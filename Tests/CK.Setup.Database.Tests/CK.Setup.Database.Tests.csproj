@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{42688FB1-AAC5-40B6-B97C-E890F360527D}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>CK.Setup.Database.Tests</RootNamespace>
+    <AssemblyName>CK.Setup.Database.Tests</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\Output\Tests\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\Output\Tests\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="CK.Core">
+      <HintPath>..\..\Runtime\Current\CK.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework, Version=2.5.9.10348, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Env\NUnit\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="FileBased.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestHelper.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\CK.Setup.Database\CK.Setup.Database.csproj">
+      <Project>{571795B1-F1EC-4EDF-9F17-01945ADE0535}</Project>
+      <Name>CK.Setup.Database</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\CK.Setup\CK.Setup.csproj">
+      <Project>{D3C700E1-3546-437C-9B96-1F867A539B6A}</Project>
+      <Name>CK.Setup</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Scripts\AllSteps\Test.InstallContent.1.1.7.to.1.2.1.sql" />
+    <Content Include="Scripts\AllSteps\Test.InstallContent.1.1.5.to.1.1.6.sql" />
+    <Content Include="Scripts\AllSteps\Test.InstallContent.1.1.6.to.1.1.7.sql" />
+    <Content Include="Scripts\AllSteps\Test.InstallContent.1.1.7.to.1.1.8.sql" />
+    <Content Include="Scripts\AllSteps\Test.InstallContent.1.1.8.to.1.1.9.sql" />
+    <Content Include="Scripts\AllSteps\Test.InstallContent.1.1.9.to.1.2.0.sql" />
+    <Content Include="Scripts\AllSteps\Test.InstallContent.1.2.0.to.1.2.1.sql" />
+    <Content Include="Scripts\AllSteps\Test.InstallContent.1.2.1.to.1.2.2.sql" />
+    <Content Include="Scripts\AllSteps\Test.Init.1.1.9.sql" />
+    <Content Include="Scripts\AllSteps\Test.Init.sql" />
+    <Content Include="Scripts\AllSteps\Test.InitContent.1.2.3.sql" />
+    <Content Include="Scripts\AllSteps\Test.Install.1.1.1.to.1.2.3.sql" />
+    <Content Include="Scripts\AllSteps\Test.Install.1.1.9.to.1.2.2.sql" />
+    <Content Include="Scripts\AllSteps\Test.Install.1.2.3.sql" />
+    <Content Include="Scripts\AllSteps\Test.InstallContent.1.2.2.to.1.2.3.sql" />
+    <Content Include="Scripts\AllSteps\Test.InstallContent.1.2.3.sql" />
+    <Content Include="Scripts\AllSteps\Test.InstallContent.sql" />
+    <Content Include="Scripts\AllSteps\Test.Settle.1.2.1.to.1.2.2.sql" />
+    <Content Include="Scripts\AllSteps\Test.SettleContent.1.2.3.sql" />
+    <Content Include="Scripts\AllSteps\Test.SettleContent.sql" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

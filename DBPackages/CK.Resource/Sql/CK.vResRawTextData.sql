@@ -1,0 +1,1 @@
+-- Version = 1.0.0, Package = CK.Resource-- Requires = { tRes, tResBigTextData }create view CK.vResRawTextDataas	select	'ResName'	= R.ResName,			'Val'		= B.Val		from CK.tRes R		inner join CK.tResRawTextData B on B.ResId = R.ResId;

@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{D3C700E1-3546-437C-9B96-1F867A539B6A}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>CK.Setup</RootNamespace>
+    <AssemblyName>CK.Setup</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="CK.Core">
+      <HintPath>..\Runtime\Current\CK.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Setup\SetupHandlerContainer.cs" />
+    <Compile Include="Setup\SetupHandler.cs" />
+    <Compile Include="Dependency\IDependentItemDiscoverer.cs" />
+    <Compile Include="ISetupHandlerContainer.cs" />
+    <Compile Include="Dependency\DependentItemRef.cs" />
+    <Compile Include="Dependency\IDependentItemRef.cs" />
+    <Compile Include="Dependency\DependentItemContainerRef.cs" />
+    <Compile Include="Dependency\IDependentItemContainerRef.cs" />
+    <Compile Include="Dependency\ISortedItem.cs" />
+    <Compile Include="Dependency\Sorter\DependentItemStructureError.cs" />
+    <Compile Include="ISetupableItemContainer.cs" />
+    <Compile Include="Dependency\Sorter\CycleExplainedElement.cs" />
+    <Compile Include="ISetupableItem.cs" />
+    <Compile Include="ISetupHandler.cs" />
+    <Compile Include="SetupableItemData.cs" />
+    <Compile Include="Setup\SetupCallContainerStep.cs" />
+    <Compile Include="Setup\SetupCenterState.cs" />
+    <Compile Include="Setup\SetupDriverEventArgs.cs" />
+    <Compile Include="Setup\SetupCenterRegisterResult.cs" />
+    <Compile Include="Setup\SetupStep.cs" />
+    <Compile Include="Setup\SetupHandlerContainerAdapter.cs" />
+    <Compile Include="ISetupDriverFactory.cs" />
+    <Compile Include="Setup\ISetupDriverList.cs" />
+    <Compile Include="SetupCenter.cs" />
+    <Compile Include="SetupDriver.cs" />
+    <Compile Include="Setup\SetupDriverBase.cs" />
+    <Compile Include="SetupDriverContainer.cs" />
+    <Compile Include="Setup\SetupDriverHead.cs" />
+    <Compile Include="Setup\SetupHandlerAdapter.cs" />
+    <Compile Include="Version\IVersionedItem.cs" />
+    <Compile Include="Dependency\IDependentItemContainer.cs" />
+    <Compile Include="Dependency\Sorter\DependencySorter.cs" />
+    <Compile Include="Dependency\Sorter\DependencySorterResult.cs" />
+    <Compile Include="Dependency\IDependentItem.cs" />
+    <Compile Include="Dependency\Sorter\DependentItemIssue.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Version\IVersionedItemRepository.cs" />
+    <Compile Include="Version\VersionedName.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
