@@ -75,7 +75,7 @@ namespace CK.Setup.Database
             return _packages.Concat( _sqlObjects );
         }
 
-        static Regex _rHeader = new Regex( @"^\s*--\s*Version\s*=\s*(?<1>\d+(\.\d+)*|\*)(\s*,?\s*((Package\s*=\s*(?<2>(\w|\.|-)+))|(Requires\s*=\s*{\s*((?<3>\??(\w+|-|\.)+)\s*,?\s*)*})|((RequiredBy\s*=\s*{\s*((?<4>(\w+|-|\.)+)\s*,?\s*)*}))|(PreviousNames\s*=\s*{\s*(((?<5>(\w|\.|-)+)\s*=\s*(?<6>\d+\.\d+\.\d+))\s*,?\s*)*})))*",
+        static readonly Regex _rHeader = new Regex( @"^\s*--\s*Version\s*=\s*(?<1>\d+(\.\d+)*|\*)(\s*,?\s*((Package\s*=\s*(?<2>(\w|\.|-)+))|(Requires\s*=\s*{\s*((?<3>\??(\w+|-|\.)+)\s*,?\s*)*})|((RequiredBy\s*=\s*{\s*((?<4>(\w+|-|\.)+)\s*,?\s*)*}))|(PreviousNames\s*=\s*{\s*(((?<5>(\w|\.|-)+)\s*=\s*(?<6>\d+\.\d+\.\d+))\s*,?\s*)*})))*",
             RegexOptions.CultureInvariant
             | RegexOptions.IgnoreCase
             | RegexOptions.ExplicitCapture );
@@ -203,8 +203,8 @@ namespace CK.Setup.Database
 
         private static void CheckDirectoryPath( string directoryPath )
         {
-            if( directoryPath == null ) throw new ArgumentNullException( directoryPath );
-            if( !Path.IsPathRooted( directoryPath ) ) throw new ArgumentException( "Path must be rooted.", directoryPath );
+            if( directoryPath == null ) throw new ArgumentNullException( "directoryPath" );
+            if( !Path.IsPathRooted( directoryPath ) ) throw new ArgumentException( String.Format( "Path {0} must be rooted.", directoryPath ), "directoryPath" );
         }
 
 
