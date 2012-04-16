@@ -43,7 +43,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Sql\Model.CK.Actor.Install.1.0.0.sql" />
+    <None Include="CK.Actor.ck" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="Sql\CK.sActorCreate.sql" />
     <Content Include="Sql\CK.sActorDestroy.sql" />
     <Content Include="Sql\CK.sUserCreate.sql" />
@@ -52,9 +54,7 @@
     <Content Include="Sql\CK.sUserEmailSet.sql" />
     <Content Include="Sql\CK.sUserEnabled.sql" />
     <Content Include="Sql\CK.sUserNameSet.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="CK.Actor.ck" />
+    <Content Include="Sql\Model.CK.Actor.Install.1.0.0.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

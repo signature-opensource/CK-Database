@@ -26,6 +26,21 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.Resource", "DBPackages\C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.Actor", "DBPackages\CK.Actor\CK.Actor.csproj", "{B1AC1CDF-F517-4F7B-85E0-9326503F229F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Packages", "Packages", "{B1FA33C8-F72A-4912-9247-B28EF2A03B5C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Nuget", "Nuget", "{786E6DD3-22B2-4BAD-B451-754337788BED}"
+	ProjectSection(SolutionItems) = preProject
+		Output\Packages\Nuget\CK.Actor.nuspec = Output\Packages\Nuget\CK.Actor.nuspec
+		Output\Packages\Nuget\CK.Database.SqlServer.nuspec = Output\Packages\Nuget\CK.Database.SqlServer.nuspec
+		Output\Packages\Nuget\CK.Resource.nuspec = Output\Packages\Nuget\CK.Resource.nuspec
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{08E68D56-78E5-4DEC-9947-BB6834125A88}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+		.nuget\NuGet.targets = .nuget\NuGet.targets
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -78,5 +93,9 @@ Global
 		{93FFB017-2D16-440F-A7A9-55F637944C8F} = {6E913090-EA34-4A90-8DBB-1501F9981F53}
 		{4FA90626-7B7C-4E1B-8A65-EDE3A3D3E260} = {8F8882E0-EACE-4DE3-8447-044B265E428C}
 		{B1AC1CDF-F517-4F7B-85E0-9326503F229F} = {8F8882E0-EACE-4DE3-8447-044B265E428C}
+		{786E6DD3-22B2-4BAD-B451-754337788BED} = {B1FA33C8-F72A-4912-9247-B28EF2A03B5C}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.0\lib\NET35
 	EndGlobalSection
 EndGlobal

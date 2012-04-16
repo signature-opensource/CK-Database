@@ -1,5 +1,5 @@
 -- Version = 1.0.0
--- CKCore.tSystem.DefaultLCID is French (12)
+-- CKCore.tSystem.DefaultLCID is french (12)
 alter table CKCore.tSystem add 
 	DefaultLCID int constraint DF_tSystem_DefaultLCID default(12);
 
