@@ -3,7 +3,9 @@
 -- Deletes an Actor.
 --
 create procedure CK.sActorDestroy
+(
 	@ActorId int
+)
 as begin
 
 	if @ActorId is not null DELETE FROM CK.tActor WHERE ActorId = @ActorId;
