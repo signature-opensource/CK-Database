@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>CK.Resource</id>
+    <version>1.0.0</version>
+    <authors>Invenietis</authors>
+    <owners>Invenietis</owners>
+    <licenseUrl>https://github.com/Invenietis/ck-database/license</licenseUrl>
+    <projectUrl>https://github.com/Invenietis/ck-database</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Brings the SQL basics resources about Resource modeling</description>
+    <language>en-US</language>
+  </metadata>
+  <files>
+    <file src="..\..\..\DBPackages\CK.Resource\Sql\*.sql" target="Sql\" />
+    <file src="..\..\..\DBPackages\CK.Resource\CK.Resource.ck" target="" />
+  </files>
+</package>

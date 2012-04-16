@@ -30,7 +30,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Packages", "Packages", "{B1
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Nuget", "Nuget", "{786E6DD3-22B2-4BAD-B451-754337788BED}"
 	ProjectSection(SolutionItems) = preProject
+		Output\Packages\Nuget\CK.Actor.nuspec = Output\Packages\Nuget\CK.Actor.nuspec
 		Output\Packages\Nuget\CK.Database.SqlServer.nuspec = Output\Packages\Nuget\CK.Database.SqlServer.nuspec
+		Output\Packages\Nuget\CK.Resource.nuspec = Output\Packages\Nuget\CK.Resource.nuspec
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{08E68D56-78E5-4DEC-9947-BB6834125A88}"

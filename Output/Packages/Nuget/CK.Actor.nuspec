@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>CK.Actor</id>
+    <version>1.0.0</version>
+    <authors>Invenietis</authors>
+    <owners>Invenietis</owners>
+    <licenseUrl>https://github.com/Invenietis/ck-database/license</licenseUrl>
+    <projectUrl>https://github.com/Invenietis/ck-database</projectUrl>
+    <dependencies>
+      <dependency id="CK.Resource" version="1.0.0" />
+    </dependencies>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Brings the SQL basics resources about User modeling</description>
+    <language>en-US</language>
+  </metadata>
+  <files>
+    <file src="..\..\..\DBPackages\CK.Actor\Sql\*.sql" target="Sql\" />
+    <file src="..\..\..\DBPackages\CK.Actor\CK.Actor.ck" target="" />
+  </files>
+</package>
