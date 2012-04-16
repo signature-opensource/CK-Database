@@ -30,3 +30,4 @@ _ReSharper*/
 Runtime/Current/
 *.svn/
 /packages/
+*.nupkg
