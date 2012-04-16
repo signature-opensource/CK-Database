@@ -16,8 +16,12 @@
   </metadata>
   <files>
     <file src="..\..\..\CK.Setup\bin\Debug\CK.Setup.dll" target="lib\net40" />
+    <file src="..\..\..\CK.Setup\bin\Debug\CK.Setup.pdb" target="lib\net40" />
     <file src="..\..\..\CK.Setup.Database\bin\Debug\CK.Setup.Database.dll" target="lib\net40" />
+    <file src="..\..\..\CK.Setup.Database\bin\Debug\CK.Setup.Database.pdb" target="lib\net40" />
     <file src="..\..\..\CK.Setup.Database.SqlServer\bin\Debug\CK.Setup.Database.SqlServer.dll" target="lib\net40" />
+    <file src="..\..\..\CK.Setup.Database.SqlServer\bin\Debug\CK.Setup.Database.SqlServer.pdb" target="lib\net40" />
     <file src="..\..\..\CK.Database.SqlServer\bin\Debug\CK.Database.SqlServer.dll" target="lib\net40" />
+    <file src="..\..\..\CK.Database.SqlServer\bin\Debug\CK.Database.SqlServer.pdb" target="lib\net40" />
   </files>
 </package>
