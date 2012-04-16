@@ -102,37 +102,5 @@ namespace CK.Setup.Database.SqlServer.Tests
             // ==> Tests/CK.Setup.Database.SqlServer.Tests/Scripts
             _scriptFolder = Path.Combine( p, "Tests", "CK.Setup.Database.SqlServer.Tests", "Scripts" );
         }
-
-        public static string MKSFolderScript
-        {
-            get { if (_scriptFolder == null) InitalizeMKSPaths(); return _scriptFolder; }
-        }
-
-        public static string GetMKSScriptsFolder(string testName)
-        {
-            return Path.Combine(MKSFolderScript, testName);
-        }
-
-        private static void InitalizeMKSPaths()
-        {
-            string p = System.Reflection.Assembly.GetExecutingAssembly().CodeBase;
-            // Code base is like "file:///C:/Users/Spi/Documents/Dev4/CK-Database/Output/Tests/Debug/CK.Setup.Database.SqlServer.Tests.DLL"
-            StringAssert.StartsWith("file:///", p, "Code base must start with file:/// protocol.");
-
-            p = p.Substring(8).Replace('/', System.IO.Path.DirectorySeparatorChar);
-
-            // => Debug/
-            p = Path.GetDirectoryName(p);
-            // => Tests/
-            p = Path.GetDirectoryName(p);
-            // => Output/
-            p = Path.GetDirectoryName(p);
-            // => CK-Database/
-            p = Path.GetDirectoryName(p);
-            // ==> Tests/CK.Setup.Database.SqlServer.Tests/Scripts
-            _scriptFolder = Path.Combine(p, "DBPackages");
-        }
-
-
     }
 }
