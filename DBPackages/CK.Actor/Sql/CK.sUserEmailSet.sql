@@ -1,19 +1,18 @@
--- Version = 1.0.0, Package = CK.Actor
+-- Version = 1.0.1, Package = CK.Actor
 --
 -- Set a new Email value for an user
 --
 create procedure CK.sUserEmailSet 
+(
+	@ActorId int,
 	@UserId int,
-	@Email varchar ( 100 )
+	@Email nvarchar ( 100 )
+)
 as begin
 
 	if @UserId is not null 
 	begin 
-
-		select Email from CK.tUser where UserId = @UserId;
-
-		if @@RowCount = 1 update CK.tUser set Email = @Email where UserId = @UserId;
-
+		update CK.tUser set Email = @Email where UserId = @UserId;
 	end
 	
 	return 0;
