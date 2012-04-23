@@ -4,11 +4,15 @@
 --
 create procedure CK.sActorDestroy
 (
-	@ActorId int
+	@ActorId int,
+	@ActorIdToDestroy int
 )
 as begin
 
-	if @ActorId is not null DELETE FROM CK.tActor WHERE ActorId = @ActorId;
-	
+	if @ActorIdToDestroy is not null 
+	begin
+		delete from CK.tActor where ActorId = @ActorIdToDestroy;
+	end
+
 	return 0;
 end

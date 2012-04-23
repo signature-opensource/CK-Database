@@ -1,16 +1,26 @@
--- Version = 1.0.0, Package = CK.Actor
+-- Version = 1.0.1, Package = CK.Actor
 --
--- Deletes an User.
+-- Deletes an User. Deletes the actor facet is optional.
 --
 create procedure CK.sUserDestroy
+(
+	@ActorId int,
 	@UserId int,
 	@DestroyActor bit
+)
 as begin
 
-	if @UserId is null return 0;
-	else DELETE FROM CK.tUser WHERE UserId = @UserId;
+	if @UserId is null 
+	begin
+		return 0;
+	end
 
-	if @DestroyActor = 1 DELETE FROM CK.tActor WHERE ActorId = @UserId;
-	
+	delete from CK.tUser where UserId = @UserId;
+
+	if @DestroyActor = 1 
+	begin
+		delete from CK.tActor where ActorId = @UserId;
+	end
+
 	return 0;
 end
