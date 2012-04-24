@@ -4,19 +4,33 @@
 -- Renames also the chidren of the resource name.
 --
 create procedure CK.sResRename
-	@OldName	varchar(96),
+(
+	@ActorId	int,
+	@ResId		int,
 	@NewName	varchar(96)
+)
 as
 begin
-	if @OldName = '' return 0;
-	set @NewName = RTrim( LTrim(@NewName) );
-	
-	-- update child names first
-	declare @lenPrefix int;
-	set @lenPrefix = len(@OldName)+1;
-	if len(@NewName) = 0 set @lenPrefix = @lenPrefix + 1;
-	update CK.tRes set ResName = @NewName+substring( ResName, @lenPrefix, 96 )
-		where ResName like @OldName+'%';
+	declare @oldName varchar(96);
+
+	select @oldName = ResName from CK.tRes where ResId = @ResId;
+	if @oldName is not null
+	begin
+
+		set @NewName = RTrim( LTrim(@NewName) );
+
+		-- update child names first
+		declare @lenPrefix int;
+		set @lenPrefix = len(@oldName)+1;
+		if len(@NewName) = 0 
+		begin
+			set @lenPrefix = @lenPrefix + 1;
+		end
+
+		update CK.tRes set ResName = @NewName+substring( ResName, @lenPrefix, 96 )
+			where ResName like @oldName+'%';
+
+	end
 
 	return 0;
 
