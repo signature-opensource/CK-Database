@@ -20,7 +20,7 @@ namespace CK.Setup
         /// Gets a list of <see cref="IDependentItem"/> that must participate to the 
         /// setup. Can be null if no such item exists.
         /// </summary>
-        IEnumerable<IDependentItem> GetDependentItems();
+        IEnumerable<IDependentItem> GetOtherItemsToRegister();
     }
 }
 

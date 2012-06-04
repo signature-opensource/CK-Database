@@ -58,7 +58,7 @@ namespace CK.Setup.Tests
             get { return _relatedItems ?? (_relatedItems = new List<IDependentItem>()); }
         }
 
-        IEnumerable<IDependentItem> IDependentItemDiscoverer.GetDependentItems()
+        IEnumerable<IDependentItem> IDependentItemDiscoverer.GetOtherItemsToRegister()
         {
             return _relatedItems;
         }
@@ -66,6 +66,11 @@ namespace CK.Setup.Tests
         public override string ToString()
         {
             return FullName;
+        }
+
+        bool IDependentItemRef.Optional
+        {
+            get { return false; }
         }
 
     }

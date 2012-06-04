@@ -26,12 +26,15 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets names of dependencies. Can be null if no such dependency exists.
+        /// When the name starts with '?', it is an optional dependency: if it is not found, this
+        /// will not be an error (see <see cref="DependentItemIssue.MissingDependencies"/>).
         /// </summary>
         IEnumerable<string> Requires { get; }
 
         /// <summary>
-        /// Gets names of revert dependencies: an item can specify
-        /// that it is itself rquired by another one. 
+        /// Gets names of revert dependencies (an item can specify that it is itself required by another one). 
+        /// A "RequiredBy" constraint is optional: a missing "RequiredBy" is not an error (it is considered 
+        /// as a reverted optional dependency).
         /// Can be null if no such dependency exists.
         /// </summary>
         IEnumerable<string> RequiredBy { get; }

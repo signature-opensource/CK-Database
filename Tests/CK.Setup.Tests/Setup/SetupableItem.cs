@@ -32,5 +32,10 @@ namespace CK.Setup.Tests
             get { return "TestItem"; }
         }
 
+        bool IDependentItemRef.Optional
+        {
+            get { return false; }
+        }
+
     }
 }

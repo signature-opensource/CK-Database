@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<VisualState xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ShowCheckBoxes="false">
+  <TopNode>[0-1000]C:\Users\Spi\Documents\Dev4\CK-Database\CK-Database.Tests.nunit</TopNode>
+  <SelectedNode>[0-1070]CK.Setup.SqlServer.Tests.FileBasedDBSetup.InstallFromScratch</SelectedNode>
+  <ExcludeCategories>false</ExcludeCategories>
+  <Nodes>
+    <Node UniqueName="[0-1000]C:\Users\Spi\Documents\Dev4\CK-Database\CK-Database.Tests.nunit" Expanded="true" />
+    <Node UniqueName="[0-1044]C:\Users\Spi\Documents\Dev4\CK-Database\Output\Tests\Debug\CK.Setup.Tests.dll" Expanded="true" />
+    <Node UniqueName="[0-1045]CK" Expanded="true" />
+    <Node UniqueName="[0-1047]CK.Setup.Tests" Expanded="true" />
+    <Node UniqueName="[0-1048]CK.Setup.Tests.Dependencies" Expanded="true" />
+    <Node UniqueName="[0-1001]CK.Setup.Tests.Dependencies.ChildByName" Expanded="true" />
+    <Node UniqueName="[0-1007]CK.Setup.Tests.Dependencies.ContainerByName" Expanded="true" />
+    <Node UniqueName="[0-1017]CK.Setup.Tests.Dependencies.ContainerDependencies" Expanded="true" />
+    <Node UniqueName="[0-1029]CK.Setup.Tests.Dependencies.FlatDependencies" Expanded="true" />
+    <Node UniqueName="[0-1042]CK.Setup.Tests.ParsedFileNameTests" Expanded="true" />
+    <Node UniqueName="[0-1052]C:\Users\Spi\Documents\Dev4\CK-Database\Output\Tests\Debug\CK.Setup.Database.Tests.dll" Expanded="true" />
+    <Node UniqueName="[0-1053]CK" Expanded="true" />
+    <Node UniqueName="[0-1054]CK.Setup" Expanded="true" />
+    <Node UniqueName="[0-1055]CK.Setup.Database" Expanded="true" />
+    <Node UniqueName="[0-1056]CK.Setup.Database.Tests" Expanded="true" />
+    <Node UniqueName="[0-1049]CK.Setup.Database.Tests.FileBased" Expanded="true" />
+    <Node UniqueName="[0-1065]C:\Users\Spi\Documents\Dev4\CK-Database\Output\Tests\Debug\CK.SqlServer.Tests.dll" Expanded="true" />
+    <Node UniqueName="[0-1066]CK" Expanded="true" />
+    <Node UniqueName="[0-1067]CK.SqlServer" Expanded="true" />
+    <Node UniqueName="[0-1068]CK.SqlServer.Tests" Expanded="true" />
+    <Node UniqueName="[0-1057]CK.SqlServer.Tests.ErrorHandlingTests" Expanded="true" />
+    <Node UniqueName="[0-1059]CK.SqlServer.Tests.SimpleScriptTagHandlerTests" Expanded="true" />
+    <Node UniqueName="[0-1072]C:\Users\Spi\Documents\Dev4\CK-Database\Output\Tests\Debug\CK.Setup.SqlServer.Tests.dll" Expanded="true" />
+    <Node UniqueName="[0-1073]CK" Expanded="true" />
+    <Node UniqueName="[0-1074]CK.Setup" Expanded="true" />
+    <Node UniqueName="[0-1075]CK.Setup.SqlServer" Expanded="true" />
+    <Node UniqueName="[0-1076]CK.Setup.SqlServer.Tests" Expanded="true" />
+    <Node UniqueName="[0-1069]CK.Setup.SqlServer.Tests.FileBasedDBSetup" Expanded="true" />
+  </Nodes>
+</VisualState>

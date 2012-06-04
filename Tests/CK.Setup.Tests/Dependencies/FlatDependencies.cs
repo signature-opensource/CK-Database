@@ -162,7 +162,7 @@ namespace CK.Setup.Tests.Dependencies
             Assert.That( r.SortedItems.Count, Is.EqualTo( 8 ) );
             Assert.That( r.IsOrdered( "System", "Res", "JustLikeRes", "Actor", "Acto", "Act", "MCulture", "Appli" ), 
                     @"Reversing of the order for 2 dependencies are on the same rank can help detect missing dependencies: 
-                      a setup MUST work regardless of fact that we invert the order of items that have the same rank: since they 
+                      a setup MUST work regardless of the fact that we invert the order of items that have the same rank: since they 
                       share their rank there is NO dependency between them." );
 
             new ResultChecker( r ).CheckRecurse( "System", "Res", "Actor", "Acto", "Act", "MCulture", "Appli", "JustLikeRes" );

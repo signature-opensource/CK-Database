@@ -11,34 +11,67 @@ namespace CK.Setup
     /// </summary>
     public struct DependentItemRef : IDependentItemRef
     {
-        string _fullName;
+        readonly string _fullName;
+        readonly bool _optional;
 
         /// <summary>
-        /// Initializes a new <see cref="DependentItemRef"/> with a <see cref="FullName"/>.
+        /// Initializes a new <see cref="DependentItemRef"/> with a <see cref="FullName"/>
+        /// optionaly starting with '?'.
         /// </summary>
         public DependentItemRef( string fullName )
         {
-            _fullName = fullName ?? String.Empty;
+            if( String.IsNullOrWhiteSpace( fullName ) ) throw new ArgumentException( "Must not be a not null nor empty nor whitespace string.", "fullName" );
+            _fullName = fullName;
+            _optional = false;
+            if( fullName[0] == '?' )
+            {
+                _fullName = fullName.Substring( 1 );
+                _optional = true;
+            }
         }
 
         /// <summary>
-        /// Gets or sets a name that uniquely identifies a container. 
-        /// It is automatically set to <see cref="String.Empty"/> when null is set.
+        /// Initializes a potentially optional new <see cref="DependentItemRef"/> with a <see cref="FullName"/>.
+        /// </summary>
+        public DependentItemRef( string fullName, bool optional )
+            : this( fullName )
+        {
+            _optional = optional;
+        }
+
+        /// <summary>
+        /// Gets the name that uniquely identifies an item. 
         /// </summary>
         public string FullName 
         {
             get { return _fullName; }
-            set { _fullName = value ?? _fullName; }
+        }
+
+        public bool Optional
+        {
+            get { return _optional; }
+        }
+
+        public static implicit operator DependentItemRef( string fullName )
+        {
+            return new DependentItemRef( fullName );
         }
 
         public override bool Equals( object obj )
         {
-            return obj is DependentItemRef ? ((DependentItemRef)obj).FullName == _fullName : false;
+            if( obj is DependentItemRef ) 
+            {
+                DependentItemRef o = (DependentItemRef)obj;
+                return o.Optional == Optional && o.FullName == _fullName;
+            }
+            return false;
         }
 
         public override int GetHashCode()
         {
-            return _fullName.GetHashCode();
+            int h = _fullName.GetHashCode();
+            if( _optional ) h = -h;
+            return h;
         }
 
         public override string ToString()

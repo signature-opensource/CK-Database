@@ -9,8 +9,8 @@ namespace CK.Setup
     /// <summary>
     /// Defines a reference to a container. Since a <see cref="IDependentItemContainer"/> is 
     /// its own IDependentItemContainerRef, when the object container is known it can be used
-    /// as the reference. The struct <see cref="DependentItemContainerRef"/> must be used for 
-    /// pure named reference.
+    /// as a (non optional) reference. The struct <see cref="DependentItemContainerRef"/> must be used for 
+    /// optional or pure named reference.
     /// </summary>
     public interface IDependentItemContainerRef : IDependentItemRef
     {

@@ -178,7 +178,7 @@ namespace CK.Setup
                 {
                     foreach( var d in discoverers )
                     {
-                        items = d.GetDependentItems();
+                        items = d.GetOtherItemsToRegister();
                         if( items != null ) Register( items );
                     }
                 }
@@ -397,7 +397,7 @@ namespace CK.Setup
                 IDependentItemDiscoverer disco = e as IDependentItemDiscoverer;
                 if( disco != null )
                 {
-                    var related = disco.GetDependentItems();
+                    var related = disco.GetOtherItemsToRegister();
                     if( related != null )
                     {
                         foreach( IDependentItem eR in related )

@@ -1,4 +1,5 @@
--- Version = 1.0.0
+﻿
+
 -- CKCore.tSystem.DefaultLCID is French (12)
 alter table CKCore.tSystem add 
 	DefaultLCID int constraint DF_tSystem_DefaultLCID default(12);
@@ -32,11 +33,11 @@ create table CK.tResRawTextData
 
 GO
 
--- 0 == Empty string => ResName is an Empty String and texts are Empty Strings.
+-- 0 == Empty string => String and Text are empty strings too.
 insert into CK.tRes( ResName ) values( '' );
-insert into CK.tResStringData( ResID, Val) values( 0, N'');
-insert into CK.tResRawTextData( ResID, Val ) values( 0, N'');
+insert into CK.tResStringData( ResId, Val) values( 0, N'');
+insert into CK.tResRawTextData( ResId, Val ) values( 0, N'');
 
 -- 1 == System itself.
 insert into CK.tRes( ResName ) values( 'System' )
-insert into CK.tResStringData( ResId, Val ) values( 1, N'Ce syst�me...' )
+insert into CK.tResStringData( ResId, Val ) values( 1, N'Ce système...' )

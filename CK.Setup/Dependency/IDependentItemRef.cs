@@ -9,8 +9,8 @@ namespace CK.Setup
     /// <summary>
     /// Defines a reference to an item. Since a <see cref="IDependentItem"/> is 
     /// its own IDependentItemRef, when the object item is known it can be used 
-    /// as the reference. The struct <see cref="DependentItemRef"/> must be used for 
-    /// pure named reference.
+    /// as a (non optional) reference. The struct <see cref="DependentItemRef"/> must be used for 
+    /// optional or pure named reference.
     /// </summary>
     public interface IDependentItemRef
     {
@@ -18,6 +18,11 @@ namespace CK.Setup
         /// Gets a name that uniquely identifies the item. It must be not null.
         /// </summary>
         string FullName { get; }
+
+        /// <summary>
+        /// Gets whether the reference is an optional one.
+        /// </summary>
+        bool Optional { get; }
 
     }
 }

@@ -13,8 +13,9 @@ namespace CK.Setup
     public sealed class DependencySorterResult
     {
         IReadOnlyList<CycleExplainedElement> _cycleExplained;
+        int _itemIssueWithStructureErrorCount;
 
-        internal DependencySorterResult( List<DependencySorter.Entry> result, List<IDependentItem> cycle, List<DependentItemIssue> missing )
+        internal DependencySorterResult( List<DependencySorter.Entry> result, List<IDependentItem> cycle, List<DependentItemIssue> itemIssues )
         {
             Debug.Assert( (result == null) != (cycle == null), "cycle ^ result" );
             if( result == null )
@@ -27,7 +28,8 @@ namespace CK.Setup
                 SortedItems = new ReadOnlyListOnIList<ISortedItem, DependencySorter.Entry>( result );
                 CycleDetected = null;
             }
-            ItemIssues = missing != null && missing.Count > 0 ? new ReadOnlyListOnIList<DependentItemIssue>( missing ) : ReadOnlyListEmpty<DependentItemIssue>.Empty;
+            ItemIssues = itemIssues != null && itemIssues.Count > 0 ? new ReadOnlyListOnIList<DependentItemIssue>( itemIssues ) : ReadOnlyListEmpty<DependentItemIssue>.Empty;
+            _itemIssueWithStructureErrorCount = -1;
         }
 
         /// <summary>
@@ -47,27 +49,49 @@ namespace CK.Setup
 
         /// <summary>
         /// True if at least one non-optional requirement (a requirement that is not prefixed with '?') exists.
+        /// (If this is true then <see cref="HasStructureError"/> is also true since a missing dependency is 
+        /// flagged with <see cref="DependentItemStructureError.MissingDependency"/>.)
         /// </summary>
         public bool HasRequiredMissing
         {
-            get { return ItemIssues.Any( m => m.RequiredMissingCount > 0 ); }
+            get 
+            {
+                Debug.Assert( !ItemIssues.Any( m => m.RequiredMissingCount > 0 ) || HasStructureError );
+                return ItemIssues.Any( m => m.RequiredMissingCount > 0 ); 
+            }
         }
 
         /// <summary>
-        /// True if at least one relation between an item and its container is invalid.
+        /// True if at least one relation between an item and its container is invalid (true when <see cref="HasRequiredMissing"/> is true).
         /// </summary>
         public bool HasStructureError
         {
-            get { return ItemIssues.Any( m => m.StructureError != DependentItemStructureError.None ); }
+            get { return StructureErrorCount > 0; }
         }
 
         /// <summary>
-        /// True only if no cycle has been detected, no required missing dependencies and no error related 
-        /// to container (<see cref="HasStructureError"/>) exist: <see cref="SortedItems"/> can be exploited.
+        /// Number of items that have at least one invalid relation between itself and its container, its children or its dependencies.
+        /// </summary>
+        public int StructureErrorCount
+        {
+            get 
+            {
+                if( _itemIssueWithStructureErrorCount < 0 )
+                {
+                    _itemIssueWithStructureErrorCount = ItemIssues.Count( m => m.StructureError != DependentItemStructureError.None );
+                }
+                return _itemIssueWithStructureErrorCount;
+            }
+        }
+
+        /// <summary>
+        /// True only if no cycle has been detected, and no structure error (<see cref="HasStructureError"/>) 
+        /// exist: <see cref="SortedItems"/> can be exploited.
+        /// When IsComplete is false, <see cref="LogError"/> can be used to have a dump of the errors in a <see cref="IActivityLogger"/>.
         /// </summary>
         public bool IsComplete
         {
-            get { return CycleDetected == null && HasRequiredMissing == false && HasStructureError == false; }
+            get { return CycleDetected == null && HasStructureError == false; }
         }
 
         /// <summary>
@@ -113,6 +137,46 @@ namespace CK.Setup
             }
         }
 
+        /// <summary>
+        /// Gets a description of the detected cycle. Null if <see cref="CycleDetected"/> is null.
+        /// </summary>
+        public string CycleExplainedString
+        {
+            get { return CycleExplained != null ? String.Join( " ", CycleExplained ) : null; }
+        }
+
+        /// <summary>
+        /// Gets a description of the required missing dependencies. Null if no missing required dependency exists.
+        /// </summary>
+        public string RequiredMissingDependenciesExplained
+        {
+            get 
+            { 
+                string s = String.Join( "', '", ItemIssues.Where( d => d.RequiredMissingCount > 0 ).Select( d => "'" + d.Item.FullName + "' => {'" + String.Join( "', '", d.RequiredMissingDependencies ) + "'}" ) );
+                return s.Length == 0 ? null : s; 
+            }
+        }
+
+        /// <summary>
+        /// Logs <see cref="CycleExplainedString"/> and any structure errors. Does nothing if <see cref="IsComplete"/> is true.
+        /// </summary>
+        /// <param name="logger">The logger to use.</param>
+        public void LogError( IActivityLogger logger )
+        {
+            if( logger == null ) throw new ArgumentNullException( "logger" );
+            if( CycleDetected != null )
+            {
+                logger.Error( "Cycle detected: {0}.", CycleExplainedString );
+            }
+            if( HasStructureError )
+            {
+                foreach( var bug in ItemIssues.Where( d => d.StructureError != DependentItemStructureError.None ) )
+                {
+                    bug.LogError( logger );
+                }
+            }
+        }
+
         private static bool IsRequires( IDependentItem from, IDependentItem to )
         {
             return from.Requires != null && from.Requires.Where( r => r[0] != '?' ).Any( r => r == to.FullName );
@@ -133,14 +197,6 @@ namespace CK.Setup
             return to.Container == from || (to.Container != null && to.Container.FullName == from.FullName);
         }
 
-        /// <summary>
-        /// Gets a description of the detected cycle. Null if <see cref="CycleDetected"/> is null.
-        /// </summary>
-        public string CycleExplainedString
-        {
-            get { return CycleExplained != null ? String.Join( " ", CycleExplained ) : null; }
-        }
-   
     }
 
 }
