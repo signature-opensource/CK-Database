@@ -31,6 +31,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Nuget", "Nuget", "{786E6DD3-22B2-4BAD-B451-754337788BED}"
 	ProjectSection(SolutionItems) = preProject
 		Output\Packages\Nuget\CK.Actor.nuspec = Output\Packages\Nuget\CK.Actor.nuspec
+		Output\Packages\Nuget\CK.ActorGroup.nuspec = Output\Packages\Nuget\CK.ActorGroup.nuspec
 		Output\Packages\Nuget\CK.Database.SqlServer.nuspec = Output\Packages\Nuget\CK.Database.SqlServer.nuspec
 		Output\Packages\Nuget\CK.Resource.nuspec = Output\Packages\Nuget\CK.Resource.nuspec
 	EndProjectSection
@@ -165,6 +166,7 @@ Global
 		{B1AC1CDF-F517-4F7B-85E0-9326503F229F} = {8F8882E0-EACE-4DE3-8447-044B265E428C}
 		{12E6DB2B-9773-47F0-9A5A-F7CDEC2A8C18} = {8F8882E0-EACE-4DE3-8447-044B265E428C}
 		{786E6DD3-22B2-4BAD-B451-754337788BED} = {B1FA33C8-F72A-4912-9247-B28EF2A03B5C}
+		{6E913090-EA34-4A90-8DBB-1501F9981F53} = {B1FA33C8-F72A-4912-9247-B28EF2A03B5C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.0\lib\NET35
