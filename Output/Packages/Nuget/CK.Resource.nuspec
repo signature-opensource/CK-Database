@@ -12,7 +12,7 @@
     <language>en-US</language>
   </metadata>
   <files>
-    <file src="..\..\..\DBPackages\CK.Resource\Sql\*.sql" target="Sql\" />
-    <file src="..\..\..\DBPackages\CK.Resource\CK.Resource.ck" target="" />
+    <file src="..\..\..\DBPackages\CK.Resource\Sql\*.sql" target="content\CK.Resource" />
+    <file src="..\..\..\DBPackages\CK.Resource\CK.Resource.ck" target="content" />
   </files>
 </package>
