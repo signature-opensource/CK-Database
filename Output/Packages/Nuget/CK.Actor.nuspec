@@ -15,7 +15,7 @@
     <language>en-US</language>
   </metadata>
   <files>
-    <file src="..\..\..\DBPackages\CK.Actor\Sql\*.sql" target="content\CK.Actor" />
-    <file src="..\..\..\DBPackages\CK.Actor\CK.Actor.ck" target="content" />
+    <file src="..\..\..\DBPackages\CK.Actor\Sql\*.sql" target="Sql\" />
+    <file src="..\..\..\DBPackages\CK.Actor\CK.Actor.ck" target="" />
   </files>
 </package>
