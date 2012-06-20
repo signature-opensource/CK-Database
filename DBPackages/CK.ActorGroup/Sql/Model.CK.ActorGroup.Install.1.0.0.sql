@@ -18,8 +18,6 @@ create table CK.tGroup
 	constraint UK_tGroup_GroupNameSecurityZoneId unique(SecurityZoneId, GroupName)
 );
 
-alter table CK.tSecurityZone add constraint FK_tSecurityZone_tGroup foreign key(SecurityZoneId) references CK.tGroup(GroupId);
-
 create table CK.tActorProfile
 (
 	ActorId int not null,
@@ -38,3 +36,5 @@ insert into CK.tActorProfile ( GroupId, ActorId ) values ( 0, 0 );
 insert into CK.tSecurityZone ( SecurityZoneId, ZoneName ) values ( 1, 'System' );
 insert into CK.tGroup ( GroupId, SecurityZoneId, GroupName ) values ( 1, 1, 'System' );
 insert into CK.tActorProfile ( GroupId, ActorId ) values ( 1, 1 );
+
+alter table CK.tSecurityZone add constraint FK_tSecurityZone_tGroup foreign key(SecurityZoneId) references CK.tGroup(GroupId);
