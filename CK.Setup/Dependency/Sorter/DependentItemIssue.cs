@@ -33,10 +33,11 @@ namespace CK.Setup
             Append( ref _homonyms, homonym );
         }
 
-        internal void AddMissing( string missing, bool isStrong )
+        internal void AddMissing( IDependentItemRef dep )
         {
-            Debug.Assert( !String.IsNullOrWhiteSpace( missing ) );
-            Debug.Assert( isStrong == (missing[0] != '?') );
+            Debug.Assert( !String.IsNullOrWhiteSpace( dep.FullName ) );
+            string missing = dep.FullName;
+            if( dep.Optional ) missing = '?' + missing;
             if( _missingDep == null )
             {
                 _missingDep = new[] { missing };
@@ -47,7 +48,7 @@ namespace CK.Setup
                 int len = _missingDep.Length;
                 // This is to maintain the fact that a strong missing 
                 // dependency hides an optional one.
-                if( isStrong )
+                if( !dep.Optional )
                 {
                     string weak = '?' + missing;
                     int idx = Array.IndexOf( _missingDep, weak );
@@ -62,7 +63,7 @@ namespace CK.Setup
                 Array.Resize( ref _missingDep, len + 1 );
                 _missingDep[len] = missing;
             }
-            if( isStrong )
+            if( !dep.Optional )
             {
                 StructureError |= DependentItemStructureError.MissingDependency;
                 ++_nbRequiredMissingDep;

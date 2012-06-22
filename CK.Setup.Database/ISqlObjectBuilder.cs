@@ -8,8 +8,6 @@ namespace CK.Setup.Database
 {
     public interface ISqlObjectBuilder
     {
-        SqlObjectPreParse PreParse( IActivityLogger logger, string text );
-
-        ISetupableItem Create( IActivityLogger logger, SqlObjectPreParse preParsed, SetupableItemData data );
+        IVersionedItem Create( IActivityLogger logger, string text );
     }
 }

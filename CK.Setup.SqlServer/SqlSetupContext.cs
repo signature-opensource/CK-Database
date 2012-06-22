@@ -35,15 +35,15 @@ namespace CK.Setup.SqlServer
             get { return _defaultDatabase.Logger; }
         }
 
-        public virtual SetupDriver CreateDriver( Type driverType, SetupDriver.BuildInfo info )
+        public virtual ItemDriver CreateDriver( Type driverType, ItemDriver.BuildInfo info )
         {
             if( driverType == typeof( SqlObjectDriver ) ) return new SqlObjectDriver( info, _defaultDatabase );
             return null;
         }
 
-        public virtual SetupDriverContainer CreateDriverContainer( Type containerType, SetupDriverContainer.BuildInfo info )
+        public virtual ContainerDriver CreateDriverContainer( Type containerType, ContainerDriver.BuildInfo info )
         {
-            if( containerType == typeof( SetupDriverContainer ) ) return new SetupDriverContainer( info );
+            if( containerType == typeof( ContainerDriver ) ) return new ContainerDriver( info );
             if( containerType == typeof( DatabaseSetupDriver ) ) return new DatabaseSetupDriver( info, DoObtainManager );
             return null;
         }

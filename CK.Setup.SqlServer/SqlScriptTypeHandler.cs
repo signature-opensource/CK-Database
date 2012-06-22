@@ -36,7 +36,7 @@ namespace CK.Setup.SqlServer
             }
         }
 
-        public IScriptExecutor CreateExecutor( IActivityLogger logger, SetupDriverContainer container )
+        public IScriptExecutor CreateExecutor( IActivityLogger logger, ContainerDriver container )
         {
             return _executor ?? (_executor = new PackageSqlScriptExecutor( _manager, container.Engine.Memory ));
         }

@@ -38,7 +38,7 @@ namespace CK.Setup.Database
             AmbiantContractCollectorResult r = _cc.GetResult();
             if( r.CheckErrorAndWarnings( logger ) )
             {
-                foreach( var t in r.ConcreteClasses )
+                foreach( var t in r.Default.ConcreteClasses )
                 {
 
                 }

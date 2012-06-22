@@ -7,11 +7,6 @@
 //namespace CK.Setup.Database.ObjectPackage
 //{
 
-//    class Package
-//    {
-
-//    }
-
 //    public interface IColumn
 //    {
 //        string ColumnName { get; }

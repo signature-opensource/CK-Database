@@ -14,7 +14,7 @@ namespace CK.Setup.Database
         ISqlObjectBuilder _sqlObjectBuilder;
         IActivityLogger _logger;
         List<DynamicPackage> _packages;
-        List<ISetupableItem> _sqlObjects;
+        List<IVersionedItem> _sqlObjects;
 
         int _packageDiscoverErrorCount;
         int _sqlFileDiscoverErrorCount;
@@ -28,7 +28,7 @@ namespace CK.Setup.Database
             _logger = logger;
 
             _packages = new List<DynamicPackage>();
-            _sqlObjects = new List<ISetupableItem>();
+            _sqlObjects = new List<IVersionedItem>();
         }
 
         public int PackageDiscoverErrorCount
@@ -84,11 +84,6 @@ namespace CK.Setup.Database
             return _packages.Concat( _sqlObjects );
         }
 
-        static Regex _rHeader = new Regex( @"^\s*--\s*Version\s*=\s*(?<1>\d+(\.\d+)*|\*)(\s*,?\s*((Package\s*=\s*(?<2>(\w|\.|-)+))|(Requires\s*=\s*{\s*((?<3>\??(\w+|-|\.)+)\s*,?\s*)*})|((RequiredBy\s*=\s*{\s*((?<4>(\w+|-|\.)+)\s*,?\s*)*}))|(PreviousNames\s*=\s*{\s*(((?<5>(\w|\.|-)+)\s*=\s*(?<6>\d+\.\d+\.\d+))\s*,?\s*)*})))*",
-            RegexOptions.CultureInvariant
-            | RegexOptions.IgnoreCase
-            | RegexOptions.ExplicitCapture );
-
         bool RegisterFileSql( string path, PackageScriptCollector collector, string sqlFileScriptType )
         {
             ParsedFileName f;
@@ -115,39 +110,17 @@ namespace CK.Setup.Database
                 {
                     // There is no SetupStep suffix: it should be a SqlObject.
                     string text = readContent();
-                    SqlObjectPreParse pre = _sqlObjectBuilder.PreParse( _logger, text );
-                    if( pre != null )
+                    IVersionedItem item = _sqlObjectBuilder.Create( _logger, text );
+                    if( item != null )
                     {
-                        Match mHeader = _rHeader.Match( pre.Header );
-                        if( !mHeader.Success )
+                        if( item.FullName != f.ContainerFullName )
                         {
-                            _logger.Warn( "Unable to read header: {0}", text.Substring( 0, Math.Max( text.Length, 80 ) ) );
+                            _logger.Error( "Name from the file is '{0}' whereas content indicates '{1}'. Names must match.", f.ContainerFullName, item.FullName );
                             return false;
                         }
-                        SetupableItemData data = new SetupableItemData();
-                        data.FullName = f.ContainerFullName;
-                        if( mHeader.Groups[1].Length == 1 ) data.Version = null;
-                        else if( !Version.TryParse( mHeader.Groups[1].Value, out data.Version ) || data.Version.Revision != -1 || data.Version.Build == -1 )
-                        {
-                            _logger.Error( "-- Version=X.Y.Z (with Major.Minor.Build) must appear first in header." );
-                            return false;
-                        }
-                        if( mHeader.Groups[2].Length > 0 ) data.Container = new DependentItemContainerRef( mHeader.Groups[2].Value );
-                        if( mHeader.Groups[3].Captures.Count > 0 ) data.Requires = mHeader.Groups[3].Captures.Cast<Group>().Select( m => m.Value ).ToArray();
-                        if( mHeader.Groups[4].Captures.Count > 0 ) data.RequiredBy = mHeader.Groups[4].Captures.Cast<Group>().Select( m => m.Value ).ToArray();
-                        if( mHeader.Groups[5].Captures.Count > 0 )
-                        {
-                            var prevNames = mHeader.Groups[5].Captures.Cast<Group>().Select( m => m.Value );
-                            var prevVer = mHeader.Groups[5].Captures.Cast<Group>().Select( m => Version.Parse( m.Value ) );
-                            data.PreviousNames = prevNames.Zip( prevVer, ( n, v ) => new VersionedName( n, v ) ).ToArray();
-                        }
-                        ISetupableItem item = _sqlObjectBuilder.Create( _logger, pre, data );
-                        if( item != null )
-                        {
-                            _logger.CloseGroup( item.FullName );
-                            _sqlObjects.Add( item );
-                            return true;
-                        }
+                        _logger.CloseGroup( item.FullName );
+                        _sqlObjects.Add( item );
+                        return true;
                     }
                 }
                 catch( Exception ex )
@@ -189,17 +162,17 @@ namespace CK.Setup.Database
             p.FullName = (string)e.AttributeRequired( "FullName" );
             p.SetVersionsString( (string)e.AttributeRequired( "Versions" ) );
             p.Requires.Clear();
-            foreach( var a in e.Elements( "Requirements" ).Attributes( "Requires" ) ) p.AddRequiresString( (string)a );
+            foreach( var a in e.Elements( "Requirements" ).Attributes( "Requires" ) ) p.Requires.AddCommaSeparatedString( (string)a );
             p.RequiredBy.Clear();
-            foreach( var a in e.Elements( "Requirements" ).Attributes( "RequiredBy" ) ) p.AddRequiredByString( (string)a );
+            foreach( var a in e.Elements( "Requirements" ).Attributes( "RequiredBy" ) ) p.RequiredBy.AddCommaSeparatedString( (string)a );
 
             XElement model = e.Elements( "Model" ).SingleOrDefault();
             if( model != null )
             {
                 p.EnsureModel().Requires.Clear();
-                foreach( var a in model.Elements( "Requirements" ).Attributes( "Requires" ) ) p.Model.AddRequiresString( (string)a );
+                foreach( var a in model.Elements( "Requirements" ).Attributes( "Requires" ) ) p.Model.Requires.AddCommaSeparatedString( (string)a );
                 p.Model.RequiredBy.Clear();
-                foreach( var a in e.Elements( "Requirements" ).Attributes( "RequiredBy" ) ) p.Model.AddRequiredByString( (string)a );
+                foreach( var a in e.Elements( "Requirements" ).Attributes( "RequiredBy" ) ) p.Model.RequiredBy.AddCommaSeparatedString( (string)a );
             }
             else p.SupressModel();
             p.Children.Clear();
@@ -208,7 +181,7 @@ namespace CK.Setup.Database
             {
                 foreach( var add in content.Elements( "Add" ) )
                 {
-                    p.Children.Add( new DependentItemRef( (string)add.AttributeRequired( "FullName" ) ) );
+                    p.Children.Add( new NamedDependentItemRef( (string)add.AttributeRequired( "FullName" ) ) );
                 }
             }
             return p;

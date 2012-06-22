@@ -35,12 +35,7 @@ namespace CK.Setup.Database.Tests
 
         public class SqlObjectBuilderMock : ISqlObjectBuilder
         {
-            public SqlObjectPreParse PreParse( IActivityLogger logger, string text )
-            {
-                throw new NotImplementedException();
-            }
-
-            public ISetupableItem Create( IActivityLogger logger, SqlObjectPreParse preParsed, SetupableItemData data )
+            public IVersionedItem Create( IActivityLogger logger, string text )
             {
                 throw new NotImplementedException();
             }

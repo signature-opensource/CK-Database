@@ -53,7 +53,6 @@ namespace CK.Core
         public string Path
         {
             get { return _path; }
-            set { _path = value; }
         }
 
         /// <summary>
@@ -152,8 +151,7 @@ namespace CK.Core
         static public Stream LoadStream( Type resourceHolder, string path, string name, bool throwError )
         {
             string fullName = ResourceName( resourceHolder, path, name );
-            Assembly a = resourceHolder != null ? resourceHolder.Assembly : Assembly.GetCallingAssembly();
-            return LoadStream( a, fullName, name, throwError );
+            return LoadStream( resourceHolder.Assembly, fullName, name, throwError );
         }
 
         /// <summary>
@@ -178,8 +176,7 @@ namespace CK.Core
         static public string LoadString( Type resourceHolder, string path, string name, bool throwError )
         {
             string fullName = ResourceName( resourceHolder, path, name );
-            Assembly a = resourceHolder != null ? resourceHolder.Assembly : Assembly.GetCallingAssembly();
-            using( Stream stream = LoadStream( a, fullName, name, throwError ) )
+            using( Stream stream = LoadStream( resourceHolder.Assembly, fullName, name, throwError ) )
             {
                 if( stream == null ) return null;
                 using( StreamReader reader = new StreamReader( stream, true ) )

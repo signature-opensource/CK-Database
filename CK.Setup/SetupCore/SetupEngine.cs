@@ -22,38 +22,38 @@ namespace CK.Setup
         readonly ISetupSessionMemory _memory;
         SetupEngineState _state;
 
-        class DriverList : ISetupDriverList
+        class DriverList : IDriverList
         {
-            Dictionary<string,SetupDriverBase> _byName;
-            List<SetupDriverBase> _drivers;
+            Dictionary<string,DriverBase> _byName;
+            List<DriverBase> _drivers;
             SetupEngine _center;
 
             public DriverList( SetupEngine center )
             {
                 _center = center;
-                _byName = new Dictionary<string, SetupDriverBase>();
-                _drivers = new List<SetupDriverBase>();
+                _byName = new Dictionary<string, DriverBase>();
+                _drivers = new List<DriverBase>();
             }
 
-            public SetupDriverBase this[string fullName]
+            public DriverBase this[string fullName]
             {
                 get { return _byName.GetValueWithDefault( fullName, null ); }
             }
 
             public int IndexOf( object item )
             {
-                SetupDriverBase d = item as SetupDriverBase;
+                DriverBase d = item as DriverBase;
                 return d != null ? d.Index : -1;
             }
 
-            public SetupDriverBase this[int index]
+            public DriverBase this[int index]
             {
                 get { return _drivers[index]; }
             }
 
             public bool Contains( object item )
             {
-                SetupDriverBase d = item as SetupDriverBase;
+                DriverBase d = item as DriverBase;
                 return d != null ? d.Engine == _center : false;
             }
 
@@ -62,7 +62,7 @@ namespace CK.Setup
                 get { return _byName.Count; }
             }
 
-            public IEnumerator<SetupDriverBase> GetEnumerator()
+            public IEnumerator<DriverBase> GetEnumerator()
             {
                 return _drivers.GetEnumerator();
             }
@@ -78,7 +78,7 @@ namespace CK.Setup
                 _drivers.Clear();
             }
 
-            internal void Add( SetupDriverBase d )
+            internal void Add( DriverBase d )
             {
                 Debug.Assert( d != null && d.Engine == _center );
                 Debug.Assert( !_byName.ContainsKey( d.FullName ) );
@@ -93,14 +93,14 @@ namespace CK.Setup
         {
             public readonly static ISetupDriverFactory Default = new DefaultDriverfactory();
 
-            SetupDriver ISetupDriverFactory.CreateDriver( Type driverType, SetupDriver.BuildInfo info )
+            ItemDriver ISetupDriverFactory.CreateDriver( Type driverType, ItemDriver.BuildInfo info )
             {
-                return (SetupDriver)Activator.CreateInstance( driverType, info );
+                return (ItemDriver)Activator.CreateInstance( driverType, info );
             }
 
-            SetupDriverContainer ISetupDriverFactory.CreateDriverContainer( Type containerType, SetupDriverContainer.BuildInfo info )
+            ContainerDriver ISetupDriverFactory.CreateDriverContainer( Type containerType, ContainerDriver.BuildInfo info )
             {
-                return (SetupDriverContainer)Activator.CreateInstance( containerType, info );
+                return (ContainerDriver)Activator.CreateInstance( containerType, info );
             }
 
         }
@@ -117,7 +117,7 @@ namespace CK.Setup
             _drivers = new DriverList( this );
         }
 
-        public event EventHandler<SetupDriverEventArgs> DriverEvent;
+        public event EventHandler<DriverEventArgs> DriverEvent;
 
         public IVersionedItemRepository VersionRepository
         {
@@ -134,7 +134,7 @@ namespace CK.Setup
             get { return _logger; }
         }
 
-        public ISetupDriverList AllDrivers
+        public IDriverList AllDrivers
         {
             get { return _drivers; }
         }
@@ -150,14 +150,14 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Registers any number of <see cref="ISetupableItem"/> and/or <see cref="IDependentItemDiscoverer"/> and optionnaly registers them
+        /// Registers any number of <see cref="IDependentItem"/> and/or <see cref="IDependentItemDiscoverer"/> and optionnaly registers them
         /// with an inverted setup order between independant items (see <see cref="DependencySorter"/> for more information).
         /// </summary>
-        /// <param name="items">Set of <see cref="ISetupableItem"/></param>
+        /// <param name="items">Set of <see cref="IDependentItem"/></param>
         /// <param name="discoverers">Set of <see cref="IDependentItemDiscoverer"/>.</param>
         /// <returns>A <see cref="SetupEngineRegisterResult"/> that captures detailed information about the registration result.</returns>
         /// <param name="reverseName">Reverse the ordering for items that share the same rank in the pure dependency graph.</param>
-        public SetupEngineRegisterResult Register( IEnumerable<ISetupableItem> items, IEnumerable<IDependentItemDiscoverer> discoverers, bool reverseName = false )
+        public SetupEngineRegisterResult Register( IEnumerable<IDependentItem> items, IEnumerable<IDependentItemDiscoverer> discoverers, bool reverseName = false )
         {
             CheckState( SetupEngineState.None );
             SetupEngineRegisterResult result = null;
@@ -166,30 +166,34 @@ namespace CK.Setup
                 result = new SetupEngineRegisterResult( DependencySorter.OrderItems( items, discoverers, reverseName ) );
                 if( result.IsValid )
                 {
-                    var reusableEvent = new SetupDriverEventArgs( SetupStep.None );
+                    var reusableEvent = new DriverEventArgs( SetupStep.None );
                     foreach( var item in result.SortResult.SortedItems )
                     {
-                        SetupDriverBase d;
+                        DriverBase d;
                         Type typeToCreate = null;
                         if( item.IsContainer )
                         {
-                            var head = _drivers[item.HeadForContainer.FullName] as SetupDriverHead;
+                            var head = _drivers[item.HeadForContainer.FullName] as ContainerHeadDriver;
                             Debug.Assert( head != null );
                             typeToCreate = ResolveDriverType( item );
-                            SetupDriverContainer c = _driverFactory.CreateDriverContainer( typeToCreate, new SetupDriverContainer.BuildInfo( head, item ) );
+                            ContainerDriver c = _driverFactory.CreateDriverContainer( typeToCreate, new ContainerDriver.BuildInfo( head, item ) );
                             d = head.Container = c;
                         }
                         else
                         {
-                            VersionedName externalVersion = VersionRepository.GetCurrent( (ISetupableItem)item.Item );
+                            VersionedName externalVersion;
+                            IVersionedItem versioned = item.Item as IVersionedItem;
+                            if( versioned != null ) externalVersion = VersionRepository.GetCurrent( versioned );
+                            else externalVersion = null;
+
                             if( item.IsContainerHead )
                             {
-                                d = new SetupDriverHead( this, item, externalVersion );
+                                d = new ContainerHeadDriver( this, item, externalVersion );
                             }
                             else
                             {
                                 typeToCreate = ResolveDriverType( item );
-                                d = _driverFactory.CreateDriver( typeToCreate, new SetupDriver.BuildInfo( this, item, externalVersion ) );
+                                d = _driverFactory.CreateDriver( typeToCreate, new ItemDriver.BuildInfo( this, item, externalVersion ) );
                             }
                         }
                         if( d == null ) throw new Exception( String.Format( "Driver Factory returned null for item {0}, type {1}", item.FullName, typeToCreate ) );
@@ -225,7 +229,7 @@ namespace CK.Setup
             _state = SetupEngineState.InitializationError;
             try
             {
-                var reusableEvent = new SetupDriverEventArgs( SetupStep.Init );
+                var reusableEvent = new DriverEventArgs( SetupStep.Init );
                 foreach( var d in _drivers )
                 {
                     using( _logger.OpenGroup( LogLevel.Info, "Initializing {0}", d.FullName ) )
@@ -256,7 +260,7 @@ namespace CK.Setup
             _state = SetupEngineState.InstallationError;
             try
             {
-                var reusableEvent = new SetupDriverEventArgs( SetupStep.Install );
+                var reusableEvent = new DriverEventArgs( SetupStep.Install );
                 foreach( var d in _drivers )
                 {
                     using( _logger.OpenGroup( LogLevel.Info, "Installing {0}", d.FullName ) )
@@ -287,7 +291,7 @@ namespace CK.Setup
             _state = SetupEngineState.SettlementError;
             try
             {
-                var reusableEvent = new SetupDriverEventArgs( SetupStep.Settle );
+                var reusableEvent = new DriverEventArgs( SetupStep.Settle );
                 foreach( var d in _drivers )
                 {
                     using( _logger.OpenGroup( LogLevel.Info, "Settling {0}", d.FullName ) )
@@ -300,8 +304,8 @@ namespace CK.Setup
                             hE( this, reusableEvent );
                             if( reusableEvent.CancelSetup ) return false;
                         }
-                        VersionRepository.SetCurrent( d.Item );
-
+                        IVersionedItem versioned = d.Item as IVersionedItem;
+                        if( versioned != null ) VersionRepository.SetCurrent( versioned );
                     }
                 }
             }
@@ -342,9 +346,17 @@ namespace CK.Setup
 
         private static Type ResolveDriverType( ISortedItem item )
         {
-            string typeName = ((ISetupableItem)item.Item).SetupDriverTypeName;
-            Type t = SimpleTypeFinder.Default.ResolveType( typeName, true );
-            return t;
+            if( item.StartValue is Type ) return (Type)item.StartValue;
+            if( !(item.StartValue is string) )
+            {
+                if( item.StartValue == null )
+                {
+                    throw new CKException( "StartDependencySort returned a null object for '{1}', it must be a Type or a string.", item.FullName );
+                }
+                throw new CKException( "Invalid StartDependencySort returned type '{0}' for '{1}', it must be a Type or a string.", item.StartValue.GetType(), item.FullName );
+            }
+            string typeName = (string)item.StartValue;
+            return SimpleTypeFinder.Default.ResolveType( typeName, true );
         }
 
         void CheckState( SetupEngineState requiredState )

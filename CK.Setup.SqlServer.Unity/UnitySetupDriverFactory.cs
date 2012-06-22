@@ -18,14 +18,14 @@ namespace CK.Setup.SqlServer
             _container = container;
         }
 
-        public override SetupDriver CreateDriver( Type driverType, SetupDriver.BuildInfo info )
+        public override ItemDriver CreateDriver( Type driverType, ItemDriver.BuildInfo info )
         {
-            return (SetupDriver)_container.Resolve( driverType, new DependencyOverride<SetupDriver.BuildInfo>( info ) );
+            return (ItemDriver)_container.Resolve( driverType, new DependencyOverride<ItemDriver.BuildInfo>( info ) );
         }
 
-        public override SetupDriverContainer CreateDriverContainer( Type containerType, SetupDriverContainer.BuildInfo info )
+        public override ContainerDriver CreateDriverContainer( Type containerType, ContainerDriver.BuildInfo info )
         {
-            return (SetupDriverContainer)_container.Resolve( containerType, new DependencyOverride<SetupDriverContainer.BuildInfo>( info ) );
+            return (ContainerDriver)_container.Resolve( containerType, new DependencyOverride<ContainerDriver.BuildInfo>( info ) );
         }
     }
 }

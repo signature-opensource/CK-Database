@@ -53,14 +53,14 @@ namespace CK.Setup
                 get { return null; }
             }
 
-            public IEnumerable<string> Requires
+            public IEnumerable<IDependentItemRef> Requires
             {
-                get { return Handler.Requires; }
+                get { return Handler.Requires != null ? Handler.Requires.Select( s => new NamedDependentItemRef( s ) ) : null; }
             }
 
-            public IEnumerable<string> RequiredBy
+            public IEnumerable<IDependentItemRef> RequiredBy
             {
-                get { return Handler.RequiredBy; }
+                get { return Handler.RequiredBy != null ? Handler.RequiredBy.Select( s => new NamedDependentItemRef( s ) ) : null; }
             }
 
             public string FullName
@@ -71,6 +71,11 @@ namespace CK.Setup
             public bool Optional
             {
                 get { return false; }
+            }
+
+            public object StartDependencySort()
+            {
+                return null;
             }
         }
 
