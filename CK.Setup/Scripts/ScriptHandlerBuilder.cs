@@ -25,10 +25,10 @@ namespace CK.Setup
             _engine.DriverEvent += OnDriverEvent;
         }
 
-        void OnDriverEvent( object sender, SetupDriverEventArgs e )
+        void OnDriverEvent( object sender, DriverEventArgs e )
         {
             Debug.Assert( sender == _engine );
-            if( e.Step == SetupStep.None && !e.Driver.IsContainerHead && e.Driver is SetupDriverContainer )
+            if( e.Step == SetupStep.None && !e.Driver.IsContainerHead && e.Driver is PackageDriver )
             {
                 bool casingDiffer;
                 PackageScriptSet scripts = _scriptCollector.Find( e.Driver.FullName, out casingDiffer );
@@ -59,8 +59,8 @@ namespace CK.Setup
                             }
                             else if( scriptHandlers.Count > 0 )
                             {
-                                var d = (SetupDriverContainer)e.Driver;
-                                new PackageScriptSetupHandler( d, scripts, scriptHandlers );
+                                var d = (PackageDriver)e.Driver;
+                                new PackageScriptHandler( d, scripts, scriptHandlers );
                             }
                         }
                     }

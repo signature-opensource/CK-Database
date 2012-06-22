@@ -87,7 +87,7 @@ namespace CK.Setup
             {
                 using( _logger.OpenGroup( LogLevel.Info, "Register step." ) )
                 {
-                    SetupEngineRegisterResult r = engine.Register( items.OfType<ISetupableItem>(), items.OfType<IDependentItemDiscoverer>(), RevertOrderingNames );
+                    SetupEngineRegisterResult r = engine.Register( items.OfType<IDependentItem>(), items.OfType<IDependentItemDiscoverer>(), RevertOrderingNames );
                     if( !r.IsValid )
                     {
                         r.LogError( _logger );

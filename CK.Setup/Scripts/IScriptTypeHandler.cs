@@ -16,7 +16,7 @@ namespace CK.Setup
         /// <param name="logger">Logger to use.</param>
         /// <param name="container">The setup container for which an executor must be created.</param>
         /// <returns>A <see cref="IScriptExecutor"/> object.</returns>
-        IScriptExecutor CreateExecutor( IActivityLogger logger, SetupDriverContainer container );
+        IScriptExecutor CreateExecutor( IActivityLogger logger, ContainerDriver container );
 
         /// <summary>
         /// Called by the framework to indicate that a <see cref="IScriptExecutor"/> is no longer needed.

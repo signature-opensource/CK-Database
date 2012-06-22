@@ -8,7 +8,7 @@ using CK.Core;
 
 namespace CK.Setup.SqlServer
 {
-    public class SqlObjectDriver : SetupDriver
+    public class SqlObjectDriver : ItemDriver
     {
         SqlManager _manager;
 
@@ -26,7 +26,7 @@ namespace CK.Setup.SqlServer
 
         protected override bool Install()
         {
-            if( ExternalVersion != null && ExternalVersion.Version == Item.Version ) return true;
+            if( ExternalVersion != null && ExternalVersion.Version == ((IVersionedItem)Item).Version ) return true;
 
             string s;
             StringWriter w = new StringWriter();

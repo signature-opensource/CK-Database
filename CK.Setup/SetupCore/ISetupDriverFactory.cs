@@ -7,8 +7,8 @@ namespace CK.Setup
 {
     public interface ISetupDriverFactory
     {
-        SetupDriver CreateDriver( Type driverType, SetupDriver.BuildInfo info );
+        ItemDriver CreateDriver( Type driverType, ItemDriver.BuildInfo info );
 
-        SetupDriverContainer CreateDriverContainer( Type containerType, SetupDriverContainer.BuildInfo info );
+        ContainerDriver CreateDriverContainer( Type containerType, ContainerDriver.BuildInfo info );
     }
 }

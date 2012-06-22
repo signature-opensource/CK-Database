@@ -27,6 +27,11 @@ namespace CK.Setup
         string FullName { get; }
 
         /// <summary>
+        /// Gets the object returned by <see cref="IDependentItem.StartDependencySort"/> if any.
+        /// </summary>
+        object StartValue { get; }
+
+        /// <summary>
         /// Gets the container to which this item belongs.
         /// Use <see cref="HeadForContainer"/> to get its head.
         /// </summary>
@@ -62,10 +67,6 @@ namespace CK.Setup
         /// Gets the requirements of the item. Combines direct <see cref="IDependentItem.Requires"/>
         /// and <see cref="IDependentItem.RequiredBy"/> declared by existing other items.
         /// </summary>
-        /// <remarks>
-        /// There can be duplicates in this list if the item A requires B and B claims also to be
-        /// required by A.
-        /// </remarks>
-        IEnumerable<string> Requires { get; }
+        IEnumerable<IDependentItemRef> Requires { get; }
     }
 }

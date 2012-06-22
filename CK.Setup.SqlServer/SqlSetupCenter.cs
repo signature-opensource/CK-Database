@@ -5,6 +5,7 @@ using System.Text;
 using CK.Core;
 using CK.SqlServer;
 using CK.Setup.Database;
+using System.Reflection;
 
 namespace CK.Setup.SqlServer
 {
@@ -12,7 +13,8 @@ namespace CK.Setup.SqlServer
     {
         SqlSetupContext _context;
         SetupCenter _center;
-        SqlFileDiscoverer _discoverer;
+        SqlFileDiscoverer _fileDiscoverer;
+        AmbiantContractCollector _collector;
 
         public SqlSetupCenter( SqlSetupContext context )
         {
@@ -21,24 +23,33 @@ namespace CK.Setup.SqlServer
             var versionRepo = new SqlVersionedItemRepository( _context.DefaultDatabase );
             var memory = new SqlSetupSessionMemoryProvider( _context.DefaultDatabase );
             _center = new SetupCenter( versionRepo, memory,_context.Logger, _context );
-            _discoverer = new SqlFileDiscoverer( new SqlObjectBuilder(), _context.Logger );
+            _fileDiscoverer = new SqlFileDiscoverer( new SqlObjectBuilder(), _context.Logger );
+            _collector = new AmbiantContractCollector();
             _center.ScriptTypeManager.Register( new SqlScriptTypeHandler( _context.DefaultDatabase ) );
         }
 
         public bool DiscoverFilePackages( string directoryPath )
         {
-            return _discoverer.DiscoverPackages( directoryPath );
+            return _fileDiscoverer.DiscoverPackages( directoryPath );
         }
 
         public bool DiscoverSqlFiles( string directoryPath )
         {
-            return _discoverer.DiscoverSqlFiles( directoryPath, _center.Scripts );
+            return _fileDiscoverer.DiscoverSqlFiles( directoryPath, _center.Scripts );
+        }
+
+        public void DiscoverObjects( Assembly assembly )
+        {
+            _collector.Register( assembly.GetTypes() ); 
         }
 
         public bool Run()
         {
-            return _center.Run( _discoverer );
-        }
+            var r = _collector.GetResult();
+            if( !r.CheckErrorAndWarnings( _context.Logger ) ) return false;
 
+
+            return _center.Run( _fileDiscoverer );
+        }
     }
 }

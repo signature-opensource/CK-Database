@@ -179,12 +179,12 @@ namespace CK.Setup
 
         private static bool IsRequires( IDependentItem from, IDependentItem to )
         {
-            return from.Requires != null && from.Requires.Where( r => r[0] != '?' ).Any( r => r == to.FullName );
+            return from.Requires != null && from.Requires.Where( r => !r.Optional ).Any( r => r.FullName == to.FullName );
         }
 
         private static bool IsRequiredBy( IDependentItem from, IDependentItem to )
         {
-            return to.RequiredBy != null && to.RequiredBy.Select( r => r.Replace( "?", String.Empty ) ).Any( r => r == from.FullName );
+            return to.RequiredBy != null && to.RequiredBy.Any( r => r.FullName == from.FullName );
         }
 
         private static bool IsContains( IDependentItem from, IDependentItem to )

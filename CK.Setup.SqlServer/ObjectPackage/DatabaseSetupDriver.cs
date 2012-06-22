@@ -6,7 +6,7 @@ using CK.SqlServer;
 
 namespace CK.Setup.SqlServer
 {
-    public class DatabaseSetupDriver : SetupDriverContainer
+    public class DatabaseSetupDriver : ContainerDriver
     {
         Func<string,SqlManager> _connectionProvider;
         SqlManager _manager;
@@ -14,6 +14,7 @@ namespace CK.Setup.SqlServer
         public DatabaseSetupDriver( BuildInfo info, Func<string,SqlManager> connectionProvider )
             : base( info )
         {
+            if( connectionProvider == null ) throw new ArgumentNullException( "connectionProvider" );
             _connectionProvider = connectionProvider;
         }
 
@@ -30,6 +31,10 @@ namespace CK.Setup.SqlServer
         protected override bool Init()
         {
             _manager = _connectionProvider( Item.Name );
+            foreach( var name in Item.Schemas )
+            {
+                _manager.ExecuteOneScript( String.Format( "if not exists(select 1 from sys.schemas where name = '{0}') begin exec( 'create schema {0}' ); end", name ), Engine.Logger );
+            } 
             return true;
         }
 

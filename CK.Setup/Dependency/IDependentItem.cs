@@ -12,8 +12,14 @@ namespace CK.Setup
     /// onto other items. The <see cref="DependencySorter"/> is used to 
     /// order such items based on their dependencies.
     /// </summary>
-    public interface IDependentItem : IDependentItemRef
+    public interface IDependentItem
     {
+        /// <summary>
+        /// Gets a name that uniquely identifies the item. 
+        /// It must be not null.
+        /// </summary>
+        string FullName { get; }
+
         /// <summary>
         /// Gets a reference to the container to which this item belongs. 
         /// Null if this item does not belong to a container.
@@ -25,19 +31,28 @@ namespace CK.Setup
         IDependentItemContainerRef Container { get; }
 
         /// <summary>
-        /// Gets names of dependencies. Can be null if no such dependency exists.
-        /// When the name starts with '?', it is an optional dependency: if it is not found, this
-        /// will not be an error (see <see cref="DependentItemIssue.MissingDependencies"/>).
+        /// Gets this item's dependencies. Can be null if no such dependency exists.
         /// </summary>
-        IEnumerable<string> Requires { get; }
+        /// <remarks>
+        /// When <see cref="IDependentItemRef.Optional"/> is true, if it is not found, this
+        /// will not be an error (see <see cref="DependentItemIssue.MissingDependencies"/>).
+        /// </remarks>
+        IEnumerable<IDependentItemRef> Requires { get; }
 
         /// <summary>
-        /// Gets names of revert dependencies (an item can specify that it is itself required by another one). 
+        /// Gets the revert dependencies (an item can specify that it is itself required by another one). 
         /// A "RequiredBy" constraint is optional: a missing "RequiredBy" is not an error (it is considered 
         /// as a reverted optional dependency).
         /// Can be null if no such dependency exists.
         /// </summary>
-        IEnumerable<string> RequiredBy { get; }
+        IEnumerable<IDependentItemRef> RequiredBy { get; }
+
+        /// <summary>
+        /// Allows the dependent item to prepare itself before ordering. The returned object (if any)
+        /// is made available after the sort in <see cref="ISortedItem.StartValue"/>
+        /// </summary>
+        /// <returns>Any object that has to be associated to this item and a <see cref="DependencySorter.OrderItems"/> call.</returns>
+        object StartDependencySort();
     }
 }
 
