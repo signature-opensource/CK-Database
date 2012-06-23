@@ -97,6 +97,14 @@ namespace CK.SqlServer
             _text = script.Trim();
         }
 
+        /// <summary>
+        /// Processes the script: <see cref="SplitScript"/> must be called to retrieve the script parts.
+        /// Returns false on error: detailed error(s) information are logged in <paramref name="logger"/>.
+        /// </summary>
+        /// <param name="logger">Required logger.</param>
+        /// <param name="scriptAllowed">True to allow --[beginscript] / --[endscript] tags.</param>
+        /// <param name="goInsideScriptAllowed">True to allow GO separator inside scripts.</param>
+        /// <returns>True on success, false on error(s).</returns>
         public bool Expand( IActivityLogger logger, bool scriptAllowed, bool goInsideScriptAllowed = false )
         {
             if( logger == null ) throw new ArgumentNullException( "logger" );
@@ -114,6 +122,10 @@ namespace CK.SqlServer
             get { return _nbScripts; }
         }
 
+        /// <summary>
+        /// Gets the list of expanded <see cref="Script"/> objects.
+        /// </summary>
+        /// <returns>List of scripts (possibly empty).</returns>
         public List<Script> SplitScript()
         {
             if( !_expandSuccess ) throw new InvalidOperationException();
@@ -337,7 +349,7 @@ namespace CK.SqlServer
                             t |= TokenType.IsScript;
                             knownMark = true;
                         }
-                        else if( String.Compare( _text, idxTag, "sp", 0, 6, StringComparison.OrdinalIgnoreCase ) == 0 )
+                        else if( String.Compare( _text, idxTag, "sp", 0, 2, StringComparison.OrdinalIgnoreCase ) == 0 )
                         {
                             t |= TokenType.IsSP;
                             knownMark = true;
@@ -349,7 +361,7 @@ namespace CK.SqlServer
                     }
                     else
                     {
-                        logger.Warn( "Unregognized sql mark '{0}'. It is ignored.", m.Value );
+                        logger.Warn( "Unregognized sql mark '{0}'. It is ignored.", m.Value.Trim() );
                     }
                 }
                 m = m.NextMatch();
@@ -374,13 +386,15 @@ endscript: if @CKScTC = 0 commit;
 --[=/endscript]
 ";
         static internal readonly string BeginSP =
-@"--[=beginsp]
+@"
+--[=beginsp]
 set nocount on; declare @SPCallTC int = @@TRANCOUNT, @SPCallId sysname; 
 beginsp: if @SPCallTC = 0 begin tran; else begin set @SPCallId = cast(32*cast(@@PROCID as bigint)+@@NESTLEVEL as varchar); save transaction @SPCallId; end begin try
 --[=/beginsp]
 ";
         static internal readonly string EndSPWithoutRecoverableError =
-@"--[=endsp]
+@"
+--[=endsp]
 end try
 begin catch if @SPCallTC = 0 rollback; else if XACT_STATE() = 1 rollback transaction @SPCallId; exec CKCore.sErrorRethrow @@ProcId; return -1; end catch;
 endsp: if @SPCallTC = 0 commit; return 0;

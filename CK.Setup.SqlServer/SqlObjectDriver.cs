@@ -38,7 +38,11 @@ namespace CK.Setup.SqlServer
             
             Item.WriteCreate( w );
             s = w.GetStringBuilder().ToString();
-            if( !_manager.ExecuteOneScript( s, Engine.Logger ) ) return false;
+
+            var tagHandler = new SimpleScriptTagHandler( s );
+            if( !tagHandler.Expand( Engine.Logger, true ) ) return false;
+            var scripts = tagHandler.SplitScript();
+            if( !_manager.ExecuteScripts( scripts.Select( c => c.Body ), Engine.Logger ) ) return false;
 
             return true;
         }

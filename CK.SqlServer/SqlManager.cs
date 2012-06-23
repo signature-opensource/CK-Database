@@ -169,7 +169,7 @@ namespace CK.SqlServer
         /// <summary>
         /// Databases in this list will not be reseted nor created.
         /// </summary>
-        public IList ProtectedDatabaseNames
+        public IList<string> ProtectedDatabaseNames
         {
             get { return _protectedDatabaseNames; }
         }
@@ -381,12 +381,10 @@ namespace CK.SqlServer
                     }
                     catch
                     {
-                        if( autoCreate )
-                        {
-                            CreateDatabase( database );
-                            hasBeenCreated = true;
-                        }
-                        else throw;
+                        if( !autoCreate ) throw;
+                        bool create = CreateDatabase( database );
+                        hasBeenCreated = true;
+                        return create;
                     }
                     _oCon.ConnectionString = CurrentConnectionString;
                     _oCon.Open();
@@ -434,6 +432,8 @@ namespace CK.SqlServer
                 _oCon.InternalConnection.ChangeDatabase( "master" );
                 _oCon.ExecuteNonQuery( cmd );
                 _oCon.InternalConnection.ChangeDatabase( databaseName );
+                // Refresh cached connections.
+                SqlConnection.ClearPool( _oCon.InternalConnection );
                 return true;
             }
             catch( Exception e )
@@ -630,7 +630,7 @@ namespace CK.SqlServer
         }
 
         /// <summary>
-        /// Do the real job for one script (no GO separator must exist inside). 
+        /// Executes one script (no GO separator must exist inside). 
         /// The script is <see cref="IActivityLogger.Trace"/>d (if <see cref="logger"/> is not null).
         /// </summary>
         /// <param name="logger">The logger to use. Null to not log anything (and throw exception on error).</param>

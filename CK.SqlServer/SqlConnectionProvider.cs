@@ -58,9 +58,9 @@ namespace CK.SqlServer
         }
 
         /// <summary>
-        /// Gets or sets the connection string. If the main connection is currently opened, 
-        /// it is automatically closed first (and remains closed until the first time it 
-        /// is needed).
+        /// Gets or sets the connection string. If the main connection is currently opened
+        /// (and the connection string actually changed), it is automatically closed first (and 
+        /// remains closed until the first time it is needed).
         /// </summary>
         public string ConnectionString
         {

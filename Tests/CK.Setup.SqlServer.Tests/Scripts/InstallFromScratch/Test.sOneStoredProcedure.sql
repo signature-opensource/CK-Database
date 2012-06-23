@@ -5,5 +5,7 @@ create procedure Test.sOneStoredProcedure
 )
 as
 begin
+	--[beginsp]
 	select P = @P
+	--[endsp]
 end

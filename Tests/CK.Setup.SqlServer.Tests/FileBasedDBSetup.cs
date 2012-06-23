@@ -17,23 +17,24 @@ namespace CK.Setup.SqlServer.Tests
             using( var context = new SqlSetupContext( "Server=.;Database=Test;Integrated Security=SSPI;", TestHelper.Logger ) )
             {
                 if( !context.DefaultDatabase.IsOpen() ) context.DefaultDatabase.OpenOrCreate( ".", "Test" );
-                SqlSetupCenter c = new SqlSetupCenter( context );
-                c.DiscoverFilePackages( TestHelper.GetScriptsFolder( "InstallFromScratch" ) );
-                c.DiscoverSqlFiles( TestHelper.GetScriptsFolder( "InstallFromScratch" ) );
-                Assert.That( c.Run() );
-            }
-        }
-
-        [Test]
-        public void InstallMKS()
-        {
-            using( var context = new SqlSetupContext( "Server=.;Database=MKSM;Integrated Security=SSPI;", TestHelper.Logger ) )
-            {
-                if( !context.DefaultDatabase.IsOpen() ) context.DefaultDatabase.OpenOrCreate( ".", "MKSM" );
-                SqlSetupCenter c = new SqlSetupCenter( context );
-                c.DiscoverFilePackages( TestHelper.GetMKSScriptsFolder( "" ) );
-                c.DiscoverSqlFiles( TestHelper.GetMKSScriptsFolder( "" ) );
-                Assert.That( c.Run() );
+                using( context.Logger.OpenGroup( LogLevel.Trace, "First setup" ) )
+                {
+                    SqlSetupCenter c = new SqlSetupCenter( context );
+                    c.DiscoverFilePackages( TestHelper.GetScriptsFolder( "InstallFromScratch" ) );
+                    c.DiscoverSqlFiles( TestHelper.GetScriptsFolder( "InstallFromScratch" ) );
+                    Assert.That( c.Run() );
+                }
+                
+                context.DefaultDatabase.ExecuteOneScript( "drop procedure Test.sOneStoredProcedure;" );
+                context.DefaultDatabase.ExecuteOneScript( "drop function Test.fTest;" );
+                
+                using( context.Logger.OpenGroup( LogLevel.Trace, "Second setup" ) )
+                {
+                    SqlSetupCenter c = new SqlSetupCenter( context );
+                    c.DiscoverFilePackages( TestHelper.GetScriptsFolder( "InstallFromScratch" ) );
+                    c.DiscoverSqlFiles( TestHelper.GetScriptsFolder( "InstallFromScratch" ) );
+                    Assert.That( c.Run() );
+                }
             }
         }
     }
