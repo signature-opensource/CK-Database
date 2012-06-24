@@ -24,6 +24,18 @@ namespace CK.Setup.Tests.Dependencies
             foreach( string s in fullNames ) Check( s );
         }
 
+        public static void SimpleCheck( DependencySorterResult r )
+        {
+            if( r.SortedItems != null )
+            {
+                foreach( var e in r.SortedItems.Where( s => !s.IsContainerHead ).Select( s => s.Item ).OfType<TestableItem>() )
+                {
+                    e.CheckStartDependencySortCountAndReset();
+                }
+            }
+            CheckMissingInvariants( r );
+        }
+
         public static void CheckMissingInvariants( DependencySorterResult r )
         {
             // Naive implementation. 
@@ -87,26 +99,26 @@ namespace CK.Setup.Tests.Dependencies
             if( o.IsContainer )
             {
                 Check( o.HeadForContainer );
-                foreach( IDependentItem item in ((IDependentItemContainer)o.Item).Children ) CheckRecurse( item.FullName );
+                foreach( var item in ((IDependentItemContainer)o.Item).Children ) CheckRecurse( item.FullName );
                 // Requirements of a package is carried by its head: we don't check Requires here.
             }
             else CheckRequires( o, o.Item.Requires );
             
             // RequiredBy applies to normal items and to container (the container itself, not its head).
-            foreach( string invertReq in o.Item.RequiredBy )
+            foreach( var invertReq in o.Item.RequiredBy )
             {
-                var after = _byName.GetValueWithDefault( invertReq, null );
+                var after = _byName.GetValueWithDefault( invertReq.FullName, null );
                 if( after != null ) Assert.That( o.Index < after.Index, "{0} is before {1} (since {1} is required by {0}).", o.FullName, after.FullName );
             }
         }
 
-        private void CheckRequires( ISortedItem o, IEnumerable<string> requirements )
+        private void CheckRequires( ISortedItem o, IEnumerable<IDependentItemRef> requirements )
         {
             if( requirements != null )
             {
-                foreach( string dep in requirements )
+                foreach( var dep in requirements )
                 {
-                    var before = Find( dep );
+                    var before = Find( dep.Optional ? '?' + dep.FullName : dep.FullName );
                     if( before != null ) Assert.That( before.Index < o.Index, "{0} is before {1} (since {1} requires {0}).", before.FullName, o.FullName );
                 }
             }
@@ -119,11 +131,11 @@ namespace CK.Setup.Tests.Dependencies
             Assert.That( o.Index < container.Index, "{0} is before {1} (since {1} contains {0}).", o.FullName, container.FullName );
         }
 
-        ISortedItem Find( string fullName )
+        ISortedItem Find( string fullNameOpt )
         {
             ISortedItem o;
-            bool found = _byName.TryGetValue( fullName, out o );
-            Assert.That( found || IsDetectedMissingDependency( fullName ), "{0} not found.", fullName );
+            bool found = _byName.TryGetValue( fullNameOpt, out o );
+            Assert.That( found || IsDetectedMissingDependency( fullNameOpt ), "{0} not found.", fullNameOpt );
             return o;
         }
 

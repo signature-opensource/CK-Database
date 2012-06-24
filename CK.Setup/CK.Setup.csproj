@@ -34,57 +34,87 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CK.Core, Version=0.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="CK.Core">
       <HintPath>..\packages\CK.Core.1.0.0\lib\net40\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Setup\SetupHandlerContainer.cs" />
-    <Compile Include="Setup\SetupHandler.cs" />
+    <Compile Include="WildObject\AmbiantContract\AmbiantContractCollector.cs" />
+    <Compile Include="WildObject\AmbiantContract\AmbiantContractCollectorContextResult.cs" />
+    <Compile Include="WildObject\AmbiantContract\AmbiantContractCollectorResult.cs" />
+    <Compile Include="WildObject\AmbiantContract\AmbiantTypeMapper.cs" />
+    <Compile Include="WildObject\AmbiantContract\IAmbiantTypeMapper.cs" />
+    <Compile Include="WildObject\AmbiantContract\IAmbiantContract.cs" />
+    <Compile Include="WildObject\AmbiantContract\IAmbiantContractDefiner.cs" />
+    <Compile Include="Dependency\DependentItemExtension.cs" />
+    <Compile Include="SetupCore\Package\DependentItemList.cs" />
+    <Compile Include="SetupCore\Package\DynamicPackage.cs" />
+    <Compile Include="SetupCore\Package\DynamicPackageModel.cs" />
+    <Compile Include="SetupCore\Package\IDependentItemList.cs" />
+    <Compile Include="SetupCore\Package\PackageBase.cs" />
+    <Compile Include="SetupCore\Package\PackageHandler.cs" />
+    <Compile Include="SetupCore\Package\IPackage.cs" />
+    <Compile Include="SetupCore\ISetupSessionMemory.cs" />
+    <Compile Include="SetupCore\ISetupSessionMemoryProvider.cs" />
+    <Compile Include="Scripts\SetupScriptExtension.cs" />
+    <Compile Include="Scripts\MultiScriptBase.cs" />
+    <Compile Include="Scripts\MultiScriptExecutorBase.cs" />
+    <Compile Include="Scripts\IScriptExecutor.cs" />
+    <Compile Include="Scripts\CoveringScript.cs" />
+    <Compile Include="Scripts\FileSetupScript.cs" />
+    <Compile Include="Scripts\IScriptTypeHandler.cs" />
+    <Compile Include="Scripts\ISetupScript.cs" />
+    <Compile Include="Scripts\PackageScriptCollector.cs" />
+    <Compile Include="Scripts\PackageScriptSet.cs" />
+    <Compile Include="Scripts\PackageScriptHandler.cs" />
+    <Compile Include="Scripts\PackageTypedScriptVector.cs" />
+    <Compile Include="Scripts\PackageTypedScriptVectorConstraint.cs" />
+    <Compile Include="Scripts\ParsedFileName.cs" />
+    <Compile Include="Scripts\ScriptHandlerBuilder.cs" />
+    <Compile Include="Scripts\ScriptTypeManager.cs" />
+    <Compile Include="SetupCenter.cs" />
+    <Compile Include="SetupCore\DriverListExtension.cs" />
+    <Compile Include="SetupCore\ContainerHandler.cs" />
+    <Compile Include="SetupCore\ItemHandler.cs" />
     <Compile Include="Dependency\IDependentItemDiscoverer.cs" />
-    <Compile Include="ISetupHandlerContainer.cs" />
-    <Compile Include="Dependency\DependentItemRef.cs" />
+    <Compile Include="SetupCore\IContainerHandler.cs" />
+    <Compile Include="Dependency\NamedDependentItemRef.cs" />
     <Compile Include="Dependency\IDependentItemRef.cs" />
-    <Compile Include="Dependency\DependentItemContainerRef.cs" />
+    <Compile Include="Dependency\NamedDependentItemContainerRef.cs" />
     <Compile Include="Dependency\IDependentItemContainerRef.cs" />
     <Compile Include="Dependency\ISortedItem.cs" />
     <Compile Include="Dependency\Sorter\DependentItemStructureError.cs" />
-    <Compile Include="ISetupableItemContainer.cs" />
     <Compile Include="Dependency\Sorter\CycleExplainedElement.cs" />
-    <Compile Include="ISetupableItem.cs" />
-    <Compile Include="ISetupHandler.cs" />
-    <Compile Include="SetupableItemData.cs" />
-    <Compile Include="Setup\SetupCallContainerStep.cs" />
-    <Compile Include="Setup\SetupCenterState.cs" />
-    <Compile Include="Setup\SetupDriverEventArgs.cs" />
-    <Compile Include="Setup\SetupCenterRegisterResult.cs" />
-    <Compile Include="Setup\SetupStep.cs" />
-    <Compile Include="Setup\SetupHandlerContainerAdapter.cs" />
-    <Compile Include="ISetupDriverFactory.cs" />
-    <Compile Include="Setup\ISetupDriverList.cs" />
-    <Compile Include="SetupCenter.cs" />
-    <Compile Include="SetupDriver.cs" />
-    <Compile Include="Setup\SetupDriverBase.cs" />
-    <Compile Include="SetupDriverContainer.cs" />
-    <Compile Include="Setup\SetupDriverHead.cs" />
-    <Compile Include="Setup\SetupHandlerAdapter.cs" />
-    <Compile Include="Version\IVersionedItem.cs" />
+    <Compile Include="SetupCore\IItemHandler.cs" />
+    <Compile Include="SetupCore\Package\PackageDriver.cs" />
+    <Compile Include="SetupCore\SetupCallContainerStep.cs" />
+    <Compile Include="SetupCore\SetupEngineState.cs" />
+    <Compile Include="SetupCore\DriverEventArgs.cs" />
+    <Compile Include="SetupCore\SetupEngineRegisterResult.cs" />
+    <Compile Include="SetupCore\SetupStep.cs" />
+    <Compile Include="SetupCore\ContainerHandlerFuncAdapter.cs" />
+    <Compile Include="SetupCore\ISetupDriverFactory.cs" />
+    <Compile Include="SetupCore\IDriverList.cs" />
+    <Compile Include="SetupCore\SetupEngine.cs" />
+    <Compile Include="SetupCore\ItemDriver.cs" />
+    <Compile Include="SetupCore\DriverBase.cs" />
+    <Compile Include="SetupCore\ContainerDriver.cs" />
+    <Compile Include="SetupCore\ContainerHeadDriver.cs" />
+    <Compile Include="SetupCore\ItemHandlerFuncAdapter.cs" />
+    <Compile Include="SetupCore\IVersionedItem.cs" />
     <Compile Include="Dependency\IDependentItemContainer.cs" />
     <Compile Include="Dependency\Sorter\DependencySorter.cs" />
     <Compile Include="Dependency\Sorter\DependencySorterResult.cs" />
     <Compile Include="Dependency\IDependentItem.cs" />
     <Compile Include="Dependency\Sorter\DependentItemIssue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Version\IVersionedItemRepository.cs" />
-    <Compile Include="Version\VersionedName.cs" />
+    <Compile Include="SetupCore\VersionedItemDriver.cs" />
+    <Compile Include="SetupCore\Version\IVersionedItemRepository.cs" />
+    <Compile Include="SetupCore\Version\MultiVersionManager.cs" />
+    <Compile Include="SetupCore\Version\VersionedName.cs" />
+    <Compile Include="WildObject\ObjectSlicer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

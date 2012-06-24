@@ -54,20 +54,33 @@ namespace CK.Setup
 
         internal class Entry : ISortedItem
         {
-            public Entry( IDependentItem e, string fullName )
-                : this( fullName )
+            public Entry( IDependentItem e, object startValue )
             {
+                StartValue = startValue;
                 Item = e;
+                FullName = e.FullName;
+                Rank = -1;
             }
+
             public Entry( string fullName )
             {
                 FullName = fullName;
                 Rank = -1;
             }
+            
+            public Entry( IDependentItemContainer c, bool isHead )
+            {
+                Debug.Assert( isHead, "Parameter is only here to disambiguate the call." );
+                Item = c;
+                FullName = c.FullName + ".Head";
+                Rank = -1;
 
+            }
+            
             public readonly string FullName;
+            public object StartValue;
             public IDependentItem Item;
-            public HashSet<string> Requires;
+            public HashSet<IDependentItemRef> Requires;
             public int Rank;
             // Index is computed at the end of the process.
             public int Index;
@@ -81,10 +94,10 @@ namespace CK.Setup
             public Entry FirstChildIfContainer;
             public Entry NextChildInContainer;
 
-            internal void AddRequiredByRequires( string fullName )
+            internal void AddRequiredByRequires( IDependentItemRef req )
             {
-                if( Requires == null ) Requires = new HashSet<string>();
-                Requires.Add( fullName );
+                if( Requires == null ) Requires = new HashSet<IDependentItemRef>();
+                Requires.Add( req );
             }
 
             internal void AddToContainer( Entry child )
@@ -118,6 +131,11 @@ namespace CK.Setup
                 get { return Rank; }
             }
 
+            object ISortedItem.StartValue
+            {
+                get { return StartValue; }
+            }
+
             ISortedItem ISortedItem.Container
             {
                 get { return Container; }
@@ -148,9 +166,9 @@ namespace CK.Setup
                 get { return Item; }
             }
 
-            IEnumerable<string> ISortedItem.Requires 
+            IEnumerable<IDependentItemRef> ISortedItem.Requires 
             {
-                get { return Requires == null ? (IEnumerable<string>)Util.EmptyStringArray : Requires.Where( d => d[0] != '?' ); }
+                get { return Requires == null ? ReadOnlyListEmpty<IDependentItemRef>.Empty : Requires.Where( d => !d.Optional ); }
             }
 
             #endregion
@@ -158,8 +176,7 @@ namespace CK.Setup
 
         class RankComputer
         {
-
-            Dictionary<string, Entry> _byName;
+            Dictionary<object, object> _entries;
             List<Entry> _result;
             List<DependentItemIssue> _itemIssues;
             List<IDependentItem> _cycle;
@@ -167,7 +184,7 @@ namespace CK.Setup
 
             public RankComputer( IEnumerable<IDependentItem> items, IEnumerable<IDependentItemDiscoverer> discoverers, bool reverseName )
             {
-                _byName = new Dictionary<string, Entry>( StringComparer.OrdinalIgnoreCase );
+                _entries = new Dictionary<object, object>();
                 _result = new List<Entry>();
                 _itemIssues = new List<DependentItemIssue>();
                 if( reverseName ) _comparer = ReverseComparer;
@@ -178,12 +195,13 @@ namespace CK.Setup
                 {
                     foreach( var d in discoverers )
                     {
-                        items = d.GetDependentItems();
+                        items = d.GetOtherItemsToRegister();
                         if( items != null ) Register( items );
                     }
                 }
             }
 
+            #region Discovering & Registering Entries.
             void Register( IEnumerable<IDependentItem> items )
             {
                 var namedContainersToBind = new List<Entry>();
@@ -208,7 +226,7 @@ namespace CK.Setup
                     else
                     {
                         Entry c;
-                        if( _byName.TryGetValue( nc.Item.Container.FullName, out c ) )
+                        if( TryGetEntryValue( nc.Item.Container.FullName, out c ) )
                         {
                             if( c.HeadIfContainer != null )
                             {
@@ -232,7 +250,7 @@ namespace CK.Setup
                 {
                     Debug.Assert( eC.Item1.HeadIfContainer != null, "The entry is a Container." );
                     Entry child;
-                    if( _byName.TryGetValue( eC.Item2, out child ) )
+                    if( TryGetEntryValue( eC.Item2, out child ) )
                     {
                         // Child found: is it already bound to a Container?
                         if( child.Container != null )
@@ -257,90 +275,188 @@ namespace CK.Setup
                 }
             }
 
-            private Entry RegisterEntry( IDependentItem e, Entry alreadyRegisteredContainer, Entry alreadyRegisteredChild, List<Entry> namedContainersToBind, List<Tuple<Entry,string>> childrenToBind )
+            /// <summary>
+            /// Preregistering allows an object's <see cref="IDependentItem.StartDependencySort"/> to be called after 
+            /// its direct dependencies or its container's StartDependencySort.
+            /// </summary>
+            object PreRegisterObjectDependencies( IDependentItem e, bool register = false )
             {
-                IDependentItemContainer c = e as IDependentItemContainer;
-                Entry entry;
-                if( _byName.TryGetValue( e.FullName, out entry ) )
+                object entryOrStartValue;
+                if( !_entries.TryGetValue( e, out entryOrStartValue ) )
                 {
-                    if( entry.Item != null )
+                    // Mark the entry with a null start value to handle cycles.
+                    // Dependency cycles are simply ignored at this stage: they will 
+                    // be detected and handled during the Process phasis.
+                    _entries.Add( e, null );
+                    // Container is a direct dependency.
+                    IDependentItem container = e.Container as IDependentItem;
+                    if( container != null ) PreRegisterObjectDependencies( container, true );
+                    // Pre register direct requirements.
+                    if( e.Requires != null )
                     {
-                        // We allow duplicated item instances in the original
-                        // items enumeration (this also support our automatic 
-                        // discovery for Container/Children).
-                        if( entry.Item == e )
+                        foreach( var d in e.Requires )
                         {
-                            if( alreadyRegisteredContainer != null )
+                            IDependentItem di = d as IDependentItem;
+                            if( di != null ) PreRegisterObjectDependencies( di, true ); 
+                        }
+                    }
+                    // Gives the item an opportunity to prepare its data (mainly its FullName).
+                    entryOrStartValue = e.StartDependencySort();
+                    if( register ) _entries[e] = entryOrStartValue;
+                }
+                return entryOrStartValue;
+            }
+
+            /// <summary>
+            /// Adapts the entries that is Dictionary(object,object) to behave like a Dictionary(object,Entry)
+            /// by ignoring start values (that can not be the private Entry).
+            /// </summary>
+            bool TryGetEntryValue( object key, out Entry e )
+            {
+                e = null;
+                object entryOrStartValue;
+                if( _entries.TryGetValue( key, out entryOrStartValue ) )
+                {
+                    e = entryOrStartValue as Entry;
+                }
+                return e != null;
+            }
+
+            Entry RegisterEntry( IDependentItem e, Entry alreadyRegisteredContainer, Entry alreadyRegisteredChild, List<Entry> namedContainersToBind, List<Tuple<Entry,string>> childrenToBind )
+            {
+                // Preregistering: collects Start values by calling StartDependencySort.
+                object startValue = PreRegisterObjectDependencies( e );
+                Entry entry = startValue as Entry;
+                if( entry != null )
+                {
+                    Debug.Assert( entry.Item == e );
+                    // We allow duplicated item instances in the original
+                    // items enumeration (this also support our automatic 
+                    // discovery for Container/Children).
+                    if( alreadyRegisteredContainer != null )
+                    {
+                        // We are coming from the registration of the Children below.
+                        // Since this item is already registered and we skip the child from which we are 
+                        // coming (alreadyRegisteredChild that is beeing processed - its Container is null), 
+                        // the container must be the same.
+                        if( entry.Container != alreadyRegisteredContainer )
+                        {
+                            // entry.Container can be null for 2 reasons: the item declares no container (null), 
+                            // or the item declares a name and the entry has been added to namedContainersToBind.
+                            Debug.Assert( entry.Container != null || (entry.Item.Container == null || (!(entry.Item.Container is IDependentItemContainer) && namedContainersToBind.Contains( entry ))) );
+                            // In both case, we set the entry.Container to the alreadyRegisteredContainer (the first container that claims to hold the item).
+                            // When Item.Container is null, this is because we consider a null container as a "free" resource for a container.
+                            // When the container is declared by name, we let the binding in Register handle the case.
+                            if( entry.Container == null )
                             {
-                                // We are coming from the registration of the Children below.
-                                // Since this item is already registered and we skip the child from which we are 
-                                // coming (alreadyRegisteredChild that is beeing processed - its Container is null), 
-                                // the container must be the same.
-                                if( entry.Container != alreadyRegisteredContainer )
-                                {
-                                    // entry.Container can be null for 2 reasons: the item declares no container (null), 
-                                    // or the item declares a name and the entry has been added to namedContainersToBind.
-                                    Debug.Assert( entry.Container != null || (entry.Item.Container == null || (!(entry.Item.Container is IDependentItemContainer) && namedContainersToBind.Contains( entry ))) );
-                                    // In both case, we set the entry.Container to the alreadyRegisteredContainer (the first container that claims to hold the item).
-                                    // When Item.Container is null, this is because we consider a null container as a "free" resource for a container.
-                                    // When the container is declared by name, we let the binding in Register handle the case.
-                                    if( entry.Container == null )
-                                    {
-                                        entry.Container = alreadyRegisteredContainer;
-                                    }
-                                    else
-                                    {
-                                        // This entry has a problem: it has more than one container that 
-                                        // claim to own it.
-                                        SetStructureError( entry, DependentItemStructureError.MultipleContainer ).AddExtraneousContainers( alreadyRegisteredContainer.FullName );
-                                    }
-                                }
+                                entry.Container = alreadyRegisteredContainer;
+                            }
+                            else
+                            {
+                                // This entry has a problem: it has more than one container that 
+                                // claim to own it.
+                                SetStructureError( entry, DependentItemStructureError.MultipleContainer ).AddExtraneousContainers( alreadyRegisteredContainer.FullName );
                             }
                         }
-                        else
-                        {
-                            // But if 2 items share the same full name, this is a structure error.
-                            SetStructureError( entry, DependentItemStructureError.Homonym ).AddHomonym( e );
-                        }
+                    }
+                    return entry;
+                }
+
+                IDependentItemContainer c = e as IDependentItemContainer;
+                if( TryGetEntryValue( e.FullName, out entry ) )
+                {
+                    // The setupable item name is known, but
+                    // is there an item already associated to this name?
+                    if( entry.Item != null )
+                    {
+                        Debug.Assert( entry.Item != e );
+                        // If 2 items share the same full name, this is a structure error.
+                        SetStructureError( entry, DependentItemStructureError.Homonym ).AddHomonym( e );
+                        // Registers the homonym item to mark the item as processed.
+                        _entries[e] = entry;
                         return entry;
                     }
+                    // Item name is knwon (the entry exists), but the entry is not bound to the item.
+                    // We bind the entry to its item.
                     Debug.Assert( entry.Requires != null && entry.Requires.Count > 0, "Already created by a RequiredBy." );
 
-                    if( c != null ) CreateContainerEntry( ref entry, c );
-                    else entry.Item = e;
+                    if( c != null ) CreateContainerEntry( ref entry, c, startValue );
+                    else
+                    {
+                        entry.Item = e;
+                        entry.StartValue = startValue;
+                    }
                 }
                 else
                 {
-                    if( c != null ) CreateContainerEntry( ref entry, c );
-                    else entry = new Entry( e, e.FullName );
-                    _byName.Add( e.FullName, entry );
+                    // Even its name has never been seen.
+                    if( c != null ) CreateContainerEntry( ref entry, c, startValue );
+                    else
+                    {
+                        entry = new Entry( e, startValue );
+                        _entries[e] = entry;
+                    }
+                    _entries.Add( e.FullName, entry );
                 }
-                // Here we did create the OrderedItem from the IDependentItem:
+                // We now have the Entry associated to its IDependentItem:
                 // we register it in the _result list (if it has been previously created
                 // to handle RequiredBy, it has not been registered).
                 _result.Add( entry );
-                // Now that the element has been registered, we can handle RequiredBy if they exist...
+                Debug.Assert( entry.Item == e );
+
+                // Now that the element has been registered, we can handle Requires and RequiredBy if they exist...
+                var requires = e.Requires;
+                if( requires != null )
+                {
+                    foreach( IDependentItemRef r in requires )
+                    {
+                        IDependentItem eR = r as IDependentItem;
+                        if( eR != null ) RegisterEntry( eR, null, null, namedContainersToBind, childrenToBind );
+                    }
+                }
                 var requiredBy = e.RequiredBy;
                 if( requiredBy != null )
                 {
-                    foreach( string reqBy in requiredBy )
+                    foreach( IDependentItemRef reqBy in requiredBy )
                     {
-                        string clean = RemoveOptional( reqBy, entry, "RequiredBy" );
-                        Entry eReq = FindOrCreateEntry( clean );
-                        eReq.AddRequiredByRequires( entry.FullName );
+                        Entry eReq = RegisterRequiredByDependency( reqBy, namedContainersToBind, childrenToBind );
+                        eReq.AddRequiredByRequires( entry.Item.GetReference() );
                     }
                 }
                 // ...and safely automatically discover its bound items: its container (if not by name) and its children.
                 if( alreadyRegisteredContainer != null )
                 {
-                    if( entry.Item.Container != null && entry.Item.Container.FullName != alreadyRegisteredContainer.FullName )
+                    if( e.Container != null )
                     {
-                        SetStructureError( entry, DependentItemStructureError.MultipleContainer ).AddExtraneousContainers( entry.Item.Container.FullName );
+                        // The current element has a container.
+                        IDependentItemContainer father = e.Container as IDependentItemContainer;
+                        if( alreadyRegisteredContainer.Item != father )
+                        {
+                            if( father != null )
+                            {
+                                // The container differs from the one that contains it as a child.
+                                // Registers the container associated to the current element...
+                                Entry extraContainer = RegisterEntry( father, null, entry, namedContainersToBind, childrenToBind );
+                                // ...and declares an error.
+                                SetStructureError( entry, DependentItemStructureError.MultipleContainer ).AddExtraneousContainers( extraContainer.FullName );
+                            }
+                            else
+                            {
+                                // Thr container is a name.
+                                var strong = e.Container.GetReference();
+                                if( strong.FullName != alreadyRegisteredContainer.FullName )
+                                {
+                                    // If it differs, declares an error.
+                                    SetStructureError( entry, DependentItemStructureError.MultipleContainer ).AddExtraneousContainers( strong.FullName );
+                                }
+                            }
+                        }
                     }
                     entry.Container = alreadyRegisteredContainer;
                 }
                 else
                 {
+                    // The current element is not a child (at least for this RegisterEntry call).
                     if( e.Container != null )
                     {
                         IDependentItemContainer father = e.Container as IDependentItemContainer;
@@ -376,7 +492,8 @@ namespace CK.Setup
                                 }
                                 else
                                 {
-                                    if( knownChild != null && childRef.FullName == knownChild.FullName )
+                                    var strong = childRef.GetReference();
+                                    if( knownChild != null && strong.FullName == knownChild.FullName )
                                     {
                                         if( lastChild == null ) entry.FirstChildIfContainer = alreadyRegisteredChild;
                                         else lastChild.NextChildInContainer = alreadyRegisteredChild;
@@ -385,7 +502,7 @@ namespace CK.Setup
                                     else
                                     {
                                         // The child must be late-bound.
-                                        childrenToBind.Add( new Tuple<Entry, string>( entry, childRef.FullName ) );
+                                        childrenToBind.Add( new Tuple<Entry, string>( entry, strong.FullName ) );
                                     }
                                 }
                             }
@@ -397,7 +514,7 @@ namespace CK.Setup
                 IDependentItemDiscoverer disco = e as IDependentItemDiscoverer;
                 if( disco != null )
                 {
-                    var related = disco.GetDependentItems();
+                    var related = disco.GetOtherItemsToRegister();
                     if( related != null )
                     {
                         foreach( IDependentItem eR in related )
@@ -409,37 +526,55 @@ namespace CK.Setup
                 return entry;
             }
 
-            private DependentItemIssue SetStructureError( Entry nc, DependentItemStructureError status )
+            Entry RegisterRequiredByDependency( IDependentItemRef r, List<Entry> namedContainersToBind, List<Tuple<Entry, string>> childrenToBind )
+            {
+                IDependentItem e = r as IDependentItem;
+                Entry entry;
+                if( e != null )
+                {
+                    entry = RegisterEntry( e, null, null, namedContainersToBind, childrenToBind );
+                }
+                else
+                {
+                    var strong = r.GetReference();
+                    if( !TryGetEntryValue( strong.FullName, out entry ) )
+                    {
+                        // When an entry is created only to handle
+                        // RequiredBy, we do not add it in _result.
+                        entry = new Entry( strong.FullName );
+                        _entries.Add( strong.FullName, entry );
+                    }
+                }
+                return entry;
+            }
+
+            void CreateContainerEntry( ref Entry entry, IDependentItemContainer c, object startValue )
+            {
+                if( entry == null )
+                {
+                    entry = new Entry( c, startValue );
+                    _entries[c] = entry;
+                }
+                else
+                {
+                    entry.Item = c;
+                    entry.StartValue = startValue;
+                }
+                Entry head = new Entry( c, true );
+                entry.HeadIfContainer = head;
+                head.ContainerIfHead = entry;
+                _entries.Add( head.FullName, head );
+                _result.Add( head );
+            }
+
+            #endregion
+
+            DependentItemIssue SetStructureError( Entry nc, DependentItemStructureError status )
             {
                 DependentItemIssue issues = _itemIssues.Where( m => m.Item == nc.Item ).FirstOrDefault();
                 if( issues == null ) _itemIssues.Add( (issues = new DependentItemIssue( nc.Item, status )) );
                 else issues.StructureError |= status;
                 return issues;
-            }
-
-            private Entry FindOrCreateEntry( string fullName )
-            {
-                Entry entry;
-                if( !_byName.TryGetValue( fullName, out entry ) )
-                {
-                    // When an entry is created only to handle
-                    // RequiredBy, we do not add it in _result.
-                    entry = new Entry( fullName );
-                    _byName.Add( fullName, entry );
-                }
-                return entry;
-            }
-
-            private void CreateContainerEntry( ref Entry entry, IDependentItemContainer c )
-            {
-                if( entry == null ) entry = new Entry( c, c.FullName );
-                else entry.Item = c;
-                string fullName = c.FullName + ".Head";
-                Entry head = new Entry( c, fullName );
-                entry.HeadIfContainer = head;
-                head.ContainerIfHead = entry;
-                _byName.Add( fullName, head );
-                _result.Add( head );
             }
 
             public void Process()
@@ -459,7 +594,7 @@ namespace CK.Setup
                             Debug.Assert( _cycle.Count >= 2, "We started the cycle construction with the 2 first participants." );
                             // Instead of removing head2, we let it in the cycle: this is useless but much more
                             // explicit for users: instead of a=>b=>c, they can see a=>b=>c=>a and a cycle
-                            // has necessarily a length of at least 2. Autoreference are cycles like a=>a.
+                            // has necessarily a length of at least 2. Autoreferences are cycles like a=>a.
                             int head2 = _cycle.IndexOf( _cycle[0], 1 ) + 1;
                             Debug.Assert( head2 >= 2, "We necessarily added the final culprit." );
                             int nbToRemove = _cycle.Count - head2;
@@ -469,6 +604,8 @@ namespace CK.Setup
                     }
                 }
             }
+
+            #region Processing: Rank computing & Cycle detection.
 
             void ComputeRank( Entry e )
             {
@@ -487,10 +624,10 @@ namespace CK.Setup
                     {
                         // Do this for Container and Item (but not for Head).
                         Debug.Assert( e.Requires.Count > 0 );
-                        foreach( string dep in requirements )
+                        foreach( var dep in requirements )
                         {
-                            Debug.Assert( _byName.ContainsKey( dep ) && _byName[dep].Item != null, "Since the requirement has been added by an item, it exists." );
-                            HandleDependency( ref rank, item, _byName[dep], false );
+                            Debug.Assert( _entries.ContainsKey( dep.FullName ) && ((Entry)_entries[dep.FullName]).Item != null, "Since the requirement has been added by an item, it exists." );
+                            HandleDependency( ref rank, item, (Entry)_entries[dep.FullName], false );
                             if( _cycle != null ) return;
                         }
                     }
@@ -502,11 +639,16 @@ namespace CK.Setup
                     var requirements = item.Requires;
                     if( requirements != null )
                     {
-                        if( e.Requires == null ) e.Requires = new HashSet<string>();
-                        foreach( string dep in requirements )
+                        if( e.Requires == null ) e.Requires = new HashSet<IDependentItemRef>();
+                        foreach( IDependentItemRef dep in requirements )
                         {
-                            string clean = RemoveOptional( dep, e, "Requires" );
-                            // Adds the string to the HashSet: if it already exists, this requirement
+                            // Security: skips any null entry.
+                            if( dep == null ) continue;
+
+                            IDependentItemRef strong = dep.GetReference();
+                            Debug.Assert( ReferenceEquals( dep, strong ) == !dep.Optional );
+
+                            // Adds the dependency to the HashSet: if it already exists, this requirement
                             // has already been handled either through a RequiredBy or by a previous
                             // duplicate in this requirements.
                             // The trick here is to first consider the non-optional dependency name (dep that does not start with ?).
@@ -527,18 +669,17 @@ namespace CK.Setup
                             //          - If the dependency is missing, we add the "?Dep" form to the Requires: this 
                             //            avoids us to process "?Dep" and have the (considered positive) side effect of hiding 
                             //            the optionnal requirement in the final Missing collector.
-                            if( !e.Requires.Contains( clean ) && e.Requires.Add( dep ) )
+                            if( !e.Requires.Contains( strong ) && e.Requires.Add( dep ) )
                             {
-                                bool isStrong = ReferenceEquals( dep, clean );
                                 Entry oeDep;
-                                if( !_byName.TryGetValue( clean, out oeDep ) || oeDep.Item == null )
+                                if( !TryGetEntryValue( strong.FullName, out oeDep ) || oeDep.Item == null )
                                 {
-                                    SetStructureError( e, isStrong ? DependentItemStructureError.MissingDependency : DependentItemStructureError.None ).AddMissing( dep, isStrong );
-                                    if( isStrong ) e.Requires.Add( '?' + dep );
+                                    SetStructureError( e, dep.Optional ? DependentItemStructureError.None : DependentItemStructureError.MissingDependency ).AddMissing( dep );
+                                    if( !dep.Optional ) e.Requires.Add( dep.GetOptionalReference() );
                                 }
                                 else
                                 {
-                                    if( !isStrong ) e.Requires.Add( clean );
+                                    if( dep.Optional ) e.Requires.Add( strong );
                                     HandleDependency( ref rank, item, oeDep, false );
                                     if( _cycle != null ) return;
                                 }
@@ -605,16 +746,6 @@ namespace CK.Setup
                 return new DependencySorterResult( null, _cycle, null );
             }
 
-            static string RemoveOptional( string dep, Entry holder, string source )
-            {
-                if( dep != null && dep.Length > 0 && dep[0] == '?' ) dep = dep.Substring( 1 );
-                if( String.IsNullOrWhiteSpace( dep ) )
-                {
-                    throw new InvalidOperationException( String.Format( "Invalid empty {1} on '{0}'.", holder.FullName, source ) );
-                }
-                return dep;
-            }
-
             static int NormalComparer( Entry o1, Entry o2 )
             {
                 int cmp = o1.Rank - o2.Rank;
@@ -629,6 +760,7 @@ namespace CK.Setup
                 return cmp;
             }
 
+            #endregion
         }
 
     }
