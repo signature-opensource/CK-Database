@@ -117,6 +117,17 @@ namespace CK.SqlServer
             return (_expandSuccess = _tokens.Count > 0 ? DoExpand( logger ) : true);
         }
 
+        /// <summary>
+        /// Gets the original script (the contructor parameter trimmed).
+        /// </summary>
+        public string OriginalScript
+        {
+            get { return _text; }
+        }
+
+        /// <summary>
+        /// Gets the number of scripts (available after a call to <see cref="Expand"/>).
+        /// </summary>
         public int ScriptCount
         {
             get { return _nbScripts; }

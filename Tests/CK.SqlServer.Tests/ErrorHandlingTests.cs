@@ -41,7 +41,10 @@ namespace CK.SqlServer.Tests
                     bool errorExpected = s.Contains( "EXCEPTION" );
                     if( errorExpected )
                     {
+                        // Checks that an exception is raised since there is no logger.
                         Assert.Throws<SqlException>( () => m.ExecuteOneScript( s, null ), s );
+                        // Dump to console.
+                        Assert.That( m.ExecuteOneScript( s, TestHelper.Logger ), Is.False, s );
                     }
                     else
                     {

@@ -43,6 +43,8 @@ We must have this line as a the third script.
             
             Assert.That( s[2].IsScriptTag, Is.False );
             Assert.That( s[2].Body, Is.EqualTo( "We must have this line as a the third script." ) );
+
+            DumpScripts( "NestedBeginScripts", p, s );
         }
 
         [Test]
@@ -221,6 +223,8 @@ go
 
                 Assert.That( String.Join( " ", s.Select( t => t.Label ?? "<null>" ) ), Is.EqualTo( "DOES IT WORK WELL <null>" ) );
                 Assert.That( s.Select( t => t.Body ).Select( ( t, i ) => t.Contains( "n°" + (i + 1) ) ).All( o => o ) );
+
+                DumpScripts( "Labeled script", p, s );
             };
 
             tester( new SimpleScriptTagHandler( @"
@@ -286,6 +290,7 @@ nested will be skipped.
 inner nested.
 --[endscript s1]
 it should work." ) );
+                DumpScripts( "Nested labeled scripts", p, s );
             }
             {
                 var p = new SimpleScriptTagHandler( @"
@@ -297,6 +302,24 @@ n°1
 --[endscript s1]
 " );
                 Assert.That( p.Expand( TestHelper.Logger, true ), Is.False );
+            }
+        }
+
+        private static void DumpScripts( string testName, SimpleScriptTagHandler p, List<SimpleScriptTagHandler.Script> s )
+        {
+            using( TestHelper.Logger.OpenGroup( LogLevel.Trace, testName ) )
+            {
+                TestHelper.Logger.Trace( p.OriginalScript );
+                using( TestHelper.Logger.OpenGroup( LogLevel.Trace, "Result" ) )
+                {
+                    foreach( var one in s )
+                    {
+                        using( TestHelper.Logger.OpenGroup( LogLevel.Trace, "Script Label: {0}", one.Label ) )
+                        {
+                            TestHelper.Logger.Trace( one.Body );
+                        }
+                    }
+                }
             }
         }
 
