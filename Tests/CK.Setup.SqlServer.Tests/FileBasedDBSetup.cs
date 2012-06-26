@@ -37,5 +37,21 @@ namespace CK.Setup.SqlServer.Tests
                 }
             }
         }
+
+        [Test]
+        public void InstallPackageWithView()
+        {
+            using( var context = new SqlSetupContext( @"Server=.;Database=Test;Integrated Security=SSPI;", TestHelper.Logger ) )
+            {
+                if( !context.DefaultDatabase.IsOpen() ) context.DefaultDatabase.OpenOrCreate( @".", "Test" );
+                using( context.Logger.OpenGroup( LogLevel.Trace, "First setup" ) )
+                {
+                    SqlSetupCenter c = new SqlSetupCenter( context );
+                    c.DiscoverFilePackages( TestHelper.GetScriptsFolder( "InstallFromScratchWithView" ) );
+                    c.DiscoverSqlFiles( TestHelper.GetScriptsFolder( "InstallFromScratchWithView" ) );
+                    Assert.That( c.Run() );
+                }
+            }
+        }
     }
 }

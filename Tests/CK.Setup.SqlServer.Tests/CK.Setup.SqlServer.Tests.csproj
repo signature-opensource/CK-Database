@@ -77,10 +77,13 @@
   <ItemGroup />
   <ItemGroup>
     <Content Include="PackageAndSqlObjects\Res\sFirstProc.sql" />
+    <Content Include="Scripts\InstallFromScratchWithView\Test.vTestView.sql" />
+    <Content Include="Scripts\InstallFromScratchWithView\Model.Test.WithView.Install.1.0.0.sql" />
     <Content Include="Scripts\InstallFromScratch\Model.Test.DependentPackage.Install.1.0.0.sql" />
     <Content Include="Scripts\InstallFromScratch\Model.Test.WithModel.Install.1.0.0.sql" />
     <Content Include="Scripts\InstallFromScratch\Test.fTest.sql" />
     <None Include="packages.config" />
+    <None Include="Scripts\InstallFromScratchWithView\Test.WithView.ck" />
     <None Include="Scripts\InstallFromScratch\Test.DependentPackage.ck" />
     <None Include="Scripts\InstallFromScratch\Test.WithModel.ck" />
     <None Include="Scripts\InstallFromScratch\Test.ck" />
