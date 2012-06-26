@@ -2,7 +2,7 @@
 --
 -- Add an actor (typically a user) to a group.
 --
-create procedure CK.sGroupActorAdd 
+alter procedure CK.sGroupActorAdd 
 (
 	@ActorId int,
 	@UserActorId int,
@@ -10,7 +10,7 @@ create procedure CK.sGroupActorAdd
 )
 as begin
 	
-	if not exists (select * from dbo.tActorProfile where GroupId = @GroupId and ActorId = @UserActorId)
+	if not exists (select * from CK.tActorProfile where GroupId = @GroupId and ActorId = @UserActorId)
 	begin
 		insert into CK.tActorProfile(ActorId, GroupId) 
 			values(@UserActorId, @GroupId);

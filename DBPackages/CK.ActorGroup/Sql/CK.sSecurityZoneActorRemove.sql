@@ -2,7 +2,7 @@
 --
 -- Remove an actor (typically a user) from a security zone.
 --
-create procedure CK.sSecurityZoneActorRemove
+alter procedure CK.sSecurityZoneActorRemove
 (
 	@ActorId int,
 	@UserActorId int,
@@ -10,7 +10,7 @@ create procedure CK.sSecurityZoneActorRemove
 )
 as begin
 
-	if exists (select * from dbo.tGroup where GroupId = @SecurityZoneId )
+	if exists (select * from CK.tGroup where GroupId = @SecurityZoneId )
 	begin
 		exec CK.sGroupActorRemove @ActorId, @UserActorId, @SecurityZoneId;
 		return 0;
