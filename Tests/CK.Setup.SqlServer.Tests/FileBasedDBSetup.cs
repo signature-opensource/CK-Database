@@ -50,6 +50,7 @@ namespace CK.Setup.SqlServer.Tests
                     c.DiscoverFilePackages( TestHelper.GetScriptsFolder( "InstallFromScratchWithView" ) );
                     c.DiscoverSqlFiles( TestHelper.GetScriptsFolder( "InstallFromScratchWithView" ) );
                     Assert.That( c.Run() );
+                    Assert.That( context.DefaultDatabase.Connection.ExecuteScalar( "select Id from Test.vTestView" ), Is.EqualTo( 3712 ) );
                 }
             }
         }

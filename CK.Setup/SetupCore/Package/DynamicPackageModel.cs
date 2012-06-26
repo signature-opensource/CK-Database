@@ -95,7 +95,7 @@ namespace CK.Setup.Database
 
         object IDependentItem.StartDependencySort()
         {
-            return typeof(ContainerDriver).AssemblyQualifiedName;
+            return typeof(PackageDriver);
         }
 
         bool IDependentItemRef.Optional

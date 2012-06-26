@@ -5,3 +5,4 @@ create table Test.tTest
 	constraint PK_tTest primary key (Id)
 );
 
+insert into Test.tTest(Id) values(3712);

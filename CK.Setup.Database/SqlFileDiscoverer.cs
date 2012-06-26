@@ -146,6 +146,7 @@ namespace CK.Setup.Database
                 {
                     DynamicPackage p = ReadPackageFileFormat( e );
                     _packages.Add( p );
+                    _logger.CloseGroup( String.Format( "SetupPackage '{0}' found.", p.FullName ) );
                     return true;
                 }
                 catch( Exception ex )

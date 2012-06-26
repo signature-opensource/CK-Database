@@ -44,6 +44,7 @@ namespace CK.Setup.SqlServer
         public virtual ContainerDriver CreateDriverContainer( Type containerType, ContainerDriver.BuildInfo info )
         {
             if( containerType == typeof( ContainerDriver ) ) return new ContainerDriver( info );
+            if( containerType == typeof( PackageDriver ) ) return new PackageDriver( info );
             if( containerType == typeof( DatabaseSetupDriver ) ) return new DatabaseSetupDriver( info, DoObtainManager );
             return null;
         }

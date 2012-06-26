@@ -28,7 +28,7 @@ namespace CK.Setup.SqlServer
             get { return _manager; }
         }
 
-        protected override bool Init()
+        protected override bool  Install()
         {
             _manager = _connectionProvider( Item.Name );
             foreach( var name in Item.Schemas )

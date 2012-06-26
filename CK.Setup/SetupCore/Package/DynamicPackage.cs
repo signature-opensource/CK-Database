@@ -49,7 +49,7 @@ namespace CK.Setup.Database
 
         protected override object StartDependencySort()
         {
-            return typeof(ContainerDriver).AssemblyQualifiedName;
+            return typeof(PackageDriver);
         }
 
         IEnumerable<IDependentItem> IDependentItemDiscoverer.GetOtherItemsToRegister()
