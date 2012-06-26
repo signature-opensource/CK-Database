@@ -2,7 +2,7 @@
 --
 -- Finds or creates an user.
 --
-alter procedure CK.sUserCreate 
+create procedure CK.sUserCreate 
 (
 	@ActorId int, -- ActorId executing the stored procedure
 	@UserName nvarchar ( 32 ),

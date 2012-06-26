@@ -1,0 +1,20 @@
+-- Version = 1.0.0, Package = CK.ActorGroup
+--
+-- Add an actor (typically a user) to a group.
+--
+create procedure CK.sGroupActorAdd 
+(
+	@ActorId int,
+	@UserActorId int,
+	@GroupId int
+)
+as begin
+	
+	if not exists (select * from dbo.tActorProfile where GroupId = @GroupId and ActorId = @UserActorId)
+	begin
+		insert into CK.tActorProfile(ActorId, GroupId) 
+			values(@UserActorId, @GroupId);
+		return 0;
+	end
+	return 1;
+end
