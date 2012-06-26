@@ -2,7 +2,7 @@
 --
 -- Remove an actor (typically a user) from a group.
 --
-create procedure CK.sGroupActorAdd 
+create procedure CK.sGroupActorRemove
 (
 	@ActorId int,
 	@UserActorId int,
