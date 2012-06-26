@@ -17,7 +17,7 @@ as begin
 	if @@RowCount = 0
 	begin
 		-- <PreCreate />
-		exec CK.sActorCreate @UserIdResult output;
+		exec CK.sActorCreate @ActorId, @UserIdResult output;
 		insert into CK.tUser ( UserId, UserName, Email ) VALUES ( @UserIdResult, @UserName, @Email );
 		-- <PostCreate />
 	end
