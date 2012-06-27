@@ -196,7 +196,7 @@ namespace CK.Setup
                                 d = _driverFactory.CreateDriver( typeToCreate, new ItemDriver.BuildInfo( this, item, externalVersion ) );
                             }
                         }
-                        if( d == null ) throw new Exception( String.Format( "Driver Factory returned null for item {0}, type {1}", item.FullName, typeToCreate ) );
+                        if( d == null ) throw new Exception( String.Format( "Driver Factory returned null for item {0}, type '{1}'.", item.FullName, typeToCreate ) );
                         _drivers.Add( d );
                         var hE = DriverEvent;
                         if( hE != null )

@@ -35,15 +35,21 @@ namespace CK.Setup.Database
 
         public void CreateSetupObjects( IActivityLogger logger )
         {
+            if( logger == null ) throw new ArgumentNullException( "logger" );
             AmbiantContractCollectorResult r = _cc.GetResult();
             if( r.CheckErrorAndWarnings( logger ) )
             {
-                foreach( var t in r.Default.ConcreteClasses )
+                foreach( AmbiantContractCollectorContextResult c in r )
                 {
+                    foreach( var t in c.ConcreteClasses )
+                    {
 
+                    }
                 }
             }
         }
+
+        
 
     }
 

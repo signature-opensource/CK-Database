@@ -34,7 +34,7 @@ namespace CK.Setup.SqlServer
                 _get.Parameters.Add( "@FullName", SqlDbType.NVarChar, 128 );
                 _get.Parameters.Add( "@ItemVersion", SqlDbType.VarChar, 32 ).Direction = ParameterDirection.Output;
             }
-            _get.Parameters[0].Value = i.ItemType;
+            _get.Parameters[0].Value = CheckItemType( i );
             _get.Parameters[1].Value = i.FullName;
             _manager.Connection.ExecuteNonQuery( _get );
             Version v;
@@ -56,10 +56,19 @@ namespace CK.Setup.SqlServer
                 _set.Parameters.Add( "@FullName", SqlDbType.NVarChar, 128 );
                 _set.Parameters.Add( "@ItemVersion", SqlDbType.VarChar, 32 );
             }
-            _set.Parameters[0].Value = i.ItemType;
+            _set.Parameters[0].Value = CheckItemType( i );
             _set.Parameters[1].Value = i.FullName;
             _set.Parameters[2].Value = i.Version != null ? i.Version.ToString() : String.Empty;
             _manager.Connection.ExecuteNonQuery( _set );
+        }
+
+        private static string CheckItemType( IVersionedItem i )
+        {
+            string type = i.ItemType;
+            if( String.IsNullOrEmpty( type ) ) throw new ArgumentOutOfRangeException( "ItemType", type, "IVersionedItem.ItemType must be not null nor empty." );
+            type = type.Trim();
+            if( type.Length == 0 || type.Length > 16 ) throw new ArgumentOutOfRangeException( "ItemType", type, "IVersionedItem.ItemType must be between 1 and 16 characters long." );
+            return type;
         }
 
         public void Delete( string fullName )
@@ -87,8 +96,11 @@ namespace CK.Setup.SqlServer
         {
             using( _manager.Logger.Filter( LogLevelFilter.Error ) )
             {
-                if( !_manager.EnsureCKCoreIsInstalled( _manager.Logger )
-                    || !_manager.ExecuteScripts( SqlHelper.SplitGoSeparator( _script ), _manager.Logger ) )
+                if( !_manager.EnsureCKCoreIsInstalled( _manager.Logger ) ) throw new Exception( "Unable to initialize CKCore." );
+                var p = new SimpleScriptTagHandler( _script );
+                if( !p.Expand( _manager.Logger, false ) ) throw new Exception( "Script error." );
+                var scripts = p.SplitScript();
+                if( !_manager.ExecuteScripts( scripts.Select( s => s.Body ), _manager.Logger ) )
                 {
                     throw new Exception( "Unable to initialize SqlVersionedItemRepository." );
                 }
@@ -129,7 +141,7 @@ begin
 	begin
 		select @ItemVersion = t.ItemVersion
 			from CKCore.tItemVersion t
-			where t.FullName = @FullName and t.ItemType = @ItemType;
+			where t.FullName = @FullName;
 	end
 	return 0;
 end
@@ -144,7 +156,7 @@ create procedure CKCore.sItemVersionSet
 	)
 AS
 begin
-	set nocount on declare @ok int, @ret int, @rc int set @ok = 0 begin tran --[!beginsp]
+	set nocount on; declare @ok int, @ret int, @rc int; set @ok = 0; begin tran; --[!beginsp]
 	set @ItemType = Upper(@ItemType);
 	if @ItemType = 'PROCEDURE' or @ItemType = 'FUNCTION' or @ItemType = 'TABLE' or @ItemType = 'VIEW'
 	begin
@@ -164,9 +176,9 @@ begin
 	else
 	begin
 		merge CKCore.tItemVersion as target
-			using (select ItemType = @ItemType, FullName = @FullName) as source
-			on target.ItemType = source.ItemType and target.FullName = source.FullName
-			when matched then update set ItemVersion = @ItemVersion
+			using (select FullName = @FullName) as source
+			on target.FullName = source.FullName
+			when matched then update set ItemVersion = @ItemVersion, ItemType = @ItemType
 			when not matched then insert (ItemType, FullName, ItemVersion) VALUES (@ItemType, @FullName, @ItemVersion); 
 		set @ok = @@Error if @ok <> 0 goto Error --[!catch]			
 	end
@@ -215,7 +227,7 @@ begin
 	end
 end
 GO
-declare @ThisVersion varchar(32) = '1.0.1'
+declare @ThisVersion varchar(32) = '2.6.27'
 exec CKCore.sItemVersionSet 'Package', 'CK.SqlVersionedItemRepository', @ThisVersion;
 exec CKCore.sItemVersionSet 'Table', 'CKCore.tItemVersion', @ThisVersion;
 exec CKCore.sItemVersionSet 'Procedure', 'CKCore.sItemVersionSet', @ThisVersion;
