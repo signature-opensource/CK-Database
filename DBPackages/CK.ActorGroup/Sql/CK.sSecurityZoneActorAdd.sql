@@ -2,7 +2,7 @@
 --
 -- Add an actor (typically a user) to a security zone.
 --
-create procedure CK.sSecurityZoneActorAdd
+alter procedure CK.sSecurityZoneActorAdd
 (
 	@ActorId int,
 	@UserActorId int,
@@ -10,7 +10,7 @@ create procedure CK.sSecurityZoneActorAdd
 )
 as begin
 
-	if exists (select * from dbo.tGroup where GroupId = @SecurityZoneId )
+	if exists (select * from CK.tGroup where GroupId = @SecurityZoneId )
 	begin
 		exec CK.sGroupActorAdd @ActorId, @UserActorId, @SecurityZoneId;
 		return 0;

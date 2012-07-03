@@ -10,7 +10,7 @@ create procedure CK.sGroupActorRemove
 )
 as begin
 	
-	if exists (select * from dbo.tActorProfile where GroupId = @GroupId and ActorId = @UserActorId)
+	if exists (select * from CK.tActorProfile where GroupId = @GroupId and ActorId = @UserActorId)
 	begin
 		delete from CK.tActorProfile where GroupId = @GroupId and ActorId = @UserActorId;
 		return 0;
