@@ -5,9 +5,10 @@
 create procedure CK.sResCreate 
 	@ResName varchar(96),
 	@ResIdResult int output
-as begin
+as 
+begin
 
-	select @ResIdResult = r.ResId from CK.tRes r where ResName = @ResName;
+	select @ResIdResult = r.ResId from CK.tRes r where r.ResName = @ResName;
 	if @@RowCount = 0 
 	begin
 		insert into CK.tRes( ResName ) values( @ResName );

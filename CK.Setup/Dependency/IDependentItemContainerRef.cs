@@ -7,17 +7,15 @@ using System.Diagnostics;
 namespace CK.Setup
 {
     /// <summary>
-    /// Defines a reference to a container. Since a <see cref="IDependentItemContainer"/> is 
-    /// its own IDependentItemContainerRef, when the object container is known it can be used
-    /// as the reference. The struct <see cref="DependentItemContainerRef"/> must be used for 
-    /// pure named reference.
+    /// Defines a reference to a container. 
     /// </summary>
+    /// <remarks>
+    /// A <see cref="IDependentItemContainer"/> implementation should implement this 
+    /// (it is then its own IDependentItemContainerRef): when the container object exists it can be used
+    /// as a (non optional) reference. The struct <see cref="NamedDependentItemContainerRef"/> must be used for 
+    /// optional or pure named reference.
+    /// </remarks>
     public interface IDependentItemContainerRef : IDependentItemRef
     {
-        /// <summary>
-        /// Gets a name that uniquely identifies the container. It must be not null.
-        /// </summary>
-        new string FullName { get; }
-
     }
 }

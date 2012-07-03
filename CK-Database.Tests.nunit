@@ -3,12 +3,14 @@
   <Config name="Debug" binpathtype="Auto">
     <assembly path="Output\Tests\Debug\CK.Setup.Tests.dll" />
     <assembly path="Output\Tests\Debug\CK.Setup.Database.Tests.dll" />
-    <assembly path="Output\Tests\Debug\CK.Setup.Database.SqlServer.Tests.dll" />
+    <assembly path="Output\Tests\Debug\CK.SqlServer.Tests.dll" />
+    <assembly path="Output\Tests\Debug\CK.Setup.SqlServer.Tests.dll" />
   </Config>
   <Config name="Release" binpathtype="Auto">
     <assembly path="Output\Tests\Release\CK.Setup.Tests.dll" />
     <assembly path="Output\Tests\Release\CK.Setup.Database.Tests.dll" />
-    <assembly path="Output\Tests\Release\CK.Setup.Database.SqlServer.Tests.dll" />
+    <assembly path="Output\Tests\Release\CK.SqlServer.Tests.dll" />
+    <assembly path="Output\Tests\Release\CK.Setup.SqlServer.Tests.dll" />
   </Config>
 </NUnitProject>
 

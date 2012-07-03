@@ -33,7 +33,7 @@ namespace CK.Setup
         MultipleContainer = 4,
         /// <summary>
         /// A <see cref="IDependentItemContainer.Children"/> contains a <see cref="IDependentItemContainerRef"/> and 
-        /// its <see cref="IDependentItemContainerRef.FullName">FullName</see> does not exist.
+        /// its <see cref="IDependentItemContainerRef.FullName">FullName</see> has not been registered.
         /// </summary>
         MissingNamedChild = 8,
         /// <summary>
