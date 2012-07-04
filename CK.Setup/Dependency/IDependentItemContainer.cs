@@ -10,15 +10,8 @@ namespace CK.Setup
     /// Collection part of the composite <see cref="IDependentItem"/>. 
     /// It only has to expose its <see cref="Children"/>.
     /// </summary>
-    public interface IDependentItemContainer : IDependentItem, IDependentItemContainerRef
+    public interface IDependentItemContainer : IDependentItem
     {
-        /// <summary>
-        /// Gets a name that uniquely identifies the container. It must be not null.
-        /// This is a redifinition to remove the ambiguity between <see cref="IDependentItem.FullName"/>
-        /// and <see cref="IDependentItemContainerRef.FullName"/> that are actually the same.
-        /// </summary>
-        new string FullName { get; }
-
         /// <summary>
         /// Gets a list of children. Can be null or empty (see remarks).
         /// </summary>

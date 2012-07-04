@@ -1,0 +1,113 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using CK.Core;
+using System.Text.RegularExpressions;
+using CK.Setup.Database;
+
+namespace CK.Setup.SqlServer
+{
+    public class SqlObjectBuilder : ISqlObjectBuilder
+    {
+        static Regex _rSqlObject = new Regex( @"(create|alter)\s+(?<1>proc(?:edure)?|function|view)\s+(\[?(?<2>\w+)]?\.)?(\[?(?<3>\w+)]?\.)?\[?(?<4>\w+)]?",
+                                            RegexOptions.CultureInvariant
+                                            | RegexOptions.IgnoreCase
+                                            | RegexOptions.ExplicitCapture );
+
+        static Regex _rHeader = new Regex( @"^\s*--\s*Version\s*=\s*(?<1>\d+(\.\d+)*|\*)(\s*,?\s*((Package\s*=\s*(?<2>(\w|\.|-)+))|(Requires\s*=\s*{\s*((?<3>\??(\w+|-|\.)+)\s*,?\s*)*})|((RequiredBy\s*=\s*{\s*((?<4>(\w+|-|\.)+)\s*,?\s*)*}))|(PreviousNames\s*=\s*{\s*(((?<5>(\w|\.|-)+)\s*=\s*(?<6>\d+\.\d+\.\d+))\s*,?\s*)*})))*",
+                RegexOptions.CultureInvariant
+                | RegexOptions.IgnoreCase
+                | RegexOptions.ExplicitCapture );
+
+
+        IVersionedItem ISqlObjectBuilder.Create( IActivityLogger logger, string text )
+        {
+            return SqlObjectBuilder.Create( logger, text, null );
+        }
+
+        static public IVersionedItem Create( IActivityLogger logger, string text, string expectedType )
+        {
+            Match mSqlObject = _rSqlObject.Match( text );
+            if( !mSqlObject.Success )
+            {
+                logger.Error( "Unable to detect create or alter statement for view, procedure or function (the object name must be Schema.Name)." );
+                return null;
+            }
+            string type;
+            switch( char.ToUpperInvariant( mSqlObject.Groups[1].Value[0] ) )
+            {
+                case 'V': type = SqlObject.TypeView; break;
+                case 'P': type = SqlObject.TypeProcedure; break;
+                default: type = SqlObject.TypeFunction; break;
+            }
+            if( expectedType != null && expectedType != type )
+            {
+                logger.Error( "Expected Sql object of type '{0}' but found a {1}.", expectedType, type );
+                return null;
+            }
+            
+            string header = text.Substring( 0, mSqlObject.Index );
+            string textAfterName = text.Substring( mSqlObject.Index + mSqlObject.Length );
+
+            Match mHeader = _rHeader.Match( header );
+            if( !mHeader.Success )
+            {
+                logger.Warn( "Unable to read object header: {0}", text.Substring( 0, Math.Max( text.Length, 80 ) ) );
+                return null;
+            }
+            string packageName = null;
+            string[] requires = null;
+            string[] requiredBy = null;
+            Version version = null;
+            VersionedName[] previousNames = null;
+
+            if( mHeader.Groups[2].Length > 0 ) packageName = mHeader.Groups[2].Value;
+            if( mHeader.Groups[3].Captures.Count > 0 ) requires = mHeader.Groups[3].Captures.Cast<Group>().Select( m => m.Value ).ToArray();
+            if( mHeader.Groups[4].Captures.Count > 0 ) requiredBy = mHeader.Groups[4].Captures.Cast<Group>().Select( m => m.Value ).ToArray();
+            if( mHeader.Groups[5].Captures.Count > 0 )
+            {
+                var prevNames = mHeader.Groups[5].Captures.Cast<Group>().Select( m => m.Value );
+                var prevVer = mHeader.Groups[5].Captures.Cast<Group>().Select( m => Version.Parse( m.Value ) );
+                previousNames = prevNames.Zip( prevVer, ( n, v ) => new VersionedName( n, v ) ).ToArray();
+            }
+            if( mHeader.Groups[1].Length == 1 ) version = null;
+            else if( !Version.TryParse( mHeader.Groups[1].Value, out version ) || version.Revision != -1 || version.Build == -1 )
+            {
+                logger.Error( "-- Version=X.Y.Z (with Major.Minor.Build) must appear first in header." );
+            }
+            string databaseOrSchema = mSqlObject.Groups[2].Value;
+            string schema = mSqlObject.Groups[3].Value;            
+            string name = mSqlObject.Groups[4].Value;
+            if( schema.Length == 0 && databaseOrSchema.Length > 0 )
+            {
+                string tmp = schema;
+                schema = databaseOrSchema;
+                databaseOrSchema = tmp;
+            }
+
+            SqlObject.ReadInfo r = new SqlObject.ReadInfo( databaseOrSchema, schema, name, header, version, packageName, requires, requiredBy, previousNames, textAfterName );
+
+            SqlObject result;
+            if( ReferenceEquals( type, SqlObject.TypeProcedure ) )
+            {
+                result = new SqlProcedure( r );
+            }
+            else if( ReferenceEquals( type, SqlObject.TypeView ) )
+            {
+                result = new SqlView( r );
+            }
+            else
+            {
+                result = new SqlFunction( r );
+            }
+            return result;
+        }
+
+        static public SqlProcedure LoadProcedureFromResource( IActivityLogger logger, Type resourceLocator, string resourceName )
+        {
+            string text = ResourceLocator.LoadString( resourceLocator, null, resourceName, true );
+            return (SqlProcedure)SqlObjectBuilder.Create( logger, text, SqlObject.TypeProcedure );
+        }
+    }
+}

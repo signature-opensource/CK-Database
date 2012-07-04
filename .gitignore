@@ -31,3 +31,4 @@ Runtime/Current/
 *.svn/
 /packages/
 *.nupkg
+CK-Database.Tests.VisualState.xml

@@ -33,10 +33,11 @@ namespace CK.Setup
             Append( ref _homonyms, homonym );
         }
 
-        internal void AddMissing( string missing, bool isStrong )
+        internal void AddMissing( IDependentItemRef dep )
         {
-            Debug.Assert( !String.IsNullOrWhiteSpace( missing ) );
-            Debug.Assert( isStrong == (missing[0] != '?') );
+            Debug.Assert( !String.IsNullOrWhiteSpace( dep.FullName ) );
+            string missing = dep.FullName;
+            if( dep.Optional ) missing = '?' + missing;
             if( _missingDep == null )
             {
                 _missingDep = new[] { missing };
@@ -47,7 +48,7 @@ namespace CK.Setup
                 int len = _missingDep.Length;
                 // This is to maintain the fact that a strong missing 
                 // dependency hides an optional one.
-                if( isStrong )
+                if( !dep.Optional )
                 {
                     string weak = '?' + missing;
                     int idx = Array.IndexOf( _missingDep, weak );
@@ -62,7 +63,7 @@ namespace CK.Setup
                 Array.Resize( ref _missingDep, len + 1 );
                 _missingDep[len] = missing;
             }
-            if( isStrong )
+            if( !dep.Optional )
             {
                 StructureError |= DependentItemStructureError.MissingDependency;
                 ++_nbRequiredMissingDep;
@@ -102,6 +103,48 @@ namespace CK.Setup
         /// </summary>
         public DependentItemStructureError StructureError { get; internal set; }
 
+        public void LogError( IActivityLogger logger )
+        {
+            if( logger == null ) throw new ArgumentNullException( "logger" );
+            if( StructureError != DependentItemStructureError.None )
+            {
+                using( logger.OpenGroup( LogLevel.Error, "Errors on '{0}'", Item.FullName ) )
+                {
+                    if( (StructureError & DependentItemStructureError.MissingNamedContainer) != 0 )
+                    {
+                        logger.Error( "Missing container named '{0}'", Item.Container.FullName );
+                    }
+                    if( (StructureError & DependentItemStructureError.ExistingItemIsNotAContainer) != 0 )
+                    {
+                        logger.Error( "Items's container named '{0}' is not a container.", Item.Container.FullName );
+                    }
+                    if( _homonyms != null )
+                    {
+                        logger.Error( "Homonyms: {0} objects with the same full name.", _homonyms.Length );
+                    }
+                    if( _extraneousContainers != null )
+                    {
+                        if( Item.Container != null )
+                        {
+                            logger.Error( "This item states to belong to container {0}, but other containers ('{1}') claim to own it.", Item.Container.FullName, String.Join( "', '", _extraneousContainers ) );
+                        }
+                        else
+                        {
+                            logger.Error( "More than one container claim to own the item: '{0}'.", String.Join( "', '", _extraneousContainers ) );
+                        }
+                    }
+                    if( _missingChildren != null )
+                    {
+                        logger.Error( "Missing children items: '{0}'.", String.Join( "', '", _missingChildren ) );
+                    }
+                    if( _nbRequiredMissingDep > 0 )
+                    {
+                        logger.Error( "Missing required dependencies: '{0}'.", String.Join( "', '", _missingDep.Where( s => s[0] != '?' ) ) );
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Gets the list of conflicting containers if any. Never null.
         /// </summary>
@@ -133,6 +176,15 @@ namespace CK.Setup
         /// if a dependency is both required and optional, only the required one appears in this list.
         /// </summary>
         public IEnumerable<string> MissingDependencies { get { return _missingDep ?? Util.EmptyStringArray; } }
+
+        /// <summary>
+        /// Gets a list of required missing dependencies for this <see cref="Item"/>. 
+        /// Null if <see cref="RequiredMissingCount"/> is 0.
+        /// </summary>
+        public IEnumerable<string> RequiredMissingDependencies
+        {
+            get { return _nbRequiredMissingDep > 0 ? _missingDep.Where( s => s[0] != '?' ) : null; }
+        }
     }
 
 }

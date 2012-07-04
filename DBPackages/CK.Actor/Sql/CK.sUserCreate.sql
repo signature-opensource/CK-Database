@@ -2,7 +2,7 @@
 --
 -- Finds or creates an user.
 --
-alter procedure CK.sUserCreate 
+create procedure CK.sUserCreate 
 (
 	@ActorId int, -- ActorId executing the stored procedure
 	@UserName nvarchar ( 32 ),
@@ -17,7 +17,7 @@ as begin
 	if @@RowCount = 0
 	begin
 		-- <PreCreate />
-		exec CK.sActorCreate @UserIdResult output;
+		exec CK.sActorCreate @ActorId, @UserIdResult output;
 		insert into CK.tUser ( UserId, UserName, Email ) VALUES ( @UserIdResult, @UserName, @Email );
 		-- <PostCreate />
 	end

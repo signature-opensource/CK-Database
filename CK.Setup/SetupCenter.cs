@@ -3,301 +3,127 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using CK.Core;
-using System.Diagnostics;
 
 namespace CK.Setup
 {
     public class SetupCenter
     {
-        readonly IVersionedItemRepository _versionRepository;
-        readonly DriverList _drivers;
-        readonly ISetupDriverFactory _driverFactory;
-        readonly IActivityLogger _logger;
-        SetupCenterState _state;
+        IVersionedItemRepository _versionRepository; 
+        ISetupSessionMemoryProvider _memory;
+        IActivityLogger _logger;
+        ISetupDriverFactory _driverFactory;
+        
+        PackageScriptCollector _scripts;
+        ScriptTypeManager _scriptTypeManager;
 
-        class DriverList : ISetupDriverList
-        {
-            Dictionary<string,SetupDriverBase> _byName;
-            List<SetupDriverBase> _drivers;
-            SetupCenter _center;
-
-            public DriverList( SetupCenter center )
-            {
-                _center = center;
-                _byName = new Dictionary<string, SetupDriverBase>();
-                _drivers = new List<SetupDriverBase>();
-            }
-
-            public SetupDriverBase this[string fullName]
-            {
-                get { return _byName.GetValueWithDefault( fullName, null ); }
-            }
-
-            public int IndexOf( object item )
-            {
-                SetupDriverBase d = item as SetupDriverBase;
-                return d != null ? d.Index : -1;
-            }
-
-            public SetupDriverBase this[int index]
-            {
-                get { return _drivers[index]; }
-            }
-
-            public bool Contains( object item )
-            {
-                SetupDriverBase d = item as SetupDriverBase;
-                return d != null ? d.SetupCenter == _center : false;
-            }
-
-            public int Count
-            {
-                get { return _byName.Count; }
-            }
-
-            public IEnumerator<SetupDriverBase> GetEnumerator()
-            {
-                return _drivers.GetEnumerator();
-            }
-
-            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-            {
-                return _drivers.GetEnumerator();
-            }
-
-            internal void Clear()
-            {
-                _byName.Clear();
-                _drivers.Clear();
-            }
-
-            internal void Add( SetupDriverBase d )
-            {
-                Debug.Assert( d != null && d.SetupCenter == _center );
-                Debug.Assert( !_byName.ContainsKey( d.FullName ) );
-                Debug.Assert( _drivers.Count == 0 || _drivers[_drivers.Count-1].Index < d.Index );
-                _drivers.Add( d );
-                _byName.Add( d.FullName, d );
-            }
-
-        }
-
-        class DefaultDriverfactory : ISetupDriverFactory
-        {
-            public readonly static ISetupDriverFactory Default = new DefaultDriverfactory();
-
-            SetupDriver ISetupDriverFactory.CreateDriver( Type driverType, SetupDriver.BuildInfo info )
-            {
-                return (SetupDriver)Activator.CreateInstance( driverType, info );
-            }
-
-            SetupDriverContainer ISetupDriverFactory.CreateDriverContainer( Type containerType, SetupDriverContainer.BuildInfo info )
-            {
-                return (SetupDriverContainer)Activator.CreateInstance( containerType, info );
-            }
-
-        }
-
-        public SetupCenter( IVersionedItemRepository versionRepository, IActivityLogger logger, ISetupDriverFactory driverFactory )
+        public SetupCenter( IVersionedItemRepository versionRepository, ISetupSessionMemoryProvider memory, IActivityLogger logger, ISetupDriverFactory driverFactory )
         {
             if( versionRepository == null ) throw new ArgumentNullException( "versionRepository" );
+            if( memory == null ) throw new ArgumentNullException( "memory" );
             if( logger == null ) throw new ArgumentNullException( "logger" );
+            if( driverFactory == null ) throw new ArgumentNullException( "driverFactory" );
+
             _versionRepository = versionRepository;
-            _driverFactory = driverFactory ?? DefaultDriverfactory.Default;
+            _memory = memory;
             _logger = logger;
-            _drivers = new DriverList( this );
+            _driverFactory = driverFactory;
+
+            _scriptTypeManager = new ScriptTypeManager();
+            _scripts = new PackageScriptCollector( _scriptTypeManager.IsRegistered );
         }
 
-        public event EventHandler<SetupDriverEventArgs> DriverEvent;
-
-        public IVersionedItemRepository VersionRepository
+        public ScriptTypeManager ScriptTypeManager
         {
-            get { return _versionRepository; }
+            get { return _scriptTypeManager; }
+        }
+        
+        public PackageScriptCollector Scripts
+        {
+            get { return _scripts; }
         }
 
-        public IActivityLogger Logger
-        {
-            get { return _logger; }
-        }
+        /// <summary>
+        /// Gets ors sets whether the ordering for setupable items that share the same rank in the pure dependency graph must be inverted.
+        /// Defaults to true.
+        /// (see <see cref="DependencySorter"/> for more information.)
+        /// </summary>
+        public bool RevertOrderingNames { get; set; }
 
-        public ISetupDriverList Drivers
+        /// <summary>
+        /// Registers any number of <see cref="ISetupableItem"/> and/or <see cref="IDependentItemDiscoverer"/> and executes
+        /// the whole setup process (<see cref="SetupEngine.RunInit"/>, <see cref="SetupEngine.RunInit"/>, <see cref="SetupEngine.RunInstall"/>, <see cref="SetupEngine.RunSettle"/>).
+        /// </summary>
+        /// <param name="items">Objects that can be <see cref="ISetupableItem"/>, <see cref="IDependentItemDiscoverer"/> or both.</param>
+        /// <returns>A <see cref="SetupEngineRegisterResult"/> that captures detailed information about the registration result.</returns>
+        public bool Run( params object[] items )
         {
-            get { return _drivers; }
-        }
-
-        public bool RegisterDone
-        {
-            get { return _drivers.Count > 0; }
-        }
-
-        public SetupCenterState State
-        {
-            get { return _state; }
-        }
-
-        public SetupCenterRegisterResult Register( params object[] items )
-        {
-            return Register( items.OfType<ISetupableItem>(), items.OfType<IDependentItemDiscoverer>() );
-        }
-
-        public SetupCenterRegisterResult Register( IEnumerable<ISetupableItem> items, IEnumerable<IDependentItemDiscoverer> discoverers, bool reverseName = false )
-        {
-            CheckState( SetupCenterState.None );
-            SetupCenterRegisterResult result = null;
+            ActivityLoggerPathCatcher path = new ActivityLoggerPathCatcher();
+            _logger.Output.RegisterClient( path );
+            ISetupSessionMemory m = null;
             try
             {
-                result = new SetupCenterRegisterResult( DependencySorter.OrderItems( items, discoverers, reverseName ) );
-                if( result.IsValid )
+                m = _memory.StartSetup();
+                if( DoRun( items, m ) )
                 {
-                    var reusableEvent = new SetupDriverEventArgs( SetupStep.None );
-                    foreach( var item in result.SortResult.SortedItems )
-                    {
-                        SetupDriverBase d;
-                        if( item.IsContainer )
-                        {
-                            var head = _drivers[item.HeadForContainer.FullName] as SetupDriverHead;
-                            Debug.Assert( head != null );
-                            Type containerType = ResolveDriverType( item );
-                            SetupDriverContainer c = _driverFactory.CreateDriverContainer( containerType, new SetupDriverContainer.BuildInfo( head, item ) );
-                            d = head.Container = c;
-                        }
-                        else
-                        {
-                            VersionedName externalVersion = VersionRepository.GetCurrent( (ISetupableItem)item.Item );
-                            if( item.IsContainerHead )
-                            {
-                                d = new SetupDriverHead( this, item, externalVersion );
-                            }
-                            else
-                            {
-                                Type driverType = ResolveDriverType( item );
-                                d = _driverFactory.CreateDriver( driverType, new SetupDriver.BuildInfo( this, item, externalVersion ) );
-                            }
-                        }
-                        _drivers.Add( d );
-                        var hE = DriverEvent;
-                        if( hE != null )
-                        {
-                            reusableEvent.Driver = d;
-                            hE( this, reusableEvent );
-                        }
-                    }
-                    _state = SetupCenterState.Registered;
+                    _memory.StopSetup( null );
+                    return true;
                 }
             }
             catch( Exception ex )
             {
-                if( result == null ) result = new SetupCenterRegisterResult( null );
-                _drivers.Clear();
-                result.UnexpectedError = ex;
+                _logger.Fatal( ex );
             }
-            return result;
+            finally
+            {
+                _logger.Output.UnregisterMuxClient( path );
+            }
+            if( m != null ) _memory.StopSetup( path.LastErrorPath.ToStringPath() );
+            return false;
         }
 
-        public bool RunInit()
+        private bool DoRun( object[] items, ISetupSessionMemory m )
         {
-            CheckState( SetupCenterState.Registered );
-            _state = SetupCenterState.InitializationError;
-            try
+            using( SetupEngine engine = CreateEngine( m ) )
             {
-                var reusableEvent = new SetupDriverEventArgs( SetupStep.Init );
-                foreach( var d in _drivers )
+                using( _logger.OpenGroup( LogLevel.Info, "Register step." ) )
                 {
-                    using( _logger.OpenGroup( LogLevel.Info, "Initializing {0}", d.FullName ) )
+                    SetupEngineRegisterResult r = engine.Register( items.OfType<IDependentItem>(), items.OfType<IDependentItemDiscoverer>(), RevertOrderingNames );
+                    if( !r.IsValid )
                     {
-                        if( !d.ExecuteInit() ) return false;
-                        var hE = DriverEvent;
-                        if( hE != null )
-                        {
-                            reusableEvent.Driver = d;
-                            hE( this, reusableEvent );
-                        }
+                        r.LogError( _logger );
+                        return false;
                     }
                 }
+                using( _logger.OpenGroup( LogLevel.Info, "Init step." ) )
+                {
+                    if( !engine.RunInit() ) return false;
+                }
+                using( _logger.OpenGroup( LogLevel.Info, "Run step." ) )
+                {
+                    if( !engine.RunInstall() ) return false;
+                }
+                using( _logger.OpenGroup( LogLevel.Info, "Settle step." ) )
+                {
+                    if( !engine.RunSettle() ) return false;
+                }
             }
-            catch( Exception ex )
-            {
-                _logger.Error( ex.Message );
-                return false;
-            }
-            _state = SetupCenterState.Initialized;
             return true;
         }
 
-        public bool RunInstall()
+        private SetupEngine CreateEngine( ISetupSessionMemory m )
         {
-            CheckState( SetupCenterState.Initialized );
-            _state = SetupCenterState.InstallationError;
-            try
+            SetupEngine engine = null;
+            using( _logger.OpenGroup( LogLevel.Info, "Setup engine initialization." ) )
             {
-                var reusableEvent = new SetupDriverEventArgs( SetupStep.Install );
-                foreach( var d in _drivers )
+                if( _memory.StartCount == 0 ) _logger.Info( "Starting a new setup." );
+                else
                 {
-                    using( _logger.OpenGroup( LogLevel.Info, "Installing {0}", d.FullName ) )
-                    {
-                        if( !d.ExecuteInstall() ) return false;
-                        var hE = DriverEvent;
-                        if( hE != null )
-                        {
-                            reusableEvent.Driver = d;
-                            hE( this, reusableEvent );
-                        }
-                    }
+                    _logger.Info( "{0} previous Setup attempt(s). Last on {2}, error was: '{1}'.", _memory.StartCount, _memory.LastError, _memory.LastStartDate );
                 }
+                engine = new SetupEngine( _versionRepository, m, _logger, _driverFactory );
+                ScriptHandlerBuilder scriptBuilder = new ScriptHandlerBuilder( engine, _scripts, _scriptTypeManager );
             }
-            catch( Exception ex )
-            {
-                _logger.Error( ex.Message );
-                return false;
-            }
-            _state = SetupCenterState.Installed;
-            return true;
-        }
-
-        public bool RunSettle()
-        {
-            CheckState( SetupCenterState.Installed );
-            _state = SetupCenterState.SettlementError;
-            try
-            {
-                var reusableEvent = new SetupDriverEventArgs( SetupStep.Settle );
-                foreach( var d in _drivers )
-                {
-                    using( _logger.OpenGroup( LogLevel.Info, "Settling {0}", d.FullName ) )
-                    {
-                        if( !d.ExecuteSettle() ) return false;
-                        var hE = DriverEvent;
-                        if( hE != null )
-                        {
-                            reusableEvent.Driver = d;
-                            hE( this, reusableEvent );
-                        }
-                    }
-                }
-            }
-            catch( Exception ex )
-            {
-                _logger.Error( ex.Message );
-                return false;
-            }
-
-            _state = SetupCenterState.Settled;
-            return true;
-        }
-
-        private static Type ResolveDriverType( ISortedItem item )
-        {
-            string typeName = ((ISetupableItem)item.Item).SetupDriverTypeName;
-            Type t = SimpleTypeFinder.Default.ResolveType( typeName, true );
-            return t;
-        }
-
-        void CheckState( SetupCenterState requiredState )
-        {
-            if( _state != requiredState )
-            {
-                throw new InvalidOperationException( String.Format( "Invalid SetupCenter state: {0} expected but was {1}", requiredState, _state.ToString() ) );
-            }
+            return engine;
         }
 
     }
