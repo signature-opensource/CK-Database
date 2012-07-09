@@ -21,8 +21,6 @@
     <file src="..\..\..\CK.Setup.Database\bin\Debug\CK.Setup.Database.pdb" target="lib\net40" />
     <file src="..\..\..\CK.Setup.SqlServer\bin\Debug\CK.Setup.SqlServer.dll" target="lib\net40" />
     <file src="..\..\..\CK.Setup.SqlServer\bin\Debug\CK.Setup.SqlServer.pdb" target="lib\net40" />
-    <file src="..\..\..\CK.Setup.SqlServer.Unity\bin\Debug\CK.Setup.SqlServer.Unity.dll" target="lib\net40" />
-    <file src="..\..\..\CK.Setup.SqlServer.Unity\bin\Debug\CK.Setup.SqlServer.Unity.pdb" target="lib\net40" />
     <file src="..\..\..\CK.SqlServer\bin\Debug\CK.SqlServer.dll" target="lib\net40" />
     <file src="..\..\..\CK.SqlServer\bin\Debug\CK.SqlServer.pdb" target="lib\net40" />
   </files>
