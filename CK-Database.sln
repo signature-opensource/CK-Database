@@ -32,6 +32,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Nuget", "Nuget", "{786E6DD3
 	ProjectSection(SolutionItems) = preProject
 		Output\Packages\Nuget\CK.Actor.nuspec = Output\Packages\Nuget\CK.Actor.nuspec
 		Output\Packages\Nuget\CK.Database.SqlServer.nuspec = Output\Packages\Nuget\CK.Database.SqlServer.nuspec
+		Output\Packages\Nuget\CK.ActorGroup.nuspec = Output\Packages\Nuget\CK.ActorGroup.nuspec
+		Output\Packages\Nuget\CK.Database.nuspec = Output\Packages\Nuget\CK.Database.nuspec
 		Output\Packages\Nuget\CK.Resource.nuspec = Output\Packages\Nuget\CK.Resource.nuspec
 	EndProjectSection
 EndProject
