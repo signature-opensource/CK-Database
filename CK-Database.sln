@@ -43,6 +43,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.SqlServer.Tests", "Tests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.ActorGroup", "DBPackages\CK.ActorGroup\CK.ActorGroup.csproj", "{12E6DB2B-9773-47F0-9A5A-F7CDEC2A8C18}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.Deploy.Console", "CK.Deploy.Console\CK.Deploy.Console.csproj", "{CA18CAFE-AC00-4030-8C97-365CA5D6050A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -167,6 +169,16 @@ Global
 		{12E6DB2B-9773-47F0-9A5A-F7CDEC2A8C18}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{12E6DB2B-9773-47F0-9A5A-F7CDEC2A8C18}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{12E6DB2B-9773-47F0-9A5A-F7CDEC2A8C18}.Release|x86.ActiveCfg = Release|Any CPU
+		{CA18CAFE-AC00-4030-8C97-365CA5D6050A}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{CA18CAFE-AC00-4030-8C97-365CA5D6050A}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{CA18CAFE-AC00-4030-8C97-365CA5D6050A}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{CA18CAFE-AC00-4030-8C97-365CA5D6050A}.Debug|x86.ActiveCfg = Debug|x86
+		{CA18CAFE-AC00-4030-8C97-365CA5D6050A}.Debug|x86.Build.0 = Debug|x86
+		{CA18CAFE-AC00-4030-8C97-365CA5D6050A}.Release|Any CPU.ActiveCfg = Release|x86
+		{CA18CAFE-AC00-4030-8C97-365CA5D6050A}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{CA18CAFE-AC00-4030-8C97-365CA5D6050A}.Release|Mixed Platforms.Build.0 = Release|x86
+		{CA18CAFE-AC00-4030-8C97-365CA5D6050A}.Release|x86.ActiveCfg = Release|x86
+		{CA18CAFE-AC00-4030-8C97-365CA5D6050A}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
