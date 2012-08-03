@@ -13,7 +13,13 @@ namespace CK.Setup.StObj.Tests.SimpleObjects
             SimpleObjectsTrace.LogMethod( MethodInfo.GetCurrentMethod() );
         }
 
+
         void Contruct()
+        {
+            SimpleObjectsTrace.LogMethod( MethodInfo.GetCurrentMethod() );
+        }
+
+        public void MethofOfALevel3()
         {
             SimpleObjectsTrace.LogMethod( MethodInfo.GetCurrentMethod() );
         }

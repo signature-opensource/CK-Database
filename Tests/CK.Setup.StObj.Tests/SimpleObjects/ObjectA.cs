@@ -19,5 +19,10 @@ namespace CK.Setup.StObj.Tests.SimpleObjects
             SimpleObjectsTrace.LogMethod( MethodInfo.GetCurrentMethod() );
         }
 
+        public void MethofOfA()
+        {
+            SimpleObjectsTrace.LogMethod( MethodInfo.GetCurrentMethod() );
+        }
+
     }
 }
