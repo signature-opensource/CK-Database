@@ -30,6 +30,11 @@ namespace CK.Setup
                 get { return _drivers.FirstOrDefault( d => d.Item.FullName == fullName ); }
             }
 
+            public DriverBase this[ IDependentItem item]
+            {
+                get { return _drivers.FirstOrDefault( d => d.Item == item ); }
+            }
+
             public bool Contains( object item )
             {
                 return IndexOf( item ) >= 0;

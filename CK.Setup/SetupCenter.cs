@@ -58,7 +58,7 @@ namespace CK.Setup
         public bool Run( params object[] items )
         {
             ActivityLoggerPathCatcher path = new ActivityLoggerPathCatcher();
-            _logger.Output.RegisterClient( path );
+            _logger.Output.RegisterMuxClient( path );
             ISetupSessionMemory m = null;
             try
             {

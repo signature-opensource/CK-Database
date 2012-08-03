@@ -39,7 +39,6 @@ namespace CK.Setup.Tests.IntoTheWild
     {
     }
 
-
     public class ScopedBaseDefiner : Base, IAmbiantContractDefiner<int>
     {
     }
@@ -108,7 +107,7 @@ namespace CK.Setup.Tests.IntoTheWild
         {
             Action<AmbiantContractCollector> check = c =>
                 {
-                    Assert.That( c.RegisteredTypeCount, Is.EqualTo( 2 ) );                    
+                    Assert.That( c.RegisteredTypeCount, Is.EqualTo( 2 ) );
                     var r = c.GetResult().Default;
                     Assert.That( r.AbstractClasses.Count, Is.EqualTo( 0 ) );
                     Assert.That( r.AbstractTails.Count, Is.EqualTo( 0 ) );
@@ -172,7 +171,7 @@ namespace CK.Setup.Tests.IntoTheWild
                     var r = rAll.Default;
                     Assert.That( r.AbstractClasses.Count, Is.EqualTo( 0 ) );
                     Assert.That( r.AbstractTails.Count, Is.EqualTo( 1 ) );
-                    Assert.That( r.ConcreteClasses.SequenceEqual( new[] { typeof( AmbiantChild ) } ) );
+                    Assert.That( r.ConcreteClasses.Count == 1 && r.ConcreteClasses[0].SequenceEqual( new[] { typeof( Ambiant ), typeof( AmbiantChild ) } ) );
                     Assert.That( r.ClassAmbiguities.Count, Is.EqualTo( 0 ) );
                     Assert.That( r.InterfaceAmbiguities.Count, Is.EqualTo( 0 ) );
                     CheckLocalMappings( r.Mappings, Tuple.Create( typeof( Ambiant ), typeof( AmbiantChild ) ), Tuple.Create( typeof( AmbiantChild ), typeof( AmbiantChild ) ) );
@@ -181,7 +180,7 @@ namespace CK.Setup.Tests.IntoTheWild
                     var r = rAll[typeof( int )];
                     Assert.That( r.AbstractClasses.Count, Is.EqualTo( 0 ) );
                     Assert.That( r.AbstractTails.Count, Is.EqualTo( 0 ) );
-                    Assert.That( r.ConcreteClasses.SequenceEqual( new[] { typeof( AmbiantScoped ) } ) );
+                    Assert.That( r.ConcreteClasses.Count == 1 && r.ConcreteClasses[0].SequenceEqual( new[] { typeof( Ambiant ), typeof( AmbiantScoped ) } ) );
                     Assert.That( r.ClassAmbiguities.Count, Is.EqualTo( 0 ) );
                     Assert.That( r.InterfaceAmbiguities.Count, Is.EqualTo( 0 ) );
                     CheckLocalMappings( r.Mappings, Tuple.Create( typeof( Ambiant ), typeof( AmbiantScoped ) ), Tuple.Create( typeof( AmbiantScoped ), typeof( AmbiantScoped ) ) );
@@ -215,7 +214,7 @@ namespace CK.Setup.Tests.IntoTheWild
                     var r = rAll[typeof( int )];
                     Assert.That( r.AbstractClasses.Count, Is.EqualTo( 0 ) );
                     Assert.That( r.AbstractTails.Count, Is.EqualTo( 0 ) );
-                    Assert.That( r.ConcreteClasses.SequenceEqual( new[] { typeof( AmbiantScopedChild ) } ) );
+                    Assert.That( r.ConcreteClasses.Count == 1 && r.ConcreteClasses[0].SequenceEqual( new[] { typeof( Ambiant ), typeof( AmbiantScoped ), typeof( AmbiantScopedChild ) } ) );
                     Assert.That( r.ClassAmbiguities.Count, Is.EqualTo( 0 ) );
                     Assert.That( r.InterfaceAmbiguities.Count, Is.EqualTo( 0 ) );
                     CheckLocalMappings( r.Mappings,
@@ -265,7 +264,7 @@ namespace CK.Setup.Tests.IntoTheWild
                     Tuple.Create( typeof( ScopedOtherFromDefiner ), typeof( ScopedOtherFromDefiner ) ) );
             };
             // Context redefinition supports requires a
-            // deep change in the way AmbiantContractCollector registers the types:
+            // deep change in the way ContextResultCollector<AmbiantContractCollectorContextResult> registers the types:
             // types that are redefined in other contexts must be "hidden" or a first registration
             // must keep all types regardless of their context and then processes only the longest ones
             // (in GetResult call).
@@ -280,14 +279,14 @@ namespace CK.Setup.Tests.IntoTheWild
             {
                 // ByDefiner is registered in <int>.
                 // ScopedOtherFromDefiner reroutes the registration in <long> context.
-                //AmbiantContractCollector c = new AmbiantContractCollector();
+                //ContextResultCollector<AmbiantContractCollectorContextResult> c = new ContextResultCollector<AmbiantContractCollectorContextResult>();
                 //Assert.That( c.RegisterClass( typeof( ByDefiner ) ), Is.True );
                 //Assert.That( c.RegisterClass( typeof( ScopedOtherFromDefiner ) ), Is.True );
                 //check( c );
             }
         }
 
-        private static void CheckEmpty( AmbiantContractCollectorContextResult r )
+        private static void CheckEmpty( AmbiantContractResult r )
         {
             Assert.That( r.AbstractClasses.Count, Is.EqualTo( 0 ) );
             Assert.That( r.AbstractClasses, Is.Empty );
@@ -309,7 +308,7 @@ namespace CK.Setup.Tests.IntoTheWild
             foreach( var e in expected )
             {
                 Assert.That( actual.IsMapped( e.Item1 ), "Key type: " + e.Item1 + " exists." );
-                Assert.That( actual[ e.Item1 ], Is.EqualTo( e.Item2 ), "Type : " + e.Item1 + " is mapped to "+ e.Item2 );
+                Assert.That( actual[e.Item1], Is.EqualTo( e.Item2 ), "Type : " + e.Item1 + " is mapped to " + e.Item2 );
             }
             Assert.That( actual.Count, Is.EqualTo( expected.Count() ), "No extra mappings exist." );
         }

@@ -28,7 +28,7 @@ namespace CK.Setup.Database.Tests
     </Content>
 </SetupPackage>
 " );
-            DynamicPackage p = SqlFileDiscoverer.ReadPackageFileFormat( e );
+            DynamicPackageItem p = SqlFileDiscoverer.ReadPackageFileFormat( e );
             Assert.That( p.VersionList.IsSortedStrict() );
         }
 

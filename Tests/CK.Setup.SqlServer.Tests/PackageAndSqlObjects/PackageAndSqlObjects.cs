@@ -18,7 +18,7 @@ namespace CK.Setup.SqlServer.Tests
             {
                 if( !context.DefaultDatabase.IsOpen() ) context.DefaultDatabase.OpenOrCreate( ".", "PackageAndSqlObjects5" );
                 SqlSetupCenter c = new SqlSetupCenter( context );
-                c.DiscoverObjects( Assembly.GetExecutingAssembly() );
+                c.ExplicitDiscover( Assembly.GetExecutingAssembly() );
                 Assert.That( c.Run() );
             }
         }

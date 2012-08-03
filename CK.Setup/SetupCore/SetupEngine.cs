@@ -24,26 +24,31 @@ namespace CK.Setup
 
         class DriverList : IDriverList
         {
-            Dictionary<string,DriverBase> _byName;
+            Dictionary<object,DriverBase> _index;
             List<DriverBase> _drivers;
             SetupEngine _center;
 
             public DriverList( SetupEngine center )
             {
                 _center = center;
-                _byName = new Dictionary<string, DriverBase>();
+                _index = new Dictionary<object, DriverBase>();
                 _drivers = new List<DriverBase>();
             }
 
             public DriverBase this[string fullName]
             {
-                get { return _byName.GetValueWithDefault( fullName, null ); }
+                get { return _index.GetValueWithDefault( fullName, null ); }
             }
 
-            public int IndexOf( object item )
+            public DriverBase this[ IDependentItem item ]
             {
-                DriverBase d = item as DriverBase;
-                return d != null ? d.Index : -1;
+                get { return _index.GetValueWithDefault( item, null ); }
+            }
+
+            public int IndexOf( object driver )
+            {
+                DriverBase d = driver as DriverBase;
+                return d != null && d.Engine == _center ? d.Index : -1;
             }
 
             public DriverBase this[int index]
@@ -51,15 +56,15 @@ namespace CK.Setup
                 get { return _drivers[index]; }
             }
 
-            public bool Contains( object item )
+            public bool Contains( object driver )
             {
-                DriverBase d = item as DriverBase;
+                DriverBase d = driver as DriverBase;
                 return d != null ? d.Engine == _center : false;
             }
 
             public int Count
             {
-                get { return _byName.Count; }
+                get { return _drivers.Count; }
             }
 
             public IEnumerator<DriverBase> GetEnumerator()
@@ -74,17 +79,18 @@ namespace CK.Setup
 
             internal void Clear()
             {
-                _byName.Clear();
+                _index.Clear();
                 _drivers.Clear();
             }
 
             internal void Add( DriverBase d )
             {
                 Debug.Assert( d != null && d.Engine == _center );
-                Debug.Assert( !_byName.ContainsKey( d.FullName ) );
+                Debug.Assert( !_index.ContainsKey( d.FullName ) );
                 Debug.Assert( _drivers.Count == 0 || _drivers[_drivers.Count-1].Index < d.Index );
                 _drivers.Add( d );
-                _byName.Add( d.FullName, d );
+                _index.Add( d.FullName, d );
+                _index.Add( d.Item, d );
             }
 
         }

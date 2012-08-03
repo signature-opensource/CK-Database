@@ -13,7 +13,7 @@ namespace CK.Setup.Database
     {
         ISqlObjectBuilder _sqlObjectBuilder;
         IActivityLogger _logger;
-        List<DynamicPackage> _packages;
+        List<DynamicPackageItem> _packages;
         List<IVersionedItem> _sqlObjects;
 
         int _packageDiscoverErrorCount;
@@ -27,7 +27,7 @@ namespace CK.Setup.Database
             _sqlObjectBuilder = sqlObjectBuilder;
             _logger = logger;
 
-            _packages = new List<DynamicPackage>();
+            _packages = new List<DynamicPackageItem>();
             _sqlObjects = new List<IVersionedItem>();
         }
 
@@ -144,7 +144,7 @@ namespace CK.Setup.Database
                 }
                 try
                 {
-                    DynamicPackage p = ReadPackageFileFormat( e );
+                    DynamicPackageItem p = ReadPackageFileFormat( e );
                     _packages.Add( p );
                     _logger.CloseGroup( String.Format( "SetupPackage '{0}' found.", p.FullName ) );
                     return true;
@@ -157,19 +157,19 @@ namespace CK.Setup.Database
             }
         }
 
-        static public DynamicPackage ReadPackageFileFormat( XElement e )
+        static public DynamicPackageItem ReadPackageFileFormat( XElement e )
         {
-            DynamicPackage p;
+            DynamicPackageItem p;
             XElement model = e.Elements( "Model" ).SingleOrDefault();
             if( model != null )
             {
-                p = new DynamicPackage( "SetupPWithModel" );
+                p = new DynamicPackageItem( "SetupPWithModel" );
                 p.EnsureModel().Requires.Clear();
                 foreach( var a in model.Elements( "Requirements" ).Attributes( "Requires" ) ) p.Model.Requires.AddCommaSeparatedString( (string)a );
                 p.Model.RequiredBy.Clear();
                 foreach( var a in e.Elements( "Requirements" ).Attributes( "RequiredBy" ) ) p.Model.RequiredBy.AddCommaSeparatedString( (string)a );
             }
-            else p = new DynamicPackage( "SetupP" );
+            else p = new DynamicPackageItem( "SetupP" );
             p.FullName = (string)e.AttributeRequired( "FullName" );
             p.SetVersionsString( (string)e.AttributeRequired( "Versions" ) );
             p.Requires.Clear();
