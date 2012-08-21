@@ -140,7 +140,7 @@ namespace CK.Setup.Database
 
         string IVersionedItem.ItemType
         {
-            get { return "Package"; }
+            get { return "Model"; }
         }
 
         IEnumerable<IDependentItemRef> IDependentItemContainer.Children

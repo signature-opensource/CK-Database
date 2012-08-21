@@ -34,25 +34,25 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CK.Core">
-      <HintPath>..\packages\CK.Core.1.0.0\lib\net40\CK.Core.dll</HintPath>
+    <Reference Include="CK.Core, Version=0.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\packages\CK.Core.2.7.3\lib\net40\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ObjectPackage\DatabaseItem.cs" />
-    <Compile Include="ObjectPackage\PackageSetupDriver.cs" />
-    <Compile Include="ObjectPackage\DefaultDatabase.cs" />
+    <Compile Include="ObjectSupport\Database\DatabaseItem.cs" />
+    <Compile Include="ObjectSupport\PackageSetupDriver.cs" />
+    <Compile Include="ObjectSupport\Database\DefaultDatabase.cs" />
     <Compile Include="SqlManagerProvider.cs" />
-    <Compile Include="ObjectPackage\Database.cs" />
-    <Compile Include="ObjectPackage\DatabaseSetupDriver.cs" />
-    <Compile Include="ObjectPackage\Package.cs" />
-    <Compile Include="ObjectPackage\PackageAttribute.cs" />
-    <Compile Include="ObjectPackage\SetupObjectRegisterer.cs" />
-    <Compile Include="ObjectPackage\TableAttribute.cs" />
-    <Compile Include="ObjectPackage\Tests.cs" />
+    <Compile Include="ObjectSupport\Database\Database.cs" />
+    <Compile Include="ObjectSupport\Database\DatabaseSetupDriver.cs" />
+    <Compile Include="ObjectSupport\Package.cs" />
+    <Compile Include="ObjectSupport\PackageAttribute.cs" />
+    <Compile Include="ObjectSupport\SetupObjectRegisterer.cs" />
+    <Compile Include="ObjectSupport\TableAttribute.cs" />
+    <Compile Include="ObjectSupport\Tests.cs" />
     <Compile Include="SqlObject\SqlFunction.cs" />
     <Compile Include="SqlObject\SqlView.cs" />
     <Compile Include="SqlObject\SqlProcedure.cs" />
@@ -84,7 +84,6 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

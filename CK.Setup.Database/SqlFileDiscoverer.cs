@@ -159,7 +159,17 @@ namespace CK.Setup.Database
 
         static public DynamicPackage ReadPackageFileFormat( XElement e )
         {
-            DynamicPackage p = new DynamicPackage();
+            DynamicPackage p;
+            XElement model = e.Elements( "Model" ).SingleOrDefault();
+            if( model != null )
+            {
+                p = new DynamicPackage( "SetupPWithModel" );
+                p.EnsureModel().Requires.Clear();
+                foreach( var a in model.Elements( "Requirements" ).Attributes( "Requires" ) ) p.Model.Requires.AddCommaSeparatedString( (string)a );
+                p.Model.RequiredBy.Clear();
+                foreach( var a in e.Elements( "Requirements" ).Attributes( "RequiredBy" ) ) p.Model.RequiredBy.AddCommaSeparatedString( (string)a );
+            }
+            else p = new DynamicPackage( "SetupP" );
             p.FullName = (string)e.AttributeRequired( "FullName" );
             p.SetVersionsString( (string)e.AttributeRequired( "Versions" ) );
             p.Requires.Clear();
@@ -167,15 +177,6 @@ namespace CK.Setup.Database
             p.RequiredBy.Clear();
             foreach( var a in e.Elements( "Requirements" ).Attributes( "RequiredBy" ) ) p.RequiredBy.AddCommaSeparatedString( (string)a );
 
-            XElement model = e.Elements( "Model" ).SingleOrDefault();
-            if( model != null )
-            {
-                p.EnsureModel().Requires.Clear();
-                foreach( var a in model.Elements( "Requirements" ).Attributes( "Requires" ) ) p.Model.Requires.AddCommaSeparatedString( (string)a );
-                p.Model.RequiredBy.Clear();
-                foreach( var a in e.Elements( "Requirements" ).Attributes( "RequiredBy" ) ) p.Model.RequiredBy.AddCommaSeparatedString( (string)a );
-            }
-            else p.SupressModel();
             p.Children.Clear();
             XElement content = e.Elements( "Content" ).SingleOrDefault();
             if( content != null )

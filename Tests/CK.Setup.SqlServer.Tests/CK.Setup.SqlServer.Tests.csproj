@@ -34,8 +34,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CK.Core">
-      <HintPath>..\..\packages\CK.Core.1.0.0\lib\net40\CK.Core.dll</HintPath>
+    <Reference Include="CK.Core, Version=0.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\CK.Core.2.7.3\lib\net40\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="nunit.framework, Version=2.5.9.10348, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -77,13 +77,13 @@
   <ItemGroup />
   <ItemGroup>
     <Content Include="PackageAndSqlObjects\Res\sFirstProc.sql" />
-    <Content Include="Scripts\InstallFromScratchWithView\Test.vTestView.sql" />
-    <Content Include="Scripts\InstallFromScratchWithView\Model.Test.WithView.Install.1.0.0.sql" />
+    <Content Include="Scripts\InstallFromScratchWithView\dbo.vTestView.sql" />
+    <Content Include="Scripts\InstallFromScratchWithView\Model.WithView.Install.1.0.0.sql" />
     <Content Include="Scripts\InstallFromScratch\Model.Test.DependentPackage.Install.1.0.0.sql" />
     <Content Include="Scripts\InstallFromScratch\Model.Test.WithModel.Install.1.0.0.sql" />
     <Content Include="Scripts\InstallFromScratch\Test.fTest.sql" />
     <None Include="packages.config" />
-    <None Include="Scripts\InstallFromScratchWithView\Test.WithView.ck" />
+    <None Include="Scripts\InstallFromScratchWithView\WithView.ck" />
     <None Include="Scripts\InstallFromScratch\Test.DependentPackage.ck" />
     <None Include="Scripts\InstallFromScratch\Test.WithModel.ck" />
     <None Include="Scripts\InstallFromScratch\Test.ck" />
