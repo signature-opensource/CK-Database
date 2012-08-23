@@ -8,304 +8,307 @@ namespace CK.Core
 {
     public class AmbiantContractCollector
     {
-        HashSet<Type> _processed;
-        readonly IAmbiantContractContextMapper _contextMapper;
-        bool _processedResultFlag;
+        readonly Dictionary<Type, AmbiantTypeModel> _collector;
+        readonly List<AmbiantTypeModel> _roots;
+        readonly IAmbiantContractDispatcher _contextDispatcher;
+        
+        /// <summary>
+        /// Support for <see cref="DefaultContext"/>: a type that defines the notion of default context.
+        /// </summary>
+        public class DefaultContextType { }
 
-        class ClassType : List<Type>
+        /// <summary>
+        /// The default context contains anything except if a typed context is explicitely defined.
+        /// </summary>
+        public static readonly Type DefaultContext = typeof( DefaultContextType );
+
+        class AmbiantTypeModel
         {
-            public ClassType( IAmbiantContractContextMapper contextMapper, Type final )
-            {
-                bool hasDefiner = typeof( IAmbiantContractDefiner ).IsAssignableFrom( final );
-                bool hasAmbiant = typeof( IAmbiantContract ).IsAssignableFrom( final );
-                
-                Debug.Assert( hasAmbiant || hasDefiner );
-                
-                Type nextFinal;
-                Type[] nextFinalInterfaces = null;
-                Type[] finalInterfaces = final.GetInterfaces();
-                // Handles current Context and its holder (the type in the inheritance chain that defined it).
-                Type context = null;
-                Type contextHolder = null;
-                bool hasBeenExplicitelyContextualized = false;
-                while( (nextFinal = final.BaseType) != null && (hasAmbiant || hasDefiner) )
-                {
-                    // Explicit Context association:
-                    if( !hasBeenExplicitelyContextualized && contextMapper != null )
-                    {
-                        // This works because a IAmbiantContractContextMapper MUST guaranty
-                        // that no ambiguities can exist in an inheritance chain:
-                        // Whatever T1, T2 are if T1 and T2 are both mapped and T1 is an ancestor of T2, then T1 and T2 are mapped 
-                        // to the same context (be it the null one).
-                        hasBeenExplicitelyContextualized = contextMapper.FindExplicitContext( final, ref context );
-                    }
-                    nextFinalInterfaces = nextFinal.GetInterfaces();
-                    var thisLevel = finalInterfaces.Except( nextFinalInterfaces );
-                    if( hasAmbiant )
-                    {
-                        if( !hasBeenExplicitelyContextualized )
-                        {
-                            ExtractContext( typeof( IAmbiantContract<> ), thisLevel, final, ref context, ref contextHolder );
-                        }
-                    }
-                    bool nextHasDefiner = hasDefiner;
-                    if( hasDefiner )
-                    {
-                        if( !hasBeenExplicitelyContextualized )
-                        {
-                            ExtractContext( typeof( IAmbiantContractDefiner<> ), thisLevel, final, ref context, ref contextHolder );
-                        }
-                        nextHasDefiner = typeof( IAmbiantContractDefiner ).IsAssignableFrom( nextFinal );
-                    }
-                    if( hasAmbiant || nextHasDefiner ) Add( final );
-                    final = nextFinal;
-                    finalInterfaces = nextFinalInterfaces;
-                    hasAmbiant &= typeof( IAmbiantContract ).IsAssignableFrom( final );
-                    hasDefiner = nextHasDefiner;
-                }
-                Reverse();
-                Context = context;
-                IndexOfFinalConcrete = Count - 1;
-                while( IndexOfFinalConcrete >= 0 && this[IndexOfFinalConcrete].IsAbstract ) --IndexOfFinalConcrete;
-            }
+            public readonly AmbiantTypeModel Parent;
+            public readonly Type Type;
+            public readonly HashSet<Type> FinalContexts;
+            
+            readonly AmbiantTypeModel _nextSibling;
+            AmbiantTypeModel _firstChild;
+            Type[] _ambiantInterfaces;
+            Type[] _thisAmbiantInterfaces;
 
-            private static void ExtractContext( Type markerType, IEnumerable<Type> thisLevel, Type final, ref Type context, ref Type contextHolder )
+            AmbiantTypeModel( AmbiantTypeModel parent, Type t )
             {
-                var ambiants = thisLevel.Where( t => t.IsGenericType && t.GetGenericTypeDefinition() == markerType );
-                var theOne = ambiants.SingleOrDefault();
-                if( theOne != null )
+                Type = t;
+                FinalContexts = new HashSet<Type>();
+                if( (Parent = parent) == null )
                 {
-                    if( context != null )
-                    {
-                        // Allowing a Context to be redefined would easily work if we were sure
-                        // that a Type is always discovered AFTER any of its specialization...
-                        // This is because we register the abstractions/inheritance chain immediatelty after
-                        // the type discovering.
-                        throw new CKException( "Ambiant contract context '{0}' is defined on class '{1}', but class '{2}' redefines it as '{3}'. Context redefinition is not supported.",
-                            theOne.GetGenericArguments()[0].Name, final.FullName, contextHolder.FullName, context.Name );
-                    }
-                    context = theOne.GetGenericArguments()[0];
-                    contextHolder = final;
+                    _nextSibling = null;
+                    FinalContexts.Add( AmbiantContractCollector.DefaultContext );
                 }
                 else
                 {
-                    if( ambiants.Count() > 1 ) throw new CKException( "Multiple definition of {0} marker on class '{1}'.", markerType.Name, final.FullName );
+                    FinalContexts.AddRange( Parent.FinalContexts );
+                    _nextSibling = Parent._firstChild;
+                    Parent._firstChild = this;
+                }
+                ProcessContextAttributes<AddContextAttribute>( t, FinalContexts.Add );
+                ProcessContextAttributes<RemoveContextAttribute>( t, FinalContexts.Remove );
+            }
+
+            public Type[] AmbiantInterfaces
+            {
+                get { return _ambiantInterfaces ?? (_ambiantInterfaces = Type.GetInterfaces().Where( t => t != typeof(IAmbiantContract) && (typeof(IAmbiantContract).IsAssignableFrom( t ) ) ).ToArray()); }
+            }
+
+            public Type[] ThisAmbiantInterfaces
+            {
+                get { return _thisAmbiantInterfaces ?? (_thisAmbiantInterfaces = Parent != null ? AmbiantInterfaces.Except( Parent.AmbiantInterfaces ).ToArray() : AmbiantInterfaces); }
+            }
+
+            public IEnumerable<AmbiantTypeModel> EnumChild( Type context = null )
+            {
+                AmbiantTypeModel c = _firstChild;
+                while( c != null )
+                {
+                    if( context == null || c.FinalContexts.Contains( context ) ) yield return c;
+                    c = c._nextSibling;
                 }
             }
 
-            public bool IsPureDefiner { get { return Count == 0; } }
-            public Type Context { get; private set; }
-            public Type Head { get { return this[0]; } }
-            public Type Final { get { return this[Count - 1]; } }
-            public readonly int IndexOfFinalConcrete;
-            public bool HasFinalConcrete { get { return IndexOfFinalConcrete >= 0; } }
-            public bool HasAbstractTail { get { return IndexOfFinalConcrete < Count - 1; } }
-            public Type FinalConcrete { get { return this[IndexOfFinalConcrete]; } }
-            public IEnumerable<Type> ToFinalConcrete { get { return this.Take( IndexOfFinalConcrete + 1 ); } }
-            public IEnumerable<Type> AbstractTail { get { return this.Skip( IndexOfFinalConcrete ); } }
-
-            public bool ProcessedResultFlag;
-        }
-
-        #region PreContext
-
-        class PreContext
-        {
-            Type _context;
-            Dictionary<Type,ClassType> _classMap;
-            int _regTypeCount;
-            List<ClassType> _classMapAmbiguities;
-            List<Type> _pureDefiners;
-            
-            internal PreContext( Type t )
+            public bool CollectDeepestConcrete( List<AmbiantTypeModel> lastConcretes, List<Type> abstractTails, Type context = null )
             {
-                _context = t;
-                _classMap = new Dictionary<Type, ClassType>();
-            }
-
-            internal bool Register( ClassType cNew, Type c )
-            {
-                Debug.Assert( cNew.Context == _context );
-                if( cNew.IsPureDefiner )
+                bool concreteBelow = false;
+                AmbiantTypeModel c = _firstChild;
+                while( c != null )
                 {
-                    if( _pureDefiners == null ) _pureDefiners = new List<Type>();
-                    ++_regTypeCount;
-                    _pureDefiners.Add( c );
-                    return true;
-                }
-                int deltaNew;
-                ClassType cPrv;
-                if( _classMap.TryGetValue( cNew.Head, out cPrv ) )
-                {
-                    deltaNew = cNew.Count - cPrv.Count;
-                    int lastCommonIdx = (deltaNew <= 0 ? cNew.Count : cPrv.Count) - 1;
-                    if( cPrv[lastCommonIdx] != cNew[lastCommonIdx] )
+                    if( context == null || c.FinalContexts.Contains( context ) )
                     {
-                        if( _classMapAmbiguities == null ) _classMapAmbiguities = new List<ClassType>();
-                        _classMapAmbiguities.Add( cNew );
-                        return false;
+                        concreteBelow |= c.CollectDeepestConcrete( lastConcretes, abstractTails, context );
                     }
-                    if( deltaNew <= 0 )
-                    {
-                        // The new path is smaller than the existing one (a prefix of the existing one). 
-                        return false;
-                    }
+                    c = c._nextSibling;
                 }
-                else deltaNew = cNew.Count;
-
-                foreach( var t in cNew ) _classMap[t] = cNew;
-                _regTypeCount += deltaNew;
-                return true;
-            }
-
-            internal int RegisteredTypeCount 
-            { 
-                get { return _regTypeCount; } 
-            }
-
-            internal AmbiantContractResult GetResult( bool processedResultFlag )
-            {
-                Dictionary<object,Type> mappings = new Dictionary<object, Type>();
-                List<IReadOnlyList<Type>> concreteClassesPath = new List<IReadOnlyList<Type>>();
-                List<Tuple<Type,Type>> itfA = null;
-                List<IReadOnlyList<Type>> abstractClasses = null;
-                List<IReadOnlyList<Type>> abstractTails = null;
-                
-                foreach( ClassType ct in _classMap.Values )
+                if( !concreteBelow )
                 {
-                    if( ct.ProcessedResultFlag == processedResultFlag ) continue;
-                    ct.ProcessedResultFlag = processedResultFlag;
-
-                    if( ct.HasFinalConcrete )
+                    if( Type.IsAbstract )
                     {
-                        Type fc = ct.FinalConcrete;
-                        IReadOnlyList<Type> pathConcrete = ct.ToFinalConcrete.ToReadOnlyList();
-                        concreteClassesPath.Add( pathConcrete );
-                        foreach( Type mapped in pathConcrete ) mappings.Add( mapped, fc );
-                        foreach( Type iFace in fc.GetInterfaces() )
-                        {
-                            if( typeof( IAmbiantContract ).IsAssignableFrom( iFace ) 
-                                && iFace != typeof( IAmbiantContract ) 
-                                && !(iFace.IsGenericType && iFace.GetGenericTypeDefinition() == typeof(IAmbiantContract<>)))
-                            {
-                                Type alreadyMapped = mappings.GetValueWithDefault( iFace, null );
-                                if( alreadyMapped != null )
-                                {
-                                    if( itfA == null ) itfA = new List<Tuple<Type, Type>>();
-                                    itfA.Add( Tuple.Create( iFace, alreadyMapped ) );
-                                }
-                                else
-                                {
-                                    // Looking for highest (most general) implementation 
-                                    // of iFace.
-                                    Type highestImpl = fc;
-                                    Debug.Assert( iFace.IsAssignableFrom( highestImpl ), "The final concrete implements iFace." );
-                                    for( int i = pathConcrete.Count-2; i >= 0; --i )
-                                    {
-                                        Type candidate = pathConcrete[i];
-                                        if( iFace.IsAssignableFrom( candidate ) ) highestImpl = candidate;
-                                        else break;
-                                    }
-                                    mappings.Add( new AmbiantContractInterfaceKey( iFace ), highestImpl );
-                                    // Adds the mapping from the interface to the 
-                                    // final concrete class.
-                                    mappings.Add( iFace, fc );
-                                }
-                            }
-                        }
-                        if( ct.HasAbstractTail )
-                        {
-                            if( abstractTails == null ) abstractTails = new List<IReadOnlyList<Type>>();
-                            abstractTails.Add( ct.AbstractTail.ToReadOnlyList() );
-                        }
+                        abstractTails.Add( Type );
                     }
                     else
                     {
-                        if( abstractClasses == null ) abstractClasses = new List<IReadOnlyList<Type>>();
-                        abstractClasses.Add( ct.ToReadOnlyList() );
+                        lastConcretes.Add( this );
+                        concreteBelow = true;
                     }
                 }
-                IReadOnlyList<Tuple<Type,Type>> clsA = _classMapAmbiguities == null
-                    ? ReadOnlyListEmpty<Tuple<Type, Type>>.Empty
-                    : _classMapAmbiguities.Select( ct => Tuple.Create( ct.Head, ct.Final ) ).ToReadOnlyList();
-
-                return new AmbiantContractResult( _context, mappings, concreteClassesPath.ToReadOnlyList(), clsA, itfA, abstractClasses, abstractTails, _pureDefiners );
+                return concreteBelow;
             }
 
-        }
-
-        PreContext _defaultCtx;
-        Dictionary<Type,PreContext> _ctx;
-
-        PreContext GetContext( Type t )
-        {
-            PreContext result = _defaultCtx;
-            if( t != null )
+            static void ProcessContextAttributes<T>( Type t, Func<Type, bool> action ) where T : IContextDefiner
             {
-                if( _ctx == null ) _ctx = new Dictionary<Type, PreContext>();
-                else if( _ctx.TryGetValue( t, out result ) ) return result;
-                result = new PreContext( t );
-                _ctx.Add( t, result );
+                object[] attrs = t.GetCustomAttributes( typeof( T ), false );
+                foreach( var a in attrs ) action( ((IContextDefiner)a).Context );
             }
-            return result;
-        }
-        #endregion
 
-        public AmbiantContractCollector( IAmbiantContractContextMapper contextMapper = null )
+            public static bool Register( AmbiantContractCollector collector, Type t, out AmbiantTypeModel result )
+            {
+                Debug.Assert( t != typeof( object ) );
+                
+                // Skips already processed types.
+                if( collector._collector.TryGetValue( t, out result ) ) return false;
+                
+                // Registers parent types whatever they are (null if not AmbiantContract).
+                AmbiantTypeModel parent = null;
+                if( t.BaseType != typeof(object) ) Register( collector, t.BaseType, out parent );
+
+                bool hasAmbiant = typeof( IAmbiantContract ).IsAssignableFrom( t );
+                if( !hasAmbiant )
+                {
+                    bool hasDefiner = typeof( IAmbiantContractDefiner ).IsAssignableFrom( t );
+                    if( hasDefiner )
+                    {
+                        hasAmbiant = typeof( IAmbiantContractDefiner ).IsAssignableFrom( t.BaseType );
+                    }
+                }
+                if( !hasAmbiant )
+                {
+                    collector._collector.Add( t, null );
+                }
+                else
+                {
+                    result = new AmbiantTypeModel( parent, t );
+                    if( parent == null ) collector._roots.Add( result );
+                    collector._collector.Add( t, result );
+                    if( collector._contextDispatcher != null ) collector._contextDispatcher.Dispatch( t, result.FinalContexts );
+                }
+                return true;
+            }
+
+
+            internal List<AmbiantTypeModel> FillPath( List<AmbiantTypeModel> path )
+            {
+                if( Parent != null ) Parent.FillPath( path );
+                path.Add( this );
+                return path;
+            }
+        }
+
+        public AmbiantContractCollector( IAmbiantContractDispatcher contextDispatcher = null )
         {
-            _defaultCtx = new PreContext( null );
-            _ctx = new Dictionary<Type, PreContext>();
-            _processed = new HashSet<Type>();
-            _contextMapper = contextMapper;
+            _contextDispatcher = contextDispatcher;
+            _collector = new Dictionary<Type, AmbiantTypeModel>();
+            _roots = new List<AmbiantTypeModel>();
         }
 
         public int RegisteredTypeCount
         {
-            get { return _defaultCtx.RegisteredTypeCount + _ctx.Values.Sum( c => c.RegisteredTypeCount ); }
+            get { return _collector.Count; }
         }
 
-        public void Register( IEnumerable<Type> types, Action<Type> onClassRegistered = null )
+        public void Register( IEnumerable<Type> types )
         {
-            foreach( var t in types.Where( c => c.IsClass
-                                                && (typeof( IAmbiantContract ).IsAssignableFrom( c ) || typeof( IAmbiantContractDefiner ).IsAssignableFrom( c ))
-                                                && !_processed.Contains( c ) ) )
+            if( types == null ) throw new ArgumentNullException( "types" );
+            foreach( var t in types.Where( c => c.IsClass && c != typeof(object) ) )
             {
-                if( DoReg( t ) && onClassRegistered != null ) onClassRegistered( t );
+                AmbiantTypeModel result;
+                AmbiantTypeModel.Register( this, t, out result );
             }
         }
 
+        /// <summary>
+        /// Registers a class.
+        /// </summary>
+        /// <param name="c">Class to register.</param>
+        /// <returns>True if it is a new class for this collector, false if it has already been registered.</returns>
         public bool RegisterClass( Type c )
         {
-            if( c == null ) throw new ArgumentNullException();
+            if( c == null ) throw new ArgumentNullException( "c" );
             if( !c.IsClass ) throw new ArgumentException();
-            if( _processed.Contains( c ) ) return false;
-            if( (typeof( IAmbiantContract ).IsAssignableFrom( c ) || typeof( IAmbiantContractDefiner ).IsAssignableFrom( c )) )
+            AmbiantTypeModel result;
+            return c != typeof(object) ? AmbiantTypeModel.Register( this, c, out result ) : false;
+        }
+
+        class PreResult
+        {
+            public readonly Type Context;
+
+            Dictionary<object,Type> _mappings;
+            List<List<AmbiantTypeModel>> _concreteClasses;
+            List<IReadOnlyList<Type>> _classAmbiguities;
+            List<Type> _abstractTails;
+            int _registeredCount;
+
+            public PreResult( Type c )
             {
-                return DoReg( c );
+                Context = c;
+                _mappings = new Dictionary<object, Type>();
+                _concreteClasses = new List<List<AmbiantTypeModel>>();
+                _abstractTails = new List<Type>();
             }
-            return false;
-        }
 
-        bool DoReg( Type c )
-        {
-            _processed.Add( c );
-            ClassType cNew = new ClassType( _contextMapper, c ) { ProcessedResultFlag = _processedResultFlag };
-            return GetContext( cNew.Context ).Register( cNew, c );
-        }
-
-        public MultiAmbiantContractResult GetResult()
-        {
-            // We filter duplicates with the help of a flag (instead of an HashSet).
-            // Each call to this GetResult() reverts the "non processed" flag.
-            _processedResultFlag = !_processedResultFlag;
-
-            var r = new MultiAmbiantContractResult();
-            r.Add( _defaultCtx.GetResult( _processedResultFlag ) );
-            foreach( PreContext ctx in _ctx.Values )
+            public void Add( AmbiantTypeModel newOne )
             {
-                r.Add( ctx.GetResult( _processedResultFlag ) );
+                ++_registeredCount;
+                if( newOne.Parent == null )
+                {
+                    List<AmbiantTypeModel> deepestConcretes = new List<AmbiantTypeModel>();
+                    newOne.CollectDeepestConcrete( deepestConcretes, _abstractTails, Context );
+                    if( deepestConcretes.Count == 1 )
+                    {
+                        var last = deepestConcretes[0];
+                        var path = last.FillPath( new List<AmbiantTypeModel>() );
+                        _concreteClasses.Add( path );
+                        foreach( var m in path ) _mappings.Add( m.Type, last.Type );                    
+                    }
+                    else if( deepestConcretes.Count > 1 )
+                    {
+                        deepestConcretes.Insert( 0, newOne );
+                        if( _classAmbiguities == null ) _classAmbiguities = new List<IReadOnlyList<Type>>();
+                        _classAmbiguities.Add( deepestConcretes.Select( m => m.Type ).ToReadOnlyList() );
+                    }
+                }
+            }
+
+            public AmbiantContractCollectorContextualResult GetResult( AmbiantTypeMapper allMappings )
+            {
+                Dictionary<Type,List<Type>> interfaceAmbiguities = null;
+                foreach( var path in _concreteClasses )
+                {
+                    var finalType = path[path.Count - 1].Type;
+                    foreach( AmbiantTypeModel m in path )
+                    {
+                        foreach( Type itf in m.ThisAmbiantInterfaces )
+                        {
+                            Type alreadyMapped;
+                            if( _mappings.TryGetValue( itf, out alreadyMapped ) )
+                            {
+                                if( interfaceAmbiguities == null ) 
+                                {
+                                    interfaceAmbiguities = new Dictionary<Type,List<Type>>();
+                                    interfaceAmbiguities.Add( itf, new List<Type>() { itf, alreadyMapped, m.Type } );
+                                }
+                                else
+                                {
+                                    var list = interfaceAmbiguities.GetOrSet( itf, t => new List<Type>() { itf, alreadyMapped } );
+                                    list.Add( m.Type );
+                                }
+                            }
+                            else
+                            {
+                                _mappings.Add( itf, finalType );
+                                _mappings.Add( new AmbiantContractInterfaceKey( itf ), m.Type );
+                            }
+                        }
+                    }
+                }
+                AmbiantTypeContextualMapper ctxMapper = new AmbiantTypeContextualMapper( allMappings, Context, _mappings );
+                AmbiantContractCollectorContextualResult ctxResult = new AmbiantContractCollectorContextualResult(
+                    ctxMapper,
+                    _concreteClasses.Select( list => list.Select( m => m.Type ).ToReadOnlyList() ).ToReadOnlyList(),
+                    _classAmbiguities != null ? new ReadOnlyListOnIList<IReadOnlyList<Type>>( _classAmbiguities ) : ReadOnlyListEmpty<IReadOnlyList<Type>>.Empty,
+                    interfaceAmbiguities != null ? interfaceAmbiguities.Values.Select( list => list.ToReadOnlyList() ).ToReadOnlyList() : ReadOnlyListEmpty<IReadOnlyList<Type>>.Empty,
+                    new ReadOnlyListOnIList<Type>( _abstractTails ) );
+                return ctxResult;
+            }
+        }
+
+        public AmbiantContractCollectorResult GetResult()
+        {
+            Dictionary<Type,PreResult> byContext = new Dictionary<Type, PreResult>();
+            byContext.Add( AmbiantContractCollector.DefaultContext, new PreResult( AmbiantContractCollector.DefaultContext ) );
+            foreach( AmbiantTypeModel m in _roots )
+            {
+                HandleContexts( m, byContext );
+            }
+            
+            var mappings = new AmbiantTypeMapper();
+            var r = new AmbiantContractCollectorResult( mappings );
+            foreach( var rCtx in byContext.Values )
+            {
+                r.Add( rCtx.GetResult( mappings ) );
             }
             return r;
+        }
+
+        static void HandleContexts( AmbiantTypeModel m, Dictionary<Type, PreResult> contexts )
+        {
+            foreach( AmbiantTypeModel child in m.EnumChild() )
+            {
+                HandleContexts( child, contexts );
+                m.FinalContexts.AddRange( child.FinalContexts );
+            }
+            foreach( Type context in m.FinalContexts )
+            {
+                contexts.GetOrSet( context, c => new PreResult( c ) ).Add( m );
+            }
+        }
+
+        /// <summary>
+        /// Formats a string that combines a context and a type information.
+        /// </summary>
+        /// <param name="context">Context can be null (considered as <see cref="DefaultContext"/>).</param>
+        /// <param name="type">Type for which a display name must be obtained.</param>
+        /// <returns>Human readable name for the type in context.</returns>
+        static public string DisplayName( Type context, Type type )
+        {
+            return context == null || context == AmbiantContractCollector.DefaultContext
+                ? type.FullName
+                : "[" + context.Name + "]" + type.FullName;
         }
 
     }

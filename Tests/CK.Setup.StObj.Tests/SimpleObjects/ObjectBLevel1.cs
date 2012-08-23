@@ -7,6 +7,7 @@ using System.Reflection;
 
 namespace CK.Setup.StObj.Tests.SimpleObjects
 {
+    [StObj( Container = typeof( PackageForABLevel1 ) )]
     public class ObjectBLevel1 : ObjectB
     {
         public ObjectBLevel1()
@@ -14,9 +15,5 @@ namespace CK.Setup.StObj.Tests.SimpleObjects
             SimpleObjectsTrace.LogMethod( MethodInfo.GetCurrentMethod() );
         }
         
-        void Contruct()
-        {
-            SimpleObjectsTrace.LogMethod( MethodInfo.GetCurrentMethod() );
-        }
     }
 }

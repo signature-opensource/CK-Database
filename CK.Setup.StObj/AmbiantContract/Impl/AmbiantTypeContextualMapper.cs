@@ -8,10 +8,10 @@ namespace CK.Core
 {
 
     /// <summary>
-    /// Internal wrapper for keys in <see cref="AmbiantTypeMapper"/>: when wrapped in this class,
+    /// Internal wrapper for keys in <see cref="AmbiantTypeContextualMapper"/>: when wrapped in this class,
     /// the Type is the key of its highest implementation instead of its final concrete class.
     /// This enables the use of one and only one dictionnary for Mappings (Type => Final Type) as well as 
-    /// highest implementation association (AmbiantContext interface => its highest implementation).
+    /// highest implementation association (Ambiant contract interface => its highest implementation).
     /// </summary>
     internal class AmbiantContractInterfaceKey
     {
@@ -36,20 +36,28 @@ namespace CK.Core
     }
 
     /// <summary>
-    /// Internal implementation of <see cref="IAmbiantTypeMapper"/> exposed by <see cref="ContextResultCollector<AmbiantContractCollectorContextResult>ContextResult"/>.
+    /// Internal implementation of <see cref="IAmbiantTypeContextualMapper"/> exposed by <see cref="IAmbiantTypeMapper"/>.
     /// </summary>
-    internal class AmbiantTypeMapper : IAmbiantTypeMapper
+    internal class AmbiantTypeContextualMapper : IAmbiantTypeContextualMapper
     {
         Dictionary<object,Type> _map;
         Type _context;
+        AmbiantTypeMapper _owner;
 
-        internal AmbiantTypeMapper( Type context, Dictionary<object, Type> m )
+        internal AmbiantTypeContextualMapper( AmbiantTypeMapper owner, Type context, Dictionary<object, Type> m )
         {
             _context = context;
             _map = m;
+            _owner = owner;
+            _owner.Add( this );
         }
 
-        public Type Context 
+        public IAmbiantTypeMapper Owner
+        {
+            get { return _owner; }
+        }
+
+        public Type Context
         {
             get { return _context; }
         }

@@ -17,16 +17,16 @@ namespace CK.Setup
     public abstract class StObjHandler
     {
         /// <summary>
-        /// Attempts to register one or more <see cref="IStObjDependentItem"/> for <paramref name="pathTypes"/>.
-        /// </summary>
-        /// <param name="logger">Logger to use.</param>
-        /// <param name="pathTypes">Types inheritance chain.</param>
-        /// <param name="registerer">Registerer object to use.</param>
-        /// <returns>
-        /// True if <paramref name="pathTypes"/> has been handled by this handler. 
-        /// False if subsequent handlers should be sollicitated.
-        /// </returns>
-        public abstract bool Register( IActivityLogger logger, IReadOnlyList<Type> pathTypes, IStObjRegisterer registerer );
+        ///// Attempts to register one or more <see cref="IStObjDependentItem"/> for <paramref name="pathTypes"/>.
+        ///// </summary>
+        ///// <param name="logger">Logger to use.</param>
+        ///// <param name="pathTypes">Types inheritance chain.</param>
+        ///// <param name="registerer">Registerer object to use.</param>
+        ///// <returns>
+        ///// True if <paramref name="pathTypes"/> has been handled by this handler. 
+        ///// False if subsequent handlers should be sollicitated.
+        ///// </returns>
+        //public abstract bool Register( IActivityLogger logger, IReadOnlyList<Type> pathTypes, IStObjRegisterer registerer );
 
     }
 }

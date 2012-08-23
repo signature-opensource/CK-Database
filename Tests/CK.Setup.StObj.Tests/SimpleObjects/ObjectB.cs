@@ -7,6 +7,7 @@ using System.Reflection;
 
 namespace CK.Setup.StObj.Tests.SimpleObjects
 {
+    [StObj( Container = typeof( PackageForAB ) )]
     public class ObjectB : IAmbiantContract
     {
         IAbstractionA _a;

@@ -6,12 +6,14 @@ using System.Text;
 namespace CK.Core
 {
     /// <summary>
-    /// Defines the result of a processing scoped by a <see cref="Type"/> (the <see cref="Context"/> property).
+    /// Utility interface that defines the result of a processing scoped by a <see cref="Type"/> (the <see cref="Context"/> property).
+    /// The utility class <see cref="MultiContextualResult{T}"/> provides common implementations for such contextualized results.
     /// </summary>
-    public interface IContextResult
+    public interface IContextualResult
     {
         /// <summary>
         /// Gets the context of this result.
+        /// Never null since <see cref="AmbiantContractCollector.DefaultContext"/> designates the default context.
         /// </summary>
         Type Context { get; }
 

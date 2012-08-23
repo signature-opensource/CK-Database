@@ -172,7 +172,8 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets a description of the required missing dependencies. Null if no missing required dependency exists.
+        /// Gets a description of the required missing dependencies. 
+        /// Null if no missing required dependency exists.
         /// </summary>
         public string RequiredMissingDependenciesExplained
         {

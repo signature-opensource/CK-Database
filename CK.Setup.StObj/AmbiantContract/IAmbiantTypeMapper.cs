@@ -5,49 +5,21 @@ using System.Text;
 
 namespace CK.Core
 {
-
     /// <summary>
-    /// Exposes a contextual type mapping.
+    /// Exposes a multi contextual type mapping.
     /// </summary>
-    public interface IAmbiantTypeMapper
+    public interface IAmbiantTypeMapper : IReadOnlyCollection<IAmbiantTypeContextualMapper>
     {
         /// <summary>
-        /// Gets the context. Null for the default context.
+        /// Gets the default type mapper, the one bound to <see cref="AmbiantContractCollector.DefaultContext"/>.
         /// </summary>
-        Type Context { get; }
+        IAmbiantTypeContextualMapper Default { get; }
 
         /// <summary>
-        /// Gets the number of type mapped.
+        /// Gets the <see cref="IAmbiantTypeContextualMapper"/> or null if context is unknown.
         /// </summary>
-        int Count { get; }
-
-        /// <summary>
-        /// Gets the mapped type or null if no mapping exists.
-        /// </summary>
-        /// <param name="t">Key type.</param>
-        /// <returns>Mapped type or null if no mapping exists for this type.</returns>
-        Type this[Type t] { get; }
-
-        /// <summary>
-        /// Retrieves the highest (most general) class that implements the given ambiant contract interface.
-        /// Null if no implementation exists for the interface.
-        /// </summary>
-        /// <param name="ambiantContractInterface">Must be an interface that extends <see cref="IAmbiantContract"/>.</param>
-        /// <returns>The highest implementation or null.</returns>
-        Type HighestImplementation( Type ambiantContractInterface );
-
-        /// <summary>
-        /// Retrieves the highest (most general) class that implements the given ambiant contract interface.
-        /// </summary>
-        /// <typeparam name="T">Must be an interface that extends <see cref="IAmbiantContract"/>.</typeparam>
-        /// <returns>The highest implementation or null.</returns>
-        Type HighestImplementation<T>() where T : class, IAmbiantContract;
-
-        /// <summary>
-        /// Gets whether a type is mapped.
-        /// </summary>
-        /// <param name="t">Type to lookup.</param>
-        /// <returns>True if <paramref name="t"/> is mapped, false otherwise.</returns>
-        bool IsMapped( Type t );
+        /// <param name="typedContext">Typed context.</param>
+        /// <returns>Contextual mapping or null if no such context exists.</returns>
+        IAmbiantTypeContextualMapper this[Type typedContext] { get; }
     }
 }

@@ -60,7 +60,7 @@ namespace CK.Setup.SqlServer
 
             //if( _context.AutomaticAssemblyDiscovering )
             //{
-            //    using( _context.Logger.OpenGroup( LogLevel.Info, "Automatic discovering of currently loaded assemblies." ) )
+            //    using( _context.Logger.OpenLoggerGroup( LogLevel.Info, "Automatic discovering of currently loaded assemblies." ) )
             //    {
             //        AssemblyDiscoverer p = new AssemblyDiscoverer( _context.Logger );
             //        try

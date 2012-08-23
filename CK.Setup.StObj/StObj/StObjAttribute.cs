@@ -7,7 +7,7 @@ using CK.Core;
 namespace CK.Setup
 {
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = false, Inherited = false )]
-    public class StobjAttribute : Attribute, IStObjAttribute
+    public class StObjAttribute : Attribute, IStObjAttribute
     {
         /// <summary>
         /// Gets or sets the container of the object.
@@ -20,7 +20,7 @@ namespace CK.Setup
         public Type[] Requires { get; set; }
 
         /// <summary>
-        /// Gets or sets an array of types that depends on the object.
+        /// Gets or sets an array of types that depend on the object.
         /// </summary>
         public Type[] RequiredBy { get; set; }
 
@@ -41,11 +41,11 @@ namespace CK.Setup
             if( objectType == null ) throw new ArgumentNullException( "objectType" );
             if( logger == null ) throw new ArgumentNullException( "logger" );
 
-            object[] a = objectType.GetCustomAttributes( typeof( IStObjAttribute ), false );
+            var a = (IStObjAttribute[])objectType.GetCustomAttributes( typeof( IStObjAttribute ), false );
             if( a.Length == 0 ) return null;
             if( a.Length == 1 ) return (IStObjAttribute)a[0];
-            List<Type> requires = null;
-            List<Type> requiredBy = null;
+            IList<Type> requires = null;
+            IList<Type> requiredBy = null;
             Type container = null;
             IStObjAttribute containerDefiner = null;
             foreach( IStObjAttribute attr in a )
@@ -80,7 +80,7 @@ namespace CK.Setup
                     requiredBy.AddRangeArray( reqBy );
                 }
             }
-            var r = new StobjAttribute();
+            var r = new StObjAttribute();
             r.Container = container;
             if( requires != null ) r.Requires = requires.ToArray();
             if( requiredBy != null ) r.RequiredBy = requiredBy.ToArray();

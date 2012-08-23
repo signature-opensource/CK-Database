@@ -3,20 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Collections.Specialized;
+using System.Diagnostics;
 
 namespace CK.Core
 {
     /// <summary>
-    /// Encapsulates multiple context dependent objects of type <typeparam name="T"/> that implements <see cref="IContextResult"/>.
+    /// Utility class that encapsulates multiple context dependent objects of type <typeparam name="T"/> that implements <see cref="IContextualResult"/>.
     /// At least one context exists: the <see cref="Default"/> one. Extraneous contexts are defined and 
     /// identified by a <see cref="Type"/>. Use <see cref="Item(Type)">indexer</see> to access them.
     /// </summary>
-    public class MultiContextResult<T> : IReadOnlyCollection<T>
-        where T : class, IContextResult
+    public class MultiContextualResult<T> : IReadOnlyCollection<T>
+        where T : class, IContextualResult
     {
         ListDictionary _contextResults;
 
-        internal MultiContextResult()
+        internal MultiContextualResult()
         {
             _contextResults = new ListDictionary();
         }
@@ -31,21 +32,21 @@ namespace CK.Core
 
 
         /// <summary>
-        /// Gets the result for the default context.
+        /// Gets the result for the default context (<see cref="AmbiantContractCollector"/>.<see cref="AmbiantContractCollector.DefaultContext"/>).
         /// </summary>
         public T Default
         {
-            get { return (T)_contextResults[typeof(AmbiantTypeMapper)]; }
+            get { return (T)_contextResults[AmbiantContractCollector.DefaultContext]; }
         }
 
         /// <summary>
         /// Gets the result for any context <see cref="Type"/> or null if no such context exist.
         /// </summary>
-        /// <param name="context">Type that identifies a context.</param>
-        /// <returns>A result for the given context.</returns>
+        /// <param name="context">Type that identifies a context (null is the same as <see cref="AmbiantContractCollector.DefaultContext"/>).</param>
+        /// <returns>The result for the given context.</returns>
         public T this[Type context]
         {
-            get { return (T)_contextResults[context ?? typeof(AmbiantTypeMapper)]; }
+            get { return (T)_contextResults[context ?? AmbiantContractCollector.DefaultContext]; }
         }
 
         /// <summary>
@@ -81,20 +82,21 @@ namespace CK.Core
             if( cDef != null ) action( cDef );
             foreach( T c in _contextResults.Values )
             {
-                if( c.Context != null ) action( c );
+                if( c.Context != AmbiantContractCollector.DefaultContext ) action( c );
             }
         }
 
         internal T Add( T c )
         {
-            _contextResults.Add( c.Context ?? typeof(AmbiantTypeMapper), c );
+            Debug.Assert( c.Context != null );
+            _contextResults.Add( c.Context, c );
             return c;
         }
 
         bool IReadOnlyCollection<T>.Contains( object item )
         {
             T c = item as T;
-            return c != null ? _contextResults.Contains( c.Context ?? typeof(AmbiantTypeMapper) ) : false;
+            return c != null ? _contextResults.Contains( c.Context ) : false;
         }
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()

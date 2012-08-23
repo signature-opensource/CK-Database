@@ -7,34 +7,20 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// Mapper for discovered typed objects (that are <see cref="IAmbiantContract"/>) to 
-    /// their associated <see cref="IStObjDependentItem"/>.
-    /// It is bound to a registration <see cref="Context"/> and encapsulates 
-    /// ambiant type <see cref="Mappings"/>.
+    /// Exposes a multi contextual type mapping.
     /// </summary>
-    public interface IStObjMapper
+    public interface IStObjMapper : IReadOnlyCollection<IStObjContextualMapper>
     {
         /// <summary>
-        /// Gets the context. Null for the default context.
+        /// Gets the default mapper, the one bound to <see cref="AmbiantContractCollector.DefaultContext"/>.
         /// </summary>
-        Type Context { get; }
+        IStObjContextualMapper Default { get; }
 
         /// <summary>
-        /// Gets the number of <see cref="IStObjDependentItem"/> mapped.
+        /// Gets the <see cref="IStObjContextualMapper"/> or null if context is unknown.
         /// </summary>
-        int Count { get; }
-
-        /// <summary>
-        /// Gets the <see cref="IAmbiantTypeMapper"/> for this <see cref="Context"/>.
-        /// </summary>
-        IAmbiantTypeMapper Mappings { get; }
-
-        /// <summary>
-        /// Gets the mapped <see cref="IStObjDependentItem"/> or null if no mapping exists.
-        /// </summary>
-        /// <param name="t">Key type. Can be null (null is returned).</param>
-        /// <returns>Dependent item or null if the type has not been mapped.</returns>
-        IStObjDependentItem this[Type t] { get; }
-
+        /// <param name="typedContext">Typed context.</param>
+        /// <returns>Contextual mapping or null if no such context exists.</returns>
+        IStObjContextualMapper this[Type typedContext] { get; }
     }
 }

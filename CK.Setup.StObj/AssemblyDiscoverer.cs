@@ -88,7 +88,7 @@ namespace CK.Core
         /// Use <see cref="ClearDiscoveredInfo"/> for <see cref="Discover"/> to be able to 
         /// discover again an assembly.
         /// </summary>
-        public IReadOnlyList<DiscoveredInfo> AssembliesProcessed
+        public IReadOnlyList<DiscoveredInfo> Assemblies
         {
             get { return _listEx; }
         }
