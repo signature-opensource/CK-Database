@@ -15,7 +15,7 @@ namespace CK.Setup
         {
             _owner = owner;
             _kind = kind;
-            if( _kind == MutableReferenceKind.Container || _kind == MutableReferenceKind.Requires ) StObjRequired = true; 
+            if( _kind == MutableReferenceKind.Requires || _kind == MutableReferenceKind.Container ) StObjRequired = true; 
         }
 
         public IStObjMutableItem Owner { get { return _owner; } }
@@ -31,11 +31,7 @@ namespace CK.Setup
         internal virtual MutableItem Resolve( IActivityLogger logger, StObjCollectorResult collector, StObjCollectorContextualResult ownerCollector )
         {
             MutableItem result = null;
-            if( Type == null )
-            {
-                WarnOrError( logger, "Type is null." );
-                return null;
-            }
+            if( Type == null ) return null;
 
             if( Context != null )
             {
@@ -45,13 +41,13 @@ namespace CK.Setup
                 StObjCollectorContextualResult ctxResult = Context != ownerCollector.Context ? collector[ Context ] : ownerCollector;
                 if( ctxResult == null ) 
                 {
-                    Error( logger, String.Format( "Undefined Typed context '{0}'.", Context.Name ) );
+                    Error( logger, String.Format( "Undefined Typed context '{0}'", Context.Name ) );
                     return null;
                 }
                 result = ctxResult.Find( Type );
                 if( result == null )
                 {
-                    WarnOrError( logger, String.Format( "{0} not found.", AmbiantContractCollector.DisplayName( Context, Type ) ) );
+                    WarnOrError( logger, String.Format( "{0} not found", AmbiantContractCollector.DisplayName( Context, Type ) ) );
                     return null;
                 }
             }
@@ -65,12 +61,12 @@ namespace CK.Setup
                     var all = collector.FindMutableItemsFor( Type ).ToList();
                     if( all.Count == 0 )
                     {
-                        WarnOrError( logger, String.Format( "Type {0} not found in any context.", Type.FullName ) );
+                        WarnOrError( logger, String.Format( "Type {0} not found in any context", Type.FullName ) );
                         return null;
                     }
                     if( all.Count > 1 )
                     {
-                        Error( logger, String.Format( "Type '{0}' exists in contexts: '{1}'. A context for this relation must be specified.", 
+                        Error( logger, String.Format( "Type '{0}' exists in more than one context: '{1}'. A context for this relation must be specified", 
                                                         Type.FullName, 
                                                         String.Join( "', '", all.Select( m => m.Context.Name ) ) ) );
                         return null;
@@ -93,12 +89,12 @@ namespace CK.Setup
             }
         }
 
-        private void Warn( IActivityLogger logger, string text )
+        protected void Warn( IActivityLogger logger, string text )
         {
             logger.Warn( "{0}: {1}. It is ignored.", ToString(), text );
         }
 
-        private void Error( IActivityLogger logger, string text )
+        protected void Error( IActivityLogger logger, string text )
         {
             logger.Error( "{0}: {1}.", ToString(), text );
         }

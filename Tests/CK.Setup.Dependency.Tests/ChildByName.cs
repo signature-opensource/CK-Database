@@ -19,14 +19,14 @@ namespace CK.Setup.Tests.Dependencies
                 // Starting by CA.
                 var r = DependencySorter.OrderItems( cA, cB );
                 Assert.That( r.IsComplete );
-                Assert.That( r.IsOrdered( "CB.Head", "CA.Head", "CA", "CB" ) );
+                r.AssertOrdered( "CB.Head", "CA.Head", "CA", "CB" );
                 ResultChecker.SimpleCheck( r );
             }
             {
                 // Starting by CB.
                 var r = DependencySorter.OrderItems( cB, cA );
                 Assert.That( r.IsComplete );
-                Assert.That( r.IsOrdered( "CB.Head", "CA.Head", "CA", "CB" ) );
+                r.AssertOrdered( "CB.Head", "CA.Head", "CA", "CB" );
                 ResultChecker.SimpleCheck( r );
             }
         }
@@ -40,14 +40,14 @@ namespace CK.Setup.Tests.Dependencies
                 // Starting with the Container.
                 var r = DependencySorter.OrderItems( cB, oB );
                 Assert.That( r.IsComplete );
-                Assert.That( r.IsOrdered( "CB.Head", "OB", "CB" ) );
+                r.AssertOrdered( "CB.Head", "OB", "CB" );
                 ResultChecker.SimpleCheck( r );
             }
             {
                 // Starting with the Item.
                 var r = DependencySorter.OrderItems( oB, cB );
                 Assert.That( r.IsComplete );
-                Assert.That( r.IsOrdered( "CB.Head", "OB", "CB" ) );
+                r.AssertOrdered( "CB.Head", "OB", "CB" );
                 ResultChecker.SimpleCheck( r );
             }
             var cA = new TestableContainer( "CA", "∋ OA" );
@@ -57,14 +57,14 @@ namespace CK.Setup.Tests.Dependencies
                 // Starting with the Containers.
                 var r = DependencySorter.OrderItems( cB, oB, cA, oA );
                 Assert.That( r.IsComplete );
-                Assert.That( r.IsOrdered( "CB.Head", "CA.Head", "OB", "OA", "CA", "CB" ) );
+                r.AssertOrdered( "CB.Head", "CA.Head", "OB", "OA", "CA", "CB" );
                 ResultChecker.SimpleCheck( r );
             }
             {
                 // Starting with the Items.
                 var r = DependencySorter.OrderItems( oB, oA, cB, cA );
                 Assert.That( r.IsComplete );
-                Assert.That( r.IsOrdered( "CB.Head", "CA.Head", "OB", "OA", "CA", "CB" ) );
+                r.AssertOrdered( "CB.Head", "CA.Head", "OB", "OA", "CA", "CB" );
                 ResultChecker.SimpleCheck( r );
             }
         }
@@ -76,7 +76,7 @@ namespace CK.Setup.Tests.Dependencies
             {
                 var r = DependencySorter.OrderItems( cB );
                 Assert.That( r.IsComplete, Is.False );
-                Assert.That( r.IsOrdered( "CB.Head", "CB" ) );
+                r.AssertOrdered( "CB.Head", "CB" );
                 Assert.That( r.HasStructureError, Is.True );
                 Assert.That( r.ItemIssues.Count, Is.EqualTo( 1 ) );
                 Assert.That( r.ItemIssues[0].StructureError, Is.EqualTo( DependentItemStructureError.MissingNamedChild ) );
@@ -94,7 +94,7 @@ namespace CK.Setup.Tests.Dependencies
             {
                 var r = DependencySorter.OrderItems( cB1, cB2 );
                 Assert.That( r.IsComplete, Is.False );
-                Assert.That( r.IsOrdered( "CB1.Head", "CB2.Head", "CB1", "ChildOfCB2", "CB2" ) );
+                r.AssertOrdered( "CB1.Head", "CB2.Head", "CB1", "ChildOfCB2", "CB2" );
                 Assert.That( r.HasStructureError, Is.True );
                 Assert.That( r.ItemIssues.Count, Is.EqualTo( 1 ) );
 
@@ -119,7 +119,7 @@ namespace CK.Setup.Tests.Dependencies
             {
                 var r = DependencySorter.OrderItems( cB1, cB2, cB3 );
                 Assert.That( r.IsComplete, Is.False );
-                Assert.That( r.IsOrdered( "CB1.Head", "CB2.Head", "CB3.Head", "CB1", "CB3", "ChildOfCB2", "CB2" ) );
+                r.AssertOrdered( "CB1.Head", "CB2.Head", "CB3.Head", "CB1", "CB3", "ChildOfCB2", "CB2" );
                 Assert.That( r.HasStructureError, Is.True );
                 Assert.That( r.ItemIssues.Count, Is.EqualTo( 4 ) );
                 

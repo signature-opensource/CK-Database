@@ -19,14 +19,14 @@ namespace CK.Setup.Tests.Dependencies
                 // Starting by CA.
                 var r = DependencySorter.OrderItems( cA, cB );
                 Assert.That( r.IsComplete );
-                Assert.That( r.IsOrdered( "CB.Head", "CA.Head", "CA", "CB" ) );
+                r.AssertOrdered( "CB.Head", "CA.Head", "CA", "CB" );
                 ResultChecker.SimpleCheck( r );
             }
             {
                 // Starting by CB.
                 var r = DependencySorter.OrderItems( cB, cA );
                 Assert.That( r.IsComplete );
-                Assert.That( r.IsOrdered( "CB.Head", "CA.Head", "CA", "CB" ) );
+                r.AssertOrdered( "CB.Head", "CA.Head", "CA", "CB" );
                 ResultChecker.SimpleCheck( r );
             }
         }
@@ -38,7 +38,7 @@ namespace CK.Setup.Tests.Dependencies
             var o1 = new TestableItem( "O1", "∈ C" );
             {
                 var r = DependencySorter.OrderItems( c, o1 );
-                Assert.That( r.IsOrdered( "C.Head", "O1", "C" ) );
+                r.AssertOrdered( "C.Head", "O1", "C" );
                 ResultChecker.SimpleCheck( r );
             }
             var o2 = new TestableItem( "O2", "∈ O1" );
@@ -51,7 +51,7 @@ namespace CK.Setup.Tests.Dependencies
             o2.Add( "∈ C", "<= O1" );
             {
                 var r = DependencySorter.OrderItems( c, o1, o2 );
-                Assert.That( r.IsOrdered( "C.Head", "O2", "O1", "C" ) );
+                r.AssertOrdered( "C.Head", "O2", "O1", "C" );
                 ResultChecker.SimpleCheck( r );
             }
             var sub = new TestableItem( "Cycle", "∈ C", "=> C" );
@@ -69,7 +69,7 @@ namespace CK.Setup.Tests.Dependencies
             {
                 var r = DependencySorter.OrderItems( o );
                 Assert.That( r.IsComplete, Is.False );
-                Assert.That( r.IsOrdered( "O1" ) );
+                r.AssertOrdered( "O1" );
                 Assert.That( r.HasStructureError, Is.True );
                 Assert.That( r.ItemIssues.Count, Is.EqualTo( 1 ) );
                 Assert.That( r.ItemIssues[0].StructureError, Is.EqualTo( DependentItemStructureError.MissingNamedContainer ) );
@@ -199,7 +199,7 @@ namespace CK.Setup.Tests.Dependencies
                 var r = DependencySorter.OrderItems( c, o1 );
                 Assert.That( r.IsComplete, Is.True );
                 Assert.That( r.HasStructureError, Is.False );
-                Assert.That( r.IsOrdered( "C.Head", "O1", "C" ) );
+                r.AssertOrdered( "C.Head", "O1", "C" );
                 Assert.That( r.SortedItems[1].Container.FullName, Is.EqualTo( "C" ) );
                 ResultChecker.SimpleCheck( r );
             }
@@ -209,7 +209,7 @@ namespace CK.Setup.Tests.Dependencies
                 var r = DependencySorter.OrderItems( o1, c );
                 Assert.That( r.IsComplete, Is.True );
                 Assert.That( r.HasStructureError, Is.False );
-                Assert.That( r.IsOrdered( "C.Head", "O1", "C" ) );
+                r.AssertOrdered( "C.Head", "O1", "C" );
                 Assert.That( r.SortedItems[1].Container.FullName, Is.EqualTo( "C" ) );
                 ResultChecker.SimpleCheck( r );
             }

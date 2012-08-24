@@ -127,6 +127,7 @@ namespace CK.Core
                 }
                 if( !hasAmbiant )
                 {
+                    // Marks the type as a registered one.
                     collector._collector.Add( t, null );
                 }
                 else
@@ -160,6 +161,10 @@ namespace CK.Core
             get { return _collector.Count; }
         }
 
+        /// <summary>
+        /// Registers multiple types. Only classes are actually registered.
+        /// </summary>
+        /// <param name="types"></param>
         public void Register( IEnumerable<Type> types )
         {
             if( types == null ) throw new ArgumentNullException( "types" );

@@ -59,6 +59,9 @@
     <Compile Include="SimpleObjects\ObjectB.cs" />
     <Compile Include="SimpleObjects\PackageForAB.cs" />
     <Compile Include="SimpleObjects\SimpleObjectsTrace.cs" />
+    <Compile Include="SimpleObjects\WithLevel3\IAbstractionB.cs" />
+    <Compile Include="SimpleObjects\WithLevel3\ObjectALevel4.cs" />
+    <Compile Include="SimpleObjects\WithLevel3\ObjectBLevel2.cs" />
     <Compile Include="TestHelper.cs" />
   </ItemGroup>
   <ItemGroup>

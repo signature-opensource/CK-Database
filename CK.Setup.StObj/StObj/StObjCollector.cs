@@ -27,10 +27,17 @@ namespace CK.Setup
             _dependencyResolver = dependencyResolver;
         }
 
-        public void RegisterTypes( AssemblyDiscoverer discoverer, IActivityLogger logger )
+        /// <summary>
+        /// Registers types discovered by an <see cref="AssemblyDiscoverer"/>.
+        /// </summary>
+        /// <param name="discoverer">The discoverer that contains types.</param>
+        /// <param name="logger">Logger to use. Can not be null.</param>
+        /// <returns>The number of new discovered classes.</returns>
+        public int RegisterTypes( AssemblyDiscoverer discoverer, IActivityLogger logger )
         {
             if( discoverer == null ) throw new ArgumentNullException( "discoverer" );
             if( logger == null ) throw new ArgumentNullException( "logger" );
+            int totalRegistered = 0;
             using( logger.OpenGroup( LogLevel.Trace, "Registering {0} assemblies.", discoverer.Assemblies.Count ) )
             {
                 foreach( var one in discoverer.Assemblies )
@@ -39,17 +46,34 @@ namespace CK.Setup
                     {
                         int nbAlready = _cc.RegisteredTypeCount;
                         _cc.Register( one.Types );
-                        logger.CloseGroup( String.Format( "{0} types(s) registered.", _cc.RegisteredTypeCount - nbAlready ) );
+                        int delta = _cc.RegisteredTypeCount - nbAlready;
+                        logger.CloseGroup( String.Format( "{0} types(s) registered.", delta ) );
+                        totalRegistered += delta;
                     }
                 }
             }
+            return totalRegistered;
         }
 
+        /// <summary>
+        /// Registers a class.
+        /// </summary>
+        /// <param name="c">Class to register.</param>
+        /// <returns>True if it is a new class for this collector, false if it has already been registered.</returns>
+        public bool RegisterClass( Type c )
+        {
+            return _cc.RegisterClass( c );
+        }
+
+        /// <summary>
+        /// Builds and returns a <see cref="StObjCollectorResult"/>.
+        /// </summary>
+        /// <param name="logger">Logger to use. Can not be null.</param>
+        /// <returns>The result.</returns>
         public StObjCollectorResult GetResult( IActivityLogger logger )
         {
             if( logger == null ) throw new ArgumentNullException( "logger" );
 
-            // Step n°0: Collecting Ambiant Contracts.
             AmbiantContractCollectorResult contracts = _cc.GetResult();
             contracts.LogErrorAndWarnings( logger );
 
@@ -62,10 +86,10 @@ namespace CK.Setup
                 foreach( StObjCollectorContextualResult r in result )
                 {
                     using( logger.Catch( e => r.SetFatal() ) )
-                    using( r.Context != null ? logger.OpenGroup( LogLevel.Info, "Working on Typed Context '{0}'.", r.Context.Name ) : null )
+                    using( r.Context != AmbiantContractCollector.DefaultContext ? logger.OpenGroup( LogLevel.Info, "Working on Typed Context '{0}'.", r.Context.Name ) : null )
                     {
                         CreateMutableItems( logger, r );
-                        if( r.Context != null ) logger.CloseGroup();
+                        if( r.Context != AmbiantContractCollector.DefaultContext ) logger.CloseGroup();
                         logger.CloseGroup( String.Format( " {0} objects created for {1} types.", r.MutableItems.Count, r.AmbiantContractResult.ConcreteClasses.Count ) );
                     }
                 }
@@ -92,6 +116,18 @@ namespace CK.Setup
             if( result.HasFatalError ) return result;
 
             Debug.Assert( sortResult != null );
+
+            if( logger.Filter == LogLevelFilter.None )
+            {
+                using( logger.OpenGroup( LogLevel.Trace, "Object construction order:" ) )
+                {
+                    foreach( ISortedItem sorted in sortResult.SortedItems )
+                    {
+                        logger.UnfilteredLog( LogLevel.Trace, sorted.FullName );
+                    }
+                }
+            }
+
             // The structure objects have been ordered by their dependencies (and optionally
             // by the IStObjExternalConfigurator). 
             // Their instance has been set during the first step (CreateMutableItems).
@@ -99,7 +135,10 @@ namespace CK.Setup
             foreach( ISortedItem sorted in sortResult.SortedItems )
             {
                 var m = (MutableItem)sorted.Item;
-                m.CallConstruct( logger, result, _dependencyResolver );
+                if( !m.IsContainer || sorted.IsContainerHead )
+                {
+                    m.CallConstruct( logger, _dependencyResolver );
+                }
             }
             return result;
         }
@@ -115,12 +154,14 @@ namespace CK.Setup
             {
                 Debug.Assert( pathTypes.Count > 0, "At least the final concrete class exists." );
                 object theObject = Activator.CreateInstance( pathTypes[pathTypes.Count - 1] );
+                MutableItem parent = null;
                 foreach( var t in pathTypes )
                 {
-                    var m = new MutableItem( r.Context, t, theObject );
+                    var m = new MutableItem( parent, r.Context, t, theObject );
                     m.ApplyAttributes( logger );
-                    r.MutableItems.Add( m );
+                    r.Add( m );
                     if( _configurator != null ) _configurator.Configure( m );
+                    parent = m;
                 }
             }
         }

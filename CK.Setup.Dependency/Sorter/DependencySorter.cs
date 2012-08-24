@@ -68,13 +68,12 @@ namespace CK.Setup
                 Rank = -1;
             }
             
-            public Entry( IDependentItemContainer c, bool isHead )
+            public Entry( Entry container )
             {
-                Debug.Assert( isHead, "Parameter is only here to disambiguate the call." );
-                Item = c;
-                FullName = c.FullName + ".Head";
+                Item = container.Item;
+                FullName = container.FullName + ".Head";
                 Rank = -1;
-
+                ContainerIfHead = container;
             }
             
             public readonly string FullName;
@@ -84,15 +83,16 @@ namespace CK.Setup
             public int Rank;
             // Index is computed at the end of the process.
             public int Index;
-            // For heads, it is the container associated to the head.
-            // Use Container.Container for heads.
-            public Entry Container;
+            
+            public Entry Container { get; private set; }
+            // The ContainerIfHead is null for normal items and containers.
+            // It is not null only for heads.
+            public Entry ContainerIfHead { get; private set; }
             // The HeadIfContainer is null for normal items and heads.
             // It is not null only for container.
-            public Entry ContainerIfHead;
-            public Entry HeadIfContainer;
-            public Entry FirstChildIfContainer;
-            public Entry NextChildInContainer;
+            public Entry HeadIfContainer { get; private set; }
+            public Entry FirstChildIfContainer { get; private set; }
+            public Entry NextChildInContainer { get; private set; }
 
             internal void AddRequiredByRequires( IDependentItemRef req )
             {
@@ -100,13 +100,49 @@ namespace CK.Setup
                 Requires.Add( req );
             }
 
+            internal void TransformToContainer()
+            {
+                Debug.Assert( HeadIfContainer == null, "Only once!" );
+                Debug.Assert( FirstChildIfContainer == null );
+                HeadIfContainer = new Entry( this );
+            }
+
             internal void AddToContainer( Entry child )
             {
-                Debug.Assert( child.Container == null, "Already existing Container must have been handled before." );
+                Debug.Assert( child != null );
+                Debug.Assert( child.Container == null, "One and only one Container setting." );
+                Debug.Assert( child.ContainerIfHead == null, "Never add a head as a Child." );
+                CheckNotContains( child );
+
                 child.Container = this;
                 if( child.HeadIfContainer != null ) child.HeadIfContainer.Container = this;
                 child.NextChildInContainer = FirstChildIfContainer;
                 FirstChildIfContainer = child;
+            }
+
+            [Conditional( "DEBUG" )]
+            internal void CheckContains( Entry e )
+            {
+                Debug.Assert( HeadIfContainer != null, "This is a Container..." );
+                Entry c = FirstChildIfContainer;
+                while( c != null )
+                {
+                    if( c == e ) return;
+                    c = c.NextChildInContainer;
+                }
+                Debug.Fail( String.Format( "Container {0} does not contain item {1}.", FullName, e.FullName ) );
+            }
+
+            [Conditional( "DEBUG" )]
+            internal void CheckNotContains( Entry e )
+            {
+                Debug.Assert( HeadIfContainer != null, "This is a Container..." );
+                Entry c = FirstChildIfContainer;
+                while( c != null )
+                {
+                    if( c == e ) Debug.Fail( String.Format( "Container {0} contains item {1}.", FullName, e.FullName ) ); ;
+                    c = c.NextChildInContainer;
+                }
             }
 
             public override string ToString()
@@ -236,7 +272,9 @@ namespace CK.Setup
                             else
                             {
                                 // The named item exists but is not a container.
-                                SetStructureError( nc, DependentItemStructureError.ExistingItemIsNotAContainer );
+                                if( c.Item is IDependentItemContainer )
+                                    SetStructureError( nc, DependentItemStructureError.ExistingContainerAskedToNotBeAContainer );
+                                else SetStructureError( nc, DependentItemStructureError.ExistingItemIsNotAContainer );
                             }
                         }
                         else
@@ -263,7 +301,7 @@ namespace CK.Setup
                         }
                         else
                         {
-                            // The container must be set.
+                            // We set the container.
                             eC.Item1.AddToContainer( child );
                         }
                     }
@@ -349,7 +387,7 @@ namespace CK.Setup
                             // When the container is declared by name, we let the binding in Register handle the case.
                             if( entry.Container == null )
                             {
-                                entry.Container = alreadyRegisteredContainer;
+                                alreadyRegisteredContainer.AddToContainer( entry );
                             }
                             else
                             {
@@ -361,8 +399,19 @@ namespace CK.Setup
                     }
                     return entry;
                 }
-
+                
+                bool containerAskedToNotBeAContainer = false;
                 IDependentItemContainer c = e as IDependentItemContainer;
+                if( c != null )
+                {
+                    IDependentItemContainerAsk ca = e as IDependentItemContainerAsk;
+                    if( ca != null && ca.ThisIsNotAContainer )
+                    {
+                        containerAskedToNotBeAContainer = true;
+                        c = null;
+                    }
+                }
+
                 if( TryGetEntryValue( e.FullName, out entry ) )
                 {
                     // The setupable item name is known, but
@@ -423,9 +472,15 @@ namespace CK.Setup
                         eReq.AddRequiredByRequires( entry.Item.GetReference() );
                     }
                 }
-                // ...and safely automatically discover its bound items: its container (if not by name) and its children.
+
+                // ...and safely automatically discover its bound items: its container and its children.
+
+                // Starts with its container :
+                // - first handle the case where we are called by a Container that claims to own the current element.
                 if( alreadyRegisteredContainer != null )
                 {
+                    // We are coming from our container.
+                    // If the item has a container, they must match.
                     if( e.Container != null )
                     {
                         // The current element has a container.
@@ -438,11 +493,13 @@ namespace CK.Setup
                                 // Registers the container associated to the current element...
                                 Entry extraContainer = RegisterEntry( father, null, entry, namedContainersToBind, childrenToBind );
                                 // ...and declares an error.
+                                // (Here we forget the fact that the extra container may be a IDependentItemContainerAsk where ThisIsNotAContainer returned false:
+                                // we consider the container mismatch as more important.)
                                 SetStructureError( entry, DependentItemStructureError.MultipleContainer ).AddExtraneousContainers( extraContainer.FullName );
                             }
                             else
                             {
-                                // Thr container is a name.
+                                // The container is a name.
                                 var strong = e.Container.GetReference();
                                 if( strong.FullName != alreadyRegisteredContainer.FullName )
                                 {
@@ -452,61 +509,75 @@ namespace CK.Setup
                             }
                         }
                     }
-                    entry.Container = alreadyRegisteredContainer;
+                    // Even if a structure error occured, we set the container.
+                    alreadyRegisteredContainer.AddToContainer( entry );
                 }
+                // - else, the current element is not a child (at least for this RegisterEntry call: we are not coming from a container that claims to own it).
                 else
                 {
-                    // The current element is not a child (at least for this RegisterEntry call).
+                    // If it declares a container, we try to bind to it.
                     if( e.Container != null )
                     {
                         IDependentItemContainer father = e.Container as IDependentItemContainer;
                         if( father != null )
                         {
-                            entry.Container = RegisterEntry( father, null, entry, namedContainersToBind, childrenToBind );
+                            var cnt = RegisterEntry( father, null, entry, namedContainersToBind, childrenToBind );
+                            if( cnt.HeadIfContainer == null )
+                            {
+                                // The container refused to be a container.
+                                SetStructureError( entry, DependentItemStructureError.ExistingContainerAskedToNotBeAContainer );
+                            }
+                            else
+                            {
+                                cnt.AddToContainer( entry );
+                            }
                         }
                         else namedContainersToBind.Add( entry );
                     }
                 }
-                // If it is a container, handle its children.
-                if( c != null )
+                // If it is a container, handle its children. 
+                // If not, check if it is a "refusing" container that nevertheless exposes children: this must be 
+                // considered as an error to stay independant of the registration order.
+                if( c == null )
+                {
+                    if( containerAskedToNotBeAContainer )
+                    {
+                        Debug.Assert( c == null && e is IDependentItemContainer );
+                        var children = ((IDependentItemContainer)e).Children;
+                        if( children != null && children.Any() )
+                        {
+                            SetStructureError( entry, DependentItemStructureError.ContainerAskedToNotBeAContainerButContainsChildren );
+                        }
+                    }
+                }
+                else
                 {
                     Debug.Assert( entry.HeadIfContainer != null );
-                    entry.HeadIfContainer.Container = entry.Container;
-                    if( c.Children != null )
+                    IEnumerable<IDependentItemRef> children;
+                    if( (children = c.Children) != null )
                     {
                         IDependentItem knownChild = alreadyRegisteredChild != null ? alreadyRegisteredChild.Item : null;
-                        Entry lastChild = null;
-                        foreach( IDependentItemRef childRef in c.Children )
+                        foreach( IDependentItemRef childRef in children )
                         {
-                            if( childRef != null )
+                            // Skips null by security.
+                            if( childRef == null ) continue;
+
+                            IDependentItem child = childRef as IDependentItem;
+                            if( child != null )
                             {
-                                IDependentItem child = childRef as IDependentItem;
-                                if( child != null )
+                                if( child != knownChild ) RegisterEntry( child, entry, null, namedContainersToBind, childrenToBind );
+                            }
+                            else
+                            {
+                                // If the child is a named reference to the exact child that 
+                                // is calling us, we have nothing to do.
+                                var strong = childRef.GetReference();
+                                if( knownChild == null || strong.FullName != knownChild.FullName )
                                 {
-                                    Entry eC;
-                                    if( child != knownChild ) eC = RegisterEntry( child, entry, null, namedContainersToBind, childrenToBind );
-                                    else eC = alreadyRegisteredChild;
-                                    if( lastChild == null ) entry.FirstChildIfContainer = eC;
-                                    else lastChild.NextChildInContainer = eC;
-                                    lastChild = eC;
-                                }
-                                else
-                                {
-                                    var strong = childRef.GetReference();
-                                    if( knownChild != null && strong.FullName == knownChild.FullName )
-                                    {
-                                        if( lastChild == null ) entry.FirstChildIfContainer = alreadyRegisteredChild;
-                                        else lastChild.NextChildInContainer = alreadyRegisteredChild;
-                                        lastChild = alreadyRegisteredChild;
-                                    }
-                                    else
-                                    {
-                                        // The child must be late-bound.
-                                        childrenToBind.Add( new Tuple<Entry, string>( entry, strong.FullName ) );
-                                    }
+                                    // The child must be late-bound.
+                                    childrenToBind.Add( new Tuple<Entry, string>( entry, strong.FullName ) );
                                 }
                             }
-
                         }
                     }
                 }
@@ -560,11 +631,9 @@ namespace CK.Setup
                     entry.Item = c;
                     entry.StartValue = startValue;
                 }
-                Entry head = new Entry( c, true );
-                entry.HeadIfContainer = head;
-                head.ContainerIfHead = entry;
-                _entries.Add( head.FullName, head );
-                _result.Add( head );
+                entry.TransformToContainer();
+                _entries.Add( entry.HeadIfContainer.FullName, entry.HeadIfContainer );
+                _result.Add( entry.HeadIfContainer );
             }
 
             #endregion
@@ -697,7 +766,9 @@ namespace CK.Setup
                 // Handles the Container: its head is required by this item (be it a head, a container or an item).
                 if( e.Container != null )
                 {
-                    Debug.Assert( e.Container.HeadIfContainer != null );
+                    // Heads do not belong to children: avoid the check.
+                    if( e.ContainerIfHead == null ) e.Container.CheckContains( e );
+                   
                     HandleDependency( ref rank, item, e.Container.HeadIfContainer, false );
                     if( _cycle != null ) return;
                 }

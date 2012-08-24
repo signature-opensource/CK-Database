@@ -23,18 +23,16 @@ namespace CK.Setup
         /// </summary>
         Type ObjectType { get; }
 
-        ///// <summary>
-        ///// Gets the root Structure Object (the one associated to the first class marked 
-        ///// as a <see cref="IAmbiantContract"/> in the inheritance chain).
-        ///// May be this object itself.
-        ///// </summary>
-        //IStObj Root { get; }
-        
-        ///// <summary>
-        ///// Gets the most precise Structure Object (the one associated to the type of the <see cref="StObj"/> itself.
-        ///// May be this object itself.
-        ///// </summary>
-        //IStObj Leaf { get; }
+        /// <summary>
+        /// Gets whether this object has been referenced as a container by one or more structure objects.
+        /// </summary>
+        bool IsContainer { get; }
 
+        /// <summary>
+        /// Gets the parent Structure Object (the one associated to the base class of the object).
+        /// May be null.
+        /// </summary>
+        IStObj Parent { get; }
+        
     }
 }

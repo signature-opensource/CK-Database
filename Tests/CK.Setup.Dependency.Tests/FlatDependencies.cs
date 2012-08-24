@@ -179,8 +179,8 @@ namespace CK.Setup.Tests.Dependencies
             Assert.That( r.ItemIssues, Is.Empty );
             Assert.That( r.SortedItems.Count, Is.EqualTo( 8 ) );
 
-            Assert.That( r.IsOrdered( "System", "JustLikeRes", "Res", "Act", "Acto", "Actor", "MCulture", "Appli" ),
-                "Ordering is deterministic: when 2 dependencies are on the same rank, their lexical order makes the difference." );
+            r.AssertOrdered( "System", "JustLikeRes", "Res", "Act", "Acto", "Actor", "MCulture", "Appli" );
+            // "Ordering is deterministic: when 2 dependencies are on the same rank, their lexical order makes the difference." );
 
             new ResultChecker( r ).CheckRecurse( "System", "Res", "Actor", "Acto", "Act", "MCulture", "Appli", "JustLikeRes" );
             ResultChecker.SimpleCheck( r );
@@ -207,10 +207,10 @@ namespace CK.Setup.Tests.Dependencies
             ResultChecker.CheckMissingInvariants( r );
             
             Assert.That( r.SortedItems.Count, Is.EqualTo( 8 ) );
-            Assert.That( r.IsOrdered( "System", "Res", "JustLikeRes", "Actor", "Acto", "Act", "MCulture", "Appli" ), 
-                    @"Reversing of the order for 2 dependencies are on the same rank can help detect missing dependencies: 
-                      a setup MUST work regardless of the fact that we invert the order of items that have the same rank: since they 
-                      share their rank there is NO dependency between them." );
+            r.AssertOrdered( "System", "Res", "JustLikeRes", "Actor", "Acto", "Act", "MCulture", "Appli" );
+            //Reversing of the order for 2 dependencies that are on the same rank can help detect missing dependencies: 
+            //a setup MUST work regardless of the fact that we invert the order of items that have the same rank: since they 
+            //share their rank there is NO dependency between them.
 
             r.ConsiderRequiredMissingAsStructureError = false;
             Assert.That( r.HasRequiredMissing && r.HasStructureError == false );
@@ -272,7 +272,7 @@ namespace CK.Setup.Tests.Dependencies
             var i = new TestableItem( "I", "=>D" );
             
             var r = DependencySorter.OrderItems( e, g, b, h, c, d, i, f, a );
-            Assert.That( r.IsOrdered( "A", "B", "D", "C", "F", "H", "I", "E", "G" ) );
+            r.AssertOrdered( "A", "B", "D", "C", "F", "H", "I", "E", "G" );
             ResultChecker.SimpleCheck( r );
 
             // Now, makes D requires E: D => A,E=>(C=>(B=>(A))) (5), where G => E=>(C=>(B=>(A))) (4)
@@ -287,13 +287,13 @@ namespace CK.Setup.Tests.Dependencies
             // i
             e.Add( "<= D" );
             r = DependencySorter.OrderItems( e, c, b, g, h, i, d, f, a );
-            Assert.That( r.IsOrdered( "A", "B", "C", "F", "H", "E", "D", "G", "I" ) );
+            r.AssertOrdered( "A", "B", "C", "F", "H", "E", "D", "G", "I" );
             ResultChecker.SimpleCheck( r );
 
             // This does not change the dependency order per se (it just contributes to make D "heavier" but do not change its rank).
             h.Add( "<= D" );
             r = DependencySorter.OrderItems( f, i, b, g, h, d, e, a, c );
-            Assert.That( r.IsOrdered( "A", "B", "C", "F", "H", "E", "D", "G", "I" ) );
+            r.AssertOrdered( "A", "B", "C", "F", "H", "E", "D", "G", "I" );
             ResultChecker.SimpleCheck( r );
 
             // Missing "RequiredBy" are just useless: we simply forget them (and they do not change anything in the ordering of course).
@@ -301,7 +301,7 @@ namespace CK.Setup.Tests.Dependencies
             a.Add( "<=KExistePas", "<=DuTout" );
             b.Add( "<= KExistePas" );
             r = DependencySorter.OrderItems( f, b, h, i, e, g, a, d, c );
-            Assert.That( r.IsOrdered( "A", "B", "C", "F", "H", "E", "D", "G", "I" ) );
+            r.AssertOrdered( "A", "B", "C", "F", "H", "E", "D", "G", "I" );
             Assert.That( r.ItemIssues, Is.Empty );
             ResultChecker.SimpleCheck( r );
 

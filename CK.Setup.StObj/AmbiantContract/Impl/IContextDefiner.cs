@@ -5,6 +5,9 @@ using System.Text;
 
 namespace CK.Core
 {
+    /// <summary>
+    /// Internal interface that unifies <see cref="AddContextAttribute"/> and <see cref="RemoveContextAttribute"/>.
+    /// </summary>
     internal interface IContextDefiner
     {
         Type Context { get; }

@@ -20,11 +20,11 @@ namespace CK.Setup
         MutableReferenceKind Kind { get; }
 
         /// <summary>
-        /// Gets or sets whether this reference must be satisfied with an available <see cref="IStObj"/>.
-        /// Defaults to true for <see cref="IStObjMutableItem.Requires"/> and <see cref="IStObjMutableItem.Container"/> (a described dependency or container is 
-        /// required unless explicitely declared as optional) 
-        /// and false for <see cref="IStObjMutableItem.Requiredby"/> and <see cref="IStObjMutableItem.ConstructParameters"/> since for Construct parameters any 
-        /// injected dependency can be used (the dependency may even be missing - ie. stays unresolved - if <see cref="IMutableParameterType.IsOptional"/> is true).
+        /// Gets or sets whether this reference must be satisfied with an available <see cref="IStObj"/> if the <see cref="P:Type"/> is specified (not null).
+        /// Defaults to true for <see cref="IStObjMutableItem.Requires"/> and <see cref="IStObjMutableItem.Container"/> (a described dependency is required unless 
+        /// explicitely declared as optional). 
+        /// Defaults to false for <see cref="IStObjMutableItem.Requiredby"/> and Construct parameters since "required by" are always considered as optional and  
+        /// for Construct parameters, any injected dependency can be used (the dependency may even be missing - ie. null - if <see cref="IMutableParameterType.IsOptional"/> is true).
         /// </summary>
         bool StObjRequired { get; set; }
 
@@ -37,7 +37,9 @@ namespace CK.Setup
         Type Context { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the reference.
+        /// Gets or sets the type of the reference. Can be set to null: container and requirements are ignored and 
+        /// construct parameters are resolved to null (<see cref="IMutableParameterType.IsOptional"/> must be true).
+        /// Of course, for construct parameters the type must be compatible with the acual parameter's type.
         /// </summary>
         Type Type { get; set; }
     }

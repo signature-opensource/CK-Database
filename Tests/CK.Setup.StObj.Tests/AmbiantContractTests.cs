@@ -6,7 +6,7 @@ using NUnit.Framework;
 using CK.Core;
 using CK.Setup.StObj.Tests;
 
-namespace CK.Setup.Tests.IntoTheWild
+namespace CK.Setup.Tests
 {
     public abstract class AbstractBase
     {
@@ -33,7 +33,7 @@ namespace CK.Setup.Tests.IntoTheWild
     }
 
     [AddContext( typeof( int ) )]
-    [RemoveContext( typeof( AmbiantContractCollector.DefaultContextType ) )]
+    [RemoveDefaultContext]
     public class AmbiantScoped : Ambiant
     {
     }

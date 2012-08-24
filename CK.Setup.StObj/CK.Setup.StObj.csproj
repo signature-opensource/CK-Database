@@ -40,11 +40,12 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AmbiantContract\AddContextAttribute.cs" />
+    <Compile Include="AmbiantContract\Attribute\AddContextAttribute.cs" />
     <Compile Include="AmbiantContract\AmbiantContractCollector.cs" />
     <Compile Include="AmbiantContract\AmbiantContractCollectorContextualResult.cs" />
+    <Compile Include="AmbiantContract\Attribute\RemoveDefaultContext.cs" />
     <Compile Include="AmbiantContract\Impl\IContextDefiner.cs" />
-    <Compile Include="AmbiantContract\RemoveContextAttribute.cs" />
+    <Compile Include="AmbiantContract\Attribute\RemoveContextAttribute.cs" />
     <Compile Include="AmbiantContract\Impl\AmbiantTypeContextualMapper.cs" />
     <Compile Include="AmbiantContract\Impl\AmbiantTypeMapper.cs" />
     <Compile Include="AmbiantContract\IAmbiantContract.cs" />
@@ -57,6 +58,7 @@
     <Compile Include="AmbiantContract\Impl\MultiContextualResult.cs" />
     <Compile Include="AssemblyDiscoverer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StObj\Attribute\ContainerAttribute.cs" />
     <Compile Include="StObj\IMutableParameterType.cs" />
     <Compile Include="StObj\IMutableReferenceType.cs" />
     <Compile Include="StObj\IStObjDependencyResolver.cs" />
@@ -68,13 +70,13 @@
     <Compile Include="StObj\IStObjExternalConfigurator.cs" />
     <Compile Include="StObj\IStObjMutableItem.cs" />
     <Compile Include="StObj\Impl\MutableParameterType.cs" />
-    <Compile Include="StObj\StObjAttribute.cs" />
-    <Compile Include="StObj\IStObjAttribute.cs" />
+    <Compile Include="StObj\Attribute\StObjAttribute.cs" />
+    <Compile Include="StObj\Attribute\IStObjAttribute.cs" />
     <Compile Include="StObj\IStObj.cs" />
     <Compile Include="StObj\IStObjContextualMapper.cs" />
     <Compile Include="StObj\StObjCollectorResult.cs" />
     <Compile Include="StObj\StObjCollector.cs" />
-    <Compile Include="StObj\StObjContextAttribute.cs" />
+    <Compile Include="StObj\Attribute\ContextAttribute.cs" />
     <Compile Include="StObj\StObjHandler.cs" />
     <Compile Include="StObj\Impl\MutableItem.cs" />
     <Compile Include="StObj\StObjCollectorContextualResult.cs" />

@@ -3,23 +3,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using NUnit.Framework;
 
 namespace CK.Setup.StObj.Tests.SimpleObjects
 {
-    [StObj( Container = typeof( PackageForABLevel1 ) )]
     public class ObjectALevel1 : ObjectA
     {
         ObjectBLevel1 _oB;
 
-        public ObjectALevel1()
+        void Construct( [Container]PackageForABLevel1 package, ObjectBLevel1 oB )
         {
-            SimpleObjectsTrace.LogMethod( MethodInfo.GetCurrentMethod() );
-        }
+            Assert.That( ConstructCount, Is.EqualTo( 1 ), "ObjectA.Construct has been called." );
+            Assert.That( oB.ConstructCount, Is.GreaterThanOrEqualTo( 2 ), "ObjectB and ObjectBLevel1 Construct have been called." );
+            Assert.That( package.ConstructCount, Is.GreaterThanOrEqualTo( 2 ), "PackageForAB and PackageForABLevel1 Construct have been called." );
 
-        void Contruct( ObjectBLevel1 oB )
-        {
             SimpleObjectsTrace.LogMethod( MethodInfo.GetCurrentMethod() );
             _oB = oB;
+
+            ConstructCount = ConstructCount + 1;
         }
 
     }

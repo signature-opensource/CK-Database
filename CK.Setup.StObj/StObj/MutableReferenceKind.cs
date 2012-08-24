@@ -8,6 +8,7 @@ namespace CK.Setup
     /// <summary>
     /// Describes the different kind of <see cref="MutableReferenceType"/>.
     /// </summary>
+    [Flags]
     public enum MutableReferenceKind
     {
         /// <summary>
@@ -28,11 +29,11 @@ namespace CK.Setup
         /// <summary>
         /// RequiredBy reference.
         /// </summary>
-        RequiredBy = 3,
+        RequiredBy = 4,
 
         /// <summary>
         /// Parameter from Construct method. It is a considered as a Requires.
         /// </summary>
-        ConstructParameter = 4,
+        ConstructParameter = 8,
     }
 }

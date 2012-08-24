@@ -39,7 +39,7 @@ namespace CK.Setup
         /// Gets the mapped <see cref="IStObj"/> or null if no mapping exists.
         /// </summary>
         /// <param name="t">Key type. Can be null (null is returned).</param>
-        /// <returns>Dependent item or null if the type has not been mapped.</returns>
+        /// <returns>StObj object or null if the type has not been mapped.</returns>
         IStObj this[Type t] { get; }
 
     }

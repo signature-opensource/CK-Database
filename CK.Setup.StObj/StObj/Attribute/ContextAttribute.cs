@@ -5,10 +5,10 @@ using System.Text;
 
 namespace CK.Setup
 {
-    [AttributeUsage( AttributeTargets.Parameter )]
-    public class StObjContextAttribute : Attribute
+    [AttributeUsage( AttributeTargets.Parameter, Inherited = false, AllowMultiple = false )]
+    public class ContextAttribute : Attribute
     {
-        public StObjContextAttribute( Type typedContext )
+        public ContextAttribute( Type typedContext )
         {
             Context = typedContext;
         }

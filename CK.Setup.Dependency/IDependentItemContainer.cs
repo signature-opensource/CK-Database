@@ -18,7 +18,7 @@ namespace CK.Setup
         /// <remarks>
         /// The <see cref="DependencySorter"/> uses this list to discover the original <see cref="IDependentItem"/> to order.
         /// Provided that each and every item is submitted to the <see cref="DependencySorter.OrderItems"/>, this collection 
-        /// can be null or empty (even if some <see cref="IDependentItem.Container"/> refer to this container).
+        /// can be null or empty (any submitted items can use <see cref="IDependentItem.Container"/> to reference this container).
         /// </remarks>
         IEnumerable<IDependentItemRef> Children { get; }
 

@@ -96,6 +96,7 @@ namespace CK.Setup.Tests
 
         object IDependentItem.StartDependencySort()
         {
+            Assert.That( _startDependencySortCount, Is.EqualTo( 0 ), "StartDependencySort must be called once and only once." );
             return ++_startDependencySortCount;
         }
     }

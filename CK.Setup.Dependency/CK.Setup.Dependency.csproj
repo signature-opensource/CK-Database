@@ -41,6 +41,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IDependentItemContainerAsk.cs" />
     <Compile Include="DependentItemExtension.cs" />
     <Compile Include="IDependentItem.cs" />
     <Compile Include="IDependentItemContainer.cs" />

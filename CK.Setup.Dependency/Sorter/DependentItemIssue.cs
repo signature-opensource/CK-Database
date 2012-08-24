@@ -118,6 +118,14 @@ namespace CK.Setup
                     {
                         logger.Error( "Items's container named '{0}' is not a container.", Item.Container.FullName );
                     }
+                    if( (StructureError & DependentItemStructureError.ExistingContainerAskedToNotBeAContainer) != 0 )
+                    {
+                        logger.Error( "Items's container '{0}' dynamically states that it is not a container. (This may be a programming error: the IDependentItemContainerAsk interface may not be used).", Item.Container.FullName );
+                    }
+                    if( (StructureError & DependentItemStructureError.ContainerAskedToNotBeAContainerButContainsChildren) != 0 )
+                    {
+                        logger.Error( "Container '{0}' dynamically states that it is not a container but contains Children. (This may be a programming error: when IDependentItemContainerAsk.ThisIsNotAContainer is true, the Children enumeration must be null or empty).", Item.FullName );
+                    }
                     if( _homonyms != null )
                     {
                         logger.Error( "Homonyms: {0} objects with the same full name.", _homonyms.Length );

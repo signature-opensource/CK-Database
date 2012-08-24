@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using CK.Core;
 
-namespace CK.Setup.StObj.Tests.SimpleObjects
+namespace CK.Setup.StObj.Tests.SimpleObjects.WithLevel3
 {
-    public interface IAbstractionA : IAmbiantContract
+    public interface IAbstractionBOnLevel2 : IAmbiantContract
     {
         int ConstructCount { get; }
         
-        void MethofOfA();
+        void MethofOfBOnLevel2();
     }
 }

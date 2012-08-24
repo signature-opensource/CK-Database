@@ -7,8 +7,8 @@ using System.Diagnostics;
 namespace CK.Setup
 {
     /// <summary>
-    /// Defines a reference to an item. Since a <see cref="IDependentItem"/> is 
-    /// its own IDependentItemRef, when the object item is known it can be used 
+    /// Defines a reference to an item. When a <see cref="IDependentItem"/> implements
+    /// its own IDependentItemRef and when the object item is known it can be used 
     /// as a (non optional) reference. The struct <see cref="NamedDependentItemRef"/> must be used for 
     /// optional or pure named reference.
     /// </summary>

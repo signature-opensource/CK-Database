@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CK.Setup.Tests
 {
-    class TestableContainer : TestableItem, IDependentItemContainer, IDependentItemContainerRef
+    class TestableContainer : TestableItem, IDependentItemContainerAsk, IDependentItemContainerRef
     {
         List<IDependentItemRef> _children = new List<IDependentItemRef>();
 
@@ -14,6 +14,8 @@ namespace CK.Setup.Tests
         {
         }
 
+        public bool ThisIsNotAContainer { get; set; }
+               
         public IEnumerable<IDependentItemRef> Children
         {
             get { return _children; }

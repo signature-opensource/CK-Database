@@ -49,12 +49,14 @@
     <Compile Include="ChildByName.cs" />
     <Compile Include="ContainerByName.cs" />
     <Compile Include="ContainerDependencies.cs" />
+    <Compile Include="ContainerDependenciesAsk.cs" />
     <Compile Include="DependencyExtensions.cs" />
     <Compile Include="FlatDependencies.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResultChecker.cs" />
     <Compile Include="TestableContainer.cs" />
     <Compile Include="TestableItem.cs" />
+    <Compile Include="TestHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">

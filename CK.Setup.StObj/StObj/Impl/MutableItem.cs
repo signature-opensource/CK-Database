@@ -9,11 +9,12 @@ using System.Collections;
 
 namespace CK.Setup
 {
-    internal class MutableItem : IStObj, IStObjMutableItem, IDependentItemContainer, IDependentItemContainerRef
+    internal class MutableItem : IStObj, IStObjMutableItem, IDependentItemContainerAsk, IDependentItemContainerRef
     {
         readonly Type _objectType;
         readonly Type _context;
         readonly object _stObj;
+        readonly MutableItem _parent;
         
         MutableReferenceType _container;
         List<MutableReferenceType> _requires;
@@ -23,28 +24,20 @@ namespace CK.Setup
         MethodInfo _construct;
         List<MutableParameterType> _constructParameter;
         IReadOnlyList<IMutableParameterType> _constructParameterEx;
+        bool _hasBeenReferencedAsAContainer;
 
         string _dFullName;
         MutableItem _dContainer;
         IEnumerable<MutableItem> _dRequires;
         IEnumerable<MutableItem> _dRequiredBy;
 
-        internal MutableItem( Type context, Type objectType, object theObject )
+        internal MutableItem( MutableItem parent, Type context, Type objectType, object theObject )
         {
             Debug.Assert( context != null  && objectType != null && theObject != null );
             _objectType = objectType;
             _stObj = theObject;
             _context = context;
-        }
-
-        public Type ObjectType
-        {
-            get { return _objectType; }
-        }
-
-        public Type Context
-        {
-            get { return _context; }
+            _parent = parent;
         }
 
         public override string ToString()
@@ -87,8 +80,16 @@ namespace CK.Setup
             {
                 _container.Type = a.Container;
                 _container.Context = contextFinder( a.Container );
-                _requires = a.Requires.Select( t => new MutableReferenceType( this, MutableReferenceKind.Requires ) { Type = t, Context = contextFinder( t ) } ).ToList();
-                _requiredBy = a.RequiredBy.Select( t => new MutableReferenceType( this, MutableReferenceKind.RequiredBy ) { Type = t, Context = contextFinder( t ) } ).ToList();
+                if( a.Requires != null )
+                {
+                    _requires = a.Requires.Select( t => new MutableReferenceType( this, MutableReferenceKind.Requires ) { Type = t, Context = contextFinder( t ) } ).ToList();
+                }
+                else _requires = new List<MutableReferenceType>();
+                if( a.RequiredBy != null )
+                {
+                    _requiredBy = a.RequiredBy.Select( t => new MutableReferenceType( this, MutableReferenceKind.RequiredBy ) { Type = t, Context = contextFinder( t ) } ).ToList();
+                }
+                else _requiredBy = new List<MutableReferenceType>();
             }
             else
             {
@@ -101,7 +102,8 @@ namespace CK.Setup
 
         void AnalyseConstruct( IActivityLogger logger, Func<Type, Type> contextFinder )
         {
-            Debug.Assert( _constructParameter == null, "Called only once right after object instanciation." );
+            Debug.Assert( _constructParameterEx == null, "Called only once right after object instanciation..." );
+            Debug.Assert( _container != null, "...and after ApplyStObjAttribute." );
 
             ParameterInfo[] parameters;
             _construct = _objectType.GetMethod( "Construct", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic );
@@ -109,18 +111,42 @@ namespace CK.Setup
             {
                 _constructParameter = new List<MutableParameterType>();
                 _constructParameterEx = new ReadOnlyListOnIList<MutableParameterType>( _constructParameter );
+                bool hasContainerParameter = false;
                 foreach( ParameterInfo i in parameters )
                 {
-                    // If a StObjContextAttribute exists on the parameter, it takes precedence over the StObjContextMapAttribute on the class.
-                    StObjContextAttribute ctx = (StObjContextAttribute)Attribute.GetCustomAttribute( i, typeof( StObjContextAttribute ) );
+                    // Is it marked with ContainerAttribute?
+                    bool isContainerParameter = Attribute.GetCustomAttribute( i, typeof( ContainerAttribute ) ) != null;
+                    // If a ContextAttribute exists on the parameter, it takes precedence over the StObjContextMapAttribute on the class.
+                    ContextAttribute ctx = (ContextAttribute)Attribute.GetCustomAttribute( i, typeof( ContextAttribute ) );
                     MutableParameterType p;
                     if( ctx != null )
                     {
-                        p = new MutableParameterType( this, _constructParameter.Count, i.Name ) { Type = i.ParameterType, Context = ctx.Context };
+                        p = new MutableParameterType( this, i, isContainerParameter ) { Context = ctx.Context };
                     }
                     else
                     {
-                        p = new MutableParameterType( this, _constructParameter.Count, i.Name ) { Type = i.ParameterType, Context = contextFinder( i.ParameterType ) };
+                        p = new MutableParameterType( this, i, isContainerParameter ) { Context = contextFinder( i.ParameterType ) };
+                    }
+                    if( isContainerParameter )
+                    {
+                        if( hasContainerParameter )
+                        {
+                            logger.Error( "Construct method of class '{0}' has more than one parameter marked with [Container] attribute.", _objectType.FullName );
+                        }
+                        hasContainerParameter = true;
+                        if( _container.Type != null )
+                        {
+                            if( _container.Type != p.Type )
+                            {
+                                logger.Error( "Construct parameter '{0}' for class '{1}' defines the Container as '{2}' but an attribute on the class declares the Container as '{3}'.", i.Name, _objectType.FullName, p.Type.FullName, _container.Type.FullName );
+                            }
+                            else if( _container.Context != p.Context )
+                            {
+                                logger.Error( "Construct parameter '{0}' for class '{1}' targets the Container in '{2}' but an attribute on the class declares the Container context as '{3}'.", i.Name, _objectType.FullName, p.Context.Name, _container.Context.Name );
+                            }
+                        }
+                        // Sets the _container to be the parameter object.
+                        _container = p;
                     }
                     _constructParameter.Add( p );
                 }
@@ -134,30 +160,35 @@ namespace CK.Setup
 
         internal void PrepareDependentItem( IActivityLogger logger, StObjCollectorResult result, StObjCollectorContextualResult contextResult )
         {
-            Debug.Assert( _container != null && _constructParameter != null );
+            Debug.Assert( _container != null && _constructParameterEx != null );
             Debug.Assert( _context == contextResult.Context && result[_context] == contextResult, "We are called inside our typed context, this avoids the lookup result[Context]." );
 
             _dFullName = AmbiantContractCollector.DisplayName( _context, _objectType );
+            
             _dContainer = _container.Resolve( logger, result, contextResult );
-            HashSet<MutableItem> req = null;
+            if( _dContainer != null ) _dContainer._hasBeenReferencedAsAContainer = true;
+
+            HashSet<MutableItem> req = new HashSet<MutableItem>();
+            if( _parent != null ) req.Add( _parent );
             foreach( MutableItem dep in _requires.Select( r => r.Resolve( logger, result, contextResult ) ).Where( m => m != null ) )
             {
-                if( req == null ) req = new HashSet<MutableItem>();
                 req.Add( dep );
             }
             if( _constructParameter != null )
             {
                 foreach( MutableParameterType t in _constructParameter )
                 {
-                    MutableItem dep = t.Resolve( logger, result, contextResult );
-                    if( dep != null )
+                    // Do not consider the container as a requirement since a Container is
+                    // already a dependency (on the head's Container) and that a requirement on a container
+                    // targets the whole content of it (this would lead to a cycle in the dependency graph).
+                    if( (t.Kind & MutableReferenceKind.Container) == 0 )
                     {
-                        if( req == null ) req = new HashSet<MutableItem>();
-                        req.Add( dep );
+                        MutableItem dep = t.Resolve( logger, result, contextResult );
+                        if( dep != null ) req.Add( dep );
                     }
                 }
             }
-            if( req != null ) _dRequires = req.ToArray();
+            _dRequires = req.ToArray();
 
             if( _requiredBy.Count > 0 )
             {
@@ -165,10 +196,11 @@ namespace CK.Setup
             }
         }
 
-        internal void CallConstruct( IActivityLogger logger, StObjCollectorResult result, IStObjDependencyResolver dependencyResolver )
+        internal void CallConstruct( IActivityLogger logger, IStObjDependencyResolver dependencyResolver )
         {
+            Debug.Assert( _constructParameterEx != null, "Always allocated." );
+            
             if( _construct == null ) return;
-            Debug.Assert( _constructParameterEx != null, "Always allocated." );           
 
             object[] parameters = new object[_constructParameterEx.Count];
             int i = 0;
@@ -225,6 +257,11 @@ namespace CK.Setup
             get { return _dRequiredBy; }
         }
 
+        bool IDependentItemContainerAsk.ThisIsNotAContainer
+        {
+            get { return !_hasBeenReferencedAsAContainer; }
+        }
+
         object IDependentItem.StartDependencySort()
         {
             return null;
@@ -247,6 +284,26 @@ namespace CK.Setup
         public object StObj
         {
             get { return _stObj; }
+        }
+
+        public Type ObjectType
+        {
+            get { return _objectType; }
+        }
+
+        public Type Context
+        {
+            get { return _context; }
+        }
+
+        public bool IsContainer
+        {
+            get { return _hasBeenReferencedAsAContainer; }
+        }
+
+        public IStObj Parent
+        {
+            get { return _parent; }
         }
 
         #endregion

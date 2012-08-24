@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using CK.Setup;
+using NUnit.Framework;
 
 namespace CK.Setup.StObj.Tests.SimpleObjects
 {
@@ -11,14 +12,13 @@ namespace CK.Setup.StObj.Tests.SimpleObjects
     [StObj( Container=typeof(PackageForAB) )] 
     public class ObjectA : IAbstractionA
     {
-        public ObjectA()
-        {
-            SimpleObjectsTrace.LogMethod( MethodInfo.GetCurrentMethod() );
-        }
+        public int ConstructCount { get; protected set; }
 
-        void Contruct()
+        void Construct()
         {
+            Assert.That( ConstructCount, Is.EqualTo( 0 ), "First Construct." );
             SimpleObjectsTrace.LogMethod( MethodInfo.GetCurrentMethod() );
+            ConstructCount = ConstructCount + 1;
         }
 
         public void MethofOfA()

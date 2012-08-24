@@ -49,7 +49,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Allows the dependent item to prepare itself before ordering. The returned object (if any)
-        /// is made available after the sort in <see cref="ISortedItem.StartValue"/>
+        /// is made available after the sort in <see cref="ISortedItem.StartValue"/>.
         /// </summary>
         /// <returns>Any object that has to be associated to this item and a <see cref="DependencySorter.OrderItems"/> call.</returns>
         object StartDependencySort();

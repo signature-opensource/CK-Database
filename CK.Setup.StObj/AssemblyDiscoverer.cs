@@ -15,7 +15,6 @@ namespace CK.Core
         Predicate<Assembly>             _assemblyFilter;
         Predicate<Type>                 _typeFilter;
         bool                            _publicTypesOnly;
-        AssemblyLoadEventHandler	    _onLoad;
         Dictionary<Assembly,DiscoveredInfo>	_index;
         List<DiscoveredInfo>                _list;
         IReadOnlyList<DiscoveredInfo>       _listEx;
@@ -44,7 +43,7 @@ namespace CK.Core
         /// <param name="logger">Logger to use. Can not be null.</param>
         public AssemblyDiscoverer( IActivityLogger logger )
         {
-            if( _logger == null ) throw new ArgumentNullException( "logger" );
+            if( logger == null ) throw new ArgumentNullException( "logger" );
             _logger = logger;
             _index = new Dictionary<Assembly, DiscoveredInfo>();
             _list = new List<DiscoveredInfo>();

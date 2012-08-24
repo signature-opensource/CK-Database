@@ -16,12 +16,12 @@ namespace CK.Setup.Tests.Dependencies
             var c = new TestableContainer( "C" );
             {
                 var r = DependencySorter.OrderItems( c );
-                Assert.That( r.IsOrdered( "C.Head", "C" ) );
+                r.AssertOrdered( "C.Head", "C" );
                 ResultChecker.SimpleCheck( r );
             }
             {
                 var r = DependencySorter.OrderItems( true, c );
-                Assert.That( r.IsOrdered( "C.Head", "C" ) );
+                r.AssertOrdered( "C.Head", "C" );
                 ResultChecker.SimpleCheck( r );
             }
         }
@@ -71,19 +71,19 @@ namespace CK.Setup.Tests.Dependencies
             var c2 = new TestableContainer( "C2", new TestableItem( "Y" ), "=>C1" );
             {
                 var r = DependencySorter.OrderItems( c2, c0, c1 );
-                Assert.That( r.IsOrdered( "C0.Head", "A", "B", "C", "C0", "C1.Head", "X", "C1", "C2.Head", "Y", "C2" ) );
+                r.AssertOrdered( "C0.Head", "A", "B", "C", "C0", "C1.Head", "X", "C1", "C2.Head", "Y", "C2" );
                 new ResultChecker( r ).CheckRecurse( "C0", "C1", "C2" );
                 ResultChecker.SimpleCheck( r );
             }
             {
                 var r = DependencySorter.OrderItems( c0, c1, c2 );
-                Assert.That( r.IsOrdered( "C0.Head", "A", "B", "C", "C0", "C1.Head", "X", "C1", "C2.Head", "Y", "C2" ) );
+                r.AssertOrdered( "C0.Head", "A", "B", "C", "C0", "C1.Head", "X", "C1", "C2.Head", "Y", "C2" );
                 new ResultChecker( r ).CheckRecurse( "C0", "C1", "C2" );
                 ResultChecker.SimpleCheck( r );
             }
             {
                 var r = DependencySorter.OrderItems( c2, c1, c0 );
-                Assert.That( r.IsOrdered( "C0.Head", "A", "B", "C", "C0", "C1.Head", "X", "C1", "C2.Head", "Y", "C2" ) );
+                r.AssertOrdered( "C0.Head", "A", "B", "C", "C0", "C1.Head", "X", "C1", "C2.Head", "Y", "C2" );
                 new ResultChecker( r ).CheckRecurse( "C0", "C1", "C2" );
                 ResultChecker.SimpleCheck( r );
             }
@@ -124,7 +124,7 @@ namespace CK.Setup.Tests.Dependencies
                 Assert.That( r.ItemIssues[1].RequiredMissingCount, Is.EqualTo( 0 ) );
                 Assert.That( r.ItemIssues[1].MissingDependencies.Count(), Is.EqualTo( 1 ) );
                 Assert.That( r.ItemIssues[1].MissingDependencies.First(), Is.EqualTo( "?OptDirect" ) );
-                
+
                 ResultChecker.SimpleCheck( r );
             }
         }
@@ -155,10 +155,10 @@ namespace CK.Setup.Tests.Dependencies
             Assert.That( r.CycleDetected, Is.Not.Null );
             Assert.That( r.SortedItems, Is.Null );
             // The detected cycle depends on the algorithm. 
-            // This works here because since we register the Root, we first find its Child Pierre: we know
-            // that the cycle starts (and ends) with Pierre.
+            // This works here because since we register the Root, we the last registered child is Nuage: we know
+            // that the cycle starts (and ends) with Nuage because children are in linked list (added at the head).
             // (This remarks is valid for the other CycleDetection below.)
-            Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ Pierre ⇒ Stratus ∈ Nuage ⇒ Pierre" ) );
+            Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ Nuage ⇒ Pierre ⇒ Stratus ∈ Nuage" ) );
             ResultChecker.SimpleCheck( r );
         }
 
@@ -178,7 +178,7 @@ namespace CK.Setup.Tests.Dependencies
             Assert.That( r.CycleDetected, Is.Not.Null );
             Assert.That( r.SortedItems, Is.Null );
             // See remark in CycleDetection1.
-            Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ Pierre ∋ Rubis ⇒ Stratus ∈ Nuage ⇒ Pierre" ) );
+            Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ Nuage ⇒ Pierre ∋ Rubis ⇒ Stratus ∈ Nuage" ) );
             ResultChecker.SimpleCheck( r );
         }
 
@@ -199,7 +199,7 @@ namespace CK.Setup.Tests.Dependencies
             Assert.That( r.SortedItems, Is.Null );
             // See remark in CycleDetection1.
             // Here we can see the Required By relation: ⇆
-            Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ Pierre ∋ Rubis ⇆ Stratus ∈ Nuage ⇒ Pierre" ) );
+            Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ Nuage ⇒ Pierre ∋ Rubis ⇆ Stratus ∈ Nuage" ) );
             ResultChecker.SimpleCheck( r );
         }
 
@@ -209,7 +209,7 @@ namespace CK.Setup.Tests.Dependencies
             var c = new TestableContainer( "Root",
                 new TestableItem( "A", "=>B" ),
                 new TestableItem( "B" ),
-                new TestableContainer( "G1", 
+                new TestableContainer( "G1",
                     new TestableItem( "C", "=> AMissingDependency", "=>E" ),
                     new TestableContainer( "G1.0", "=> A",
                         new TestableItem( "NeedInZ", "=>InsideZ" )
@@ -218,8 +218,8 @@ namespace CK.Setup.Tests.Dependencies
                 new TestableContainer( "Z", "=>E",
                     new TestableItem( "InsideZ", "=>C", "=> ?OptionalMissingDep" )
                     ),
-                new TestableItem( "E", "=>B"),
-                new TestableContainer( "Pierre", 
+                new TestableItem( "E", "=>B" ),
+                new TestableContainer( "Pierre",
                     new TestableItem( "Rubis" )
                     ),
                 new TestableContainer( "Nuage", "=>Pierre",
@@ -228,11 +228,31 @@ namespace CK.Setup.Tests.Dependencies
                     )
                 );
             var r = DependencySorter.OrderItems( c );
-            
+
             Assert.That( r.ItemIssues.Any( m => m.MissingDependencies.Contains( "AMissingDependency" ) ) );
 
             new ResultChecker( r ).CheckRecurse( "Root" );
             ResultChecker.SimpleCheck( r );
+        }
+
+        [Test]
+        public void SimpleGraph()
+        {
+            var pAB = new TestableContainer( "PackageForAB" );
+            var oA = new TestableItem( "A" );
+            oA.Container = pAB;
+            var oB = new TestableItem( "B" );
+            oB.Container = pAB;
+            oB.Requires.Add( oA );
+            var pABLevel1 = new TestableContainer( "PackageForABLevel1" );
+            pABLevel1.Requires.Add( pAB );
+            var oBLevel1 = new TestableItem( "ObjectBLevel1" );
+            oBLevel1.Container = pABLevel1;
+            oBLevel1.Requires.Add( oA );
+
+            var r = DependencySorter.OrderItems( pAB, oA, oB, pABLevel1, oBLevel1 );
+            Assert.That( r.IsComplete );
+            r.AssertOrdered( "PackageForAB.Head", "A", "B", "PackageForAB", "PackageForABLevel1.Head", "ObjectBLevel1", "PackageForABLevel1" );
         }
     }
 }
