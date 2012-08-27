@@ -17,5 +17,9 @@
           can be created by the Package and/or the Item.
     -->
     <Add FullName="Test.fTest" />
+
+    <Add FullName="Test.sStoredProcedureAe" />
+    <Add FullName="Test.sStoredProcedureB" />
+    <Add FullName="Test.sStoredProcedureC" />
   </Content>
 </SetupPackage>
