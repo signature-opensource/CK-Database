@@ -34,25 +34,41 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CK.Core, Version=0.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.Core.2.7.3\lib\net40\CK.Core.dll</HintPath>
+    <Reference Include="CK.Core">
+      <HintPath>..\packages\CK.Core.2.7.40\lib\net40\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ObjectSupport\Database\DatabaseItem.cs" />
-    <Compile Include="ObjectSupport\PackageSetupDriver.cs" />
-    <Compile Include="ObjectSupport\Database\DefaultDatabase.cs" />
+    <Compile Include="..\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="Labo\Copy of Tests.cs" />
+    <Compile Include="Labo\PathImpl.cs" />
+    <Compile Include="ObjectSupport\Container\ContainerAttribute.cs" />
+    <Compile Include="ObjectSupport\Container\ContainerType.cs" />
+    <Compile Include="ObjectSupport\Container\ContainerTypeItem.cs" />
+    <Compile Include="ObjectSupport\Database\SqlConnectionItem.cs" />
+    <Compile Include="ObjectSupport\Database\SqlConnectionSetupDriver.cs" />
+    <Compile Include="ObjectSupport\Database\SqlDatabaseItem.cs" />
+    <Compile Include="ObjectSupport\Database\SqlDefaultDatabase.cs" />
+    <Compile Include="ObjectSupport\Package\PackageType.cs" />
+    <Compile Include="ObjectSupport\Package\PackageTypeItem.cs" />
+    <Compile Include="ObjectSupport\SqlPackage\SqlPackageAttribute.cs" />
+    <Compile Include="ObjectSupport\Package\PackageAttribute.cs" />
+    <Compile Include="ObjectSupport\SqlPackage\SqlPackageTypeItem.cs" />
+    <Compile Include="ObjectSupport\SqlPackage\SqlPackageType.cs" />
+    <Compile Include="ObjectSupport\SqlTable\SqlTableOverrideAttribute.cs" />
+    <Compile Include="ObjectSupport\SqlTable\SqlTableAttribute.cs" />
+    <Compile Include="ObjectSupport\SqlTable\SqlTableType.cs" />
+    <Compile Include="ObjectSupport\SqlTable\SqlTableTypeItem.cs" />
+    <Compile Include="ObjectSupport\SqlTypedObjectStandardHandler.cs" />
     <Compile Include="SqlManagerProvider.cs" />
-    <Compile Include="ObjectSupport\Database\Database.cs" />
-    <Compile Include="ObjectSupport\Database\DatabaseSetupDriver.cs" />
-    <Compile Include="ObjectSupport\Package.cs" />
-    <Compile Include="ObjectSupport\PackageAttribute.cs" />
-    <Compile Include="ObjectSupport\SetupObjectRegisterer.cs" />
-    <Compile Include="ObjectSupport\TableAttribute.cs" />
-    <Compile Include="ObjectSupport\Tests.cs" />
+    <Compile Include="ObjectSupport\Database\SqlDatabase.cs" />
+    <Compile Include="ObjectSupport\Database\SqlDatabaseSetupDriver.cs" />
+    <Compile Include="Labo\Tests.cs" />
     <Compile Include="SqlObject\SqlFunction.cs" />
     <Compile Include="SqlObject\SqlView.cs" />
     <Compile Include="SqlObject\SqlProcedure.cs" />
@@ -68,6 +84,14 @@
     <Compile Include="SqlObjectDriver.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">
+      <Project>{87F54185-5226-4EEE-8D59-5D03E6C1AB7C}</Project>
+      <Name>CK.Setup.Dependency</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CK.Setup.StObj\CK.Setup.StObj.csproj">
+      <Project>{DF7A0B05-4B48-44C2-B6C8-6FCFD66DF8F8}</Project>
+      <Name>CK.Setup.StObj</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CK.SqlServer\CK.SqlServer.csproj">
       <Project>{95912A3B-758E-474B-AF34-BE24C4E3BF56}</Project>
       <Name>CK.SqlServer</Name>

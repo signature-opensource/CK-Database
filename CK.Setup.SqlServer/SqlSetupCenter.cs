@@ -14,7 +14,7 @@ namespace CK.Setup.SqlServer
         SqlSetupContext _context;
         SetupCenter _center;
         SqlFileDiscoverer _fileDiscoverer;
-        AmbiantContractCollector _collector;
+        //TypedObjectCollector _collector;      
 
         public SqlSetupCenter( SqlSetupContext context )
         {
@@ -24,7 +24,7 @@ namespace CK.Setup.SqlServer
             var memory = new SqlSetupSessionMemoryProvider( _context.DefaultDatabase );
             _center = new SetupCenter( versionRepo, memory,_context.Logger, _context );
             _fileDiscoverer = new SqlFileDiscoverer( new SqlObjectBuilder(), _context.Logger );
-            _collector = new AmbiantContractCollector();
+            //_collector = new TypedObjectCollector( context.TypedObjectHandlers.ToReadOnlyList() );
             _center.ScriptTypeManager.Register( new SqlScriptTypeHandler( _context.DefaultDatabase ) );
         }
 
@@ -37,19 +37,43 @@ namespace CK.Setup.SqlServer
         {
             return _fileDiscoverer.DiscoverSqlFiles( directoryPath, _center.Scripts );
         }
+        
 
-        public void DiscoverObjects( Assembly assembly )
+        /// <summary>
+        /// Explicitely discovers objects and types in the given assembly (its dependencies are not processed).
+        /// This should be used if and only if <see cref="SqlSetupContext.AutomaticAssemblyDiscovering"/> is set to false.
+        /// </summary>
+        /// <param name="assembly">The assembly to discover.</param>
+        public void ExplicitDiscover( Assembly assembly )
         {
-            _collector.Register( assembly.GetTypes() ); 
+//            _collector.RegisterTypes( assembly, _context.Logger ); 
         }
 
+
+        /// <summary>
+        /// Executes the setup. See remarks.
+        /// </summary>
+        /// <returns>True if no error occured. False otherwise.</returns>
         public bool Run()
         {
-            var r = _collector.GetResult();
-            if( !r.CheckErrorAndWarnings( _context.Logger ) ) return false;
-
-
             return _center.Run( _fileDiscoverer );
+
+            if( _context.AutomaticAssemblyDiscovering )
+            {
+                using( _context.Logger.OpenGroup( LogLevel.Info, "Automatic discovering of currently loaded assemblies." ) )
+                {
+                    AssemblyDiscoverer p = new AssemblyDiscoverer( _context.Logger );
+                    try
+                    {
+                        p.AssemblyFilter = a => _context.IgnoredAssemblyNames.Contains( a.GetName().Name ) == false;
+                        p.DiscoverCurrenlyLoadedAssemblies();
+                    }
+                    catch( Exception ex )
+                    {
+                        _context.Logger.Error( ex );
+                    }
+                }
+            }
         }
     }
 }

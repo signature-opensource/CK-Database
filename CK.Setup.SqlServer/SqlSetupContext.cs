@@ -11,6 +11,8 @@ namespace CK.Setup.SqlServer
     {
         SqlManager _defaultDatabase;
         SqlManagerProvider _otherDatabases;
+        //List<TypedObjectHandler> _typedObjectHandlers;
+        List<string> _ignoredAssemblies;
 
         public SqlSetupContext( string defaultDatabaseConnectionString, IActivityLogger logger )
         {
@@ -18,6 +20,27 @@ namespace CK.Setup.SqlServer
             _defaultDatabase.Logger = logger;
             _defaultDatabase.OpenFromConnectionString( defaultDatabaseConnectionString );
             _otherDatabases = new SqlManagerProvider( logger );
+            //_typedObjectHandlers = new List<TypedObjectHandler>();
+            _ignoredAssemblies = new List<string>();
+
+            //_typedObjectHandlers.Add( new SqlTypedObjectStandardHandler() );
+
+            _ignoredAssemblies.Add( "System" );
+            _ignoredAssemblies.Add( "System.Core" );
+            _ignoredAssemblies.Add( "System.Data" );
+            _ignoredAssemblies.Add( "System.Data.DataSetExtensions" );
+            _ignoredAssemblies.Add( "System.Data.Xml" );
+            _ignoredAssemblies.Add( "System.Data.Xml.Linq" );
+            
+            _ignoredAssemblies.Add( "CK.Core" );
+            _ignoredAssemblies.Add( "CK.Setup" );
+            _ignoredAssemblies.Add( "CK.SqlServer" );
+
+            _ignoredAssemblies.Add( "Microsoft.CSharp" );
+            _ignoredAssemblies.Add( "Microsoft.Practices.ServiceLocation" );
+            _ignoredAssemblies.Add( "Microsoft.Practices.Unity" );
+            _ignoredAssemblies.Add( "Microsoft.Practices.Unity.Configuration" );
+
         }
 
         public SqlManager DefaultDatabase
@@ -35,9 +58,22 @@ namespace CK.Setup.SqlServer
             get { return _defaultDatabase.Logger; }
         }
 
+        //public IList<TypedObjectHandler> TypedObjectHandlers
+        //{
+        //    get { return _typedObjectHandlers; }
+        //}
+
+        public bool AutomaticAssemblyDiscovering { get; set; }
+
+        public IList<string> IgnoredAssemblyNames
+        {
+            get { return _ignoredAssemblies; }
+        }
+
         public virtual ItemDriver CreateDriver( Type driverType, ItemDriver.BuildInfo info )
         {
             if( driverType == typeof( SqlObjectDriver ) ) return new SqlObjectDriver( info, _defaultDatabase );
+            if( driverType == typeof( SqlConnectionSetupDriver ) ) return new SqlConnectionSetupDriver( info, DoObtainManager );
             return null;
         }
 
@@ -45,14 +81,14 @@ namespace CK.Setup.SqlServer
         {
             if( containerType == typeof( ContainerDriver ) ) return new ContainerDriver( info );
             if( containerType == typeof( PackageDriver ) ) return new PackageDriver( info );
-            if( containerType == typeof( DatabaseSetupDriver ) ) return new DatabaseSetupDriver( info, DoObtainManager );
+            if( containerType == typeof( SqlDatabaseSetupDriver ) ) return new SqlDatabaseSetupDriver( info );
             return null;
         }
 
         SqlManager DoObtainManager( string dbName )
         {
             if( dbName == null ) throw new ArgumentNullException( "dbName" );
-            if( dbName == Database.DefaultDatabaseName ) return _defaultDatabase;
+            if( dbName == SqlDatabase.DefaultDatabaseName ) return _defaultDatabase;
             SqlManager m = ObtainManager( dbName );
             if( m == null ) Logger.Warn( "Database named '{0}' is not mapped.", dbName );
             return m;

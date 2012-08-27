@@ -6,22 +6,22 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
-    /// Driver for <see cref="IPackage"/>.
+    /// Driver for <see cref="IPackageItem"/>.
     /// </summary>
     public class PackageDriver : ContainerDriver
     {
         public PackageDriver( BuildInfo info )
             : base( info )
         {
-            if( !(info.SortedItem.Item is IPackage) ) throw new InvalidOperationException( "Attempt to build a PackageDriver for an item that is not a IPackage." );
+            if( !(info.SortedItem.Item is IPackageItem) ) throw new InvalidOperationException( "Attempt to build a PackageDriver for an item that is not a IPackageItem." );
         }
 
         /// <summary>
         /// Gets the package to setup.
         /// </summary>
-        public new IPackage Item
+        public new IPackageItem Item
         {
-            get { return (IPackage)base.Item; }
+            get { return (IPackageItem)base.Item; }
         }
 
 

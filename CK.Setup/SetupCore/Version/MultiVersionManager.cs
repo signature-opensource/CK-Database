@@ -22,6 +22,9 @@ namespace CK.Setup
                 | RegexOptions.CultureInvariant
                 | RegexOptions.Compiled );
 
+        /// <summary>
+        /// Initializes a new <see cref="MultiVersionManager"/> with a null <see cref="P:Version"/>.
+        /// </summary>
         public MultiVersionManager()
         {
             _versions = new SortedArrayList<Version>();
