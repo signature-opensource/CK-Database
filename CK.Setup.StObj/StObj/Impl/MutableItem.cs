@@ -206,24 +206,40 @@ namespace CK.Setup
             int i = 0;
             foreach( MutableParameterType t in _constructParameterEx )
             {
-                object instance = null;
-                MutableItem resolved = t.Resolved;
-                if( resolved != null )
+                object instance = Type.Missing;
+                // We inject our "setup logger" only if it is exactly the formal parameter: ... , IActivityLogger logger, ...
+                // This enforces code homogeneity and let any other IActivityLogger injection.
+                if( t.IsSetupLogger )
                 {
-                    instance = resolved.StObj;
+                    instance = logger;
                 }
-                else if( !t.StObjRequired )
+                else
                 {
-                    // Resolve failed to find a StObj, but it was not required to be a StObj.
-                    // We try an external resolution. If it fails, we may accept the null
-                    // depending on IsOptional flag.
-                    if( dependencyResolver != null ) instance = dependencyResolver.Resolve( t );
-                }
-                // By throwing an exception here, we stop the process and avoid the construction 
-                // of an invalid object graph.
-                if( instance == null && !t.IsOptional )
-                {
-                    throw new CKException( "Unable to resolve non optional: {0}", t.ToString() );
+                    MutableItem resolved = t.Resolved;
+                    if( resolved != null )
+                    {
+                        instance = resolved.StObj;
+                    }
+                    else if( t.StObjRequirementBehavior != StObjRequirementBehavior.ErrorIfNotStObj )
+                    {
+                        // Resolve failed to find a StObj, but it was not required to be a StObj.
+                        // We try an external resolution with the full data of the parameter (we may call this
+                        // with a null Type for instance to enable name based resolution for instance).
+                        //
+                        // If it fails, we may accept the null depending on IsOptional flag.
+                        //
+                        if( dependencyResolver != null ) instance = dependencyResolver.Resolve( logger, t );
+                    }
+                    // By throwing an exception here, we stop the process and avoid the construction 
+                    // of an invalid object graph.
+                    if( instance == Type.Missing && !t.IsRealParameterOptional )
+                    {
+                        throw new CKException( "{0}: Unable to resolve non optional.", t.ToString() );
+                    }
+                    if( instance == null && !t.IsOptional )
+                    {
+                        throw new CKException( "{0}: Non optional parameter can not be set to null.", t.ToString() );
+                    }
                 }
                 parameters[i++] = instance;
             }

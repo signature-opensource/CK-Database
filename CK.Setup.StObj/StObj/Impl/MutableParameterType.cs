@@ -11,7 +11,7 @@ namespace CK.Setup
     /// <summary>
     /// Describes a parameter of a Construct method.
     /// </summary>
-    internal class MutableParameterType : MutableReferenceType, IMutableParameterType
+    internal class MutableParameterType : MutableReferenceType, IMutableParameterType, IParameterType
     {
         ParameterInfo _param;
         MutableItem _resolved;
@@ -24,13 +24,22 @@ namespace CK.Setup
             _resolved = _unresolved;
             Type = param.ParameterType;
             IsOptional = param.IsOptional;
+            if( IsSetupLogger ) StObjRequirementBehavior = Setup.StObjRequirementBehavior.None;
         }
 
         public int Index { get { return _param.Position; } }
 
         public string Name { get { return _param.Name; } }
 
+        public bool IsRealParameterOptional { get { return _param.IsOptional; } }
+       
         public bool IsOptional { get; set; }
+
+
+        internal bool IsSetupLogger
+        {
+            get { return _param.ParameterType == typeof( IActivityLogger ) && _param.Name == "logger"; }
+        }
 
         internal MutableItem Resolved 
         { 
@@ -47,15 +56,30 @@ namespace CK.Setup
             if( Type == null && !IsOptional )
             {
                 Error( logger, "Type can not be null since the parameter is not optional" );
+                return _resolved = null;
+            }
+            Debug.Assert( Type != null || IsOptional );
+            if( Type != null )
+            {
+                if( !_param.ParameterType.IsAssignableFrom( Type ) )
+                {
+                    Error( logger, String.Format( "Type '{0}' is not compatible with the parameter type ('1')", Type.FullName, _param.ParameterType.Name ) );
+                    return _resolved = null;
+                }
             }
             return _resolved = base.Resolve( logger, collector, ownerCollector );
         } 
 
         public override string ToString()
         {
-            string s = String.Format( "Construct parameter '{0}' (n°{1}) for '{2}'", Name, Index, Owner.ToString() );
+            string s = String.Format( "Construct parameter '{0}' (n°{1}) for '{2}'", Name, Index+1, Owner.ToString() );
             if( (Kind & MutableReferenceKind.Container) != 0 ) s += " (Container)";
             return s;
+        }
+
+        IStObj IParameterType.Owner
+        {
+            get { return (IStObj)Owner; }
         }
 
     }

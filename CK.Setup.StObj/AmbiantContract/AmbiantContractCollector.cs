@@ -107,7 +107,7 @@ namespace CK.Core
 
             public static bool Register( AmbiantContractCollector collector, Type t, out AmbiantTypeModel result )
             {
-                Debug.Assert( t != typeof( object ) );
+                Debug.Assert( t != null && t != typeof( object ) && t.IsClass );
                 
                 // Skips already processed types.
                 if( collector._collector.TryGetValue( t, out result ) ) return false;
@@ -116,26 +116,19 @@ namespace CK.Core
                 AmbiantTypeModel parent = null;
                 if( t.BaseType != typeof(object) ) Register( collector, t.BaseType, out parent );
 
-                bool hasAmbiant = typeof( IAmbiantContract ).IsAssignableFrom( t );
-                if( !hasAmbiant )
+                if( typeof( IAmbiantContract ).IsAssignableFrom( t ) || typeof( IAmbiantContractDefiner ).IsAssignableFrom( t.BaseType ) )
                 {
-                    bool hasDefiner = typeof( IAmbiantContractDefiner ).IsAssignableFrom( t );
-                    if( hasDefiner )
-                    {
-                        hasAmbiant = typeof( IAmbiantContractDefiner ).IsAssignableFrom( t.BaseType );
-                    }
-                }
-                if( !hasAmbiant )
-                {
-                    // Marks the type as a registered one.
-                    collector._collector.Add( t, null );
-                }
-                else
-                {
+                    Debug.Assert( AmbiantContractCollector.IsAmbiantContract( t ) );
                     result = new AmbiantTypeModel( parent, t );
                     if( parent == null ) collector._roots.Add( result );
                     collector._collector.Add( t, result );
                     if( collector._contextDispatcher != null ) collector._contextDispatcher.Dispatch( t, result.FinalContexts );
+                }
+                else
+                {
+                    Debug.Assert( AmbiantContractCollector.IsAmbiantContract( t ) == false );
+                    // Marks the type as a registered one.
+                    collector._collector.Add( t, null );
                 }
                 return true;
             }
@@ -162,13 +155,14 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Registers multiple types. Only classes are actually registered.
+        /// Registers multiple types. Only classes are actually registered (the enumearation 
+        /// can safely contain null references and interfaces).
         /// </summary>
         /// <param name="types"></param>
         public void Register( IEnumerable<Type> types )
         {
             if( types == null ) throw new ArgumentNullException( "types" );
-            foreach( var t in types.Where( c => c.IsClass && c != typeof(object) ) )
+            foreach( var t in types.Where( c => c != null && c.IsClass && c != typeof(object) ) )
             {
                 AmbiantTypeModel result;
                 AmbiantTypeModel.Register( this, t, out result );
@@ -316,6 +310,22 @@ namespace CK.Core
                 : "[" + context.Name + "]" + type.FullName;
         }
 
+        /// <summary>
+        /// Tests whether a Type is an <see cref="IAmbiantContract"/>.
+        /// It applies to interfaces and classes (for a class <see cref="IAmbiantContractDefiner"/> is 
+        /// checked on its base class).
+        /// </summary>
+        /// <param name="t">Type to challenge.</param>
+        /// <returns>True if the type is an ambiant contract.</returns>
+        static public bool IsAmbiantContract( Type t )
+        {
+            return 
+                t != null 
+                && t != typeof( object )
+                && (typeof( IAmbiantContract ).IsAssignableFrom( t ) 
+                    || 
+                   (t.IsClass && typeof( IAmbiantContractDefiner ).IsAssignableFrom( t.BaseType )));
+        }
     }
 
 }

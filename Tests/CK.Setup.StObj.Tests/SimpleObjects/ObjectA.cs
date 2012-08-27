@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Reflection;
-using CK.Setup;
+﻿using System.Reflection;
 using NUnit.Framework;
 
 namespace CK.Setup.StObj.Tests.SimpleObjects
@@ -15,7 +10,7 @@ namespace CK.Setup.StObj.Tests.SimpleObjects
         public int ConstructCount { get; protected set; }
 
         void Construct()
-        {
+        { 
             Assert.That( ConstructCount, Is.EqualTo( 0 ), "First Construct." );
             SimpleObjectsTrace.LogMethod( MethodInfo.GetCurrentMethod() );
             ConstructCount = ConstructCount + 1;

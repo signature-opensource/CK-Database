@@ -58,24 +58,22 @@ namespace CK.Setup.SqlServer
         {
             return _center.Run( _fileDiscoverer );
 
-            //if( _context.AutomaticAssemblyDiscovering )
-            //{
-            //    using( _context.Logger.OpenLoggerGroup( LogLevel.Info, "Automatic discovering of currently loaded assemblies." ) )
-            //    {
-            //        AssemblyDiscoverer p = new AssemblyDiscoverer( _context.Logger );
-            //        try
-            //        {
-            //            p.Start( a => _context.IgnoredAssemblies.Contains( a.GetName().Name ) == false, ExplicitDiscover );
-            //            p.DiscoverCurrenlyLoadedAssemblies();
-            //        }
-            //        finally
-            //        {
-            //            p.Stop();
-            //        }
-            //    }
-            //}
-            //MultiTypedObjectResult r = _collector.GetResult( _context.Logger );
-            //return !r.HasFatalError && _center.Run( _fileDiscoverer, r );
+            if( _context.AutomaticAssemblyDiscovering )
+            {
+                using( _context.Logger.OpenGroup( LogLevel.Info, "Automatic discovering of currently loaded assemblies." ) )
+                {
+                    AssemblyDiscoverer p = new AssemblyDiscoverer( _context.Logger );
+                    try
+                    {
+                        p.AssemblyFilter = a => _context.IgnoredAssemblyNames.Contains( a.GetName().Name ) == false;
+                        p.DiscoverCurrenlyLoadedAssemblies();
+                    }
+                    catch( Exception ex )
+                    {
+                        _context.Logger.Error( ex );
+                    }
+                }
+            }
         }
     }
 }

@@ -86,11 +86,10 @@ namespace CK.Setup
                 foreach( StObjCollectorContextualResult r in result )
                 {
                     using( logger.Catch( e => r.SetFatal() ) )
-                    using( r.Context != AmbiantContractCollector.DefaultContext ? logger.OpenGroup( LogLevel.Info, "Working on Typed Context '{0}'.", r.Context.Name ) : null )
+                    using( logger.OpenGroup( LogLevel.Info, "Working on Context '{0}'.", r.Context == AmbiantContractCollector.DefaultContext ? "(default)" : r.Context.Name ) )
                     {
                         CreateMutableItems( logger, r );
-                        if( r.Context != AmbiantContractCollector.DefaultContext ) logger.CloseGroup();
-                        logger.CloseGroup( String.Format( " {0} objects created for {1} types.", r.MutableItems.Count, r.AmbiantContractResult.ConcreteClasses.Count ) );
+                        logger.CloseGroup( String.Format( " {0} items created for {1} types.", r.MutableItems.Count, r.AmbiantContractResult.ConcreteClasses.Count ) );
                     }
                 }
                 if( result.HasFatalError ) return result;
@@ -117,30 +116,41 @@ namespace CK.Setup
 
             Debug.Assert( sortResult != null );
 
-            if( logger.Filter == LogLevelFilter.None )
-            {
-                using( logger.OpenGroup( LogLevel.Trace, "Object construction order:" ) )
-                {
-                    foreach( ISortedItem sorted in sortResult.SortedItems )
-                    {
-                        logger.UnfilteredLog( LogLevel.Trace, sorted.FullName );
-                    }
-                }
-            }
-
             // The structure objects have been ordered by their dependencies (and optionally
             // by the IStObjExternalConfigurator). 
             // Their instance has been set during the first step (CreateMutableItems).
             // We can now call the Construct methods.
-            foreach( ISortedItem sorted in sortResult.SortedItems )
+
+            using( logger.Catch( e => result.SetFatal() ) )
+            using( logger.OpenGroup( LogLevel.Info, "Initializing object graph." ) )
             {
-                var m = (MutableItem)sorted.Item;
-                if( !m.IsContainer || sorted.IsContainerHead )
+                foreach( ISortedItem sorted in sortResult.SortedItems )
                 {
-                    m.CallConstruct( logger, _dependencyResolver );
+                    var m = (MutableItem)sorted.Item;
+                    if( !m.IsContainer || sorted.IsContainerHead )
+                    {
+                        using( logger.OpenGroup( LogLevel.Trace, "Initializing '{0}'.", m.ToString() ) )
+                        {
+                            try
+                            {
+                                m.CallConstruct( logger, _dependencyResolver );
+                            }
+                            catch( Exception ex )
+                            {
+                                logger.Error( ex );
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Debug.Assert( m.IsContainer && !sorted.IsContainerHead );
+                        // We may call here a ConstructContent( IReadOnlyList<IStObj> packageContent ).
+                        // But, is it a good thing for a package object to know its content detail ?
+                    }
                 }
+                return result;
             }
-            return result;
         }
 
         /// <summary>

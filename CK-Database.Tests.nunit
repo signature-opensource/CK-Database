@@ -9,8 +9,8 @@
     <assembly path="Output\Tests\Debug\CK.Setup.SqlServer.Tests.dll" />
   </Config>
   <Config name="Release" binpathtype="Auto">
-    <assembly path="Output\Tests\Debug\CK.Setup.Dependency.Tests.dll" />
-    <assembly path="Output\Tests\Debug\CK.Setup.StObj.Tests.dll" />
+    <assembly path="Output\Tests\Release\CK.Setup.Dependency.Tests.dll" />
+    <assembly path="Output\Tests\Release\CK.Setup.StObj.Tests.dll" />
     <assembly path="Output\Tests\Release\CK.Setup.Tests.dll" />
     <assembly path="Output\Tests\Release\CK.Setup.Database.Tests.dll" />
     <assembly path="Output\Tests\Release\CK.SqlServer.Tests.dll" />

@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-using System.Reflection;
+﻿using System.Reflection;
+using CK.Core;
 
 namespace CK.Setup.StObj.Tests.SimpleObjects
 {
     public static class SimpleObjectsTrace
     {
-        public static StringWriter Log = new StringWriter();
-
         public static void LogMethod( MethodBase m )
         {
-            Log.WriteLine( "{0}.{1}", m.DeclaringType.FullName, m.Name );
+            TestHelper.Logger.Trace( "{0}.{1} {2} has been called.", m.DeclaringType.Name, m.Name, m.IsVirtual ? "(virtual)" : "" );
         }
     }
 }

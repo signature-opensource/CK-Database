@@ -180,7 +180,7 @@ namespace CK.Core
                 var disco = new DiscoveredInfo( assembly );
                 _index.Add( assembly, disco );
 
-                using( _logger.OpenGroup( LogLevel.Info, "Discovering assembly '{0}'.", assembly.FullName ) )
+                using( _logger.OpenGroup( LogLevel.Trace, "Discovering assembly '{0}'.", assembly.FullName ) )
                 {
                     try
                     {

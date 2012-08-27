@@ -21,8 +21,16 @@ namespace CK.Setup
         string Name { get; }
 
         /// <summary>
-        /// Gets or sets whether this parameter is optional (ie. can be null).
-        /// Defaults to false: a parameter instance should be found unless explicitely said as optionnal.
+        /// Gets whether the formal parameter is optional (<see cref="Type.Missing"/> can be used as the parameter value 
+        /// at invocation time, see <see cref="ParameterInfo.IsOptional"/>).
+        /// </summary>
+        bool IsRealParameterOptional { get; }
+        
+        /// <summary>
+        /// Gets or sets whether this parameter can be considered as optional.
+        /// Defaults to <see cref="IsRealParameterOptional"/>.
+        /// When changed by <see cref="IStObjExternalConfigurator"/> from false to true (the formal parameter is NOT optional), null becomes
+        /// an acceptable value for the parameter, otherwise null is not accepted.
         /// </summary>
         bool IsOptional { get; set; }
 

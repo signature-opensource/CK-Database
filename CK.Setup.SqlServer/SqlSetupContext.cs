@@ -65,7 +65,7 @@ namespace CK.Setup.SqlServer
 
         public bool AutomaticAssemblyDiscovering { get; set; }
 
-        public IList<string> IgnoredAssemblies
+        public IList<string> IgnoredAssemblyNames
         {
             get { return _ignoredAssemblies; }
         }

@@ -13,9 +13,10 @@ namespace CK.Core
     {
         /// <summary>
         /// Dispatchs the type to zero, one or mutiple contexts or keeps it in the programmatically defined contexts.
+        /// Clearing <paramref name="contexts"/> removes the type from the whole setup.
         /// </summary>
         /// <param name="t">The type to map.</param>
-        /// <param name="contexts">Contexts into which the type must be defined.</param>
+        /// <param name="contexts">Contexts into which the type is defined. This set can be changed.</param>
         void Dispatch( Type t, ISet<Type> contexts );
     }
 }

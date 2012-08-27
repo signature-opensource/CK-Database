@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using CK.Core;
+using System.Diagnostics;
 
 namespace CK.Setup
 {
@@ -15,14 +16,20 @@ namespace CK.Setup
         {
             _owner = owner;
             _kind = kind;
-            if( _kind == MutableReferenceKind.Requires || _kind == MutableReferenceKind.Container ) StObjRequired = true; 
+            if( _kind == MutableReferenceKind.Requires || (_kind&MutableReferenceKind.Container) != 0 ) StObjRequirementBehavior = StObjRequirementBehavior.ErrorIfNotStObj;
+            else if( _kind == MutableReferenceKind.RequiredBy ) StObjRequirementBehavior = StObjRequirementBehavior.None;
+            else
+            {
+                Debug.Assert( (_kind & MutableReferenceKind.ConstructParameter) != 0 );
+                StObjRequirementBehavior = StObjRequirementBehavior.WarnIfNotStObj;
+            }
         }
 
         public IStObjMutableItem Owner { get { return _owner; } }
 
         public MutableReferenceKind Kind { get { return _kind; } }
 
-        public bool StObjRequired { get; set; }
+        public StObjRequirementBehavior StObjRequirementBehavior { get; set; }
 
         public Type Context { get; set; }
 
@@ -32,6 +39,12 @@ namespace CK.Setup
         {
             MutableItem result = null;
             if( Type == null ) return null;
+
+            if( !AmbiantContractCollector.IsAmbiantContract( Type ) )
+            {
+                WarnOrErrorIfStObjRequired( logger, String.Format( "Type '{0}' is not an Ambiant contract", Type.FullName ) );
+                return null;
+            }
 
             if( Context != null )
             {
@@ -47,7 +60,7 @@ namespace CK.Setup
                 result = ctxResult.Find( Type );
                 if( result == null )
                 {
-                    WarnOrError( logger, String.Format( "{0} not found", AmbiantContractCollector.DisplayName( Context, Type ) ) );
+                    WarnOrErrorIfStObjRequired( logger, String.Format( "{0} not found", AmbiantContractCollector.DisplayName( Context, Type ) ) );
                     return null;
                 }
             }
@@ -61,7 +74,7 @@ namespace CK.Setup
                     var all = collector.FindMutableItemsFor( Type ).ToList();
                     if( all.Count == 0 )
                     {
-                        WarnOrError( logger, String.Format( "Type {0} not found in any context", Type.FullName ) );
+                        WarnOrErrorIfStObjRequired( logger, String.Format( "Type '{0}' not found in any context", Type.FullName ) );
                         return null;
                     }
                     if( all.Count > 1 )
@@ -77,13 +90,13 @@ namespace CK.Setup
             return result;
         }
 
-        private void WarnOrError( IActivityLogger logger, string text )
+        private void WarnOrErrorIfStObjRequired( IActivityLogger logger, string text )
         {
-            if( StObjRequired )
+            if( StObjRequirementBehavior == Setup.StObjRequirementBehavior.ErrorIfNotStObj )
             {
                 Error( logger, text );
             }
-            else
+            else if( StObjRequirementBehavior == Setup.StObjRequirementBehavior.WarnIfNotStObj )
             {
                 Warn( logger, text );
             }
@@ -91,7 +104,7 @@ namespace CK.Setup
 
         protected void Warn( IActivityLogger logger, string text )
         {
-            logger.Warn( "{0}: {1}. It is ignored.", ToString(), text );
+            logger.Warn( "{0}: {1}.", ToString(), text );
         }
 
         protected void Error( IActivityLogger logger, string text )

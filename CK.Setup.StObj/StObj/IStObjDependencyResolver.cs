@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using CK.Core;
 
 namespace CK.Setup
 {
     public interface IStObjDependencyResolver
     {
-        object Resolve( IMutableParameterType parameter );
+        object Resolve( IActivityLogger logger, IParameterType parameter );
     }
 
 }

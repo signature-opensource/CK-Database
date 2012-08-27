@@ -90,7 +90,7 @@ namespace CK.Setup
                 Debug.Assert( _drivers.Count == 0 || _drivers[_drivers.Count-1].Index < d.Index );
                 _drivers.Add( d );
                 _index.Add( d.FullName, d );
-                _index.Add( d.Item, d );
+                if( !d.IsContainerHead ) _index.Add( d.Item, d );
             }
 
         }
