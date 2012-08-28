@@ -18,8 +18,8 @@
     -->
     <Add FullName="Test.fTest" />
 
-    <Add FullName="Test.sStoredProcedureAe" />
-    <Add FullName="Test.sStoredProcedureB" />
-    <Add FullName="Test.sStoredProcedureC" />
+    <Add FullName="Test.sOneStoredProcedureA" />
+    <Add FullName="Test.sStoredProcedureRequires" />
+
   </Content>
 </SetupPackage>

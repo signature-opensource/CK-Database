@@ -14,8 +14,9 @@ namespace CK.Setup
         readonly Type _objectType;
         readonly Type _context;
         readonly object _stObj;
-        readonly MutableItem _parent;
-        
+        readonly MutableItem _generalization;
+        MutableItem _specialization;
+
         MutableReferenceType _container;
         List<MutableReferenceType> _requires;
         IReadOnlyList<MutableReferenceType> _requiresEx;
@@ -28,8 +29,8 @@ namespace CK.Setup
 
         string _dFullName;
         MutableItem _dContainer;
-        IEnumerable<MutableItem> _dRequires;
-        IEnumerable<MutableItem> _dRequiredBy;
+        IReadOnlyList<MutableItem> _dRequires;
+        IReadOnlyList<MutableItem> _dRequiredBy;
 
         internal MutableItem( MutableItem parent, Type context, Type objectType, object theObject )
         {
@@ -37,7 +38,12 @@ namespace CK.Setup
             _objectType = objectType;
             _stObj = theObject;
             _context = context;
-            _parent = parent;
+            _generalization = parent;
+            if( _generalization != null )
+            {
+                Debug.Assert( _generalization._specialization == null );
+                _generalization._specialization = this;
+            }
         }
 
         public override string ToString()
@@ -157,42 +163,74 @@ namespace CK.Setup
             }
         }
 
+        void ComputeFullNameAndResolveContainer( IActivityLogger logger, StObjCollectorResult result, StObjCollectorContextualResult contextResult, ref List<MutableItem> prevContainers )
+        {
+            if( _dFullName != null ) return;
+
+            _dFullName = AmbiantContractCollector.DisplayName( _context, _objectType );
+            _dContainer = _container.Resolve( logger, result, contextResult );
+            if( _dContainer != null )
+            {
+                _dContainer._hasBeenReferencedAsAContainer = true;
+                if( prevContainers == null ) prevContainers = new List<MutableItem>();
+                else if( prevContainers.Contains( _dContainer ) )
+                {
+                    logger.Fatal( "Recursive Container chain encountered: '{0}'.", String.Join( "', '", prevContainers.Select( m => m._dFullName ) ) );
+                    return;
+                }
+                prevContainers.Add( _dContainer );
+                Type containerContext = _dContainer.Context;
+                if( containerContext != contextResult.Context )
+                {
+                    contextResult = result[containerContext];
+                    Debug.Assert( contextResult != null );
+                }
+                _dContainer.ComputeFullNameAndResolveContainer( logger, result, contextResult, ref prevContainers );
+            }
+        }
 
         internal void PrepareDependentItem( IActivityLogger logger, StObjCollectorResult result, StObjCollectorContextualResult contextResult )
         {
             Debug.Assert( _container != null && _constructParameterEx != null );
-            Debug.Assert( _context == contextResult.Context && result[_context] == contextResult, "We are called inside our typed context, this avoids the lookup result[Context]." );
+            Debug.Assert( _context == contextResult.Context && result[_context] == contextResult, "We are called inside our typed context, this avoids the lookup result[Context] to obtain the owner's context (the default)." );
 
-            _dFullName = AmbiantContractCollector.DisplayName( _context, _objectType );
-            
-            _dContainer = _container.Resolve( logger, result, contextResult );
-            if( _dContainer != null ) _dContainer._hasBeenReferencedAsAContainer = true;
+            // Since we want to remove all the containers of the object from its parameter requirements (see below), 
+            // we can not rely on the DependencySorter to detect a cyclic chain of containers:
+            // we use the list to collect the chain of containers and detect cycles.
+            List<MutableItem> allContainers = null;
+            ComputeFullNameAndResolveContainer( logger, result, contextResult, ref allContainers );
 
             HashSet<MutableItem> req = new HashSet<MutableItem>();
-            if( _parent != null ) req.Add( _parent );
+            if( _generalization != null ) req.Add( _generalization );
             foreach( MutableItem dep in _requires.Select( r => r.Resolve( logger, result, contextResult ) ).Where( m => m != null ) )
             {
                 req.Add( dep );
             }
             if( _constructParameter != null )
             {
+                // We are here considering here that a Container parameter does NOT define a dependency to the whole container (with its content):
+                //
+                //      That seems strange: we may expect the container to be fully initialized when used as a parameter by a dependency Construct...
+                //      The fact is that we are dealing with Objects that have a method Construct, that this Construct method is called on the head
+                //      of the container (before any of its content) and that this method has no "thickness", no content in terms of dependencies: its
+                //      execution fully initializes the StOj and we can use it.
+                //      This is actually fully coherent with the way the setup works. An item of a package does not "require" its own package, it is 
+                //      contained in its package and requires some items in the package if needed.
+                // 
                 foreach( MutableParameterType t in _constructParameter )
                 {
                     // Do not consider the container as a requirement since a Container is
                     // already a dependency (on the head's Container) and that a requirement on a container
                     // targets the whole content of it (this would lead to a cycle in the dependency graph).
-                    if( (t.Kind & MutableReferenceKind.Container) == 0 )
-                    {
-                        MutableItem dep = t.Resolve( logger, result, contextResult );
-                        if( dep != null ) req.Add( dep );
-                    }
+                    MutableItem dep = t.Resolve( logger, result, contextResult );
+                    if( dep != null && (allContainers == null || allContainers.Contains( dep ) == false) ) req.Add( dep );
                 }
             }
-            _dRequires = req.ToArray();
+            _dRequires = req.ToReadOnlyList();
 
             if( _requiredBy.Count > 0 )
             {
-                _dRequiredBy = _requiredBy.Select( r => r.Resolve( logger, result, contextResult ) ).Where( m => m != null ).ToArray();
+                _dRequiredBy = _requiredBy.Select( r => r.Resolve( logger, result, contextResult ) ).Where( m => m != null ).ToReadOnlyList();
             }
         }
 
@@ -317,9 +355,43 @@ namespace CK.Setup
             get { return _hasBeenReferencedAsAContainer; }
         }
 
-        public IStObj Parent
+        public IStObj Generalization
         {
-            get { return _parent; }
+            get { return _generalization; }
+        }
+
+        public IStObj Specialization
+        {
+            get { return _specialization; }
+        }
+
+        public IEnumerable<IStObj> SpecializationPath
+        {
+            get
+            {
+                MutableItem s = this;
+                do
+                {
+                    yield return s;
+                }
+                while( (s = s._specialization) != null );
+            }
+        }
+
+
+        IStObj IStObj.Container 
+        { 
+            get { return _dContainer; } 
+        }
+
+        IReadOnlyList<IStObj> IStObj.Requires 
+        {
+            get { return _dRequires; } 
+        }
+
+        IReadOnlyList<IStObj> IStObj.RequiredBy
+        {
+            get { return _dRequiredBy ?? ReadOnlyListEmpty<IStObj>.Empty; }
         }
 
         #endregion

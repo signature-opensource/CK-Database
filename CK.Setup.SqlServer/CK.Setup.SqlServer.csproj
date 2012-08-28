@@ -64,7 +64,6 @@
     <Compile Include="ObjectSupport\SqlTable\SqlTableAttribute.cs" />
     <Compile Include="ObjectSupport\SqlTable\SqlTableType.cs" />
     <Compile Include="ObjectSupport\SqlTable\SqlTableTypeItem.cs" />
-    <Compile Include="ObjectSupport\SqlTypedObjectStandardHandler.cs" />
     <Compile Include="SqlManagerProvider.cs" />
     <Compile Include="ObjectSupport\Database\SqlDatabase.cs" />
     <Compile Include="ObjectSupport\Database\SqlDatabaseSetupDriver.cs" />

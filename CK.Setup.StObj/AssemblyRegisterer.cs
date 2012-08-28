@@ -7,9 +7,10 @@ using System.Reflection;
 namespace CK.Core
 {
     /// <summary>
-    /// Enable discovering of types from assemblies, respecting the ordering of dependencies between them.
+    /// Enable discovering assemblies and registering of types from assemblies, respecting 
+    /// the ordering of dependencies between assemblies.
     /// </summary>
-    public class AssemblyDiscoverer
+    public class AssemblyRegisterer
     {
         readonly IActivityLogger	    _logger;
         Predicate<Assembly>             _assemblyFilter;
@@ -38,16 +39,50 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Initializes a new <see cref="AssemblyDiscoverer"/>.
+        /// Initializes a new <see cref="AssemblyRegisterer"/>.
         /// </summary>
         /// <param name="logger">Logger to use. Can not be null.</param>
-        public AssemblyDiscoverer( IActivityLogger logger )
+        public AssemblyRegisterer( IActivityLogger logger )
         {
             if( logger == null ) throw new ArgumentNullException( "logger" );
             _logger = logger;
             _index = new Dictionary<Assembly, DiscoveredInfo>();
             _list = new List<DiscoveredInfo>();
             _listEx = new ReadOnlyListOnIList<DiscoveredInfo>( _list );
+        }
+
+        /// <summary>
+        /// Discovers assemblies based on the <see cref="AssemblyRegistererConfiguration"/> object.
+        /// </summary>
+        /// <param name="config">Configuration object.</param>
+        /// <remarks>
+        /// The current <see cref="AssemblyFilter"/> and <see cref="TypeFilter"/> applies.
+        /// </remarks>
+        public void Discover( AssemblyRegistererConfiguration config )
+        {
+            if( config == null ) throw new ArgumentNullException( "config" );
+            using( _logger.OpenGroup( LogLevel.Info, "Discovering assemblies & types from configuration." ) )
+            {
+                var prevFilter = _assemblyFilter;
+                if( prevFilter != null )
+                {
+                    _assemblyFilter = a => prevFilter( a ) && config.IgnoredAssemblyNames.Contains( a.GetName().Name );
+                }
+                else
+                {
+                    _assemblyFilter = a => config.IgnoredAssemblyNames.Contains( a.GetName().Name );
+                }
+                try
+                {
+                    if( config.AutomaticAssemblyDiscovering ) DiscoverCurrenlyLoadedAssemblies();
+                    DiscoverRecurse( config.DiscoverRecurseAssemblyNames.Select( a => Assembly.Load( a ) ) );
+                    foreach( string a in config.DiscoverAssemblyNames ) Discover( Assembly.Load( a ) );
+                }
+                finally
+                {
+                    _assemblyFilter = prevFilter;
+                }
+            }
         }
 
         /// <summary>
@@ -84,7 +119,7 @@ namespace CK.Core
         
         /// <summary>
         /// Gets the list of assemblies that have been discovered so far. 
-        /// Use <see cref="ClearDiscoveredInfo"/> for <see cref="Discover"/> to be able to 
+        /// Use <see cref="ClearDiscoveredInfo"/> for <see cref="DiscoverRecurse"/> to be able to 
         /// discover again an assembly.
         /// </summary>
         public IReadOnlyList<DiscoveredInfo> Assemblies
@@ -93,7 +128,7 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Finds an existing <see cref="Discover"/>ed information. Returns null if not found.
+        /// Finds an existing <see cref="DiscoverRecurse"/>ed information. Returns null if not found.
         /// </summary>
         /// <param name="a">The assembly.</param>
         /// <returns>A <see cref="DiscoveredInfo"/> or null if not found.</returns>
@@ -128,52 +163,70 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Discover assemblies currently loaded in the <see cref="AppDomain.CurrentDomain"/>.
+        /// Discover assemblies currently loaded in the <see cref="AppDomain.CurrentDomain"/> and all their 
+        /// dependencies (even if they are not already loaded).
         /// </summary>
         public void DiscoverCurrenlyLoadedAssemblies()
         {
-            Discover( AppDomain.CurrentDomain.GetAssemblies() );
+            DiscoverRecurse( AppDomain.CurrentDomain.GetAssemblies() );
         }
 
         /// <summary>
-        /// Ensures that the given assemblies has not yet been discovered, that it is accepted by the current <see cref="AssemblyFilter"/>,
+        /// Discovers one assembly without automatically discover assemblies referenced by it.
+        /// </summary>
+        /// <param name="assembly">The <see cref="Assembly"/> to discover.</param>
+        /// <remarks>
+        /// This method does not automatically discover assemblies referenced by this one.
+        /// </remarks>
+        public void Discover( Assembly assembly )
+        {
+            Discover( false, new Assembly[] { assembly } );
+        }
+
+        /// <summary>
+        /// Ensures that the given assembly has not yet been discovered, that it is accepted by the current <see cref="AssemblyFilter"/>,
         /// and that all its dependencies have been discovered before discovering it.
         /// </summary>
         /// <param name="assembly">The <see cref="Assembly"/> to discover.</param>
         /// <remarks>
         /// This method ensures that referenced assemblies are discovered before any of their referencers.
         /// </remarks>
-        public void Discover( Assembly assembly )
+        public void DiscoverRecurse( Assembly assembly )
         {
-            Discover( new Assembly[] { assembly } );
+            Discover( true, new Assembly[] { assembly } );
         }
 
         /// <summary>
         /// Ensures that the given assemblies have not yet been discovered, that they are accepted by the current <see cref="AssemblyFilter"/>,
         /// and that all their dependencies have been discovered before discovering the original assemblies.
         /// </summary>
-        /// <param name="assembly">Multiple assemblies to discover.</param>
+        /// <param name="assemblies">Multiple assemblies to discover.</param>
         /// <remarks>
         /// This method ensures that referenced assemblies are discovered before any of their referencers.
         /// </remarks>
-        public void Discover( params Assembly[] assembly )
+        public void DiscoverRecurse( IEnumerable<Assembly> assemblies )
         {
-            if( assembly != null && assembly.Length > 0 )
+            Discover( true, assemblies );
+        }
+
+        void Discover( bool recurse, IEnumerable<Assembly> assemblies )
+        {
+            if( assemblies != null && assemblies.Count() > 0 )
             {
-                var onLoad = new AssemblyLoadEventHandler( AssemblyLoadHandler );
+                var onLoad = recurse ? new AssemblyLoadEventHandler( AssemblyLoadHandler ) : null;
                 AppDomain.CurrentDomain.AssemblyLoad += onLoad;
                 try
                 {
-                    foreach( var a in assembly ) DoDiscover( a );
+                    foreach( var a in assemblies ) DoDiscover( a, recurse );
                 }
                 finally
                 {
-                    AppDomain.CurrentDomain.AssemblyLoad -= onLoad;
+                    if( onLoad != null ) AppDomain.CurrentDomain.AssemblyLoad -= onLoad;
                 }
             }
         }
 
-        void DoDiscover( Assembly assembly )
+        void DoDiscover( Assembly assembly, bool recurse )
         {
             if( !_index.ContainsKey( assembly ) )
             {
@@ -186,10 +239,13 @@ namespace CK.Core
                     {
                         if( _assemblyFilter == null || _assemblyFilter( assembly ) )
                         {
-                            foreach( AssemblyName refName in assembly.GetReferencedAssemblies() )
+                            if( recurse )
                             {
-                                Assembly refAssembly = Assembly.Load( refName );
-                                if( refAssembly != null ) Discover( refAssembly );
+                                foreach( AssemblyName refName in assembly.GetReferencedAssemblies() )
+                                {
+                                    Assembly refAssembly = Assembly.Load( refName );
+                                    if( refAssembly != null ) DiscoverRecurse( refAssembly );
+                                }
                             }
                             IEnumerable<Type> types = _publicTypesOnly ? assembly.GetExportedTypes() : assembly.GetTypes();
                             if( _typeFilter != null ) types = types.Where( t => _typeFilter( t ) );
@@ -209,7 +265,7 @@ namespace CK.Core
 
         void AssemblyLoadHandler( object o, AssemblyLoadEventArgs e )
         {
-            DoDiscover( e.LoadedAssembly );
+            DoDiscover( e.LoadedAssembly, true );
         }
 
     }

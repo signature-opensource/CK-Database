@@ -9,7 +9,10 @@ namespace CK.Setup
 {
     public class StObjCollectorResult : MultiContextualResult<StObjCollectorContextualResult>
     {
-        AmbiantContractCollectorResult _contractResult;
+        readonly AmbiantContractCollectorResult _contractResult;
+        IReadOnlyCollection<IStObj> _rootStObjs;
+        int _totalItemCount;
+
         bool _fatal;
 
         internal StObjCollectorResult( StObjMapper owner, AmbiantContractCollectorResult contractResult )
@@ -30,19 +33,22 @@ namespace CK.Setup
             }
         }
 
+        /// <summary>
+        /// Gets the total number of <see cref="IStObj"/> available. 
+        /// Zero if <see cref="HasFatalError"/> is true.
+        /// </summary>
         public int TotalItemCount
         {
-            get 
-            {
-                int c = 0;
-                Foreach( r => c += r.StObjMapper.Count );
-                return c;
-            }
+            get { return _totalItemCount; }
         }
 
-        internal void SetFatal()
+        /// <summary>
+        /// Gets all the <see cref="IStObj"/> that have no <see cref="IStObj.Generalization"/>.
+        /// Empty if <see cref="HasFatalError"/> is true.
+        /// </summary>
+        public IReadOnlyCollection<IStObj> RootStObjs
         {
-            _fatal = true;
+            get { return _rootStObjs; }
         }
 
         internal IEnumerable<MutableItem> AllMutableItems
@@ -55,5 +61,23 @@ namespace CK.Setup
             return this.Select( r => r.Find( t ) ).Where( m => m != null );
         }
 
+        internal void SetFatal()
+        {
+            _fatal = true;
+            _rootStObjs = ReadOnlyListEmpty<IStObj>.Empty;
+        }
+
+        internal void SetSuccess()
+        {
+            Debug.Assert( !HasFatalError );
+            Debug.Assert( _totalItemCount == 0 );
+            List<IStObj> heads = new List<IStObj>();
+            foreach( var ctx in this )
+            {
+                _totalItemCount += ctx.MutableItems.Count;
+                heads.AddRange( ctx.MutableItems.Where( m => m.Generalization == null ) );
+            }
+            _rootStObjs = heads.ToReadOnlyCollection();
+        }
     }
 }

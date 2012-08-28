@@ -90,6 +90,8 @@
     <Content Include="PackageAndSqlObjects\Res\sFirstProc.sql" />
     <Content Include="Scripts\InstallFromScratchWithView\dbo.vTestView.sql" />
     <Content Include="Scripts\InstallFromScratchWithView\Model.WithView.Install.1.0.0.sql" />
+    <Content Include="Scripts\InstallFromScratch\Test.sStoredProcedureRequires.sql" />
+    <Content Include="Scripts\InstallFromScratch\Test.sOneStoredProcedureA.sql" />
     <Content Include="Scripts\InstallFromScratch\Model.Test.DependentPackage.Install.1.0.0.sql" />
     <Content Include="Scripts\InstallFromScratch\Model.Test.WithModel.Install.1.0.0.sql" />
     <Content Include="Scripts\InstallFromScratch\Test.fTest.sql" />

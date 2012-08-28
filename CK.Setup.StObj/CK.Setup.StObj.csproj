@@ -60,7 +60,8 @@
     <Compile Include="AmbiantContract\Impl\IContextualResult.cs" />
     <Compile Include="AmbiantContract\AmbiantContractCollectorResult.cs" />
     <Compile Include="AmbiantContract\Impl\MultiContextualResult.cs" />
-    <Compile Include="AssemblyDiscoverer.cs" />
+    <Compile Include="AssemblyRegisterer.cs" />
+    <Compile Include="AssemblyRegistererConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StObj\Attribute\ContainerAttribute.cs" />
     <Compile Include="StObj\IParameterType.cs" />
@@ -82,7 +83,6 @@
     <Compile Include="StObj\StObjCollectorResult.cs" />
     <Compile Include="StObj\StObjCollector.cs" />
     <Compile Include="StObj\Attribute\ContextAttribute.cs" />
-    <Compile Include="StObj\StObjHandler.cs" />
     <Compile Include="StObj\Impl\MutableItem.cs" />
     <Compile Include="StObj\StObjCollectorContextualResult.cs" />
     <Compile Include="StObj\StObjRequirementBehavior.cs" />

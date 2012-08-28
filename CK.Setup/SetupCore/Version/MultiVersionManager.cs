@@ -106,10 +106,10 @@ namespace CK.Setup
 
         /// <summary>
         /// Sets the <see cref="VersionList"/> and <see cref="PreviousNames"/> from a string like: "1.2.4, Previous.Name = 1.3.1, A.New.Name=1.4.1, 1.5.0"
-        /// The last version must NOT define a previous name since the last version is the current one (and <see cref="FullName"/> is its name): an <see cref="ArgumentException"/> is thrown.
+        /// The last version must NOT define a previous name since the last version is the current one: an <see cref="ArgumentException"/> is thrown.
         /// If null or empty, <see cref="VersionList"/> and <see cref="PreviousNames"/> are cleared and <see cref="Version"/> is set to null.
         /// </summary>
-        /// <param name="versions">A comma separated list of versions (3 integers), optionally associated to a previous name.</param>
+        /// <param name="versions">A comma separated list of versions (3 or 4 short integers), optionally associated to a previous name.</param>
         public void SetVersionsString( string versions )
         {
             if( _previousNames != null ) _previousNames.Clear();

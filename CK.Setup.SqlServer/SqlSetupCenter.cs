@@ -40,40 +40,12 @@ namespace CK.Setup.SqlServer
         
 
         /// <summary>
-        /// Explicitely discovers objects and types in the given assembly (its dependencies are not processed).
-        /// This should be used if and only if <see cref="SqlSetupContext.AutomaticAssemblyDiscovering"/> is set to false.
-        /// </summary>
-        /// <param name="assembly">The assembly to discover.</param>
-        public void ExplicitDiscover( Assembly assembly )
-        {
-//            _collector.RegisterTypes( assembly, _context.Logger ); 
-        }
-
-
-        /// <summary>
-        /// Executes the setup. See remarks.
+        /// Executes the setup.
         /// </summary>
         /// <returns>True if no error occured. False otherwise.</returns>
         public bool Run()
         {
             return _center.Run( _fileDiscoverer );
-
-            if( _context.AutomaticAssemblyDiscovering )
-            {
-                using( _context.Logger.OpenGroup( LogLevel.Info, "Automatic discovering of currently loaded assemblies." ) )
-                {
-                    AssemblyDiscoverer p = new AssemblyDiscoverer( _context.Logger );
-                    try
-                    {
-                        p.AssemblyFilter = a => _context.IgnoredAssemblyNames.Contains( a.GetName().Name ) == false;
-                        p.DiscoverCurrenlyLoadedAssemblies();
-                    }
-                    catch( Exception ex )
-                    {
-                        _context.Logger.Error( ex );
-                    }
-                }
-            }
         }
     }
 }

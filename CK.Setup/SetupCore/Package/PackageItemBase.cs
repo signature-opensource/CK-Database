@@ -6,7 +6,6 @@ using CK.Core;
 
 namespace CK.Setup
 {
-
     /// <summary>
     /// Mutable package implementation: any property can be changed (version information is handled
     /// by the base <see cref="MultiVersionManager"/>).

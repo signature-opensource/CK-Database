@@ -7,12 +7,12 @@ using CK.Core;
 
 namespace CK.Setup.SqlServer
 {
+
     public class SqlSetupContext : ISetupDriverFactory, IDisposable
     {
         SqlManager _defaultDatabase;
         SqlManagerProvider _otherDatabases;
-        //List<TypedObjectHandler> _typedObjectHandlers;
-        List<string> _ignoredAssemblies;
+        AssemblyRegistererConfiguration _conf;
 
         public SqlSetupContext( string defaultDatabaseConnectionString, IActivityLogger logger )
         {
@@ -20,27 +20,12 @@ namespace CK.Setup.SqlServer
             _defaultDatabase.Logger = logger;
             _defaultDatabase.OpenFromConnectionString( defaultDatabaseConnectionString );
             _otherDatabases = new SqlManagerProvider( logger );
-            //_typedObjectHandlers = new List<TypedObjectHandler>();
-            _ignoredAssemblies = new List<string>();
 
-            //_typedObjectHandlers.Add( new SqlTypedObjectStandardHandler() );
 
-            _ignoredAssemblies.Add( "System" );
-            _ignoredAssemblies.Add( "System.Core" );
-            _ignoredAssemblies.Add( "System.Data" );
-            _ignoredAssemblies.Add( "System.Data.DataSetExtensions" );
-            _ignoredAssemblies.Add( "System.Data.Xml" );
-            _ignoredAssemblies.Add( "System.Data.Xml.Linq" );
-            
-            _ignoredAssemblies.Add( "CK.Core" );
-            _ignoredAssemblies.Add( "CK.Setup" );
-            _ignoredAssemblies.Add( "CK.SqlServer" );
-
-            _ignoredAssemblies.Add( "Microsoft.CSharp" );
-            _ignoredAssemblies.Add( "Microsoft.Practices.ServiceLocation" );
-            _ignoredAssemblies.Add( "Microsoft.Practices.Unity" );
-            _ignoredAssemblies.Add( "Microsoft.Practices.Unity.Configuration" );
-
+        }
+        public AssemblyRegistererConfiguration AssemblyRegistererConfiguration
+        {
+            get { return _conf; }
         }
 
         public SqlManager DefaultDatabase
@@ -58,17 +43,6 @@ namespace CK.Setup.SqlServer
             get { return _defaultDatabase.Logger; }
         }
 
-        //public IList<TypedObjectHandler> TypedObjectHandlers
-        //{
-        //    get { return _typedObjectHandlers; }
-        //}
-
-        public bool AutomaticAssemblyDiscovering { get; set; }
-
-        public IList<string> IgnoredAssemblyNames
-        {
-            get { return _ignoredAssemblies; }
-        }
 
         public virtual ItemDriver CreateDriver( Type driverType, ItemDriver.BuildInfo info )
         {

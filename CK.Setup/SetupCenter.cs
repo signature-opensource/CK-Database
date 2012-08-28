@@ -50,7 +50,7 @@ namespace CK.Setup
         public bool RevertOrderingNames { get; set; }
 
         /// <summary>
-        /// Registers any number of <see cref="ISetupableItem"/> and/or <see cref="IDependentItemDiscoverer"/> and executes
+        /// Registers any number of <see cref="IDependentItem"/> and/or <see cref="IDependentItemDiscoverer"/> and executes
         /// the whole setup process (<see cref="SetupEngine.RunInit"/>, <see cref="SetupEngine.RunInit"/>, <see cref="SetupEngine.RunInstall"/>, <see cref="SetupEngine.RunSettle"/>).
         /// </summary>
         /// <param name="items">Objects that can be <see cref="ISetupableItem"/>, <see cref="IDependentItemDiscoverer"/> or both.</param>

@@ -20,27 +20,27 @@ namespace CK.Setup
         IStObjExternalConfigurator _configurator;
         IStObjDependencyResolver _dependencyResolver;
 
-        public StObjCollector( IStObjExternalConfigurator configurator = null, IStObjDependencyResolver dependencyResolver = null )
+        public StObjCollector( IAmbiantContractDispatcher dispatcher = null, IStObjExternalConfigurator configurator = null, IStObjDependencyResolver dependencyResolver = null )
         {
-            _cc = new AmbiantContractCollector();
+            _cc = new AmbiantContractCollector( dispatcher );
             _configurator = configurator;
             _dependencyResolver = dependencyResolver;
         }
 
         /// <summary>
-        /// Registers types discovered by an <see cref="AssemblyDiscoverer"/>.
+        /// Registers types discovered by an <see cref="AssemblyRegisterer"/>.
         /// </summary>
-        /// <param name="discoverer">The discoverer that contains types.</param>
+        /// <param name="registerer">The discoverer that contains assembmies/types.</param>
         /// <param name="logger">Logger to use. Can not be null.</param>
         /// <returns>The number of new discovered classes.</returns>
-        public int RegisterTypes( AssemblyDiscoverer discoverer, IActivityLogger logger )
+        public int RegisterTypes( AssemblyRegisterer registerer, IActivityLogger logger )
         {
-            if( discoverer == null ) throw new ArgumentNullException( "discoverer" );
+            if( registerer == null ) throw new ArgumentNullException( "discoverer" );
             if( logger == null ) throw new ArgumentNullException( "logger" );
             int totalRegistered = 0;
-            using( logger.OpenGroup( LogLevel.Trace, "Registering {0} assemblies.", discoverer.Assemblies.Count ) )
+            using( logger.OpenGroup( LogLevel.Trace, "Registering {0} assemblies.", registerer.Assemblies.Count ) )
             {
-                foreach( var one in discoverer.Assemblies )
+                foreach( var one in registerer.Assemblies )
                 {
                     using( logger.OpenGroup( LogLevel.Trace, "Registering assembly '{0}'.", one.Assembly.FullName ) )
                     {
@@ -146,9 +146,10 @@ namespace CK.Setup
                     {
                         Debug.Assert( m.IsContainer && !sorted.IsContainerHead );
                         // We may call here a ConstructContent( IReadOnlyList<IStObj> packageContent ).
-                        // But, is it a good thing for a package object to know its content detail ?
+                        // But... is it a good thing for a package object to know its content detail?
                     }
                 }
+                if( !result.HasFatalError ) result.SetSuccess();
                 return result;
             }
         }

@@ -67,6 +67,10 @@
       <Project>{87F54185-5226-4EEE-8D59-5D03E6C1AB7C}</Project>
       <Name>CK.Setup.Dependency</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\CK.Setup.StObj\CK.Setup.StObj.csproj">
+      <Project>{DF7A0B05-4B48-44C2-B6C8-6FCFD66DF8F8}</Project>
+      <Name>CK.Setup.StObj</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\CK.Setup\CK.Setup.csproj">
       <Project>{D3C700E1-3546-437C-9B96-1F867A539B6A}</Project>
       <Name>CK.Setup</Name>
