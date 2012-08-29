@@ -1,4 +1,4 @@
--- Version = 1.0.0, Package = CK.Actor
+-- Version = 1.0.1, Package = CK.Actor
 --
 -- Finds or creates an user.
 --
