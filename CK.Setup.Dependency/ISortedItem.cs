@@ -44,7 +44,7 @@ namespace CK.Setup
         bool IsContainerHead { get; }
 
         /// <summary>
-        /// Whether this is a container.
+        /// Whether this is a container (the <see cref="HeadIfContainer"/> is not null).
         /// </summary>
         bool IsContainer { get; }
 

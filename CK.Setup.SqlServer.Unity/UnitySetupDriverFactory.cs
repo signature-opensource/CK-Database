@@ -23,9 +23,9 @@ namespace CK.Setup.SqlServer
             return (ItemDriver)_container.Resolve( driverType, new DependencyOverride<ItemDriver.BuildInfo>( info ) );
         }
 
-        public override ContainerDriver CreateDriverContainer( Type containerType, ContainerDriver.BuildInfo info )
+        public override SetupDriver CreateDriver( Type containerType, SetupDriver.BuildInfo info )
         {
-            return (ContainerDriver)_container.Resolve( containerType, new DependencyOverride<ContainerDriver.BuildInfo>( info ) );
+            return (SetupDriver)_container.Resolve( containerType, new DependencyOverride<SetupDriver.BuildInfo>( info ) );
         }
     }
 }

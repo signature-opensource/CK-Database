@@ -7,14 +7,24 @@ using CK.Core;
 
 namespace CK.Setup
 {
-    public class DynamicPackageItem : PackageItemBase, IDependentItemDiscoverer
+    public class DynamicPackageItem : PackageItemBase, IDependentItemContainerAsk, IDependentItemDiscoverer
     {
         string _fullName;
         PackageModelItem _model;
+        object _driverType;
 
-        public DynamicPackageItem( string itemType )
+        /// <summary>
+        /// Initializes a new dynamic package.
+        /// </summary>
+        /// <param name="itemType">The <see cref="IVersionedItem.ItemType"/> for this item.</param>
+        /// <param name="driverType">
+        /// Type of the driver to use. Can be the <see cref="Type"/> itself or the Assembly Qualified Name of the type.
+        /// When null, the type of <see cref="SetupDriver"/> is asumed.
+        /// </param>
+        public DynamicPackageItem( string itemType, object driverType = null )
             : base( itemType )
         {
+            _driverType = driverType ?? typeof( SetupDriver );
         }
 
         /// <summary>
@@ -53,6 +63,13 @@ namespace CK.Setup
             set { _fullName = value ?? String.Empty; }
         }
 
+        /// <summary>
+        /// Gets or sets whether this container is actually NOT a container.
+        /// When set to true, if this container contains children or if an item declares this
+        /// item as its container, an error is raised during the ordering of the dependency graph.
+        /// </summary>
+        public bool ThisIsNotAContainer { get; set; }
+
         protected override string GetFullName()
         {
             return _fullName;
@@ -60,7 +77,7 @@ namespace CK.Setup
 
         protected override object StartDependencySort()
         {
-            return typeof(PackageDriver);
+            return _driverType;
         }
 
         IEnumerable<IDependentItem> IDependentItemDiscoverer.GetOtherItemsToRegister()

@@ -6,15 +6,25 @@ using CK.Core;
 
 namespace CK.Setup.SqlServer
 {
-    public class SqlDatabase
+    [Setup( DriverType = typeof( SqlDatabaseSetupDriver ) )]
+    public class SqlDatabase : IStObjSetupConfigurator
     {
-        public static readonly string DefaultDatabaseName = "db";
+        public const string DefaultDatabaseName = "db";
 
         string _name;
         Dictionary<string,string> _schemas;
+        bool _installCore;
 
-        public SqlDatabase()
+        internal SqlDatabase()
         {
+            _name = DefaultDatabaseName;
+            _schemas = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
+        }
+
+        protected SqlDatabase( string logicalName )
+        {
+            if( logicalName == DefaultDatabaseName ) throw new CKException( "DefaultDatabaseName '{0}' is reserved.", DefaultDatabaseName );
+            _name = logicalName;
             _schemas = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
         }
 
@@ -32,6 +42,13 @@ namespace CK.Setup.SqlServer
             }
         }
 
+        /// <summary>
+        /// Finds or creates the given schema. 
+        /// Schema names are case sensitive and this constraint is enforced here: an exception will 
+        /// be thrown whenever casing differ between schema registration.
+        /// </summary>
+        /// <param name="name">Name of the schema.</param>
+        /// <returns>Registered name.</returns>
         public string EnsureSchema( string name )
         {
             if( String.IsNullOrWhiteSpace( name ) ) throw new ArgumentException( "Must be not null, empty, nor whitespace.", "name" );
@@ -55,10 +72,33 @@ namespace CK.Setup.SqlServer
             get { return _schemas.Keys; }
         }
 
-        public virtual bool IsDefaultDatabase
+        /// <summary>
+        /// Gets or sets whether CK Core kernel support must be installed in the database.
+        /// Defaults to false.
+        /// Always true if <see cref="IsDefaultDatabase"/> is true.
+        /// </summary>
+        public bool InstallCore 
         {
-            get { return false; }
+            get { return _installCore | IsDefaultDatabase; }
+            set { _installCore = value; } 
         }
 
+        /// <summary>
+        /// Default database name is <see cref="DefaultDatabaseName"/> = "db".
+        /// </summary>
+        public bool IsDefaultDatabase
+        {
+            get { return ReferenceEquals( _name, DefaultDatabaseName ); }
+        }
+
+        protected virtual void ConfigureDependentItem( IActivityLogger logger, StObjSetupData data )
+        {
+            data.FullNameWithoutContext = Name;
+        }
+
+        void IStObjSetupConfigurator.ConfigureDependentItem( IActivityLogger logger, StObjSetupData data )
+        {
+            ConfigureDependentItem( logger, data );
+        }
     }
 }

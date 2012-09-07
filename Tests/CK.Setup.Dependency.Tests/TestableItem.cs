@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using NUnit.Framework;
+using CK.Core;
 
 namespace CK.Setup.Tests
 {
@@ -15,12 +16,20 @@ namespace CK.Setup.Tests
         List<IDependentItem> _relatedItems;
         int _startDependencySortCount;
 
+        static int _ignoreCheckedCount = 0;
+        public static IDisposable IgnoreCheckCount()
+        {
+            ++_ignoreCheckedCount;
+            return Util.CreateDisposableAction( () => --_ignoreCheckedCount );
+        }
+
         public TestableItem( string fullName, params object[] content )
         {
             _requires = new List<IDependentItemRef>();
             _requiredBy = new List<IDependentItemRef>();
             FullName = fullName;
             Add( content );
+            if( _ignoreCheckedCount > 0 ) _startDependencySortCount = -1;
         }
 
         public virtual void Add( params object[] content )
@@ -52,7 +61,10 @@ namespace CK.Setup.Tests
 
         public void CheckStartDependencySortCountAndReset()
         {
-            Assert.That( _startDependencySortCount, Is.EqualTo( 1 ), "StartDependencySort must have been called once and only once." );
+            if( _startDependencySortCount != -1 )
+            {
+                Assert.That( _startDependencySortCount, Is.EqualTo( 1 ), "StartDependencySort must have been called once and only once." );
+            }
             _startDependencySortCount = 0;
         }
 
@@ -60,7 +72,10 @@ namespace CK.Setup.Tests
         {
             get 
             {
-                Assert.That( _startDependencySortCount, Is.EqualTo( 1 ), "StartDependencySort must have been called once and only once." );
+                if( _startDependencySortCount != -1 )
+                {
+                    Assert.That( _startDependencySortCount, Is.EqualTo( 1 ), "StartDependencySort must have been called once and only once." );
+                }
                 return _fullName; 
             }
             set { _fullName = value; } 
@@ -96,8 +111,12 @@ namespace CK.Setup.Tests
 
         object IDependentItem.StartDependencySort()
         {
-            Assert.That( _startDependencySortCount, Is.EqualTo( 0 ), "StartDependencySort must be called once and only once." );
-            return ++_startDependencySortCount;
+            if( _startDependencySortCount != -1 )
+            {
+                Assert.That( _startDependencySortCount, Is.EqualTo( 0 ), "StartDependencySort must be called once and only once." );
+                ++_startDependencySortCount;
+            }
+            return _startDependencySortCount;
         }
     }
 

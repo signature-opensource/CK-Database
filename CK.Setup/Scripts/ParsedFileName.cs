@@ -9,7 +9,10 @@ using System.Diagnostics;
 namespace CK.Setup
 {
     /// <summary>
-    /// Offers <see cref="Parse"/> and <see cref="TryParse"/> or <see cref="CodeCreate"/> factory methods.
+    /// Encapsulation of a file name associated to a setup object. It handles steps specific 
+    /// to Group specific steps (<see cref="SetupCallGroupStep.InitContent"/>, <see cref="SetupCallGroupStep.InstallContent"/> and <see cref="SetupCallGroupStep.SettleContent"/>)
+    /// and versions (for <see cref="IVersionedItem"/>) but can be used for simple <see cref="IDependentItem"/>.
+    /// Offers <see cref="Parse"/> and <see cref="TryParse"/> factory methods.
     /// </summary>
     public class ParsedFileName
     {
@@ -34,9 +37,17 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the name of the container. Not null nor empty.
+        /// Gets the name of the item with its contextual prefix if any. Not null nor empty.
         /// </summary>
-        public string ContainerFullName
+        public string FullName
+        {
+            get { return _fullName; }
+        }
+
+        /// <summary>
+        /// Gets the name of the item. Not null nor empty.
+        /// </summary>
+        public string FullNameWithoutContext
         {
             get { return _fullName; }
         }
@@ -51,7 +62,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the path (the prefix for a string or any context data that enables to locate the reource). 
+        /// Gets the path (the prefix for a string or any context data that enables to locate the resource). 
         /// This information is not processed and is passed as-is from <see cref="TryParse"/> and <see cref="Parse"/> parameter.
         /// It can be null at this level. It is up to the <see cref="ISetupScript"/> that wraps it to exploit it.
         /// </summary>
@@ -86,9 +97,19 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the version extracted from the <see cref="FileName"/>.
-        /// Null if no version at all is specified (this is a "no version" script that should always be applied last).
+        /// Gets the version extracted from the <see cref="FileName"/>. Null if no version at all is specified: this is the "no version" script. See remarks.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The "no version" script should always be applied by <see cref="ScriptSetupHandler"/>.
+        /// This offers a coherency between versioned and non-versioned items and enables versioned items to behave like a non-versioned one.
+        /// </para>
+        /// <para>
+        /// If the item is not an <see cref="IVersionedItem"/> or if its <see cref="IVersionedItem.Version"/> is null, this is the only script that applies.
+        /// For versioned items (when <see cref="IVersionedItem"/> is implemented and <see cref="IVersionedItem.Version"/> is not null) the NoVersion script will 
+        /// be applied after the last versioned script if it exists (be it a <see cref="IsUpgradeScript"/> or not).
+        /// </para>
+        /// </remarks>
         public Version Version
         {
             get { return _version; }
@@ -103,7 +124,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets whether the <see cref="FileName"/> applies to the content of the container (must be called after 
+        /// Gets whether the <see cref="FileName"/> applies to the content of a container (must be called after 
         /// content elements setup).
         /// </summary>
         public bool IsContent
@@ -112,16 +133,16 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the combination of <see cref="P:SetupStep"/> and <see cref="IsContent"/> as a <see cref="SetupCallContainerStep"/>.
+        /// Gets the combination of <see cref="P:SetupStep"/> and <see cref="IsContent"/> as a <see cref="SetupCallGroupStep"/>.
         /// </summary>
-        public SetupCallContainerStep CallContainerStep
+        public SetupCallGroupStep CallContainerStep
         {
             get
             {
-                if( _step == SetupStep.None ) return SetupCallContainerStep.None;
-                if( _step == SetupStep.Init ) return _isContent ? SetupCallContainerStep.InitContent : SetupCallContainerStep.Init;
-                if( _step == SetupStep.Install ) return _isContent ? SetupCallContainerStep.InstallContent : SetupCallContainerStep.Install;
-                return _isContent ? SetupCallContainerStep.SettleContent : SetupCallContainerStep.Settle;
+                if( _step == SetupStep.None ) return SetupCallGroupStep.None;
+                if( _step == SetupStep.Init ) return _isContent ? SetupCallGroupStep.InitContent : SetupCallGroupStep.Init;
+                if( _step == SetupStep.Install ) return _isContent ? SetupCallGroupStep.InstallContent : SetupCallGroupStep.Install;
+                return _isContent ? SetupCallGroupStep.SettleContent : SetupCallGroupStep.Settle;
             }
         }
 

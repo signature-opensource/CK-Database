@@ -6,7 +6,7 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
-    /// Describes the different kind of <see cref="MutableReferenceType"/>.
+    /// Describes the different kind of <see cref="MutableReference"/>.
     /// </summary>
     [Flags]
     public enum MutableReferenceKind
@@ -35,5 +35,11 @@ namespace CK.Setup
         /// Parameter from Construct method. It is a considered as a Requires.
         /// </summary>
         ConstructParameter = 8,
+
+        /// <summary>
+        /// Ambiant property.
+        /// </summary>
+        AmbiantProperty = 16,
+
     }
 }

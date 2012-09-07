@@ -66,11 +66,11 @@ namespace CK.Core
                 var prevFilter = _assemblyFilter;
                 if( prevFilter != null )
                 {
-                    _assemblyFilter = a => prevFilter( a ) && config.IgnoredAssemblyNames.Contains( a.GetName().Name );
+                    _assemblyFilter = a => prevFilter( a ) && !config.IgnoredAssemblyNames.Contains( a.GetName().Name );
                 }
                 else
                 {
-                    _assemblyFilter = a => config.IgnoredAssemblyNames.Contains( a.GetName().Name );
+                    _assemblyFilter = a => !config.IgnoredAssemblyNames.Contains( a.GetName().Name );
                 }
                 try
                 {
@@ -211,7 +211,7 @@ namespace CK.Core
 
         void Discover( bool recurse, IEnumerable<Assembly> assemblies )
         {
-            if( assemblies != null && assemblies.Count() > 0 )
+            if( assemblies != null && assemblies.Any() )
             {
                 var onLoad = recurse ? new AssemblyLoadEventHandler( AssemblyLoadHandler ) : null;
                 AppDomain.CurrentDomain.AssemblyLoad += onLoad;

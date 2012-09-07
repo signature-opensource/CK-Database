@@ -90,7 +90,7 @@ namespace CK.Setup
                 Debug.Assert( _drivers.Count == 0 || _drivers[_drivers.Count-1].Index < d.Index );
                 _drivers.Add( d );
                 _index.Add( d.FullName, d );
-                if( !d.IsContainerHead ) _index.Add( d.Item, d );
+                if( !d.IsGroupHead ) _index.Add( d.Item, d );
             }
 
         }
@@ -99,16 +99,10 @@ namespace CK.Setup
         {
             public readonly static ISetupDriverFactory Default = new DefaultDriverfactory();
 
-            ItemDriver ISetupDriverFactory.CreateDriver( Type driverType, ItemDriver.BuildInfo info )
+            SetupDriver ISetupDriverFactory.CreateDriver( Type containerType, SetupDriver.BuildInfo info )
             {
-                return (ItemDriver)Activator.CreateInstance( driverType, info );
+                return (SetupDriver)Activator.CreateInstance( containerType, info );
             }
-
-            ContainerDriver ISetupDriverFactory.CreateDriverContainer( Type containerType, ContainerDriver.BuildInfo info )
-            {
-                return (ContainerDriver)Activator.CreateInstance( containerType, info );
-            }
-
         }
 
         public SetupEngine( IVersionedItemRepository versionRepository, ISetupSessionMemory memory, IActivityLogger logger, ISetupDriverFactory driverFactory )
@@ -179,10 +173,10 @@ namespace CK.Setup
                         Type typeToCreate = null;
                         if( item.IsContainer )
                         {
-                            var head = _drivers[item.HeadForContainer.FullName] as ContainerHeadDriver;
+                            var head = _drivers[item.HeadForContainer.FullName] as GroupHeadSetupDriver;
                             Debug.Assert( head != null );
                             typeToCreate = ResolveDriverType( item );
-                            ContainerDriver c = _driverFactory.CreateDriverContainer( typeToCreate, new ContainerDriver.BuildInfo( head, item ) );
+                            SetupDriver c = _driverFactory.CreateDriver( typeToCreate, new SetupDriver.BuildInfo( head, item ) );
                             d = head.Container = c;
                         }
                         else
@@ -194,12 +188,12 @@ namespace CK.Setup
 
                             if( item.IsContainerHead )
                             {
-                                d = new ContainerHeadDriver( this, item, externalVersion );
+                                d = new GroupHeadSetupDriver( this, item, externalVersion );
                             }
                             else
                             {
                                 typeToCreate = ResolveDriverType( item );
-                                d = _driverFactory.CreateDriver( typeToCreate, new ItemDriver.BuildInfo( this, item, externalVersion ) );
+                                d = _driverFactory.CreateDriver( typeToCreate, new SetupDriver.BuildInfo( this, item, externalVersion ) );
                             }
                         }
                         if( d == null ) throw new Exception( String.Format( "Driver Factory returned null for item {0}, type '{1}'.", item.FullName, typeToCreate ) );
@@ -222,6 +216,8 @@ namespace CK.Setup
             }
             catch( Exception ex )
             {
+                // Exception is not logged at this level: it is carried by the SetupEngineRegisterResult
+                // and its LogError method must be used to log different kind of errors.
                 if( result == null ) result = new SetupEngineRegisterResult( null );
                 _drivers.Clear();
                 result.UnexpectedError = ex;

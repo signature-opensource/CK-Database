@@ -10,7 +10,7 @@ namespace CK.Setup.SqlServer
 {
     /// <summary>
     /// Sql Server based memory provider for the setup.
-    /// It is used by <see cref="PackageSqlScriptExecutor"/> (created by <see cref="SqlScriptTypeHandler"/>)
+    /// It is used by <see cref="SqlScriptExecutor"/> (created by <see cref="SqlScriptTypeHandler"/>)
     /// to skip already executed scripts.
     /// </summary>
     public class SqlSetupSessionMemoryProvider : ISetupSessionMemoryProvider, ISetupSessionMemory
@@ -139,9 +139,9 @@ select LastStartDate, StartCount, LastError from CKCore.tSetupMemory;
             if( String.IsNullOrWhiteSpace( itemKey ) || itemKey.Length > 255 ) throw new ArgumentException( "Must not be null or empty or longer than 255 characters.", "itemKey" );
 
             using( var c = new SqlCommand( @"
-merge CKCore.tSetupMemoryItem as target 
+merge CKCore.tSetupMemoryItem as _specialization 
 using (select ItemKey = @ItemKey) as source
-on target.ItemKey = source.ItemKey
+on _specialization.ItemKey = source.ItemKey
 when matched then update set ItemValue = @ItemValue
 when not matched then insert(ItemKey,ItemValue) values (@ItemKey, @ItemValue);" ) )
             {

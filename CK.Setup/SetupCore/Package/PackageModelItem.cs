@@ -110,7 +110,7 @@ namespace CK.Setup
 
         object IDependentItem.StartDependencySort()
         {
-            return typeof(PackageDriver);
+            return typeof(SetupDriver);
         }
 
         bool IDependentItemRef.Optional
@@ -158,7 +158,7 @@ namespace CK.Setup
             get { return "Model"; }
         }
 
-        IEnumerable<IDependentItemRef> IDependentItemContainer.Children
+        IEnumerable<IDependentItemRef> IDependentItemGroup.Children
         {
             get { return _children; }
         }

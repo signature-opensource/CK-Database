@@ -7,7 +7,7 @@ using CK.Core;
 
 namespace CK.Setup
 {
-    public class DynamicContainerItem : IDependentItemContainer, IDependentItemContainerRef
+    public class DynamicContainerItem : IDependentItemContainerAsk, IDependentItemContainerRef
     {
         DependentItemList _requires;
         DependentItemList _requiredBy;
@@ -63,17 +63,24 @@ namespace CK.Setup
         }
 
         /// <summary>
+        /// Gets or sets whether this container is actually NOT a container.
+        /// When set to true, if this container contains children or if an item declares this
+        /// item as its container, an error is raised during the ordering of the dependency graph.
+        /// </summary>
+        public bool ThisIsNotAContainer { get; set; }
+        
+        /// <summary>
         /// Called at the very beginning of the setup phasis, before <see cref="IDependentItem.FullName"/> is used to planify the setup. 
         /// This start method has been already called on direct dependencies <see cref="Container"/> 
         /// and <see cref="Requires"/> if they are <see cref="IDependentItem"/> (and not strings).
         /// </summary>
         /// <returns>
-        /// Must return the <see cref="Type"/> of the setup driver (specialization of <see cref="DriverBase"/>), its assembly qualified name.
-        /// By default, returns the type of <see cref="ContainerDriver"/>.
+        /// Must return the <see cref="Type"/> of the setup driver (specialization of <see cref="DriverBase"/>), or its assembly qualified name.
+        /// By default, returns the type of <see cref="SetupDriver"/>.
         /// </returns>
         protected virtual object StartDependencySort()
         {
-            return typeof( ContainerDriver );
+            return typeof( SetupDriver );
         }
 
         object IDependentItem.StartDependencySort()
@@ -96,7 +103,7 @@ namespace CK.Setup
             get { return _requiredBy; }
         }
 
-        IEnumerable<IDependentItemRef> IDependentItemContainer.Children
+        IEnumerable<IDependentItemRef> IDependentItemGroup.Children
         {
             get { return _children; }
         }

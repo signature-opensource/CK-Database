@@ -51,6 +51,7 @@
     </Compile>
     <Compile Include="CaseSensitivity.cs" />
     <Compile Include="ChildByName.cs" />
+    <Compile Include="ContainerAndRequirementsSemantics.cs" />
     <Compile Include="ContainerByName.cs" />
     <Compile Include="ContainerDependencies.cs" />
     <Compile Include="ContainerDependenciesAsk.cs" />

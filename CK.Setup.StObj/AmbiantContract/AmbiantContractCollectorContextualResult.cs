@@ -6,16 +6,17 @@ using System.Diagnostics;
 
 namespace CK.Core
 {
-    public class AmbiantContractCollectorContextualResult : IContextualResult
+    public class AmbiantContractCollectorContextualResult<TAmbiantTypeInfo> : IContextualResult
+        where TAmbiantTypeInfo : AmbiantTypeInfo 
     {
         AmbiantTypeContextualMapper _mappings;
-        IReadOnlyList<IReadOnlyList<Type>> _concreteClassesPath;
+        IReadOnlyList<IReadOnlyList<TAmbiantTypeInfo>> _concreteClassesPath;
         IReadOnlyList<IReadOnlyList<Type>> _classAmbiguities;
         IReadOnlyList<IReadOnlyList<Type>> _interfaceAmbiguities;
         IReadOnlyList<Type> _abstractTails;
 
         internal AmbiantContractCollectorContextualResult( AmbiantTypeContextualMapper mappings,
-                                IReadOnlyList<IReadOnlyList<Type>> concreteClasses,
+                                IReadOnlyList<IReadOnlyList<TAmbiantTypeInfo>> concreteClasses,
                                 IReadOnlyList<IReadOnlyList<Type>> classAmbiguities,
                                 IReadOnlyList<IReadOnlyList<Type>> interfaceAmbiguities,
                                 IReadOnlyList<Type> abstractTails )
@@ -48,7 +49,7 @@ namespace CK.Core
         /// Gets all the paths from <see cref="IAmbiantContract"/> base classes to their most specialized concrete classes 
         /// that this context contains.
         /// </summary>
-        public IReadOnlyList<IReadOnlyList<Type>> ConcreteClasses
+        public IReadOnlyList<IReadOnlyList<TAmbiantTypeInfo>> ConcreteClasses
         {
             get { return _concreteClassesPath; }
         }
@@ -92,7 +93,7 @@ namespace CK.Core
         public void LogErrorAndWarnings( IActivityLogger logger )
         {
             if( logger == null ) throw new ArgumentNullException( "logger" );
-            using( logger.OpenGroup( LogLevel.Trace, "Ambiant Contract for '{1}' context: {0} mappings for {2} concrete paths.", _mappings.Count, Context != AmbiantContractCollector.DefaultContext ? Context.Name : "(Default)", _concreteClassesPath.Count ) )
+            using( logger.OpenGroup( LogLevel.Trace, "Ambiant Contract for context '{1}': {0} mappings for {2} concrete paths.", _mappings.Count, Context.Name, _concreteClassesPath.Count ) )
             {
                 foreach( var a in _classAmbiguities )
                 {

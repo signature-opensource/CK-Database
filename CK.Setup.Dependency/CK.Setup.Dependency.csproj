@@ -45,6 +45,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="IDependentItemGroup.cs" />
     <Compile Include="IDependentItemContainerAsk.cs" />
     <Compile Include="DependentItemExtension.cs" />
     <Compile Include="IDependentItem.cs" />

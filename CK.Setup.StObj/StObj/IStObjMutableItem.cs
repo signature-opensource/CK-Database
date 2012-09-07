@@ -17,27 +17,45 @@ namespace CK.Setup
         Type Context { get; }
 
         /// <summary>
-        /// Gets or sets the container of the object.
+        /// Gets a mutable reference to the container of the object.
         /// Initialized by <see cref="StObjAttribute.Container"/>.
         /// </summary>
-        IMutableReferenceType Container { get; }
+        IMutableReference Container { get; }
 
         /// <summary>
         /// Direct dependencies of the object.
         /// Initialized by <see cref="StObjAttribute.Requires"/>.
         /// </summary>
-        IReadOnlyList<IMutableReferenceType> Requires { get; }
+        IReadOnlyList<IMutableReference> Requires { get; }
 
         /// <summary>
         /// Reverse dependencies: types that depend on the object.
         /// Initialized by <see cref="StObjAttribute.RequiredBy"/>.
         /// </summary>
-        IReadOnlyList<IMutableReferenceType> RequiredBy { get; }
+        IReadOnlyList<IMutableReference> RequiredBy { get; }
 
         /// <summary>
         /// Gets a list of mutable Construct parameters.
         /// </summary>
-        IReadOnlyList<IMutableParameterType> ConstructParameters { get; }
+        IReadOnlyList<IMutableParameter> ConstructParameters { get; }
 
+        /// <summary>
+        /// Gets a list of mutable Ambiant properties for the ultimate specialization: all
+        /// ambiant properties of the most specialized object are avalaible.
+        /// This guarantees that properties are accessed by their most precise overriden/masked version.
+        /// </summary>
+        IReadOnlyList<IMutableAmbiantProperty> AllAmbiantProperties { get; }
+
+        /// <summary>
+        /// Sets a property on the actual object (the property must exist and its type must be compatible with the value).
+        /// Can be called for any writeable property of the object but when the property is an ambiant one, this is
+        /// the same as calling <see cref="IMutableAmbiantProperty.SetStructuralValue"/>.
+        /// </summary>
+        /// <param name="logger">The logger to use to describe any error.</param>
+        /// <param name="sourceName">The name of the "source" of this action.</param>
+        /// <param name="propertyName">Name of the property that must exist.</param>
+        /// <param name="value">Value to set.</param>
+        /// <returns>True on success, false if any error occurs.</returns>
+        bool SetPropertyStructuralValue( IActivityLogger logger, string sourceName, string propertyName, object value );
     }
 }

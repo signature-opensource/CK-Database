@@ -7,17 +7,12 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// A Structure Object "slices" an object (that is an <see cref="IAmbiantContract"/>) by 
-    /// types in the inheritance chain.
-    /// The <see cref="StObj">object</see> is built based on already built dependencies from top to bottom thanks to its "Construct" methods. 
+    /// A StObj "slices" a Structured Object (that is an <see cref="IAmbiantContract"/>) by 
+    /// types in its inheritance chain.
+    /// The <see cref="StructuredObject">Structured Object</see> is built based on already built dependencies from top to bottom thanks to its "Construct" methods. 
     /// </summary>
-    public interface IStObj
+    public interface IStObj : IStructuredObjectHolder
     {
-        /// <summary>
-        /// Gets the object.
-        /// </summary>
-        object StObj { get; }
-
         /// <summary>
         /// Gets the associated type (the "slice" of the object).
         /// </summary>
@@ -34,14 +29,24 @@ namespace CK.Setup
         bool IsContainer { get; }
 
         /// <summary>
-        /// Gets the parent Structure Object in the inheritance chain (the one associated to the base class of the object).
+        /// Gets the parent <see cref="IStObj"/> in the inheritance chain (the one associated to the base class of this <see cref="ObjectType"/>).
         /// May be null.
+        /// </summary>
+        IStObj DirectGeneralization { get; }
+
+        /// <summary>
+        /// Gets the child <see cref="IStObj"/> in the inheritance chain.
+        /// May be null.
+        /// </summary>
+        IStObj DirectSpecialization { get; }
+
+        /// <summary>
+        /// Gets the ultimate generalization <see cref="IStObj"/> in the inheritance chain. Never null (can be this object itself).
         /// </summary>
         IStObj Generalization { get; }
 
         /// <summary>
-        /// Gets the child Structure Object in the inheritance chain.
-        /// May be null.
+        /// Gets the ultimate specialization <see cref="IStObj"/> in the inheritance chain. Never null (can be this object itself).
         /// </summary>
         IStObj Specialization { get; }
 

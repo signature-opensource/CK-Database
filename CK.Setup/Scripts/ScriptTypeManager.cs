@@ -9,41 +9,55 @@ namespace CK.Setup
 
     public class ScriptTypeManager
     {
-        Dictionary<string,IScriptTypeHandler> _handlers;
-        IReadOnlyList<IScriptTypeHandler> _sortedHandlers;
+        readonly Dictionary<string,ScriptTypeHandler> _handlers;
+        readonly Dictionary<string,ScriptSource> _sources;
+        IReadOnlyList<ScriptTypeHandler> _sortedHandlers;
 
         public ScriptTypeManager()
         {
-            _handlers = new Dictionary<string, IScriptTypeHandler>();
+            _handlers = new Dictionary<string, ScriptTypeHandler>();
+            _sources = new Dictionary<string, ScriptSource>();
         }
 
         /// <summary>
-        /// Registers a new <see cref="IScriptTypeHandler"/>. Its <see cref="IScriptTypeHandler.ScriptType"/> must not 
+        /// Registers a new <see cref="ScriptTypeHandler"/>. Its <see cref="IScriptTypeHandler.ScriptType"/> must not 
         /// be already registered otherwise an exception is thrown.
         /// </summary>
         /// <param name="handler">The handler to register. Must not be null.</param>
-        public void Register( IScriptTypeHandler handler )
+        public void Register( ScriptTypeHandler handler )
         {
             if( handler == null ) throw new ArgumentNullException( "handler" );
-            if( String.IsNullOrWhiteSpace( handler.ScriptType ) ) throw new ArgumentException( "ScriptType can not be empty.", "handler" );
-            _handlers.Add( handler.ScriptType, handler );
+            _handlers.Add( handler.HandlerName, handler );
+            handler.SetScriptTypeManager( this );
         }
 
-        public IScriptTypeHandler Find( string scriptType )
+        public ScriptTypeHandler Find( string handlerName )
         {
-            return _handlers.GetValueWithDefault( scriptType, null );
+            return _handlers.GetValueWithDefault( handlerName, null );
         }
 
-        public bool IsRegistered( string scriptType )
+        public bool IsRegistered( string handlerName )
         {
-            return _handlers.ContainsKey( scriptType );
+            return _handlers.ContainsKey( handlerName );
+        }
+
+        internal ScriptSource FindSourceByName( string sourceName )
+        {
+            return _sources.GetValueWithDefault( sourceName, null );
+        }
+
+        internal ScriptSource RegisterSource( ScriptSource s )
+        {
+            ScriptSource existing;
+            if( !_sources.TryGetValue( s.Name, out existing ) ) _sources.Add( s.Name, s );
+            return existing;
         }
 
         class DependencyWrapper : IDependentItem
         {
-            public readonly IScriptTypeHandler Handler;
+            public readonly ScriptTypeHandler Handler;
 
-            public DependencyWrapper( IScriptTypeHandler h )
+            public DependencyWrapper( ScriptTypeHandler h )
             {
                 Handler = h;
             }
@@ -55,17 +69,17 @@ namespace CK.Setup
 
             public IEnumerable<IDependentItemRef> Requires
             {
-                get { return Handler.Requires != null ? Handler.Requires.Select( s => new NamedDependentItemRef( s ) ) : null; }
+                get { return Handler.InternalRequires != null ? Handler.InternalRequires.Select( s => new NamedDependentItemRef( s ) ) : null; }
             }
 
             public IEnumerable<IDependentItemRef> RequiredBy
             {
-                get { return Handler.RequiredBy != null ? Handler.RequiredBy.Select( s => new NamedDependentItemRef( s ) ) : null; }
+                get { return Handler.InternalRequiredBy != null ? Handler.InternalRequiredBy.Select( s => new NamedDependentItemRef( s ) ) : null; }
             }
 
             public string FullName
             {
-                get { return Handler.ScriptType; }
+                get { return Handler.HandlerName; }
             }
 
             public bool Optional
@@ -85,7 +99,7 @@ namespace CK.Setup
         /// </summary>
         /// <param name="logger">Logger to use. Any error will be logged.</param>
         /// <returns>Null on error or the sorted list.</returns>
-        public IReadOnlyList<IScriptTypeHandler> GetSortedHandlers( IActivityLogger logger )
+        internal IReadOnlyList<ScriptTypeHandler> GetSortedHandlers( IActivityLogger logger )
         {
             if( _sortedHandlers == null )
             {

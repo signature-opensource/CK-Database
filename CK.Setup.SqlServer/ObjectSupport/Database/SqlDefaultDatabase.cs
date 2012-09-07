@@ -9,16 +9,9 @@ namespace CK.Setup.SqlServer
     public class SqlDefaultDatabase : SqlDatabase, IAmbiantContract
     {
         public SqlDefaultDatabase()
+            : base()
         {
-            Name = DefaultDatabaseName;
             EnsureSchema( "CK" );
-            EnsureSchema( "CKCore" );
         }
-        
-        public override bool IsDefaultDatabase
-        {
-            get { return true; }
-        }
-
     }
 }

@@ -9,17 +9,16 @@ namespace CK.Setup
 {
     public class StObjCollectorResult : MultiContextualResult<StObjCollectorContextualResult>
     {
-        readonly AmbiantContractCollectorResult _contractResult;
+        readonly AmbiantContractCollectorResult<StObjTypeInfo> _contractResult;
         IReadOnlyCollection<IStObj> _rootStObjs;
-        int _totalItemCount;
-
+        IReadOnlyList<IStObj> _orderedStObjs;
         bool _fatal;
 
-        internal StObjCollectorResult( StObjMapper owner, AmbiantContractCollectorResult contractResult )
+        internal StObjCollectorResult( StObjMapper owner, AmbiantContractCollectorResult<StObjTypeInfo> contractResult )
         {
             Debug.Assert( contractResult != null );
             _contractResult = contractResult;
-            foreach( AmbiantContractCollectorContextualResult r in contractResult )
+            foreach( AmbiantContractCollectorContextualResult<StObjTypeInfo> r in contractResult )
             {
                 Add( new StObjCollectorContextualResult( r, new StObjContextualMapper( owner, r.Mappings ) ) );
             }
@@ -27,28 +26,37 @@ namespace CK.Setup
 
         public override bool HasFatalError
         {
-            get
-            {
-                return _fatal || _contractResult.HasFatalError || base.HasFatalError;
-            }
+            get { return _fatal || _contractResult.HasFatalError || base.HasFatalError; }
         }
-
+        
         /// <summary>
-        /// Gets the total number of <see cref="IStObj"/> available. 
-        /// Zero if <see cref="HasFatalError"/> is true.
+        /// Gets all the <see cref="IStObj"/> ordered by their dependencies.
+        /// Empty if <see cref="HasFatalError"/> is true.
         /// </summary>
-        public int TotalItemCount
+        public IReadOnlyList<IStObj> OrderedStObjs
         {
-            get { return _totalItemCount; }
+            get { return _orderedStObjs; }
         }
-
+        
         /// <summary>
-        /// Gets all the <see cref="IStObj"/> that have no <see cref="IStObj.Generalization"/>.
+        /// Gets all the <see cref="IStObj"/> that have no <see cref="IStObj.DirectGeneralization"/>.
         /// Empty if <see cref="HasFatalError"/> is true.
         /// </summary>
         public IReadOnlyCollection<IStObj> RootStObjs
         {
-            get { return _rootStObjs; }
+            get 
+            {
+                if( _rootStObjs == null )
+                {
+                    List<IStObj> heads = new List<IStObj>();
+                    foreach( var ctx in this )
+                    {
+                        heads.AddRange( ctx.MutableItems.Where( m => m.DirectGeneralization == null ) );
+                    }
+                    _rootStObjs = heads.ToReadOnlyCollection();
+                }
+                return _rootStObjs; 
+            }
         }
 
         internal IEnumerable<MutableItem> AllMutableItems
@@ -65,19 +73,13 @@ namespace CK.Setup
         {
             _fatal = true;
             _rootStObjs = ReadOnlyListEmpty<IStObj>.Empty;
+            _orderedStObjs = ReadOnlyListEmpty<IStObj>.Empty;
         }
 
-        internal void SetSuccess()
+        internal void SetSuccess( IReadOnlyList<IStObj> ordered )
         {
-            Debug.Assert( !HasFatalError );
-            Debug.Assert( _totalItemCount == 0 );
-            List<IStObj> heads = new List<IStObj>();
-            foreach( var ctx in this )
-            {
-                _totalItemCount += ctx.MutableItems.Count;
-                heads.AddRange( ctx.MutableItems.Where( m => m.Generalization == null ) );
-            }
-            _rootStObjs = heads.ToReadOnlyCollection();
+            Debug.Assert( !HasFatalError && _orderedStObjs == null );
+            _orderedStObjs = ordered;
         }
     }
 }

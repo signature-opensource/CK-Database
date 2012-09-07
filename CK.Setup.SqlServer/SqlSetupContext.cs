@@ -8,34 +8,38 @@ using CK.Core;
 namespace CK.Setup.SqlServer
 {
 
-    public class SqlSetupContext : ISetupDriverFactory, IDisposable
+
+    public class SqlSetupContext : ISetupDriverFactory, ISqlManagerProvider, IDisposable
     {
         SqlManager _defaultDatabase;
-        SqlManagerProvider _otherDatabases;
-        AssemblyRegistererConfiguration _conf;
+        SqlManagerProvider _databases;
+        AssemblyRegistererConfiguration _regConf;
+        StObjConfigurator _stObjConfigurator;
+        List<Type> _regTypeList;
 
         public SqlSetupContext( string defaultDatabaseConnectionString, IActivityLogger logger )
         {
-            _defaultDatabase = new SqlManager();
-            _defaultDatabase.Logger = logger;
-            _defaultDatabase.OpenFromConnectionString( defaultDatabaseConnectionString );
-            _otherDatabases = new SqlManagerProvider( logger );
-
-
+            _databases = new SqlManagerProvider( logger );
+            _databases.Add( SqlDatabase.DefaultDatabaseName, defaultDatabaseConnectionString );
+            _defaultDatabase = _databases.FindManager( SqlDatabase.DefaultDatabaseName );
+            _stObjConfigurator = new StObjConfigurator();
+            _regConf = new AssemblyRegistererConfiguration();
+            _regTypeList = new List<Type>();
+            _regTypeList.Add( typeof( SqlDefaultDatabase ) );
         }
+
         public AssemblyRegistererConfiguration AssemblyRegistererConfiguration
         {
-            get { return _conf; }
+            get { return _regConf; }
         }
 
-        public SqlManager DefaultDatabase
+        /// <summary>
+        /// Gets a list of class types that will be explicitely registered (even if they belong to
+        /// a assembly that is not discovered or appears in <see cref="AssemblyRegistererConfiguration.IgnoredAssemblyNames"/>).
+        /// </summary>
+        public IList<Type> ExplicitRegisteredClasses
         {
-            get { return _defaultDatabase; }
-        }
-
-        public SqlManagerProvider OtherDatabases
-        {
-            get { return _otherDatabases; }
+            get { return _regTypeList; }
         }
 
         public IActivityLogger Logger
@@ -43,23 +47,30 @@ namespace CK.Setup.SqlServer
             get { return _defaultDatabase.Logger; }
         }
 
-
-        public virtual ItemDriver CreateDriver( Type driverType, ItemDriver.BuildInfo info )
+        public virtual SetupDriver CreateDriver( Type driverType, SetupDriver.BuildInfo info )
         {
-            if( driverType == typeof( SqlObjectDriver ) ) return new SqlObjectDriver( info, _defaultDatabase );
-            if( driverType == typeof( SqlConnectionSetupDriver ) ) return new SqlConnectionSetupDriver( info, DoObtainManager );
+            if( driverType == typeof( SqlObjectDriver ) ) return new SqlObjectDriver( info, this );
+            if( driverType == typeof( SetupDriver ) ) return new SetupDriver( info );
+            if( driverType == typeof( SqlDatabaseSetupDriver ) ) return new SqlDatabaseSetupDriver( info, this );
             return null;
         }
 
-        public virtual ContainerDriver CreateDriverContainer( Type containerType, ContainerDriver.BuildInfo info )
+        public StObjConfigurator StObjConfigurator
         {
-            if( containerType == typeof( ContainerDriver ) ) return new ContainerDriver( info );
-            if( containerType == typeof( PackageDriver ) ) return new PackageDriver( info );
-            if( containerType == typeof( SqlDatabaseSetupDriver ) ) return new SqlDatabaseSetupDriver( info );
-            return null;
+            get { return _stObjConfigurator; }
         }
 
-        SqlManager DoObtainManager( string dbName )
+        public SqlManager DefaultSqlDatabase
+        {
+            get { return _defaultDatabase; }
+        }
+
+        public SqlManagerProvider SqlDatabases
+        {
+            get { return _databases; }
+        }
+
+        SqlManager ISqlManagerProvider.FindManager( string dbName )
         {
             if( dbName == null ) throw new ArgumentNullException( "dbName" );
             if( dbName == SqlDatabase.DefaultDatabaseName ) return _defaultDatabase;
@@ -70,16 +81,15 @@ namespace CK.Setup.SqlServer
 
         protected virtual SqlManager ObtainManager( string dbName )
         {
-            return _otherDatabases.Obtain( dbName );
+            return _databases.FindManager( dbName );
         }
-
 
         public virtual void Dispose()
         {
-            if( _defaultDatabase != null )
+            if( _databases != null )
             {
-                _defaultDatabase.Dispose();
-                _defaultDatabase = null;
+                _databases.Dispose();
+                _databases = null;
             }
         }
 

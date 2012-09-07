@@ -21,10 +21,10 @@ namespace CK.Setup.StObj.Tests
             
             disco.DiscoverRecurse( Assembly.GetExecutingAssembly() );
 
-            StObjCollector collector = new StObjCollector();
-            collector.RegisterTypes( disco, TestHelper.Logger );
+            StObjCollector collector = new StObjCollector( TestHelper.Logger );
+            collector.RegisterTypes( disco );
             
-            var result = collector.GetResult( TestHelper.Logger );
+            var result = collector.GetResult();
             Assert.That( result.HasFatalError, Is.False );
 
         }
@@ -44,10 +44,10 @@ namespace CK.Setup.StObj.Tests
 
                 disco.DiscoverRecurse( Assembly.GetExecutingAssembly() );
 
-                StObjCollector collector = new StObjCollector();
-                collector.RegisterTypes( disco, TestHelper.Logger );
+                StObjCollector collector = new StObjCollector( TestHelper.Logger );
+                collector.RegisterTypes( disco );
 
-                var result = collector.GetResult( TestHelper.Logger );
+                var result = collector.GetResult();
                 Assert.That( result.HasFatalError, Is.False );
             }
 
@@ -60,10 +60,10 @@ namespace CK.Setup.StObj.Tests
 
                 disco.DiscoverRecurse( Assembly.GetExecutingAssembly() );
 
-                StObjCollector collector = new StObjCollector();
-                collector.RegisterTypes( disco, TestHelper.Logger );
+                StObjCollector collector = new StObjCollector( TestHelper.Logger );
+                collector.RegisterTypes( disco );
 
-                var result = collector.GetResult( TestHelper.Logger );
+                var result = collector.GetResult();
                 Assert.That( result.HasFatalError, Is.False );
             }
         }
@@ -83,10 +83,10 @@ namespace CK.Setup.StObj.Tests
 
                 disco.DiscoverRecurse( Assembly.GetExecutingAssembly() );
 
-                StObjCollector collector = new StObjCollector();
-                collector.RegisterTypes( disco, TestHelper.Logger );
+                StObjCollector collector = new StObjCollector( TestHelper.Logger );
+                collector.RegisterTypes( disco );
 
-                var result = collector.GetResult( TestHelper.Logger );
+                var result = collector.GetResult();
                 Assert.That( result.HasFatalError, Is.True );
             }
         }
@@ -104,10 +104,10 @@ namespace CK.Setup.StObj.Tests
 
                 disco.DiscoverRecurse( Assembly.GetExecutingAssembly() );
 
-                StObjCollector collector = new StObjCollector();
-                collector.RegisterTypes( disco, TestHelper.Logger );
+                StObjCollector collector = new StObjCollector( TestHelper.Logger );
+                collector.RegisterTypes( disco );
 
-                var result = collector.GetResult( TestHelper.Logger );
+                var result = collector.GetResult();
                 Assert.That( result.HasFatalError, Is.True );
             }
         }
@@ -125,9 +125,9 @@ namespace CK.Setup.StObj.Tests
 
                 disco.DiscoverRecurse( Assembly.GetExecutingAssembly() );
 
-                StObjCollector collector = new StObjCollector();
-                collector.RegisterTypes( disco, TestHelper.Logger );
-                var result = collector.GetResult( TestHelper.Logger );
+                StObjCollector collector = new StObjCollector( TestHelper.Logger );
+                collector.RegisterTypes( disco );
+                var result = collector.GetResult();
                 Assert.That( result.HasFatalError, Is.True );
             }
         }
@@ -143,14 +143,14 @@ namespace CK.Setup.StObj.Tests
 
                 disco.DiscoverRecurse( Assembly.GetExecutingAssembly() );
 
-                StObjCollector collector = new StObjCollector();
-                collector.RegisterTypes( disco, TestHelper.Logger );
-                var result = collector.GetResult( TestHelper.Logger );
+                StObjCollector collector = new StObjCollector( TestHelper.Logger );
+                collector.RegisterTypes( disco );
+                var result = collector.GetResult();
                 Assert.That( result.HasFatalError, Is.False );
 
                 IStObj theObject = result.Default.StObjMapper[typeof( CK.Setup.StObj.Tests.SimpleObjects.LoggerInjection.LoggerInjected )];
                 Assert.That( theObject, Is.Not.Null );
-                Assert.That( theObject.StObj, Is.Not.Null.And.InstanceOf<CK.Setup.StObj.Tests.SimpleObjects.LoggerInjection.LoggerInjected>() );
+                Assert.That( theObject.StructuredObject, Is.Not.Null.And.InstanceOf<CK.Setup.StObj.Tests.SimpleObjects.LoggerInjection.LoggerInjected>() );
             }
         }
 

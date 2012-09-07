@@ -7,20 +7,15 @@ using System.Diagnostics;
 namespace CK.Setup
 {
     /// <summary>
-    /// Collection part of the composite <see cref="IDependentItem"/>. 
-    /// It only has to expose its <see cref="Children"/>.
+    /// Specializes <see cref="IDependentItemGroup"/> that defines an object as a container: any <see cref="IDependentItem.Container"/>
+    /// can reference it.
     /// </summary>
-    public interface IDependentItemContainer : IDependentItem
+    /// <remarks>
+    /// Provided that other items are submitted to the <see cref="DependencySorter.OrderItems"/> method the <see cref="IDependentItemGroup.Children"/> collection 
+    /// can be null or empty sine any submitted items that has its <see cref="IDependentItem.Container"/> references this container will be automatically "added"
+    /// to the container.
+    /// </remarks>
+    public interface IDependentItemContainer : IDependentItemGroup
     {
-        /// <summary>
-        /// Gets a list of children. Can be null or empty (see remarks).
-        /// </summary>
-        /// <remarks>
-        /// The <see cref="DependencySorter"/> uses this list to discover the original <see cref="IDependentItem"/> to order.
-        /// Provided that each and every item is submitted to the <see cref="DependencySorter.OrderItems"/>, this collection 
-        /// can be null or empty (any submitted items can use <see cref="IDependentItem.Container"/> to reference this container).
-        /// </remarks>
-        IEnumerable<IDependentItemRef> Children { get; }
-
     }
 }

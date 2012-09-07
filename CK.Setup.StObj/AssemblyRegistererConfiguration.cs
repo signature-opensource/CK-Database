@@ -34,7 +34,7 @@ namespace CK.Core
         /// Defaults to false.
         /// </summary>
         public bool AutomaticAssemblyDiscovering { get; set; }
-
+        
         /// <summary>
         /// Assembly names from this list are ignored wherever they come from.
         /// Contains by default some names like "System" or "CK.Core".

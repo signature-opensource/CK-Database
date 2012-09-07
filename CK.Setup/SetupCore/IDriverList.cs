@@ -7,7 +7,8 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// An ordered list of <see cref="DriverBase"/> indexed by the <see cref="ISetupableItem.FullName"/>.
+    /// An ordered list of <see cref="DriverBase"/> indexed by the <see cref="IDependentItem.FullName"/> or 
+    /// by the <see cref="IDependentItem"/> object instance itself.
     /// </summary>
     public interface IDriverList : IReadOnlyList<DriverBase>
     {

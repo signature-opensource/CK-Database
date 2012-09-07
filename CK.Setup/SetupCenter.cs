@@ -13,7 +13,7 @@ namespace CK.Setup
         IActivityLogger _logger;
         ISetupDriverFactory _driverFactory;
         
-        PackageScriptCollector _scripts;
+        ScriptCollector _scripts;
         ScriptTypeManager _scriptTypeManager;
 
         public SetupCenter( IVersionedItemRepository versionRepository, ISetupSessionMemoryProvider memory, IActivityLogger logger, ISetupDriverFactory driverFactory )
@@ -29,15 +29,22 @@ namespace CK.Setup
             _driverFactory = driverFactory;
 
             _scriptTypeManager = new ScriptTypeManager();
-            _scripts = new PackageScriptCollector( _scriptTypeManager.IsRegistered );
+            _scripts = new ScriptCollector( _scriptTypeManager );
         }
 
+        /// <summary>
+        /// Gets the <see cref="ScriptTypeManager"/> into which <see cref="IScriptTypeHandler"/> must be registered
+        /// before <see cref="Run"/> in order for <see cref="ISetupScript"/> added to <see cref="Scripts"/> to be executed.
+        /// </summary>
         public ScriptTypeManager ScriptTypeManager
         {
             get { return _scriptTypeManager; }
         }
         
-        public PackageScriptCollector Scripts
+        /// <summary>
+        /// Gets the <see cref="ScriptCollector"/>.
+        /// </summary>
+        public ScriptCollector Scripts
         {
             get { return _scripts; }
         }
@@ -53,7 +60,7 @@ namespace CK.Setup
         /// Registers any number of <see cref="IDependentItem"/> and/or <see cref="IDependentItemDiscoverer"/> and executes
         /// the whole setup process (<see cref="SetupEngine.RunInit"/>, <see cref="SetupEngine.RunInit"/>, <see cref="SetupEngine.RunInstall"/>, <see cref="SetupEngine.RunSettle"/>).
         /// </summary>
-        /// <param name="items">Objects that can be <see cref="ISetupableItem"/>, <see cref="IDependentItemDiscoverer"/> or both.</param>
+        /// <param name="items">Objects that can be <see cref="IDependentItem"/>, <see cref="IDependentItemDiscoverer"/> or both.</param>
         /// <returns>A <see cref="SetupEngineRegisterResult"/> that captures detailed information about the registration result.</returns>
         public bool Run( params object[] items )
         {
@@ -121,7 +128,7 @@ namespace CK.Setup
                     _logger.Info( "{0} previous Setup attempt(s). Last on {2}, error was: '{1}'.", _memory.StartCount, _memory.LastError, _memory.LastStartDate );
                 }
                 engine = new SetupEngine( _versionRepository, m, _logger, _driverFactory );
-                ScriptHandlerBuilder scriptBuilder = new ScriptHandlerBuilder( engine, _scripts, _scriptTypeManager );
+                ScriptSetupHandlerBuilder scriptBuilder = new ScriptSetupHandlerBuilder( engine, _scripts, _scriptTypeManager );
             }
             return engine;
         }

@@ -120,7 +120,7 @@ namespace CK.Setup
             get { return _requiredBy; }
         }
 
-        IEnumerable<IDependentItemRef> IDependentItemContainer.Children
+        IEnumerable<IDependentItemRef> IDependentItemGroup.Children
         {
             get { return _children; }
         }

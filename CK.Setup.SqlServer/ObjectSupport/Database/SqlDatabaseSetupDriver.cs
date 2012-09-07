@@ -6,31 +6,21 @@ using CK.SqlServer;
 
 namespace CK.Setup.SqlServer
 {
-    public class SqlDatabaseSetupDriver : ContainerDriver
+    public class SqlDatabaseSetupDriver : StObjSetupDriver<SqlDatabase>
     {
-        SqlConnectionSetupDriver _connection;
+        SqlManager _connection;
 
-        public SqlDatabaseSetupDriver( BuildInfo info )
+        public SqlDatabaseSetupDriver( BuildInfo info, ISqlManagerProvider sqlProvider )
             : base( info )
         {
-            _connection = (SqlConnectionSetupDriver)DirectDependencies[Item.SqlConnection];
+            _connection = sqlProvider.FindManager( Object.Name );
         }
 
-        public new SqlDatabaseItem Item
+        protected override bool  Install()
         {
-            get { return (SqlDatabaseItem)base.Item; }
-        }
-
-        public SqlConnectionSetupDriver SqlConnection
-        {
-            get { return _connection; }
-        }
-
-        protected override bool Install()
-        {
-            foreach( var name in Item.Database.Schemas )
+            foreach( var name in Object.Schemas )
             {
-                _connection.SqlManager.ExecuteOneScript( String.Format( "if not exists(select 1 from sys.schemas where name = '{0}') begin exec( 'create schema {0}' ); end", name ), Engine.Logger );
+                _connection.ExecuteOneScript( String.Format( "if not exists(select 1 from sys.schemas where name = '{0}') begin exec( 'create schema {0}' ); end", name ), Engine.Logger );
             } 
             return true;
         }

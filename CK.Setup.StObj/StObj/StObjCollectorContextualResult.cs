@@ -9,12 +9,12 @@ namespace CK.Setup
 {
     public class StObjCollectorContextualResult : IContextualResult
     {
-        readonly AmbiantContractCollectorContextualResult _contractResult;
+        readonly AmbiantContractCollectorContextualResult<StObjTypeInfo> _contractResult;
         readonly StObjContextualMapper _mappings;
         readonly IReadOnlyCollection<MutableItem> _itemsEx;
         bool _fatalError;
 
-        internal StObjCollectorContextualResult( AmbiantContractCollectorContextualResult contractResult, StObjContextualMapper mappings )
+        internal StObjCollectorContextualResult( AmbiantContractCollectorContextualResult<StObjTypeInfo> contractResult, StObjContextualMapper mappings )
         {
             _contractResult = contractResult;
             _mappings = mappings;
@@ -53,12 +53,12 @@ namespace CK.Setup
             get { return _itemsEx; }
         }
 
-        internal AmbiantContractCollectorContextualResult AmbiantContractResult
+        internal AmbiantContractCollectorContextualResult<StObjTypeInfo> AmbiantContractResult
         {
             get { return _contractResult; }
         }
 
-        internal void Add( MutableItem item )
+        internal void AddConfiguredItem( MutableItem item )
         {
             _mappings.Add( item );
         }

@@ -11,155 +11,253 @@ namespace CK.Setup
 {
     internal class MutableItem : IStObj, IStObjMutableItem, IDependentItemContainerAsk, IDependentItemContainerRef
     {
-        readonly Type _objectType;
+        readonly StObjTypeInfo _objectType;
         readonly Type _context;
         readonly object _stObj;
-        readonly MutableItem _generalization;
+        readonly MutableItem _directGeneralization;
+        MutableItem _directSpecialization;
+        MutableItem _generalization;
         MutableItem _specialization;
 
-        MutableReferenceType _container;
-        List<MutableReferenceType> _requires;
-        IReadOnlyList<MutableReferenceType> _requiresEx;
-        List<MutableReferenceType> _requiredBy;
-        IReadOnlyList<MutableReferenceType> _requiredByEx;
-        MethodInfo _construct;
-        List<MutableParameterType> _constructParameter;
-        IReadOnlyList<IMutableParameterType> _constructParameterEx;
-        bool _hasBeenReferencedAsAContainer;
+        MutableReference _container;
+        List<MutableReference> _requires;
+        IReadOnlyList<MutableReference> _requiresEx;
+        List<MutableReference> _requiredBy;
+        IReadOnlyList<MutableReference> _requiredByEx;
+
+        IReadOnlyList<MutableParameter> _constructParameterEx;
+        IReadOnlyList<MutableAmbiantProperty> _allAmbiantProperties;
 
         string _dFullName;
         MutableItem _dContainer;
         IReadOnlyList<MutableItem> _dRequires;
         IReadOnlyList<MutableItem> _dRequiredBy;
+        bool _hasBeenReferencedAsAContainer;
+        byte _ambiantPropertiesResolved;
 
-        internal MutableItem( MutableItem parent, Type context, Type objectType, object theObject )
+        internal MutableItem( MutableItem parent, Type context, StObjTypeInfo objectType, object theObject )
         {
-            Debug.Assert( context != null  && objectType != null && theObject != null );
+            Debug.Assert( context != null  && theObject != null );
             _objectType = objectType;
             _stObj = theObject;
             _context = context;
-            _generalization = parent;
-            if( _generalization != null )
+            _directGeneralization = parent;
+            if( _directGeneralization != null )
             {
-                Debug.Assert( _generalization._specialization == null );
-                _generalization._specialization = this;
+                Debug.Assert( _directGeneralization._directSpecialization == null );
+                _directGeneralization._directSpecialization = this;
             }
         }
 
         public override string ToString()
         {
-            return AmbiantContractCollector.DisplayName( _context, _objectType );
+            return AmbiantContractCollector.DisplayName( _context, _objectType.Type );
         }
 
-        public IMutableReferenceType Container 
+        #region Configuration
+
+        internal void Configure( IActivityLogger logger, MutableItem generalization, MutableItem specialization )
         {
-            get { return _container; }
+            Debug.Assert( _generalization == null && _specialization == null, "Configured once and only once." );
+            Debug.Assert( generalization != null && specialization != null, "Configuration sets the top & bottom of the inheritance chain." );
+            Debug.Assert( (generalization == this) == (_directGeneralization == null) );
+            Debug.Assert( (specialization == this) == (_directSpecialization == null) );
+
+            _generalization = generalization;
+            _specialization = specialization;
+            ApplyTypeInformation( logger );
+            AnalyseConstruct( logger );
+            ApplyConfiguratorAttributes( logger );
         }
 
-        public IReadOnlyList<IMutableReferenceType> Requires { get { return _requiresEx; } }
-
-        public IReadOnlyList<IMutableReferenceType> RequiredBy { get { return _requiredByEx; } }
-
-        public IReadOnlyList<IMutableParameterType> ConstructParameters 
-        {
-            get { return _constructParameterEx; } 
-        }
-
-        internal void ApplyAttributes( IActivityLogger logger )
-        {
-            Func<Type,Type> contextFinder = ReadContextMapperFromStObjContextMapAttribute( logger );
-            ApplyStObjAttribute( logger, contextFinder );
-            AnalyseConstruct( logger, contextFinder );
-        }
-
-        Func<Type, Type> ReadContextMapperFromStObjContextMapAttribute( IActivityLogger logger )
-        {
-            return t => null;
-        }
-
-        void ApplyStObjAttribute( IActivityLogger logger, Func<Type, Type> contextFinder )
+        void ApplyTypeInformation( IActivityLogger logger )
         {
             Debug.Assert( _container == null, "Called only once right after object instanciation." );
-            _container = new MutableReferenceType( this, MutableReferenceKind.Container );
-            var a = StObjAttribute.GetStObjAttribute( _objectType, logger );
-            if( a != null )
+            Debug.Assert( _directSpecialization == null || _directSpecialization._generalization != null, "Configuration is from bottom to top." );
+
+            _container = new MutableReference( this, MutableReferenceKind.Container );
+            _container.Type = _objectType.Container;
+            _container.Context = _objectType.ContainerContext;
+
+            // We share Ambiant properties from the Specialization.
+            // This is why Configuration must be made from bottom to the top.
+            if( _directSpecialization == null )
             {
-                _container.Type = a.Container;
-                _container.Context = contextFinder( a.Container );
-                if( a.Requires != null )
-                {
-                    _requires = a.Requires.Select( t => new MutableReferenceType( this, MutableReferenceKind.Requires ) { Type = t, Context = contextFinder( t ) } ).ToList();
-                }
-                else _requires = new List<MutableReferenceType>();
-                if( a.RequiredBy != null )
-                {
-                    _requiredBy = a.RequiredBy.Select( t => new MutableReferenceType( this, MutableReferenceKind.RequiredBy ) { Type = t, Context = contextFinder( t ) } ).ToList();
-                }
-                else _requiredBy = new List<MutableReferenceType>();
+                _allAmbiantProperties = _objectType.AmbiantProperties.Select( ap => new MutableAmbiantProperty( this, ap ) ).ToReadOnlyList();
             }
             else
             {
-                _requires = new List<MutableReferenceType>();
-                _requiredBy = new List<MutableReferenceType>();
+                _allAmbiantProperties = _directSpecialization._allAmbiantProperties;
             }
-            _requiresEx = new ReadOnlyListOnIList<MutableReferenceType>( _requires );
-            _requiredByEx = new ReadOnlyListOnIList<MutableReferenceType>( _requiredBy );
+            var a = _objectType.StObjAttribute;
+            if( a != null )
+            {
+                if( a.Requires != null )
+                {
+                    _requires = a.Requires.Select( t => new MutableReference( this, MutableReferenceKind.Requires ) { Type = t, Context = _objectType.FindContextFromMapAttributes( t ) } ).ToList();
+                }
+                else _requires = new List<MutableReference>();
+                if( a.RequiredBy != null )
+                {
+                    _requiredBy = a.RequiredBy.Select( t => new MutableReference( this, MutableReferenceKind.RequiredBy ) { Type = t, Context = _objectType.FindContextFromMapAttributes( t ) } ).ToList();
+                }
+                else _requiredBy = new List<MutableReference>();
+            }
+            else
+            {
+                _requires = new List<MutableReference>();
+                _requiredBy = new List<MutableReference>();
+            }
+            _requiresEx = new ReadOnlyListOnIList<MutableReference>( _requires );
+            _requiredByEx = new ReadOnlyListOnIList<MutableReference>( _requiredBy );
         }
 
-        void AnalyseConstruct( IActivityLogger logger, Func<Type, Type> contextFinder )
+        void AnalyseConstruct( IActivityLogger logger )
         {
             Debug.Assert( _constructParameterEx == null, "Called only once right after object instanciation..." );
-            Debug.Assert( _container != null, "...and after ApplyStObjAttribute." );
+            Debug.Assert( _container != null, "...and after ApplyTypeInformation." );
 
-            ParameterInfo[] parameters;
-            _construct = _objectType.GetMethod( "Construct", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic );
-            if( _construct != null && (parameters = _construct.GetParameters()).Length > 0 )
+            if( _objectType.Construct != null && _objectType.ConstructParameters.Length > 0 )
             {
-                _constructParameter = new List<MutableParameterType>();
-                _constructParameterEx = new ReadOnlyListOnIList<MutableParameterType>( _constructParameter );
-                bool hasContainerParameter = false;
-                foreach( ParameterInfo i in parameters )
+                var parameters = new MutableParameter[ _objectType.ConstructParameters.Length ];
+                for( int idx = 0; idx < parameters.Length; ++idx )
                 {
-                    // Is it marked with ContainerAttribute?
-                    bool isContainerParameter = Attribute.GetCustomAttribute( i, typeof( ContainerAttribute ) ) != null;
-                    // If a ContextAttribute exists on the parameter, it takes precedence over the StObjContextMapAttribute on the class.
-                    ContextAttribute ctx = (ContextAttribute)Attribute.GetCustomAttribute( i, typeof( ContextAttribute ) );
-                    MutableParameterType p;
-                    if( ctx != null )
+                    ParameterInfo cp = _objectType.ConstructParameters[idx];
+                    bool isContainer = idx == _objectType.ContainerConstructParameterIndex;
+                    MutableParameter p = new MutableParameter( this, cp, isContainer );
+                    p.Context = _objectType.ConstructParameterTypedContext[idx];
+                    if( isContainer )
                     {
-                        p = new MutableParameterType( this, i, isContainerParameter ) { Context = ctx.Context };
-                    }
-                    else
-                    {
-                        p = new MutableParameterType( this, i, isContainerParameter ) { Context = contextFinder( i.ParameterType ) };
-                    }
-                    if( isContainerParameter )
-                    {
-                        if( hasContainerParameter )
-                        {
-                            logger.Error( "Construct method of class '{0}' has more than one parameter marked with [Container] attribute.", _objectType.FullName );
-                        }
-                        hasContainerParameter = true;
-                        if( _container.Type != null )
-                        {
-                            if( _container.Type != p.Type )
-                            {
-                                logger.Error( "Construct parameter '{0}' for class '{1}' defines the Container as '{2}' but an attribute on the class declares the Container as '{3}'.", i.Name, _objectType.FullName, p.Type.FullName, _container.Type.FullName );
-                            }
-                            else if( _container.Context != p.Context )
-                            {
-                                logger.Error( "Construct parameter '{0}' for class '{1}' targets the Container in '{2}' but an attribute on the class declares the Container context as '{3}'.", i.Name, _objectType.FullName, p.Context.Name, _container.Context.Name );
-                            }
-                        }
                         // Sets the _container to be the parameter object.
                         _container = p;
                     }
-                    _constructParameter.Add( p );
+                    parameters[idx] = p;
                 }
+                _constructParameterEx = new ReadOnlyListOnIList<MutableParameter>( parameters );
             }
             else
             {
-                _constructParameterEx = ReadOnlyListEmpty<MutableParameterType>.Empty;
+                _constructParameterEx = ReadOnlyListEmpty<MutableParameter>.Empty;
+            }
+        }
+
+        void ApplyConfiguratorAttributes( IActivityLogger logger )
+        {
+            foreach( var c in _objectType.ConfiguratorAttributes )
+            {
+                c.Configure( logger, this );
+            }
+        }
+
+        #endregion
+
+        internal MutableItem DirectGeneralization
+        {
+            get { return _directGeneralization; }
+        }
+
+        internal MutableItem DirectSpecialization
+        {
+            get { return _directSpecialization; }
+        }
+
+        #region IStObjMutableItem is called during Configuration
+
+        IMutableReference IStObjMutableItem.Container { get { return _container; } }
+
+        IReadOnlyList<IMutableReference> IStObjMutableItem.Requires { get { return _requiresEx; } }
+
+        IReadOnlyList<IMutableReference> IStObjMutableItem.RequiredBy { get { return _requiredByEx; } }
+
+        IReadOnlyList<IMutableParameter> IStObjMutableItem.ConstructParameters { get { return _constructParameterEx; } }
+
+        IReadOnlyList<IMutableAmbiantProperty> IStObjMutableItem.AllAmbiantProperties { get { return _allAmbiantProperties; } }
+
+        bool IStObjMutableItem.SetPropertyStructuralValue( IActivityLogger logger, string sourceName, string propertyName, object value )
+        {
+            if( value == Type.Missing ) throw new InvalidOperationException( "Setting property to Type.Missing is not allowed." );
+
+            // Targets the specialization to honor property covariance.
+            PropertyInfo p;
+            MutableAmbiantProperty mp = _specialization._allAmbiantProperties.FirstOrDefault( a => a.Name == propertyName );
+            if( mp != null ) p = mp.PropertyInfo;
+            else p = _specialization._objectType.Type.GetProperty( propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, null, Type.EmptyTypes, null );
+            
+            if( p == null || !p.CanWrite )
+            {
+                logger.Error( "Unable to set property '{1}.{0}' structural value. It must exist and be writeable.", propertyName, _specialization._objectType.Type.FullName );
+            }
+            else 
+            {
+                try
+                {
+                    p.SetValue( _stObj, value, null );
+                    if( mp != null ) mp.ResolvedValue = value;
+                    return true;
+                }
+                catch( Exception ex )
+                {
+                    logger.Error( ex, "While setting structural property '{1}.{0}'.", propertyName, _specialization._objectType.Type.FullName );
+                }
+            }
+            return false;
+        }
+
+        #endregion
+
+        #region PrepareDependentItem: before sorting.
+        internal void PrepareDependentItem( IActivityLogger logger, StObjCollectorResult result, StObjCollectorContextualResult contextResult )
+        {
+            Debug.Assert( _container != null && _constructParameterEx != null );
+            Debug.Assert( _context == contextResult.Context && result[_context] == contextResult, "We are called inside our typed context, this avoids the lookup result[Context] to obtain the owner's context (the default)." );
+
+            // Container initialization.
+            //
+            // Since we want to remove all the containers of the object from its parameter requirements (see below), 
+            // we can not rely on the DependencySorter to detect a cyclic chain of containers:
+            // we use the list to collect the chain of containers and detect cycles.
+            List<MutableItem> allContainers = null;
+            ComputeFullNameAndResolveContainer( logger, result, contextResult, ref allContainers );
+
+            // Requirement intialization.
+            HashSet<MutableItem> req = new HashSet<MutableItem>();
+            {
+                // Base class is Required.
+                if( _directGeneralization != null ) req.Add( _directGeneralization );
+
+                // Requires are... Required (when not configured as optional by IStObjStructuralConfigurator).
+                foreach( MutableItem dep in _requires.Select( r => r.ResolveToStObj( logger, result, contextResult ) ).Where( m => m != null ) )
+                {
+                    req.Add( dep );
+                }
+                // Construct parameters are Required... except if they are one of our Container.
+                if( _constructParameterEx.Count > 0 )
+                {
+                    // We are here considering here that a Container parameter does NOT define a dependency to the whole container (with its content):
+                    //
+                    //      That seems strange: we may expect the container to be fully initialized when used as a parameter by a dependency Construct...
+                    //      The fact is that we are dealing with Objects that have a method Construct, that this Construct method is called on the head
+                    //      of the container (before any of its content) and that this method has no "thickness", no content in terms of dependencies: its
+                    //      execution fully initializes the StOj and we can use it.
+                    //      This is actually fully coherent with the way the setup works. An item of a package does not "require" its own package, it is 
+                    //      contained in its package and can require items in the package as it needs.
+                    // 
+                    foreach( MutableParameter t in _constructParameterEx )
+                    {
+                        // Do not consider the container as a requirement since a Container is
+                        // already a dependency (on the head's Container) and that a requirement on a container
+                        // targets the whole content of it (this would lead to a cycle in the dependency graph).
+                        MutableItem dep = t.ResolveToStObj( logger, result, contextResult );
+                        if( dep != null && (allContainers == null || allContainers.Contains( dep ) == false) ) req.Add( dep );
+                    }
+                }
+            }
+            _dRequires = req.ToReadOnlyList();
+
+            // RequiredBy initialization.
+            if( _requiredBy.Count > 0 )
+            {
+                _dRequiredBy = _requiredBy.Select( r => r.ResolveToStObj( logger, result, contextResult ) ).Where( m => m != null ).ToReadOnlyList();
             }
         }
 
@@ -167,8 +265,8 @@ namespace CK.Setup
         {
             if( _dFullName != null ) return;
 
-            _dFullName = AmbiantContractCollector.DisplayName( _context, _objectType );
-            _dContainer = _container.Resolve( logger, result, contextResult );
+            _dFullName = AmbiantContractCollector.DisplayName( _context, _objectType.Type );
+            _dContainer = _container.ResolveToStObj( logger, result, contextResult );
             if( _dContainer != null )
             {
                 _dContainer._hasBeenReferencedAsAContainer = true;
@@ -188,85 +286,50 @@ namespace CK.Setup
                 _dContainer.ComputeFullNameAndResolveContainer( logger, result, contextResult, ref prevContainers );
             }
         }
+        #endregion
 
-        internal void PrepareDependentItem( IActivityLogger logger, StObjCollectorResult result, StObjCollectorContextualResult contextResult )
-        {
-            Debug.Assert( _container != null && _constructParameterEx != null );
-            Debug.Assert( _context == contextResult.Context && result[_context] == contextResult, "We are called inside our typed context, this avoids the lookup result[Context] to obtain the owner's context (the default)." );
-
-            // Since we want to remove all the containers of the object from its parameter requirements (see below), 
-            // we can not rely on the DependencySorter to detect a cyclic chain of containers:
-            // we use the list to collect the chain of containers and detect cycles.
-            List<MutableItem> allContainers = null;
-            ComputeFullNameAndResolveContainer( logger, result, contextResult, ref allContainers );
-
-            HashSet<MutableItem> req = new HashSet<MutableItem>();
-            if( _generalization != null ) req.Add( _generalization );
-            foreach( MutableItem dep in _requires.Select( r => r.Resolve( logger, result, contextResult ) ).Where( m => m != null ) )
-            {
-                req.Add( dep );
-            }
-            if( _constructParameter != null )
-            {
-                // We are here considering here that a Container parameter does NOT define a dependency to the whole container (with its content):
-                //
-                //      That seems strange: we may expect the container to be fully initialized when used as a parameter by a dependency Construct...
-                //      The fact is that we are dealing with Objects that have a method Construct, that this Construct method is called on the head
-                //      of the container (before any of its content) and that this method has no "thickness", no content in terms of dependencies: its
-                //      execution fully initializes the StOj and we can use it.
-                //      This is actually fully coherent with the way the setup works. An item of a package does not "require" its own package, it is 
-                //      contained in its package and requires some items in the package if needed.
-                // 
-                foreach( MutableParameterType t in _constructParameter )
-                {
-                    // Do not consider the container as a requirement since a Container is
-                    // already a dependency (on the head's Container) and that a requirement on a container
-                    // targets the whole content of it (this would lead to a cycle in the dependency graph).
-                    MutableItem dep = t.Resolve( logger, result, contextResult );
-                    if( dep != null && (allContainers == null || allContainers.Contains( dep ) == false) ) req.Add( dep );
-                }
-            }
-            _dRequires = req.ToReadOnlyList();
-
-            if( _requiredBy.Count > 0 )
-            {
-                _dRequiredBy = _requiredBy.Select( r => r.Resolve( logger, result, contextResult ) ).Where( m => m != null ).ToReadOnlyList();
-            }
-        }
+        /// <summary>
+        /// The index is set by StObjCollector once the mutable items have been sorted.
+        /// </summary>
+        public int IndexOrdered { get; internal set; }
 
         internal void CallConstruct( IActivityLogger logger, IStObjDependencyResolver dependencyResolver )
         {
             Debug.Assert( _constructParameterEx != null, "Always allocated." );
             
-            if( _construct == null ) return;
+            if( _objectType.Construct == null ) return;
 
             object[] parameters = new object[_constructParameterEx.Count];
             int i = 0;
-            foreach( MutableParameterType t in _constructParameterEx )
+            foreach( MutableParameter t in _constructParameterEx )
             {
                 object instance = Type.Missing;
                 // We inject our "setup logger" only if it is exactly the formal parameter: ... , IActivityLogger logger, ...
-                // This enforces code homogeneity and let any other IActivityLogger injection.
+                // This enforces code homogeneity and let room for any other IActivityLogger injection.
                 if( t.IsSetupLogger )
                 {
                     instance = logger;
                 }
                 else
                 {
-                    MutableItem resolved = t.Resolved;
+                    MutableItem resolved = t.CachedResolvedStObj;
                     if( resolved != null )
                     {
-                        instance = resolved.StObj;
+                        instance = resolved.StructuredObject;
                     }
                     else if( t.StObjRequirementBehavior != StObjRequirementBehavior.ErrorIfNotStObj )
                     {
-                        // Resolve failed to find a StObj, but it was not required to be a StObj.
+                        // ResolveToStObj failed to find a StObj, but it was not required to be a StObj.
                         // We try an external resolution with the full data of the parameter (we may call this
                         // with a null Type for instance to enable name based resolution for instance).
                         //
-                        // If it fails, we may accept the null depending on IsOptional flag.
+                        // If it fails (Type.Missing), we may automatically use the default(T) depending on IsOptional flag.
                         //
-                        if( dependencyResolver != null ) instance = dependencyResolver.Resolve( logger, t );
+                        if( dependencyResolver != null ) instance = dependencyResolver.ResolveParameterValue( logger, t );
+                        if( instance == Type.Missing && !t.IsRealParameterOptional && t.IsOptional )
+                        {
+                            instance = t.Type.IsValueType ? Activator.CreateInstance( t.Type ) : null;
+                        }
                     }
                     // By throwing an exception here, we stop the process and avoid the construction 
                     // of an invalid object graph.
@@ -274,19 +337,121 @@ namespace CK.Setup
                     {
                         throw new CKException( "{0}: Unable to resolve non optional.", t.ToString() );
                     }
-                    if( instance == null && !t.IsOptional )
-                    {
-                        throw new CKException( "{0}: Non optional parameter can not be set to null.", t.ToString() );
-                    }
                 }
                 parameters[i++] = instance;
             }
-            _construct.Invoke( _stObj, parameters );
+            _objectType.Construct.Invoke( _stObj, parameters );
+        }
+
+        
+        internal void EnsureAmbiantPropertiesResolved( IActivityLogger logger, StObjCollectorResult result, IStObjDependencyResolver dependencyResolver )
+        {
+            if( _ambiantPropertiesResolved == 1 ) return;
+            if( _directSpecialization != null )
+            {
+                _directSpecialization.EnsureAmbiantPropertiesResolved( logger, result, dependencyResolver );
+                _ambiantPropertiesResolved = 1;
+                return;
+            }
+            if( _ambiantPropertiesResolved == 2 ) throw new CKException( "Recursivity in AmbiantProperties resolution. Please contact the developer :-(." );
+            _ambiantPropertiesResolved = 2;
+            try
+            {
+                foreach( var a in _allAmbiantProperties )
+                {
+                    object instance = a.ResolvedValue;
+                    if( instance == Type.Missing )
+                    {
+                        MutableItem resolved = a.ResolveToStObj( logger, result, null );
+                        if( resolved != null )
+                        {
+                            instance = resolved.StructuredObject;
+                        }
+                        else if( a.StObjRequirementBehavior != StObjRequirementBehavior.ErrorIfNotStObj )
+                        {
+                            // ResolveToStObj failed to find a StObj, but it was not required to be a StObj.
+                            // First, try an external resolution. If it works, we skip the resolution.
+                            if( dependencyResolver != null ) instance = dependencyResolver.ResolvePropertyValue( logger, a );
+                            if( instance == Type.Missing )
+                            {
+                                // Let's try to locate the property.
+                                IAmbiantPropertyGetter getter = LocateAmbiantProperty( logger, result, dependencyResolver, a.Type, a.Name );
+                                if( getter != null ) instance = getter.GetValue();
+                            }
+                        }
+                    }
+                    if( instance != Type.Missing )
+                    {
+                        a.PropertyInfo.SetValue( _stObj, instance, null );
+                    }
+                    else if( !a.IsOptional )
+                    {
+                        logger.Error( "{0}: Unable to resolve non optional.", a.ToString() );
+                    }
+                }
+            }
+            finally
+            {
+                _ambiantPropertiesResolved = 1;
+            }
+        }
+
+        interface IAmbiantPropertyGetter
+        {
+            object GetValue();
+        }
+
+        class AmbiantPropertyGetterFromRealProperty : IAmbiantPropertyGetter
+        {
+            MutableItem _holder;
+            PropertyInfo _realProperty;
+
+            public AmbiantPropertyGetterFromRealProperty( MutableItem holder, PropertyInfo realProperty )
+            {
+                _holder = holder;
+                _realProperty = realProperty;
+            }
+
+            public object GetValue()
+            {
+                return _realProperty.GetValue( _holder.StructuredObject, null );
+            }
+        }
+
+        IAmbiantPropertyGetter LocateAmbiantProperty( IActivityLogger logger, StObjCollectorResult result, IStObjDependencyResolver dependencyResolver, Type propertyType, string name )
+        {
+            IAmbiantPropertyGetter getter = null;
+            MutableItem start = this;
+            while( start != null && getter == null )
+            {
+                if( start._dContainer != null )
+                {
+                    start._dContainer.EnsureAmbiantPropertiesResolved( logger, result, dependencyResolver );
+                    getter = start._dContainer.FindAmbiantProperty( logger, propertyType, name );
+                }
+                start = start._directGeneralization;
+            }
+            return getter;
+        }
+
+        IAmbiantPropertyGetter FindAmbiantProperty( IActivityLogger logger, Type propertyType, string name )
+        {
+            var exist = _allAmbiantProperties.FirstOrDefault( a => a.Name == name );
+            if( exist == null ) return null;
+            // A property exists at the Specialization level, but does it exist for this slice?
+            if( !exist.IsDefinedFor( this ) ) return null;
+            // Type compatible ?
+            if( !propertyType.IsAssignableFrom( exist.Type ) )
+            {
+                Debug.Assert( exist.Owner == this );
+                logger.Warn( "Looking for property named '{0}' of type '{1}': found a candidate on '{2}' but type does not match (it is '{3}'). It is ignored.", name, propertyType.Name, ToString(), exist.Type.Name );
+            }
+            return new AmbiantPropertyGetterFromRealProperty( exist.Owner, exist.PropertyInfo );
         }
 
         #region IDependentItemContainer Members
 
-        IEnumerable<IDependentItemRef> IDependentItemContainer.Children
+        IEnumerable<IDependentItemRef> IDependentItemGroup.Children
         {
             get { return null; }
         }
@@ -335,14 +500,14 @@ namespace CK.Setup
 
         #region IStObj Members
 
-        public object StObj
+        public object StructuredObject
         {
             get { return _stObj; }
         }
 
         public Type ObjectType
         {
-            get { return _objectType; }
+            get { return _objectType.Type; }
         }
 
         public Type Context
@@ -355,12 +520,22 @@ namespace CK.Setup
             get { return _hasBeenReferencedAsAContainer; }
         }
 
-        public IStObj Generalization
+        IStObj IStObj.DirectGeneralization
+        {
+            get { return _directGeneralization; }
+        }
+
+        IStObj IStObj.DirectSpecialization
+        {
+            get { return _directSpecialization; }
+        }
+
+        IStObj IStObj.Generalization
         {
             get { return _generalization; }
         }
 
-        public IStObj Specialization
+        IStObj IStObj.Specialization
         {
             get { return _specialization; }
         }
@@ -374,7 +549,7 @@ namespace CK.Setup
                 {
                     yield return s;
                 }
-                while( (s = s._specialization) != null );
+                while( (s = s._directSpecialization) != null );
             }
         }
 

@@ -44,6 +44,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="AmbiantContract\AmbiantTypeInfo.cs" />
     <Compile Include="AmbiantContract\Attribute\AddContextAttribute.cs" />
     <Compile Include="AmbiantContract\AmbiantContractCollector.cs" />
     <Compile Include="AmbiantContract\AmbiantContractCollectorContextualResult.cs" />
@@ -63,19 +64,28 @@
     <Compile Include="AssemblyRegisterer.cs" />
     <Compile Include="AssemblyRegistererConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StObj\Attribute\AmbiantPropertyAttribute.cs" />
     <Compile Include="StObj\Attribute\ContainerAttribute.cs" />
-    <Compile Include="StObj\IParameterType.cs" />
-    <Compile Include="StObj\IMutableParameterType.cs" />
-    <Compile Include="StObj\IMutableReferenceType.cs" />
+    <Compile Include="StObj\IMutableResolvableReference.cs" />
+    <Compile Include="StObj\IAmbiantProperty.cs" />
+    <Compile Include="StObj\Impl\MutableResolvableReference.cs" />
+    <Compile Include="StObj\IMutableAmbiantProperty.cs" />
+    <Compile Include="StObj\Impl\AmbiantPropertyInfo.cs" />
+    <Compile Include="StObj\Impl\MutableAmbiantProperty.cs" />
+    <Compile Include="StObj\Impl\StObjTypeInfo.cs" />
+    <Compile Include="StObj\IParameter.cs" />
+    <Compile Include="StObj\IMutableParameter.cs" />
+    <Compile Include="StObj\IMutableReference.cs" />
     <Compile Include="StObj\IStObjDependencyResolver.cs" />
     <Compile Include="StObj\IStObjMapper.cs" />
     <Compile Include="StObj\Impl\StObjMapper.cs" />
     <Compile Include="StObj\Impl\StObjContextualMapper.cs" />
+    <Compile Include="StObj\IStructuredObjectHolder.cs" />
     <Compile Include="StObj\MutableReferenceKind.cs" />
-    <Compile Include="StObj\Impl\MutableReferenceType.cs" />
-    <Compile Include="StObj\IStObjExternalConfigurator.cs" />
+    <Compile Include="StObj\Impl\MutableReference.cs" />
+    <Compile Include="StObj\IStObjStructuralConfigurator.cs" />
     <Compile Include="StObj\IStObjMutableItem.cs" />
-    <Compile Include="StObj\Impl\MutableParameterType.cs" />
+    <Compile Include="StObj\Impl\MutableParameter.cs" />
     <Compile Include="StObj\Attribute\StObjAttribute.cs" />
     <Compile Include="StObj\Attribute\IStObjAttribute.cs" />
     <Compile Include="StObj\IStObj.cs" />

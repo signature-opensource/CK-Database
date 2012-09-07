@@ -16,7 +16,7 @@ namespace CK.Setup.SqlServer.Tests
         {
             using( var context = new SqlSetupContext( "Server=.;Database=Test;Integrated Security=SSPI;", TestHelper.Logger ) )
             {
-                if( !context.DefaultDatabase.IsOpen() ) context.DefaultDatabase.OpenOrCreate( ".", "Test" );
+                if( !context.DefaultSqlDatabase.IsOpen() ) context.DefaultSqlDatabase.OpenOrCreate( ".", "Test" );
                 using( context.Logger.OpenGroup( LogLevel.Trace, "First setup" ) )
                 {
                     SqlSetupCenter c = new SqlSetupCenter( context );
@@ -25,8 +25,8 @@ namespace CK.Setup.SqlServer.Tests
                     Assert.That( c.Run() );
                 }
                 
-                context.DefaultDatabase.ExecuteOneScript( "drop procedure Test.sOneStoredProcedure;" );
-                context.DefaultDatabase.ExecuteOneScript( "drop function Test.fTest;" );
+                context.DefaultSqlDatabase.ExecuteOneScript( "drop procedure Test.sOneStoredProcedure;" );
+                context.DefaultSqlDatabase.ExecuteOneScript( "drop function Test.fTest;" );
                 
                 using( context.Logger.OpenGroup( LogLevel.Trace, "Second setup" ) )
                 {
@@ -43,12 +43,12 @@ namespace CK.Setup.SqlServer.Tests
         {
             using( var context = new SqlSetupContext( @"Server=.;Database=Test;Integrated Security=SSPI;", TestHelper.Logger ) )
             {
-                if( !context.DefaultDatabase.IsOpen() ) context.DefaultDatabase.OpenOrCreate( @".", "Test" );
+                if( !context.DefaultSqlDatabase.IsOpen() ) context.DefaultSqlDatabase.OpenOrCreate( @".", "Test" );
                 SqlSetupCenter c = new SqlSetupCenter( context );
                 c.DiscoverFilePackages( TestHelper.GetScriptsFolder( "InstallFromScratchWithView" ) );
                 c.DiscoverSqlFiles( TestHelper.GetScriptsFolder( "InstallFromScratchWithView" ) );
                 Assert.That( c.Run() );
-                Assert.That( context.DefaultDatabase.Connection.ExecuteScalar( "select Id from dbo.vTestView" ), Is.EqualTo( 3712 ) );
+                Assert.That( context.DefaultSqlDatabase.Connection.ExecuteScalar( "select Id from dbo.vTestView" ), Is.EqualTo( 3712 ) );
             }
         }
     }

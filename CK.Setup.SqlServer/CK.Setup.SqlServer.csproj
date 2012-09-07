@@ -45,21 +45,10 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="ISqlManagerProvider.cs" />
     <Compile Include="Labo\Copy of Tests.cs" />
     <Compile Include="Labo\PathImpl.cs" />
-    <Compile Include="ObjectSupport\Container\ContainerAttribute.cs" />
-    <Compile Include="ObjectSupport\Container\ContainerType.cs" />
-    <Compile Include="ObjectSupport\Container\ContainerTypeItem.cs" />
-    <Compile Include="ObjectSupport\Database\SqlConnectionItem.cs" />
-    <Compile Include="ObjectSupport\Database\SqlConnectionSetupDriver.cs" />
-    <Compile Include="ObjectSupport\Database\SqlDatabaseItem.cs" />
     <Compile Include="ObjectSupport\Database\SqlDefaultDatabase.cs" />
-    <Compile Include="ObjectSupport\Package\PackageType.cs" />
-    <Compile Include="ObjectSupport\Package\PackageTypeItem.cs" />
-    <Compile Include="ObjectSupport\SqlPackage\SqlPackageAttribute.cs" />
-    <Compile Include="ObjectSupport\Package\PackageAttribute.cs" />
-    <Compile Include="ObjectSupport\SqlPackage\SqlPackageTypeItem.cs" />
-    <Compile Include="ObjectSupport\SqlPackage\SqlPackageType.cs" />
     <Compile Include="ObjectSupport\SqlTable\SqlTableOverrideAttribute.cs" />
     <Compile Include="ObjectSupport\SqlTable\SqlTableAttribute.cs" />
     <Compile Include="ObjectSupport\SqlTable\SqlTableType.cs" />
@@ -68,12 +57,13 @@
     <Compile Include="ObjectSupport\Database\SqlDatabase.cs" />
     <Compile Include="ObjectSupport\Database\SqlDatabaseSetupDriver.cs" />
     <Compile Include="Labo\Tests.cs" />
+    <Compile Include="SqlMultiScript.cs" />
     <Compile Include="SqlObject\SqlFunction.cs" />
     <Compile Include="SqlObject\SqlView.cs" />
     <Compile Include="SqlObject\SqlProcedure.cs" />
     <Compile Include="SqlSetupSessionMemoryProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PackageSqlScriptExecutor.cs" />
+    <Compile Include="SqlScriptExecutor.cs" />
     <Compile Include="SqlScriptTypeHandler.cs" />
     <Compile Include="SqlSetupCenter.cs" />
     <Compile Include="SqlSetupContext.cs" />
