@@ -77,7 +77,8 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets the container to which this Model belongs. 
-        /// It is independent of the <see cref="Package"/>'s container and can be null.
+        /// It is totally independent of the <see cref="Package"/>'s container and should be let to null
+        /// to minimize constraints on the graph.
         /// </summary>
         public IDependentItemContainerRef Container
         {
@@ -108,9 +109,14 @@ namespace CK.Setup
             get { return _children ?? (_children = new DependentItemList()); }
         }
 
+        IDependentItemRef IDependentItem.Generalization
+        {
+            get { return null; }
+        }
+
         object IDependentItem.StartDependencySort()
         {
-            return typeof(SetupDriver);
+            return typeof( SetupDriver );
         }
 
         bool IDependentItemRef.Optional

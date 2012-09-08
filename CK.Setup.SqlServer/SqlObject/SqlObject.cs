@@ -121,6 +121,11 @@ namespace CK.Setup.SqlServer
             get { return _container; }
         }
 
+        IDependentItemRef IDependentItem.Generalization
+        {
+            get { return null; }
+        }
+
         IEnumerable<IDependentItemRef> IDependentItem.Requires
         {
             get { return _requires; }

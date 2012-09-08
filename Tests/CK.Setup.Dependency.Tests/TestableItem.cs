@@ -59,6 +59,8 @@ namespace CK.Setup.Tests
 
         public IDependentItemContainerRef Container { get; set; }
 
+        public IDependentItemRef Generalization { get; set; }
+
         public void CheckStartDependencySortCountAndReset()
         {
             if( _startDependencySortCount != -1 )

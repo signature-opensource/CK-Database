@@ -87,6 +87,11 @@ namespace CK.Setup
                 get { return false; }
             }
 
+            public IDependentItemRef Generalization
+            {
+                get { return null; }
+            }
+
             public object StartDependencySort()
             {
                 return null;
