@@ -46,7 +46,7 @@ namespace CK.Setup
             return s;
         }
 
-        IStObj IParameter.Owner
+        IStObj IResolvableReference.Owner
         {
             get { return (IStObj)Owner; }
         }

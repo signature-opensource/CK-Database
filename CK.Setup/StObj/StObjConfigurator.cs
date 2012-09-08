@@ -22,14 +22,12 @@ namespace CK.Setup
         {
         }
 
-        object IStObjDependencyResolver.ResolveParameterValue( IActivityLogger logger, IParameter parameter )
+        void IStObjDependencyResolver.ResolveParameterValue( IActivityLogger logger, IParameter p )
         {
-            return Type.Missing;
         }
 
-        object IStObjDependencyResolver.ResolvePropertyValue( IActivityLogger logger, IAmbiantProperty ambiantProperty )
+        void IStObjDependencyResolver.ResolvePropertyValue( IActivityLogger logger, IAmbiantProperty a )
         {
-            return Type.Missing;
         }
 
         void IStObjSetupConfigurator.ConfigureDependentItem( IActivityLogger logger, StObjSetupData data )

@@ -51,12 +51,6 @@ namespace CK.Setup
         IStObj Specialization { get; }
 
         /// <summary>
-        /// Gets this object and its children Structure Objects down to the most specialized one.
-        /// May be empty.
-        /// </summary>
-        IEnumerable<IStObj> SpecializationPath { get; }
-
-        /// <summary>
         /// Gets the container object. 
         /// May be null.
         /// </summary>

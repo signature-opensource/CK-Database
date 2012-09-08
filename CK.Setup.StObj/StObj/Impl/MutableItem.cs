@@ -192,7 +192,7 @@ namespace CK.Setup
                 try
                 {
                     p.SetValue( _stObj, value, null );
-                    if( mp != null ) mp.ResolvedValue = value;
+                    if( mp != null ) mp.Value = value;
                     return true;
                 }
                 catch( Exception ex )
@@ -303,42 +303,42 @@ namespace CK.Setup
             int i = 0;
             foreach( MutableParameter t in _constructParameterEx )
             {
-                object instance = Type.Missing;
                 // We inject our "setup logger" only if it is exactly the formal parameter: ... , IActivityLogger logger, ...
                 // This enforces code homogeneity and let room for any other IActivityLogger injection.
                 if( t.IsSetupLogger )
                 {
-                    instance = logger;
+                    t.SetResolvedValue( logger, logger );
                 }
                 else
                 {
-                    MutableItem resolved = t.CachedResolvedStObj;
-                    if( resolved != null )
+                    if( dependencyResolver != null ) dependencyResolver.ResolveParameterValue( logger, t );
+                    if( t.Value == Type.Missing )
                     {
-                        instance = resolved.StructuredObject;
-                    }
-                    else if( t.StObjRequirementBehavior != StObjRequirementBehavior.ErrorIfNotStObj )
-                    {
-                        // ResolveToStObj failed to find a StObj, but it was not required to be a StObj.
-                        // We try an external resolution with the full data of the parameter (we may call this
-                        // with a null Type for instance to enable name based resolution for instance).
-                        //
-                        // If it fails (Type.Missing), we may automatically use the default(T) depending on IsOptional flag.
-                        //
-                        if( dependencyResolver != null ) instance = dependencyResolver.ResolveParameterValue( logger, t );
-                        if( instance == Type.Missing && !t.IsRealParameterOptional && t.IsOptional )
+                        // Parameter reference have already been resolved as dependencies for graph construction.
+                        MutableItem resolved = t.CachedResolvedStObj;
+                        if( resolved != null )
                         {
-                            instance = t.Type.IsValueType ? Activator.CreateInstance( t.Type ) : null;
+                            Debug.Assert( resolved.StructuredObject != Type.Missing );
+                            t.SetResolvedValue( logger, resolved.StructuredObject );
+                        }
+                        else if( !t.IsRealParameterOptional )
+                        {
+                            if( t.IsOptional )
+                            {
+                                t.SetResolvedValue( logger, t.Type.IsValueType ? Activator.CreateInstance( t.Type ) : null );
+                            }
+                            else
+                            {
+                                // By throwing an exception here, we stop the process and avoid the construction 
+                                // of an invalid object graph...
+                                // This behavior (FailFastOnFailureToResolve) may be an option once.
+                                logger.Fatal( "{0}: Unable to resolve non optional. Attempting to use a default value to continue the setup process in order to detect other errors.", t.ToString() );
+                                t.SetResolvedValue( logger, t.Type.IsValueType ? Activator.CreateInstance( t.Type ) : null );
+                            }
                         }
                     }
-                    // By throwing an exception here, we stop the process and avoid the construction 
-                    // of an invalid object graph.
-                    if( instance == Type.Missing && !t.IsRealParameterOptional )
-                    {
-                        throw new CKException( "{0}: Unable to resolve non optional.", t.ToString() );
-                    }
                 }
-                parameters[i++] = instance;
+                parameters[i++] = t.Value;
             }
             _objectType.Construct.Invoke( _stObj, parameters );
         }
@@ -359,30 +359,28 @@ namespace CK.Setup
             {
                 foreach( var a in _allAmbiantProperties )
                 {
-                    object instance = a.ResolvedValue;
-                    if( instance == Type.Missing )
+                    if( dependencyResolver != null ) dependencyResolver.ResolvePropertyValue( logger, a );
+                    if( a.Value == Type.Missing )
                     {
                         MutableItem resolved = a.ResolveToStObj( logger, result, null );
                         if( resolved != null )
                         {
-                            instance = resolved.StructuredObject;
+                            Debug.Assert( resolved.StructuredObject != Type.Missing ); 
+                            a.SetResolvedValue( logger, resolved.StructuredObject );
                         }
-                        else if( a.StObjRequirementBehavior != StObjRequirementBehavior.ErrorIfNotStObj )
+                        else 
                         {
-                            // ResolveToStObj failed to find a StObj, but it was not required to be a StObj.
-                            // First, try an external resolution. If it works, we skip the resolution.
-                            if( dependencyResolver != null ) instance = dependencyResolver.ResolvePropertyValue( logger, a );
-                            if( instance == Type.Missing )
+                            // Let's try to locate the property.
+                            IAmbiantPropertyGetter getter = LocateAmbiantProperty( logger, result, dependencyResolver, a.Type, a.Name );
+                            if( getter != null )
                             {
-                                // Let's try to locate the property.
-                                IAmbiantPropertyGetter getter = LocateAmbiantProperty( logger, result, dependencyResolver, a.Type, a.Name );
-                                if( getter != null ) instance = getter.GetValue();
+                                a.SetResolvedValue( logger, getter.GetValue() );
                             }
                         }
                     }
-                    if( instance != Type.Missing )
+                    if( a.Value != Type.Missing )
                     {
-                        a.PropertyInfo.SetValue( _stObj, instance, null );
+                        a.PropertyInfo.SetValue( _stObj, a.Value, null );
                     }
                     else if( !a.IsOptional )
                     {
@@ -539,20 +537,6 @@ namespace CK.Setup
         {
             get { return _specialization; }
         }
-
-        public IEnumerable<IStObj> SpecializationPath
-        {
-            get
-            {
-                MutableItem s = this;
-                do
-                {
-                    yield return s;
-                }
-                while( (s = s._directSpecialization) != null );
-            }
-        }
-
 
         IStObj IStObj.Container 
         { 

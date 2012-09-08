@@ -12,7 +12,7 @@ namespace CK.Setup
     /// Base class for construct parameters or ambiant properties: these references can be resolved
     /// either structurally or dynamically (by <see cref="IStObjDependencyResolver"/>).
     /// </summary>
-    internal abstract class MutableResolvableReference : MutableReference
+    internal abstract class MutableResolvableReference : MutableReference, IResolvableReference
     {
         MutableItem _resolved;
 
@@ -20,7 +20,7 @@ namespace CK.Setup
             : base( owner, kind )
         {
             _resolved = UnresolvedMarker;
-            ResolvedValue = Type.Missing;
+            Value = Type.Missing;
         }
 
         public abstract string Name { get; }
@@ -31,9 +31,9 @@ namespace CK.Setup
 
         public bool IsOptional { get; set; }
 
-        internal object ResolvedValue;
+        public object Value { get; set; }
 
-        internal bool HasBeenResolved { get { return ResolvedValue != Type.Missing; } }
+        internal bool HasBeenResolved { get { return Value != Type.Missing; } }
 
         internal MutableItem CachedResolvedStObj 
         { 
@@ -64,13 +64,23 @@ namespace CK.Setup
             return _resolved = base.ResolveToStObj( logger, collector, ownerCollector );
         }
 
+        public virtual bool SetResolvedValue( IActivityLogger logger, object value )
+        {
+            Value = value;
+            return true;
+        }
+
         public virtual bool SetStructuralValue( IActivityLogger logger, string sourceName, object value )
         {
             if( sourceName == null ) throw new ArgumentNullException( "sourceName" );
             if( value == Type.Missing ) throw new InvalidOperationException( "Setting a structural value to Type.Missing is not allowed. Source = " + sourceName );
-            ResolvedValue = value;
+            Value = value;
             return true;
         }
 
+        IStObj IResolvableReference.Owner
+        {
+            get { return Owner; }
+        }
     }
 }

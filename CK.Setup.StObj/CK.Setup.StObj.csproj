@@ -66,6 +66,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StObj\Attribute\AmbiantPropertyAttribute.cs" />
     <Compile Include="StObj\Attribute\ContainerAttribute.cs" />
+    <Compile Include="StObj\IResolvableReference.cs" />
     <Compile Include="StObj\IMutableResolvableReference.cs" />
     <Compile Include="StObj\IAmbiantProperty.cs" />
     <Compile Include="StObj\Impl\MutableResolvableReference.cs" />

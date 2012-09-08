@@ -37,15 +37,10 @@ namespace CK.Setup
 
         internal PropertyInfo PropertyInfo { get { return _info.PropertyInfo; } }
 
-        IStObj IAmbiantProperty.Owner
-        {
-            get { return (IStObj)Owner; }
-        }
-
         public bool IsDefinedFor( IStObj stObj )
         {
             if( stObj == null ) throw new ArgumentNullException( "stObj" );
-            return stObj.ObjectType.IsAssignableFrom( _info.DeclaringType );
+            return _info.DeclaringType.IsAssignableFrom( stObj.ObjectType );
         }
 
         public override bool SetStructuralValue( IActivityLogger logger, string sourceName, object value )

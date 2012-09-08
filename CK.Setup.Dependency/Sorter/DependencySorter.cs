@@ -123,6 +123,11 @@ namespace CK.Setup
             [Conditional( "DEBUG" )]
             internal void CheckContains( Entry e )
             {
+                if( e.ContainerIfHead != null ) 
+                {
+                    Debug.Assert( e.ContainerIfHead.Container == this );
+                    return;
+                }
                 Debug.Assert( HeadIfContainer != null, "This is a Container..." );
                 Entry c = FirstChildIfContainer;
                 while( c != null )
@@ -763,11 +768,12 @@ namespace CK.Setup
                     HandleDependency( ref rank, item, e.HeadIfContainer, true );
                     if( _cycle != null ) return;
                 }
-                // Handles the Container: its head is required by this item (be it a head, a container or an item).
+                // Handles the element's Container: its head is required by this item (be it a head, a container or an item).
                 if( e.Container != null )
                 {
-                    // Heads do not belong to children: avoid the check.
-                    if( e.ContainerIfHead == null ) e.Container.CheckContains( e );
+                    // Checks (Debug only) that an element that claims to belong to a Container
+                    // is actually in the linked list of its Container's items.
+                    e.Container.CheckContains( e );
                    
                     HandleDependency( ref rank, item, e.Container.HeadIfContainer, false );
                     if( _cycle != null ) return;
