@@ -22,7 +22,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets the full name of the item.
-        /// It is suffixed by ".head" if this is a head.
+        /// It is suffixed by ".Head" if this is a head.
         /// </summary>
         string FullName { get; }
 
@@ -38,13 +38,18 @@ namespace CK.Setup
         ISortedItem Container { get; }
 
         /// <summary>
+        /// Gets the Generalization of this item if it has one.
+        /// </summary>
+        ISortedItem Generalization { get; }
+
+        /// <summary>
         /// Whether this is the head of a container.
         /// Use <see cref="ContainerForHead"/> to get the associated container.
         /// </summary>
         bool IsContainerHead { get; }
 
         /// <summary>
-        /// Whether this is a container (the <see cref="HeadIfContainer"/> is not null).
+        /// Whether this is a container (the <see cref="HeadForContainer"/> is not null).
         /// </summary>
         bool IsContainer { get; }
 
@@ -54,7 +59,8 @@ namespace CK.Setup
         ISortedItem HeadForContainer { get; }
 
         /// <summary>
-        /// Gets the container if this item is a head  (null otherwise).
+        /// Gets the container for which this item is the Head. 
+        /// Null if this item is not a Head.
         /// </summary>
         ISortedItem ContainerForHead { get; }
 

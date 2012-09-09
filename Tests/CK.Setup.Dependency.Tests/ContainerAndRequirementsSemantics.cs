@@ -31,13 +31,25 @@ namespace CK.Setup.Tests.Dependencies
                 // - in term of dependencies, it requires A.
                 // - since it specializes A, unless explicitely injected into another container it is also in System.
                 ASpec.Requires.Add( A );
-                ASpec.Container = A.Container;
+                ASpec.Container = System;
 
                 {
                     var r = DependencySorter.OrderItems( A, B, ASpec );
                     Assert.That( r.IsComplete );
                     r.AssertOrdered( "System.Head", "A.Head", "B.Head", "B", "A", "ASpec.Head", "ASpec", "System" );
                 }
+
+                // This "Requires me + use my Container" relationship is "Generalization".
+                ASpec.Requires.Clear();
+                ASpec.Container = null;
+                // Previous scenario is the same as:
+                ASpec.Generalization = A;
+                {
+                    var r = DependencySorter.OrderItems( A, B, ASpec );
+                    Assert.That( r.IsComplete );
+                    r.AssertOrdered( "System.Head", "A.Head", "B.Head", "B", "A", "ASpec.Head", "ASpec", "System" );
+                }
+
 
                 // John would like ASpec to be inside the package A:
                 ASpec.Container = A;

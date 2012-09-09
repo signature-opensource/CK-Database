@@ -17,6 +17,7 @@ namespace CK.Setup
         DependentItemList _requiredBy;
         DependentItemList _children;
         IDependentItemContainerRef _container;
+        IDependentItemRef _generalization;
 
         /// <summary>
         /// Initializes a new mutable package with 'Package' as its <see cref="IVersionedItem.ItemType"/>.
@@ -61,6 +62,15 @@ namespace CK.Setup
             set { _container = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the generalization of this package.
+        /// </summary>
+        public IDependentItemRef Generalization
+        {
+            get { return _generalization; }
+            set { _generalization = value; }
+        }
+        
         /// <summary>
         /// Gets a mutable list of children for this package.
         /// </summary>

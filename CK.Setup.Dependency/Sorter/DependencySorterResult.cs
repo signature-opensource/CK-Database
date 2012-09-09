@@ -12,21 +12,24 @@ namespace CK.Setup
     /// </summary>
     public sealed class DependencySorterResult
     {
+        readonly IReadOnlyList<ISortedItem> _cycle;
         IReadOnlyList<CycleExplainedElement> _cycleExplained;
         int _itemIssueWithStructureErrorCount;
         bool _requiredMissingIsError;
 
-        internal DependencySorterResult( List<DependencySorter.Entry> result, List<IDependentItem> cycle, List<DependentItemIssue> itemIssues )
+        internal DependencySorterResult( List<DependencySorter.Entry> result, List<DependencySorter.Entry> cycle, List<DependentItemIssue> itemIssues )
         {
             Debug.Assert( (result == null) != (cycle == null), "cycle ^ result" );
             if( result == null )
             {
                 SortedItems = null;
-                CycleDetected = new ReadOnlyListOnIList<IDependentItem>( cycle );
+                _cycle = new ReadOnlyListOnIList<DependencySorter.Entry>( cycle );
+                CycleDetected = cycle.ToReadOnlyList( e => e.Item );
             }
             else
             {
-                SortedItems = new ReadOnlyListOnIList<ISortedItem, DependencySorter.Entry>( result );
+                SortedItems = new ReadOnlyListOnIList<DependencySorter.Entry>( result );
+                _cycle = null;
                 CycleDetected = null;
             }
             ItemIssues = itemIssues != null && itemIssues.Count > 0 ? new ReadOnlyListOnIList<DependentItemIssue>( itemIssues ) : ReadOnlyListEmpty<DependentItemIssue>.Empty;
@@ -50,7 +53,7 @@ namespace CK.Setup
         public readonly IReadOnlyList<DependentItemIssue> ItemIssues;
 
         /// <summary>
-        /// Gets or sets whether any non optional missing requirement is a structure error (<see cref="HasStructureError"/> 
+        /// Gets or sets whether any non optional missing requirement or generalization is a structure error (<see cref="HasStructureError"/> 
         /// becomes true).
         /// </summary>
         public bool ConsiderRequiredMissingAsStructureError
@@ -67,7 +70,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// True if at least one non-optional requirement (a requirement that is not prefixed with '?' when expressed as a string) exists.
+        /// True if at least one non-optional requirement or generalization (a requirement that is not prefixed with '?' when expressed as a string) exists.
         /// (If both this and <see cref="ConsiderRequiredMissingAsStructureError"/> are true then <see cref="HasStructureError"/> is also true 
         /// since a missing dependency is flagged with <see cref="DependentItemStructureError.MissingDependency"/>.)
         /// </summary>
@@ -81,7 +84,8 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// True if at least one relation between an item and its container is invalid (true when <see cref="HasRequiredMissing"/> is true if <see cref="ConsiderRequiredMissingAsStructureError"/> is true).
+        /// True if at least one relation between an item and its container is invalid (true when <see cref="HasRequiredMissing"/> is 
+        /// true if <see cref="ConsiderRequiredMissingAsStructureError"/> is true).
         /// </summary>
         public bool HasStructureError
         {
@@ -89,7 +93,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Number of items that have at least one invalid relation between itself and its container, its children or its dependencies.
+        /// Number of items that have at least one invalid relation between itself and its container, its children, its generalization or its dependencies.
         /// </summary>
         public int StructureErrorCount
         {
@@ -103,7 +107,9 @@ namespace CK.Setup
                     }
                     else
                     {
-                        _itemIssueWithStructureErrorCount = ItemIssues.Count( m => (m.StructureError != DependentItemStructureError.None && m.StructureError != DependentItemStructureError.MissingDependency) );
+                        _itemIssueWithStructureErrorCount = ItemIssues.Count( m => (m.StructureError != DependentItemStructureError.None 
+                            && m.StructureError != DependentItemStructureError.MissingDependency
+                            && m.StructureError != DependentItemStructureError.MissingGeneralization) );
                     }
                 }
                 return _itemIssueWithStructureErrorCount;
@@ -127,35 +133,40 @@ namespace CK.Setup
         {
             get
             {
-                if( _cycleExplained == null && CycleDetected != null )
+                if( _cycleExplained == null && _cycle != null )
                 {
-                    int num = CycleDetected.Count;
+                    int num = _cycle.Count;
                     CycleExplainedElement[] ac = new CycleExplainedElement[ num-- ];
-                    ac[0] = new CycleExplainedElement( CycleExplainedElement.Start, CycleDetected[0] );
+                    ac[0] = new CycleExplainedElement( CycleExplainedElement.Start, _cycle[0].Item );
                     int i = 0;
                     while( i < num )
                     {
-                        IDependentItem from = CycleDetected[i++];
-                        IDependentItem to = CycleDetected[i];
+                        // From & To are normalized to the Container object if they are heads.
+                        ISortedItem from = _cycle[i++];
+                        if( from.IsContainerHead ) from = from.ContainerForHead;
+                        ISortedItem to = _cycle[i];
+                        if( to.IsContainerHead ) to = to.ContainerForHead;
 
                         bool normal = num > 3;
 
                         char rel;
                         if( normal )
                         {
-                            if( IsContainedBy(from, to) ) rel = CycleExplainedElement.ContainedBy;
-                            else if( IsContains(from, to) ) rel = CycleExplainedElement.Contains;
+                            if( IsContainedBy( from, to ) ) rel = CycleExplainedElement.ContainedBy;
+                            else if( IsContains( from, to ) ) rel = CycleExplainedElement.Contains;
                             else if( IsRequiredBy(from, to) ) rel = CycleExplainedElement.RequiredByRequires;
+                            else if( IsGeneralizedBy( from, to ) ) rel = CycleExplainedElement.GeneralizedBy;
                             else rel = CycleExplainedElement.Requires;
                         }
                         else
                         {
-                            if( IsRequires( from, to ) ) rel = CycleExplainedElement.Requires;
+                            if( IsGeneralizedBy( from, to ) ) rel = CycleExplainedElement.GeneralizedBy;
+                            else if( IsRequires( from, to ) ) rel = CycleExplainedElement.Requires;
                             else if( IsRequiredBy( from, to ) ) rel = CycleExplainedElement.RequiredByRequires;
                             else if( IsContains( from, to ) ) rel = CycleExplainedElement.Contains;
                             else rel = CycleExplainedElement.ContainedBy;
                         }
-                        ac[i] = new CycleExplainedElement( rel, to );
+                        ac[i] = new CycleExplainedElement( rel, to.Item );
                     }
                     _cycleExplained = new ReadOnlyListOnIList<CycleExplainedElement>( ac );
                 }
@@ -204,24 +215,34 @@ namespace CK.Setup
             }
         }
 
-        private static bool IsRequires( IDependentItem from, IDependentItem to )
+        private static bool IsGeneralizedBy( ISortedItem from, ISortedItem to )
         {
-            return from.Requires != null && from.Requires.Where( r => !r.Optional ).Any( r => r.FullName == to.FullName );
+            return from.Generalization == to;
         }
 
-        private static bool IsRequiredBy( IDependentItem from, IDependentItem to )
+        private static bool IsRequires( ISortedItem from, ISortedItem to )
         {
-            return to.RequiredBy != null && to.RequiredBy.Any( r => r.FullName == from.FullName );
+            // We want to know here if the Requires relation is defined at the DependentItem level.
+            // If we challenge the from.Requires (HashSet of IDependentItemRef which can not be used efficiently here), 
+            // we'll be able to say that from requires to or to is required by from.
+            // It is simpler and quite as efficient to challenge the original list.
+            return from.Item.Requires != null && from.Item.Requires.Where( r => r != null && !r.Optional ).Any( r => r == to.Item || r.FullName == to.FullName );
         }
 
-        private static bool IsContains( IDependentItem from, IDependentItem to )
+        private static bool IsRequiredBy( ISortedItem from, ISortedItem to )
         {
-            return from.Container == to || (from.Container != null && from.Container.FullName == to.FullName);
+            // See comment above.
+            return to.Item.RequiredBy != null && to.Item.RequiredBy.Any( r => r != null && (r == from.Item || r.FullName == from.FullName) );
         }
 
-        private static bool IsContainedBy( IDependentItem from, IDependentItem to )
+        private static bool IsContains( ISortedItem from, ISortedItem to )
         {
-            return to.Container == from || (to.Container != null && to.Container.FullName == from.FullName);
+            return from.Container == to;
+        }
+
+        private static bool IsContainedBy( ISortedItem from, ISortedItem to )
+        {
+            return to.Container == from;
         }
 
     }

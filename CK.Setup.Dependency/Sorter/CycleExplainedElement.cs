@@ -12,6 +12,7 @@ namespace CK.Setup
         public readonly static char ContainedBy = '∋';
         public readonly static char Requires = '⇒';
         public readonly static char RequiredByRequires = '⇆';
+        public readonly static char GeneralizedBy = 'ĵ';
 
         internal CycleExplainedElement( char r, IDependentItem i )
         {

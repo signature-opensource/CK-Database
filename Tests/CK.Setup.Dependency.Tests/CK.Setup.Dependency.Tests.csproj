@@ -57,6 +57,7 @@
     <Compile Include="ContainerDependenciesAsk.cs" />
     <Compile Include="DependencyExtensions.cs" />
     <Compile Include="FlatDependencies.cs" />
+    <Compile Include="Generalization.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResultChecker.cs" />
     <Compile Include="TestableContainer.cs" />

@@ -46,13 +46,17 @@ namespace CK.Setup
         /// </summary>
         MissingDependency = 32,
         /// <summary>
+        /// A generalization can not be found.
+        /// </summary>
+        MissingGeneralization = 64,
+        /// <summary>
         /// Two items or more use the same <see cref="IDependentItem.FullName"/>.
         /// </summary>
-        Homonym = 64,
+        Homonym = 128,
         /// <summary>
         /// A <see cref="IDependentItemContainerAsk"/> that declares to not be a container (<see cref="IDependentItemContainerAsk.ThisIsNotAContainer"/> returned
         /// true) has items in its <see cref="IDependentItemContainer.Children"/> collection.
         /// </summary>
-        ContainerAskedToNotBeAContainerButContainsChildren = 128
+        ContainerAskedToNotBeAContainerButContainsChildren = 256
     }
 }

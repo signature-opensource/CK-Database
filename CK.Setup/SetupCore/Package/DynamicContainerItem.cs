@@ -13,6 +13,7 @@ namespace CK.Setup
         DependentItemList _requiredBy;
         DependentItemList _children;
         IDependentItemContainerRef _container;
+        IDependentItemRef _generalization;
         string _fullName;
 
         public DynamicContainerItem()
@@ -46,12 +47,21 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets or sets the container to which this package belongs.
+        /// Gets or sets the container to which this container belongs.
         /// </summary>
         public IDependentItemContainerRef Container
         {
             get { return _container; }
             set { _container = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the generalization of this container.
+        /// </summary>
+        public IDependentItemRef Generalization
+        {
+            get { return _generalization; }
+            set { _generalization = value; }
         }
 
         /// <summary>

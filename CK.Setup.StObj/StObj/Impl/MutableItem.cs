@@ -447,7 +447,7 @@ namespace CK.Setup
             return new AmbiantPropertyGetterFromRealProperty( exist.Owner, exist.PropertyInfo );
         }
 
-        #region IDependentItemContainer Members
+        #region IDependentItemContainerAsk Members
 
         IEnumerable<IDependentItemRef> IDependentItemGroup.Children
         {
@@ -457,6 +457,11 @@ namespace CK.Setup
         string IDependentItem.FullName
         {
             get { return _dFullName; }
+        }
+
+        IDependentItemRef IDependentItem.Generalization
+        {
+            get { return _directGeneralization; }
         }
 
         IDependentItemContainerRef IDependentItem.Container

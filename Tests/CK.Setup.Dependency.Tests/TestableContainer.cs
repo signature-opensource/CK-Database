@@ -15,8 +15,13 @@ namespace CK.Setup.Tests
         }
 
         public bool ThisIsNotAContainer { get; set; }
-               
-        public IEnumerable<IDependentItemRef> Children
+
+        IEnumerable<IDependentItemRef> IDependentItemGroup.Children
+        {
+            get { return _children; }
+        }
+
+        public IList<IDependentItemRef> Children
         {
             get { return _children; }
         }

@@ -254,6 +254,19 @@ namespace CK.Setup.Tests.Dependencies
         }
 
         [Test]
+        public void DeferredRequiredByRegistration()
+        {
+            // This triggers a deferred registration of a RequiredBy object
+            // (and this is a case that must be tested).
+            var a = new TestableItem( "A" );
+            var d = new TestableItem( "D", "=>A" );
+            var e = new TestableItem( "E", "<=D" );
+            var r = DependencySorter.OrderItems( e, d, a );
+            r.AssertOrdered( "A", "E", "D" );
+            ResultChecker.SimpleCheck( r );
+        }
+
+        [Test]
         public void RequiredBy()
         {
             // a
@@ -270,7 +283,7 @@ namespace CK.Setup.Tests.Dependencies
             var g = new TestableItem( "G", "=>E" );
             var h = new TestableItem( "H", "=>B" );
             var i = new TestableItem( "I", "=>D" );
-            
+
             var r = DependencySorter.OrderItems( e, g, b, h, c, d, i, f, a );
             r.AssertOrdered( "A", "B", "D", "C", "F", "H", "I", "E", "G" );
             ResultChecker.SimpleCheck( r );

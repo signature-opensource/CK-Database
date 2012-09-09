@@ -26,9 +26,27 @@ namespace CK.Setup
         /// </summary>
         /// <remarks>
         /// If a container exists, this item may belong to <see cref="IDependentItemContainer.Children"/>
-        /// (but it is not mandatory as long as the <see cref="DependencySorter"/> is concerned).
+        /// (but it is not mandatory as long as the <see cref="DependencySorter"/> is concerned: it will
+        /// correctly handle all cases).
         /// </remarks>
         IDependentItemContainerRef Container { get; }
+
+        /// <summary>
+        /// Gets a reference to the item that generalizes this one. 
+        /// Null if this item does not specialize any other item.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This "Generalization" relationships is a requirement (like any other in <see cref="Requires"/>, it 
+        /// can be <see cref="IDependentItemRef.Optional"/>), with an addition: a Generalization's <see cref="Container"/> is considered as the 
+        /// Container for any of its specializations that do not have one.
+        /// </para>
+        /// <para>
+        /// This relationships enables a kind of "Container inheritance": the <see cref="Container">IDependentItem.Container</see> is 
+        /// considered as an item's attribute that is inherited by its specialized items.
+        /// </para>
+        /// </remarks>
+        IDependentItemRef Generalization { get; }
 
         /// <summary>
         /// Gets this item's dependencies. Can be null if no such dependency exists.

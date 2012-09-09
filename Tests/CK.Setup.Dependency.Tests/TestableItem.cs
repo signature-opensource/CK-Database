@@ -48,6 +48,10 @@ namespace CK.Setup.Tests
                     {
                         Container = new NamedDependentItemContainerRef( dep.Substring( 1 ).Trim() );
                     }
+                    else if( dep.StartsWith( "ĵ" ) )
+                    {
+                        Generalization = new NamedDependentItemContainerRef( dep.Substring( 1 ).Trim() );
+                    }
                     else
                     {
                         if( dep.StartsWith( "=>" ) ) dep = dep.Substring( 2 );
@@ -59,13 +63,15 @@ namespace CK.Setup.Tests
 
         public IDependentItemContainerRef Container { get; set; }
 
+        public IDependentItemRef Generalization { get; set; }
+
         public void CheckStartDependencySortCountAndReset()
         {
             if( _startDependencySortCount != -1 )
             {
                 Assert.That( _startDependencySortCount, Is.EqualTo( 1 ), "StartDependencySort must have been called once and only once." );
+                _startDependencySortCount = 0;
             }
-            _startDependencySortCount = 0;
         }
 
         public string FullName 
