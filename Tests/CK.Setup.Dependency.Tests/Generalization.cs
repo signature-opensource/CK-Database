@@ -1,0 +1,186 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using NUnit.Framework;
+using CK.Setup.Tests;
+
+namespace CK.Setup.Tests.Dependencies
+{
+    [TestFixture]
+    public class Generalization
+    {
+        [Test]
+        public void OneGeneralization()
+        {
+            using( TestableItem.IgnoreCheckCount() )
+            {
+                var A = new TestableItem( "A" );
+                var ASpec = new TestableItem( "ASpec" );
+                ASpec.Generalization = A;
+                {
+                    // "A" must be automatically discovered.
+                    var r = DependencySorter.OrderItems( ASpec );
+                    r.AssertOrdered( "A", "ASpec" );
+                }
+                {
+                    var r = DependencySorter.OrderItems( true, ASpec );
+                    r.AssertOrdered( "A", "ASpec" );
+                }
+
+                var container = new TestableContainer( "Container" );
+                // First, registers the container that contains A.
+                container.Children.Add( A );
+                {
+                    var r = DependencySorter.OrderItems( ASpec, container );
+                    r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
+                    Assert.That( r.SortedItems[2].Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
+                }
+                {
+                    var r = DependencySorter.OrderItems( true, ASpec, container );
+                    r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
+                    Assert.That( r.SortedItems[2].Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
+                }
+                // Second, register ASpec that generalizes A that references the container: the container is automatically discovered.
+                container.Children.Clear();
+                A.Container = container;
+                {
+                    var r = DependencySorter.OrderItems( ASpec );
+                    r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
+                    Assert.That( r.SortedItems[2].Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
+                }
+                {
+                    var r = DependencySorter.OrderItems( true, ASpec );
+                    r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
+                    Assert.That( r.SortedItems[2].Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
+                }
+                // Third, register the container that references A by name.
+                container.Add( "∋A" );
+                {
+                    var r = DependencySorter.OrderItems( ASpec, container );
+                    r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
+                    Assert.That( r.SortedItems[2].Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
+                }
+                {
+                    var r = DependencySorter.OrderItems( true, ASpec, container );
+                    r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
+                    Assert.That( r.SortedItems[2].Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
+                }
+                // Fourth, register A that reference the container by name.
+                container.Children.Clear();
+                A.Container = new NamedDependentItemContainerRef( "Container" );
+                {
+                    var r = DependencySorter.OrderItems( ASpec, container );
+                    r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
+                    Assert.That( r.SortedItems[2].Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
+                }
+                {
+                    var r = DependencySorter.OrderItems( true, ASpec, container );
+                    r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
+                    Assert.That( r.SortedItems[2].Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
+                }
+            }
+        }
+
+        [Test]
+        public void OneGeneralizationByName()
+        {
+            using( TestableItem.IgnoreCheckCount() )
+            {
+                var A = new TestableItem( "A" );
+                var ASpec = new TestableItem( "ASpec", "ĵA" );
+                {
+                    var r = DependencySorter.OrderItems( ASpec, A );
+                    r.AssertOrdered( "A", "ASpec" );
+                }
+                {
+                    var r = DependencySorter.OrderItems( true, ASpec, A );
+                    r.AssertOrdered( "A", "ASpec" );
+                }
+
+                var container = new TestableContainer( "Container" );
+                container.Add( A );
+                {
+                    var r = DependencySorter.OrderItems( ASpec, container );
+                    r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
+                    Assert.That( r.SortedItems[2].Container.FullName, Is.EqualTo( "Container" ) );
+                }
+                {
+                    var r = DependencySorter.OrderItems( true, ASpec, container );
+                    r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
+                    Assert.That( r.SortedItems[2].Container.FullName, Is.EqualTo( "Container" ) );
+                }
+            }
+        }
+
+        [Test]
+        public void CycleDetectionByName0()
+        {
+            // Ruby belongs to "Root" container.
+            var c = new TestableContainer( "Root",
+                        new TestableContainer( "Pierre", "=>Nuage",
+                            new TestableItem( "Gem" )
+                        ),
+                        new TestableItem( "Nuage", "=>Rubis", "<=Pierre" ),
+                        new TestableItem( "Rubis", "ĵGem" )
+                    );
+            var r = DependencySorter.OrderItems( c );
+            Assert.That( r.CycleDetected, Is.Not.Null );
+            Assert.That( r.SortedItems, Is.Null );
+            // Here we can see the "Required By" ⇆ and the "Generalized By" ĵ relations.
+            Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ Rubis ĵ Gem ∈ Pierre ⇆ Nuage ⇒ Rubis" ) );
+            ResultChecker.SimpleCheck( r );
+        }
+        
+        [Test]
+        public void CycleDetectionByName2()
+        {
+            using( TestableItem.IgnoreCheckCount() )
+            {
+                var root = new TestableContainer( "Root",
+                            new TestableContainer( "Pierre",
+                                new TestableItem( "Gem" )
+                                ),
+                            new TestableContainer( "Nuage", "=>Pierre",
+                                new TestableItem( "Cumulus" ),
+                                new TestableItem( "Stratus", "<= Rubis" )
+                                )
+                    );
+                var rubis = new TestableItem( "Rubis" );
+
+                {
+                    // Here: Rubis => Stratus ∈ Cumulus ∈ Nuage => Pierre ∋ Gem.
+                    //       Rubis is not in a Container. There is no cycle.
+                    var r = DependencySorter.OrderItems( root, rubis );
+                    Assert.That( r.CycleDetected, Is.Null );
+                    Assert.That( r.SortedItems, Is.Not.Null );
+                    ResultChecker.SimpleCheck( r );
+                }
+                // Before saying that "Gem" generalizes "Rubis", we check that
+                // adding a "Rubis" => "Gem" dependency does not create any cycle.
+                rubis.Add( "=>Gem" );
+                {
+                    // Here: Rubis => Stratus ∈ Cumulus ∈ Nuage => Pierre ∋ Gem, and Rubis => Gem.
+                    // No Cycle.
+                    var r = DependencySorter.OrderItems( root, rubis );
+                    Assert.That( r.CycleDetected, Is.Null );
+                    Assert.That( r.SortedItems, Is.Not.Null );
+                    ResultChecker.SimpleCheck( r );
+                }
+                // Now we say that "Gem" generalizes "Rubis".
+                // This is more than adding "Rubis" => "Gem" dependency because since
+                // Rubis has no defined container, Gem's container (Pierre) has been inherited.
+                rubis.Requires.Clear();
+                rubis.Add( "ĵGem" );
+                {
+                    // This is like adding Pierre ∈ Rubis... and this creates a cycle at the Container level:
+                    // Rubis => Stratus ∈ Cumulus ∈ Nuage => Pierre ∈ Rubis.
+                    var r = DependencySorter.OrderItems( root, rubis );
+                    Assert.That( r.CycleDetected, Is.Not.Null );
+                    //"↳ Nuage ⇒ Pierre ⇒ Rubis ⇆ Stratus ∈ Nuage"
+                    Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ Nuage ⇒ Pierre ∋ Rubis ⇆ Stratus ∈ Nuage" ) );
+                }
+            }
+        }
+    }
+}

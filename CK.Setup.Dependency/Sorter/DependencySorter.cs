@@ -54,6 +54,9 @@ namespace CK.Setup
 
         internal class Entry : ISortedItem
         {
+            // This marker saves one iteration over specialized items to resolve Generalizations.
+            internal static readonly Entry GeneralizationMissingMarker = new Entry( String.Empty );
+
             public Entry( IDependentItem e, object startValue )
             {
                 StartValue = startValue;
@@ -83,7 +86,8 @@ namespace CK.Setup
             public int Rank;
             // Index is computed at the end of the process.
             public int Index;
-            
+
+            public Entry Generalization;
             public Entry Container { get; private set; }
             // The ContainerIfHead is null for normal items and containers.
             // It is not null only for heads.
@@ -182,6 +186,11 @@ namespace CK.Setup
                 get { return Container; }
             }
 
+            ISortedItem ISortedItem.Generalization
+            {
+                get { return Generalization == GeneralizationMissingMarker ? null : Generalization; }
+            }
+
             bool ISortedItem.IsContainerHead
             {
                 get { return ContainerIfHead != null; }
@@ -221,7 +230,7 @@ namespace CK.Setup
             readonly List<Entry> _result;
             readonly List<DependentItemIssue> _itemIssues;
             readonly Comparison<Entry> _comparer;
-            List<IDependentItem> _cycle;
+            List<Entry> _cycle;
 
             public RankComputer( IEnumerable<IDependentItem> items, IEnumerable<IDependentItemDiscoverer> discoverers, bool reverseName )
             {
@@ -247,16 +256,18 @@ namespace CK.Setup
 
             class Registerer
             {
+                readonly Dictionary<object, object> _entries;
                 readonly RankComputer _computer;
                 readonly List<Entry> _namedContainersToBind;
                 readonly List<Tuple<Entry, string>> _childrenToBind;
-                readonly Dictionary<object, object> _entries;
+                readonly List<Entry> _specializedItems;
 
                 public Registerer( RankComputer computer )
                 {
                     _computer = computer;
                     _namedContainersToBind = new List<Entry>();
                     _childrenToBind = new List<Tuple<Entry, string>>();
+                    _specializedItems = new List<Entry>();
                     _entries = _computer._entries;
                 }
 
@@ -269,7 +280,7 @@ namespace CK.Setup
                     foreach( Entry nc in _namedContainersToBind )
                     {
                         Debug.Assert( nc.Item.Container != null && !(nc.Item.Container is IDependentItemContainer) );
-                        // Container has been set by the first container that claims to own the item in its Children collection.
+                        // Container has been set by the first Container that claims to own the item in its Children collection.
                         if( nc.Container != null )
                         {
                             // If it is the good one, it is perfect (we avoided a lookup in the dictionary :-)).
@@ -281,6 +292,7 @@ namespace CK.Setup
                         }
                         else
                         {
+                            // The entry has no associated container yet: we must find it by name.
                             Entry c;
                             if( TryGetEntryValue( nc.Item.Container.FullName, out c ) )
                             {
@@ -331,6 +343,49 @@ namespace CK.Setup
                             _computer.SetStructureError( eC.Item1, DependentItemStructureError.MissingNamedChild ).AddMissingChild( eC.Item2 );
                         }
                     }
+                    // Now that named containers and children have been handled, we can follow the Generalization chains
+                    // to resolve all of them to their roots and apply Generalization's Container inheritance.
+                    // The list contains only container and items, not head.
+                    foreach( var sEntry in _specializedItems )
+                    {
+                        if( sEntry.Generalization == null ) ResolveGeneralization( sEntry );
+                    }
+                }
+
+                void ResolveGeneralization( Entry sEntry )
+                {
+                    var s = sEntry.Item;
+                    var g = s.Generalization;
+                    Debug.Assert( g != null && sEntry.Generalization == null, "The entry is a specialization that does not know its Generalization yet." );
+                    // Loop guard & default Generalization if not found by name.
+                    sEntry.Generalization = Entry.GeneralizationMissingMarker;
+                    Entry gEntry;
+                    if( !TryGetEntryValue( g.FullName, out gEntry ) )
+                    {
+                        // Not found... If it is optional, act as if there
+                        // were no generalization.
+                        if( !g.Optional )
+                        {
+                            _computer.SetStructureError( sEntry, DependentItemStructureError.MissingGeneralization );
+                        }
+                    }
+                    else
+                    {
+                        // Sets the Generalization object also on the head if 
+                        // we are on a Container.
+                        sEntry.Generalization = gEntry;
+                        if( sEntry.HeadIfContainer != null ) sEntry.HeadIfContainer.Generalization = gEntry;
+
+                        if( gEntry.Generalization == null && gEntry.Item.Generalization != null ) ResolveGeneralization( gEntry );
+                        // The entry is bound to its Generalization. It is time to inherit Container.
+                        if( sEntry.Container == null && gEntry.Container != null )
+                        {
+                            gEntry.Container.AddToContainer( sEntry );
+                            // Check (debug only).
+                            Debug.Assert( sEntry.Container == gEntry.Container );
+                            gEntry.Container.CheckContains( sEntry );
+                        }
+                    }
                 }
 
                 /// <summary>
@@ -373,16 +428,18 @@ namespace CK.Setup
                 {
                     // Preregistering: collects Start values by calling StartDependencySort.
                     object startValue = PreRegisterObjectDependencies( e, false );
+                    
                     Entry entry = startValue as Entry;
                     if( entry != null )
                     {
+                        #region If the Entry exists, we only have to check container/item coherency (for a specific edge case).
                         Debug.Assert( entry.Item == e );
                         // We allow duplicated item instances in the original
                         // items enumeration (this also support our automatic 
                         // discovery for Container/Children).
                         if( alreadyRegisteredContainer != null )
                         {
-                            // We are coming from the registration of the Children below.
+                            // We are coming from the registration of our Children (below).
                             // Since this item is already registered and we skip the child from which we are 
                             // coming (alreadyRegisteredChild that is beeing processed - its Container is null), 
                             // the container must be the same.
@@ -406,6 +463,7 @@ namespace CK.Setup
                                 }
                             }
                         }
+                        #endregion
                         return entry;
                     }
                 
@@ -423,6 +481,7 @@ namespace CK.Setup
 
                     if( TryGetEntryValue( e.FullName, out entry ) )
                     {
+                        #region FullName exists (Homonym or RequiredBy registration).
                         // The setupable item name is known, but
                         // is there an item already associated to this name?
                         if( entry.Item != null )
@@ -442,23 +501,25 @@ namespace CK.Setup
                         // Associates the element to its entry.
                         _entries[e] = entry;
 
-                        if( c != null ) CreateContainerEntry( ref entry, c, startValue );
+                        if( c != null ) CreateOrTransformToContainerEntry( ref entry, c, startValue );
                         else
                         {
                             entry.Item = e;
                             entry.StartValue = startValue;
                         }
+                        #endregion
                     }
                     else
                     {
-                        // Even its name has never been seen.
-                        if( c != null ) CreateContainerEntry( ref entry, c, startValue );
+                        #region The element nor its name has never been seen.
+                        if( c != null ) CreateOrTransformToContainerEntry( ref entry, c, startValue );
                         else
                         {
                             entry = new Entry( e, startValue );
                             _entries[e] = entry;
                         }
                         _entries.Add( e.FullName, entry );
+                        #endregion
                     }
                     // We now have the Entry associated to its IDependentItem:
                     // we register it in the _result list (if it has been previously created
@@ -485,9 +546,22 @@ namespace CK.Setup
                             eReq.AddRequiredByRequires( entry.Item.GetReference() );
                         }
                     }
+                    // ...and Generalization...
+                    var genRef = e.Generalization;
+                    if( genRef != null )
+                    {
+                        // If it is an object (not a named reference), registers it
+                        // but do not catch the resulting entry in entry.Generalization
+                        // since it has yet to be fully resolved. 
+                        // This is done after Container/Child binding.
+                        IDependentItem g = e.Generalization as IDependentItem;
+                        if( g != null ) RegisterEntry( g, null, null );
+                        // SpecializedItems contains items and container (but no heads).
+                        _specializedItems.Add( entry );
+                    }
 
                     // ...and safely automatically discover its bound items: its container and its children.
-
+                    //
                     // Starts with its container :
                     // - first handle the case where we are called by a Container that claims to own the current element.
                     if( alreadyRegisteredContainer != null )
@@ -632,7 +706,7 @@ namespace CK.Setup
                     return entry;
                 }
 
-                void CreateContainerEntry( ref Entry entry, IDependentItemContainer c, object startValue )
+                void CreateOrTransformToContainerEntry( ref Entry entry, IDependentItemContainer c, object startValue )
                 {
                     if( entry == null )
                     {
@@ -693,7 +767,9 @@ namespace CK.Setup
                             // Instead of removing head2, we let it in the cycle: this is useless but much more
                             // explicit for users: instead of a=>b=>c, they can see a=>b=>c=>a and a cycle
                             // has necessarily a length of at least 2. Autoreferences are cycles like a=>a.
-                            int head2 = _cycle.IndexOf( _cycle[0], 1 ) + 1;
+                            IDependentItem head = _cycle[0].Item;
+                            int head2 = _cycle.FindIndex( 1, c => c.Item == head ) + 1;
+                            //int head2 = _cycle.IndexOf( _cycle[0], 1 ) + 1;
                             Debug.Assert( head2 >= 2, "We necessarily added the final culprit." );
                             int nbToRemove = _cycle.Count - head2;
                             if( nbToRemove > 0 ) _cycle.RemoveRange( head2, nbToRemove );
@@ -723,7 +799,7 @@ namespace CK.Setup
                         foreach( var dep in requirements )
                         {
                             Debug.Assert( _entries.ContainsKey( dep.FullName ) && ((Entry)_entries[dep.FullName]).Item != null, "Since the requirement has been added by an item, it exists." );
-                            HandleDependency( ref rank, item, (Entry)_entries[dep.FullName], false );
+                            HandleDependency( ref rank, e, (Entry)_entries[dep.FullName], false );
                             if( _cycle != null ) return;
                         }
                     }
@@ -732,6 +808,12 @@ namespace CK.Setup
                 if( e.HeadIfContainer == null )
                 {
                     // Do this for Heads and Items (but not for Container).
+                    // We first handle Generalization as a requirement.
+                    if( e.Generalization != null && e.Generalization != Entry.GeneralizationMissingMarker )
+                    {
+                        HandleDependency( ref rank, e, e.Generalization, false );
+                        if( _cycle != null ) return;
+                    }
                     var requirements = item.Requires;
                     if( requirements != null )
                     {
@@ -777,7 +859,7 @@ namespace CK.Setup
                                 else
                                 {
                                     if( dep.Optional ) e.Requires.Add( strong );
-                                    HandleDependency( ref rank, item, oeDep, false );
+                                    HandleDependency( ref rank, e, oeDep, false );
                                     if( _cycle != null ) return;
                                 }
                             }
@@ -788,7 +870,7 @@ namespace CK.Setup
                 {
                     // Handles Container => Head (useful for empty containers).
                     Debug.Assert( e.HeadIfContainer != null );
-                    HandleDependency( ref rank, item, e.HeadIfContainer, true );
+                    HandleDependency( ref rank, e, e.HeadIfContainer, true );
                     if( _cycle != null ) return;
                 }
                 // Handles the element's Container: its head is required by this item (be it a head, a container or an item).
@@ -798,26 +880,26 @@ namespace CK.Setup
                     // is actually in the linked list of its Container's items.
                     e.Container.CheckContains( e );
                    
-                    HandleDependency( ref rank, item, e.Container.HeadIfContainer, false );
+                    HandleDependency( ref rank, e, e.Container.HeadIfContainer, false );
                     if( _cycle != null ) return;
                 }
                 // Handles children if any.
                 Entry child = e.FirstChildIfContainer;
                 while( child != null )
                 {
-                    HandleDependency( ref rank, item, child, false );
+                    HandleDependency( ref rank, e, child, false );
                     if( _cycle != null ) return;
                     child = child.NextChildInContainer;
                 }
                 e.Rank = rank + 1;
             }
 
-            void HandleDependency( ref int rank, IDependentItem item, Entry oeDep, bool isContainerHeadDependency )
+            void HandleDependency( ref int rank, Entry e, Entry oeDep, bool isContainerHeadDependency )
             {
                 // Cycle detection.
                 if( oeDep.Rank == -2 )
                 {
-                    _cycle = new List<IDependentItem>() { oeDep.Item, item };
+                    _cycle = new List<Entry>() { oeDep, e };
                     return;
                 }
                 if( oeDep.Rank == -1 )
@@ -828,7 +910,7 @@ namespace CK.Setup
                     // We do not test that oeDep is the head of the item (either by its name
                     // or by changing the parameter to the entry) in order to not 
                     // mask auto-dependency.
-                    if( _cycle != null && !isContainerHeadDependency ) _cycle.Add( item );
+                    if( _cycle != null && !isContainerHeadDependency ) _cycle.Add( e );
                 }
                 rank = Math.Max( rank, oeDep.Rank );
             }

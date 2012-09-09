@@ -93,7 +93,12 @@ namespace CK.Setup
 
         public int RequiredMissingCount
         {
-            get { return _nbRequiredMissingDep; }
+            get 
+            { 
+                int r = _nbRequiredMissingDep;
+                if( (StructureError & DependentItemStructureError.MissingGeneralization) != 0 ) r += 1;
+                return r;
+            }
         }
 
         public readonly IDependentItem Item;
@@ -125,6 +130,10 @@ namespace CK.Setup
                     if( (StructureError & DependentItemStructureError.ContainerAskedToNotBeAContainerButContainsChildren) != 0 )
                     {
                         logger.Error( "Container '{0}' dynamically states that it is not a container but contains Children. (This may be a programming error: when IDependentItemContainerAsk.ThisIsNotAContainer is true, the Children enumeration must be null or empty).", Item.FullName );
+                    }
+                    if( (StructureError & DependentItemStructureError.MissingGeneralization) != 0 )
+                    {
+                        logger.Error( "Item '{0}' requires '{1}' as its Generalization. The Generalization is missing.", Item.FullName, Item.Generalization.FullName );
                     }
                     if( _homonyms != null )
                     {

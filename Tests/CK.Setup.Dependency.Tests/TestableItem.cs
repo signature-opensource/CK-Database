@@ -48,6 +48,10 @@ namespace CK.Setup.Tests
                     {
                         Container = new NamedDependentItemContainerRef( dep.Substring( 1 ).Trim() );
                     }
+                    else if( dep.StartsWith( "ĵ" ) )
+                    {
+                        Generalization = new NamedDependentItemContainerRef( dep.Substring( 1 ).Trim() );
+                    }
                     else
                     {
                         if( dep.StartsWith( "=>" ) ) dep = dep.Substring( 2 );
