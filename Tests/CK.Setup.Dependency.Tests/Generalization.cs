@@ -131,21 +131,21 @@ namespace CK.Setup.Tests.Dependencies
             Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ Rubis ĵ Gem ∈ Pierre ⇆ Nuage ⇒ Rubis" ) );
             ResultChecker.SimpleCheck( r );
         }
-        
+
         [Test]
         public void CycleDetectionByName2()
         {
             using( TestableItem.IgnoreCheckCount() )
             {
                 var root = new TestableContainer( "Root",
-                            new TestableContainer( "Pierre",
-                                new TestableItem( "Gem" )
-                                ),
-                            new TestableContainer( "Nuage", "=>Pierre",
-                                new TestableItem( "Cumulus" ),
-                                new TestableItem( "Stratus", "<= Rubis" )
-                                )
-                    );
+                                new TestableContainer( "Pierre",
+                                    new TestableItem( "Gem" )
+                                    ),
+                                new TestableContainer( "Nuage", "=>Pierre",
+                                    new TestableItem( "Cumulus" ),
+                                    new TestableItem( "Stratus", "<= Rubis" )
+                                    )
+                        );
                 var rubis = new TestableItem( "Rubis" );
 
                 {
@@ -177,8 +177,24 @@ namespace CK.Setup.Tests.Dependencies
                     // Rubis => Stratus ∈ Cumulus ∈ Nuage => Pierre ∈ Rubis.
                     var r = DependencySorter.OrderItems( root, rubis );
                     Assert.That( r.CycleDetected, Is.Not.Null );
-                    //"↳ Nuage ⇒ Pierre ⇒ Rubis ⇆ Stratus ∈ Nuage"
                     Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ Nuage ⇒ Pierre ∋ Rubis ⇆ Stratus ∈ Nuage" ) );
+                    ResultChecker.SimpleCheck( r );
+                }
+                // Setting a Container for Rubis (Root for instance), solves the problem.
+                rubis.Container = root;
+                {
+                    var r = DependencySorter.OrderItems( root, rubis );
+                    Assert.That( r.CycleDetected, Is.Null );
+                    Assert.That( r.SortedItems, Is.Not.Null );
+                    ResultChecker.SimpleCheck( r );
+                }
+                // Setting a brand new Container is ok also.
+                rubis.Container = new TestableContainer( "Specialized Features." );
+                {
+                    var r = DependencySorter.OrderItems( root, rubis );
+                    Assert.That( r.CycleDetected, Is.Null );
+                    Assert.That( r.SortedItems, Is.Not.Null );
+                    ResultChecker.SimpleCheck( r );
                 }
             }
         }

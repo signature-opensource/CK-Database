@@ -88,6 +88,17 @@ namespace CK.Setup.Tests.Dependencies
                 CheckRequires( o, o.ContainerForHead.Item.Requires );
                 return;
             }
+            // Checking Generalization.
+            if( o.Item.Generalization != null )
+            {
+                if( !o.Item.Generalization.Optional )
+                {
+                    Assert.That( o.Generalization != null && o.Generalization.Item == o.Item.Generalization );
+                    var gen = _byName[ o.Item.Generalization.FullName ];
+                    Assert.That( gen.Index < o.Index, "{0} is before {1} (since {1} specializes {0}).", gen.FullName, o.FullName );
+                }
+            }
+
             // Checking Container.
             if( o.Item.Container != null )
             {

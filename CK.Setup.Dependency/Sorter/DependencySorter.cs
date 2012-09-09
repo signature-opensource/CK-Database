@@ -769,7 +769,6 @@ namespace CK.Setup
                             // has necessarily a length of at least 2. Autoreferences are cycles like a=>a.
                             IDependentItem head = _cycle[0].Item;
                             int head2 = _cycle.FindIndex( 1, c => c.Item == head ) + 1;
-                            //int head2 = _cycle.IndexOf( _cycle[0], 1 ) + 1;
                             Debug.Assert( head2 >= 2, "We necessarily added the final culprit." );
                             int nbToRemove = _cycle.Count - head2;
                             if( nbToRemove > 0 ) _cycle.RemoveRange( head2, nbToRemove );

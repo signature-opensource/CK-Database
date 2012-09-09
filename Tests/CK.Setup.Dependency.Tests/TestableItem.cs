@@ -70,8 +70,8 @@ namespace CK.Setup.Tests
             if( _startDependencySortCount != -1 )
             {
                 Assert.That( _startDependencySortCount, Is.EqualTo( 1 ), "StartDependencySort must have been called once and only once." );
+                _startDependencySortCount = 0;
             }
-            _startDependencySortCount = 0;
         }
 
         public string FullName 
