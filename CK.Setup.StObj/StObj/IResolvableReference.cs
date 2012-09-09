@@ -43,7 +43,7 @@ namespace CK.Setup
         /// it is <see cref="Type.Missing"/>. 
         /// Use <see cref="SetResolvedValue"/> to set it.
         /// </summary>
-        object Value { get; }
+        object Value { get; set; }
 
         /// <summary>
         /// Sets the <see cref="Value"/>.

@@ -31,16 +31,21 @@ namespace CK.Setup.SqlServer
         /// <summary>
         /// Gets or sets the logical name of the database.
         /// </summary>
-        public string Name 
+        public string Name
         {
             get { return _name; }
-            set
+            protected set
             {
                 if( String.IsNullOrWhiteSpace( value ) ) throw new ArgumentNullException( "value" );
                 if( IsDefaultDatabase && value != DefaultDatabaseName ) throw new CKException( "Can not modify DefaultDatabaseName (it must be '{0}').", DefaultDatabaseName );
                 _name = value;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the connection string.
+        /// </summary>
+        public string ConnectionString { get; protected set; }
 
         /// <summary>
         /// Finds or creates the given schema. 

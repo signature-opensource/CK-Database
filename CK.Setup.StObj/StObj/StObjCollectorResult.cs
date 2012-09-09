@@ -39,7 +39,7 @@ namespace CK.Setup
         }
         
         /// <summary>
-        /// Gets all the <see cref="IStObj"/> that have no <see cref="IStObj.DirectGeneralization"/>.
+        /// Gets all the <see cref="IStObj"/> that have no <see cref="IStObj.Generalization"/>.
         /// Empty if <see cref="HasFatalError"/> is true.
         /// </summary>
         public IReadOnlyCollection<IStObj> RootStObjs
@@ -51,7 +51,7 @@ namespace CK.Setup
                     List<IStObj> heads = new List<IStObj>();
                     foreach( var ctx in this )
                     {
-                        heads.AddRange( ctx.MutableItems.Where( m => m.DirectGeneralization == null ) );
+                        heads.AddRange( ctx.MutableItems.Where( m => m.Generalization == null ) );
                     }
                     _rootStObjs = heads.ToReadOnlyCollection();
                 }

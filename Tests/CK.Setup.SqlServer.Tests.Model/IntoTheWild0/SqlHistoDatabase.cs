@@ -10,11 +10,12 @@ namespace CK.Setup.SqlServer
     [AddContext(typeof(SqlHistoDatabase))]
     public class SqlHistoDatabase : SqlDatabase, IAmbiantContract
     {
-        public SqlHistoDatabase()
-            : base( "dbHisto" )
+        public void Construct( string connectionString = null )
         {
+            ConnectionString = connectionString;
+            Name = "dbHisto";
             InstallCore = true;
         }
-
+        
     }
 }

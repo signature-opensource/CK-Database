@@ -37,27 +37,22 @@ namespace CK.Setup
 
         internal PropertyInfo PropertyInfo { get { return _info.PropertyInfo; } }
 
-        public bool IsDefinedFor( IStObj stObj )
+        bool IMutableAmbiantProperty.IsDefinedFor( IStObjMutableItem stObj )
         {
             if( stObj == null ) throw new ArgumentNullException( "stObj" );
-            return _info.DeclaringType.IsAssignableFrom( stObj.ObjectType );
+            return IsDefinedFor( stObj.ObjectType );
         }
 
-        public override bool SetStructuralValue( IActivityLogger logger, string sourceName, object value )
+        bool IAmbiantProperty.IsDefinedFor( IStObj stObj )
         {
-            if( base.SetStructuralValue( logger, sourceName, value ) )
-            {
-                try
-                {
-                    PropertyInfo.SetValue( Owner.StructuredObject, value, null );
-                    return true;
-                }
-                catch( Exception ex )
-                {
-                    logger.Error( ex, "While setting structural property '{1}.{0}'.", Name, Owner.ObjectType.FullName );
-                }
-            }
-            return false;
+            if( stObj == null ) throw new ArgumentNullException( "stObj" );
+            return IsDefinedFor( stObj.ObjectType );
+        }
+
+        internal bool IsDefinedFor( Type t )
+        {
+            Debug.Assert( t != null );
+            return _info.DeclaringType.IsAssignableFrom( t );
         }
 
     }

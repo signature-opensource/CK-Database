@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using CK.Core;
 
 namespace CK.Setup
 {
@@ -23,5 +24,13 @@ namespace CK.Setup
         /// </summary>
         bool IsOptional { get; set; }
 
+        /// <summary>
+        /// Sets a value for this reference.
+        /// </summary>
+        /// <param name="logger">The logger to use to describe any error.</param>
+        /// <param name="sourceName">The name of the "source" of this action.</param>
+        /// <param name="value">Value to set.</param>
+        /// <returns>True on success, false if any error occurs.</returns>
+        bool SetStructuralValue( IActivityLogger logger, string sourceName, object value );
     }
 }

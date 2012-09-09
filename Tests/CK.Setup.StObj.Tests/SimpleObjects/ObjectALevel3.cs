@@ -3,6 +3,7 @@ using NUnit.Framework;
 
 namespace CK.Setup.StObj.Tests.SimpleObjects
 {
+    // ObjectALevel2 is by default in the container of its parent's parent: ObjectALevel1 is in PackageForABLevel1
     public class ObjectALevel3 : ObjectALevel2, IAbstractionALevel3
     {
         void Construct()

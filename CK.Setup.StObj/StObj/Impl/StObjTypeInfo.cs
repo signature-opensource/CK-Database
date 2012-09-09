@@ -182,7 +182,7 @@ namespace CK.Setup
                         }
                         // We do not need to keep the fact that this property overrides one above
                         // as long as we have checked that no conflict/incoherency occur.
-                        // We may keep the Generalization (ie. setting exists._directGeneralization = a) but not a
+                        // We may keep the Generalization (ie. setting exists._generalization = a) but not a
                         // reference to the specialization since we are not Contextualized here, but only on
                         // a pure Type level.
                     }

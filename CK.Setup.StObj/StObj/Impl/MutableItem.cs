@@ -14,10 +14,10 @@ namespace CK.Setup
         readonly StObjTypeInfo _objectType;
         readonly Type _context;
         readonly object _stObj;
-        readonly MutableItem _directGeneralization;
-        MutableItem _directSpecialization;
-        MutableItem _generalization;
+        readonly MutableItem _generalization;
         MutableItem _specialization;
+        MutableItem _rootGeneralization;
+        MutableItem _leafSpecialization;
 
         MutableReference _container;
         List<MutableReference> _requires;
@@ -41,11 +41,11 @@ namespace CK.Setup
             _objectType = objectType;
             _stObj = theObject;
             _context = context;
-            _directGeneralization = parent;
-            if( _directGeneralization != null )
+            _generalization = parent;
+            if( _generalization != null )
             {
-                Debug.Assert( _directGeneralization._directSpecialization == null );
-                _directGeneralization._directSpecialization = this;
+                Debug.Assert( _generalization._specialization == null );
+                _generalization._specialization = this;
             }
         }
 
@@ -56,15 +56,15 @@ namespace CK.Setup
 
         #region Configuration
 
-        internal void Configure( IActivityLogger logger, MutableItem generalization, MutableItem specialization )
+        internal void Configure( IActivityLogger logger, MutableItem rootGeneralization, MutableItem leafSpecialization )
         {
-            Debug.Assert( _generalization == null && _specialization == null, "Configured once and only once." );
-            Debug.Assert( generalization != null && specialization != null, "Configuration sets the top & bottom of the inheritance chain." );
-            Debug.Assert( (generalization == this) == (_directGeneralization == null) );
-            Debug.Assert( (specialization == this) == (_directSpecialization == null) );
+            Debug.Assert( _rootGeneralization == null && _leafSpecialization == null, "Configured once and only once." );
+            Debug.Assert( rootGeneralization != null && leafSpecialization != null, "Configuration sets the top & bottom of the inheritance chain." );
+            Debug.Assert( (rootGeneralization == this) == (_generalization == null) );
+            Debug.Assert( (leafSpecialization == this) == (_specialization == null) );
 
-            _generalization = generalization;
-            _specialization = specialization;
+            _rootGeneralization = rootGeneralization;
+            _leafSpecialization = leafSpecialization;
             ApplyTypeInformation( logger );
             AnalyseConstruct( logger );
             ApplyConfiguratorAttributes( logger );
@@ -73,7 +73,7 @@ namespace CK.Setup
         void ApplyTypeInformation( IActivityLogger logger )
         {
             Debug.Assert( _container == null, "Called only once right after object instanciation." );
-            Debug.Assert( _directSpecialization == null || _directSpecialization._generalization != null, "Configuration is from bottom to top." );
+            Debug.Assert( _specialization == null || _specialization._rootGeneralization != null, "Configuration is from bottom to top." );
 
             _container = new MutableReference( this, MutableReferenceKind.Container );
             _container.Type = _objectType.Container;
@@ -81,13 +81,13 @@ namespace CK.Setup
 
             // We share Ambiant properties from the Specialization.
             // This is why Configuration must be made from bottom to the top.
-            if( _directSpecialization == null )
+            if( _specialization == null )
             {
                 _allAmbiantProperties = _objectType.AmbiantProperties.Select( ap => new MutableAmbiantProperty( this, ap ) ).ToReadOnlyList();
             }
             else
             {
-                _allAmbiantProperties = _directSpecialization._allAmbiantProperties;
+                _allAmbiantProperties = _specialization._allAmbiantProperties;
             }
             var a = _objectType.StObjAttribute;
             if( a != null )
@@ -151,14 +151,14 @@ namespace CK.Setup
 
         #endregion
 
-        internal MutableItem DirectGeneralization
+        internal MutableItem Generalization
         {
-            get { return _directGeneralization; }
+            get { return _generalization; }
         }
 
-        internal MutableItem DirectSpecialization
+        internal MutableItem Specialization
         {
-            get { return _directSpecialization; }
+            get { return _specialization; }
         }
 
         #region IStObjMutableItem is called during Configuration
@@ -173,34 +173,28 @@ namespace CK.Setup
 
         IReadOnlyList<IMutableAmbiantProperty> IStObjMutableItem.AllAmbiantProperties { get { return _allAmbiantProperties; } }
 
+        Dictionary<PropertyInfo,object> _directPropertiesToSet;
+
         bool IStObjMutableItem.SetPropertyStructuralValue( IActivityLogger logger, string sourceName, string propertyName, object value )
         {
             if( value == Type.Missing ) throw new InvalidOperationException( "Setting property to Type.Missing is not allowed." );
 
+            MutableAmbiantProperty mp = _allAmbiantProperties.FirstOrDefault( a => a.Name == propertyName );
+            if( mp != null )
+            {
+                return mp.SetStructuralValue( logger, sourceName, value );
+            }
+
             // Targets the specialization to honor property covariance.
-            PropertyInfo p;
-            MutableAmbiantProperty mp = _specialization._allAmbiantProperties.FirstOrDefault( a => a.Name == propertyName );
-            if( mp != null ) p = mp.PropertyInfo;
-            else p = _specialization._objectType.Type.GetProperty( propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, null, Type.EmptyTypes, null );
-            
+            PropertyInfo p = _leafSpecialization._objectType.Type.GetProperty( propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, null, Type.EmptyTypes, null );           
             if( p == null || !p.CanWrite )
             {
-                logger.Error( "Unable to set property '{1}.{0}' structural value. It must exist and be writeable.", propertyName, _specialization._objectType.Type.FullName );
+                logger.Error( "Unable to set property '{1}.{0}' structural value. It must exist and be writeable.", propertyName, _leafSpecialization._objectType.Type.FullName );
+                return false;
             }
-            else 
-            {
-                try
-                {
-                    p.SetValue( _stObj, value, null );
-                    if( mp != null ) mp.Value = value;
-                    return true;
-                }
-                catch( Exception ex )
-                {
-                    logger.Error( ex, "While setting structural property '{1}.{0}'.", propertyName, _specialization._objectType.Type.FullName );
-                }
-            }
-            return false;
+            if( _leafSpecialization._directPropertiesToSet == null ) _leafSpecialization._directPropertiesToSet = new Dictionary<PropertyInfo, object>();
+            _leafSpecialization._directPropertiesToSet[p] = value;
+            return true;
         }
 
         #endregion
@@ -223,7 +217,7 @@ namespace CK.Setup
             HashSet<MutableItem> req = new HashSet<MutableItem>();
             {
                 // Base class is Required.
-                if( _directGeneralization != null ) req.Add( _directGeneralization );
+                if( _generalization != null ) req.Add( _generalization );
 
                 // Requires are... Required (when not configured as optional by IStObjStructuralConfigurator).
                 foreach( MutableItem dep in _requires.Select( r => r.ResolveToStObj( logger, result, contextResult ) ).Where( m => m != null ) )
@@ -288,10 +282,27 @@ namespace CK.Setup
         }
         #endregion
 
+
         /// <summary>
-        /// The index is set by StObjCollector once the mutable items have been sorted.
+        /// Calles StObjCollector once the mutable items have been sorted.
         /// </summary>
-        public int IndexOrdered { get; internal set; }
+        /// <param name="idx">The <see cref="IndexOrdered"/>.</param>
+        /// <param name="containerFromSorter"></param>
+        internal void SetSorterData( int idx, ISortedItem containerFromSorter )
+        {
+            Debug.Assert( IndexOrdered == 0 );
+            Debug.Assert( _dContainer == null || _dContainer == containerFromSorter.Item );
+            IndexOrdered = idx;
+            if( _dContainer == null && containerFromSorter != null )
+            {
+                _dContainer = (MutableItem)containerFromSorter.Item;
+            }
+        }
+
+        /// <summary>
+        /// This is the natural index to reference a IStObj in a setup phasis.
+        /// </summary>
+        public int IndexOrdered { get; private set; }
 
         internal void CallConstruct( IActivityLogger logger, IStObjDependencyResolver dependencyResolver )
         {
@@ -331,7 +342,7 @@ namespace CK.Setup
                             {
                                 // By throwing an exception here, we stop the process and avoid the construction 
                                 // of an invalid object graph...
-                                // This behavior (FailFastOnFailureToResolve) may be an option once.
+                                // This behavior (FailFastOnFailureToResolve) may be an option once. For the moment: log the error.
                                 logger.Fatal( "{0}: Unable to resolve non optional. Attempting to use a default value to continue the setup process in order to detect other errors.", t.ToString() );
                                 t.SetResolvedValue( logger, t.Type.IsValueType ? Activator.CreateInstance( t.Type ) : null );
                             }
@@ -342,21 +353,35 @@ namespace CK.Setup
             }
             _objectType.Construct.Invoke( _stObj, parameters );
         }
-
         
         internal void EnsureAmbiantPropertiesResolved( IActivityLogger logger, StObjCollectorResult result, IStObjDependencyResolver dependencyResolver )
         {
             if( _ambiantPropertiesResolved == 1 ) return;
-            if( _directSpecialization != null )
+            if( _specialization != null )
             {
-                _directSpecialization.EnsureAmbiantPropertiesResolved( logger, result, dependencyResolver );
+                _specialization.EnsureAmbiantPropertiesResolved( logger, result, dependencyResolver );
                 _ambiantPropertiesResolved = 1;
                 return;
             }
+            Debug.Assert( _specialization == null && _leafSpecialization == this );
             if( _ambiantPropertiesResolved == 2 ) throw new CKException( "Recursivity in AmbiantProperties resolution. Please contact the developer :-(." );
             _ambiantPropertiesResolved = 2;
             try
             {
+                if( _directPropertiesToSet != null )
+                {
+                    foreach( var k in _directPropertiesToSet )
+                    {
+                        try
+                        {
+                            if( k.Value != Type.Missing ) k.Key.SetValue( _stObj, k.Value, null );
+                        }
+                        catch( Exception ex )
+                        {
+                            logger.Error( ex, "While setting property '{1}.{0}'.", k.Key.Name, k.Key.DeclaringType.FullName );
+                        }
+                    }
+                }
                 foreach( var a in _allAmbiantProperties )
                 {
                     if( dependencyResolver != null ) dependencyResolver.ResolvePropertyValue( logger, a );
@@ -380,7 +405,14 @@ namespace CK.Setup
                     }
                     if( a.Value != Type.Missing )
                     {
-                        a.PropertyInfo.SetValue( _stObj, a.Value, null );
+                        try
+                        {
+                            a.PropertyInfo.SetValue( _stObj, a.Value, null );
+                        }
+                        catch( Exception ex )
+                        {
+                            logger.Error( ex, "While setting ambiant property '{1}.{0}'.", a.Name, a.PropertyInfo.DeclaringType.FullName );
+                        }
                     }
                     else if( !a.IsOptional )
                     {
@@ -427,7 +459,7 @@ namespace CK.Setup
                     start._dContainer.EnsureAmbiantPropertiesResolved( logger, result, dependencyResolver );
                     getter = start._dContainer.FindAmbiantProperty( logger, propertyType, name );
                 }
-                start = start._directGeneralization;
+                start = start._generalization;
             }
             return getter;
         }
@@ -437,7 +469,7 @@ namespace CK.Setup
             var exist = _allAmbiantProperties.FirstOrDefault( a => a.Name == name );
             if( exist == null ) return null;
             // A property exists at the Specialization level, but does it exist for this slice?
-            if( !exist.IsDefinedFor( this ) ) return null;
+            if( !exist.IsDefinedFor( _objectType.Type ) ) return null;
             // Type compatible ?
             if( !propertyType.IsAssignableFrom( exist.Type ) )
             {
@@ -461,7 +493,7 @@ namespace CK.Setup
 
         IDependentItemRef IDependentItem.Generalization
         {
-            get { return _directGeneralization; }
+            get { return _generalization; }
         }
 
         IDependentItemContainerRef IDependentItem.Container
@@ -523,16 +555,6 @@ namespace CK.Setup
             get { return _hasBeenReferencedAsAContainer; }
         }
 
-        IStObj IStObj.DirectGeneralization
-        {
-            get { return _directGeneralization; }
-        }
-
-        IStObj IStObj.DirectSpecialization
-        {
-            get { return _directSpecialization; }
-        }
-
         IStObj IStObj.Generalization
         {
             get { return _generalization; }
@@ -541,6 +563,16 @@ namespace CK.Setup
         IStObj IStObj.Specialization
         {
             get { return _specialization; }
+        }
+
+        IStObj IStObj.RootGeneralization
+        {
+            get { return _rootGeneralization; }
+        }
+
+        IStObj IStObj.LeafSpecialization
+        {
+            get { return _leafSpecialization; }
         }
 
         IStObj IStObj.Container 

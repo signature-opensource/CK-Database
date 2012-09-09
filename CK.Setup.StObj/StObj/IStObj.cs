@@ -32,26 +32,26 @@ namespace CK.Setup
         /// Gets the parent <see cref="IStObj"/> in the inheritance chain (the one associated to the base class of this <see cref="ObjectType"/>).
         /// May be null.
         /// </summary>
-        IStObj DirectGeneralization { get; }
+        IStObj Generalization { get; }
 
         /// <summary>
         /// Gets the child <see cref="IStObj"/> in the inheritance chain.
         /// May be null.
         /// </summary>
-        IStObj DirectSpecialization { get; }
+        IStObj Specialization { get; }
 
         /// <summary>
         /// Gets the ultimate generalization <see cref="IStObj"/> in the inheritance chain. Never null (can be this object itself).
         /// </summary>
-        IStObj Generalization { get; }
+        IStObj RootGeneralization { get; }
 
         /// <summary>
         /// Gets the ultimate specialization <see cref="IStObj"/> in the inheritance chain. Never null (can be this object itself).
         /// </summary>
-        IStObj Specialization { get; }
+        IStObj LeafSpecialization { get; }
 
         /// <summary>
-        /// Gets the container object. 
+        /// Gets the container of this object. 
         /// May be null.
         /// </summary>
         IStObj Container { get; }

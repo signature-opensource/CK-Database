@@ -6,7 +6,7 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
-    /// This is a parameter attribute that can be use to designate the container of the object among 
+    /// Parameter attribute that can be use to designate the container of the object among 
     /// Construct parameters.
     /// </summary>
     [AttributeUsage( AttributeTargets.Parameter, Inherited=false, AllowMultiple=false )]

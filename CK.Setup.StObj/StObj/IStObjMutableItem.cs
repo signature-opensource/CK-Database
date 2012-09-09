@@ -18,7 +18,8 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets a mutable reference to the container of the object.
-        /// Initialized by <see cref="StObjAttribute.Container"/>.
+        /// Initialized by <see cref="StObjAttribute.Container"/> or any other <see cref="IStObjStructuralConfigurator"/>.
+        /// When container is null and this StObj has a container of its Generalization will be used.
         /// </summary>
         IMutableReference Container { get; }
 

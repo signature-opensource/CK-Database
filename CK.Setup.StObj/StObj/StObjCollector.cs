@@ -139,7 +139,7 @@ namespace CK.Setup
                         var m = (MutableItem)sorted.Item;
                         if( !m.IsContainer || sorted.IsContainerHead )
                         {
-                            m.IndexOrdered = ordered.Count;
+                            m.SetSorterData( ordered.Count, sorted.Container );
                             ordered.Add( m );
                             using( _logger.OpenGroup( LogLevel.Trace, "Constructing '{0}'.", m.ToString() ) )
                             {
@@ -179,7 +179,7 @@ namespace CK.Setup
                 {
                     foreach( MutableItem m in ordered )
                     {
-                        if( m.DirectSpecialization == null )
+                        if( m.Specialization == null )
                         {
                             using( _logger.OpenGroup( LogLevel.Trace, "EnsureAmbiantPropertiesResolved( {0} )", m.ToString() ) )
                             {
@@ -225,7 +225,7 @@ namespace CK.Setup
                     if( _configurator != null ) _configurator.Configure( _logger, m );
                     r.AddConfiguredItem( m );
                 }
-                while( (m = m.DirectGeneralization) != null );
+                while( (m = m.Generalization) != null );
             }
         }
 

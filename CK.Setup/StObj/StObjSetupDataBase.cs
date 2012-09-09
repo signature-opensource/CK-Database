@@ -64,7 +64,7 @@ namespace CK.Setup
             {
                 if( _driverType == null ) _driverType = parent.DriverType;
                 if( _driverTypeName == null ) _driverTypeName = parent.DriverTypeName;
-                if( _containerFullName == null ) _containerFullName = parent.FullNameContainer;
+                if( _containerFullName == null ) _containerFullName = parent.ContainerFullName;
             }
 
             // If we are the root of the ambiant contract, we consider that base classes
@@ -91,9 +91,9 @@ namespace CK.Setup
         /// This allow name binding to an existing container or package that is not a Structure Object: it should be rarely used.
         /// </summary>
         /// <remarks>
-        /// This is not inherited: the container of a specialization is not, by default, the container of its base class.
+        /// This is not inherited: it must be explicitely set for each object.
         /// </remarks>
-        public string FullNameContainer
+        public string ContainerFullName
         {
             get { return _containerFullName; }
             set { _containerFullName = value; }

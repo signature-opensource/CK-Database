@@ -73,7 +73,7 @@ namespace CK.Setup
         public virtual bool SetStructuralValue( IActivityLogger logger, string sourceName, object value )
         {
             if( sourceName == null ) throw new ArgumentNullException( "sourceName" );
-            if( value == Type.Missing ) throw new InvalidOperationException( "Setting a structural value to Type.Missing is not allowed. Source = " + sourceName );
+            if( value == Type.Missing ) logger.Warn( "{0}: '{1}' is setting a structural value to Type.Missing.", ToString(), sourceName );
             Value = value;
             return true;
         }

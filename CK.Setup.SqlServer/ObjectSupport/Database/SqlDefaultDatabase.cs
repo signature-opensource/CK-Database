@@ -8,9 +8,9 @@ namespace CK.Setup.SqlServer
 {
     public class SqlDefaultDatabase : SqlDatabase, IAmbiantContract
     {
-        public SqlDefaultDatabase()
-            : base()
+        public void Construct( string connectionString = null )
         {
+            ConnectionString = connectionString;
             EnsureSchema( "CK" );
         }
     }

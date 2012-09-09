@@ -42,7 +42,7 @@ namespace CK.Setup
         /// <remarks>
         /// This is not inherited: the container of a specialization is not, by default, the container of its base class.
         /// </remarks>
-        string FullNameContainer { get; }
+        string ContainerFullName { get; }
 
         /// <summary>
         /// Gets setup driver type (when not null this masks the <see cref="DriverTypeName"/> property).

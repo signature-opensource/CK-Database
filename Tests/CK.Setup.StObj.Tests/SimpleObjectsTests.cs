@@ -27,6 +27,23 @@ namespace CK.Setup.StObj.Tests
             var result = collector.GetResult();
             Assert.That( result.HasFatalError, Is.False );
 
+            IStObj oa = result.Default.StObjMapper[typeof( ObjectA )];
+            Assert.That( oa.Container.ObjectType == typeof( PackageForAB ) );
+            Assert.That( oa.LeafSpecialization.ObjectType == typeof( ObjectALevel3 ) );
+            
+            IStObj oa1 = result.Default.StObjMapper[typeof( ObjectALevel1 )];
+            Assert.That( oa1.Generalization == oa );
+            Assert.That( oa1.Container.ObjectType == typeof( PackageForABLevel1 ) );
+            
+            IStObj oa2 = result.Default.StObjMapper[typeof( ObjectALevel2 )];
+            Assert.That( oa2.Generalization == oa1 );
+            Assert.That( oa2.Container.ObjectType == typeof( PackageForABLevel1 ), "Inherited." );
+
+            IStObj oa3 = result.Default.StObjMapper[typeof( ObjectALevel3 )];
+            Assert.That( oa3.Generalization == oa2 );
+            Assert.That( oa3.Container.ObjectType == typeof( PackageForABLevel1 ), "Inherited." );
+            Assert.That( oa.RootGeneralization.ObjectType == typeof( ObjectA ) );
+
         }
 
         [Test]

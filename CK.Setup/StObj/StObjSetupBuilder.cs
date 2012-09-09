@@ -35,10 +35,10 @@ namespace CK.Setup
                 {
                     // Gets the StObjSetupDataBase that applies: the one of its base class or the one built from
                     // the attibutes above if it is the root ambiant contract.
-                    Debug.Assert( r.DirectGeneralization == null || setupableItems.ContainsKey( r.DirectGeneralization ), "Generalizations are required: they are processed first." );
+                    Debug.Assert( r.Generalization == null || setupableItems.ContainsKey( r.Generalization ), "Generalizations are required: they are processed first." );
 
                     StObjSetupDataBase fromFather;
-                    if( r.DirectGeneralization != null ) fromFather = setupableItems[r.DirectGeneralization];
+                    if( r.Generalization != null ) fromFather = setupableItems[r.Generalization];
                     else fromFather = StObjSetupDataBase.CreateRootData( _logger, r.ObjectType.BaseType );
                     
                     // Builds the StObjSetupData from the different attributes.
@@ -82,20 +82,20 @@ namespace CK.Setup
             StObjSetupData existing = existingStObjContainer != null ? setupableItems[existingStObjContainer] : null;
             if( existing != null )
             {
-                if( data.FullNameContainer != null )
+                if( data.ContainerFullName != null )
                 {
-                    if( existing.FullNameWithoutContext != data.FullNameContainer )
+                    if( existing.FullNameWithoutContext != data.ContainerFullName )
                     {
-                        _logger.Error( "Structure Object '{0}' is bound to Container named '{1}' but the PackageAttribute states that it must be in '{2}'.", data.FullName, existing.FullNameWithoutContext, data.FullNameContainer );
+                        _logger.Error( "Structure Object '{0}' is bound to Container named '{1}' but the PackageAttribute states that it must be in '{2}'.", data.FullName, existing.FullNameWithoutContext, data.ContainerFullName );
                     }
                 }
                 data.SetupItem.Container = existing.SetupItem;
             }
             else
             {
-                if( data.FullNameContainer != null )
+                if( data.ContainerFullName != null )
                 {
-                    data.SetupItem.Container = new NamedDependentItemContainerRef( data.FullNameContainer );
+                    data.SetupItem.Container = new NamedDependentItemContainerRef( data.ContainerFullName );
                 }
             }
         }

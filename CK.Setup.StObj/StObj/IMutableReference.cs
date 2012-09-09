@@ -44,10 +44,11 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets or sets the type of the reference. Can be set to null: container and requirements are ignored and 
-        /// construct parameters are resolved to null (<see cref="IMutableParameter.IsOptional"/> must be true).
+        /// construct parameters are resolved to their default (<see cref="IMutableParameter.IsOptional"/> must be true).
         /// Of course, for construct parameters the type must be compatible with the formal parameter's type (similar
         /// type compatibility is required for ambiant properties).
         /// </summary>
         Type Type { get; set; }
+
     }
 }
