@@ -8,8 +8,9 @@ using CK.Setup.SqlServer;
 namespace IntoTheWild0
 {
 
-    [SqlTable( "tResDataString", Package = typeof( ResourcePackage ) ), Versions( "2.9.2" )]
-    public class tResDataString : SqlTableType
+    [SqlTable( "tResDataRawText", Package = typeof( ResPackage ) ), Versions( "2.9.2" )]
+    public class tResDataRawText : SqlTableType
     {
     }
+
 }

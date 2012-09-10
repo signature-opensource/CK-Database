@@ -31,7 +31,7 @@ namespace CK.Setup.SqlServer
             _items.Add( name, new Item() { ConnectionString = connectionString } );
         }
 
-        public SqlManager FindManager( string name )
+        public SqlManager FindManagerByName( string name )
         {
             Item i;
             if( _items.TryGetValue( name, out i ) )

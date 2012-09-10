@@ -8,7 +8,7 @@ namespace CK.Setup
 {
     public interface IStObjSetupConfigurator
     {
-        void ConfigureDependentItem( IActivityLogger logger, StObjSetupData data );
+        void ConfigureDependentItem( IActivityLogger logger, IMutableStObjSetupData data );
     }
 
 }

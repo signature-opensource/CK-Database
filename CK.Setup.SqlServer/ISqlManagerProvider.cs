@@ -10,6 +10,6 @@ namespace CK.Setup.SqlServer
 
     public interface ISqlManagerProvider
     {
-        SqlManager FindManager( string name );
+        SqlManager FindManagerByName( string logicalName );
     }
 }

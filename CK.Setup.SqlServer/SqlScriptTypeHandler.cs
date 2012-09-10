@@ -21,7 +21,7 @@ namespace CK.Setup.SqlServer
 
         protected override IScriptExecutor CreateExecutor( IActivityLogger logger, SetupDriver driver )
         {
-            SqlManager m = _managerProvider.FindManager( SqlDatabase.DefaultDatabaseName );
+            SqlManager m = _managerProvider.FindManagerByName( SqlDatabase.DefaultDatabaseName );
             return _executor ?? (_executor = new SqlScriptExecutor( m, driver.Engine.Memory ));
         }
 

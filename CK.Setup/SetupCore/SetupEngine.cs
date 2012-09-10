@@ -156,14 +156,14 @@ namespace CK.Setup
         /// <param name="items">Set of <see cref="IDependentItem"/></param>
         /// <param name="discoverers">Set of <see cref="IDependentItemDiscoverer"/>.</param>
         /// <returns>A <see cref="SetupEngineRegisterResult"/> that captures detailed information about the registration result.</returns>
-        /// <param name="reverseName">Reverse the ordering for items that share the same rank in the pure dependency graph.</param>
-        public SetupEngineRegisterResult Register( IEnumerable<IDependentItem> items, IEnumerable<IDependentItemDiscoverer> discoverers, bool reverseName = false )
+        /// <param name="options">Optional configuration for dependecy graph computation.</param>
+        public SetupEngineRegisterResult Register( IEnumerable<IDependentItem> items, IEnumerable<IDependentItemDiscoverer> discoverers, DependencySorter.Options options = null )
         {
             CheckState( SetupEngineState.None );
             SetupEngineRegisterResult result = null;
             try
             {
-                result = new SetupEngineRegisterResult( DependencySorter.OrderItems( items, discoverers, reverseName ) );
+                result = new SetupEngineRegisterResult( DependencySorter.OrderItems( items, discoverers, options ) );
                 if( result.IsValid )
                 {
                     var reusableEvent = new DriverEventArgs( SetupStep.None );

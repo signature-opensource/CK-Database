@@ -15,16 +15,9 @@ namespace CK.Setup.SqlServer
         Dictionary<string,string> _schemas;
         bool _installCore;
 
-        internal SqlDatabase()
+        protected SqlDatabase()
         {
             _name = DefaultDatabaseName;
-            _schemas = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
-        }
-
-        protected SqlDatabase( string logicalName )
-        {
-            if( logicalName == DefaultDatabaseName ) throw new CKException( "DefaultDatabaseName '{0}' is reserved.", DefaultDatabaseName );
-            _name = logicalName;
             _schemas = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
         }
 
@@ -37,7 +30,6 @@ namespace CK.Setup.SqlServer
             protected set
             {
                 if( String.IsNullOrWhiteSpace( value ) ) throw new ArgumentNullException( "value" );
-                if( IsDefaultDatabase && value != DefaultDatabaseName ) throw new CKException( "Can not modify DefaultDatabaseName (it must be '{0}').", DefaultDatabaseName );
                 _name = value;
             }
         }
@@ -96,12 +88,12 @@ namespace CK.Setup.SqlServer
             get { return ReferenceEquals( _name, DefaultDatabaseName ); }
         }
 
-        protected virtual void ConfigureDependentItem( IActivityLogger logger, StObjSetupData data )
+        protected virtual void ConfigureDependentItem( IActivityLogger logger, IMutableStObjSetupData data )
         {
             data.FullNameWithoutContext = Name;
         }
 
-        void IStObjSetupConfigurator.ConfigureDependentItem( IActivityLogger logger, StObjSetupData data )
+        void IStObjSetupConfigurator.ConfigureDependentItem( IActivityLogger logger, IMutableStObjSetupData data )
         {
             ConfigureDependentItem( logger, data );
         }

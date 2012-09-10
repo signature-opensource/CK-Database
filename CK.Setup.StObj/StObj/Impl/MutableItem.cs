@@ -199,53 +199,39 @@ namespace CK.Setup
 
         #endregion
 
-        #region PrepareDependentItem: before sorting.
         internal void PrepareDependentItem( IActivityLogger logger, StObjCollectorResult result, StObjCollectorContextualResult contextResult )
         {
             Debug.Assert( _container != null && _constructParameterEx != null );
             Debug.Assert( _context == contextResult.Context && result[_context] == contextResult, "We are called inside our typed context, this avoids the lookup result[Context] to obtain the owner's context (the default)." );
 
-            // Container initialization.
-            //
-            // Since we want to remove all the containers of the object from its parameter requirements (see below), 
-            // we can not rely on the DependencySorter to detect a cyclic chain of containers:
-            // we use the list to collect the chain of containers and detect cycles.
-            List<MutableItem> allContainers = null;
-            ComputeFullNameAndResolveContainer( logger, result, contextResult, ref allContainers );
-
+            _dFullName = AmbiantContractCollector.DisplayName( _context, _objectType.Type );
+            _dContainer = _container.ResolveToStObj( logger, result, contextResult );
+            if( _dContainer != null )
+            {
+                // This is an optimization: handle containers only where it is necessary.
+                _dContainer._hasBeenReferencedAsAContainer = true;
+            }
             // Requirement intialization.
             HashSet<MutableItem> req = new HashSet<MutableItem>();
             {
-                // Base class is Required.
-                if( _generalization != null ) req.Add( _generalization );
-
                 // Requires are... Required (when not configured as optional by IStObjStructuralConfigurator).
                 foreach( MutableItem dep in _requires.Select( r => r.ResolveToStObj( logger, result, contextResult ) ).Where( m => m != null ) )
                 {
                     req.Add( dep );
                 }
-                // Construct parameters are Required... except if they are one of our Container.
+                // Construct parameters are Required... except if they are one of our Container but this is handled
+                // at the DependencySorter level by using the SkipDependencyToContainer option.
+                // See the commented old code (to be kept) below for more detail on this option.
                 if( _constructParameterEx.Count > 0 )
                 {
-                    // We are here considering here that a Container parameter does NOT define a dependency to the whole container (with its content):
-                    //
-                    //      That seems strange: we may expect the container to be fully initialized when used as a parameter by a dependency Construct...
-                    //      The fact is that we are dealing with Objects that have a method Construct, that this Construct method is called on the head
-                    //      of the container (before any of its content) and that this method has no "thickness", no content in terms of dependencies: its
-                    //      execution fully initializes the StOj and we can use it.
-                    //      This is actually fully coherent with the way the setup works. An item of a package does not "require" its own package, it is 
-                    //      contained in its package and can require items in the package as it needs.
-                    // 
                     foreach( MutableParameter t in _constructParameterEx )
                     {
-                        // Do not consider the container as a requirement since a Container is
-                        // already a dependency (on the head's Container) and that a requirement on a container
-                        // targets the whole content of it (this would lead to a cycle in the dependency graph).
                         MutableItem dep = t.ResolveToStObj( logger, result, contextResult );
-                        if( dep != null && (allContainers == null || allContainers.Contains( dep ) == false) ) req.Add( dep );
+                        if( dep != null ) req.Add( dep );
                     }
                 }
             }
+            // This will be updated after the Sort with clean Requirements (no Generalization nor Containers in it).
             _dRequires = req.ToReadOnlyList();
 
             // RequiredBy initialization.
@@ -255,40 +241,103 @@ namespace CK.Setup
             }
         }
 
-        void ComputeFullNameAndResolveContainer( IActivityLogger logger, StObjCollectorResult result, StObjCollectorContextualResult contextResult, ref List<MutableItem> prevContainers )
-        {
-            if( _dFullName != null ) return;
+        #region PrepareDependentItem: before sorting (old fully commented code to be kept for documentation - SkipDependencyToContainer option rational).
+        //internal void PrepareDependentItem( IActivityLogger logger, StObjCollectorResult result, StObjCollectorContextualResult contextResult )
+        //{
+        //    Debug.Assert( _container != null && _constructParameterEx != null );
+        //    Debug.Assert( _context == contextResult.Context && result[_context] == contextResult, "We are called inside our typed context, this avoids the lookup result[Context] to obtain the owner's context (the default)." );
 
-            _dFullName = AmbiantContractCollector.DisplayName( _context, _objectType.Type );
-            _dContainer = _container.ResolveToStObj( logger, result, contextResult );
-            if( _dContainer != null )
-            {
-                _dContainer._hasBeenReferencedAsAContainer = true;
-                if( prevContainers == null ) prevContainers = new List<MutableItem>();
-                else if( prevContainers.Contains( _dContainer ) )
-                {
-                    logger.Fatal( "Recursive Container chain encountered: '{0}'.", String.Join( "', '", prevContainers.Select( m => m._dFullName ) ) );
-                    return;
-                }
-                prevContainers.Add( _dContainer );
-                Type containerContext = _dContainer.Context;
-                if( containerContext != contextResult.Context )
-                {
-                    contextResult = result[containerContext];
-                    Debug.Assert( contextResult != null );
-                }
-                _dContainer.ComputeFullNameAndResolveContainer( logger, result, contextResult, ref prevContainers );
-            }
-        }
+        //    // Container initialization.
+        //    //
+        //    // Since we want to remove all the containers of the object from its parameter requirements (see below), 
+        //    // we can not rely on the DependencySorter to detect a cyclic chain of containers:
+        //    // we use the list to collect the chain of containers and detect cycles.
+        //    List<MutableItem> allContainers = null;
+        //    ComputeFullNameAndResolveContainer( logger, result, contextResult, ref allContainers );
+
+        //    // Requirement intialization.
+        //    HashSet<MutableItem> req = new HashSet<MutableItem>();
+        //    {
+        //        // Requires are... Required (when not configured as optional by IStObjStructuralConfigurator).
+        //        foreach( MutableItem dep in _requires.Select( r => r.ResolveToStObj( logger, result, contextResult ) ).Where( m => m != null ) )
+        //        {
+        //            req.Add( dep );
+        //        }
+        //        // Construct parameters are Required... except if they are one of our Container.
+        //        if( _constructParameterEx.Count > 0 )
+        //        {
+        //            // We are here considering here that a Container parameter does NOT define a dependency to the whole container (with its content):
+        //            //
+        //            //      That seems strange: we may expect the container to be fully initialized when used as a parameter by a dependency Construct...
+        //            //      The fact is that we are dealing with Objects that have a method Construct, that this Construct method is called on the head
+        //            //      of the container (before any of its content) and that this method has no "thickness", no content in terms of dependencies: its
+        //            //      execution fully initializes the StOj and we can use it.
+        //            //      Construct method is a requirement on "Init", not on "InitContent".
+        //            //      This is actually fully coherent with the way the setup works. An item of a package does not "require" its own package, it is 
+        //            //      contained in its package and can require items in the package as it needs.
+        //            // 
+        //            foreach( MutableParameter t in _constructParameterEx )
+        //            {
+        //                // Do not consider the container as a requirement since a Container is
+        //                // already a dependency (on the head's Container) and that a requirement on a container
+        //                // targets the whole content of it (this would lead to a cycle in the dependency graph).
+        //                MutableItem dep = t.ResolveToStObj( logger, result, contextResult );
+        //                if( dep != null && (allContainers == null || allContainers.Contains( dep ) == false) ) req.Add( dep );
+        //            }
+        //        }
+        //    }
+        //    _dRequires = req.ToReadOnlyList();
+
+        //    // RequiredBy initialization.
+        //    if( _requiredBy.Count > 0 )
+        //    {
+        //        _dRequiredBy = _requiredBy.Select( r => r.ResolveToStObj( logger, result, contextResult ) ).Where( m => m != null ).ToReadOnlyList();
+        //    }
+        //}
+
+        //void ComputeFullNameAndResolveContainer( IActivityLogger logger, StObjCollectorResult result, StObjCollectorContextualResult contextResult, ref List<MutableItem> prevContainers )
+        //{
+        //    if( _dFullName != null ) return;
+
+        //    _dFullName = AmbiantContractCollector.DisplayName( _context, _objectType.Type );
+        //    _dContainer = _container.ResolveToStObj( logger, result, contextResult );
+
+        //    // Since we are obliged here to do in advance what the SetupOrderer will do (to remove dependencies to containers, see PrepareDependentItem above),
+        //    // we must apply the "Container inheritance"...
+            
+        //    // TODO... Here or in DependencySorter... ?
+        //    //    All this Container discovering stuff duplicates DependencySorter work...
+        //    //    
+        //    // => Answer: Done in the dependency sorter.
+
+        //    if( _dContainer != null )
+        //    {
+        //        _dContainer._hasBeenReferencedAsAContainer = true;
+        //        if( prevContainers == null ) prevContainers = new List<MutableItem>();
+        //        else if( prevContainers.Contains( _dContainer ) )
+        //        {
+        //            logger.Fatal( "Recursive Container chain encountered: '{0}'.", String.Join( "', '", prevContainers.Select( m => m._dFullName ) ) );
+        //            return;
+        //        }
+        //        prevContainers.Add( _dContainer );
+        //        Type containerContext = _dContainer.Context;
+        //        if( containerContext != contextResult.Context )
+        //        {
+        //            contextResult = result[containerContext];
+        //            Debug.Assert( contextResult != null );
+        //        }
+        //        _dContainer.ComputeFullNameAndResolveContainer( logger, result, contextResult, ref prevContainers );
+        //    }
+        //}
         #endregion
 
-
         /// <summary>
-        /// Calles StObjCollector once the mutable items have been sorted.
+        /// Called by StObjCollector once the mutable items have been sorted.
         /// </summary>
         /// <param name="idx">The <see cref="IndexOrdered"/>.</param>
-        /// <param name="containerFromSorter"></param>
-        internal void SetSorterData( int idx, ISortedItem containerFromSorter )
+        /// <param name="containerFromSorter">Container (with Generalization's inheritance).</param>
+        /// <param name="requiresFromSorter">Cleaned up requirements (no Genralization nor Containers).</param>
+        internal void SetSorterData( int idx, ISortedItem containerFromSorter, IEnumerable<IDependentItemRef> requiresFromSorter )
         {
             Debug.Assert( IndexOrdered == 0 );
             Debug.Assert( _dContainer == null || _dContainer == containerFromSorter.Item );
@@ -297,6 +346,9 @@ namespace CK.Setup
             {
                 _dContainer = (MutableItem)containerFromSorter.Item;
             }
+            _dRequires = requiresFromSorter.Cast<MutableItem>().ToReadOnlyList();
+            // requiredBy are useless.
+            _dRequiredBy = null;
         }
 
         /// <summary>
@@ -575,6 +627,12 @@ namespace CK.Setup
             get { return _leafSpecialization; }
         }
 
+        IStObj IStObj.ConfiguredContainer 
+        {
+            // TODO: check this seriously.
+            get { return _dContainer != null && _dContainer.ObjectType == _container.Type ? _dContainer : null; } 
+        }
+
         IStObj IStObj.Container 
         { 
             get { return _dContainer; } 
@@ -583,11 +641,6 @@ namespace CK.Setup
         IReadOnlyList<IStObj> IStObj.Requires 
         {
             get { return _dRequires; } 
-        }
-
-        IReadOnlyList<IStObj> IStObj.RequiredBy
-        {
-            get { return _dRequiredBy ?? ReadOnlyListEmpty<IStObj>.Empty; }
         }
 
         #endregion

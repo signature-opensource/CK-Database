@@ -13,7 +13,16 @@ namespace CK.Setup.SqlServer
         public SqlDatabaseSetupDriver( BuildInfo info, ISqlManagerProvider sqlProvider )
             : base( info )
         {
-            _connection = sqlProvider.FindManager( Object.Name );
+            _connection = sqlProvider.FindManagerByName( Object.Name );
+        }
+
+        protected override bool Init()
+        {
+            if( !Object.IsDefaultDatabase && Object.InstallCore )
+            {
+                _connection.EnsureCKCoreIsInstalled( Engine.Logger );
+            }
+            return base.Init();
         }
 
         protected override bool  Install()

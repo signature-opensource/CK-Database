@@ -12,7 +12,7 @@ namespace CK.Setup
     /// </summary>
     /// <remarks>
     /// Provided that other items are submitted to the <see cref="DependencySorter.OrderItems"/> method the <see cref="IDependentItemGroup.Children"/> collection 
-    /// can be null or empty sine any submitted items that has its <see cref="IDependentItem.Container"/> references this container will be automatically "added"
+    /// can be null or empty since any submitted items that has its <see cref="IDependentItem.Container"/> references this container will be automatically "added"
     /// to the container.
     /// </remarks>
     public interface IDependentItemContainer : IDependentItemGroup

@@ -16,6 +16,7 @@ namespace CK.Setup
             if( data.HasModel ) EnsureModel();
             SetVersionsString( data.Versions );
             StructuredObject = data.StObj.StructuredObject;
+            FullName = data.FullName;
         }
 
         public object StructuredObject { get; private set; }

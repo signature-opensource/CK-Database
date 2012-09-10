@@ -6,15 +6,24 @@ using CK.Core;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Collects <see cref="ISetupScript">scripts</see> originating from multiple sources in the context of a <see cref="ScriptTypeManager"/>.
+    /// Scripts are organized in <see cref="ScriptSet"/> for each <see cref="ParsedFileName.FullName">setup object full name</see>.
+    /// </summary>
     public class ScriptCollector
     {
-        Dictionary<string,ScriptSet> _scripts;
-        HashSet<string> _scriptSources;
-        ReadOnlyCollectionOnISet<string> _scriptSourcesEx;
-        ScriptTypeManager _typeManager;
+        readonly ScriptTypeManager _typeManager;
+        readonly Dictionary<string,ScriptSet> _scripts;
+        readonly HashSet<string> _scriptSources;
+        readonly ReadOnlyCollectionOnISet<string> _scriptSourcesEx;
 
+        /// <summary>
+        /// Initializes a new <see cref="ScriptCollector"/> bound to a <see cref="ScriptTypeManager"/>.
+        /// </summary>
+        /// <param name="typeManager"></param>
         public ScriptCollector( ScriptTypeManager typeManager )
         {
+            if( typeManager == null ) throw new ArgumentNullException( "typeManager" );
             _scripts = new Dictionary<string, ScriptSet>( StringComparer.OrdinalIgnoreCase );
             _scriptSources = new HashSet<string>();
             _scriptSourcesEx = new ReadOnlyCollectionOnISet<string>( _scriptSources );
@@ -22,7 +31,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Register a <see cref="ScriptSet"/> for a package script.
+        /// Registers a <see cref="ISetupScript"/>: finds or creates a unique <see cref="ScriptSet"/> for each <see cref="ISetupScript.Name"/>.
         /// The first name becomes the case-insensitive key: names with different case will
         /// be detected, a warning will be emitted into the logger and null will be returned.
         /// </summary>

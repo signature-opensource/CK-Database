@@ -51,8 +51,14 @@ namespace CK.Setup
         IStObj LeafSpecialization { get; }
 
         /// <summary>
-        /// Gets the container of this object. 
-        /// May be null.
+        /// Gets the configured container for this object. If this <see cref="Container"/> has been inherited 
+        /// from its <see cref="Generalization"/>, this ConfiguredContainer is null.
+        /// </summary>
+        IStObj ConfiguredContainer { get; }
+
+        /// <summary>
+        /// Gets the container of this object. If no container has been explicitely associated for the object, this is the
+        /// container of its <see cref="Generalization"/> (if it exists). May be null.
         /// </summary>
         IStObj Container { get; }
 
@@ -61,9 +67,5 @@ namespace CK.Setup
         /// </summary>
         IReadOnlyList<IStObj> Requires { get; }
         
-        /// <summary>
-        /// Gets a list of objects that require this object. 
-        /// </summary>
-        IReadOnlyList<IStObj> RequiredBy { get; }
     }
 }

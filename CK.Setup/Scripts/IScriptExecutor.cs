@@ -9,7 +9,7 @@ namespace CK.Setup
     public interface IScriptExecutor
     {
         /// <summary>
-        /// Executes the script.
+        /// Implementation must execute the given script.
         /// </summary>
         /// <param name="logger">The logger to use.</param>
         /// <param name="driver">The item driver for which the script is executed.</param>

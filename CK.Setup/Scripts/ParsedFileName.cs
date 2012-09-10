@@ -24,7 +24,7 @@ namespace CK.Setup
         SetupStep _step;
         bool _isContent;
 
-        ParsedFileName( string fileName, object extraPath, string name, Version f, Version v, SetupStep step, bool isContent )
+        private ParsedFileName( string fileName, object extraPath, string name, Version f, Version v, SetupStep step, bool isContent )
         {
             Debug.Assert( f == null || (v != null && f != v), "from ==> version && from != version" );
             _fileName = fileName;

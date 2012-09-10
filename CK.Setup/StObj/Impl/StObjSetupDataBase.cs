@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace CK.Setup
 {
-    public class StObjSetupDataBase
+    internal class StObjSetupDataBase
     {
         readonly IStObjSetupData _parent;
 
@@ -76,90 +76,45 @@ namespace CK.Setup
             }
         }
 
-        /// <summary>
-        /// Gets the parent setup data if it exists (this is to manage attribute properties "inheritance"). 
-        /// Null if this object corresponds to the first (top) <see cref="IAmbiantContract"/> of the inheritance chain.
-        /// </summary>
         public IStObjSetupData Parent
         {
             get { return _parent; }
         }
         
-        /// <summary>
-        /// Gets or sets the full name of the container.
-        /// If the container is already defined at the <see cref="IStObj"/> level, names must match otherwise an error occurs.
-        /// This allow name binding to an existing container or package that is not a Structure Object: it should be rarely used.
-        /// </summary>
-        /// <remarks>
-        /// This is not inherited: it must be explicitely set for each object.
-        /// </remarks>
         public string ContainerFullName
         {
             get { return _containerFullName; }
             set { _containerFullName = value; }
         }
 
-        /// <summary>
-        /// Gets a mutable list of requirements (can be <see cref="IDependentItem"/> instances or named references).
-        /// </summary>
         public IDependentItemList Requires
         {
             get { return _requires; }
         }
 
-        /// <summary>
-        /// Gets a mutable list of reverse requirements (can be <see cref="IDependentItem"/> instances or named references).
-        /// </summary>
         public IDependentItemList RequiredBy
         {
             get { return _requiredBy; }
         }
 
-        /// <summary>
-        /// Gets or sets whether this object must not be considered as a <see cref="IDependentItemContainer"/>: when true, no items 
-        /// must be subordinated to this object.
-        /// </summary>        
         public bool NoContent
         {
             get { return _noContent; }
             set { _noContent = value; }
         }
 
-        /// <summary>
-        /// Gets or sets the setup driver type (when set this masks the <see cref="DriverTypeName"/> property).
-        /// This property is inherited.
-        /// </summary>
-        /// <remarks>
-        /// When let to null (and no <see cref="DriverTypeName"/> is specified either), 
-        /// the standard <see cref="PackageDriver"/> is used.
-        /// </remarks>
         public Type DriverType
         {
             get { return _driverType; }
             set { _driverType = value; }
         }
 
-        /// <summary>
-        /// Gets or sets the assembly qualified name of the setup driver type.
-        /// This property is inherited and is ignored if <see cref="DriverType"/> is specified.
-        /// </summary>
-        /// <remarks>
-        /// When let to null (and no <see cref="DriverType"/> is specified either), 
-        /// the standard <see cref="PackageDriver"/> is used.
-        /// </remarks>
         public string DriverTypeName
         {
             get { return _driverTypeName; }
             set { _driverTypeName = value; }
         }
 
-        /// <summary>
-        /// Gets or sets whether a Model package is associated to this object. The Model is required by this object
-        /// and by each and every Model associated to the objects that require this object.
-        /// </summary>
-        /// <remarks>
-        /// This is not inherited.
-        /// </remarks>
         public bool HasModel
         {
             get { return _hasModel; }

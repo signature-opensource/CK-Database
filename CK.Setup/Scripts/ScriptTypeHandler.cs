@@ -26,12 +26,13 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the type of scripts that this script handler handles.
+        /// Gets the type of scripts that this script handler manages.
         /// </summary>
         public string HandlerName { get { return _name; } }
 
         /// <summary>
         /// Gets the <see cref="ScriptSource"/> that this <see cref="ScriptTypeHandler"/> handles.
+        /// Script sources are ordered by priority in ascending order.
         /// </summary>
         public IReadOnlyList<ScriptSource> Sources
         {
@@ -40,6 +41,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Registers a new <see cref="ScriptSource"/> (its name must be unique).
+        /// Last registered source takes precedence over previously registered sources.
         /// </summary>
         /// <param name="name">Name must be not null, empty, white space and must not already exists.</param>
         /// <returns>The created source object.</returns>

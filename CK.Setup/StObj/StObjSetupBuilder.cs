@@ -34,15 +34,16 @@ namespace CK.Setup
                 foreach( var r in orderedObjects )
                 {
                     // Gets the StObjSetupDataBase that applies: the one of its base class or the one built from
-                    // the attibutes above if it is the root ambiant contract.
+                    // the attibutes above if it is the root Ambiant Contract.
                     Debug.Assert( r.Generalization == null || setupableItems.ContainsKey( r.Generalization ), "Generalizations are required: they are processed first." );
 
-                    StObjSetupDataBase fromFather;
-                    if( r.Generalization != null ) fromFather = setupableItems[r.Generalization];
-                    else fromFather = StObjSetupDataBase.CreateRootData( _logger, r.ObjectType.BaseType );
+                    StObjSetupData generalizationData = null;
+                    StObjSetupDataBase fromAbove;
+                    if( r.Generalization != null ) fromAbove = generalizationData = setupableItems[r.Generalization];
+                    else fromAbove = StObjSetupDataBase.CreateRootData( _logger, r.ObjectType.BaseType );
                     
                     // Builds the StObjSetupData from the different attributes.
-                    var data = new StObjSetupData( _logger, r, fromFather );
+                    var data = new StObjSetupData( _logger, r, fromAbove );
                     // Calls any attributes that is a IStObjSetupConfigurator with the StObjSetupData.
                     SetupAttribute.ApplyAttributesConfigurator( _logger, r.ObjectType, data );
 
@@ -52,7 +53,12 @@ namespace CK.Setup
 
                     // Calls external configuration.
                     if( _configurator != null ) _configurator.ConfigureDependentItem( _logger, data );
-                    data.CreateSetupItem();
+
+                    // Creates the internal StObjDynamicPackageItem configured with the StObjSetupData
+                    // and configures Generalization since we got it above.
+                    var item = data.CreateSetupItem();
+                    if( generalizationData != null ) item.Generalization = generalizationData.SetupItem;
+
                     setupableItems.Add( r, data );
                 }
             }
@@ -66,11 +72,6 @@ namespace CK.Setup
                         StObjSetupData reqD = setupableItems[req];
                         data.SetupItem.Requires.Add( reqD.SetupItem );
                     }
-                    foreach( IStObj reqBy in data.StObj.RequiredBy )
-                    {
-                        StObjSetupData reqDBy = setupableItems[reqBy];
-                        data.SetupItem.RequiredBy.Add( reqDBy.SetupItem );
-                    }
                 }
             }
             return setupableItems.Values.Select( data => data.SetupItem );
@@ -78,7 +79,7 @@ namespace CK.Setup
 
         void BindContainer( Dictionary<IStObj, StObjSetupData> setupableItems, StObjSetupData data )
         {
-            IStObj existingStObjContainer = data.StObj.Container;
+            IStObj existingStObjContainer = data.StObj.ConfiguredContainer;
             StObjSetupData existing = existingStObjContainer != null ? setupableItems[existingStObjContainer] : null;
             if( existing != null )
             {

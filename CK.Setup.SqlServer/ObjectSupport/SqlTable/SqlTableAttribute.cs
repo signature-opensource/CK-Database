@@ -1,51 +1,65 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using CK.Core;
 
-//namespace CK.Setup.SqlServer
-//{
-//    [AttributeUsage( AttributeTargets.Class, AllowMultiple = false, Inherited = false )]
-//    public class SqlTableAttribute : Attribute
-//    {
-//        public SqlTableAttribute( string versions )
-//        {
-//            Versions = versions;
-//        }
+namespace CK.Setup.SqlServer
+{
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple=false, Inherited=false )]
+    public class SqlTableAttribute : Attribute, IStObjStructuralConfigurator, IStObjSetupConfigurator
+    {
+        public SqlTableAttribute( string tableName )
+        {
+            TableName = tableName;
+        }
 
-//        /// <summary>
-//        /// Gets the version list.
-//        /// </summary>
-//        public string Versions { get; private set; }
+        /// <summary>
+        /// Gets or sets the <see cref="SqlDatabase"/> that owns this table.
+        /// See <see cref="SqlPackageAttribute.Database"/>.
+        /// </summary>
+        public Type Database { get; set; }
+        
+        public Type Package { get; set; }
 
-//        /// <summary>
-//        /// Gets or sets the table name (without schema). 
-//        /// When null, the package object's <see cref="Type.Name"/> is used.
-//        /// </summary>
-//        public string TableName { get; set; }
+        public string TableName { get; set; }
 
-//        /// <summary>
-//        /// Gets or sets the setup container.
-//        /// When null, the container defined by the <see cref="SqlDefaultDatabase"/> is used.
-//        /// </summary>
-//        public Type Container { get; set; }
+        public string Schema { get; set; }
 
-//        /// <summary>
-//        /// Gets or sets a comma separated list of full names dependencies.
-//        /// </summary>
-//        public string Requires { get; set; }
-//        public string RequiredBy { get; set; }
+        void IStObjStructuralConfigurator.Configure( IActivityLogger logger, IStObjMutableItem o )
+        {
+            if( !typeof( SqlTableType ).IsAssignableFrom( o.ObjectType.BaseType ) )
+            {
+                logger.Error( "Attribute SqlTable must be set only on class that specialize SqlTableType." );
+            }
+            if( Package != null )
+            {
+                if( o.Container.Type == null ) o.Container.Type = Package;
+                else if( o.Container.Type != Package )
+                {
+                    logger.Error( "{0}: SqlTable attribute sets Package to be '{1}' but it is already '{2}'.", o.ToString(), Package.Name, o.Container.Type );
+                }
+            }
+            if( Database != null )
+            {
+                var ambiant = o.AllAmbiantProperties.First( a => a.Name == "Database" );
+                ambiant.StObjRequirementBehavior = StObjRequirementBehavior.WarnIfNotStObj;
+                ambiant.Type = Database;
+            }
+            if( TableName != null ) o.SetPropertyStructuralValue( logger, "SqlTableAttribute", "TableName", TableName );
+            if( Schema != null ) o.SetPropertyStructuralValue( logger, "SqlTableAttribute", "Schema", Schema );
+        }
 
-//        /// <summary>
-//        /// Gets or sets the default database object to use.
-//        /// When null, the <see cref="Container"/>'s <see cref="Container.DefaultDatabase"/> is used.
-//        /// </summary>
-//        public Type Database { get; set; }
+        void IStObjSetupConfigurator.ConfigureDependentItem( IActivityLogger logger, IMutableStObjSetupData data )
+        {
+            if( data.IsDefaultFullName )
+            {
+                var table = (SqlTableType)data.StObj.StructuredObject;
+                logger.Info( "Class '{0}' uses its own table name '{1}' as its Setup FullName.", data.StObj.ObjectType.Name, table.SchemaName );
+                data.FullNameWithoutContext = table.SchemaName;
+            }
+            data.HasModel = true;
+        }
 
-//        /// <summary>
-//        /// Gets or sets the schema to use.
-//        /// When null, the <see cref="Container"/>'s <see cref="Container.DefaultSchema"/> is used.
-//        /// </summary>
-//        public string Schema { get; set; }
-//    }
-//}
+    }
+}

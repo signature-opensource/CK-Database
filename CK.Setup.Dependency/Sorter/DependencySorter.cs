@@ -13,6 +13,25 @@ namespace CK.Setup
     /// </summary>
     public static class DependencySorter
     {
+        /// <summary>
+        /// Parametrizes the way <see cref="DependencySorter.OrderItems"/> works.
+        /// </summary>
+        public class Options
+        {
+            /// <summary>
+            /// Gets or sets whether to reverse the lexicographic order for items that share the same rank.
+            /// Defaults to false.
+            /// </summary>
+            public bool ReverseName { get; set; }
+
+            /// <summary>
+            /// Gets or sets whether dependencies to any Container the item belongs to should be ignored.
+            /// Defaults to false.
+            /// </summary>
+            public bool SkipDependencyToContainer { get; set; }
+        }
+
+        static readonly Options _defaultOptions = new Options();
 
         /// <summary>
         /// Try to order items. First cycle encountered is detected, missing dependencies are 
@@ -20,11 +39,11 @@ namespace CK.Setup
         /// </summary>
         /// <param name="items">Set of <see cref="IDependentItem"/> to order.</param>
         /// <param name="discoverers">An optional set of <see cref="IDependentItemDiscoverer"/> (can be null).</param>
-        /// <param name="reverseName">True to reverse lexicographic order for items.</param>
+        /// <param name="options">Options for advanced uses.</param>
         /// <returns>A <see cref="DependencySorterResult"/>.</returns>
-        public static DependencySorterResult OrderItems( IEnumerable<IDependentItem> items, IEnumerable<IDependentItemDiscoverer> discoverers, bool reverseName = false )
+        public static DependencySorterResult OrderItems( IEnumerable<IDependentItem> items, IEnumerable<IDependentItemDiscoverer> discoverers, Options options = null )
         {
-            var computer = new RankComputer( items, discoverers, reverseName );
+            var computer = new RankComputer( items, discoverers, options ?? _defaultOptions );
             computer.Process();
             return computer.GetResult();
         }
@@ -37,19 +56,31 @@ namespace CK.Setup
         /// <returns>A <see cref="DependencySorterResult"/>.</returns>
         public static DependencySorterResult OrderItems( params IDependentItem[] items )
         {
-            return OrderItems( items, null, false );
+            return OrderItems( items, null, null );
         }
 
         /// <summary>
         /// Try to order items. First cycle encountered is detected, missing dependencies are 
         /// collected and resulting ordered items are initialized in the correct order.
         /// </summary>
-        /// <param name="reverseName">True to reverse lexicographic order for items.</param>
+        /// <param name="reverseName">True to reverse lexicographic order for items that share the same rank.</param>
         /// <param name="items">Set of <see cref="IDependentItem"/> to order.</param>
         /// <returns>A <see cref="DependencySorterResult"/>.</returns>
         public static DependencySorterResult OrderItems( bool reverseName, params IDependentItem[] items )
         {
-            return OrderItems( items, null, reverseName );
+            return OrderItems( items, null, new Options() { ReverseName = reverseName } );
+        }
+
+        /// <summary>
+        /// Try to order items. First cycle encountered is detected, missing dependencies are 
+        /// collected and resulting ordered items are initialized in the correct order.
+        /// </summary>
+        /// <param name="options">Options for advanced uses.</param>
+        /// <param name="items">Set of <see cref="IDependentItem"/> to order.</param>
+        /// <returns>A <see cref="DependencySorterResult"/>.</returns>
+        public static DependencySorterResult OrderItems( Options options, params IDependentItem[] items )
+        {
+            return OrderItems( items, null, options );
         }
 
         internal class Entry : ISortedItem
@@ -81,19 +112,30 @@ namespace CK.Setup
             
             public readonly string FullName;
             public object StartValue;
+            /// <summary>
+            /// Item is set for all kind of entries: Containers, Heads and normal item reference the dependent item.
+            /// </summary>
             public IDependentItem Item;
+            /// <summary>
+            /// Allocated as soon as this entry Requires another one.
+            /// </summary>
             public HashSet<IDependentItemRef> Requires;
             public int Rank;
             // Index is computed at the end of the process.
             public int Index;
 
             public Entry Generalization;
+
             public Entry Container { get; private set; }
-            // The ContainerIfHead is null for normal items and containers.
-            // It is not null only for heads.
+            /// <summary>
+            /// The ContainerIfHead is null for normal items and containers.
+            /// It is not null only for heads.
+            /// </summary>
             public Entry ContainerIfHead { get; private set; }
-            // The HeadIfContainer is null for normal items and heads.
-            // It is not null only for container.
+            /// <summary>
+            /// The HeadIfContainer is null for normal items and heads.
+            /// It is not null only for container.
+            /// </summary>
             public Entry HeadIfContainer { get; private set; }
             public Entry FirstChildIfContainer { get; private set; }
             public Entry NextChildInContainer { get; private set; }
@@ -122,6 +164,18 @@ namespace CK.Setup
                 if( child.HeadIfContainer != null ) child.HeadIfContainer.Container = this;
                 child.NextChildInContainer = FirstChildIfContainer;
                 FirstChildIfContainer = child;
+            }
+
+            internal bool AppearInContainerChain( Entry dep )
+            {
+                Debug.Assert( dep.HeadIfContainer != null, "Called only with a Container." );
+                Entry c = Container;
+                while( c != null )
+                {
+                    if( c == dep ) return true;
+                    c = c.Container;
+                }
+                return false;
             }
 
             [Conditional( "DEBUG" )]
@@ -186,6 +240,12 @@ namespace CK.Setup
                 get { return Container; }
             }
 
+            // By double checking the full name, we handle any "Optional"ity of the original Container reference.
+            ISortedItem ISortedItem.ConfiguredContainer 
+            {
+                get { return Item.Container != null && ReferenceEquals( Item.Container.FullName, Container.FullName ) ? Container : null; } 
+            }
+
             ISortedItem ISortedItem.Generalization
             {
                 get { return Generalization == GeneralizationMissingMarker ? null : Generalization; }
@@ -218,7 +278,11 @@ namespace CK.Setup
 
             IEnumerable<IDependentItemRef> ISortedItem.Requires 
             {
-                get { return Requires == null ? ReadOnlyListEmpty<IDependentItemRef>.Empty : Requires.Where( d => !d.Optional ); }
+                get 
+                {
+                    var req = HeadIfContainer != null ? HeadIfContainer.Requires : null; 
+                    return req == null ? ReadOnlyListEmpty<IDependentItemRef>.Empty : req.Where( d => !d.Optional ); 
+                }
             }
 
             #endregion
@@ -230,14 +294,16 @@ namespace CK.Setup
             readonly List<Entry> _result;
             readonly List<DependentItemIssue> _itemIssues;
             readonly Comparison<Entry> _comparer;
+            readonly Options _options;
             List<Entry> _cycle;
 
-            public RankComputer( IEnumerable<IDependentItem> items, IEnumerable<IDependentItemDiscoverer> discoverers, bool reverseName )
+            public RankComputer( IEnumerable<IDependentItem> items, IEnumerable<IDependentItemDiscoverer> discoverers, Options options )
             {
                 _entries = new Dictionary<object, object>();
                 _result = new List<Entry>();
                 _itemIssues = new List<DependentItemIssue>();
-                if( reverseName ) _comparer = ReverseComparer;
+                _options = options;
+                if( _options.ReverseName ) _comparer = ReverseComparer;
                 else _comparer =  NormalComparer;
 
                 Registerer r = new Registerer( this );
@@ -381,7 +447,7 @@ namespace CK.Setup
                         if( sEntry.Container == null && gEntry.Container != null )
                         {
                             gEntry.Container.AddToContainer( sEntry );
-                            // Check (debug only).
+                            // Checks (debug only).
                             Debug.Assert( sEntry.Container == gEntry.Container );
                             gEntry.Container.CheckContains( sEntry );
                         }
@@ -754,7 +820,7 @@ namespace CK.Setup
                 // Note: Since we can NOT support dynamic resolution of a missing dependency
                 // (through a function like ResolveMissing( fullName ) because of
                 // the RequiredBy: if a newly added item has a RequiredBy, we should
-                // reprocess all the items since it may change (a lot of) already computed rank),
+                // reprocess all the items since it may change -a lot of- already computed rank),
                 // the _result list does not change during process: we can safely foreach on it.
                 foreach( var e in _result )
                 {
@@ -783,9 +849,18 @@ namespace CK.Setup
                 Debug.Assert( e.Rank == -1 );
                 e.Rank = -2;
                 int rank = 0;
-                IDependentItem item = e.Item;
+
+                List<IDependentItemRef> requiresHiddenByContainerOrGen = null;
+                
+                // Prepares eGen.
+                Entry eGen = e.Generalization;
+                if( eGen == Entry.GeneralizationMissingMarker ) eGen = null;
+
                 // Starts with reverse requirements (RequiredBy) since during the registeration phasis,
                 // the Requires HashSet has been populated only with RequiredBy from others.
+                //
+                // Do this for Containers and Items (but not for Heads)
+                //
                 if( e.ContainerIfHead == null )
                 {
                     // Reverse requirements (RequiredBy) can be ignored for Head since "Required By" 
@@ -793,34 +868,47 @@ namespace CK.Setup
                     var requirements = e.Requires;
                     if( requirements != null )
                     {
-                        // Do this for Container and Item (but not for Head).
                         Debug.Assert( e.Requires.Count > 0 );
                         foreach( var dep in requirements )
                         {
                             Debug.Assert( _entries.ContainsKey( dep.FullName ) && ((Entry)_entries[dep.FullName]).Item != null, "Since the requirement has been added by an item, it exists." );
-                            HandleDependency( ref rank, e, (Entry)_entries[dep.FullName], false );
-                            if( _cycle != null ) return;
+                            Entry oeDep = (Entry)_entries[dep.FullName];
+                            if( (oeDep == eGen)
+                                ||
+                                (oeDep.HeadIfContainer != null && _options.SkipDependencyToContainer && e.AppearInContainerChain( oeDep ) ) )
+                            {
+                                if( requiresHiddenByContainerOrGen == null ) requiresHiddenByContainerOrGen = new List<IDependentItemRef>();
+                                requiresHiddenByContainerOrGen.Add( dep );
+                            }
+                            else
+                            {
+                                HandleDependency( ref rank, e, oeDep, false );
+                                if( _cycle != null ) return;
+                            }
                         }
                     }
                 }
+
                 // Handle direct requirements: this can be ignored for Containers: the Head handles them.
+                //
+                // Do this for Heads and Items (but not for Containers).
+                //
                 if( e.HeadIfContainer == null )
                 {
-                    // Do this for Heads and Items (but not for Container).
                     // We first handle Generalization as a requirement.
-                    if( e.Generalization != null && e.Generalization != Entry.GeneralizationMissingMarker )
+                    if( eGen != null )
                     {
-                        HandleDependency( ref rank, e, e.Generalization, false );
+                        HandleDependency( ref rank, e, eGen, false );
                         if( _cycle != null ) return;
                     }
-                    var requirements = item.Requires;
+                    var requirements = e.Item.Requires;
                     if( requirements != null )
                     {
                         if( e.Requires == null ) e.Requires = new HashSet<IDependentItemRef>();
                         foreach( IDependentItemRef dep in requirements )
                         {
-                            // Security: skips any null entry.
-                            if( dep == null ) continue;
+                            // Security: skips any null entry and Generalization if it exists.
+                            if( dep == null || (eGen != null && (eGen == dep || eGen.FullName == dep.FullName)) ) continue;
 
                             IDependentItemRef strong = dep.GetReference();
                             Debug.Assert( ReferenceEquals( dep, strong ) == !dep.Optional );
@@ -857,9 +945,20 @@ namespace CK.Setup
                                 }
                                 else
                                 {
+                                    // Adds the strong dependency to mark it as processed even if it will be removed by skipDependencyToContainer.
                                     if( dep.Optional ) e.Requires.Add( strong );
-                                    HandleDependency( ref rank, e, oeDep, false );
-                                    if( _cycle != null ) return;
+                                    if( oeDep.HeadIfContainer != null
+                                        && _options.SkipDependencyToContainer
+                                        && e.AppearInContainerChain( oeDep ) )
+                                    {
+                                        if( requiresHiddenByContainerOrGen == null ) requiresHiddenByContainerOrGen = new List<IDependentItemRef>();
+                                        requiresHiddenByContainerOrGen.Add( dep );
+                                    }
+                                    else
+                                    {
+                                        HandleDependency( ref rank, e, oeDep, false );
+                                        if( _cycle != null ) return;
+                                    }
                                 }
                             }
                         }
@@ -867,11 +966,15 @@ namespace CK.Setup
                 }
                 else
                 {
+                    //
+                    // Container only.
+                    //
                     // Handles Container => Head (useful for empty containers).
                     Debug.Assert( e.HeadIfContainer != null );
                     HandleDependency( ref rank, e, e.HeadIfContainer, true );
                     if( _cycle != null ) return;
                 }
+
                 // Handles the element's Container: its head is required by this item (be it a head, a container or an item).
                 if( e.Container != null )
                 {
@@ -890,6 +993,17 @@ namespace CK.Setup
                     if( _cycle != null ) return;
                     child = child.NextChildInContainer;
                 }
+                // Should the entry.Requires HashSet be cleaned up?
+                if( requiresHiddenByContainerOrGen != null )
+                {
+                    Debug.Assert( requiresHiddenByContainerOrGen.Count > 0 );
+                    Debug.Assert( e.Requires != null );
+                    foreach( var hiddenDep in requiresHiddenByContainerOrGen )
+                    {
+                        e.Requires.Remove( hiddenDep );
+                    }
+                }
+                // The rank of the item is known now.
                 e.Rank = rank + 1;
             }
 

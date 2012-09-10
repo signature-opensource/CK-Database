@@ -30,7 +30,7 @@ namespace CK.Setup
         {
         }
 
-        void IStObjSetupConfigurator.ConfigureDependentItem( IActivityLogger logger, StObjSetupData data )
+        void IStObjSetupConfigurator.ConfigureDependentItem( IActivityLogger logger, IMutableStObjSetupData data )
         {
         }
 

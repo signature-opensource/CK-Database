@@ -98,12 +98,14 @@
     <Compile Include="StObj\Attributes\IRequirementsAttribute.cs" />
     <Compile Include="StObj\Attributes\RequiresAttribute.cs" />
     <Compile Include="StObj\Attributes\SetupAttribute.cs" />
+    <Compile Include="StObj\IMutableStObjSetupData.cs" />
     <Compile Include="StObj\IStObjSetupConfigurator.cs" />
+    <Compile Include="StObj\IStObjSetupDataBase.cs" />
     <Compile Include="StObj\StObjConfigurator.cs" />
-    <Compile Include="StObj\StObjSetupDataBase.cs" />
+    <Compile Include="StObj\Impl\StObjSetupDataBase.cs" />
     <Compile Include="StObj\IStObjSetupData.cs" />
-    <Compile Include="StObj\StObjDynamicPackageItem.cs" />
-    <Compile Include="StObj\StObjSetupData.cs" />
+    <Compile Include="StObj\Impl\StObjDynamicPackageItem.cs" />
+    <Compile Include="StObj\Impl\StObjSetupData.cs" />
     <Compile Include="StObj\Attributes\VersionsAttribute.cs" />
     <Compile Include="StObj\Attributes\ISetupNameAttribute.cs" />
     <Compile Include="StObj\Attributes\SetupNameAttribute.cs" />

@@ -32,6 +32,12 @@ namespace CK.Setup
         object StartValue { get; }
 
         /// <summary>
+        /// Gets the container to which this item belongs thanks to its own configuration (<see cref="IDependentItem.Container)"/>.
+        /// If the actual <see cref="Container"/> is inherited through <see cref="Generalization"/>, this ConfiguredContainer is null.
+        /// </summary>
+        ISortedItem ConfiguredContainer { get; }
+
+        /// <summary>
         /// Gets the container to which this item belongs.
         /// Use <see cref="HeadForContainer"/> to get its head.
         /// </summary>

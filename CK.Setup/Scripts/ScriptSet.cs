@@ -7,12 +7,22 @@ using CK.Core;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Groups <see cref="ISetupScript">scripts</see> by object's <see cref="FullName"/> to which they apply 
+    /// and by <see cref="ScriptTypeHandler"/> that are able to manage them (see <see cref="FindScripts"/>).
+    /// </summary>
     public class ScriptSet
     {
         readonly List<ForHandler> _handlers;
         readonly IReadOnlyList<ForHandler> _handlersEx;
         readonly string _fullName;
 
+        /// <summary>
+        /// Collection of <see cref="ISetupScript"/> that applies to one setup object and of one type (for same script occuring 
+        /// in multiple sources, the <see cref="ScriptSource.Index"/> has been used to choose the one to keep).
+        /// Contained scripts can be enumerated, but the actual usage is to rely on <see cref="GetScriptVector"/> method to obtain an ordered set
+        /// of scripts that should be executed for a given <see cref="SetupCallGroupStep">setup step</see> from a starting version to a final version.
+        /// </summary>
         public class ForHandler : IReadOnlyCollection<ISetupScript>
         {
             public readonly ScriptTypeHandler Handler;           
@@ -141,8 +151,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets the full name of the item that is associated to these scripts.
         /// </summary>
-        public string FullName { get { return _fullName; } }
-       
+        public string FullName { get { return _fullName; } }      
 
         internal bool Add( IActivityLogger logger, ScriptSource source, ISetupScript script, ScriptTypeManager manager )
         {

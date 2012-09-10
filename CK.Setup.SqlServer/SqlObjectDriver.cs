@@ -16,7 +16,7 @@ namespace CK.Setup.SqlServer
             : base( info )
         {
             if( sqlProvider == null ) throw new ArgumentNullException( "sqlProvider" );
-            _manager = sqlProvider.FindManager( SqlDatabase.DefaultDatabaseName );
+            _manager = sqlProvider.FindManagerByName( SqlDatabase.DefaultDatabaseName );
         }
 
         public new SqlObject Item

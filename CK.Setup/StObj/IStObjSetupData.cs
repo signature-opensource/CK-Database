@@ -5,25 +5,8 @@ using CK.Core;
 namespace CK.Setup
 {
 
-    public interface IStObjSetupData
+    public interface IStObjSetupData : IStObjSetupDataBase
     {
-        /// <summary>
-        /// Gets the parent setup data if it exists (this is to manage attribute properties "inheritance"). 
-        /// Null if this object corresponds to the first (top) <see cref="IAmbiantContract"/> of the inheritance chain.
-        /// </summary>
-        IStObjSetupData Parent { get; }
-        
-        /// <summary>
-        /// Gets the associated <see cref="IStObj"/>.
-        /// Never null.
-        /// </summary>
-        IStObj StObj { get; }
-
-        /// <summary>
-        /// Gets the [contextualized] full name of the object.
-        /// </summary>
-        string FullName { get; }
-        
         /// <summary>
         /// Gets the full name without its context. 
         /// </summary>
@@ -36,12 +19,9 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets the full name of the container.
-        /// If the container is already defined at the <see cref="IStObj"/> level, names must match otherwise an error occurs.
+        /// If the container is already defined by the <see cref="P:StObj"/>, names must match otherwise an error occurs.
         /// This allow name binding to an existing container or package that is not a Structure Object: it should be rarely used.
         /// </summary>
-        /// <remarks>
-        /// This is not inherited: the container of a specialization is not, by default, the container of its base class.
-        /// </remarks>
         string ContainerFullName { get; }
 
         /// <summary>

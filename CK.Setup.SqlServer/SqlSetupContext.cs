@@ -21,7 +21,7 @@ namespace CK.Setup.SqlServer
         {
             _databases = new SqlManagerProvider( logger );
             _databases.Add( SqlDatabase.DefaultDatabaseName, defaultDatabaseConnectionString );
-            _defaultDatabase = _databases.FindManager( SqlDatabase.DefaultDatabaseName );
+            _defaultDatabase = _databases.FindManagerByName( SqlDatabase.DefaultDatabaseName );
             _stObjConfigurator = new StObjConfigurator();
             _regConf = new AssemblyRegistererConfiguration();
             _regTypeList = new List<Type>();
@@ -70,7 +70,7 @@ namespace CK.Setup.SqlServer
             get { return _databases; }
         }
 
-        SqlManager ISqlManagerProvider.FindManager( string dbName )
+        SqlManager ISqlManagerProvider.FindManagerByName( string dbName )
         {
             if( dbName == null ) throw new ArgumentNullException( "dbName" );
             if( dbName == SqlDatabase.DefaultDatabaseName ) return _defaultDatabase;
@@ -81,7 +81,7 @@ namespace CK.Setup.SqlServer
 
         protected virtual SqlManager ObtainManager( string dbName )
         {
-            return _databases.FindManager( dbName );
+            return _databases.FindManagerByName( dbName );
         }
 
         public virtual void Dispose()

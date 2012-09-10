@@ -65,7 +65,7 @@ namespace CK.Setup.SqlServer
             if( Schema != null ) o.SetPropertyStructuralValue( logger, "SqlTableAttribute", "Schema", Schema );
         }
 
-        void IStObjSetupConfigurator.ConfigureDependentItem( IActivityLogger logger, StObjSetupData data )
+        void IStObjSetupConfigurator.ConfigureDependentItem( IActivityLogger logger, IMutableStObjSetupData data )
         {
             if( data.IsDefaultFullName )
             {

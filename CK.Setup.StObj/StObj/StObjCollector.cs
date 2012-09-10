@@ -108,7 +108,7 @@ namespace CK.Setup
             {
                 if( PrepareDependentItems( _logger, result ) )
                 {
-                    sortResult = DependencySorter.OrderItems( result.AllMutableItems, null );
+                    sortResult = DependencySorter.OrderItems( result.AllMutableItems, null, new DependencySorter.Options() { SkipDependencyToContainer = true } );
                     Debug.Assert( sortResult.HasRequiredMissing == false, 
                         "A missing requirement can not exist at this stage since we only inject existing Mutable items: missing unresolved dependencies are handled by PrepareDependentItems that logs Errors when needed." );
                     if( !sortResult.IsComplete )
@@ -139,7 +139,7 @@ namespace CK.Setup
                         var m = (MutableItem)sorted.Item;
                         if( !m.IsContainer || sorted.IsContainerHead )
                         {
-                            m.SetSorterData( ordered.Count, sorted.Container );
+                            m.SetSorterData( ordered.Count, sorted.Container, sorted.Requires );
                             ordered.Add( m );
                             using( _logger.OpenGroup( LogLevel.Trace, "Constructing '{0}'.", m.ToString() ) )
                             {
