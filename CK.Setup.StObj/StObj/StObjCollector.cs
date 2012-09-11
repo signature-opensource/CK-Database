@@ -12,17 +12,20 @@ namespace CK.Setup
 {
 
     /// <summary>
-    /// Discovers available structure objects and instanciates them.
+    /// Discovers available structure objects and instanciates them. 
+    /// Once Types are registered (<see cref="RegisterTypes"/> and <see cref="RegisterClass"/>), the <see cref="GetResult"/> method
+    /// initializes the full object graph.
     /// </summary>
     public class StObjCollector
     {
-        AmbiantContractCollector<StObjTypeInfo> _cc;
-        IStObjStructuralConfigurator _configurator;
-        IStObjDependencyResolver _dependencyResolver;
-        IActivityLogger _logger;
+        readonly AmbiantContractCollector<StObjTypeInfo> _cc;
+        readonly IStObjStructuralConfigurator _configurator;
+        readonly IStObjDependencyResolver _dependencyResolver;
+        readonly IActivityLogger _logger;
+        bool _callConstructBeforeResolvingProperties;
 
         /// <summary>
-        /// 
+        /// Initializes a new <see cref="StObjCollector"/>.
         /// </summary>
         /// <param name="logger">Logger to use. Can not be null.</param>
         /// <param name="dispatcher"></param>
@@ -35,6 +38,17 @@ namespace CK.Setup
             _cc = new AmbiantContractCollector<StObjTypeInfo>( _logger, ( l, p, t ) => new StObjTypeInfo( l, p, t ), dispatcher );
             _configurator = configurator;
             _dependencyResolver = dependencyResolver;
+        }
+
+        /// <summary>
+        /// Gets or sets whether Construct must be called before resolving properties.
+        /// Defaults to false: properties are resolved and then Construct method is called (this
+        /// allows Construct code to be parametrized by properties and Ambiant properties values).
+        /// </summary>
+        public bool CallConstructBeforeResolvingProperties
+        {
+            get { return _callConstructBeforeResolvingProperties; }
+            set { _callConstructBeforeResolvingProperties = value; }
         }
 
         /// <summary>
@@ -126,13 +140,16 @@ namespace CK.Setup
             // The structure objects have been ordered by their dependencies (and optionally
             // by the IStObjStructuralConfigurator). 
             // Their instance has been set during the first step (CreateMutableItems).
-            // We can now call the Construct methods.
-
+            //
+            // We can now call : 
+            //  - the Construct methods.
+            //  - the Ambiant properties setting.
+            //
             using( _logger.Catch( e => result.SetFatal() ) )
             using( _logger.OpenGroup( LogLevel.Info, "Initializing object graph." ) )
             {
                 List<IStObj> ordered = new List<IStObj>();
-                using( _logger.OpenGroup( LogLevel.Info, "Graph construction." ) )
+                using( _logger.OpenGroup( LogLevel.Info, _callConstructBeforeResolvingProperties ? "Graph construction." : "Ambiant properties initialization." ) )
                 {
                     foreach( ISortedItem sorted in sortResult.SortedItems )
                     {
@@ -141,30 +158,26 @@ namespace CK.Setup
                         {
                             m.SetSorterData( ordered.Count, sorted.Container, sorted.Requires );
                             ordered.Add( m );
-                            using( _logger.OpenGroup( LogLevel.Trace, "Constructing '{0}'.", m.ToString() ) )
+                            if( _callConstructBeforeResolvingProperties )
                             {
-                                try
-                                {
-                                    m.CallConstruct( _logger, _dependencyResolver );
-                                    // Here, if m.Specialization == null, we have intialized
-                                    // the leaf of the inheritance chain.
-                                    // Can we initialize Ambiant properties here? Not yet!
-                                    //
-                                    // Ambiant properties are searched only on containers (first) and then base classes (recursively).
-                                    // Ambiant properties must be initialized by the leaf (most specialized).
-                                    //
-                                    // Even if we just initialized the bottom of a chain here,
-                                    // there may be containers of these items that have not been 
-                                    // initialized (up to their "leaf")...
-                                    //
-                                    // So we can NOT resolve ambiant properties here since we
-                                    // want Containers holding properties to be initialized first.
-                                }
-                                catch( Exception ex )
-                                {
-                                    _logger.Error( ex );
-                                    break;
-                                }
+                                CallConstruct( m );
+                                // Here, if m.Specialization == null, we have intialized
+                                // the leaf of the inheritance chain.
+                                // Can we initialize Ambiant properties here? Not yet!
+                                //
+                                // Ambiant properties are searched only on containers (first) and then base classes (recursively).
+                                // Ambiant properties must be initialized by the leaf (most specialized).
+                                //
+                                // Even if we just initialized the bottom of a chain here,
+                                // there may be containers of these items that have not been 
+                                // initialized (up to their "leaf")...
+                                //
+                                // So we can NOT resolve ambiant properties here since we
+                                // want Containers holding properties to be initialized first.
+                            }
+                            else
+                            {
+                                ResolveProperties( result, m );
                             }
                         }
                         else
@@ -175,22 +188,45 @@ namespace CK.Setup
                         }
                     }
                 }
-                using( _logger.OpenGroup( LogLevel.Info, "Ambiant properties initialization." ) )
+                using( _logger.OpenGroup( LogLevel.Info, _callConstructBeforeResolvingProperties ? "Ambiant properties initialization." : "Graph construction." ) )
                 {
                     foreach( MutableItem m in ordered )
                     {
-                        if( m.Specialization == null )
-                        {
-                            using( _logger.OpenGroup( LogLevel.Trace, "EnsureAmbiantPropertiesResolved( {0} )", m.ToString() ) )
-                            {
-                                m.EnsureAmbiantPropertiesResolved( _logger, result, _dependencyResolver );
-                            }
-                        }
+                        if( _callConstructBeforeResolvingProperties ) ResolveProperties( result, m );
+                        else CallConstruct( m );
                     }
                 }
                 if( !result.HasFatalError ) result.SetSuccess( ordered.ToReadOnlyList() );
                 return result;
             }
+        }
+
+        private void ResolveProperties( StObjCollectorResult result, MutableItem m )
+        {
+            if( m.Specialization == null )
+            {
+                using( _logger.OpenGroup( LogLevel.Trace, "Resolving Properties '{0}'", m.ToString() ) )
+                {
+                    m.EnsureAmbiantPropertiesResolved( _logger, result, _dependencyResolver );
+                }
+            }
+        }
+
+        private bool CallConstruct( MutableItem m )
+        {
+            using( _logger.OpenGroup( LogLevel.Trace, "Constructing '{0}'.", m.ToString() ) )
+            {
+                try
+                {
+                    m.CallConstruct( _logger, _dependencyResolver );
+                    return true;
+                }
+                catch( Exception ex )
+                {
+                    _logger.Error( ex );
+                }
+            }
+            return false;
         }
 
         /// <summary>
