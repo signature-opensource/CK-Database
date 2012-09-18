@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>CK.Database</id>
+    <version>2.7.9</version>
+    <authors>Invenietis</authors>
+    <owners>Invenietis</owners>
+    <licenseUrl>https://github.com/Invenietis/ck-database/license</licenseUrl>
+    <projectUrl>https://github.com/Invenietis/ck-database</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Install SQL scripts for SqlServer</description>
+    <language>en-US</language>
+    <dependencies>
+      <dependency id="CK.Core" version="2.7.3" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\..\..\CK.Setup\bin\Debug\CK.Setup.dll" target="lib\net40" />
+    <file src="..\..\..\CK.Setup\bin\Debug\CK.Setup.pdb" target="lib\net40" />
+    <file src="..\..\..\CK.Setup.Database\bin\Debug\CK.Setup.Database.dll" target="lib\net40" />
+    <file src="..\..\..\CK.Setup.Database\bin\Debug\CK.Setup.Database.pdb" target="lib\net40" />
+    <file src="..\..\..\CK.Setup.SqlServer\bin\Debug\CK.Setup.SqlServer.dll" target="lib\net40" />
+    <file src="..\..\..\CK.Setup.SqlServer\bin\Debug\CK.Setup.SqlServer.pdb" target="lib\net40" />
+    <file src="..\..\..\CK.SqlServer\bin\Debug\CK.SqlServer.dll" target="lib\net40" />
+    <file src="..\..\..\CK.SqlServer\bin\Debug\CK.SqlServer.pdb" target="lib\net40" />
+  </files>
+</package>
