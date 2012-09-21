@@ -92,6 +92,9 @@
   <ItemGroup />
   <ItemGroup>
     <Content Include="PackageAndSqlObjects\Res\sFirstProc.sql" />
+    <Content Include="Scripts\InstallFromScratchWithSPDependsOnVersion\dbo.sStoredProcedureWithSPDependsOnVersion.sql" />
+    <Content Include="Scripts\InstallFromScratchWithSPDependsOnVersion\Model.WithSPDependsOnVersion.Install.1.0.0.sql" />
+    <Content Include="Scripts\InstallFromScratchWithSPDependsOnVersion\Model.WithSPDependsOnVersion.Install.1.0.0.to.1.0.1.sql" />
     <Content Include="Scripts\InstallFromScratchWithView\dbo.vTestView.sql" />
     <Content Include="Scripts\InstallFromScratchWithView\Model.WithView.Install.1.0.0.sql" />
     <Content Include="Scripts\InstallFromScratch\Test.sStoredProcedureRequires.sql" />
@@ -100,6 +103,9 @@
     <Content Include="Scripts\InstallFromScratch\Model.Test.WithModel.Install.1.0.0.sql" />
     <Content Include="Scripts\InstallFromScratch\Test.fTest.sql" />
     <None Include="packages.config" />
+    <None Include="Scripts\InstallFromScratchWithSPDependsOnVersion\WithSPDependsOnVersion.ck">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Scripts\InstallFromScratchWithView\WithView.ck" />
     <None Include="Scripts\InstallFromScratch\Test.DependentPackage.ck" />
     <None Include="Scripts\InstallFromScratch\Test.WithModel.ck" />
