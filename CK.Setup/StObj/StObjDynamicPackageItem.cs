@@ -3,24 +3,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using CK.Core;
 
 namespace CK.Setup
 {
     /// <summary>
-    /// Default <see cref="IDependentItem"/> implementation associated to <see cref="IStObj"/> object
+    /// Default <see cref="IMutableDependentItem"/> implementation associated to <see cref="IStObj"/> object
     /// used when the <see cref="IStObjSetupData"/> does not specify a dedicated implementation (<see cref="IStObjSetupData.ItemType"/> 
     /// nor <see cref="IStObjSetupData.ItemTypeName"/> are set).
-    /// Can be used as a base class for more specific item implementation.
+    /// May be used as a base class for more specific item implementation.
     /// </summary>
-    public class StObjDynamicPackageItem : DynamicPackageItem, IStructuredObjectHolder
+    public class StObjDynamicPackageItem : DynamicPackageItem
     {
         /// <summary>
-        /// Initializes a new <see cref="StObjDynamicPackageItem"/> fully initialized by a <see cref="IStObjSetupData"/> and a 
-        /// parent <see cref=""/>
+        /// Initializes a new <see cref="StObjDynamicPackageItem"/> initialized by a <see cref="IStObjSetupData"/>.
         /// </summary>
-        /// <param name="data"></param>
-        /// <param name="generalization"></param>
-        public StObjDynamicPackageItem( IStObjSetupData data, IDependentItem generalization = null )
+        /// <param name="logger">Logger to use.</param>
+        /// <param name="data">Descriptive data that is used to configure this item.</param>
+        public StObjDynamicPackageItem( IActivityLogger logger, IStObjSetupData data )
             : base( data.NoContent ? "StObjItem" : "StObjPackage", (object)data.DriverType ?? data.DriverTypeName )
         {
             Debug.Assert( Model == null, "Initially, a DynamicPackageItem has no model." );
@@ -30,7 +30,6 @@ namespace CK.Setup
             SetVersionsString( data.Versions );
             StructuredObject = data.StObj.StructuredObject;
             FullName = data.FullName;
-            Generalization = generalization.GetReference();
         }
 
         /// <summary>

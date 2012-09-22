@@ -6,7 +6,7 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
-    /// Basic support for declarative structure between objects.
+    /// Basic support for declarative dependency structure between types.
     /// </summary>
     public interface IStObjAttribute
     {

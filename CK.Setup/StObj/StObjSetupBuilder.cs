@@ -11,12 +11,14 @@ namespace CK.Setup
     {
         readonly IActivityLogger _logger;
         readonly IStObjSetupConfigurator _configurator;
+        readonly IStObjSetupItemFactory _setupItemFactory;
 
-        public StObjSetupBuilder( IActivityLogger logger, IStObjSetupConfigurator configurator = null )
+        public StObjSetupBuilder( IActivityLogger logger, IStObjSetupConfigurator configurator = null, IStObjSetupItemFactory setupItemFactory = null )
         {
             if( logger == null ) throw new ArgumentNullException( "logger" );
             _logger = logger;
             _configurator = configurator;
+            _setupItemFactory = setupItemFactory;
         }
 
         /// <summary>
@@ -54,10 +56,32 @@ namespace CK.Setup
                     // Calls external configuration.
                     if( _configurator != null ) _configurator.ConfigureDependentItem( _logger, data );
 
-                    // Creates the internal StObjDynamicPackageItem configured with the StObjSetupData
-                    // and configures Generalization since we got it above.
-                    data.SetupItem = new StObjDynamicPackageItem( data, generalizationData != null ? generalizationData.SetupItem : null );
-                    setupableItems.Add( r, data );
+                    // Creates the IMutableDependentItem (or StObjDynamicPackageItem) configured with the StObjSetupData.
+                    try
+                    {
+                        data.ResolveTypes( _logger );
+                        if( _setupItemFactory != null ) data.SetupItem = _setupItemFactory.CreateItem( _logger, data );
+                        if( data.SetupItem == null )
+                        {
+                            Type itemType = data.ItemType;
+                            if( itemType == null ) data.SetupItem = new StObjDynamicPackageItem( _logger, data );
+                            else
+                            {
+                                data.SetupItem = (IMutableDependentItem)Activator.CreateInstance( itemType, _logger, data );
+                            }
+                        }
+                        // Configures Generalization since we got it above.
+                        // Other properties (like dependencies) will be initialized later (once all setup items instances exist).
+                        if( generalizationData != null )
+                        {
+                            data.SetupItem.Generalization = generalizationData.SetupItem.GetReference();
+                        }
+                        setupableItems.Add( r, data );
+                    }
+                    catch( Exception ex )
+                    {
+                        _logger.Error( ex, "While initializing Setup item for StObj '{0}'.", data.FullName );
+                    }
                 }
             }
             using( _logger.OpenGroup( LogLevel.Info, "Binding dependencies." ) )
@@ -68,7 +92,7 @@ namespace CK.Setup
                     foreach( IStObj req in data.StObj.Requires )
                     {
                         StObjSetupData reqD = setupableItems[req];
-                        data.SetupItem.Requires.Add( reqD.SetupItem );
+                        data.SetupItem.Requires.Add( reqD.SetupItem.GetReference() );
                     }
                 }
             }
@@ -88,7 +112,8 @@ namespace CK.Setup
                         _logger.Error( "Structure Object '{0}' is bound to Container named '{1}' but the PackageAttribute states that it must be in '{2}'.", data.FullName, existing.FullNameWithoutContext, data.ContainerFullName );
                     }
                 }
-                data.SetupItem.Container = existing.SetupItem;
+                Debug.Assert( existing.SetupItem is IDependentItemContainer, "Creating a non container item for a StObj that has been referenced as a Container must have been checked before (at item creation time)." );
+                data.SetupItem.Container = ((IDependentItemContainer)existing.SetupItem).GetReference();
             }
             else
             {

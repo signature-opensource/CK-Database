@@ -50,6 +50,7 @@
     </Compile>
     <Compile Include="Scripts\ScriptSource.cs" />
     <Compile Include="Scripts\ScriptTypeHandler.cs" />
+    <Compile Include="SetupCore\Package\IMutableDependentItem.cs" />
     <Compile Include="SetupCore\Package\DynamicContainerItem.cs" />
     <Compile Include="SetupCore\Package\DependentItemList.cs" />
     <Compile Include="SetupCore\Package\DynamicPackageItem.cs" />
@@ -98,6 +99,7 @@
     <Compile Include="StObj\Attributes\IRequirementsAttribute.cs" />
     <Compile Include="StObj\Attributes\RequiresAttribute.cs" />
     <Compile Include="StObj\Attributes\SetupAttribute.cs" />
+    <Compile Include="StObj\IStObjSetupItemFactory.cs" />
     <Compile Include="StObj\IMutableStObjSetupData.cs" />
     <Compile Include="StObj\IStObjSetupConfigurator.cs" />
     <Compile Include="StObj\IStObjSetupDataBase.cs" />

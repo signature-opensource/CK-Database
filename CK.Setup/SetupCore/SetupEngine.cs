@@ -358,7 +358,7 @@ namespace CK.Setup
                 throw new CKException( "Invalid StartDependencySort returned type '{0}' for '{1}', it must be a Type or a string.", item.StartValue.GetType(), item.FullName );
             }
             string typeName = (string)item.StartValue;
-            return SimpleTypeFinder.Default.ResolveType( typeName, true );
+            return SimpleTypeFinder.WeakDefault.ResolveType( typeName, true );
         }
 
         void CheckState( SetupEngineState requiredState )

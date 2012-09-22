@@ -10,7 +10,7 @@ namespace CK.Setup
     /// Mutable package implementation: any property can be changed (version information is handled
     /// by the base <see cref="MultiVersionManager"/>).
     /// </summary>
-    public abstract class PackageItemBase : MultiVersionManager, IPackageItem, IDependentItemContainerRef
+    public abstract class PackageItemBase : MultiVersionManager, IMutableDependentItem, IPackageItem, IDependentItemContainerRef
     {
         string _itemType;
         DependentItemList _requires;

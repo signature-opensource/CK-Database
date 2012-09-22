@@ -55,7 +55,13 @@ namespace CK.Setup
             set { _versions = value; }
         }
 
-        internal StObjDynamicPackageItem SetupItem { get; set; }
+        internal void ResolveTypes( IActivityLogger logger )
+        {
+            if( ItemType == null && ItemTypeName != null ) ItemType = SimpleTypeFinder.WeakDefault.ResolveType( ItemTypeName, true );
+            if( DriverType == null && DriverTypeName != null ) DriverType = SimpleTypeFinder.WeakDefault.ResolveType( DriverTypeName, true );
+        }
+
+        internal IMutableDependentItem SetupItem { get; set; }
 
         IReadOnlyList<IDependentItemRef> IStObjSetupData.RequiredBy
         {

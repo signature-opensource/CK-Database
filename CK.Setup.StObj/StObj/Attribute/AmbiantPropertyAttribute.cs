@@ -5,6 +5,10 @@ using System.Text;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Defines an ambiant property: properties tagged with this attribute can be automatically set
+    /// by properties from their containers.
+    /// </summary>
     [AttributeUsage( AttributeTargets.Property, AllowMultiple=false, Inherited=true )]
     public class AmbiantPropertyAttribute : Attribute
     {
