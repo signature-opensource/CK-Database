@@ -2,6 +2,8 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(MSBuildProjectDirectory)\..\</SolutionDir>
+
+	<PackageSources>"https://get-package.net/Invenietis/JGHRN6ACE2MXNXGRMMMTYXFXUJYRWXGRHDUYYGDE469BSNGCR8KYSBSRCCUT6XJXC2BNYWJDC8YKXUFV7JHE6AJRX69YYUEXN4JQ22A5WM9C7DGR28TC6BFXHGHX23AVC8FZH7W5RZLE6RSVHCKKXKDXW8KTWNDESC9Z7BJX7Z9W78EX7CYLBTADUBGW7TACDBGZ27FVGDGYS/api/v2"</PackageSources>
         
         <!-- Enable the restore command to run before builds -->
         <RestorePackages Condition="  '$(RestorePackages)' == '' ">false</RestorePackages>
