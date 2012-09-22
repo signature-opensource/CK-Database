@@ -40,6 +40,22 @@ namespace CK.Setup
         }
 
         /// <summary>
+        /// A starting script, a migration script and an optional NoVersion one.
+        /// </summary>
+        internal TypedScriptVector( ISetupScript startingScript, ISetupScript migrationScript, ISetupScript noVersion )
+        {
+            Debug.Assert( startingScript != null && migrationScript != null );
+            Debug.Assert( noVersion == null || (noVersion.ScriptSource == startingScript.ScriptSource) );
+
+            var a = noVersion != null
+                        ? new[] { new CoveringScript( startingScript ), new CoveringScript( migrationScript ), new CoveringScript( noVersion ) }
+                        : new[] { new CoveringScript( startingScript ), new CoveringScript( migrationScript ) };
+
+            Scripts = new ReadOnlyListOnIList<CoveringScript>( a );
+            Final = migrationScript.Name.Version;
+        }
+
+        /// <summary>
         /// Only the NoVersion script found. No script with version at all.
         /// </summary>
         internal TypedScriptVector( ISetupScript noVersion )
@@ -50,8 +66,6 @@ namespace CK.Setup
         /// <summary>
         /// A list of versioned script and an optional NoVersion script found.
         /// </summary>
-        /// <param name="scripts"></param>
-        /// <param name="noVersion"></param>
         internal TypedScriptVector( List<CoveringScript> scripts, ISetupScript noVersion )
         {
             Debug.Assert( scripts.All( s => s.Script.ScriptSource == scripts[0].Script.ScriptSource ) );

@@ -76,9 +76,17 @@ namespace CK.Setup
         IDependentItem Item { get; }
 
         /// <summary>
-        /// Gets the requirements of the item. Combines direct <see cref="IDependentItem.Requires"/>
-        /// and <see cref="IDependentItem.RequiredBy"/> declared by existing other items.
+        /// Gets a clean set of requirements for the item. Combines direct <see cref="IDependentItem.Requires"/>
+        /// and <see cref="IDependentItem.RequiredBy"/> declared by existing other items without any duplicates.
+        /// Requirement to the <see cref="IDependentItem.Generalization"/> is always removed.
+        /// Requirements to any Container are removed when <see cref="DependencySorter.Options.SkipDependencyToContainer"/> is true.
         /// </summary>
         IEnumerable<IDependentItemRef> Requires { get; }
+
+        /// <summary>
+        /// Gets the items (as their <see cref="ISortedItem"/> wrapper) that are contained in 
+        /// the <see cref="Item"/> if it is a <see cref="IDependentItemGroup"/>. Empty otherwise.
+        /// </summary>
+        IEnumerable<ISortedItem> Children { get; }
     }
 }

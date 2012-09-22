@@ -104,7 +104,7 @@
     <Compile Include="StObj\StObjConfigurator.cs" />
     <Compile Include="StObj\Impl\StObjSetupDataBase.cs" />
     <Compile Include="StObj\IStObjSetupData.cs" />
-    <Compile Include="StObj\Impl\StObjDynamicPackageItem.cs" />
+    <Compile Include="StObj\StObjDynamicPackageItem.cs" />
     <Compile Include="StObj\Impl\StObjSetupData.cs" />
     <Compile Include="StObj\Attributes\VersionsAttribute.cs" />
     <Compile Include="StObj\Attributes\ISetupNameAttribute.cs" />

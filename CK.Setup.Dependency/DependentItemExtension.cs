@@ -5,6 +5,10 @@ using System.Text;
 
 namespace CK.Setup
 {
+
+    /// <summary>
+    /// Exposes extension methods on <see cref="IDependentItem"/> and <see cref="IDependentItemContainer"/>.
+    /// </summary>
     public static class DependentItemExtension
     {
         class DirectRef
@@ -78,7 +82,7 @@ namespace CK.Setup
             }
         }
 
-        #region CreateReference and CreateOptionalReference on IDependentItem and IDependentItemContainer
+        #region GetReference and GetOptionalReference on IDependentItem and IDependentItemContainer
 
         public static IDependentItemRef GetReference( this IDependentItem @this )
         {
@@ -108,7 +112,7 @@ namespace CK.Setup
         
         #endregion
 
-        #region CreateReference and CreateOptionalReference on IDependentItemRef and IDependentItemContainerRef
+        #region GetReference and GetOptionalReference on IDependentItemRef and IDependentItemContainerRef
 
         public static IDependentItemRef GetReference( this IDependentItemRef @this )
         {

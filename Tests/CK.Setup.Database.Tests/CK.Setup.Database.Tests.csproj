@@ -95,6 +95,12 @@
     <Content Include="Scripts\AllSteps\Test.Settle.1.2.1.to.1.2.2.sql" />
     <Content Include="Scripts\AllSteps\Test.SettleContent.1.2.3.sql" />
     <Content Include="Scripts\AllSteps\Test.SettleContent.sql" />
+    <Content Include="Scripts\FromOpenTo\Test.Install.1.0.4.to.1.0.5.sql" />
+    <Content Include="Scripts\FromOpenTo\Test.Install.1.0.4.sql" />
+    <Content Include="Scripts\FromOpenTo\Test.Install.1.0.2.to.1.0.3.sql" />
+    <Content Include="Scripts\FromOpenTo\Test.Install.1.0.1.to.1.0.2.sql" />
+    <Content Include="Scripts\FromOpenTo\Test.Install.1.0.0.sql" />
+    <Content Include="Scripts\FromOpenTo\Test.Install.1.0.0.to.1.0.1.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -6,7 +6,8 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
-    /// This is the setup driver for structured object.
+    /// Can be used as a base class for specialized setup driver associated to <see cref="StObjDynamicPackageItem"/>.
+    /// Simply adds typed accessors to the <see cref="Item"/> (that is a <see cref="IStructuredObjectHolder"/>) and its structured object.
     /// </summary>
     public class StObjSetupDriver<T> : SetupDriver
     {

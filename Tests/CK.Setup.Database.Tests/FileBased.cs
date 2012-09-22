@@ -60,6 +60,55 @@ namespace CK.Setup.Database.Tests
         }
 
         [Test]
+        public void FromOpenTo()
+        {
+            ScriptTypeManager typeManager = new ScriptTypeManager();
+            typeManager.Register( new SqlScriptTypeHandler() );
+            ScriptCollector collector = new ScriptCollector( typeManager );
+            SqlFileDiscoverer discoverer = new SqlFileDiscoverer( new SqlObjectBuilderMock(), TestHelper.Logger );
+            Assert.That( discoverer.DiscoverSqlFiles( TestHelper.GetScriptsFolder( "FromOpenTo" ), collector ), Is.True );
+
+            bool caseDiffer;
+            ScriptSet scripts = collector.Find( "Test", out caseDiffer );
+            Assert.That( scripts, Is.Not.Null );
+            Assert.That( caseDiffer, Is.False );
+
+            var scriptsForSql = scripts.ScriptsByHandlers.Single( h => h.Handler.HandlerName == "Sql" );
+            {
+                {
+                    var v = scriptsForSql.GetScriptVector( SetupCallGroupStep.Install, null, new Version( 1, 0, 1 ) );
+                    Assert.That( v.Final, Is.EqualTo( new Version( 1, 0, 1 ) ) );
+                    Assert.That( v.HasTheNoVersionScript, Is.False );
+                    CheckScripts( v, ".Install.1.0.0.sql", ".Install.1.0.0.to.1.0.1.sql" );
+                }
+                {
+                    var v = scriptsForSql.GetScriptVector( SetupCallGroupStep.Install, null, new Version( 1, 0, 2 ) );
+                    Assert.That( v.Final, Is.EqualTo( new Version( 1, 0, 2 ) ) );
+                    Assert.That( v.HasTheNoVersionScript, Is.False );
+                    CheckScripts( v, ".Install.1.0.0.sql", ".Install.1.0.0.to.1.0.1.sql", ".Install.1.0.1.to.1.0.2.sql" );
+                }
+                {
+                    var v = scriptsForSql.GetScriptVector( SetupCallGroupStep.Install, null, new Version( 1, 0, 3 ) );
+                    Assert.That( v.Final, Is.EqualTo( new Version( 1, 0, 3 ) ) );
+                    Assert.That( v.HasTheNoVersionScript, Is.False );
+                    CheckScripts( v, ".Install.1.0.0.sql", ".Install.1.0.0.to.1.0.1.sql", ".Install.1.0.1.to.1.0.2.sql", ".Install.1.0.2.to.1.0.3.sql" );
+                }
+                {
+                    var v = scriptsForSql.GetScriptVector( SetupCallGroupStep.Install, null, new Version( 1, 0, 4 ) );
+                    Assert.That( v.Final, Is.EqualTo( new Version( 1, 0, 4 ) ) );
+                    Assert.That( v.HasTheNoVersionScript, Is.False );
+                    CheckScripts( v, ".Install.1.0.4.sql" );
+                }
+                {
+                    var v = scriptsForSql.GetScriptVector( SetupCallGroupStep.Install, null, new Version( 1, 0, 5 ) );
+                    Assert.That( v.Final, Is.EqualTo( new Version( 1, 0, 5 ) ) );
+                    Assert.That( v.HasTheNoVersionScript, Is.False );
+                    CheckScripts( v, ".Install.1.0.4.sql", ".Install.1.0.4.to.1.0.5.sql" );
+                }
+            }
+        }
+
+        [Test]
         public void GetScriptVectorAllStepsFiles()
         {
             ScriptTypeManager typeManager = new ScriptTypeManager();

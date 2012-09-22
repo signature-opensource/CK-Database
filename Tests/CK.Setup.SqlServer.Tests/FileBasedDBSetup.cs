@@ -59,11 +59,11 @@ namespace CK.Setup.SqlServer.Tests
             {
                 if( !context.DefaultSqlDatabase.IsOpen() ) context.DefaultSqlDatabase.OpenOrCreate( @".", "Test" );
 
-                context.DefaultSqlDatabase.Connection.ExecuteNonQuery( @"delete from [CKCore].[tSetupMemoryItem] where ItemKey like '%WithSPDependsOnVersion%';" );
-                context.DefaultSqlDatabase.Connection.ExecuteNonQuery( @"delete from [CKCore].[tItemVersion] where FullName like '%WithSPDependsOnVersion%';" );
+                context.DefaultSqlDatabase.Connection.ExecuteNonQuery( @"if object_id(N'[CKCore].[tSetupMemoryItem]') is not null delete from [CKCore].[tSetupMemoryItem] where ItemKey like '%WithSPDependsOnVersion%';" );
+                context.DefaultSqlDatabase.Connection.ExecuteNonQuery( @"if object_id(N'[CKCore].[tItemVersion]') is not null delete from [CKCore].[tItemVersion] where FullName like '%WithSPDependsOnVersion%';" );
 
-                context.DefaultSqlDatabase.Connection.ExecuteNonQuery( @"IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[tTestVSP]') AND type in (N'U')) drop table dbo.tTestVSP;" ); // Reset
-                context.DefaultSqlDatabase.Connection.ExecuteNonQuery( @"IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[sStoredProcedureWithSPDependsOnVersion]') AND type in (N'P', N'PC')) DROP PROCEDURE [dbo].[sStoredProcedureWithSPDependsOnVersion];" );
+                context.DefaultSqlDatabase.Connection.ExecuteNonQuery( @"if object_id(N'[dbo].[tTestVSP]') is not null drop table dbo.tTestVSP;" ); // Reset
+                context.DefaultSqlDatabase.Connection.ExecuteNonQuery( @"if object_id(N'[dbo].[sStoredProcedureWithSPDependsOnVersion]') is not null drop procedure [dbo].[sStoredProcedureWithSPDependsOnVersion];" );
 
 
                 SqlSetupCenter c = new SqlSetupCenter( context );

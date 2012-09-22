@@ -56,9 +56,7 @@ namespace CK.Setup
 
                     // Creates the internal StObjDynamicPackageItem configured with the StObjSetupData
                     // and configures Generalization since we got it above.
-                    var item = data.CreateSetupItem();
-                    if( generalizationData != null ) item.Generalization = generalizationData.SetupItem;
-
+                    data.SetupItem = new StObjDynamicPackageItem( data, generalizationData != null ? generalizationData.SetupItem : null );
                     setupableItems.Add( r, data );
                 }
             }

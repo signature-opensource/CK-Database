@@ -77,12 +77,24 @@ namespace CK.Setup
                 var noVersion = _scripts.Values.Where( s => s.Name.CallContainerStep == step ).FirstOrDefault( s => s.Name.Version == null );
                 if( from == null )
                 {
-                    if( versionStep.Any() )
-                    {
-                        ISetupScript maxVersion = versionStep.Where( s => s.Name.FromVersion == null ).MaxBy( s => s.Name.Version );
-                        return new TypedScriptVector( maxVersion, noVersion );
-                    }
-                    return new TypedScriptVector();
+                    // If there is no "from", consider the best one as the starting point.
+                    // If there is no script at all, there is nothing to do.
+                    if( !versionStep.Any() ) return new TypedScriptVector();
+                    // Looking for the best version script, not migration one.
+                    var startingVersions = versionStep.Where( s => s.Name.FromVersion == null );
+                    // If there is only migration scripts... there is nothing to do.
+                    if( !startingVersions.Any() ) return new TypedScriptVector();
+                    // Taking the better one.
+                    ISetupScript maxVersion = startingVersions.MaxBy( s => s.Name.Version );
+                    
+                    var fromScripts = versionStep.Where( s => s.Name.BelongsToUpgradeFrom( maxVersion.Name.Version ) ).ToList();
+                    if( fromScripts.Count == 0 ) return new TypedScriptVector( maxVersion, noVersion );
+                    if( fromScripts.Count == 1 ) return new TypedScriptVector( maxVersion, fromScripts[0], noVersion );
+
+                    fromScripts.Sort( CoveringScript.CompareUpgradeScripts );
+                    List<CoveringScript> coveringMigrationScripts = CoveringScript.BuildCoveringScripts( fromScripts );
+                    coveringMigrationScripts.Insert( 0, new CoveringScript( maxVersion ) );
+                    return new TypedScriptVector( coveringMigrationScripts, noVersion );
                 }
                 var scripts = versionStep.Where( s => s.Name.BelongsToUpgradeFrom( from ) ).ToList();
                 if( scripts.Count == 0 ) return new TypedScriptVector();

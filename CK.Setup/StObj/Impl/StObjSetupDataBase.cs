@@ -11,6 +11,8 @@ namespace CK.Setup
     {
         readonly IStObjSetupData _parent;
 
+        Type _itemType;
+        string _itemTypeName;
         Type _driverType;
         string _driverTypeName;
         string _containerFullName;
@@ -30,6 +32,8 @@ namespace CK.Setup
             if( setupAttr != null )
             {
                 _containerFullName = setupAttr.ContainerFullName;
+                _itemType = setupAttr.ItemType;
+                _itemTypeName = setupAttr.ItemTypeName;
                 _driverType = setupAttr.DriverType;
                 _driverTypeName = setupAttr.DriverTypeName;
                 
@@ -62,7 +66,9 @@ namespace CK.Setup
             // Container full name, driver type & name inherit by default.
             if( parent != null )
             {
-                if( _driverType == null ) _driverType = parent.DriverType;
+                if( _itemType == null && _itemTypeName == null ) _itemType = parent.ItemType;
+                if( _itemTypeName == null ) _itemTypeName = parent.ItemTypeName;
+                if( _driverType == null && _driverTypeName == null ) _driverType = parent.DriverType;
                 if( _driverTypeName == null ) _driverTypeName = parent.DriverTypeName;
                 if( _containerFullName == null ) _containerFullName = parent.ContainerFullName;
             }
@@ -101,6 +107,18 @@ namespace CK.Setup
         {
             get { return _noContent; }
             set { _noContent = value; }
+        }
+
+        public Type ItemType
+        {
+            get { return _itemType; }
+            set { _itemType = value; }
+        }
+
+        public string ItemTypeName
+        {
+            get { return _itemTypeName; }
+            set { _itemTypeName = value; }
         }
 
         public Type DriverType

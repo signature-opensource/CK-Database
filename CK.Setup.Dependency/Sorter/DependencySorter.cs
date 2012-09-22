@@ -137,8 +137,8 @@ namespace CK.Setup
             /// It is not null only for container.
             /// </summary>
             public Entry HeadIfContainer { get; private set; }
-            public Entry FirstChildIfContainer { get; private set; }
-            public Entry NextChildInContainer { get; private set; }
+            public Entry FirstChildIfGroup { get; private set; }
+            public Entry NextChildInGroup { get; private set; }
 
             internal void AddRequiredByRequires( IDependentItemRef req )
             {
@@ -149,7 +149,7 @@ namespace CK.Setup
             internal void TransformToContainer()
             {
                 Debug.Assert( HeadIfContainer == null, "Only once!" );
-                Debug.Assert( FirstChildIfContainer == null );
+                Debug.Assert( FirstChildIfGroup == null );
                 HeadIfContainer = new Entry( this );
             }
 
@@ -162,8 +162,8 @@ namespace CK.Setup
 
                 child.Container = this;
                 if( child.HeadIfContainer != null ) child.HeadIfContainer.Container = this;
-                child.NextChildInContainer = FirstChildIfContainer;
-                FirstChildIfContainer = child;
+                child.NextChildInGroup = FirstChildIfGroup;
+                FirstChildIfGroup = child;
             }
 
             internal bool AppearInContainerChain( Entry dep )
@@ -187,11 +187,11 @@ namespace CK.Setup
                     return;
                 }
                 Debug.Assert( HeadIfContainer != null, "This is a Container..." );
-                Entry c = FirstChildIfContainer;
+                Entry c = FirstChildIfGroup;
                 while( c != null )
                 {
                     if( c == e ) return;
-                    c = c.NextChildInContainer;
+                    c = c.NextChildInGroup;
                 }
                 Debug.Fail( String.Format( "Container {0} does not contain item {1}.", FullName, e.FullName ) );
             }
@@ -200,11 +200,11 @@ namespace CK.Setup
             internal void CheckNotContains( Entry e )
             {
                 Debug.Assert( HeadIfContainer != null, "This is a Container..." );
-                Entry c = FirstChildIfContainer;
+                Entry c = FirstChildIfGroup;
                 while( c != null )
                 {
                     if( c == e ) Debug.Fail( String.Format( "Container {0} contains item {1}.", FullName, e.FullName ) ); ;
-                    c = c.NextChildInContainer;
+                    c = c.NextChildInGroup;
                 }
             }
 
@@ -276,12 +276,25 @@ namespace CK.Setup
                 get { return Item; }
             }
 
-            IEnumerable<IDependentItemRef> ISortedItem.Requires 
+            IEnumerable<IDependentItemRef> ISortedItem.Requires
             {
-                get 
+                get
                 {
-                    var req = HeadIfContainer != null ? HeadIfContainer.Requires : null; 
-                    return req == null ? ReadOnlyListEmpty<IDependentItemRef>.Empty : req.Where( d => !d.Optional ); 
+                    var req = HeadIfContainer != null ? HeadIfContainer.Requires : null;
+                    return req == null ? ReadOnlyListEmpty<IDependentItemRef>.Empty : req.Where( d => !d.Optional );
+                }
+            }
+
+            IEnumerable<ISortedItem> ISortedItem.Children
+            {
+                get
+                {
+                    var c = FirstChildIfGroup;
+                    while( c != null )
+                    {
+                        yield return c;
+                        c = c.NextChildInGroup;
+                    }
                 }
             }
 
@@ -986,12 +999,12 @@ namespace CK.Setup
                     if( _cycle != null ) return;
                 }
                 // Handles children if any.
-                Entry child = e.FirstChildIfContainer;
+                Entry child = e.FirstChildIfGroup;
                 while( child != null )
                 {
                     HandleDependency( ref rank, e, child, false );
                     if( _cycle != null ) return;
-                    child = child.NextChildInContainer;
+                    child = child.NextChildInGroup;
                 }
                 // Should the entry.Requires HashSet be cleaned up?
                 if( requiresHiddenByContainerOrGen != null )

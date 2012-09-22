@@ -27,6 +27,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets the type of scripts that this script handler manages.
+        /// It is automatically computed from the name of the class: for "SqlScriptTypeHandler", the HandlerName is "Sql".
         /// </summary>
         public string HandlerName { get { return _name; } }
 

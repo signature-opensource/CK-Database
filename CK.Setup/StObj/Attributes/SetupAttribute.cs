@@ -10,6 +10,8 @@ namespace CK.Setup
     public class SetupAttribute : Attribute, ISetupNameAttribute, IStObjAttribute
     {
         string _name;
+        Type _itemType;
+        string _itemTypeName;
         Type _driverType;
         string _driverTypeName;
         string _containerFullName;
@@ -33,12 +35,35 @@ namespace CK.Setup
         }
 
         /// <summary>
+        /// Gets or sets the type of the <see cref="IDependentItem"/> to use instead of the default <see cref="DynamicPackageItem"/>. 
+        /// When set, this masks the <see cref="ItemTypeName"/> property,  otherwise ItemTypeName can be used to 
+        /// designate a specific IDependentItem.
+        /// This property is inherited.
+        /// </summary>
+        public Type ItemType
+        {
+            get { return _itemType; }
+            set { _itemType = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the assembly qualified type name of the <see cref="IDependentItem"/> to use instead of the default <see cref="DynamicPackageItem"/>. 
+        /// This is used ONLY if <see cref="ItemType"/> is not set.
+        /// This property is inherited.
+        /// </summary>
+        public string ItemTypeName
+        {
+            get { return _itemTypeName; }
+            set { _itemTypeName = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the setup driver type (when set this masks the <see cref="DriverTypeName"/> property).
         /// This property is inherited.
         /// </summary>
         /// <remarks>
         /// When let to null (and no <see cref="DriverTypeName"/> is specified either), 
-        /// the standard <see cref="PackageDriver"/> is used.
+        /// a standard <see cref="SetupDriver"/> is used.
         /// </remarks>
         public Type DriverType
         {
@@ -52,7 +77,7 @@ namespace CK.Setup
         /// </summary>
         /// <remarks>
         /// When let to null (and no <see cref="DriverType"/> is specified either), 
-        /// the standard <see cref="PackageDriver"/> is used.
+        /// the standard <see cref="SetupDriver"/> is used.
         /// </remarks>
         public string DriverTypeName
         {

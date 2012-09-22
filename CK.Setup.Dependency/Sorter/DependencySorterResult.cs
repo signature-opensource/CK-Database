@@ -147,10 +147,9 @@ namespace CK.Setup
                         ISortedItem to = _cycle[i];
                         if( to.IsContainerHead ) to = to.ContainerForHead;
 
-                        bool normal = num > 3;
-
+                        // First relations are searched differently: 
                         char rel;
-                        if( normal )
+                        if( i > 3 )
                         {
                             if( IsContainedBy( from, to ) ) rel = CycleExplainedElement.ContainedBy;
                             else if( IsContains( from, to ) ) rel = CycleExplainedElement.Contains;
@@ -161,8 +160,8 @@ namespace CK.Setup
                         else
                         {
                             if( IsGeneralizedBy( from, to ) ) rel = CycleExplainedElement.GeneralizedBy;
-                            else if( IsRequires( from, to ) ) rel = CycleExplainedElement.Requires;
                             else if( IsRequiredBy( from, to ) ) rel = CycleExplainedElement.RequiredByRequires;
+                            else if( IsRequires( from, to ) ) rel = CycleExplainedElement.Requires;
                             else if( IsContains( from, to ) ) rel = CycleExplainedElement.Contains;
                             else rel = CycleExplainedElement.ContainedBy;
                         }

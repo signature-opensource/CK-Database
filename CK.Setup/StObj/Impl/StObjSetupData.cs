@@ -55,12 +55,7 @@ namespace CK.Setup
             set { _versions = value; }
         }
 
-        internal StObjDynamicPackageItem SetupItem { get; private set; }
-
-        internal StObjDynamicPackageItem CreateSetupItem()
-        {
-            return SetupItem = new StObjDynamicPackageItem( this );
-        }
+        internal StObjDynamicPackageItem SetupItem { get; set; }
 
         IReadOnlyList<IDependentItemRef> IStObjSetupData.RequiredBy
         {

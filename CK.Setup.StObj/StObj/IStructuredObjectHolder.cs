@@ -15,8 +15,7 @@ namespace CK.Setup
     public interface IStructuredObjectHolder
     {
         /// <summary>
-        /// Gets associated instance. 
-        /// It is often the final, most specialized, structured object.
+        /// Gets the associated object instance (the final, most specialized, structured object).
         /// </summary>
         object StructuredObject { get; }
 
