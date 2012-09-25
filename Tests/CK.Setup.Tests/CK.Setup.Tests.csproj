@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -34,33 +34,35 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CK.Core, Version=0.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\CK.Core.2.7.3\lib\net40\CK.Core.dll</HintPath>
+    <Reference Include="CK.Core, Version=2.7.40.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\CK.Core.2.7.40\lib\net40\CK.Core.dll</HintPath>
     </Reference>
-    <Reference Include="nunit.framework, Version=2.5.9.10348, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL" />
+    <Reference Include="nunit.framework, Version=2.5.9.10348, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Env\NUnit\nunit.framework.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Dependencies\ContainerDependencies.cs" />
-    <Compile Include="Dependencies\ContainerByName.cs" />
-    <Compile Include="Dependencies\ChildByName.cs" />
-    <Compile Include="Dependencies\CaseSensitivity.cs" />
-    <Compile Include="Dependencies\DependencyExtensions.cs" />
-    <Compile Include="IntoTheWild\AmbiantContractTests.cs" />
+    <Compile Include="..\..\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="ParsedFileNameTests.cs" />
-    <Compile Include="TestableContainer.cs" />
-    <Compile Include="Dependencies\FlatDependencies.cs" />
-    <Compile Include="TestableItem.cs" />
-    <Compile Include="Dependencies\ResultChecker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">
+      <Project>{87F54185-5226-4EEE-8D59-5D03E6C1AB7C}</Project>
+      <Name>CK.Setup.Dependency</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\CK.Setup.StObj\CK.Setup.StObj.csproj">
+      <Project>{DF7A0B05-4B48-44C2-B6C8-6FCFD66DF8F8}</Project>
+      <Name>CK.Setup.StObj</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\CK.Setup\CK.Setup.csproj">
       <Project>{D3C700E1-3546-437C-9B96-1F867A539B6A}</Project>
       <Name>CK.Setup</Name>

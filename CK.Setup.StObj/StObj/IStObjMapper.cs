@@ -1,0 +1,26 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using CK.Core;
+
+namespace CK.Setup
+{
+    /// <summary>
+    /// Exposes a multi contextual type mapping.
+    /// </summary>
+    public interface IStObjMapper : IReadOnlyCollection<IStObjContextualMapper>
+    {
+        /// <summary>
+        /// Gets the default mapper, the one bound to <see cref="AmbiantContractCollector.DefaultContext"/>.
+        /// </summary>
+        IStObjContextualMapper Default { get; }
+
+        /// <summary>
+        /// Gets the <see cref="IStObjContextualMapper"/> or null if context is unknown.
+        /// </summary>
+        /// <param name="typedContext">Typed context.</param>
+        /// <returns>Contextual mapping or null if no such context exists.</returns>
+        IStObjContextualMapper this[Type typedContext] { get; }
+    }
+}

@@ -4,75 +4,29 @@ using System.Linq;
 using System.Text;
 using CK.SqlServer;
 using CK.Core;
+using CK.Setup.Database;
 
 namespace CK.Setup.SqlServer
 {
-    public class SqlScriptTypeHandler : IScriptTypeHandler
+    public class SqlScriptTypeHandler : ScriptTypeHandler
     {
-        SqlManager _manager;
+        ISqlManagerProvider _managerProvider;
         IScriptExecutor _executor;
-        string _scriptType;
-        List<string> _requires;
-        List<string> _requiredby;
 
-        public SqlScriptTypeHandler( SqlManager manager )
+        public SqlScriptTypeHandler( ISqlManagerProvider provider )
         {
-            if( manager == null ) throw new ArgumentNullException( "manager" );
-            _manager = manager;
-            _scriptType = "file-sql";
+            if( provider == null ) throw new ArgumentNullException( "provider" );
+            _managerProvider = provider;
         }
 
-        /// <summary>
-        /// Gets or sets the script type.
-        /// Defaults to "file-sql".
-        /// </summary>
-        public string ScriptType
+        protected override IScriptExecutor CreateExecutor( IActivityLogger logger, SetupDriver driver )
         {
-            get { return _scriptType; }
-            set 
-            {
-                if( String.IsNullOrWhiteSpace( value ) ) throw new ArgumentNullException( "value" );
-                _scriptType = value; 
-            }
+            SqlManager m = _managerProvider.FindManagerByName( SqlDatabase.DefaultDatabaseName );
+            return _executor ?? (_executor = new SqlScriptExecutor( m, driver.Engine.Memory ));
         }
 
-        public IScriptExecutor CreateExecutor( IActivityLogger logger, ContainerDriver container )
-        {
-            return _executor ?? (_executor = new PackageSqlScriptExecutor( _manager, container.Engine.Memory ));
-        }
-
-        public void Release( IActivityLogger logger, IScriptExecutor executor )
-        {
-        }
-
-        /// <summary>
-        /// Gets script types that must be executed before this one. 
-        /// Use '?' prefix to specify that the handler is not required (like "?res-sql").
-        /// Can be null if no such handler exists.
-        /// </summary>
-        public IList<string> Requires
-        {
-            get { return _requires ?? (_requires = new List<string>()); }
-        }
-
-        /// <summary>
-        /// Gets names of revert dependencies: scripts for this handler 
-        /// will be executed before scripts for them. 
-        /// Can be null if no such handler exists.
-        /// </summary>
-        public IList<string> RequiredBy
-        {
-            get { return _requiredby ?? (_requiredby = new List<string>()); }
-        }
-
-        IEnumerable<string> IScriptTypeHandler.Requires
-        {
-            get { return _requires; }
-        }
-
-        IEnumerable<string> IScriptTypeHandler.RequiredBy
-        {
-            get { return _requiredby; }
+        protected override void ReleaseExecutor( IActivityLogger logger, IScriptExecutor executor )
+        {           
         }
 
     }

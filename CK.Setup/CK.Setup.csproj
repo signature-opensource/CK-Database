@@ -34,28 +34,29 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CK.Core, Version=0.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.Core.2.7.3\lib\net40\CK.Core.dll</HintPath>
+    <Reference Include="CK.Core, Version=2.7.40.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\CK.Core.2.7.40\lib\net40\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="WildObject\AmbiantContract\AmbiantContractCollector.cs" />
-    <Compile Include="WildObject\AmbiantContract\AmbiantContractCollectorContextResult.cs" />
-    <Compile Include="WildObject\AmbiantContract\AmbiantContractCollectorResult.cs" />
-    <Compile Include="WildObject\AmbiantContract\AmbiantTypeMapper.cs" />
-    <Compile Include="WildObject\AmbiantContract\IAmbiantTypeMapper.cs" />
-    <Compile Include="WildObject\AmbiantContract\IAmbiantContract.cs" />
-    <Compile Include="WildObject\AmbiantContract\IAmbiantContractDefiner.cs" />
-    <Compile Include="Dependency\DependentItemExtension.cs" />
+    <Compile Include="..\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scripts\ScriptSource.cs" />
+    <Compile Include="Scripts\ScriptTypeHandler.cs" />
+    <Compile Include="SetupCore\Package\DynamicContainerItem.cs" />
     <Compile Include="SetupCore\Package\DependentItemList.cs" />
-    <Compile Include="SetupCore\Package\DynamicPackage.cs" />
-    <Compile Include="SetupCore\Package\DynamicPackageModel.cs" />
+    <Compile Include="SetupCore\Package\DynamicPackageItem.cs" />
+    <Compile Include="SetupCore\Package\PackageModelItem.cs" />
     <Compile Include="SetupCore\Package\IDependentItemList.cs" />
-    <Compile Include="SetupCore\Package\PackageBase.cs" />
-    <Compile Include="SetupCore\Package\PackageHandler.cs" />
-    <Compile Include="SetupCore\Package\IPackage.cs" />
+    <Compile Include="SetupCore\Package\PackageItemBase.cs" />
+    <Compile Include="SetupCore\Package\IPackageItem.cs" />
     <Compile Include="SetupCore\ISetupSessionMemory.cs" />
     <Compile Include="SetupCore\ISetupSessionMemoryProvider.cs" />
     <Compile Include="Scripts\SetupScriptExtension.cs" />
@@ -64,60 +65,67 @@
     <Compile Include="Scripts\IScriptExecutor.cs" />
     <Compile Include="Scripts\CoveringScript.cs" />
     <Compile Include="Scripts\FileSetupScript.cs" />
-    <Compile Include="Scripts\IScriptTypeHandler.cs" />
     <Compile Include="Scripts\ISetupScript.cs" />
-    <Compile Include="Scripts\PackageScriptCollector.cs" />
-    <Compile Include="Scripts\PackageScriptSet.cs" />
-    <Compile Include="Scripts\PackageScriptHandler.cs" />
-    <Compile Include="Scripts\PackageTypedScriptVector.cs" />
-    <Compile Include="Scripts\PackageTypedScriptVectorConstraint.cs" />
+    <Compile Include="Scripts\ScriptCollector.cs" />
+    <Compile Include="Scripts\ScriptSet.cs" />
+    <Compile Include="Scripts\ScriptSetupHandler.cs" />
+    <Compile Include="Scripts\TypedScriptVector.cs" />
+    <Compile Include="Scripts\TypedScriptVectorConstraint.cs" />
     <Compile Include="Scripts\ParsedFileName.cs" />
-    <Compile Include="Scripts\ScriptHandlerBuilder.cs" />
+    <Compile Include="Scripts\ScriptSetupHandlerBuilder.cs" />
     <Compile Include="Scripts\ScriptTypeManager.cs" />
     <Compile Include="SetupCenter.cs" />
     <Compile Include="SetupCore\DriverListExtension.cs" />
-    <Compile Include="SetupCore\ContainerHandler.cs" />
-    <Compile Include="SetupCore\ItemHandler.cs" />
-    <Compile Include="Dependency\IDependentItemDiscoverer.cs" />
-    <Compile Include="SetupCore\IContainerHandler.cs" />
-    <Compile Include="Dependency\NamedDependentItemRef.cs" />
-    <Compile Include="Dependency\IDependentItemRef.cs" />
-    <Compile Include="Dependency\NamedDependentItemContainerRef.cs" />
-    <Compile Include="Dependency\IDependentItemContainerRef.cs" />
-    <Compile Include="Dependency\ISortedItem.cs" />
-    <Compile Include="Dependency\Sorter\DependentItemStructureError.cs" />
-    <Compile Include="Dependency\Sorter\CycleExplainedElement.cs" />
-    <Compile Include="SetupCore\IItemHandler.cs" />
-    <Compile Include="SetupCore\Package\PackageDriver.cs" />
-    <Compile Include="SetupCore\SetupCallContainerStep.cs" />
+    <Compile Include="SetupCore\SetupHandler.cs" />
+    <Compile Include="SetupCore\ISetupHandler.cs" />
+    <Compile Include="SetupCore\SetupCallGroupStep.cs" />
     <Compile Include="SetupCore\SetupEngineState.cs" />
     <Compile Include="SetupCore\DriverEventArgs.cs" />
     <Compile Include="SetupCore\SetupEngineRegisterResult.cs" />
     <Compile Include="SetupCore\SetupStep.cs" />
-    <Compile Include="SetupCore\ContainerHandlerFuncAdapter.cs" />
+    <Compile Include="SetupCore\SetupHandlerFuncAdapter.cs" />
     <Compile Include="SetupCore\ISetupDriverFactory.cs" />
     <Compile Include="SetupCore\IDriverList.cs" />
     <Compile Include="SetupCore\SetupEngine.cs" />
-    <Compile Include="SetupCore\ItemDriver.cs" />
     <Compile Include="SetupCore\DriverBase.cs" />
-    <Compile Include="SetupCore\ContainerDriver.cs" />
-    <Compile Include="SetupCore\ContainerHeadDriver.cs" />
-    <Compile Include="SetupCore\ItemHandlerFuncAdapter.cs" />
+    <Compile Include="SetupCore\SetupDriver.cs" />
+    <Compile Include="SetupCore\GroupHeadSetupDriver.cs" />
     <Compile Include="SetupCore\IVersionedItem.cs" />
-    <Compile Include="Dependency\IDependentItemContainer.cs" />
-    <Compile Include="Dependency\Sorter\DependencySorter.cs" />
-    <Compile Include="Dependency\Sorter\DependencySorterResult.cs" />
-    <Compile Include="Dependency\IDependentItem.cs" />
-    <Compile Include="Dependency\Sorter\DependentItemIssue.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SetupCore\VersionedItemDriver.cs" />
     <Compile Include="SetupCore\Version\IVersionedItemRepository.cs" />
     <Compile Include="SetupCore\Version\MultiVersionManager.cs" />
     <Compile Include="SetupCore\Version\VersionedName.cs" />
+    <Compile Include="StObj\Attributes\RequiredByAttribute.cs" />
+    <Compile Include="StObj\Attributes\IRequirementsAttribute.cs" />
+    <Compile Include="StObj\Attributes\RequiresAttribute.cs" />
+    <Compile Include="StObj\Attributes\SetupAttribute.cs" />
+    <Compile Include="StObj\IMutableStObjSetupData.cs" />
+    <Compile Include="StObj\IStObjSetupConfigurator.cs" />
+    <Compile Include="StObj\IStObjSetupDataBase.cs" />
+    <Compile Include="StObj\StObjConfigurator.cs" />
+    <Compile Include="StObj\Impl\StObjSetupDataBase.cs" />
+    <Compile Include="StObj\IStObjSetupData.cs" />
+    <Compile Include="StObj\StObjDynamicPackageItem.cs" />
+    <Compile Include="StObj\Impl\StObjSetupData.cs" />
+    <Compile Include="StObj\Attributes\VersionsAttribute.cs" />
+    <Compile Include="StObj\Attributes\ISetupNameAttribute.cs" />
+    <Compile Include="StObj\Attributes\SetupNameAttribute.cs" />
+    <Compile Include="StObj\StObjSetupBuilder.cs" />
+    <Compile Include="StObj\StObjSetupDriver.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">
+      <Project>{87F54185-5226-4EEE-8D59-5D03E6C1AB7C}</Project>
+      <Name>CK.Setup.Dependency</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CK.Setup.StObj\CK.Setup.StObj.csproj">
+      <Project>{DF7A0B05-4B48-44C2-B6C8-6FCFD66DF8F8}</Project>
+      <Name>CK.Setup.StObj</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -7,7 +7,8 @@ using CK.Core;
 
 namespace CK.Setup.SqlServer
 {
-    public class SqlManagerProvider : IDisposable
+
+    public class SqlManagerProvider : ISqlManagerProvider, IDisposable
     {
         IActivityLogger _logger;
         Dictionary<string, Item> _items;
@@ -24,20 +25,13 @@ namespace CK.Setup.SqlServer
             _logger = logger;
             _items = new Dictionary<string, Item>();
         }
-
-        public void AddOpenedManager( string name, SqlManager manager )
-        {
-            if( manager == null ) throw new ArgumentNullException( "manager" );
-            if( !manager.IsOpen() ) throw new ArgumentException( "Manager must be opened.", "manager" );
-            _items.Add( name, new Item() { Manager = manager } );
-        }
         
         public void Add( string name, string connectionString )
         {
             _items.Add( name, new Item() { ConnectionString = connectionString } );
         }
 
-        public SqlManager Obtain( string name )
+        public SqlManager FindManagerByName( string name )
         {
             Item i;
             if( _items.TryGetValue( name, out i ) )
@@ -47,6 +41,7 @@ namespace CK.Setup.SqlServer
                     SqlManager m = new SqlManager();
                     m.Logger = _logger;
                     m.OpenFromConnectionString( i.ConnectionString );
+                    i.Manager = m;
                 }
                 return i.Manager;
             }

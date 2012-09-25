@@ -34,13 +34,41 @@ namespace CK.Setup.SqlServer
                 _get.Parameters.Add( "@FullName", SqlDbType.NVarChar, 128 );
                 _get.Parameters.Add( "@ItemVersion", SqlDbType.VarChar, 32 ).Direction = ParameterDirection.Output;
             }
-            _get.Parameters[0].Value = CheckItemType( i );
-            _get.Parameters[1].Value = i.FullName;
+            // The way this stuff currently implemented prevents the type of an object to change...
+            // The version management should consider the type as an (merely optional) attribute and 
+            // use it to stamp the version on database (whatever it is) instance if the feature is supported.
+            _get.Parameters[0].Value = CheckItemType( i ); ;
+
+            VersionedName n = DoGetVersion( i.FullName );
+            if( n == null )
+            {
+                var prev = i.PreviousNames;
+                if( prev != null )
+                {
+                    // Should be replaced with a CodeContract on IVersionedItem...
+                    if( !prev.IsSortedStrict( ( v1, v2 ) => v1.Version.CompareTo( v2.Version ) ) )
+                    {
+                        throw new CKException( "PreviousNames must be ordered by their Version for FullName='{0}'", i.FullName );
+                    }
+                    var orderedPrev = prev.Reverse();
+                    foreach( var prevVersion in orderedPrev )
+                    {
+                        n = DoGetVersion( prevVersion.FullName );
+                        if( n != null ) break;
+                    }
+                }
+            }
+            return n;
+        }
+
+        private VersionedName DoGetVersion( string fullName )
+        {
+            _get.Parameters[1].Value = fullName;
             _manager.Connection.ExecuteNonQuery( _get );
             Version v;
             if( _get.Parameters[2].Value != DBNull.Value && Version.TryParse( (string)_get.Parameters[2].Value, out v ) )
             {
-                return new VersionedName( i.FullName, v );
+                return new VersionedName( fullName, v );
             }
             return null;
         }
@@ -175,9 +203,9 @@ begin
 	end
 	else
 	begin
-		merge CKCore.tItemVersion as target
+		merge CKCore.tItemVersion as _specialization
 			using (select FullName = @FullName) as source
-			on target.FullName = source.FullName
+			on _specialization.FullName = source.FullName
 			when matched then update set ItemVersion = @ItemVersion, ItemType = @ItemType
 			when not matched then insert (ItemType, FullName, ItemVersion) VALUES (@ItemType, @FullName, @ItemVersion); 
 		set @ok = @@Error if @ok <> 0 goto Error --[!catch]			

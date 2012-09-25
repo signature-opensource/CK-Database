@@ -8,16 +8,16 @@ namespace CK.Setup
 {
     public class FileSetupScript : ISetupScript
     {
-        public FileSetupScript( ParsedFileName n, string scriptType )
+        public FileSetupScript( ParsedFileName n, string scriptSource )
         {
             if( n == null ) throw new ArgumentNullException( "n" );
-            if( scriptType == null ) throw new ArgumentNullException( "scriptType" );
+            if( String.IsNullOrWhiteSpace(scriptSource) ) throw new ArgumentException( "Must be not null nor empty nor white space.", "scriptSource" );
             if( !(n.ExtraPath is string) || !Path.IsPathRooted( (string)n.ExtraPath ) ) throw new ArgumentException( "ParsedFileName.ExtraPath must be a rooted file path.", "n" );
             Name = n;
-            ScriptType = scriptType;
+            ScriptSource = scriptSource;
         }
 
-        public string ScriptType { get; private set; }
+        public string ScriptSource { get; private set; }
 
         public ParsedFileName Name { get; private set; }
 
@@ -29,7 +29,7 @@ namespace CK.Setup
 
         public override string ToString()
         {
-            return String.Format( @"{0} script - {1}\\{2}", ScriptType, Name.ExtraPath, Name.FileName );
+            return String.Format( @"{0} script - {1}\\{2}", ScriptSource, Name.ExtraPath, Name.FileName );
         }
 
     }

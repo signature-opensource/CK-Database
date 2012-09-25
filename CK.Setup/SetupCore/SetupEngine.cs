@@ -24,26 +24,31 @@ namespace CK.Setup
 
         class DriverList : IDriverList
         {
-            Dictionary<string,DriverBase> _byName;
+            Dictionary<object,DriverBase> _index;
             List<DriverBase> _drivers;
             SetupEngine _center;
 
             public DriverList( SetupEngine center )
             {
                 _center = center;
-                _byName = new Dictionary<string, DriverBase>();
+                _index = new Dictionary<object, DriverBase>();
                 _drivers = new List<DriverBase>();
             }
 
             public DriverBase this[string fullName]
             {
-                get { return _byName.GetValueWithDefault( fullName, null ); }
+                get { return _index.GetValueWithDefault( fullName, null ); }
             }
 
-            public int IndexOf( object item )
+            public DriverBase this[ IDependentItem item ]
             {
-                DriverBase d = item as DriverBase;
-                return d != null ? d.Index : -1;
+                get { return _index.GetValueWithDefault( item, null ); }
+            }
+
+            public int IndexOf( object driver )
+            {
+                DriverBase d = driver as DriverBase;
+                return d != null && d.Engine == _center ? d.Index : -1;
             }
 
             public DriverBase this[int index]
@@ -51,15 +56,15 @@ namespace CK.Setup
                 get { return _drivers[index]; }
             }
 
-            public bool Contains( object item )
+            public bool Contains( object driver )
             {
-                DriverBase d = item as DriverBase;
+                DriverBase d = driver as DriverBase;
                 return d != null ? d.Engine == _center : false;
             }
 
             public int Count
             {
-                get { return _byName.Count; }
+                get { return _drivers.Count; }
             }
 
             public IEnumerator<DriverBase> GetEnumerator()
@@ -74,17 +79,18 @@ namespace CK.Setup
 
             internal void Clear()
             {
-                _byName.Clear();
+                _index.Clear();
                 _drivers.Clear();
             }
 
             internal void Add( DriverBase d )
             {
                 Debug.Assert( d != null && d.Engine == _center );
-                Debug.Assert( !_byName.ContainsKey( d.FullName ) );
+                Debug.Assert( !_index.ContainsKey( d.FullName ) );
                 Debug.Assert( _drivers.Count == 0 || _drivers[_drivers.Count-1].Index < d.Index );
                 _drivers.Add( d );
-                _byName.Add( d.FullName, d );
+                _index.Add( d.FullName, d );
+                if( !d.IsGroupHead ) _index.Add( d.Item, d );
             }
 
         }
@@ -93,16 +99,10 @@ namespace CK.Setup
         {
             public readonly static ISetupDriverFactory Default = new DefaultDriverfactory();
 
-            ItemDriver ISetupDriverFactory.CreateDriver( Type driverType, ItemDriver.BuildInfo info )
+            SetupDriver ISetupDriverFactory.CreateDriver( Type containerType, SetupDriver.BuildInfo info )
             {
-                return (ItemDriver)Activator.CreateInstance( driverType, info );
+                return (SetupDriver)Activator.CreateInstance( containerType, info );
             }
-
-            ContainerDriver ISetupDriverFactory.CreateDriverContainer( Type containerType, ContainerDriver.BuildInfo info )
-            {
-                return (ContainerDriver)Activator.CreateInstance( containerType, info );
-            }
-
         }
 
         public SetupEngine( IVersionedItemRepository versionRepository, ISetupSessionMemory memory, IActivityLogger logger, ISetupDriverFactory driverFactory )
@@ -156,14 +156,14 @@ namespace CK.Setup
         /// <param name="items">Set of <see cref="IDependentItem"/></param>
         /// <param name="discoverers">Set of <see cref="IDependentItemDiscoverer"/>.</param>
         /// <returns>A <see cref="SetupEngineRegisterResult"/> that captures detailed information about the registration result.</returns>
-        /// <param name="reverseName">Reverse the ordering for items that share the same rank in the pure dependency graph.</param>
-        public SetupEngineRegisterResult Register( IEnumerable<IDependentItem> items, IEnumerable<IDependentItemDiscoverer> discoverers, bool reverseName = false )
+        /// <param name="options">Optional configuration for dependecy graph computation.</param>
+        public SetupEngineRegisterResult Register( IEnumerable<IDependentItem> items, IEnumerable<IDependentItemDiscoverer> discoverers, DependencySorter.Options options = null )
         {
             CheckState( SetupEngineState.None );
             SetupEngineRegisterResult result = null;
             try
             {
-                result = new SetupEngineRegisterResult( DependencySorter.OrderItems( items, discoverers, reverseName ) );
+                result = new SetupEngineRegisterResult( DependencySorter.OrderItems( items, discoverers, options ) );
                 if( result.IsValid )
                 {
                     var reusableEvent = new DriverEventArgs( SetupStep.None );
@@ -173,10 +173,10 @@ namespace CK.Setup
                         Type typeToCreate = null;
                         if( item.IsContainer )
                         {
-                            var head = _drivers[item.HeadForContainer.FullName] as ContainerHeadDriver;
+                            var head = _drivers[item.HeadForContainer.FullName] as GroupHeadSetupDriver;
                             Debug.Assert( head != null );
                             typeToCreate = ResolveDriverType( item );
-                            ContainerDriver c = _driverFactory.CreateDriverContainer( typeToCreate, new ContainerDriver.BuildInfo( head, item ) );
+                            SetupDriver c = _driverFactory.CreateDriver( typeToCreate, new SetupDriver.BuildInfo( head, item ) );
                             d = head.Container = c;
                         }
                         else
@@ -188,12 +188,12 @@ namespace CK.Setup
 
                             if( item.IsContainerHead )
                             {
-                                d = new ContainerHeadDriver( this, item, externalVersion );
+                                d = new GroupHeadSetupDriver( this, item, externalVersion );
                             }
                             else
                             {
                                 typeToCreate = ResolveDriverType( item );
-                                d = _driverFactory.CreateDriver( typeToCreate, new ItemDriver.BuildInfo( this, item, externalVersion ) );
+                                d = _driverFactory.CreateDriver( typeToCreate, new SetupDriver.BuildInfo( this, item, externalVersion ) );
                             }
                         }
                         if( d == null ) throw new Exception( String.Format( "Driver Factory returned null for item {0}, type '{1}'.", item.FullName, typeToCreate ) );
@@ -216,6 +216,8 @@ namespace CK.Setup
             }
             catch( Exception ex )
             {
+                // Exception is not logged at this level: it is carried by the SetupEngineRegisterResult
+                // and its LogError method must be used to log different kind of errors.
                 if( result == null ) result = new SetupEngineRegisterResult( null );
                 _drivers.Clear();
                 result.UnexpectedError = ex;

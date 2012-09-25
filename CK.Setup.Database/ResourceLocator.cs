@@ -46,7 +46,7 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Holds a sub path from the namespace of the <see cref="Type"/> to the resources.<br/>
+        /// Holds a sub path from the namespace of the <see cref="Type"/> to the resources.
         /// Can be null or <see cref="String.Empty"/> if the resources are directly 
         /// associated to the type.
         /// </summary>
@@ -70,10 +70,14 @@ namespace CK.Core
         /// Obtains the content of a resource.
         /// </summary>
         /// <param name="name">Name of the resource to load.</param>
-        /// <param name="throwError">Set to false, no exception will be thrown if the resource 
-        /// does not exist.</param>
-        /// <returns>An opened <see cref="Stream"/> if the resource is found.<br/>
-        /// Null if the resource is not found and <paramref name="throwError"/> is false.</returns>
+        /// <param name="throwError">
+        /// When set to false, no exception will be thrown if the resource 
+        /// does not exist and null is returned.
+        /// </param>
+        /// <returns>
+        /// An opened <see cref="Stream"/> if the resource is found.
+        /// Null if the resource is not found and <paramref name="throwError"/> is false.
+        /// </returns>
         public Stream OpenStream( string name, bool throwError )
         {
             return LoadStream( _type, _path, name, throwError );

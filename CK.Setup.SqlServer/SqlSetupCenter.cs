@@ -14,18 +14,19 @@ namespace CK.Setup.SqlServer
         SqlSetupContext _context;
         SetupCenter _center;
         SqlFileDiscoverer _fileDiscoverer;
-        AmbiantContractCollector _collector;
 
         public SqlSetupCenter( SqlSetupContext context )
         {
             if( context == null ) throw new ArgumentNullException( "context" );
             _context = context;
-            var versionRepo = new SqlVersionedItemRepository( _context.DefaultDatabase );
-            var memory = new SqlSetupSessionMemoryProvider( _context.DefaultDatabase );
+            var versionRepo = new SqlVersionedItemRepository( _context.DefaultSqlDatabase );
+            var memory = new SqlSetupSessionMemoryProvider( _context.DefaultSqlDatabase );
             _center = new SetupCenter( versionRepo, memory,_context.Logger, _context );
             _fileDiscoverer = new SqlFileDiscoverer( new SqlObjectBuilder(), _context.Logger );
-            _collector = new AmbiantContractCollector();
-            _center.ScriptTypeManager.Register( new SqlScriptTypeHandler( _context.DefaultDatabase ) );
+            
+            var sqlHandler = new SqlScriptTypeHandler( _context );
+            sqlHandler.RegisterSource( SqlFileDiscoverer.DefaultSourceName );
+            _center.ScriptTypeManager.Register( sqlHandler );
         }
 
         public bool DiscoverFilePackages( string directoryPath )
@@ -37,19 +38,36 @@ namespace CK.Setup.SqlServer
         {
             return _fileDiscoverer.DiscoverSqlFiles( directoryPath, _center.Scripts );
         }
-
-        public void DiscoverObjects( Assembly assembly )
-        {
-            _collector.Register( assembly.GetTypes() ); 
-        }
-
+        
+        /// <summary>
+        /// Executes the setup.
+        /// </summary>
+        /// <returns>True if no error occured. False otherwise.</returns>
         public bool Run()
         {
-            var r = _collector.GetResult();
-            if( !r.CheckErrorAndWarnings( _context.Logger ) ) return false;
+            var logger = _context.Logger;
 
+            StObjCollectorResult result;
+            using( logger.OpenGroup( LogLevel.Info, "Collecting objects." ) )
+            {
+                AssemblyRegisterer typeReg = new AssemblyRegisterer( logger );
+                typeReg.Discover( _context.AssemblyRegistererConfiguration );
+                StObjCollector stObjC = new StObjCollector( logger, _context.StObjConfigurator, _context.StObjConfigurator, _context.StObjConfigurator );
+                stObjC.RegisterTypes( typeReg );
+                foreach( var t in _context.ExplicitRegisteredClasses ) stObjC.RegisterClass( t );
+                result = stObjC.GetResult();
+                if( result.HasFatalError ) return false;
+            }
+            
+            IEnumerable<IDependentItem> stObjItems;
+            using( logger.OpenGroup( LogLevel.Info, "Creating Dependent Items from Structured Objects." ) )
+            {
 
-            return _center.Run( _fileDiscoverer );
+                var itemBuilder = new StObjSetupBuilder( logger, _context.StObjConfigurator );
+                stObjItems = itemBuilder.Build( result.OrderedStObjs );
+            }
+            
+            return _center.Run( _fileDiscoverer, stObjItems );
         }
     }
 }

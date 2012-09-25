@@ -16,7 +16,7 @@ namespace CK.Setup.SqlServer.Tests
         {
             using( var context = new SqlSetupContext( "Server=.;Database=Test;Integrated Security=SSPI;", TestHelper.Logger ) )
             {
-                if( !context.DefaultDatabase.IsOpen() ) context.DefaultDatabase.OpenOrCreate( ".", "Test" );
+                if( !context.DefaultSqlDatabase.IsOpen() ) context.DefaultSqlDatabase.OpenOrCreate( ".", "Test" );
                 using( context.Logger.OpenGroup( LogLevel.Trace, "First setup" ) )
                 {
                     SqlSetupCenter c = new SqlSetupCenter( context );
@@ -25,8 +25,8 @@ namespace CK.Setup.SqlServer.Tests
                     Assert.That( c.Run() );
                 }
                 
-                context.DefaultDatabase.ExecuteOneScript( "drop procedure Test.sOneStoredProcedure;" );
-                context.DefaultDatabase.ExecuteOneScript( "drop function Test.fTest;" );
+                context.DefaultSqlDatabase.ExecuteOneScript( "drop procedure Test.sOneStoredProcedure;" );
+                context.DefaultSqlDatabase.ExecuteOneScript( "drop function Test.fTest;" );
                 
                 using( context.Logger.OpenGroup( LogLevel.Trace, "Second setup" ) )
                 {
@@ -43,12 +43,36 @@ namespace CK.Setup.SqlServer.Tests
         {
             using( var context = new SqlSetupContext( @"Server=.;Database=Test;Integrated Security=SSPI;", TestHelper.Logger ) )
             {
-                if( !context.DefaultDatabase.IsOpen() ) context.DefaultDatabase.OpenOrCreate( @".", "Test" );
+                if( !context.DefaultSqlDatabase.IsOpen() ) context.DefaultSqlDatabase.OpenOrCreate( @".", "Test" );
                 SqlSetupCenter c = new SqlSetupCenter( context );
                 c.DiscoverFilePackages( TestHelper.GetScriptsFolder( "InstallFromScratchWithView" ) );
                 c.DiscoverSqlFiles( TestHelper.GetScriptsFolder( "InstallFromScratchWithView" ) );
                 Assert.That( c.Run() );
-                Assert.That( context.DefaultDatabase.Connection.ExecuteScalar( "select Id from dbo.vTestView" ), Is.EqualTo( 3712 ) );
+                Assert.That( context.DefaultSqlDatabase.Connection.ExecuteScalar( "select Id from dbo.vTestView" ), Is.EqualTo( 3712 ) );
+            }
+        }
+
+        [Test]
+        public void InstallPackageWithSPDependsOnVersion()
+        {
+            using( var context = new SqlSetupContext( @"Server=.;Database=Test;Integrated Security=SSPI;", TestHelper.Logger ) )
+            {
+                if( !context.DefaultSqlDatabase.IsOpen() ) context.DefaultSqlDatabase.OpenOrCreate( @".", "Test" );
+
+                context.DefaultSqlDatabase.Connection.ExecuteNonQuery( @"if object_id(N'[CKCore].[tSetupMemoryItem]') is not null delete from [CKCore].[tSetupMemoryItem] where ItemKey like '%WithSPDependsOnVersion%';" );
+                context.DefaultSqlDatabase.Connection.ExecuteNonQuery( @"if object_id(N'[CKCore].[tItemVersion]') is not null delete from [CKCore].[tItemVersion] where FullName like '%WithSPDependsOnVersion%';" );
+
+                context.DefaultSqlDatabase.Connection.ExecuteNonQuery( @"if object_id(N'[dbo].[tTestVSP]') is not null drop table dbo.tTestVSP;" ); // Reset
+                context.DefaultSqlDatabase.Connection.ExecuteNonQuery( @"if object_id(N'[dbo].[sStoredProcedureWithSPDependsOnVersion]') is not null drop procedure [dbo].[sStoredProcedureWithSPDependsOnVersion];" );
+
+
+                SqlSetupCenter c = new SqlSetupCenter( context );
+                c.DiscoverFilePackages( TestHelper.GetScriptsFolder( "InstallFromScratchWithSPDependsOnVersion" ) );
+                c.DiscoverSqlFiles( TestHelper.GetScriptsFolder( "InstallFromScratchWithSPDependsOnVersion" ) );
+                Assert.That( c.Run() );
+                Assert.That( context.DefaultSqlDatabase.Connection.ExecuteScalar( "select Id2 from dbo.tTestVSP where Id = 0" ), Is.EqualTo( 3713 ) );
+
+
             }
         }
     }

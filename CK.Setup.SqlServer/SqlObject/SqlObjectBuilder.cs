@@ -63,12 +63,12 @@ namespace CK.Setup.SqlServer
             VersionedName[] previousNames = null;
 
             if( mHeader.Groups[2].Length > 0 ) packageName = mHeader.Groups[2].Value;
-            if( mHeader.Groups[3].Captures.Count > 0 ) requires = mHeader.Groups[3].Captures.Cast<Group>().Select( m => m.Value ).ToArray();
-            if( mHeader.Groups[4].Captures.Count > 0 ) requiredBy = mHeader.Groups[4].Captures.Cast<Group>().Select( m => m.Value ).ToArray();
+            if( mHeader.Groups[3].Captures.Count > 0 ) requires = mHeader.Groups[3].Captures.Cast<Capture>().Select( m => m.Value ).ToArray();
+            if( mHeader.Groups[4].Captures.Count > 0 ) requiredBy = mHeader.Groups[4].Captures.Cast<Capture>().Select( m => m.Value ).ToArray();
             if( mHeader.Groups[5].Captures.Count > 0 )
             {
-                var prevNames = mHeader.Groups[5].Captures.Cast<Group>().Select( m => m.Value );
-                var prevVer = mHeader.Groups[5].Captures.Cast<Group>().Select( m => Version.Parse( m.Value ) );
+                var prevNames = mHeader.Groups[5].Captures.Cast<Capture>().Select( m => m.Value );
+                var prevVer = mHeader.Groups[5].Captures.Cast<Capture>().Select( m => Version.Parse( m.Value ) );
                 previousNames = prevNames.Zip( prevVer, ( n, v ) => new VersionedName( n, v ) ).ToArray();
             }
             if( mHeader.Groups[1].Length == 1 ) version = null;

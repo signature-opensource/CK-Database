@@ -121,6 +121,11 @@ namespace CK.Setup.SqlServer
             get { return _container; }
         }
 
+        IDependentItemRef IDependentItem.Generalization
+        {
+            get { return null; }
+        }
+
         IEnumerable<IDependentItemRef> IDependentItem.Requires
         {
             get { return _requires; }
@@ -154,7 +159,7 @@ namespace CK.Setup.SqlServer
         /// <summary>
         /// Writes the drop instruction.
         /// </summary>
-        /// <param name="b">The target <see cref="TextWriter"/>.</param>
+        /// <param name="b">The _specialization <see cref="TextWriter"/>.</param>
         public void WriteDrop( TextWriter b )
         {
             b.Write( "if OBJECT_ID('" );
@@ -169,7 +174,7 @@ namespace CK.Setup.SqlServer
         /// <summary>
         /// Writes the whole object.
         /// </summary>
-        /// <param name="b">The target <see cref="TextWriter"/>.</param>
+        /// <param name="b">The _specialization <see cref="TextWriter"/>.</param>
         public void WriteCreate( TextWriter b )
         {
             if( _readInfo != null ) b.WriteLine( _readInfo.Header );

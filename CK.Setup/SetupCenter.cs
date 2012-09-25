@@ -13,7 +13,7 @@ namespace CK.Setup
         IActivityLogger _logger;
         ISetupDriverFactory _driverFactory;
         
-        PackageScriptCollector _scripts;
+        ScriptCollector _scripts;
         ScriptTypeManager _scriptTypeManager;
 
         public SetupCenter( IVersionedItemRepository versionRepository, ISetupSessionMemoryProvider memory, IActivityLogger logger, ISetupDriverFactory driverFactory )
@@ -29,15 +29,22 @@ namespace CK.Setup
             _driverFactory = driverFactory;
 
             _scriptTypeManager = new ScriptTypeManager();
-            _scripts = new PackageScriptCollector( _scriptTypeManager.IsRegistered );
+            _scripts = new ScriptCollector( _scriptTypeManager );
         }
 
+        /// <summary>
+        /// Gets the <see cref="ScriptTypeManager"/> into which <see cref="IScriptTypeHandler"/> must be registered
+        /// before <see cref="Run"/> in order for <see cref="ISetupScript"/> added to <see cref="Scripts"/> to be executed.
+        /// </summary>
         public ScriptTypeManager ScriptTypeManager
         {
             get { return _scriptTypeManager; }
         }
         
-        public PackageScriptCollector Scripts
+        /// <summary>
+        /// Gets the <see cref="ScriptCollector"/>.
+        /// </summary>
+        public ScriptCollector Scripts
         {
             get { return _scripts; }
         }
@@ -50,15 +57,15 @@ namespace CK.Setup
         public bool RevertOrderingNames { get; set; }
 
         /// <summary>
-        /// Registers any number of <see cref="ISetupableItem"/> and/or <see cref="IDependentItemDiscoverer"/> and executes
+        /// Registers any number of <see cref="IDependentItem"/> and/or <see cref="IDependentItemDiscoverer"/> and executes
         /// the whole setup process (<see cref="SetupEngine.RunInit"/>, <see cref="SetupEngine.RunInit"/>, <see cref="SetupEngine.RunInstall"/>, <see cref="SetupEngine.RunSettle"/>).
         /// </summary>
-        /// <param name="items">Objects that can be <see cref="ISetupableItem"/>, <see cref="IDependentItemDiscoverer"/> or both.</param>
+        /// <param name="items">Objects that can be <see cref="IDependentItem"/>, <see cref="IDependentItemDiscoverer"/> or both.</param>
         /// <returns>A <see cref="SetupEngineRegisterResult"/> that captures detailed information about the registration result.</returns>
         public bool Run( params object[] items )
         {
             ActivityLoggerPathCatcher path = new ActivityLoggerPathCatcher();
-            _logger.Output.RegisterClient( path );
+            _logger.Output.RegisterMuxClient( path );
             ISetupSessionMemory m = null;
             try
             {
@@ -87,7 +94,7 @@ namespace CK.Setup
             {
                 using( _logger.OpenGroup( LogLevel.Info, "Register step." ) )
                 {
-                    SetupEngineRegisterResult r = engine.Register( items.OfType<IDependentItem>(), items.OfType<IDependentItemDiscoverer>(), RevertOrderingNames );
+                    SetupEngineRegisterResult r = engine.Register( items.OfType<IDependentItem>(), items.OfType<IDependentItemDiscoverer>(), RevertOrderingNames ? new DependencySorter.Options() { ReverseName = true } : null );
                     if( !r.IsValid )
                     {
                         r.LogError( _logger );
@@ -121,7 +128,7 @@ namespace CK.Setup
                     _logger.Info( "{0} previous Setup attempt(s). Last on {2}, error was: '{1}'.", _memory.StartCount, _memory.LastError, _memory.LastStartDate );
                 }
                 engine = new SetupEngine( _versionRepository, m, _logger, _driverFactory );
-                ScriptHandlerBuilder scriptBuilder = new ScriptHandlerBuilder( engine, _scripts, _scriptTypeManager );
+                ScriptSetupHandlerBuilder scriptBuilder = new ScriptSetupHandlerBuilder( engine, _scripts, _scriptTypeManager );
             }
             return engine;
         }

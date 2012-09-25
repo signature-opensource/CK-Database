@@ -1,0 +1,92 @@
+﻿using System;
+using CK.Core;
+
+
+namespace CK.Setup
+{
+
+    public interface IStObjSetupData : IStObjSetupDataBase
+    {
+        /// <summary>
+        /// Gets the full name without its context. 
+        /// </summary>
+        string FullNameWithoutContext { get; }
+
+        /// <summary>
+        /// Gets the list of available versions and optional associated previous full names with a string like: "1.2.4, Previous.Name = 1.3.1, A.New.Name=1.4.1, 1.5.0"
+        /// </summary>
+        string Versions { get; }
+
+        /// <summary>
+        /// Gets the full name of the container.
+        /// If the container is already defined by the <see cref="P:StObj"/>, names must match otherwise an error occurs.
+        /// This allow name binding to an existing container or package that is not a Structure Object: it should be rarely used.
+        /// </summary>
+        string ContainerFullName { get; }
+
+        /// <summary>
+        /// Gets the type of the <see cref="IDependentItem"/> to use instead of the default <see cref="StObjDynamicPackageItem"/>. 
+        /// When set, this masks the <see cref="ItemTypeName"/> property,  otherwise <see cref="ItemTypeName"/> can be used to 
+        /// designate a specific <see cref="IDependentItem"/>.
+        /// This property is inherited.
+        /// </summary>
+        Type ItemType { get; }
+
+        /// <summary>
+        /// Gets the assembly qualified type name of the <see cref="IDependentItem"/> to use instead of the default <see cref="StObjDynamicPackageItem"/>. 
+        /// This is used ONLY if <see cref="ItemType"/> is not set.
+        /// This property is inherited.
+        /// </summary>
+        string ItemTypeName { get; }
+
+        /// <summary>
+        /// Gets setup driver type (when not null this masks the <see cref="DriverTypeName"/> property).
+        /// This is used ONLY if <see cref="ItemType"/> and <see cref="ItemTypeName"/> are not set.
+        /// This enables the use of a specialized <see cref="SetupDriver"/> bound to a default <see cref="StObjDynamicPackageItem"/>.
+        /// This property is inherited.
+        /// </summary>
+        /// <remarks>
+        /// When let to null (and no <see cref="DriverTypeName"/> is specified either), 
+        /// the standard <see cref="SetupDriver"/> is used.
+        /// </remarks>
+        Type DriverType { get; }
+
+        /// <summary>
+        /// Gets the assembly qualified name of the setup driver type.
+        /// This is used ONLY if <see cref="ItemType"/>, <see cref="ItemTypeName"/> and <see cref="DriverType"/> are not set.
+        /// This is the ultimate fallback in order to use anything else than the default <see cref="SetupDriver"/> (bound to a default <see cref="StObjDynamicPackageItem"/>).
+        /// This property is inherited.
+        /// </summary>
+        /// <remarks>
+        /// When let to null (and no <see cref="DriverType"/> is specified either), 
+        /// the standard <see cref="PackageDriver"/> is used.
+        /// </remarks>
+        string DriverTypeName { get; }
+
+        /// <summary>
+        /// Gets whether a Model package is associated to this object. The Model is required by this object
+        /// and by each and every Model associated to the objects that require this object.
+        /// </summary>
+        /// <remarks>
+        /// This is not inherited.
+        /// </remarks>
+        bool HasModel { get; }
+        
+        /// <summary>
+        /// Gets whether this object must not be considered as a <see cref="IDependentItemContainer"/>: no items 
+        /// must be subordinated to this object.
+        /// This property is inherited.
+        /// </summary>
+        bool NoContent { get; }
+
+        /// <summary>
+        /// Gets the list of requirements (can be <see cref="IDependentItem"/> instances or named references).
+        /// </summary>
+        IReadOnlyList<IDependentItemRef> RequiredBy { get; }
+
+        /// <summary>
+        /// Gets the list of reverse requirements (can be <see cref="IDependentItem"/> instances or named references).
+        /// </summary>
+        IReadOnlyList<IDependentItemRef> Requires { get; }
+    }
+}

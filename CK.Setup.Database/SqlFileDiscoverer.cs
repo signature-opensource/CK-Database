@@ -11,9 +11,14 @@ namespace CK.Setup.Database
 {
     public class SqlFileDiscoverer : IDependentItemDiscoverer
     {
+        /// <summary>
+        /// This is the default <see cref="ScriptSource.Name"/> used by <see cref="DiscoverSqlFiles"/>.
+        /// </summary>
+        public const string DefaultSourceName = "file-sql";
+
         ISqlObjectBuilder _sqlObjectBuilder;
         IActivityLogger _logger;
-        List<DynamicPackage> _packages;
+        List<DynamicPackageItem> _packages;
         List<IVersionedItem> _sqlObjects;
 
         int _packageDiscoverErrorCount;
@@ -27,7 +32,7 @@ namespace CK.Setup.Database
             _sqlObjectBuilder = sqlObjectBuilder;
             _logger = logger;
 
-            _packages = new List<DynamicPackage>();
+            _packages = new List<DynamicPackageItem>();
             _sqlObjects = new List<IVersionedItem>();
         }
 
@@ -41,6 +46,11 @@ namespace CK.Setup.Database
             get { return _sqlFileDiscoverErrorCount; }
         }
 
+        /// <summary>
+        /// Discovers *.ck files recursively in a directory and collects them internally as <see cref="DynamicPackageItem"/>.
+        /// </summary>
+        /// <param name="directoryPath">Root path to start.</param>
+        /// <returns>True on success. Any warn or error are logged in the <see cref="IActivityLogger"/> that has been provided to the constructor.</returns>
         public bool DiscoverPackages( string directoryPath )
         {
             using( _logger.OpenGroup( LogLevel.Info, "Discovering *.ck package files in '{0}'.", directoryPath ) )
@@ -59,17 +69,27 @@ namespace CK.Setup.Database
             }
         }
 
-        public bool DiscoverSqlFiles( string directoryPath, PackageScriptCollector collector, string sqlFileScriptType = "file-sql" )
+        /// <summary>
+        /// Discovers *.sql files recursively in a directory and, depending on their type, either registers them in the script <paramref name="collector"/>
+        /// or consider them as <see cref="IVersionedItem"/> and collects them internally.
+        /// </summary>
+        /// <param name="directoryPath">Root path to start.</param>
+        /// <param name="collector">Optional scripts collector.</param>
+        /// <param name="sqlFileScriptSource">The <see cref="ScriptSource.Name"/> for the <paramref name="collector"/>.
+        /// It must have been registered as a source in a <see cref="ScriptTypeHandler"/>, itself registered in the <see cref="ScriptTypeManager"/> associated to the collector.
+        /// </param>
+        /// <returns>True on success. Any warn or error are logged in the <see cref="IActivityLogger"/> that has been provided to the constructor.</returns>
+        public bool DiscoverSqlFiles( string directoryPath, ScriptCollector collector = null, string sqlFileScriptSource = DefaultSourceName )
         {
-            using( _logger.OpenGroup( LogLevel.Info, "Discovering Sql files in '{0}' for type '{1}'.", directoryPath, sqlFileScriptType ) )
+            using( _logger.OpenGroup( LogLevel.Info, "Discovering Sql files in '{0}' for source '{1}'.", directoryPath, sqlFileScriptSource ) )
             {
                 CheckDirectoryPath( directoryPath );
-                if( String.IsNullOrWhiteSpace( sqlFileScriptType ) ) throw new ArgumentException( "Must not be null, empty or white space.", "sqlFileScriptType" );
+                if( String.IsNullOrWhiteSpace( sqlFileScriptSource ) ) throw new ArgumentException( "Must not be null, empty or white space.", "sqlFileScriptSource" );
 
                 bool result = true;
                 foreach( var path in Directory.EnumerateFiles( directoryPath, "*.sql", SearchOption.AllDirectories ) )
                 {
-                    if( !RegisterFileSql( path, collector, sqlFileScriptType ) )
+                    if( !RegisterFileSql( path, collector, sqlFileScriptSource ) )
                     {
                         _sqlFileDiscoverErrorCount++;
                         result = false;
@@ -84,14 +104,14 @@ namespace CK.Setup.Database
             return _packages.Concat( _sqlObjects );
         }
 
-        bool RegisterFileSql( string path, PackageScriptCollector collector, string sqlFileScriptType )
+        bool RegisterFileSql( string path, ScriptCollector collector, string sqlFileScriptSource )
         {
             ParsedFileName f;
             if( !ParsedFileName.TryParse( Path.GetFileName( path ), Path.GetDirectoryName( path ), true, out f ) ) return false;
-            return DoRegisterSql( f, collector, () => File.ReadAllText( path ), () => new FileSetupScript( f, sqlFileScriptType ) );
+            return DoRegisterSql( f, collector, () => File.ReadAllText( path ), () => new FileSetupScript( f, sqlFileScriptSource ) );
         }
 
-        bool DoRegisterSql( ParsedFileName f, PackageScriptCollector collector, Func<string> readContent, Func<ISetupScript> createSetupScript )
+        bool DoRegisterSql( ParsedFileName f, ScriptCollector collector, Func<string> readContent, Func<ISetupScript> createSetupScript )
         {
             if( f.SetupStep != SetupStep.None )
             {
@@ -113,9 +133,9 @@ namespace CK.Setup.Database
                     IVersionedItem item = _sqlObjectBuilder.Create( _logger, text );
                     if( item != null )
                     {
-                        if( item.FullName != f.ContainerFullName )
+                        if( item.FullName != f.FullNameWithoutContext )
                         {
-                            _logger.Error( "Name from the file is '{0}' whereas content indicates '{1}'. Names must match.", f.ContainerFullName, item.FullName );
+                            _logger.Error( "Name from the file is '{0}' whereas content indicates '{1}'. Names must match.", f.FullName, item.FullName );
                             return false;
                         }
                         _logger.CloseGroup( item.FullName );
@@ -144,7 +164,7 @@ namespace CK.Setup.Database
                 }
                 try
                 {
-                    DynamicPackage p = ReadPackageFileFormat( e );
+                    DynamicPackageItem p = ReadPackageFileFormat( e );
                     _packages.Add( p );
                     _logger.CloseGroup( String.Format( "SetupPackage '{0}' found.", p.FullName ) );
                     return true;
@@ -157,19 +177,19 @@ namespace CK.Setup.Database
             }
         }
 
-        static public DynamicPackage ReadPackageFileFormat( XElement e )
+        static public DynamicPackageItem ReadPackageFileFormat( XElement e )
         {
-            DynamicPackage p;
+            DynamicPackageItem p;
             XElement model = e.Elements( "Model" ).SingleOrDefault();
             if( model != null )
             {
-                p = new DynamicPackage( "SetupPWithModel" );
+                p = new DynamicPackageItem( "SetupPWithModel" );
                 p.EnsureModel().Requires.Clear();
                 foreach( var a in model.Elements( "Requirements" ).Attributes( "Requires" ) ) p.Model.Requires.AddCommaSeparatedString( (string)a );
                 p.Model.RequiredBy.Clear();
                 foreach( var a in e.Elements( "Requirements" ).Attributes( "RequiredBy" ) ) p.Model.RequiredBy.AddCommaSeparatedString( (string)a );
             }
-            else p = new DynamicPackage( "SetupP" );
+            else p = new DynamicPackageItem( "SetupP" );
             p.FullName = (string)e.AttributeRequired( "FullName" );
             p.SetVersionsString( (string)e.AttributeRequired( "Versions" ) );
             p.Requires.Clear();
