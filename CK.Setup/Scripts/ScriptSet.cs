@@ -61,7 +61,15 @@ namespace CK.Setup
                 return true;
             }
 
-            public TypedScriptVector GetScriptVector( SetupCallGroupStep step, Version from, Version to )
+            /// <summary>
+            /// Computes the list of scripts to execute between to upgrade from a version to another one.
+            /// </summary>
+            /// <param name="step">The setup phasis.</param>
+            /// <param name="from">The starting version. Can be null.</param>
+            /// <param name="to">The final version. When null, the "no version" script, if it exists, is always returned.</param>
+            /// <param name="alwaysAddNoVersionScript">True to return the "no version" script even when there are no scripts to execute.</param>
+            /// <returns>The list of version or null if no scripts must be executed.</returns>
+            public TypedScriptVector GetScriptVector( SetupCallGroupStep step, Version from, Version to, bool alwaysAddNoVersionScript = false )
             {
                 Debug.Assert( _scripts.Values.Where( s => s.Name.CallContainerStep == step ).Count( s => s.Name.Version == null ) <= 1, "There is either 0 or 1 'no version' script for a step." );
 
@@ -70,7 +78,7 @@ namespace CK.Setup
                     // Delivers only the NoVersion script if it exists.
                     var noV = _scripts.Values.Where( s => s.Name.CallContainerStep == step && s.Name.Version == null ).SingleOrDefault();
                     if( noV != null ) return new TypedScriptVector( noV );
-                    return new TypedScriptVector();
+                    return null;
                 }
 
                 var versionStep = _scripts.Values.Where( s => s.Name.CallContainerStep == step && s.Name.Version != null && !s.Name.IsDowngradeScript && s.Name.Version <= to );
@@ -79,11 +87,11 @@ namespace CK.Setup
                 {
                     // If there is no "from", consider the best one as the starting point.
                     // If there is no script at all, there is nothing to do.
-                    if( !versionStep.Any() ) return new TypedScriptVector();
+                    if( !versionStep.Any() ) return alwaysAddNoVersionScript && noVersion != null ? new TypedScriptVector( noVersion ) : null;
                     // Looking for the best version script, not migration one.
                     var startingVersions = versionStep.Where( s => s.Name.FromVersion == null );
                     // If there is only migration scripts... there is nothing to do.
-                    if( !startingVersions.Any() ) return new TypedScriptVector();
+                    if( !startingVersions.Any() ) return alwaysAddNoVersionScript && noVersion != null ? new TypedScriptVector( noVersion ) : null;
                     // Taking the better one.
                     ISetupScript maxVersion = startingVersions.MaxBy( s => s.Name.Version );
                     
@@ -97,7 +105,7 @@ namespace CK.Setup
                     return new TypedScriptVector( coveringMigrationScripts, noVersion );
                 }
                 var scripts = versionStep.Where( s => s.Name.BelongsToUpgradeFrom( from ) ).ToList();
-                if( scripts.Count == 0 ) return new TypedScriptVector();
+                if( scripts.Count == 0 ) return alwaysAddNoVersionScript && noVersion != null ? new TypedScriptVector( noVersion ) : null;
                 if( scripts.Count == 1 ) return new TypedScriptVector( scripts[0], noVersion );
 
                 scripts.Sort( CoveringScript.CompareUpgradeScripts );

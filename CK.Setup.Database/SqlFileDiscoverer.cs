@@ -12,7 +12,7 @@ namespace CK.Setup.Database
     public class SqlFileDiscoverer : IDependentItemDiscoverer
     {
         /// <summary>
-        /// This is the default <see cref="ScriptSource.Name"/> used by <see cref="DiscoverSqlFiles"/>.
+        /// The default <see cref="ScriptSource.Name"/> used by <see cref="DiscoverSqlFiles"/> is "file-sql".
         /// </summary>
         public const string DefaultSourceName = "file-sql";
 

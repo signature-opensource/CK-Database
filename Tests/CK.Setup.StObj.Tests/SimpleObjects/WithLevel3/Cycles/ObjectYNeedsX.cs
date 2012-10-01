@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace CK.Setup.StObj.Tests.SimpleObjects.WithLevel3.Cycles
 {
 
-    public class ObjectYNeedsX : IAmbiantContract
+    public class ObjectYNeedsX : IAmbientContract
     {
         void Construct( ObjectXNeedsY other )
         {

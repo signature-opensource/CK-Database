@@ -53,7 +53,7 @@ namespace CK.Setup
                     _noContent = parent.NoContent;
                     
                     // We accept to inherit from parent HasModel, only if 
-                    // we are the root ambiant contract (consider attributes on above classes to 
+                    // we are the root ambient contract (consider attributes on above classes to 
                     // be kind of "definer").
                     if( isInRoot )
                     {
@@ -73,7 +73,7 @@ namespace CK.Setup
                 if( _containerFullName == null ) _containerFullName = parent.ContainerFullName;
             }
 
-            // If we are the root of the ambiant contract, we consider that base classes
+            // If we are the root of the ambient contract, we consider that base classes
             // preinitialize our value.
             if( isInRoot && parent != null )
             {

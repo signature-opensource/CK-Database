@@ -6,7 +6,7 @@ using CK.Core;
 
 namespace CK.Setup.SqlServer
 {
-    public class SqlDefaultDatabase : SqlDatabase, IAmbiantContract
+    public class SqlDefaultDatabase : SqlDatabase, IAmbientContract
     {
         public void Construct( string connectionString = null )
         {

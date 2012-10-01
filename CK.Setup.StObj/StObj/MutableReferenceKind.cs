@@ -37,9 +37,9 @@ namespace CK.Setup
         ConstructParameter = 8,
 
         /// <summary>
-        /// Ambiant property.
+        /// Ambient property.
         /// </summary>
-        AmbiantProperty = 16,
+        AmbientProperty = 16,
 
     }
 }

@@ -4,7 +4,7 @@ using NUnit.Framework;
 
 namespace CK.Setup.StObj.Tests.SimpleObjects
 {
-    public class PackageForAB : IAmbiantContract
+    public class PackageForAB : IAmbientContract
     {
         public int ConstructCount { get; protected set; }
 

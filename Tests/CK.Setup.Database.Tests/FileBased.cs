@@ -137,15 +137,11 @@ namespace CK.Setup.Database.Tests
             }
             {
                 var v = scriptsForSql.GetScriptVector( SetupCallGroupStep.Init, new Version( 1, 1, 9 ), new Version( 1, 1, 10 ) );
-                Assert.That( v.Final, Is.Null );
-                Assert.That( v.HasTheNoVersionScript, Is.False, "Nothing is installed: the no version script will not be added." );
-                CheckScripts( v );
+                Assert.That( v, Is.Null, "Nothing is installed: the no version script will not be added." );
             }
             {
                 var v = scriptsForSql.GetScriptVector( SetupCallGroupStep.Init, new Version( 1, 0, 0 ), new Version( 1, 1, 10 ) );
-                Assert.That( v.Final, Is.Null );
-                Assert.That( v.HasTheNoVersionScript, Is.False, "Nothing is installed: the no version script will not be added." );
-                CheckScripts( v );
+                Assert.That( v, Is.Null, "Nothing is installed: the no version script will not be added." );
             }
 
             {

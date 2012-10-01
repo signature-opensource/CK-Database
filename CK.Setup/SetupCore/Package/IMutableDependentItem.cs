@@ -6,6 +6,7 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
+    /// A mutable version of an <see cref="IDependentItem"/>
     /// </summary>
     public interface IMutableDependentItem : IDependentItem
     {

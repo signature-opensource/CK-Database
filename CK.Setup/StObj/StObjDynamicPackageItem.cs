@@ -8,13 +8,28 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// Default <see cref="IMutableDependentItem"/> implementation associated to <see cref="IStObj"/> object
-    /// used when the <see cref="IStObjSetupData"/> does not specify a dedicated implementation (<see cref="IStObjSetupData.ItemType"/> 
-    /// nor <see cref="IStObjSetupData.ItemTypeName"/> are set).
-    /// May be used as a base class for more specific item implementation.
+    /// Default <see cref="IMutableDependentItem"/> implementation associated to <see cref="IStObj"/> object.
+    /// Used when the <see cref="IStObjSetupData"/> does not specify a dedicated implementation (<see cref="IStObjSetupData.ItemType"/> 
+    /// nor <see cref="IStObjSetupData.ItemTypeName"/> are set) but can be used as a base class for more specific item implementation.
     /// </summary>
     public class StObjDynamicPackageItem : DynamicPackageItem
     {
+        /// <summary>
+        /// Initializes a new <see cref="StObjDynamicPackageItem"/> that must be manually configured.
+        /// </summary>
+        /// <param name="itemType">
+        /// Type of item (must not be longer than 16 characters). 
+        /// It is "StObjItem" or "StObjPackage" when initialized by the <see cref="StObjDynamicPackageItem(IActivityLogger,IStObjSetupData)">other constructor</see>.
+        /// </param>
+        /// <param name="driverType">Type of the associated driver or its assembly qualified name.</param>
+        /// <param name="obj">The final <see cref="Object"/>.</param>
+        protected StObjDynamicPackageItem( string itemType, object driverType, object obj )
+            : base( itemType, driverType )
+        {
+            if( obj == null ) throw new ArgumentNullException( "obj" );
+            Object = obj;
+        }
+
         /// <summary>
         /// Initializes a new <see cref="StObjDynamicPackageItem"/> initialized by a <see cref="IStObjSetupData"/>.
         /// </summary>
@@ -24,18 +39,18 @@ namespace CK.Setup
             : base( data.NoContent ? "StObjItem" : "StObjPackage", (object)data.DriverType ?? data.DriverTypeName )
         {
             Debug.Assert( Model == null, "Initially, a DynamicPackageItem has no model." );
-            Debug.Assert( data.ItemType == null || data.ItemTypeName == null, "If we are using a DynamicPackageItem, this is because no explicit ItemType nor ItemTypeName have been set." );
+            Debug.Assert( data.ItemType == null || typeof( StObjDynamicPackageItem ).IsAssignableFrom( data.ItemType ), "If we are using a StObjDynamicPackageItem, this is because no explicit ItemType (nor ItemTypeName) have been set, or it is a type that specializes this." );
             ThisIsNotAContainer = data.NoContent;
             if( data.HasModel ) EnsureModel();
             SetVersionsString( data.Versions );
-            StructuredObject = data.StObj.StructuredObject;
+            Object = data.StObj.Object;
             FullName = data.FullName;
         }
 
         /// <summary>
         /// Gets the associated object instance (the final, most specialized, structured object).
         /// </summary>
-        public object StructuredObject { get; private set; }
+        public object Object { get; private set; }
 
     }
 }

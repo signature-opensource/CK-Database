@@ -167,7 +167,7 @@ namespace CK.Setup.StObj.Tests
 
                 IStObj theObject = result.Default.StObjMapper[typeof( CK.Setup.StObj.Tests.SimpleObjects.LoggerInjection.LoggerInjected )];
                 Assert.That( theObject, Is.Not.Null );
-                Assert.That( theObject.StructuredObject, Is.Not.Null.And.InstanceOf<CK.Setup.StObj.Tests.SimpleObjects.LoggerInjection.LoggerInjected>() );
+                Assert.That( theObject.Object, Is.Not.Null.And.InstanceOf<CK.Setup.StObj.Tests.SimpleObjects.LoggerInjection.LoggerInjected>() );
             }
         }
 

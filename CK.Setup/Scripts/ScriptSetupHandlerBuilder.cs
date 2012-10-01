@@ -22,7 +22,8 @@ namespace CK.Setup
             _engine = engine;
             _scriptCollector = scripts;
             _scriptManager = scriptManager;
-            _engine.DriverEvent += OnDriverEvent;
+            
+            _engine.SetupEvent += OnSetupEvent;
         }
 
         void OnDriverEvent( object sender, DriverEventArgs e )
@@ -30,34 +31,71 @@ namespace CK.Setup
             Debug.Assert( sender == _engine );
             if( e.Step == SetupStep.None && !e.Driver.IsGroupHead )
             {
-                Debug.Assert( e.Driver is SetupDriver, "Since it is not a Head." );
-
-                bool casingDiffer;
-                ScriptSet scripts = _scriptCollector.Find( e.Driver.FullName, out casingDiffer );
-                if( scripts != null )
+                Debug.Assert( e.Driver is SetupDriver, "Since it is not the Head of a Group." );
+                SetupDriver driver = (SetupDriver)e.Driver;
+                if( !driver.LoadScripts( _scriptCollector ) )
                 {
-                    if( casingDiffer )
+                    _engine.Logger.Fatal( "Driver '{0}' failed to load scripts.", e.Driver.FullName );
+                    e.CancelSetup = true;
+                }
+           }
+        }
+
+        void OnSetupEvent( object sender, SetupEventArgs e )
+        {
+            Debug.Assert( sender == _engine );
+            if( e.ErrorOccurred ) 
+            {
+                // On any error, remove the event listener.
+                _engine.DriverEvent -= OnDriverEvent;
+                return;
+            }
+            if( e.Step == SetupStep.None )
+            {
+                // At startuo, subscribe to the Driver event.
+                _engine.DriverEvent += OnDriverEvent;
+            }
+            else 
+            {
+                // For any step other than None, we do not need the event listener anymore.
+                _engine.DriverEvent -= OnDriverEvent;
+
+                // At initialization step, we create the ScriptSetupHandler for each registered scripts.
+                if( e.Step == SetupStep.Init )
+                {
+                    var allHandlers = _scriptManager.GetSortedHandlers( _engine.Logger );
+                    if( allHandlers == null )
                     {
-                        _engine.Logger.Fatal( "The names are case sensitive: setupable item '{0}' can not use scripts registered for '{1}'.", e.Driver.FullName, scripts.FullName );
-                        e.CancelSetup = true;
+                        // GetSortedHandlers logged the detailed reason.
+                        e.CancelSetup( "Errors while getting script handlers." );
                     }
-                    else
+                    if( allHandlers.Count > 0 )
                     {
-                        var allHandlers = _scriptManager.GetSortedHandlers( _engine.Logger );
-                        if( allHandlers == null )
+                        foreach( var d in _engine.AllDrivers )
                         {
-                            // GetSortedHandlers already logged the reason.
-                            e.CancelSetup = true;
-                        }
-                        else if( allHandlers.Count > 0 )
-                        {
-                            var d = (SetupDriver)e.Driver;
-                            foreach( ScriptTypeHandler h in allHandlers )
+                            Debug.Assert( (d is SetupDriver) == !d.IsGroupHead, "There is only 2 DriverBase specializations: SetupDriver and GroupHeadSetupDriver." );
+                            SetupDriver driver = d as SetupDriver;
+                            if( driver != null )
                             {
-                                ScriptSet.ForHandler fH = scripts.FindScripts( h );
-                                if( fH != null && fH.Count > 0 )
+                                bool casingDiffer;
+                                ScriptSet scripts = _scriptCollector.Find( driver.FullName, out casingDiffer );
+                                if( scripts != null )
                                 {
-                                    new ScriptSetupHandler( d, fH );
+                                    if( casingDiffer )
+                                    {
+                                        e.CancelSetup( String.Format( "The names are case sensitive: setupable item '{0}' can not use scripts registered for '{1}'.", driver.FullName, scripts.FullName ) );
+                                    }
+                                    else
+                                    {
+                                        foreach( ScriptTypeHandler h in allHandlers )
+                                        {
+                                            ScriptSet.ForHandler fH = scripts.FindScripts( h );
+                                            if( fH != null && fH.Count > 0 )
+                                            {
+                                                new ScriptSetupHandler( driver, fH );
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -65,6 +103,7 @@ namespace CK.Setup
                 }
             }
         }
+
 
     }
 }

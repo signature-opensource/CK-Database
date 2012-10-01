@@ -59,6 +59,37 @@ namespace CK.Setup
         }
 
         /// <summary>
+        /// Registers a set of resources (multiples <see cref="ResSetupScript"/>) from a <see cref="ResourceLocator"/>, a full name prefix and a script source
+        /// (the script source must be registered in the associated <see cref="ScriptTypeManager"/>).
+        /// </summary>
+        /// <param name="logger">Logger to use.</param>
+        /// <param name="scriptSource">The script source under which registering the <see cref="ISetupScript"/>.</param>
+        /// <param name="resLoc">Resource locator.</param>
+        /// <param name="fullName">Name of the object. This is used as a prefix for the resource names.</param>
+        /// <param name="fileSuffix">Keeps only resources that ends with this suffix.</param>
+        /// <returns>The number of scripts that have been added.</returns>
+        public int AddFromResources( IActivityLogger logger, string scriptSource, ResourceLocator resLoc, string fullName, string fileSuffix )
+        {
+            if( logger == null ) throw new ArgumentNullException( "logger" );
+            if( scriptSource == null ) throw new ArgumentNullException( "scriptSource" );
+            if( resLoc == null ) throw new ArgumentNullException( "scriptSource" );
+            if( fullName == null ) throw new ArgumentNullException( "fullName" );
+            if( fileSuffix == null ) throw new ArgumentNullException( "fileSuffix" );
+            int count = 0;
+            var candidates = resLoc.GetNames( fullName + '.' ).Where( n => n.EndsWith( fileSuffix, StringComparison.OrdinalIgnoreCase ) );
+            foreach( var s in candidates )
+            {
+                ParsedFileName name;
+                if( ParsedFileName.TryParse( s, resLoc, true, out name ) )
+                {
+                    Add( new ResSetupScript( name, scriptSource ), logger );
+                    ++count;
+                }
+            }
+            return count;
+        }
+
+        /// <summary>
         /// Finds a <see cref="ScriptSet"/> associated to a package.
         /// </summary>
         /// <param name="fullName">The full name of the package.</param>

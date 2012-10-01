@@ -2,37 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using CK.Core;
 using CK.SqlServer;
 
 namespace CK.Setup.SqlServer
 {
-    public class SqlDatabaseSetupDriver : StObjSetupDriver<SqlDatabase>
+    public class SqlDatabaseSetupDriver : SetupDriver
     {
-        SqlManager _connection;
+        readonly SqlDatabaseConnectionSetupDriver _connection;
 
-        public SqlDatabaseSetupDriver( BuildInfo info, ISqlManagerProvider sqlProvider )
+        public SqlDatabaseSetupDriver( BuildInfo info )
             : base( info )
         {
-            _connection = sqlProvider.FindManagerByName( Object.Name );
+            _connection = (SqlDatabaseConnectionSetupDriver)DirectDependencies[Item.ConnectionItem];
         }
 
-        protected override bool Init()
-        {
-            if( !Object.IsDefaultDatabase && Object.InstallCore )
-            {
-                _connection.EnsureCKCoreIsInstalled( Engine.Logger );
-            }
-            return base.Init();
-        }
-
-        protected override bool  Install()
-        {
-            foreach( var name in Object.Schemas )
-            {
-                _connection.ExecuteOneScript( String.Format( "if not exists(select 1 from sys.schemas where name = '{0}') begin exec( 'create schema {0}' ); end", name ), Engine.Logger );
-            } 
-            return true;
-        }
+        /// <summary>
+        /// Masked Item to formally be associated to a <see cref="SqlDatabaseItem"/> item.
+        /// </summary>
+        public new SqlDatabaseItem Item { get { return (SqlDatabaseItem)base.Item; } }
 
     }
 }

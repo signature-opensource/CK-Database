@@ -7,11 +7,11 @@
 
 //namespace CK.Setup
 //{
-//    public class SqlPackage : IAmbiantContractDefiner
+//    public class SqlPackage : IAmbientContractDefiner
 //    {
 //    }
 
-//    public class SqlTable : IAmbiantContractDefiner
+//    public class SqlTable : IAmbientContractDefiner
 //    {
 //        public SqlTable()
 //        {

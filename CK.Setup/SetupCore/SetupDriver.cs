@@ -7,7 +7,7 @@ using System.Diagnostics;
 namespace CK.Setup
 {
     /// <summary>
-    /// Generic driver for <see cref="IDependentItem"/> (also handles <see cref="IDependentItemGoup"/>).
+    /// Generic driver for <see cref="IDependentItem"/> (also handles the composite <see cref="IDependentItemGoup"/>).
     /// </summary>
     public class SetupDriver : DriverBase
     {
@@ -53,6 +53,11 @@ namespace CK.Setup
         public bool IsGroup 
         { 
             get { return Head != null; } 
+        }
+
+        protected internal virtual bool LoadScripts( ScriptCollector scripts )
+        {
+            return true;
         }
 
         internal bool ExecuteHeadInit()
@@ -138,6 +143,12 @@ namespace CK.Setup
 
         #region Handler management
 
+        /// <summary>
+        /// Adds a <see cref="ISetupHandler"/> in the chain of handlers.
+        /// Can be called during any setup phasis (typically in the <see cref="SetupStep.Init"/> phasis): the new handler 
+        /// will be appended to the the handlers queue and will be called normally.
+        /// </summary>
+        /// <param name="handler">The handler to append.</param>
         public void AddHandler( ISetupHandler handler )
         {
             if( handler == null ) throw new ArgumentNullException( "handler" );

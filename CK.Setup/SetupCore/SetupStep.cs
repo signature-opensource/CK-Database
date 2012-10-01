@@ -9,7 +9,8 @@ namespace CK.Setup
         None    = 0,
         Init    = 1,
         Install = 3,
-        Settle  = 5
+        Settle  = 5,
+        Done    = 7
     }
 
 }

@@ -8,21 +8,21 @@ using System.Diagnostics;
 
 namespace CK.Setup
 {
-    internal class StObjTypeInfo : AmbiantTypeInfo
+    internal class StObjTypeInfo : AmbientTypeInfo
     {
-        internal StObjTypeInfo( IActivityLogger logger, AmbiantTypeInfo parent, Type t )
+        internal StObjTypeInfo( IActivityLogger logger, AmbientTypeInfo parent, Type t )
             : base( parent, t )
         {
-            #region Ambiant properties.
+            #region Ambient properties.
             {
-                // For type that have no Generalization: we must handle [AmbiantProperty] on base classes (no AmbiantTypeInfo since they are not Ambiant contract).
-                // Currently, the ambiant properties information is not cached and rebuilt each time.
+                // For type that have no Generalization: we must handle [AmbientProperty] on base classes (no AmbientTypeInfo since they are not Ambient contract).
+                // Currently, the ambient properties information is not cached and rebuilt each time.
                 // May be once, a cache will be here, but for the moment, I consider it useless.
-                IEnumerable<AmbiantPropertyInfo> fromParent = DirectGeneralization != null ? DirectGeneralization.AmbiantProperties : CreateAllAmbiantPropertyList( Type.BaseType, logger );
-                // Ambiant properties for the exact Type (can be null).
-                IList<AmbiantPropertyInfo> collector = CreateAmbiantPropertyList( Type, logger );
-                // Both fromParent and collector can be null: MergeAboveAmbiantProperties handles it.
-                AmbiantProperties = MergeAboveAmbiantProperties( fromParent, collector, logger ).ToReadOnlyCollection();
+                IEnumerable<AmbientPropertyInfo> fromParent = DirectGeneralization != null ? DirectGeneralization.AmbientProperties : CreateAllAmbientPropertyList( Type.BaseType, logger );
+                // Ambient properties for the exact Type (can be null).
+                IList<AmbientPropertyInfo> collector = CreateAmbientPropertyList( Type, logger );
+                // Both fromParent and collector can be null: MergeAboveAmbientProperties handles it.
+                AmbientProperties = MergeAboveAmbientProperties( fromParent, collector, logger ).ToReadOnlyCollection();
             }
             #endregion
 
@@ -95,7 +95,7 @@ namespace CK.Setup
 
         public new StObjTypeInfo DirectGeneralization { get { return (StObjTypeInfo)base.DirectGeneralization; } }
 
-        public readonly IReadOnlyCollection<AmbiantPropertyInfo> AmbiantProperties;
+        public readonly IReadOnlyCollection<AmbientPropertyInfo> AmbientProperties;
 
         public readonly IStObjAttribute StObjAttribute;
 
@@ -119,61 +119,67 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// An ambiant property must be public or protected in order to be "specialized" either by overriding (for virtual ones)
+        /// An ambient property must be public or protected in order to be "specialized" either by overriding (for virtual ones)
         /// or by masking ('new' keyword in C#), typically to support covariance return type.
-        /// The "Property Covariance" trick can be supported here because ambiant properties are conceptually "read only" properties:
+        /// The "Property Covariance" trick can be supported here because ambient properties are conceptually "read only" properties:
         /// they must be settable only to enable the framework (and no one else) to actually set their values.
         /// </summary>
-        List<AmbiantPropertyInfo> CreateAmbiantPropertyList( Type t, IActivityLogger logger )
+        List<AmbientPropertyInfo> CreateAmbientPropertyList( Type t, IActivityLogger logger )
         {
             var properties = t.GetProperties( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly ).Where( p => !p.Name.Contains( '.' ) );
-            List<AmbiantPropertyInfo> result = null;
+            List<AmbientPropertyInfo> result = null;
             foreach( var p in properties )
             {
-                AmbiantPropertyAttribute attr = (AmbiantPropertyAttribute)Attribute.GetCustomAttribute( p, typeof( AmbiantPropertyAttribute ), false );
+                AmbientPropertyAttribute attr = (AmbientPropertyAttribute)Attribute.GetCustomAttribute( p, typeof( AmbientPropertyAttribute ), false );
                 if( attr == null ) continue;
 
                 var mSet = p.GetSetMethod( true );
                 var mGet = p.GetGetMethod( true );
-                if( (mSet == null || mSet.IsPrivate) || (mGet == null || mGet.IsPrivate) )
+                bool isMergeable = typeof(IMergeable).IsAssignableFrom( p.PropertyType );
+                bool isWriteable = mSet != null && !mSet.IsPrivate;
+                if( (!isWriteable && !isMergeable ) || (mGet == null || mGet.IsPrivate) )
                 {
                     // Warning: not a "Property Covariance" compliant property since
                     // specialized classes will not be able to "override" its signature.
                     // Even if it is not the "Property Covariance" that is targeted, a private get or set
                     // implies a "slicing" of the (base) type that defeats the specialization paradigm (with Covariance).
-                    logger.Error( "Property '{0}' of '{1}' can not be considered as an Ambiant property. An Ambiant property must be readable and writeable (no private setter or getter).", p.Name, p.DeclaringType.FullName );
+                    logger.Error( "Property '{0}' of '{1}' can not be considered as an Ambient property. An Ambient property must be readable and writeable (no private setter or getter), or implement CK.Core.IMergeable interface.", p.Name, p.DeclaringType.FullName );
                 }
                 else
                 {
-                    if( result == null ) result = new List<AmbiantPropertyInfo>();
+                    if( !isWriteable && isMergeable )
+                    {
+                        throw new NotImplementedException( "Not writeable mergeable properties are not yet supported (need a IStObjMutableItem.SetPropertyStructuralSetter to initialize it)." );
+                    }
+                    if( result == null ) result = new List<AmbientPropertyInfo>();
                     Debug.Assert( result.Find( a => a.Name == p.Name ) == null, "No homonym properties in .Net framework." );
-                    result.Add( new AmbiantPropertyInfo( this, p, attr ) );
+                    result.Add( new AmbientPropertyInfo( this, p, attr, isWriteable, isMergeable ) );
                 }
             }
             return result;
         }
 
-        private IEnumerable<AmbiantPropertyInfo> MergeAboveAmbiantProperties( IEnumerable<AmbiantPropertyInfo> above, IList<AmbiantPropertyInfo> collector, IActivityLogger logger )
+        private IEnumerable<AmbientPropertyInfo> MergeAboveAmbientProperties( IEnumerable<AmbientPropertyInfo> above, IList<AmbientPropertyInfo> collector, IActivityLogger logger )
         {
-            if( collector == null || collector.Count == 0 ) return above ?? ReadOnlyListEmpty<AmbiantPropertyInfo>.Empty;
+            if( collector == null || collector.Count == 0 ) return above ?? ReadOnlyListEmpty<AmbientPropertyInfo>.Empty;
             if( above != null )
             {
                 // Add 'above' into 'collector' before returning it.
-                List<AmbiantPropertyInfo> fromAbove = null;
-                foreach( AmbiantPropertyInfo a in above )
+                List<AmbientPropertyInfo> fromAbove = null;
+                foreach( AmbientPropertyInfo a in above )
                 {
-                    AmbiantPropertyInfo exists = collector.FirstOrDefault( p => p.Name == a.Name );
+                    AmbientPropertyInfo exists = collector.FirstOrDefault( p => p.Name == a.Name );
                     if( exists != null )
                     {
                         // Covariance ?
                         if( exists.PropertyType != a.PropertyType && !a.PropertyType.IsAssignableFrom( exists.PropertyType ) )
                         {
-                            logger.Error( "Ambiant property '{0}.{1}' type is not compatible with base property '{2}.{1}'.", exists.DeclaringType.FullName, exists.Name, a.DeclaringType.FullName );
+                            logger.Error( "Ambient property '{0}.{1}' type is not compatible with base property '{2}.{1}'.", exists.DeclaringType.FullName, exists.Name, a.DeclaringType.FullName );
                         }
                         // A required property can not become optional.
                         if( exists.IsOptional && !a.IsOptional )
                         {
-                            logger.Error( "Ambiant property '{0}.{1}' states that it is optional but base property '{2}.{1}' is required.", exists.DeclaringType.FullName, exists.Name, a.DeclaringType.FullName );
+                            logger.Error( "Ambient property '{0}.{1}' states that it is optional but base property '{2}.{1}' is required.", exists.DeclaringType.FullName, exists.Name, a.DeclaringType.FullName );
                         }
                         // Context inheritance (if not defined).
                         if( exists.Context == null )
@@ -188,7 +194,7 @@ namespace CK.Setup
                     }
                     else
                     {
-                        if( fromAbove == null ) fromAbove = new List<AmbiantPropertyInfo>();
+                        if( fromAbove == null ) fromAbove = new List<AmbientPropertyInfo>();
                         fromAbove.Add( a );
                     }
                 }
@@ -197,10 +203,10 @@ namespace CK.Setup
             return collector;
         }
 
-        private IEnumerable<AmbiantPropertyInfo> CreateAllAmbiantPropertyList( Type type, IActivityLogger logger )
+        private IEnumerable<AmbientPropertyInfo> CreateAllAmbientPropertyList( Type type, IActivityLogger logger )
         {
             if( type == typeof( object ) ) return null;
-            return MergeAboveAmbiantProperties( CreateAllAmbiantPropertyList( type.BaseType, logger ), CreateAmbiantPropertyList( type, logger ), logger );
+            return MergeAboveAmbientProperties( CreateAllAmbientPropertyList( type.BaseType, logger ), CreateAmbientPropertyList( type, logger ), logger );
         }
 
 

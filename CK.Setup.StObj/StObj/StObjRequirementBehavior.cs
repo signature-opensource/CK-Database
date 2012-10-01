@@ -11,7 +11,7 @@ namespace CK.Setup
     public enum StObjRequirementBehavior
     {
         /// <summary>
-        /// The reference is not necessarily an existing <see cref="IAmbiantContract"/> (a <see cref="IStObj"/>).
+        /// The reference is not necessarily an existing <see cref="IAmbientContract"/> (a <see cref="IStObj"/>).
         /// if an existing IStObj can not be found, the <see cref="IStObjDependencyResolver"/> is automatically sollicited.
         /// </summary>
         None = 0,
@@ -23,13 +23,13 @@ namespace CK.Setup
         WarnIfNotStObj,
 
         /// <summary>
-        /// The reference must be an existing <see cref="IAmbiantContract"/> (a <see cref="IStObj"/>).
+        /// The reference must be an existing <see cref="IAmbientContract"/> (a <see cref="IStObj"/>).
         /// </summary>
         ErrorIfNotStObj,
 
         /// <summary>
         /// The reference must be satisfied only by <see cref="IStObjDependencyResolver"/>. 
-        /// Any existing <see cref="IAmbiantContract"/> (a <see cref="IStObj"/>) that could do the job are ignored.
+        /// Any existing <see cref="IAmbientContract"/> (a <see cref="IStObj"/>) that could do the job are ignored.
         /// </summary>
         ExternalReference
     }

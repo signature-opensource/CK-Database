@@ -4,7 +4,7 @@ using NUnit.Framework;
 
 namespace CK.Setup.StObj.Tests.SimpleObjects
 {
-    public class ObjectB : IAmbiantContract
+    public class ObjectB : IAmbientContract
     {
         IAbstractionA _a;
 

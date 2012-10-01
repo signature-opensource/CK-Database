@@ -7,11 +7,19 @@ using CK.Core;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Fully mutable <see cref="IDependentItemContainer"/> and <see cref="IVersionnedItem"/> with a an optional associated <see cref="Model"/> package
+    /// and  configurable type for the associated <see cref="SetupDriver"/>.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="DynamicContainerItem"/> can be used a pure mutable Container is needed (no versions nor associated model).
+    /// </remarks>
     public class DynamicPackageItem : PackageItemBase, IDependentItemContainerAsk, IDependentItemDiscoverer
     {
         string _fullName;
         PackageModelItem _model;
         object _driverType;
+        bool _notContainer; 
 
         /// <summary>
         /// Initializes a new dynamic package.
@@ -65,14 +73,23 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets or sets whether this container is actually NOT a container.
-        /// When set to true, if this container contains children or if an item declares this
-        /// item as its container, an error is raised during the ordering of the dependency graph.
+        /// When set to true, if an item declares this item as its container, an error is raised 
+        /// during the ordering of the dependency graph.
         /// </summary>
-        public bool ThisIsNotAContainer { get; set; }
+        public bool ThisIsNotAContainer 
+        {
+            get { return _notContainer; }
+            set { _notContainer = value; }
+        }
 
         protected override string GetFullName()
         {
             return _fullName;
+        }
+
+        protected override bool GetThisIsNotAContainer()
+        {
+            return _notContainer;
         }
 
         protected override object StartDependencySort()

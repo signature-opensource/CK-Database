@@ -27,12 +27,13 @@ namespace CK.SqlServer
         {
             if( cmd.CommandType == System.Data.CommandType.StoredProcedure )
             {
-                w.Write( "exec {0} ", cmd.CommandText );
+                w.Write( "exec {0} <= ", cmd.CommandText );
                 WriteCallParameters( w, cmd.Parameters );
             }
             else
             {
                 WriteCallParameters( w, cmd.Parameters );
+                w.Write( " => " );
                 w.Write( cmd.CommandText );
             }
             return w;

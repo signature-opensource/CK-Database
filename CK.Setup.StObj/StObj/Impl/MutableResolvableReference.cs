@@ -9,7 +9,7 @@ using System.Reflection;
 namespace CK.Setup
 {
     /// <summary>
-    /// Base class for construct parameters or ambiant properties: these references can be resolved
+    /// Base class for construct parameters or ambient properties: these references can be resolved
     /// either structurally or dynamically (by <see cref="IStObjDependencyResolver"/>).
     /// </summary>
     internal abstract class MutableResolvableReference : MutableReference, IResolvableReference
@@ -31,7 +31,7 @@ namespace CK.Setup
 
         public bool IsOptional { get; set; }
 
-        public object Value { get; set; }
+        public object Value { get; private set; }
 
         internal bool HasBeenResolved { get { return Value != Type.Missing; } }
 

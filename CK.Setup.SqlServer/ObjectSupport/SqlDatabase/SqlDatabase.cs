@@ -6,16 +6,20 @@ using CK.Core;
 
 namespace CK.Setup.SqlServer
 {
-    [Setup( DriverType = typeof( SqlDatabaseSetupDriver ) )]
-    public class SqlDatabase : IStObjSetupConfigurator
+
+    [Setup( ItemType = typeof( SqlDatabaseItem ) )]
+    public class SqlDatabase
     {
+        /// <summary>
+        /// Default database name is "db".
+        /// </summary>
         public const string DefaultDatabaseName = "db";
 
         string _name;
         Dictionary<string,string> _schemas;
         bool _installCore;
 
-        protected SqlDatabase()
+        public SqlDatabase()
         {
             _name = DefaultDatabaseName;
             _schemas = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
@@ -23,6 +27,7 @@ namespace CK.Setup.SqlServer
 
         /// <summary>
         /// Gets or sets the logical name of the database.
+        /// Defaults to <see cref="DefaultDatabaseName"/>.
         /// </summary>
         public string Name
         {
@@ -85,17 +90,7 @@ namespace CK.Setup.SqlServer
         /// </summary>
         public bool IsDefaultDatabase
         {
-            get { return ReferenceEquals( _name, DefaultDatabaseName ); }
-        }
-
-        protected virtual void ConfigureDependentItem( IActivityLogger logger, IMutableStObjSetupData data )
-        {
-            data.FullNameWithoutContext = Name;
-        }
-
-        void IStObjSetupConfigurator.ConfigureDependentItem( IActivityLogger logger, IMutableStObjSetupData data )
-        {
-            ConfigureDependentItem( logger, data );
+            get { return _name == DefaultDatabaseName; }
         }
     }
 }

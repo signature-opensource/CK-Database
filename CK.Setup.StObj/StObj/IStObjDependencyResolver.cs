@@ -13,21 +13,19 @@ namespace CK.Setup
     {
         /// <summary>
         /// Dynamically called for each parameter before automatic resolution.
+        /// The <see cref="IResolvableReference.SetResolvedValue"/> can be used to set the parameter value.
         /// </summary>
         /// <param name="logger">The logger to use.</param>
-        /// <param name="parameter">
-        /// Parameter description with a mutable <see cref="IResolvableReference.Value"/>.
-        /// </param>
+        /// <param name="parameter">Parameter description.</param>
         void ResolveParameterValue( IActivityLogger logger, IParameter parameter );
         
         /// <summary>
-        /// Dynamically called for each parameter before automatic resolution.
+        /// Dynamically called for each ambient property before automatic resolution.
+        /// The <see cref="IResolvableReference.SetResolvedValue"/> can be used to set the property value.
         /// </summary>
         /// <param name="logger">The logger to use.</param>
-        /// <param name="ambiantProperty">
-        /// Property description with a mutable <see cref="IResolvableReference.Value"/>.
-        /// </param>
-        void ResolvePropertyValue( IActivityLogger logger, IAmbiantProperty ambiantProperty );
+        /// <param name="ambientProperty">Property description.</param>
+        void ResolvePropertyValue( IActivityLogger logger, IAmbientProperty ambientProperty );
     }
 
 }

@@ -16,38 +16,38 @@ namespace CK.Setup.Tests
     {
     }
 
-    public class Ambiant : Base, IAmbiantContract
+    public class Ambient : Base, IAmbientContract
     {
     }
 
-    public class AmbiantChild : Ambiant
+    public class AmbientChild : Ambient
     {
     }
 
-    public abstract class AmbiantChildAbstractTail : AmbiantChild
+    public abstract class AmbientChildAbstractTail : AmbientChild
     {
     }
 
-    public abstract class AbstractAmbiant : AbstractBase, IAmbiantContract
+    public abstract class AbstractAmbient : AbstractBase, IAmbientContract
     {
     }
 
     [AddContext( typeof( int ) )]
     [RemoveDefaultContext]
-    public class AmbiantScoped : Ambiant
+    public class AmbientScoped : Ambient
     {
     }
 
-    public class AmbiantScopedChild : AmbiantScoped
+    public class AmbientScopedChild : AmbientScoped
     {
     }
 
-    public class ScopedBaseDefiner : Base, IAmbiantContractDefiner
+    public class ScopedBaseDefiner : Base, IAmbientContractDefiner
     {
     }
 
     [AddContext( typeof( int ) )]
-    [RemoveContext( typeof( AmbiantContractCollector.DefaultContextType ) )]
+    [RemoveContext( typeof( AmbientContractCollector.DefaultContextType ) )]
     public class ByDefiner : ScopedBaseDefiner
     {
     }
@@ -58,21 +58,21 @@ namespace CK.Setup.Tests
     {
     }
 
-    public class DefaultAmbiantContractCollector : AmbiantContractCollector<AmbiantTypeInfo>
+    public class DefaultAmbientContractCollector : AmbientContractCollector<AmbientTypeInfo>
     {
-        public DefaultAmbiantContractCollector( IActivityLogger logger = null, IAmbiantContractDispatcher contextDispatcher = null )
-            : base( logger ?? DefaultActivityLogger.Empty, ( l, p, t ) => new AmbiantTypeInfo( p, t ), contextDispatcher )
+        public DefaultAmbientContractCollector( IActivityLogger logger = null, IAmbientContractDispatcher contextDispatcher = null )
+            : base( logger ?? DefaultActivityLogger.Empty, ( l, p, t ) => new AmbientTypeInfo( p, t ), contextDispatcher )
         {
         }
     }
 
     [TestFixture]
-    public class AmbiantContractTests
+    public class AmbientContractTests
     {
         [Test]
-        public void NonAmbiantContextRegistration()
+        public void NonAmbientContextRegistration()
         {
-            DefaultAmbiantContractCollector c = new DefaultAmbiantContractCollector();
+            DefaultAmbientContractCollector c = new DefaultAmbientContractCollector();
             Assert.That( c.RegisterClass( typeof( Base ) ), Is.True );
             Assert.That( c.RegisteredTypeCount, Is.EqualTo( 2 ), "AbstractBase, Base" );
 
@@ -81,25 +81,25 @@ namespace CK.Setup.Tests
         }
 
         [Test]
-        public void OneAmbiantContextRegistration()
+        public void OneAmbientContextRegistration()
         {
-            DefaultAmbiantContractCollector c = new DefaultAmbiantContractCollector();
-            Assert.That( c.RegisterClass( typeof( Ambiant ) ), Is.True );
-            Assert.That( c.RegisteredTypeCount, Is.EqualTo( 3 ), "AbstractBase, Base, Ambiant" );
+            DefaultAmbientContractCollector c = new DefaultAmbientContractCollector();
+            Assert.That( c.RegisterClass( typeof( Ambient ) ), Is.True );
+            Assert.That( c.RegisteredTypeCount, Is.EqualTo( 3 ), "AbstractBase, Base, Ambient" );
 
             var r = c.GetResult().Default;
             Assert.That( r.ConcreteClasses.Count, Is.EqualTo( 1 ) );
             Assert.That( r.ClassAmbiguities.Count, Is.EqualTo( 0 ) );
             Assert.That( r.InterfaceAmbiguities.Count, Is.EqualTo( 0 ) );
-            CheckLocalMappings( r.Mappings, Tuple.Create( typeof( Ambiant ), typeof( Ambiant ) ) );
+            CheckLocalMappings( r.Mappings, Tuple.Create( typeof( Ambient ), typeof( Ambient ) ) );
         }
 
         [Test]
-        public void OneAbstractAmbiantContextRegistration()
+        public void OneAbstractAmbientContextRegistration()
         {
-            DefaultAmbiantContractCollector c = new DefaultAmbiantContractCollector();
-            Assert.That( c.RegisterClass( typeof( AbstractAmbiant ) ), Is.True );
-            Assert.That( c.RegisteredTypeCount, Is.EqualTo( 2 ), "AbstractBase, AbstractAmbiant" );
+            DefaultAmbientContractCollector c = new DefaultAmbientContractCollector();
+            Assert.That( c.RegisterClass( typeof( AbstractAmbient ) ), Is.True );
+            Assert.That( c.RegisteredTypeCount, Is.EqualTo( 2 ), "AbstractBase, AbstractAmbient" );
 
             var r = c.GetResult().Default;
             Assert.That( r.AbstractTails.Count, Is.EqualTo( 1 ) );
@@ -112,26 +112,26 @@ namespace CK.Setup.Tests
         [Test]
         public void ChildRegistration()
         {
-            Action<DefaultAmbiantContractCollector> check = c =>
+            Action<DefaultAmbientContractCollector> check = c =>
                 {
-                    Assert.That( c.RegisteredTypeCount, Is.EqualTo( 4 ), "AbstractBase, Base, Ambiant, AmbiantChild" );
+                    Assert.That( c.RegisteredTypeCount, Is.EqualTo( 4 ), "AbstractBase, Base, Ambient, AmbientChild" );
                     var r = c.GetResult().Default;
                     Assert.That( r.AbstractTails.Count, Is.EqualTo( 0 ) );
                     Assert.That( r.ConcreteClasses.Count, Is.EqualTo( 1 ) );
                     Assert.That( r.ClassAmbiguities.Count, Is.EqualTo( 0 ) );
                     Assert.That( r.InterfaceAmbiguities.Count, Is.EqualTo( 0 ) );
-                    CheckLocalMappings( r.Mappings, Tuple.Create( typeof( Ambiant ), typeof( AmbiantChild ) ), Tuple.Create( typeof( AmbiantChild ), typeof( AmbiantChild ) ) );
+                    CheckLocalMappings( r.Mappings, Tuple.Create( typeof( Ambient ), typeof( AmbientChild ) ), Tuple.Create( typeof( AmbientChild ), typeof( AmbientChild ) ) );
                 };
             {
-                DefaultAmbiantContractCollector c = new DefaultAmbiantContractCollector();
-                Assert.That( c.RegisterClass( typeof( AmbiantChild ) ), Is.True );
-                Assert.That( c.RegisterClass( typeof( Ambiant ) ), Is.False, "Already registered by its Child." );
+                DefaultAmbientContractCollector c = new DefaultAmbientContractCollector();
+                Assert.That( c.RegisterClass( typeof( AmbientChild ) ), Is.True );
+                Assert.That( c.RegisterClass( typeof( Ambient ) ), Is.False, "Already registered by its Child." );
                 check( c );
             }
             {
-                DefaultAmbiantContractCollector c = new DefaultAmbiantContractCollector();
-                Assert.That( c.RegisterClass( typeof( Ambiant ) ), Is.True );
-                Assert.That( c.RegisterClass( typeof( AmbiantChild ) ), Is.True );
+                DefaultAmbientContractCollector c = new DefaultAmbientContractCollector();
+                Assert.That( c.RegisterClass( typeof( Ambient ) ), Is.True );
+                Assert.That( c.RegisterClass( typeof( AmbientChild ) ), Is.True );
                 check( c );
             }
         }
@@ -139,28 +139,28 @@ namespace CK.Setup.Tests
         [Test]
         public void AbstractTail()
         {
-            Action<DefaultAmbiantContractCollector> check = c =>
+            Action<DefaultAmbientContractCollector> check = c =>
             {
-                Assert.That( c.RegisteredTypeCount, Is.EqualTo( 5 ), "AbstractBase, Base, Ambiant, AmbiantChild, AmbiantChildAbstractTail" );
+                Assert.That( c.RegisteredTypeCount, Is.EqualTo( 5 ), "AbstractBase, Base, Ambient, AmbientChild, AmbientChildAbstractTail" );
                 var r = c.GetResult().Default;
-                Assert.That( r.AbstractTails.Count, Is.EqualTo( 1 ), "AmbiantChild => AmbiantChildAbstractTail is the abstract tail." );
-                Assert.That( r.ConcreteClasses.Count, Is.EqualTo( 1 ), "AmbiantChild is the Concrete class." );
+                Assert.That( r.AbstractTails.Count, Is.EqualTo( 1 ), "AmbientChild => AmbientChildAbstractTail is the abstract tail." );
+                Assert.That( r.ConcreteClasses.Count, Is.EqualTo( 1 ), "AmbientChild is the Concrete class." );
                 Assert.That( r.ClassAmbiguities.Count, Is.EqualTo( 0 ) );
                 Assert.That( r.InterfaceAmbiguities.Count, Is.EqualTo( 0 ) );
-                CheckLocalMappings( r.Mappings, Tuple.Create( typeof( Ambiant ), typeof( AmbiantChild ) ), Tuple.Create( typeof( AmbiantChild ), typeof( AmbiantChild ) ) );
+                CheckLocalMappings( r.Mappings, Tuple.Create( typeof( Ambient ), typeof( AmbientChild ) ), Tuple.Create( typeof( AmbientChild ), typeof( AmbientChild ) ) );
             };
             {
-                DefaultAmbiantContractCollector c = new DefaultAmbiantContractCollector();
-                Assert.That( c.RegisterClass( typeof( AmbiantChildAbstractTail ) ), Is.True );
-                Assert.That( c.RegisterClass( typeof( AmbiantChild ) ), Is.False, "Already registered by its Child." );
-                Assert.That( c.RegisterClass( typeof( Ambiant ) ), Is.False, "Already registered by its Child." );
+                DefaultAmbientContractCollector c = new DefaultAmbientContractCollector();
+                Assert.That( c.RegisterClass( typeof( AmbientChildAbstractTail ) ), Is.True );
+                Assert.That( c.RegisterClass( typeof( AmbientChild ) ), Is.False, "Already registered by its Child." );
+                Assert.That( c.RegisterClass( typeof( Ambient ) ), Is.False, "Already registered by its Child." );
                 check( c );
             }
             {
-                DefaultAmbiantContractCollector c = new DefaultAmbiantContractCollector();
-                Assert.That( c.RegisterClass( typeof( Ambiant ) ), Is.True );
-                Assert.That( c.RegisterClass( typeof( AmbiantChild ) ), Is.True );
-                Assert.That( c.RegisterClass( typeof( AmbiantChildAbstractTail ) ), Is.True );
+                DefaultAmbientContractCollector c = new DefaultAmbientContractCollector();
+                Assert.That( c.RegisterClass( typeof( Ambient ) ), Is.True );
+                Assert.That( c.RegisterClass( typeof( AmbientChild ) ), Is.True );
+                Assert.That( c.RegisterClass( typeof( AmbientChildAbstractTail ) ), Is.True );
                 check( c );
             }
         }
@@ -168,39 +168,39 @@ namespace CK.Setup.Tests
         [Test]
         public void WithContext()
         {
-            Action<DefaultAmbiantContractCollector> check = c =>
+            Action<DefaultAmbientContractCollector> check = c =>
             {
                 var rAll = c.GetResult();
                 rAll.LogErrorAndWarnings( TestHelper.Logger );
                 {
                     var r = rAll.Default;
                     Assert.That( r.AbstractTails.Count, Is.EqualTo( 1 ) );
-                    Assert.That( r.ConcreteClasses.Count == 1 && r.ConcreteClasses[0].Select( a => a.Type ).SequenceEqual( new[] { typeof( Ambiant ), typeof( AmbiantChild ) } ) );
+                    Assert.That( r.ConcreteClasses.Count == 1 && r.ConcreteClasses[0].Select( a => a.Type ).SequenceEqual( new[] { typeof( Ambient ), typeof( AmbientChild ) } ) );
                     Assert.That( r.ClassAmbiguities.Count, Is.EqualTo( 0 ) );
                     Assert.That( r.InterfaceAmbiguities.Count, Is.EqualTo( 0 ) );
-                    CheckLocalMappings( r.Mappings, Tuple.Create( typeof( Ambiant ), typeof( AmbiantChild ) ), Tuple.Create( typeof( AmbiantChild ), typeof( AmbiantChild ) ) );
+                    CheckLocalMappings( r.Mappings, Tuple.Create( typeof( Ambient ), typeof( AmbientChild ) ), Tuple.Create( typeof( AmbientChild ), typeof( AmbientChild ) ) );
                 }
                 {
                     var r = rAll[typeof( int )];
                     Assert.That( r.AbstractTails.Count, Is.EqualTo( 0 ) );
-                    Assert.That( r.ConcreteClasses.Count == 1 && r.ConcreteClasses[0].Select( a => a.Type ).SequenceEqual( new[] { typeof( Ambiant ), typeof( AmbiantScoped ) } ) );
+                    Assert.That( r.ConcreteClasses.Count == 1 && r.ConcreteClasses[0].Select( a => a.Type ).SequenceEqual( new[] { typeof( Ambient ), typeof( AmbientScoped ) } ) );
                     Assert.That( r.ClassAmbiguities.Count, Is.EqualTo( 0 ) );
                     Assert.That( r.InterfaceAmbiguities.Count, Is.EqualTo( 0 ) );
-                    CheckLocalMappings( r.Mappings, Tuple.Create( typeof( Ambiant ), typeof( AmbiantScoped ) ), Tuple.Create( typeof( AmbiantScoped ), typeof( AmbiantScoped ) ) );
+                    CheckLocalMappings( r.Mappings, Tuple.Create( typeof( Ambient ), typeof( AmbientScoped ) ), Tuple.Create( typeof( AmbientScoped ), typeof( AmbientScoped ) ) );
                 }
             };
             {
-                DefaultAmbiantContractCollector c = new DefaultAmbiantContractCollector();
-                Assert.That( c.RegisterClass( typeof( Ambiant ) ), Is.True );
-                Assert.That( c.RegisterClass( typeof( AmbiantScoped ) ), Is.True );
-                Assert.That( c.RegisterClass( typeof( AmbiantChildAbstractTail ) ), Is.True );
+                DefaultAmbientContractCollector c = new DefaultAmbientContractCollector();
+                Assert.That( c.RegisterClass( typeof( Ambient ) ), Is.True );
+                Assert.That( c.RegisterClass( typeof( AmbientScoped ) ), Is.True );
+                Assert.That( c.RegisterClass( typeof( AmbientChildAbstractTail ) ), Is.True );
                 check( c );
             }
             {
-                DefaultAmbiantContractCollector c = new DefaultAmbiantContractCollector();
-                Assert.That( c.RegisterClass( typeof( AmbiantChildAbstractTail ) ), Is.True );
-                Assert.That( c.RegisterClass( typeof( AmbiantScoped ) ), Is.True );
-                Assert.That( c.RegisterClass( typeof( Ambiant ) ), Is.False, "Registered by previous AmbiantChildAbstractTail." );
+                DefaultAmbientContractCollector c = new DefaultAmbientContractCollector();
+                Assert.That( c.RegisterClass( typeof( AmbientChildAbstractTail ) ), Is.True );
+                Assert.That( c.RegisterClass( typeof( AmbientScoped ) ), Is.True );
+                Assert.That( c.RegisterClass( typeof( Ambient ) ), Is.False, "Registered by previous AmbientChildAbstractTail." );
                 check( c );
             }
         }
@@ -208,27 +208,27 @@ namespace CK.Setup.Tests
         [Test]
         public void WithContextAndChild()
         {
-            Action<DefaultAmbiantContractCollector> check = c =>
+            Action<DefaultAmbientContractCollector> check = c =>
             {
                 var rAll = c.GetResult();
-                Assert.That( rAll.Default.ConcreteClasses.Count == 1 && rAll.Default.ConcreteClasses[0][0].Type == typeof( Ambiant ), "Default context contains Ambiant." );
+                Assert.That( rAll.Default.ConcreteClasses.Count == 1 && rAll.Default.ConcreteClasses[0][0].Type == typeof( Ambient ), "Default context contains Ambient." );
                 
-                // Whereas int context contains Ambiant, AmbiantScoped and AmbiantScopedChild.
+                // Whereas int context contains Ambient, AmbientScoped and AmbientScopedChild.
                 {
                     var r = rAll[typeof( int )];
                     Assert.That( r.AbstractTails.Count, Is.EqualTo( 0 ) );
-                    Assert.That( r.ConcreteClasses.Count == 1 && r.ConcreteClasses[0].Select( a => a.Type ).SequenceEqual( new[] { typeof( Ambiant ), typeof( AmbiantScoped ), typeof( AmbiantScopedChild ) } ) );
+                    Assert.That( r.ConcreteClasses.Count == 1 && r.ConcreteClasses[0].Select( a => a.Type ).SequenceEqual( new[] { typeof( Ambient ), typeof( AmbientScoped ), typeof( AmbientScopedChild ) } ) );
                     Assert.That( r.ClassAmbiguities.Count, Is.EqualTo( 0 ) );
                     Assert.That( r.InterfaceAmbiguities.Count, Is.EqualTo( 0 ) );
                     CheckLocalMappings( r.Mappings,
-                        Tuple.Create( typeof( Ambiant ), typeof( AmbiantScopedChild ) ),
-                        Tuple.Create( typeof( AmbiantScoped ), typeof( AmbiantScopedChild ) ),
-                        Tuple.Create( typeof( AmbiantScopedChild ), typeof( AmbiantScopedChild ) ) );
+                        Tuple.Create( typeof( Ambient ), typeof( AmbientScopedChild ) ),
+                        Tuple.Create( typeof( AmbientScoped ), typeof( AmbientScopedChild ) ),
+                        Tuple.Create( typeof( AmbientScopedChild ), typeof( AmbientScopedChild ) ) );
                 }
             };
             {
-                DefaultAmbiantContractCollector c = new DefaultAmbiantContractCollector();
-                Assert.That( c.RegisterClass( typeof( AmbiantScopedChild ) ), Is.True );
+                DefaultAmbientContractCollector c = new DefaultAmbientContractCollector();
+                Assert.That( c.RegisterClass( typeof( AmbientScopedChild ) ), Is.True );
                 check( c );
             }
         }
@@ -236,7 +236,7 @@ namespace CK.Setup.Tests
         [Test]
         public void DefinerAlone()
         {
-            Action<DefaultAmbiantContractCollector> check = c =>
+            Action<DefaultAmbientContractCollector> check = c =>
             {
                 Assert.That( c.RegisteredTypeCount, Is.EqualTo( 3 ), "AbstractBase, Base, ScopedBaseDefiner" );
                 var rAll = c.GetResult();
@@ -244,7 +244,7 @@ namespace CK.Setup.Tests
                 Assert.That( rAll.Count, Is.EqualTo( 1 ) );
             };
             {
-                DefaultAmbiantContractCollector c = new DefaultAmbiantContractCollector();
+                DefaultAmbientContractCollector c = new DefaultAmbientContractCollector();
                 Assert.That( c.RegisterClass( typeof( ScopedBaseDefiner ) ), Is.True );
                 check( c );
             }
@@ -253,7 +253,7 @@ namespace CK.Setup.Tests
         [Test]
         public void WithContextAndChildMove()
         {
-            Action<DefaultAmbiantContractCollector> check = c =>
+            Action<DefaultAmbientContractCollector> check = c =>
             {
                 var rAll = c.GetResult();
                 CheckEmpty( rAll.Default );
@@ -270,13 +270,13 @@ namespace CK.Setup.Tests
                     Tuple.Create( typeof( ScopedOtherFromDefiner ), typeof( ScopedOtherFromDefiner ) ) );
             };
             {
-                DefaultAmbiantContractCollector c = new DefaultAmbiantContractCollector();
+                DefaultAmbientContractCollector c = new DefaultAmbientContractCollector();
                 Assert.That( c.RegisterClass( typeof( ScopedOtherFromDefiner ) ), Is.True );
                 check( c );
             }
         }
 
-        private static void CheckEmpty( AmbiantContractCollectorContextualResult<AmbiantTypeInfo> r )
+        private static void CheckEmpty( AmbientContractCollectorContextualResult<AmbientTypeInfo> r )
         {
             Assert.That( r.AbstractTails.Count, Is.EqualTo( 0 ) );
             Assert.That( r.AbstractTails, Is.Empty );
@@ -289,7 +289,7 @@ namespace CK.Setup.Tests
             CheckLocalMappings( r.Mappings );
         }
 
-        static void CheckLocalMappings( IAmbiantTypeContextualMapper actual, params Tuple<Type, Type>[] expected )
+        static void CheckLocalMappings( IAmbientTypeContextualMapper actual, params Tuple<Type, Type>[] expected )
         {
             foreach( var e in expected )
             {

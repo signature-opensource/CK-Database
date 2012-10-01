@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using CK.Core;
+using System.Collections;
 
 namespace CK.Setup
 {
@@ -51,8 +52,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets ors sets whether the ordering for setupable items that share the same rank in the pure dependency graph must be inverted.
-        /// Defaults to true.
-        /// (see <see cref="DependencySorter"/> for more information.)
+        /// Defaults to false. (See <see cref="DependencySorter"/> for more information.)
         /// </summary>
         public bool RevertOrderingNames { get; set; }
 
@@ -94,12 +94,13 @@ namespace CK.Setup
             {
                 using( _logger.OpenGroup( LogLevel.Info, "Register step." ) )
                 {
-                    SetupEngineRegisterResult r = engine.Register( items.OfType<IDependentItem>(), items.OfType<IDependentItemDiscoverer>(), RevertOrderingNames ? new DependencySorter.Options() { ReverseName = true } : null );
+                    SetupEngineRegisterResult r = engine.Register( OfTypeRecurse<IDependentItem>( items ), items.OfType<IDependentItemDiscoverer>(), RevertOrderingNames ? new DependencySorter.Options() { ReverseName = true } : null );
                     if( !r.IsValid )
                     {
                         r.LogError( _logger );
                         return false;
                     }
+                    _logger.CloseGroup( String.Format( "{0} Setup items registered.", r.SortResult.SortedItems.Count ) );
                 }
                 using( _logger.OpenGroup( LogLevel.Info, "Init step." ) )
                 {
@@ -116,6 +117,40 @@ namespace CK.Setup
             }
             return true;
         }
+
+        static IEnumerable<T> OfTypeRecurse<T>( IEnumerable e )
+        {
+            return new Flattennifier().Flatten<T>( e );
+        }
+
+        class Flattennifier
+        {
+            Stack _stack;
+
+            public IEnumerable<T> Flatten<T>( IEnumerable e )
+            {
+                if( e != null )
+                {
+                    foreach( object o in e )
+                    {
+                        if( o is T ) yield return (T)o;
+                        if( o is IEnumerable<T> )
+                        {
+                            foreach( T o2 in (IEnumerable<T>)o ) if( o2 != null ) yield return o2;
+                        }
+                        if( o is IEnumerable && o != e )
+                        {
+                            if( _stack == null ) _stack = new Stack();
+                            else if( _stack.Contains( o ) ) break;
+                            _stack.Push( e );
+                            foreach( T o2 in Flatten<T>( (IEnumerable)o ) ) yield return o2;
+                            _stack.Pop();
+                        }
+                    }
+                }
+            }
+        }
+
 
         private SetupEngine CreateEngine( ISetupSessionMemory m )
         {

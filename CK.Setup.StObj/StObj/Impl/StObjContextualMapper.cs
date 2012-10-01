@@ -10,10 +10,10 @@ namespace CK.Setup
     public class StObjContextualMapper : IStObjContextualMapper
     {
         readonly Dictionary<Type,MutableItem> _items;
-        readonly IAmbiantTypeContextualMapper _mappings;
+        readonly IAmbientTypeContextualMapper _mappings;
         readonly StObjMapper _owner;
 
-        internal StObjContextualMapper( StObjMapper owner, IAmbiantTypeContextualMapper mappings )
+        internal StObjContextualMapper( StObjMapper owner, IAmbientTypeContextualMapper mappings )
         {
             _items = new Dictionary<Type, MutableItem>();
             _mappings = mappings;
@@ -36,7 +36,7 @@ namespace CK.Setup
             get { return _items.Count; }
         }
 
-        public IAmbiantTypeContextualMapper Mappings
+        public IAmbientTypeContextualMapper Mappings
         {
             get { return _mappings; }
         }
@@ -57,7 +57,7 @@ namespace CK.Setup
             MutableItem r;
             if( !_items.TryGetValue( t, out r ) )
             {
-                if( t.IsInterface && typeof( IAmbiantContract ).IsAssignableFrom( t ) )
+                if( t.IsInterface && typeof( IAmbientContract ).IsAssignableFrom( t ) )
                 {
                     t = _mappings.HighestImplementation( t );
                     if( t != null )

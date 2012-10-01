@@ -2,7 +2,7 @@
 
 namespace CK.Setup.StObj.Tests.SimpleObjects
 {
-    public interface IAbstractionA : IAmbiantContract
+    public interface IAbstractionA : IAmbientContract
     {
         int ConstructCount { get; }
         

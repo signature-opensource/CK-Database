@@ -19,8 +19,8 @@ namespace CK.Setup
         /// </summary>
         /// <param name="logger">Logger to use.</param>
         /// <param name="data">Descriptive data (initialized by attributes and other direct code-first approaches and configured by any <see cref="IStObjSetupConfigurator"/>).</param>
-        /// <returns>A <see cref="IMutableDependentItem"/> implementation that must be correctly initialized by the given data.</returns>
-        IMutableDependentItem CreateItem( IActivityLogger logger, IStObjSetupData data );
+        /// <returns>A <see cref="IMutableDependentItem"/> implementation that must be correctly initialized by the given data, or null to use the default <see cref="StObjDynamicPackageItem"/>.</returns>
+        IMutableDependentItem CreateDependentItem( IActivityLogger logger, IStObjSetupData data );
     }
 
 }

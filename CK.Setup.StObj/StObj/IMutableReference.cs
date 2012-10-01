@@ -29,7 +29,7 @@ namespace CK.Setup
         /// dependency may even be missing - ie. null - if <see cref="IMutableParameter.IsOptional"/> is true).
         /// </para>
         /// <para>
-        /// Defaults to <see cref="StObjRequirementBehavior.None"/> for ambiant properties and <see cref="IStObjMutableItem.Requiredby"/> since "required by" are always considered as optional.
+        /// Defaults to <see cref="StObjRequirementBehavior.None"/> for ambient properties and <see cref="IStObjMutableItem.Requiredby"/> since "required by" are always considered as optional.
         /// </para>
         /// </summary>
         StObjRequirementBehavior StObjRequirementBehavior { get; set; }
@@ -46,7 +46,7 @@ namespace CK.Setup
         /// Gets or sets the type of the reference. Can be set to null: container and requirements are ignored and 
         /// construct parameters are resolved to their default (<see cref="IMutableParameter.IsOptional"/> must be true).
         /// Of course, for construct parameters the type must be compatible with the formal parameter's type (similar
-        /// type compatibility is required for ambiant properties).
+        /// type compatibility is required for ambient properties).
         /// </summary>
         Type Type { get; set; }
 

@@ -36,7 +36,7 @@ namespace CK.Setup
                 foreach( var r in orderedObjects )
                 {
                     // Gets the StObjSetupDataBase that applies: the one of its base class or the one built from
-                    // the attibutes above if it is the root Ambiant Contract.
+                    // the attibutes above if it is the root Ambient Contract.
                     Debug.Assert( r.Generalization == null || setupableItems.ContainsKey( r.Generalization ), "Generalizations are required: they are processed first." );
 
                     StObjSetupData generalizationData = null;
@@ -50,7 +50,7 @@ namespace CK.Setup
                     SetupAttribute.ApplyAttributesConfigurator( _logger, r.ObjectType, data );
 
                     // If the object itself is a IStObjSetupConfigurator, calls it.
-                    IStObjSetupConfigurator objectItself = r.StructuredObject as IStObjSetupConfigurator;
+                    IStObjSetupConfigurator objectItself = r.Object as IStObjSetupConfigurator;
                     if( objectItself != null ) objectItself.ConfigureDependentItem( _logger, data );
 
                     // Calls external configuration.
@@ -60,8 +60,20 @@ namespace CK.Setup
                     try
                     {
                         data.ResolveTypes( _logger );
-                        if( _setupItemFactory != null ) data.SetupItem = _setupItemFactory.CreateItem( _logger, data );
-                        if( data.SetupItem == null )
+                        if( _setupItemFactory != null ) data.SetupItem = _setupItemFactory.CreateDependentItem( _logger, data );
+                        if( data.SetupItem != null )
+                        {
+                            // An item has been created by the factory. 
+                            // If the StObj has been referenced as a Container: data.StObj.IsContainer == true, 
+                            // we may check here that the type of the created item is able to be structurally considered as a Container:
+                            // we should just check here that it is a IDependentItemContainer (we ignore the IDependentItemContainerAsk 
+                            // that may, later dynamically refuses to be a Container since this will be handled during ordering by The DependencySorter).
+                            //
+                            // The actual binding from the Items to their Container is handled below (once all items have been created).
+                            // It is best to detect such inconsistencies below since we'll be able to give more precise error information to the user (ie, "This non Container Item 
+                            // is referenced by that Item as a Container", instead of only "This non Container item is used as a Container.").
+                        }
+                        else
                         {
                             Type itemType = data.ItemType;
                             if( itemType == null ) data.SetupItem = new StObjDynamicPackageItem( _logger, data );
@@ -75,6 +87,8 @@ namespace CK.Setup
                         if( generalizationData != null )
                         {
                             data.SetupItem.Generalization = generalizationData.SetupItem.GetReference();
+                            ISetupItemAwareObject awareObject = data.StObj.Object as ISetupItemAwareObject;
+                            if( awareObject != null ) awareObject.SetupItem = data.SetupItem;
                         }
                         setupableItems.Add( r, data );
                     }
@@ -111,12 +125,29 @@ namespace CK.Setup
                     {
                         _logger.Error( "Structure Object '{0}' is bound to Container named '{1}' but the PackageAttribute states that it must be in '{2}'.", data.FullName, existing.FullNameWithoutContext, data.ContainerFullName );
                     }
+                    // Even when a mismatch exists, we continue and bind the container configred at the StObj level (trying to raise more errors).
                 }
-                Debug.Assert( existing.SetupItem is IDependentItemContainer, "Creating a non container item for a StObj that has been referenced as a Container must have been checked before (at item creation time)." );
-                data.SetupItem.Container = ((IDependentItemContainer)existing.SetupItem).GetReference();
+                IDependentItemContainer c = existing.SetupItem as IDependentItemContainer;
+                if( c == null )
+                {
+                    if( existing.SetupItem != null )
+                    {
+                        _logger.Error( "Structure Object '{0}' is bound to a Container named '{1}' but the corresponding IDependentItem is not a IDependentItemContainer (its type is '{2}').", data.FullName, existing.FullNameWithoutContext, existing.SetupItem.GetType().FullName );
+                    }
+                    else
+                    {
+                        _logger.Error( "Structure Object '{0}' is bound to a Container named '{1}' but the corresponding IDependentItem has not been successfully created.", data.FullName, existing.FullNameWithoutContext );
+                    }
+                }
+                else
+                {
+                    data.SetupItem.Container = c.GetReference();
+                }
             }
             else
             {
+                // If the Container was not configured at the StObj level we let 
+                // the ContainerFullName (if specified) be the "named reference".
                 if( data.ContainerFullName != null )
                 {
                     data.SetupItem.Container = new NamedDependentItemContainerRef( data.ContainerFullName );

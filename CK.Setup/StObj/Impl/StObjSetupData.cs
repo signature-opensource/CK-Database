@@ -46,7 +46,7 @@ namespace CK.Setup
 
         public string FullName
         {
-            get { return AmbiantContractCollector.DisplayName( _stObj.Context, FullNameWithoutContext ); }
+            get { return AmbientContractCollector.DisplayName( _stObj.Context, FullNameWithoutContext ); }
         }
 
         public string Versions

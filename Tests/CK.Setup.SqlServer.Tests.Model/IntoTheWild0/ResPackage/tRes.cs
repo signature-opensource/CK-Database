@@ -9,7 +9,7 @@ namespace IntoTheWild0
 {
 
     [SqlTable( "tRes", Package = typeof( ResPackage ) ), Versions( "2.9.2" )]
-    public class tRes : SqlTableType
+    public class tRes : SqlTable
     {
     }
 }

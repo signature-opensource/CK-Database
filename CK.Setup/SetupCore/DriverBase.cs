@@ -146,5 +146,6 @@ namespace CK.Setup
         internal abstract bool ExecuteInstall();
         
         internal abstract bool ExecuteSettle();
+
     }
 }

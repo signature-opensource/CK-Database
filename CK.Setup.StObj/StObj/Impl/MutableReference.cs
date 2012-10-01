@@ -11,14 +11,14 @@ namespace CK.Setup
     {
         internal readonly MutableItem Owner;
         readonly MutableReferenceKind _kind;
-        static protected readonly MutableItem UnresolvedMarker = new MutableItem( null, AmbiantContractCollector.DefaultContext, null, AmbiantContractCollector.DefaultContext );
+        static protected readonly MutableItem UnresolvedMarker = new MutableItem( null, AmbientContractCollector.DefaultContext, null, AmbientContractCollector.DefaultContext );
 
         internal MutableReference( MutableItem owner, MutableReferenceKind kind )
         {
             Owner = owner;
             _kind = kind;
             if( _kind == MutableReferenceKind.Requires || (_kind&MutableReferenceKind.Container) != 0 ) StObjRequirementBehavior = StObjRequirementBehavior.ErrorIfNotStObj;
-            else if( _kind == MutableReferenceKind.RequiredBy || _kind == MutableReferenceKind.AmbiantProperty ) StObjRequirementBehavior = StObjRequirementBehavior.None;
+            else if( _kind == MutableReferenceKind.RequiredBy || _kind == MutableReferenceKind.AmbientProperty ) StObjRequirementBehavior = StObjRequirementBehavior.None;
             else
             {
                 Debug.Assert( (_kind & MutableReferenceKind.ConstructParameter) != 0 );
@@ -57,7 +57,7 @@ namespace CK.Setup
                 result = ctxResult.Find( Type );
                 if( result == null )
                 {
-                    WarnOrErrorIfStObjRequired( logger, String.Format( "{0} not found", AmbiantContractCollector.DisplayName( Context, Type ) ) );
+                    WarnOrErrorIfStObjRequired( logger, String.Format( "{0} not found", AmbientContractCollector.DisplayName( Context, Type ) ) );
                     return null;
                 }
             }

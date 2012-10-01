@@ -8,9 +8,13 @@ namespace CK.Setup
 {
     /// <summary>
     /// Mutable package implementation: any property can be changed (version information is handled
-    /// by the base <see cref="MultiVersionManager"/>).
+    /// by the base <see cref="MultiVersionManager"/>) except FullName and <see cref="IDependentItemContainerAsk.ThisIsNotAContainer"/> (that can be 
+    /// used to dynamically refuse to be referenced as a Container by other items) that must be provided through implementations of abstract methods.
     /// </summary>
-    public abstract class PackageItemBase : MultiVersionManager, IMutableDependentItem, IPackageItem, IDependentItemContainerRef
+    /// <remarks>
+    /// The <see cref="ContainerItemBase"/> must be used for container that do not have versions.
+    /// </remarks>
+    public abstract class PackageItemBase : MultiVersionManager, IMutableDependentItem, IDependentItemContainerAsk, IPackageItem, IDependentItemContainerRef
     {
         string _itemType;
         DependentItemList _requires;
@@ -87,17 +91,34 @@ namespace CK.Setup
         protected abstract string GetFullName();
 
         /// <summary>
-        /// Called at the very beginning of the setup phasis, before any calls are 
-        /// made to <see cref="GetFullName"/> (exposed as <see cref="IDependentItem.FullName"/>). 
-        /// This start has been already called on direct dependencies <see cref="Container"/> 
+        /// Gets whether this container is actually NOT a container.
+        /// When true, if an item declares this item as its container, an error is 
+        /// raised during the ordering of the dependency graph.
+        /// </summary>
+        protected abstract bool GetThisIsNotAContainer();
+
+        /// <summary>
+        /// Called at the very beginning of the setup phasis, before <see cref="IDependentItem.FullName"/> is used to planify the setup. 
+        /// This start method has been already called on direct dependencies <see cref="Container"/>, <see cref="Generalization"/>
         /// and <see cref="Requires"/> if they are <see cref="IDependentItem"/> (and not strings).
         /// </summary>
-        /// <returns>Must return the <see cref="Type"/> of the setup driver (specialization of <see cref="DriverBase"/>), its fully qualified name.</returns>
-        protected abstract object StartDependencySort();
+        /// <returns>
+        /// Must return the <see cref="Type"/> of the setup driver (specialization of <see cref="SetupDriver"/>), or its assembly qualified name.
+        /// By default, returns the type of <see cref="SetupDriver"/>.
+        /// </returns>
+        protected virtual object StartDependencySort()
+        {
+            return typeof( SetupDriver );
+        }
 
         object IDependentItem.StartDependencySort()
         {
             return StartDependencySort();
+        }
+
+        bool IDependentItemContainerAsk.ThisIsNotAContainer
+        {
+            get { return GetThisIsNotAContainer(); }
         }
 
         string IVersionedItem.ItemType

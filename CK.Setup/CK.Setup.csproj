@@ -45,11 +45,16 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Core\AssemblyExtension.cs" />
+    <Compile Include="Core\ResourceLocator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Scripts\ResSetupScript.cs" />
     <Compile Include="Scripts\ScriptSource.cs" />
     <Compile Include="Scripts\ScriptTypeHandler.cs" />
+    <Compile Include="SetupCore\SetupEventArgs.cs" />
+    <Compile Include="SetupCore\Package\ContainerItemBase.cs" />
     <Compile Include="SetupCore\Package\IMutableDependentItem.cs" />
     <Compile Include="SetupCore\Package\DynamicContainerItem.cs" />
     <Compile Include="SetupCore\Package\DependentItemList.cs" />
@@ -99,6 +104,7 @@
     <Compile Include="StObj\Attributes\IRequirementsAttribute.cs" />
     <Compile Include="StObj\Attributes\RequiresAttribute.cs" />
     <Compile Include="StObj\Attributes\SetupAttribute.cs" />
+    <Compile Include="StObj\ISetupItemAwareObject.cs" />
     <Compile Include="StObj\IStObjSetupItemFactory.cs" />
     <Compile Include="StObj\IMutableStObjSetupData.cs" />
     <Compile Include="StObj\IStObjSetupConfigurator.cs" />
@@ -112,7 +118,6 @@
     <Compile Include="StObj\Attributes\ISetupNameAttribute.cs" />
     <Compile Include="StObj\Attributes\SetupNameAttribute.cs" />
     <Compile Include="StObj\StObjSetupBuilder.cs" />
-    <Compile Include="StObj\StObjSetupDriver.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">

@@ -130,10 +130,13 @@ namespace CK.Setup
             {
                 if( _automaticModelRequirement )
                 {
-                    var fromPackage = _package.Requires
-                                                .Where( r => !r.FullName.StartsWith( "Model.", StringComparison.Ordinal ) )
-                                                .Select( r => new NamedDependentItemRef( "?Model." + r.FullName ) );
-                    return _requires != null ? _requires.Concat( fromPackage ) : fromPackage;
+                    var req = _package.Requires;
+                    if( req != null )
+                    {
+                        var fromPackage = req.Where( r => !r.FullName.StartsWith( "Model.", StringComparison.Ordinal ) )
+                                             .Select( r => new NamedDependentItemRef( "?Model." + r.FullName ) );
+                        return _requires != null ? _requires.Concat( fromPackage ) : fromPackage;
+                    }
                 }
                 return _requires; 
             }
@@ -145,10 +148,13 @@ namespace CK.Setup
             {
                 if( _automaticModelRequirement )
                 {
-                    var fromPackage = _package.RequiredBy
-                                                .Where( r => !r.FullName.StartsWith( "Model.", StringComparison.Ordinal ) )
-                                                .Select( r => new NamedDependentItemRef( "?Model." + r.FullName ) );
-                    return _requiredBy != null ? _requiredBy.Concat( fromPackage ) : fromPackage;
+                    var reqBy = _package.RequiredBy;
+                    if( reqBy != null )
+                    {
+                        var fromPackage = reqBy.Where( r => !r.FullName.StartsWith( "Model.", StringComparison.Ordinal ) )
+                                               .Select( r => new NamedDependentItemRef( "?Model." + r.FullName ) );
+                        return _requiredBy != null ? _requiredBy.Concat( fromPackage ) : fromPackage;
+                    }
                 }
                 return _requiredBy; 
             }

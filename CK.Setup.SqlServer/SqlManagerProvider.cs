@@ -28,22 +28,52 @@ namespace CK.Setup.SqlServer
         
         public void Add( string name, string connectionString )
         {
-            _items.Add( name, new Item() { ConnectionString = connectionString } );
+            Item i = new Item() { ConnectionString = connectionString };
+            _items.Add( name, i );
+            _items[connectionString] =  i;
         }
 
         public SqlManager FindManagerByName( string name )
         {
-            Item i;
-            if( _items.TryGetValue( name, out i ) )
+            return FindManagerByName( name, true );
+        }
+
+        internal SqlManager FindManagerByName( string name, bool openIt )
+        {
+            if( !String.IsNullOrWhiteSpace( name ) )
             {
-                if( i.Manager == null )
+                Item i;
+                if( _items.TryGetValue( name, out i ) )
                 {
-                    SqlManager m = new SqlManager();
-                    m.Logger = _logger;
-                    m.OpenFromConnectionString( i.ConnectionString );
-                    i.Manager = m;
+                    if( i.Manager == null )
+                    {
+                        SqlManager m = new SqlManager();
+                        m.Logger = _logger;
+                        if( openIt ) m.OpenFromConnectionString( i.ConnectionString );
+                        i.Manager = m;
+                    }
+                    return i.Manager;
                 }
-                return i.Manager;
+            }
+            return null;
+        }
+
+        public SqlManager FindManagerByConnectionString( string connectionString )
+        {
+            if( !String.IsNullOrWhiteSpace( connectionString ) )
+            {
+                Item i;
+                if( _items.TryGetValue( connectionString, out i ) )
+                {
+                    if( i.Manager == null )
+                    {
+                        SqlManager m = new SqlManager();
+                        m.Logger = _logger;
+                        m.OpenFromConnectionString( i.ConnectionString );
+                        i.Manager = m;
+                    }
+                    return i.Manager;
+                }
             }
             return null;
         }

@@ -7,7 +7,7 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// Exposes a resolvable reference (can be a <see cref="IAmbiantProperty"/> or a <see cref="IParameter"/>).
+    /// Exposes a resolvable reference (can be a <see cref="IAmbientProperty"/> or a <see cref="IParameter"/>).
     /// <see cref="SetResolvedValue"/> can be used to set the <see cref="Value"/> to use.
     /// </summary>
     public interface IResolvableReference
@@ -28,7 +28,7 @@ namespace CK.Setup
         Type Type { get; }
 
         /// <summary>
-        /// Gets the name of the ambiant property or parameter.
+        /// Gets the name of the ambient property or parameter.
         /// </summary>
         string Name { get; }
 
@@ -43,7 +43,7 @@ namespace CK.Setup
         /// it is <see cref="Type.Missing"/>. 
         /// Use <see cref="SetResolvedValue"/> to set it.
         /// </summary>
-        object Value { get; set; }
+        object Value { get; }
 
         /// <summary>
         /// Sets the <see cref="Value"/>.

@@ -18,7 +18,7 @@ namespace CK.Setup
     /// </summary>
     public class StObjCollector
     {
-        readonly AmbiantContractCollector<StObjTypeInfo> _cc;
+        readonly AmbientContractCollector<StObjTypeInfo> _cc;
         readonly IStObjStructuralConfigurator _configurator;
         readonly IStObjDependencyResolver _dependencyResolver;
         readonly IActivityLogger _logger;
@@ -31,11 +31,11 @@ namespace CK.Setup
         /// <param name="dispatcher"></param>
         /// <param name="configurator"></param>
         /// <param name="dependencyResolver"></param>
-        public StObjCollector( IActivityLogger logger, IAmbiantContractDispatcher dispatcher = null, IStObjStructuralConfigurator configurator = null, IStObjDependencyResolver dependencyResolver = null )
+        public StObjCollector( IActivityLogger logger, IAmbientContractDispatcher dispatcher = null, IStObjStructuralConfigurator configurator = null, IStObjDependencyResolver dependencyResolver = null )
         {
             if( logger == null ) throw new ArgumentNullException( "logger" );
             _logger = logger;
-            _cc = new AmbiantContractCollector<StObjTypeInfo>( _logger, ( l, p, t ) => new StObjTypeInfo( l, p, t ), dispatcher );
+            _cc = new AmbientContractCollector<StObjTypeInfo>( _logger, ( l, p, t ) => new StObjTypeInfo( l, p, t ), dispatcher );
             _configurator = configurator;
             _dependencyResolver = dependencyResolver;
         }
@@ -43,7 +43,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets or sets whether Construct must be called before resolving properties.
         /// Defaults to false: properties are resolved and then Construct method is called (this
-        /// allows Construct code to be parametrized by properties and Ambiant properties values).
+        /// allows Construct code to be parametrized by properties and Ambient properties values).
         /// </summary>
         public bool CallConstructBeforeResolvingProperties
         {
@@ -106,10 +106,10 @@ namespace CK.Setup
                 foreach( StObjCollectorContextualResult r in result )
                 {
                     using( _logger.Catch( e => r.SetFatal() ) )
-                    using( _logger.OpenGroup( LogLevel.Info, "Working on Context '{0}'.", r.Context == AmbiantContractCollector.DefaultContext ? "(default)" : r.Context.Name ) )
+                    using( _logger.OpenGroup( LogLevel.Info, "Working on Context '{0}'.", r.Context == AmbientContractCollector.DefaultContext ? "(default)" : r.Context.Name ) )
                     {
                         CreateMutableItems( r );
-                        _logger.CloseGroup( String.Format( " {0} items created for {1} types.", r.MutableItems.Count, r.AmbiantContractResult.ConcreteClasses.Count ) );
+                        _logger.CloseGroup( String.Format( " {0} items created for {1} types.", r.MutableItems.Count, r.AmbientContractResult.ConcreteClasses.Count ) );
                         objectCount += r.MutableItems.Count;
                     }
                 }
@@ -143,13 +143,13 @@ namespace CK.Setup
             //
             // We can now call : 
             //  - the Construct methods.
-            //  - the Ambiant properties setting.
+            //  - the Ambient properties setting.
             //
             using( _logger.Catch( e => result.SetFatal() ) )
             using( _logger.OpenGroup( LogLevel.Info, "Initializing object graph." ) )
             {
                 List<IStObj> ordered = new List<IStObj>();
-                using( _logger.OpenGroup( LogLevel.Info, _callConstructBeforeResolvingProperties ? "Graph construction." : "Ambiant properties initialization." ) )
+                using( _logger.OpenGroup( LogLevel.Info, _callConstructBeforeResolvingProperties ? "Graph construction." : "Ambient properties initialization." ) )
                 {
                     foreach( ISortedItem sorted in sortResult.SortedItems )
                     {
@@ -163,16 +163,16 @@ namespace CK.Setup
                                 CallConstruct( m );
                                 // Here, if m.Specialization == null, we have intialized
                                 // the leaf of the inheritance chain.
-                                // Can we initialize Ambiant properties here? Not yet!
+                                // Can we initialize Ambient properties here? Not yet!
                                 //
-                                // Ambiant properties are searched only on containers (first) and then base classes (recursively).
-                                // Ambiant properties must be initialized by the leaf (most specialized).
+                                // Ambient properties are searched only on containers (first) and then base classes (recursively).
+                                // Ambient properties must be initialized by the leaf (most specialized).
                                 //
                                 // Even if we just initialized the bottom of a chain here,
                                 // there may be containers of these items that have not been 
                                 // initialized (up to their "leaf")...
                                 //
-                                // So we can NOT resolve ambiant properties here since we
+                                // So we can NOT resolve ambient properties here since we
                                 // want Containers holding properties to be initialized first.
                             }
                             else
@@ -188,7 +188,7 @@ namespace CK.Setup
                         }
                     }
                 }
-                using( _logger.OpenGroup( LogLevel.Info, _callConstructBeforeResolvingProperties ? "Ambiant properties initialization." : "Graph construction." ) )
+                using( _logger.OpenGroup( LogLevel.Info, _callConstructBeforeResolvingProperties ? "Ambient properties initialization." : "Graph construction." ) )
                 {
                     foreach( MutableItem m in ordered )
                     {
@@ -205,9 +205,9 @@ namespace CK.Setup
         {
             if( m.Specialization == null )
             {
-                using( _logger.OpenGroup( LogLevel.Trace, "Resolving Properties '{0}'", m.ToString() ) )
+                using( _logger.OpenGroup( LogLevel.Trace, "Resolving Properties for '{0}'", m.ToString() ) )
                 {
-                    m.EnsureAmbiantPropertiesResolved( _logger, result, _dependencyResolver );
+                    m.EnsureAmbientPropertiesResolved( _logger, result, _dependencyResolver );
                 }
             }
         }
@@ -230,13 +230,13 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Creates one or more StObjMutableItem for each ambiant Type, each of them bound 
+        /// Creates one or more StObjMutableItem for each ambient Type, each of them bound 
         /// to an instance created through its default constructor.
         /// This is the very first step.
         /// </summary>
         void CreateMutableItems( StObjCollectorContextualResult r )
         {
-            foreach( var pathTypes in r.AmbiantContractResult.ConcreteClasses )
+            foreach( var pathTypes in r.AmbientContractResult.ConcreteClasses )
             {
                 Debug.Assert( pathTypes.Count > 0, "At least the final concrete class exists." );
                 object theObject = Activator.CreateInstance( pathTypes[pathTypes.Count - 1].Type );
@@ -249,7 +249,7 @@ namespace CK.Setup
                 }
                 MutableItem specialization = m;
                 // We configure items from bottom to top. Even if this may seem
-                // strange, this is required for AllAmbiantProperties to
+                // strange, this is required for AllAmbientProperties to
                 // be set to the Specialization one.
                 // Note that this works because we do NOT offer any access to 
                 // Generalization nor to Specialization in IStObjMutableItem.

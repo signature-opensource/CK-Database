@@ -19,15 +19,6 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// No at all scripts found.
-        /// </summary>
-        internal TypedScriptVector()
-        {
-            Scripts = ReadOnlyListEmpty<CoveringScript>.Empty;
-            Final = null;
-        }
-
-        /// <summary>
         /// A (last) versioned script and an optional NoVersion script found.
         /// </summary>
         internal TypedScriptVector( ISetupScript maxScript, ISetupScript noVersion )

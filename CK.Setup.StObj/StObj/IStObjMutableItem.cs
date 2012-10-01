@@ -41,16 +41,17 @@ namespace CK.Setup
         IReadOnlyList<IMutableParameter> ConstructParameters { get; }
 
         /// <summary>
-        /// Gets a list of mutable Ambiant properties for the ultimate specialization: all
-        /// ambiant properties of the most specialized object are avalaible.
+        /// Gets a list of mutable Ambient properties for the ultimate specialization: all
+        /// ambient properties of the most specialized object are avalaible.
         /// This guarantees that properties are accessed by their most precise overriden/masked version.
         /// </summary>
-        IReadOnlyList<IMutableAmbiantProperty> AllAmbiantProperties { get; }
+        IReadOnlyList<IMutableAmbientProperty> AllAmbientProperties { get; }
 
         /// <summary>
-        /// Sets a property on the actual object (the property must exist and its type must be compatible with the value).
-        /// Can be called for any writeable property of the object but when the property is an ambiant one, this is
-        /// the same as calling <see cref="IMutableAmbiantProperty.SetStructuralValue"/>.
+        /// Sets a property on the actual object (the property must exist, its type must be compatible with the value 
+        /// and be writeable - it must not be a non writeable mergeable property).
+        /// Can be called for any writeable property of the object but when the property is an ambient one, this is
+        /// the same as calling <see cref="IMutableAmbientProperty.SetStructuralValue"/>.
         /// </summary>
         /// <param name="logger">The logger to use to describe any error.</param>
         /// <param name="sourceName">The name of the "source" of this action.</param>

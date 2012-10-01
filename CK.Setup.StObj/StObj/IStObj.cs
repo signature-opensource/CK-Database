@@ -7,7 +7,7 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// A StObj "slices" a Structured Object (that is an <see cref="IAmbiantContract"/>) by 
+    /// A StObj "slices" a Structured Object (that is an <see cref="IAmbientContract"/>) by 
     /// types in its inheritance chain.
     /// The <see cref="StructuredObject">Structured Object</see> is built based on already built dependencies from top to bottom thanks to its "Construct" methods. 
     /// </summary>

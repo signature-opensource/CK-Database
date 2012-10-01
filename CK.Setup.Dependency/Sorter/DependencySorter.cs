@@ -280,7 +280,7 @@ namespace CK.Setup
             {
                 get
                 {
-                    var req = HeadIfContainer != null ? HeadIfContainer.Requires : null;
+                    var req = HeadIfContainer != null ? HeadIfContainer.Requires : Requires;
                     return req == null ? ReadOnlyListEmpty<IDependentItemRef>.Empty : req.Where( d => !d.Optional );
                 }
             }

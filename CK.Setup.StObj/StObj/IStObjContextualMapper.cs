@@ -7,10 +7,10 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// Mapper for discovered typed objects (that are <see cref="IAmbiantContract"/>) to 
+    /// Mapper for discovered typed objects (that are <see cref="IAmbientContract"/>) to 
     /// their associated <see cref="IStObj"/>.
     /// It is bound to a registration <see cref="Context"/> and encapsulates 
-    /// ambiant type <see cref="Mappings"/>.
+    /// ambient type <see cref="Mappings"/>.
     /// </summary>
     public interface IStObjContextualMapper
     {
@@ -31,9 +31,9 @@ namespace CK.Setup
         int Count { get; }
 
         /// <summary>
-        /// Gets the <see cref="IAmbiantTypeContextualMapper"/> for this <see cref="Context"/>.
+        /// Gets the <see cref="IAmbientTypeContextualMapper"/> for this <see cref="Context"/>.
         /// </summary>
-        IAmbiantTypeContextualMapper Mappings { get; }
+        IAmbientTypeContextualMapper Mappings { get; }
 
         /// <summary>
         /// Gets the mapped <see cref="IStObj"/> or null if no mapping exists.
