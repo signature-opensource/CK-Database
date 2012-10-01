@@ -28,7 +28,7 @@ namespace CK.Setup.Tests.Dependencies
         {
             if( r.SortedItems != null )
             {
-                foreach( var e in r.SortedItems.Where( s => !s.IsContainerHead ).Select( s => s.Item ).OfType<TestableItem>() )
+                foreach( var e in r.SortedItems.Where( s => !s.IsGroupHead ).Select( s => s.Item ).OfType<TestableItem>() )
                 {
                     e.CheckStartDependencySortCountAndReset();
                 }
@@ -73,7 +73,7 @@ namespace CK.Setup.Tests.Dependencies
             if( o == null ) return;
 
             // If Head, then we check the head/container order and Requires and then we stop.
-            if( o.IsContainerHead )
+            if( o.IsGroupHead )
             {
                 Assert.That( o.Container == o.ContainerForHead.Container, "The container is the same for a head and its associated container." );
                 Assert.That( o.Index < o.ContainerForHead.Index, "{0} is before {1} (since {0} is the head of {1}).", o.FullName, o.ContainerForHead.FullName );

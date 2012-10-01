@@ -49,7 +49,7 @@
     <Compile Include="..\..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="CaseSensitivity.cs" />
+    <Compile Include="ByNames.cs" />
     <Compile Include="ChildByName.cs" />
     <Compile Include="ContainerAndRequirementsSemantics.cs" />
     <Compile Include="ContainerByName.cs" />

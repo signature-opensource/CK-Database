@@ -44,7 +44,7 @@ namespace CK.Setup
             } 
         }
 
-        internal override MutableItem ResolveToStObj( IActivityLogger logger, StObjCollectorResult collector, StObjCollectorContextualResult ownerCollector )
+        internal override MutableItem ResolveToStObj( IActivityLogger logger, StObjCollectorResult collector, StObjCollectorContextualResult cachedCollector )
         {
             if( _resolved != UnresolvedMarker ) return _resolved;
             if( Type == null && !IsOptional )
@@ -61,7 +61,7 @@ namespace CK.Setup
                     return _resolved = null;
                 }
             }
-            return _resolved = base.ResolveToStObj( logger, collector, ownerCollector );
+            return _resolved = base.ResolveToStObj( logger, collector, cachedCollector );
         }
 
         public virtual bool SetResolvedValue( IActivityLogger logger, object value )

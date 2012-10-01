@@ -134,16 +134,18 @@ namespace CK.Setup
                     foreach( object o in e )
                     {
                         if( o is T ) yield return (T)o;
-                        if( o is IEnumerable<T> )
-                        {
-                            foreach( T o2 in (IEnumerable<T>)o ) if( o2 != null ) yield return o2;
-                        }
+                        // If o is both a T and an IEnumerable, we continue: this
+                        // handles composites. For monades, this may lead to a duplicate
+                        // (since often the element belongs to its own enumeration).
+                        // Such duplicates should not be a surprise for the developper
+                        // that works with such funny beast: I prefer to keep handling 
+                        // the composition.
                         if( o is IEnumerable && o != e )
                         {
                             if( _stack == null ) _stack = new Stack();
                             else if( _stack.Contains( o ) ) break;
                             _stack.Push( e );
-                            foreach( T o2 in Flatten<T>( (IEnumerable)o ) ) yield return o2;
+                            foreach( T o2 in Flatten<T>( (IEnumerable)o )) if( o2 != null ) yield return o2;
                             _stack.Pop();
                         }
                     }

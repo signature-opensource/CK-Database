@@ -52,7 +52,7 @@ namespace CK.Setup
         /// Whether this is the head of a container.
         /// Use <see cref="ContainerForHead"/> to get the associated container.
         /// </summary>
-        bool IsContainerHead { get; }
+        bool IsGroupHead { get; }
 
         /// <summary>
         /// Whether this is a container (the <see cref="HeadForContainer"/> is not null).

@@ -34,7 +34,7 @@ namespace CK.Setup.Tests.Dependencies
             var r = DependencySorter.OrderItems( c );
             Assert.That( r.SortedItems.Count, Is.EqualTo( 4 ) );
 
-            Assert.That( r.SortedItems[0].IsContainerHead, "Head of Container." );
+            Assert.That( r.SortedItems[0].IsGroupHead, "Head of Container." );
             Assert.That( r.SortedItems[1].Item.FullName, Is.EqualTo( "A" ), "Lexical order." );
             Assert.That( r.SortedItems[2].Item.FullName, Is.EqualTo( "B" ), "Lexical order." );
             Assert.That( r.SortedItems[3].Item.FullName, Is.EqualTo( "C" ), "Container" );
@@ -53,7 +53,7 @@ namespace CK.Setup.Tests.Dependencies
             var r = DependencySorter.OrderItems( e );
             Assert.That( r.SortedItems.Count, Is.EqualTo( 5 ) );
 
-            Assert.That( r.SortedItems[0].IsContainerHead, "Head of Container." );
+            Assert.That( r.SortedItems[0].IsGroupHead, "Head of Container." );
             Assert.That( r.SortedItems[1].Item.FullName, Is.EqualTo( "A" ), "Lexical order." );
             Assert.That( r.SortedItems[2].Item.FullName, Is.EqualTo( "B" ), "Lexical order." );
             Assert.That( r.SortedItems[3].Item.FullName, Is.EqualTo( "E" ), "Lexical order." );
@@ -227,12 +227,26 @@ namespace CK.Setup.Tests.Dependencies
                     new TestableItem( "Stratus" )
                     )
                 );
-            var r = DependencySorter.OrderItems( c );
-
-            Assert.That( r.ItemIssues.Any( m => m.MissingDependencies.Contains( "AMissingDependency" ) ) );
-
-            new ResultChecker( r ).CheckRecurse( "Root" );
-            ResultChecker.SimpleCheck( r );
+            {
+                var r = DependencySorter.OrderItems( c );
+                Assert.That( r.ItemIssues.Any( m => m.MissingDependencies.Contains( "AMissingDependency" ) ) );
+                new ResultChecker( r ).CheckRecurse( "Root" );
+                ResultChecker.SimpleCheck( r );
+            }
+            {
+                // Ordering handles duplicates.
+                var r = DependencySorter.OrderItems( new IDependentItem[]{ c, c } );
+                Assert.That( r.ItemIssues.Any( m => m.MissingDependencies.Contains( "AMissingDependency" ) ) );
+                new ResultChecker( r ).CheckRecurse( "Root" );
+                ResultChecker.SimpleCheck( r );
+            }
+            {
+                // Ordering handles duplicates.
+                var r = DependencySorter.OrderItems( new IDependentItem[] { c, c }.Concat( c.Children.Cast<IDependentItem>() ).Concat( c.Children.Cast<IDependentItem>() ), null );
+                Assert.That( r.ItemIssues.Any( m => m.MissingDependencies.Contains( "AMissingDependency" ) ) );
+                new ResultChecker( r ).CheckRecurse( "Root" );
+                ResultChecker.SimpleCheck( r );
+            }
         }
 
         [Test]

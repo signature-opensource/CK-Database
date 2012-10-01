@@ -64,7 +64,7 @@ namespace CK.Setup
                         if( data.SetupItem != null )
                         {
                             // An item has been created by the factory. 
-                            // If the StObj has been referenced as a Container: data.StObj.IsContainer == true, 
+                            // If the StObj has been referenced as a Container: data.StObj.IsGroup == true, 
                             // we may check here that the type of the created item is able to be structurally considered as a Container:
                             // we should just check here that it is a IDependentItemContainer (we ignore the IDependentItemContainerAsk 
                             // that may, later dynamically refuses to be a Container since this will be handled during ordering by The DependencySorter).

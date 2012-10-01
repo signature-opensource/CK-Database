@@ -143,9 +143,9 @@ namespace CK.Setup
                     {
                         // From & To are normalized to the Container object if they are heads.
                         ISortedItem from = _cycle[i++];
-                        if( from.IsContainerHead ) from = from.ContainerForHead;
+                        if( from.IsGroupHead ) from = from.ContainerForHead;
                         ISortedItem to = _cycle[i];
-                        if( to.IsContainerHead ) to = to.ContainerForHead;
+                        if( to.IsGroupHead ) to = to.ContainerForHead;
 
                         // First relations are searched differently: 
                         char rel;
@@ -201,16 +201,16 @@ namespace CK.Setup
         public void LogError( IActivityLogger logger )
         {
             if( logger == null ) throw new ArgumentNullException( "logger" );
-            if( CycleDetected != null )
-            {
-                logger.Error( "Cycle detected: {0}.", CycleExplainedString );
-            }
             if( HasStructureError )
             {
                 foreach( var bug in ItemIssues.Where( d => d.StructureError != DependentItemStructureError.None ) )
                 {
                     bug.LogError( logger );
                 }
+            }
+            if( CycleDetected != null )
+            {
+                logger.Error( "Cycle detected: {0}.", CycleExplainedString );
             }
         }
 

@@ -36,10 +36,8 @@ namespace CK.Setup
 
         public Type Type { get; set; }
 
-        internal virtual MutableItem ResolveToStObj( IActivityLogger logger, StObjCollectorResult collector, StObjCollectorContextualResult ownerCollector = null )
+        internal virtual MutableItem ResolveToStObj( IActivityLogger logger, StObjCollectorResult collector, StObjCollectorContextualResult cachedCollector )
         {
-            Debug.Assert( ownerCollector == null || ownerCollector == collector[Owner.Context], "Parameter ownerCollector is an optimization." );
-
             MutableItem result = null;
             if( Type == null || StObjRequirementBehavior == Setup.StObjRequirementBehavior.ExternalReference ) return result;
           
@@ -48,7 +46,7 @@ namespace CK.Setup
                 // Context is not null: search inside this exact context.
                 // Even if the context for this reference is the one of our Owner's context, since it is explicitely set,
                 // we expect the type to actually be in this context.
-                StObjCollectorContextualResult ctxResult = Context != Owner.Context ? collector[ Context ] : (ownerCollector ?? collector[Owner.Context]);
+                StObjCollectorContextualResult ctxResult = cachedCollector == null || cachedCollector.Context != Context ? collector[ Context ] : cachedCollector;
                 if( ctxResult == null ) 
                 {
                     Error( logger, String.Format( "Undefined Typed context '{0}'", Context.Name ) );
@@ -63,10 +61,10 @@ namespace CK.Setup
             }
             else
             {
-                if( ownerCollector == null ) ownerCollector = collector[Owner.Context];
+                if( cachedCollector == null || cachedCollector.Context != Owner.Context ) cachedCollector = collector[Owner.Context];
                 // Context is not set: first look for the type in the Owners's context.
                 // If it is not foud, look for a single type across the different contexts.
-                result = ownerCollector.Find( Type );
+                result = cachedCollector.Find( Type );
                 if( result == null )
                 {
                     var all = collector.FindMutableItemsFor( Type ).ToList();

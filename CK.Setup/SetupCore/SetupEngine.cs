@@ -215,7 +215,7 @@ namespace CK.Setup
                             if( versioned != null ) externalVersion = VersionRepository.GetCurrent( versioned );
                             else externalVersion = null;
 
-                            if( item.IsContainerHead )
+                            if( item.IsGroupHead )
                             {
                                 d = new GroupHeadSetupDriver( this, item, externalVersion );
                             }

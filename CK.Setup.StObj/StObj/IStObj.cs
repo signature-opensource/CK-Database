@@ -26,7 +26,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets whether this object has been referenced as a container by one or more structure objects.
         /// </summary>
-        bool IsContainer { get; }
+        bool IsGroup { get; }
 
         /// <summary>
         /// Gets the parent <see cref="IStObj"/> in the inheritance chain (the one associated to the base class of this <see cref="ObjectType"/>).

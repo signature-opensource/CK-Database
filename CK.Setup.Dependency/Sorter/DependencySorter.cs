@@ -251,7 +251,7 @@ namespace CK.Setup
                 get { return Generalization == GeneralizationMissingMarker ? null : Generalization; }
             }
 
-            bool ISortedItem.IsContainerHead
+            bool ISortedItem.IsGroupHead
             {
                 get { return ContainerIfHead != null; }
             }
@@ -498,7 +498,7 @@ namespace CK.Setup
                         }
                         // Gives the item an opportunity to prepare its data (mainly its FullName).
                         entryOrStartValue = e.StartDependencySort();
-                        if( memorizeStartValue ) _entries[e] = entryOrStartValue;
+                        if( memorizeStartValue && entryOrStartValue != null ) _entries[e] = entryOrStartValue;
                     }
                     return entryOrStartValue;
                 }
@@ -511,34 +511,38 @@ namespace CK.Setup
                     Entry entry = startValue as Entry;
                     if( entry != null )
                     {
-                        #region If the Entry exists, we only have to check container/item coherency (for a specific edge case).
-                        Debug.Assert( entry.Item == e );
-                        // We allow duplicated item instances in the original
-                        // items enumeration (this also support our automatic 
-                        // discovery for Container/Children).
-                        if( alreadyRegisteredContainer != null )
+                        #region If the Entry exists, we only have to check container/item coherency (for a specific edge case) and registered homonyms.
+                        // If entry.Item != e, this is an homonym registered previously (code below): ignores it
+                        // and returns the first named entry (an Homonym StructureError has been pushed anyway).
+                        if( entry.Item == e )
                         {
-                            // We are coming from the registration of our Children (below).
-                            // Since this item is already registered and we skip the child from which we are 
-                            // coming (alreadyRegisteredChild that is beeing processed - its Container is null), 
-                            // the container must be the same.
-                            if( entry.Container != alreadyRegisteredContainer )
+                            // We allow duplicated item instances in the original
+                            // items enumeration (this also support our automatic 
+                            // discovery for Container/Children).
+                            if( alreadyRegisteredContainer != null )
                             {
-                                // entry.Container can be null for 2 reasons: the item declares no container (null), 
-                                // or the item declares a name and the entry has been added to namedContainersToBind.
-                                Debug.Assert( entry.Container != null || (entry.Item.Container == null || (!(entry.Item.Container is IDependentItemContainer) && _namedContainersToBind.Contains( entry ))) );
-                                // In both case, we set the entry.Container to the alreadyRegisteredContainer (the first container that claims to hold the item).
-                                // When Item.Container is null, this is because we consider a null container as a "free" resource for a container.
-                                // When the container is declared by name, we let the binding in Register handle the case.
-                                if( entry.Container == null )
+                                // We are coming from the registration of our Children (below).
+                                // Since this item is already registered and we skip the child from which we are 
+                                // coming (alreadyRegisteredChild that is beeing processed - its Container is null), 
+                                // the container must be the same.
+                                if( entry.Container != alreadyRegisteredContainer )
                                 {
-                                    alreadyRegisteredContainer.AddToContainer( entry );
-                                }
-                                else
-                                {
-                                    // This entry has a problem: it has more than one container that 
-                                    // claim to own it.
-                                    _computer.SetStructureError( entry, DependentItemStructureError.MultipleContainer ).AddExtraneousContainers( alreadyRegisteredContainer.FullName );
+                                    // entry.Container can be null for 2 reasons: the item declares no container (null), 
+                                    // or the item declares a name and the entry has been added to namedContainersToBind.
+                                    Debug.Assert( entry.Container != null || (entry.Item.Container == null || (!(entry.Item.Container is IDependentItemContainer) && _namedContainersToBind.Contains( entry ))) );
+                                    // In both case, we set the entry.Container to the alreadyRegisteredContainer (the first container that claims to hold the item).
+                                    // When Item.Container is null, this is because we consider a null container as a "free" resource for a container.
+                                    // When the container is declared by name, we let the binding in Register handle the case.
+                                    if( entry.Container == null )
+                                    {
+                                        alreadyRegisteredContainer.AddToContainer( entry );
+                                    }
+                                    else
+                                    {
+                                        // This entry has a problem: it has more than one container that 
+                                        // claim to own it.
+                                        _computer.SetStructureError( entry, DependentItemStructureError.MultipleContainer ).AddExtraneousContainers( alreadyRegisteredContainer.FullName );
+                                    }
                                 }
                             }
                         }
@@ -1051,7 +1055,7 @@ namespace CK.Setup
                     return new DependencySorterResult( _result, null, _itemIssues );
                 }
                 _cycle.Reverse();
-                return new DependencySorterResult( null, _cycle, null );
+                return new DependencySorterResult( null, _cycle, _itemIssues );
             }
 
             static int NormalComparer( Entry o1, Entry o2 )
