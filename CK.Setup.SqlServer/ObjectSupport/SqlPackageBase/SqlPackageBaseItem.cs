@@ -28,7 +28,6 @@ namespace CK.Setup.SqlServer
         public SqlPackageBaseItem( IActivityLogger logger, IStObjSetupData data )
             : base( logger, data )
         {
-            Debug.Assert( typeof( SqlPackageBaseSetupDriver ).IsAssignableFrom( data.DriverType ) );
         }
 
         /// <summary>
@@ -43,10 +42,7 @@ namespace CK.Setup.SqlServer
         {
             if( Model != null )
             {
-                foreach( var db in Groups.OfType<SqlDatabaseItem>() )
-                {
-                    Model.Groups.Add( db );
-                }
+                Model.Groups.RemoveWhere.AddRange( Groups.OfType<SqlDatabaseItem>() );
             }
             return base.StartDependencySort();
         }
