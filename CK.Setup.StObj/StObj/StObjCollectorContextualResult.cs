@@ -58,7 +58,7 @@ namespace CK.Setup
             get { return _contractResult; }
         }
 
-        internal void AddConfiguredItem( MutableItem item )
+        internal void AddStObjConfiguredItem( MutableItem item )
         {
             _mappings.Add( item );
         }

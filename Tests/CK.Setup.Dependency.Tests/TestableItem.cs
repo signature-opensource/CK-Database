@@ -6,13 +6,14 @@ using System.Diagnostics;
 using NUnit.Framework;
 using CK.Core;
 
-namespace CK.Setup.Tests
+namespace CK.Setup.Dependency.Tests
 {
     class TestableItem : IDependentItem, IDependentItemDiscoverer, IDependentItemRef
     {
         string _fullName;
         List<IDependentItemRef> _requires;
         List<IDependentItemRef> _requiredBy;
+        List<IDependentItemGroupRef> _groups;
         List<IDependentItem> _relatedItems;
         int _startDependencySortCount;
 
@@ -27,8 +28,9 @@ namespace CK.Setup.Tests
         {
             _requires = new List<IDependentItemRef>();
             _requiredBy = new List<IDependentItemRef>();
+            _groups = new List<IDependentItemGroupRef>();
             FullName = fullName;
-            Add( content );
+            if( content != null ) Add( content );
             if( _ignoreCheckedCount > 0 ) _startDependencySortCount = -1;
         }
 
@@ -40,25 +42,41 @@ namespace CK.Setup.Tests
                 if( o != null && o is string )
                 {
                     string dep = (string)o;
-                    if( dep.StartsWith( "<=" ) )
+                    if( !HandleItemString( dep ) )
                     {
-                        _requiredBy.Add( new NamedDependentItemRef( dep.Substring( 2 ).Trim() ) );
-                    }
-                    else if( dep.StartsWith( "∈" ) )
-                    {
-                        Container = new NamedDependentItemContainerRef( dep.Substring( 1 ).Trim() );
-                    }
-                    else if( dep.StartsWith( "ĵ" ) )
-                    {
-                        Generalization = new NamedDependentItemContainerRef( dep.Substring( 1 ).Trim() );
-                    }
-                    else
-                    {
-                        if( dep.StartsWith( "=>" ) ) dep = dep.Substring( 2 );
-                        _requires.Add( new NamedDependentItemRef( dep.Trim() ) );
+                        throw new ArgumentException( "Only RequiredBy (↽), Requires (⇀), GeneralizedBy (↟), ElementOfContainer (⊏) and ElementOf (∈) are supported." );
                     }
                 }
             }
+        }
+
+        protected bool HandleItemString( string dep )
+        {
+            if( dep[0] == CycleExplainedElement.RequiredBy ) // ↽
+            {
+                _requiredBy.Add( new NamedDependentItemRef( dep.Substring( 1 ).Trim() ) );
+            }
+            else if( dep[0] == CycleExplainedElement.Requires ) // ⇀
+            {
+                _requires.Add( new NamedDependentItemRef( dep.Substring( 1 ).Trim() ) );
+            }
+            else if( dep[0] == CycleExplainedElement.ElementOfContainer ) // ⊏
+            {
+                Container = new NamedDependentItemContainerRef( dep.Substring( 1 ).Trim() );
+            }
+            else if( dep[0] == CycleExplainedElement.ElementOf ) // ∈
+            {
+                _groups.Add( new NamedDependentItemGroupRef( dep.Substring( 1 ).Trim() ) );
+            }
+            else if( dep[0] == CycleExplainedElement.GeneralizedBy ) // ↟
+            {
+                Generalization = new NamedDependentItemRef( dep.Substring( 1 ).Trim() );
+            }
+            else
+            {
+                return false;
+            }
+            return true;
         }
 
         public IDependentItemContainerRef Container { get; set; }
@@ -91,9 +109,13 @@ namespace CK.Setup.Tests
 
         public IList<IDependentItemRef> RequiredBy { get { return _requiredBy; } }
 
+        public IList<IDependentItemGroupRef> Groups { get { return _groups; } }
+
         IEnumerable<IDependentItemRef> IDependentItem.Requires { get { return _requires; } }
 
         IEnumerable<IDependentItemRef> IDependentItem.RequiredBy { get { return _requiredBy; } }
+
+        IEnumerable<IDependentItemGroupRef> IDependentItem.Groups { get { return _groups; } }
 
         public IList<IDependentItem> RelatedItems
         {

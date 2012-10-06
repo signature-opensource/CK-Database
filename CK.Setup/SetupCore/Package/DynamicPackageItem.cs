@@ -14,15 +14,15 @@ namespace CK.Setup
     /// <remarks>
     /// The <see cref="DynamicContainerItem"/> can be used a pure mutable Container is needed (no versions nor associated model).
     /// </remarks>
-    public class DynamicPackageItem : PackageItemBase, IDependentItemContainerAsk, IDependentItemDiscoverer
+    public class DynamicPackageItem : PackageItemBase, IDependentItemContainerTyped, IDependentItemDiscoverer
     {
         string _fullName;
         PackageModelItem _model;
         object _driverType;
-        bool _notContainer; 
+        DependentItemType _dynamicType; 
 
         /// <summary>
-        /// Initializes a new dynamic package.
+        /// Initializes a new dynamic package with <see cref="ItemKind"/> set to <see cref="DependentItemType.Container"/>.
         /// </summary>
         /// <param name="itemType">The <see cref="IVersionedItem.ItemType"/> for this item.</param>
         /// <param name="driverType">
@@ -32,6 +32,7 @@ namespace CK.Setup
         public DynamicPackageItem( string itemType, object driverType = null )
             : base( itemType )
         {
+            _dynamicType = DependentItemType.Container;
             _driverType = driverType ?? typeof( SetupDriver );
         }
 
@@ -72,14 +73,14 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets or sets whether this container is actually NOT a container.
-        /// When set to true, if an item declares this item as its container, an error is raised 
+        /// Gets or sets whether this container is actually NOT a Container or even not a Group.
+        /// When not <see cref="DependentItemType.Container"/>, if an item declares this item as its container, an error is raised 
         /// during the ordering of the dependency graph.
         /// </summary>
-        public bool ThisIsNotAContainer 
+        public DependentItemType ItemKind
         {
-            get { return _notContainer; }
-            set { _notContainer = value; }
+            get { return _dynamicType; }
+            set { _dynamicType = value; }
         }
 
         protected override string GetFullName()
@@ -87,9 +88,9 @@ namespace CK.Setup
             return _fullName;
         }
 
-        protected override bool GetThisIsNotAContainer()
+        protected override DependentItemType GetDynamicType()
         {
-            return _notContainer;
+            return _dynamicType;
         }
 
         protected override object StartDependencySort()

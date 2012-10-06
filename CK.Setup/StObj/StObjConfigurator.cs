@@ -26,7 +26,7 @@ namespace CK.Setup
         {
         }
 
-        void IStObjDependencyResolver.ResolvePropertyValue( IActivityLogger logger, IAmbientProperty a )
+        void IStObjDependencyResolver.ResolveExternalPropertyValue( IActivityLogger logger, IAmbientProperty a )
         {
         }
 
@@ -34,7 +34,7 @@ namespace CK.Setup
         {
         }
 
-        IMutableDependentItem IStObjSetupItemFactory.CreateDependentItem( IActivityLogger logger, IStObjSetupData data )
+        IMutableDependentItemContainerTyped IStObjSetupItemFactory.CreateDependentItem( IActivityLogger logger, IStObjSetupData data )
         {
             return null;
         }

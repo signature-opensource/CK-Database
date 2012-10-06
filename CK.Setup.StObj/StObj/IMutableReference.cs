@@ -9,8 +9,17 @@ namespace CK.Setup
     public interface IMutableReference
     {
         /// <summary>
-        /// Gets the item that owns this reference.
+        /// Gets the item that owns this reference. See remarks.
         /// </summary>
+        /// <remarks>
+        /// Owner of the reference corresponds to the exact type of the object that has the Construct method for parameters.
+        /// For Ambient Properties, the Owner is the Specialization. See remarks.
+        /// </remarks>
+        /// <remarks>
+        /// For Ambient Properties, this is because a property has de facto more than one Owner when masking is used: spotting one of them requires to 
+        /// choose among them - The more abstract one? The less abstract one? - and this would be both ambiguate and quite useless since in practice, 
+        /// the "best Owner" must be based on the actual property type to take Property Covariance into account.
+        /// </remarks>
         IStObjMutableItem Owner { get; }
 
         /// <summary>
@@ -26,7 +35,7 @@ namespace CK.Setup
         /// </para>
         /// <para>
         /// Defaults to <see cref="StObjRequirementBehavior.WarnIfNotStObj"/> for Construct parameters since <see cref="IStObjDependencyResolver"/> can inject any dependency (the 
-        /// dependency may even be missing - ie. null - if <see cref="IMutableParameter.IsOptional"/> is true).
+        /// dependency may even be missing - ie. let to null for refernce types - if <see cref="IMutableParameter.IsOptional"/> is true).
         /// </para>
         /// <para>
         /// Defaults to <see cref="StObjRequirementBehavior.None"/> for ambient properties and <see cref="IStObjMutableItem.Requiredby"/> since "required by" are always considered as optional.
@@ -48,6 +57,11 @@ namespace CK.Setup
         /// Of course, for construct parameters the type must be compatible with the formal parameter's type (similar
         /// type compatibility is required for ambient properties).
         /// </summary>
+        /// <remarks>
+        /// Initialized with the <see cref="System.Reflection.PropertyInfo.PropertyType"/> for Ambient Properties, 
+        /// with <see cref="System.Reflection.ParameterInfo.ParameterType"/> for parameters and with provided type 
+        /// for other kind of reference (<see cref="MutableReferenceKind.Requires"/>, <see cref="MutableReferenceKind.RequiredBy"/> and <see cref="MutableReferenceKind.Container"/>).
+        /// </remarks>
         Type Type { get; set; }
 
     }

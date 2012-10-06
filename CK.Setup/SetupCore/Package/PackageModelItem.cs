@@ -22,6 +22,7 @@ namespace CK.Setup
         IDependentItemContainerRef _container;
         DependentItemList _requires;
         DependentItemList _requiredBy;
+        DependentItemGroupList _groups;
         IDependentItemList _children;
         bool _automaticModelRequirement;
 
@@ -86,16 +87,30 @@ namespace CK.Setup
             set { _container = value; }
         }
 
+        /// <summary>
+        /// Gets a mutable list of items that this Model requires.
+        /// </summary>
         public IDependentItemList Requires
         {
             get { return _requires ?? (_requires = new DependentItemList()); }
         }
 
+        /// <summary>
+        /// Gets a mutable list of items that are required by this Model.
+        /// </summary>
         public IDependentItemList RequiredBy
         {
             get { return _requiredBy ?? (_requiredBy = new DependentItemList()); }
         }
 
+        /// <summary>
+        /// Gets a mutable list of groups to which this Model belongs.
+        /// </summary>
+        public IDependentItemGroupList Groups
+        {
+            get { return _groups ?? (_groups = new DependentItemGroupList()); }
+        }
+        
         /// <summary>
         /// Gets the version: it is the same as the <see cref="P:Package"/>'s one.
         /// </summary>
@@ -144,7 +159,7 @@ namespace CK.Setup
 
         IEnumerable<IDependentItemRef> IDependentItem.RequiredBy
         {
-            get 
+            get
             {
                 if( _automaticModelRequirement )
                 {
@@ -156,8 +171,13 @@ namespace CK.Setup
                         return _requiredBy != null ? _requiredBy.Concat( fromPackage ) : fromPackage;
                     }
                 }
-                return _requiredBy; 
+                return _requiredBy;
             }
+        }
+
+        IEnumerable<IDependentItemGroupRef> IDependentItem.Groups
+        {
+            get { return _groups; }
         }
 
         IEnumerable<VersionedName> IVersionedItem.PreviousNames

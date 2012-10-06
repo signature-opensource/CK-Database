@@ -4,6 +4,7 @@ using NUnit.Framework;
 
 namespace CK.Setup.StObj.Tests.SimpleObjects
 {
+    [StObj( ItemKind = DependentItemType.Container )]
     public class PackageForAB : IAmbientContract
     {
         public int ConstructCount { get; protected set; }

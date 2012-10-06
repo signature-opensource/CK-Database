@@ -15,7 +15,7 @@ namespace CK.Setup.SqlServer
                                             | RegexOptions.IgnoreCase
                                             | RegexOptions.ExplicitCapture );
 
-        static Regex _rHeader = new Regex( @"^\s*--\s*Version\s*=\s*(?<1>\d+(\.\d+)*|\*)(\s*,?\s*((Package\s*=\s*(?<2>(\w|\.|-)+))|(Requires\s*=\s*{\s*((?<3>\??(\w+|-|\.)+)\s*,?\s*)*})|((RequiredBy\s*=\s*{\s*((?<4>(\w+|-|\.)+)\s*,?\s*)*}))|(PreviousNames\s*=\s*{\s*(((?<5>(\w|\.|-)+)\s*=\s*(?<6>\d+\.\d+\.\d+))\s*,?\s*)*})))*",
+        static Regex _rHeader = new Regex( @"^\s*--\s*Version\s*=\s*(?<1>\d+(\.\d+)*|\*)(\s*,?\s*((Package\s*=\s*(?<2>(\w|\.|-)+))|(Requires\s*=\s*{\s*((?<3>\??(\w+|-|\.)+)\s*,?\s*)*})|((Groups\s*=\s*{\s*((?<4>(\w+|-|\.)+)\s*,?\s*)*}))|((RequiredBy\s*=\s*{\s*((?<5>(\w+|-|\.)+)\s*,?\s*)*}))|(PreviousNames\s*=\s*{\s*(((?<6>(\w|\.|-)+)\s*=\s*(?<6>\d+\.\d+\.\d+))\s*,?\s*)*})))*",
                 RegexOptions.CultureInvariant
                 | RegexOptions.IgnoreCase
                 | RegexOptions.ExplicitCapture );
@@ -58,17 +58,19 @@ namespace CK.Setup.SqlServer
             }
             string packageName = null;
             string[] requires = null;
+            string[] groups = null;
             string[] requiredBy = null;
             Version version = null;
             VersionedName[] previousNames = null;
 
             if( mHeader.Groups[2].Length > 0 ) packageName = mHeader.Groups[2].Value;
             if( mHeader.Groups[3].Captures.Count > 0 ) requires = mHeader.Groups[3].Captures.Cast<Capture>().Select( m => m.Value ).ToArray();
-            if( mHeader.Groups[4].Captures.Count > 0 ) requiredBy = mHeader.Groups[4].Captures.Cast<Capture>().Select( m => m.Value ).ToArray();
-            if( mHeader.Groups[5].Captures.Count > 0 )
+            if( mHeader.Groups[4].Captures.Count > 0 ) groups = mHeader.Groups[4].Captures.Cast<Capture>().Select( m => m.Value ).ToArray();
+            if( mHeader.Groups[5].Captures.Count > 0 ) requiredBy = mHeader.Groups[5].Captures.Cast<Capture>().Select( m => m.Value ).ToArray();
+            if( mHeader.Groups[6].Captures.Count > 0 )
             {
-                var prevNames = mHeader.Groups[5].Captures.Cast<Capture>().Select( m => m.Value );
-                var prevVer = mHeader.Groups[5].Captures.Cast<Capture>().Select( m => Version.Parse( m.Value ) );
+                var prevNames = mHeader.Groups[6].Captures.Cast<Capture>().Select( m => m.Value );
+                var prevVer = mHeader.Groups[6].Captures.Cast<Capture>().Select( m => Version.Parse( m.Value ) );
                 previousNames = prevNames.Zip( prevVer, ( n, v ) => new VersionedName( n, v ) ).ToArray();
             }
             if( mHeader.Groups[1].Length == 1 ) version = null;
@@ -86,7 +88,7 @@ namespace CK.Setup.SqlServer
                 databaseOrSchema = tmp;
             }
 
-            SqlObject.ReadInfo r = new SqlObject.ReadInfo( databaseOrSchema, schema, name, header, version, packageName, requires, requiredBy, previousNames, textAfterName );
+            SqlObject.ReadInfo r = new SqlObject.ReadInfo( databaseOrSchema, schema, name, header, version, packageName, requires, groups, requiredBy, previousNames, textAfterName );
 
             SqlObject result;
             if( ReferenceEquals( type, SqlObject.TypeProcedure ) )

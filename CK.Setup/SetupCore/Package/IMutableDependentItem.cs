@@ -6,7 +6,8 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
-    /// A mutable version of an <see cref="IDependentItem"/>
+    /// A mutable version of an <see cref="IDependentItem"/>.
+    /// The <see cref="IDependentItem.FullName"/> (that identifies the item) can not be changed through this interface.
     /// </summary>
     public interface IMutableDependentItem : IDependentItem
     {
@@ -19,6 +20,11 @@ namespace CK.Setup
         /// Gets a mutable list of items that are required by this item.
         /// </summary>
         new IDependentItemList RequiredBy { get; }
+
+        /// <summary>
+        /// Gets a mutable list of groups to which this item belongs.
+        /// </summary>
+        new IDependentItemGroupList Groups { get; }
 
         /// <summary>
         /// Gets or sets the container to which this item belongs.

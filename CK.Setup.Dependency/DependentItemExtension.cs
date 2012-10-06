@@ -82,11 +82,18 @@ namespace CK.Setup
             }
         }
 
-        #region GetReference and GetOptionalReference on IDependentItem and IDependentItemContainer
+        #region GetReference and GetOptionalReference on IDependentItem, IDependentItemGroup and IDependentItemContainer
 
         public static IDependentItemRef GetReference( this IDependentItem @this )
         {
             IDependentItemRef r = @this as IDependentItemRef;
+            if( r == null ) r = @this != null ? new ItemRef( @this ) : null;
+            return r;
+        }
+
+        public static IDependentItemGroupRef GetReference( this IDependentItemGroup @this )
+        {
+            IDependentItemGroupRef r = @this as IDependentItemGroupRef;
             if( r == null ) r = @this != null ? new ItemRef( @this ) : null;
             return r;
         }
@@ -104,6 +111,12 @@ namespace CK.Setup
             return @this != null ? new OptItemRef( @this ) : null;
         }
 
+        public static IDependentItemGroupRef GetOptionalReference( this IDependentItemGroup @this, bool optional = true )
+        {
+            if( !optional ) return GetReference( @this );
+            return @this != null ? new OptItemRef( @this ) : null;
+        }
+
         public static IDependentItemContainerRef GetOptionalReference( this IDependentItemContainer @this, bool optional = true )
         {
             if( !optional ) return GetReference( @this );
@@ -112,7 +125,7 @@ namespace CK.Setup
         
         #endregion
 
-        #region GetReference and GetOptionalReference on IDependentItemRef and IDependentItemContainerRef
+        #region GetReference and GetOptionalReference on IDependentItemRef, IDependentItemGroupRef and IDependentItemContainerRef
 
         public static IDependentItemRef GetReference( this IDependentItemRef @this )
         {
@@ -121,6 +134,17 @@ namespace CK.Setup
                 DirectRef d = @this as DirectRef;
                 if( d != null ) return GetReference( d.Item );
                 return new NamedDependentItemRef( @this.FullName );
+            }
+            return @this;
+        }
+
+        public static IDependentItemGroupRef GetReference( this IDependentItemGroupRef @this )
+        {
+            if( @this != null && @this.Optional )
+            {
+                DirectRef d = @this as DirectRef;
+                if( d != null ) return GetReference( (IDependentItemGroupRef)d.Item );
+                return new NamedDependentItemGroupRef( @this.FullName );
             }
             return @this;
         }
@@ -143,6 +167,15 @@ namespace CK.Setup
             DirectRef d = @this as DirectRef;
             if( d != null ) return new OptItemRef( d.Item );
             return new NamedDependentItemRef( @this.FullName, true );
+        }
+
+        public static IDependentItemGroupRef GetOptionalReference( this IDependentItemGroupRef @this, bool optional = true )
+        {
+            if( !optional ) return GetReference( @this );
+            if( @this == null || @this.Optional ) return @this;
+            DirectRef d = @this as DirectRef;
+            if( d != null ) return new OptItemRef( d.Item );
+            return new NamedDependentItemGroupRef( @this.FullName, true );
         }
 
         public static IDependentItemContainerRef GetOptionalReference( this IDependentItemContainerRef @this, bool optional = true )

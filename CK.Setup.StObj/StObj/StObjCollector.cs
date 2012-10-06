@@ -142,9 +142,9 @@ namespace CK.Setup
                 {
                     var m = (MutableItem)sorted.Item;
                     // Calls Construct on Head for Groups.
-                    if( !m.IsGroup || sorted.IsGroupHead )
+                    if( m.ItemKind == DependentItemType.SimpleItem || sorted.IsGroupHead )
                     {
-                        m.SetSorterData( ordered.Count, sorted.Requires );
+                        m.SetSorterData( ordered.Count, sorted.Requires, sorted.Children, sorted.Groups );
                         using( _logger.OpenGroup( LogLevel.Trace, "Constructing '{0}'.", m.ToString() ) )
                         {
                             try
@@ -160,7 +160,7 @@ namespace CK.Setup
                     }
                     else
                     {
-                        Debug.Assert( m.IsGroup && !sorted.IsGroupHead );
+                        Debug.Assert( m.ItemKind != DependentItemType.SimpleItem && !sorted.IsGroupHead );
                         // We may call here a ConstructContent( IReadOnlyList<IStObj> packageContent ).
                         // But... is it a good thing for a package object to know its content detail?
                     }
@@ -186,7 +186,7 @@ namespace CK.Setup
                 MutableItem m = null;
                 foreach( var t in pathTypes )
                 {
-                    m = new MutableItem( m, r.Context, t, theObject );
+                    m = new MutableItem( m, r.Context, t, theObject );                   
                     if( generalization == null ) generalization = m;
                 }
                 MutableItem specialization = m;
@@ -201,7 +201,7 @@ namespace CK.Setup
                 {
                     m.Configure( _logger, generalization, specialization );
                     if( _configurator != null ) _configurator.Configure( _logger, m );
-                    r.AddConfiguredItem( m );
+                    r.AddStObjConfiguredItem( m );
                 }
                 while( (m = m.Generalization) != null );
             }

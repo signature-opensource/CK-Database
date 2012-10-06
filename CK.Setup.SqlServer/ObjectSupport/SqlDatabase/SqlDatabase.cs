@@ -7,7 +7,7 @@ using CK.Core;
 namespace CK.Setup.SqlServer
 {
 
-    [Setup( ItemType = typeof( SqlDatabaseItem ) )]
+    [Setup( ItemType = typeof( SqlDatabaseItem ), ItemKind = DependentItemType.Group, TrackAmbientProperties = TrackAmbientPropertiesMode.AddPropertyHolderAsChildren )]
     public class SqlDatabase
     {
         /// <summary>

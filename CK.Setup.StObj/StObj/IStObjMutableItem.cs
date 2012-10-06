@@ -17,23 +17,45 @@ namespace CK.Setup
         Type Context { get; }
 
         /// <summary>
+        /// Gets the kind of object (simple item, group or container).
+        /// </summary>
+        DependentItemType ItemKind { get; set; }
+
+        /// <summary>
+        /// Gets or sets how Ambient Properties that reference this StObj must be considered.
+        /// </summary
+        TrackAmbientPropertiesMode TrackAmbientProperties { get; set; }
+
+        /// <summary>
         /// Gets a mutable reference to the container of the object.
         /// Initialized by <see cref="StObjAttribute.Container"/> or any other <see cref="IStObjStructuralConfigurator"/>.
-        /// When container is null and this StObj has a container of its Generalization will be used.
+        /// When the configured container's type is null and this StObj has a Generalization, the container of its Generalization will be used.
         /// </summary>
         IMutableReference Container { get; }
+
+        /// <summary>
+        /// Contained items of the object.
+        /// Initialized by <see cref="StObjAttribute.Children"/>.
+        /// </summary>
+        IMutableReferenceList Children { get; }
 
         /// <summary>
         /// Direct dependencies of the object.
         /// Initialized by <see cref="StObjAttribute.Requires"/>.
         /// </summary>
-        IReadOnlyList<IMutableReference> Requires { get; }
+        IMutableReferenceList Requires { get; }
 
         /// <summary>
         /// Reverse dependencies: types that depend on the object.
         /// Initialized by <see cref="StObjAttribute.RequiredBy"/>.
         /// </summary>
-        IReadOnlyList<IMutableReference> RequiredBy { get; }
+        IMutableReferenceList RequiredBy { get; }
+
+        /// <summary>
+        /// Reverse dependencies: types that depend on the object.
+        /// Initialized by <see cref="StObjAttribute.RequiredBy"/>.
+        /// </summary>
+        IMutableReferenceList Groups { get; }
 
         /// <summary>
         /// Gets a list of mutable Construct parameters.
@@ -42,7 +64,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets a list of mutable Ambient properties for the ultimate specialization: all
-        /// ambient properties of the most specialized object are avalaible.
+        /// ambient properties of the most specialized object are available.
         /// This guarantees that properties are accessed by their most precise overriden/masked version.
         /// </summary>
         IReadOnlyList<IMutableAmbientProperty> AllAmbientProperties { get; }

@@ -15,7 +15,8 @@ namespace CK.Setup
         Type _driverType;
         string _driverTypeName;
         string _containerFullName;
-        bool? _noContent;
+        TrackAmbientPropertiesMode _trackAmbientProperties;
+        DependentItemType _setupItemKind;
         bool _hasModel;
 
         public SetupAttribute()
@@ -101,19 +102,24 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets or sets whether this object must not be considered as a <see cref="IDependentItemContainer"/>: no items 
-        /// must be subordinated to this object.
-        /// This property is inherited.
+        /// Gets how Ambient Properties that reference the object must be tracked.
         /// </summary>
-        public bool NoContent
+        public TrackAmbientPropertiesMode TrackAmbientProperties
         {
-            get { return _noContent ?? false; }
-            set { _noContent = value; }
+            get { return _trackAmbientProperties; }
+            set { _trackAmbientProperties = value; }
         }
 
-        internal bool NoContentDefined
+        /// <summary>
+        /// Gets or sets how this object must be considered regarding other items: it can be a <see cref="DependentItemType.SimpleItem"/>, 
+        /// a <see cref="DependentItemType.Group"/> or a <see cref="DependentItemType.Container"/>.
+        /// When let to <see cref="DependentItemType.Unknown"/>, this property is inherited (it is eventually 
+        /// considered as <see cref="DependentItemType.Container"/> when not set).
+        /// </summary>
+        public DependentItemType ItemKind
         {
-            get { return _noContent.HasValue; }
+            get { return _setupItemKind; }
+            set { _setupItemKind = value; }
         }
 
         /// <summary>
@@ -137,6 +143,10 @@ namespace CK.Setup
         Type[] IStObjAttribute.Requires { get { return null; } }
 
         Type[] IStObjAttribute.RequiredBy { get { return null; } }
+
+        Type[] IStObjAttribute.Children { get { return null; } }
+
+        Type[] IStObjAttribute.Groups { get { return null; } }
 
         static internal SetupAttribute GetSetupAttribute( Type t )
         {

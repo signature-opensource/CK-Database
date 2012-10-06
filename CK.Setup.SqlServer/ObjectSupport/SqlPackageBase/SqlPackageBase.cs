@@ -6,18 +6,19 @@ using CK.Core;
 
 namespace CK.Setup.SqlServer
 {
+    [StObj( ItemKind = DependentItemType.Container )]
     public class SqlPackageBase 
     {
         /// <summary>
         /// Gets or sets the database to which this package belongs.
-        /// Typically initialized by an attribute (like <see cref="SqlPackageAttribute"/>) when specialized as a StObj.
+        /// Typically initialized by an attribute (like <see cref="SqlPackageAttribute"/>).
         /// </summary>
         [AmbientProperty]
         public SqlDatabase Database { get; set; }
 
         /// <summary>
         /// Gets or sets the sql schema.
-        /// Typically initialized by an attribute (like <see cref="SqlPackageAttribute"/>) when specialized as a StObj.
+        /// Typically initialized by an attribute (like <see cref="SqlPackageAttribute"/>).
         /// </summary>
         [AmbientProperty]
         public string Schema { get; set; }
@@ -25,7 +26,7 @@ namespace CK.Setup.SqlServer
         /// <summary>
         /// Gets or sets a <see cref="ResourceLocation"/> that locates the resources associated 
         /// to this package.
-        /// Typically initialized by an attribute (like <see cref="SqlPackageAttribute"/>) when specialized as a StObj.
+        /// Typically initialized by an attribute (like <see cref="SqlPackageAttribute"/>).
         /// </summary>
         [AmbientProperty]
         public ResourceLocator ResourceLocation { get; set; }

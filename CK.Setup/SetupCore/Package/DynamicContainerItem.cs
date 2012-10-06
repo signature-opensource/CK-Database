@@ -10,7 +10,7 @@ namespace CK.Setup
     /// <summary>
     /// Standard implementation of a mutable <see cref="IDependentItemContainer"/> that is NOT a <see cref="IVersionedItem"/>.
     /// This class implements the minimal behavior for an item container: FullName, Requires, RequiredBy, Container, Generalization and Children, all 
-    /// of them being writable, plus the <see cref="IDependentItemContainerAsk.ThisIsNotAContainer"/> that can be used to dynamically refuse to be referenced
+    /// of them being writable, plus the <see cref="IDependentItemContainerTyped.ItemKind"/> that can be used to dynamically refuse to be referenced
     /// as a Container by other items.
     /// </summary>
     /// <remarks>
@@ -19,10 +19,11 @@ namespace CK.Setup
     public class DynamicContainerItem : ContainerItemBase
     {
         string _fullName;
-        bool _notContainer; 
+        DependentItemType _itemKind; 
 
         public DynamicContainerItem()
         {
+            _itemKind = DependentItemType.Container;
         }
 
         /// <summary>
@@ -36,14 +37,14 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets or sets whether this container is actually NOT a container.
-        /// When set to true, if an item declares this item as its container, an error is 
-        /// raised during the ordering of the dependency graph.
+        /// Gets or sets whether this container is actually NOT a Container or even not a Group.
+        /// When not <see cref="DependentItemType.Container"/>, if an item declares this item as its container, an error is raised 
+        /// during the ordering of the dependency graph.
         /// </summary>
-        public bool ThisIsNotAContainer 
-        { 
-            get { return _notContainer; }
-            set { _notContainer = value; } 
+        public DependentItemType ItemKind
+        {
+            get { return _itemKind; }
+            set { _itemKind = value; }
         }
 
         protected override string GetFullName()
@@ -51,9 +52,9 @@ namespace CK.Setup
             return _fullName;
         }
 
-        protected override bool GetThisIsNotAContainer()
+        protected override DependentItemType GetItemKind()
         {
-            return _notContainer;
+            return _itemKind;
         }
     }
 

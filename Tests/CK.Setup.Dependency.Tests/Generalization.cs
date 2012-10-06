@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
-using CK.Setup.Tests;
 
-namespace CK.Setup.Tests.Dependencies
+namespace CK.Setup.Dependency.Tests
 {
     [TestFixture]
     public class Generalization
@@ -55,7 +54,7 @@ namespace CK.Setup.Tests.Dependencies
                     Assert.That( r.SortedItems[2].Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
                 }
                 // Third, register the container that references A by name.
-                container.Add( "∋A" );
+                container.Add( "⊐A" );
                 {
                     var r = DependencySorter.OrderItems( ASpec, container );
                     r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
@@ -88,7 +87,7 @@ namespace CK.Setup.Tests.Dependencies
             using( TestableItem.IgnoreCheckCount() )
             {
                 var A = new TestableItem( "A" );
-                var ASpec = new TestableItem( "ASpec", "ĵA" );
+                var ASpec = new TestableItem( "ASpec", "↟A" );
                 {
                     var r = DependencySorter.OrderItems( ASpec, A );
                     r.AssertOrdered( "A", "ASpec" );
@@ -118,17 +117,17 @@ namespace CK.Setup.Tests.Dependencies
         {
             // Ruby belongs to "Root" container.
             var c = new TestableContainer( "Root",
-                        new TestableContainer( "Pierre", "=>Nuage",
+                        new TestableContainer( "Pierre", "⇀Nuage",
                             new TestableItem( "Gem" )
                         ),
-                        new TestableItem( "Nuage", "=>Rubis", "<=Pierre" ),
-                        new TestableItem( "Rubis", "ĵGem" )
+                        new TestableItem( "Nuage", "⇀Rubis", "↽Pierre" ),
+                        new TestableItem( "Rubis", "↟Gem" )
                     );
             var r = DependencySorter.OrderItems( c );
             Assert.That( r.CycleDetected, Is.Not.Null );
             Assert.That( r.SortedItems, Is.Null );
-            // Here we can see the "Required By" ⇆ and the "Generalized By" ĵ relations.
-            Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ Rubis ĵ Gem ∈ Pierre ⇆ Nuage ⇒ Rubis" ) );
+            // Here we can see the "Required By Requires" ⇌ and the "Generalized By" ↟ relations.
+            Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ Rubis ↟ Gem ⊏ Pierre ⇀ Nuage ⇀ Rubis" ) );
             ResultChecker.SimpleCheck( r );
         }
 
@@ -141,15 +140,15 @@ namespace CK.Setup.Tests.Dependencies
                                 new TestableContainer( "Pierre",
                                     new TestableItem( "Gem" )
                                     ),
-                                new TestableContainer( "Nuage", "=>Pierre",
+                                new TestableContainer( "Nuage", "⇀Pierre",
                                     new TestableItem( "Cumulus" ),
-                                    new TestableItem( "Stratus", "<= Rubis" )
+                                    new TestableItem( "Stratus", "↽ Rubis" )
                                     )
                         );
                 var rubis = new TestableItem( "Rubis" );
 
                 {
-                    // Here: Rubis => Stratus ∈ Cumulus ∈ Nuage => Pierre ∋ Gem.
+                    // Here: Rubis => Stratus ⊏ Cumulus ⊏ Nuage => Pierre ∋ Gem.
                     //       Rubis is not in a Container. There is no cycle.
                     var r = DependencySorter.OrderItems( root, rubis );
                     Assert.That( r.CycleDetected, Is.Null );
@@ -158,9 +157,9 @@ namespace CK.Setup.Tests.Dependencies
                 }
                 // Before saying that "Gem" generalizes "Rubis", we check that
                 // adding a "Rubis" => "Gem" dependency does not create any cycle.
-                rubis.Add( "=>Gem" );
+                rubis.Add( "⇀Gem" );
                 {
-                    // Here: Rubis => Stratus ∈ Cumulus ∈ Nuage => Pierre ∋ Gem, and Rubis => Gem.
+                    // Here: Rubis => Stratus ⊏ Cumulus ⊏ Nuage => Pierre ∋ Gem, and Rubis => Gem.
                     // No Cycle.
                     var r = DependencySorter.OrderItems( root, rubis );
                     Assert.That( r.CycleDetected, Is.Null );
@@ -171,13 +170,13 @@ namespace CK.Setup.Tests.Dependencies
                 // This is more than adding "Rubis" => "Gem" dependency because since
                 // Rubis has no defined container, Gem's container (Pierre) has been inherited.
                 rubis.Requires.Clear();
-                rubis.Add( "ĵGem" );
+                rubis.Add( "↟Gem" );
                 {
-                    // This is like adding Pierre ∈ Rubis... and this creates a cycle at the Container level:
-                    // Rubis => Stratus ∈ Cumulus ∈ Nuage => Pierre ∈ Rubis.
+                    // This is like adding Pierre ⊏ Rubis... and this creates a cycle at the Container level:
+                    // Rubis => Stratus ⊏ Cumulus ⊏ Nuage => Pierre ⊏ Rubis.
                     var r = DependencySorter.OrderItems( root, rubis );
                     Assert.That( r.CycleDetected, Is.Not.Null );
-                    Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ Nuage ⇒ Pierre ∋ Rubis ⇆ Stratus ∈ Nuage" ) );
+                    Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ Nuage ⇀ Pierre ⊐ Rubis ⇌ Stratus ⊏ Nuage" ) );
                     ResultChecker.SimpleCheck( r );
                 }
                 // Setting a Container for Rubis (Root for instance), solves the problem.

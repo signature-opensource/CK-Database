@@ -35,8 +35,8 @@ namespace CK.Setup
             return s;
         }
 
-        internal bool IsMergeable { get { return _info.IsMergeable; } }
-        
+        internal bool IsValueMergeable { get { return _info.IsValueMergeable; } }
+
         internal bool IsWriteable { get { return _info.IsWriteable; } }
 
         internal PropertyInfo PropertyInfo { get { return _info.PropertyInfo; } }

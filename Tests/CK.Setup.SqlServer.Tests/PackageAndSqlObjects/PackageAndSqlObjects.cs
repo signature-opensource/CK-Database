@@ -20,13 +20,15 @@ namespace CK.Setup.SqlServer.Tests
                 context.SqlDatabases.Add( "dbHisto", connection );
                 context.AssemblyRegistererConfiguration.DiscoverAssemblyNames.Add( "IntoTheWild0" );
 
-                // Try normally with any existing database if it exists.
-                {
-                    if( !context.DefaultSqlDatabase.IsOpen() ) context.DefaultSqlDatabase.OpenOrCreate( ".", "IntoTheWild" );
-                    SqlSetupCenter c = new SqlSetupCenter( context );
-                    Assert.That( c.Run() );
-                    Assert.That( context.DefaultSqlDatabase.Connection.ExecuteScalar( "select ResName from CK.tRes where ResId=1" ), Is.EqualTo( "System" ) );
-                }
+                if( !context.DefaultSqlDatabase.IsOpen() ) context.DefaultSqlDatabase.OpenOrCreate( ".", "IntoTheWild" );
+
+                //// Try normally with any existing database if it exists.
+                //{
+                //    
+                //    SqlSetupCenter c = new SqlSetupCenter( context );
+                //    Assert.That( c.Run() );
+                //    Assert.That( context.DefaultSqlDatabase.Connection.ExecuteScalar( "select ResName from CK.tRes where ResId=1" ), Is.EqualTo( "System" ) );
+                //}
                 // Drop CK and CKCore and retries in reverse order.
                 {
                     context.DefaultSqlDatabase.SchemaDropAllObjects( "CK", true );

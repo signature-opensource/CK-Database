@@ -53,6 +53,9 @@
     <Compile Include="Scripts\ResSetupScript.cs" />
     <Compile Include="Scripts\ScriptSource.cs" />
     <Compile Include="Scripts\ScriptTypeHandler.cs" />
+    <Compile Include="SetupCore\Package\DependentItemGroupList.cs" />
+    <Compile Include="SetupCore\Package\IDependentItemGroupList.cs" />
+    <Compile Include="SetupCore\Package\IMutableDependentItemContainer.cs" />
     <Compile Include="SetupCore\SetupEventArgs.cs" />
     <Compile Include="SetupCore\Package\ContainerItemBase.cs" />
     <Compile Include="SetupCore\Package\IMutableDependentItem.cs" />
@@ -100,6 +103,8 @@
     <Compile Include="SetupCore\Version\IVersionedItemRepository.cs" />
     <Compile Include="SetupCore\Version\MultiVersionManager.cs" />
     <Compile Include="SetupCore\Version\VersionedName.cs" />
+    <Compile Include="StObj\Attributes\ChildrenAttribute.cs" />
+    <Compile Include="StObj\Attributes\GroupsAttribute.cs" />
     <Compile Include="StObj\Attributes\RequiredByAttribute.cs" />
     <Compile Include="StObj\Attributes\IRequirementsAttribute.cs" />
     <Compile Include="StObj\Attributes\RequiresAttribute.cs" />

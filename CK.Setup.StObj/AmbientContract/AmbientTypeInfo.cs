@@ -5,6 +5,11 @@ using System.Text;
 
 namespace CK.Core
 {
+    /// <summary>
+    /// Encapsulate type information for an Ambient Contract class and offers a <see cref="FinalContexts"/> collection that 
+    /// exposes the different contexts that contain the type.
+    /// It is a concrete class that can be specialized to capture more specific information related to the type.
+    /// </summary>
     public class AmbientTypeInfo
     {
         public readonly Type Type;
@@ -17,27 +22,33 @@ namespace CK.Core
         Type[] _ambientInterfaces;
         Type[] _thisAmbientInterfaces;
 
+        /// <summary>
+        /// Initializes a new <see cref="AmbientTypeInfo"/> from a base one (its <see cref="Generalization"/>) if it exists and a type.
+        /// </summary>
+        /// <param name="parent">Parent AmbientTypeInfo. Null if the base type is not an Ambient Contract.</param>
+        /// <param name="t">Type itself. Can not be null.</param>
         public AmbientTypeInfo( AmbientTypeInfo parent, Type t )
         {
+            if( t == null ) throw new ArgumentNullException( "t" );
             Type = t;
             MutableFinalContexts = new HashSet<Type>();
             _finalContextsEx = new ReadOnlyCollectionOnISet<Type>( MutableFinalContexts );
-            if( (DirectGeneralization = parent) == null )
+            if( (Generalization = parent) == null )
             {
                 _nextSibling = null;
                 MutableFinalContexts.Add( AmbientContractCollector.DefaultContext );
             }
             else
             {
-                MutableFinalContexts.AddRange( DirectGeneralization.MutableFinalContexts );
-                _nextSibling = DirectGeneralization._firstChild;
-                DirectGeneralization._firstChild = this;
+                MutableFinalContexts.AddRange( Generalization.MutableFinalContexts );
+                _nextSibling = Generalization._firstChild;
+                Generalization._firstChild = this;
             }
             ProcessContextAttributes<AddContextAttribute>( t, MutableFinalContexts.Add );
             ProcessContextAttributes<RemoveContextAttribute>( t, MutableFinalContexts.Remove );
         }
 
-        public AmbientTypeInfo DirectGeneralization { get; private set; }
+        public AmbientTypeInfo Generalization { get; private set; }
 
         public IReadOnlyCollection<Type> FinalContexts
         {
@@ -51,8 +62,8 @@ namespace CK.Core
 
         internal Type[] EnsureThisAmbientInterfaces( Func<Type, bool> ambientInterfacePredicate )
         {
-            return _thisAmbientInterfaces ?? (_thisAmbientInterfaces = DirectGeneralization != null 
-                                                        ? EnsureAllAmbientInterfaces( ambientInterfacePredicate ).Except( DirectGeneralization.EnsureAllAmbientInterfaces( ambientInterfacePredicate ) ).ToArray() 
+            return _thisAmbientInterfaces ?? (_thisAmbientInterfaces = Generalization != null 
+                                                        ? EnsureAllAmbientInterfaces( ambientInterfacePredicate ).Except( Generalization.EnsureAllAmbientInterfaces( ambientInterfacePredicate ) ).ToArray() 
                                                         : EnsureAllAmbientInterfaces( ambientInterfacePredicate ));
         }
 
@@ -101,7 +112,7 @@ namespace CK.Core
 
         internal List<TAmbientTypeInfo> FillPath<TAmbientTypeInfo>( List<TAmbientTypeInfo> path ) where TAmbientTypeInfo : AmbientTypeInfo
         {
-            if( DirectGeneralization != null ) DirectGeneralization.FillPath( path );
+            if( Generalization != null ) Generalization.FillPath( path );
             path.Add( (TAmbientTypeInfo)this );
             return path;
         }

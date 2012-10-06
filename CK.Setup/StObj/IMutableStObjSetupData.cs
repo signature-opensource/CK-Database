@@ -37,10 +37,9 @@ namespace CK.Setup
         IDependentItemList RequiredBy { get; }
 
         /// <summary>
-        /// Gets or sets whether this object must not be considered as a <see cref="IDependentItemContainer"/>: when true, no items 
-        /// must be subordinated to this object.
-        /// </summary>        
-        bool NoContent { get; set; }
+        /// Gets a mutable list of children (can be <see cref="IDependentItem"/> instances or named references).
+        /// </summary>
+        IDependentItemList Children { get; }
 
         /// <summary>
         /// Gets or sets whether a Model package is associated to this object. The Model is required by this object

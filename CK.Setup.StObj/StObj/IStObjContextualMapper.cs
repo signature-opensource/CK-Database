@@ -10,7 +10,7 @@ namespace CK.Setup
     /// Mapper for discovered typed objects (that are <see cref="IAmbientContract"/>) to 
     /// their associated <see cref="IStObj"/>.
     /// It is bound to a registration <see cref="Context"/> and encapsulates 
-    /// ambient type <see cref="Mappings"/>.
+    /// ambient type <see cref="TypeMappings"/>.
     /// </summary>
     public interface IStObjContextualMapper
     {
@@ -33,7 +33,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets the <see cref="IAmbientTypeContextualMapper"/> for this <see cref="Context"/>.
         /// </summary>
-        IAmbientTypeContextualMapper Mappings { get; }
+        IAmbientTypeContextualMapper TypeMappings { get; }
 
         /// <summary>
         /// Gets the mapped <see cref="IStObj"/> or null if no mapping exists.

@@ -64,9 +64,9 @@ namespace CK.Setup
                         if( data.SetupItem != null )
                         {
                             // An item has been created by the factory. 
-                            // If the StObj has been referenced as a Container: data.StObj.IsGroup == true, 
-                            // we may check here that the type of the created item is able to be structurally considered as a Container:
-                            // we should just check here that it is a IDependentItemContainer (we ignore the IDependentItemContainerAsk 
+                            // If the StObj has been declared as a Group or a Container: data.StObj.IsGroup == true, 
+                            // we may check here that the type of the created item is able to be structurally considered as a Group (or a Container):
+                            // we should just check here that it is a IDependentItemGroup/Container (we ignore the IDependentItemContainerTyped
                             // that may, later dynamically refuses to be a Container since this will be handled during ordering by The DependencySorter).
                             //
                             // The actual binding from the Items to their Container is handled below (once all items have been created).
@@ -79,14 +79,14 @@ namespace CK.Setup
                             if( itemType == null ) data.SetupItem = new StObjDynamicPackageItem( _logger, data );
                             else
                             {
-                                data.SetupItem = (IMutableDependentItem)Activator.CreateInstance( itemType, _logger, data );
+                                data.SetupItem = (IMutableDependentItemContainerTyped)Activator.CreateInstance( itemType, _logger, data );
                             }
                         }
                         // Configures Generalization since we got it above.
                         // Other properties (like dependencies) will be initialized later (once all setup items instances exist).
                         if( generalizationData != null )
                         {
-                            data.SetupItem.Generalization = generalizationData.SetupItem.GetReference();
+                            data.SetupItem.Generalization = generalizationData.SetupItem;
                             ISetupItemAwareObject awareObject = data.StObj.Object as ISetupItemAwareObject;
                             if( awareObject != null ) awareObject.SetupItem = data.SetupItem;
                         }
@@ -106,7 +106,17 @@ namespace CK.Setup
                     foreach( IStObj req in data.StObj.Requires )
                     {
                         StObjSetupData reqD = setupableItems[req];
-                        data.SetupItem.Requires.Add( reqD.SetupItem.GetReference() );
+                        data.SetupItem.Requires.Add( reqD.SetupItem );
+                    }
+                    foreach( IStObj child in data.StObj.Children )
+                    {
+                        StObjSetupData c = setupableItems[child];
+                        data.SetupItem.Children.Add( c.SetupItem );
+                    }
+                    foreach( IStObj group in data.StObj.Groups )
+                    {
+                        StObjSetupData g = setupableItems[group];
+                        data.SetupItem.Groups.Add( g.SetupItem );
                     }
                 }
             }

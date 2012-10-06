@@ -11,9 +11,9 @@ namespace CK.Setup
     public class RequiredByAttribute : RequiresAttribute
     {
         /// <summary>
-        /// Defines requirements by their names.
+        /// Defines reverse requirements by their names.
         /// </summary>
-        /// <param name="requires">Comma separated list of requirement item names.</param>
+        /// <param name="requires">Comma separated list of item names that require this object.</param>
         public RequiredByAttribute( string requires )
             : base( requires )
         {            

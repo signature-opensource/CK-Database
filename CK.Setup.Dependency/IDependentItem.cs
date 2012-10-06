@@ -66,6 +66,13 @@ namespace CK.Setup
         IEnumerable<IDependentItemRef> RequiredBy { get; }
 
         /// <summary>
+        /// Gets the groups to which this item belongs. If one of these groups is a container, it must be 
+        /// the only container of this item (otherwise it is an error).
+        /// Can be null if the item is not in any group.
+        /// </summary>
+        IEnumerable<IDependentItemGroupRef> Groups { get; }
+
+        /// <summary>
         /// Allows the dependent item to prepare itself before ordering. The returned object (if any)
         /// is made available after the sort in <see cref="ISortedItem.StartValue"/>.
         /// </summary>

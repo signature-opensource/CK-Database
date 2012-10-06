@@ -200,10 +200,9 @@ namespace CK.Setup
                     {
                         DriverBase d;
                         Type typeToCreate = null;
-                        if( item.IsContainer )
+                        if( item.IsGroup )
                         {
-                            var head = _drivers[item.HeadForContainer.FullName] as GroupHeadSetupDriver;
-                            Debug.Assert( head != null );
+                            var head = (GroupHeadSetupDriver)_drivers[item.HeadForGroup.FullName];
                             typeToCreate = ResolveDriverType( item );
                             SetupDriver c = _driverFactory.CreateDriver( typeToCreate, new SetupDriver.BuildInfo( head, item ) );
                             d = head.Container = c;

@@ -24,6 +24,7 @@ namespace CK.Setup.SqlServer
             public string PackageName { get; private set; }
             public IEnumerable<string> Requires { get; private set; }
             public IEnumerable<string> RequiredBy { get; private set; }
+            public IEnumerable<string> Groups { get; private set; }
             public IEnumerable<VersionedName> PreviousNames { get; private set; }
             public string TextAfterName { get; private set; }
             
@@ -34,8 +35,9 @@ namespace CK.Setup.SqlServer
                         string header,
                         Version v,
                         string packageName,
-                        IEnumerable<string> requires, 
-                        IEnumerable<string> requiredBy, 
+                        IEnumerable<string> requires,
+                        IEnumerable<string> requiredBy,
+                        IEnumerable<string> groups,
                         IEnumerable<VersionedName> prevNames,
                         string textAfterName )
             {
@@ -47,6 +49,7 @@ namespace CK.Setup.SqlServer
                 PackageName = packageName;
                 Requires = requires;
                 RequiredBy = requiredBy;
+                Groups = groups;
                 PreviousNames = prevNames;
                 TextAfterName = textAfterName;
             }
@@ -59,21 +62,19 @@ namespace CK.Setup.SqlServer
         string _name;
         DependentItemList _requires;
         DependentItemList _requiredBy;
+        DependentItemGroupList _groups;
         IDependentItemContainerRef _container;
 
         internal SqlObject( string type, ReadInfo readInfo )
         {
             _type = type;
-            _requires = new DependentItemList();
-            _requiredBy = new DependentItemList();
-
             _readInfo = readInfo;
             _schema = readInfo.Schema;
             _name = readInfo.Name;
-            _requires.Add( readInfo.Requires );
-            _requiredBy.Add( readInfo.RequiredBy );
+            if( readInfo.Requires != null ) Requires.Add( readInfo.Requires );
+            if( readInfo.RequiredBy != null ) RequiredBy.Add( readInfo.RequiredBy );
+            if( readInfo.Groups != null ) Groups.Add( readInfo.Groups );
             if( readInfo.PackageName != null ) _container = new NamedDependentItemContainerRef( readInfo.PackageName );
-
         }
 
        public string SchemaName
@@ -95,12 +96,17 @@ namespace CK.Setup.SqlServer
 
         public IDependentItemList Requires
         {
-            get { return _requires; }
+            get { return _requires ?? (_requires = new DependentItemList()); }
         }
 
         public IDependentItemList RequiredBy
         {
-            get { return _requiredBy; }
+            get { return _requiredBy ?? (_requiredBy = new DependentItemList()); }
+        }
+
+        public IDependentItemGroupList Groups
+        {
+            get { return _groups ?? (_groups = new DependentItemGroupList()); }
         }
 
         // Version exists only for text based object.
@@ -134,6 +140,11 @@ namespace CK.Setup.SqlServer
         IEnumerable<IDependentItemRef> IDependentItem.RequiredBy
         {
             get { return _requiredBy; }
+        }
+
+        IEnumerable<IDependentItemGroupRef> IDependentItem.Groups
+        {
+            get { return _groups; }
         }
 
         IEnumerable<VersionedName> IVersionedItem.PreviousNames

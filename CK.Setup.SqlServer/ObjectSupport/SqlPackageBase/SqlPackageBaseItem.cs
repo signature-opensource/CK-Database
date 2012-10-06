@@ -39,5 +39,16 @@ namespace CK.Setup.SqlServer
             get { return (SqlPackageBase)base.Object; } 
         }
 
+        protected override object StartDependencySort()
+        {
+            if( Model != null )
+            {
+                foreach( var db in Groups.OfType<SqlDatabaseItem>() )
+                {
+                    Model.Groups.Add( db );
+                }
+            }
+            return base.StartDependencySort();
+        }
     }
 }

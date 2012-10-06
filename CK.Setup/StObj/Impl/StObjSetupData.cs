@@ -15,7 +15,8 @@ namespace CK.Setup
         string _versions;
         IReadOnlyList<IDependentItemRef> _requiresEx;
         IReadOnlyList<IDependentItemRef> _requiredByEx;
-
+        IReadOnlyList<IDependentItemRef> _childrenEx;
+        IReadOnlyList<IDependentItemGroupRef> _groupsEx;
 
         internal StObjSetupData( IActivityLogger logger, IStObj o, StObjSetupDataBase parent )
             : base( logger, o.ObjectType, parent )
@@ -26,6 +27,8 @@ namespace CK.Setup
             _versions = VersionsAttribute.GetVersionsString( o.ObjectType );
             _requiresEx = new ReadOnlyListOnIList<IDependentItemRef>( Requires );
             _requiredByEx = new ReadOnlyListOnIList<IDependentItemRef>( RequiredBy );
+            _childrenEx = new ReadOnlyListOnIList<IDependentItemRef>( Children );
+            _groupsEx = new ReadOnlyListOnIList<IDependentItemGroupRef>( Groups );
         }
 
         public IStObj StObj
@@ -61,7 +64,7 @@ namespace CK.Setup
             if( DriverType == null && DriverTypeName != null ) DriverType = SimpleTypeFinder.WeakDefault.ResolveType( DriverTypeName, true );
         }
 
-        internal IMutableDependentItem SetupItem { get; set; }
+        internal IMutableDependentItemContainerTyped SetupItem { get; set; }
 
         IReadOnlyList<IDependentItemRef> IStObjSetupData.RequiredBy
         {
@@ -71,6 +74,16 @@ namespace CK.Setup
         IReadOnlyList<IDependentItemRef> IStObjSetupData.Requires
         {
             get { return _requiredByEx; }
+        }
+
+        IReadOnlyList<IDependentItemRef> IStObjSetupData.Children
+        {
+            get { return _childrenEx; }
+        }
+
+        IReadOnlyList<IDependentItemGroupRef> IStObjSetupData.Groups
+        {
+            get { return _groupsEx; }
         }
 
     }

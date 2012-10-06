@@ -5,7 +5,7 @@ using System.Text;
 using NUnit.Framework;
 using CK.Core;
 
-namespace CK.Setup.Tests.Dependencies
+namespace CK.Setup.Dependency.Tests
 {
     [TestFixture]
     public class ContainerByName
@@ -14,7 +14,7 @@ namespace CK.Setup.Tests.Dependencies
         public void JustContainers()
         {
             var cB = new TestableContainer( "CB" );
-            var cA = new TestableContainer( "CA", "∈ CB" );
+            var cA = new TestableContainer( "CA", "⊏ CB" );
             {
                 // Starting by CA.
                 var r = DependencySorter.OrderItems( cA, cB );
@@ -35,29 +35,29 @@ namespace CK.Setup.Tests.Dependencies
         public void SomeItems()
         {
             var c = new TestableContainer( "C" );
-            var o1 = new TestableItem( "O1", "∈ C" );
+            var o1 = new TestableItem( "O1", "⊏ C" );
             {
                 var r = DependencySorter.OrderItems( c, o1 );
                 r.AssertOrdered( "C.Head", "O1", "C" );
                 ResultChecker.SimpleCheck( r );
             }
-            var o2 = new TestableItem( "O2", "∈ O1" );
+            var o2 = new TestableItem( "O2", "⊏ O1" );
             {
                 var r = DependencySorter.OrderItems( c, o1, o2 );
                 Assert.That( r.IsComplete, Is.False );
                 Assert.That( r.HasStructureError, Is.True );
                 ResultChecker.SimpleCheck( r );
             }
-            o2.Add( "∈ C", "<= O1" );
+            o2.Add( "⊏ C", "↽ O1" );
             {
                 var r = DependencySorter.OrderItems( c, o1, o2 );
                 r.AssertOrdered( "C.Head", "O2", "O1", "C" );
                 ResultChecker.SimpleCheck( r );
             }
-            var sub = new TestableItem( "Cycle", "∈ C", "=> C" );
+            var sub = new TestableItem( "Cycle", "⊏ C", "⇀ C" );
             {
                 var r = DependencySorter.OrderItems( c, o1, o2, sub );
-                Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ C ∋ Cycle ⇒ C" ) );
+                Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ C ⊐ Cycle ⇀ C" ) );
                 ResultChecker.SimpleCheck( r );
             }
         }
@@ -65,7 +65,7 @@ namespace CK.Setup.Tests.Dependencies
         [Test]
         public void MissingContainer()
         {
-            var o = new TestableItem( "O1", "∈ C" );
+            var o = new TestableItem( "O1", "⊏ C" );
             {
                 var r = DependencySorter.OrderItems( o );
                 Assert.That( r.IsComplete, Is.False );
@@ -81,11 +81,11 @@ namespace CK.Setup.Tests.Dependencies
         [Test]
         public void MonoCycle()
         {
-            var c = new TestableContainer( "C", "=> C" );
-            var o1 = new TestableItem( "O1", "∈ C" );
+            var c = new TestableContainer( "C", "⇀ C" );
+            var o1 = new TestableItem( "O1", "⊏ C" );
             {
                 var r = DependencySorter.OrderItems( c, o1 );
-                Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ C ⇒ C" ) );
+                Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ C ⇀ C" ) );
                 ResultChecker.SimpleCheck( r );
             }
         }
@@ -93,11 +93,11 @@ namespace CK.Setup.Tests.Dependencies
         [Test]
         public void AutoContains()
         {
-            var c = new TestableContainer( "C", "∈ C" );
-            var o1 = new TestableItem( "O1", "∈ C" );
+            var c = new TestableContainer( "C", "O1", "⊐ C" );
+            var o1 = new TestableItem( "O1" );
             {
                 var r = DependencySorter.OrderItems( c, o1 );
-                Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ C ∈ C" ) );
+                Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ C ⊏ C" ) );
                 ResultChecker.SimpleCheck( r );
             }
         }
@@ -106,12 +106,12 @@ namespace CK.Setup.Tests.Dependencies
         [Test]
         public void RecurseAutoContains()
         {
-            var c = new TestableContainer( "C", "∈ D" );
-            var o1 = new TestableItem( "O1", "∈ C" );
-            var d = new TestableContainer( "D", "∈ C" );
+            var c = new TestableContainer( "C", "⊏ D" );
+            var o1 = new TestableItem( "O1", "⊏ C" );
+            var d = new TestableContainer( "D", "⊏ C" );
             {
                 var r = DependencySorter.OrderItems( c, o1, d );
-                Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ C ∈ D ∈ C" ) );
+                Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ C ⊏ D ⊏ C" ) );
                 ResultChecker.SimpleCheck( r );
             }
         }
@@ -123,7 +123,7 @@ namespace CK.Setup.Tests.Dependencies
             var c = new TestableContainer( "C", o1 );
 
             Assert.That( c.Children.Contains( o1 ) && o1.Container == c );
-            o1.Add( "∈ D" );
+            o1.Add( "⊏ D" );
             Assert.That( c.Children.Contains( o1 ) && o1.Container != c );
 
             var d = new TestableContainer( "D" );

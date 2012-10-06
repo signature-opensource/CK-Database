@@ -15,7 +15,7 @@ namespace CK.Setup
     /// as a (non optional) reference. The struct <see cref="NamedDependentItemContainerRef"/> must be used for 
     /// optional or pure named reference.
     /// </remarks>
-    public interface IDependentItemContainerRef : IDependentItemRef
+    public interface IDependentItemContainerRef : IDependentItemGroupRef
     {
     }
 }

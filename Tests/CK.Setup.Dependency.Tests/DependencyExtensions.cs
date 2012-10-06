@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 
-namespace CK.Setup.Tests.Dependencies
+namespace CK.Setup.Dependency.Tests
 {
     static class DependencyExtensions
     {

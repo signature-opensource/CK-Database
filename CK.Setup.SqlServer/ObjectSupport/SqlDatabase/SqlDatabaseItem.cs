@@ -22,6 +22,7 @@ namespace CK.Setup.SqlServer
         {
             Object = (SqlDatabase)data.StObj.Object;
             FullName = AmbientContractCollector.DisplayName( data.StObj.Context, Object.Name );
+            ItemKind = data.StObj.ItemKind;
             ConnectionItem = new SqlDatabaseConnectionItem( this );
             Requires.Add( ConnectionItem );
         }

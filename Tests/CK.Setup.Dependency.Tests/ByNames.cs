@@ -5,7 +5,7 @@ using System.Text;
 using NUnit.Framework;
 using CK.Core;
 
-namespace CK.Setup.Tests.Dependencies
+namespace CK.Setup.Dependency.Tests
 {
     [TestFixture]
     public class ByNames
@@ -13,7 +13,7 @@ namespace CK.Setup.Tests.Dependencies
         [Test]
         public void NamesAreCaseSensitive()
         {
-            var cA = new TestableContainer( "A", "∋ b" );
+            var cA = new TestableContainer( "A", "⊐ b" );
             var cB = new TestableContainer( "B" );
             {
                 // Starting by CA.

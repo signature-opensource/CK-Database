@@ -9,6 +9,12 @@ namespace CK.Setup
 {
     internal class MutableReference : IMutableReference
     {
+        /// <summary>
+        /// Owner of the reference corresponds to the exact type of the object that has the Construct method for parameters.
+        /// For Ambient Properties, the Owner is the Specialization.
+        /// This is because a property has de facto more than one Owner when masking is used (note that handling of mask and covariance type checking is done
+        /// by StObjTypeInfo: StObjTypeInfo.AmbientProperties already contains a merged information).
+        /// </summary>
         internal readonly MutableItem Owner;
         readonly MutableReferenceKind _kind;
         static protected readonly MutableItem UnresolvedMarker = new MutableItem( null, AmbientContractCollector.DefaultContext, null, AmbientContractCollector.DefaultContext );
@@ -17,8 +23,14 @@ namespace CK.Setup
         {
             Owner = owner;
             _kind = kind;
-            if( _kind == MutableReferenceKind.Requires || (_kind&MutableReferenceKind.Container) != 0 ) StObjRequirementBehavior = StObjRequirementBehavior.ErrorIfNotStObj;
-            else if( _kind == MutableReferenceKind.RequiredBy || _kind == MutableReferenceKind.AmbientProperty ) StObjRequirementBehavior = StObjRequirementBehavior.None;
+            if( _kind == MutableReferenceKind.Requires || _kind == MutableReferenceKind.Group || (_kind & MutableReferenceKind.Container) != 0 )
+            {
+                StObjRequirementBehavior = StObjRequirementBehavior.ErrorIfNotStObj;
+            }
+            else if( _kind == MutableReferenceKind.RequiredBy || _kind == MutableReferenceKind.AmbientProperty )
+            {
+                StObjRequirementBehavior = StObjRequirementBehavior.None;
+            }
             else
             {
                 Debug.Assert( (_kind & MutableReferenceKind.ConstructParameter) != 0 );
@@ -34,10 +46,16 @@ namespace CK.Setup
 
         public Type Context { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type of the reference. 
+        /// Initialized with the <see cref="System.Reflection.PropertyInfo.PropertyType"/> for Ambient Properties, 
+        /// with <see cref="System.Reflection.ParameterInfo.ParameterType"/> for parameters and with provided type 
+        /// for other kind of reference (<see cref="MutableReferenceKind.Requires"/>, <see cref="MutableReferenceKind.RequiredBy"/> and <see cref="MutableReferenceKind.Container"/>).
+        /// </summary>
         public Type Type { get; set; }
 
         internal virtual MutableItem ResolveToStObj( IActivityLogger logger, StObjCollectorResult collector, StObjCollectorContextualResult cachedCollector )
-        {
+        {           
             MutableItem result = null;
             if( Type == null || StObjRequirementBehavior == Setup.StObjRequirementBehavior.ExternalReference ) return result;
           

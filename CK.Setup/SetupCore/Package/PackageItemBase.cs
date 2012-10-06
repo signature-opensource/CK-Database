@@ -8,18 +8,19 @@ namespace CK.Setup
 {
     /// <summary>
     /// Mutable package implementation: any property can be changed (version information is handled
-    /// by the base <see cref="MultiVersionManager"/>) except FullName and <see cref="IDependentItemContainerAsk.ThisIsNotAContainer"/> (that can be 
+    /// by the base <see cref="MultiVersionManager"/>) except FullName and <see cref="IDependentItemContainerTyped.ItemKind"/> (that can be 
     /// used to dynamically refuse to be referenced as a Container by other items) that must be provided through implementations of abstract methods.
     /// </summary>
     /// <remarks>
     /// The <see cref="ContainerItemBase"/> must be used for container that do not have versions.
     /// </remarks>
-    public abstract class PackageItemBase : MultiVersionManager, IMutableDependentItem, IDependentItemContainerAsk, IPackageItem, IDependentItemContainerRef
+    public abstract class PackageItemBase : MultiVersionManager, IMutableDependentItemContainerTyped, IPackageItem
     {
         string _itemType;
         DependentItemList _requires;
         DependentItemList _requiredBy;
         DependentItemList _children;
+        DependentItemGroupList _groups;
         IDependentItemContainerRef _container;
         IDependentItemRef _generalization;
 
@@ -58,6 +59,14 @@ namespace CK.Setup
         }
 
         /// <summary>
+        /// Gets a mutable list of groups to which this package belongs.
+        /// </summary>
+        public IDependentItemGroupList Groups
+        {
+            get { return _groups ?? (_groups = new DependentItemGroupList()); }
+        }
+
+        /// <summary>
         /// Gets or sets the container to which this package belongs.
         /// </summary>
         public IDependentItemContainerRef Container
@@ -91,11 +100,11 @@ namespace CK.Setup
         protected abstract string GetFullName();
 
         /// <summary>
-        /// Gets whether this container is actually NOT a container.
-        /// When true, if an item declares this item as its container, an error is 
-        /// raised during the ordering of the dependency graph.
+        /// Gets whether this container is actually NOT a Container or even not a Group.
+        /// When not <see cref="DependentItemType.Container"/>, if an item declares this item as its container, an error is raised 
+        /// during the ordering of the dependency graph.
         /// </summary>
-        protected abstract bool GetThisIsNotAContainer();
+        protected abstract DependentItemType GetDynamicType();
 
         /// <summary>
         /// Called at the very beginning of the setup phasis, before <see cref="IDependentItem.FullName"/> is used to planify the setup. 
@@ -116,9 +125,9 @@ namespace CK.Setup
             return StartDependencySort();
         }
 
-        bool IDependentItemContainerAsk.ThisIsNotAContainer
+        DependentItemType IDependentItemContainerTyped.ItemKind
         {
-            get { return GetThisIsNotAContainer(); }
+            get { return GetDynamicType(); }
         }
 
         string IVersionedItem.ItemType
@@ -149,6 +158,11 @@ namespace CK.Setup
         IEnumerable<IDependentItemRef> IDependentItem.RequiredBy
         {
             get { return _requiredBy; }
+        }
+
+        IEnumerable<IDependentItemGroupRef> IDependentItem.Groups
+        {
+            get { return _groups; }
         }
 
         IEnumerable<IDependentItemRef> IDependentItemGroup.Children

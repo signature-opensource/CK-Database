@@ -10,13 +10,13 @@ namespace CK.Setup
     public class StObjContextualMapper : IStObjContextualMapper
     {
         readonly Dictionary<Type,MutableItem> _items;
-        readonly IAmbientTypeContextualMapper _mappings;
+        readonly IAmbientTypeContextualMapper _typeMappings;
         readonly StObjMapper _owner;
 
-        internal StObjContextualMapper( StObjMapper owner, IAmbientTypeContextualMapper mappings )
+        internal StObjContextualMapper( StObjMapper owner, IAmbientTypeContextualMapper typeMappings )
         {
             _items = new Dictionary<Type, MutableItem>();
-            _mappings = mappings;
+            _typeMappings = typeMappings;
             _owner = owner;
             _owner.Add( this );
         }
@@ -28,7 +28,7 @@ namespace CK.Setup
 
         public Type Context
         {
-            get { return _mappings.Context; }
+            get { return _typeMappings.Context; }
         }
 
         public int Count
@@ -36,9 +36,9 @@ namespace CK.Setup
             get { return _items.Count; }
         }
 
-        public IAmbientTypeContextualMapper Mappings
+        public IAmbientTypeContextualMapper TypeMappings
         {
-            get { return _mappings; }
+            get { return _typeMappings; }
         }
 
         public IStObj this[Type t]
@@ -59,7 +59,7 @@ namespace CK.Setup
             {
                 if( t.IsInterface && typeof( IAmbientContract ).IsAssignableFrom( t ) )
                 {
-                    t = _mappings.HighestImplementation( t );
+                    t = _typeMappings.HighestImplementation( t );
                     if( t != null )
                     {
                         _items.TryGetValue( t, out r );

@@ -32,14 +32,24 @@ namespace CK.Setup
         RequiredBy = 4,
 
         /// <summary>
+        /// Group reference.
+        /// </summary>
+        Group = 8,
+
+        /// <summary>
+        /// Child reference.
+        /// </summary>
+        Child = 8,
+
+        /// <summary>
         /// Parameter from Construct method. It is a considered as a Requires.
         /// </summary>
-        ConstructParameter = 8,
+        ConstructParameter = 16,
 
         /// <summary>
         /// Ambient property.
         /// </summary>
-        AmbientProperty = 16,
+        AmbientProperty = 32,
 
     }
 }

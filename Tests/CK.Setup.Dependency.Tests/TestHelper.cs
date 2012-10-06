@@ -4,7 +4,7 @@ using CK.Core;
 using System;
 using System.Diagnostics;
 
-namespace CK.Setup.Tests
+namespace CK.Setup.Dependency.Tests
 {
     static class TestHelper
     {

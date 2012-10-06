@@ -8,31 +8,122 @@ using System.Diagnostics;
 
 namespace CK.Setup
 {
-    internal class StObjTypeInfo : AmbientTypeInfo
+    interface ITypeInfoFromParent
     {
+        Type Container { get; }
+        IReadOnlyCollection<AmbientPropertyInfo> AmbientProperties { get; }
+        DependentItemType ItemKind { get; }
+        TrackAmbientPropertiesMode TrackAmbientProperties { get; }
+    }
+
+    internal class StObjTypeInfo : AmbientTypeInfo, ITypeInfoFromParent
+    {
+        class TypeInfoForBaseClasses : ITypeInfoFromParent
+        {
+            public IReadOnlyCollection<AmbientPropertyInfo> AmbientProperties { get; private set; }
+            public Type Container { get; private set; }
+            public DependentItemType ItemKind { get; private set; }
+            public TrackAmbientPropertiesMode TrackAmbientProperties { get; private set; }
+
+            bool IsFullyDefined
+            {
+                get { return Container != null && ItemKind != DependentItemType.Unknown && TrackAmbientProperties != TrackAmbientPropertiesMode.Unknown; }
+            }
+
+            static object _lock = new object();
+            static Dictionary<Type,TypeInfoForBaseClasses> _cache;
+
+            static public ITypeInfoFromParent GetFor( IActivityLogger logger, Type t )
+            {
+                TypeInfoForBaseClasses result = null;
+                // Poor lock: we don't care here. Really.
+                lock( _lock )
+                {
+                    if( _cache == null ) _cache = new Dictionary<Type, TypeInfoForBaseClasses>();
+                    else _cache.TryGetValue( t, out result );
+                    if( result == null )
+                    {
+                        result = new TypeInfoForBaseClasses();
+                        // Ambient Properties (uses a recursive function).
+                        var all = CreateAllAmbientPropertyList( t, logger );
+                        result.AmbientProperties = all != null ? all.ToReadOnlyCollection() : ReadOnlyListEmpty<AmbientPropertyInfo>.Empty;
+                        // For ItemKind & TrackAmbientProperties, walks up the inheritance chain and combines the StObjAttribute.
+                        var a = CK.Setup.StObjAttribute.GetStObjAttributeForExactType( t, logger );
+                        if( a != null )
+                        {
+                            result.Container = a.Container;
+                            result.ItemKind = a.ItemKind;
+                            result.TrackAmbientProperties = a.TrackAmbientProperties;
+                        }
+                        Type tAbove = t.BaseType;
+                        while( !result.IsFullyDefined && tAbove != null && tAbove != typeof( object ) )
+                        {
+                            var aAbove = CK.Setup.StObjAttribute.GetStObjAttributeForExactType( tAbove, logger );
+                            if( aAbove != null )
+                            {
+                                if( result.Container == null ) result.Container = aAbove.Container;
+                                if( result.ItemKind == DependentItemType.Unknown ) result.ItemKind = aAbove.ItemKind;
+                                if( result.TrackAmbientProperties == TrackAmbientPropertiesMode.Unknown ) result.TrackAmbientProperties = aAbove.TrackAmbientProperties;
+                            }
+                            tAbove = tAbove.BaseType;
+                        }
+                        _cache.Add( t, result );
+                    }
+                }
+                return result;
+            }
+
+            /// <summary>
+            /// Recursive function to collect Ambient Properties on base types 
+            /// </summary>
+            static IEnumerable<AmbientPropertyInfo> CreateAllAmbientPropertyList( Type type, IActivityLogger logger )
+            {
+                if( type == typeof( object ) ) return null;
+                return MergeAboveAmbientProperties( CreateAllAmbientPropertyList( type.BaseType, logger ), CreateAmbientPropertyListForExactType( type, logger ), logger );
+            }
+        }
+
         internal StObjTypeInfo( IActivityLogger logger, AmbientTypeInfo parent, Type t )
             : base( parent, t )
         {
+            ITypeInfoFromParent infoFromParent = Generalization ?? TypeInfoForBaseClasses.GetFor( logger, t.BaseType );
+
             #region Ambient properties.
             {
-                // For type that have no Generalization: we must handle [AmbientProperty] on base classes (no AmbientTypeInfo since they are not Ambient contract).
-                // Currently, the ambient properties information is not cached and rebuilt each time.
-                // May be once, a cache will be here, but for the moment, I consider it useless.
-                IEnumerable<AmbientPropertyInfo> fromParent = DirectGeneralization != null ? DirectGeneralization.AmbientProperties : CreateAllAmbientPropertyList( Type.BaseType, logger );
                 // Ambient properties for the exact Type (can be null).
-                IList<AmbientPropertyInfo> collector = CreateAmbientPropertyList( Type, logger );
+                IList<AmbientPropertyInfo> collector = CreateAmbientPropertyListForExactType( Type, logger );
+                // For type that have no Generalization: we must handle [AmbientProperty] on base classes (no AmbientTypeInfo since they are not Ambient contract).
                 // Both fromParent and collector can be null: MergeAboveAmbientProperties handles it.
-                AmbientProperties = MergeAboveAmbientProperties( fromParent, collector, logger ).ToReadOnlyCollection();
+                AmbientProperties = MergeAboveAmbientProperties( infoFromParent.AmbientProperties, collector, logger ).ToReadOnlyCollection();
             }
             #endregion
 
-            #region IStObjAttribute (Container & Type requirements).
-            StObjAttribute = CK.Setup.StObjAttribute.GetStObjAttribute( t, logger );
-            if( StObjAttribute != null )
+            #region IStObjAttribute (ItemKind, Container & Type requirements).
+            // There is no Container inheritance at this level.
+            var a = CK.Setup.StObjAttribute.GetStObjAttributeForExactType( t, logger );
+            if( a != null )
             {
-                Container = StObjAttribute.Container;
-                if( Container != null ) ContainerContext = FindContextFromMapAttributes( Container );
+                Container = a.Container;
+                ItemKind = a.ItemKind;
+                TrackAmbientProperties = a.TrackAmbientProperties;
+                RequiredBy = a.RequiredBy;
+                Requires = a.Requires;
+                Children = a.Children;
+                Groups = a.Groups;
             }
+            // We inherit only from non Ambient Contract base classes, not from Generalization if it exists.
+            // This is to let the inheritance of these 3 properties take dynamic configuration (IStObjStructuralConfigurator) 
+            // changes into account: inheritance will take place after configuration so that a change on a base class
+            // will be inherited if not explicitely defined at the class level.
+            if( Generalization == null )
+            {
+                if( Container == null ) Container = infoFromParent.Container;
+                if( ItemKind == DependentItemType.Unknown ) ItemKind = infoFromParent.ItemKind;
+                if( TrackAmbientProperties == TrackAmbientPropertiesMode.Unknown ) TrackAmbientProperties = infoFromParent.TrackAmbientProperties;
+            }
+            if( Container != null ) ContainerContext = FindContextFromMapAttributes( Container );
+            // Requires, Children, Groups and RequiredBy are directly handled by MutableItem (they are wrapped in MutableReference 
+            // so that IStObjStructuralConfigurator objects can alter them).
             #endregion
 
             #region Construct method & parameters
@@ -93,15 +184,25 @@ namespace CK.Setup
             ConfiguratorAttributes = (IStObjStructuralConfigurator[])Type.GetCustomAttributes( typeof( IStObjStructuralConfigurator ), false );
         }
 
-        public new StObjTypeInfo DirectGeneralization { get { return (StObjTypeInfo)base.DirectGeneralization; } }
+        public new StObjTypeInfo Generalization { get { return (StObjTypeInfo)base.Generalization; } }
 
-        public readonly IReadOnlyCollection<AmbientPropertyInfo> AmbientProperties;
+        public IReadOnlyCollection<AmbientPropertyInfo> AmbientProperties { get; private set; }
 
-        public readonly IStObjAttribute StObjAttribute;
-
-        public readonly Type Container;
+        public Type Container { get; private set; }
 
         public readonly Type ContainerContext;
+
+        public DependentItemType ItemKind { get; private set; }
+
+        public TrackAmbientPropertiesMode TrackAmbientProperties { get; private set; }
+
+        public readonly Type[] Requires;
+
+        public readonly Type[] RequiredBy;
+
+        public readonly Type[] Children;
+
+        public readonly Type[] Groups;
 
         public readonly MethodInfo Construct;
 
@@ -124,7 +225,7 @@ namespace CK.Setup
         /// The "Property Covariance" trick can be supported here because ambient properties are conceptually "read only" properties:
         /// they must be settable only to enable the framework (and no one else) to actually set their values.
         /// </summary>
-        List<AmbientPropertyInfo> CreateAmbientPropertyList( Type t, IActivityLogger logger )
+        static List<AmbientPropertyInfo> CreateAmbientPropertyListForExactType( Type t, IActivityLogger logger )
         {
             var properties = t.GetProperties( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly ).Where( p => !p.Name.Contains( '.' ) );
             List<AmbientPropertyInfo> result = null;
@@ -135,9 +236,9 @@ namespace CK.Setup
 
                 var mSet = p.GetSetMethod( true );
                 var mGet = p.GetGetMethod( true );
-                bool isMergeable = typeof(IMergeable).IsAssignableFrom( p.PropertyType );
+                bool isValueMergeable = typeof(IMergeable).IsAssignableFrom( p.PropertyType );
                 bool isWriteable = mSet != null && !mSet.IsPrivate;
-                if( (!isWriteable && !isMergeable ) || (mGet == null || mGet.IsPrivate) )
+                if( (!isWriteable && !isValueMergeable ) || (mGet == null || mGet.IsPrivate) )
                 {
                     // Warning: not a "Property Covariance" compliant property since
                     // specialized classes will not be able to "override" its signature.
@@ -147,24 +248,24 @@ namespace CK.Setup
                 }
                 else
                 {
-                    if( !isWriteable && isMergeable )
+                    if( !isWriteable && isValueMergeable )
                     {
-                        throw new NotImplementedException( "Not writeable mergeable properties are not yet supported (need a IStObjMutableItem.SetPropertyStructuralSetter to initialize it)." );
+                        throw new NotImplementedException( "Not Writeable but Mergeable properties are not yet supported (need a IStObjMutableItem.SetPropertyStructuralSetter to initialize it)." );
                     }
                     if( result == null ) result = new List<AmbientPropertyInfo>();
                     Debug.Assert( result.Find( a => a.Name == p.Name ) == null, "No homonym properties in .Net framework." );
-                    result.Add( new AmbientPropertyInfo( this, p, attr, isWriteable, isMergeable ) );
+                    result.Add( new AmbientPropertyInfo( p, attr, isWriteable, isValueMergeable ) );
                 }
             }
             return result;
         }
 
-        private IEnumerable<AmbientPropertyInfo> MergeAboveAmbientProperties( IEnumerable<AmbientPropertyInfo> above, IList<AmbientPropertyInfo> collector, IActivityLogger logger )
+        static IEnumerable<AmbientPropertyInfo> MergeAboveAmbientProperties( IEnumerable<AmbientPropertyInfo> above, IList<AmbientPropertyInfo> collector, IActivityLogger logger )
         {
             if( collector == null || collector.Count == 0 ) return above ?? ReadOnlyListEmpty<AmbientPropertyInfo>.Empty;
             if( above != null )
             {
-                // Add 'above' into 'collector' before returning it.
+                // Adds 'above' into 'collector' before returning it.
                 List<AmbientPropertyInfo> fromAbove = null;
                 foreach( AmbientPropertyInfo a in above )
                 {
@@ -203,11 +304,6 @@ namespace CK.Setup
             return collector;
         }
 
-        private IEnumerable<AmbientPropertyInfo> CreateAllAmbientPropertyList( Type type, IActivityLogger logger )
-        {
-            if( type == typeof( object ) ) return null;
-            return MergeAboveAmbientProperties( CreateAllAmbientPropertyList( type.BaseType, logger ), CreateAmbientPropertyList( type, logger ), logger );
-        }
 
 
 

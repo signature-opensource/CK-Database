@@ -24,9 +24,10 @@ namespace CK.Setup
         Type Context { get; }
 
         /// <summary>
-        /// Gets whether this object has been referenced as a container by one or more structure objects.
+        /// Gets kind of structure object for this StObj. It can be a <see cref="DependentItemType.SimpleItem"/>, 
+        /// a <see cref="DependentItemType.Group"/> or a <see cref="DependentItemType.Container"/>.
         /// </summary>
-        bool IsGroup { get; }
+        DependentItemType ItemKind { get; }
 
         /// <summary>
         /// Gets the parent <see cref="IStObj"/> in the inheritance chain (the one associated to the base class of this <see cref="ObjectType"/>).
@@ -63,9 +64,24 @@ namespace CK.Setup
         IStObj Container { get; }
 
         /// <summary>
-        /// Gets a list of required objects. 
+        /// Gets a list of required objects. This list combines the requirements of this items (explicitely required types, construct parameters, etc.) and the RequiredBy of other objects.
         /// </summary>
         IReadOnlyList<IStObj> Requires { get; }
+
+        /// <summary>
+        /// Gets a list of Group objects to which this object belongs.
+        /// </summary>
+        IReadOnlyList<IStObj> Groups { get; }
+
+        /// <summary>
+        /// Gets a list of children objects when this <see cref="ItemKind"/> is either a <see cref="DependentItemType.Group"/> or a <see cref="DependentItemType.Container"/>.
+        /// </summary>
+        IReadOnlyList<IStObj> Children { get; }
+
+        /// <summary>
+        /// Gets the list of Ambient Properties that reference this object.
+        /// </summary>
+        IReadOnlyList<ITrackedAmbientPropertyInfo> TrackedAmbientProperties { get; }
         
     }
 }

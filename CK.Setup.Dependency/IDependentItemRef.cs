@@ -15,7 +15,7 @@ namespace CK.Setup
     public interface IDependentItemRef
     {
         /// <summary>
-        /// Gets a name that uniquely identifies the item. It must be not null.
+        /// Gets a name that uniquely identifies the item. It must be not null nor starts with '?'.
         /// </summary>
         string FullName { get; }
 

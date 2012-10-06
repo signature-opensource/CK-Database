@@ -5,7 +5,7 @@ using System.Text;
 using CK.Core;
 using NUnit.Framework;
 
-namespace CK.Setup.Tests.Dependencies
+namespace CK.Setup.Dependency.Tests
 {
     class ResultChecker
     {
@@ -75,17 +75,19 @@ namespace CK.Setup.Tests.Dependencies
             // If Head, then we check the head/container order and Requires and then we stop.
             if( o.IsGroupHead )
             {
-                Assert.That( o.Container == o.ContainerForHead.Container, "The container is the same for a head and its associated container." );
-                Assert.That( o.Index < o.ContainerForHead.Index, "{0} is before {1} (since {0} is the head of {1}).", o.FullName, o.ContainerForHead.FullName );
-                // Consider the head as its container: the head must be contained in the container of our container if it exists.               
+                Assert.That( o.Container == o.GroupForHead.Container, "The container is the same for a head and its associated group." );
+                Assert.That( o.Index < o.GroupForHead.Index, "{0} is before {1} (since {0} is the head of {1}).", o.FullName, o.GroupForHead.FullName );
+                
+                // Consider the head as its container (same test as below): the head must be contained in the container of our container if it exists.               
                 if( o.Item.Container != null )
                 {
                     ISortedItem container = Find( o.Item.Container.FullName );
-                    Assert.That( container != null && container.IsContainer );
+                    Assert.That( container != null && container.ItemKind == DependentItemType.Container );
                     CheckItemInContainer( o, container );
                 }
-                // Requirements of a package is carried by its head.
-                CheckRequires( o, o.ContainerForHead.Item.Requires );
+
+                // Requirements of a group is carried by its head.
+                CheckRequires( o, o.GroupForHead.Item.Requires );
                 return;
             }
             // Checking Generalization.
@@ -103,19 +105,19 @@ namespace CK.Setup.Tests.Dependencies
             if( o.Item.Container != null )
             {
                 ISortedItem container = Find( o.Item.Container.FullName );
-                Assert.That( container != null && container.IsContainer );
+                Assert.That( container != null && container.ItemKind == DependentItemType.Container );
                 CheckItemInContainer( o, container );
             }
             
-            if( o.IsContainer )
+            if( o.ItemKind != DependentItemType.SimpleItem )
             {
-                Check( o.HeadForContainer );
+                Check( o.HeadForGroup );
                 foreach( var item in ((IDependentItemContainer)o.Item).Children ) CheckRecurse( item.FullName );
-                // Requirements of a package is carried by its head: we don't check Requires here.
+                // Requirements of a group is carried by its head: we don't check Requires here.
             }
             else CheckRequires( o, o.Item.Requires );
             
-            // RequiredBy applies to normal items and to container (the container itself, not its head).
+            // RequiredBy applies to normal items and to groups (the container itself, not its head).
             foreach( var invertReq in o.Item.RequiredBy )
             {
                 var after = _byName.GetValueWithDefault( invertReq.FullName, null );
@@ -138,7 +140,7 @@ namespace CK.Setup.Tests.Dependencies
         private static void CheckItemInContainer( ISortedItem o, ISortedItem container )
         {
             Assert.That( container != null, "Container necessarily exists." );
-            Assert.That( container.HeadForContainer.Index < o.Index, "{0} is before {1} (since {0} contains {1}).", container.HeadForContainer.FullName, o.FullName );
+            Assert.That( container.HeadForGroup.Index < o.Index, "{0} is before {1} (since {0} contains {1}).", container.HeadForGroup.FullName, o.FullName );
             Assert.That( o.Index < container.Index, "{0} is before {1} (since {1} contains {0}).", o.FullName, container.FullName );
         }
 

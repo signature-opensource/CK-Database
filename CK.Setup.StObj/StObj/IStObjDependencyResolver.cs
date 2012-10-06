@@ -20,12 +20,12 @@ namespace CK.Setup
         void ResolveParameterValue( IActivityLogger logger, IParameter parameter );
         
         /// <summary>
-        /// Dynamically called for each ambient property before automatic resolution.
+        /// Dynamically called for each ambient property if automatic resolution failed to locate a StObj.
         /// The <see cref="IResolvableReference.SetResolvedValue"/> can be used to set the property value.
         /// </summary>
         /// <param name="logger">The logger to use.</param>
         /// <param name="ambientProperty">Property description.</param>
-        void ResolvePropertyValue( IActivityLogger logger, IAmbientProperty ambientProperty );
+        void ResolveExternalPropertyValue( IActivityLogger logger, IAmbientProperty ambientProperty );
     }
 
 }

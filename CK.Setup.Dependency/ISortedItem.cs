@@ -11,6 +11,16 @@ namespace CK.Setup
     public interface ISortedItem
     {
         /// <summary>
+        /// Gets the associated item.
+        /// </summary>
+        IDependentItem Item { get; }
+
+        /// <summary>
+        /// Gets the item type.
+        /// </summary>
+        DependentItemType ItemKind { get; }
+
+        /// <summary>
         /// Gets the index of this item among the others.
         /// </summary>
         int Index { get; }
@@ -39,7 +49,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets the container to which this item belongs.
-        /// Use <see cref="HeadForContainer"/> to get its head.
+        /// Use <see cref="HeadForGroup"/> to get its head.
         /// </summary>
         ISortedItem Container { get; }
 
@@ -49,31 +59,27 @@ namespace CK.Setup
         ISortedItem Generalization { get; }
 
         /// <summary>
-        /// Whether this is the head of a container.
-        /// Use <see cref="ContainerForHead"/> to get the associated container.
+        /// Whether this is the head of a group.
+        /// Use <see cref="GroupForHead"/> to get the associated group.
         /// </summary>
         bool IsGroupHead { get; }
 
         /// <summary>
-        /// Whether this is a container (the <see cref="HeadForContainer"/> is not null).
+        /// Whether this is a group (it is a Container if <see cref="ItemKind"/> is <see cref="DependentItemType.Container"/>.
+        /// Use <see cref="HeadForGroup"/> to get the associated head.
         /// </summary>
-        bool IsContainer { get; }
+        bool IsGroup { get; }
 
         /// <summary>
-        /// Gets the head of a container if this item is a container (null otherwise).
+        /// Gets the head of the group if this item is a group (null otherwise).
         /// </summary>
-        ISortedItem HeadForContainer { get; }
+        ISortedItem HeadForGroup { get; }
 
         /// <summary>
-        /// Gets the container for which this item is the Head. 
+        /// Gets the group for which this item is the Head. 
         /// Null if this item is not a Head.
         /// </summary>
-        ISortedItem ContainerForHead { get; }
-
-        /// <summary>
-        /// Gets the associated item.
-        /// </summary>
-        IDependentItem Item { get; }
+        ISortedItem GroupForHead { get; }
 
         /// <summary>
         /// Gets a clean set of requirements for the item. Combines direct <see cref="IDependentItem.Requires"/>
@@ -81,11 +87,19 @@ namespace CK.Setup
         /// Requirement to the <see cref="IDependentItem.Generalization"/> is always removed.
         /// Requirements to any Container are removed when <see cref="DependencySorter.Options.SkipDependencyToContainer"/> is true.
         /// </summary>
-        IEnumerable<IDependentItemRef> Requires { get; }
+        IEnumerable<ISortedItem> Requires { get; }
 
         /// <summary>
         /// Gets the items (as their <see cref="ISortedItem"/> wrapper) that are contained in 
-        /// the <see cref="Item"/> if it is a <see cref="IDependentItemGroup"/>. Empty otherwise.
+        /// the <see cref="Item"/> if it is a <see cref="IDependentItemGroup"/>.
+        /// Empty otherwise.
+        /// </summary>
+        IEnumerable<ISortedItem> Groups { get; }
+        
+        /// <summary>
+        /// Gets the items (as their <see cref="ISortedItem"/> wrapper) that are contained in 
+        /// the <see cref="Item"/> if it is a <see cref="IDependentItemGroup"/>.
+        /// Empty otherwise.
         /// </summary>
         IEnumerable<ISortedItem> Children { get; }
     }

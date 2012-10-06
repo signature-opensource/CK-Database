@@ -86,59 +86,122 @@ namespace CK.Setup
         internal class Entry : ISortedItem
         {
             // This marker saves one iteration over specialized items to resolve Generalizations.
-            internal static readonly Entry GeneralizationMissingMarker = new Entry( String.Empty );
+            internal static readonly Entry GeneralizationMissingMarker = new Entry( null, String.Empty );
 
-            public Entry( IDependentItem e, object startValue )
-            {
-                StartValue = startValue;
-                Item = e;
-                FullName = e.FullName;
-                Rank = -1;
-            }
+            // This is unfortunately required only for ISortedItem.Requires to give ISortedItems instead of
+            // poor IDependentItemRef. Mapping from a reference (FullName) to its Entry is done dynamically 
+            // by a LINQ Select. The other way would be to compute the list of Entries for each ISortedItem.Requires
+            // before returning the result (this would anyway imply a dedicated field to store the result of the mapping).
+            // Since ISortedItem.Requires is not necessarily called, I choose the dynamic way... It's a pity but there
+            // is no way to it differently...
+            readonly Dictionary<object, object> _entries;
 
-            public Entry( string fullName )
+            public Entry( Dictionary<object, object> entries, string fullName )
             {
+                _entries = entries;
                 FullName = fullName;
                 Rank = -1;
             }
             
-            public Entry( Entry container )
+            Entry( Entry group )
             {
-                Item = container.Item;
-                FullName = container.FullName + ".Head";
+                _entries = group._entries;
+                Item = group.Item;
+                ItemKind = group.ItemKind;
+                FullName = group.FullName + ".Head";
                 Rank = -1;
-                ContainerIfHead = container;
+                GroupIfHead = group;
             }
             
-            public readonly string FullName;
-            public object StartValue;
+
+            public bool Init( IDependentItem e, DependentItemType actualType, object startValue )
+            {
+                Debug.Assert( FullName == e.FullName );
+                Item = e;
+                StartValue = startValue;
+                ItemKind = actualType;
+                if( actualType != DependentItemType.SimpleItem )
+                {
+                    Debug.Assert( HeadIfGroupOrContainer == null, "Only once!" );
+                    Debug.Assert( FirstChildIfContainer == null );
+                    HeadIfGroupOrContainer = new Entry( this );
+                    if( actualType == DependentItemType.Group ) GroupChildren = new List<Entry>();
+                    return true;
+                }
+                return false;
+            }
+            
             /// <summary>
-            /// Item is set for all kind of entries: Containers, Heads and normal item reference the dependent item.
+            /// FullName of the Item (or Item.FullName + ".Head" for heads).
             /// </summary>
-            public IDependentItem Item;
+            public readonly string FullName;
+
+            /// <summary>
+            /// Item is set for all kind of entries: Containers, Heads and normal item all reference the dependent item.
+            /// </summary>
+            public IDependentItem Item { get; private set; }
+
+            /// <summary>
+            /// Updated from actual IDependentItem type and IDependentItemContainerTyped.
+            /// For heads, it is the same as its GroupIfHead.ItemType (ie. the type of the Item is copied).
+            /// </summary>
+            public DependentItemType ItemKind { get; private set; }
+
+            /// <summary>
+            /// Captured return from Item.StartDependencySort() call.
+            /// </summary>
+            public object StartValue { get; private set; }
+            
             /// <summary>
             /// Allocated as soon as this entry Requires another one.
             /// </summary>
             public HashSet<IDependentItemRef> Requires;
-            public int Rank;
-            // Index is computed at the end of the process.
-            public int Index;
-
+            
+            /// <summary>
+            /// Generalization entry if it exists.
+            /// </summary>
             public Entry Generalization;
 
-            public Entry Container { get; private set; }
             /// <summary>
-            /// The ContainerIfHead is null for normal items and containers.
+            /// Container entry if it exists.
+            /// </summary>
+            public Entry Container { get; private set; }
+
+            /// <summary>
+            /// The GroupIfHead is null for normal items, groups and containers.
             /// It is not null only for heads.
             /// </summary>
-            public Entry ContainerIfHead { get; private set; }
+            public Entry GroupIfHead { get; private set; }
+
             /// <summary>
-            /// The HeadIfContainer is null for normal items and heads.
-            /// It is not null only for container.
+            /// The HeadIfGroupOrContainer is null for normal items and heads.
+            /// It is not null only for container or group.
             /// </summary>
-            public Entry HeadIfContainer { get; private set; }
-            public Entry FirstChildIfGroup { get; private set; }
-            public Entry NextChildInGroup { get; private set; }
+            public Entry HeadIfGroupOrContainer { get; private set; }
+
+            /// <summary>
+            /// Not null only when ItemType == Group.
+            /// Container's children are managed by the FirstChildIfContainer / NextChildInContainer linked list.
+            /// </summary>
+            public List<Entry> GroupChildren { get; private set; }
+            /// <summary>
+            /// Allocated as soon as the item is added to a Group.
+            /// Always null for heads.
+            /// </summary>
+            public HashSet<Entry> Groups { get; private set; }
+
+            public Entry FirstChildIfContainer { get; private set; }
+            public Entry NextChildInContainer { get; private set; }
+
+            /// <summary>
+            /// Computed by RankComputer.Process(). 
+            /// </summary>
+            public int Rank;
+
+            /// <summary>
+            /// Index is computed at the end of the process. 
+            /// </summary>
+            public int Index;
 
             internal void AddRequiredByRequires( IDependentItemRef req )
             {
@@ -146,29 +209,32 @@ namespace CK.Setup
                 Requires.Add( req );
             }
 
-            internal void TransformToContainer()
+            internal void AddToGroup( Entry child )
             {
-                Debug.Assert( HeadIfContainer == null, "Only once!" );
-                Debug.Assert( FirstChildIfGroup == null );
-                HeadIfContainer = new Entry( this );
+                Debug.Assert( ItemKind == DependentItemType.Group );
+                Debug.Assert( child != null );
+                Debug.Assert( child.GroupIfHead == null, "Never add a head as a Child." );
+                Debug.Assert( GroupChildren != null );               
+                if( child.Groups == null ) child.Groups = new HashSet<Entry>();
+                if( child.Groups.Add( this ) ) GroupChildren.Add( child );
             }
 
             internal void AddToContainer( Entry child )
             {
-                Debug.Assert( child != null );
+                Debug.Assert( ItemKind == DependentItemType.Container );
                 Debug.Assert( child.Container == null, "One and only one Container setting." );
-                Debug.Assert( child.ContainerIfHead == null, "Never add a head as a Child." );
-                CheckNotContains( child );
-
+                Debug.Assert( child != null );
+                Debug.Assert( child.GroupIfHead == null, "Never add a head as a Child." );
+                CheckContainerNotContains( child );
+                child.NextChildInContainer = FirstChildIfContainer;
+                FirstChildIfContainer = child;
                 child.Container = this;
-                if( child.HeadIfContainer != null ) child.HeadIfContainer.Container = this;
-                child.NextChildInGroup = FirstChildIfGroup;
-                FirstChildIfGroup = child;
+                if( child.HeadIfGroupOrContainer != null ) child.HeadIfGroupOrContainer.Container = this;
             }
 
             internal bool AppearInContainerChain( Entry dep )
             {
-                Debug.Assert( dep.HeadIfContainer != null, "Called only with a Container." );
+                Debug.Assert( dep.ItemKind == DependentItemType.Container, "Called only with a Container." );
                 Entry c = Container;
                 while( c != null )
                 {
@@ -179,32 +245,34 @@ namespace CK.Setup
             }
 
             [Conditional( "DEBUG" )]
-            internal void CheckContains( Entry e )
+            internal void CheckContainerIsHeadOrContains( Entry e )
             {
-                if( e.ContainerIfHead != null ) 
+                if( e.GroupIfHead != null ) 
                 {
-                    Debug.Assert( e.ContainerIfHead.Container == this );
+                    Debug.Assert( e.GroupIfHead.Container == this, "e is a container's head ==> this is the container..." );
                     return;
                 }
-                Debug.Assert( HeadIfContainer != null, "This is a Container..." );
-                Entry c = FirstChildIfGroup;
+                Debug.Assert( HeadIfGroupOrContainer != null, "This is a Group..." );
+                Debug.Assert( ItemKind == DependentItemType.Container, "...more than that: a Container." );
+                Entry c = FirstChildIfContainer;
                 while( c != null )
                 {
                     if( c == e ) return;
-                    c = c.NextChildInGroup;
+                    c = c.NextChildInContainer;
                 }
-                Debug.Fail( String.Format( "Container {0} does not contain item {1}.", FullName, e.FullName ) );
+                Debug.Fail( String.Format( "Group {0} does not contain item {1}.", FullName, e.FullName ) );
             }
 
             [Conditional( "DEBUG" )]
-            internal void CheckNotContains( Entry e )
+            internal void CheckContainerNotContains( Entry e )
             {
-                Debug.Assert( HeadIfContainer != null, "This is a Container..." );
-                Entry c = FirstChildIfGroup;
+                Debug.Assert( HeadIfGroupOrContainer != null, "This is a Group..." );
+                Debug.Assert( ItemKind == DependentItemType.Container, "...more than that: a Container." );
+                Entry c = FirstChildIfContainer;
                 while( c != null )
                 {
-                    if( c == e ) Debug.Fail( String.Format( "Container {0} contains item {1}.", FullName, e.FullName ) ); ;
-                    c = c.NextChildInGroup;
+                    if( c == e ) Debug.Fail( String.Format( "Group {0} contains item {1}.", FullName, e.FullName ) ); ;
+                    c = c.NextChildInContainer;
                 }
             }
 
@@ -253,22 +321,22 @@ namespace CK.Setup
 
             bool ISortedItem.IsGroupHead
             {
-                get { return ContainerIfHead != null; }
+                get { return GroupIfHead != null; }
             }
 
-            bool ISortedItem.IsContainer
+            bool ISortedItem.IsGroup
             {
-                get { return HeadIfContainer != null; }
+                get { return HeadIfGroupOrContainer != null; }
             }
 
-            ISortedItem ISortedItem.HeadForContainer
+            ISortedItem ISortedItem.HeadForGroup
             {
-                get { return HeadIfContainer; }
+                get { return HeadIfGroupOrContainer; }
             }
 
-            ISortedItem ISortedItem.ContainerForHead
+            ISortedItem ISortedItem.GroupForHead
             {
-                get { return ContainerIfHead; }
+                get { return GroupIfHead; }
             }
 
             IDependentItem ISortedItem.Item
@@ -276,12 +344,12 @@ namespace CK.Setup
                 get { return Item; }
             }
 
-            IEnumerable<IDependentItemRef> ISortedItem.Requires
+            IEnumerable<ISortedItem> ISortedItem.Requires
             {
                 get
                 {
-                    var req = HeadIfContainer != null ? HeadIfContainer.Requires : Requires;
-                    return req == null ? ReadOnlyListEmpty<IDependentItemRef>.Empty : req.Where( d => !d.Optional );
+                    var req = HeadIfGroupOrContainer != null ? HeadIfGroupOrContainer.Requires : Requires;
+                    return req == null ? ReadOnlyListEmpty<ISortedItem>.Empty : req.Where( d => !d.Optional ).Select( r => (ISortedItem)_entries[r.FullName] );
                 }
             }
 
@@ -289,15 +357,31 @@ namespace CK.Setup
             {
                 get
                 {
-                    var c = FirstChildIfGroup;
-                    while( c != null )
-                    {
-                        yield return c;
-                        c = c.NextChildInGroup;
-                    }
+                    // GroupChildren is only on the Group (not on its head).
+                    var holder = GroupIfHead ?? this;
+                    return holder.GroupChildren != null ? holder.GroupChildren : holder.GetContainerChildren();
                 }
             }
 
+            IEnumerable<ISortedItem> ISortedItem.Groups
+            {
+                get
+                {
+                    // Groups is only on the Group (not on its head).
+                    var holder = GroupIfHead ?? this;
+                    return holder.Groups != null ? (IEnumerable<ISortedItem>)holder.Groups : ReadOnlyListEmpty<ISortedItem>.Empty;
+                }
+            }
+
+            IEnumerable<ISortedItem> GetContainerChildren()
+            {
+                var c = FirstChildIfContainer;
+                while( c != null )
+                {
+                    yield return c;
+                    c = c.NextChildInContainer;
+                }
+            }
             #endregion
         }
 
@@ -308,7 +392,7 @@ namespace CK.Setup
             readonly List<DependentItemIssue> _itemIssues;
             readonly Comparison<Entry> _comparer;
             readonly Options _options;
-            List<Entry> _cycle;
+            List<CycleExplainedElement> _cycle;
 
             public RankComputer( IEnumerable<IDependentItem> items, IEnumerable<IDependentItemDiscoverer> discoverers, Options options )
             {
@@ -338,14 +422,16 @@ namespace CK.Setup
                 readonly Dictionary<object, object> _entries;
                 readonly RankComputer _computer;
                 readonly List<Entry> _namedContainersToBind;
-                readonly List<Tuple<Entry, string>> _childrenToBind;
+                readonly List<Tuple<Entry, IDependentItemRef>> _childrenToBind;
+                readonly List<Tuple<Entry, IDependentItemGroupRef>> _groupsToBind;
                 readonly List<Entry> _specializedItems;
 
                 public Registerer( RankComputer computer )
                 {
                     _computer = computer;
                     _namedContainersToBind = new List<Entry>();
-                    _childrenToBind = new List<Tuple<Entry, string>>();
+                    _childrenToBind = new List<Tuple<Entry, IDependentItemRef>>();
+                    _groupsToBind = new List<Tuple<Entry, IDependentItemGroupRef>>();
                     _specializedItems = new List<Entry>();
                     _entries = _computer._entries;
                 }
@@ -375,7 +461,7 @@ namespace CK.Setup
                             Entry c;
                             if( TryGetEntryValue( nc.Item.Container.FullName, out c ) )
                             {
-                                if( c.HeadIfContainer != null )
+                                if( c.ItemKind == DependentItemType.Container )
                                 {
                                     // The named container exists and it is a Container.
                                     c.AddToContainer( nc );
@@ -388,7 +474,7 @@ namespace CK.Setup
                                     else _computer.SetStructureError( nc, DependentItemStructureError.ExistingItemIsNotAContainer );
                                 }
                             }
-                            else
+                            else if( !nc.Item.Container.Optional )
                             {
                                 // The named container does not exist.
                                 _computer.SetStructureError( nc, DependentItemStructureError.MissingNamedContainer );
@@ -397,37 +483,78 @@ namespace CK.Setup
                     }
                     foreach( var eC in _childrenToBind )
                     {
-                        Debug.Assert( eC.Item1.HeadIfContainer != null, "The entry is a Container." );
+                        Entry group = eC.Item1;
+                        Debug.Assert( group.HeadIfGroupOrContainer != null, "The entry is a Group." );
                         Entry child;
-                        if( TryGetEntryValue( eC.Item2, out child ) )
+                        IDependentItemRef childRef = eC.Item2;
+                        if( TryGetEntryValue( childRef.FullName, out child ) )
                         {
-                            // Child found: is it already bound to a Container?
-                            if( child.Container != null )
-                            {
-                                if( child.Container != eC.Item1 )
-                                {
-                                    // The child is bound to a container with another name: the late-bound name is an extraneous container.
-                                    _computer.SetStructureError( child, DependentItemStructureError.MultipleContainer ).AddExtraneousContainers( eC.Item1.FullName );
-                                }
-                            }
-                            else
-                            {
-                                // We set the container.
-                                eC.Item1.AddToContainer( child );
-                            }
+                            AddChildToGroupOrContainer( group, child );
                         }
-                        else
+                        else if( !childRef.Optional )
                         {
                             // The child has not been registered.
-                            _computer.SetStructureError( eC.Item1, DependentItemStructureError.MissingNamedChild ).AddMissingChild( eC.Item2 );
+                            _computer.SetStructureError( group, DependentItemStructureError.MissingNamedChild ).AddMissingChild( childRef.FullName );
                         }
                     }
+                    foreach( var eC in _groupsToBind )
+                    {
+                        Entry entry = eC.Item1;
+                        IDependentItemGroupRef groupRef = eC.Item2;
+                        Entry group;
+                        if( TryGetEntryValue( groupRef.FullName, out group ) )
+                        {
+                            if( group.ItemKind == DependentItemType.SimpleItem )
+                            {
+                                _computer.SetStructureError( entry, DependentItemStructureError.DeclaredGroupRefusedToBeAGroup ).AddInvalidGroup( groupRef.FullName );
+                            }
+                            else AddChildToGroupOrContainer( group, entry );
+                        }
+                        else if( !groupRef.Optional )
+                        {
+                            // The group has not been registered.
+                            _computer.SetStructureError( entry, DependentItemStructureError.MissingNamedGroup ).AddMissingGroup( groupRef.FullName );
+                        }
+                    }
+
                     // Now that named containers and children have been handled, we can follow the Generalization chains
                     // to resolve all of them to their roots and apply Generalization's Container inheritance.
                     // The list contains only container and items, not head.
                     foreach( var sEntry in _specializedItems )
                     {
                         if( sEntry.Generalization == null ) ResolveGeneralization( sEntry );
+                    }
+                }
+
+                private void AddChildToGroupOrContainer( Entry group, Entry child )
+                {
+                    Debug.Assert( group != null && group.ItemKind != DependentItemType.SimpleItem );
+                    Debug.Assert( child != null );
+                    // child.Container can be null for 2 reasons: the item declares no container (null), 
+                    // or the item declares a name and the entry has been added to namedContainersToBind.
+                    Debug.Assert( child.Container != null || (child.Item.Container == null || (!(child.Item.Container is IDependentItemContainer) && _namedContainersToBind.Contains( child ))) );
+                    
+                    // Is it already bound to a Container?
+                    if( child.Container != null )
+                    {
+                        if( group.ItemKind == DependentItemType.Container )
+                        {
+                            if( child.Container != group )
+                            {
+                                // The child is bound to a container with another name: the late-bound name is an extraneous container.
+                                _computer.SetStructureError( child, DependentItemStructureError.MultipleContainer ).AddExtraneousContainers( group.FullName );
+                            }
+                        }
+                        else
+                        {
+                            group.AddToGroup( child );
+                        }
+                    }
+                    else
+                    {
+                        // We set the container or add the child to the group.
+                        if( group.ItemKind == DependentItemType.Container ) group.AddToContainer( child );
+                        else group.AddToGroup( child );
                     }
                 }
 
@@ -439,21 +566,12 @@ namespace CK.Setup
                     // Loop guard & default Generalization if not found by name.
                     sEntry.Generalization = Entry.GeneralizationMissingMarker;
                     Entry gEntry;
-                    if( !TryGetEntryValue( g.FullName, out gEntry ) )
-                    {
-                        // Not found... If it is optional, act as if there
-                        // were no generalization.
-                        if( !g.Optional )
-                        {
-                            _computer.SetStructureError( sEntry, DependentItemStructureError.MissingGeneralization );
-                        }
-                    }
-                    else
+                    if( TryGetEntryValue( g.FullName, out gEntry ) )
                     {
                         // Sets the Generalization object also on the head if 
                         // we are on a Container.
                         sEntry.Generalization = gEntry;
-                        if( sEntry.HeadIfContainer != null ) sEntry.HeadIfContainer.Generalization = gEntry;
+                        if( sEntry.HeadIfGroupOrContainer != null ) sEntry.HeadIfGroupOrContainer.Generalization = gEntry;
 
                         if( gEntry.Generalization == null && gEntry.Item.Generalization != null ) ResolveGeneralization( gEntry );
                         // The entry is bound to its Generalization. It is time to inherit Container.
@@ -462,9 +580,16 @@ namespace CK.Setup
                             gEntry.Container.AddToContainer( sEntry );
                             // Checks (debug only).
                             Debug.Assert( sEntry.Container == gEntry.Container );
-                            gEntry.Container.CheckContains( sEntry );
+                            gEntry.Container.CheckContainerIsHeadOrContains( sEntry );
                         }
                     }
+                    else if( !g.Optional )
+                    {
+                        // Not found... If it is optional, act as if there
+                        // were no generalization.
+                        _computer.SetStructureError( sEntry, DependentItemStructureError.MissingGeneralization );
+                    }
+
                 }
 
                 /// <summary>
@@ -493,7 +618,17 @@ namespace CK.Setup
                             foreach( var d in req )
                             {
                                 IDependentItem di = d as IDependentItem;
-                                if( di != null ) PreRegisterObjectDependencies( di, true ); 
+                                if( di != null ) PreRegisterObjectDependencies( di, true );
+                            }
+                        }
+                        // Pre registers Groups.
+                        var grp = e.Groups;
+                        if( grp != null )
+                        {
+                            foreach( var g in grp )
+                            {
+                                IDependentItem gi = g as IDependentItem;
+                                if( gi != null ) PreRegisterObjectDependencies( gi, true );
                             }
                         }
                         // Gives the item an opportunity to prepare its data (mainly its FullName).
@@ -503,64 +638,76 @@ namespace CK.Setup
                     return entryOrStartValue;
                 }
 
-                Entry RegisterEntry( IDependentItem e, Entry alreadyRegisteredContainer, Entry alreadyRegisteredChild )
+                Entry RegisterEntry( IDependentItem e, Entry alreadyRegisteredGroup, Entry alreadyRegisteredChild )
                 {
+                    Debug.Assert( alreadyRegisteredGroup == null || alreadyRegisteredChild == null, "Not coming from both sides at the same time." );
                     // Preregistering: collects Start values by calling StartDependencySort.
                     object startValue = PreRegisterObjectDependencies( e, false );
                     
                     Entry entry = startValue as Entry;
                     if( entry != null )
                     {
-                        #region If the Entry exists, we only have to check container/item coherency (for a specific edge case) and registered homonyms.
+                        #region If the Entry exists, we only have to handle (group,container)/item relation and registered homonyms.
                         // If entry.Item != e, this is an homonym registered previously (code below): ignores it
-                        // and returns the first named entry (an Homonym StructureError has been pushed anyway).
+                        // and returns the first named entry that has been registered (an Homonym StructureError has been pushed anyway).
                         if( entry.Item == e )
                         {
-                            // We allow duplicated item instances in the original
-                            // items enumeration (this also support our automatic 
-                            // discovery for Container/Children).
-                            if( alreadyRegisteredContainer != null )
+                            if( alreadyRegisteredGroup != null ) 
                             {
-                                // We are coming from the registration of our Children (below).
-                                // Since this item is already registered and we skip the child from which we are 
-                                // coming (alreadyRegisteredChild that is beeing processed - its Container is null), 
-                                // the container must be the same.
-                                if( entry.Container != alreadyRegisteredContainer )
-                                {
-                                    // entry.Container can be null for 2 reasons: the item declares no container (null), 
-                                    // or the item declares a name and the entry has been added to namedContainersToBind.
-                                    Debug.Assert( entry.Container != null || (entry.Item.Container == null || (!(entry.Item.Container is IDependentItemContainer) && _namedContainersToBind.Contains( entry ))) );
-                                    // In both case, we set the entry.Container to the alreadyRegisteredContainer (the first container that claims to hold the item).
-                                    // When Item.Container is null, this is because we consider a null container as a "free" resource for a container.
-                                    // When the container is declared by name, we let the binding in Register handle the case.
-                                    if( entry.Container == null )
-                                    {
-                                        alreadyRegisteredContainer.AddToContainer( entry );
-                                    }
-                                    else
-                                    {
-                                        // This entry has a problem: it has more than one container that 
-                                        // claim to own it.
-                                        _computer.SetStructureError( entry, DependentItemStructureError.MultipleContainer ).AddExtraneousContainers( alreadyRegisteredContainer.FullName );
-                                    }
-                                }
+                                // We are coming from the registration of our Children (code below).
+                                AddChildToGroupOrContainer( alreadyRegisteredGroup, entry );
+                                //if( alreadyRegisteredGroup.ItemKind == DependentItemType.Container )
+                                //{
+                                //    // Since this item is already registered and we skip the child from which we are 
+                                //    // coming (alreadyRegisteredChild that is beeing processed - its Container is null), 
+                                //    // the container must be the same.
+                                //    if( entry.Container != alreadyRegisteredGroup )
+                                //    {
+                                //        // entry.Container can be null for 2 reasons: the item declares no container (null), 
+                                //        // or the item declares a name and the entry has been added to namedContainersToBind.
+                                //        Debug.Assert( entry.Container != null || (entry.Item.Container == null || (!(entry.Item.Container is IDependentItemContainer) && _namedContainersToBind.Contains( entry ))) );
+                                //        // In both case, we set the entry.Container to the alreadyRegisteredGroup (the first container that claims to hold the item).
+                                //        // When Item.Container is null, this is because we consider a null container as a "free" resource for a container.
+                                //        // When the container is declared by name, we let the binding in Register handle the case.
+                                //        if( entry.Container == null )
+                                //        {
+                                //            alreadyRegisteredGroup.AddToContainer( entry );
+                                //        }
+                                //        else
+                                //        {
+                                //            // This entry has a problem: it has more than one container that 
+                                //            // claim to own it.
+                                //            _computer.SetStructureError( entry, DependentItemStructureError.MultipleContainer ).AddExtraneousContainers( alreadyRegisteredGroup.FullName );
+                                //        }
+                                //    }
+                                //}
+                                //else
+                                //{
+                                //    // Simply add the entry to the group.
+                                //    alreadyRegisteredGroup.AddToGroup( entry );
+                                //}
                             }
                         }
                         #endregion
                         return entry;
                     }
-                
-                    bool containerAskedToNotBeAContainer = false;
+
+                    #region Compute actual item type (actualType, e, g and c)
+                    IDependentItemGroup g = null;
                     IDependentItemContainer c = e as IDependentItemContainer;
+                    DependentItemType actualType = DependentItemType.SimpleItem;
                     if( c != null )
                     {
-                        IDependentItemContainerAsk ca = e as IDependentItemContainerAsk;
-                        if( ca != null && ca.ThisIsNotAContainer )
-                        {
-                            containerAskedToNotBeAContainer = true;
-                            c = null;
-                        }
+                        g = c;
+                        IDependentItemContainerTyped cTyped = e as IDependentItemContainerTyped;
+                        actualType = cTyped != null ? cTyped.ItemKind : DependentItemType.Container;
                     }
+                    else
+                    {
+                        g = e as IDependentItemGroup;
+                        if( g != null ) actualType = DependentItemType.Group;
+                    }
+                    #endregion
 
                     if( TryGetEntryValue( e.FullName, out entry ) )
                     {
@@ -583,26 +730,14 @@ namespace CK.Setup
 
                         // Associates the element to its entry.
                         _entries[e] = entry;
-
-                        if( c != null ) CreateOrTransformToContainerEntry( ref entry, c, startValue );
-                        else
-                        {
-                            entry.Item = e;
-                            entry.StartValue = startValue;
-                        }
+                        CreateOrInitEntry( ref entry, actualType, e, startValue );
                         #endregion
                     }
                     else
                     {
-                        #region The element nor its name has never been seen.
-                        if( c != null ) CreateOrTransformToContainerEntry( ref entry, c, startValue );
-                        else
-                        {
-                            entry = new Entry( e, startValue );
-                            _entries[e] = entry;
-                        }
+                        // The element nor its name has never been seen.
+                        CreateOrInitEntry( ref entry, actualType, e, startValue );
                         _entries.Add( e.FullName, entry );
-                        #endregion
                     }
                     // We now have the Entry associated to its IDependentItem:
                     // we register it in the _result list (if it has been previously created
@@ -637,54 +772,65 @@ namespace CK.Setup
                         // but do not catch the resulting entry in entry.Generalization
                         // since it has yet to be fully resolved. 
                         // This is done after Container/Child binding.
-                        IDependentItem g = e.Generalization as IDependentItem;
-                        if( g != null ) RegisterEntry( g, null, null );
+                        IDependentItem gen = e.Generalization as IDependentItem;
+                        if( gen != null ) RegisterEntry( gen, null, null );
                         // SpecializedItems contains items and container (but no heads).
                         _specializedItems.Add( entry );
                     }
 
                     // ...and safely automatically discover its bound items: its container and its children.
                     //
-                    // Starts with its container :
-                    // - first handle the case where we are called by a Container that claims to own the current element.
-                    if( alreadyRegisteredContainer != null )
+                    // Starts with its Container :
+                    // - first handle the case where we are called by a Group that claims to own the current element.
+                    if( alreadyRegisteredGroup != null )
                     {
-                        // We are coming from our container.
-                        // If the item has a container, they must match.
-                        if( e.Container != null )
+                        #region Call comes from one of our group or from a container.
+                        if( alreadyRegisteredGroup.ItemKind == DependentItemType.Container )
                         {
-                            // The current element has a container.
-                            IDependentItemContainer father = e.Container as IDependentItemContainer;
-                            if( alreadyRegisteredContainer.Item != father )
+                            // We are coming from our container.
+                            // If the item has a container, they must match.
+                            if( e.Container != null )
                             {
-                                if( father != null )
+                                // The current element has a container.
+                                IDependentItemContainer father = e.Container as IDependentItemContainer;
+                                if( alreadyRegisteredGroup.Item != father )
                                 {
-                                    // The container differs from the one that contains it as a child.
-                                    // Registers the container associated to the current element...
-                                    Entry extraContainer = RegisterEntry( father, null, entry );
-                                    // ...and declares an error.
-                                    // (Here we forget the fact that the extra container may be a IDependentItemContainerAsk where ThisIsNotAContainer returned false:
-                                    // we consider the container mismatch as more important.)
-                                    _computer.SetStructureError( entry, DependentItemStructureError.MultipleContainer ).AddExtraneousContainers( extraContainer.FullName );
-                                }
-                                else
-                                {
-                                    // The container is a name.
-                                    var strong = e.Container.GetReference();
-                                    if( strong.FullName != alreadyRegisteredContainer.FullName )
+                                    if( father != null )
                                     {
-                                        // If it differs, declares an error.
-                                        _computer.SetStructureError( entry, DependentItemStructureError.MultipleContainer ).AddExtraneousContainers( strong.FullName );
+                                        // The container differs from the one that contains it as a child.
+                                        // Registers the container associated to the current element...
+                                        Entry extraContainer = RegisterEntry( father, null, entry );
+                                        // ...and declares an error.
+                                        // (Here we forget the fact that the extra container may be a IDependentItemContainerTyped where ItemKind != Container:
+                                        // we consider the container mismatch as more important.)
+                                        _computer.SetStructureError( entry, DependentItemStructureError.MultipleContainer ).AddExtraneousContainers( extraContainer.FullName );
+                                    }
+                                    else
+                                    {
+                                        // The container is a named reference.
+                                        if( e.Container.FullName != alreadyRegisteredGroup.FullName )
+                                        {
+                                            // If it differs, declares an error.
+                                            _computer.SetStructureError( entry, DependentItemStructureError.MultipleContainer ).AddExtraneousContainers( e.Container.FullName );
+                                        }
                                     }
                                 }
                             }
+                            // Even if a structure error occured, we set the container.
+                            alreadyRegisteredGroup.AddToContainer( entry );
                         }
-                        // Even if a structure error occured, we set the container.
-                        alreadyRegisteredContainer.AddToContainer( entry );
+                        else
+                        {
+                            Debug.Assert( alreadyRegisteredGroup.ItemKind == DependentItemType.Group, "A SimpleItem would not have called us." );
+                            // Groups do not create any constraints. 
+                            // Simply add the entry to the group.
+                            alreadyRegisteredGroup.AddToGroup( entry );
+                        }
+                        #endregion
                     }
-                    // - else, the current element is not a child (at least for this RegisterEntry call: we are not coming from a container that claims to own it).
-                    else
+                    else // We are not coming from a group or container that claims to own it.
                     {
+                        #region Handles Container first.
                         // If it declares a container, we try to bind to it.
                         if( e.Container != null )
                         {
@@ -692,7 +838,7 @@ namespace CK.Setup
                             if( father != null )
                             {
                                 var cnt = RegisterEntry( father, null, entry );
-                                if( cnt.HeadIfContainer == null )
+                                if( cnt.ItemKind != DependentItemType.Container )
                                 {
                                     // The container refused to be a container.
                                     _computer.SetStructureError( entry, DependentItemStructureError.ExistingContainerAskedToNotBeAContainer );
@@ -700,31 +846,59 @@ namespace CK.Setup
                                 else
                                 {
                                     cnt.AddToContainer( entry );
+                                    Debug.Assert( entry.Container == cnt );
                                 }
                             }
                             else _namedContainersToBind.Add( entry );
                         }
-                    }
-                    // If it is a container, handle its children. 
-                    // If not, check if it is a "refusing" container that nevertheless exposes children: this must be 
-                    // considered as an error to stay independant of the registration order.
-                    if( c == null )
-                    {
-                        if( containerAskedToNotBeAContainer )
+                        #endregion
+                        #region Handles Groups.
+                        // Whatever it is, if it declares Groups, handle them.
+                        IEnumerable<IDependentItemGroupRef> groups;
+                        if( (groups = e.Groups) != null )
                         {
-                            Debug.Assert( c == null && e is IDependentItemContainer );
-                            var children = ((IDependentItemContainer)e).Children;
+                            foreach( IDependentItemGroupRef groupRef in groups )
+                            {
+                                // Skips null by security.
+                                if( groupRef == null ) continue;
+                                IDependentItemGroup group = groupRef as IDependentItemGroup;
+                                if( group != null )
+                                {
+                                    var gE = RegisterEntry( group, null, entry );
+                                    if( gE.ItemKind == DependentItemType.SimpleItem )
+                                    {
+                                        _computer.SetStructureError( entry, DependentItemStructureError.DeclaredGroupRefusedToBeAGroup ).AddInvalidGroup( gE.FullName );
+                                    }
+                                    else AddChildToGroupOrContainer( gE, entry );
+                                }
+                                else
+                                {
+                                    _groupsToBind.Add( Tuple.Create( entry, groupRef ) );
+                                }
+                            }
+                        }
+                        #endregion
+                    }
+                    // If it is a group, handle its children. 
+                    if( actualType == DependentItemType.SimpleItem )
+                    {
+                        // If not, check if it is NOT a group that nevertheless exposes children: this must be 
+                        // considered as an error to stay independant of the registration order.
+                        if( g != null )
+                        {
+                            var children = g.Children;
                             if( children != null && children.Any() )
                             {
-                                _computer.SetStructureError( entry, DependentItemStructureError.ContainerAskedToNotBeAContainerButContainsChildren );
+                                _computer.SetStructureError( entry, DependentItemStructureError.ContainerAskedToNotBeAGroupButContainsChildren );
                             }
                         }
                     }
                     else
                     {
-                        Debug.Assert( entry.HeadIfContainer != null );
+                        Debug.Assert( actualType != DependentItemType.SimpleItem && g != null );
+                        Debug.Assert( entry.HeadIfGroupOrContainer != null );
                         IEnumerable<IDependentItemRef> children;
-                        if( (children = c.Children) != null )
+                        if( (children = g.Children) != null )
                         {
                             IDependentItem knownChild = alreadyRegisteredChild != null ? alreadyRegisteredChild.Item : null;
                             foreach( IDependentItemRef childRef in children )
@@ -735,17 +909,22 @@ namespace CK.Setup
                                 IDependentItem child = childRef as IDependentItem;
                                 if( child != null )
                                 {
-                                    if( child != knownChild ) RegisterEntry( child, entry, null );
+                                    // If the child is the child that calls us, then we are necessary a Container or a Group
+                                    // and the child registration will manage the relation: we have nothing to do.
+                                    if( child != knownChild )
+                                    {
+                                        // RegisterEntry handles the relation.
+                                        RegisterEntry( child, entry, null );
+                                    }
                                 }
                                 else
                                 {
                                     // If the child is a named reference to the exact child that 
                                     // is calling us, we have nothing to do.
-                                    var strong = childRef.GetReference();
-                                    if( knownChild == null || strong.FullName != knownChild.FullName )
+                                    if( knownChild == null || childRef.FullName != knownChild.FullName )
                                     {
                                         // The child must be late-bound.
-                                        _childrenToBind.Add( new Tuple<Entry, string>( entry, strong.FullName ) );
+                                        _childrenToBind.Add( Tuple.Create( entry, childRef ) );
                                     }
                                 }
                             }
@@ -782,28 +961,25 @@ namespace CK.Setup
                         {
                             // When an entry is created only to handle
                             // RequiredBy, we do not add it in _result.
-                            entry = new Entry( strong.FullName );
+                            entry = new Entry( _entries, strong.FullName );
                             _entries.Add( strong.FullName, entry );
                         }
                     }
                     return entry;
                 }
 
-                void CreateOrTransformToContainerEntry( ref Entry entry, IDependentItemContainer c, object startValue )
+                void CreateOrInitEntry( ref Entry entry, DependentItemType actualType, IDependentItem e, object startValue )
                 {
                     if( entry == null )
                     {
-                        entry = new Entry( c, startValue );
-                        _entries[c] = entry;
+                        entry = new Entry( _entries, e.FullName );
+                        _entries[e] = entry;
                     }
-                    else
+                    if( entry.Init( e, actualType, startValue ) )
                     {
-                        entry.Item = c;
-                        entry.StartValue = startValue;
+                        _entries.Add( entry.HeadIfGroupOrContainer.FullName, entry.HeadIfGroupOrContainer );
+                        _computer._result.Add( entry.HeadIfGroupOrContainer );
                     }
-                    entry.TransformToContainer();
-                    _entries.Add( entry.HeadIfContainer.FullName, entry.HeadIfContainer );
-                    _computer._result.Add( entry.HeadIfContainer );
                 }
 
                 /// <summary>
@@ -843,32 +1019,24 @@ namespace CK.Setup
                 {
                     if( e.Rank == -1 )
                     {
-                        ComputeRank( e );
-                        if( _cycle != null )
+                        if( ComputeRank( e ) )
                         {
-                            Debug.Assert( _cycle.Count >= 2, "We started the cycle construction with the 2 first participants." );
-                            // Instead of removing head2, we let it in the cycle: this is useless but much more
-                            // explicit for users: instead of a=>b=>c, they can see a=>b=>c=>a and a cycle
-                            // has necessarily a length of at least 2. Autoreferences are cycles like a=>a.
-                            IDependentItem head = _cycle[0].Item;
-                            int head2 = _cycle.FindIndex( 1, c => c.Item == head ) + 1;
-                            Debug.Assert( head2 >= 2, "We necessarily added the final culprit." );
-                            int nbToRemove = _cycle.Count - head2;
-                            if( nbToRemove > 0 ) _cycle.RemoveRange( head2, nbToRemove );
+                            Debug.Assert( _cycle != null && _cycle.Count >= 2, "We started the cycle construction with the 2 first participants." );
+                            if( _cycle[0].Relation != CycleExplainedElement.Start ) _cycle.Reverse();
                             break;
                         }
                     }
                 }
             }
 
-            void ComputeRank( Entry e )
+            bool ComputeRank( Entry e )
             {
                 Debug.Assert( e.Rank == -1 );
                 e.Rank = -2;
                 int rank = 0;
 
                 List<IDependentItemRef> requiresHiddenByContainerOrGen = null;
-                
+
                 // Prepares eGen.
                 Entry eGen = e.Generalization;
                 if( eGen == Entry.GeneralizationMissingMarker ) eGen = null;
@@ -876,12 +1044,12 @@ namespace CK.Setup
                 // Starts with reverse requirements (RequiredBy) since during the registeration phasis,
                 // the Requires HashSet has been populated only with RequiredBy from others.
                 //
-                // Do this for Containers and Items (but not for Heads)
+                // Do this for Groups and Items (but not for Heads)
                 //
-                if( e.ContainerIfHead == null )
+                if( e.GroupIfHead == null )
                 {
                     // Reverse requirements (RequiredBy) can be ignored for Head since "Required By" 
-                    // for a Container must apply to each and every items contained in a container.
+                    // for a Group must apply to each and every items contained in a Group.
                     var requirements = e.Requires;
                     if( requirements != null )
                     {
@@ -892,31 +1060,29 @@ namespace CK.Setup
                             Entry oeDep = (Entry)_entries[dep.FullName];
                             if( (oeDep == eGen)
                                 ||
-                                (oeDep.HeadIfContainer != null && _options.SkipDependencyToContainer && e.AppearInContainerChain( oeDep ) ) )
+                                (oeDep.ItemKind == DependentItemType.Container && _options.SkipDependencyToContainer && e.AppearInContainerChain( oeDep )) )
                             {
                                 if( requiresHiddenByContainerOrGen == null ) requiresHiddenByContainerOrGen = new List<IDependentItemRef>();
                                 requiresHiddenByContainerOrGen.Add( dep );
                             }
                             else
                             {
-                                HandleDependency( ref rank, e, oeDep, false );
-                                if( _cycle != null ) return;
+                                if( HandleDependency( ref rank, e, CycleExplainedElement.RequiredByRequires, oeDep ) ) return true;
                             }
                         }
                     }
                 }
 
-                // Handle direct requirements: this can be ignored for Containers: the Head handles them.
+                // Handle direct requirements: this can be ignored for Groups since the Head handles them.
                 //
-                // Do this for Heads and Items (but not for Containers).
+                // Do this for Heads and Items (but not for Groups).
                 //
-                if( e.HeadIfContainer == null )
+                if( e.HeadIfGroupOrContainer == null )
                 {
                     // We first handle Generalization as a requirement.
                     if( eGen != null )
                     {
-                        HandleDependency( ref rank, e, eGen, false );
-                        if( _cycle != null ) return;
+                        if( HandleDependency( ref rank, e, CycleExplainedElement.GeneralizedBy, eGen ) ) return true;
                     }
                     var requirements = e.Item.Requires;
                     if( requirements != null )
@@ -964,7 +1130,7 @@ namespace CK.Setup
                                 {
                                     // Adds the strong dependency to mark it as processed even if it will be removed by skipDependencyToContainer.
                                     if( dep.Optional ) e.Requires.Add( strong );
-                                    if( oeDep.HeadIfContainer != null
+                                    if( oeDep.ItemKind == DependentItemType.Container
                                         && _options.SkipDependencyToContainer
                                         && e.AppearInContainerChain( oeDep ) )
                                     {
@@ -973,8 +1139,7 @@ namespace CK.Setup
                                     }
                                     else
                                     {
-                                        HandleDependency( ref rank, e, oeDep, false );
-                                        if( _cycle != null ) return;
+                                        if( HandleDependency( ref rank, e, CycleExplainedElement.Requires, oeDep ) ) return true;
                                     }
                                 }
                             }
@@ -984,31 +1149,49 @@ namespace CK.Setup
                 else
                 {
                     //
-                    // Container only.
+                    // Group or Container only.
                     //
-                    // Handles Container => Head (useful for empty containers).
-                    Debug.Assert( e.HeadIfContainer != null );
-                    HandleDependency( ref rank, e, e.HeadIfContainer, true );
-                    if( _cycle != null ) return;
+                    // Handles Group => Head (useful for empty groups).
+                    Debug.Assert( e.HeadIfGroupOrContainer != null );
+                    if( HandleDependency( ref rank, e, CycleExplainedElement.Start, e.HeadIfGroupOrContainer ) ) return true;
                 }
 
-                // Handles the element's Container: its head is required by this item (be it a head, a container or an item).
+                // Handles the element's Container: its head is required by this item (be it a head, a container, a group or an item).
                 if( e.Container != null )
                 {
                     // Checks (Debug only) that an element that claims to belong to a Container
-                    // is actually in the linked list of its Container's items.
-                    e.Container.CheckContains( e );
-                   
-                    HandleDependency( ref rank, e, e.Container.HeadIfContainer, false );
-                    if( _cycle != null ) return;
+                    // is actually in the linked list of its children.
+                    e.Container.CheckContainerIsHeadOrContains( e );
+
+                    if( HandleDependency( ref rank, e, CycleExplainedElement.ElementOfContainer, e.Container.HeadIfGroupOrContainer ) ) return true;
                 }
-                // Handles children if any.
-                Entry child = e.FirstChildIfGroup;
-                while( child != null )
+                // Handles the element's Groups: their heads are required by this item (be it a head, a container, a group or an item).
+                var groups = e.GroupIfHead != null ? e.GroupIfHead.Groups : e.Groups;
+                if( groups != null )
                 {
-                    HandleDependency( ref rank, e, child, false );
-                    if( _cycle != null ) return;
-                    child = child.NextChildInGroup;
+                    foreach( Entry group in groups )
+                    {
+                        Debug.Assert( group.HeadIfGroupOrContainer != null && group.GroupChildren.Contains( e.GroupIfHead ?? e ) );
+                        if( HandleDependency( ref rank, e, CycleExplainedElement.ElementOf, group.HeadIfGroupOrContainer ) ) return true;
+                    }
+                }
+                // Handles group children if any.
+                if( e.GroupChildren != null )
+                {
+                    foreach( Entry child in e.GroupChildren )
+                    {
+                        if( HandleDependency( ref rank, e, CycleExplainedElement.Contains, child ) ) return true;
+                    }
+                }
+                else
+                {
+                    // Handles container's children if any.
+                    Entry child = e.FirstChildIfContainer;
+                    while( child != null )
+                    {
+                        if( HandleDependency( ref rank, e, CycleExplainedElement.ContainerContains, child ) ) return true;
+                        child = child.NextChildInContainer;
+                    }
                 }
                 // Should the entry.Requires HashSet be cleaned up?
                 if( requiresHiddenByContainerOrGen != null )
@@ -1022,27 +1205,69 @@ namespace CK.Setup
                 }
                 // The rank of the item is known now.
                 e.Rank = rank + 1;
+                return false;
             }
 
-            void HandleDependency( ref int rank, Entry e, Entry oeDep, bool isContainerHeadDependency )
+            bool HandleDependency( ref int rank, Entry e, char relation, Entry oeDep )
             {
                 // Cycle detection.
                 if( oeDep.Rank == -2 )
                 {
-                    _cycle = new List<Entry>() { oeDep, e };
-                    return;
+                    if( relation != CycleExplainedElement.Start ) StartCycle( e, relation, oeDep );
+                     return true;
                 }
                 if( oeDep.Rank == -1 )
                 {
-                    ComputeRank( oeDep );
-                    // Do not add "Container" => "Head". It is useless and hard 
-                    // to understand since the name is the same ("X" => "X").
-                    // We do not test that oeDep is the head of the item (either by its name
-                    // or by changing the parameter to the entry) in order to not 
-                    // mask auto-dependency.
-                    if( _cycle != null && !isContainerHeadDependency ) _cycle.Add( e );
+                    if( ComputeRank( oeDep ) )
+                    {
+                        // We let the first and last item be the same in the cycle since it is much more
+                        // explicit for users: instead of a=>b=>c, they can see a=>b=>c=>a and a cycle
+                        // has necessarily a length of at least 2.
+                        // Autoreferences are cycles like a=>a.
+                        //
+                        // Do not add "Container" => "Head". It is useless and hard 
+                        // to understand since the name is the same ("X" => "X").
+                        // We do not test that oeDep is the head of the item (either by its name
+                        // or by changing the parameter to the entry) in order to not 
+                        // mask auto-dependency.
+                        if( relation != CycleExplainedElement.Start )
+                        {
+                            if( _cycle == null ) StartCycle( e, relation, oeDep );
+                            else
+                            {
+                                Debug.Assert( _cycle.Count >= 2 );
+                                // Is the cycle already fully detected?
+                                if( _cycle[0].Relation != CycleExplainedElement.Start )
+                                {
+                                    Debug.Assert( _cycle[_cycle.Count - 1].Item == (oeDep.GroupIfHead ?? oeDep), "Last one is the target of the relation." );
+
+                                    if( e.GroupIfHead != null ) e = e.GroupIfHead;
+                                    // Updates relation to the last one.
+                                    _cycle[_cycle.Count - 1].Relation = relation;
+                                    _cycle.Add( new CycleExplainedElement( CycleExplainedElement.Start, e ) );
+                                    // Should we stop the detection ?
+                                    if( _cycle[0].Item == e )
+                                    {
+                                        _cycle.Reverse();
+                                    }
+                                }
+                            }
+                        }
+                        return true;
+                    }
                 }
                 rank = Math.Max( rank, oeDep.Rank );
+                return false;
+            }
+
+            private void StartCycle( Entry e, char relation, Entry oeDep )
+            {
+                Debug.Assert( relation != CycleExplainedElement.Start );
+                if( oeDep.GroupIfHead != null ) oeDep = oeDep.GroupIfHead;
+                if( e.GroupIfHead != null ) e = e.GroupIfHead;
+                _cycle = new List<CycleExplainedElement>() { new CycleExplainedElement( relation, oeDep ), new CycleExplainedElement( CycleExplainedElement.Start, e ) };
+                // Auto reference? Immediately ends the cycle.
+                if( e == oeDep ) _cycle.Reverse();
             }
 
             public DependencySorterResult GetResult()
@@ -1054,7 +1279,6 @@ namespace CK.Setup
                     foreach( var e in _result ) e.Index = i++;
                     return new DependencySorterResult( _result, null, _itemIssues );
                 }
-                _cycle.Reverse();
                 return new DependencySorterResult( null, _cycle, _itemIssues );
             }
 

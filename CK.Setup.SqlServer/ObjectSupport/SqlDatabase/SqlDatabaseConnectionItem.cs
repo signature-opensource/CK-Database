@@ -36,6 +36,11 @@ namespace CK.Setup.SqlServer
             get { return null; }
         }
 
+        public IEnumerable<IDependentItemGroupRef> Groups
+        {
+            get { return null; }
+        }
+
         public IEnumerable<IDependentItemRef> RequiredBy
         {
             get { return null; }

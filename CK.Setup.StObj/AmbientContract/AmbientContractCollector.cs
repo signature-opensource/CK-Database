@@ -186,7 +186,7 @@ namespace CK.Core
             public void Add( AmbientTypeInfo newOne )
             {
                 ++_registeredCount;
-                if( newOne.DirectGeneralization == null )
+                if( newOne.Generalization == null )
                 {
                     List<AmbientTypeInfo> deepestConcretes = new List<AmbientTypeInfo>();
                     newOne.CollectDeepestConcrete( deepestConcretes, _abstractTails, Context );
