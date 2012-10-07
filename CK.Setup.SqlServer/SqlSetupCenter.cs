@@ -86,7 +86,7 @@ namespace CK.Setup.SqlServer
 
         SetupDriver ISetupDriverFactory.CreateDriver( Type driverType, SetupDriver.BuildInfo info )
         {
-            if( driverType == typeof( SqlObjectDriver ) ) return new SqlObjectDriver( info, _context );
+            if( driverType == typeof( SqlObjectSetupDriver ) ) return new SqlObjectSetupDriver( info, _context );
             if( driverType == typeof( SetupDriver ) ) return new SetupDriver( info );
             if( driverType == typeof( SqlDatabaseSetupDriver ) ) return new SqlDatabaseSetupDriver( info );
             if( driverType == typeof( SqlDatabaseConnectionSetupDriver ) ) return new SqlDatabaseConnectionSetupDriver( info, _context );

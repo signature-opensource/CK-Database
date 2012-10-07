@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace CK.Setup.SqlServer
 {
-    public class SqlObject : IVersionedItem, IDependentItemRef
+    public class SqlObjectItem : IVersionedItem, IDependentItemRef
     {
         static public readonly string TypeView = "View";
         static public readonly string TypeProcedure = "Procedure";
@@ -65,7 +65,7 @@ namespace CK.Setup.SqlServer
         DependentItemGroupList _groups;
         IDependentItemContainerRef _container;
 
-        internal SqlObject( string type, ReadInfo readInfo )
+        internal SqlObjectItem( string type, ReadInfo readInfo )
         {
             _type = type;
             _readInfo = readInfo;
@@ -164,7 +164,7 @@ namespace CK.Setup.SqlServer
 
         object IDependentItem.StartDependencySort()
         { 
-            return typeof(SqlObjectDriver).AssemblyQualifiedName;
+            return typeof(SqlObjectSetupDriver).AssemblyQualifiedName;
         }
 
         /// <summary>

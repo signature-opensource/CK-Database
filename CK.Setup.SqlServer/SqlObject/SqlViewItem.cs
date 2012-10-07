@@ -7,13 +7,11 @@ using CK.Setup.Database;
 
 namespace CK.Setup.SqlServer
 {
-    public class SqlProcedure : SqlObject
+    public class SqlViewItem : SqlObjectItem
     {
-        internal SqlProcedure( ReadInfo readInfo )
-            : base( SqlObject.TypeProcedure, readInfo )
+        internal SqlViewItem( ReadInfo readInfo )
+            : base( SqlObjectItem.TypeView, readInfo )
         {
         }
-
-
     }
 }

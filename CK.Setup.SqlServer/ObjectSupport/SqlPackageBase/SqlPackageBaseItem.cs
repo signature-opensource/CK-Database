@@ -42,7 +42,7 @@ namespace CK.Setup.SqlServer
         {
             if( Model != null )
             {
-                Model.Groups.RemoveWhere.AddRange( Groups.OfType<SqlDatabaseItem>() );
+                Model.Groups.AddRange( Groups.OfType<SqlDatabaseItem>() );
             }
             return base.StartDependencySort();
         }

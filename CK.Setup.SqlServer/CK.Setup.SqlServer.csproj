@@ -69,9 +69,9 @@
     <Compile Include="ObjectSupport\SqlDatabase\SqlDatabaseSetupDriver.cs" />
     <Compile Include="Labo\Tests.cs" />
     <Compile Include="SqlMultiScript.cs" />
-    <Compile Include="SqlObject\SqlFunction.cs" />
-    <Compile Include="SqlObject\SqlView.cs" />
-    <Compile Include="SqlObject\SqlProcedure.cs" />
+    <Compile Include="SqlObject\SqlFunctionItem.cs" />
+    <Compile Include="SqlObject\SqlViewItem.cs" />
+    <Compile Include="SqlObject\SqlProcedureItem.cs" />
     <Compile Include="SqlSetupSessionMemoryProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlScriptExecutor.cs" />
@@ -79,9 +79,9 @@
     <Compile Include="SqlSetupCenter.cs" />
     <Compile Include="SqlSetupContext.cs" />
     <Compile Include="SqlVersionedItemRepository.cs" />
-    <Compile Include="SqlObject\SqlObject.cs" />
+    <Compile Include="SqlObject\SqlObjectItem.cs" />
     <Compile Include="SqlObject\SqlObjectBuilder.cs" />
-    <Compile Include="SqlObjectDriver.cs" />
+    <Compile Include="SqlObject\SqlObjectSetupDriver.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">

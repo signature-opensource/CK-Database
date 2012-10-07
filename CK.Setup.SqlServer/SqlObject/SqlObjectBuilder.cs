@@ -37,9 +37,9 @@ namespace CK.Setup.SqlServer
             string type;
             switch( char.ToUpperInvariant( mSqlObject.Groups[1].Value[0] ) )
             {
-                case 'V': type = SqlObject.TypeView; break;
-                case 'P': type = SqlObject.TypeProcedure; break;
-                default: type = SqlObject.TypeFunction; break;
+                case 'V': type = SqlObjectItem.TypeView; break;
+                case 'P': type = SqlObjectItem.TypeProcedure; break;
+                default: type = SqlObjectItem.TypeFunction; break;
             }
             if( expectedType != null && expectedType != type )
             {
@@ -88,28 +88,28 @@ namespace CK.Setup.SqlServer
                 databaseOrSchema = tmp;
             }
 
-            SqlObject.ReadInfo r = new SqlObject.ReadInfo( databaseOrSchema, schema, name, header, version, packageName, requires, groups, requiredBy, previousNames, textAfterName );
+            SqlObjectItem.ReadInfo r = new SqlObjectItem.ReadInfo( databaseOrSchema, schema, name, header, version, packageName, requires, groups, requiredBy, previousNames, textAfterName );
 
-            SqlObject result;
-            if( ReferenceEquals( type, SqlObject.TypeProcedure ) )
+            SqlObjectItem result;
+            if( ReferenceEquals( type, SqlObjectItem.TypeProcedure ) )
             {
-                result = new SqlProcedure( r );
+                result = new SqlProcedureItem( r );
             }
-            else if( ReferenceEquals( type, SqlObject.TypeView ) )
+            else if( ReferenceEquals( type, SqlObjectItem.TypeView ) )
             {
-                result = new SqlView( r );
+                result = new SqlViewItem( r );
             }
             else
             {
-                result = new SqlFunction( r );
+                result = new SqlFunctionItem( r );
             }
             return result;
         }
 
-        static public SqlProcedure LoadProcedureFromResource( IActivityLogger logger, Type resourceLocator, string resourceName )
+        static public SqlProcedureItem LoadProcedureFromResource( IActivityLogger logger, Type resourceLocator, string resourceName )
         {
             string text = ResourceLocator.LoadString( resourceLocator, null, resourceName, true );
-            return (SqlProcedure)SqlObjectBuilder.Create( logger, text, SqlObject.TypeProcedure );
+            return (SqlProcedureItem)SqlObjectBuilder.Create( logger, text, SqlObjectItem.TypeProcedure );
         }
     }
 }

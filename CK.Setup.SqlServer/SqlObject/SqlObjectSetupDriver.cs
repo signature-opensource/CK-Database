@@ -8,20 +8,20 @@ using CK.Core;
 
 namespace CK.Setup.SqlServer
 {
-    public class SqlObjectDriver : SetupDriver
+    public class SqlObjectSetupDriver : SetupDriver
     {
         SqlManager _manager;
 
-        public SqlObjectDriver( BuildInfo info, ISqlManagerProvider sqlProvider )
+        public SqlObjectSetupDriver( BuildInfo info, ISqlManagerProvider sqlProvider )
             : base( info )
         {
             if( sqlProvider == null ) throw new ArgumentNullException( "sqlProvider" );
             _manager = sqlProvider.FindManagerByName( SqlDatabase.DefaultDatabaseName );
         }
 
-        public new SqlObject Item
+        public new SqlObjectItem Item
         {
-            get { return (SqlObject)base.Item; }
+            get { return (SqlObjectItem)base.Item; }
         }
 
         protected override bool InstallContent()

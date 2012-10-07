@@ -55,6 +55,12 @@ namespace CK.Setup
             get { return Head != null; } 
         }
 
+        /// <summary>
+        /// Provides a way for this driver to load scripts (<see cref="ISetupScript"/> abstraction) from any storage 
+        /// and to register them in the given <see cref="ScriptCollector"/>.
+        /// </summary>
+        /// <param name="scripts">Collector for scripts.</param>
+        /// <returns>True on success. False when an error occured that must stop the setup process.</returns>
         protected internal virtual bool LoadScripts( ScriptCollector scripts )
         {
             return true;

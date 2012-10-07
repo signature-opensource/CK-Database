@@ -26,21 +26,6 @@ namespace CK.Setup
             _engine.SetupEvent += OnSetupEvent;
         }
 
-        void OnDriverEvent( object sender, DriverEventArgs e )
-        {
-            Debug.Assert( sender == _engine );
-            if( e.Step == SetupStep.None && !e.Driver.IsGroupHead )
-            {
-                Debug.Assert( e.Driver is SetupDriver, "Since it is not the Head of a Group." );
-                SetupDriver driver = (SetupDriver)e.Driver;
-                if( !driver.LoadScripts( _scriptCollector ) )
-                {
-                    _engine.Logger.Fatal( "Driver '{0}' failed to load scripts.", e.Driver.FullName );
-                    e.CancelSetup = true;
-                }
-           }
-        }
-
         void OnSetupEvent( object sender, SetupEventArgs e )
         {
             Debug.Assert( sender == _engine );
@@ -102,6 +87,21 @@ namespace CK.Setup
                     }
                 }
             }
+        }
+
+        void OnDriverEvent( object sender, DriverEventArgs e )
+        {
+            Debug.Assert( sender == _engine );
+            if( e.Step == SetupStep.None && !e.Driver.IsGroupHead )
+            {
+                Debug.Assert( e.Driver is SetupDriver, "Since it is not the Head of a Group." );
+                SetupDriver driver = (SetupDriver)e.Driver;
+                if( !driver.LoadScripts( _scriptCollector ) )
+                {
+                    _engine.Logger.Fatal( "Driver '{0}' failed to load scripts.", e.Driver.FullName );
+                    e.CancelSetup = true;
+                }
+           }
         }
 
 

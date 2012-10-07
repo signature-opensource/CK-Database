@@ -7,10 +7,10 @@ using CK.Setup.Database;
 
 namespace CK.Setup.SqlServer
 {
-    public class SqlFunction : SqlObject
+    public class SqlFunctionItem : SqlObjectItem
     {
-        internal SqlFunction( ReadInfo readInfo )
-            : base( SqlObject.TypeFunction, readInfo )
+        internal SqlFunctionItem( ReadInfo readInfo )
+            : base( SqlObjectItem.TypeFunction, readInfo )
         {
         }
     }
