@@ -32,6 +32,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets the priority of this source among other sources from the same <see cref="ScriptTypeHandler"/>.
+        /// Larger the index is, the higher the priority source.
         /// </summary>
         public int Index
         {
