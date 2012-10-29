@@ -50,12 +50,15 @@
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ProtoItem\IDependentProtoItem.cs" />
+    <Compile Include="ProtoItem\ProtoItemCollector.cs" />
     <Compile Include="Scripts\ResSetupScript.cs" />
     <Compile Include="Scripts\ScriptSource.cs" />
     <Compile Include="Scripts\ScriptTypeHandler.cs" />
+    <Compile Include="SetupCore\Package\DynamicDependentItem.cs" />
     <Compile Include="SetupCore\Package\DependentItemGroupList.cs" />
     <Compile Include="SetupCore\Package\IDependentItemGroupList.cs" />
-    <Compile Include="SetupCore\Package\IMutableDependentItemContainer.cs" />
+    <Compile Include="SetupCore\Package\IMutableDependentItemContainerTyped.cs" />
     <Compile Include="SetupCore\SetupEventArgs.cs" />
     <Compile Include="SetupCore\Package\ContainerItemBase.cs" />
     <Compile Include="SetupCore\Package\IMutableDependentItem.cs" />

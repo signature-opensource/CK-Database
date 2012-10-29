@@ -8,6 +8,6 @@ namespace CK.Setup.Database
 {
     public interface ISqlObjectBuilder
     {
-        IVersionedItem Create( IActivityLogger logger, string text );
+        IDependentProtoItem Create( IActivityLogger logger, string text );
     }
 }

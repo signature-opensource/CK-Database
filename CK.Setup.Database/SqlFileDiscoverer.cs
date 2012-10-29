@@ -130,7 +130,7 @@ namespace CK.Setup.Database
                 {
                     // There is no SetupStep suffix: it should be a SqlObject.
                     string text = readContent();
-                    IVersionedItem item = _sqlObjectBuilder.Create( _logger, text );
+                    var item = _sqlObjectBuilder.Create( _logger, text );
                     if( item != null )
                     {
                         if( item.FullName != f.FullNameWithoutContext )

@@ -15,18 +15,18 @@ namespace CK.Setup.SqlServer
                                             | RegexOptions.IgnoreCase
                                             | RegexOptions.ExplicitCapture );
 
-        static Regex _rHeader = new Regex( @"^\s*--\s*Version\s*=\s*(?<1>\d+(\.\d+)*|\*)(\s*,?\s*((Package\s*=\s*(?<2>(\w|\.|-)+))|(Requires\s*=\s*{\s*((?<3>\??(\w+|-|\.)+)\s*,?\s*)*})|((Groups\s*=\s*{\s*((?<4>(\w+|-|\.)+)\s*,?\s*)*}))|((RequiredBy\s*=\s*{\s*((?<5>(\w+|-|\.)+)\s*,?\s*)*}))|(PreviousNames\s*=\s*{\s*(((?<6>(\w|\.|-)+)\s*=\s*(?<6>\d+\.\d+\.\d+))\s*,?\s*)*})))*",
+        static Regex _rHeader = new Regex( @"^\s*--\s*Version\s*=\s*(?<1>\d+(\.\d+)*|\*)(\s*,?\s*((Package\s*=\s*(?<2>(\w|\.|-)+))|(Requires\s*=\s*{\s*((?<3>\??(\w+|-|\.)+)\s*,?\s*)*})|((Groups\s*=\s*{\s*((?<4>(\w+|-|\.)+)\s*,?\s*)*}))|((RequiredBy\s*=\s*{\s*((?<5>(\w+|-|\.)+)\s*,?\s*)*}))|(PreviousNames\s*=\s*{\s*(((?<6>(\w|\.|-)+)\s*=\s*(?<6>\d+\.\d+\.\d+(\.\d+)?))\s*,?\s*)*})))*",
                 RegexOptions.CultureInvariant
                 | RegexOptions.IgnoreCase
                 | RegexOptions.ExplicitCapture );
 
 
-        IVersionedItem ISqlObjectBuilder.Create( IActivityLogger logger, string text )
+        IDependentProtoItem ISqlObjectBuilder.Create( IActivityLogger logger, string text )
         {
             return SqlObjectBuilder.Create( logger, text, null );
         }
 
-        static public IVersionedItem Create( IActivityLogger logger, string text, string expectedType )
+        static public IDependentProtoItem Create( IActivityLogger logger, string text, string expectedType )
         {
             Match mSqlObject = _rSqlObject.Match( text );
             if( !mSqlObject.Success )
@@ -88,22 +88,8 @@ namespace CK.Setup.SqlServer
                 databaseOrSchema = tmp;
             }
 
-            SqlObjectItem.ReadInfo r = new SqlObjectItem.ReadInfo( databaseOrSchema, schema, name, header, version, packageName, requires, groups, requiredBy, previousNames, textAfterName );
-
-            SqlObjectItem result;
-            if( ReferenceEquals( type, SqlObjectItem.TypeProcedure ) )
-            {
-                result = new SqlProcedureItem( r );
-            }
-            else if( ReferenceEquals( type, SqlObjectItem.TypeView ) )
-            {
-                result = new SqlViewItem( r );
-            }
-            else
-            {
-                result = new SqlFunctionItem( r );
-            }
-            return result;
+            var r = new SqlObjectProtoItem( type, databaseOrSchema, schema, name, header, version, packageName, requires, groups, requiredBy, previousNames, textAfterName );
+            return r;
         }
 
         static public SqlProcedureItem LoadProcedureFromResource( IActivityLogger logger, Type resourceLocator, string resourceName )

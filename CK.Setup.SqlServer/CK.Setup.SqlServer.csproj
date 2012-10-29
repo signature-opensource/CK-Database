@@ -69,6 +69,7 @@
     <Compile Include="ObjectSupport\SqlDatabase\SqlDatabaseSetupDriver.cs" />
     <Compile Include="Labo\Tests.cs" />
     <Compile Include="SqlMultiScript.cs" />
+    <Compile Include="SqlObject\SqlObjectProtoItem.cs" />
     <Compile Include="SqlObject\SqlFunctionItem.cs" />
     <Compile Include="SqlObject\SqlViewItem.cs" />
     <Compile Include="SqlObject\SqlProcedureItem.cs" />
