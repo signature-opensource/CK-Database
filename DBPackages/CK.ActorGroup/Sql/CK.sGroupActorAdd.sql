@@ -9,7 +9,7 @@ alter procedure CK.sGroupActorAdd
 	@GroupId int
 )
 as begin
-	
+	--[beginsp]
 	if not exists (select * from CK.tActorProfile where GroupId = @GroupId and ActorId = @UserActorId)
 	begin
 		insert into CK.tActorProfile(ActorId, GroupId) 
@@ -17,4 +17,5 @@ as begin
 		return 0;
 	end
 	return 1;
+	--[endsp]
 end

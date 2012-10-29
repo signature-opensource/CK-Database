@@ -9,15 +9,21 @@ create procedure CK.sSecurityZoneCreate
 	@SecurityZoneIdResult int output
 )
 as begin
-
+	--[beginsp]
 	declare @GroupId int;
+	
+	if @ZoneName is null
+	begin
+		set @ZoneName = substring( convert( varchar, convert (time, sysdatetime())), 0, 11);
+	end
+
 	exec CK.sGroupCreate @ActorId, 0, @ZoneName, @GroupId output;
 	
-	insert into CK.tSecurityZone(SecurityZoneId, ZoneName) 
-		values(@GroupId, @ZoneName);
+	insert into CK.tSecurityZone(SecurityZoneId, ZoneName) values(@GroupId, @ZoneName);
 	set @SecurityZoneIdResult = @GroupId;
-
+	
 	exec CK.sGroupSetSecurityZone @ActorId, @GroupId, @GroupId;
 	
 	return 0;
+	--[endsp]
 end

@@ -9,7 +9,7 @@ alter procedure CK.sSecurityZoneActorRemove
 	@SecurityZoneId int
 )
 as begin
-
+	--[beginsp]
 	if exists (select * from CK.tGroup where GroupId = @SecurityZoneId )
 	begin
 		exec CK.sGroupActorRemove @ActorId, @UserActorId, @SecurityZoneId;
@@ -17,4 +17,5 @@ as begin
 	end
 
 	return 1;
+	--[endsp]
 end

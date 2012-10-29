@@ -9,7 +9,7 @@ create procedure CK.sGroupSetSecurityZone
 	@SecurityZoneId int
 )
 as begin
-	
+	--[beginsp]
 	if exists (select * from CK.tGroup where GroupId = @GroupId)
 	begin
 		update CK.tGroup set SecurityZoneId = @SecurityZoneId 
@@ -18,4 +18,5 @@ as begin
 	end
 	
 	return 1;
+	--[endsp]
 end
