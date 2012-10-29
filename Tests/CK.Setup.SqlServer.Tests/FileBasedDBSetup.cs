@@ -14,9 +14,8 @@ namespace CK.Setup.SqlServer.Tests
         [Test]
         public void InstallFromScratch()
         {
-            using( var context = new SqlSetupContext( "Server=.;Database=Test;Integrated Security=SSPI;", TestHelper.Logger ) )
+            using( var context = new SqlSetupContext( SqlManager.OpenOrCreate( ".", "Test", TestHelper.Logger ) ) )
             {
-                if( !context.DefaultSqlDatabase.IsOpen() ) context.DefaultSqlDatabase.OpenOrCreate( ".", "Test" );
                 using( context.Logger.OpenGroup( LogLevel.Trace, "First setup" ) )
                 {
                     SqlSetupCenter c = new SqlSetupCenter( context );
@@ -41,9 +40,8 @@ namespace CK.Setup.SqlServer.Tests
         [Test]
         public void InstallPackageWithView()
         {
-            using( var context = new SqlSetupContext( @"Server=.;Database=Test;Integrated Security=SSPI;", TestHelper.Logger ) )
+            using( var context = new SqlSetupContext( SqlManager.OpenOrCreate( ".", "Test", TestHelper.Logger ) ) )
             {
-                if( !context.DefaultSqlDatabase.IsOpen() ) context.DefaultSqlDatabase.OpenOrCreate( @".", "Test" );
                 SqlSetupCenter c = new SqlSetupCenter( context );
                 c.DiscoverFilePackages( TestHelper.GetScriptsFolder( "InstallFromScratchWithView" ) );
                 c.DiscoverSqlFiles( TestHelper.GetScriptsFolder( "InstallFromScratchWithView" ) );
@@ -55,10 +53,8 @@ namespace CK.Setup.SqlServer.Tests
         [Test]
         public void InstallPackageWithSPDependsOnVersion()
         {
-            using( var context = new SqlSetupContext( @"Server=.;Database=Test;Integrated Security=SSPI;", TestHelper.Logger ) )
+            using( var context = new SqlSetupContext( SqlManager.OpenOrCreate( ".", "Test", TestHelper.Logger ) ) )
             {
-                if( !context.DefaultSqlDatabase.IsOpen() ) context.DefaultSqlDatabase.OpenOrCreate( @".", "Test" );
-
                 context.DefaultSqlDatabase.Connection.ExecuteNonQuery( @"if object_id(N'[CKCore].[tSetupMemoryItem]') is not null delete from [CKCore].[tSetupMemoryItem] where ItemKey like '%WithSPDependsOnVersion%';" );
                 context.DefaultSqlDatabase.Connection.ExecuteNonQuery( @"if object_id(N'[CKCore].[tItemVersion]') is not null delete from [CKCore].[tItemVersion] where FullName like '%WithSPDependsOnVersion%';" );
 
