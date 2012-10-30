@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using System.Reflection;
+using CK.SqlServer;
 
 namespace CK.Setup.SqlServer.Tests
 {
@@ -14,21 +15,18 @@ namespace CK.Setup.SqlServer.Tests
         [Test]
         public void IntoTheWild0()
         {
-            string connection = "Server=.;Database=IntoTheWild;Integrated Security=SSPI;";
-            using( var context = new SqlSetupContext( connection, TestHelper.Logger ) )
+            using( var context = new SqlSetupContext( SqlManager.OpenOrCreate( ".", "IntoTheWild", TestHelper.Logger ) ) )
             {
-                context.SqlDatabases.Add( "dbHisto", connection );
+                context.SqlDatabases.Add( "dbHisto", context.DefaultSqlDatabase.CurrentConnectionString );
                 context.AssemblyRegistererConfiguration.DiscoverAssemblyNames.Add( "IntoTheWild0" );
 
-                if( !context.DefaultSqlDatabase.IsOpen() ) context.DefaultSqlDatabase.OpenOrCreate( ".", "IntoTheWild" );
+                // Try normally with any existing database if it exists.
+                {
 
-                //// Try normally with any existing database if it exists.
-                //{
-                //    
-                //    SqlSetupCenter c = new SqlSetupCenter( context );
-                //    Assert.That( c.Run() );
-                //    Assert.That( context.DefaultSqlDatabase.Connection.ExecuteScalar( "select ResName from CK.tRes where ResId=1" ), Is.EqualTo( "System" ) );
-                //}
+                    SqlSetupCenter c = new SqlSetupCenter( context );
+                    Assert.That( c.Run() );
+                    Assert.That( context.DefaultSqlDatabase.Connection.ExecuteScalar( "select ResName from CK.tRes where ResId=1" ), Is.EqualTo( "System" ) );
+                }
                 // Drop CK and CKCore and retries in reverse order.
                 {
                     context.DefaultSqlDatabase.SchemaDropAllObjects( "CK", true );

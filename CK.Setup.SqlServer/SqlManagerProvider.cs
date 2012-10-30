@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using CK.SqlServer;
 using CK.Core;
+using System.Diagnostics;
 
 namespace CK.Setup.SqlServer
 {
@@ -25,6 +26,13 @@ namespace CK.Setup.SqlServer
             _logger = logger;
             _items = new Dictionary<string, Item>();
         }
+
+        internal void AddDefaultDatabase( SqlManager m )
+        {
+            Item i = new Item() { ConnectionString = m.CurrentConnectionString, Manager = m };
+            _items.Add( SqlDatabase.DefaultDatabaseName, i );
+            _items.Add( i.ConnectionString, i );
+        }
         
         public void Add( string name, string connectionString )
         {
@@ -35,11 +43,6 @@ namespace CK.Setup.SqlServer
 
         public SqlManager FindManagerByName( string name )
         {
-            return FindManagerByName( name, true );
-        }
-
-        internal SqlManager FindManagerByName( string name, bool openIt )
-        {
             if( !String.IsNullOrWhiteSpace( name ) )
             {
                 Item i;
@@ -49,7 +52,7 @@ namespace CK.Setup.SqlServer
                     {
                         SqlManager m = new SqlManager();
                         m.Logger = _logger;
-                        if( openIt ) m.OpenFromConnectionString( i.ConnectionString );
+                        m.OpenFromConnectionString( i.ConnectionString );
                         i.Manager = m;
                     }
                     return i.Manager;
