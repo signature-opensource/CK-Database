@@ -21,7 +21,7 @@ namespace CK.Setup.SqlServer
         {
             _databases = new SqlManagerProvider( logger );
             _databases.Add( SqlDatabase.DefaultDatabaseName, defaultDatabaseConnectionString );
-            _defaultDatabase = _databases.FindManagerByName( SqlDatabase.DefaultDatabaseName, false );
+            _defaultDatabase = _databases.FindManagerByName( SqlDatabase.DefaultDatabaseName, true );
             _stObjConfigurator = new StObjConfigurator();
             _regConf = new AssemblyRegistererConfiguration();
             _regTypeList = new List<Type>();
