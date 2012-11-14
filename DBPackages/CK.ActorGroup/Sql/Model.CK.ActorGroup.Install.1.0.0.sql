@@ -1,3 +1,4 @@
+--[beginscript]
 create table CK.tSecurityZone 
 (
 	SecurityZoneId int not null,
@@ -38,3 +39,4 @@ insert into CK.tGroup ( GroupId, SecurityZoneId, GroupName ) values ( 1, 1, 'Sys
 insert into CK.tActorProfile ( GroupId, ActorId ) values ( 1, 1 );
 
 alter table CK.tSecurityZone add constraint FK_tSecurityZone_tGroup foreign key(SecurityZoneId) references CK.tGroup(GroupId);
+--[endscript]

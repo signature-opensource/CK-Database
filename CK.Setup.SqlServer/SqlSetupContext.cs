@@ -7,8 +7,6 @@ using CK.Core;
 
 namespace CK.Setup.SqlServer
 {
-
-
     public class SqlSetupContext : ISqlManagerProvider, IDisposable
     {
         SqlManager _defaultDatabase;
@@ -17,16 +15,43 @@ namespace CK.Setup.SqlServer
         StObjConfigurator _stObjConfigurator;
         List<Type> _regTypeList;
 
+        /// <summary>
+        /// Initializes a new <see cref="SqlSetupContext"/> on an existing database.
+        /// </summary>
+        /// <param name="defaultDatabaseConnectionString">
+        /// Connection string to an existing database. The <see cref="DefaultSqlDatabase"/> connection will 
+        /// be opened by default.</param>
+        /// <param name="logger">Logger to use for the whole process.</param>
         public SqlSetupContext( string defaultDatabaseConnectionString, IActivityLogger logger )
+            : this( logger )
+        {
+            _databases.Add( SqlDatabase.DefaultDatabaseName, defaultDatabaseConnectionString );
+            _defaultDatabase = _databases.FindManagerByName( SqlDatabase.DefaultDatabaseName );
+        }
+
+        /// <summary>
+        /// Initializes a new <see cref="SqlSetupContext"/>, using an existing and ready <see cref="SqlManager"/> as 
+        /// the <see cref="DefaultSqlDatabase"/>.
+        /// </summary>
+        /// <param name="defaultDatabase">Default database. Must be opened and the database must exist.</param>
+        public SqlSetupContext( SqlManager defaultDatabase )
+            : this( defaultDatabase.Logger )
+        {
+            if( defaultDatabase == null ) throw new ArgumentNullException( "defaultDatabase" );
+            if( !defaultDatabase.IsOpen() ) throw new ArgumentException( "Database manager must be opened.", "defaultDatabase" );
+            _databases.AddDefaultDatabase( defaultDatabase );
+            _defaultDatabase = defaultDatabase;
+        }
+
+        private SqlSetupContext( IActivityLogger logger )
         {
             _databases = new SqlManagerProvider( logger );
-            _databases.Add( SqlDatabase.DefaultDatabaseName, defaultDatabaseConnectionString );
-            _defaultDatabase = _databases.FindManagerByName( SqlDatabase.DefaultDatabaseName, false );
             _stObjConfigurator = new StObjConfigurator();
             _regConf = new AssemblyRegistererConfiguration();
             _regTypeList = new List<Type>();
             _regTypeList.Add( typeof( SqlDefaultDatabase ) );
         }
+
 
         public AssemblyRegistererConfiguration AssemblyRegistererConfiguration
         {

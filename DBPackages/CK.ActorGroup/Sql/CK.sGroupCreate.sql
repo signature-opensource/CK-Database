@@ -10,13 +10,14 @@ create procedure CK.sGroupCreate
 	@GroupIdResult int output
 )
 as begin
-	
+	--[beginsp]
 	declare @GroupId int;
 	exec CK.sActorCreate @ActorId, @GroupId output;
 
 	insert into CK.tGroup(GroupId, SecurityZoneId, GroupName) 
 		values(@GroupId, @SecurityZoneId, @GroupName);
 	set @GroupIdResult = @GroupId;
-	
+		
 	return 0;
+	--[endsp]
 end

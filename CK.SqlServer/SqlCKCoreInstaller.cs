@@ -8,7 +8,7 @@ namespace CK.SqlServer
 {
     internal class SqlCKCoreInstaller
     {
-        public readonly static Int16 CurrentVersion = 3;
+        public readonly static Int16 CurrentVersion = 4;
 
         /// <summary>
         /// Installs the kernel.
@@ -184,6 +184,12 @@ begin
 end
 if not exists(select * from CKCore.tSystem where Id=1) insert into CKCore.tSystem(Id,CreationDate,Ver) values(1,GETUTCDATE(),$Ver$);
 else update CKCore.tSystem set Ver = $Ver$ where Id=1;
+-- This should not be here!
+-- This will be removed once Object support will be effective.
+if not exists(select 1 from sys.schemas where name = 'CK')
+begin
+    exec( 'create schema CK' );
+end
 ";
     }
 }

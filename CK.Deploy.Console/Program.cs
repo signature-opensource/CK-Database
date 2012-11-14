@@ -18,7 +18,7 @@ namespace CK.Deploy.Console
 
             if (a != null) 
             {
-                var console = new ActivityLoggerConsoleSync();
+                var console = new ActivityLoggerConsoleSink();
                 var logger = DefaultActivityLogger.Create().Register(console);
 
 
@@ -30,7 +30,7 @@ namespace CK.Deploy.Console
 
                 using (var context = new SqlSetupContext(a.ConnectionString, logger))
                 {
-                    if (!context.DefaultDatabase.IsOpen()) context.DefaultDatabase.OpenOrCreate(".", "Test");
+                    //if( !context.DefaultSqlDatabase.IsOpen() ) context.DefaultSqlDatabase.Open( context.DefaultSqlDatabase.Server );
                     using (context.Logger.OpenGroup(LogLevel.Trace, "First setup"))
                     {
                         SqlSetupCenter c = new SqlSetupCenter(context);

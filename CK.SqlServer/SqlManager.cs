@@ -149,6 +149,22 @@ namespace CK.SqlServer
         }
 
         /// <summary>
+        /// Creates a new <see cref="SqlManager"/> bound to a server and a database with an attempt to create if it does not exist.
+        /// </summary>
+        /// <param name="server">Server name.</param>
+        /// <param name="database">Database name.</param>
+        /// <param name="logger">
+        /// Logger to use, when null an exception is thrown on error. 
+        /// Otherwise any exceptions are routed to it and it is associated as the <see cref="SqlManager.Logger"/>.</param>
+        /// <returns>A new <see cref="SqlManager"/> or null if an error occured and no <paramref name="logger"/> is provided.</returns>
+        public static SqlManager OpenOrCreate( string server, string database, IActivityLogger logger = null )
+        {
+            SqlManager m = new SqlManager();
+            if( logger != null ) m.Logger = logger;
+            return m.OpenOrCreate( server, database ) ? m : null;
+        }
+
+        /// <summary>
         /// Gets the <see cref="SqlConnectionProvider"/> of this <see cref="SqlManager"/>.
         /// </summary>
         public SqlConnectionProvider Connection
