@@ -51,7 +51,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ProtoItem\IDependentProtoItem.cs" />
-    <Compile Include="ProtoItem\ProtoItemCollector.cs" />
+    <Compile Include="ProtoItem\DependentProtoItemCollector.cs" />
     <Compile Include="Scripts\ResSetupScript.cs" />
     <Compile Include="Scripts\ScriptSource.cs" />
     <Compile Include="Scripts\ScriptTypeHandler.cs" />

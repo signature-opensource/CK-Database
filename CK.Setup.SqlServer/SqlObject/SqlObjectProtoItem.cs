@@ -14,9 +14,21 @@ namespace CK.Setup.SqlServer
         static public readonly string TypeProcedure = "Procedure";
         static public readonly string TypeFunction = "Function";
 
+        /// <summary>
+        /// Can be empty but not null.
+        /// </summary>
         public string DatabaseName { get; private set; }
+
+        /// <summary>
+        /// Can be empty but not null.
+        /// </summary>
         public string Schema { get; private set; }
+        
+        /// <summary>
+        /// Never null nor empty.
+        /// </summary>
         public string Name { get; private set; }           
+        
         public string Header { get; private set; }
 
         public string FullName { get { return Schema + '.' + Name; } }

@@ -139,9 +139,9 @@ select LastStartDate, StartCount, LastError from CKCore.tSetupMemory;
             if( String.IsNullOrWhiteSpace( itemKey ) || itemKey.Length > 255 ) throw new ArgumentException( "Must not be null or empty or longer than 255 characters.", "itemKey" );
 
             using( var c = new SqlCommand( @"
-merge CKCore.tSetupMemoryItem as _specialization 
-using (select ItemKey = @ItemKey) as source
-on _specialization.ItemKey = source.ItemKey
+merge CKCore.tSetupMemoryItem as t 
+using (select ItemKey = @ItemKey) as s
+on t.ItemKey = s.ItemKey
 when matched then update set ItemValue = @ItemValue
 when not matched then insert(ItemKey,ItemValue) values (@ItemKey, @ItemValue);" ) )
             {

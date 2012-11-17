@@ -67,7 +67,7 @@ namespace CK.Setup
                             // If the StObj has been declared as a Group or a Container: data.StObj.IsGroup == true, 
                             // we may check here that the type of the created item is able to be structurally considered as a Group (or a Container):
                             // we should just check here that it is a IDependentItemGroup/Container (we ignore the IDependentItemContainerTyped
-                            // that may, later dynamically refuses to be a Container since this will be handled during ordering by The DependencySorter).
+                            // that may, later dynamically refuse to be a Container since this will be handled during ordering by The DependencySorter).
                             //
                             // The actual binding from the Items to their Container is handled below (once all items have been created).
                             // It is best to detect such inconsistencies below since we'll be able to give more precise error information to the user (ie, "This non Container Item 

@@ -75,7 +75,12 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="ResPackage\Resource\sResDataStringSet.sql" />
+    <EmbeddedResource Include="ResPackage\Resource\sResDataStringRemove.sql" />
+    <EmbeddedResource Include="ResPackage\Resource\sResCreate.sql" />
+    <EmbeddedResource Include="ResPackage\Resource\sResRemove.sql" />
+  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="ResPackage\Resource\Model.CK.tResDataRawText.Install.2.9.2.sql" />
     <EmbeddedResource Include="ResPackage\Resource\Model.CK.tResDataString.Install.2.9.2.sql" />

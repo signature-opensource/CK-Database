@@ -17,8 +17,11 @@ namespace CK.Setup
     public interface IDependentProtoItem
     {
         /// <summary>
-        /// Gets the full name of the item to which this data applies. Can be null.
+        /// Gets the full name of this item.
         /// </summary>
+        /// <remarks>
+        /// Can be null when such proto item is used as a partial definition.
+        /// </remarks>
         string FullName { get; }
 
         /// <summary>
@@ -36,7 +39,7 @@ namespace CK.Setup
         /// Gets an identifier of the type of the item. This is required
         /// in order to be able to handle specific storage for version without 
         /// relying on any <see cref="FullName"/> conventions.
-        /// Must be a non null, nor empty empty or whitespace identifier of at most 16 characters long.
+        /// Must be a non null, nor empty or whitespace identifier of at most 16 characters long.
         /// </summary>
         string ItemType { get; }
         

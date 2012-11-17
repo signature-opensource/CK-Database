@@ -52,6 +52,7 @@
     <Compile Include="ObjectSupport\SqlDatabase\SqlDatabaseConnectionSetupDriver.cs" />
     <Compile Include="ObjectSupport\SqlDatabase\SqlDatabaseItem.cs" />
     <Compile Include="ObjectSupport\SqlDatabase\SqlDefaultDatabase.cs" />
+    <Compile Include="ObjectSupport\SqlObjectItemAttribute.cs" />
     <Compile Include="ObjectSupport\SqlPackageBase\SqlPackageBaseSetupDriver.cs" />
     <Compile Include="ObjectSupport\SqlPackageBase\SqlPackageAttributeBase.cs" />
     <Compile Include="ObjectSupport\SqlPackageBase\SqlPackageBase.cs" />
@@ -81,7 +82,7 @@
     <Compile Include="SqlSetupContext.cs" />
     <Compile Include="SqlVersionedItemRepository.cs" />
     <Compile Include="SqlObject\SqlObjectItem.cs" />
-    <Compile Include="SqlObject\SqlObjectBuilder.cs" />
+    <Compile Include="SqlObject\SqlObjectParser.cs" />
     <Compile Include="SqlObject\SqlObjectSetupDriver.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -69,11 +69,16 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the full name of this model, that is "Model." prefixed to <see cref="Package"/>.<see cref="DynamicPackageItem.FullName">FullName</see>.
+        /// Gets the full name of this model, that is "Model." prefix in front of <see cref="Package"/>.<see cref="DynamicPackageItem.FullName">FullName</see>.
         /// </summary>
         public string FullName
         {
-            get { return "Model." + _package.FullName; }
+            get 
+            {
+                string c, n;
+                if( !ContextNaming.TryExtractContext( _package.FullName, out c, out n ) ) n = _package.FullName;
+                return ContextNaming.FormatContextPrefix( "Model." + n, c );
+            }
         }
 
         /// <summary>

@@ -115,7 +115,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets the current version of the <see cref="Item"/> if it is a <see cref="IVersionedItem"/>. 
-        /// Null if the item does not exist yet in the _specialization system or if <see cref="Item"/> is not a <see cref="IVersionedItem"/>.
+        /// Null if the item does not exist yet in the target system or if <see cref="Item"/> is not a <see cref="IVersionedItem"/>.
         /// </summary>
         public readonly VersionedName ExternalVersion;
 

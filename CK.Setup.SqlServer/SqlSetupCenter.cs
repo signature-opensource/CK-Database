@@ -14,6 +14,7 @@ namespace CK.Setup.SqlServer
         SqlSetupContext _context;
         SetupCenter _center;
         SqlFileDiscoverer _fileDiscoverer;
+        DependentProtoItemCollector _sqlFiles;
 
         public SqlSetupCenter( SqlSetupContext context )
         {
@@ -22,7 +23,8 @@ namespace CK.Setup.SqlServer
             var versionRepo = new SqlVersionedItemRepository( _context.DefaultSqlDatabase );
             var memory = new SqlSetupSessionMemoryProvider( _context.DefaultSqlDatabase );
             _center = new SetupCenter( versionRepo, memory,_context.Logger, this );
-            _fileDiscoverer = new SqlFileDiscoverer( new SqlObjectBuilder(), _context.Logger );
+            _sqlFiles = new DependentProtoItemCollector();
+            _fileDiscoverer = new SqlFileDiscoverer( new SqlObjectParser(), _context.Logger );
             
             var sqlHandler = new SqlScriptTypeHandler( _context );
             // Registers source "res-sql" first: resource scripts have low priority.
@@ -50,7 +52,7 @@ namespace CK.Setup.SqlServer
 
         public bool DiscoverSqlFiles( string directoryPath )
         {
-            return _fileDiscoverer.DiscoverSqlFiles( directoryPath, _center.Scripts );
+            return _fileDiscoverer.DiscoverSqlFiles( directoryPath, _sqlFiles, _center.Scripts );
         }
         
         /// <summary>
@@ -79,10 +81,13 @@ namespace CK.Setup.SqlServer
                 var itemBuilder = new StObjSetupBuilder( logger, _context.StObjConfigurator );
                 stObjItems = itemBuilder.Build( result.OrderedStObjs );
             }
-            
-            return _center.Run( _fileDiscoverer, stObjItems );
+            IEnumerable<IDependentItem> sqlObjectsFromFiles;
+            using( logger.OpenGroup( LogLevel.Info, "Creating Sql Objects from {0} sql files.", _sqlFiles.Count ) )
+            {
+                sqlObjectsFromFiles = _sqlFiles.OfType<SqlObjectProtoItem>().Select( proto => proto.CreateItem( logger ) );
+            }
+            return _center.Run( sqlObjectsFromFiles, _fileDiscoverer.DiscoveredPackages, stObjItems );
         }
-
 
         SetupDriver ISetupDriverFactory.CreateDriver( Type driverType, SetupDriver.BuildInfo info )
         {

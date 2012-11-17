@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
+using CK.Core;
 
 namespace CK.Setup
 {
@@ -18,18 +19,22 @@ namespace CK.Setup
     {
         string _fileName;
         object _extraPath;
+        string _context;
+        string _fullNameWithoutContext;
         string _fullName;
         Version _fromVersion;
         Version _version;
         SetupStep _step;
         bool _isContent;
 
-        private ParsedFileName( string fileName, object extraPath, string name, Version f, Version v, SetupStep step, bool isContent )
+        private ParsedFileName( string fileName, object extraPath, string context, string fullNameWithoutContext, Version f, Version v, SetupStep step, bool isContent )
         {
             Debug.Assert( f == null || (v != null && f != v), "from ==> version && from != version" );
             _fileName = fileName;
             _extraPath = extraPath;
-            _fullName = name;
+            _context = context;
+            _fullNameWithoutContext = fullNameWithoutContext;
+            _fullName = ContextNaming.FormatContextPrefix( _fullNameWithoutContext, _context );
             _fromVersion = f;
             _version = v;
             _step = step;
@@ -37,7 +42,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the name of the item with its contextual prefix if any. Not null nor empty.
+        /// Gets the name of the item with its [Context] prefix if any. Not null nor empty.
         /// </summary>
         public string FullName
         {
@@ -45,15 +50,23 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the name of the item. Not null nor empty.
+        /// Gets the optional [Context] prefix (without the square brackets).
         /// </summary>
-        public string FullNameWithoutContext
+        public string Context
         {
-            get { return _fullName; }
+            get { return _context; }
         }
 
         /// <summary>
-        /// Gets the original file name (including its extension if any).
+        /// Gets the name of the item without its optional [Context] prefix. Not null nor empty.
+        /// </summary>
+        public string FullNameWithoutContext
+        {
+            get { return _fullNameWithoutContext; }
+        }
+
+        /// <summary>
+        /// Gets the original file name (including its extension and [Context] prefix if any) without any normalization.
         /// Not null nor empty.
         /// </summary>
         public string FileName
@@ -62,7 +75,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the path (the prefix for a string or any context data that enables to locate the resource). 
+        /// Gets the path (the prefix for a string or any contextual data that enables to locate the resource). 
         /// This information is not processed and is passed as-is from <see cref="TryParse"/> and <see cref="Parse"/> parameter.
         /// It can be null at this level. It is up to the <see cref="ISetupScript"/> that wraps it to exploit it.
         /// </summary>
@@ -178,7 +191,7 @@ namespace CK.Setup
         static public ParsedFileName Parse( string fileName, string extraPath, bool hasExtension )
         {
             ParsedFileName r;
-            if( !TryParse( fileName, extraPath, hasExtension, out r ) ) throw new FormatException( "Invalid file name: " + fileName );
+            if( !TryParse( fileName, extraPath, hasExtension, out r ) ) throw new FormatException( "Invalid file name '" + fileName + "' in '" + extraPath + "'." );
             return r;
         }
 
@@ -194,67 +207,74 @@ namespace CK.Setup
         /// <param name="fileName">The file name. Should not start with a path (otherwise the path will appear in the <see cref="Name"/>).</param>
         /// <param name="extraPath">Path part (context dependant data) of the <paramref name="fileName"/>.</param>
         /// <param name="hasExtension">
-        /// True to ignore the trailing extension (.xxx). False if the <paramref name="fileName"/> does not end with an extension.
-        /// The <see cref="FileName"/> will contain the extension.
+        /// True to ignore the trailing extension (.xxx). False if the <paramref name="fileName"/> does not end with an extension: the last .part is part of the name.
+        /// The <see cref="FileName"/> property will contain the extension.
         /// </param>
         /// <param name="result">The parsed result or null.</param>
         /// <returns>True on success, false if the <paramref name="fileName"/> is not valid.</returns>
+        /// <remarks>
+        /// The context prefix is optional. If the <paramref name="fileName"/> starts with a [, it must be like "[Context]FullName".
+        /// </remarks>
         static public bool TryParse( string fileName, object extraPath, bool hasExtension, out ParsedFileName result )
         {
             result = null;
             if( String.IsNullOrEmpty( fileName ) ) return false;
-            string name = hasExtension ? fileName.Remove( fileName.LastIndexOf( '.' ) ) : fileName;
-            if( name.Length == 0 ) return false;
-
+            
+            // The n is the future fullNameWithoutContext.
+            string n = hasExtension ? fileName.Remove( fileName.LastIndexOf( '.' ) ) : fileName;
+            if( n.Length == 0 ) return false;
+            
+            string context;
+            if( !ContextNaming.TryExtractContext( n, out context, out n ) ) return false;
             Version f = null;
             Version v = null;
             SetupStep step = SetupStep.None;
             bool isContent = false;
-            Match m = _rVersion.Match( name );
+            Match m = _rVersion.Match( n );
             if( m.Success )
             {
                 if( !Version.TryParse( m.Groups[1].Value, out v ) ) return false;
                 if( m.Groups[2].Length > 0 && !Version.TryParse( m.Groups[2].Value, out f ) ) return false;
-                name = name.Remove( m.Index );
+                n = n.Remove( m.Index );
             }
-            if( name.Length == 0 ) return false;
+            if( n.Length == 0 ) return false;
             // from version to itself: rejects it.
             if( f != null && f == v ) return false;
-            if( name.EndsWith( ".Init", StringComparison.OrdinalIgnoreCase ) )
+            if( n.EndsWith( ".Init", StringComparison.OrdinalIgnoreCase ) )
             {
                 step = SetupStep.Init;
-                name = name.Remove( name.Length - 5 );
+                n = n.Remove( n.Length - 5 );
             }
-            else if( name.EndsWith( ".InitContent", StringComparison.OrdinalIgnoreCase ) )
+            else if( n.EndsWith( ".InitContent", StringComparison.OrdinalIgnoreCase ) )
             {
                 step = SetupStep.Init;
                 isContent = true;
-                name = name.Remove( name.Length - 12 );
+                n = n.Remove( n.Length - 12 );
             }
-            else if( name.EndsWith( ".Install", StringComparison.OrdinalIgnoreCase ) )
+            else if( n.EndsWith( ".Install", StringComparison.OrdinalIgnoreCase ) )
             {
                 step = SetupStep.Install;
-                name = name.Remove( name.Length - 8 );
+                n = n.Remove( n.Length - 8 );
             }
-            else if( name.EndsWith( ".InstallContent", StringComparison.OrdinalIgnoreCase ) )
+            else if( n.EndsWith( ".InstallContent", StringComparison.OrdinalIgnoreCase ) )
             {
                 step = SetupStep.Install;
                 isContent = true;
-                name = name.Remove( name.Length - 15 );
+                n = n.Remove( n.Length - 15 );
             }
-            else if( name.EndsWith( ".Settle", StringComparison.OrdinalIgnoreCase ) )
+            else if( n.EndsWith( ".Settle", StringComparison.OrdinalIgnoreCase ) )
             {
                 step = SetupStep.Settle;
-                name = name.Remove( name.Length - 7 );
+                n = n.Remove( n.Length - 7 );
             }
-            else if( name.EndsWith( ".SettleContent", StringComparison.OrdinalIgnoreCase ) )
+            else if( n.EndsWith( ".SettleContent", StringComparison.OrdinalIgnoreCase ) )
             {
                 step = SetupStep.Settle;
                 isContent = true;
-                name = name.Remove( name.Length - 14 );
+                n = n.Remove( n.Length - 14 );
             }
-            if( name.Length == 0 ) return false;
-            result = new ParsedFileName( fileName, extraPath, name, f, v, step, isContent );
+            if( n.Length == 0 ) return false;
+            result = new ParsedFileName( fileName, extraPath, context, n, f, v, step, isContent );
             return true; 
         }
 

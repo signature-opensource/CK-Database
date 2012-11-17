@@ -8,7 +8,7 @@ using CK.Setup.Database;
 
 namespace CK.Setup.SqlServer
 {
-    public class SqlObjectBuilder : ISqlObjectBuilder
+    public class SqlObjectParser : ISqlObjectParser
     {
         static Regex _rSqlObject = new Regex( @"(create|alter)\s+(?<1>proc(?:edure)?|function|view)\s+(\[?(?<2>\w+)]?\.)?(\[?(?<3>\w+)]?\.)?\[?(?<4>\w+)]?",
                                             RegexOptions.CultureInvariant
@@ -21,12 +21,12 @@ namespace CK.Setup.SqlServer
                 | RegexOptions.ExplicitCapture );
 
 
-        IDependentProtoItem ISqlObjectBuilder.Create( IActivityLogger logger, string text )
+        IDependentProtoItem ISqlObjectParser.Create( IActivityLogger logger, string text )
         {
-            return SqlObjectBuilder.Create( logger, text, null );
+            return SqlObjectParser.Create( logger, text, null );
         }
 
-        static public IDependentProtoItem Create( IActivityLogger logger, string text, string expectedType )
+        static public SqlObjectProtoItem Create( IActivityLogger logger, string text, string expectedType = null )
         {
             Match mSqlObject = _rSqlObject.Match( text );
             if( !mSqlObject.Success )
@@ -37,9 +37,9 @@ namespace CK.Setup.SqlServer
             string type;
             switch( char.ToUpperInvariant( mSqlObject.Groups[1].Value[0] ) )
             {
-                case 'V': type = SqlObjectItem.TypeView; break;
-                case 'P': type = SqlObjectItem.TypeProcedure; break;
-                default: type = SqlObjectItem.TypeFunction; break;
+                case 'V': type = SqlObjectProtoItem.TypeView; break;
+                case 'P': type = SqlObjectProtoItem.TypeProcedure; break;
+                default: type = SqlObjectProtoItem.TypeFunction; break;
             }
             if( expectedType != null && expectedType != type )
             {
@@ -92,10 +92,5 @@ namespace CK.Setup.SqlServer
             return r;
         }
 
-        static public SqlProcedureItem LoadProcedureFromResource( IActivityLogger logger, Type resourceLocator, string resourceName )
-        {
-            string text = ResourceLocator.LoadString( resourceLocator, null, resourceName, true );
-            return (SqlProcedureItem)SqlObjectBuilder.Create( logger, text, SqlObjectItem.TypeProcedure );
-        }
     }
 }

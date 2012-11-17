@@ -11,7 +11,7 @@ namespace CK.Setup.SqlServer
         public void Construct( string connectionString = null )
         {
             ConnectionString = connectionString;
-            EnsureSchema( "CK" );
+            EnsureSchema( DefaultSchemaName );
         }
     }
 }

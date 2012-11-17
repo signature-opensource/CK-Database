@@ -9,31 +9,31 @@ using System.Text.RegularExpressions;
 
 namespace CK.Setup.Database
 {
-    public class SqlFileDiscoverer : IDependentItemDiscoverer
+    public class SqlFileDiscoverer
     {
         /// <summary>
         /// The default <see cref="ScriptSource.Name"/> used by <see cref="DiscoverSqlFiles"/> is "file-sql".
         /// </summary>
         public const string DefaultSourceName = "file-sql";
 
-        ISqlObjectBuilder _sqlObjectBuilder;
+        ISqlObjectParser _sqlObjectParser;
         IActivityLogger _logger;
         List<DynamicPackageItem> _packages;
-        List<IVersionedItem> _sqlObjects;
+        IReadOnlyList<DynamicPackageItem> _packagesEx;
 
         int _packageDiscoverErrorCount;
         int _sqlFileDiscoverErrorCount;
 
-        public SqlFileDiscoverer( ISqlObjectBuilder sqlObjectBuilder, IActivityLogger logger )
+        public SqlFileDiscoverer( ISqlObjectParser sqlObjectParser, IActivityLogger logger )
         {
-            if( sqlObjectBuilder == null ) throw new ArgumentNullException( "sqlObjectBuilder" );
+            if( sqlObjectParser == null ) throw new ArgumentNullException( "sqlObjectBuilder" );
             if( logger == null ) throw new ArgumentNullException( "logger" );
  
-            _sqlObjectBuilder = sqlObjectBuilder;
+            _sqlObjectParser = sqlObjectParser;
             _logger = logger;
 
             _packages = new List<DynamicPackageItem>();
-            _sqlObjects = new List<IVersionedItem>();
+            _packagesEx = new ReadOnlyListOnIList<DynamicPackageItem>( _packages );
         }
 
         public int PackageDiscoverErrorCount
@@ -46,8 +46,13 @@ namespace CK.Setup.Database
             get { return _sqlFileDiscoverErrorCount; }
         }
 
+        public IReadOnlyList<DynamicPackageItem> DiscoveredPackages
+        {
+            get { return _packagesEx; }
+        }
+
         /// <summary>
-        /// Discovers *.ck files recursively in a directory and collects them internally as <see cref="DynamicPackageItem"/>.
+        /// Discovers *.ck files recursively in a directory and collects them as <see cref="DynamicPackageItem"/> exposed by <see cref="DiscoveredPackages"/> property.
         /// </summary>
         /// <param name="directoryPath">Root path to start.</param>
         /// <returns>True on success. Any warn or error are logged in the <see cref="IActivityLogger"/> that has been provided to the constructor.</returns>
@@ -71,15 +76,16 @@ namespace CK.Setup.Database
 
         /// <summary>
         /// Discovers *.sql files recursively in a directory and, depending on their type, either registers them in the script <paramref name="collector"/>
-        /// or consider them as <see cref="IVersionedItem"/> and collects them internally.
+        /// or consider them as <see cref="IDependentProtoItem"/> and collects them in <paramref name="itemCollector"/>.
         /// </summary>
         /// <param name="directoryPath">Root path to start.</param>
+        /// <param name="itemCollector">Collector for discovered items.</param>
         /// <param name="collector">Optional scripts collector.</param>
         /// <param name="sqlFileScriptSource">The <see cref="ScriptSource.Name"/> for the <paramref name="collector"/>.
         /// It must have been registered as a source in a <see cref="ScriptTypeHandler"/>, itself registered in the <see cref="ScriptTypeManager"/> associated to the collector.
         /// </param>
         /// <returns>True on success. Any warn or error are logged in the <see cref="IActivityLogger"/> that has been provided to the constructor.</returns>
-        public bool DiscoverSqlFiles( string directoryPath, ScriptCollector collector = null, string sqlFileScriptSource = DefaultSourceName )
+        public bool DiscoverSqlFiles( string directoryPath, DependentProtoItemCollector itemCollector, ScriptCollector collector = null, string sqlFileScriptSource = DefaultSourceName )
         {
             using( _logger.OpenGroup( LogLevel.Info, "Discovering Sql files in '{0}' for source '{1}'.", directoryPath, sqlFileScriptSource ) )
             {
@@ -89,7 +95,7 @@ namespace CK.Setup.Database
                 bool result = true;
                 foreach( var path in Directory.EnumerateFiles( directoryPath, "*.sql", SearchOption.AllDirectories ) )
                 {
-                    if( !RegisterFileSql( path, collector, sqlFileScriptSource ) )
+                    if( !RegisterFileSql( path, itemCollector, collector, sqlFileScriptSource ) )
                     {
                         _sqlFileDiscoverErrorCount++;
                         result = false;
@@ -99,19 +105,14 @@ namespace CK.Setup.Database
             }
         }
 
-        IEnumerable<IDependentItem> IDependentItemDiscoverer.GetOtherItemsToRegister()
-        {
-            return _packages.Concat( _sqlObjects );
-        }
-
-        bool RegisterFileSql( string path, ScriptCollector collector, string sqlFileScriptSource )
+        bool RegisterFileSql( string path, DependentProtoItemCollector itemCollector, ScriptCollector collector, string sqlFileScriptSource )
         {
             ParsedFileName f;
             if( !ParsedFileName.TryParse( Path.GetFileName( path ), Path.GetDirectoryName( path ), true, out f ) ) return false;
-            return DoRegisterSql( f, collector, () => File.ReadAllText( path ), () => new FileSetupScript( f, sqlFileScriptSource ) );
+            return DoRegisterSql( f, itemCollector, collector, () => File.ReadAllText( path ), () => new FileSetupScript( f, sqlFileScriptSource ) );
         }
 
-        bool DoRegisterSql( ParsedFileName f, ScriptCollector collector, Func<string> readContent, Func<ISetupScript> createSetupScript )
+        bool DoRegisterSql( ParsedFileName f, DependentProtoItemCollector itemCollector, ScriptCollector collector, Func<string> readContent, Func<ISetupScript> createSetupScript )
         {
             if( f.SetupStep != SetupStep.None )
             {
@@ -130,16 +131,20 @@ namespace CK.Setup.Database
                 {
                     // There is no SetupStep suffix: it should be a SqlObject.
                     string text = readContent();
-                    var item = _sqlObjectBuilder.Create( _logger, text );
+                    var item = _sqlObjectParser.Create( _logger, text );
                     if( item != null )
                     {
                         if( item.FullName != f.FullNameWithoutContext )
                         {
-                            _logger.Error( "Name from the file is '{0}' whereas content indicates '{1}'. Names must match.", f.FullName, item.FullName );
+                            _logger.Error( "File '{0}' in '{1}': content indicates '{2}'. Names must match.", f.FileName, f.ExtraPath, item.FullName );
+                            return false;
+                        }
+                        if( !itemCollector.Add( item ) )
+                        {
+                            _logger.Error( "File '{0}' in '{1}' contains an already defined object.", f.FileName, f.ExtraPath );
                             return false;
                         }
                         _logger.CloseGroup( item.FullName );
-                        _sqlObjects.Add( item );
                         return true;
                     }
                 }

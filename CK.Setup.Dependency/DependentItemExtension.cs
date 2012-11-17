@@ -11,6 +11,65 @@ namespace CK.Setup
     /// </summary>
     public static class DependentItemExtension
     {
+        /// <summary>
+        /// Applies <see cref="IDependentItemNamedRef.DoEnsureContextPrefix"/> on all <see cref="IDependentItemNamedRef"/> in the enumerable.
+        /// </summary>
+        /// <param name="source">This enumerable.</param>
+        /// <param name="defaultContextName">Default context name to be set on named references.</param>
+        /// <returns>A collection of <see cref="IDependentItemRef"/> whose <see cref="IDependentItem.FullName"/> is prefixed with [defaultContextName] if there were no context prefix.</returns>
+        public static IEnumerable<IDependentItemRef> EnsureContextPrefix( this IEnumerable<IDependentItemRef> source, string defaultContextName )
+        {
+            return source != null ? CallEnsureContextPrefix( source, defaultContextName ) : source;
+        }
+
+        /// <summary>
+        /// Applies <see cref="IDependentItemNamedRef.DoEnsureContextPrefix"/> on all <see cref="IDependentItemNamedRef"/> in the enumerable.
+        /// </summary>
+        /// <param name="source">This enumerable.</param>
+        /// <param name="defaultContextName">Default context name to be set on named references.</param>
+        /// <returns>A collection of <see cref="IDependentItemGroupRef"/> whose <see cref="IDependentItem.FullName"/> is prefixed with [defaultContextName] if there were no context prefix.</returns>
+        public static IEnumerable<IDependentItemGroupRef> EnsureContextPrefix( this IEnumerable<IDependentItemGroupRef> source, string defaultContextName )
+        {
+            return source != null ? CallEnsureContextPrefix( source, defaultContextName ) : source;
+        }
+
+        /// <summary>
+        /// Applies <see cref="IDependentItemNamedRef.DoEnsureContextPrefix"/> on all <see cref="IDependentItemNamedRef"/> in the enumerable.
+        /// </summary>
+        /// <param name="source">This enumerable.</param>
+        /// <param name="defaultContextName">Default context name to be set on named references.</param>
+        /// <returns>A collection of <see cref="IDependentItemContainerRef"/> whose <see cref="IDependentItem.FullName"/> is prefixed with [defaultContextName] if there were no context prefix.</returns>
+        public static IEnumerable<IDependentItemContainerRef> EnsureContextPrefix( this IEnumerable<IDependentItemContainerRef> source, string defaultContextName )
+        {
+            return source != null ? CallEnsureContextPrefix( source, defaultContextName ) : source;
+        }
+
+        /// <summary>
+        /// Applies <see cref="IDependentItemNamedRef.DoEnsureContextPrefix"/> if this container is a <see cref="IDependentItemNamedRef"/>.
+        /// </summary>
+        /// <param name="@this">This container.</param>
+        /// <param name="defaultContextName">Default context name to be set on a named reference.</param>
+        public static IDependentItemContainerRef EnsureContextPrefix( this IDependentItemContainerRef @this, string defaultContextName )
+        {
+            return @this is IDependentItemNamedRef ? (IDependentItemContainerRef)((IDependentItemNamedRef)@this).DoEnsureContextPrefix( defaultContextName ) : @this;
+        }
+
+        /// <summary>
+        /// Private implementation to avoid duplicated code or IEnumerable{T} extension method pollution.
+        /// </summary>
+        static IEnumerable<T> CallEnsureContextPrefix<T>( this IEnumerable<T> source, string defaultContextName )
+        {
+            foreach( var e in source )
+            {
+                IDependentItemNamedRef named = e as IDependentItemNamedRef;
+                if( named != null ) yield return (T)named.DoEnsureContextPrefix( defaultContextName );
+                else yield return e;
+            }
+        }
+
+        /// <summary>
+        /// Private base class that hosts a reference to a dependent items.
+        /// </summary>
         class DirectRef
         {
             public IDependentItem Item { get; protected set; }
@@ -143,7 +202,7 @@ namespace CK.Setup
             if( @this != null && @this.Optional )
             {
                 DirectRef d = @this as DirectRef;
-                if( d != null ) return GetReference( (IDependentItemGroupRef)d.Item );
+                if( d != null ) return GetReference( (IDependentItemGroup)d.Item );
                 return new NamedDependentItemGroupRef( @this.FullName );
             }
             return @this;
@@ -188,5 +247,7 @@ namespace CK.Setup
         }
 
         #endregion
+
+
     }
 }

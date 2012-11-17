@@ -15,6 +15,11 @@ namespace CK.Setup.SqlServer
         /// </summary>
         public const string DefaultDatabaseName = "db";
 
+        /// <summary>
+        /// Default schema name is "CK".
+        /// </summary>
+        public const string DefaultSchemaName = "CK";
+
         string _name;
         Dictionary<string,string> _schemas;
         bool _installCore;

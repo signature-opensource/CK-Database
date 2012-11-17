@@ -193,22 +193,22 @@ begin
 		if exists( select 1 from ::fn_listextendedproperty('CKVersion', 'schema', @Schema, @ItemType, @Object, NULL, NULL) )
 		begin
 			exec @ret = sp_updateextendedproperty 'CKVersion', @ItemVersion, 'schema', @Schema, @ItemType, @Object;
-			set @ok = @@Error if @ok <> 0 goto ErCall if @ret <> 0 goto Error --[!call]
+			set @ok = @@Error; if @ok <> 0 goto ErCall; if @ret <> 0 goto Error; --[!call]
 		end 
 		else
 		begin
 			exec @ret = sp_addextendedproperty 'CKVersion', @ItemVersion, 'schema', @Schema, @ItemType, @Object;
-			set @ok = @@Error if @ok <> 0 goto ErCall if @ret <> 0 goto Error --[!call]
+			set @ok = @@Error; if @ok <> 0 goto ErCall; if @ret <> 0 goto Error; --[!call]
 		end
 	end
 	else
 	begin
-		merge CKCore.tItemVersion as _specialization
-			using (select FullName = @FullName) as source
-			on _specialization.FullName = source.FullName
+		merge CKCore.tItemVersion as t
+			using (select FullName = @FullName) as s
+			on t.FullName = s.FullName
 			when matched then update set ItemVersion = @ItemVersion, ItemType = @ItemType
-			when not matched then insert (ItemType, FullName, ItemVersion) VALUES (@ItemType, @FullName, @ItemVersion); 
-		set @ok = @@Error if @ok <> 0 goto Error --[!catch]			
+			when not matched then insert (ItemType, FullName, ItemVersion) values (@ItemType, @FullName, @ItemVersion); 
+		set @ok = @@Error; if @ok <> 0 goto Error; --[!catch]			
 	end
 	StdExit: if @@TranCount > 0 commit return 0 ErCall: raiserror( 'Sub call failed', 16, 1 ) Error: if @@TranCount > 1 commit else if @@TranCount = 1 rollback return -1 --[!endsp]
 end

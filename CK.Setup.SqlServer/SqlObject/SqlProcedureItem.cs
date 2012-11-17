@@ -4,14 +4,16 @@ using System.Linq;
 using System.Text;
 using CK.Core;
 using CK.Setup.Database;
+using System.Diagnostics;
 
 namespace CK.Setup.SqlServer
 {
     public class SqlProcedureItem : SqlObjectItem
     {
-        internal SqlProcedureItem( ReadInfo readInfo )
-            : base( SqlObjectItem.TypeProcedure, readInfo )
+        internal SqlProcedureItem( SqlObjectProtoItem p )
+            : base( p )
         {
+            Debug.Assert( p.ItemType == SqlObjectProtoItem.TypeProcedure );
         }
 
 

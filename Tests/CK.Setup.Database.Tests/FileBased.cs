@@ -33,9 +33,9 @@ namespace CK.Setup.Database.Tests
         }
 
 
-        class SqlObjectBuilderMock : ISqlObjectBuilder
+        class SqlObjectParserMock : ISqlObjectParser
         {
-            public IVersionedItem Create( IActivityLogger logger, string text )
+            public IDependentProtoItem Create( IActivityLogger logger, string text )
             {
                 throw new NotImplementedException();
             }
@@ -65,8 +65,8 @@ namespace CK.Setup.Database.Tests
             ScriptTypeManager typeManager = new ScriptTypeManager();
             typeManager.Register( new SqlScriptTypeHandler() );
             ScriptCollector collector = new ScriptCollector( typeManager );
-            SqlFileDiscoverer discoverer = new SqlFileDiscoverer( new SqlObjectBuilderMock(), TestHelper.Logger );
-            Assert.That( discoverer.DiscoverSqlFiles( TestHelper.GetScriptsFolder( "FromOpenTo" ), collector ), Is.True );
+            SqlFileDiscoverer discoverer = new SqlFileDiscoverer( new SqlObjectParserMock(), TestHelper.Logger );
+            Assert.That( discoverer.DiscoverSqlFiles( TestHelper.GetScriptsFolder( "FromOpenTo" ), new DependentProtoItemCollector(), collector ), Is.True );
 
             bool caseDiffer;
             ScriptSet scripts = collector.Find( "Test", out caseDiffer );
@@ -115,9 +115,9 @@ namespace CK.Setup.Database.Tests
             typeManager.Register( new SqlScriptTypeHandler() );
             ScriptCollector collector = new ScriptCollector( typeManager );
             
-            SqlFileDiscoverer discoverer = new SqlFileDiscoverer( new SqlObjectBuilderMock(), TestHelper.Logger );
+            SqlFileDiscoverer discoverer = new SqlFileDiscoverer( new SqlObjectParserMock(), TestHelper.Logger );
 
-            Assert.That( discoverer.DiscoverSqlFiles( TestHelper.GetScriptsFolder( "AllSteps" ), collector ), Is.True );
+            Assert.That( discoverer.DiscoverSqlFiles( TestHelper.GetScriptsFolder( "AllSteps" ), new DependentProtoItemCollector(), collector ), Is.True );
 
             bool caseDiffer;
             ScriptSet scripts = collector.Find( "test", out caseDiffer );

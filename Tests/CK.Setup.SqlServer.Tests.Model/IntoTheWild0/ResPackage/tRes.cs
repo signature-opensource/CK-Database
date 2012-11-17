@@ -9,6 +9,8 @@ namespace IntoTheWild0
 {
 
     [SqlTable( "tRes", Package = typeof( ResPackage ) ), Versions( "2.9.2" )]
+    [SqlObjectItem( "sResCreate" )]
+    [SqlObjectItem( "sResRemove" )]
     public class tRes : SqlTable
     {
     }

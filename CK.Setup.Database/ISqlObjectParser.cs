@@ -6,7 +6,7 @@ using CK.Core;
 
 namespace CK.Setup.Database
 {
-    public interface ISqlObjectBuilder
+    public interface ISqlObjectParser
     {
         IDependentProtoItem Create( IActivityLogger logger, string text );
     }

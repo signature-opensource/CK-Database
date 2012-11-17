@@ -14,7 +14,7 @@ namespace CK.Core
         public class DefaultContextType { }
 
         /// <summary>
-        /// The default context contains anything except if a typed context is explicitely defined.
+        /// The default context contains all <see cref="IAmbientContract"/> that are not explicitely associted to a typed context.
         /// </summary>
         public static readonly Type DefaultContext = typeof( DefaultContextType );
 

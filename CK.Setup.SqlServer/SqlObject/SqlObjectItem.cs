@@ -13,110 +13,65 @@ namespace CK.Setup.SqlServer
         string _type;
         SqlObjectProtoItem _protoItem;
 
+        string _dataBase;
         string _schema;
         string _name;
         Version _version;
         DependentItemList _requires;
         DependentItemList _requiredBy;
         DependentItemGroupList _groups;
-        IDependentItemContainerRef _container;
+        NamedDependentItemContainerRef _container;
 
         internal SqlObjectItem( SqlObjectProtoItem p )
         {
-            _type = type;
-            _protoItem = readInfo;
-            _schema = readInfo.Schema;
-            _name = readInfo.Name;
-            if( readInfo.Requires != null ) Requires.Add( readInfo.Requires );
-            if( readInfo.RequiredBy != null ) RequiredBy.Add( readInfo.RequiredBy );
-            if( readInfo.Groups != null ) Groups.Add( readInfo.Groups );
-            if( readInfo.Container != null ) _container = new NamedDependentItemContainerRef( readInfo.Container );
+            _protoItem = p;
+            _type = p.ItemType;
+            Database = p.DatabaseName;
+            Schema = p.Schema;
+            _name = p.Name;
+            _version = p.Version;
+            if( p.Requires != null ) Requires.Add( p.Requires );
+            if( p.RequiredBy != null ) RequiredBy.Add( p.RequiredBy );
+            if( p.Groups != null ) Groups.Add( p.Groups );
+            if( p.Container != null ) _container = new NamedDependentItemContainerRef( p.Container );
         }
 
         /// <summary>
-        /// Replaces this information with the one from a <see cref="SqlObjectProtoItem"/>.
+        /// Gets the <see cref="Schema"/>.<see cref="Name"/> name of this object.
         /// </summary>
-        /// <param name="logger">Used to log whenever a replacement occurs.</param>
-        /// <param name="p"></param>
-        /// <returns></returns>
-        public bool ReplaceWith( IActivityLogger logger, SqlObjectProtoItem p )
-        {
-            if( logger == null ) throw new ArgumentNullException( "logger" );
-            bool nameChanged = false;
-            if( p != null )
-            {
-                if( p.Name != null )
-                {
-                    if( _name != null && _name != p.Name )
-                    {
-                        logger.Warn( "Item '{0}' changed its name from '{1}' to '{2}'.", ToString(), _name, p.Name );
-                        nameChanged = true;
-                    }
-                    _name = p.Name;
-                }
-                if( p.ItemType != null )
-                {
-                    if( _type != null && _type != p.ItemType )
-                    {
-                        logger.Error( "Item '{0}' changed its type from '{1}' to '{2}'.", ToString(), _type, p.ItemType );
-                    }
-                    _type = p.ItemType;
-                }
-                if( p.Schema != null )
-                {
-                    if( _schema != null && _schema != p.Schema )
-                    {
-                        logger.Warn( "Item '{0}' changed its Schema from '{1}' to '{2}'.", ToString(), _schema, p.Schema );
-                        nameChanged = true;
-                    }
-                    _schema = p.Schema;
-                }
-                if( p.Container != null )
-                {
-                    if( _container != null && _container.FullName != p.Container )
-                    {
-                        logger.Warn( "Item '{0}' changed its Container from '{1}' to '{2}'.", ToString(), _container.FullName, p.Container );
-                    }
-                    _container = new NamedDependentItemContainerRef( p.Container );
-                }
-                if( p.Version != null )
-                {
-                    if( _version != null && _version != p.Version )
-                    {
-                        logger.Warn( "Item '{0}' changed its Version from '{1}' to '{2}'.", ToString(), _version, p.Version );
-                    }
-                    _container = new NamedDependentItemContainerRef( p.Container );
-                }
-                if( p.Requires != null ) 
-                {
-                    Requires.Clear(); 
-                    Requires.Add( p.Requires ); 
-                }
-                if( p.RequiredBy != null ) 
-                { 
-                    RequiredBy.Clear(); 
-                    RequiredBy.Add( p.RequiredBy ); 
-                }
-                if( p.Groups != null )
-                {
-                    Groups.Clear();
-                    Groups.Add( p.Groups );
-                }
-            }
-            return !nameChanged;
-        }
-
         public string SchemaName
         {
             get { return _schema + '.' + _name; }
         }
 
+        /// <summary>
+        /// Gets or sets the schema name.
+        /// Defaults to <see cref="SqlDatabase.DefaultSchemaName"/> ("CK").
+        /// </summary>
         public string Schema
         {
             get { return _schema; }
-            set { _schema = value; }
+            set { _schema = String.IsNullOrWhiteSpace( value ) ? SqlDatabase.DefaultSchemaName : value; }
         }
 
+        /// <summary>
+        /// Gets or sets the database logical name.
+        /// Defaults to <see cref="SqlDatabase.DefaultDatabaseName"/> ("db").
+        /// </summary>
+        /// <remarks>
+        /// This Database property is the logical name of a database, by no way should it be used as the actual, physical name of a database in any script.
+        /// </remarks>
+        public string Database
+        {
+            get { return _dataBase ?? SqlDatabase.DefaultDatabaseName; }
+            set { _dataBase = String.IsNullOrWhiteSpace( value ) ? null : value; }
+            //get { return _dataBase; }
+            //set { _dataBase = String.IsNullOrWhiteSpace( value ) ? SqlDatabase.DefaultDatabaseName : value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the object name without <see cref="Database"/> nor <see cref="Schema"/>.
+        /// </summary>
         public string Name
         {
             get { return _name; }
@@ -149,14 +104,18 @@ namespace CK.Setup.SqlServer
             get { return _version; }
         }
 
+        /// <summary>
+        /// Gets the [<see cref="Database"/>]<see cref="SchemaName"/> full name of this object: the database name is the context of the object.
+        /// Note that no prefix is added when Database is <see cref="SqlDatabase.DefaultDatabaseName"/>.
+        /// </summary>
         public string FullName
         {
-            get { return SchemaName; }
+            get { return ContextNaming.FormatContextPrefix( SchemaName, _dataBase ); }
         }
 
         IDependentItemContainerRef IDependentItem.Container
         {
-            get { return _container; }
+            get { return _container != null ? _container.EnsureContextPrefix( _dataBase ) : null; }
         }
 
         IDependentItemRef IDependentItem.Generalization
@@ -166,17 +125,17 @@ namespace CK.Setup.SqlServer
 
         IEnumerable<IDependentItemRef> IDependentItem.Requires
         {
-            get { return _requires; }
+            get { return _requires.EnsureContextPrefix( _dataBase ); }
         }
 
         IEnumerable<IDependentItemRef> IDependentItem.RequiredBy
         {
-            get { return _requiredBy; }
+            get { return _requiredBy.EnsureContextPrefix( _dataBase ); }
         }
 
         IEnumerable<IDependentItemGroupRef> IDependentItem.Groups
         {
-            get { return _groups; }
+            get { return _groups.EnsureContextPrefix( _dataBase ); }
         }
 
         IEnumerable<VersionedName> IVersionedItem.PreviousNames
@@ -196,13 +155,13 @@ namespace CK.Setup.SqlServer
 
         object IDependentItem.StartDependencySort()
         { 
-            return typeof(SqlObjectSetupDriver).AssemblyQualifiedName;
+            return typeof(SqlObjectSetupDriver);
         }
 
         /// <summary>
         /// Writes the drop instruction.
         /// </summary>
-        /// <param name="b">The _specialization <see cref="TextWriter"/>.</param>
+        /// <param name="b">The target <see cref="TextWriter"/>.</param>
         public void WriteDrop( TextWriter b )
         {
             b.Write( "if OBJECT_ID('" );
@@ -217,7 +176,7 @@ namespace CK.Setup.SqlServer
         /// <summary>
         /// Writes the whole object.
         /// </summary>
-        /// <param name="b">The _specialization <see cref="TextWriter"/>.</param>
+        /// <param name="b">The target <see cref="TextWriter"/>.</param>
         public void WriteCreate( TextWriter b )
         {
             if( _protoItem != null ) b.WriteLine( _protoItem.Header );

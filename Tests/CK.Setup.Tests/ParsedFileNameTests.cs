@@ -49,5 +49,38 @@ namespace CK.Setup.Tests
 
         }
 
+        [Test]
+        public void FileNameParserWithContext()
+        {
+            ParsedFileName result;
+            Assert.That( ParsedFileName.TryParse( "[db]Test.1.2.3.sql", null, true, out result ) );
+            Assert.That( result.FullName, Is.EqualTo( "[db]Test" ) );
+            Assert.That( result.FullNameWithoutContext, Is.EqualTo( "Test" ) );
+
+            // Dot after ] is ignored.
+            Assert.That( ParsedFileName.TryParse( "[db].Test.1.2.3.sql", null, true, out result ) );
+            Assert.That( result.FullName, Is.EqualTo( "[db]Test" ) );
+            Assert.That( result.FullNameWithoutContext, Is.EqualTo( "Test" ) );
+
+            // Empty context is ignored.
+            Assert.That( ParsedFileName.TryParse( "[].Test.1.2.3.sql", null, true, out result ) );
+            Assert.That( result.FullName, Is.EqualTo( "Test" ) );
+            Assert.That( result.FullNameWithoutContext, Is.EqualTo( "Test" ) );
+
+            Assert.That( ParsedFileName.TryParse( "[].A", null, false, out result ), Is.True );
+            Assert.That( result.FullName, Is.EqualTo( "A" ) );
+            Assert.That( result.FullNameWithoutContext, Is.EqualTo( "A" ) );
+            
+            Assert.That( ParsedFileName.TryParse( "[]A", null, false, out result ), Is.True );
+            Assert.That( result.FullName, Is.EqualTo( "A" ) );
+            Assert.That( result.FullNameWithoutContext, Is.EqualTo( "A" ) );
+            
+            // Invalid context is not parsed.
+            Assert.That( ParsedFileName.TryParse( "[db.Test.1.2.3.sql", null, true, out result ), Is.False );
+            Assert.That( ParsedFileName.TryParse( "[", null, false, out result ), Is.False );
+            Assert.That( ParsedFileName.TryParse( "[]", null, false, out result ), Is.False );
+            Assert.That( ParsedFileName.TryParse( "[].", null, false, out result ), Is.False );
+
+        }
     }
 }
