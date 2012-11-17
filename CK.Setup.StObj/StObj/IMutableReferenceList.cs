@@ -8,7 +8,7 @@ namespace CK.Setup
 {
     public interface IMutableReferenceList : IReadOnlyList<IMutableReference>
     {
-        IMutableReference AddNew( Type t, Type typedContext = null );
+        IMutableReference AddNew( Type t, string context = null );
     }
 
 }

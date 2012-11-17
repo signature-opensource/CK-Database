@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using CK.Core;
+using System.Diagnostics;
 
 namespace CK.Setup.SqlServer
 {
@@ -11,9 +12,10 @@ namespace CK.Setup.SqlServer
     public class SqlDatabase
     {
         /// <summary>
-        /// Default database name is "db".
+        /// Default database name is <see cref="String.Empty"/>. 
+        /// This is required so that the default database maps to the default context of <see cref="IAmbientContract"/> objects.
         /// </summary>
-        public const string DefaultDatabaseName = "db";
+        public const string DefaultDatabaseName = "";
 
         /// <summary>
         /// Default schema name is "CK".
@@ -26,6 +28,7 @@ namespace CK.Setup.SqlServer
 
         public SqlDatabase()
         {
+            Debug.Assert( DefaultDatabaseName.Length == 0 );
             _name = DefaultDatabaseName;
             _schemas = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
         }
@@ -91,11 +94,11 @@ namespace CK.Setup.SqlServer
         }
 
         /// <summary>
-        /// Default database name is <see cref="DefaultDatabaseName"/> = "db".
+        /// Default database name is <see cref="DefaultDatabaseName"/> = <see cref="String.Empty"/>.
         /// </summary>
         public bool IsDefaultDatabase
         {
-            get { return _name == DefaultDatabaseName; }
+            get { return _name.Length == 0; }
         }
     }
 }

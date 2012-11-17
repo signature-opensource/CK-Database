@@ -17,7 +17,8 @@ namespace CK.Setup
         /// </summary>
         internal readonly MutableItem Owner;
         readonly MutableReferenceKind _kind;
-        static protected readonly MutableItem UnresolvedMarker = new MutableItem( null, AmbientContractCollector.DefaultContext, null, AmbientContractCollector.DefaultContext );
+        string _context;
+        static protected readonly MutableItem UnresolvedMarker = new MutableItem( null, String.Empty, null, String.Empty );
 
         internal MutableReference( MutableItem owner, MutableReferenceKind kind )
         {
@@ -44,7 +45,14 @@ namespace CK.Setup
 
         public StObjRequirementBehavior StObjRequirementBehavior { get; set; }
 
-        public Type Context { get; set; }
+        /// <summary>
+        /// Gets or sets the context for the referenced type. Null to use the <see cref="Owner"/>'s context.
+        /// </summary>
+        public string Context 
+        {
+            get { return _context; }
+            set { _context = value; }
+        }
 
         /// <summary>
         /// Gets or sets the type of the reference. 
@@ -59,21 +67,21 @@ namespace CK.Setup
             MutableItem result = null;
             if( Type == null || StObjRequirementBehavior == Setup.StObjRequirementBehavior.ExternalReference ) return result;
           
-            if( Context != null )
+            if( _context != null )
             {
                 // Context is not null: search inside this exact context.
                 // Even if the context for this reference is the one of our Owner's context, since it is explicitely set,
                 // we expect the type to actually be in this context.
-                StObjCollectorContextualResult ctxResult = cachedCollector == null || cachedCollector.Context != Context ? collector[ Context ] : cachedCollector;
+                StObjCollectorContextualResult ctxResult = cachedCollector == null || cachedCollector.Context != _context ? collector[ _context ] : cachedCollector;
                 if( ctxResult == null ) 
                 {
-                    Error( logger, String.Format( "Undefined Typed context '{0}'", Context.Name ) );
+                    Error( logger, String.Format( "Undefined Typed context '{0}'", _context ) );
                     return null;
                 }
                 result = ctxResult.Find( Type );
                 if( result == null )
                 {
-                    WarnOrErrorIfStObjRequired( logger, String.Format( "{0} not found", AmbientContractCollector.DisplayName( Context, Type ) ) );
+                    WarnOrErrorIfStObjRequired( logger, String.Format( "{0} not found", ContextNaming.FormatContextPrefix( Type.FullName, _context ) ) );
                     return null;
                 }
             }
@@ -95,7 +103,7 @@ namespace CK.Setup
                     {
                         Error( logger, String.Format( "Type '{0}' exists in more than one context: '{1}'. A context for this relation must be specified", 
                                                         Type.FullName, 
-                                                        String.Join( "', '", all.Select( m => m.Context.Name ) ) ) );
+                                                        String.Join( "', '", all.Select( m => m.Context ) ) ) );
                         return null;
                     }
                     result = all[0];

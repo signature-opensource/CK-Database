@@ -19,9 +19,9 @@ namespace CK.Setup
         Type ObjectType { get; }
 
         /// <summary>
-        /// Gets the typed context where the structure object resides.
+        /// Gets the context name where the structure object resides.
         /// </summary>
-        Type Context { get; }
+        string Context { get; }
 
         /// <summary>
         /// Gets kind of structure object for this StObj. It can be a <see cref="DependentItemType.SimpleItem"/>, 

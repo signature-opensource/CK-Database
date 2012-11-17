@@ -18,8 +18,8 @@ namespace CK.Core
         /// <summary>
         /// Gets the <see cref="IAmbientTypeContextualMapper"/> or null if context is unknown.
         /// </summary>
-        /// <param name="typedContext">Typed context.</param>
+        /// <param name="context">Context name.</param>
         /// <returns>Contextual mapping or null if no such context exists.</returns>
-        IAmbientTypeContextualMapper this[Type typedContext] { get; }
+        IAmbientTypeContextualMapper this[string context] { get; }
     }
 }

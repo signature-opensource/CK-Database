@@ -13,9 +13,9 @@ namespace CK.Core
     {
         /// <summary>
         /// Gets the context of this result.
-        /// Never null since <see cref="AmbientContractCollector.DefaultContext"/> designates the default context.
+        /// Never null since <see cref="String.Empty"/> designates the default context.
         /// </summary>
-        Type Context { get; }
+        string Context { get; }
 
         /// <summary>
         /// Gets whether an error exists that prevents the process to continue.

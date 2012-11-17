@@ -49,7 +49,7 @@ namespace CK.Setup
 
         public string FullName
         {
-            get { return AmbientContractCollector.DisplayName( _stObj.Context, FullNameWithoutContext ); }
+            get { return ContextNaming.FormatContextPrefix( _fullNameWithoutContext, _stObj.Context ); }
         }
 
         public string Versions

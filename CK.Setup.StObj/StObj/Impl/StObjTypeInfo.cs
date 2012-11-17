@@ -137,14 +137,14 @@ namespace CK.Setup
                 else
                 {
                     ConstructParameters = Construct.GetParameters();
-                    ConstructParameterTypedContext = ConstructParameters.Length > 0 ? new Type[ConstructParameters.Length] : Type.EmptyTypes;
+                    ConstructParameterTypedContext = ConstructParameters.Length > 0 ? new string[ConstructParameters.Length] : Util.EmptyStringArray;
                     ContainerConstructParameterIndex = -1;
                     for( int i = 0; i < ConstructParameters.Length; ++i )
                     {
                         var p = ConstructParameters[i];
 
                         // Finds the Context.
-                        Type parameterContext;
+                        string parameterContext;
                         ContextAttribute ctx = (ContextAttribute)Attribute.GetCustomAttribute( p, typeof( ContextAttribute ) );
                         if( ctx != null ) parameterContext = ctx.Context;
                         else parameterContext = FindContextFromMapAttributes( p.ParameterType );
@@ -169,7 +169,7 @@ namespace CK.Setup
                                 else if( ContainerContext != null && ContainerContext != parameterContext )
                                 {
                                     logger.Error( "Construct parameter '{0}' for class '{1}' targets the Container in '{2}' but an attribute on the class declares the Container context as '{3}'.",
-                                                                    p.Name, t.FullName, parameterContext.Name, ContainerContext.Name );
+                                                                    p.Name, t.FullName, parameterContext, ContainerContext );
                                 }
                                 ContainerConstructParameterIndex = i;
                                 Container = p.ParameterType;
@@ -190,7 +190,7 @@ namespace CK.Setup
 
         public Type Container { get; private set; }
 
-        public readonly Type ContainerContext;
+        public readonly string ContainerContext;
 
         public DependentItemType ItemKind { get; private set; }
 
@@ -210,12 +210,13 @@ namespace CK.Setup
 
         public readonly int ContainerConstructParameterIndex;
 
-        public readonly Type[] ConstructParameterTypedContext;
+        public readonly string[] ConstructParameterTypedContext;
 
         public readonly IStObjStructuralConfigurator[] ConfiguratorAttributes;
 
-        public Type FindContextFromMapAttributes( Type t )
+        public string FindContextFromMapAttributes( Type t )
         {
+            // Attribute ContextMap( Type, string ) is not implemented.
             return null;
         }
 

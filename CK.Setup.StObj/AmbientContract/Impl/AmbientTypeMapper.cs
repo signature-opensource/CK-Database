@@ -18,12 +18,12 @@ namespace CK.Core
         
         public IAmbientTypeContextualMapper Default
         {
-            get { return (IAmbientTypeContextualMapper)_contextMappers[AmbientContractCollector.DefaultContext]; }
+            get { return (IAmbientTypeContextualMapper)_contextMappers[String.Empty]; }
         }
 
-        public IAmbientTypeContextualMapper this[Type typedContext]
+        public IAmbientTypeContextualMapper this[string context]
         {
-            get { return (IAmbientTypeContextualMapper)_contextMappers[typedContext ?? AmbientContractCollector.DefaultContext]; }
+            get { return (IAmbientTypeContextualMapper)_contextMappers[context ?? String.Empty]; }
         }
 
         public bool Contains( object item )

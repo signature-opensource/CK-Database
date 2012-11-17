@@ -26,7 +26,7 @@ namespace CK.Setup
             get { return _owner; } 
         }
 
-        public Type Context
+        public string Context
         {
             get { return _typeMappings.Context; }
         }

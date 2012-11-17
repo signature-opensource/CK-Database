@@ -12,9 +12,9 @@ namespace CK.Setup
         Type ObjectType { get; }
 
         /// <summary>
-        /// Gets the typed context where the structure object resides.
+        /// Gets the context where the structure object resides.
         /// </summary>
-        Type Context { get; }
+        string Context { get; }
 
         /// <summary>
         /// Gets the kind of object (simple item, group or container).

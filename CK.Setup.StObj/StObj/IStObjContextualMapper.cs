@@ -21,9 +21,9 @@ namespace CK.Setup
         IStObjMapper Owner { get; }
 
         /// <summary>
-        /// Gets the context. Null for the default context.
+        /// Gets the context. <see cref="String.Empty"/> for the default context.
         /// </summary>
-        Type Context { get; }
+        string Context { get; }
 
         /// <summary>
         /// Gets the number of <see cref="IStObj"/> mapped.

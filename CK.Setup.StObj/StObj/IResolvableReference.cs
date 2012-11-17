@@ -18,9 +18,9 @@ namespace CK.Setup
         IStObj Owner { get; }
         
         /// <summary>
-        /// Gets the typed context associated to the <see cref="P:Type"/> of this reference.
+        /// Gets the context associated to the <see cref="P:Type"/> of this reference.
         /// </summary>
-        Type Context { get; }
+        string Context { get; }
 
         /// <summary>
         /// Gets the expected type of the reference value.

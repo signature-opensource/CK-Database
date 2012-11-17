@@ -21,7 +21,7 @@ namespace CK.Setup.SqlServer
         public SqlDatabaseItem( IActivityLogger logger, IStObjSetupData data )
         {
             Object = (SqlDatabase)data.StObj.Object;
-            FullName = AmbientContractCollector.DisplayName( data.StObj.Context, Object.Name );
+            FullName = ContextNaming.FormatContextPrefix( Object.Name, data.StObj.Context );
             ItemKind = data.StObj.ItemKind;
             ConnectionItem = new SqlDatabaseConnectionItem( this );
             Requires.Add( ConnectionItem );

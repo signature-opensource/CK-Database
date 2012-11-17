@@ -33,7 +33,7 @@ namespace CK.Setup
         /// This is settable in order for base class property's context to be used if it is not explicitely defined
         /// by the specialized property.
         /// </summary>
-        public Type Context { get; internal set; }
+        public string Context { get; internal set; }
         public bool IsOptional { get; private set; }
         public bool IsWriteable { get { return _isWriteable; } }
         public bool IsValueMergeable { get { return _isValueMergeable; } }

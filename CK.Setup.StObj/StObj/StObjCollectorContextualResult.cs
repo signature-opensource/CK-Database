@@ -22,9 +22,9 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the <see cref="Type"/> that identifies this context. <see cref="AmbientContractCollector.DefaultContext"/> for the default context.
+        /// Gets the context name. <see cref="String.Empty"/> for the default context.
         /// </summary>
-        public Type Context
+        public string Context
         {
             get { return _contractResult.Context; }
         }

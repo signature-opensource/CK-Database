@@ -94,7 +94,7 @@ namespace CK.Setup
                 foreach( StObjCollectorContextualResult r in result )
                 {
                     using( _logger.Catch( e => r.SetFatal() ) )
-                    using( _logger.OpenGroup( LogLevel.Info, "Working on Context '{0}'.", r.Context == AmbientContractCollector.DefaultContext ? "(default)" : r.Context.Name ) )
+                    using( _logger.OpenGroup( LogLevel.Info, "Working on Context '{0}'.", r.Context.Length == 0 ? "(default)" : r.Context ) )
                     {
                         CreateMutableItems( r );
                         _logger.CloseGroup( String.Format( " {0} items created for {1} types.", r.MutableItems.Count, r.AmbientContractResult.ConcreteClasses.Count ) );
@@ -218,7 +218,7 @@ namespace CK.Setup
             foreach( StObjCollectorContextualResult contextResult in collector )
             {
                 using( _logger.Catch( e => contextResult.SetFatal() ) )
-                using( contextResult.Context != null ? _logger.OpenGroup( LogLevel.Info, "Working on Typed Context '{0}'.", contextResult.Context.Name ) : null )
+                using( contextResult.Context != null ? _logger.OpenGroup( LogLevel.Info, "Working on Context '{0}'.", contextResult.Context.Length == 0 ? "(default)" : contextResult.Context ) : null )
                 {
                     foreach( MutableItem item in contextResult.MutableItems )
                     {

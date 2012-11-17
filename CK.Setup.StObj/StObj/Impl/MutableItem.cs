@@ -12,7 +12,7 @@ namespace CK.Setup
     internal class MutableItem : IStObj, IStObjMutableItem, IDependentItemContainerTyped, IDependentItemContainerRef
     {
         readonly StObjTypeInfo _objectType;
-        readonly Type _context;
+        readonly string _context;
         readonly object _stObj;
         readonly MutableItem _generalization;
         MutableItem _specialization;
@@ -53,7 +53,7 @@ namespace CK.Setup
         }
         PrepareState _prepareState;
 
-        internal MutableItem( MutableItem parent, Type context, StObjTypeInfo objectType, object theObject )
+        internal MutableItem( MutableItem parent, string context, StObjTypeInfo objectType, object theObject )
         {
             Debug.Assert( context != null  && theObject != null );
             _objectType = objectType;
@@ -69,7 +69,7 @@ namespace CK.Setup
 
         public override string ToString()
         {
-            return AmbientContractCollector.DisplayName( _context, _objectType.Type );
+            return ContextNaming.FormatContextPrefix( _objectType.Type.FullName, _context );
         }
 
         #region Configuration
@@ -304,7 +304,7 @@ namespace CK.Setup
         {
             Debug.Assert( _container != null && _constructParameterEx != null );
             bool result = true;
-            _dFullName = AmbientContractCollector.DisplayName( _context, _objectType.Type );
+            _dFullName = ContextNaming.FormatContextPrefix( _objectType.Type.FullName, _context );
             _dContainer = _container.ResolveToStObj( logger, collector, cachedCollector );
             // Requirement intialization.
             HashSet<MutableItem> req = new HashSet<MutableItem>();
@@ -753,7 +753,7 @@ namespace CK.Setup
             get { return _objectType.Type; }
         }
 
-        public Type Context
+        public string Context
         {
             get { return _context; }
         }

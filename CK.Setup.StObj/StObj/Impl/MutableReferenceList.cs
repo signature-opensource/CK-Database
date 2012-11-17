@@ -20,9 +20,9 @@ namespace CK.Setup
         // To disambiguate types.
         internal List<MutableReference> AsList { get { return this; } }
 
-        public IMutableReference AddNew( Type t, Type typedContext = null )
+        public IMutableReference AddNew( Type t, string context = null )
         {
-            var m = new MutableReference( _owner, _kind ) { Type = t, Context = typedContext };
+            var m = new MutableReference( _owner, _kind ) { Type = t, Context = context };
             Add( m );
             return m;
         }

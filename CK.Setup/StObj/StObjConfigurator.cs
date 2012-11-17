@@ -14,7 +14,7 @@ namespace CK.Setup
             return false;
         }
 
-        void IAmbientContractDispatcher.Dispatch( Type t, ISet<Type> contexts )
+        void IAmbientContractDispatcher.Dispatch( Type t, ISet<string> contexts )
         {
         }
 

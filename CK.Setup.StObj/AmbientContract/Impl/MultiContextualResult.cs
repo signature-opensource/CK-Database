@@ -32,21 +32,21 @@ namespace CK.Core
 
 
         /// <summary>
-        /// Gets the result for the default context (<see cref="AmbientContractCollector"/>.<see cref="AmbientContractCollector.DefaultContext"/>).
+        /// Gets the result for the default context (<see cref="String.Empty"/>).
         /// </summary>
         public T Default
         {
-            get { return (T)_contextResults[AmbientContractCollector.DefaultContext]; }
+            get { return (T)_contextResults[String.Empty]; }
         }
 
         /// <summary>
-        /// Gets the result for any context <see cref="Type"/> or null if no such context exist.
+        /// Gets the result for any context or null if no such context exist.
         /// </summary>
-        /// <param name="context">Type that identifies a context (null is the same as <see cref="AmbientContractCollector.DefaultContext"/>).</param>
+        /// <param name="context">Type that identifies a context (null is the same as <see cref="String.Empty"/>).</param>
         /// <returns>The result for the given context.</returns>
-        public T this[Type context]
+        public T this[string context]
         {
-            get { return (T)_contextResults[context ?? AmbientContractCollector.DefaultContext]; }
+            get { return (T)_contextResults[context ?? String.Empty]; }
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace CK.Core
             if( cDef != null ) action( cDef );
             foreach( T c in _contextResults.Values )
             {
-                if( c.Context != AmbientContractCollector.DefaultContext ) action( c );
+                if( c.Context.Length > 0 ) action( c );
             }
         }
 

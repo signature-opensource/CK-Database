@@ -19,8 +19,8 @@ namespace CK.Setup
         /// <summary>
         /// Gets the <see cref="IStObjContextualMapper"/> or null if context is unknown.
         /// </summary>
-        /// <param name="typedContext">Typed context.</param>
+        /// <param name="context">Context name.</param>
         /// <returns>Contextual mapping or null if no such context exists.</returns>
-        IStObjContextualMapper this[Type typedContext] { get; }
+        IStObjContextualMapper this[string context] { get; }
     }
 }

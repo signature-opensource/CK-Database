@@ -6,45 +6,16 @@ using System.Diagnostics;
 
 namespace CK.Core
 {
+    /// <summary>
+    /// Discovers types that support <see cref="IAmbientContract"/> marker interface and manages to 
+    /// dispatch them among different contexts (identified by a string) with generalization/specialization handling.
+    /// </summary>
+    /// <remarks>
+    /// The default context is identified by the empty string and contains all <see cref="IAmbientContract"/> that are 
+    /// not explicitely associated to a specific context.
+    /// </remarks>
     public class AmbientContractCollector
     {
-        /// <summary>
-        /// Support for <see cref="DefaultContext"/>: a type that defines the notion of default context.
-        /// </summary>
-        public class DefaultContextType { }
-
-        /// <summary>
-        /// The default context contains all <see cref="IAmbientContract"/> that are not explicitely associted to a typed context.
-        /// </summary>
-        public static readonly Type DefaultContext = typeof( DefaultContextType );
-
-
-        /// <summary>
-        /// Formats a string that combines a context and a type information.
-        /// </summary>
-        /// <param name="context">Context can be null (considered as <see cref="DefaultContext"/>).</param>
-        /// <param name="type">Type for which a display name must be obtained.</param>
-        /// <returns>Human readable name for the type in context.</returns>
-        static public string DisplayName( Type context, Type type )
-        {
-            if( type == null ) throw new ArgumentNullException( "type" );
-            return DisplayName( context, type.FullName );
-        }
-
-        /// <summary>
-        /// Formats a string that combines a context and the name of something.
-        /// </summary>
-        /// <param name="context">Context can be null (considered as <see cref="DefaultContext"/>).</param>
-        /// <param name="fullName">A name that must be contextualized.</param>
-        /// <returns>Human readable name for the name in context.</returns>
-        static public string DisplayName( Type context, string fullName )
-        {
-            if( fullName == null ) throw new ArgumentNullException( "fullName" );
-            return context == null || context == AmbientContractCollector.DefaultContext
-                ? fullName
-                : "[" + context.Name + "]" + fullName;
-        }
-
         /// <summary>
         /// Tests whether a Type is an <see cref="IAmbientContract"/>.
         /// It applies to interfaces and classes (for a class <see cref="IAmbientContractDefiner"/> is 
@@ -167,7 +138,7 @@ namespace CK.Core
 
         class PreResult
         {
-            public readonly Type Context;
+            public readonly string Context;
 
             Dictionary<object,Type> _mappings;
             List<List<TAmbientTypeInfo>> _concreteClasses;
@@ -175,7 +146,7 @@ namespace CK.Core
             List<Type> _abstractTails;
             int _registeredCount;
 
-            public PreResult( Type c )
+            public PreResult( string c )
             {
                 Context = c;
                 _mappings = new Dictionary<object, Type>();
@@ -251,8 +222,8 @@ namespace CK.Core
 
         public AmbientContractCollectorResult<TAmbientTypeInfo> GetResult()
         {
-            Dictionary<Type,PreResult> byContext = new Dictionary<Type, PreResult>();
-            byContext.Add( AmbientContractCollector.DefaultContext, new PreResult( AmbientContractCollector.DefaultContext ) );
+            var byContext = new Dictionary<string, PreResult>();
+            byContext.Add( String.Empty, new PreResult( String.Empty ) );
             foreach( AmbientTypeInfo m in _roots )
             {
                 HandleContexts( m, byContext );
@@ -273,14 +244,14 @@ namespace CK.Core
             return t != typeof( IAmbientContract ) && typeof( IAmbientContract ).IsAssignableFrom( t );
         }
 
-        static void HandleContexts( AmbientTypeInfo m, Dictionary<Type, PreResult> contexts )
+        static void HandleContexts( AmbientTypeInfo m, Dictionary<string, PreResult> contexts )
         {
             foreach( AmbientTypeInfo child in m.SpecializationsByContext( null ) )
             {
                 HandleContexts( child, contexts );
                 m.MutableFinalContexts.AddRange( child.MutableFinalContexts );
             }
-            foreach( Type context in m.MutableFinalContexts )
+            foreach( string context in m.MutableFinalContexts )
             {
                 contexts.GetOrSet( context, c => new PreResult( c ) ).Add( m );
             }
