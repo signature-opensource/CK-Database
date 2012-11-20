@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.Setup", "CK.Setup\CK.Setup.csproj", "{D3C700E1-3546-437C-9B96-1F867A539B6A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.Setup.Tests", "Tests\CK.Setup.Tests\CK.Setup.Tests.csproj", "{93FFB017-2D16-440F-A7A9-55F637944C8F}"

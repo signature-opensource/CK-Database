@@ -16,7 +16,6 @@ namespace CK.Setup
     /// </remarks>
     public class DynamicPackageItem : PackageItemBase, IDependentItemContainerTyped, IDependentItemDiscoverer
     {
-        string _fullName;
         PackageModelItem _model;
         object _driverType;
         DependentItemType _dynamicType; 
@@ -64,15 +63,6 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets or sets the full name of this package.
-        /// </summary>
-        public string FullName
-        {
-            get { return _fullName; }
-            set { _fullName = value ?? String.Empty; }
-        }
-
-        /// <summary>
         /// Gets or sets whether this container is actually NOT a Container or even not a Group.
         /// When not <see cref="DependentItemType.Container"/>, if an item declares this item as its container, an error is raised 
         /// during the ordering of the dependency graph.
@@ -81,11 +71,6 @@ namespace CK.Setup
         {
             get { return _dynamicType; }
             set { _dynamicType = value; }
-        }
-
-        protected override string GetFullName()
-        {
-            return _fullName;
         }
 
         protected override DependentItemType GetDynamicType()

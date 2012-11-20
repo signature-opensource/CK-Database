@@ -8,6 +8,6 @@ namespace CK.Setup.Database
 {
     public interface ISqlObjectParser
     {
-        IDependentProtoItem Create( IActivityLogger logger, string text );
+        IDependentProtoItem Create( IActivityLogger logger, IContextLocName externalName, string text );
     }
 }

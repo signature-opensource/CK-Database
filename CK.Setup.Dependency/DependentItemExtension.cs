@@ -12,57 +12,100 @@ namespace CK.Setup
     public static class DependentItemExtension
     {
         /// <summary>
-        /// Applies <see cref="IDependentItemNamedRef.DoEnsureContextPrefix"/> on all <see cref="IDependentItemNamedRef"/> in the enumerable.
+        /// Returns a collection of <see cref="IDependentItemRef"/> with potentially different <see cref="IDependentItem.FullName"/>.
+        /// Can safely be called on null source reference.
         /// </summary>
         /// <param name="source">This enumerable.</param>
-        /// <param name="defaultContextName">Default context name to be set on named references.</param>
-        /// <returns>A collection of <see cref="IDependentItemRef"/> whose <see cref="IDependentItem.FullName"/> is prefixed with [defaultContextName] if there were no context prefix.</returns>
-        public static IEnumerable<IDependentItemRef> EnsureContextPrefix( this IEnumerable<IDependentItemRef> source, string defaultContextName )
+        /// <param name="fullNameProvider">Name provider. By returning null, the reference does not appear in the resulting enumerable.</param>
+        /// <returns>A collection of <see cref="IDependentItemRef"/> whose FullName of named references may have changed.</returns>
+        public static IEnumerable<IDependentItemRef> SetRefFullName( this IEnumerable<IDependentItemRef> source, Func<IDependentItemNamedRef, string> fullNameProvider )
         {
-            return source != null ? CallEnsureContextPrefix( source, defaultContextName ) : source;
+            return source != null ? CallSetRefFullName( source, fullNameProvider ) : source;
         }
 
         /// <summary>
-        /// Applies <see cref="IDependentItemNamedRef.DoEnsureContextPrefix"/> on all <see cref="IDependentItemNamedRef"/> in the enumerable.
+        /// Returns a collection of <see cref="IDependentItemGroupRef"/> with potentially different <see cref="IDependentItem.FullName"/>.
+        /// Can safely be called on null source reference.
         /// </summary>
         /// <param name="source">This enumerable.</param>
-        /// <param name="defaultContextName">Default context name to be set on named references.</param>
-        /// <returns>A collection of <see cref="IDependentItemGroupRef"/> whose <see cref="IDependentItem.FullName"/> is prefixed with [defaultContextName] if there were no context prefix.</returns>
-        public static IEnumerable<IDependentItemGroupRef> EnsureContextPrefix( this IEnumerable<IDependentItemGroupRef> source, string defaultContextName )
+        /// <param name="fullNameProvider">Name provider. By returning null, the reference does not appear in the resulting enumerable.</param>
+        /// <returns>A collection of <see cref="IDependentItemGroupRef"/> whose FullName of named references may have changed.</returns>
+        public static IEnumerable<IDependentItemGroupRef> SetRefFullName( this IEnumerable<IDependentItemGroupRef> source, Func<IDependentItemNamedRef, string> fullNameProvider )
         {
-            return source != null ? CallEnsureContextPrefix( source, defaultContextName ) : source;
+            return source != null ? CallSetRefFullName( source, fullNameProvider ) : source;
         }
 
         /// <summary>
-        /// Applies <see cref="IDependentItemNamedRef.DoEnsureContextPrefix"/> on all <see cref="IDependentItemNamedRef"/> in the enumerable.
+        /// Returns a collection of <see cref="IDependentItemContainerRef"/> with potentially different <see cref="IDependentItem.FullName"/>.
+        /// Can safely be called on null source reference.
         /// </summary>
         /// <param name="source">This enumerable.</param>
-        /// <param name="defaultContextName">Default context name to be set on named references.</param>
-        /// <returns>A collection of <see cref="IDependentItemContainerRef"/> whose <see cref="IDependentItem.FullName"/> is prefixed with [defaultContextName] if there were no context prefix.</returns>
-        public static IEnumerable<IDependentItemContainerRef> EnsureContextPrefix( this IEnumerable<IDependentItemContainerRef> source, string defaultContextName )
+        /// <param name="fullNameProvider">Name provider. By returning null, the reference does not appear in the resulting enumerable.</param>
+        /// <returns>A collection of <see cref="IDependentItemContainerRef"/> whose FullName of named references may have changed.</returns>
+        public static IEnumerable<IDependentItemContainerRef> SetRefFullName( this IEnumerable<IDependentItemContainerRef> source, Func<IDependentItemNamedRef,string> fullNameProvider )
         {
-            return source != null ? CallEnsureContextPrefix( source, defaultContextName ) : source;
+            return source != null ? CallSetRefFullName( source, fullNameProvider ) : source;
         }
 
         /// <summary>
-        /// Applies <see cref="IDependentItemNamedRef.DoEnsureContextPrefix"/> if this container is a <see cref="IDependentItemNamedRef"/>.
+        /// Returns an updated reference if this is a <see cref="IDependentItemNamedRef"/>.
+        /// Can safely be called on null reference and on reference that are not <see cref="IDependentItemNamedRef"/> (this unifies the API of extension 
+        /// methods SetRefFullName on <see cref="IEnumerable{T}"/> of <see cref="IDependentItem"/> and its specializations).
         /// </summary>
-        /// <param name="@this">This container.</param>
-        /// <param name="defaultContextName">Default context name to be set on a named reference.</param>
-        public static IDependentItemContainerRef EnsureContextPrefix( this IDependentItemContainerRef @this, string defaultContextName )
+        /// <param name="@this">This item reference.</param>
+        /// <param name="fullNameProvider">Name provider. When null is returned, it is ignored.</param>
+        /// <returns>The reference with an updated name.</returns>
+        public static IDependentItemRef SetRefFullName( this IDependentItemRef @this, Func<IDependentItemNamedRef, string> fullNameProvider )
         {
-            return @this is IDependentItemNamedRef ? (IDependentItemContainerRef)((IDependentItemNamedRef)@this).DoEnsureContextPrefix( defaultContextName ) : @this;
+            IDependentItemNamedRef r = @this as IDependentItemNamedRef;
+            return r != null ? (IDependentItemRef)r.SetFullName( fullNameProvider( r ) ) : @this;
         }
 
         /// <summary>
-        /// Private implementation to avoid duplicated code or IEnumerable{T} extension method pollution.
+        /// Returns an updated reference if this is a <see cref="IDependentItemNamedRef"/>.
+        /// Can safely be called on null reference and on reference that are not <see cref="IDependentItemNamedRef"/> (this unifies the API of extension 
+        /// methods SetRefFullName on <see cref="IEnumerable{T}"/> of <see cref="IDependentItem"/> and its specializations).
         /// </summary>
-        static IEnumerable<T> CallEnsureContextPrefix<T>( this IEnumerable<T> source, string defaultContextName )
+        /// <param name="@this">This group reference.</param>
+        /// <param name="fullNameProvider">Name provider. When null is returned, it is ignored.</param>
+        /// <returns>The reference with an updated name.</returns>
+        public static IDependentItemGroupRef SetRefFullName( this IDependentItemGroupRef @this, Func<IDependentItemNamedRef, string> fullNameProvider )
+        {
+            IDependentItemNamedRef r = @this as IDependentItemNamedRef;
+            return r != null ? (IDependentItemGroupRef)r.SetFullName( fullNameProvider( r ) ) : @this;
+        }
+
+        /// <summary>
+        /// Returns an updated reference if this is a <see cref="IDependentItemNamedRef"/>.
+        /// Can safely be called on null reference and on reference that are not <see cref="IDependentItemNamedRef"/> (this unifies the API of extension 
+        /// methods SetRefFullName on <see cref="IEnumerable{T}"/> of <see cref="IDependentItem"/> and its specializations).
+        /// </summary>
+        /// <param name="@this">This container reference.</param>
+        /// <param name="fullNameProvider">Name provider. When null is returned, it is ignored.</param>
+        /// <returns>The reference with an updated name.</returns>
+        public static IDependentItemContainerRef SetRefFullName( this IDependentItemContainerRef @this, Func<IDependentItemNamedRef, string> fullNameProvider )
+        {
+            IDependentItemNamedRef r = @this as IDependentItemNamedRef;
+            return r != null ? (IDependentItemContainerRef)r.SetFullName( fullNameProvider( r ) ) : @this;
+        }
+
+        /// <summary>
+        /// Private implementation to avoid duplicated code or IEnumerable{T} extension methods pollution.
+        /// </summary>
+        static IEnumerable<T> CallSetRefFullName<T>( this IEnumerable<T> source, Func<IDependentItemNamedRef, string> fullNameProvider )
         {
             foreach( var e in source )
             {
                 IDependentItemNamedRef named = e as IDependentItemNamedRef;
-                if( named != null ) yield return (T)named.DoEnsureContextPrefix( defaultContextName );
+                if( named != null )
+                {
+                    string newName = fullNameProvider( named );
+                    if( newName != null )
+                    {
+                        if( newName == named.FullName ) yield return e;
+                        else yield return (T)named.SetFullName( newName );
+                    }
+                }
                 else yield return e;
             }
         }

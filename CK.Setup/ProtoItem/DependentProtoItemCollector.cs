@@ -6,6 +6,11 @@ using CK.Core;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Very simple collection of <see cref="IDependentProtoItem"/> indexed by their FullName: duplicate proto 
+    /// item (based on their FullName) are not collected. FullName is not tracked: once added to this collector
+    /// the FullName of the item must not be changed.
+    /// </summary>
     public class DependentProtoItemCollector : IReadOnlyCollection<IDependentProtoItem>
     {
         readonly Dictionary<string,IDependentProtoItem> _items;

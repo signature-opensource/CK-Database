@@ -10,6 +10,7 @@ namespace CK.Setup.SqlServer
 {
     public class SqlObjectItem : IVersionedItem, IDependentItemRef
     {
+        ContextLocNameStructImpl _fullName;
         string _type;
         SqlObjectProtoItem _protoItem;
 
@@ -24,11 +25,14 @@ namespace CK.Setup.SqlServer
 
         internal SqlObjectItem( SqlObjectProtoItem p )
         {
+            _fullName = new ContextLocNameStructImpl();
             _protoItem = p;
             _type = p.ItemType;
-            Database = p.DatabaseName;
+            //??
+            Database = p.PhysicalDatabaseName;
             Schema = p.Schema;
             _name = p.Name;
+            
             _version = p.Version;
             if( p.Requires != null ) Requires.Add( p.Requires );
             if( p.RequiredBy != null ) RequiredBy.Add( p.RequiredBy );
@@ -41,7 +45,7 @@ namespace CK.Setup.SqlServer
         /// </summary>
         public string SchemaName
         {
-            get { return _schema + '.' + _name; }
+            get { return _fullName.Name; }
         }
 
         /// <summary>
@@ -51,7 +55,15 @@ namespace CK.Setup.SqlServer
         public string Schema
         {
             get { return _schema; }
-            set { _schema = String.IsNullOrWhiteSpace( value ) ? SqlDatabase.DefaultSchemaName : value; }
+            set 
+            {
+                if( String.IsNullOrWhiteSpace( value ) ) value = SqlDatabase.DefaultSchemaName;
+                if( _schema != value )
+                {
+                    _schema = value;
+                    _fullName.Name = _schema + '.' + _name;
+                }
+            }
         }
 
         /// <summary>
@@ -63,19 +75,31 @@ namespace CK.Setup.SqlServer
         /// </remarks>
         public string Database
         {
-            get { return _dataBase ?? SqlDatabase.DefaultDatabaseName; }
-            set { _dataBase = String.IsNullOrWhiteSpace( value ) ? null : value; }
-            //get { return _dataBase; }
-            //set { _dataBase = String.IsNullOrWhiteSpace( value ) ? SqlDatabase.DefaultDatabaseName : value; }
+            get { return _fullName.Location; }
+            set 
+            { 
+                _fullName.Location = String.IsNullOrWhiteSpace( value ) ? SqlDatabase.DefaultDatabaseName : value;
+                _fullName.Context = _fullName.Location != SqlDatabase.DefaultDatabaseName ? _fullName.Location : String.Empty;
+            }
         }
 
         /// <summary>
         /// Gets or sets the object name without <see cref="Database"/> nor <see cref="Schema"/>.
+        /// Defaults.to <see cref="String.Empty"/>.
         /// </summary>
         public string Name
         {
             get { return _name; }
-            set { _name = value; }
+            set 
+            {
+                if( value == null ) value = String.Empty;
+                if( _name != value )
+                {
+                    _name = value;
+                    _fullName.Name = _schema + '.' + _name;
+                }
+
+            }
         }
 
         public IDependentItemList Requires
@@ -105,17 +129,16 @@ namespace CK.Setup.SqlServer
         }
 
         /// <summary>
-        /// Gets the [<see cref="Database"/>]<see cref="SchemaName"/> full name of this object: the database name is the context of the object.
-        /// Note that no prefix is added when Database is <see cref="SqlDatabase.DefaultDatabaseName"/>.
+        /// Gets the full name of this object.
         /// </summary>
         public string FullName
         {
-            get { return ContextNaming.FormatContextPrefix( SchemaName, _dataBase ); }
+            get { return _fullName.FullName; }
         }
 
         IDependentItemContainerRef IDependentItem.Container
         {
-            get { return _container != null ? _container.EnsureContextPrefix( _dataBase ) : null; }
+            get { return _container.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _fullName.Context, _fullName.Location ) ); }
         }
 
         IDependentItemRef IDependentItem.Generalization
@@ -125,22 +148,22 @@ namespace CK.Setup.SqlServer
 
         IEnumerable<IDependentItemRef> IDependentItem.Requires
         {
-            get { return _requires.EnsureContextPrefix( _dataBase ); }
+            get { return _requires.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _fullName.Context, _fullName.Location ) ); }
         }
 
         IEnumerable<IDependentItemRef> IDependentItem.RequiredBy
         {
-            get { return _requiredBy.EnsureContextPrefix( _dataBase ); }
+            get { return _requiredBy.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _fullName.Context, _fullName.Location ) ); }
         }
 
         IEnumerable<IDependentItemGroupRef> IDependentItem.Groups
         {
-            get { return _groups.EnsureContextPrefix( _dataBase ); }
+            get { return _groups.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _fullName.Context, _fullName.Location ) ); }
         }
 
         IEnumerable<VersionedName> IVersionedItem.PreviousNames
         {
-            get { return _protoItem != null ? _protoItem.PreviousNames : null; }
+            get { return _protoItem != null ? _protoItem.PreviousNames.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _fullName.Context, _fullName.Location ) ) : null; }
         }
 
         string IVersionedItem.ItemType

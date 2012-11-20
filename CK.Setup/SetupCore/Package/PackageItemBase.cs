@@ -8,13 +8,13 @@ namespace CK.Setup
 {
     /// <summary>
     /// Mutable package implementation: any property can be changed (version information is handled
-    /// by the base <see cref="MultiVersionManager"/>) except FullName and <see cref="IDependentItemContainerTyped.ItemKind"/> (that can be 
+    /// by the base <see cref="MultiVersionManager"/>) except <see cref="IDependentItemContainerTyped.ItemKind"/> (that can be 
     /// used to dynamically refuse to be referenced as a Container by other items) that must be provided through implementations of abstract methods.
     /// </summary>
     /// <remarks>
     /// The <see cref="ContainerItemBase"/> must be used for container that do not have versions.
     /// </remarks>
-    public abstract class PackageItemBase : DynamicDependentItem, IMutableDependentItemContainerTyped, IPackageItem
+    public abstract class PackageItemBase : DynamicDependentItem, IMutableSetupItemContainer, IPackageItem
     {
         DependentItemList _children;
 
@@ -62,7 +62,7 @@ namespace CK.Setup
 
         IEnumerable<IDependentItemRef> IDependentItemGroup.Children
         {
-            get { return _children; }
+            get { return _children.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, Context, Location ) ); }
         }
 
     }

@@ -80,21 +80,17 @@ namespace CK.Core
         /// Gets an ordered list of resource names that starts with the <paramref name="namePrefix"/>.
         /// </summary>
         /// <param name="namePrefix">Prefix for any strings.</param>
-        /// <returns>Ordered lists of available resource names that can then be obtained by <see cref="OpenStream"/> or <see cref="GetString"/>.</returns>
+        /// <returns>Ordered lists of available resource names (without the prefix). Resource content can then be obtained by <see cref="OpenStream"/> or <see cref="GetString"/>.</returns>
         public IEnumerable<string> GetNames( string namePrefix )
         {
             if( _type == null ) return Util.EmptyStringArray;
             IReadOnlyList<string> a = _type.Assembly.GetSortedResourceNames();
             // TODO: Use the fact that the list is sorted to 
-            // select the sub range instead of tha Where linear filter.
+            // select the sub range instead of that Where linear filter.
             string prefix = ResourceName( null );
             string prefixName = namePrefix != null && namePrefix.Length > 0 ? prefix + '.' + namePrefix : prefix;
-            return a.Where( n => 
-                n.StartsWith( prefixName, StringComparison.Ordinal ) 
-                && 
-                n != prefixName )
-                .Select( n => 
-                    n.Substring( prefix.Length+1 ) );
+            return a.Where( n => n.Length > prefixName.Length && n.StartsWith( prefixName, StringComparison.Ordinal ) )
+                    .Select( n => n.Substring( prefix.Length+1 ) );
         }
 
         /// <summary>

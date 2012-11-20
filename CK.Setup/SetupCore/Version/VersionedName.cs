@@ -7,7 +7,7 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// Associates a name and a version for which it is valid.
+    /// Associates a name and a version for which it is valid. It is an immutable object.
     /// </summary>
     public class VersionedName
     {

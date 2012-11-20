@@ -21,12 +21,12 @@ namespace CK.Setup.SqlServer
                 | RegexOptions.ExplicitCapture );
 
 
-        IDependentProtoItem ISqlObjectParser.Create( IActivityLogger logger, string text )
+        IDependentProtoItem ISqlObjectParser.Create( IActivityLogger logger, IContextLocName externalName, string text )
         {
-            return SqlObjectParser.Create( logger, text, null );
+            return SqlObjectParser.Create( logger, externalName, text, null );
         }
 
-        static public SqlObjectProtoItem Create( IActivityLogger logger, string text, string expectedType = null )
+        static public SqlObjectProtoItem Create( IActivityLogger logger, IContextLocName externalName, string text, string expectedType = null )
         {
             Match mSqlObject = _rSqlObject.Match( text );
             if( !mSqlObject.Success )
@@ -87,9 +87,7 @@ namespace CK.Setup.SqlServer
                 schema = databaseOrSchema;
                 databaseOrSchema = tmp;
             }
-
-            var r = new SqlObjectProtoItem( type, databaseOrSchema, schema, name, header, version, packageName, requires, groups, requiredBy, previousNames, textAfterName );
-            return r;
+            return new SqlObjectProtoItem( externalName, type, databaseOrSchema, schema, name, header, version, packageName, requires, groups, requiredBy, previousNames, textAfterName );
         }
 
     }

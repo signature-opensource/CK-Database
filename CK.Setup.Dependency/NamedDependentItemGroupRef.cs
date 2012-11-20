@@ -29,14 +29,13 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Makes sure that this <see cref="FullName"/> has a [context] prefix (and returns this instance) or
-        /// creates a new <see cref="NamedDependentItemGroupRef"/> with the given prefix.
+        /// Returns this instance or creates a new <see cref="NamedDependentItemGroupRef"/> (or a more specialized type) with the given full name if needed.
         /// </summary>
-        /// <param name="defaultContextName">Context name to inject if no context prefix exists.</param>
-        /// <returns>This instance or a new prefixed one.</returns>
-        public new NamedDependentItemGroupRef EnsureContextPrefix( string defaultContextName )
+        /// <param name="defaultContextName">New full name.</param>
+        /// <returns>This instance or a new one.</returns>
+        public new NamedDependentItemGroupRef SetFullName( string fullName )
         {
-            return (NamedDependentItemGroupRef)base.EnsureContextPrefix( defaultContextName );
+            return (NamedDependentItemGroupRef)base.SetFullName( fullName );
         }
 
         /// <summary>

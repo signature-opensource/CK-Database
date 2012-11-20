@@ -8,7 +8,7 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// Default <see cref="IMutableDependentItemContainerTyped"/> implementation associated to <see cref="IStObj"/> object.
+    /// Default <see cref="IMutableSetupItemContainer"/> implementation associated to <see cref="IStObj"/> object.
     /// Used when the <see cref="IStObjSetupData"/> does not specify a dedicated implementation (<see cref="IStObjSetupData.ItemType"/> 
     /// nor <see cref="IStObjSetupData.ItemTypeName"/> are set) but can also be used as a base class for more specific item implementation.
     /// </summary>

@@ -69,7 +69,7 @@ namespace CK.Setup
 
         public override string ToString()
         {
-            return ContextNaming.FormatContextPrefix( _objectType.Type.FullName, _context );
+            return AmbientContractCollector.FormatContextualFullName( _context, _objectType.Type );
         }
 
         #region Configuration
@@ -304,7 +304,7 @@ namespace CK.Setup
         {
             Debug.Assert( _container != null && _constructParameterEx != null );
             bool result = true;
-            _dFullName = ContextNaming.FormatContextPrefix( _objectType.Type.FullName, _context );
+            _dFullName = AmbientContractCollector.FormatContextualFullName( _context, _objectType.Type );
             _dContainer = _container.ResolveToStObj( logger, collector, cachedCollector );
             // Requirement intialization.
             HashSet<MutableItem> req = new HashSet<MutableItem>();

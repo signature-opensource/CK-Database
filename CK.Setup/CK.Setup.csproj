@@ -45,6 +45,10 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="ContextLocName\ContextLocNameStructImpl.cs" />
+    <Compile Include="ContextLocName\ContextLocName.cs" />
+    <Compile Include="ContextLocName\DefaultContextLocNaming.cs" />
+    <Compile Include="ContextLocName\IContextLocName.cs" />
     <Compile Include="Core\AssemblyExtension.cs" />
     <Compile Include="Core\ResourceLocator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -55,13 +59,14 @@
     <Compile Include="Scripts\ResSetupScript.cs" />
     <Compile Include="Scripts\ScriptSource.cs" />
     <Compile Include="Scripts\ScriptTypeHandler.cs" />
+    <Compile Include="SetupCore\Package\IMutableSetupItemGroup.cs" />
     <Compile Include="SetupCore\Package\DynamicDependentItem.cs" />
     <Compile Include="SetupCore\Package\DependentItemGroupList.cs" />
     <Compile Include="SetupCore\Package\IDependentItemGroupList.cs" />
-    <Compile Include="SetupCore\Package\IMutableDependentItemContainerTyped.cs" />
+    <Compile Include="SetupCore\Package\IMutableSetupItemContainer.cs" />
     <Compile Include="SetupCore\SetupEventArgs.cs" />
     <Compile Include="SetupCore\Package\ContainerItemBase.cs" />
-    <Compile Include="SetupCore\Package\IMutableDependentItem.cs" />
+    <Compile Include="SetupCore\Package\IMutableSetupItem.cs" />
     <Compile Include="SetupCore\Package\DynamicContainerItem.cs" />
     <Compile Include="SetupCore\Package\DependentItemList.cs" />
     <Compile Include="SetupCore\Package\DynamicPackageItem.cs" />
@@ -103,6 +108,7 @@
     <Compile Include="SetupCore\SetupDriver.cs" />
     <Compile Include="SetupCore\GroupHeadSetupDriver.cs" />
     <Compile Include="SetupCore\IVersionedItem.cs" />
+    <Compile Include="SetupCore\Version\VersionedNameExtension.cs" />
     <Compile Include="SetupCore\Version\IVersionedItemRepository.cs" />
     <Compile Include="SetupCore\Version\MultiVersionManager.cs" />
     <Compile Include="SetupCore\Version\VersionedName.cs" />
@@ -113,6 +119,7 @@
     <Compile Include="StObj\Attributes\RequiresAttribute.cs" />
     <Compile Include="StObj\Attributes\SetupAttribute.cs" />
     <Compile Include="StObj\ISetupItemAwareObject.cs" />
+    <Compile Include="SetupCore\ISetupItem.cs" />
     <Compile Include="StObj\IStObjSetupItemFactory.cs" />
     <Compile Include="StObj\IMutableStObjSetupData.cs" />
     <Compile Include="StObj\IStObjSetupConfigurator.cs" />

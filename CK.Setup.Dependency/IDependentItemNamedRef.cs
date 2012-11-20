@@ -8,17 +8,21 @@ namespace CK.Setup
 {
     /// <summary>
     /// Defines a named reference to an item: this interface must be supported by items that really are named references
-    /// to items (such as <see cref="NamedDependentItemRef"/>).
+    /// to items (such as <see cref="NamedDependentItemRef"/>). 
+    /// As it is a true reference (name is not defined by the object itself), this offer a way to manipulate the referenced <see cref="IDependentItem.FullName"/>.
     /// </summary>
     public interface IDependentItemNamedRef : IDependentItemRef 
     {
         /// <summary>
-        /// Makes sure that this <see cref="IDependentItemRef.FullName"/> has a [context] prefix (and returns this instance) or
-        /// creates a new <see cref="IDependentItemNamedRef"/> with the given prefix.
+        /// Sets the full name of this reference. It MUST return the modified instance (be it this).
         /// </summary>
-        /// <param name="defaultContextName">Context name to inject if no context prefix exists.</param>
-        /// <returns>This instance or a new prefixed one.</returns>
-        IDependentItemNamedRef DoEnsureContextPrefix( string defaultContextName );
+        /// <param name="fullName">New full name. Must not be null.</param>
+        /// <returns>This instance or a new one if required (this is let to the implementation, but see remarks).</returns>
+        /// <remarks>
+        /// Even if nothing prevents this reference to be altered by this call, we prefer the "immutable objects" way here: concrete 
+        /// implementations such as <see cref="NamedDependentItemRef"/> are immutable and create a new instance if needed.
+        /// </remarks>
+        IDependentItemNamedRef SetFullName( string fullName );
     
     }
 }

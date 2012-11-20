@@ -20,7 +20,7 @@ namespace CK.Setup.Database.Tests
 <SetupPackage FullName=""TheFirstPackageEver"" Versions=""1.2.88, 1.2.4, Old.Name-Is-in.the.Versions = 1.3.4, The.New.Name=1.4.1, 1.5.0"">
     <Requirements Requires=""AnOtherPackage, YetAnotherOne"" RequiredBy=""AnObjectIHook, AnotherObjectIHook"" />
     <Model>
-        <Requirements Requires=""AnOtherPackage, YetAnotherOne"" RequiredBy=""AnObjectIHook, AnotherObjectIHook"" />
+        <Requirements Requires=""AnOtherPackage, db^YetAnotherOne"" RequiredBy=""AnObjectIHook, AnotherObjectIHook"" />
     </Model>
     <Content>
         <Add FullName=""ContainedItem"" />
@@ -28,14 +28,22 @@ namespace CK.Setup.Database.Tests
     </Content>
 </SetupPackage>
 " );
-            DynamicPackageItem p = SqlFileDiscoverer.ReadPackageFileFormat( e );
+            DynamicPackageItem p = SqlFileDiscoverer.ReadPackageFileFormat( e, "C", null );
             Assert.That( p.VersionList.IsSortedStrict() );
+            Assert.That( p.FullName, Is.EqualTo( "[C]TheFirstPackageEver" ) );
+            Assert.That( p.Requires[0].FullName, Is.EqualTo( "AnOtherPackage" ) );
+            Assert.That( p.Requires[1].FullName, Is.EqualTo( "db^YetAnotherOne" ) );
+
+
+            IDependentItemContainer c = p as IDependentItemContainer;
+            Assert.That( c.Requires.ElementAt(0).FullName, Is.EqualTo( "[C]AnOtherPackage" ) );
+            Assert.That( c.Requires.ElementAt(1).FullName, Is.EqualTo( "[C]db^YetAnotherOne" ) );
         }
 
 
-        class SqlObjectParserMock : ISqlObjectParser
+        class SqlObjectParserStub : ISqlObjectParser
         {
-            public IDependentProtoItem Create( IActivityLogger logger, string text )
+            public IDependentProtoItem Create( IActivityLogger logger, IContextLocName externalName, string text )
             {
                 throw new NotImplementedException();
             }
@@ -65,8 +73,8 @@ namespace CK.Setup.Database.Tests
             ScriptTypeManager typeManager = new ScriptTypeManager();
             typeManager.Register( new SqlScriptTypeHandler() );
             ScriptCollector collector = new ScriptCollector( typeManager );
-            SqlFileDiscoverer discoverer = new SqlFileDiscoverer( new SqlObjectParserMock(), TestHelper.Logger );
-            Assert.That( discoverer.DiscoverSqlFiles( TestHelper.GetScriptsFolder( "FromOpenTo" ), new DependentProtoItemCollector(), collector ), Is.True );
+            SqlFileDiscoverer discoverer = new SqlFileDiscoverer( new SqlObjectParserStub(), TestHelper.Logger );
+            Assert.That( discoverer.DiscoverSqlFiles( null, null, TestHelper.GetScriptsFolder( "FromOpenTo" ), new DependentProtoItemCollector(), collector ), Is.True );
 
             bool caseDiffer;
             ScriptSet scripts = collector.Find( "Test", out caseDiffer );
@@ -115,9 +123,9 @@ namespace CK.Setup.Database.Tests
             typeManager.Register( new SqlScriptTypeHandler() );
             ScriptCollector collector = new ScriptCollector( typeManager );
             
-            SqlFileDiscoverer discoverer = new SqlFileDiscoverer( new SqlObjectParserMock(), TestHelper.Logger );
+            SqlFileDiscoverer discoverer = new SqlFileDiscoverer( new SqlObjectParserStub(), TestHelper.Logger );
 
-            Assert.That( discoverer.DiscoverSqlFiles( TestHelper.GetScriptsFolder( "AllSteps" ), new DependentProtoItemCollector(), collector ), Is.True );
+            Assert.That( discoverer.DiscoverSqlFiles( null, null, TestHelper.GetScriptsFolder( "AllSteps" ), new DependentProtoItemCollector(), collector ), Is.True );
 
             bool caseDiffer;
             ScriptSet scripts = collector.Find( "test", out caseDiffer );

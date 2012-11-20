@@ -49,7 +49,7 @@ namespace CK.Setup
 
         public string FullName
         {
-            get { return ContextNaming.FormatContextPrefix( _fullNameWithoutContext, _stObj.Context ); }
+            get { return DefaultContextLocNaming.Format( _stObj.Context, null, _fullNameWithoutContext ); }
         }
 
         public string Versions
@@ -64,7 +64,7 @@ namespace CK.Setup
             if( DriverType == null && DriverTypeName != null ) DriverType = SimpleTypeFinder.WeakDefault.ResolveType( DriverTypeName, true );
         }
 
-        internal IMutableDependentItemContainerTyped SetupItem { get; set; }
+        internal IMutableSetupItem SetupItem { get; set; }
 
         IReadOnlyList<IDependentItemRef> IStObjSetupData.RequiredBy
         {

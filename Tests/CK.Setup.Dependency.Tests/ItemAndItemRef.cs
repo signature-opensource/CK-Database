@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
+using CK.Core;
 
 namespace CK.Setup.Dependency.Tests
 {
@@ -97,50 +98,6 @@ namespace CK.Setup.Dependency.Tests
             Assert.That( refItem2.Optional, Is.False );
             Assert.That( refGroup2.Optional, Is.False );
             Assert.That( refContainer2.Optional, Is.False );
-        }
-
-        [Test]
-        public void EnsureContext()
-        {
-            IEnumerable<IDependentItemRef> eItem = new IDependentItemRef[] 
-            { 
-                new Item() { FullName = "Item" }, new Group() { FullName = "Group" }, new Container() { FullName = "Container" },
-                new NamedDependentItemRef( "RefItem" ), new NamedDependentItemGroupRef( "RefGroup" ), new NamedDependentItemContainerRef( "RefContainer" ),
-                new NamedDependentItemRef( "[Already]RefItem" ), new NamedDependentItemGroupRef( "[Already]RefGroup" ), new NamedDependentItemContainerRef( "[Already]RefContainer" ) 
-            };
-
-            var eC = eItem.EnsureContextPrefix( "C" );
-
-            Assert.That( eC.ElementAt( 0 ), Is.SameAs( eItem.ElementAt( 0 ) ), "DependentItem are kept as-is (current implementation)." );
-            Assert.That( eC.ElementAt( 1 ), Is.SameAs( eItem.ElementAt( 1 ) ), "DependentItem are kept (current implementation)." );
-            Assert.That( eC.ElementAt( 2 ), Is.SameAs( eItem.ElementAt( 2 ) ), "DependentItem are kept (current implementation)." );
-
-            var eNamed = eC.ElementAt( 3 );
-            Assert.That( eNamed, Is.Not.SameAs( eItem.ElementAt( 3 ) ), "Named reference are changed." );
-            Assert.That( eNamed.FullName, Is.EqualTo( "[C]RefItem" ) );
-            Assert.That( eNamed, Is.AssignableTo<IDependentItemRef>() );
-            eNamed = eC.ElementAt( 4 );
-            Assert.That( eNamed, Is.Not.SameAs( eItem.ElementAt( 4 ) ), "Named reference are changed." );
-            Assert.That( eNamed.FullName, Is.EqualTo( "[C]RefGroup" ) );
-            Assert.That( eNamed, Is.AssignableTo<IDependentItemGroupRef>() );
-            eNamed = eC.ElementAt( 5 );
-            Assert.That( eNamed, Is.Not.SameAs( eItem.ElementAt( 5 ) ), "Named reference are changed." );
-            Assert.That( eNamed.FullName, Is.EqualTo( "[C]RefContainer" ) );
-            Assert.That( eNamed, Is.AssignableTo<IDependentItemContainerRef>() );
-
-            var eNamedUnchanged = eC.ElementAt( 6 );
-            Assert.That( eNamedUnchanged.FullName, Is.EqualTo( "[Already]RefItem" ) );
-            eNamedUnchanged = eC.ElementAt( 7 );
-            Assert.That( eNamedUnchanged.FullName, Is.EqualTo( "[Already]RefGroup" ) );
-
-            // Overload resolution kindly support specialized versions.
-            IEnumerable<IDependentItemGroupRef> eGroup = new IDependentItemGroupRef[] { };
-            IEnumerable<IDependentItemGroupRef> eGroupC = eGroup.EnsureContextPrefix( "C" );
-
-            IEnumerable<IDependentItemContainerRef> eContainer = new IDependentItemContainerRef[] { };
-            IEnumerable<IDependentItemContainerRef> eContainerC = eContainer.EnsureContextPrefix( "C" );
-
-
         }
     }
 }

@@ -1,0 +1,165 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="CK.Setup.SqlServer.SqlDatabase" Collapsed="true">
+    <Position X="0.5" Y="1.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAQAIAAAAEAAEQAAAAAAAQQACAAAAAAAACAQAAAAgAA=</HashCode>
+      <FileName>ObjectSupport\SqlDatabase\SqlDatabase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.Setup.SqlServer.SqlDatabaseConnectionItem" Collapsed="true">
+    <Position X="4.75" Y="0.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAgEQAQAAAAICAAAAAAAAAAAAAAIAIQAAAAAACAAA=</HashCode>
+      <FileName>ObjectSupport\SqlDatabase\SqlDatabaseConnectionItem.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="CK.Setup.SqlServer.SqlDatabaseConnectionSetupDriver" Collapsed="true">
+    <Position X="10.5" Y="0.5" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAQAAAAEAAAAAAAEAABAAAAAAAACAAAABAA=</HashCode>
+      <FileName>ObjectSupport\SqlDatabase\SqlDatabaseConnectionSetupDriver.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.Setup.SqlServer.SqlDatabaseItem" Collapsed="true">
+    <Position X="4.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAIAAAAAAAAgAAAAAAAAAAAAAIAAAAAAAAAAAAA=</HashCode>
+      <FileName>ObjectSupport\SqlDatabase\SqlDatabaseItem.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.Setup.SqlServer.SqlDatabaseSetupDriver" Collapsed="true">
+    <Position X="10.5" Y="1.5" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAABAA=</HashCode>
+      <FileName>ObjectSupport\SqlDatabase\SqlDatabaseSetupDriver.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.Setup.SqlServer.SqlDefaultDatabase" Collapsed="true">
+    <Position X="1.25" Y="2.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ObjectSupport\SqlDatabase\SqlDefaultDatabase.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="1.304" />
+  </Class>
+  <Class Name="CK.Setup.SqlServer.SqlPackage" Collapsed="true">
+    <Position X="1.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ObjectSupport\SqlPackage\SqlPackage.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.919" />
+  </Class>
+  <Class Name="CK.Setup.SqlServer.SqlPackageBase" Collapsed="true">
+    <Position X="0.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAEAAAAAAAAAAAAAEAAAAAAAAAAABAAAAAAA=</HashCode>
+      <FileName>ObjectSupport\SqlPackageBase\SqlPackageBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.Setup.SqlServer.SqlPackageBaseItem" Collapsed="true">
+    <Position X="4.75" Y="3.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAgAAAAAAAAAAAAAIAAAAAAAAAAAAA=</HashCode>
+      <FileName>ObjectSupport\SqlPackageBase\SqlPackageBaseItem.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.Setup.StObjDynamicPackageItem" Collapsed="true">
+    <Position X="7.25" Y="3.25" Width="2.25" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="CK.Setup.SqlServer.SqlPackageBaseSetupDriver" Collapsed="true">
+    <Position X="10.5" Y="3.5" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAQAAAAAAAAAA=</HashCode>
+      <FileName>ObjectSupport\SqlPackageBase\SqlPackageBaseSetupDriver.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.Setup.SqlServer.SqlPackageItem" Collapsed="true">
+    <Position X="4.75" Y="4.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ObjectSupport\SqlPackage\SqlPackageItem.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.Setup.SqlServer.SqlPackageSetupDriver" Collapsed="true">
+    <Position X="10.5" Y="4.75" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ObjectSupport\SqlPackage\SqlPackageSetupDriver.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.Setup.SqlServer.SqlTable" Collapsed="true">
+    <Position X="1" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAQAA=</HashCode>
+      <FileName>ObjectSupport\SqlTable\SqlTable.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="1.158" />
+  </Class>
+  <Class Name="CK.Setup.SqlServer.SqlTableItem" Collapsed="true">
+    <Position X="4.75" Y="5.75" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ObjectSupport\SqlTable\SqlTableItem.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.Setup.SqlServer.SqlTableSetupDriver" Collapsed="true">
+    <Position X="10.5" Y="5.75" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ObjectSupport\SqlTable\SqlTableSetupDriver.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.Setup.SqlServer.SqlObjectItem" Collapsed="true">
+    <Position X="4.75" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>JAAAIGBAAkwAIISAEAAAALYkAAAAAAwIAAACBAACQAA=</HashCode>
+      <FileName>ObjectSupport\SqlObject\SqlObjectItem.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="CK.Setup.SqlServer.SqlObjectSetupDriver" Collapsed="true">
+    <Position X="10.5" Y="7.5" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAQIEAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ObjectSupport\SqlObject\SqlObjectSetupDriver.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.Setup.SqlServer.SqlObjectProtoItem" Collapsed="true">
+    <Position X="0.5" Y="7.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>JABAIEQAQgBAAIDIEAIMABQEAAAAAAAAAAAAAAACAoA=</HashCode>
+      <FileName>ObjectSupport\SqlObject\SqlObjectProtoItem.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="CK.Setup.SqlServer.SqlProcedureItem" Collapsed="true">
+    <Position X="5.75" Y="8.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ObjectSupport\SqlObject\SqlProcedureItem.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.Setup.SqlServer.SqlFunctionItem" Collapsed="true">
+    <Position X="5.75" Y="9.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ObjectSupport\SqlObject\SqlFunctionItem.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.Setup.SqlServer.SqlViewItem" Collapsed="true">
+    <Position X="5.75" Y="10.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ObjectSupport\SqlObject\SqlViewItem.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.Setup.DynamicContainerItem" Collapsed="true">
+    <Position X="7.25" Y="1.25" Width="2" />
+    <TypeIdentifier />
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

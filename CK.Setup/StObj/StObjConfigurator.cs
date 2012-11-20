@@ -34,7 +34,7 @@ namespace CK.Setup
         {
         }
 
-        IMutableDependentItemContainerTyped IStObjSetupItemFactory.CreateDependentItem( IActivityLogger logger, IStObjSetupData data )
+        IMutableSetupItem IStObjSetupItemFactory.CreateDependentItem( IActivityLogger logger, IStObjSetupData data )
         {
             return null;
         }

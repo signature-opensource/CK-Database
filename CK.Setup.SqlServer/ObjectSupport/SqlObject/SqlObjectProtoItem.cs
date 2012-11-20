@@ -14,24 +14,31 @@ namespace CK.Setup.SqlServer
         static public readonly string TypeProcedure = "Procedure";
         static public readonly string TypeFunction = "Function";
 
+        ContextLocNameStructImpl _name;
+
+        public string Context { get { return _name.Context; } }
+
+        public string Location { get { return _name.Location; } }
+
+        /// <summary>
+        /// Never null nor empty (otherwise this object would have not been created).
+        /// </summary>
+        public string Name { get { return _name.Name; } }
+
+        public string FullName { get { return _name.FullName; } }
+
+        public string Header { get; private set; }
+
         /// <summary>
         /// Can be empty but not null.
         /// </summary>
-        public string DatabaseName { get; private set; }
+        public string PhysicalDatabaseName { get; private set; }
 
         /// <summary>
         /// Can be empty but not null.
         /// </summary>
         public string Schema { get; private set; }
-        
-        /// <summary>
-        /// Never null nor empty.
-        /// </summary>
-        public string Name { get; private set; }           
-        
-        public string Header { get; private set; }
 
-        public string FullName { get { return Schema + '.' + Name; } }
         public string Container { get; private set; }
         public Version Version { get; private set; }
         public string ItemType { get; private set; }
@@ -46,8 +53,9 @@ namespace CK.Setup.SqlServer
         public string TextAfterName { get; private set; }
             
         internal SqlObjectProtoItem(
+                    IContextLocName externalName,
                     string itemType,
-                    string databaseName,
+                    string physicalDatabaseName,
                     string schema,
                     string name,
                     string header,
@@ -59,10 +67,13 @@ namespace CK.Setup.SqlServer
                     IEnumerable<VersionedName> prevNames,
                     string textAfterName )
         {
+            Debug.Assert( externalName != null );
             ItemType = itemType;
-            DatabaseName = databaseName;
+            PhysicalDatabaseName = physicalDatabaseName;
             Schema = schema;
-            Name = name;
+            // The fact that external.Name must be equal to this Name (based on the content) is checked
+            // by the caller (it can then give more information suh as the resource location).
+            _name = new ContextLocNameStructImpl( externalName.Context, externalName.Location, schema.Length > 0 ? (schema + '.' + name) : name );
             Header = header;
             Version = v;
             Container = packageName;

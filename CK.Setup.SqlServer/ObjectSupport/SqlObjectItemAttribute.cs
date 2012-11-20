@@ -16,16 +16,16 @@ namespace CK.Setup.SqlServer
 
         public string ObjectName { get; private set; }
 
-        public SqlObjectItem Create( IActivityLogger logger, IStObjSetupData container )
+        public SqlObjectItem Create( IActivityLogger logger, ISetupItem holderItem, IStObj holder )
         {
-            if( !(container.StObj.Object is SqlPackageBase) )
+            if( !(holder.Object is SqlPackageBase) )
             {
                 throw new NotSupportedException( "SqlObjectItemAttribute must be set only on class that inherits SqlPackageBase." );
             }
-            SqlPackageBase p = (SqlPackageBase)container.StObj.Object;
+            SqlPackageBase p = (SqlPackageBase)holder.Object;
             string fileName = ObjectName + ".sql";
             string text = p.ResourceLocation.GetString( ObjectName, true );
-            SqlObjectProtoItem protoObject = SqlObjectParser.Create( logger, text );
+            SqlObjectProtoItem protoObject = SqlObjectParser.Create( logger, holderItem, text );
             if( protoObject == null ) return null;
             if( protoObject.Name != ObjectName )
             {
@@ -34,13 +34,14 @@ namespace CK.Setup.SqlServer
             }
             if( protoObject.Schema.Length > 0 && protoObject.Schema != p.Schema )
             {
+                    
                 logger.Error( "Resource '{0}' defines the {1} in the schema '{2}' instead of '{3}'.", fileName, protoObject.ItemType, protoObject.Schema, p.Schema );
                 return null;
             }
             // For Database, if specified, we can not force the 
-            if( protoObject.DatabaseName.Length > 0 && protoObject.DatabaseName != p.Database.Name )
+            if( protoObject.PhysicalDatabaseName.Length > 0 && protoObject.PhysicalDatabaseName != p.Database.Name )
             {
-                logger.Error( "Resource '{0}' defines the {1} in the database '{2}' instead of '{3}'.", fileName, protoObject.ItemType, protoObject.DatabaseName, p.Database.Name );
+                logger.Error( "Resource '{0}' defines the {1} in the database '{2}' instead of '{3}'.", fileName, protoObject.ItemType, protoObject.PhysicalDatabaseName, p.Database.Name );
                 return null;
             }
             return protoObject.CreateItem( logger );

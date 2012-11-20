@@ -81,7 +81,7 @@ namespace CK.Setup
                 result = ctxResult.Find( Type );
                 if( result == null )
                 {
-                    WarnOrErrorIfStObjRequired( logger, String.Format( "{0} not found", ContextNaming.FormatContextPrefix( Type.FullName, _context ) ) );
+                    WarnOrErrorIfStObjRequired( logger, String.Format( "{0} not found", AmbientContractCollector.FormatContextualFullName( _context, Type ) ) );
                     return null;
                 }
             }

@@ -47,12 +47,12 @@ namespace CK.Setup.SqlServer
 
         public bool DiscoverFilePackages( string directoryPath )
         {
-            return _fileDiscoverer.DiscoverPackages( directoryPath );
+            return _fileDiscoverer.DiscoverPackages( String.Empty, SqlDefaultDatabase.DefaultDatabaseName, directoryPath );
         }
 
         public bool DiscoverSqlFiles( string directoryPath )
         {
-            return _fileDiscoverer.DiscoverSqlFiles( directoryPath, _sqlFiles, _center.Scripts );
+            return _fileDiscoverer.DiscoverSqlFiles( String.Empty, SqlDefaultDatabase.DefaultDatabaseName, directoryPath, _sqlFiles, _center.Scripts );
         }
         
         /// <summary>

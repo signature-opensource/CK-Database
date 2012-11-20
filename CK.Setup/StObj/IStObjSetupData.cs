@@ -25,15 +25,15 @@ namespace CK.Setup
         string ContainerFullName { get; }
 
         /// <summary>
-        /// Gets the type of the <see cref="IMutableDependentItem"/> to use instead of the default <see cref="StObjDynamicPackageItem"/>. 
+        /// Gets the type of the <see cref="IMutableSetupItem"/> to use instead of the default <see cref="StObjDynamicPackageItem"/>. 
         /// When set, this masks the <see cref="ItemTypeName"/> property,  otherwise <see cref="ItemTypeName"/> can be used to 
-        /// designate a specific <see cref="IMutableDependentItem"/> by its assembly qualified name.
+        /// designate a specific <see cref="IMutableSetupItem"/> by its assembly qualified name.
         /// This property is inherited.
         /// </summary>
         Type ItemType { get; }
 
         /// <summary>
-        /// Gets the assembly qualified type name of the <see cref="IMutableDependentItem"/> to use instead of the default <see cref="StObjDynamicPackageItem"/>. 
+        /// Gets the assembly qualified type name of the <see cref="IMutableSetupItem"/> to use instead of the default <see cref="StObjDynamicPackageItem"/>. 
         /// This is used ONLY if <see cref="ItemType"/> is not set.
         /// This property is inherited.
         /// </summary>

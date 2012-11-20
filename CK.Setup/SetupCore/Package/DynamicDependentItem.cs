@@ -8,11 +8,11 @@ namespace CK.Setup
 {
     /// <summary>
     /// Mutable item implementation: any property can be changed (version information is handled
-    /// by the base <see cref="MultiVersionManager"/>) except FullName that must be provided through 
-    /// implementations of abstract methods.
+    /// by the base <see cref="MultiVersionManager"/>).
     /// </summary>
-    public abstract class DynamicDependentItem : MultiVersionManager, IMutableDependentItem, IVersionedItem, IDependentItemRef
+    public abstract class DynamicDependentItem : MultiVersionManager, IMutableSetupItem, IVersionedItem, IDependentItemRef
     {
+        ContextLocNameStructImpl _name;
         string _itemType;
         DependentItemList _requires;
         DependentItemList _requiredBy;
@@ -28,6 +28,49 @@ namespace CK.Setup
         {
             if( itemType == null ) throw new ArgumentNullException( "itemType" );
             _itemType = itemType;
+            _name = new ContextLocNameStructImpl();
+        }
+
+        /// <summary>
+        /// Gets or sets the context identifier of this package. 
+        /// Can be null (unknown context) or empty (the default context).
+        /// When set, <see cref="FullName"/> is automatically updated.
+        /// </summary>
+        public string Context
+        {
+            get { return _name.Context; }
+            set { _name.Context = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the location of this package. 
+        /// Can be null (unknown location) or empty (the root location).
+        /// When set, <see cref="FullName"/> is automatically updated.
+        /// </summary>
+        public string Location
+        {
+            get { return _name.Location; }
+            set { _name.Location = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the name of this package. <see cref="FullName"/> is automatically updated.
+        /// Never null (normalized to <see cref="String.Empty"/>).
+        /// </summary>
+        public string Name
+        {
+            get { return _name.Name; }
+            set { _name.Name = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the full name of this package. <see cref="Context"/>, <see cref="Location"/> and <see cref="Name"/> are automatically updated.
+        /// Never null (normalized to <see cref="String.Empty"/>).
+        /// </summary>
+        public string FullName
+        {
+            get { return _name.FullName; }
+            set { _name.FullName = value; }
         }
 
         /// <summary>
@@ -71,13 +114,6 @@ namespace CK.Setup
             get { return _generalization; }
             set { _generalization = value; }
         }
-        
-        /// <summary>
-        /// Must return the full name of this item.
-        /// It can be computed by <see cref="StartDependencySort"/>.
-        /// </summary>
-        /// <returns>This full name.</returns>
-        protected abstract string GetFullName();
 
         /// <summary>
         /// Called at the very beginning of the setup phasis, before <see cref="IDependentItem.FullName"/> is used to planify the setup. 
@@ -102,41 +138,42 @@ namespace CK.Setup
         {
             get { return _itemType; }
         }
-        
-        string IDependentItem.FullName
-        {
-            get { return GetFullName(); }
-        }
-
-        string IDependentItemRef.FullName
-        {
-            get { return GetFullName(); }
-        }
 
         bool IDependentItemRef.Optional
         {
             get { return false; }
         }
 
+        IDependentItemContainerRef IDependentItem.Container
+        {
+            get { return _container.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _name.Context, _name.Location ) ); }
+        }
+
+        IDependentItemRef IDependentItem.Generalization
+        {
+            get { return _generalization.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _name.Context, _name.Location ) ); }
+        }
+
         IEnumerable<IDependentItemRef> IDependentItem.Requires
         {
-            get { return _requires; }
+            get { return _requires.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _name.Context, _name.Location ) ); }
         }
 
         IEnumerable<IDependentItemRef> IDependentItem.RequiredBy
         {
-            get { return _requiredBy; }
+            get { return _requiredBy.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _name.Context, _name.Location ) ); }
         }
 
         IEnumerable<IDependentItemGroupRef> IDependentItem.Groups
         {
-            get { return _groups; }
+            get { return _groups.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _name.Context, _name.Location ) ); }
         }
 
         IEnumerable<VersionedName> IVersionedItem.PreviousNames
         {
-            get { return PreviousNames; }
+            get { return PreviousNames.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _name.Context, _name.Location ) ); }
         }
+
     }
 
 }

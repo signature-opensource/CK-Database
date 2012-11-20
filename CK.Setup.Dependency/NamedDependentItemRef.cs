@@ -57,29 +57,27 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Explicit implementation that relays to public covariant <see cref="EnsureContextPrefix"/> method that itself 
+        /// Explicit implementation that relays to public covariant <see cref="SetFullName"/> method that itself 
         /// uses protected virtual <see cref="Create"/> to be able to return specialized types.
         /// </summary>
-        IDependentItemNamedRef IDependentItemNamedRef.DoEnsureContextPrefix( string defaultContextName )
+        IDependentItemNamedRef IDependentItemNamedRef.SetFullName( string fullName )
         {
-            return EnsureContextPrefix( defaultContextName );
+            return SetFullName( fullName );
         }
 
         /// <summary>
-        /// Makes sure that this <see cref="FullName"/> has a [context] prefix (and returns this instance) or
-        /// creates a new <see cref="NamedDependentItemRef"/> (or a more specialized type) with the given prefix.
+        /// Returns this instance or creates a new <see cref="NamedDependentItemRef"/> (or a more specialized type) with the given full name if needed.
         /// </summary>
-        /// <param name="defaultContextName">Context name to inject if no context prefix exists.</param>
-        /// <returns>This instance or a new prefixed one.</returns>
+        /// <param name="fullName">New full name of the reference.</param>
+        /// <returns>This instance or a new one.</returns>
         /// <remarks>
         /// This implementation is not virtual to offer return type covariance.
         /// It calls protected virtual <see cref="Create"/> to be able to return specialized types.
         /// </remarks>
-        public NamedDependentItemRef EnsureContextPrefix( string defaultContextName )
+        public NamedDependentItemRef SetFullName( string fullName )
         {
-            string newName = ContextNaming.SetContextPrefixIfNotExists( _fullName, defaultContextName );
-            if( ReferenceEquals( newName, _fullName ) ) return this;
-            return Create( newName, _optional );
+            if( fullName == _fullName ) return this;
+            return Create( fullName, _optional );
         }
 
         /// <summary>

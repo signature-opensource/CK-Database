@@ -45,7 +45,6 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="ContextNaming.cs" />
     <Compile Include="IDependentItemNamedRef.cs" />
     <Compile Include="NamedDependentItemGroupRef.cs" />
     <Compile Include="IDependentItemGroupRef.cs" />

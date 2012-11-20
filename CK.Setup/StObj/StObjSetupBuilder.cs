@@ -22,11 +22,11 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Initializes a set of <see cref="IDependentItem"/> given a dependency-ordered list of <see cref="IStObj"/> objects.
+        /// Initializes a set of <see cref="ISetupItem"/> given a dependency-ordered list of <see cref="IStObj"/> objects.
         /// </summary>
         /// <param name="rootObjects">Root <see cref="IStObj"/> objects.</param>
-        /// <returns>A set of dependent items.</returns>
-        public IEnumerable<IDependentItem> Build( IReadOnlyList<IStObj> orderedObjects )
+        /// <returns>A set of setup items.</returns>
+        public IEnumerable<ISetupItem> Build( IReadOnlyList<IStObj> orderedObjects )
         {
             if( orderedObjects == null ) throw new ArgumentNullException( "rootObjects" );
 
@@ -79,14 +79,14 @@ namespace CK.Setup
                             if( itemType == null ) data.SetupItem = new StObjDynamicPackageItem( _logger, data );
                             else
                             {
-                                data.SetupItem = (IMutableDependentItemContainerTyped)Activator.CreateInstance( itemType, _logger, data );
+                                data.SetupItem = (IMutableSetupItem)Activator.CreateInstance( itemType, _logger, data );
                             }
                         }
                         // Configures Generalization since we got it above.
                         // Other properties (like dependencies) will be initialized later (once all setup items instances exist).
                         if( generalizationData != null )
                         {
-                            data.SetupItem.Generalization = generalizationData.SetupItem;
+                            data.SetupItem.Generalization = generalizationData.SetupItem.GetReference();
                             ISetupItemAwareObject awareObject = data.StObj.Object as ISetupItemAwareObject;
                             if( awareObject != null ) awareObject.SetupItem = data.SetupItem;
                         }
@@ -106,17 +106,37 @@ namespace CK.Setup
                     foreach( IStObj req in data.StObj.Requires )
                     {
                         StObjSetupData reqD = setupableItems[req];
-                        data.SetupItem.Requires.Add( reqD.SetupItem );
-                    }
-                    foreach( IStObj child in data.StObj.Children )
-                    {
-                        StObjSetupData c = setupableItems[child];
-                        data.SetupItem.Children.Add( c.SetupItem );
+                        data.SetupItem.Requires.Add( reqD.SetupItem.GetReference() );
                     }
                     foreach( IStObj group in data.StObj.Groups )
                     {
-                        StObjSetupData g = setupableItems[group];
-                        data.SetupItem.Groups.Add( g.SetupItem );
+                        StObjSetupData gData = setupableItems[group];
+                        IMutableSetupItemGroup g = gData.SetupItem as IMutableSetupItemGroup;
+                        if( g == null )
+                        {
+                            _logger.Error( "Structure Object '{0}' declares '{1}' as a Group, but the latter is not a IMutableSetupItemGroup (only a IMutableSetupItem).", data.FullName, gData.FullName );
+                        }
+                        else
+                        {
+                            data.SetupItem.Groups.Add( g.GetReference() );
+                        }
+                    }
+                    if( data.StObj.Children.Count > 0 )
+                    {
+                        // The StObj has children. 
+                        IMutableSetupItemGroup g = data.SetupItem as IMutableSetupItemGroup;
+                        if( g == null )
+                        {
+                            _logger.Error( "Structure Object '{0}' has associated children but it is not a IMutableSetupItemGroup (only a IMutableSetupItem).", data.FullName );
+                        }
+                        else
+                        {
+                            foreach( IStObj child in data.StObj.Children )
+                            {
+                                StObjSetupData c = setupableItems[child];
+                                g.Children.Add( c.SetupItem.GetReference() );
+                            }
+                        }
                     }
                 }
             }

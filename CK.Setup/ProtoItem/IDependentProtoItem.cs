@@ -2,28 +2,31 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using CK.Core;
 
 namespace CK.Setup
 {
     /// <summary>
     /// Exposes a text version of the most versatile <see cref="IDependentItem"/> (the <see cref="IDependentItemContainerTyped"/>) with an additional 
     /// version (for a support of <see cref="IVersionedItem"/>). 
-    /// All properties are optional and are mere strings.
+    /// All properties are optional (except <see cref="IContextLocName.FullName">FullName</see>, see remarks) and are mere strings.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// This captures information that can define (or partialy define) a dependent item (or be used to define/compose a dependent item) without beeing itself a <see cref="IDependentItem"/>
     /// nor a <see cref="IVersionedItem"/>.
+    /// </para>
+    /// <para>
+    /// It seems to coherent to consider FullName a nullable (ie. optional) property like the others since such proto item can be used as a partial definition. 
+    /// Actually it is not nullable in order to extend from <see cref="IContextLocName"/> naming interface that requires its <see cref="IContextLocName.FullName"/> (and Name) to be not null.
+    /// </para>
+    /// <para>
+    /// Extending IContextLocName makes this propto item simpler to understand and easier to work with.
+    /// This should not be an issue (one can use a special FullName marker like "*" or "?" to handle this case - String.Empty may perfectly do the job if it has no semantics in the system).
+    /// </para>
     /// </remarks>
-    public interface IDependentProtoItem
+    public interface IDependentProtoItem : IContextLocName
     {
-        /// <summary>
-        /// Gets the full name of this item.
-        /// </summary>
-        /// <remarks>
-        /// Can be null when such proto item is used as a partial definition.
-        /// </remarks>
-        string FullName { get; }
-
         /// <summary>
         /// Gets the container name. Can be null.
         /// </summary>

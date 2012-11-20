@@ -6,10 +6,11 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
-    /// A mutable version of an <see cref="IDependentItem"/>.
+    /// A mutable version of an <see cref="ISetupItem"/>.
+    /// Note that <see cref="IMutableSetupItemContainer"/> offers children collection.
     /// The <see cref="IDependentItem.FullName"/> (that identifies the item) can not be changed through this interface.
     /// </summary>
-    public interface IMutableDependentItem : IDependentItem
+    public interface IMutableSetupItem : ISetupItem
     {
         /// <summary>
         /// Gets a mutable list of items that this item requires.

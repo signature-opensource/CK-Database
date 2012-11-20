@@ -18,22 +18,11 @@ namespace CK.Setup
     /// </remarks>
     public class DynamicContainerItem : ContainerItemBase
     {
-        string _fullName;
         DependentItemType _itemKind; 
 
         public DynamicContainerItem()
         {
             _itemKind = DependentItemType.Container;
-        }
-
-        /// <summary>
-        /// Gets or sets the full name of this container.
-        /// It must be not null.
-        /// </summary>
-        public string FullName
-        {
-            get { return _fullName; }
-            set { _fullName = value ?? String.Empty; }
         }
 
         /// <summary>
@@ -45,11 +34,6 @@ namespace CK.Setup
         {
             get { return _itemKind; }
             set { _itemKind = value; }
-        }
-
-        protected override string GetFullName()
-        {
-            return _fullName;
         }
 
         protected override DependentItemType GetItemKind()

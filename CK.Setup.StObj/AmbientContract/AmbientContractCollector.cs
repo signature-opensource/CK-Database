@@ -32,6 +32,24 @@ namespace CK.Core
                     ||
                    (t.IsClass && typeof( IAmbientContractDefiner ).IsAssignableFrom( t.BaseType )));
         }
+
+        /// <summary>
+        /// Simple helper that centralizes the formatting of a context associated to a type.
+        /// </summary>
+        /// <param name="context">Context. Can be null or empty.</param>
+        /// <param name="type">Type for which a contextualized name must be obtained.</param>
+        /// <returns>Contextual name of the type.</returns>
+        /// <remarks>
+        /// Choosen format [Context]TypeFullName mimics the way objects are addressed in CK.Setup only
+        /// for homogeneity. Unique naming of contextualized types (used by the dependency sorter to resolve dependency order) has, strictly
+        /// speaking, nothing to do with setup full names. Nevertheless, it seems a good idea to rely on the same (simple) format.
+        /// </remarks>
+        static public string FormatContextualFullName( string context, Type type )
+        {
+            if( type == null ) throw new ArgumentNullException( "type" );
+            return context == null ? type.FullName : '[' + context + ']' + type.FullName;
+        }
+        
     }
 
     public class AmbientContractCollector<TAmbientTypeInfo> : AmbientContractCollector

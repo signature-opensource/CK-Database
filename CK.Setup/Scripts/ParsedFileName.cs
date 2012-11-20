@@ -15,26 +15,28 @@ namespace CK.Setup
     /// and versions (for <see cref="IVersionedItem"/>) but can be used for simple <see cref="IDependentItem"/>.
     /// Offers <see cref="Parse"/> and <see cref="TryParse"/> factory methods.
     /// </summary>
-    public class ParsedFileName
+    public class ParsedFileName : IContextLocName
     {
         string _fileName;
         object _extraPath;
         string _context;
-        string _fullNameWithoutContext;
+        string _loc;
+        string _name;
         string _fullName;
         Version _fromVersion;
         Version _version;
         SetupStep _step;
         bool _isContent;
 
-        private ParsedFileName( string fileName, object extraPath, string context, string fullNameWithoutContext, Version f, Version v, SetupStep step, bool isContent )
+        private ParsedFileName( string fileName, object extraPath, string context, string location, string name, Version f, Version v, SetupStep step, bool isContent )
         {
             Debug.Assert( f == null || (v != null && f != v), "from ==> version && from != version" );
             _fileName = fileName;
             _extraPath = extraPath;
             _context = context;
-            _fullNameWithoutContext = fullNameWithoutContext;
-            _fullName = ContextNaming.FormatContextPrefix( _fullNameWithoutContext, _context );
+            _loc = location;
+            _name = name;
+            _fullName = DefaultContextLocNaming.Format( _context, _loc, _name );
             _fromVersion = f;
             _version = v;
             _step = step;
@@ -42,15 +44,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the name of the item with its [Context] prefix if any. Not null nor empty.
-        /// </summary>
-        public string FullName
-        {
-            get { return _fullName; }
-        }
-
-        /// <summary>
-        /// Gets the optional [Context] prefix (without the square brackets).
+        /// Gets the context identifier (see <see cref="DefaultContextLocNaming"/>).
         /// </summary>
         public string Context
         {
@@ -58,11 +52,27 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the name of the item without its optional [Context] prefix. Not null nor empty.
+        /// Gets the location (see <see cref="DefaultContextLocNaming"/>).
         /// </summary>
-        public string FullNameWithoutContext
+        public string Location
         {
-            get { return _fullNameWithoutContext; }
+            get { return _loc; }
+        }
+
+        /// <summary>
+        /// Gets the name of the item without its <see cref="Context"/> nor <see cref="Location"/>. Not null nor empty.
+        /// </summary>
+        public string Name
+        {
+            get { return _name; }
+        }
+
+        /// <summary>
+        /// Gets the name of the item with its context, location and name. Not null nor empty.
+        /// </summary>
+        public string FullName
+        {
+            get { return _fullName; }
         }
 
         /// <summary>
@@ -184,14 +194,16 @@ namespace CK.Setup
         /// Calls <see cref="TryParse"/> and throws a <see cref="FormatException"/> if it 
         /// fails to parse the given file name.
         /// </summary>
-        /// <param name="fileName">The file name. Should not start with a path (otherwise the path will appear in the <see cref="Name"/>).</param>
+        /// <param name="curContext">Current context identifier. It will be used as the <see cref="Context"/> if <paramref name="fileName"/> does not contain it. Null if no current context exist.</param>
+        /// <param name="curLoc">Current location identifier. It will be used as the <see cref="Loc"/> if <paramref name="fileName"/> does not contain a location. Null if no current location exist.</param>
+        /// <param name="fileName">The file name. Should not start with a path.</param>
         /// <param name="extraPath">Path part (prefix) of the <paramref name="fileName"/>.</param>
         /// <param name="hasExtension">True to ignore the trailing extension (.xxx). False if the <paramref name="fileName"/> does not end with an extension.</param>
         /// <param name="result">The parsed result.</param>
-        static public ParsedFileName Parse( string fileName, string extraPath, bool hasExtension )
+        static public ParsedFileName Parse( string curContext, string curLoc, string fileName, object extraPath, bool hasExtension )
         {
             ParsedFileName r;
-            if( !TryParse( fileName, extraPath, hasExtension, out r ) ) throw new FormatException( "Invalid file name '" + fileName + "' in '" + extraPath + "'." );
+            if( !TryParse( curContext, curLoc, fileName, extraPath, hasExtension, out r ) ) throw new FormatException( "Invalid file name '" + fileName + "' in '" + extraPath + "'." );
             return r;
         }
 
@@ -204,7 +216,9 @@ namespace CK.Setup
         /// trailing version with 3 numbers (ends with ".X.Y.Z") or a migration path (ends 
         /// with ".U.V.W.to.X.Y.Z").
         /// </summary>
-        /// <param name="fileName">The file name. Should not start with a path (otherwise the path will appear in the <see cref="Name"/>).</param>
+        /// <param name="curContext">Current context identifier. It will be used as the <see cref="Context"/> if <paramref name="fileName"/> does not contain it. Null if no current context exist.</param>
+        /// <param name="curLoc">Current location identifier. It will be used as the <see cref="Loc"/> if <paramref name="fileName"/> does not contain a location. Null if no current location exist.</param>
+        /// <param name="fileName">The file name. Should not start with a path.</param>
         /// <param name="extraPath">Path part (context dependant data) of the <paramref name="fileName"/>.</param>
         /// <param name="hasExtension">
         /// True to ignore the trailing extension (.xxx). False if the <paramref name="fileName"/> does not end with an extension: the last .part is part of the name.
@@ -213,19 +227,20 @@ namespace CK.Setup
         /// <param name="result">The parsed result or null.</param>
         /// <returns>True on success, false if the <paramref name="fileName"/> is not valid.</returns>
         /// <remarks>
-        /// The context prefix is optional. If the <paramref name="fileName"/> starts with a [, it must be like "[Context]FullName".
+        /// The context and location are optional since they can be given (<paramref name="curContext"/> and <paramref name="curLoc"/>). 
+        /// If the <paramref name="fileName"/> contains such context or location, they take precedence over the 2 parameters.
         /// </remarks>
-        static public bool TryParse( string fileName, object extraPath, bool hasExtension, out ParsedFileName result )
+        static public bool TryParse( string curContext, string curLoc, string fileName, object extraPath, bool hasExtension, out ParsedFileName result )
         {
             result = null;
             if( String.IsNullOrEmpty( fileName ) ) return false;
             
-            // The n is the future fullNameWithoutContext.
+            // The n is the future Name.
             string n = hasExtension ? fileName.Remove( fileName.LastIndexOf( '.' ) ) : fileName;
             if( n.Length == 0 ) return false;
             
-            string context;
-            if( !ContextNaming.TryExtractContext( n, out context, out n ) ) return false;
+            string context, location;
+            if( !DefaultContextLocNaming.TryParse( n, out context, out location, out n ) ) return false;
             Version f = null;
             Version v = null;
             SetupStep step = SetupStep.None;
@@ -274,7 +289,7 @@ namespace CK.Setup
                 n = n.Remove( n.Length - 14 );
             }
             if( n.Length == 0 ) return false;
-            result = new ParsedFileName( fileName, extraPath, context, n, f, v, step, isContent );
+            result = new ParsedFileName( fileName, extraPath, context, location, n, f, v, step, isContent );
             return true; 
         }
 
