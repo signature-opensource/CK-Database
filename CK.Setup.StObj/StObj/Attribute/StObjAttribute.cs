@@ -23,7 +23,7 @@ namespace CK.Setup
         /// Gets or sets the kind of object (simple item, group or container).
         /// This property is inherited from base classes that are not Ambient Contracts.
         /// </summary>
-        public DependentItemType ItemKind { get; set; }
+        public DependentItemKind ItemKind { get; set; }
 
         /// <summary>
         /// Gets or sets how Ambient Properties that reference the object must be tracked.
@@ -45,7 +45,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets or sets an array of types that must be Children of this item.
-        /// <see cref="ItemKind"/> must be <see cref="DependentItemType.Group"/> or <see cref="DependentItemType.Container"/>.
+        /// <see cref="ItemKind"/> must be <see cref="DependentItemKind.Group"/> or <see cref="DependentItemKind.Container"/>.
         /// This property is not inherited, it applies only to the decorated type.
         /// </summary>
         public Type[] Children { get; set; }
@@ -59,7 +59,7 @@ namespace CK.Setup
         /// <summary>
         /// Retrieves a <see cref="IStObjAttribute"/> from (potentially multiple) attributes on a type.
         /// If multiple attributes are defined, <see cref="IStObjAttribute.Requires"/>, <see cref="IStObjAttribute.Children"/>, and <see cref="IStObjAttribute.RequiredBy"/>
-        /// are merged, but if their <see cref="IStObjAttribute.Container"/> are not null or if <see cref="ItemKind"/> is not <see cref="DependentItemType.Unknown"/> and differ, the 
+        /// are merged, but if their <see cref="IStObjAttribute.Container"/> are not null or if <see cref="ItemKind"/> is not <see cref="DependentItemKind.Unknown"/> and differ, the 
         /// first one is kept and a log is emitted in the <paramref name="logger"/>.
         /// </summary>
         /// <param name="objectType">The type for which the attribute must be found.</param>
@@ -80,7 +80,7 @@ namespace CK.Setup
             IList<Type> requiredBy = null;
             IList<Type> children = null;
             IList<Type> group = null;
-            DependentItemType itemKind = DependentItemType.Unknown;
+            DependentItemKind itemKind = DependentItemKind.Unknown;
             Type container = null;
             IStObjAttribute containerDefiner = null;
             foreach( IStObjAttribute attr in a )
@@ -102,9 +102,9 @@ namespace CK.Setup
                         }
                     }
                 }
-                if( attr.ItemKind != DependentItemType.Unknown )
+                if( attr.ItemKind != DependentItemKind.Unknown )
                 {
-                    if( itemKind != DependentItemType.Unknown ) logger.Warn( "ItemKind is already set to '{0}'. Value '{1}' set by {2} is ignored.", itemKind, attr.ItemKind, attr.GetType().Name );
+                    if( itemKind != DependentItemKind.Unknown ) logger.Warn( "ItemKind is already set to '{0}'. Value '{1}' set by {2} is ignored.", itemKind, attr.ItemKind, attr.GetType().Name );
                     else itemKind = attr.ItemKind;
                 }
                 CombineTypes( ref requires, attr.Requires );

@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace CK.Setup
 {
-    internal class MutableReference : IMutableReference
+    internal class MutableReference : IStObjMutableReference
     {
         /// <summary>
         /// Owner of the reference corresponds to the exact type of the object that has the Construct method for parameters.
@@ -16,32 +16,32 @@ namespace CK.Setup
         /// by StObjTypeInfo: StObjTypeInfo.AmbientProperties already contains a merged information).
         /// </summary>
         internal readonly MutableItem Owner;
-        readonly MutableReferenceKind _kind;
+        readonly StObjMutableReferenceKind _kind;
         string _context;
-        static protected readonly MutableItem UnresolvedMarker = new MutableItem( null, String.Empty, null, String.Empty );
+        static protected readonly MutableItem UnresolvedMarker = new MutableItem();
 
-        internal MutableReference( MutableItem owner, MutableReferenceKind kind )
+        internal MutableReference( MutableItem owner, StObjMutableReferenceKind kind )
         {
             Owner = owner;
             _kind = kind;
-            if( _kind == MutableReferenceKind.Requires || _kind == MutableReferenceKind.Group || (_kind & MutableReferenceKind.Container) != 0 )
+            if( _kind == StObjMutableReferenceKind.Requires || _kind == StObjMutableReferenceKind.Group || (_kind & StObjMutableReferenceKind.Container) != 0 )
             {
                 StObjRequirementBehavior = StObjRequirementBehavior.ErrorIfNotStObj;
             }
-            else if( _kind == MutableReferenceKind.RequiredBy || _kind == MutableReferenceKind.AmbientProperty )
+            else if( _kind == StObjMutableReferenceKind.RequiredBy || _kind == StObjMutableReferenceKind.AmbientProperty )
             {
                 StObjRequirementBehavior = StObjRequirementBehavior.None;
             }
             else
             {
-                Debug.Assert( (_kind & MutableReferenceKind.ConstructParameter) != 0 );
+                Debug.Assert( (_kind & StObjMutableReferenceKind.ConstructParameter) != 0 );
                 StObjRequirementBehavior = StObjRequirementBehavior.WarnIfNotStObj;
             }
         }
 
-        IStObjMutableItem IMutableReference.Owner { get { return Owner; } }
+        IStObjMutableItem IStObjReference.Owner { get { return Owner; } }
 
-        public MutableReferenceKind Kind { get { return _kind; } }
+        public StObjMutableReferenceKind Kind { get { return _kind; } }
 
         public StObjRequirementBehavior StObjRequirementBehavior { get; set; }
 
@@ -58,7 +58,7 @@ namespace CK.Setup
         /// Gets or sets the type of the reference. 
         /// Initialized with the <see cref="System.Reflection.PropertyInfo.PropertyType"/> for Ambient Properties, 
         /// with <see cref="System.Reflection.ParameterInfo.ParameterType"/> for parameters and with provided type 
-        /// for other kind of reference (<see cref="MutableReferenceKind.Requires"/>, <see cref="MutableReferenceKind.RequiredBy"/> and <see cref="MutableReferenceKind.Container"/>).
+        /// for other kind of reference (<see cref="StObjMutableReferenceKind.Requires"/>, <see cref="StObjMutableReferenceKind.RequiredBy"/> and <see cref="StObjMutableReferenceKind.Container"/>).
         /// </summary>
         public Type Type { get; set; }
 
@@ -96,7 +96,15 @@ namespace CK.Setup
                     var all = collector.FindMutableItemsFor( Type ).ToList();
                     if( all.Count == 0 )
                     {
-                        WarnOrErrorIfStObjRequired( logger, String.Format( "Type '{0}' not found in any context", Type.FullName ) );
+                        // Do not use WarnOrErrorIfStObjRequired since we want to handle optional value type or string not found without any warning.
+                        if( StObjRequirementBehavior == Setup.StObjRequirementBehavior.ErrorIfNotStObj )
+                        {
+                            Error( logger, String.Format( "Type '{0}' not found in any context", Type.FullName ) );
+                        }
+                        else if( StObjRequirementBehavior == Setup.StObjRequirementBehavior.WarnIfNotStObj )
+                        {
+                            if( !Type.IsValueType && Type != typeof(string) ) Warn( logger, String.Format( "Type '{0}' not found in any context", Type.FullName ) );
+                        }
                         return null;
                     }
                     if( all.Count > 1 )
@@ -136,7 +144,7 @@ namespace CK.Setup
 
         public override string ToString()
         {
-            return String.Format( "'{0}' reference for {1}", _kind.ToString(), Owner.ToString() );
+            return String.Format( "{0} reference for '{1}'", _kind.ToString(), Owner.ToString() );
         }
     }
 }

@@ -11,14 +11,14 @@ namespace CK.Setup
     {
         readonly AmbientContractCollectorContextualResult<StObjTypeInfo> _contractResult;
         readonly StObjContextualMapper _mappings;
-        readonly IReadOnlyCollection<MutableItem> _itemsEx;
+        readonly internal MutableItem[] _specializations;
         bool _fatalError;
 
         internal StObjCollectorContextualResult( AmbientContractCollectorContextualResult<StObjTypeInfo> contractResult, StObjContextualMapper mappings )
         {
             _contractResult = contractResult;
             _mappings = mappings;
-            _itemsEx = new ReadOnlyCollectionOnICollection<MutableItem>( _mappings.MutableItems );
+            _specializations = new MutableItem[_contractResult.ConcreteClasses.Count];
         }
 
         /// <summary>
@@ -43,14 +43,6 @@ namespace CK.Setup
         public IStObjContextualMapper StObjMapper
         {
             get { return _mappings; }
-        }
-
-        /// <summary>
-        /// Gets the collection of structure objects that have been collected for this <see cref="Context"/>.
-        /// </summary>
-        public IReadOnlyCollection<IStObj> StObjItems
-        {
-            get { return _itemsEx; }
         }
 
         internal AmbientContractCollectorContextualResult<StObjTypeInfo> AmbientContractResult

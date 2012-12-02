@@ -14,7 +14,7 @@ namespace CK.Setup.Dependency.Tests
         public void EmptyContainer()
         {
             {
-                var c = new TestableContainer( DependentItemType.SimpleItem, "C" );
+                var c = new TestableContainer( DependentItemKind.Item, "C" );
                 {
                     var r = DependencySorter.OrderItems( c );
                     r.AssertOrdered( "C" );
@@ -22,7 +22,7 @@ namespace CK.Setup.Dependency.Tests
                 }
             }
             {
-                var c = new TestableContainer( DependentItemType.Group, "C" );
+                var c = new TestableContainer( DependentItemKind.Group, "C" );
                 {
                     var r = DependencySorter.OrderItems( c );
                     r.AssertOrdered( "C.Head", "C" );
@@ -34,7 +34,7 @@ namespace CK.Setup.Dependency.Tests
         [Test]
         public void AutoChildrenRegistration()
         {
-            var c = new TestableContainer( DependentItemType.SimpleItem, "C", new TestableItem( "A" ), new TestableItem( "B" ) );
+            var c = new TestableContainer( DependentItemKind.Item, "C", new TestableItem( "A" ), new TestableItem( "B" ) );
 
             var r = DependencySorter.OrderItems( c );
             Assert.That( r.HasStructureError );
@@ -44,7 +44,7 @@ namespace CK.Setup.Dependency.Tests
         [Test]
         public void AutoContainerRegistration()
         {
-            var c = new TestableContainer( DependentItemType.SimpleItem, "ZeContainer" );
+            var c = new TestableContainer( DependentItemKind.Item, "ZeContainer" );
             var e = new TestableItem( "E" );
             e.Container = c;
 
@@ -57,7 +57,7 @@ namespace CK.Setup.Dependency.Tests
         public void ThreeContainersByName()
         {
             {
-                var c0 = new TestableContainer( DependentItemType.SimpleItem, "C0" );
+                var c0 = new TestableContainer( DependentItemKind.Item, "C0" );
                 var c1 = new TestableContainer( "C1", "⊏C0" );
                 var c2 = new TestableContainer( "C2", "⊏C1" );
                 var r = DependencySorter.OrderItems( c2, c0, c1 );
@@ -66,7 +66,7 @@ namespace CK.Setup.Dependency.Tests
             }
             {
                 var c0 = new TestableContainer( "C0" );
-                var c1 = new TestableContainer( DependentItemType.SimpleItem, "C1", "⊏C0" );
+                var c1 = new TestableContainer( DependentItemKind.Item, "C1", "⊏C0" );
                 var c2 = new TestableContainer( "C2", "⊏C1" );
                 var r = DependencySorter.OrderItems( c2, c0, c1 );
                 r.LogError( TestHelper.Logger );
@@ -75,7 +75,7 @@ namespace CK.Setup.Dependency.Tests
             {
                 var c0 = new TestableContainer( "C0" );
                 var c1 = new TestableContainer( "C1", "⊏C0" );
-                var c2 = new TestableContainer( DependentItemType.SimpleItem, "C2", "⊏C1" );
+                var c2 = new TestableContainer( DependentItemKind.Item, "C2", "⊏C1" );
                 var r = DependencySorter.OrderItems( c2, c0, c1 );
                 Assert.That( r.HasStructureError, Is.False, "Success since c2 has no items." );
             }
@@ -87,8 +87,8 @@ namespace CK.Setup.Dependency.Tests
             using( TestableItem.IgnoreCheckCount() )
             {
                 var c0 = new TestableContainer( "C0" );
-                var gA = new TestableContainer( DependentItemType.Group, "GA", "∋C0" );
-                var gB = new TestableContainer( DependentItemType.Group, "GB", "∋C0" );
+                var gA = new TestableContainer( DependentItemKind.Group, "GA", "∋C0" );
+                var gB = new TestableContainer( DependentItemKind.Group, "GB", "∋C0" );
                 {
                     var r = DependencySorter.OrderItems( gA, c0, gB );
                     Assert.That( r.IsComplete );
@@ -103,9 +103,9 @@ namespace CK.Setup.Dependency.Tests
             using( TestableItem.IgnoreCheckCount() )
             {
                 var c0 = new TestableContainer( "C0" );
-                var g1 = new TestableContainer( DependentItemType.Group, "G1", new TestableItem( "Alpha" ) );
-                var gA = new TestableContainer( DependentItemType.Group, "GA", g1 );
-                var gB = new TestableContainer( DependentItemType.Group, "GB", "G1" );
+                var g1 = new TestableContainer( DependentItemKind.Group, "G1", new TestableItem( "Alpha" ) );
+                var gA = new TestableContainer( DependentItemKind.Group, "GA", g1 );
+                var gB = new TestableContainer( DependentItemKind.Group, "GB", "G1" );
                 gA.Container = c0;
                 gB.Container = c0;
                 {

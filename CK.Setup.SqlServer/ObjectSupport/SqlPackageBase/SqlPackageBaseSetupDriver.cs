@@ -41,11 +41,11 @@ namespace CK.Setup.SqlServer
 
                         if( Item.Model == null )
                         {
-                            logger.Trace( "{1} sql scripts in resource found for '{0}'.", name, nbScripts );
+                            logger.Trace( "{1} sql scripts in resource found for '{0}' in '{2}.", name, nbScripts, r );
                         }
                         else
                         {
-                            logger.Trace( "{1} sql scripts in resource found for '{0}' and 'Model.{0}'.", name, nbScripts );
+                            logger.Trace( "{1} sql scripts in resource found for '{0}' and 'Model.{0}' in '{2}'.", name, nbScripts, r );
                         }
                     }
                 }

@@ -14,18 +14,28 @@ namespace CK.Setup.SqlServer
         static public readonly string TypeProcedure = "Procedure";
         static public readonly string TypeFunction = "Function";
 
-        ContextLocNameStructImpl _name;
+        ContextLocNameStructImpl _fullName;
 
-        public string Context { get { return _name.Context; } }
+        public string Context { get { return _fullName.Context; } }
 
-        public string Location { get { return _name.Location; } }
+        public string Location { get { return _fullName.Location; } }
 
         /// <summary>
         /// Never null nor empty (otherwise this object would have not been created).
         /// </summary>
-        public string Name { get { return _name.Name; } }
+        public string Name { get { return _fullName.Name; } }
 
-        public string FullName { get { return _name.FullName; } }
+        public string FullName { get { return _fullName.FullName; } }
+
+        /// <summary>
+        /// Can be empty but not null.
+        /// </summary>
+        public string Schema { get; private set; }
+
+        /// <summary>
+        /// Can be empty but not null.
+        /// </summary>
+        public string ObjectName { get; private set; }
 
         public string Header { get; private set; }
 
@@ -34,15 +44,10 @@ namespace CK.Setup.SqlServer
         /// </summary>
         public string PhysicalDatabaseName { get; private set; }
 
-        /// <summary>
-        /// Can be empty but not null.
-        /// </summary>
-        public string Schema { get; private set; }
-
         public string Container { get; private set; }
         public Version Version { get; private set; }
         public string ItemType { get; private set; }
-        public DependentItemType ItemKind { get { return DependentItemType.SimpleItem; } }
+        public DependentItemKind ItemKind { get { return DependentItemKind.Item; } }
         public string Generalization { get { return null; } }
         public IEnumerable<string> Groups { get; private set; }
         public IEnumerable<string> Requires { get; private set; }
@@ -53,7 +58,7 @@ namespace CK.Setup.SqlServer
         public string TextAfterName { get; private set; }
             
         internal SqlObjectProtoItem(
-                    IContextLocName externalName,
+                    IContextLocNaming externalName,
                     string itemType,
                     string physicalDatabaseName,
                     string schema,
@@ -68,12 +73,15 @@ namespace CK.Setup.SqlServer
                     string textAfterName )
         {
             Debug.Assert( externalName != null );
-            ItemType = itemType;
-            PhysicalDatabaseName = physicalDatabaseName;
-            Schema = schema;
+            
             // The fact that external.Name must be equal to this Name (based on the content) is checked
             // by the caller (it can then give more information suh as the resource location).
-            _name = new ContextLocNameStructImpl( externalName.Context, externalName.Location, schema.Length > 0 ? (schema + '.' + name) : name );
+            _fullName = new ContextLocNameStructImpl( externalName.Context, externalName.Location, schema.Length > 0 ? (schema + '.' + name) : name );
+            Schema = schema;
+            ObjectName = name;
+
+            ItemType = itemType;
+            PhysicalDatabaseName = physicalDatabaseName;
             Header = header;
             Version = v;
             Container = packageName;

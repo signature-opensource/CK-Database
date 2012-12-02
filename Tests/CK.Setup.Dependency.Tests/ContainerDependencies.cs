@@ -38,9 +38,9 @@ namespace CK.Setup.Dependency.Tests
             Assert.That( r.SortedItems[1].Item.FullName, Is.EqualTo( "A" ), "Lexical order." );
             Assert.That( r.SortedItems[2].Item.FullName, Is.EqualTo( "B" ), "Lexical order." );
             Assert.That( r.SortedItems[3].Item.FullName, Is.EqualTo( "C" ), "Container" );
-
             new ResultChecker( r ).CheckRecurse( c.FullName );
             ResultChecker.SimpleCheck( r );
+            r.CheckChildren( "C", "A,B" );
         }
 
         [Test]
@@ -61,6 +61,7 @@ namespace CK.Setup.Dependency.Tests
 
             new ResultChecker( r ).CheckRecurse( c.FullName, e.FullName );
             ResultChecker.SimpleCheck( r );
+            r.CheckChildren( "ZeContainer", "A,B,E" );
         }
 
         [Test]
@@ -74,18 +75,21 @@ namespace CK.Setup.Dependency.Tests
                 r.AssertOrdered( "C0.Head", "A", "B", "C", "C0", "C1.Head", "X", "C1", "C2.Head", "Y", "C2" );
                 new ResultChecker( r ).CheckRecurse( "C0", "C1", "C2" );
                 ResultChecker.SimpleCheck( r );
+                r.CheckChildren( "C0", "A,B,C" );
             }
             {
                 var r = DependencySorter.OrderItems( c0, c1, c2 );
                 r.AssertOrdered( "C0.Head", "A", "B", "C", "C0", "C1.Head", "X", "C1", "C2.Head", "Y", "C2" );
                 new ResultChecker( r ).CheckRecurse( "C0", "C1", "C2" );
                 ResultChecker.SimpleCheck( r );
+                r.CheckChildren( "C0", "A,B,C" );
             }
             {
                 var r = DependencySorter.OrderItems( c2, c1, c0 );
                 r.AssertOrdered( "C0.Head", "A", "B", "C", "C0", "C1.Head", "X", "C1", "C2.Head", "Y", "C2" );
                 new ResultChecker( r ).CheckRecurse( "C0", "C1", "C2" );
                 ResultChecker.SimpleCheck( r );
+                r.CheckChildren( "C0", "A,B,C" );
             }
         }
 
@@ -98,6 +102,9 @@ namespace CK.Setup.Dependency.Tests
             var r = DependencySorter.OrderItems( c2, c0, c1 );
             new ResultChecker( r ).CheckRecurse( "C0", "C1", "C2" );
             ResultChecker.SimpleCheck( r );
+            r.CheckChildren( "C0", "A,B,C" );
+            r.CheckChildren( "C1", "X" );
+            r.CheckChildren( "C2", "Y" );
         }
 
 
@@ -267,6 +274,8 @@ namespace CK.Setup.Dependency.Tests
             var r = DependencySorter.OrderItems( pAB, oA, oB, pABLevel1, oBLevel1 );
             Assert.That( r.IsComplete );
             r.AssertOrdered( "PackageForAB.Head", "A", "B", "PackageForAB", "PackageForABLevel1.Head", "ObjectBLevel1", "PackageForABLevel1" );
+            r.CheckChildren( "PackageForAB", "A,B" );
+            r.CheckChildren( "PackageForABLevel1", "ObjectBLevel1" );
         }
     }
 }

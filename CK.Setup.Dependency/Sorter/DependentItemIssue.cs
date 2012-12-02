@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using CK.Core;
 using System.Diagnostics;
+using System.IO;
 
 namespace CK.Setup
 {
@@ -125,7 +126,7 @@ namespace CK.Setup
             if( logger == null ) throw new ArgumentNullException( "logger" );
             if( StructureError != DependentItemStructureError.None )
             {
-                using( logger.OpenGroup( LogLevel.Error, "Errors on '{0}'", Item.FullName ) )
+                using( logger.OpenGroup( LogLevel.Info, "Errors on '{0}'", Item.FullName ) )
                 {
                     if( (StructureError & DependentItemStructureError.MissingNamedContainer) != 0 )
                     {
@@ -164,7 +165,7 @@ namespace CK.Setup
                     {
                         if( Item.Container != null )
                         {
-                            logger.Error( "This item states to belong to container {0}, but other containers ('{1}') claim to own it.", Item.Container.FullName, String.Join( "', '", _extraneousContainers ) );
+                            logger.Error( "This item states to belong to container '{0}', but other containers ('{1}') claim to own it.", Item.Container.FullName, String.Join( "', '", _extraneousContainers ) );
                         }
                         else
                         {
@@ -223,6 +224,20 @@ namespace CK.Setup
         {
             get { return _nbRequiredMissingDep > 0 ? _missingDep.Where( s => s[0] != '?' ) : null; }
         }
+
+        public override string ToString()
+        {
+            if( StructureError != DependentItemStructureError.None )
+            {
+                TextWriter writer = new StringWriter();
+                IDefaultActivityLogger l = DefaultActivityLogger.Create();
+                l.Tap.Register( new ActivityLoggerTextWriterSink( writer ) );
+                LogError( l );
+                return writer.ToString();
+            }
+            return "(no error)";
+        }
+
     }
 
 }

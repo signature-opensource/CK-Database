@@ -10,13 +10,13 @@ namespace CK.Setup
 {
     /// <summary>
     /// Base class for construct parameters or ambient properties: these references can be resolved
-    /// either structurally or dynamically (by <see cref="IStObjDependencyResolver"/>).
+    /// either structurally or dynamically (by <see cref="IStObjValueResolver"/>).
     /// </summary>
-    internal abstract class MutableResolvableReference : MutableReference, IResolvableReference
+    internal abstract class MutableReferenceWithValue : MutableReference
     {
         MutableItem _resolved;
 
-        internal MutableResolvableReference( MutableItem owner, MutableReferenceKind kind )
+        internal MutableReferenceWithValue( MutableItem owner, StObjMutableReferenceKind kind )
             : base( owner, kind )
         {
             _resolved = UnresolvedMarker;
@@ -31,9 +31,9 @@ namespace CK.Setup
 
         public bool IsOptional { get; set; }
 
-        public object Value { get; private set; }
+        public object Value { get; protected set; }
 
-        internal bool HasBeenResolved { get { return Value != Type.Missing; } }
+        internal bool HasBeenSet { get { return Value != Type.Missing; } }
 
         internal MutableItem CachedResolvedStObj 
         { 
@@ -62,25 +62,6 @@ namespace CK.Setup
                 }
             }
             return _resolved = base.ResolveToStObj( logger, collector, cachedCollector );
-        }
-
-        public virtual bool SetResolvedValue( IActivityLogger logger, object value )
-        {
-            Value = value;
-            return true;
-        }
-
-        public virtual bool SetStructuralValue( IActivityLogger logger, string sourceName, object value )
-        {
-            if( sourceName == null ) throw new ArgumentNullException( "sourceName" );
-            if( value == Type.Missing ) logger.Warn( "{0}: '{1}' is setting a structural value to Type.Missing.", ToString(), sourceName );
-            Value = value;
-            return true;
-        }
-
-        IStObj IResolvableReference.Owner
-        {
-            get { return Owner; }
         }
     }
 }

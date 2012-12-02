@@ -12,7 +12,7 @@ namespace CK.Setup
     public interface IStObjMapper : IReadOnlyCollection<IStObjContextualMapper>
     {
         /// <summary>
-        /// Gets the default mapper, the one bound to <see cref="AmbientContractCollector.DefaultContext"/>.
+        /// Gets the default mapper, the one identified by <see cref="String.Empty"/>.
         /// </summary>
         IStObjContextualMapper Default { get; }
 

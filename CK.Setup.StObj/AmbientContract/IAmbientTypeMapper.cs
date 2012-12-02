@@ -11,7 +11,7 @@ namespace CK.Core
     public interface IAmbientTypeMapper : IReadOnlyCollection<IAmbientTypeContextualMapper>
     {
         /// <summary>
-        /// Gets the default type mapper, the one bound to <see cref="AmbientContractCollector.DefaultContext"/>.
+        /// Gets the default type mapper, the one identified by <see cref="String.Empty"/>.
         /// </summary>
         IAmbientTypeContextualMapper Default { get; }
 

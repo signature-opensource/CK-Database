@@ -81,7 +81,7 @@ namespace CK.Setup
             }
         }
 
-        public IStObjSetupData Parent
+        public IStObjSetupData Generalization
         {
             get { return _parent; }
         }

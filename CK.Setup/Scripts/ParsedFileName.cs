@@ -15,7 +15,7 @@ namespace CK.Setup
     /// and versions (for <see cref="IVersionedItem"/>) but can be used for simple <see cref="IDependentItem"/>.
     /// Offers <see cref="Parse"/> and <see cref="TryParse"/> factory methods.
     /// </summary>
-    public class ParsedFileName : IContextLocName
+    public class ParsedFileName : IContextLocNaming
     {
         string _fileName;
         object _extraPath;
@@ -241,6 +241,7 @@ namespace CK.Setup
             
             string context, location;
             if( !DefaultContextLocNaming.TryParse( n, out context, out location, out n ) ) return false;
+            if( !DefaultContextLocNaming.Combine( curContext, curLoc, ref context, ref location ) ) return false;
             Version f = null;
             Version v = null;
             SetupStep step = SetupStep.None;

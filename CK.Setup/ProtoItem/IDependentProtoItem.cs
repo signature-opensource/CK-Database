@@ -9,7 +9,7 @@ namespace CK.Setup
     /// <summary>
     /// Exposes a text version of the most versatile <see cref="IDependentItem"/> (the <see cref="IDependentItemContainerTyped"/>) with an additional 
     /// version (for a support of <see cref="IVersionedItem"/>). 
-    /// All properties are optional (except <see cref="IContextLocName.FullName">FullName</see>, see remarks) and are mere strings.
+    /// All properties are optional (except <see cref="IContextLocNaming.FullName">FullName</see>, see remarks) and are mere strings.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -17,15 +17,15 @@ namespace CK.Setup
     /// nor a <see cref="IVersionedItem"/>.
     /// </para>
     /// <para>
-    /// It seems to coherent to consider FullName a nullable (ie. optional) property like the others since such proto item can be used as a partial definition. 
-    /// Actually it is not nullable in order to extend from <see cref="IContextLocName"/> naming interface that requires its <see cref="IContextLocName.FullName"/> (and Name) to be not null.
+    /// It seems coherent to consider FullName a nullable (ie. optional) property like the others since such proto item can be used as a partial definition. 
+    /// Actually it is not nullable in order to extend from <see cref="IContextLocNaming"/> naming interface that requires its <see cref="IContextLocNaming.FullName"/> (and Name) to be not null.
     /// </para>
     /// <para>
     /// Extending IContextLocName makes this propto item simpler to understand and easier to work with.
     /// This should not be an issue (one can use a special FullName marker like "*" or "?" to handle this case - String.Empty may perfectly do the job if it has no semantics in the system).
     /// </para>
     /// </remarks>
-    public interface IDependentProtoItem : IContextLocName
+    public interface IDependentProtoItem : IContextLocNaming
     {
         /// <summary>
         /// Gets the container name. Can be null.
@@ -53,9 +53,9 @@ namespace CK.Setup
         string Generalization { get; }
 
         /// <summary>
-        /// Gets the kind of item. Can be <see cref="DependentItemType.Unknown"/>.
+        /// Gets the kind of item. Can be <see cref="DependentItemKind.Unknown"/>.
         /// </summary>
-        DependentItemType ItemKind { get; }
+        DependentItemKind ItemKind { get; }
 
         /// <summary>
         /// Gets the groups name to which this item belongs. Can be null.

@@ -49,5 +49,14 @@ namespace CK.Setup
             private set { _version = value ?? Util.EmptyVersion; }
         }
 
+        /// <summary>
+        /// Overridden to return the "FullName - Version".
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return _name + " - " + _version.ToString();
+        }
+
     }
 }

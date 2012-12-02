@@ -7,7 +7,7 @@ using CK.Core;
 namespace CK.Setup
 {
 
-    public class StObjConfigurator : IAmbientContractDispatcher, IStObjStructuralConfigurator, IStObjDependencyResolver, IStObjSetupConfigurator, IStObjSetupItemFactory
+    public class StObjConfigurator : IAmbientContractDispatcher, IStObjStructuralConfigurator, IStObjValueResolver, IStObjSetupConfigurator, IStObjSetupItemFactory
     {
         bool IAmbientContractDispatcher.IsAmbientContractClass( Type t )
         {
@@ -22,11 +22,11 @@ namespace CK.Setup
         {
         }
 
-        void IStObjDependencyResolver.ResolveParameterValue( IActivityLogger logger, IParameter p )
+        void IStObjValueResolver.ResolveParameterValue( IActivityLogger logger, IStObjFinalParameter p )
         {
         }
 
-        void IStObjDependencyResolver.ResolveExternalPropertyValue( IActivityLogger logger, IAmbientProperty a )
+        void IStObjValueResolver.ResolveExternalPropertyValue( IActivityLogger logger, IStObjFinalAmbientProperty a )
         {
         }
 

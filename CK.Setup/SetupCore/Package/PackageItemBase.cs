@@ -43,21 +43,9 @@ namespace CK.Setup
             get { return _children ?? (_children = new DependentItemList()); }
         }
 
-        /// <summary>
-        /// Gets whether this container is actually NOT a Container or even not a Group.
-        /// When not <see cref="DependentItemType.Container"/>, if an item declares this item as its container, an error is raised 
-        /// during the ordering of the dependency graph.
-        /// </summary>
-        protected abstract DependentItemType GetDynamicType();
-
         object IDependentItem.StartDependencySort()
         {
             return StartDependencySort();
-        }
-
-        DependentItemType IDependentItemContainerTyped.ItemKind
-        {
-            get { return GetDynamicType(); }
         }
 
         IEnumerable<IDependentItemRef> IDependentItemGroup.Children

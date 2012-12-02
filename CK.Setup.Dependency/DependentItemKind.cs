@@ -9,7 +9,7 @@ namespace CK.Setup
     /// Describes the kind of a <see cref="IDependentItem"/>.
     /// Used by <see cref="IDependentItemContainerTyped"/> to dynamically restrict its type.
     /// </summary>
-    public enum DependentItemType
+    public enum DependentItemKind
     {
         /// <summary>
         /// Unknown type can be used for instance to dynamically adjust the behavior of the item.
@@ -19,7 +19,7 @@ namespace CK.Setup
         /// <summary>
         /// Considers the item as a pure <see cref="IDependentItem"/>.
         /// </summary>
-        SimpleItem,
+        Item,
 
         /// <summary>
         /// Considers the item as a <see cref="IDependentItemGroup"/>.

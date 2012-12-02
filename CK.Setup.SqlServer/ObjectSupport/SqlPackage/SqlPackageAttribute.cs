@@ -22,15 +22,14 @@ namespace CK.Setup.SqlServer
 
         protected override void ConfigureMutableItem( IActivityLogger logger, IStObjMutableItem o )
         {
-            o.SetPropertyStructuralValue( logger, "SqlPackageAttribute", "HasModel", HasModel );
+            o.SetDirectPropertyValue( logger, "HasModel", HasModel );
         }
 
         void IStObjSetupConfigurator.ConfigureDependentItem( IActivityLogger logger, IMutableStObjSetupData data )
         {
-            if( data.IsDefaultFullName )
+            if( data.IsDefaultFullNameWithoutContext )
             {
-                logger.Info( "SqlPackage class '{0}' uses its own name as its setup FullName.", data.StObj.ObjectType.Name );
-                data.FullNameWithoutContext = data.StObj.ObjectType.Name;
+                logger.Info( "SqlPackage class '{0}' uses its own full name as its SetupName.", data.FullNameWithoutContext );
             }
             data.ItemType = typeof( SqlPackageItem );
             data.DriverType = typeof( SqlPackageSetupDriver );

@@ -42,7 +42,19 @@ namespace CK.Setup
             set { _fullNameWithoutContext = value; }
         }
 
-        public bool IsDefaultFullName
+        public bool IsFullNameWithoutContextAvailable( string name )
+        {
+            IStObjSetupData g = Generalization;
+            while( g != null )
+            {
+                if( g.FullNameWithoutContext == name ) return false;
+                g = g.Generalization;
+            }
+            return true;
+        }
+
+
+        public bool IsDefaultFullNameWithoutContext
         {
             get { return ReferenceEquals( _fullNameWithoutContext, _stObj.ObjectType.FullName ); } 
         }

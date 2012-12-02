@@ -55,12 +55,12 @@ namespace CK.Setup
         /// </summary>
         Homonym = 128,
         /// <summary>
-        /// A <see cref="IDependentItemContainerTyped"/> that declares to not be a group (<see cref="IDependentItemContainerTyped.ItemKind"/> is <see cref="DependentItemType.SimpleItem"/>)
+        /// A <see cref="IDependentItemContainerTyped"/> that declares to not be a group (<see cref="IDependentItemContainerTyped.ItemKind"/> is <see cref="DependentItemKind.Item"/>)
         /// has items in its <see cref="IDependentItemContainer.Children"/> collection.
         /// </summary>
         ContainerAskedToNotBeAGroupButContainsChildren = 256,
         /// <summary>
-        /// A group in <see cref="IDependentItem.Groups"/> declares to not be a group (<see cref="IDependentItemContainerTyped.ItemKind"/> is <see cref="DependentItemType.SimpleItem"/>).
+        /// A group in <see cref="IDependentItem.Groups"/> declares to not be a group (<see cref="IDependentItemContainerTyped.ItemKind"/> is <see cref="DependentItemKind.Item"/>).
         /// </summary>
         DeclaredGroupRefusedToBeAGroup = 512,
         /// <summary>

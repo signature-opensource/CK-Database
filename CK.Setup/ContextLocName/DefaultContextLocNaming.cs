@@ -71,7 +71,7 @@ namespace CK.Core
 
         static string DoGetName( string input, int startIndex, int count )
         {
-            int iName = input.LastIndexOfAny( _namePrefixes, startIndex + count, count );
+            int iName = input.LastIndexOfAny( _namePrefixes, startIndex + count - 1, count );
             if( iName < 0 ) iName = startIndex;
             else count -= (iName - startIndex);
             return input.Substring( iName, count );
@@ -127,7 +127,7 @@ namespace CK.Core
         static bool DoNameStartsWith( string input, int startIndex, int count, string prefix )
         {
             if( String.IsNullOrEmpty( prefix ) ) return true;
-            int iName = input.LastIndexOfAny( _namePrefixes, startIndex + count, count );
+            int iName = input.LastIndexOfAny( _namePrefixes, startIndex + count - 1, count );
             if( iName < 0 ) iName = startIndex;
             return String.CompareOrdinal( input, iName, prefix, 0, prefix.Length ) == 0;
         }
@@ -182,9 +182,9 @@ namespace CK.Core
         static string DoAddNamePrefix( string input, int startIndex, int count, string namePrefix )
         {
             if( String.IsNullOrEmpty( namePrefix ) ) throw new ArgumentException( "namePrefix" );
-            int iName = input.LastIndexOfAny( _namePrefixes, startIndex + count, count );
+            int iName = input.LastIndexOfAny( _namePrefixes, --startIndex + count, count );
             if( iName < 0 ) iName = startIndex;
-            return input.Insert( iName, namePrefix );
+            return input.Insert( ++iName, namePrefix );
         }
         #endregion
 
@@ -289,6 +289,15 @@ namespace CK.Core
             return input.Remove( startIndex, count ).Insert( startIndex, r );
         }
 
+        #endregion
+
+        #region Combine
+
+        static public bool Combine( string curContext, string curLoc, ref string context, ref string location )
+        {
+            return DoCombine( curContext, curLoc, ref context, ref location, null );
+        }
+
         static bool DoCombine( string curContext, string curLoc, ref string context, ref string location, Func<string> fullNameToThrowError = null )
         {
             if( context == null ) context = curContext;
@@ -315,7 +324,9 @@ namespace CK.Core
             }
             return true;
         }
+
         #endregion
+
     }
 
  }

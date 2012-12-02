@@ -16,7 +16,7 @@ namespace CK.Setup
         string _driverTypeName;
         string _containerFullName;
         TrackAmbientPropertiesMode _trackAmbientProperties;
-        DependentItemType _setupItemKind;
+        DependentItemKind _setupItemKind;
         bool _hasModel;
 
         public SetupAttribute()
@@ -111,12 +111,12 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets or sets how this object must be considered regarding other items: it can be a <see cref="DependentItemType.SimpleItem"/>, 
-        /// a <see cref="DependentItemType.Group"/> or a <see cref="DependentItemType.Container"/>.
-        /// When let to <see cref="DependentItemType.Unknown"/>, this property is inherited (it is eventually 
-        /// considered as <see cref="DependentItemType.Container"/> when not set).
+        /// Gets or sets how this object must be considered regarding other items: it can be a <see cref="DependentItemKind.Item"/>, 
+        /// a <see cref="DependentItemKind.Group"/> or a <see cref="DependentItemKind.Container"/>.
+        /// When let to <see cref="DependentItemKind.Unknown"/>, this property is inherited (it is eventually 
+        /// considered as <see cref="DependentItemKind.Container"/> when not set).
         /// </summary>
-        public DependentItemType ItemKind
+        public DependentItemKind ItemKind
         {
             get { return _setupItemKind; }
             set { _setupItemKind = value; }
@@ -161,6 +161,16 @@ namespace CK.Setup
                 c.ConfigureDependentItem( logger, data );
             }
         }
+
+        internal static void ApplyAttributesDynamicInitializer( IActivityLogger logger, IMutableSetupItem i, IStObj o )
+        {
+            var all = o.ObjectType.GetCustomAttributes( typeof( IStObjSetupDynamicInitializer ), false );
+            foreach( IStObjSetupDynamicInitializer init in all )
+            {
+                init.DynamicItemInitialize( logger, i, o );
+            }
+        }
+        
         
 
     }

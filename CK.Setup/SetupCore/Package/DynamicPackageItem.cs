@@ -18,10 +18,9 @@ namespace CK.Setup
     {
         PackageModelItem _model;
         object _driverType;
-        DependentItemType _dynamicType; 
 
         /// <summary>
-        /// Initializes a new dynamic package with <see cref="ItemKind"/> set to <see cref="DependentItemType.Container"/>.
+        /// Initializes a new dynamic package with <see cref="ItemKind"/> set to <see cref="DependentItemKind.Container"/>.
         /// </summary>
         /// <param name="itemType">The <see cref="IVersionedItem.ItemType"/> for this item.</param>
         /// <param name="driverType">
@@ -31,8 +30,8 @@ namespace CK.Setup
         public DynamicPackageItem( string itemType, object driverType = null )
             : base( itemType )
         {
-            _dynamicType = DependentItemType.Container;
             _driverType = driverType ?? typeof( SetupDriver );
+            ItemKind = DependentItemKind.Container;
         }
 
         /// <summary>
@@ -63,19 +62,12 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets or sets whether this container is actually NOT a Container or even not a Group.
-        /// When not <see cref="DependentItemType.Container"/>, if an item declares this item as its container, an error is raised 
-        /// during the ordering of the dependency graph.
+        /// Gets or sets the kind of this item.
         /// </summary>
-        public DependentItemType ItemKind
+        public new DependentItemKind ItemKind
         {
-            get { return _dynamicType; }
-            set { _dynamicType = value; }
-        }
-
-        protected override DependentItemType GetDynamicType()
-        {
-            return _dynamicType;
+            get { return base.ItemKind; }
+            set { base.ItemKind = value; }
         }
 
         protected override object StartDependencySort()

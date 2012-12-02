@@ -20,6 +20,6 @@ namespace CK.Setup
     /// </remarks>
     public interface IDependentItemContainerTyped : IDependentItemContainer
     {
-        DependentItemType ItemKind { get; }
+        DependentItemKind ItemKind { get; }
     }
 }

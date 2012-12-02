@@ -38,7 +38,7 @@ namespace CK.Setup.Dependency.Tests
                 {
                     var r = DependencySorter.OrderItems( true, ASpec, container );
                     r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
-                    Assert.That( r.SortedItems[2].Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
+                    Assert.That( r.Find( "ASpec" ).Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
                 }
                 // Second, register ASpec that generalizes A that references the container: the container is automatically discovered.
                 container.Children.Clear();
@@ -46,24 +46,24 @@ namespace CK.Setup.Dependency.Tests
                 {
                     var r = DependencySorter.OrderItems( ASpec );
                     r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
-                    Assert.That( r.SortedItems[2].Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
+                    Assert.That( r.Find( "ASpec" ).Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
                 }
                 {
                     var r = DependencySorter.OrderItems( true, ASpec );
                     r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
-                    Assert.That( r.SortedItems[2].Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
+                    Assert.That( r.Find( "ASpec" ).Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
                 }
                 // Third, register the container that references A by name.
                 container.Add( "⊐A" );
                 {
                     var r = DependencySorter.OrderItems( ASpec, container );
                     r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
-                    Assert.That( r.SortedItems[2].Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
+                    Assert.That( r.Find( "ASpec" ).Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
                 }
                 {
                     var r = DependencySorter.OrderItems( true, ASpec, container );
                     r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
-                    Assert.That( r.SortedItems[2].Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
+                    Assert.That( r.Find( "ASpec" ).Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
                 }
                 // Fourth, register A that reference the container by name.
                 container.Children.Clear();
@@ -71,12 +71,12 @@ namespace CK.Setup.Dependency.Tests
                 {
                     var r = DependencySorter.OrderItems( ASpec, container );
                     r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
-                    Assert.That( r.SortedItems[2].Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
+                    Assert.That( r.Find( "ASpec" ).Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
                 }
                 {
                     var r = DependencySorter.OrderItems( true, ASpec, container );
                     r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
-                    Assert.That( r.SortedItems[2].Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
+                    Assert.That( r.Find( "ASpec" ).Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
                 }
             }
         }
@@ -116,6 +116,7 @@ namespace CK.Setup.Dependency.Tests
         public void CycleDetectionByName0()
         {
             // Ruby belongs to "Root" container.
+            // Here we can see the the "Generalized By" ↟ relations.
             var c = new TestableContainer( "Root",
                         new TestableContainer( "Pierre", "⇀Nuage",
                             new TestableItem( "Gem" )
@@ -126,7 +127,6 @@ namespace CK.Setup.Dependency.Tests
             var r = DependencySorter.OrderItems( c );
             Assert.That( r.CycleDetected, Is.Not.Null );
             Assert.That( r.SortedItems, Is.Null );
-            // Here we can see the "Required By Requires" ⇌ and the "Generalized By" ↟ relations.
             Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ Rubis ↟ Gem ⊏ Pierre ⇀ Nuage ⇀ Rubis" ) );
             ResultChecker.SimpleCheck( r );
         }

@@ -21,12 +21,12 @@ namespace CK.Setup.SqlServer
                 | RegexOptions.ExplicitCapture );
 
 
-        IDependentProtoItem ISqlObjectParser.Create( IActivityLogger logger, IContextLocName externalName, string text )
+        IDependentProtoItem ISqlObjectParser.Create( IActivityLogger logger, IContextLocNaming externalName, string text )
         {
             return SqlObjectParser.Create( logger, externalName, text, null );
         }
 
-        static public SqlObjectProtoItem Create( IActivityLogger logger, IContextLocName externalName, string text, string expectedType = null )
+        static public SqlObjectProtoItem Create( IActivityLogger logger, IContextLocNaming externalName, string text, string expectedType = null )
         {
             Match mSqlObject = _rSqlObject.Match( text );
             if( !mSqlObject.Success )

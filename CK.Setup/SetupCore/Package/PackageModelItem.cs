@@ -88,7 +88,7 @@ namespace CK.Setup
         /// </summary>
         public string Name
         {
-            get { return _package.Name; }
+            get { return "Model." + _package.Name; }
         }
 
         /// <summary>
@@ -216,7 +216,7 @@ namespace CK.Setup
             get { return "Model"; }
         }
 
-        //TODO: CHECK that Children relationships supports optionality and projects them into potential "Model." groups. 
+        //TODO: CHECK that Children relationships supports optionality and projects them into potential "Model." children. ?? Not sure it is a good idea for container/Children... 
         IEnumerable<IDependentItemRef> IDependentItemGroup.Children
         {
             get { return _children.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _package.Context, _package.Location ) ); }

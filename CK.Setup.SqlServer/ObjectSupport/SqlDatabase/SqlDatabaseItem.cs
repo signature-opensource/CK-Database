@@ -22,7 +22,7 @@ namespace CK.Setup.SqlServer
         {
             Object = (SqlDatabase)data.StObj.Object;
             Context = data.StObj.Context;
-            Name = Object.Name;
+            Location = Object.Name;
             ItemKind = data.StObj.ItemKind;
             ConnectionItem = new SqlDatabaseConnectionItem( this );
             Requires.Add( ConnectionItem );

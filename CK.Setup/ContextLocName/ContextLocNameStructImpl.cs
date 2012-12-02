@@ -20,8 +20,8 @@ namespace CK.Core
         /// <summary>
         /// Initializes a new <see cref="ContextLocNameStructImpl"/> with a full name.
         /// </summary>
-        /// <param name="fullName">Initial full name. (note:There is no default constructor for struct, hence the use of the default value.)</param>
-        public ContextLocNameStructImpl( string fullName = null )
+        /// <param name="fullName">Initial full name. (Note: There is no default constructor for struct, this ctor should be called with (string)null or String.Empty.)</param>
+        public ContextLocNameStructImpl( string fullName )
         {
             // Initialize class invariants.
             _fullName = _name = String.Empty;
@@ -39,6 +39,19 @@ namespace CK.Core
             _location = location;
             _name = name;
             _fullName = DefaultContextLocNaming.Format( _context, _location, _name );
+        }
+
+        /// <summary>
+        /// Initializes a new <see cref="ContextLocNameStructImpl"/> from a non null <see cref="IContextLocNaming"/>.
+        /// </summary>
+        /// <param name="contextLocName"></param>
+        public ContextLocNameStructImpl( IContextLocNaming contextLocName )
+        {
+            if( contextLocName == null ) throw new ArgumentNullException( "contextLocName" );
+            _context = contextLocName.Context;
+            _location = contextLocName.Location;
+            _name = contextLocName.Name;
+            _fullName = contextLocName.FullName;
         }
 
         /// <summary>
@@ -114,21 +127,14 @@ namespace CK.Core
                     }
                     else
                     {
-                        string context, location, name;
-                        if( !DefaultContextLocNaming.TryParse( value, out context, out location, out name ) )
+                        if( !DefaultContextLocNaming.TryParse( value, out _context, out _location, out _name ) )
                         {
                             _fullName = _name = value;
                             _context = _location = null;
                         }
                         else
                         {
-                            int nbC = _context != null ? 1 : 0;
-                            if( _location != null ) nbC++;
-
-                            if( context != null && _context != context ) { _context = context; --nbC; }
-                            if( location != null && _location != location ) { _location = location; --nbC; }
-                            _name = name;
-                            if( nbC > 0 ) _fullName = DefaultContextLocNaming.Format( _context, _location, _name );
+                            _fullName = DefaultContextLocNaming.Format( _context, _location, _name );
                         }
                     }
                 }

@@ -133,15 +133,7 @@ namespace CK.Setup.Database
             }
             else p = new DynamicPackageItem( "SetupP" );
 
-            string fullName = (string)e.AttributeRequired( "FullName" );
-            string context, loc, name;
-            if( !DefaultContextLocNaming.TryParse( fullName, out context, out loc, out name ) )
-            {
-                throw new CKException( "FullName '{0}' is not valid.", fullName );
-            }
-            if( context != null ) curContext = context;
-            if( loc != null ) curLoc = loc;
-            fullName = DefaultContextLocNaming.Resolve( fullName, curContext, curLoc );
+            p.FullName = DefaultContextLocNaming.Resolve( (string)e.AttributeRequired( "FullName" ), curContext, curLoc );
 
             p.SetVersionsString( (string)e.AttributeRequired( "Versions" ) );
             

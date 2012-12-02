@@ -11,16 +11,27 @@ namespace CK.Setup
     /// <summary>
     /// Describes an Ambient property.
     /// </summary>
-    internal class MutableAmbientProperty : MutableResolvableReference, IMutableAmbientProperty, IAmbientProperty
+    internal class MutableAmbientProperty : MutableReferenceWithValue, IStObjAmbientProperty, IStObjFinalAmbientProperty
     {
-        AmbientPropertyInfo _info;
+        readonly AmbientPropertyInfo _info;
+        int _maxSpecializationDepthSet;
+        internal bool UseValue;
 
         internal MutableAmbientProperty( MutableItem owner, AmbientPropertyInfo info )
-            : base( owner, MutableReferenceKind.AmbientProperty )
+            : base( owner, StObjMutableReferenceKind.AmbientProperty )
         {
             _info = info;
             Type = _info.PropertyType;
             IsOptional = _info.IsOptional;
+        }
+
+        internal MutableAmbientProperty( MutableItem owner, string unexistingPropertyName )
+            : base( owner, StObjMutableReferenceKind.AmbientProperty )
+        {
+            _info = null;
+            Type = typeof(object);
+            IsOptional = false;
+            _maxSpecializationDepthSet = Int32.MaxValue;
         }
 
         public override string Name { get { return _info.Name; } }
@@ -31,32 +42,58 @@ namespace CK.Setup
 
         public override string ToString()
         {
-            string s = String.Format( "Ambient Property '{0}' of '{1}'", Name, Owner.ToString() );
-            return s;
+            return String.Format( "Ambient Property '{0}' of '{1}'", Name, Owner.ToString() );
         }
-
-        internal bool IsValueMergeable { get { return _info.IsValueMergeable; } }
 
         internal bool IsWriteable { get { return _info.IsWriteable; } }
 
-        internal PropertyInfo PropertyInfo { get { return _info.PropertyInfo; } }
+        internal AmbientPropertyInfo AmbientPropertyInfo { get { return _info; } }
 
-        bool IMutableAmbientProperty.IsDefinedFor( IStObjMutableItem stObj )
+        internal int MaxSpecializationDepthSet { get { return _maxSpecializationDepthSet; } }
+
+        /// <summary>
+        /// Public in oreder to implement IStObjFinalAmbientProperty.SetFinalValue.
+        /// </summary>
+        public void SetValue( object value )
         {
-            if( stObj == null ) throw new ArgumentNullException( "stObj" );
-            return IsDefinedFor( stObj.ObjectType );
+            _maxSpecializationDepthSet = Int32.MaxValue;
+            Value = value;
         }
 
-        bool IAmbientProperty.IsDefinedFor( IStObj stObj )
+        internal bool IsFinalValue
         {
-            if( stObj == null ) throw new ArgumentNullException( "stObj" );
-            return IsDefinedFor( stObj.ObjectType );
+            get { return _maxSpecializationDepthSet == Int32.MaxValue; }
         }
 
-        internal bool IsDefinedFor( Type t )
+        internal bool SetValue( int setterSpecializationDepth, IActivityLogger logger, object value )
         {
-            Debug.Assert( t != null );
-            return _info.DeclaringType.IsAssignableFrom( t );
+            Debug.Assert( _maxSpecializationDepthSet != Int32.MaxValue );
+            if( setterSpecializationDepth < _maxSpecializationDepthSet )
+            {
+                logger.Error( "'{0}' has already been set or configured through a more specialized object.", ToString() );
+                return false;
+            }
+            _maxSpecializationDepthSet = setterSpecializationDepth;
+            Value = value;
+            UseValue = true;
+            return true;
+        }
+
+        internal bool SetConfiguration( int setterSpecializationDepth, IActivityLogger logger, string context, Type type, StObjRequirementBehavior behavior )
+        {
+            Debug.Assert( _maxSpecializationDepthSet != Int32.MaxValue );
+            if( setterSpecializationDepth < _maxSpecializationDepthSet )
+            {
+                logger.Error( "'{0}' has already been set or configured through a more specialized object.", ToString() );
+                return false;
+            }
+            _maxSpecializationDepthSet = setterSpecializationDepth;
+            Value = Type.Missing;
+            Context = context;
+            Type = type;
+            StObjRequirementBehavior = behavior;
+            UseValue = false;
+            return true;
         }
 
     }

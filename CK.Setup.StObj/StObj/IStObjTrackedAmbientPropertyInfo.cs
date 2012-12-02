@@ -6,12 +6,12 @@ using System.Reflection;
 
 namespace CK.Setup
 {
-    public interface ITrackedAmbientPropertyInfo
+    public interface IStObjTrackedAmbientPropertyInfo
     {
         /// <summary>
         /// Gets the <see cref="IStObj"/> that holds the property.
         /// </summary>
-        IStObj SpecializedOwner { get; }
+        IStObj Owner { get; }
 
         /// <summary>
         /// Gets the property information.

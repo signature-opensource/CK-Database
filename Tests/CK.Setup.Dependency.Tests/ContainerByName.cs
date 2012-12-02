@@ -21,6 +21,7 @@ namespace CK.Setup.Dependency.Tests
                 Assert.That( r.IsComplete );
                 r.AssertOrdered( "CB.Head", "CA.Head", "CA", "CB" );
                 ResultChecker.SimpleCheck( r );
+                r.CheckChildren( "CB", "CA" );
             }
             {
                 // Starting by CB.
@@ -28,6 +29,7 @@ namespace CK.Setup.Dependency.Tests
                 Assert.That( r.IsComplete );
                 r.AssertOrdered( "CB.Head", "CA.Head", "CA", "CB" );
                 ResultChecker.SimpleCheck( r );
+                r.CheckChildren( "CB", "CA" );
             }
         }
 
@@ -40,6 +42,7 @@ namespace CK.Setup.Dependency.Tests
                 var r = DependencySorter.OrderItems( c, o1 );
                 r.AssertOrdered( "C.Head", "O1", "C" );
                 ResultChecker.SimpleCheck( r );
+                r.CheckChildren( "C", "O1" );
             }
             var o2 = new TestableItem( "O2", "⊏ O1" );
             {
@@ -53,6 +56,7 @@ namespace CK.Setup.Dependency.Tests
                 var r = DependencySorter.OrderItems( c, o1, o2 );
                 r.AssertOrdered( "C.Head", "O2", "O1", "C" );
                 ResultChecker.SimpleCheck( r );
+                r.CheckChildren( "C", "O1,O2" );
             }
             var sub = new TestableItem( "Cycle", "⊏ C", "⇀ C" );
             {
@@ -129,12 +133,13 @@ namespace CK.Setup.Dependency.Tests
             var d = new TestableContainer( "D" );
 
             {
-                // Starting by C: O1 is discovered by C.Children: the extraneous container is D.
                 var r = DependencySorter.OrderItems( c, o1, d );
                 Assert.That( r.IsComplete, Is.False );
                 Assert.That( r.HasStructureError, Is.True );
                 Assert.That( r.ItemIssues[0].StructureError, Is.EqualTo( DependentItemStructureError.MultipleContainer ) );
-                Assert.That( r.ItemIssues[0].ExtraneousContainers.Single(), Is.EqualTo( "D" ) );
+                Assert.That( r.ItemIssues[0].Item.FullName, Is.EqualTo( "O1" ) );
+                Assert.That( r.ItemIssues[0].Item.Container.FullName, Is.EqualTo( "D" ) );
+                Assert.That( r.ItemIssues[0].ExtraneousContainers.Single(), Is.EqualTo( "C" ) );
                 ResultChecker.SimpleCheck( r );
             }
 
@@ -146,7 +151,9 @@ namespace CK.Setup.Dependency.Tests
                 Assert.That( r.IsComplete, Is.False );
                 Assert.That( r.HasStructureError, Is.True );
                 Assert.That( r.ItemIssues[0].StructureError, Is.EqualTo( DependentItemStructureError.MultipleContainer ) );
-                Assert.That( r.ItemIssues[0].ExtraneousContainers.Single(), Is.EqualTo( "D" ) );
+                Assert.That( r.ItemIssues[0].Item.FullName, Is.EqualTo( "O1" ) );
+                Assert.That( r.ItemIssues[0].Item.Container.FullName, Is.EqualTo( "D" ) );
+                Assert.That( r.ItemIssues[0].ExtraneousContainers.Single(), Is.EqualTo( "C" ) );
                 ResultChecker.SimpleCheck( r );
             }
         }
@@ -162,14 +169,15 @@ namespace CK.Setup.Dependency.Tests
             o1.Container = d;
             Assert.That( c.Children.Contains( o1 ) && o1.Container != c );
 
-
             {
                 // Starting by C: O1 is discovered by C.Children: the extraneous container is D.
                 var r = DependencySorter.OrderItems( c, o1, d );
                 Assert.That( r.IsComplete, Is.False );
                 Assert.That( r.HasStructureError, Is.True );
                 Assert.That( r.ItemIssues[0].StructureError, Is.EqualTo( DependentItemStructureError.MultipleContainer ) );
-                Assert.That( r.ItemIssues[0].ExtraneousContainers.Single(), Is.EqualTo( "D" ) );
+                Assert.That( r.ItemIssues[0].Item.FullName, Is.EqualTo( "O1" ) );
+                Assert.That( r.ItemIssues[0].Item.Container.FullName, Is.EqualTo( "D" ) );
+                Assert.That( r.ItemIssues[0].ExtraneousContainers.Single(), Is.EqualTo( "C" ) );
                 ResultChecker.SimpleCheck( r );
             }
 
@@ -179,6 +187,8 @@ namespace CK.Setup.Dependency.Tests
                 Assert.That( r.IsComplete, Is.False );
                 Assert.That( r.HasStructureError, Is.True );
                 Assert.That( r.ItemIssues[0].StructureError, Is.EqualTo( DependentItemStructureError.MultipleContainer ) );
+                Assert.That( r.ItemIssues[0].Item.FullName, Is.EqualTo( "O1" ) );
+                Assert.That( r.ItemIssues[0].Item.Container.FullName, Is.EqualTo( "D" ) );
                 Assert.That( r.ItemIssues[0].ExtraneousContainers.Single(), Is.EqualTo( "C" ) );
                 ResultChecker.SimpleCheck( r );
             }

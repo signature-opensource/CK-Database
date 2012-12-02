@@ -55,12 +55,11 @@ namespace CK.Setup.Tests
             ParsedFileName result;
             Assert.That( ParsedFileName.TryParse( "nimp", null, "[db]Test.1.2.3.sql", null, true, out result ) );
             Assert.That( result.FullName, Is.EqualTo( "[db]Test" ) );
-            Assert.That( result.FullName, Is.EqualTo( "Test" ) );
 
             // Empty context is the Default.
             Assert.That( ParsedFileName.TryParse( "nimp", "db", "[]Test.1.2.3.sql", null, true, out result ) );
-            Assert.That( result.FullName, Is.EqualTo( "db^Test" ) );
-            Assert.That( result.Context, Is.Null );
+            Assert.That( result.FullName, Is.EqualTo( "[]db^Test" ) );
+            Assert.That( result.Context, Is.Empty );
             Assert.That( result.Location, Is.EqualTo( "db" ) );
             Assert.That( result.Name, Is.EqualTo( "Test" ) );
 
@@ -72,11 +71,7 @@ namespace CK.Setup.Tests
             Assert.That( result.Version.ToString(), Is.EqualTo( "1.0.3" ) );
 
             Assert.That( ParsedFileName.TryParse( "nimp", null, "[]", null, false, out result ), Is.False );
-            Assert.That( result.FullName, Is.EqualTo( "[]" ) );
-            Assert.That( result.Context, Is.EqualTo( "" ) );
-            Assert.That( result.Location, Is.Null );
-            Assert.That( result.Name, Is.EqualTo( "" ) );
-            Assert.That( result.Version, Is.Null );
+            Assert.That( result, Is.Null );
             
             // Invalid context is not parsed.
             Assert.That( ParsedFileName.TryParse( "nimp", "nimp", "[db.Test.1.2.3.sql", null, true, out result ), Is.False );

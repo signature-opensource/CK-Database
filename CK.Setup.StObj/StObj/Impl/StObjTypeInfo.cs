@@ -8,11 +8,13 @@ using System.Diagnostics;
 
 namespace CK.Setup
 {
-    interface ITypeInfoFromParent
+    internal interface ITypeInfoFromParent
     {
+        int SpecializationDepth { get; }
         Type Container { get; }
         IReadOnlyCollection<AmbientPropertyInfo> AmbientProperties { get; }
-        DependentItemType ItemKind { get; }
+        IReadOnlyCollection<StObjPropertyInfo> StObjProperties { get; }
+        DependentItemKind ItemKind { get; }
         TrackAmbientPropertiesMode TrackAmbientProperties { get; }
     }
 
@@ -21,13 +23,15 @@ namespace CK.Setup
         class TypeInfoForBaseClasses : ITypeInfoFromParent
         {
             public IReadOnlyCollection<AmbientPropertyInfo> AmbientProperties { get; private set; }
+            public IReadOnlyCollection<StObjPropertyInfo> StObjProperties { get; private set; }
+            public int SpecializationDepth { get; private set; }
             public Type Container { get; private set; }
-            public DependentItemType ItemKind { get; private set; }
+            public DependentItemKind ItemKind { get; private set; }
             public TrackAmbientPropertiesMode TrackAmbientProperties { get; private set; }
 
             bool IsFullyDefined
             {
-                get { return Container != null && ItemKind != DependentItemType.Unknown && TrackAmbientProperties != TrackAmbientPropertiesMode.Unknown; }
+                get { return Container != null && ItemKind != DependentItemKind.Unknown && TrackAmbientProperties != TrackAmbientPropertiesMode.Unknown; }
             }
 
             static object _lock = new object();
@@ -44,28 +48,45 @@ namespace CK.Setup
                     if( result == null )
                     {
                         result = new TypeInfoForBaseClasses();
-                        // Ambient Properties (uses a recursive function).
-                        var all = CreateAllAmbientPropertyList( t, logger );
-                        result.AmbientProperties = all != null ? all.ToReadOnlyCollection() : ReadOnlyListEmpty<AmbientPropertyInfo>.Empty;
-                        // For ItemKind & TrackAmbientProperties, walks up the inheritance chain and combines the StObjAttribute.
-                        var a = CK.Setup.StObjAttribute.GetStObjAttributeForExactType( t, logger );
-                        if( a != null )
+                        if( t == typeof( object ) )
                         {
-                            result.Container = a.Container;
-                            result.ItemKind = a.ItemKind;
-                            result.TrackAmbientProperties = a.TrackAmbientProperties;
+                            result.AmbientProperties = ReadOnlyListEmpty<AmbientPropertyInfo>.Empty;
+                            result.StObjProperties = ReadOnlyListEmpty<StObjPropertyInfo>.Empty;
                         }
-                        Type tAbove = t.BaseType;
-                        while( !result.IsFullyDefined && tAbove != null && tAbove != typeof( object ) )
+                        else
                         {
-                            var aAbove = CK.Setup.StObjAttribute.GetStObjAttributeForExactType( tAbove, logger );
-                            if( aAbove != null )
+                            // At least below object :-).
+                            result.SpecializationDepth = 1;
+                            // For ItemKind & TrackAmbientProperties, walks up the inheritance chain and combines the StObjAttribute.
+                            // We compute the SpecializationDepth: once we know it, we can inject it the Ambient Properties discovery.
+                            var a = CK.Setup.StObjAttribute.GetStObjAttributeForExactType( t, logger );
+                            if( a != null )
                             {
-                                if( result.Container == null ) result.Container = aAbove.Container;
-                                if( result.ItemKind == DependentItemType.Unknown ) result.ItemKind = aAbove.ItemKind;
-                                if( result.TrackAmbientProperties == TrackAmbientPropertiesMode.Unknown ) result.TrackAmbientProperties = aAbove.TrackAmbientProperties;
+                                result.Container = a.Container;
+                                result.ItemKind = a.ItemKind;
+                                result.TrackAmbientProperties = a.TrackAmbientProperties;
                             }
-                            tAbove = tAbove.BaseType;
+                            Type tAbove = t.BaseType;
+                            while( tAbove != typeof( object ) )
+                            {
+                                result.SpecializationDepth = result.SpecializationDepth + 1;
+                                if( !result.IsFullyDefined )
+                                {
+                                    var aAbove = CK.Setup.StObjAttribute.GetStObjAttributeForExactType( tAbove, logger );
+                                    if( aAbove != null )
+                                    {
+                                        if( result.Container == null ) result.Container = aAbove.Container;
+                                        if( result.ItemKind == DependentItemKind.Unknown ) result.ItemKind = aAbove.ItemKind;
+                                        if( result.TrackAmbientProperties == TrackAmbientPropertiesMode.Unknown ) result.TrackAmbientProperties = aAbove.TrackAmbientProperties;
+                                    }
+                                }
+                                tAbove = tAbove.BaseType;
+                            }
+                            // Ambient Properties (uses a recursive function).
+                            List<StObjPropertyInfo> stObjProperties = new List<StObjPropertyInfo>();
+                            var all = AmbientPropertyInfo.CreateAllAmbientPropertyList( t, result.SpecializationDepth, logger, stObjProperties );
+                            result.AmbientProperties = all != null ? all.ToReadOnlyCollection() : ReadOnlyListEmpty<AmbientPropertyInfo>.Empty;
+                            result.StObjProperties = stObjProperties.ToReadOnlyList();
                         }
                         _cache.Add( t, result );
                     }
@@ -73,30 +94,45 @@ namespace CK.Setup
                 return result;
             }
 
-            /// <summary>
-            /// Recursive function to collect Ambient Properties on base types 
-            /// </summary>
-            static IEnumerable<AmbientPropertyInfo> CreateAllAmbientPropertyList( Type type, IActivityLogger logger )
-            {
-                if( type == typeof( object ) ) return null;
-                return MergeAboveAmbientProperties( CreateAllAmbientPropertyList( type.BaseType, logger ), CreateAmbientPropertyListForExactType( type, logger ), logger );
-            }
         }
 
         internal StObjTypeInfo( IActivityLogger logger, AmbientTypeInfo parent, Type t )
             : base( parent, t )
         {
             ITypeInfoFromParent infoFromParent = Generalization ?? TypeInfoForBaseClasses.GetFor( logger, t.BaseType );
+            SpecializationDepth = infoFromParent.SpecializationDepth + 1;
 
-            #region Ambient properties.
+            // StObj properties are initialized with inherited (non Ambient Contract ones).
+            List<StObjPropertyInfo> stObjProperties = new List<StObjPropertyInfo>();
+            if( Generalization == null ) stObjProperties.AddRange( infoFromParent.StObjProperties );
+            // StObj properties are then read from StObjPropertyAttribute on class
+            foreach( StObjPropertyAttribute p in t.GetCustomAttributes( typeof( StObjPropertyAttribute ), Generalization == null ) )
             {
-                // Ambient properties for the exact Type (can be null).
-                IList<AmbientPropertyInfo> collector = CreateAmbientPropertyListForExactType( Type, logger );
-                // For type that have no Generalization: we must handle [AmbientProperty] on base classes (no AmbientTypeInfo since they are not Ambient contract).
-                // Both fromParent and collector can be null: MergeAboveAmbientProperties handles it.
-                AmbientProperties = MergeAboveAmbientProperties( infoFromParent.AmbientProperties, collector, logger ).ToReadOnlyCollection();
-            }
-            #endregion
+                if( String.IsNullOrEmpty( p.PropertyName ) )
+                {
+                    logger.Error( "Unamed StObj property on '{1}'. Attribute must be configured with a valid PropertyName.", t.FullName );
+                }
+                else if( p.PropertyType == null )
+                {
+                    logger.Error( "StObj property named '{0}' for '{1}' has no PropertyType defined.", p.PropertyName, t.FullName );
+                }
+                else if( stObjProperties.Find( sP => sP.Name == p.PropertyName ) != null )
+                {
+                    logger.Error( "StObj property named '{0}' for '{1}' is defined more than once. It should be declared only once.", p.PropertyName, t.FullName );
+                }
+                else
+                {
+                    stObjProperties.Add( new StObjPropertyInfo( p.PropertyName, p.PropertyType, null ) );
+                }
+            }           
+            // Ambient properties for the exact Type (can be null). 
+            // In the same time, StObjPropertyAttribute that are associated to properties are collected into stObjProperties.
+            IList<AmbientPropertyInfo> collector = AmbientPropertyInfo.CreateAmbientPropertyListForExactType( Type, SpecializationDepth, logger, stObjProperties );
+            // For type that have no Generalization: we must handle [AmbientProperty] on base classes (no AmbientTypeInfo since they are not Ambient contract).
+            // Both fromParent and collector can be null: MergeAboveAmbientProperties handles it.
+            AmbientProperties = AmbientPropertyInfo.MergeAboveAmbientProperties( infoFromParent.AmbientProperties, collector, logger ).ToReadOnlyCollection();
+
+            StObjProperties = stObjProperties.ToReadOnlyList();
 
             #region IStObjAttribute (ItemKind, Container & Type requirements).
             // There is no Container inheritance at this level.
@@ -118,7 +154,7 @@ namespace CK.Setup
             if( Generalization == null )
             {
                 if( Container == null ) Container = infoFromParent.Container;
-                if( ItemKind == DependentItemType.Unknown ) ItemKind = infoFromParent.ItemKind;
+                if( ItemKind == DependentItemKind.Unknown ) ItemKind = infoFromParent.ItemKind;
                 if( TrackAmbientProperties == TrackAmbientPropertiesMode.Unknown ) TrackAmbientProperties = infoFromParent.TrackAmbientProperties;
             }
             if( Container != null ) ContainerContext = FindContextFromMapAttributes( Container );
@@ -188,11 +224,15 @@ namespace CK.Setup
 
         public IReadOnlyCollection<AmbientPropertyInfo> AmbientProperties { get; private set; }
 
+        public IReadOnlyCollection<StObjPropertyInfo> StObjProperties { get; private set; }
+
         public Type Container { get; private set; }
 
+        public int SpecializationDepth { get; private set; }
+        
         public readonly string ContainerContext;
 
-        public DependentItemType ItemKind { get; private set; }
+        public DependentItemKind ItemKind { get; private set; }
 
         public TrackAmbientPropertiesMode TrackAmbientProperties { get; private set; }
 
@@ -219,94 +259,6 @@ namespace CK.Setup
             // Attribute ContextMap( Type, string ) is not implemented.
             return null;
         }
-
-        /// <summary>
-        /// An ambient property must be public or protected in order to be "specialized" either by overriding (for virtual ones)
-        /// or by masking ('new' keyword in C#), typically to support covariance return type.
-        /// The "Property Covariance" trick can be supported here because ambient properties are conceptually "read only" properties:
-        /// they must be settable only to enable the framework (and no one else) to actually set their values.
-        /// </summary>
-        static List<AmbientPropertyInfo> CreateAmbientPropertyListForExactType( Type t, IActivityLogger logger )
-        {
-            var properties = t.GetProperties( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly ).Where( p => !p.Name.Contains( '.' ) );
-            List<AmbientPropertyInfo> result = null;
-            foreach( var p in properties )
-            {
-                AmbientPropertyAttribute attr = (AmbientPropertyAttribute)Attribute.GetCustomAttribute( p, typeof( AmbientPropertyAttribute ), false );
-                if( attr == null ) continue;
-
-                var mSet = p.GetSetMethod( true );
-                var mGet = p.GetGetMethod( true );
-                bool isValueMergeable = typeof(IMergeable).IsAssignableFrom( p.PropertyType );
-                bool isWriteable = mSet != null && !mSet.IsPrivate;
-                if( (!isWriteable && !isValueMergeable ) || (mGet == null || mGet.IsPrivate) )
-                {
-                    // Warning: not a "Property Covariance" compliant property since
-                    // specialized classes will not be able to "override" its signature.
-                    // Even if it is not the "Property Covariance" that is targeted, a private get or set
-                    // implies a "slicing" of the (base) type that defeats the specialization paradigm (with Covariance).
-                    logger.Error( "Property '{0}' of '{1}' can not be considered as an Ambient property. An Ambient property must be readable and writeable (no private setter or getter), or implement CK.Core.IMergeable interface.", p.Name, p.DeclaringType.FullName );
-                }
-                else
-                {
-                    if( !isWriteable && isValueMergeable )
-                    {
-                        throw new NotImplementedException( "Not Writeable but Mergeable properties are not yet supported (need a IStObjMutableItem.SetPropertyStructuralSetter to initialize it)." );
-                    }
-                    if( result == null ) result = new List<AmbientPropertyInfo>();
-                    Debug.Assert( result.Find( a => a.Name == p.Name ) == null, "No homonym properties in .Net framework." );
-                    result.Add( new AmbientPropertyInfo( p, attr, isWriteable, isValueMergeable ) );
-                }
-            }
-            return result;
-        }
-
-        static IEnumerable<AmbientPropertyInfo> MergeAboveAmbientProperties( IEnumerable<AmbientPropertyInfo> above, IList<AmbientPropertyInfo> collector, IActivityLogger logger )
-        {
-            if( collector == null || collector.Count == 0 ) return above ?? ReadOnlyListEmpty<AmbientPropertyInfo>.Empty;
-            if( above != null )
-            {
-                // Adds 'above' into 'collector' before returning it.
-                List<AmbientPropertyInfo> fromAbove = null;
-                foreach( AmbientPropertyInfo a in above )
-                {
-                    AmbientPropertyInfo exists = collector.FirstOrDefault( p => p.Name == a.Name );
-                    if( exists != null )
-                    {
-                        // Covariance ?
-                        if( exists.PropertyType != a.PropertyType && !a.PropertyType.IsAssignableFrom( exists.PropertyType ) )
-                        {
-                            logger.Error( "Ambient property '{0}.{1}' type is not compatible with base property '{2}.{1}'.", exists.DeclaringType.FullName, exists.Name, a.DeclaringType.FullName );
-                        }
-                        // A required property can not become optional.
-                        if( exists.IsOptional && !a.IsOptional )
-                        {
-                            logger.Error( "Ambient property '{0}.{1}' states that it is optional but base property '{2}.{1}' is required.", exists.DeclaringType.FullName, exists.Name, a.DeclaringType.FullName );
-                        }
-                        // Context inheritance (if not defined).
-                        if( exists.Context == null )
-                        {
-                            exists.Context = a.Context;
-                        }
-                        // We do not need to keep the fact that this property overrides one above
-                        // as long as we have checked that no conflict/incoherency occur.
-                        // We may keep the Generalization (ie. setting exists._generalization = a) but not a
-                        // reference to the specialization since we are not Contextualized here, but only on
-                        // a pure Type level.
-                    }
-                    else
-                    {
-                        if( fromAbove == null ) fromAbove = new List<AmbientPropertyInfo>();
-                        fromAbove.Add( a );
-                    }
-                }
-                if( fromAbove != null ) collector.AddRange( fromAbove );
-            }
-            return collector;
-        }
-
-
-
 
     }
 }

@@ -10,13 +10,13 @@ namespace CK.Setup.SqlServer
 {
     public class SqlObjectSetupDriver : SetupDriver
     {
-        SqlManager _manager;
+        readonly ISqlManagerProvider _provider;
 
         public SqlObjectSetupDriver( BuildInfo info, ISqlManagerProvider sqlProvider )
             : base( info )
         {
             if( sqlProvider == null ) throw new ArgumentNullException( "sqlProvider" );
-            _manager = sqlProvider.FindManagerByName( SqlDatabase.DefaultDatabaseName );
+            _provider = sqlProvider;
         }
 
         public new SqlObjectItem Item
@@ -28,12 +28,15 @@ namespace CK.Setup.SqlServer
         {
             if( ExternalVersion != null && ExternalVersion.Version == ((IVersionedItem)Item).Version ) return true;
 
+            SqlManager m = SqlScriptTypeHandler.FindManagerFromLocation( Engine.Logger, _provider, FullName );
+            if( m == null ) return false;
+ 
             string s;
             StringWriter w = new StringWriter();
             
             Item.WriteDrop( w );
             s = w.GetStringBuilder().ToString();
-            if( !_manager.ExecuteOneScript( s, Engine.Logger ) ) return false;
+            if( !m.ExecuteOneScript( s, Engine.Logger ) ) return false;
             w.GetStringBuilder().Clear();
             
             Item.WriteCreate( w );
@@ -42,7 +45,7 @@ namespace CK.Setup.SqlServer
             var tagHandler = new SimpleScriptTagHandler( s );
             if( !tagHandler.Expand( Engine.Logger, true ) ) return false;
             var scripts = tagHandler.SplitScript();
-            if( !_manager.ExecuteScripts( scripts.Select( c => c.Body ), Engine.Logger ) ) return false;
+            if( !m.ExecuteScripts( scripts.Select( c => c.Body ), Engine.Logger ) ) return false;
 
             return true;
         }

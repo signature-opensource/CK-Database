@@ -11,11 +11,13 @@ namespace CK.Setup
     {
         readonly Dictionary<Type,MutableItem> _items;
         readonly IAmbientTypeContextualMapper _typeMappings;
+        readonly IReadOnlyCollection<MutableItem> _itemsEx;
         readonly StObjMapper _owner;
 
         internal StObjContextualMapper( StObjMapper owner, IAmbientTypeContextualMapper typeMappings )
         {
             _items = new Dictionary<Type, MutableItem>();
+            _itemsEx = new ReadOnlyCollectionOnICollection<MutableItem>( _items.Values );
             _typeMappings = typeMappings;
             _owner = owner;
             _owner.Add( this );
@@ -41,9 +43,25 @@ namespace CK.Setup
             get { return _typeMappings; }
         }
 
-        public IStObj this[Type t]
+        public IReadOnlyCollection<IStObj> Items
         {
-            get { return t != null ? Find( t ) : null; }
+            get { return _itemsEx; }
+        }
+
+        IStObj IStObjContextualMapper.Find( Type t )
+        {
+            return t != null ? Find( t ) : null;
+        }
+
+        public IStObj Find<T>() where T : IAmbientContract
+        {
+            return Find( typeof(T) );
+        }
+
+        public T GetObject<T>() where T : class
+        {
+            MutableItem m = Find( typeof(T) );
+            return m != null ? (T)m.Object : (T)null;
         }
 
         internal void Add( MutableItem item )

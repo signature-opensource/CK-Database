@@ -28,6 +28,8 @@ namespace CK.Setup.SqlServer
         public SqlPackageBaseItem( IActivityLogger logger, IStObjSetupData data )
             : base( logger, data )
         {
+            Context = data.StObj.Context;
+            Location = Object.Database.Name;
         }
 
         /// <summary>

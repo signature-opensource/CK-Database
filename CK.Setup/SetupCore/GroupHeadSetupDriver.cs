@@ -7,7 +7,7 @@ namespace CK.Setup
 {
     public sealed class GroupHeadSetupDriver : DriverBase
     {
-        SetupDriver _container;
+        SetupDriver _group;
 
         internal GroupHeadSetupDriver( SetupEngine center, ISortedItem sortedItem, VersionedName externalVersion )
             : base( center, sortedItem, externalVersion, null )
@@ -19,25 +19,25 @@ namespace CK.Setup
             get { return true; }
         }
 
-        public SetupDriver Container
+        public SetupDriver Group
         {
-            get { return _container; }
-            internal set { _container = value; }
+            get { return _group; }
+            internal set { _group = value; }
         }
 
         internal override sealed bool ExecuteInit()
         {
-            return Container.ExecuteHeadInit();
+            return Group.ExecuteHeadInit();
         }
 
         internal override sealed bool ExecuteInstall()
         {
-            return Container.ExecuteHeadInstall();
+            return Group.ExecuteHeadInstall();
         }
 
         internal override sealed bool ExecuteSettle()
         {
-            return Container.ExecuteHeadSettle();
+            return Group.ExecuteHeadSettle();
         }
 
     }

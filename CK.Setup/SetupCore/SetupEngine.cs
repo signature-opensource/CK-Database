@@ -127,11 +127,6 @@ namespace CK.Setup
         /// </summary>
         public event EventHandler<DriverEventArgs> DriverEvent;
         
-        public IVersionedItemRepository VersionRepository
-        {
-            get { return _versionRepository; }
-        }
-
         public ISetupSessionMemory Memory
         {
             get { return _memory; }
@@ -205,13 +200,13 @@ namespace CK.Setup
                             var head = (GroupHeadSetupDriver)_drivers[item.HeadForGroup.FullName];
                             typeToCreate = ResolveDriverType( item );
                             SetupDriver c = _driverFactory.CreateDriver( typeToCreate, new SetupDriver.BuildInfo( head, item ) );
-                            d = head.Container = c;
+                            d = head.Group = c;
                         }
                         else
                         {
                             VersionedName externalVersion;
                             IVersionedItem versioned = item.Item as IVersionedItem;
-                            if( versioned != null ) externalVersion = VersionRepository.GetCurrent( versioned );
+                            if( versioned != null ) externalVersion = _versionRepository.GetCurrent( versioned );
                             else externalVersion = null;
 
                             if( item.IsGroupHead )
@@ -320,7 +315,7 @@ namespace CK.Setup
                 var reusableEvent = new DriverEventArgs( SetupStep.Install );
                 foreach( var d in _drivers )
                 {
-                    using( _logger.OpenGroup( LogLevel.Info, "Installing {0}", d.FullName ) )
+                    using( _logger.OpenGroup( LogLevel.Info, "Installing {0} ({1})", d.FullName, VersionTransitionString( d ) ) )
                     {
                         if( !d.ExecuteInstall() ) return false;
                         var hE = DriverEvent;
@@ -341,6 +336,42 @@ namespace CK.Setup
             }
             _state = SetupEngineState.Installed;
             return true;
+        }
+
+        private static string VersionTransitionString( DriverBase d )
+        {
+            string versionTransition;
+            if( d.ItemVersion == null )
+            {
+                versionTransition = "unversioned";
+            }
+            else
+            {
+                if( d.ExternalVersion == null )
+                {
+                    versionTransition = String.Format( "¤ => {0}", d.ItemVersion );
+                }
+                else
+                {
+                    if( d.ExternalVersion.Version == d.ItemVersion )
+                    {
+                        versionTransition = String.Format( "= {0} =", d.ItemVersion );
+                    }
+                    else
+                    {
+                        if( d.IsGroupHead ) d = ((GroupHeadSetupDriver)d).Group;
+                        if( d.ExternalVersion.FullName != d.FullName )
+                        {
+                            versionTransition = String.Format( "{0} => {1}", d.ExternalVersion, d.ItemVersion );
+                        }
+                        else
+                        {
+                            versionTransition = String.Format( "{0} => {1}", d.ExternalVersion.Version, d.ItemVersion );
+                        }
+                    }
+                }
+            }
+            return versionTransition;
         }
 
         public bool RunSettle()
@@ -364,7 +395,7 @@ namespace CK.Setup
                             if( reusableEvent.CancelSetup ) return false;
                         }
                         IVersionedItem versioned = d.Item as IVersionedItem;
-                        if( versioned != null ) VersionRepository.SetCurrent( versioned );
+                        if( versioned != null ) _versionRepository.SetCurrent( versioned );
                     }
                 }
             }

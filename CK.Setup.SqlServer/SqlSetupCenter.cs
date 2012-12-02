@@ -54,12 +54,13 @@ namespace CK.Setup.SqlServer
         {
             return _fileDiscoverer.DiscoverSqlFiles( String.Empty, SqlDefaultDatabase.DefaultDatabaseName, directoryPath, _sqlFiles, _center.Scripts );
         }
-        
+
         /// <summary>
         /// Executes the setup.
         /// </summary>
+        /// <param name="typeFilter">Optional filter for types. When null, all types from the registered assmblies are kept.</param>
         /// <returns>True if no error occured. False otherwise.</returns>
-        public bool Run()
+        public bool Run( Predicate<Type> typeFilter = null )
         {
             var logger = _context.Logger;
 
@@ -67,6 +68,7 @@ namespace CK.Setup.SqlServer
             using( logger.OpenGroup( LogLevel.Info, "Collecting objects." ) )
             {
                 AssemblyRegisterer typeReg = new AssemblyRegisterer( logger );
+                typeReg.TypeFilter = typeFilter;
                 typeReg.Discover( _context.AssemblyRegistererConfiguration );
                 StObjCollector stObjC = new StObjCollector( logger, _context.StObjConfigurator, _context.StObjConfigurator, _context.StObjConfigurator );
                 stObjC.RegisterTypes( typeReg );

@@ -98,11 +98,11 @@ namespace CK.Setup.Dependency.Tests
 
         void CheckFormatException( string input, string curContext, string curLoc )
         {
-            Assert.Throws<FormatException>( () => DefaultContextLocNaming.Resolve( input, curContext, curLoc ) );
-            Assert.Throws<FormatException>( () => DefaultContextLocNaming.Resolve( "?" + input, 1, curContext, curLoc ) );
-            Assert.Throws<FormatException>( () => DefaultContextLocNaming.Resolve( "??" + input, 2, curContext, curLoc ) );
-            Assert.Throws<FormatException>( () => DefaultContextLocNaming.Resolve( input + "pouf", 0, input.Length, curContext, curLoc ) );
-            Assert.Throws<FormatException>( () => DefaultContextLocNaming.Resolve( "pif" + input + "pouf", 3, input.Length, curContext, curLoc ) );
+            Assert.Throws<CKException>( () => DefaultContextLocNaming.Resolve( input, curContext, curLoc ) );
+            Assert.Throws<CKException>( () => DefaultContextLocNaming.Resolve( "?" + input, 1, curContext, curLoc ) );
+            Assert.Throws<CKException>( () => DefaultContextLocNaming.Resolve( "??" + input, 2, curContext, curLoc ) );
+            Assert.Throws<CKException>( () => DefaultContextLocNaming.Resolve( input + "pouf", 0, input.Length, curContext, curLoc ) );
+            Assert.Throws<CKException>( () => DefaultContextLocNaming.Resolve( "pif" + input + "pouf", 3, input.Length, curContext, curLoc ) );
         }
 
     }

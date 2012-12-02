@@ -18,7 +18,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets the item type.
         /// </summary>
-        DependentItemType ItemKind { get; }
+        DependentItemKind ItemKind { get; }
 
         /// <summary>
         /// Gets the index of this item among the others.
@@ -65,7 +65,7 @@ namespace CK.Setup
         bool IsGroupHead { get; }
 
         /// <summary>
-        /// Whether this is a group (it is a Container if <see cref="ItemKind"/> is <see cref="DependentItemType.Container"/>.
+        /// Whether this is a group (it is a Container if <see cref="ItemKind"/> is <see cref="DependentItemKind.Container"/>.
         /// Use <see cref="HeadForGroup"/> to get the associated head.
         /// </summary>
         bool IsGroup { get; }
@@ -90,15 +90,14 @@ namespace CK.Setup
         IEnumerable<ISortedItem> Requires { get; }
 
         /// <summary>
-        /// Gets the items (as their <see cref="ISortedItem"/> wrapper) that are contained in 
-        /// the <see cref="Item"/> if it is a <see cref="IDependentItemGroup"/>.
-        /// Empty otherwise.
+        /// Gets the groups (as their <see cref="ISortedItem"/> wrapper) to which this item belongs.
+        /// Defaults to an empty enumerable.
         /// </summary>
         IEnumerable<ISortedItem> Groups { get; }
         
         /// <summary>
         /// Gets the items (as their <see cref="ISortedItem"/> wrapper) that are contained in 
-        /// the <see cref="Item"/> if it is a <see cref="IDependentItemGroup"/>.
+        /// the <see cref="Item"/> if it is a <see cref="IDependentItemGroup"/> (that can be a <see cref="IDependentItemContainer"/>).
         /// Empty otherwise.
         /// </summary>
         IEnumerable<ISortedItem> Children { get; }

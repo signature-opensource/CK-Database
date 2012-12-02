@@ -6,9 +6,9 @@ using System.Text;
 namespace CK.Core
 {
     /// <summary>
-    /// Independent implementation of <see cref="IContextLocName"/> (wraps <see cref="ContextLocNameStructImpl"/> helper).
+    /// Independent implementation of <see cref="IContextLocNaming"/> (wraps <see cref="ContextLocNameStructImpl"/> helper).
     /// </summary>
-    public class ContextLocName : IContextLocName
+    public class ContextLocName : IContextLocNaming
     {
         ContextLocNameStructImpl _impl;
 
@@ -17,7 +17,7 @@ namespace CK.Core
         /// </summary>
         public ContextLocName()
         {
-            _impl = new ContextLocNameStructImpl( null );
+            _impl = new ContextLocNameStructImpl();
         }
 
         /// <summary>

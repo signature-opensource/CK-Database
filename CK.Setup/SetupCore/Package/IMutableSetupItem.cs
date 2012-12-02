@@ -7,11 +7,18 @@ namespace CK.Setup
 {
     /// <summary>
     /// A mutable version of an <see cref="ISetupItem"/>.
-    /// Note that <see cref="IMutableSetupItemContainer"/> offers children collection.
-    /// The <see cref="IDependentItem.FullName"/> (that identifies the item) can not be changed through this interface.
+    /// Note that <see cref="IMutableSetupItemGroup"/> offers children collection.
+    /// Its <see cref="IContextLocNaming.Context">Context</see>, <see cref="IContextLocNaming.Location">Location</see>, <see cref="IContextLocNaming.Name">Name</see> 
+    /// and <see cref="ISetupItem.FullName">FullName</see> (that identify the item) and <see cref="ItemKind"/> can not be changed through this interface.
     /// </summary>
     public interface IMutableSetupItem : ISetupItem
     {
+        /// <summary>
+        /// Gets whether this object must be considered as a <see cref="IDependentItem"/>, a <see cref="IDependentItemGroup"/> or a <see cref="IDependentItemContainer"/>
+        /// whatever its actual type is.
+        /// </summary>
+        DependentItemKind ItemKind { get; }
+        
         /// <summary>
         /// Gets a mutable list of items that this item requires.
         /// </summary>

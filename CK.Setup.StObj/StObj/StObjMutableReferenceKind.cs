@@ -6,10 +6,10 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
-    /// Describes the different kind of <see cref="MutableReference"/>.
+    /// Describes the different kind of <see cref="IStObjReference"/>.
     /// </summary>
     [Flags]
-    public enum MutableReferenceKind
+    public enum StObjMutableReferenceKind
     {
         /// <summary>
         /// Not applicable.

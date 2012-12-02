@@ -49,6 +49,7 @@
     <Compile Include="..\..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="ActorZoneTests.cs" />
     <Compile Include="ByNames.cs" />
     <Compile Include="ChildByName.cs" />
     <Compile Include="ContainerAndRequirementsSemantics.cs" />

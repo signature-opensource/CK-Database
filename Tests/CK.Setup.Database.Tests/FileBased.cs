@@ -18,9 +18,11 @@ namespace CK.Setup.Database.Tests
 
             XElement e = XElement.Parse( @"
 <SetupPackage FullName=""TheFirstPackageEver"" Versions=""1.2.88, 1.2.4, Old.Name-Is-in.the.Versions = 1.3.4, The.New.Name=1.4.1, 1.5.0"">
-    <Requirements Requires=""AnOtherPackage, YetAnotherOne"" RequiredBy=""AnObjectIHook, AnotherObjectIHook"" />
+    <Requirements Requires=""[X]AnOtherPackage, db^YetAnotherOne"" RequiredBy=""AnObjectIHook, AnotherObjectIHook"" />
     <Model>
-        <Requirements Requires=""AnOtherPackage, db^YetAnotherOne"" RequiredBy=""AnObjectIHook, AnotherObjectIHook"" />
+        <!-- 
+                Model finally requires: ?[X]LOC^Model.AnOtherPackage and [C]db^Model.YetAnotherOne
+        -->
     </Model>
     <Content>
         <Add FullName=""ContainedItem"" />
@@ -28,22 +30,33 @@ namespace CK.Setup.Database.Tests
     </Content>
 </SetupPackage>
 " );
-            DynamicPackageItem p = SqlFileDiscoverer.ReadPackageFileFormat( e, "C", null );
+            DynamicPackageItem p = SqlFileDiscoverer.ReadPackageFileFormat( e, "C", "LOC" );
             Assert.That( p.VersionList.IsSortedStrict() );
-            Assert.That( p.FullName, Is.EqualTo( "[C]TheFirstPackageEver" ) );
-            Assert.That( p.Requires[0].FullName, Is.EqualTo( "AnOtherPackage" ) );
+
+            Assert.That( p.FullName, Is.EqualTo( "[C]LOC^TheFirstPackageEver" ), "FullName read has been contextualized with the curContext/curLoc." );
+            
+            Assert.That( p.Requires[0].FullName, Is.EqualTo( "[X]AnOtherPackage" ), "Direct relation storage is not impacted by Context-Localization context." );
             Assert.That( p.Requires[1].FullName, Is.EqualTo( "db^YetAnotherOne" ) );
+            Assert.That( p.Model.Requires.Count, Is.EqualTo( 0 ), "Model does not require anythnig by itself." );
 
+            Assert.That( p.Model.Name, Is.EqualTo( "Model.TheFirstPackageEver" ) );
+            Assert.That( p.Model.FullName, Is.EqualTo( "[C]LOC^Model.TheFirstPackageEver" ) );
 
-            IDependentItemContainer c = p as IDependentItemContainer;
-            Assert.That( c.Requires.ElementAt(0).FullName, Is.EqualTo( "[C]AnOtherPackage" ) );
-            Assert.That( c.Requires.ElementAt(1).FullName, Is.EqualTo( "[C]db^YetAnotherOne" ) );
-        }
+            // Consider the DynamicPackageItem and its model as IDependentItem.
+            IDependentItemContainer pAsI = p as IDependentItemContainer;
+            Assert.That( pAsI.Requires.ElementAt(0).FullName, Is.EqualTo( "[X]LOC^AnOtherPackage" ), "Context-Localization is dynamically injected through IDependentItem interfaces." );
+            Assert.That( pAsI.Requires.ElementAt( 1 ).FullName, Is.EqualTo( "[C]db^YetAnotherOne" ) );
+
+            IDependentItem mAsI = p.Model as IDependentItem;
+            Assert.That( mAsI.Requires.ElementAt( 0 ).FullName, Is.EqualTo( "[X]LOC^Model.AnOtherPackage" ) );
+            Assert.That( mAsI.Requires.ElementAt( 1 ).FullName, Is.EqualTo( "[C]db^Model.YetAnotherOne" ) );
+
+       }
 
 
         class SqlObjectParserStub : ISqlObjectParser
         {
-            public IDependentProtoItem Create( IActivityLogger logger, IContextLocName externalName, string text )
+            public IDependentProtoItem Create( IActivityLogger logger, IContextLocNaming externalName, string text )
             {
                 throw new NotImplementedException();
             }

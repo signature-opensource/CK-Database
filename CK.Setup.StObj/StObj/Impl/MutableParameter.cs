@@ -11,12 +11,12 @@ namespace CK.Setup
     /// <summary>
     /// Describes a parameter of a Construct method.
     /// </summary>
-    internal class MutableParameter : MutableResolvableReference, IMutableParameter, IParameter
+    internal class MutableParameter : MutableReferenceWithValue, IStObjMutableParameter, IStObjFinalParameter
     {
         ParameterInfo _param;
 
         internal MutableParameter( MutableItem owner, ParameterInfo param, bool isContainer )
-            : base( owner, isContainer ? MutableReferenceKind.ConstructParameter|MutableReferenceKind.Container : MutableReferenceKind.ConstructParameter )
+            : base( owner, isContainer ? StObjMutableReferenceKind.ConstructParameter|StObjMutableReferenceKind.Container : StObjMutableReferenceKind.ConstructParameter )
         {
             _param = param;
             Type = param.ParameterType;
@@ -42,14 +42,14 @@ namespace CK.Setup
         public override string ToString()
         {
             string s = String.Format( "Construct parameter '{0}' (n°{1}) for '{2}'", Name, Index+1, Owner.ToString() );
-            if( (Kind & MutableReferenceKind.Container) != 0 ) s += " (Container)";
+            if( (Kind & StObjMutableReferenceKind.Container) != 0 ) s += " (Container)";
             return s;
         }
 
-        IStObj IResolvableReference.Owner
+        public void SetParameterValue( object value )
         {
-            get { return (IStObj)Owner; }
+            Value = value;
         }
-
+      
     }
 }

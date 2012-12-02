@@ -98,7 +98,7 @@ namespace CK.Setup
             get 
             {
                 IVersionedItem v = _item as IVersionedItem;
-                return v != null ? v.Version : v.Version;
+                return v != null ? v.Version : null;
             }
         }
 

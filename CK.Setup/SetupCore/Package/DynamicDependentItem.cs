@@ -19,6 +19,7 @@ namespace CK.Setup
         DependentItemGroupList _groups;
         IDependentItemContainerRef _container;
         IDependentItemRef _generalization;
+        DependentItemKind _dynamicType;
 
         /// <summary>
         /// Initializes a new mutable item with a given <see cref="IVersionedItem.ItemType"/>.
@@ -28,7 +29,8 @@ namespace CK.Setup
         {
             if( itemType == null ) throw new ArgumentNullException( "itemType" );
             _itemType = itemType;
-            _name = new ContextLocNameStructImpl();
+            _name = new ContextLocNameStructImpl( String.Empty );
+            _dynamicType = DependentItemKind.Item;
         }
 
         /// <summary>
@@ -71,6 +73,21 @@ namespace CK.Setup
         {
             get { return _name.FullName; }
             set { _name.FullName = value; }
+        }
+
+        /// <summary>
+        /// Gets whether this item is a simple Item, a Group or a Container.
+        /// </summary>
+        /// <remarks>
+        /// This is <see cref="DependentItemKind.Item"/> at this level but can be changed by specialized classes. 
+        /// When this ItemKind is not <see cref="DependentItemKind.Container"/> and an item declares this item as its container, or 
+        /// when it is <see cref="DependentItemKind.Item"/> and this item is referenced as a group, an error is raised 
+        /// during the ordering of the dependency graph.
+        /// </remarks>
+        public DependentItemKind ItemKind
+        {
+            get { return _dynamicType; }
+            protected set { _dynamicType = value; }
         }
 
         /// <summary>

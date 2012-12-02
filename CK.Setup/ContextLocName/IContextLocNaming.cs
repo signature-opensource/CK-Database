@@ -8,7 +8,7 @@ namespace CK.Core
     /// <summary>
     /// Defines the immutable aspect of Context-Location-Name triplet.
     /// </summary>
-    public interface IContextLocName
+    public interface IContextLocNaming
     {
         /// <summary>
         /// Gets the context part of this name.

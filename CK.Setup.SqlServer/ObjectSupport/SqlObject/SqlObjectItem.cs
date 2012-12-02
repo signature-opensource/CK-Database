@@ -14,30 +14,38 @@ namespace CK.Setup.SqlServer
         string _type;
         SqlObjectProtoItem _protoItem;
 
-        string _dataBase;
+        string _physicalDB;
         string _schema;
-        string _name;
+        string _objectName;
         Version _version;
         DependentItemList _requires;
         DependentItemList _requiredBy;
         DependentItemGroupList _groups;
-        NamedDependentItemContainerRef _container;
+        IDependentItemContainerRef _container;
 
         internal SqlObjectItem( SqlObjectProtoItem p )
         {
-            _fullName = new ContextLocNameStructImpl();
+            _fullName = new ContextLocNameStructImpl( p );
+            _schema = p.Schema;
+            _objectName = p.ObjectName;
             _protoItem = p;
             _type = p.ItemType;
-            //??
-            Database = p.PhysicalDatabaseName;
-            Schema = p.Schema;
-            _name = p.Name;
+            _physicalDB = p.PhysicalDatabaseName;
             
             _version = p.Version;
             if( p.Requires != null ) Requires.Add( p.Requires );
             if( p.RequiredBy != null ) RequiredBy.Add( p.RequiredBy );
             if( p.Groups != null ) Groups.Add( p.Groups );
             if( p.Container != null ) _container = new NamedDependentItemContainerRef( p.Container );
+        }
+
+        /// <summary>
+        /// Gets or sets the container of this object.
+        /// </summary>
+        public IDependentItemContainerRef Container
+        {
+            get { return _container; }
+            set { _container = value; }
         }
 
         /// <summary>
@@ -61,7 +69,7 @@ namespace CK.Setup.SqlServer
                 if( _schema != value )
                 {
                     _schema = value;
-                    _fullName.Name = _schema + '.' + _name;
+                    _fullName.Name = _schema + '.' + _objectName;
                 }
             }
         }
@@ -85,18 +93,18 @@ namespace CK.Setup.SqlServer
 
         /// <summary>
         /// Gets or sets the object name without <see cref="Database"/> nor <see cref="Schema"/>.
-        /// Defaults.to <see cref="String.Empty"/>.
+        /// Defaults to <see cref="String.Empty"/>.
         /// </summary>
-        public string Name
+        public string ObjectName
         {
-            get { return _name; }
+            get { return _objectName; }
             set 
             {
                 if( value == null ) value = String.Empty;
-                if( _name != value )
+                if( _objectName != value )
                 {
-                    _name = value;
-                    _fullName.Name = _schema + '.' + _name;
+                    _objectName = value;
+                    _fullName.Name = _schema + '.' + _objectName;
                 }
 
             }

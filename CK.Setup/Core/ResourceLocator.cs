@@ -126,9 +126,13 @@ namespace CK.Core
             return LoadString( _type, _path, name, throwError );
         }
 
+        /// <summary>
+        /// Overridden to return the assembly:path for this ResourceLocator.
+        /// </summary>
+        /// <returns>The assembly:path string.</returns>
         public override string ToString()
         {
-            return String.Format( "ResourceLocator:{0}/{1}", _type != null ? _type.Assembly.GetName().Name : "(no assembly)", ResourceName( "*" ) );
+            return String.Format( "{0}:{1}", _type != null ? _type.Assembly.GetName().Name : "(no assembly)", ResourceName( "*" ) );
         }
 
         /// <summary>
