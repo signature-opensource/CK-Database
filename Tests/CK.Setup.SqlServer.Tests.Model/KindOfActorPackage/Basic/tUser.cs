@@ -7,11 +7,12 @@ using CK.Setup;
 
 namespace SqlActorPackage.Basic
 {
-    //[SqlTable( "tUser", Package = typeof( Package ) ), Versions( "2.11.25" )]
-    //public class tUser : SqlTable
-    //{
-    //    void Construct( tActor actor )
-    //    {
-    //    }
-    //}
+    [SqlTable( "tUser", Package = typeof( Package ) ), Versions( "2.11.25" )]
+    [SqlObjectItem( "sUserCreate" )]
+    public class tUser : SqlTable
+    {
+        void Construct( tActor actor )
+        {
+        }
+    }
 }

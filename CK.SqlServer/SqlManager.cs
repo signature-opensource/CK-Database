@@ -513,6 +513,7 @@ namespace CK.SqlServer
                         _oCon.ExecuteNonQuery( c );
                     }
                 }
+                if( schemaName == "CKCore" ) _ckCoreInstalled = false;
             }
             catch( Exception ex )
             {

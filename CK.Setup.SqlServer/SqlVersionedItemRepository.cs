@@ -142,11 +142,11 @@ namespace CK.Setup.SqlServer
                 {
                     if( v == Util.EmptyVersion )
                     {
-                        logger.Info( "Installing current version {0}.", v );
+                        logger.Info( "Installing current version {0}.", CurrentVersion );
                     }
                     else
                     {
-                        logger.Info( "Updgrading from {0}.", v );
+                        logger.Info( "Updgrading from {0} to {1}.", v, CurrentVersion );
                     }
                     using( logger.Filter( LogLevelFilter.Error ) )
                     {

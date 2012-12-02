@@ -46,6 +46,10 @@
     <Compile Include="Basic\tUser.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">
+      <Project>{87F54185-5226-4EEE-8D59-5D03E6C1AB7C}</Project>
+      <Name>CK.Setup.Dependency</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\CK.Setup.SqlServer\CK.Setup.SqlServer.csproj">
       <Project>{9A0BCE15-00EF-411B-8283-68AED047FCE5}</Project>
       <Name>CK.Setup.SqlServer</Name>
@@ -80,6 +84,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Basic\Res\Model.CK.tActorProfile.Install.2.11.25.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Basic\Res\sUserCreate.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Basic\Res\sActorCreate.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

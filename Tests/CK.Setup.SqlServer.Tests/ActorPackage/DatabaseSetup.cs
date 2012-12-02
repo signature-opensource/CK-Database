@@ -20,13 +20,6 @@ namespace CK.Setup.SqlServer.Tests.ActorPackage
         [Test]
         public void InstallZone()
         {
-            //Error: Cycle detected: 
-            //  ↳ Zone.Package 
-            //      ↟ Basic.Package 
-            //          ⊐ Zone.tGroup 
-            //              ⇀ Zone.tSecurityZone 
-            //                  ⊏ Zone.Package.
-
             InstallDropAndReverseInstall( null );
         }
 
