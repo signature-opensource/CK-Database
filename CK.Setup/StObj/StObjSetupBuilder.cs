@@ -12,25 +12,54 @@ namespace CK.Setup
         readonly IActivityLogger _logger;
         readonly IStObjSetupConfigurator _configurator;
         readonly IStObjSetupItemFactory _setupItemFactory;
+        readonly IStObjSetupDynamicInitializer _dynamicInitializer;
 
-        public StObjSetupBuilder( IActivityLogger logger, IStObjSetupConfigurator configurator = null, IStObjSetupItemFactory setupItemFactory = null )
+        public StObjSetupBuilder( IActivityLogger logger, IStObjSetupConfigurator configurator = null, IStObjSetupItemFactory setupItemFactory = null, IStObjSetupDynamicInitializer dynamicInitializer = null )
         {
             if( logger == null ) throw new ArgumentNullException( "logger" );
             _logger = logger;
             _configurator = configurator;
             _setupItemFactory = setupItemFactory;
+            _dynamicInitializer = dynamicInitializer;
         }
 
         /// <summary>
-        /// Initializes a set of <see cref="IDependentItem"/> given a dependency-ordered list of <see cref="IStObj"/> objects.
+        /// Initializes a set of <see cref="ISetupItem"/> given a dependency-ordered list of <see cref="IStObj"/> objects.
         /// </summary>
         /// <param name="rootObjects">Root <see cref="IStObj"/> objects.</param>
-        /// <returns>A set of dependent items.</returns>
-        public IEnumerable<IDependentItem> Build( IReadOnlyList<IStObj> orderedObjects )
+        /// <returns>A set of setup items.</returns>
+        public IEnumerable<ISetupItem> Build( IReadOnlyList<IStObj> orderedObjects )
         {
             if( orderedObjects == null ) throw new ArgumentNullException( "rootObjects" );
 
             var setupableItems = new Dictionary<IStObj, StObjSetupData>();
+            BuildSetupItems( orderedObjects, setupableItems );
+            BindDependencies( setupableItems );
+            foreach( var o in orderedObjects )
+            {
+                string callStep = null;
+                IMutableSetupItem item = setupableItems[o].SetupItem;
+                try
+                {
+                    callStep = "Attributes";
+                    SetupAttribute.ApplyAttributesDynamicInitializer( _logger, item, o );
+                    callStep = "Structured Object itself";
+                    if( o.Object is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)o.Object).DynamicItemInitialize( _logger, item, o );
+                    callStep = "Setup Item itself";
+                    if( item is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)item).DynamicItemInitialize( _logger, item, o );
+                    callStep = "global StObjSetupBuilder initializer";
+                    if( _dynamicInitializer != null ) _dynamicInitializer.DynamicItemInitialize( _logger, item, o );
+                }
+                catch( Exception ex )
+                {
+                    _logger.Error( ex, "While Dynamic item initialization (from {2}) of '{0}' for object '{1}'.", item.FullName, o.ObjectType.Name, callStep );
+                }
+            }
+            return setupableItems.Values.Select( data => data.SetupItem );
+        }
+
+        void BuildSetupItems( IReadOnlyList<IStObj> orderedObjects, Dictionary<IStObj, StObjSetupData> setupableItems )
+        {
             using( _logger.OpenGroup( LogLevel.Info, "Building setupable items from {0} Structure Objects.", orderedObjects.Count ) )
             {
                 foreach( var r in orderedObjects )
@@ -43,7 +72,7 @@ namespace CK.Setup
                     StObjSetupDataBase fromAbove;
                     if( r.Generalization != null ) fromAbove = generalizationData = setupableItems[r.Generalization];
                     else fromAbove = StObjSetupDataBase.CreateRootData( _logger, r.ObjectType.BaseType );
-                    
+
                     // Builds the StObjSetupData from the different attributes.
                     var data = new StObjSetupData( _logger, r, fromAbove );
                     // Calls any attributes that is a IStObjSetupConfigurator with the StObjSetupData.
@@ -67,7 +96,7 @@ namespace CK.Setup
                             // If the StObj has been declared as a Group or a Container: data.StObj.IsGroup == true, 
                             // we may check here that the type of the created item is able to be structurally considered as a Group (or a Container):
                             // we should just check here that it is a IDependentItemGroup/Container (we ignore the IDependentItemContainerTyped
-                            // that may, later dynamically refuses to be a Container since this will be handled during ordering by The DependencySorter).
+                            // that may, later dynamically refuse to be a Container since this will be handled during ordering by The DependencySorter).
                             //
                             // The actual binding from the Items to their Container is handled below (once all items have been created).
                             // It is best to detect such inconsistencies below since we'll be able to give more precise error information to the user (ie, "This non Container Item 
@@ -79,16 +108,14 @@ namespace CK.Setup
                             if( itemType == null ) data.SetupItem = new StObjDynamicPackageItem( _logger, data );
                             else
                             {
-                                data.SetupItem = (IMutableDependentItemContainerTyped)Activator.CreateInstance( itemType, _logger, data );
+                                data.SetupItem = (IMutableSetupItem)Activator.CreateInstance( itemType, _logger, data );
                             }
                         }
                         // Configures Generalization since we got it above.
                         // Other properties (like dependencies) will be initialized later (once all setup items instances exist).
                         if( generalizationData != null )
                         {
-                            data.SetupItem.Generalization = generalizationData.SetupItem;
-                            ISetupItemAwareObject awareObject = data.StObj.Object as ISetupItemAwareObject;
-                            if( awareObject != null ) awareObject.SetupItem = data.SetupItem;
+                            data.SetupItem.Generalization = generalizationData.SetupItem.GetReference();
                         }
                         setupableItems.Add( r, data );
                     }
@@ -98,6 +125,10 @@ namespace CK.Setup
                     }
                 }
             }
+        }
+
+        void BindDependencies( Dictionary<IStObj, StObjSetupData> setupableItems )
+        {
             using( _logger.OpenGroup( LogLevel.Info, "Binding dependencies." ) )
             {
                 foreach( StObjSetupData data in setupableItems.Values )
@@ -106,21 +137,40 @@ namespace CK.Setup
                     foreach( IStObj req in data.StObj.Requires )
                     {
                         StObjSetupData reqD = setupableItems[req];
-                        data.SetupItem.Requires.Add( reqD.SetupItem );
-                    }
-                    foreach( IStObj child in data.StObj.Children )
-                    {
-                        StObjSetupData c = setupableItems[child];
-                        data.SetupItem.Children.Add( c.SetupItem );
+                        data.SetupItem.Requires.Add( reqD.SetupItem.GetReference() );
                     }
                     foreach( IStObj group in data.StObj.Groups )
                     {
-                        StObjSetupData g = setupableItems[group];
-                        data.SetupItem.Groups.Add( g.SetupItem );
+                        StObjSetupData gData = setupableItems[group];
+                        IMutableSetupItemGroup g = gData.SetupItem as IMutableSetupItemGroup;
+                        if( g == null )
+                        {
+                            _logger.Error( "Structure Object '{0}' declares '{1}' as a Group, but the latter is not a IMutableSetupItemGroup (only a IMutableSetupItem).", data.FullName, gData.FullName );
+                        }
+                        else
+                        {
+                            data.SetupItem.Groups.Add( g.GetReference() );
+                        }
+                    }
+                    if( data.StObj.Children.Count > 0 )
+                    {
+                        // The StObj has children. 
+                        IMutableSetupItemGroup g = data.SetupItem as IMutableSetupItemGroup;
+                        if( g == null )
+                        {
+                            _logger.Error( "Structure Object '{0}' has associated children but it is not a IMutableSetupItemGroup (only a IMutableSetupItem).", data.FullName );
+                        }
+                        else
+                        {
+                            foreach( IStObj child in data.StObj.Children )
+                            {
+                                StObjSetupData c = setupableItems[child];
+                                g.Children.Add( c.SetupItem.GetReference() );
+                            }
+                        }
                     }
                 }
             }
-            return setupableItems.Values.Select( data => data.SetupItem );
         }
 
         void BindContainer( Dictionary<IStObj, StObjSetupData> setupableItems, StObjSetupData data )

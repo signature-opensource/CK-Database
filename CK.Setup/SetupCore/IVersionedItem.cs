@@ -24,7 +24,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets an optionnal list of <see cref="VersionedName"/>. <see cref="VersionedName.FullName"/> in this list
-        /// are not null and the list is sorted by <see cref="VersionedName.Version"/> in ascending order.
+        /// are not null and the list is sorted by <see cref="VersionedName.Version">Version</see> in ascending order.
         /// Can be null if no previous names exists.
         /// </summary>
         IEnumerable<VersionedName> PreviousNames { get; }

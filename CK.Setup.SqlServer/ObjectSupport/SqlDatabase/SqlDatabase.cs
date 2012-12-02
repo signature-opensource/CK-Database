@@ -3,17 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using CK.Core;
+using System.Diagnostics;
 
 namespace CK.Setup.SqlServer
 {
 
-    [Setup( ItemType = typeof( SqlDatabaseItem ), ItemKind = DependentItemType.Group, TrackAmbientProperties = TrackAmbientPropertiesMode.AddPropertyHolderAsChildren )]
+    [Setup( ItemType = typeof( SqlDatabaseItem ), ItemKind = DependentItemKind.Group, TrackAmbientProperties = TrackAmbientPropertiesMode.AddPropertyHolderAsChildren )]
     public class SqlDatabase
     {
         /// <summary>
-        /// Default database name is "db".
+        /// Default database name is "db". 
         /// </summary>
         public const string DefaultDatabaseName = "db";
+
+        /// <summary>
+        /// Default schema name is "CK".
+        /// </summary>
+        public const string DefaultSchemaName = "CK";
 
         string _name;
         Dictionary<string,string> _schemas;
@@ -26,7 +32,7 @@ namespace CK.Setup.SqlServer
         }
 
         /// <summary>
-        /// Gets or sets the logical name of the database.
+        /// Gets or sets the logical name of the database. Must not be null nor empty.
         /// Defaults to <see cref="DefaultDatabaseName"/>.
         /// </summary>
         public string Name

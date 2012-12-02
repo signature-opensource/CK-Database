@@ -1,0 +1,86 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using NUnit.Framework;
+using CK.Core;
+using System.Reflection;
+using CK.Setup.StObj.Tests.SimpleObjects;
+
+namespace CK.Setup.StObj.Tests
+{
+    [TestFixture]
+    [CLSCompliant(false)]
+    public class ActorZoneWithAmbientTests
+    {
+        [StObj( ItemKind = DependentItemKind.Group, TrackAmbientProperties = TrackAmbientPropertiesMode.AddPropertyHolderAsChildren )] 
+        class SqlDatabaseDefault : IAmbientContract
+        {
+        }
+
+        class BaseDatabaseObject : IAmbientContractDefiner
+        {
+            [AmbientProperty]
+            public SqlDatabaseDefault Database { get; set; }
+        }
+
+        [StObj( ItemKind = DependentItemKind.Container )]
+        class BasicPackage : BaseDatabaseObject
+        {
+        }
+
+        [StObj( Container = typeof( BasicPackage ), ItemKind = DependentItemKind.Item )]
+        class BasicActor : BaseDatabaseObject
+        {
+        }
+
+        [StObj( Container = typeof(BasicPackage), ItemKind = DependentItemKind.Item )]
+        class BasicGroup : BaseDatabaseObject
+        {
+            void Construct( BasicActor actor )
+            {
+            }
+        }
+
+        class ZonePackage : BasicPackage
+        {
+        }
+
+        [StObj( Container = typeof( ZonePackage ), ItemKind = DependentItemKind.Item )]
+        class ZoneGroup : BasicGroup
+        {
+            void Construct( SecurityZone zone )
+            {
+            }
+        }
+
+        [StObj( Container = typeof( ZonePackage ), ItemKind = DependentItemKind.Item )]
+        class SecurityZone : BaseDatabaseObject
+        {
+            void Construct( BasicGroup group )
+            {
+            }
+        }
+
+        [Test]
+        public void LayeredArchitecture()
+        {
+            StObjCollector collector = new StObjCollector( TestHelper.Logger );
+            collector.RegisterClass( typeof( BasicPackage ) );
+            collector.RegisterClass( typeof( BasicActor ) );
+            collector.RegisterClass( typeof( BasicGroup ) );
+            collector.RegisterClass( typeof( ZonePackage ) );
+            collector.RegisterClass( typeof( ZoneGroup ) );
+            collector.RegisterClass( typeof( SecurityZone ) );
+            collector.RegisterClass( typeof( SqlDatabaseDefault ) );
+            collector.DependencySorterHookInput = TestHelper.Trace;
+            collector.DependencySorterHookOutput = sortedItems => TestHelper.Trace( sortedItems, false );
+
+            var r = collector.GetResult();
+            Assert.That( r.HasFatalError, Is.False );
+            r.Default.CheckChildren<BasicPackage>( "BasicActor,BasicGroup" );
+            r.Default.CheckChildren<ZonePackage>( "SecurityZone,ZoneGroup" );
+            r.Default.CheckChildren<SqlDatabaseDefault>( "BasicPackage,BasicActor,BasicGroup,ZonePackage,SecurityZone,ZoneGroup" );
+        }
+    }
+}

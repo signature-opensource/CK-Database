@@ -8,7 +8,7 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// Default <see cref="IMutableDependentItemContainerTyped"/> implementation associated to <see cref="IStObj"/> object.
+    /// Default <see cref="IMutableSetupItemContainer"/> implementation associated to <see cref="IStObj"/> object.
     /// Used when the <see cref="IStObjSetupData"/> does not specify a dedicated implementation (<see cref="IStObjSetupData.ItemType"/> 
     /// nor <see cref="IStObjSetupData.ItemTypeName"/> are set) but can also be used as a base class for more specific item implementation.
     /// </summary>
@@ -36,7 +36,7 @@ namespace CK.Setup
         /// <param name="logger">Logger to use.</param>
         /// <param name="data">Descriptive data that is used to configure this item.</param>
         public StObjDynamicPackageItem( IActivityLogger logger, IStObjSetupData data )
-            : base( data.StObj.ItemKind == DependentItemType.SimpleItem ? "StObjItem" : "StObjPackage", (object)data.DriverType ?? data.DriverTypeName )
+            : base( data.StObj.ItemKind == DependentItemKind.Item ? "StObjItem" : "StObjPackage", (object)data.DriverType ?? data.DriverTypeName )
         {
             Debug.Assert( Model == null, "Initially, a DynamicPackageItem has no model." );
             Debug.Assert( data.ItemType == null || typeof( StObjDynamicPackageItem ).IsAssignableFrom( data.ItemType ), "If we are using a StObjDynamicPackageItem, this is because no explicit ItemType (nor ItemTypeName) have been set, or it is a type that specializes this." );
@@ -44,7 +44,6 @@ namespace CK.Setup
             if( data.HasModel ) EnsureModel();
             SetVersionsString( data.Versions );
             Object = data.StObj.Object;
-            FullName = data.FullName;
         }
 
         /// <summary>

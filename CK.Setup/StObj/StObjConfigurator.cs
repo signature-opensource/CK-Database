@@ -7,14 +7,14 @@ using CK.Core;
 namespace CK.Setup
 {
 
-    public class StObjConfigurator : IAmbientContractDispatcher, IStObjStructuralConfigurator, IStObjDependencyResolver, IStObjSetupConfigurator, IStObjSetupItemFactory
+    public class StObjConfigurator : IAmbientContractDispatcher, IStObjStructuralConfigurator, IStObjValueResolver, IStObjSetupConfigurator, IStObjSetupItemFactory
     {
         bool IAmbientContractDispatcher.IsAmbientContractClass( Type t )
         {
             return false;
         }
 
-        void IAmbientContractDispatcher.Dispatch( Type t, ISet<Type> contexts )
+        void IAmbientContractDispatcher.Dispatch( Type t, ISet<string> contexts )
         {
         }
 
@@ -22,11 +22,11 @@ namespace CK.Setup
         {
         }
 
-        void IStObjDependencyResolver.ResolveParameterValue( IActivityLogger logger, IParameter p )
+        void IStObjValueResolver.ResolveParameterValue( IActivityLogger logger, IStObjFinalParameter p )
         {
         }
 
-        void IStObjDependencyResolver.ResolveExternalPropertyValue( IActivityLogger logger, IAmbientProperty a )
+        void IStObjValueResolver.ResolveExternalPropertyValue( IActivityLogger logger, IStObjFinalAmbientProperty a )
         {
         }
 
@@ -34,7 +34,7 @@ namespace CK.Setup
         {
         }
 
-        IMutableDependentItemContainerTyped IStObjSetupItemFactory.CreateDependentItem( IActivityLogger logger, IStObjSetupData data )
+        IMutableSetupItem IStObjSetupItemFactory.CreateDependentItem( IActivityLogger logger, IStObjSetupData data )
         {
             return null;
         }

@@ -6,12 +6,12 @@ using CK.Core;
 
 namespace CK.Setup
 {
-    internal class MutableReferenceList : List<MutableReference>, IMutableReferenceList
+    internal class MutableReferenceList : List<MutableReference>, IStObjMutableReferenceList
     {
         MutableItem _owner;
-        MutableReferenceKind _kind;
+        StObjMutableReferenceKind _kind;
 
-        internal MutableReferenceList( MutableItem owner, MutableReferenceKind kind )
+        internal MutableReferenceList( MutableItem owner, StObjMutableReferenceKind kind )
         {
             _owner = owner;
             _kind = kind;
@@ -20,9 +20,9 @@ namespace CK.Setup
         // To disambiguate types.
         internal List<MutableReference> AsList { get { return this; } }
 
-        public IMutableReference AddNew( Type t, Type typedContext = null )
+        public IStObjMutableReference AddNew( string context, Type t, StObjRequirementBehavior behavior )
         {
-            var m = new MutableReference( _owner, _kind ) { Type = t, Context = typedContext };
+            var m = new MutableReference( _owner, _kind ) { Type = t, Context = context, StObjRequirementBehavior = behavior };
             Add( m );
             return m;
         }
@@ -30,7 +30,7 @@ namespace CK.Setup
         public int IndexOf( object item )
         {
             MutableReference m = item as MutableReference;
-            return m != null ? IndexOf( m ) : Int32.MaxValue;
+            return m != null ? IndexOf( m ) : Int32.MinValue;
         }
 
         public bool Contains( object item )
@@ -38,12 +38,12 @@ namespace CK.Setup
             return IndexOf( item ) >= 0;
         }
 
-        IMutableReference IReadOnlyList<IMutableReference>.this[int index]
+        IStObjMutableReference IReadOnlyList<IStObjMutableReference>.this[int index]
         {
             get { return this[index]; }
         }
 
-        IEnumerator<IMutableReference> IEnumerable<IMutableReference>.GetEnumerator()
+        IEnumerator<IStObjMutableReference> IEnumerable<IStObjMutableReference>.GetEnumerator()
         {
             return GetEnumerator();
         }

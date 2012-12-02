@@ -6,78 +6,54 @@ using System.Diagnostics;
 
 namespace CK.Setup
 {
-    /// <summary>
-    /// Defines a named reference to a container.
-    /// </summary>
-    public class NamedDependentItemContainerRef : IDependentItemContainerRef
-    {
-        readonly string _fullName;
-        readonly bool _optional;
 
+    /// <summary>
+    /// Implements a named reference to a container.
+    /// </summary>
+    public class NamedDependentItemContainerRef : NamedDependentItemGroupRef, IDependentItemContainerRef
+    {
         /// <summary>
-        /// Initializes a new <see cref="NamedDependentItemContainerRef"/> with a <see cref="FullName"/>.
+        /// Initializes a new <see cref="NamedDependentItemContainerRef"/> with a <see cref="FullName"/>
+        /// optionaly starting with '?'.
         /// </summary>
         public NamedDependentItemContainerRef( string fullName )
+            : base( fullName )
         {
-            if( String.IsNullOrWhiteSpace( fullName ) ) throw new ArgumentException( "Must not be a not null nor empty nor whitespace string.", "fullName" );
-            _fullName = fullName;
-            _optional = false;
-            if( fullName[0] == '?' )
-            {
-                _fullName = fullName.Substring( 1 );
-                _optional = true;
-            }
         }
 
         /// <summary>
         /// Initializes a potentially optional new <see cref="NamedDependentItemContainerRef"/> with a <see cref="FullName"/>.
         /// </summary>
         public NamedDependentItemContainerRef( string fullName, bool optional )
-            : this( fullName )
+            : base( fullName, optional )
         {
-            _optional = optional;
         }
 
         /// <summary>
-        /// Gets the name that uniquely identifies a container. 
-        /// Never null but can be <see cref="String.Empty"/>.
+        /// Returns this instance or creates a new <see cref="NamedDependentItemContainerRef"/> with the given full name if needed.
         /// </summary>
-        public string FullName 
+        /// <param name="fullName">New full name.</param>
+        /// <returns>This instance or a new one.</returns>
+        public new NamedDependentItemContainerRef SetFullName( string fullName )
         {
-            get { return _fullName; }
+            return (NamedDependentItemContainerRef)base.SetFullName( fullName );
         }
 
-        public bool Optional
+        /// <summary>
+        /// Overriden to create a <see cref="NamedDependentItemContainerRef"/>.
+        /// </summary>
+        /// <param name="fullName">Full name of the object. May start with '?' but this is ignored: <paramref name="optional"/> drives the optionality.</param>
+        /// <param name="optional">True for an optional reference.</param>
+        /// <returns>A new <see cref="NamedDependentItemContainerRef"/> instance.</returns>
+        protected override NamedDependentItemRef Create( string fullName, bool optional )
         {
-            get { return _optional; }
+            return new NamedDependentItemContainerRef( fullName, optional );
         }
 
         public static implicit operator NamedDependentItemContainerRef( string fullName )
         {
             return new NamedDependentItemContainerRef( fullName );
         }
-
-        public override bool Equals( object obj )
-        {
-            if( obj is IDependentItemRef )
-            {
-                IDependentItemRef o = (IDependentItemRef)obj;
-                return o.Optional == Optional && o.FullName == _fullName;
-            }
-            return false;
-        }
-
-        public override int GetHashCode()
-        {
-            int h = _fullName.GetHashCode();
-            if( _optional ) h = -h;
-            return h;
-        }
-
-        public override string ToString()
-        {
-            return FullName;
-        }
-
     }
+
 }

@@ -16,6 +16,7 @@ namespace CK.Setup.SqlServer
         public SqlTableItem( IActivityLogger logger, IStObjSetupData data )
             : base( logger, data )
         {
+            Name = data.FullNameWithoutContext;
         }
 
         /// <summary>

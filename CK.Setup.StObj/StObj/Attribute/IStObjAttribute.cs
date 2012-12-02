@@ -20,7 +20,7 @@ namespace CK.Setup
         /// Gets the kind of object (simple item, group or container).
         /// This property is inherited from base classes that are not Ambient Contracts.
         /// </summary>
-        DependentItemType ItemKind { get; }
+        DependentItemKind ItemKind { get; }
 
         /// <summary>
         /// Gets how Ambient Properties that reference the object must be tracked.
@@ -42,7 +42,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets an array of types that must be Children of this item.
-        /// <see cref="ItemKind"/> must be <see cref="DependentItemType.Group"/> or <see cref="DependentItemType.Container"/>.
+        /// <see cref="ItemKind"/> must be <see cref="DependentItemKind.Group"/> or <see cref="DependentItemKind.Container"/>.
         /// This property is not inherited, it applies only to the decorated type.
         /// </summary>
         Type[] Children { get; }

@@ -30,9 +30,9 @@ namespace CK.Core
 
 
         /// <summary>
-        /// Gets the <see cref="Type"/> that identifies this context. Null for default context.
+        /// Gets the context name. <see cref="String.Empty"/> for default context.
         /// </summary>
-        public Type Context
+        public string Context
         {
             get { return _mappings.Context; }
         }
@@ -93,7 +93,7 @@ namespace CK.Core
         public void LogErrorAndWarnings( IActivityLogger logger )
         {
             if( logger == null ) throw new ArgumentNullException( "logger" );
-            using( logger.OpenGroup( LogLevel.Trace, "Ambient Contract for context '{1}': {0} mappings for {2} concrete paths.", _mappings.Count, Context.Name, _concreteClassesPath.Count ) )
+            using( logger.OpenGroup( LogLevel.Trace, "Ambient Contract for context '{1}': {0} mappings for {2} concrete paths.", _mappings.Count, Context, _concreteClassesPath.Count ) )
             {
                 foreach( var a in _classAmbiguities )
                 {

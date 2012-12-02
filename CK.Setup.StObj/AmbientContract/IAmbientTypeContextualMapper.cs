@@ -17,9 +17,9 @@ namespace CK.Core
         IAmbientTypeMapper Owner { get; }
 
         /// <summary>
-        /// Gets the context. <see cref="AmbientContractCollector.DefaultContext"/> for the default context.
+        /// Gets the context. <see cref="String.Empty"/> for the default context.
         /// </summary>
-        Type Context { get; }
+        string Context { get; }
 
         /// <summary>
         /// Gets the number of type mapped.

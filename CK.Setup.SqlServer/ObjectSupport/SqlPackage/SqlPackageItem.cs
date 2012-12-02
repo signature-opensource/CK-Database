@@ -18,6 +18,7 @@ namespace CK.Setup.SqlServer
             : base( logger, data )
         {
             Debug.Assert( typeof( SqlPackageSetupDriver ).IsAssignableFrom( data.DriverType ) );
+            Name = data.FullNameWithoutContext;
         }
 
         /// <summary>

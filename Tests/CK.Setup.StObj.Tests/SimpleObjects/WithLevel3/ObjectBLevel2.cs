@@ -3,6 +3,13 @@ using NUnit.Framework;
 
 namespace CK.Setup.StObj.Tests.SimpleObjects.WithLevel3
 {
+    // Container PackageForABLevel1 is "over defined" here:
+    // - by the StObj attribute.
+    // - by the Construct parameter.
+    // - by its base class (ObjectBLevel1 is already in PackageForABLevel1).
+    //
+    // As long as it is the same, there is no problem.
+    //
     [StObj( Container = typeof( PackageForABLevel1 ) )]
     public class ObjectBLevel2 : ObjectBLevel1, IAbstractionBOnLevel2
     {

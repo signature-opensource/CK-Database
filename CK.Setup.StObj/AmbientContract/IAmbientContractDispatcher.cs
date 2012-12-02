@@ -18,7 +18,7 @@ namespace CK.Core
         /// </summary>
         /// <param name="t">The type to map.</param>
         /// <param name="contexts">Contexts into which the type is defined. This set can be changed.</param>
-        void Dispatch( Type t, ISet<Type> contexts );
+        void Dispatch( Type t, ISet<string> contexts );
 
         /// <summary>
         /// This method is called for any class Type that are not <see cref="AmbientContractCollector.IsStaticallyTypedAmbientContract">statically typed</see>

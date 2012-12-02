@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 
 namespace CK.Core
 {
@@ -14,8 +15,8 @@ namespace CK.Core
     {
         public readonly Type Type;
 
-        internal readonly ISet<Type> MutableFinalContexts;
-        readonly IReadOnlyCollection<Type> _finalContextsEx;
+        internal readonly ISet<string> MutableFinalContexts;
+        readonly IReadOnlyCollection<string> _finalContextsEx;
 
         readonly AmbientTypeInfo _nextSibling;
         AmbientTypeInfo _firstChild;
@@ -31,12 +32,12 @@ namespace CK.Core
         {
             if( t == null ) throw new ArgumentNullException( "t" );
             Type = t;
-            MutableFinalContexts = new HashSet<Type>();
-            _finalContextsEx = new ReadOnlyCollectionOnISet<Type>( MutableFinalContexts );
+            MutableFinalContexts = new HashSet<string>();
+            _finalContextsEx = new ReadOnlyCollectionOnISet<string>( MutableFinalContexts );
             if( (Generalization = parent) == null )
             {
                 _nextSibling = null;
-                MutableFinalContexts.Add( AmbientContractCollector.DefaultContext );
+                MutableFinalContexts.Add( String.Empty );
             }
             else
             {
@@ -50,7 +51,7 @@ namespace CK.Core
 
         public AmbientTypeInfo Generalization { get; private set; }
 
-        public IReadOnlyCollection<Type> FinalContexts
+        public IReadOnlyCollection<string> FinalContexts
         {
             get { return _finalContextsEx; }
         }
@@ -67,7 +68,12 @@ namespace CK.Core
                                                         : EnsureAllAmbientInterfaces( ambientInterfacePredicate ));
         }
 
-        public IEnumerable<AmbientTypeInfo> SpecializationsByContext( Type context )
+        /// <summary>
+        /// Gets the different specialized <see cref="AmbientTypeInfo"/> that exist in a given context or in all context (when <paramref name="context"/> is null).
+        /// </summary>
+        /// <param name="context">Named context. Null to get all specializations regardless of their context.</param>
+        /// <returns>An enumerable of <see cref="AmbientTypeInfo"/> that specialize this one.</returns>
+        public IEnumerable<AmbientTypeInfo> SpecializationsByContext( string context )
         {
             AmbientTypeInfo c = _firstChild;
             while( c != null )
@@ -77,7 +83,7 @@ namespace CK.Core
             }
         }
 
-        internal bool CollectDeepestConcrete( List<AmbientTypeInfo> lastConcretes, List<Type> abstractTails, Type context = null )
+        internal bool CollectDeepestConcrete( List<AmbientTypeInfo> lastConcretes, List<Type> abstractTails, string context = null )
         {
             bool concreteBelow = false;
             AmbientTypeInfo c = _firstChild;
@@ -104,7 +110,7 @@ namespace CK.Core
             return concreteBelow;
         }
 
-        static void ProcessContextAttributes<T>( Type t, Func<Type, bool> action ) where T : IContextDefiner
+        static void ProcessContextAttributes<T>( Type t, Func<string, bool> action ) where T : IContextDefiner
         {
             object[] attrs = t.GetCustomAttributes( typeof( T ), false );
             foreach( var a in attrs ) action( ((IContextDefiner)a).Context );

@@ -9,14 +9,40 @@ namespace CK.Setup.Dependency.Tests
     [TestFixture]
     public class Groups
     {
+
+        [Test]
+        public void DiscoverByGroup()
+        {
+            using( TestableItem.IgnoreCheckCount() )
+            {
+                var g = new TestableContainer( DependentItemKind.Group, "G" );
+                var c = new TestableContainer( DependentItemKind.Container, "C" );
+                var i = new TestableContainer( DependentItemKind.Item, "I" );
+                g.Add( i );
+                i.Container = c;
+                {
+                    var r = DependencySorter.OrderItems( i, c, g );
+                    r.AssertOrdered( "C.Head", "G.Head", "I", "C", "G" );
+                }
+                {
+                    var r = DependencySorter.OrderItems( c, i, g );
+                    r.AssertOrdered( "C.Head", "G.Head", "I", "C", "G" );
+                }
+                {
+                    var r = DependencySorter.OrderItems( g );
+                    r.AssertOrdered( "C.Head", "G.Head", "I", "C", "G" );
+                }
+            }
+        }
+
         [Test]
         public void InsideAnotherOne()
         {
             using( TestableItem.IgnoreCheckCount() )
             {
-                var g1 = new TestableContainer( DependentItemType.Group, "G1" );
-                var g2 = new TestableContainer( DependentItemType.Group, "G2" );
-                var g3 = new TestableContainer( DependentItemType.Group, "G3" );
+                var g1 = new TestableContainer( DependentItemKind.Group, "G1" );
+                var g2 = new TestableContainer( DependentItemKind.Group, "G2" );
+                var g3 = new TestableContainer( DependentItemKind.Group, "G3" );
                 g3.Groups.Add( g2 );
                 g2.Groups.Add( g1 );
                 {
@@ -56,9 +82,9 @@ namespace CK.Setup.Dependency.Tests
         {
             using( TestableItem.IgnoreCheckCount() )
             {
-                var g1 = new TestableContainer( DependentItemType.Group, "G1" );
-                var g2 = new TestableContainer( DependentItemType.Group, "G2" );
-                var g3 = new TestableContainer( DependentItemType.Group, "G3" );
+                var g1 = new TestableContainer( DependentItemKind.Group, "G1" );
+                var g2 = new TestableContainer( DependentItemKind.Group, "G2" );
+                var g3 = new TestableContainer( DependentItemKind.Group, "G3" );
                 g3.Add( "∈G2" );
                 g2.Add( "∈G1" );
                 {

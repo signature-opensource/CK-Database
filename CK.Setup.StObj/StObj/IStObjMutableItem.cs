@@ -12,14 +12,14 @@ namespace CK.Setup
         Type ObjectType { get; }
 
         /// <summary>
-        /// Gets the typed context where the structure object resides.
+        /// Gets the context where the structure object resides.
         /// </summary>
-        Type Context { get; }
+        string Context { get; }
 
         /// <summary>
         /// Gets the kind of object (simple item, group or container).
         /// </summary>
-        DependentItemType ItemKind { get; set; }
+        DependentItemKind ItemKind { get; set; }
 
         /// <summary>
         /// Gets or sets how Ambient Properties that reference this StObj must be considered.
@@ -31,55 +31,92 @@ namespace CK.Setup
         /// Initialized by <see cref="StObjAttribute.Container"/> or any other <see cref="IStObjStructuralConfigurator"/>.
         /// When the configured container's type is null and this StObj has a Generalization, the container of its Generalization will be used.
         /// </summary>
-        IMutableReference Container { get; }
+        IStObjMutableReference Container { get; }
 
         /// <summary>
         /// Contained items of the object.
         /// Initialized by <see cref="StObjAttribute.Children"/>.
         /// </summary>
-        IMutableReferenceList Children { get; }
+        IStObjMutableReferenceList Children { get; }
 
         /// <summary>
         /// Direct dependencies of the object.
         /// Initialized by <see cref="StObjAttribute.Requires"/>.
         /// </summary>
-        IMutableReferenceList Requires { get; }
+        IStObjMutableReferenceList Requires { get; }
 
         /// <summary>
         /// Reverse dependencies: types that depend on the object.
         /// Initialized by <see cref="StObjAttribute.RequiredBy"/>.
         /// </summary>
-        IMutableReferenceList RequiredBy { get; }
+        IStObjMutableReferenceList RequiredBy { get; }
 
         /// <summary>
         /// Reverse dependencies: types that depend on the object.
         /// Initialized by <see cref="StObjAttribute.RequiredBy"/>.
         /// </summary>
-        IMutableReferenceList Groups { get; }
+        IStObjMutableReferenceList Groups { get; }
 
         /// <summary>
         /// Gets a list of mutable Construct parameters.
         /// </summary>
-        IReadOnlyList<IMutableParameter> ConstructParameters { get; }
+        IReadOnlyList<IStObjMutableParameter> ConstructParameters { get; }
 
         /// <summary>
-        /// Gets a list of mutable Ambient properties for the ultimate specialization: all
-        /// ambient properties of the most specialized object are available.
+        /// Gets a list of mutable Ambient properties defined at this level (and above) but potentially specialized.
         /// This guarantees that properties are accessed by their most precise overriden/masked version.
+        /// To explicitely set a value for an ambient property, use <see cref="SetAmbiantPropertyValue"/>.
         /// </summary>
-        IReadOnlyList<IMutableAmbientProperty> AllAmbientProperties { get; }
+        IReadOnlyList<IStObjAmbientProperty> SpecializedAmbientProperties { get; }
 
         /// <summary>
-        /// Sets a property on the actual object (the property must exist, its type must be compatible with the value 
-        /// and be writeable - it must not be a non writeable mergeable property).
-        /// Can be called for any writeable property of the object but when the property is an ambient one, this is
-        /// the same as calling <see cref="IMutableAmbientProperty.SetStructuralValue"/>.
+        /// Sets a direct (non Ambient nor StObj) property on the Structured Object. The property must exist, be writeable and the
+        /// type of the <paramref name="value"/> must be compatible with the property type otherwise an error is logged.
         /// </summary>
         /// <param name="logger">The logger to use to describe any error.</param>
-        /// <param name="sourceName">The name of the "source" of this action.</param>
-        /// <param name="propertyName">Name of the property that must exist.</param>
+        /// <param name="propertyName">Name of the property to set.</param>
         /// <param name="value">Value to set.</param>
+        /// <param name="sourceDescription">Optional description of the origin of the value to help troubleshooting.</param>
         /// <returns>True on success, false if any error occurs.</returns>
-        bool SetPropertyStructuralValue( IActivityLogger logger, string sourceName, string propertyName, object value );
+        bool SetDirectPropertyValue( IActivityLogger logger, string propertyName, object value, string sourceDescription = null );
+
+        /// <summary>
+        /// Sets a property on the StObj. The property must not be an ambient property, but it is not required to be 
+        /// defined by a <see cref="StObjPropertyAttribute"/> (see remarks).
+        /// </summary>
+        /// <remarks>
+        /// A StObj property can be dynamically defined on any StObj. The StObjPropertyAttribute enables definition and Type restriction 
+        /// of StObj properties by the holding type itself, but is not required.
+        /// </remarks>
+        /// <param name="logger">The logger to use to describe any error.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="value">Value to set.</param>
+        /// <param name="sourceDescription">Optional description of the origin of the value to help troubleshooting.</param>
+        /// <returns>True on success, false if any error occurs.</returns>
+        bool SetStObjPropertyValue( IActivityLogger logger, string propertyName, object value, string sourceDescription = null );
+
+        /// <summary>
+        /// Sets an ambient property on the Structured Object (the property must exist, be writeable, and marked with <see cref="AmbientPropertyAttribute"/>). The
+        /// type of the <paramref name="value"/> must be compatible with the property type otherwise an error is logged.
+        /// </summary>
+        /// <param name="logger">The logger to use to describe any error.</param>
+        /// <param name="propertyName">Name of the property to set.</param>
+        /// <param name="value">Value to set.</param>
+        /// <param name="sourceDescription">Optional description of the origin of the value to help troubleshooting.</param>
+        /// <returns>True on success, false if any error occurs.</returns>
+        bool SetAmbiantPropertyValue( IActivityLogger logger, string propertyName, object value, string sourceDescription = null );
+
+        /// <summary>
+        /// Sets how an ambient property on the Structured Object must be resolved (the property must exist, be writeable, and marked with <see cref="AmbientPropertyAttribute"/>).
+        /// </summary>
+        /// <param name="logger">The logger to use to describe any error.</param>
+        /// <param name="propertyName">Name of the property to configure.</param>
+        /// <param name="context">See <see cref="IStObjMutableReference.Context"/>.</param>
+        /// <param name="type">See <see cref="IStObjMutableReference.Type"/>.</param>
+        /// <param name="behavior">See <see cref="IStObjMutableReference.StObjRequirementBehavior"/>.</param>
+        /// <param name="sourceDescription">Optional description of the origin of the call to help troubleshooting.</param>
+        /// <returns>True on success, false if any error occurs.</returns>
+        bool SetAmbiantPropertyConfiguration( IActivityLogger logger, string propertyName, string context, Type type, StObjRequirementBehavior behavior, string sourceDescription = null );
+
     }
 }

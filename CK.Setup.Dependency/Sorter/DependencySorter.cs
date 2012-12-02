@@ -29,6 +29,17 @@ namespace CK.Setup
             /// Defaults to false.
             /// </summary>
             public bool SkipDependencyToContainer { get; set; }
+
+            /// <summary>
+            /// Gets or sets a function that will be called with the list of items once all of them are registered.
+            /// Duplicates has been removed.
+            /// </summary>
+            public Action<IEnumerable<IDependentItem>> HookInput { get; set; }
+
+            /// <summary>
+            /// Gets or sets a function that will be called on success.
+            /// </summary>
+            public Action<IEnumerable<ISortedItem>> HookOutput { get; set; }
         }
 
         static readonly Options _defaultOptions = new Options();
@@ -114,18 +125,18 @@ namespace CK.Setup
             }
             
 
-            public bool Init( IDependentItem e, DependentItemType actualType, object startValue )
+            public bool Init( IDependentItem e, DependentItemKind actualType, object startValue )
             {
                 Debug.Assert( FullName == e.FullName );
                 Item = e;
                 StartValue = startValue;
                 ItemKind = actualType;
-                if( actualType != DependentItemType.SimpleItem )
+                if( actualType != DependentItemKind.Item )
                 {
                     Debug.Assert( HeadIfGroupOrContainer == null, "Only once!" );
                     Debug.Assert( FirstChildIfContainer == null );
                     HeadIfGroupOrContainer = new Entry( this );
-                    if( actualType == DependentItemType.Group ) GroupChildren = new List<Entry>();
+                    if( actualType == DependentItemKind.Group ) GroupChildren = new List<Entry>();
                     return true;
                 }
                 return false;
@@ -145,7 +156,7 @@ namespace CK.Setup
             /// Updated from actual IDependentItem type and IDependentItemContainerTyped.
             /// For heads, it is the same as its GroupIfHead.ItemType (ie. the type of the Item is copied).
             /// </summary>
-            public DependentItemType ItemKind { get; private set; }
+            public DependentItemKind ItemKind { get; private set; }
 
             /// <summary>
             /// Captured return from Item.StartDependencySort() call.
@@ -211,7 +222,7 @@ namespace CK.Setup
 
             internal void AddToGroup( Entry child )
             {
-                Debug.Assert( ItemKind == DependentItemType.Group );
+                Debug.Assert( ItemKind == DependentItemKind.Group );
                 Debug.Assert( child != null );
                 Debug.Assert( child.GroupIfHead == null, "Never add a head as a Child." );
                 Debug.Assert( GroupChildren != null );               
@@ -221,7 +232,7 @@ namespace CK.Setup
 
             internal void AddToContainer( Entry child )
             {
-                Debug.Assert( ItemKind == DependentItemType.Container );
+                Debug.Assert( ItemKind == DependentItemKind.Container );
                 Debug.Assert( child.Container == null, "One and only one Container setting." );
                 Debug.Assert( child != null );
                 Debug.Assert( child.GroupIfHead == null, "Never add a head as a Child." );
@@ -234,7 +245,7 @@ namespace CK.Setup
 
             internal bool AppearInContainerChain( Entry dep )
             {
-                Debug.Assert( dep.ItemKind == DependentItemType.Container, "Called only with a Container." );
+                Debug.Assert( dep.ItemKind == DependentItemKind.Container, "Called only with a Container." );
                 Entry c = Container;
                 while( c != null )
                 {
@@ -253,7 +264,7 @@ namespace CK.Setup
                     return;
                 }
                 Debug.Assert( HeadIfGroupOrContainer != null, "This is a Group..." );
-                Debug.Assert( ItemKind == DependentItemType.Container, "...more than that: a Container." );
+                Debug.Assert( ItemKind == DependentItemKind.Container, "...more than that: a Container." );
                 Entry c = FirstChildIfContainer;
                 while( c != null )
                 {
@@ -267,7 +278,7 @@ namespace CK.Setup
             internal void CheckContainerNotContains( Entry e )
             {
                 Debug.Assert( HeadIfGroupOrContainer != null, "This is a Group..." );
-                Debug.Assert( ItemKind == DependentItemType.Container, "...more than that: a Container." );
+                Debug.Assert( ItemKind == DependentItemKind.Container, "...more than that: a Container." );
                 Entry c = FirstChildIfContainer;
                 while( c != null )
                 {
@@ -452,7 +463,7 @@ namespace CK.Setup
                             // Else... it is a multiple containment.
                             if( nc.Container.FullName != nc.Item.Container.FullName )
                             {
-                                _computer.SetStructureError( nc, DependentItemStructureError.MultipleContainer ).AddExtraneousContainers( nc.Item.Container.FullName );
+                                _computer.SetStructureError( nc, DependentItemStructureError.MultipleContainer ).AddExtraneousContainers( nc.Container.FullName );
                             }
                         }
                         else
@@ -461,7 +472,7 @@ namespace CK.Setup
                             Entry c;
                             if( TryGetEntryValue( nc.Item.Container.FullName, out c ) )
                             {
-                                if( c.ItemKind == DependentItemType.Container )
+                                if( c.ItemKind == DependentItemKind.Container )
                                 {
                                     // The named container exists and it is a Container.
                                     c.AddToContainer( nc );
@@ -504,7 +515,7 @@ namespace CK.Setup
                         Entry group;
                         if( TryGetEntryValue( groupRef.FullName, out group ) )
                         {
-                            if( group.ItemKind == DependentItemType.SimpleItem )
+                            if( group.ItemKind == DependentItemKind.Item )
                             {
                                 _computer.SetStructureError( entry, DependentItemStructureError.DeclaredGroupRefusedToBeAGroup ).AddInvalidGroup( groupRef.FullName );
                             }
@@ -528,7 +539,7 @@ namespace CK.Setup
 
                 private void AddChildToGroupOrContainer( Entry group, Entry child )
                 {
-                    Debug.Assert( group != null && group.ItemKind != DependentItemType.SimpleItem );
+                    Debug.Assert( group != null && group.ItemKind != DependentItemKind.Item );
                     Debug.Assert( child != null );
                     // child.Container can be null for 2 reasons: the item declares no container (null), 
                     // or the item declares a name and the entry has been added to namedContainersToBind.
@@ -537,7 +548,7 @@ namespace CK.Setup
                     // Is it already bound to a Container?
                     if( child.Container != null )
                     {
-                        if( group.ItemKind == DependentItemType.Container )
+                        if( group.ItemKind == DependentItemKind.Container )
                         {
                             if( child.Container != group )
                             {
@@ -553,7 +564,7 @@ namespace CK.Setup
                     else
                     {
                         // We set the container or add the child to the group.
-                        if( group.ItemKind == DependentItemType.Container ) group.AddToContainer( child );
+                        if( group.ItemKind == DependentItemKind.Container ) group.AddToContainer( child );
                         else group.AddToGroup( child );
                     }
                 }
@@ -695,17 +706,17 @@ namespace CK.Setup
                     #region Compute actual item type (actualType, e, g and c)
                     IDependentItemGroup g = null;
                     IDependentItemContainer c = e as IDependentItemContainer;
-                    DependentItemType actualType = DependentItemType.SimpleItem;
+                    DependentItemKind actualType = DependentItemKind.Item;
                     if( c != null )
                     {
                         g = c;
                         IDependentItemContainerTyped cTyped = e as IDependentItemContainerTyped;
-                        actualType = cTyped != null ? cTyped.ItemKind : DependentItemType.Container;
+                        actualType = cTyped != null ? cTyped.ItemKind : DependentItemKind.Container;
                     }
                     else
                     {
                         g = e as IDependentItemGroup;
-                        if( g != null ) actualType = DependentItemType.Group;
+                        if( g != null ) actualType = DependentItemKind.Group;
                     }
                     #endregion
 
@@ -780,12 +791,13 @@ namespace CK.Setup
 
                     // ...and safely automatically discover its bound items: its container and its children.
                     //
+                    bool handleItemContainer = e.Container != null;
                     // Starts with its Container :
                     // - first handle the case where we are called by a Group that claims to own the current element.
                     if( alreadyRegisteredGroup != null )
                     {
                         #region Call comes from one of our group or from a container.
-                        if( alreadyRegisteredGroup.ItemKind == DependentItemType.Container )
+                        if( alreadyRegisteredGroup.ItemKind == DependentItemKind.Container )
                         {
                             // We are coming from our container.
                             // If the item has a container, they must match.
@@ -798,12 +810,12 @@ namespace CK.Setup
                                     if( father != null )
                                     {
                                         // The container differs from the one that contains it as a child.
-                                        // Registers the container associated to the current element...
+                                        // Registers the container associated to the current element (to ensure auto-discovery).
                                         Entry extraContainer = RegisterEntry( father, null, entry );
                                         // ...and declares an error.
                                         // (Here we forget the fact that the extra container may be a IDependentItemContainerTyped where ItemKind != Container:
                                         // we consider the container mismatch as more important.)
-                                        _computer.SetStructureError( entry, DependentItemStructureError.MultipleContainer ).AddExtraneousContainers( extraContainer.FullName );
+                                        _computer.SetStructureError( entry, DependentItemStructureError.MultipleContainer ).AddExtraneousContainers( alreadyRegisteredGroup.Item.FullName );
                                     }
                                     else
                                     {
@@ -811,76 +823,74 @@ namespace CK.Setup
                                         if( e.Container.FullName != alreadyRegisteredGroup.FullName )
                                         {
                                             // If it differs, declares an error.
-                                            _computer.SetStructureError( entry, DependentItemStructureError.MultipleContainer ).AddExtraneousContainers( e.Container.FullName );
+                                            _computer.SetStructureError( entry, DependentItemStructureError.MultipleContainer ).AddExtraneousContainers( alreadyRegisteredGroup.FullName );
                                         }
                                     }
                                 }
                             }
                             // Even if a structure error occured, we set the container.
                             alreadyRegisteredGroup.AddToContainer( entry );
+                            handleItemContainer = false;
                         }
                         else
                         {
-                            Debug.Assert( alreadyRegisteredGroup.ItemKind == DependentItemType.Group, "A SimpleItem would not have called us." );
+                            Debug.Assert( alreadyRegisteredGroup.ItemKind == DependentItemKind.Group, "A SimpleItem would not have called us." );
                             // Groups do not create any constraints. 
                             // Simply add the entry to the group.
                             alreadyRegisteredGroup.AddToGroup( entry );
                         }
                         #endregion
                     }
-                    else // We are not coming from a group or container that claims to own it.
+                    #region Now, handles item's Container if needed.
+                    // If it declares a container, we try to bind to it.
+                    if( handleItemContainer )
                     {
-                        #region Handles Container first.
-                        // If it declares a container, we try to bind to it.
-                        if( e.Container != null )
+                        IDependentItemContainer father = e.Container as IDependentItemContainer;
+                        if( father != null )
                         {
-                            IDependentItemContainer father = e.Container as IDependentItemContainer;
-                            if( father != null )
+                            var cnt = RegisterEntry( father, null, entry );
+                            if( cnt.ItemKind != DependentItemKind.Container )
                             {
-                                var cnt = RegisterEntry( father, null, entry );
-                                if( cnt.ItemKind != DependentItemType.Container )
-                                {
-                                    // The container refused to be a container.
-                                    _computer.SetStructureError( entry, DependentItemStructureError.ExistingContainerAskedToNotBeAContainer );
-                                }
-                                else
-                                {
-                                    cnt.AddToContainer( entry );
-                                    Debug.Assert( entry.Container == cnt );
-                                }
+                                // The container refused to be a container.
+                                _computer.SetStructureError( entry, DependentItemStructureError.ExistingContainerAskedToNotBeAContainer );
                             }
-                            else _namedContainersToBind.Add( entry );
-                        }
-                        #endregion
-                        #region Handles Groups.
-                        // Whatever it is, if it declares Groups, handle them.
-                        IEnumerable<IDependentItemGroupRef> groups;
-                        if( (groups = e.Groups) != null )
-                        {
-                            foreach( IDependentItemGroupRef groupRef in groups )
+                            else
                             {
-                                // Skips null by security.
-                                if( groupRef == null ) continue;
-                                IDependentItemGroup group = groupRef as IDependentItemGroup;
-                                if( group != null )
-                                {
-                                    var gE = RegisterEntry( group, null, entry );
-                                    if( gE.ItemKind == DependentItemType.SimpleItem )
-                                    {
-                                        _computer.SetStructureError( entry, DependentItemStructureError.DeclaredGroupRefusedToBeAGroup ).AddInvalidGroup( gE.FullName );
-                                    }
-                                    else AddChildToGroupOrContainer( gE, entry );
-                                }
-                                else
-                                {
-                                    _groupsToBind.Add( Tuple.Create( entry, groupRef ) );
-                                }
+                                cnt.AddToContainer( entry );
+                                Debug.Assert( entry.Container == cnt );
                             }
                         }
-                        #endregion
+                        else _namedContainersToBind.Add( entry );
                     }
+                    #endregion
+                    #region Handles Groups.
+                    // Whatever it is, if it declares Groups, handle them.
+                    IEnumerable<IDependentItemGroupRef> groups;
+                    if( (groups = e.Groups) != null )
+                    {
+                        foreach( IDependentItemGroupRef groupRef in groups )
+                        {
+                            // Skips null (security) and any reference to the group that is registering us.
+                            if( groupRef == null || (alreadyRegisteredGroup != null && alreadyRegisteredGroup.FullName == groupRef.FullName) ) continue;
+                            IDependentItemGroup group = groupRef as IDependentItemGroup;
+                            if( group != null )
+                            {
+                                var gE = RegisterEntry( group, null, entry );
+                                if( gE.ItemKind == DependentItemKind.Item )
+                                {
+                                    _computer.SetStructureError( entry, DependentItemStructureError.DeclaredGroupRefusedToBeAGroup ).AddInvalidGroup( gE.FullName );
+                                }
+                                else AddChildToGroupOrContainer( gE, entry );
+                            }
+                            else
+                            {
+                                _groupsToBind.Add( Tuple.Create( entry, groupRef ) );
+                            }
+                        }
+                    }
+                    #endregion
                     // If it is a group, handle its children. 
-                    if( actualType == DependentItemType.SimpleItem )
+                    if( actualType == DependentItemKind.Item )
                     {
                         // If not, check if it is NOT a group that nevertheless exposes children: this must be 
                         // considered as an error to stay independant of the registration order.
@@ -895,7 +905,7 @@ namespace CK.Setup
                     }
                     else
                     {
-                        Debug.Assert( actualType != DependentItemType.SimpleItem && g != null );
+                        Debug.Assert( actualType != DependentItemKind.Item && g != null );
                         Debug.Assert( entry.HeadIfGroupOrContainer != null );
                         IEnumerable<IDependentItemRef> children;
                         if( (children = g.Children) != null )
@@ -968,7 +978,7 @@ namespace CK.Setup
                     return entry;
                 }
 
-                void CreateOrInitEntry( ref Entry entry, DependentItemType actualType, IDependentItem e, object startValue )
+                void CreateOrInitEntry( ref Entry entry, DependentItemKind actualType, IDependentItem e, object startValue )
                 {
                     if( entry == null )
                     {
@@ -1010,6 +1020,7 @@ namespace CK.Setup
 
             public void Process()
             {
+                if( _options.HookInput != null ) _options.HookInput( _entries.Where( e => e.Key is String ).Select( e => (Entry)e.Value ).Where( e => e.HeadIfGroupOrContainer == null ).Select( e => e.Item ) );
                 // Note: Since we can NOT support dynamic resolution of a missing dependency
                 // (through a function like ResolveMissing( fullName ) because of
                 // the RequiredBy: if a newly added item has a RequiredBy, we should
@@ -1060,7 +1071,7 @@ namespace CK.Setup
                             Entry oeDep = (Entry)_entries[dep.FullName];
                             if( (oeDep == eGen)
                                 ||
-                                (oeDep.ItemKind == DependentItemType.Container && _options.SkipDependencyToContainer && e.AppearInContainerChain( oeDep )) )
+                                (oeDep.ItemKind == DependentItemKind.Container && _options.SkipDependencyToContainer && e.AppearInContainerChain( oeDep )) )
                             {
                                 if( requiresHiddenByContainerOrGen == null ) requiresHiddenByContainerOrGen = new List<IDependentItemRef>();
                                 requiresHiddenByContainerOrGen.Add( dep );
@@ -1130,7 +1141,7 @@ namespace CK.Setup
                                 {
                                     // Adds the strong dependency to mark it as processed even if it will be removed by skipDependencyToContainer.
                                     if( dep.Optional ) e.Requires.Add( strong );
-                                    if( oeDep.ItemKind == DependentItemType.Container
+                                    if( oeDep.ItemKind == DependentItemKind.Container
                                         && _options.SkipDependencyToContainer
                                         && e.AppearInContainerChain( oeDep ) )
                                     {
@@ -1277,6 +1288,7 @@ namespace CK.Setup
                     _result.Sort( _comparer );
                     int i = 0;
                     foreach( var e in _result ) e.Index = i++;
+                    if( _options.HookOutput != null ) _options.HookOutput( _result );
                     return new DependencySorterResult( _result, null, _itemIssues );
                 }
                 return new DependencySorterResult( null, _cycle, _itemIssues );

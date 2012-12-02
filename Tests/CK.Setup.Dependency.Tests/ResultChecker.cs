@@ -82,7 +82,7 @@ namespace CK.Setup.Dependency.Tests
                 if( o.Item.Container != null )
                 {
                     ISortedItem container = Find( o.Item.Container.FullName );
-                    Assert.That( container != null && container.ItemKind == DependentItemType.Container );
+                    Assert.That( container != null && container.ItemKind == DependentItemKind.Container );
                     CheckItemInContainer( o, container );
                 }
 
@@ -105,11 +105,11 @@ namespace CK.Setup.Dependency.Tests
             if( o.Item.Container != null )
             {
                 ISortedItem container = Find( o.Item.Container.FullName );
-                Assert.That( container != null && container.ItemKind == DependentItemType.Container );
+                Assert.That( container != null && container.ItemKind == DependentItemKind.Container );
                 CheckItemInContainer( o, container );
             }
             
-            if( o.ItemKind != DependentItemType.SimpleItem )
+            if( o.ItemKind != DependentItemKind.Item )
             {
                 Check( o.HeadForGroup );
                 foreach( var item in ((IDependentItemContainer)o.Item).Children ) CheckRecurse( item.FullName );

@@ -8,11 +8,12 @@ namespace CK.Core
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = false )]
     public class AddContextAttribute : Attribute, IContextDefiner
     {
-        public AddContextAttribute( Type context )
+        public AddContextAttribute( string context )
         {
+            if( context == null ) throw new ArgumentNullException( "context" );
             Context = context;
         }
 
-        public Type Context { get; private set; }
+        public string Context { get; private set; }
     }
 }

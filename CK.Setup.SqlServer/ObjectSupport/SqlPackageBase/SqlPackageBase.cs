@@ -6,7 +6,7 @@ using CK.Core;
 
 namespace CK.Setup.SqlServer
 {
-    [StObj( ItemKind = DependentItemType.Container )]
+    [StObj( ItemKind = DependentItemKind.Container )]
     public class SqlPackageBase 
     {
         /// <summary>
@@ -28,7 +28,7 @@ namespace CK.Setup.SqlServer
         /// to this package.
         /// Typically initialized by an attribute (like <see cref="SqlPackageAttribute"/>).
         /// </summary>
-        [AmbientProperty]
+        [StObjProperty]
         public ResourceLocator ResourceLocation { get; set; }
 
     }

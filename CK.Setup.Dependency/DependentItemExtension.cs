@@ -11,6 +11,108 @@ namespace CK.Setup
     /// </summary>
     public static class DependentItemExtension
     {
+        /// <summary>
+        /// Returns a collection of <see cref="IDependentItemRef"/> with potentially different <see cref="IDependentItem.FullName"/>.
+        /// Can safely be called on null source reference.
+        /// </summary>
+        /// <param name="source">This enumerable.</param>
+        /// <param name="fullNameProvider">Name provider. By returning null, the reference does not appear in the resulting enumerable.</param>
+        /// <returns>A collection of <see cref="IDependentItemRef"/> whose FullName of named references may have changed.</returns>
+        public static IEnumerable<IDependentItemRef> SetRefFullName( this IEnumerable<IDependentItemRef> source, Func<IDependentItemNamedRef, string> fullNameProvider )
+        {
+            return source != null ? CallSetRefFullName( source, fullNameProvider ) : source;
+        }
+
+        /// <summary>
+        /// Returns a collection of <see cref="IDependentItemGroupRef"/> with potentially different <see cref="IDependentItem.FullName"/>.
+        /// Can safely be called on null source reference.
+        /// </summary>
+        /// <param name="source">This enumerable.</param>
+        /// <param name="fullNameProvider">Name provider. By returning null, the reference does not appear in the resulting enumerable.</param>
+        /// <returns>A collection of <see cref="IDependentItemGroupRef"/> whose FullName of named references may have changed.</returns>
+        public static IEnumerable<IDependentItemGroupRef> SetRefFullName( this IEnumerable<IDependentItemGroupRef> source, Func<IDependentItemNamedRef, string> fullNameProvider )
+        {
+            return source != null ? CallSetRefFullName( source, fullNameProvider ) : source;
+        }
+
+        /// <summary>
+        /// Returns a collection of <see cref="IDependentItemContainerRef"/> with potentially different <see cref="IDependentItem.FullName"/>.
+        /// Can safely be called on null source reference.
+        /// </summary>
+        /// <param name="source">This enumerable.</param>
+        /// <param name="fullNameProvider">Name provider. By returning null, the reference does not appear in the resulting enumerable.</param>
+        /// <returns>A collection of <see cref="IDependentItemContainerRef"/> whose FullName of named references may have changed.</returns>
+        public static IEnumerable<IDependentItemContainerRef> SetRefFullName( this IEnumerable<IDependentItemContainerRef> source, Func<IDependentItemNamedRef,string> fullNameProvider )
+        {
+            return source != null ? CallSetRefFullName( source, fullNameProvider ) : source;
+        }
+
+        /// <summary>
+        /// Returns an updated reference if this is a <see cref="IDependentItemNamedRef"/>.
+        /// Can safely be called on null reference and on reference that are not <see cref="IDependentItemNamedRef"/> (this unifies the API of extension 
+        /// methods SetRefFullName on <see cref="IEnumerable{T}"/> of <see cref="IDependentItem"/> and its specializations).
+        /// </summary>
+        /// <param name="@this">This item reference.</param>
+        /// <param name="fullNameProvider">Name provider. When null is returned, it is ignored.</param>
+        /// <returns>The reference with an updated name.</returns>
+        public static IDependentItemRef SetRefFullName( this IDependentItemRef @this, Func<IDependentItemNamedRef, string> fullNameProvider )
+        {
+            IDependentItemNamedRef r = @this as IDependentItemNamedRef;
+            return r != null ? (IDependentItemRef)r.SetFullName( fullNameProvider( r ) ) : @this;
+        }
+
+        /// <summary>
+        /// Returns an updated reference if this is a <see cref="IDependentItemNamedRef"/>.
+        /// Can safely be called on null reference and on reference that are not <see cref="IDependentItemNamedRef"/> (this unifies the API of extension 
+        /// methods SetRefFullName on <see cref="IEnumerable{T}"/> of <see cref="IDependentItem"/> and its specializations).
+        /// </summary>
+        /// <param name="@this">This group reference.</param>
+        /// <param name="fullNameProvider">Name provider. When null is returned, it is ignored.</param>
+        /// <returns>The reference with an updated name.</returns>
+        public static IDependentItemGroupRef SetRefFullName( this IDependentItemGroupRef @this, Func<IDependentItemNamedRef, string> fullNameProvider )
+        {
+            IDependentItemNamedRef r = @this as IDependentItemNamedRef;
+            return r != null ? (IDependentItemGroupRef)r.SetFullName( fullNameProvider( r ) ) : @this;
+        }
+
+        /// <summary>
+        /// Returns an updated reference if this is a <see cref="IDependentItemNamedRef"/>.
+        /// Can safely be called on null reference and on reference that are not <see cref="IDependentItemNamedRef"/> (this unifies the API of extension 
+        /// methods SetRefFullName on <see cref="IEnumerable{T}"/> of <see cref="IDependentItem"/> and its specializations).
+        /// </summary>
+        /// <param name="@this">This container reference.</param>
+        /// <param name="fullNameProvider">Name provider. When null is returned, it is ignored.</param>
+        /// <returns>The reference with an updated name.</returns>
+        public static IDependentItemContainerRef SetRefFullName( this IDependentItemContainerRef @this, Func<IDependentItemNamedRef, string> fullNameProvider )
+        {
+            IDependentItemNamedRef r = @this as IDependentItemNamedRef;
+            return r != null ? (IDependentItemContainerRef)r.SetFullName( fullNameProvider( r ) ) : @this;
+        }
+
+        /// <summary>
+        /// Private implementation to avoid duplicated code or IEnumerable{T} extension methods pollution.
+        /// </summary>
+        static IEnumerable<T> CallSetRefFullName<T>( this IEnumerable<T> source, Func<IDependentItemNamedRef, string> fullNameProvider )
+        {
+            foreach( var e in source )
+            {
+                IDependentItemNamedRef named = e as IDependentItemNamedRef;
+                if( named != null )
+                {
+                    string newName = fullNameProvider( named );
+                    if( newName != null )
+                    {
+                        if( newName == named.FullName ) yield return e;
+                        else yield return (T)named.SetFullName( newName );
+                    }
+                }
+                else yield return e;
+            }
+        }
+
+        /// <summary>
+        /// Private base class that hosts a reference to a dependent items.
+        /// </summary>
         class DirectRef
         {
             public IDependentItem Item { get; protected set; }
@@ -143,7 +245,7 @@ namespace CK.Setup
             if( @this != null && @this.Optional )
             {
                 DirectRef d = @this as DirectRef;
-                if( d != null ) return GetReference( (IDependentItemGroupRef)d.Item );
+                if( d != null ) return GetReference( (IDependentItemGroup)d.Item );
                 return new NamedDependentItemGroupRef( @this.FullName );
             }
             return @this;
@@ -188,5 +290,7 @@ namespace CK.Setup
         }
 
         #endregion
+
+
     }
 }

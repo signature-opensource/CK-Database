@@ -28,16 +28,25 @@ namespace CK.Setup.SqlServer
                 }
                 else
                 {
-                    int nbScripts = scripts.AddFromResources( logger, "res-sql", r, FullName, ".sql" );
-                    if( Item.Model != null ) nbScripts += scripts.AddFromResources( logger, "res-sql", r, "Model." + FullName, ".sql" );
-                    
-                    if( Item.Model == null )
+                    string context, location, name;
+                    if( !DefaultContextLocNaming.TryParse( FullName, out context, out location, out name ) )
                     {
-                        logger.Trace( "{1} sql scripts in resource found for '{0}'.", FullName, nbScripts );
+                        logger.Error( "Unable to parse '{0}' to extract context and location.", FullName );
+                        return false;
                     }
                     else
                     {
-                        logger.Trace( "{1} sql scripts in resource found for '{0}' and 'Model.{0}'.", FullName, nbScripts );
+                        int nbScripts = scripts.AddFromResources( logger, "res-sql", r, context, location, name, ".sql" );
+                        if( Item.Model != null ) nbScripts += scripts.AddFromResources( logger, "res-sql", r, context, location, "Model." + name, ".sql" );
+
+                        if( Item.Model == null )
+                        {
+                            logger.Trace( "{1} sql scripts in resource found for '{0}' in '{2}.", name, nbScripts, r );
+                        }
+                        else
+                        {
+                            logger.Trace( "{1} sql scripts in resource found for '{0}' and 'Model.{0}' in '{2}'.", name, nbScripts, r );
+                        }
                     }
                 }
             }

@@ -37,7 +37,7 @@ namespace CK.Setup
             }
             if( e.Step == SetupStep.None )
             {
-                // At startuo, subscribe to the Driver event.
+                // At startup, subscribe to the Driver event.
                 _engine.DriverEvent += OnDriverEvent;
             }
             else 

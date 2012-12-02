@@ -41,11 +41,12 @@ namespace CK.Core
     internal class AmbientTypeContextualMapper : IAmbientTypeContextualMapper
     {
         Dictionary<object,Type> _map;
-        Type _context;
+        string _context;
         AmbientTypeMapper _owner;
 
-        internal AmbientTypeContextualMapper( AmbientTypeMapper owner, Type context, Dictionary<object, Type> m )
+        internal AmbientTypeContextualMapper( AmbientTypeMapper owner, string context, Dictionary<object, Type> m )
         {
+            Debug.Assert( context != null );
             _context = context;
             _map = m;
             _owner = owner;
@@ -57,7 +58,7 @@ namespace CK.Core
             get { return _owner; }
         }
 
-        public Type Context
+        public string Context
         {
             get { return _context; }
         }

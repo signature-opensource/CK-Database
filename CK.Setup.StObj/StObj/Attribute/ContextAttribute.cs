@@ -15,11 +15,11 @@ namespace CK.Setup
     [AttributeUsage( AttributeTargets.Parameter | AttributeTargets.ReturnValue | AttributeTargets.Property, Inherited = false, AllowMultiple = false )]
     public class ContextAttribute : Attribute
     {
-        public ContextAttribute( Type typedContext )
+        public ContextAttribute( string context )
         {
-            Context = typedContext;
+            Context = context;
         }
 
-        public Type Context { get; private set; }
+        public string Context { get; private set; }
     }
 }

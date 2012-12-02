@@ -18,9 +18,11 @@ namespace CK.Setup.Database.Tests
 
             XElement e = XElement.Parse( @"
 <SetupPackage FullName=""TheFirstPackageEver"" Versions=""1.2.88, 1.2.4, Old.Name-Is-in.the.Versions = 1.3.4, The.New.Name=1.4.1, 1.5.0"">
-    <Requirements Requires=""AnOtherPackage, YetAnotherOne"" RequiredBy=""AnObjectIHook, AnotherObjectIHook"" />
+    <Requirements Requires=""[X]AnOtherPackage, db^YetAnotherOne"" RequiredBy=""AnObjectIHook, AnotherObjectIHook"" />
     <Model>
-        <Requirements Requires=""AnOtherPackage, YetAnotherOne"" RequiredBy=""AnObjectIHook, AnotherObjectIHook"" />
+        <!-- 
+                Model finally requires: ?[X]LOC^Model.AnOtherPackage and [C]db^Model.YetAnotherOne
+        -->
     </Model>
     <Content>
         <Add FullName=""ContainedItem"" />
@@ -28,14 +30,33 @@ namespace CK.Setup.Database.Tests
     </Content>
 </SetupPackage>
 " );
-            DynamicPackageItem p = SqlFileDiscoverer.ReadPackageFileFormat( e );
+            DynamicPackageItem p = SqlFileDiscoverer.ReadPackageFileFormat( e, "C", "LOC" );
             Assert.That( p.VersionList.IsSortedStrict() );
-        }
+
+            Assert.That( p.FullName, Is.EqualTo( "[C]LOC^TheFirstPackageEver" ), "FullName read has been contextualized with the curContext/curLoc." );
+            
+            Assert.That( p.Requires[0].FullName, Is.EqualTo( "[X]AnOtherPackage" ), "Direct relation storage is not impacted by Context-Localization context." );
+            Assert.That( p.Requires[1].FullName, Is.EqualTo( "db^YetAnotherOne" ) );
+            Assert.That( p.Model.Requires.Count, Is.EqualTo( 0 ), "Model does not require anythnig by itself." );
+
+            Assert.That( p.Model.Name, Is.EqualTo( "Model.TheFirstPackageEver" ) );
+            Assert.That( p.Model.FullName, Is.EqualTo( "[C]LOC^Model.TheFirstPackageEver" ) );
+
+            // Consider the DynamicPackageItem and its model as IDependentItem.
+            IDependentItemContainer pAsI = p as IDependentItemContainer;
+            Assert.That( pAsI.Requires.ElementAt(0).FullName, Is.EqualTo( "[X]LOC^AnOtherPackage" ), "Context-Localization is dynamically injected through IDependentItem interfaces." );
+            Assert.That( pAsI.Requires.ElementAt( 1 ).FullName, Is.EqualTo( "[C]db^YetAnotherOne" ) );
+
+            IDependentItem mAsI = p.Model as IDependentItem;
+            Assert.That( mAsI.Requires.ElementAt( 0 ).FullName, Is.EqualTo( "[X]LOC^Model.AnOtherPackage" ) );
+            Assert.That( mAsI.Requires.ElementAt( 1 ).FullName, Is.EqualTo( "[C]db^Model.YetAnotherOne" ) );
+
+       }
 
 
-        class SqlObjectBuilderMock : ISqlObjectBuilder
+        class SqlObjectParserStub : ISqlObjectParser
         {
-            public IVersionedItem Create( IActivityLogger logger, string text )
+            public IDependentProtoItem Create( IActivityLogger logger, IContextLocNaming externalName, string text )
             {
                 throw new NotImplementedException();
             }
@@ -65,8 +86,8 @@ namespace CK.Setup.Database.Tests
             ScriptTypeManager typeManager = new ScriptTypeManager();
             typeManager.Register( new SqlScriptTypeHandler() );
             ScriptCollector collector = new ScriptCollector( typeManager );
-            SqlFileDiscoverer discoverer = new SqlFileDiscoverer( new SqlObjectBuilderMock(), TestHelper.Logger );
-            Assert.That( discoverer.DiscoverSqlFiles( TestHelper.GetScriptsFolder( "FromOpenTo" ), collector ), Is.True );
+            SqlFileDiscoverer discoverer = new SqlFileDiscoverer( new SqlObjectParserStub(), TestHelper.Logger );
+            Assert.That( discoverer.DiscoverSqlFiles( null, null, TestHelper.GetScriptsFolder( "FromOpenTo" ), new DependentProtoItemCollector(), collector ), Is.True );
 
             bool caseDiffer;
             ScriptSet scripts = collector.Find( "Test", out caseDiffer );
@@ -115,9 +136,9 @@ namespace CK.Setup.Database.Tests
             typeManager.Register( new SqlScriptTypeHandler() );
             ScriptCollector collector = new ScriptCollector( typeManager );
             
-            SqlFileDiscoverer discoverer = new SqlFileDiscoverer( new SqlObjectBuilderMock(), TestHelper.Logger );
+            SqlFileDiscoverer discoverer = new SqlFileDiscoverer( new SqlObjectParserStub(), TestHelper.Logger );
 
-            Assert.That( discoverer.DiscoverSqlFiles( TestHelper.GetScriptsFolder( "AllSteps" ), collector ), Is.True );
+            Assert.That( discoverer.DiscoverSqlFiles( null, null, TestHelper.GetScriptsFolder( "AllSteps" ), new DependentProtoItemCollector(), collector ), Is.True );
 
             bool caseDiffer;
             ScriptSet scripts = collector.Find( "test", out caseDiffer );

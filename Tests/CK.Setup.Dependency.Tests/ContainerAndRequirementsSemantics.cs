@@ -38,7 +38,7 @@ namespace CK.Setup.Dependency.Tests
                     r.AssertOrdered( "System.Head", "A.Head", "B.Head", "B", "A", "ASpec.Head", "ASpec", "System" );
                 }
 
-                // This "Requires me + use my Container" relationship is "Generalization".
+                // This "Requires me + use my Container" relationship is a kind of "Generalization".
                 ASpec.Requires.Clear();
                 ASpec.Container = null;
                 // Previous scenario is the same as:

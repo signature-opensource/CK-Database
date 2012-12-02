@@ -17,17 +17,26 @@ namespace CK.Setup.SqlServer
 
         protected override void ConfigureMutableItem( IActivityLogger logger, IStObjMutableItem o )
         {
-            if( TableName != null ) o.SetPropertyStructuralValue( logger, "SqlTableAttribute", "TableName", TableName );
-            if( Schema != null ) o.SetPropertyStructuralValue( logger, "SqlTableAttribute", "Schema", Schema );
+            if( TableName != null ) o.SetDirectPropertyValue( logger, "TableName", TableName );
+            if( Schema != null ) o.SetAmbiantPropertyValue( logger, "Schema", Schema );
         }
 
         void IStObjSetupConfigurator.ConfigureDependentItem( IActivityLogger logger, IMutableStObjSetupData data )
         {
-            if( data.IsDefaultFullName )
+            if( data.IsDefaultFullNameWithoutContext )
             {
                 var table = (SqlTable)data.StObj.Object;
-                logger.Info( "Class '{0}' uses its own table name '{1}' as its Setup FullName.", data.StObj.ObjectType.Name, table.SchemaName );
-                data.FullNameWithoutContext = table.SchemaName;
+                var autoName = table.SchemaName;
+                if( data.IsFullNameWithoutContextAvailable( autoName ) )
+                {
+                    logger.Info( "SqlTable '{0}' uses its own table name '{1}' as its SetupName.", data.StObj.ObjectType.FullName, autoName );
+                }
+                else
+                {
+                    autoName = FindAvailableFullNameWithoutContext( data, autoName );
+                    logger.Info( "SqlTable '{0}' has no defined SetupName. It has been automatically computed as '{1}'. You may set a [SetupName] attribute on the class to settle it.", data.StObj.ObjectType.FullName, autoName );
+                }
+                data.FullNameWithoutContext = autoName;
             }
             data.ItemType = typeof( SqlTableItem );
             data.DriverType = typeof( SqlTableSetupDriver );

@@ -12,17 +12,17 @@ namespace CK.Setup.Dependency.Tests
         public TestableContainer( string fullName, params object[] content )
             : base( fullName, content )
         {
-            ItemKind = DependentItemType.Container;
+            ItemKind = DependentItemKind.Container;
         }
 
-        public TestableContainer( DependentItemType dynamicType, string fullName, params object[] content )
+        public TestableContainer( DependentItemKind dynamicType, string fullName, params object[] content )
             : base( fullName, null )
         {
             ItemKind = dynamicType;
             Add( content );
         }
 
-        public DependentItemType ItemKind { get; private set; }
+        public DependentItemKind ItemKind { get; private set; }
 
         IEnumerable<IDependentItemRef> IDependentItemGroup.Children
         {
@@ -42,14 +42,14 @@ namespace CK.Setup.Dependency.Tests
                 if( i != null )
                 {
                     _children.Add( i );
-                    if( ItemKind == DependentItemType.Container || ItemKind == DependentItemType.Unknown ) i.Container = this;
+                    if( ItemKind == DependentItemKind.Container || ItemKind == DependentItemKind.Unknown ) i.Container = this;
                 }
                 else
                 {
                     string dep = (string)o;
                     if( dep[0] == CycleExplainedElement.ContainerContains ) // ⊐
                     {
-                        if( ItemKind != DependentItemType.Container && ItemKind != DependentItemType.Unknown )
+                        if( ItemKind != DependentItemKind.Container && ItemKind != DependentItemKind.Unknown )
                         {
                             throw new ArgumentException( "ContainerContains (⊐) must be used only when ItemKind = Container. Use Contains (∋) to add an element in a Group." );
                         }
@@ -57,7 +57,7 @@ namespace CK.Setup.Dependency.Tests
                     }
                     else if( dep[0] == CycleExplainedElement.Contains ) // ∋
                     {
-                        if( ItemKind == DependentItemType.Container || ItemKind == DependentItemType.Unknown )
+                        if( ItemKind == DependentItemKind.Container || ItemKind == DependentItemKind.Unknown )
                         {
                             throw new ArgumentException( "Contains (∋)  must be used only when ItemKind != Container. Use ContainerContains (⊐) to add an element in a Container." );
                         }

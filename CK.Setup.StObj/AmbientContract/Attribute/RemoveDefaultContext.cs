@@ -9,7 +9,7 @@ namespace CK.Core
     public class RemoveDefaultContextAttribute : RemoveContextAttribute
     {
         public RemoveDefaultContextAttribute()
-            : base( AmbientContractCollector.DefaultContext )
+            : base( String.Empty )
         {
         }
     }

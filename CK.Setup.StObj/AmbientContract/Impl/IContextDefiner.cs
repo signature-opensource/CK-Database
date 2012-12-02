@@ -10,6 +10,6 @@ namespace CK.Core
     /// </summary>
     internal interface IContextDefiner
     {
-        Type Context { get; }
+        string Context { get; }
     }
 }

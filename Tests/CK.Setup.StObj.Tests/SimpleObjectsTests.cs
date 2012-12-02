@@ -27,19 +27,19 @@ namespace CK.Setup.StObj.Tests
             var result = collector.GetResult();
             Assert.That( result.HasFatalError, Is.False );
 
-            IStObj oa = result.Default.StObjMapper[typeof( ObjectA )];
+            IStObj oa = result.Default.StObjMapper.Find<ObjectA>();
             Assert.That( oa.Container.ObjectType == typeof( PackageForAB ) );
             Assert.That( oa.LeafSpecialization.ObjectType == typeof( ObjectALevel3 ) );
             
-            IStObj oa1 = result.Default.StObjMapper[typeof( ObjectALevel1 )];
+            IStObj oa1 = result.Default.StObjMapper.Find<ObjectALevel1>();
             Assert.That( oa1.Generalization == oa );
             Assert.That( oa1.Container.ObjectType == typeof( PackageForABLevel1 ) );
             
-            IStObj oa2 = result.Default.StObjMapper[typeof( ObjectALevel2 )];
+            IStObj oa2 = result.Default.StObjMapper.Find<ObjectALevel2>();
             Assert.That( oa2.Generalization == oa1 );
             Assert.That( oa2.Container.ObjectType == typeof( PackageForABLevel1 ), "Inherited." );
 
-            IStObj oa3 = result.Default.StObjMapper[typeof( ObjectALevel3 )];
+            IStObj oa3 = result.Default.StObjMapper.Find<ObjectALevel3>();
             Assert.That( oa3.Generalization == oa2 );
             Assert.That( oa3.Container.ObjectType == typeof( PackageForABLevel1 ), "Inherited." );
             Assert.That( oa.RootGeneralization.ObjectType == typeof( ObjectA ) );
@@ -165,11 +165,105 @@ namespace CK.Setup.StObj.Tests
                 var result = collector.GetResult();
                 Assert.That( result.HasFatalError, Is.False );
 
-                IStObj theObject = result.Default.StObjMapper[typeof( CK.Setup.StObj.Tests.SimpleObjects.LoggerInjection.LoggerInjected )];
+                IStObj theObject = result.Default.StObjMapper.Find<CK.Setup.StObj.Tests.SimpleObjects.LoggerInjection.LoggerInjected>();
                 Assert.That( theObject, Is.Not.Null );
                 Assert.That( theObject.Object, Is.Not.Null.And.InstanceOf<CK.Setup.StObj.Tests.SimpleObjects.LoggerInjection.LoggerInjected>() );
             }
         }
+
+        #region Buggy & Valid Model
+
+        [StObj( ItemKind = DependentItemKind.Container )]
+        class C1 : IAmbientContract
+        {
+        }
+
+        [StObj( Container = typeof( C1 ), ItemKind = DependentItemKind.Container )]
+        class C2InC1 : IAmbientContract
+        {
+        }
+
+        class C3InC2SpecializeC1 : C1
+        {
+            void Construct( [Container]C2InC1 c2 )
+            {
+            }
+        }
+
+        [Test]
+        public void BuggyModelBecauseOfContainment()
+        {
+            //Error: Cycle detected: 
+            //    ↳ []CK.Setup.StObj.Tests.SimpleObjectsTests+C1 
+            //        ⊐ []CK.Setup.StObj.Tests.SimpleObjectsTests+C2InC1 
+            //            ⊐ []CK.Setup.StObj.Tests.SimpleObjectsTests+C3InC2SpecializeC1 
+            //                ↟ []CK.Setup.StObj.Tests.SimpleObjectsTests+C1.
+            AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Logger );
+            disco.TypeFilter =
+                t => t.FullName == "CK.Setup.StObj.Tests.SimpleObjectsTests+C1"
+                || t.FullName == "CK.Setup.StObj.Tests.SimpleObjectsTests+C2InC1"
+                || t.FullName == "CK.Setup.StObj.Tests.SimpleObjectsTests+C3InC2SpecializeC1";
+
+            disco.Discover( Assembly.GetExecutingAssembly() );
+
+            StObjCollector collector = new StObjCollector( TestHelper.Logger );
+            collector.RegisterTypes( disco );
+            var result = collector.GetResult();
+            Assert.That( result.HasFatalError, Is.True );
+        }
+
+        [StObj( ItemKind = DependentItemKind.Container, Container = typeof(C2InC1), Children = new Type[]{ typeof( C1 ) } )]
+        class C3ContainsC1 : IAmbientContract
+        {
+        }
+
+        [Test]
+        public void BuggyModelBecauseOfContainmentCycle()
+        {
+            //Error: Cycle detected: 
+            //    ↳ []CK.Setup.StObj.Tests.SimpleObjectsTests+C1 
+            //        ⊏ []CK.Setup.StObj.Tests.SimpleObjectsTests+C3ContainsC1 
+            //            ⊏ []CK.Setup.StObj.Tests.SimpleObjectsTests+C2InC1 
+            //                ⊏ []CK.Setup.StObj.Tests.SimpleObjectsTests+C1.
+            AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Logger );
+            disco.TypeFilter =
+                t => t.FullName == "CK.Setup.StObj.Tests.SimpleObjectsTests+C1"
+                || t.FullName == "CK.Setup.StObj.Tests.SimpleObjectsTests+C2InC1"
+                || t.FullName == "CK.Setup.StObj.Tests.SimpleObjectsTests+C3ContainsC1";
+
+            disco.Discover( Assembly.GetExecutingAssembly() );
+
+            StObjCollector collector = new StObjCollector( TestHelper.Logger );
+            collector.RegisterTypes( disco );
+            var result = collector.GetResult();
+            Assert.That( result.HasFatalError, Is.True );
+
+        }
+
+        class C3RequiresC2SpecializeC1 : C1
+        {
+            void Construct( C2InC1 c2 )
+            {
+            }
+        }
+
+        [Test]
+        public void ValidModelWithRequires()
+        {
+            AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Logger );
+            disco.TypeFilter =
+                t => t.FullName == "CK.Setup.StObj.Tests.SimpleObjectsTests+C1"
+                || t.FullName == "CK.Setup.StObj.Tests.SimpleObjectsTests+C2InC1"
+                || t.FullName == "CK.Setup.StObj.Tests.SimpleObjectsTests+C3RequiresC2SpecializeC1";
+
+            disco.Discover( Assembly.GetExecutingAssembly() );
+
+            StObjCollector collector = new StObjCollector( TestHelper.Logger );
+            collector.RegisterTypes( disco );
+            var result = collector.GetResult();
+            Assert.That( result.HasFatalError, Is.False );
+        }
+        #endregion
 
     }
 }

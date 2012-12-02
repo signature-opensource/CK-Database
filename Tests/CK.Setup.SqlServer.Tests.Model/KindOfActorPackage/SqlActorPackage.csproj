@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{6D0D47C8-98F7-47DE-B118-AD3606455F7E}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SqlActorPackage</RootNamespace>
+    <AssemblyName>SqlActorPackage</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Basic\tActorProfile.cs" />
+    <Compile Include="Basic\tGroup.cs" />
+    <Compile Include="Basic\tActor.cs" />
+    <Compile Include="Basic\Package.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Zone\Package.cs" />
+    <Compile Include="Zone\tGroup.cs" />
+    <Compile Include="Zone\tSecurityZone.cs" />
+    <Compile Include="Basic\tUser.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\CK.Setup.SqlServer\CK.Setup.SqlServer.csproj">
+      <Project>{9A0BCE15-00EF-411B-8283-68AED047FCE5}</Project>
+      <Name>CK.Setup.SqlServer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\CK.Setup.StObj\CK.Setup.StObj.csproj">
+      <Project>{DF7A0B05-4B48-44C2-B6C8-6FCFD66DF8F8}</Project>
+      <Name>CK.Setup.StObj</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\CK.Setup\CK.Setup.csproj">
+      <Project>{D3C700E1-3546-437C-9B96-1F867A539B6A}</Project>
+      <Name>CK.Setup</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\IntoTheWild0\IntoTheWild0.csproj">
+      <Project>{94F93F54-E70F-45B4-BB7B-4ADB82059257}</Project>
+      <Name>IntoTheWild0</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Basic\Res\Model.CK.tUser.Install.2.11.25.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Basic\Res\Model.CK.tActor.Install.2.11.25.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Basic\Res\Model.CK.tGroup.Install.2.11.25.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Zone\Res\Model.CK.tSecurityZone.Install.2.11.25.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Zone\Res\Model.CK.tGroup.Install.2.11.25.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Basic\Res\Model.CK.tActorProfile.Install.2.11.25.sql" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
