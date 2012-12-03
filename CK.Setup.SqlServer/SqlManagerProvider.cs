@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using CK.SqlServer;
 using CK.Core;
+using System.Diagnostics;
 
 namespace CK.Setup.SqlServer
 {
@@ -25,25 +26,57 @@ namespace CK.Setup.SqlServer
             _logger = logger;
             _items = new Dictionary<string, Item>();
         }
+
+        internal void AddDefaultDatabase( SqlManager m )
+        {
+            Item i = new Item() { ConnectionString = m.CurrentConnectionString, Manager = m };
+            _items.Add( SqlDatabase.DefaultDatabaseName, i );
+            _items.Add( i.ConnectionString, i );
+        }
         
         public void Add( string name, string connectionString )
         {
-            _items.Add( name, new Item() { ConnectionString = connectionString } );
+            Item i = new Item() { ConnectionString = connectionString };
+            _items.Add( name, i );
+            _items[connectionString] =  i;
         }
 
         public SqlManager FindManagerByName( string name )
         {
-            Item i;
-            if( _items.TryGetValue( name, out i ) )
+            if( !String.IsNullOrWhiteSpace( name ) )
             {
-                if( i.Manager == null )
+                Item i;
+                if( _items.TryGetValue( name, out i ) )
                 {
-                    SqlManager m = new SqlManager();
-                    m.Logger = _logger;
-                    m.OpenFromConnectionString( i.ConnectionString );
-                    i.Manager = m;
+                    if( i.Manager == null )
+                    {
+                        SqlManager m = new SqlManager();
+                        m.Logger = _logger;
+                        m.OpenFromConnectionString( i.ConnectionString );
+                        i.Manager = m;
+                    }
+                    return i.Manager;
                 }
-                return i.Manager;
+            }
+            return null;
+        }
+
+        public SqlManager FindManagerByConnectionString( string connectionString )
+        {
+            if( !String.IsNullOrWhiteSpace( connectionString ) )
+            {
+                Item i;
+                if( _items.TryGetValue( connectionString, out i ) )
+                {
+                    if( i.Manager == null )
+                    {
+                        SqlManager m = new SqlManager();
+                        m.Logger = _logger;
+                        m.OpenFromConnectionString( i.ConnectionString );
+                        i.Manager = m;
+                    }
+                    return i.Manager;
+                }
             }
             return null;
         }

@@ -18,11 +18,10 @@ namespace CK.Setup
     /// </summary>
     public class StObjCollector
     {
-        readonly AmbiantContractCollector<StObjTypeInfo> _cc;
+        readonly AmbientContractCollector<StObjTypeInfo> _cc;
         readonly IStObjStructuralConfigurator _configurator;
-        readonly IStObjDependencyResolver _dependencyResolver;
+        readonly IStObjValueResolver _dependencyResolver;
         readonly IActivityLogger _logger;
-        bool _callConstructBeforeResolvingProperties;
 
         /// <summary>
         /// Initializes a new <see cref="StObjCollector"/>.
@@ -30,25 +29,14 @@ namespace CK.Setup
         /// <param name="logger">Logger to use. Can not be null.</param>
         /// <param name="dispatcher"></param>
         /// <param name="configurator"></param>
-        /// <param name="dependencyResolver"></param>
-        public StObjCollector( IActivityLogger logger, IAmbiantContractDispatcher dispatcher = null, IStObjStructuralConfigurator configurator = null, IStObjDependencyResolver dependencyResolver = null )
+        /// <param name="valueResolver"></param>
+        public StObjCollector( IActivityLogger logger, IAmbientContractDispatcher dispatcher = null, IStObjStructuralConfigurator configurator = null, IStObjValueResolver dependencyResolver = null )
         {
             if( logger == null ) throw new ArgumentNullException( "logger" );
             _logger = logger;
-            _cc = new AmbiantContractCollector<StObjTypeInfo>( _logger, ( l, p, t ) => new StObjTypeInfo( l, p, t ), dispatcher );
+            _cc = new AmbientContractCollector<StObjTypeInfo>( _logger, ( l, p, t ) => new StObjTypeInfo( l, p, t ), dispatcher );
             _configurator = configurator;
             _dependencyResolver = dependencyResolver;
-        }
-
-        /// <summary>
-        /// Gets or sets whether Construct must be called before resolving properties.
-        /// Defaults to false: properties are resolved and then Construct method is called (this
-        /// allows Construct code to be parametrized by properties and Ambiant properties values).
-        /// </summary>
-        public bool CallConstructBeforeResolvingProperties
-        {
-            get { return _callConstructBeforeResolvingProperties; }
-            set { _callConstructBeforeResolvingProperties = value; }
         }
 
         /// <summary>
@@ -88,14 +76,27 @@ namespace CK.Setup
         }
 
         /// <summary>
+        /// Gets or sets a function that will be called with the list of items once all of them are registered.
+        /// </summary>
+        public Action<IEnumerable<IDependentItem>> DependencySorterHookInput { get; set; }
+
+        /// <summary>
+        /// Gets or sets a function that will be called when items have been successfuly sorted.
+        /// </summary>
+        public Action<IEnumerable<ISortedItem>> DependencySorterHookOutput { get; set; }
+
+        /// <summary>
         /// Builds and returns a <see cref="StObjCollectorResult"/>.
         /// </summary>
         /// <returns>The result.</returns>
         public StObjCollectorResult GetResult()
         {
-            var contracts = _cc.GetResult();
-            contracts.LogErrorAndWarnings( _logger );
-
+            AmbientContractCollectorResult<StObjTypeInfo> contracts;
+            using( _logger.OpenGroup( LogLevel.Info, "Collecting Ambient Contracts and Type structure." ) )
+            {
+                contracts = _cc.GetResult();
+                contracts.LogErrorAndWarnings( _logger );
+            }
             var stObjMapper = new StObjMapper();
             var result = new StObjCollectorResult( stObjMapper, contracts );
             if( result.HasFatalError ) return result;
@@ -106,10 +107,10 @@ namespace CK.Setup
                 foreach( StObjCollectorContextualResult r in result )
                 {
                     using( _logger.Catch( e => r.SetFatal() ) )
-                    using( _logger.OpenGroup( LogLevel.Info, "Working on Context '{0}'.", r.Context == AmbiantContractCollector.DefaultContext ? "(default)" : r.Context.Name ) )
+                    using( _logger.OpenGroup( LogLevel.Info, "Working on Context [{0}].", r.Context ) )
                     {
                         CreateMutableItems( r );
-                        _logger.CloseGroup( String.Format( " {0} items created for {1} types.", r.MutableItems.Count, r.AmbiantContractResult.ConcreteClasses.Count ) );
+                        _logger.CloseGroup( String.Format( " {0} items created for {1} types.", r.MutableItems.Count, r.AmbientContractResult.ConcreteClasses.Count ) );
                         objectCount += r.MutableItems.Count;
                     }
                 }
@@ -118,82 +119,74 @@ namespace CK.Setup
             }
 
             DependencySorterResult sortResult = null;
-            using( _logger.OpenGroup( LogLevel.Info, "Resolving dependencies." ) )
+            using( _logger.OpenGroup( LogLevel.Info, "Handling dependencies." ) )
             {
-                if( PrepareDependentItems( _logger, result ) )
+                bool noCycleDetected;
+                if( !PrepareDependentItems( result, out noCycleDetected ) )
                 {
-                    sortResult = DependencySorter.OrderItems( result.AllMutableItems, null, new DependencySorter.Options() { SkipDependencyToContainer = true } );
-                    Debug.Assert( sortResult.HasRequiredMissing == false, 
-                        "A missing requirement can not exist at this stage since we only inject existing Mutable items: missing unresolved dependencies are handled by PrepareDependentItems that logs Errors when needed." );
-                    if( !sortResult.IsComplete )
-                    {
-                        sortResult.LogError( _logger );
-                        _logger.CloseGroup( "Ordering failed." );
-                        result.SetFatal();
-                    }
+                    _logger.CloseGroup( "Prepare failed." );
+                    Debug.Assert( result.HasFatalError );
+                    return result;
+                }
+                if( !ResolveAmbientProperties( result ) )
+                {
+                    _logger.CloseGroup( "Resolving Ambient Properties failed." );
+                    Debug.Assert( result.HasFatalError );
+                    return result;
+                }
+                sortResult = DependencySorter.OrderItems( result.AllMutableItems, null, new DependencySorter.Options() 
+                                                                                                { 
+                                                                                                    SkipDependencyToContainer = true, 
+                                                                                                    HookInput = DependencySorterHookInput, 
+                                                                                                    HookOutput = DependencySorterHookOutput 
+                                                                                                } );
+                Debug.Assert( sortResult.HasRequiredMissing == false, 
+                    "A missing requirement can not exist at this stage since we only inject existing Mutable items: missing unresolved dependencies are handled by PrepareDependentItems that logs Errors when needed." );
+                Debug.Assert( noCycleDetected || (sortResult.CycleDetected != null), "Cycle detected during item preparation => Cycle detected by the DependencySorter." );
+                if( !sortResult.IsComplete )
+                {
+                    sortResult.LogError( _logger );
+                    _logger.CloseGroup( "Ordering failed." );
+                    result.SetFatal();
+                    return result;
                 }
             }
-            if( result.HasFatalError ) return result;
-
             Debug.Assert( sortResult != null );
 
             // The structure objects have been ordered by their dependencies (and optionally
             // by the IStObjStructuralConfigurator). 
             // Their instance has been set during the first step (CreateMutableItems).
-            //
-            // We can now call : 
-            //  - the Construct methods.
-            //  - the Ambiant properties setting.
+            // We can now call the Construct methods and returns an ordered list of IStObj.
             //
             using( _logger.Catch( e => result.SetFatal() ) )
             using( _logger.OpenGroup( LogLevel.Info, "Initializing object graph." ) )
             {
                 List<IStObj> ordered = new List<IStObj>();
-                using( _logger.OpenGroup( LogLevel.Info, _callConstructBeforeResolvingProperties ? "Graph construction." : "Ambiant properties initialization." ) )
+                foreach( ISortedItem sorted in sortResult.SortedItems )
                 {
-                    foreach( ISortedItem sorted in sortResult.SortedItems )
+                    var m = (MutableItem)sorted.Item;
+                    // Calls Construct on Head for Groups.
+                    if( m.ItemKind == DependentItemKind.Item || sorted.IsGroupHead )
                     {
-                        var m = (MutableItem)sorted.Item;
-                        if( !m.IsContainer || sorted.IsContainerHead )
+                        m.SetSorterData( ordered.Count, sorted.Requires, sorted.Children, sorted.Groups );
+                        using( _logger.OpenGroup( LogLevel.Trace, "Constructing '{0}'.", m.ToString() ) )
                         {
-                            m.SetSorterData( ordered.Count, sorted.Container, sorted.Requires );
-                            ordered.Add( m );
-                            if( _callConstructBeforeResolvingProperties )
+                            try
                             {
-                                CallConstruct( m );
-                                // Here, if m.Specialization == null, we have intialized
-                                // the leaf of the inheritance chain.
-                                // Can we initialize Ambiant properties here? Not yet!
-                                //
-                                // Ambiant properties are searched only on containers (first) and then base classes (recursively).
-                                // Ambiant properties must be initialized by the leaf (most specialized).
-                                //
-                                // Even if we just initialized the bottom of a chain here,
-                                // there may be containers of these items that have not been 
-                                // initialized (up to their "leaf")...
-                                //
-                                // So we can NOT resolve ambiant properties here since we
-                                // want Containers holding properties to be initialized first.
+                                m.CallConstruct( _logger, _dependencyResolver );
                             }
-                            else
+                            catch( Exception ex )
                             {
-                                ResolveProperties( result, m );
+                                _logger.Error( ex );
                             }
                         }
-                        else
-                        {
-                            Debug.Assert( m.IsContainer && !sorted.IsContainerHead );
-                            // We may call here a ConstructContent( IReadOnlyList<IStObj> packageContent ).
-                            // But... is it a good thing for a package object to know its content detail?
-                        }
+                        ordered.Add( m );
                     }
-                }
-                using( _logger.OpenGroup( LogLevel.Info, _callConstructBeforeResolvingProperties ? "Ambiant properties initialization." : "Graph construction." ) )
-                {
-                    foreach( MutableItem m in ordered )
+                    else
                     {
-                        if( _callConstructBeforeResolvingProperties ) ResolveProperties( result, m );
-                        else CallConstruct( m );
+                        Debug.Assert( m.ItemKind != DependentItemKind.Item && !sorted.IsGroupHead );
+                        // We may call here a ConstructContent( IReadOnlyList<IStObj> packageContent ).
+                        // But... is it a good thing for a package object to know its content detail?
                     }
                 }
                 if( !result.HasFatalError ) result.SetSuccess( ordered.ToReadOnlyList() );
@@ -201,92 +194,89 @@ namespace CK.Setup
             }
         }
 
-        private void ResolveProperties( StObjCollectorResult result, MutableItem m )
-        {
-            if( m.Specialization == null )
-            {
-                using( _logger.OpenGroup( LogLevel.Trace, "Resolving Properties '{0}'", m.ToString() ) )
-                {
-                    m.EnsureAmbiantPropertiesResolved( _logger, result, _dependencyResolver );
-                }
-            }
-        }
-
-        private bool CallConstruct( MutableItem m )
-        {
-            using( _logger.OpenGroup( LogLevel.Trace, "Constructing '{0}'.", m.ToString() ) )
-            {
-                try
-                {
-                    m.CallConstruct( _logger, _dependencyResolver );
-                    return true;
-                }
-                catch( Exception ex )
-                {
-                    _logger.Error( ex );
-                }
-            }
-            return false;
-        }
 
         /// <summary>
-        /// Creates one or more StObjMutableItem for each ambiant Type, each of them bound 
+        /// Creates one or more StObjMutableItem for each ambient Type, each of them bound 
         /// to an instance created through its default constructor.
         /// This is the very first step.
         /// </summary>
         void CreateMutableItems( StObjCollectorContextualResult r )
         {
-            foreach( var pathTypes in r.AmbiantContractResult.ConcreteClasses )
+            IReadOnlyList<IReadOnlyList<StObjTypeInfo>> concreteClasses = r.AmbientContractResult.ConcreteClasses;
+
+            for( int i = concreteClasses.Count-1; i >= 0; --i )
             {
+                IReadOnlyList<StObjTypeInfo> pathTypes = concreteClasses[i];
                 Debug.Assert( pathTypes.Count > 0, "At least the final concrete class exists." );
+
+                // We create items from bottom to top in order for specialization specific 
+                // data (like AllAmbientProperties) to be initalized during this creation pass.
                 object theObject = Activator.CreateInstance( pathTypes[pathTypes.Count - 1].Type );
-                MutableItem generalization = null;
+                MutableItem specialization = null;
                 MutableItem m = null;
-                foreach( var t in pathTypes )
+                for( int iT = pathTypes.Count-1; iT >= 0; --iT )
                 {
-                    m = new MutableItem( m, r.Context, t, theObject );
-                    if( generalization == null ) generalization = m;
+                    m = new MutableItem( m, r.Context, pathTypes[iT], theObject );
+                    if( specialization == null ) specialization = r._specializations[i] = m;
                 }
-                MutableItem specialization = m;
-                // We configure items from bottom to top. Even if this may seem
-                // strange, this is required for AllAmbiantProperties to
-                // be set to the Specialization one.
-                // Note that this works because we do NOT offer any access to 
-                // Generalization nor to Specialization in IStObjMutableItem.
+                MutableItem generalization = m;
+                // Finalize configuration by sollicitating IStObjStructuralConfigurator.
+                // It is important here to go top-down since specialized configuration 
+                // should override more general ones.
+                // Note that this works because we do NOT offer any access to Specialization 
+                // in IStObjMutableItem. We actually could offer an access to the Generalization 
+                // since it is configured, but it seems useless and may block us later.
                 Debug.Assert( typeof( IStObjMutableItem ).GetProperty( "Generalization" ) == null );
                 Debug.Assert( typeof( IStObjMutableItem ).GetProperty( "Specialization" ) == null );
+                m = generalization;
                 do
                 {
-                    m.Configure( _logger, generalization, specialization );
+                    m.ConfigureToDown( _logger, generalization, specialization );
                     if( _configurator != null ) _configurator.Configure( _logger, m );
-                    r.AddConfiguredItem( m );
+                    r.AddStObjConfiguredItem( m );
                 }
-                while( (m = m.Generalization) != null );
+                while( (m = m.Specialization) != null );
             }
         }
 
         /// <summary>
-        /// Transfers construct parameters type as requirements for the object
-        /// and binds dependent types to their respective StObjMutableItem.
-        /// This is the second step: all mutable items have now been created and configured.
+        /// Transfers construct parameters type as requirements for the object, binds dependent types to their respective MutableItem,
+        /// resolve generalization and container inheritance, and intializes StObjProperties.
         /// </summary>
-        internal bool PrepareDependentItems( IActivityLogger logger, StObjCollectorResult result )
+        internal bool PrepareDependentItems( StObjCollectorResult collector, out bool noCycleDetected )
         {
-            foreach( StObjCollectorContextualResult contextResult in result )
+            noCycleDetected = true;
+            foreach( StObjCollectorContextualResult contextResult in collector )
             {
-                using( logger.Catch( e => contextResult.SetFatal() ) )
-                using( contextResult.Context != null ? logger.OpenGroup( LogLevel.Info, "Working on Typed Context '{0}'.", contextResult.Context.Name ) : null )
+                using( _logger.Catch( e => contextResult.SetFatal() ) )
+                using( _logger.OpenGroup( LogLevel.Info, "Working on Context [{0}].", contextResult.Context ) )
                 {
-                    foreach( MutableItem item in contextResult.MutableItems )
+                    foreach( MutableItem item in contextResult._specializations )
                     {
-                        using( logger.OpenGroup( LogLevel.Trace, "PrepareDependentItem( {0} )", item.ToString() ) )
-                        {
-                            item.PrepareDependentItem( logger, result, contextResult );
-                        }
+                        noCycleDetected &= item.PrepareDependendtItem( _logger, _dependencyResolver, collector, contextResult );
                     }
                 }
             }
-            return !result.HasFatalError;
+            return !collector.HasFatalError;
+        }
+
+        /// <summary>
+        /// This is the last step: all mutable items have now been created and configured, they are ready to be sorted.
+        /// </summary>
+        internal bool ResolveAmbientProperties( StObjCollectorResult collector )
+        {
+            foreach( StObjCollectorContextualResult contextResult in collector )
+            {
+                using( _logger.Catch( e => contextResult.SetFatal() ) )
+                using( _logger.OpenGroup( LogLevel.Info, "Working on Context [{0}].", contextResult.Context ) )
+                {
+                    foreach( MutableItem item in contextResult._specializations )
+                    {
+                        item.ResolvePropertiesOnSpecialization( _logger, collector, _dependencyResolver );
+                    }
+                }
+            }
+            return !collector.HasFatalError;
         }
 
     }

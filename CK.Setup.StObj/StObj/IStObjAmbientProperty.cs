@@ -1,0 +1,32 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using CK.Core;
+
+namespace CK.Setup
+{
+    /// <summary>
+    /// Describes a <see cref="IStObjReference"/> that is an an ambient property. 
+    /// There is no setter for the value: <see cref="IStObjMutableItem.SetAmbiantPropertyValue"/> and <see cref="IStObjMutableItem.SetAmbiantPropertyConfiguration"/> must 
+    /// be used to update the configuration of an ambient property from <see cref="IStObjStructuralConfigurator.Configure"/>.
+    /// </summary>
+    public interface IStObjAmbientProperty : IStObjReference
+    {
+        /// <summary>
+        /// Gets the name of the ambient property.
+        /// </summary>
+        string Name { get; }
+
+        /// <summary>
+        /// Gets whether the resolution of this property is optional.
+        /// When it is true (see remarks) and the resolution fails, the property will not be set.
+        /// </summary>
+        /// <remarks>
+        /// If this is true, it means that all property definition across the inheritance chain has [<see cref="AmbientPropertyAttribute">AmbientProperty</see>( <see cref="AmbientPropertyAttribute.IsOptional">IsOptional</see> = true ]
+        /// attribute (from the most abstract property definition), because a required property can NOT become optional.
+        /// (Note that an optional ambient property may be made required by Specializations.)
+        /// </remarks>
+        bool IsOptional { get; }
+    }
+}

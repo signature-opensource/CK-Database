@@ -9,22 +9,22 @@ namespace CK.Setup
 {
     public class StObjCollectorContextualResult : IContextualResult
     {
-        readonly AmbiantContractCollectorContextualResult<StObjTypeInfo> _contractResult;
+        readonly AmbientContractCollectorContextualResult<StObjTypeInfo> _contractResult;
         readonly StObjContextualMapper _mappings;
-        readonly IReadOnlyCollection<MutableItem> _itemsEx;
+        readonly internal MutableItem[] _specializations;
         bool _fatalError;
 
-        internal StObjCollectorContextualResult( AmbiantContractCollectorContextualResult<StObjTypeInfo> contractResult, StObjContextualMapper mappings )
+        internal StObjCollectorContextualResult( AmbientContractCollectorContextualResult<StObjTypeInfo> contractResult, StObjContextualMapper mappings )
         {
             _contractResult = contractResult;
             _mappings = mappings;
-            _itemsEx = new ReadOnlyCollectionOnICollection<MutableItem>( _mappings.MutableItems );
+            _specializations = new MutableItem[_contractResult.ConcreteClasses.Count];
         }
 
         /// <summary>
-        /// Gets the <see cref="Type"/> that identifies this context. <see cref="AmbiantContractCollector.DefaultContext"/> for the default context.
+        /// Gets the context name. <see cref="String.Empty"/> for the default context.
         /// </summary>
-        public Type Context
+        public string Context
         {
             get { return _contractResult.Context; }
         }
@@ -45,20 +45,12 @@ namespace CK.Setup
             get { return _mappings; }
         }
 
-        /// <summary>
-        /// Gets the collection of structure objects that have been collected for this <see cref="Context"/>.
-        /// </summary>
-        public IReadOnlyCollection<IStObj> StObjItems
-        {
-            get { return _itemsEx; }
-        }
-
-        internal AmbiantContractCollectorContextualResult<StObjTypeInfo> AmbiantContractResult
+        internal AmbientContractCollectorContextualResult<StObjTypeInfo> AmbientContractResult
         {
             get { return _contractResult; }
         }
 
-        internal void AddConfiguredItem( MutableItem item )
+        internal void AddStObjConfiguredItem( MutableItem item )
         {
             _mappings.Add( item );
         }

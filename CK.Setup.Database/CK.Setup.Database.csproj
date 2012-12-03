@@ -47,9 +47,8 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="ResourceLocator.cs" />
     <Compile Include="SqlFileDiscoverer.cs" />
-    <Compile Include="ISqlObjectBuilder.cs" />
+    <Compile Include="ISqlObjectParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

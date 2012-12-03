@@ -9,54 +9,104 @@ using System.Collections;
 
 namespace CK.Setup
 {
-    internal class MutableItem : IStObj, IStObjMutableItem, IDependentItemContainerAsk, IDependentItemContainerRef
+
+    partial class MutableItem : IStObj, IStObjMutableItem, IDependentItemContainerTyped, IDependentItemContainerRef
     {
         readonly StObjTypeInfo _objectType;
-        readonly Type _context;
+        readonly string _context;
         readonly object _stObj;
-        readonly MutableItem _generalization;
-        MutableItem _specialization;
+        readonly MutableItem _specialization;
+        /// <summary>
+        /// Ambient Properties are shared by the inheritance chain (it is
+        /// not null only at the specialization level).
+        /// </summary>
+        readonly List<MutableAmbientProperty> _allAmbientProperties;
+        readonly IReadOnlyList<MutableAmbientProperty> _ambientPropertiesEx;
+        // _directPropertiesToSet is not null only on _leafSpecialization and is allocated
+        // if and only if needed (by SetDirectPropertyValue).
+        Dictionary<PropertyInfo,object> _directPropertiesToSet;
+
+        MutableItem _generalization;
         MutableItem _rootGeneralization;
         MutableItem _leafSpecialization;
 
         MutableReference _container;
-        List<MutableReference> _requires;
-        IReadOnlyList<MutableReference> _requiresEx;
-        List<MutableReference> _requiredBy;
-        IReadOnlyList<MutableReference> _requiredByEx;
-
+        MutableReferenceList _requires;
+        MutableReferenceList _requiredBy;
+        MutableReferenceList _children;
+        MutableReferenceList _groups;
+        
         IReadOnlyList<MutableParameter> _constructParameterEx;
-        IReadOnlyList<MutableAmbiantProperty> _allAmbiantProperties;
+        DependentItemKind _itemKind;
+        List<StObjProperty> _stObjProperties;
 
         string _dFullName;
         MutableItem _dContainer;
         IReadOnlyList<MutableItem> _dRequires;
         IReadOnlyList<MutableItem> _dRequiredBy;
-        bool _hasBeenReferencedAsAContainer;
-        byte _ambiantPropertiesResolved;
+        IReadOnlyList<MutableItem> _dChildren;
+        IReadOnlyList<MutableItem> _dGroups;
+        // Our container comes from the configuration of this item or is inherited (from generalization). 
+        bool IsOwnContainer { get { return _dContainer != null && _dContainer.ObjectType == _container.Type; } }
 
-        internal MutableItem( MutableItem parent, Type context, StObjTypeInfo objectType, object theObject )
+        // The tracking mode for ambient properties is inherited and nothing prevents it to 
+        // change between levels (a Generalization can set AddPropertyHolderAsChildren and a Specialization 
+        // define PropertyHolderRequiredByThis, even if that seems pretty strange and that I can not imagine any
+        // clever use of such beast...). Anyway, technically speaking, it has to work this way.
+        TrackAmbientPropertiesMode _trackAmbientPropertiesMode;
+        // Ambient properties are per StObj.
+        List<TrackedAmbientPropertyInfo> _trackedAmbientProperties;
+        IReadOnlyList<TrackedAmbientPropertyInfo> _trackedAmbientPropertiesEx;
+        // True if this or any Generalization has _trackAmbientPropertiesMode != None.
+        bool _needsTrackedAmbientProperties;
+
+        enum PrepareState : byte
+        {
+            None,
+            RecursePreparing,
+            PreparedDone,
+            CachingAmbientProperty
+        }
+        PrepareState _prepareState;
+
+        /// <summary>
+        /// Used only for Empty Object Pattern implementations.
+        /// </summary>
+        internal MutableItem()
+        {
+            _context = String.Empty;
+        }
+
+        /// <summary>
+        /// Called from Specialization up to Generalization.
+        /// </summary>
+        internal MutableItem( MutableItem spec, string context, StObjTypeInfo objectType, object theObject )
         {
             Debug.Assert( context != null  && theObject != null );
             _objectType = objectType;
             _stObj = theObject;
             _context = context;
-            _generalization = parent;
-            if( _generalization != null )
+            _specialization = spec;
+            if( _specialization != null )
             {
-                Debug.Assert( _generalization._specialization == null );
-                _generalization._specialization = this;
+                Debug.Assert( _specialization._generalization == null );
+                _specialization._generalization = this;
             }
+            else
+            {
+                _allAmbientProperties = _objectType.AmbientProperties.Select( ap => new MutableAmbientProperty( this, ap ) ).ToList();
+            }
+            _ambientPropertiesEx = new ListAmbientProperty( this );
         }
 
         public override string ToString()
         {
-            return AmbiantContractCollector.DisplayName( _context, _objectType.Type );
+            return AmbientContractCollector.FormatContextualFullName( _context, _objectType.Type );
         }
 
         #region Configuration
 
-        internal void Configure( IActivityLogger logger, MutableItem rootGeneralization, MutableItem leafSpecialization )
+        internal void ConfigureToDown( IActivityLogger logger, MutableItem rootGeneralization, MutableItem leafSpecialization )
         {
             Debug.Assert( _rootGeneralization == null && _leafSpecialization == null, "Configured once and only once." );
             Debug.Assert( rootGeneralization != null && leafSpecialization != null, "Configuration sets the top & bottom of the inheritance chain." );
@@ -67,49 +117,44 @@ namespace CK.Setup
             _leafSpecialization = leafSpecialization;
             ApplyTypeInformation( logger );
             AnalyseConstruct( logger );
-            ApplyConfiguratorAttributes( logger );
+            ConfigureFromAttributes( logger );
         }
 
         void ApplyTypeInformation( IActivityLogger logger )
         {
             Debug.Assert( _container == null, "Called only once right after object instanciation." );
-            Debug.Assert( _specialization == null || _specialization._rootGeneralization != null, "Configuration is from bottom to top." );
 
-            _container = new MutableReference( this, MutableReferenceKind.Container );
+            _container = new MutableReference( this, StObjMutableReferenceKind.Container );
             _container.Type = _objectType.Container;
             _container.Context = _objectType.ContainerContext;
+            _itemKind = _objectType.ItemKind;
 
-            // We share Ambiant properties from the Specialization.
-            // This is why Configuration must be made from bottom to the top.
-            if( _specialization == null )
+            if( _objectType.StObjProperties.Count > 0 ) _stObjProperties = _objectType.StObjProperties.Select( sp => new StObjProperty( sp ) ).ToList();
+
+            // StObjTypeInfo already applied inheritance of TrackAmbientProperties attribute accros StObj levels.
+            // But since TrackAmbientProperties is "mutable" (can be configured), we only know its actual value once PrepareDependentItem has done its job:
+            // inheritance by StObjType onky gives the IStObjStructuralConfigurator a more precise information.
+            _trackAmbientPropertiesMode = _objectType.TrackAmbientProperties;
+            _requires = new MutableReferenceList( this, StObjMutableReferenceKind.Requires );
+            if( _objectType.Requires != null )
             {
-                _allAmbiantProperties = _objectType.AmbiantProperties.Select( ap => new MutableAmbiantProperty( this, ap ) ).ToReadOnlyList();
+                _requires.AddRange( _objectType.Requires.Select( t => new MutableReference( this, StObjMutableReferenceKind.Requires ) { Type = t, Context = _objectType.FindContextFromMapAttributes( t ) } ) );
             }
-            else
+            _requiredBy = new MutableReferenceList( this, StObjMutableReferenceKind.RequiredBy );           
+            if( _objectType.RequiredBy != null )
             {
-                _allAmbiantProperties = _specialization._allAmbiantProperties;
+                _requiredBy.AddRange( _objectType.RequiredBy.Select( t => new MutableReference( this, StObjMutableReferenceKind.RequiredBy ) { Type = t, Context = _objectType.FindContextFromMapAttributes( t ) } ) );
             }
-            var a = _objectType.StObjAttribute;
-            if( a != null )
+            _children = new MutableReferenceList( this, StObjMutableReferenceKind.Child );
+            if( _objectType.Children != null )
             {
-                if( a.Requires != null )
-                {
-                    _requires = a.Requires.Select( t => new MutableReference( this, MutableReferenceKind.Requires ) { Type = t, Context = _objectType.FindContextFromMapAttributes( t ) } ).ToList();
-                }
-                else _requires = new List<MutableReference>();
-                if( a.RequiredBy != null )
-                {
-                    _requiredBy = a.RequiredBy.Select( t => new MutableReference( this, MutableReferenceKind.RequiredBy ) { Type = t, Context = _objectType.FindContextFromMapAttributes( t ) } ).ToList();
-                }
-                else _requiredBy = new List<MutableReference>();
+                _children.AddRange( _objectType.Children.Select( t => new MutableReference( this, StObjMutableReferenceKind.RequiredBy ) { Type = t, Context = _objectType.FindContextFromMapAttributes( t ) } ) );
             }
-            else
+            _groups = new MutableReferenceList( this, StObjMutableReferenceKind.Group );
+            if( _objectType.Groups != null )
             {
-                _requires = new List<MutableReference>();
-                _requiredBy = new List<MutableReference>();
+                _groups.AddRange( _objectType.Groups.Select( t => new MutableReference( this, StObjMutableReferenceKind.Group ) { Type = t, Context = _objectType.FindContextFromMapAttributes( t ) } ) );
             }
-            _requiresEx = new ReadOnlyListOnIList<MutableReference>( _requires );
-            _requiredByEx = new ReadOnlyListOnIList<MutableReference>( _requiredBy );
         }
 
         void AnalyseConstruct( IActivityLogger logger )
@@ -141,13 +186,14 @@ namespace CK.Setup
             }
         }
 
-        void ApplyConfiguratorAttributes( IActivityLogger logger )
+        void ConfigureFromAttributes( IActivityLogger logger )
         {
             foreach( var c in _objectType.ConfiguratorAttributes )
             {
                 c.Configure( logger, this );
             }
         }
+
 
         #endregion
 
@@ -163,33 +209,57 @@ namespace CK.Setup
 
         #region IStObjMutableItem is called during Configuration
 
-        IMutableReference IStObjMutableItem.Container { get { return _container; } }
-
-        IReadOnlyList<IMutableReference> IStObjMutableItem.Requires { get { return _requiresEx; } }
-
-        IReadOnlyList<IMutableReference> IStObjMutableItem.RequiredBy { get { return _requiredByEx; } }
-
-        IReadOnlyList<IMutableParameter> IStObjMutableItem.ConstructParameters { get { return _constructParameterEx; } }
-
-        IReadOnlyList<IMutableAmbiantProperty> IStObjMutableItem.AllAmbiantProperties { get { return _allAmbiantProperties; } }
-
-        Dictionary<PropertyInfo,object> _directPropertiesToSet;
-
-        bool IStObjMutableItem.SetPropertyStructuralValue( IActivityLogger logger, string sourceName, string propertyName, object value )
+        DependentItemKind IStObjMutableItem.ItemKind
         {
-            if( value == Type.Missing ) throw new InvalidOperationException( "Setting property to Type.Missing is not allowed." );
+            get { return _itemKind; }
+            set { _itemKind = value; }
+        }
 
-            MutableAmbiantProperty mp = _allAmbiantProperties.FirstOrDefault( a => a.Name == propertyName );
+        TrackAmbientPropertiesMode IStObjMutableItem.TrackAmbientProperties
+        {
+            get { return _trackAmbientPropertiesMode; }
+            set { _trackAmbientPropertiesMode = value; }
+        }
+
+        IStObjMutableReference IStObjMutableItem.Container { get { return _container; } }
+
+        IStObjMutableReferenceList IStObjMutableItem.Children { get { return _children; } }
+
+        IStObjMutableReferenceList IStObjMutableItem.Requires { get { return _requires; } }
+
+        IStObjMutableReferenceList IStObjMutableItem.RequiredBy { get { return _requiredBy; } }
+
+        IStObjMutableReferenceList IStObjMutableItem.Groups { get { return _groups; } }
+
+        IReadOnlyList<IStObjMutableParameter> IStObjMutableItem.ConstructParameters { get { return _constructParameterEx; } }
+
+        IReadOnlyList<IStObjAmbientProperty> IStObjMutableItem.SpecializedAmbientProperties { get { return _ambientPropertiesEx; } }
+
+        bool IStObjMutableItem.SetDirectPropertyValue( IActivityLogger logger, string propertyName, object value, string sourceDescription )
+        {
+            if( logger == null ) throw new ArgumentNullException( "logger", "Source:" + sourceDescription );
+            if( String.IsNullOrEmpty( propertyName ) ) throw new ArgumentException( "Can not ne null nor empty. Source:" + sourceDescription, "propertyName" );
+            if( value == Type.Missing ) throw new ArgumentException( "Setting property to Type.Missing is not allowed. Source:" + sourceDescription, "value" );
+
+            // Is it an Ambient property?
+            // If yes, it is an error... 
+            // We may consider that it is an error if the property is defined at this type level (or above), 
+            // and a simple warning if the property is defined by a specialization (the developper may not be aware of it).
+            // Note: since we check properties' type homogeneity in StObjTypeInfo, an Ambient/StObj/Direct property is always 
+            // of the same "kind" regardless of its owner specialization depth.
+            MutableAmbientProperty mp = _leafSpecialization._allAmbientProperties.FirstOrDefault( a => a.Name == propertyName );
             if( mp != null )
             {
-                return mp.SetStructuralValue( logger, sourceName, value );
+                logger.Error( "Unable to set direct property '{1}.{0}' since it is defined as an Ambient property. Use SetAmbiantPropertyValue to set it. (Source:{2})", propertyName, _objectType.Type.FullName, sourceDescription );
+                return false;
             }
 
+            // Direct property set.
             // Targets the specialization to honor property covariance.
-            PropertyInfo p = _leafSpecialization._objectType.Type.GetProperty( propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, null, Type.EmptyTypes, null );           
+            PropertyInfo p = _leafSpecialization._objectType.Type.GetProperty( propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, null, Type.EmptyTypes, null );
             if( p == null || !p.CanWrite )
             {
-                logger.Error( "Unable to set property '{1}.{0}' structural value. It must exist and be writeable.", propertyName, _leafSpecialization._objectType.Type.FullName );
+                logger.Error( "Unable to set direct property '{1}.{0}' structural value. It must exist and be writeable (on type '{2}'). (Source:{3})", propertyName, _objectType.Type.FullName, _leafSpecialization._objectType.Type.FullName, sourceDescription );
                 return false;
             }
             if( _leafSpecialization._directPropertiesToSet == null ) _leafSpecialization._directPropertiesToSet = new Dictionary<PropertyInfo, object>();
@@ -197,37 +267,146 @@ namespace CK.Setup
             return true;
         }
 
+        bool IStObjMutableItem.SetAmbiantPropertyValue( IActivityLogger logger, string propertyName, object value, string sourceDescription )
+        {
+            if( logger == null ) throw new ArgumentNullException( "logger", "Source:" + sourceDescription );
+            if( String.IsNullOrEmpty( propertyName ) ) throw new ArgumentException( "Can not ne null nor empty. Source:" + sourceDescription, "propertyName" );
+            if( value == Type.Missing ) throw new ArgumentException( "Setting property to Type.Missing is not allowed. Source:" + sourceDescription, "value" );
+
+            // Is it an Ambient property?
+            // If yes, set the value onto the property.
+            MutableAmbientProperty mp = _leafSpecialization._allAmbientProperties.FirstOrDefault( a => a.Name == propertyName );
+            if( mp != null )
+            {
+                return mp.SetValue( _objectType.SpecializationDepth, logger, value );
+            }
+            logger.Error( "Unable to set unexisting Ambient property '{1}.{0}'. It must exist, be writeable and marked with AmbientPropertyAttribute. (Source:{2})", propertyName, _objectType.Type.FullName, sourceDescription );
+            return false;
+        }
+
+        bool IStObjMutableItem.SetAmbiantPropertyConfiguration( IActivityLogger logger, string propertyName, string context, Type type, StObjRequirementBehavior behavior, string sourceDescription )
+        {
+            if( logger == null ) throw new ArgumentNullException( "logger", "Source:" + sourceDescription );
+            if( String.IsNullOrEmpty( propertyName ) ) throw new ArgumentException( "Can not ne null nor empty. Source:" + sourceDescription, "propertyName" );
+            
+            MutableAmbientProperty mp = _leafSpecialization._allAmbientProperties.FirstOrDefault( a => a.Name == propertyName );
+            if( mp != null )
+            {
+                return mp.SetConfiguration( _objectType.SpecializationDepth, logger, context, type, behavior );
+            }
+            logger.Error( "Unable to configure unexisting Ambient property '{1}.{0}'. It must exist, be writeable and marked with AmbientPropertyAttribute. (Source:{2})", propertyName, _objectType.Type.FullName, sourceDescription );
+            return false;        
+        }
+
+        bool IStObjMutableItem.SetStObjPropertyValue( IActivityLogger logger, string propertyName, object value, string sourceDescription )
+        {
+            if( logger == null ) throw new ArgumentNullException( "logger", "Source:" + sourceDescription );
+            if( String.IsNullOrEmpty( propertyName ) ) throw new ArgumentException( "Can not ne null nor empty. Source:" + sourceDescription, "propertyName" );
+            if( value == Type.Missing ) throw new ArgumentException( "Setting property to Type.Missing is not allowed. Source:" + sourceDescription, "value" );
+
+            MutableAmbientProperty mp = _leafSpecialization._allAmbientProperties.FirstOrDefault( a => a.Name == propertyName );
+            if( mp != null )
+            {
+                logger.Error( "Unable to set StObj property '{1}.{0}' since it is defined as an Ambient property. Use SetAmbiantPropertyValue to set it. (Source:{2})", propertyName, _objectType.Type.FullName, sourceDescription );
+                return false;
+            }
+
+            SetStObjProperty( propertyName, value );
+            return true;
+        }
+
         #endregion
 
-        internal void PrepareDependentItem( IActivityLogger logger, StObjCollectorResult result, StObjCollectorContextualResult contextResult )
+        internal bool PrepareDependendtItem( IActivityLogger logger, IStObjValueResolver dependencyResolver, StObjCollectorResult collector, StObjCollectorContextualResult cachedCollector )
+        {
+            if( _prepareState == PrepareState.PreparedDone ) return true;
+            using( logger.OpenGroup( LogLevel.Trace, "Preparing '{0}'.", ToString() ) )
+            {
+                try
+                {
+                    bool result = true;
+                    if( _prepareState == PrepareState.RecursePreparing )
+                    {
+                        logger.Warn( "Cycle detected while preparing item." );
+                        result = false;
+                    }
+                    else
+                    {
+                        _prepareState = PrepareState.RecursePreparing;
+                        
+                        ResolveDirectReferences( logger, collector, cachedCollector );
+                        if( _dContainer != null ) result &= _dContainer.PrepareDependendtItem( logger, dependencyResolver, collector, cachedCollector );
+                        // Prepares Generalization and inherits from it as needed.
+                        if( _generalization != null )
+                        {
+                            result &= _generalization.PrepareDependendtItem( logger, dependencyResolver, collector, cachedCollector );
+                            if( _dContainer == null ) _dContainer = _generalization._dContainer;
+                            if( _itemKind == DependentItemKind.Unknown ) _itemKind = _generalization._itemKind;
+                            if( _trackAmbientPropertiesMode == TrackAmbientPropertiesMode.Unknown ) _trackAmbientPropertiesMode = _generalization._trackAmbientPropertiesMode;
+                            _needsTrackedAmbientProperties = _generalization._needsTrackedAmbientProperties;
+                        }
+                        // Check configuration.
+                        if( _itemKind == DependentItemKind.Unknown )
+                        {
+                            logger.Warn( "ItemKind is not specified. It defaults to SimpleItem. It should be set explicitely to either SimpleItem, Group or Container." );
+                            _itemKind = DependentItemKind.Item;
+                        }
+                        if( _trackAmbientPropertiesMode == TrackAmbientPropertiesMode.Unknown ) _trackAmbientPropertiesMode = TrackAmbientPropertiesMode.None;
+                        
+                        // Allocates Ambient Properties now that we know the final configuration for it.
+                        Debug.Assert( _trackAmbientPropertiesMode != TrackAmbientPropertiesMode.Unknown );
+                        if( _trackAmbientPropertiesMode != TrackAmbientPropertiesMode.None )
+                        {
+                            _trackedAmbientProperties = new List<TrackedAmbientPropertyInfo>();
+                            _needsTrackedAmbientProperties = true;
+                        }
+                        // We can handle StObjProperties (check type coherency and propagate values) since the Container and 
+                        // the Generalization have been prepared, StObj properties can safely be located and propagated to this StObj.
+                        CheckStObjProperties( logger );
+
+                        // For AmbientProperties, this can not be done the same way: Ambient Properties are "projected to the leaf": they 
+                        // have to be managed at the most specialized level: this is done in the next preparation step.
+                    }
+                    return result;
+
+                }
+                finally
+                {
+                    _prepareState = PrepareState.PreparedDone;
+                }
+            }
+        }
+
+        bool ResolveDirectReferences( IActivityLogger logger, StObjCollectorResult collector, StObjCollectorContextualResult cachedCollector )
         {
             Debug.Assert( _container != null && _constructParameterEx != null );
-            Debug.Assert( _context == contextResult.Context && result[_context] == contextResult, "We are called inside our typed context, this avoids the lookup result[Context] to obtain the owner's context (the default)." );
-
-            _dFullName = AmbiantContractCollector.DisplayName( _context, _objectType.Type );
-            _dContainer = _container.ResolveToStObj( logger, result, contextResult );
-            if( _dContainer != null )
-            {
-                // This is an optimization: handle containers only where it is necessary.
-                _dContainer._hasBeenReferencedAsAContainer = true;
-            }
+            bool result = true;
+            _dFullName = AmbientContractCollector.FormatContextualFullName( _context, _objectType.Type );
+            _dContainer = _container.ResolveToStObj( logger, collector, cachedCollector );
             // Requirement intialization.
             HashSet<MutableItem> req = new HashSet<MutableItem>();
             {
                 // Requires are... Required (when not configured as optional by IStObjStructuralConfigurator).
-                foreach( MutableItem dep in _requires.Select( r => r.ResolveToStObj( logger, result, contextResult ) ).Where( m => m != null ) )
+                foreach( MutableItem dep in _requires.AsList.Select( r => r.ResolveToStObj( logger, collector, cachedCollector ) ) )
                 {
-                    req.Add( dep );
+                    if( dep != null ) req.Add( dep );
                 }
-                // Construct parameters are Required... except if they are one of our Container but this is handled
-                // at the DependencySorter level by using the SkipDependencyToContainer option.
-                // See the commented old code (to be kept) below for more detail on this option.
+                // Construct parameters are Required... except:
+                // - If they are one of our Container but this is handled
+                //   at the DependencySorter level by using the SkipDependencyToContainer option.
+                //   See the commented old code (to be kept) below for more detail on this option.
+                // - If IStObjMutableParameter.SetParameterValue has been called by a IStObjStructuralConfigurator, then this 
+                //   breaks the potential dependency.
+                // 
                 if( _constructParameterEx.Count > 0 )
                 {
                     foreach( MutableParameter t in _constructParameterEx )
                     {
-                        MutableItem dep = t.ResolveToStObj( logger, result, contextResult );
-                        if( dep != null ) req.Add( dep );
+                        if( !t.HasBeenSet )
+                        {
+                            MutableItem dep = t.ResolveToStObj( logger, collector, cachedCollector );
+                            if( dep != null ) req.Add( dep );
+                        }
                     }
                 }
             }
@@ -237,11 +416,22 @@ namespace CK.Setup
             // RequiredBy initialization.
             if( _requiredBy.Count > 0 )
             {
-                _dRequiredBy = _requiredBy.Select( r => r.ResolveToStObj( logger, result, contextResult ) ).Where( m => m != null ).ToReadOnlyList();
+                _dRequiredBy = _requiredBy.AsList.Select( r => r.ResolveToStObj( logger, collector, cachedCollector ) ).Where( m => m != null ).ToReadOnlyList();
             }
+            // Children Initialization.
+            if( _children.Count > 0 )
+            {
+                _dChildren = _children.AsList.Select( r => r.ResolveToStObj( logger, collector, cachedCollector ) ).Where( m => m != null ).ToReadOnlyList();
+            }
+            // Groups Initialization.
+            if( _groups.Count > 0 )
+            {
+                _dGroups = _groups.AsList.Select( r => r.ResolveToStObj( logger, collector, cachedCollector ) ).Where( m => m != null ).ToReadOnlyList();
+            }
+            return result;
         }
 
-        #region PrepareDependentItem: before sorting (old fully commented code to be kept for documentation - SkipDependencyToContainer option rational).
+        #region (Old fully commented PrepareDependentItem code to be kept for documentation - SkipDependencyToContainer option rationale).
         //internal void PrepareDependentItem( IActivityLogger logger, StObjCollectorResult result, StObjCollectorContextualResult contextResult )
         //{
         //    Debug.Assert( _container != null && _constructParameterEx != null );
@@ -299,7 +489,7 @@ namespace CK.Setup
         //{
         //    if( _dFullName != null ) return;
 
-        //    _dFullName = AmbiantContractCollector.DisplayName( _context, _objectType.Type );
+        //    _dFullName = AmbientContractCollector.DisplayName( _context, _objectType.Type );
         //    _dContainer = _container.ResolveToStObj( logger, result, contextResult );
 
         //    // Since we are obliged here to do in advance what the SetupOrderer will do (to remove dependencies to containers, see PrepareDependentItem above),
@@ -335,18 +525,14 @@ namespace CK.Setup
         /// Called by StObjCollector once the mutable items have been sorted.
         /// </summary>
         /// <param name="idx">The <see cref="IndexOrdered"/>.</param>
-        /// <param name="containerFromSorter">Container (with Generalization's inheritance).</param>
-        /// <param name="requiresFromSorter">Cleaned up requirements (no Genralization nor Containers).</param>
-        internal void SetSorterData( int idx, ISortedItem containerFromSorter, IEnumerable<IDependentItemRef> requiresFromSorter )
+        /// <param name="requiresFromSorter">Cleaned up requirements (no Generalization nor Containers).</param>
+        internal void SetSorterData( int idx, IEnumerable<ISortedItem> requiresFromSorter, IEnumerable<ISortedItem> childrenFromSorter, IEnumerable<ISortedItem> groupsFromSorter )
         {
             Debug.Assert( IndexOrdered == 0 );
-            Debug.Assert( _dContainer == null || _dContainer == containerFromSorter.Item );
             IndexOrdered = idx;
-            if( _dContainer == null && containerFromSorter != null )
-            {
-                _dContainer = (MutableItem)containerFromSorter.Item;
-            }
-            _dRequires = requiresFromSorter.Cast<MutableItem>().ToReadOnlyList();
+            _dRequires = requiresFromSorter.Select( s => (MutableItem)s.Item ).ToReadOnlyList();
+            _dChildren = childrenFromSorter.Select( s => (MutableItem)s.Item ).ToReadOnlyList();
+            _dGroups = groupsFromSorter.Select( s => (MutableItem)s.Item ).ToReadOnlyList();
             // requiredBy are useless.
             _dRequiredBy = null;
         }
@@ -356,7 +542,7 @@ namespace CK.Setup
         /// </summary>
         public int IndexOrdered { get; private set; }
 
-        internal void CallConstruct( IActivityLogger logger, IStObjDependencyResolver dependencyResolver )
+        internal void CallConstruct( IActivityLogger logger, IStObjValueResolver dependencyResolver )
         {
             Debug.Assert( _constructParameterEx != null, "Always allocated." );
             
@@ -370,173 +556,40 @@ namespace CK.Setup
                 // This enforces code homogeneity and let room for any other IActivityLogger injection.
                 if( t.IsSetupLogger )
                 {
-                    t.SetResolvedValue( logger, logger );
+                    t.SetParameterValue( logger );
                 }
                 else
                 {
-                    if( dependencyResolver != null ) dependencyResolver.ResolveParameterValue( logger, t );
-                    if( t.Value == Type.Missing )
+                    if( !t.HasBeenSet )
                     {
-                        // Parameter reference have already been resolved as dependencies for graph construction.
+                        // Parameter reference have already been resolved as dependencies for graph construction since 
+                        // no Value has been explicitely set for the parameter.
                         MutableItem resolved = t.CachedResolvedStObj;
                         if( resolved != null )
                         {
-                            Debug.Assert( resolved.StructuredObject != Type.Missing );
-                            t.SetResolvedValue( logger, resolved.StructuredObject );
+                            Debug.Assert( resolved.Object != Type.Missing );
+                            t.SetParameterValue( resolved.Object );
                         }
                         else if( !t.IsRealParameterOptional )
                         {
-                            if( t.IsOptional )
-                            {
-                                t.SetResolvedValue( logger, t.Type.IsValueType ? Activator.CreateInstance( t.Type ) : null );
-                            }
-                            else
+                            if( !t.IsOptional )
                             {
                                 // By throwing an exception here, we stop the process and avoid the construction 
                                 // of an invalid object graph...
                                 // This behavior (FailFastOnFailureToResolve) may be an option once. For the moment: log the error.
                                 logger.Fatal( "{0}: Unable to resolve non optional. Attempting to use a default value to continue the setup process in order to detect other errors.", t.ToString() );
-                                t.SetResolvedValue( logger, t.Type.IsValueType ? Activator.CreateInstance( t.Type ) : null );
                             }
+                            t.SetParameterValue( t.Type.IsValueType ? Activator.CreateInstance( t.Type ) : null );
                         }
                     }
+                    if( dependencyResolver != null ) dependencyResolver.ResolveParameterValue( logger, t );
                 }
                 parameters[i++] = t.Value;
             }
             _objectType.Construct.Invoke( _stObj, parameters );
         }
-        
-        internal void EnsureAmbiantPropertiesResolved( IActivityLogger logger, StObjCollectorResult result, IStObjDependencyResolver dependencyResolver )
-        {
-            if( _ambiantPropertiesResolved == 1 ) return;
-            if( _specialization != null )
-            {
-                _specialization.EnsureAmbiantPropertiesResolved( logger, result, dependencyResolver );
-                _ambiantPropertiesResolved = 1;
-                return;
-            }
-            Debug.Assert( _specialization == null && _leafSpecialization == this );
-            if( _ambiantPropertiesResolved == 2 ) throw new CKException( "Recursivity in AmbiantProperties resolution. Please contact the developer :-(." );
-            _ambiantPropertiesResolved = 2;
-            try
-            {
-                if( _directPropertiesToSet != null )
-                {
-                    foreach( var k in _directPropertiesToSet )
-                    {
-                        try
-                        {
-                            if( k.Value != Type.Missing ) k.Key.SetValue( _stObj, k.Value, null );
-                        }
-                        catch( Exception ex )
-                        {
-                            logger.Error( ex, "While setting property '{1}.{0}'.", k.Key.Name, k.Key.DeclaringType.FullName );
-                        }
-                    }
-                }
-                foreach( var a in _allAmbiantProperties )
-                {
-                    if( dependencyResolver != null ) dependencyResolver.ResolvePropertyValue( logger, a );
-                    if( a.Value == Type.Missing )
-                    {
-                        MutableItem resolved = a.ResolveToStObj( logger, result, null );
-                        if( resolved != null )
-                        {
-                            Debug.Assert( resolved.StructuredObject != Type.Missing ); 
-                            a.SetResolvedValue( logger, resolved.StructuredObject );
-                        }
-                        else 
-                        {
-                            // Let's try to locate the property.
-                            IAmbiantPropertyGetter getter = LocateAmbiantProperty( logger, result, dependencyResolver, a.Type, a.Name );
-                            if( getter != null )
-                            {
-                                a.SetResolvedValue( logger, getter.GetValue() );
-                            }
-                        }
-                    }
-                    if( a.Value != Type.Missing )
-                    {
-                        try
-                        {
-                            a.PropertyInfo.SetValue( _stObj, a.Value, null );
-                        }
-                        catch( Exception ex )
-                        {
-                            logger.Error( ex, "While setting ambiant property '{1}.{0}'.", a.Name, a.PropertyInfo.DeclaringType.FullName );
-                        }
-                    }
-                    else if( !a.IsOptional )
-                    {
-                        logger.Error( "{0}: Unable to resolve non optional.", a.ToString() );
-                    }
-                }
-            }
-            finally
-            {
-                _ambiantPropertiesResolved = 1;
-            }
-        }
-
-        interface IAmbiantPropertyGetter
-        {
-            object GetValue();
-        }
-
-        class AmbiantPropertyGetterFromRealProperty : IAmbiantPropertyGetter
-        {
-            MutableItem _holder;
-            PropertyInfo _realProperty;
-
-            public AmbiantPropertyGetterFromRealProperty( MutableItem holder, PropertyInfo realProperty )
-            {
-                _holder = holder;
-                _realProperty = realProperty;
-            }
-
-            public object GetValue()
-            {
-                return _realProperty.GetValue( _holder.StructuredObject, null );
-            }
-        }
-
-        IAmbiantPropertyGetter LocateAmbiantProperty( IActivityLogger logger, StObjCollectorResult result, IStObjDependencyResolver dependencyResolver, Type propertyType, string name )
-        {
-            IAmbiantPropertyGetter getter = null;
-            MutableItem start = this;
-            while( start != null && getter == null )
-            {
-                if( start._dContainer != null )
-                {
-                    start._dContainer.EnsureAmbiantPropertiesResolved( logger, result, dependencyResolver );
-                    getter = start._dContainer.FindAmbiantProperty( logger, propertyType, name );
-                }
-                start = start._generalization;
-            }
-            return getter;
-        }
-
-        IAmbiantPropertyGetter FindAmbiantProperty( IActivityLogger logger, Type propertyType, string name )
-        {
-            var exist = _allAmbiantProperties.FirstOrDefault( a => a.Name == name );
-            if( exist == null ) return null;
-            // A property exists at the Specialization level, but does it exist for this slice?
-            if( !exist.IsDefinedFor( _objectType.Type ) ) return null;
-            // Type compatible ?
-            if( !propertyType.IsAssignableFrom( exist.Type ) )
-            {
-                Debug.Assert( exist.Owner == this );
-                logger.Warn( "Looking for property named '{0}' of type '{1}': found a candidate on '{2}' but type does not match (it is '{3}'). It is ignored.", name, propertyType.Name, ToString(), exist.Type.Name );
-            }
-            return new AmbiantPropertyGetterFromRealProperty( exist.Owner, exist.PropertyInfo );
-        }
 
         #region IDependentItemContainerAsk Members
-
-        IEnumerable<IDependentItemRef> IDependentItemGroup.Children
-        {
-            get { return null; }
-        }
 
         string IDependentItem.FullName
         {
@@ -553,19 +606,64 @@ namespace CK.Setup
             get { return _dContainer; }
         }
 
+        IEnumerable<IDependentItemRef> IDependentItemGroup.Children
+        {
+            get
+            {
+                IEnumerable<IDependentItemRef> r = _dChildren;
+                if( _trackAmbientPropertiesMode == TrackAmbientPropertiesMode.AddPropertyHolderAsChildren )
+                {
+                    Debug.Assert( _trackedAmbientProperties != null );
+                    var t = _trackedAmbientProperties.Select( a => a.Owner );
+                    r = r != null ? r.Concat( r ) : t;
+                }
+                return r;
+            }
+        }
+
+        IEnumerable<IDependentItemGroupRef> IDependentItem.Groups
+        {
+            get
+            {
+                IEnumerable<IDependentItemGroupRef> r = _dGroups;
+                if( _trackAmbientPropertiesMode == TrackAmbientPropertiesMode.AddThisToPropertyHolderItems )
+                {
+                    Debug.Assert( _trackedAmbientProperties != null );
+                    var t = _trackedAmbientProperties.Select( a => a.Owner );
+                    r = r != null ? r.Concat( r ) : t;
+                }
+                return r;
+            }
+        }
+
         IEnumerable<IDependentItemRef> IDependentItem.Requires
         {
-            get { return _dRequires; }
+            get 
+            {
+                Debug.Assert( _dRequires != null, "Built from the HashSet in PrepareDependentItem." );
+                IEnumerable<IDependentItemRef> r = _dRequires;
+                if( _trackAmbientPropertiesMode == TrackAmbientPropertiesMode.PropertyHolderRequiresThis )
+                {
+                    Debug.Assert( _trackedAmbientProperties != null );
+                    r = r.Concat( _trackedAmbientProperties.Select( a => a.Owner ) ); 
+                }
+                return r; 
+            }
         }
 
         IEnumerable<IDependentItemRef> IDependentItem.RequiredBy
         {
-            get { return _dRequiredBy; }
-        }
-
-        bool IDependentItemContainerAsk.ThisIsNotAContainer
-        {
-            get { return !_hasBeenReferencedAsAContainer; }
+            get 
+            {
+                IEnumerable<IDependentItemRef> r = _dRequiredBy;
+                if( _trackAmbientPropertiesMode == TrackAmbientPropertiesMode.PropertyHolderRequiredByThis )
+                {
+                    Debug.Assert( _trackedAmbientProperties != null );
+                    var t = _trackedAmbientProperties.Select( a => a.Owner );
+                    r = r != null ? r.Concat( r ) : t;
+                }
+                return r;
+            }
         }
 
         object IDependentItem.StartDependencySort()
@@ -587,7 +685,7 @@ namespace CK.Setup
 
         #region IStObj Members
 
-        public object StructuredObject
+        public object Object
         {
             get { return _stObj; }
         }
@@ -597,14 +695,14 @@ namespace CK.Setup
             get { return _objectType.Type; }
         }
 
-        public Type Context
+        public string Context
         {
             get { return _context; }
         }
 
-        public bool IsContainer
+        public DependentItemKind ItemKind 
         {
-            get { return _hasBeenReferencedAsAContainer; }
+            get { return _itemKind; } 
         }
 
         IStObj IStObj.Generalization
@@ -629,8 +727,7 @@ namespace CK.Setup
 
         IStObj IStObj.ConfiguredContainer 
         {
-            // TODO: check this seriously.
-            get { return _dContainer != null && _dContainer.ObjectType == _container.Type ? _dContainer : null; } 
+            get { return IsOwnContainer ? _dContainer : null; } 
         }
 
         IStObj IStObj.Container 
@@ -641,6 +738,32 @@ namespace CK.Setup
         IReadOnlyList<IStObj> IStObj.Requires 
         {
             get { return _dRequires; } 
+        }
+
+        IReadOnlyList<IStObj> IStObj.Children
+        {
+            get { return _dChildren; }
+        }
+
+        IReadOnlyList<IStObj> IStObj.Groups
+        {
+            get { return _dGroups; }
+        }
+
+
+        IReadOnlyList<IStObjTrackedAmbientPropertyInfo> IStObj.TrackedAmbientProperties
+        {
+            get 
+            { 
+                if( _trackedAmbientProperties == null ) return null;
+                return _trackedAmbientPropertiesEx ?? (_trackedAmbientPropertiesEx = new ReadOnlyListOnIList<TrackedAmbientPropertyInfo>( _trackedAmbientProperties )); 
+            }
+        }
+
+        object IStObj.GetStObjProperty( string propertyName )
+        {
+            StObjProperty p = GetStObjProperty( propertyName );
+            return p != null ? p.Value : Type.Missing;
         }
 
         #endregion

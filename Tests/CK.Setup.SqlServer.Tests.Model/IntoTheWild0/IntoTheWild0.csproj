@@ -75,12 +75,17 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
-    <Content Include="ResPackage\Resource\Model.tResDataRawText.Install.2.9.2.sql" />
-    <Content Include="ResPackage\Resource\Model.tResDataString.Install.2.9.2.sql" />
-    <Content Include="ResPackage\Resource\Model.ResPackage.Install.2.9.2.sql" />
-    <Content Include="ResPackage\Resource\Model.tRes.Install.2.9.2.sql" />
+    <EmbeddedResource Include="ResPackage\Resource\sResDataStringSet.sql" />
+    <EmbeddedResource Include="ResPackage\Resource\sResDataStringRemove.sql" />
+    <EmbeddedResource Include="ResPackage\Resource\sResCreate.sql" />
+    <EmbeddedResource Include="ResPackage\Resource\sResRemove.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ResPackage\Resource\Model.CK.tResDataRawText.Install.2.9.2.sql" />
+    <EmbeddedResource Include="ResPackage\Resource\Model.CK.tResDataString.Install.2.9.2.sql" />
+    <EmbeddedResource Include="ResPackage\Resource\Model.ResPackage.Install.2.9.2.sql" />
+    <EmbeddedResource Include="ResPackage\Resource\Model.CK.tRes.Install.2.9.2.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />

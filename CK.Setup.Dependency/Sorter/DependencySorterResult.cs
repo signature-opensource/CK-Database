@@ -12,25 +12,22 @@ namespace CK.Setup
     /// </summary>
     public sealed class DependencySorterResult
     {
-        readonly IReadOnlyList<ISortedItem> _cycle;
-        IReadOnlyList<CycleExplainedElement> _cycleExplained;
+        readonly IReadOnlyList<CycleExplainedElement> _cycle;
         int _itemIssueWithStructureErrorCount;
         bool _requiredMissingIsError;
 
-        internal DependencySorterResult( List<DependencySorter.Entry> result, List<DependencySorter.Entry> cycle, List<DependentItemIssue> itemIssues )
+        internal DependencySorterResult( List<DependencySorter.Entry> result, List<CycleExplainedElement> cycle, List<DependentItemIssue> itemIssues )
         {
             Debug.Assert( (result == null) != (cycle == null), "cycle ^ result" );
             if( result == null )
             {
                 SortedItems = null;
-                _cycle = new ReadOnlyListOnIList<DependencySorter.Entry>( cycle );
-                CycleDetected = cycle.ToReadOnlyList( e => e.Item );
+                _cycle = cycle.ToReadOnlyList();
             }
             else
             {
                 SortedItems = new ReadOnlyListOnIList<DependencySorter.Entry>( result );
                 _cycle = null;
-                CycleDetected = null;
             }
             ItemIssues = itemIssues != null && itemIssues.Count > 0 ? new ReadOnlyListOnIList<DependentItemIssue>( itemIssues ) : ReadOnlyListEmpty<DependentItemIssue>.Empty;
             _requiredMissingIsError = true;
@@ -40,7 +37,7 @@ namespace CK.Setup
         /// <summary>
         /// Non null if a cycle has been detected.
         /// </summary>
-        public readonly IReadOnlyList<IDependentItem> CycleDetected;
+        public IReadOnlyList<ICycleExplainedElement> CycleDetected { get { return _cycle; } }
         
         /// <summary>
         /// Gets the list of <see cref="ISortedItem"/>: null if <see cref="CycleDetected"/> is not null.
@@ -127,58 +124,11 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets a list of <see cref="CycleExplainedElement"/>. Null if <see cref="CycleDetected"/> is null.
-        /// </summary>
-        public IReadOnlyList<CycleExplainedElement> CycleExplained
-        {
-            get
-            {
-                if( _cycleExplained == null && _cycle != null )
-                {
-                    int num = _cycle.Count;
-                    CycleExplainedElement[] ac = new CycleExplainedElement[ num-- ];
-                    ac[0] = new CycleExplainedElement( CycleExplainedElement.Start, _cycle[0].Item );
-                    int i = 0;
-                    while( i < num )
-                    {
-                        // From & To are normalized to the Container object if they are heads.
-                        ISortedItem from = _cycle[i++];
-                        if( from.IsContainerHead ) from = from.ContainerForHead;
-                        ISortedItem to = _cycle[i];
-                        if( to.IsContainerHead ) to = to.ContainerForHead;
-
-                        // First relations are searched differently: 
-                        char rel;
-                        if( i > 3 )
-                        {
-                            if( IsContainedBy( from, to ) ) rel = CycleExplainedElement.ContainedBy;
-                            else if( IsContains( from, to ) ) rel = CycleExplainedElement.Contains;
-                            else if( IsRequiredBy(from, to) ) rel = CycleExplainedElement.RequiredByRequires;
-                            else if( IsGeneralizedBy( from, to ) ) rel = CycleExplainedElement.GeneralizedBy;
-                            else rel = CycleExplainedElement.Requires;
-                        }
-                        else
-                        {
-                            if( IsGeneralizedBy( from, to ) ) rel = CycleExplainedElement.GeneralizedBy;
-                            else if( IsRequiredBy( from, to ) ) rel = CycleExplainedElement.RequiredByRequires;
-                            else if( IsRequires( from, to ) ) rel = CycleExplainedElement.Requires;
-                            else if( IsContains( from, to ) ) rel = CycleExplainedElement.Contains;
-                            else rel = CycleExplainedElement.ContainedBy;
-                        }
-                        ac[i] = new CycleExplainedElement( rel, to.Item );
-                    }
-                    _cycleExplained = new ReadOnlyListOnIList<CycleExplainedElement>( ac );
-                }
-                return _cycleExplained;
-            }
-        }
-
-        /// <summary>
         /// Gets a description of the detected cycle. Null if <see cref="CycleDetected"/> is null.
         /// </summary>
         public string CycleExplainedString
         {
-            get { return CycleExplained != null ? String.Join( " ", CycleExplained ) : null; }
+            get { return CycleDetected != null ? String.Join( " ", CycleDetected ) : null; }
         }
 
         /// <summary>
@@ -201,16 +151,16 @@ namespace CK.Setup
         public void LogError( IActivityLogger logger )
         {
             if( logger == null ) throw new ArgumentNullException( "logger" );
-            if( CycleDetected != null )
-            {
-                logger.Error( "Cycle detected: {0}.", CycleExplainedString );
-            }
             if( HasStructureError )
             {
                 foreach( var bug in ItemIssues.Where( d => d.StructureError != DependentItemStructureError.None ) )
                 {
                     bug.LogError( logger );
                 }
+            }
+            if( CycleDetected != null )
+            {
+                logger.Error( "Cycle detected: {0}.", CycleExplainedString );
             }
         }
 
@@ -234,12 +184,12 @@ namespace CK.Setup
             return to.Item.RequiredBy != null && to.Item.RequiredBy.Any( r => r != null && (r == from.Item || r.FullName == from.FullName) );
         }
 
-        private static bool IsContains( ISortedItem from, ISortedItem to )
+        private static bool IsContainerContains( ISortedItem from, ISortedItem to )
         {
             return from.Container == to;
         }
 
-        private static bool IsContainedBy( ISortedItem from, ISortedItem to )
+        private static bool IsElementOfContainer( ISortedItem from, ISortedItem to )
         {
             return to.Container == from;
         }

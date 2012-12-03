@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
-using CK.Setup.Tests;
-using CK.Setup.Tests.Dependencies;
+using CK.Setup.Dependency.Tests;
 
-namespace CK.Setup.Tests.Dependencies
+namespace CK.Setup.Dependency.Tests
 {
     [TestFixture]
     public class ContainerAndRequirementsSemantics
@@ -39,7 +38,7 @@ namespace CK.Setup.Tests.Dependencies
                     r.AssertOrdered( "System.Head", "A.Head", "B.Head", "B", "A", "ASpec.Head", "ASpec", "System" );
                 }
 
-                // This "Requires me + use my Container" relationship is "Generalization".
+                // This "Requires me + use my Container" relationship is a kind of "Generalization".
                 ASpec.Requires.Clear();
                 ASpec.Container = null;
                 // Previous scenario is the same as:
@@ -109,7 +108,7 @@ namespace CK.Setup.Tests.Dependencies
                 {
                     var r = DependencySorter.OrderItems( C );
                     Assert.That( !r.IsComplete );
-                    Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ C ∋ I ⇒ C" ) );
+                    Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ C ⊐ I ⇀ C" ) );
                 }
                 // Under certain circumstances, one can consider that an item that is contained in a Container can require it.
                 {
@@ -124,16 +123,16 @@ namespace CK.Setup.Tests.Dependencies
                 {
                     var r = DependencySorter.OrderItems( C );
                     Assert.That( !r.IsComplete );
-                    Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ C ∋ I ĵ C" ) );
+                    Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ C ⊐ I ↟ C" ) );
                 }
                 // Of course, this works even with Generalization's Container "inheritance".
                 var SuperC = new TestableContainer( "SuperC", C );
-                var A = new TestableItem( "A", "∈C" );
+                var A = new TestableItem( "A", "⊏C" );
                 I.Generalization = A;
-                var ISpec = new TestableItem( "ISpec", "ĵI" );
+                var ISpec = new TestableItem( "ISpec", "↟I" );
                 // ISpec is a I that is a A: the container of A is inherited => ISpec belongs to C that is in SuperC.
                 // If ISpec requires SuperC, this creates a cycle without the option.
-                ISpec.Add( "=>SuperC" );
+                ISpec.Add( "⇀SuperC" );
                 {
                     var r = DependencySorter.OrderItems( new DependencySorter.Options() { SkipDependencyToContainer = true }, C, ISpec );
                     Assert.That( r.IsComplete );
@@ -143,7 +142,7 @@ namespace CK.Setup.Tests.Dependencies
                 {
                     var r = DependencySorter.OrderItems( SuperC, ISpec );
                     Assert.That( !r.IsComplete );
-                    Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ SuperC ∋ C ∋ ISpec ⇒ SuperC" ) );
+                    Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ SuperC ⊐ C ⊐ ISpec ⇀ SuperC" ) );
                 }
 
 

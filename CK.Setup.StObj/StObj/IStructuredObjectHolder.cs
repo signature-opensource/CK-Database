@@ -17,7 +17,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets the associated object instance (the final, most specialized, structured object).
         /// </summary>
-        object StructuredObject { get; }
+        object Object { get; }
 
     }
 }

@@ -7,8 +7,8 @@ using CK.Core;
 namespace CK.Setup.SqlServer
 {
     [RemoveDefaultContext]
-    [AddContext(typeof(SqlHistoDatabase))]
-    public class SqlHistoDatabase : SqlDatabase, IAmbiantContract
+    [AddContext( "dbHisto" )]
+    public class SqlHistoDatabase : SqlDatabase, IAmbientContract
     {
         public void Construct( string connectionString = null )
         {

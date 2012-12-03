@@ -18,7 +18,7 @@
 //    {
 //    }
 
-//    class Table : IAmbiantContractDefiner
+//    class Table : IAmbientContractDefiner
 //    {
 //        public Column PrimaryKey { get; }
 //        public MultiColumn PrimaryKeys { get; }
@@ -127,7 +127,7 @@
 //        public override string ColumnType { get { return "int"; } }
 //    }
 
-//    public class SqlPackage : IAmbiantContractDefiner
+//    public class SqlPackage : IAmbientContractDefiner
 //    {
 //        public SqlDatabase DefaultDatabase { get; set; }
         

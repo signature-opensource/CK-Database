@@ -7,14 +7,14 @@ using CK.Core;
 namespace CK.Setup
 {
 
-    public class StObjConfigurator : IAmbiantContractDispatcher, IStObjStructuralConfigurator, IStObjDependencyResolver, IStObjSetupConfigurator
+    public class StObjConfigurator : IAmbientContractDispatcher, IStObjStructuralConfigurator, IStObjValueResolver, IStObjSetupConfigurator, IStObjSetupItemFactory
     {
-        bool IAmbiantContractDispatcher.IsAmbiantContractClass( Type t )
+        bool IAmbientContractDispatcher.IsAmbientContractClass( Type t )
         {
             return false;
         }
 
-        void IAmbiantContractDispatcher.Dispatch( Type t, ISet<Type> contexts )
+        void IAmbientContractDispatcher.Dispatch( Type t, ISet<string> contexts )
         {
         }
 
@@ -22,16 +22,21 @@ namespace CK.Setup
         {
         }
 
-        void IStObjDependencyResolver.ResolveParameterValue( IActivityLogger logger, IParameter p )
+        void IStObjValueResolver.ResolveParameterValue( IActivityLogger logger, IStObjFinalParameter p )
         {
         }
 
-        void IStObjDependencyResolver.ResolvePropertyValue( IActivityLogger logger, IAmbiantProperty a )
+        void IStObjValueResolver.ResolveExternalPropertyValue( IActivityLogger logger, IStObjFinalAmbientProperty a )
         {
         }
 
         void IStObjSetupConfigurator.ConfigureDependentItem( IActivityLogger logger, IMutableStObjSetupData data )
         {
+        }
+
+        IMutableSetupItem IStObjSetupItemFactory.CreateDependentItem( IActivityLogger logger, IStObjSetupData data )
+        {
+            return null;
         }
 
     }

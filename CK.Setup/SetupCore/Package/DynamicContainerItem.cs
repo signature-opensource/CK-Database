@@ -7,43 +7,87 @@ using CK.Core;
 
 namespace CK.Setup
 {
-    public class DynamicContainerItem : IDependentItemContainerAsk, IDependentItemContainerRef
+    /// <summary>
+    /// Standard implementation of a mutable <see cref="IDependentItemContainer"/> that is NOT a <see cref="IVersionedItem"/>.
+    /// This class implements the minimal behavior for an item container: FullName, Requires, RequiredBy, Container, Generalization and Children, all 
+    /// of them being writable, plus the <see cref="IDependentItemContainerTyped.ItemKind"/> that can be used to dynamically refuse to be referenced
+    /// as a Container by other items.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="DynamicPackageItem"/> must be used for container that have multiple versions and an optional associated model.
+    /// </remarks>
+    public abstract class DynamicContainerItem : IMutableSetupItemContainer, IDependentItemContainerRef
     {
+        ContextLocNameStructImpl _name;
         DependentItemList _requires;
         DependentItemList _requiredBy;
         DependentItemList _children;
+        DependentItemGroupList _groups;
         IDependentItemContainerRef _container;
         IDependentItemRef _generalization;
-        string _fullName;
+        DependentItemKind _itemKind;
 
         public DynamicContainerItem()
         {
+            _name = new ContextLocNameStructImpl();
+            _itemKind = DependentItemKind.Container;
         }
 
         /// <summary>
-        /// Gets or sets the full name of this container.
-        /// It must be not null.
+        /// Gets or sets the context identifier of this container. 
+        /// Can be null (unknown context) or empty (the default context).
+        /// When set, <see cref="FullName"/> is automatically updated.
+        /// </summary>
+        public string Context
+        {
+            get { return _name.Context; }
+            set { _name.Context = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the location of this container. 
+        /// Can be null (unknown location) or empty (the root location).
+        /// When set, <see cref="FullName"/> is automatically updated.
+        /// </summary>
+        public string Location
+        {
+            get { return _name.Location; }
+            set { _name.Location = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the name of this container. <see cref="FullName"/> is automatically updated.
+        /// Never null (normalized to <see cref="String.Empty"/>).
+        /// </summary>
+        public string Name
+        {
+            get { return _name.Name; }
+            set { _name.Name = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the full name of this container. <see cref="Context"/>, <see cref="Location"/> and <see cref="Name"/> are automatically updated.
+        /// Never null (normalized to <see cref="String.Empty"/>).
         /// </summary>
         public string FullName
         {
-            get { return _fullName; }
-            set { _fullName = value; }
+            get { return _name.FullName; }
+            set { _name.FullName = value; }
         }
 
         /// <summary>
-        /// Gets a mutable list of items that this container requires.
+        /// Gets or sets whether this container is actually NOT a Container or even not a Group.
         /// </summary>
-        public IDependentItemList Requires
+        /// <remarks>
+        /// Defaults to <see cref="DependentItemKind.Container"/>. 
+        /// When this ItemKind is not <see cref="DependentItemKind.Container"/> and an item declares this item as its container, or 
+        /// when it is <see cref="DependentItemKind.Item"/> and this item is referenced as a group, an error is raised 
+        /// during the ordering of the dependency graph.
+        /// </remarks>
+        public DependentItemKind ItemKind
         {
-            get { return _requires ?? (_requires = new DependentItemList()); }
-        }
-
-        /// <summary>
-        /// Gets a mutable list of items that are required by this container.
-        /// </summary>
-        public IDependentItemList RequiredBy
-        {
-            get { return _requiredBy ?? (_requiredBy = new DependentItemList()); }
+            get { return _itemKind; }
+            set { _itemKind = value; }
         }
 
         /// <summary>
@@ -65,6 +109,30 @@ namespace CK.Setup
         }
 
         /// <summary>
+        /// Gets a mutable list of items that this container requires.
+        /// </summary>
+        public IDependentItemList Requires
+        {
+            get { return _requires ?? (_requires = new DependentItemList()); }
+        }
+
+        /// <summary>
+        /// Gets a mutable list of items that are required by this container.
+        /// </summary>
+        public IDependentItemList RequiredBy
+        {
+            get { return _requiredBy ?? (_requiredBy = new DependentItemList()); }
+        }
+
+        /// <summary>
+        /// Gets a mutable list of groups to which this package belongs.
+        /// </summary>
+        public IDependentItemGroupList Groups
+        {
+            get { return _groups ?? (_groups = new DependentItemGroupList()); }
+        }
+
+        /// <summary>
         /// Gets a mutable list of children for this package.
         /// </summary>
         public IDependentItemList Children
@@ -73,19 +141,12 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets or sets whether this container is actually NOT a container.
-        /// When set to true, if this container contains children or if an item declares this
-        /// item as its container, an error is raised during the ordering of the dependency graph.
-        /// </summary>
-        public bool ThisIsNotAContainer { get; set; }
-        
-        /// <summary>
         /// Called at the very beginning of the setup phasis, before <see cref="IDependentItem.FullName"/> is used to planify the setup. 
-        /// This start method has been already called on direct dependencies <see cref="Container"/> 
+        /// This start method has been already called on direct dependencies <see cref="Container"/>, <see cref="Generalization"/>
         /// and <see cref="Requires"/> if they are <see cref="IDependentItem"/> (and not strings).
         /// </summary>
         /// <returns>
-        /// Must return the <see cref="Type"/> of the setup driver (specialization of <see cref="DriverBase"/>), or its assembly qualified name.
+        /// Must return the <see cref="Type"/> of the setup driver (specialization of <see cref="SetupDriver"/>), or its assembly qualified name.
         /// By default, returns the type of <see cref="SetupDriver"/>.
         /// </returns>
         protected virtual object StartDependencySort()
@@ -97,25 +158,40 @@ namespace CK.Setup
         {
             return StartDependencySort();
         }
-
+        
         bool IDependentItemRef.Optional
         {
             get { return false; }
         }
 
+        IDependentItemContainerRef IDependentItem.Container
+        {
+            get { return _container.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _name.Context, _name.Location ) ); }
+        }
+
+        IDependentItemRef IDependentItem.Generalization
+        {
+            get { return _generalization.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _name.Context, _name.Location ) ); }
+        }
+
         IEnumerable<IDependentItemRef> IDependentItem.Requires
         {
-            get { return _requires; }
+            get { return _requires.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _name.Context, _name.Location ) ); }
         }
 
         IEnumerable<IDependentItemRef> IDependentItem.RequiredBy
         {
-            get { return _requiredBy; }
+            get { return _requiredBy.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _name.Context, _name.Location ) ); }
         }
 
+        IEnumerable<IDependentItemGroupRef> IDependentItem.Groups
+        {
+            get { return _groups.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _name.Context, _name.Location ) ); }
+        }
+        
         IEnumerable<IDependentItemRef> IDependentItemGroup.Children
         {
-            get { return _children; }
+            get { return _children.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _name.Context, _name.Location ) ); }
         }
     }
 

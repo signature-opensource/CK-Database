@@ -11,9 +11,12 @@ namespace CK.Setup
     public class DriverEventArgs : EventArgs
     {
         /// <summary>
-        /// The current step. <see cref="SetupStep.None"/> is used 
-        /// during <see cref="SetupEngine.Register"/>.
+        /// Gets the current step. See remarks.
         /// </summary>
+        /// <remarks>
+        /// the step <see cref="SetupStep.None"/> is used during <see cref="SetupEngine.Register"/> (right after <see cref="DriverBase"/> object 
+        /// instanciation: its dependencies' drivers are available but not the whole set of drivers).
+        /// </remarks>
         public SetupStep Step { get; private set; }
         
         /// <summary>

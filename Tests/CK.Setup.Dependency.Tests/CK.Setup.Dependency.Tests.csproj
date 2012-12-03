@@ -49,15 +49,18 @@
     <Compile Include="..\..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="CaseSensitivity.cs" />
+    <Compile Include="ActorZoneTests.cs" />
+    <Compile Include="ByNames.cs" />
     <Compile Include="ChildByName.cs" />
     <Compile Include="ContainerAndRequirementsSemantics.cs" />
     <Compile Include="ContainerByName.cs" />
     <Compile Include="ContainerDependencies.cs" />
-    <Compile Include="ContainerDependenciesAsk.cs" />
+    <Compile Include="ContainerDynamicallyTyped.cs" />
     <Compile Include="DependencyExtensions.cs" />
     <Compile Include="FlatDependencies.cs" />
     <Compile Include="Generalization.cs" />
+    <Compile Include="Groups.cs" />
+    <Compile Include="ItemAndItemRef.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResultChecker.cs" />
     <Compile Include="TestableContainer.cs" />

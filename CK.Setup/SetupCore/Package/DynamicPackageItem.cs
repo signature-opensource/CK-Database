@@ -7,14 +7,20 @@ using CK.Core;
 
 namespace CK.Setup
 {
-    public class DynamicPackageItem : PackageItemBase, IDependentItemContainerAsk, IDependentItemDiscoverer
+    /// <summary>
+    /// Fully mutable <see cref="IDependentItemContainer"/> and <see cref="IVersionnedItem"/> with a an optional associated <see cref="Model"/> package
+    /// and  configurable type for the associated <see cref="SetupDriver"/>.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="DynamicContainerItem"/> can be used a pure mutable Container is needed (no versions nor associated model).
+    /// </remarks>
+    public class DynamicPackageItem : PackageItemBase, IDependentItemContainerTyped, IDependentItemDiscoverer
     {
-        string _fullName;
         PackageModelItem _model;
         object _driverType;
 
         /// <summary>
-        /// Initializes a new dynamic package.
+        /// Initializes a new dynamic package with <see cref="ItemKind"/> set to <see cref="DependentItemKind.Container"/>.
         /// </summary>
         /// <param name="itemType">The <see cref="IVersionedItem.ItemType"/> for this item.</param>
         /// <param name="driverType">
@@ -25,6 +31,7 @@ namespace CK.Setup
             : base( itemType )
         {
             _driverType = driverType ?? typeof( SetupDriver );
+            ItemKind = DependentItemKind.Container;
         }
 
         /// <summary>
@@ -55,24 +62,12 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets or sets the full name of this package.
+        /// Gets or sets the kind of this item.
         /// </summary>
-        public string FullName
+        public new DependentItemKind ItemKind
         {
-            get { return _fullName; }
-            set { _fullName = value ?? String.Empty; }
-        }
-
-        /// <summary>
-        /// Gets or sets whether this container is actually NOT a container.
-        /// When set to true, if this container contains children or if an item declares this
-        /// item as its container, an error is raised during the ordering of the dependency graph.
-        /// </summary>
-        public bool ThisIsNotAContainer { get; set; }
-
-        protected override string GetFullName()
-        {
-            return _fullName;
+            get { return base.ItemKind; }
+            set { base.ItemKind = value; }
         }
 
         protected override object StartDependencySort()

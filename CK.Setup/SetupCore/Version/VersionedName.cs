@@ -7,7 +7,7 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// Associates a name and a version for which it is valid.
+    /// Associates a name and a version for which it is valid. It is an immutable object.
     /// </summary>
     public class VersionedName
     {
@@ -47,6 +47,15 @@ namespace CK.Setup
         {
             get { return _version; }
             private set { _version = value ?? Util.EmptyVersion; }
+        }
+
+        /// <summary>
+        /// Overridden to return the "FullName - Version".
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return _name + " - " + _version.ToString();
         }
 
     }

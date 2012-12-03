@@ -15,7 +15,8 @@ namespace CK.Setup
         Type _driverType;
         string _driverTypeName;
         string _containerFullName;
-        bool? _noContent;
+        TrackAmbientPropertiesMode _trackAmbientProperties;
+        DependentItemKind _setupItemKind;
         bool _hasModel;
 
         public SetupAttribute()
@@ -87,7 +88,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets or sets the name of the container.
-        /// If the container is already defined at the <see cref="IStObj"/> level by the <see cref="Container"/> property or via a construct parameter, names must 
+        /// If the container is already defined at the <see cref="IStObj"/> level by the <see cref="IStObj.Container"/> property or via a construct parameter, names must 
         /// match otherwise an error occurs.
         /// This allow name binding to an existing container or package that is not a Structure Object: it should be rarely used.
         /// </summary>
@@ -101,19 +102,24 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets or sets whether this object must not be considered as a <see cref="IDependentItemContainer"/>: no items 
-        /// must be subordinated to this object.
-        /// This property is inherited.
+        /// Gets how Ambient Properties that reference the object must be tracked.
         /// </summary>
-        public bool NoContent
+        public TrackAmbientPropertiesMode TrackAmbientProperties
         {
-            get { return _noContent ?? false; }
-            set { _noContent = value; }
+            get { return _trackAmbientProperties; }
+            set { _trackAmbientProperties = value; }
         }
 
-        internal bool NoContentDefined
+        /// <summary>
+        /// Gets or sets how this object must be considered regarding other items: it can be a <see cref="DependentItemKind.Item"/>, 
+        /// a <see cref="DependentItemKind.Group"/> or a <see cref="DependentItemKind.Container"/>.
+        /// When let to <see cref="DependentItemKind.Unknown"/>, this property is inherited (it is eventually 
+        /// considered as <see cref="DependentItemKind.Container"/> when not set).
+        /// </summary>
+        public DependentItemKind ItemKind
         {
-            get { return _noContent.HasValue; }
+            get { return _setupItemKind; }
+            set { _setupItemKind = value; }
         }
 
         /// <summary>
@@ -138,6 +144,10 @@ namespace CK.Setup
 
         Type[] IStObjAttribute.RequiredBy { get { return null; } }
 
+        Type[] IStObjAttribute.Children { get { return null; } }
+
+        Type[] IStObjAttribute.Groups { get { return null; } }
+
         static internal SetupAttribute GetSetupAttribute( Type t )
         {
             return (SetupAttribute)t.GetCustomAttributes( typeof( SetupAttribute ), false ).SingleOrDefault();
@@ -151,6 +161,16 @@ namespace CK.Setup
                 c.ConfigureDependentItem( logger, data );
             }
         }
+
+        internal static void ApplyAttributesDynamicInitializer( IActivityLogger logger, IMutableSetupItem i, IStObj o )
+        {
+            var all = o.ObjectType.GetCustomAttributes( typeof( IStObjSetupDynamicInitializer ), false );
+            foreach( IStObjSetupDynamicInitializer init in all )
+            {
+                init.DynamicItemInitialize( logger, i, o );
+            }
+        }
+        
         
 
     }

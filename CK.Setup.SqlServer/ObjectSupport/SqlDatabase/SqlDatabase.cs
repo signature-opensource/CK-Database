@@ -3,26 +3,37 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using CK.Core;
+using System.Diagnostics;
 
 namespace CK.Setup.SqlServer
 {
-    [Setup( DriverType = typeof( SqlDatabaseSetupDriver ) )]
-    public class SqlDatabase : IStObjSetupConfigurator
+
+    [Setup( ItemType = typeof( SqlDatabaseItem ), ItemKind = DependentItemKind.Group, TrackAmbientProperties = TrackAmbientPropertiesMode.AddPropertyHolderAsChildren )]
+    public class SqlDatabase
     {
+        /// <summary>
+        /// Default database name is "db". 
+        /// </summary>
         public const string DefaultDatabaseName = "db";
+
+        /// <summary>
+        /// Default schema name is "CK".
+        /// </summary>
+        public const string DefaultSchemaName = "CK";
 
         string _name;
         Dictionary<string,string> _schemas;
         bool _installCore;
 
-        protected SqlDatabase()
+        public SqlDatabase()
         {
             _name = DefaultDatabaseName;
             _schemas = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
         }
 
         /// <summary>
-        /// Gets or sets the logical name of the database.
+        /// Gets or sets the logical name of the database. Must not be null nor empty.
+        /// Defaults to <see cref="DefaultDatabaseName"/>.
         /// </summary>
         public string Name
         {
@@ -85,17 +96,7 @@ namespace CK.Setup.SqlServer
         /// </summary>
         public bool IsDefaultDatabase
         {
-            get { return ReferenceEquals( _name, DefaultDatabaseName ); }
-        }
-
-        protected virtual void ConfigureDependentItem( IActivityLogger logger, IMutableStObjSetupData data )
-        {
-            data.FullNameWithoutContext = Name;
-        }
-
-        void IStObjSetupConfigurator.ConfigureDependentItem( IActivityLogger logger, IMutableStObjSetupData data )
-        {
-            ConfigureDependentItem( logger, data );
+            get { return _name == DefaultDatabaseName; }
         }
     }
 }

@@ -7,9 +7,7 @@ using CK.Core;
 
 namespace CK.Setup.SqlServer
 {
-
-
-    public class SqlSetupContext : ISetupDriverFactory, ISqlManagerProvider, IDisposable
+    public class SqlSetupContext : ISqlManagerProvider, IDisposable
     {
         SqlManager _defaultDatabase;
         SqlManagerProvider _databases;
@@ -17,16 +15,43 @@ namespace CK.Setup.SqlServer
         StObjConfigurator _stObjConfigurator;
         List<Type> _regTypeList;
 
+        /// <summary>
+        /// Initializes a new <see cref="SqlSetupContext"/> on an existing database.
+        /// </summary>
+        /// <param name="defaultDatabaseConnectionString">
+        /// Connection string to an existing database. The <see cref="DefaultSqlDatabase"/> connection will 
+        /// be opened by default.</param>
+        /// <param name="logger">Logger to use for the whole process.</param>
         public SqlSetupContext( string defaultDatabaseConnectionString, IActivityLogger logger )
+            : this( logger )
         {
-            _databases = new SqlManagerProvider( logger );
             _databases.Add( SqlDatabase.DefaultDatabaseName, defaultDatabaseConnectionString );
             _defaultDatabase = _databases.FindManagerByName( SqlDatabase.DefaultDatabaseName );
+        }
+
+        /// <summary>
+        /// Initializes a new <see cref="SqlSetupContext"/>, using an existing and ready <see cref="SqlManager"/> as 
+        /// the <see cref="DefaultSqlDatabase"/>.
+        /// </summary>
+        /// <param name="defaultDatabase">Default database. Must be opened and the database must exist.</param>
+        public SqlSetupContext( SqlManager defaultDatabase )
+            : this( defaultDatabase.Logger )
+        {
+            if( defaultDatabase == null ) throw new ArgumentNullException( "defaultDatabase" );
+            if( !defaultDatabase.IsOpen() ) throw new ArgumentException( "Database manager must be opened.", "defaultDatabase" );
+            _databases.AddDefaultDatabase( defaultDatabase );
+            _defaultDatabase = defaultDatabase;
+        }
+
+        private SqlSetupContext( IActivityLogger logger )
+        {
+            _databases = new SqlManagerProvider( logger );
             _stObjConfigurator = new StObjConfigurator();
             _regConf = new AssemblyRegistererConfiguration();
             _regTypeList = new List<Type>();
             _regTypeList.Add( typeof( SqlDefaultDatabase ) );
         }
+
 
         public AssemblyRegistererConfiguration AssemblyRegistererConfiguration
         {
@@ -45,14 +70,6 @@ namespace CK.Setup.SqlServer
         public IActivityLogger Logger
         {
             get { return _defaultDatabase.Logger; }
-        }
-
-        public virtual SetupDriver CreateDriver( Type driverType, SetupDriver.BuildInfo info )
-        {
-            if( driverType == typeof( SqlObjectDriver ) ) return new SqlObjectDriver( info, this );
-            if( driverType == typeof( SetupDriver ) ) return new SetupDriver( info );
-            if( driverType == typeof( SqlDatabaseSetupDriver ) ) return new SqlDatabaseSetupDriver( info, this );
-            return null;
         }
 
         public StObjConfigurator StObjConfigurator
@@ -79,9 +96,23 @@ namespace CK.Setup.SqlServer
             return m;
         }
 
+        SqlManager ISqlManagerProvider.FindManagerByConnectionString( string conString )
+        {
+            if( conString == null ) throw new ArgumentNullException( "conString" );
+            if( conString == _defaultDatabase.Connection.ConnectionString ) return _defaultDatabase;
+            SqlManager m = ObtainManagerByConnectionString( conString );
+            if( m == null ) Logger.Warn( "Database connection to '{0}' is not mapped.", conString );
+            return m;
+        }
+
         protected virtual SqlManager ObtainManager( string dbName )
         {
             return _databases.FindManagerByName( dbName );
+        }
+
+        protected virtual SqlManager ObtainManagerByConnectionString( string conString )
+        {
+            return _databases.FindManagerByConnectionString( conString );
         }
 
         public virtual void Dispose()

@@ -3,12 +3,23 @@
 namespace CK.Setup
 {
 
+    /// <summary>
+    /// Once StObj have been sorted and initialized, this interface enables any <see cref="IStObjSetupConfigurator"/> to
+    /// configure the setup item: this drives the type of the item itself (that defaults to <see cref="StObjDynamicPackageItem"/>) and most of its properties.
+    /// </summary>
     public interface IMutableStObjSetupData : IStObjSetupDataBase
     {
         /// <summary>
         /// Gets or sets the full name.
         /// </summary>
         string FullNameWithoutContext { get; set; }
+
+        /// <summary>
+        /// Checks if the proposed name can be the <see cref="FullNameWithoutContext"/>: none of our <see cref="IStObjSetupDataBase.Generalization"/> already use this name.
+        /// </summary>
+        /// <param name="proposedName">Name to check.</param>
+        /// <returns>True if the name can be used.</returns>
+        bool IsFullNameWithoutContextAvailable( string proposedName );
 
         /// <summary>
         /// Gets or sets the list of available versions and optional associated previous full names with a string like: "1.2.4, Previous.Name = 1.3.1, A.New.Name=1.4.1, 1.5.0"
@@ -19,7 +30,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets or sets the full name of the container.
         /// If the container is already defined at the <see cref="IStObj"/> level, names must match otherwise an error occurs.
-        /// This allow name binding to an existing container or package that is not a Structure Object: it should be rarely used.
+        /// This allow name binding to an existing container or package that is not a Structure Object: it should be rarely used and most often let to null.
         /// </summary>
         /// <remarks>
         /// This is not inherited: it must be explicitely set for each object.
@@ -37,10 +48,9 @@ namespace CK.Setup
         IDependentItemList RequiredBy { get; }
 
         /// <summary>
-        /// Gets or sets whether this object must not be considered as a <see cref="IDependentItemContainer"/>: when true, no items 
-        /// must be subordinated to this object.
-        /// </summary>        
-        bool NoContent { get; set; }
+        /// Gets a mutable list of children (can be <see cref="IDependentItem"/> instances or named references).
+        /// </summary>
+        IDependentItemList Children { get; }
 
         /// <summary>
         /// Gets or sets whether a Model package is associated to this object. The Model is required by this object
@@ -89,8 +99,6 @@ namespace CK.Setup
         /// a standard <see cref="SetupDriver"/> is used.
         /// </remarks>
         string DriverTypeName { get; set; }
-
-
 
     }
 }

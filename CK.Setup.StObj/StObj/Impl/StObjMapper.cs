@@ -19,12 +19,12 @@ namespace CK.Setup
         
         public IStObjContextualMapper Default
         {
-            get { return (IStObjContextualMapper)_contextMappers[AmbiantContractCollector.DefaultContext]; }
+            get { return (IStObjContextualMapper)_contextMappers[String.Empty]; }
         }
 
-        public IStObjContextualMapper this[Type typedContext]
+        public IStObjContextualMapper this[string context]
         {
-            get { return (IStObjContextualMapper)_contextMappers[typedContext ?? AmbiantContractCollector.DefaultContext]; }
+            get { return (IStObjContextualMapper)_contextMappers[context ?? String.Empty]; }
         }
 
         public bool Contains( object item )

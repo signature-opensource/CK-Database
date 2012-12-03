@@ -20,7 +20,7 @@ namespace CK.Setup
         bool Execute( SetupCallGroupStep step )
         {
             TypedScriptVector v = _scripts.GetScriptVector( step, Driver.ExternalVersion != null ? Driver.ExternalVersion.Version : null, Driver.ItemVersion );
-            if( v.Scripts.Count == 0 ) return true;
+            if( v == null || v.Scripts.Count == 0 ) return true;
 
             var logger = Driver.Engine.Logger;
             IScriptExecutor e = _scripts.Handler.CreateExecutor( logger, Driver );

@@ -9,7 +9,7 @@ create procedure CK.sGroupActorRemove
 	@GroupId int
 )
 as begin
-	
+	--[beginsp]
 	if exists (select * from CK.tActorProfile where GroupId = @GroupId and ActorId = @UserActorId)
 	begin
 		delete from CK.tActorProfile where GroupId = @GroupId and ActorId = @UserActorId;
@@ -17,5 +17,5 @@ as begin
 	end
 	
 	return 1;
-
+	--[endsp]
 end

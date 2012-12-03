@@ -9,16 +9,16 @@ namespace CK.Setup
 {
     public class StObjCollectorResult : MultiContextualResult<StObjCollectorContextualResult>
     {
-        readonly AmbiantContractCollectorResult<StObjTypeInfo> _contractResult;
+        readonly AmbientContractCollectorResult<StObjTypeInfo> _contractResult;
         IReadOnlyCollection<IStObj> _rootStObjs;
         IReadOnlyList<IStObj> _orderedStObjs;
         bool _fatal;
 
-        internal StObjCollectorResult( StObjMapper owner, AmbiantContractCollectorResult<StObjTypeInfo> contractResult )
+        internal StObjCollectorResult( StObjMapper owner, AmbientContractCollectorResult<StObjTypeInfo> contractResult )
         {
             Debug.Assert( contractResult != null );
             _contractResult = contractResult;
-            foreach( AmbiantContractCollectorContextualResult<StObjTypeInfo> r in contractResult )
+            foreach( AmbientContractCollectorContextualResult<StObjTypeInfo> r in contractResult )
             {
                 Add( new StObjCollectorContextualResult( r, new StObjContextualMapper( owner, r.Mappings ) ) );
             }

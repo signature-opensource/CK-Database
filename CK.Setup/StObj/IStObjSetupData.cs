@@ -25,15 +25,15 @@ namespace CK.Setup
         string ContainerFullName { get; }
 
         /// <summary>
-        /// Gets the type of the <see cref="IDependentItem"/> to use instead of the default <see cref="StObjDynamicPackageItem"/>. 
+        /// Gets the type of the <see cref="IMutableSetupItem"/> to use instead of the default <see cref="StObjDynamicPackageItem"/>. 
         /// When set, this masks the <see cref="ItemTypeName"/> property,  otherwise <see cref="ItemTypeName"/> can be used to 
-        /// designate a specific <see cref="IDependentItem"/>.
+        /// designate a specific <see cref="IMutableSetupItem"/> by its assembly qualified name.
         /// This property is inherited.
         /// </summary>
         Type ItemType { get; }
 
         /// <summary>
-        /// Gets the assembly qualified type name of the <see cref="IDependentItem"/> to use instead of the default <see cref="StObjDynamicPackageItem"/>. 
+        /// Gets the assembly qualified type name of the <see cref="IMutableSetupItem"/> to use instead of the default <see cref="StObjDynamicPackageItem"/>. 
         /// This is used ONLY if <see cref="ItemType"/> is not set.
         /// This property is inherited.
         /// </summary>
@@ -71,13 +71,6 @@ namespace CK.Setup
         /// This is not inherited.
         /// </remarks>
         bool HasModel { get; }
-        
-        /// <summary>
-        /// Gets whether this object must not be considered as a <see cref="IDependentItemContainer"/>: no items 
-        /// must be subordinated to this object.
-        /// This property is inherited.
-        /// </summary>
-        bool NoContent { get; }
 
         /// <summary>
         /// Gets the list of requirements (can be <see cref="IDependentItem"/> instances or named references).
@@ -85,8 +78,18 @@ namespace CK.Setup
         IReadOnlyList<IDependentItemRef> RequiredBy { get; }
 
         /// <summary>
+        /// Gets the list of groups (can be <see cref="IDependentItemGroup"/> instances or named references).
+        /// </summary>
+        IReadOnlyList<IDependentItemGroupRef> Groups { get; }
+
+        /// <summary>
         /// Gets the list of reverse requirements (can be <see cref="IDependentItem"/> instances or named references).
         /// </summary>
         IReadOnlyList<IDependentItemRef> Requires { get; }
+
+        /// <summary>
+        /// Gets the list of children (can be <see cref="IDependentItem"/> instances or named references).
+        /// </summary>
+        IReadOnlyList<IDependentItemRef> Children { get; }
     }
 }

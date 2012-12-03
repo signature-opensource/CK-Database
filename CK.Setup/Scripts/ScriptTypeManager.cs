@@ -77,6 +77,11 @@ namespace CK.Setup
                 get { return Handler.InternalRequiredBy != null ? Handler.InternalRequiredBy.Select( s => new NamedDependentItemRef( s ) ) : null; }
             }
 
+            public IEnumerable<IDependentItemGroupRef> Groups
+            {
+                get { return null; }
+            }
+
             public string FullName
             {
                 get { return Handler.HandlerName; }

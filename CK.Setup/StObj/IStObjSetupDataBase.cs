@@ -9,9 +9,9 @@ namespace CK.Setup
     {
         /// <summary>
         /// Gets the parent setup data if it exists (this is to manage attribute properties "inheritance"). 
-        /// Null if this object corresponds to the first (root) <see cref="IAmbiantContract"/> of the inheritance chain.
+        /// Null if this object corresponds to the first (root) <see cref="IAmbientContract"/> of the inheritance chain.
         /// </summary>
-        IStObjSetupData Parent { get; }
+        IStObjSetupData Generalization { get; }
 
         /// <summary>
         /// Gets the associated <see cref="IStObj"/>.
@@ -25,8 +25,8 @@ namespace CK.Setup
         string FullName { get; }
 
         /// <summary>
-        /// Gets whether the <see cref="FullName"/> is the default one (default full name is the <see cref="IStObj.ObjectType"/>.<see cref="Type.FullName">FullName</see>).
+        /// Gets whether the <see cref="FullName"/> is the default one (default full name is the <see cref="IStObj.ObjectType">StObj.ObjectType</see>.<see cref="Type.FullName">FullName</see>).
         /// </summary>
-        bool IsDefaultFullName { get; }
+        bool IsDefaultFullNameWithoutContext { get; }
     }
 }

@@ -117,13 +117,16 @@ namespace CK.Setup
             _drivers = new DriverList( this );
         }
 
+        /// <summary>
+        /// Triggered for each steps of <see cref="SetupStep"/>: None (before registration), Init, Install, Settle and Done.
+        /// </summary>
+        public event EventHandler<SetupEventArgs> SetupEvent;
+
+        /// <summary>
+        /// Triggered for each <see cref="DriverBase"/> setup phasis.
+        /// </summary>
         public event EventHandler<DriverEventArgs> DriverEvent;
-
-        public IVersionedItemRepository VersionRepository
-        {
-            get { return _versionRepository; }
-        }
-
+        
         public ISetupSessionMemory Memory
         {
             get { return _memory; }
@@ -160,6 +163,27 @@ namespace CK.Setup
         public SetupEngineRegisterResult Register( IEnumerable<IDependentItem> items, IEnumerable<IDependentItemDiscoverer> discoverers, DependencySorter.Options options = null )
         {
             CheckState( SetupEngineState.None );
+            
+            // Because of the SetupEngineRegisterResult encapsulation for this Register phasis, it is not easy to reuse FireSetupEvent.
+            if( SetupEvent != null )
+            {
+                var e = new SetupEventArgs( SetupStep.None );
+                try
+                {
+                    SetupEvent( this, e );
+                    if( e.CancelReason != null )
+                    {
+                        return new SetupEngineRegisterResult( null ) { CancelReason = e.CancelReason };
+                    }
+                }
+                catch( Exception ex )
+                {
+                    return new SetupEngineRegisterResult( null ) { UnexpectedError = ex };
+                }
+            }
+
+            // There is no _state = SetupEngineState.RegistrationError since on error we clear the driver list and
+            // the state remains set to SetupEngineState.None.
             SetupEngineRegisterResult result = null;
             try
             {
@@ -171,22 +195,21 @@ namespace CK.Setup
                     {
                         DriverBase d;
                         Type typeToCreate = null;
-                        if( item.IsContainer )
+                        if( item.IsGroup )
                         {
-                            var head = _drivers[item.HeadForContainer.FullName] as GroupHeadSetupDriver;
-                            Debug.Assert( head != null );
+                            var head = (GroupHeadSetupDriver)_drivers[item.HeadForGroup.FullName];
                             typeToCreate = ResolveDriverType( item );
                             SetupDriver c = _driverFactory.CreateDriver( typeToCreate, new SetupDriver.BuildInfo( head, item ) );
-                            d = head.Container = c;
+                            d = head.Group = c;
                         }
                         else
                         {
                             VersionedName externalVersion;
                             IVersionedItem versioned = item.Item as IVersionedItem;
-                            if( versioned != null ) externalVersion = VersionRepository.GetCurrent( versioned );
+                            if( versioned != null ) externalVersion = _versionRepository.GetCurrent( versioned );
                             else externalVersion = null;
 
-                            if( item.IsContainerHead )
+                            if( item.IsGroupHead )
                             {
                                 d = new GroupHeadSetupDriver( this, item, externalVersion );
                             }
@@ -211,7 +234,6 @@ namespace CK.Setup
                             }
                         }
                     }
-                    if( result.CanceledRegistrationCulprit == null ) _state = SetupEngineState.Registered;
                 }
             }
             catch( Exception ex )
@@ -219,16 +241,42 @@ namespace CK.Setup
                 // Exception is not logged at this level: it is carried by the SetupEngineRegisterResult
                 // and its LogError method must be used to log different kind of errors.
                 if( result == null ) result = new SetupEngineRegisterResult( null );
-                _drivers.Clear();
                 result.UnexpectedError = ex;
+                _drivers.Clear();
+            }
+            if( result.IsValid ) _state = SetupEngineState.Registered;
+            else 
+            {
+                SafeFireSetupEvent( SetupStep.None, true );
             }
             return result;
+        }
+
+        private bool SafeFireSetupEvent( SetupStep step, bool errorOccured = false )
+        {
+            if( SetupEvent == null ) return true;
+            using( _logger.OpenGroup( LogLevel.Trace, errorOccured ? "Raising error event during {0}." : "Raising {0} setup event.", step ) )
+            {
+                var e = new SetupEventArgs( step );
+                try
+                {
+                    SetupEvent( this, e );
+                    if( e.CancelReason == null ) return true;
+                    _logger.Fatal( e.CancelReason );
+                }
+                catch( Exception ex )
+                {
+                    _logger.Fatal( ex );
+                }
+            }
+            return false;
         }
 
         public bool RunInit()
         {
             CheckState( SetupEngineState.Registered );
             _state = SetupEngineState.InitializationError;
+            if( !SafeFireSetupEvent( SetupStep.Init ) ) return false;
             try
             {
                 var reusableEvent = new DriverEventArgs( SetupStep.Init );
@@ -250,6 +298,7 @@ namespace CK.Setup
             catch( Exception ex )
             {
                 _logger.Fatal( ex );
+                SafeFireSetupEvent( SetupStep.Init, true );
                 return false;
             }
             _state = SetupEngineState.Initialized;
@@ -260,12 +309,13 @@ namespace CK.Setup
         {
             CheckState( SetupEngineState.Initialized );
             _state = SetupEngineState.InstallationError;
+            if( !SafeFireSetupEvent( SetupStep.Install ) ) return false;
             try
             {
                 var reusableEvent = new DriverEventArgs( SetupStep.Install );
                 foreach( var d in _drivers )
                 {
-                    using( _logger.OpenGroup( LogLevel.Info, "Installing {0}", d.FullName ) )
+                    using( _logger.OpenGroup( LogLevel.Info, "Installing {0} ({1})", d.FullName, VersionTransitionString( d ) ) )
                     {
                         if( !d.ExecuteInstall() ) return false;
                         var hE = DriverEvent;
@@ -281,16 +331,54 @@ namespace CK.Setup
             catch( Exception ex )
             {
                 _logger.Fatal( ex );
+                SafeFireSetupEvent( SetupStep.Install, true );
                 return false;
             }
             _state = SetupEngineState.Installed;
             return true;
         }
 
+        private static string VersionTransitionString( DriverBase d )
+        {
+            string versionTransition;
+            if( d.ItemVersion == null )
+            {
+                versionTransition = "unversioned";
+            }
+            else
+            {
+                if( d.ExternalVersion == null )
+                {
+                    versionTransition = String.Format( "¤ => {0}", d.ItemVersion );
+                }
+                else
+                {
+                    if( d.ExternalVersion.Version == d.ItemVersion )
+                    {
+                        versionTransition = String.Format( "= {0} =", d.ItemVersion );
+                    }
+                    else
+                    {
+                        if( d.IsGroupHead ) d = ((GroupHeadSetupDriver)d).Group;
+                        if( d.ExternalVersion.FullName != d.FullName )
+                        {
+                            versionTransition = String.Format( "{0} => {1}", d.ExternalVersion, d.ItemVersion );
+                        }
+                        else
+                        {
+                            versionTransition = String.Format( "{0} => {1}", d.ExternalVersion.Version, d.ItemVersion );
+                        }
+                    }
+                }
+            }
+            return versionTransition;
+        }
+
         public bool RunSettle()
         {
             CheckState( SetupEngineState.Installed );
             _state = SetupEngineState.SettlementError;
+            if( !SafeFireSetupEvent( SetupStep.Settle ) ) return false;
             try
             {
                 var reusableEvent = new DriverEventArgs( SetupStep.Settle );
@@ -307,16 +395,18 @@ namespace CK.Setup
                             if( reusableEvent.CancelSetup ) return false;
                         }
                         IVersionedItem versioned = d.Item as IVersionedItem;
-                        if( versioned != null ) VersionRepository.SetCurrent( versioned );
+                        if( versioned != null ) _versionRepository.SetCurrent( versioned );
                     }
                 }
             }
             catch( Exception ex )
             {
                 _logger.Fatal( ex );
+                SafeFireSetupEvent( SetupStep.Settle, true );
                 return false;
             }
             _state = SetupEngineState.Settled;
+            SafeFireSetupEvent( SetupStep.Done );
             return true;
         }
 
@@ -358,7 +448,7 @@ namespace CK.Setup
                 throw new CKException( "Invalid StartDependencySort returned type '{0}' for '{1}', it must be a Type or a string.", item.StartValue.GetType(), item.FullName );
             }
             string typeName = (string)item.StartValue;
-            return SimpleTypeFinder.Default.ResolveType( typeName, true );
+            return SimpleTypeFinder.WeakDefault.ResolveType( typeName, true );
         }
 
         void CheckState( SetupEngineState requiredState )

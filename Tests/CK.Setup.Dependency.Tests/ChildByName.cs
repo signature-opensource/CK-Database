@@ -5,7 +5,7 @@ using System.Text;
 using NUnit.Framework;
 using CK.Core;
 
-namespace CK.Setup.Tests.Dependencies
+namespace CK.Setup.Dependency.Tests
 {
     [TestFixture]
     public class ChildByName
@@ -13,7 +13,7 @@ namespace CK.Setup.Tests.Dependencies
         [Test]
         public void JustContainers()
         {
-            var cB = new TestableContainer( "CB", "∋ CA" );
+            var cB = new TestableContainer( "CB", "⊐ CA" );
             var cA = new TestableContainer( "CA" );
             {
                 // Starting by CA.
@@ -34,7 +34,7 @@ namespace CK.Setup.Tests.Dependencies
         [Test]
         public void SomeItems()
         {
-            var cB = new TestableContainer( "CB", "∋ OB" );
+            var cB = new TestableContainer( "CB", "⊐ OB" );
             var oB = new TestableItem( "OB" );
             {
                 // Starting with the Container.
@@ -50,8 +50,8 @@ namespace CK.Setup.Tests.Dependencies
                 r.AssertOrdered( "CB.Head", "OB", "CB" );
                 ResultChecker.SimpleCheck( r );
             }
-            var cA = new TestableContainer( "CA", "∋ OA" );
-            cB.Add( "∋ CA" );
+            var cA = new TestableContainer( "CA", "⊐ OA" );
+            cB.Add( "⊐ CA" );
             var oA = new TestableItem( "OA" );
             {
                 // Starting with the Containers.
@@ -72,7 +72,7 @@ namespace CK.Setup.Tests.Dependencies
         [Test]
         public void MissingChild()
         {
-            var cB = new TestableContainer( "CB", "∋ CA" );
+            var cB = new TestableContainer( "CB", "⊐ CA" );
             {
                 var r = DependencySorter.OrderItems( cB );
                 Assert.That( r.IsComplete, Is.False );
@@ -89,7 +89,7 @@ namespace CK.Setup.Tests.Dependencies
         public void ExtraneousContainer()
         {
             var childOfCB2 = new TestableItem( "ChildOfCB2" );
-            var cB1 = new TestableContainer( "CB1", "∋ ChildOfCB2" );
+            var cB1 = new TestableContainer( "CB1", "⊐ ChildOfCB2" );
             var cB2 = new TestableContainer( "CB2", childOfCB2 );
             {
                 var r = DependencySorter.OrderItems( cB1, cB2 );
@@ -111,9 +111,9 @@ namespace CK.Setup.Tests.Dependencies
         public void MultipleStructureErrors()
         {
             var childOfCB2 = new TestableItem( "ChildOfCB2" );
-            var cB1 = new TestableContainer( "CB1", "∋ MissingChild", "∋ ChildOfCB2" );
-            var cB2 = new TestableContainer( "CB2", "∋ MissingChild", "∈ MissingContainer", "=> MissingDependency", childOfCB2 );
-            var cB3 = new TestableContainer( "CB3", "∈ ChildOfCB2", "=> MissingDependency" );
+            var cB1 = new TestableContainer( "CB1", "⊐ MissingChild", "⊐ ChildOfCB2" );
+            var cB2 = new TestableContainer( "CB2", "⊐ MissingChild", "⊏ MissingContainer", "⇀ MissingDependency", childOfCB2 );
+            var cB3 = new TestableContainer( "CB3", "⊏ ChildOfCB2", "⇀ MissingDependency" );
             // This "discovers" an homonym.
             cB3.RelatedItems.Add( new TestableItem( "CB1" ) );
             {

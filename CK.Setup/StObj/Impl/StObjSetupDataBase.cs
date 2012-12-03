@@ -18,8 +18,9 @@ namespace CK.Setup
         string _containerFullName;
         DependentItemList _requires;
         DependentItemList _requiredBy;
+        DependentItemList _children;
+        DependentItemGroupList _groups;
         bool _hasModel;
-        bool _noContent;
 
         internal StObjSetupDataBase( IActivityLogger logger, Type t, StObjSetupDataBase parent = null )
         {
@@ -28,6 +29,8 @@ namespace CK.Setup
 
             _requires = RequiresAttribute.GetRequirements( logger, t, typeof( RequiresAttribute ) );
             _requiredBy = RequiresAttribute.GetRequirements( logger, t, typeof( RequiredByAttribute ) );
+            _children = RequiresAttribute.GetRequirements( logger, t, typeof( ChildrenAttribute ) );
+            _groups = GroupsAttribute.GetGroups( logger, t );
             SetupAttribute setupAttr = SetupAttribute.GetSetupAttribute( t );
             if( setupAttr != null )
             {
@@ -38,9 +41,6 @@ namespace CK.Setup
                 _driverTypeName = setupAttr.DriverTypeName;
                 
                 _hasModel = setupAttr.HasModel;
-                
-                if( setupAttr.NoContentDefined ) _noContent = setupAttr.NoContent;
-                else _noContent = parent != null ? parent.NoContent : false;
             }
             else
             {
@@ -48,12 +48,9 @@ namespace CK.Setup
                 if( parent != null )
                 {
                     // _hasModel remains false (this is not because the base class has an associated Model that
-                    // a specialization has one), but NoContent is stronger: if a base class states that it has no content,
-                    // its specialization, by default, also reject content.
-                    _noContent = parent.NoContent;
-                    
+                    // a specialization has one).                   
                     // We accept to inherit from parent HasModel, only if 
-                    // we are the root ambiant contract (consider attributes on above classes to 
+                    // we are the root ambient contract (consider attributes on above classes to 
                     // be kind of "definer").
                     if( isInRoot )
                     {
@@ -73,16 +70,18 @@ namespace CK.Setup
                 if( _containerFullName == null ) _containerFullName = parent.ContainerFullName;
             }
 
-            // If we are the root of the ambiant contract, we consider that base classes
+            // If we are the root of the ambient contract, we consider that base classes
             // preinitialize our value.
             if( isInRoot && parent != null )
             {
-                Requires.AddRange( parent.Requires );
-                RequiredBy.AddRange( parent.RequiredBy );
+                _requires.AddRange( parent.Requires );
+                _requiredBy.AddRange( parent.RequiredBy );
+                _children.AddRange( parent.Children );
+                _groups.AddRange( parent.Groups );
             }
         }
 
-        public IStObjSetupData Parent
+        public IStObjSetupData Generalization
         {
             get { return _parent; }
         }
@@ -103,10 +102,14 @@ namespace CK.Setup
             get { return _requiredBy; }
         }
 
-        public bool NoContent
+        public IDependentItemList Children
         {
-            get { return _noContent; }
-            set { _noContent = value; }
+            get { return _children; }
+        }
+
+        public IDependentItemGroupList Groups
+        {
+            get { return _groups; }
         }
 
         public Type ItemType

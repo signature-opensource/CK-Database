@@ -7,7 +7,7 @@ using NUnit.Framework;
 
 namespace CK.Setup.StObj.Tests.SimpleObjects.LoggerInjection
 {
-    public class LoggerInjected : IAmbiantContract
+    public class LoggerInjected : IAmbientContract
     {
         void Construct( IActivityLogger logger, IActivityLogger anotherLogger = null )
         {

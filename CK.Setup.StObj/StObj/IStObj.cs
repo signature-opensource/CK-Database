@@ -7,9 +7,9 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// A StObj "slices" a Structured Object (that is an <see cref="IAmbiantContract"/>) by 
+    /// A StObj "slices" a Structured Object (that is an <see cref="IAmbientContract"/>) by 
     /// types in its inheritance chain.
-    /// The <see cref="StructuredObject">Structured Object</see> is built based on already built dependencies from top to bottom thanks to its "Construct" methods. 
+    /// The <see cref="StructuredObject">Structured Object</see> itself is built based on already built dependencies from top to bottom thanks to its "Construct" methods. 
     /// </summary>
     public interface IStObj : IStructuredObjectHolder
     {
@@ -19,14 +19,15 @@ namespace CK.Setup
         Type ObjectType { get; }
 
         /// <summary>
-        /// Gets the typed context where the structure object resides.
+        /// Gets the context name where the structure object resides.
         /// </summary>
-        Type Context { get; }
+        string Context { get; }
 
         /// <summary>
-        /// Gets whether this object has been referenced as a container by one or more structure objects.
+        /// Gets kind of structure object for this StObj. It can be a <see cref="DependentItemKind.Item"/>, 
+        /// a <see cref="DependentItemKind.Group"/> or a <see cref="DependentItemKind.Container"/>.
         /// </summary>
-        bool IsContainer { get; }
+        DependentItemKind ItemKind { get; }
 
         /// <summary>
         /// Gets the parent <see cref="IStObj"/> in the inheritance chain (the one associated to the base class of this <see cref="ObjectType"/>).
@@ -63,9 +64,33 @@ namespace CK.Setup
         IStObj Container { get; }
 
         /// <summary>
-        /// Gets a list of required objects. 
+        /// Gets a list of required objects. This list combines the requirements of this items (explicitely required types, 
+        /// construct parameters, etc.) and any RequiredBy from other objects.
         /// </summary>
         IReadOnlyList<IStObj> Requires { get; }
+
+        /// <summary>
+        /// Gets a list of Group objects to which this object belongs.
+        /// </summary>
+        IReadOnlyList<IStObj> Groups { get; }
+
+        /// <summary>
+        /// Gets a list of children objects when this <see cref="ItemKind"/> is either a <see cref="DependentItemKind.Group"/> or a <see cref="DependentItemKind.Container"/>.
+        /// </summary>
+        IReadOnlyList<IStObj> Children { get; }
+
+        /// <summary>
+        /// Gets the list of Ambient Properties that reference this object.
+        /// </summary>
+        IReadOnlyList<IStObjTrackedAmbientPropertyInfo> TrackedAmbientProperties { get; }
+
+        /// <summary>
+        /// Gets the value of the named property that may be associated to this StObj or to any StObj 
+        /// in <see cref="Container"/> or <see cref="Generalization"/> 's chains (recursively).
+        /// </summary>
+        /// <param name="propertyName">Name of the property. Must not be null nor empty.</param>
+        /// <returns>The property value (can be null) if the property has been defined, <see cref="Type.Missing"/> otherwise.</returns>
+        object GetStObjProperty( string propertyName );
         
     }
 }

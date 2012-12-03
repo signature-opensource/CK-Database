@@ -15,7 +15,8 @@ namespace CK.Setup
         string _versions;
         IReadOnlyList<IDependentItemRef> _requiresEx;
         IReadOnlyList<IDependentItemRef> _requiredByEx;
-
+        IReadOnlyList<IDependentItemRef> _childrenEx;
+        IReadOnlyList<IDependentItemGroupRef> _groupsEx;
 
         internal StObjSetupData( IActivityLogger logger, IStObj o, StObjSetupDataBase parent )
             : base( logger, o.ObjectType, parent )
@@ -26,6 +27,8 @@ namespace CK.Setup
             _versions = VersionsAttribute.GetVersionsString( o.ObjectType );
             _requiresEx = new ReadOnlyListOnIList<IDependentItemRef>( Requires );
             _requiredByEx = new ReadOnlyListOnIList<IDependentItemRef>( RequiredBy );
+            _childrenEx = new ReadOnlyListOnIList<IDependentItemRef>( Children );
+            _groupsEx = new ReadOnlyListOnIList<IDependentItemGroupRef>( Groups );
         }
 
         public IStObj StObj
@@ -39,14 +42,26 @@ namespace CK.Setup
             set { _fullNameWithoutContext = value; }
         }
 
-        public bool IsDefaultFullName
+        public bool IsFullNameWithoutContextAvailable( string name )
+        {
+            IStObjSetupData g = Generalization;
+            while( g != null )
+            {
+                if( g.FullNameWithoutContext == name ) return false;
+                g = g.Generalization;
+            }
+            return true;
+        }
+
+
+        public bool IsDefaultFullNameWithoutContext
         {
             get { return ReferenceEquals( _fullNameWithoutContext, _stObj.ObjectType.FullName ); } 
         }
 
         public string FullName
         {
-            get { return AmbiantContractCollector.DisplayName( _stObj.Context, FullNameWithoutContext ); }
+            get { return DefaultContextLocNaming.Format( _stObj.Context, null, _fullNameWithoutContext ); }
         }
 
         public string Versions
@@ -55,7 +70,13 @@ namespace CK.Setup
             set { _versions = value; }
         }
 
-        internal StObjDynamicPackageItem SetupItem { get; set; }
+        internal void ResolveTypes( IActivityLogger logger )
+        {
+            if( ItemType == null && ItemTypeName != null ) ItemType = SimpleTypeFinder.WeakDefault.ResolveType( ItemTypeName, true );
+            if( DriverType == null && DriverTypeName != null ) DriverType = SimpleTypeFinder.WeakDefault.ResolveType( DriverTypeName, true );
+        }
+
+        internal IMutableSetupItem SetupItem { get; set; }
 
         IReadOnlyList<IDependentItemRef> IStObjSetupData.RequiredBy
         {
@@ -65,6 +86,16 @@ namespace CK.Setup
         IReadOnlyList<IDependentItemRef> IStObjSetupData.Requires
         {
             get { return _requiredByEx; }
+        }
+
+        IReadOnlyList<IDependentItemRef> IStObjSetupData.Children
+        {
+            get { return _childrenEx; }
+        }
+
+        IReadOnlyList<IDependentItemGroupRef> IStObjSetupData.Groups
+        {
+            get { return _groupsEx; }
         }
 
     }

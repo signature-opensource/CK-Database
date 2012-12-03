@@ -10,13 +10,15 @@ namespace CK.Setup
     public class StObjContextualMapper : IStObjContextualMapper
     {
         readonly Dictionary<Type,MutableItem> _items;
-        readonly IAmbiantTypeContextualMapper _mappings;
+        readonly IAmbientTypeContextualMapper _typeMappings;
+        readonly IReadOnlyCollection<MutableItem> _itemsEx;
         readonly StObjMapper _owner;
 
-        internal StObjContextualMapper( StObjMapper owner, IAmbiantTypeContextualMapper mappings )
+        internal StObjContextualMapper( StObjMapper owner, IAmbientTypeContextualMapper typeMappings )
         {
             _items = new Dictionary<Type, MutableItem>();
-            _mappings = mappings;
+            _itemsEx = new ReadOnlyCollectionOnICollection<MutableItem>( _items.Values );
+            _typeMappings = typeMappings;
             _owner = owner;
             _owner.Add( this );
         }
@@ -26,9 +28,9 @@ namespace CK.Setup
             get { return _owner; } 
         }
 
-        public Type Context
+        public string Context
         {
-            get { return _mappings.Context; }
+            get { return _typeMappings.Context; }
         }
 
         public int Count
@@ -36,14 +38,30 @@ namespace CK.Setup
             get { return _items.Count; }
         }
 
-        public IAmbiantTypeContextualMapper Mappings
+        public IAmbientTypeContextualMapper TypeMappings
         {
-            get { return _mappings; }
+            get { return _typeMappings; }
         }
 
-        public IStObj this[Type t]
+        public IReadOnlyCollection<IStObj> Items
         {
-            get { return t != null ? Find( t ) : null; }
+            get { return _itemsEx; }
+        }
+
+        IStObj IStObjContextualMapper.Find( Type t )
+        {
+            return t != null ? Find( t ) : null;
+        }
+
+        public IStObj Find<T>() where T : IAmbientContract
+        {
+            return Find( typeof(T) );
+        }
+
+        public T GetObject<T>() where T : class
+        {
+            MutableItem m = Find( typeof(T) );
+            return m != null ? (T)m.Object : (T)null;
         }
 
         internal void Add( MutableItem item )
@@ -57,9 +75,9 @@ namespace CK.Setup
             MutableItem r;
             if( !_items.TryGetValue( t, out r ) )
             {
-                if( t.IsInterface && typeof( IAmbiantContract ).IsAssignableFrom( t ) )
+                if( t.IsInterface && typeof( IAmbientContract ).IsAssignableFrom( t ) )
                 {
-                    t = _mappings.HighestImplementation( t );
+                    t = _typeMappings.HighestImplementation( t );
                     if( t != null )
                     {
                         _items.TryGetValue( t, out r );

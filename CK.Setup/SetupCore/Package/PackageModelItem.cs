@@ -9,7 +9,6 @@ namespace CK.Setup
     /// <summary>
     /// A PackageModel is a <see cref="IPackageItem"/> associated to a <see cref="IPackageItem"/>.
     /// A Model <see cref="FullName"/> is the "Model." prefix followed by the <see cref="DynamicPackageItem.FullName"/>.
-    /// It is by default required by its DynamicPackage (<see cref="DynamicPackageItem.AutomaticModelRequirement"/> can change this).
     /// </summary>
     /// <remarks>
     /// Since there can be at most one Model per Package, a PackageModel should only be built or removed by its owner Package itself 
@@ -22,6 +21,7 @@ namespace CK.Setup
         IDependentItemContainerRef _container;
         DependentItemList _requires;
         DependentItemList _requiredBy;
+        DependentItemGroupList _groups;
         IDependentItemList _children;
         bool _automaticModelRequirement;
 
@@ -68,11 +68,35 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the full name of this model, that is "Model." prefixed to <see cref="Package"/>.<see cref="DynamicPackageItem.FullName">FullName</see>.
+        /// Gets the context of this model that is the same as the <see cref="P:Package"/>.
+        /// </summary>
+        public string Context
+        {
+            get { return _package.Context; }
+        }
+
+        /// <summary>
+        /// Gets the location of this model that is the same as the <see cref="P:Package"/>.
+        /// </summary>
+        public string Location
+        {
+            get { return _package.Location; }
+        }
+
+        /// <summary>
+        /// Gets the name of this model: it is the <see cref="P:Package"/>'s name prefixed by "Model.".
+        /// </summary>
+        public string Name
+        {
+            get { return "Model." + _package.Name; }
+        }
+
+        /// <summary>
+        /// Gets the full name of this model.
         /// </summary>
         public string FullName
         {
-            get { return "Model." + _package.FullName; }
+            get { return DefaultContextLocNaming.Format( _package.Context, _package.Location, Name ); }
         }
 
         /// <summary>
@@ -86,16 +110,30 @@ namespace CK.Setup
             set { _container = value; }
         }
 
+        /// <summary>
+        /// Gets a mutable list of items that this Model requires.
+        /// </summary>
         public IDependentItemList Requires
         {
             get { return _requires ?? (_requires = new DependentItemList()); }
         }
 
+        /// <summary>
+        /// Gets a mutable list of items that are required by this Model.
+        /// </summary>
         public IDependentItemList RequiredBy
         {
             get { return _requiredBy ?? (_requiredBy = new DependentItemList()); }
         }
 
+        /// <summary>
+        /// Gets a mutable list of groups to which this Model belongs.
+        /// </summary>
+        public IDependentItemGroupList Groups
+        {
+            get { return _groups ?? (_groups = new DependentItemGroupList()); }
+        }
+        
         /// <summary>
         /// Gets the version: it is the same as the <see cref="P:Package"/>'s one.
         /// </summary>
@@ -128,35 +166,49 @@ namespace CK.Setup
         {
             get 
             {
+                var thisRequires = _requires.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _package.Context, _package.Location ) );
                 if( _automaticModelRequirement )
                 {
-                    var fromPackage = _package.Requires
-                                                .Where( r => !r.FullName.StartsWith( "Model.", StringComparison.Ordinal ) )
-                                                .Select( r => new NamedDependentItemRef( "?Model." + r.FullName ) );
-                    return _requires != null ? _requires.Concat( fromPackage ) : fromPackage;
+                    var req = _package.Requires;
+                    if( req != null )
+                    {
+                        var fromPackage = req.Where( r => !DefaultContextLocNaming.NameStartsWith( r.FullName, "Model." ) )
+                                             .Select( r => new NamedDependentItemRef( DefaultContextLocNaming.AddNamePrefix( r.FullName, "Model." ), true ) );
+                        return thisRequires != null ? thisRequires.Concat( fromPackage ) : fromPackage;
+                    }
                 }
-                return _requires; 
+                return thisRequires; 
             }
         }
 
         IEnumerable<IDependentItemRef> IDependentItem.RequiredBy
         {
-            get 
+            get
             {
+                var thisRequiredBy = _requiredBy.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _package.Context, _package.Location ) );
                 if( _automaticModelRequirement )
                 {
-                    var fromPackage = _package.RequiredBy
-                                                .Where( r => !r.FullName.StartsWith( "Model.", StringComparison.Ordinal ) )
-                                                .Select( r => new NamedDependentItemRef( "?Model." + r.FullName ) );
-                    return _requiredBy != null ? _requiredBy.Concat( fromPackage ) : fromPackage;
+                    var reqBy = _package.RequiredBy;
+                    if( reqBy != null )
+                    {
+                        var fromPackage = reqBy.Where( r => !DefaultContextLocNaming.NameStartsWith( r.FullName, "Model." ) )
+                                                .Select( r => new NamedDependentItemRef( DefaultContextLocNaming.AddNamePrefix( r.FullName, "Model." ), true ) );
+                        return thisRequiredBy != null ? thisRequiredBy.Concat( fromPackage ) : fromPackage;
+                    }
                 }
-                return _requiredBy; 
+                return thisRequiredBy;
             }
+        }
+
+        //TODO: CHECK that Group relationships supports optionality and projects them into potential "Model." groups. 
+        IEnumerable<IDependentItemGroupRef> IDependentItem.Groups
+        {
+            get { return _groups.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _package.Context, _package.Location ) ); }
         }
 
         IEnumerable<VersionedName> IVersionedItem.PreviousNames
         {
-            get { return _package.PreviousNames.Select( p => new VersionedName( "Model." + p.FullName, p.Version ) ); }
+            get { return _package.PreviousNames.Select( p => new VersionedName( DefaultContextLocNaming.AddNamePrefix( p.FullName, "Model." ), p.Version ) ); }
         }
 
         string IVersionedItem.ItemType
@@ -164,9 +216,10 @@ namespace CK.Setup
             get { return "Model"; }
         }
 
+        //TODO: CHECK that Children relationships supports optionality and projects them into potential "Model." children. ?? Not sure it is a good idea for container/Children... 
         IEnumerable<IDependentItemRef> IDependentItemGroup.Children
         {
-            get { return _children; }
+            get { return _children.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _package.Context, _package.Location ) ); }
         }
 
 

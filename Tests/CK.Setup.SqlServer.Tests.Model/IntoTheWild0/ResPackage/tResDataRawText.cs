@@ -9,8 +9,11 @@ namespace IntoTheWild0
 {
 
     [SqlTable( "tResDataRawText", Package = typeof( ResPackage ) ), Versions( "2.9.2" )]
-    public class tResDataRawText : SqlTableType
+    public class tResDataRawText : SqlTable
     {
+        void Construct( tRes res )
+        {
+        }
     }
 
 }
