@@ -17,7 +17,7 @@ namespace CK.Setup.SqlServer
 
         protected override bool LoadScripts( ScriptCollector scripts )
         {
-            var r = Item.Object.ResourceLocation;
+            var r = Item.ResourceLocation;
             if( r != null )
             {
                 IActivityLogger logger = Engine.Logger;

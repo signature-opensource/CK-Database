@@ -26,7 +26,8 @@ namespace CK.Setup.SqlServer
             Debug.Assert( stObj.ItemKind == DependentItemKind.Container, "Since it is a SqlPackageBase." );
             Debug.Assert( item is IMutableSetupItemContainer );
 
-            SqlPackageBase p = (SqlPackageBase)stObj.Object;
+            SqlPackageBaseItem p = (SqlPackageBaseItem)item;
+            SqlPackageBase obj = (SqlPackageBase)stObj.Object;
             string fileName = ObjectName + ".sql";
             string text = p.ResourceLocation.GetString( fileName, true );
             SqlObjectProtoItem protoObject = SqlObjectParser.Create( logger, item, text );
@@ -36,9 +37,9 @@ namespace CK.Setup.SqlServer
                 {
                     logger.Error( "Resource '{0}' contains the definition of '{1}'. Names must match.", fileName, protoObject.Name );
                 }
-                else if( protoObject.Schema.Length > 0 && protoObject.Schema != p.Schema )
+                else if( protoObject.Schema.Length > 0 && protoObject.Schema != obj.Schema )
                 {
-                    logger.Error( "Resource '{0}' defines the {1} in the schema '{2}' instead of '{3}'.", fileName, protoObject.ItemType, protoObject.Schema, p.Schema );
+                    logger.Error( "Resource '{0}' defines the {1} in the schema '{2}' instead of '{3}'.", fileName, protoObject.ItemType, protoObject.Schema, obj.Schema );
                 }
                 else
                 {

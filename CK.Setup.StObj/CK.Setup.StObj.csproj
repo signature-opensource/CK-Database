@@ -67,6 +67,7 @@
     <Compile Include="StObj\Attribute\AmbientPropertyAttribute.cs" />
     <Compile Include="StObj\Attribute\ContainerAttribute.cs" />
     <Compile Include="StObj\Attribute\StObjPropertyAttribute.cs" />
+    <Compile Include="StObj\Impl\IStObjTypeInfoFromParent.cs" />
     <Compile Include="StObj\IStObjFinalAmbientProperty.cs" />
     <Compile Include="StObj\IStObjReference.cs" />
     <Compile Include="StObj\Impl\MutableItem.AmbientProperties.cs" />

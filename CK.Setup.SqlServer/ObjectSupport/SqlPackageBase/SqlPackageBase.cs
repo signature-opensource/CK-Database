@@ -7,6 +7,7 @@ using CK.Core;
 namespace CK.Setup.SqlServer
 {
     [StObj( ItemKind = DependentItemKind.Container )]
+    [StObjProperty( PropertyName = "ResourceLocation", PropertyType = typeof(ResourceLocator) ) ]
     public class SqlPackageBase 
     {
         /// <summary>
@@ -22,14 +23,6 @@ namespace CK.Setup.SqlServer
         /// </summary>
         [AmbientProperty]
         public string Schema { get; set; }
-
-        /// <summary>
-        /// Gets or sets a <see cref="ResourceLocation"/> that locates the resources associated 
-        /// to this package.
-        /// Typically initialized by an attribute (like <see cref="SqlPackageAttribute"/>).
-        /// </summary>
-        [StObjProperty]
-        public ResourceLocator ResourceLocation { get; set; }
 
     }
 }

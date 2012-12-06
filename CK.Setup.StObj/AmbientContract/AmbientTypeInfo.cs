@@ -56,6 +56,16 @@ namespace CK.Core
             get { return _finalContextsEx; }
         }
 
+        /// <summary>
+        /// Gets whether this <see cref="Type"/> must be considered as an abstract type or not.
+        /// An abstract class may be considered as concrete if there is a way to concretize it for instance...
+        /// </summary>
+        protected virtual bool IsAnAbstractType
+        {
+            get { return Type.IsAbstract; }
+        }
+
+
         Type[] EnsureAllAmbientInterfaces( Func<Type,bool> ambientInterfacePredicate )
         {
             return _ambientInterfaces ?? (_ambientInterfaces = Type.GetInterfaces().Where( ambientInterfacePredicate ).ToArray());
@@ -97,7 +107,7 @@ namespace CK.Core
             }
             if( !concreteBelow )
             {
-                if( Type.IsAbstract )
+                if( IsAnAbstractType )
                 {
                     abstractTails.Add( Type );
                 }

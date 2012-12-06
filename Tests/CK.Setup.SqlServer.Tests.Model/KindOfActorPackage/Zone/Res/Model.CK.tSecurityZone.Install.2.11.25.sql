@@ -2,7 +2,7 @@
 create table CK.tSecurityZone 
 (
 	SecurityZoneId int not null,
-	ZoneName varchar(12) not null,
+	ZoneName varchar(12) collate LATIN1_GENERAL_BIN not null,
 	
 	constraint PK_tSecurityZone primary key clustered ( SecurityZoneId ),
 	constraint FK_tSecurityZone_tGroup foreign key( SecurityZoneId ) references CK.tGroup( GroupId ),

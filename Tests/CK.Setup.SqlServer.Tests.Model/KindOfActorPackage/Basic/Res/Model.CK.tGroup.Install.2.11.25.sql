@@ -2,7 +2,7 @@
 create table CK.tGroup
 (
   GroupId int not null,
-  GroupName varchar(32) not null,
+  GroupName varchar(32) collate LATIN1_GENERAL_BIN not null,
   CreationDate datetime not null constraint DF_tGroup_CreationDate default( getutcdate() ),
 
   constraint PK_tGroup primary key clustered( GroupId ),

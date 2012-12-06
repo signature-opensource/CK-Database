@@ -13,24 +13,34 @@ namespace CK.Setup
         {
             static readonly object _unsetValue = typeof( StObjProperty );
 
-            public readonly StObjPropertyInfo Info;
+            /// <summary>
+            /// Null if this property results from a call to IStObjMutableItem.SetStObjPropertyValue 
+            /// on the StObj of a Type that does not define the property (either by a property with a [StObjPropertyAttribute] 
+            /// nor with a [StObjPropertyAttribute( PropertyName == ..., PropertyType = ...)] on the class itself.
+            /// </summary>
+            public readonly StObjPropertyInfo InfoOnType;
             public readonly string Name;
-            public Type Type { get { return Info != null ? Info.Type : typeof( object ); } }
+            public Type Type { get { return InfoOnType != null ? InfoOnType.Type : typeof( object ); } }
             object _value;
 
             public StObjProperty( string name, object value )
             {
                 Name = name;
                 _value = value;
-                Info = null;
+                InfoOnType = null;
             }
 
             public StObjProperty( StObjPropertyInfo info )
             {
                 Debug.Assert( info.Type != null );
-                Info = info;
+                InfoOnType = info;
                 Name = info.Name;
                 _value = _unsetValue;
+            }
+
+            public bool HasStructuredObjectProperty
+            {
+                get { return InfoOnType != null && InfoOnType.PropertyInfo != null; }
             }
 
             public object Value
@@ -74,7 +84,7 @@ namespace CK.Setup
                 object v = p.Value;
                 if( v != Type.Missing )
                 {
-                    bool setIt = p.Info != null;
+                    bool setIt = p.HasStructuredObjectProperty;
                     if( p.Type != typeof( object ) )
                     {
                         if( v == null )
@@ -98,7 +108,7 @@ namespace CK.Setup
                     // we set the property here since we are actually called from top to bottom: the property that will win is the most specialized one if
                     // the property is virtual. If the property does not inherit (which SHOULD be the normal way of implementing a StObj property), then 
                     // we are sure that every "StObj layer" has been updated with its own value.
-                    if( setIt ) p.Info.SetValue( logger, _stObj, v );
+                    if( setIt ) p.InfoOnType.SetValue( logger, _stObj, v );
                 }
             }
         }
@@ -111,7 +121,7 @@ namespace CK.Setup
             {
                 // If the property is explicitely defined (Info != null) and its type is not 
                 // compatible with our, there is a problem.
-                if( c.Info != null && !p.Type.IsAssignableFrom( c.Type ) )
+                if( c.InfoOnType != null && !p.Type.IsAssignableFrom( c.Type ) )
                 {
                     // It is a warning because if actual values work, everything is okay... but one day, it should fail.
                     logger.Warn( "StObjProperty '{0}.{1}' of type '{2}' is not compatible with the one of its {6} ('{3}.{4}' of type '{5}'). Type should be compatible since {6}'s property value will be propagated if no explicit value is set for '{7}.{1}' or if '{3}.{4}' is set with an incompatible value.",

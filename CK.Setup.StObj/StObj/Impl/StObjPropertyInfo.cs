@@ -12,26 +12,27 @@ namespace CK.Setup
     {
         public readonly string Name;
         public readonly Type Type;
-        readonly PropertyInfo _info;
+        public readonly PropertyInfo PropertyInfo;
 
         public StObjPropertyInfo( string name, Type type, PropertyInfo pInfo )
         {
             Debug.Assert( name != null && type != null );
             Name = name;
             Type = type;
-            _info = pInfo;
+            PropertyInfo = pInfo;
         }
 
         internal bool SetValue( IActivityLogger logger, object stObj, object v )
         {
+            Debug.Assert( PropertyInfo != null );
             try
             {
-                _info.SetValue( stObj, v, null );
+                PropertyInfo.SetValue( stObj, v, null );
                 return true;
             }
             catch( Exception ex )
             {
-                logger.Error( ex, "While setting StObj property value on '{0}.{1}'.", _info.DeclaringType.Name, _info.Name );
+                logger.Error( ex, "While setting StObj property value on '{0}.{1}'.", PropertyInfo.DeclaringType.Name, PropertyInfo.Name );
                 return false;
             }
         }

@@ -75,21 +75,19 @@ namespace CK.Setup
             List<AmbientPropertyInfo> result = null;
             foreach( var p in properties )
             {
-                if( stObjProperties != null )
+                Debug.Assert( stObjProperties != null );
+                StObjPropertyAttribute stObjAttr = (StObjPropertyAttribute)Attribute.GetCustomAttribute( p, typeof( StObjPropertyAttribute ), false );
+                if( stObjAttr != null )
                 {
-                    StObjPropertyAttribute stObjAttr = (StObjPropertyAttribute)Attribute.GetCustomAttribute( p, typeof( StObjPropertyAttribute ), false );
-                    if( stObjAttr != null )
+                    string nP = String.IsNullOrEmpty( stObjAttr.PropertyName ) ? p.Name : stObjAttr.PropertyName;
+                    Type tP = stObjAttr.PropertyType == null ? p.PropertyType : stObjAttr.PropertyType;
+                    if( stObjProperties.Find( sp => sp.Name == nP ) != null )
                     {
-                        string nP = String.IsNullOrEmpty( stObjAttr.PropertyName ) ? p.Name : stObjAttr.PropertyName;
-                        Type tP = stObjAttr.PropertyType == null ? p.PropertyType : stObjAttr.PropertyType;
-                        if( stObjProperties.Find( sp => sp.Name == nP ) != null )
-                        {
-                            logger.Error( "StObj property named '{0}' for '{1}' is defined more than once. It should be declared only once.", p.Name, p.DeclaringType.FullName );
-                        }
-                        else
-                        {
-                            stObjProperties.Add( new StObjPropertyInfo( nP, tP, p ) );
-                        }
+                        logger.Error( "StObj property named '{0}' for '{1}' is defined more than once. It should be declared only once.", p.Name, p.DeclaringType.FullName );
+                    }
+                    else
+                    {
+                        stObjProperties.Add( new StObjPropertyInfo( nP, tP, p ) );
                     }
                     // Continue to detect Ambient properties. Properties that are both Ambient and StObj must be detected.
                 }

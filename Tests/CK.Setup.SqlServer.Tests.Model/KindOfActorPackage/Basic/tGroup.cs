@@ -9,6 +9,7 @@ using IntoTheWild0;
 namespace SqlActorPackage.Basic
 {
     [SqlTable( "tGroup", Package = typeof( Package ) ), Versions( "2.11.25" )]
+    [SqlObjectItem( "sGroupCreate" )]
     public class tGroup : SqlTable
     {
         void Construct( tActor actor )

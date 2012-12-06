@@ -8,19 +8,9 @@ using System.Diagnostics;
 
 namespace CK.Setup
 {
-    internal interface ITypeInfoFromParent
+    internal class StObjTypeInfo : AmbientTypeInfo, IStObjTypeInfoFromParent
     {
-        int SpecializationDepth { get; }
-        Type Container { get; }
-        IReadOnlyCollection<AmbientPropertyInfo> AmbientProperties { get; }
-        IReadOnlyCollection<StObjPropertyInfo> StObjProperties { get; }
-        DependentItemKind ItemKind { get; }
-        TrackAmbientPropertiesMode TrackAmbientProperties { get; }
-    }
-
-    internal class StObjTypeInfo : AmbientTypeInfo, ITypeInfoFromParent
-    {
-        class TypeInfoForBaseClasses : ITypeInfoFromParent
+        class TypeInfoForBaseClasses : IStObjTypeInfoFromParent
         {
             public IReadOnlyCollection<AmbientPropertyInfo> AmbientProperties { get; private set; }
             public IReadOnlyCollection<StObjPropertyInfo> StObjProperties { get; private set; }
@@ -37,7 +27,7 @@ namespace CK.Setup
             static object _lock = new object();
             static Dictionary<Type,TypeInfoForBaseClasses> _cache;
 
-            static public ITypeInfoFromParent GetFor( IActivityLogger logger, Type t )
+            static public IStObjTypeInfoFromParent GetFor( IActivityLogger logger, Type t )
             {
                 TypeInfoForBaseClasses result = null;
                 // Poor lock: we don't care here. Really.
@@ -99,7 +89,7 @@ namespace CK.Setup
         internal StObjTypeInfo( IActivityLogger logger, AmbientTypeInfo parent, Type t )
             : base( parent, t )
         {
-            ITypeInfoFromParent infoFromParent = Generalization ?? TypeInfoForBaseClasses.GetFor( logger, t.BaseType );
+            IStObjTypeInfoFromParent infoFromParent = Generalization ?? TypeInfoForBaseClasses.GetFor( logger, t.BaseType );
             SpecializationDepth = infoFromParent.SpecializationDepth + 1;
 
             // StObj properties are initialized with inherited (non Ambient Contract ones).
@@ -114,7 +104,7 @@ namespace CK.Setup
                 }
                 else if( p.PropertyType == null )
                 {
-                    logger.Error( "StObj property named '{0}' for '{1}' has no PropertyType defined.", p.PropertyName, t.FullName );
+                    logger.Error( "StObj property named '{0}' for '{1}' has no PropertyType defined. It can be typeof(object) to accept any type.", p.PropertyName, t.FullName );
                 }
                 else if( stObjProperties.Find( sP => sP.Name == p.PropertyName ) != null )
                 {

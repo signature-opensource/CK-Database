@@ -30,6 +30,7 @@ namespace CK.Setup.SqlServer
         {
             Context = data.StObj.Context;
             Location = Object.Database.Name;
+            ResourceLocation = (ResourceLocator)data.StObj.GetStObjProperty( "ResourceLocation" );
         }
 
         /// <summary>
@@ -39,6 +40,12 @@ namespace CK.Setup.SqlServer
         { 
             get { return (SqlPackageBase)base.Object; } 
         }
+
+        /// <summary>
+        /// Gets or sets a <see cref="ResourceLocation"/> that locates the resources associated 
+        /// to this package.
+        /// </summary>
+        public ResourceLocator ResourceLocation { get; set; }
 
         protected override object StartDependencySort()
         {
