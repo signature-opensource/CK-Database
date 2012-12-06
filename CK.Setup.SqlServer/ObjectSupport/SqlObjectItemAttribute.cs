@@ -7,15 +7,26 @@ using System.Diagnostics;
 
 namespace CK.Setup.SqlServer
 {
+    /// <summary>
+    /// Declares a resource that contains a Sql procedure, function or view associated to a type.
+    /// Multiples object names like "sUserCreate, sUserDestroy, sUserUpgrade" can be defined.
+    /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = false )]
     public class SqlObjectItemAttribute : Attribute, IStObjSetupDynamicInitializer
     {
-        public SqlObjectItemAttribute( string objectName )
+        /// <summary>
+        /// Initializes a new <see cref="SqlObjectItemAttribute"/> with (potentially) multiple object names.
+        /// </summary>
+        /// <param name="commaSeparatedObjectNames">Name or multiple comma separated names.</param>
+        public SqlObjectItemAttribute( string commaSeparatedObjectNames )
         {
-            ObjectName = objectName;
+            CommaSeparatedObjectNames = commaSeparatedObjectNames;
         }
 
-        public string ObjectName { get; private set; }
+        /// <summary>
+        /// Gets a Sql object name or multiple comma separated names.
+        /// </summary>
+        public string CommaSeparatedObjectNames { get; private set; }
 
         void IStObjSetupDynamicInitializer.DynamicItemInitialize( IActivityLogger logger, IMutableSetupItem item, IStObj stObj )
         {
@@ -28,12 +39,24 @@ namespace CK.Setup.SqlServer
 
             SqlPackageBaseItem p = (SqlPackageBaseItem)item;
             SqlPackageBase obj = (SqlPackageBase)stObj.Object;
-            string fileName = ObjectName + ".sql";
+
+            foreach( var n in CommaSeparatedObjectNames.Split( ',' ) )
+            {
+                if( !String.IsNullOrWhiteSpace( n ) )
+                {
+                    AddChildObjectFromResource( logger, item, p, obj, n );
+                }
+            }
+        }
+
+        private void AddChildObjectFromResource( IActivityLogger logger, IMutableSetupItem item, SqlPackageBaseItem p, SqlPackageBase obj, string objectName )
+        {
+            string fileName = objectName + ".sql";
             string text = p.ResourceLocation.GetString( fileName, true );
             SqlObjectProtoItem protoObject = SqlObjectParser.Create( logger, item, text );
             if( protoObject != null )
             {
-                if( protoObject.ObjectName != ObjectName )
+                if( protoObject.ObjectName != CommaSeparatedObjectNames )
                 {
                     logger.Error( "Resource '{0}' contains the definition of '{1}'. Names must match.", fileName, protoObject.Name );
                 }
