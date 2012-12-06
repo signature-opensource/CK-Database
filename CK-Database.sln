@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2010
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.Setup", "CK.Setup\CK.Setup.csproj", "{D3C700E1-3546-437C-9B96-1F867A539B6A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.Setup.Tests", "Tests\CK.Setup.Tests\CK.Setup.Tests.csproj", "{93FFB017-2D16-440F-A7A9-55F637944C8F}"
@@ -51,6 +51,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.Deploy.Console", "CK.Deploy.Console\CK.Deploy.Console.csproj", "{CA18CAFE-AC00-4030-8C97-365CA5D6050A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlActorPackage", "Tests\CK.Setup.SqlServer.Tests.Model\KindOfActorPackage\SqlActorPackage.csproj", "{6D0D47C8-98F7-47DE-B118-AD3606455F7E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlZonePackage", "SqlZonePackage\SqlZonePackage.csproj", "{3FF4BF4A-3A28-4AD6-BFF1-E87F11124E31}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.Authentication.Local", "Tests\CK.Setup.SqlServer.Tests.Model\CK.Authentication.Local\CK.Authentication.Local.csproj", "{346344C2-F522-4B69-914C-E911B3C3D92B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -242,6 +246,26 @@ Global
 		{6D0D47C8-98F7-47DE-B118-AD3606455F7E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{6D0D47C8-98F7-47DE-B118-AD3606455F7E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{6D0D47C8-98F7-47DE-B118-AD3606455F7E}.Release|x86.ActiveCfg = Release|Any CPU
+		{3FF4BF4A-3A28-4AD6-BFF1-E87F11124E31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FF4BF4A-3A28-4AD6-BFF1-E87F11124E31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FF4BF4A-3A28-4AD6-BFF1-E87F11124E31}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{3FF4BF4A-3A28-4AD6-BFF1-E87F11124E31}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{3FF4BF4A-3A28-4AD6-BFF1-E87F11124E31}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3FF4BF4A-3A28-4AD6-BFF1-E87F11124E31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FF4BF4A-3A28-4AD6-BFF1-E87F11124E31}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3FF4BF4A-3A28-4AD6-BFF1-E87F11124E31}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{3FF4BF4A-3A28-4AD6-BFF1-E87F11124E31}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{3FF4BF4A-3A28-4AD6-BFF1-E87F11124E31}.Release|x86.ActiveCfg = Release|Any CPU
+		{346344C2-F522-4B69-914C-E911B3C3D92B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{346344C2-F522-4B69-914C-E911B3C3D92B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{346344C2-F522-4B69-914C-E911B3C3D92B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{346344C2-F522-4B69-914C-E911B3C3D92B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{346344C2-F522-4B69-914C-E911B3C3D92B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{346344C2-F522-4B69-914C-E911B3C3D92B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{346344C2-F522-4B69-914C-E911B3C3D92B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{346344C2-F522-4B69-914C-E911B3C3D92B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{346344C2-F522-4B69-914C-E911B3C3D92B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{346344C2-F522-4B69-914C-E911B3C3D92B}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -259,6 +283,8 @@ Global
 		{12E6DB2B-9773-47F0-9A5A-F7CDEC2A8C18} = {8F8882E0-EACE-4DE3-8447-044B265E428C}
 		{94F93F54-E70F-45B4-BB7B-4ADB82059257} = {BC5282AF-0E6A-41FF-B4C3-07D44A55E0BE}
 		{6D0D47C8-98F7-47DE-B118-AD3606455F7E} = {BC5282AF-0E6A-41FF-B4C3-07D44A55E0BE}
+		{3FF4BF4A-3A28-4AD6-BFF1-E87F11124E31} = {BC5282AF-0E6A-41FF-B4C3-07D44A55E0BE}
+		{346344C2-F522-4B69-914C-E911B3C3D92B} = {BC5282AF-0E6A-41FF-B4C3-07D44A55E0BE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.0\lib\NET35;packages\Unity.2.1.505.2\lib\NET35

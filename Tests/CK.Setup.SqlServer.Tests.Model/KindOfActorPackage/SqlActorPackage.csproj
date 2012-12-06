@@ -40,9 +40,6 @@
     <Compile Include="Basic\tActor.cs" />
     <Compile Include="Basic\Package.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Zone\Package.cs" />
-    <Compile Include="Zone\tGroup.cs" />
-    <Compile Include="Zone\tSecurityZone.cs" />
     <Compile Include="Basic\tUser.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -77,12 +74,6 @@
     <EmbeddedResource Include="Basic\Res\Model.CK.tGroup.Install.2.11.25.sql" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Zone\Res\Model.CK.tSecurityZone.Install.2.11.25.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Zone\Res\Model.CK.tGroup.Install.2.11.25.sql" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Basic\Res\Model.CK.tActorProfile.Install.2.11.25.sql" />
   </ItemGroup>
   <ItemGroup>
@@ -90,9 +81,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Basic\Res\sActorCreate.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Zone\Res\sSecurityZoneCreate.sql" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Basic\Res\sGroupCreate.sql" />

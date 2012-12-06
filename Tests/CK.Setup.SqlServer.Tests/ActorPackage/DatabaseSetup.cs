@@ -28,6 +28,8 @@ namespace CK.Setup.SqlServer.Tests.ActorPackage
             using( var context = new SqlSetupContext( SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.Logger ) ) )
             {
                 context.AssemblyRegistererConfiguration.DiscoverAssemblyNames.Add( "SqlActorPackage" );
+                context.AssemblyRegistererConfiguration.DiscoverAssemblyNames.Add( "SqlZonePackage" );
+                context.AssemblyRegistererConfiguration.DiscoverAssemblyNames.Add( "CK.Authentication.Local" );
                 using( context.Logger.OpenGroup( LogLevel.Trace, "First setup" ) )
                 {
                     SqlSetupCenter c = new SqlSetupCenter( context );
