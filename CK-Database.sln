@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2010
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.Setup", "CK.Setup\CK.Setup.csproj", "{D3C700E1-3546-437C-9B96-1F867A539B6A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.Setup.Tests", "Tests\CK.Setup.Tests\CK.Setup.Tests.csproj", "{93FFB017-2D16-440F-A7A9-55F637944C8F}"
@@ -25,14 +25,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.Resource", "DBPackages\CK.Resource\CK.Resource.csproj", "{4FA90626-7B7C-4E1B-8A65-EDE3A3D3E260}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.Actor", "DBPackages\CK.Actor\CK.Actor.csproj", "{B1AC1CDF-F517-4F7B-85E0-9326503F229F}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Packages", "Packages", "{B1FA33C8-F72A-4912-9247-B28EF2A03B5C}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Nuget", "Nuget", "{786E6DD3-22B2-4BAD-B451-754337788BED}"
-	ProjectSection(SolutionItems) = preProject
-		Output\Packages\Nuget\CK.Actor.nuspec = Output\Packages\Nuget\CK.Actor.nuspec
-		Output\Packages\Nuget\CK.Database.SqlServer.nuspec = Output\Packages\Nuget\CK.Database.SqlServer.nuspec
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.Setup.SqlServer.Unity", "CK.Setup.SqlServer.Unity\CK.Setup.SqlServer.Unity.csproj", "{1831E97A-0617-4F11-8098-4EE2DA784FEB}"
 EndProject
@@ -269,7 +261,6 @@ Global
 		{4FA90626-7B7C-4E1B-8A65-EDE3A3D3E260} = {8F8882E0-EACE-4DE3-8447-044B265E428C}
 		{B1AC1CDF-F517-4F7B-85E0-9326503F229F} = {8F8882E0-EACE-4DE3-8447-044B265E428C}
 		{12E6DB2B-9773-47F0-9A5A-F7CDEC2A8C18} = {8F8882E0-EACE-4DE3-8447-044B265E428C}
-		{786E6DD3-22B2-4BAD-B451-754337788BED} = {B1FA33C8-F72A-4912-9247-B28EF2A03B5C}
 		{94F93F54-E70F-45B4-BB7B-4ADB82059257} = {BC5282AF-0E6A-41FF-B4C3-07D44A55E0BE}
 		{6D0D47C8-98F7-47DE-B118-AD3606455F7E} = {BC5282AF-0E6A-41FF-B4C3-07D44A55E0BE}
 	EndGlobalSection

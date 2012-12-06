@@ -1,1 +1,47 @@
--- Version = 1.0.0, Package = CK.Resource, Requires={ CK.sResCreate, CK.sResBigTextDataCreate }---- Edits a BigText Data ressource's Val by a @NewVal-- if ressource doesn't exists, create it-- if BigText ressource doesn't exists, create it--create procedure CK.sResBigTextDataEdit	@ResName	varchar(96),	@NewVal		varchar(400)asbegin	declare @idRes int;	select @idRes = ResId		from CK.tRes		where ResName = @ResName;			if @@RowCount = 0	begin			exec CK.sResCreate @ResName, @idRes;		end	declare @exist bit;	set @exist = 0;		select @exist = 1		from CK.tResBigTextData		where ResId = @idRes;		if @exist = 0		begin					exec CK.sResBigTextDataCreate @ResName, @NewVal;				end	else		begin					update CK.tResBigTextData set Val = @NewVal where ResId = @idRes;				end	return 0;end
+-- Version = 1.0.0, Package = CK.Resource, Requires={ CK.sResCreate, CK.sResBigTextDataCreate }
+--
+-- Edits a BigText Data ressource's Val by a @NewVal
+-- if ressource doesn't exists, create it
+-- if BigText ressource doesn't exists, create it
+--
+create procedure CK.sResBigTextDataEdit
+	@ResName	varchar(96),
+	@NewVal		varchar(400)
+as
+begin
+
+	declare @idRes int;
+	select @idRes = ResId
+		from CK.tRes
+		where ResName = @ResName;
+		
+	if @@RowCount = 0
+	begin
+	
+		exec CK.sResCreate @ResName, @idRes;
+	
+	end
+
+	declare @exist bit;
+	set @exist = 0;
+	
+	select @exist = 1
+		from CK.tResBigTextData
+		where ResId = @idRes;
+	
+	if @exist = 0
+		begin
+		
+			exec CK.sResBigTextDataCreate @ResName, @NewVal;
+		
+		end
+	else
+		begin
+		
+			update CK.tResBigTextData set Val = @NewVal where ResId = @idRes;
+		
+		end
+
+	return 0;
+
+end
