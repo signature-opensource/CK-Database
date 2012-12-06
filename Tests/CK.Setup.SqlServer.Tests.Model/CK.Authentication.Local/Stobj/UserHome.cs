@@ -14,8 +14,8 @@ namespace CK.Authentication.Local
     [SqlObjectItem( "sUserCanImpersonate" )]
     [SqlObjectItem( "sUserPwdEncrypt" )]
     [SqlObjectItem( "sUserPwdSet" )]
-    [SetupName( "CK.tUserLocal" )]
-    public class LocalUserHome : SqlActorPackage.Basic.tUser
+    //[SetupName( "CK.tUserLocal" )]
+    public class tUser : SqlActorPackage.Basic.tUser
     {
         //void Construct( SqlActorPackage.Basic.tUser baseUserHome )
         //{

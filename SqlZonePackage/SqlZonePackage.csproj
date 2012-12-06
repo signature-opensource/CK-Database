@@ -45,7 +45,7 @@
     <Compile Include="tSecurityZone.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Res\Model.CK.tGroup.Install.2.11.25.sql" />
+    <EmbeddedResource Include="Res\Model.CK.tGroup-Zone.Install.2.11.25.sql" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Res\Model.CK.tSecurityZone.Install.2.11.25.sql" />

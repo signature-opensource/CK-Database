@@ -1,4 +1,4 @@
--- Version = 1.0.0, Requires={ CK.fCukeHashPassword }
+-- Version = 1.0.0
 create procedure CK.sUserPwdSet
 (
     @ActorId int,
