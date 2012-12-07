@@ -46,19 +46,18 @@
     <EmbeddedResource Include="Res\Model.CK.tUser-Local.Install.1.0.0.sql" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
     <None Include="Properties\CK.Authentication.Local.nuspec" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="CK.Authentication, Version=2.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\CK.Authentication.2.0.1-develop\lib\net40-Client\CK.Authentication.dll</HintPath>
+    <Reference Include="CK.Authentication">
+      <HintPath>..\..\..\packages\CK.Authentication.1.1.4.1\lib\net40\CK.Authentication.dll</HintPath>
     </Reference>
-    <Reference Include="CK.Authentication.Web, Version=2.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\CK.Authentication.Web.2.0.1-develop\lib\net40\CK.Authentication.Web.dll</HintPath>
+    <Reference Include="CK.Authentication.Web">
+      <HintPath>..\..\..\packages\CK.Authentication.Web.1.1.4.1\lib\net40\CK.Authentication.Web.dll</HintPath>
     </Reference>
     <Reference Include="CK.Core">
-      <HintPath>..\packages\CK.Core.2.7.42\lib\net40\CK.Core.dll</HintPath>
+      <HintPath>..\..\..\packages\CK.Core.2.7.42\lib\net40\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />

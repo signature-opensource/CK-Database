@@ -42,9 +42,10 @@ namespace CK.Setup.SqlServer
 
             foreach( var n in CommaSeparatedObjectNames.Split( ',' ) )
             {
-                if( !String.IsNullOrWhiteSpace( n ) )
+                string nTrimmed = n.Trim();
+                if( nTrimmed.Length > 0 )
                 {
-                    AddChildObjectFromResource( logger, item, p, obj, n );
+                    AddChildObjectFromResource( logger, item, p, obj, nTrimmed );
                 }
             }
         }
@@ -56,7 +57,7 @@ namespace CK.Setup.SqlServer
             SqlObjectProtoItem protoObject = SqlObjectParser.Create( logger, item, text );
             if( protoObject != null )
             {
-                if( protoObject.ObjectName != CommaSeparatedObjectNames )
+                if( protoObject.ObjectName != objectName )
                 {
                     logger.Error( "Resource '{0}' contains the definition of '{1}'. Names must match.", fileName, protoObject.Name );
                 }
