@@ -26,6 +26,7 @@ namespace CK.Setup.StObj.Tests
                     typeof( AuthenticationPackage ),
                     typeof( AuthenticationUser )
                 } )]
+
         class SqlDatabaseDefault : IAmbientContract
         {
         }

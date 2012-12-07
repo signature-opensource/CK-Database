@@ -1,4 +1,4 @@
--- Version = 1.0.1
+-- Version = 2.12.7
 -- sUserReadInfo: 
 --	When @Pwd is null it is not controlled. If it is empty or set to any string, it is controlled.
 -- Returns:
@@ -76,7 +76,9 @@ begin
 	end
 	--<OnIsSysAdminSet /> 
 
-	select @preferredCulture = DefaultLCID from CKCore.tSystem; -- Default LCID
+	-- CKCore.tSystem.DefaultLCID is (currently) added by Resource package.
+	--select @preferredCulture = DefaultLCID from CKCore.tSystem; -- Default LCID
+	set @preferredCulture = 12;
 	--<OnPreferredCultureSet />
 
 	set @applicationId = 0; -- Default ApplicationId

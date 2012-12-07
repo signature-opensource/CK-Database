@@ -33,6 +33,10 @@ namespace CK.Setup.SqlServer.Tests.ActorPackage
                 using( context.Logger.OpenGroup( LogLevel.Trace, "First setup" ) )
                 {
                     SqlSetupCenter c = new SqlSetupCenter( context );
+                    c.StObjDependencySorterHookInput = TestHelper.Trace;
+                    c.StObjDependencySorterHookOutput = sortedItems => TestHelper.Trace( sortedItems, false );
+                    c.SetupDependencySorterHookInput = TestHelper.Trace;
+                    c.SetupDependencySorterHookOutput = sortedItems => TestHelper.Trace( sortedItems, false );
                     Assert.That( c.Run( typeFilter ) );
                 }
 
