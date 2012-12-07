@@ -784,7 +784,16 @@ namespace CK.Setup
                         // since it has yet to be fully resolved. 
                         // This is done after Container/Child binding.
                         IDependentItem gen = e.Generalization as IDependentItem;
-                        if( gen != null ) RegisterEntry( gen, null, null );
+                        
+                        // Support for "intrinsic optional object".
+                        // Intrinsic optional objects are IDependentItem that implement IDependentItemRef and 
+                        // for which Optional is true.
+                        // The idea is that this kind of objects should NOT be automatically registered. 
+                        // Generalization is currently the ONLY relationships that handles this kind of beast
+                        // but it could be (I think) generalized to all relationships.
+                        // Supporting these intrisically optional objects should be useful for easy (and dynamic) feature flipping.
+
+                        if( gen != null && !genRef.Optional ) RegisterEntry( gen, null, null );
                         // SpecializedItems contains items and container (but no heads).
                         _specializedItems.Add( entry );
                     }

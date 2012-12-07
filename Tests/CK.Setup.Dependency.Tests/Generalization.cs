@@ -197,5 +197,59 @@ namespace CK.Setup.Dependency.Tests
                 }
             }
         }
+
+        [Test]
+        public void GeneralizationIsOptional()
+        {
+            using( TestableItem.IgnoreCheckCount() )
+            {
+                var A = new TestableItem( "A" );
+                var ASpec = new TestableItem( "ASpec" );
+                ASpec.Generalization = new NamedDependentItemRef( "?A" );
+
+                // When A is here, nothing changed...
+                {
+                    var r = DependencySorter.OrderItems( ASpec, A );
+                    r.AssertOrdered( "A", "ASpec" );
+                    Assert.That( r.SortedItems[1].Generalization, Is.SameAs( r.SortedItems[0] ) );
+                }
+                {
+                    var r = DependencySorter.OrderItems( true, ASpec, A );
+                    r.AssertOrdered( "A", "ASpec" );
+                    Assert.That( r.SortedItems[1].Generalization, Is.SameAs( r.SortedItems[0] ) );
+                }
+                // When A is NOT here it is okay...
+                {
+                    var r = DependencySorter.OrderItems( ASpec );
+                    r.AssertOrdered( "ASpec" );
+                    Assert.That( r.SortedItems[0].Generalization, Is.Null );
+                }
+                {
+                    var r = DependencySorter.OrderItems( true, ASpec );
+                    r.AssertOrdered( "ASpec" );
+                    Assert.That( r.SortedItems[0].Generalization, Is.Null );
+                }
+            }
+        }
+
+        [Test]
+        public void OptionalGeneralizationIsNOTAutomaticallyDiscovered()
+        {
+            using( TestableItem.IgnoreCheckCount() )
+            {
+                var A = new TestableItem( "A" );
+                var ASpec = new TestableItem( "ASpec" );
+                ASpec.Generalization = ((IDependentItem)A).GetOptionalReference();
+
+                // Optional reference to an otpional Generalization is automatically discovered...
+                {
+                    var r = DependencySorter.OrderItems( ASpec );
+                    r.AssertOrdered( "ASpec" );
+                    Assert.That( r.SortedItems[0].Generalization, Is.Null );
+                }
+            }
+        }
+
+
     }
 }

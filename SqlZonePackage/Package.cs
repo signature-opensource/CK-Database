@@ -5,11 +5,11 @@ using System.Text;
 using CK.Setup.SqlServer;
 using CK.Setup;
 
-namespace SqlActorPackage.Zone
+namespace SqlZonePackage.Zone
 {
 
     [SqlPackage( ResourceType = typeof( Package ), ResourcePath = "Res" ), Versions( "2.11.25" )]
-    public class Package : Basic.Package
+    public class Package : SqlActorPackage.Basic.Package
     {
     }
 }

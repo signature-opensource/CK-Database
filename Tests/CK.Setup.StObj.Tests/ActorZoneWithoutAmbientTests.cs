@@ -13,11 +13,25 @@ namespace CK.Setup.StObj.Tests
     [CLSCompliant(false)]
     public class ActorZoneWithoutAmbientTests
     {
-        [StObj( ItemKind = DependentItemKind.Group, 
-                Children = new Type[]{ typeof(BasicPackage), typeof(BasicActor), typeof(BasicGroup), typeof(ZonePackage), typeof(ZoneGroup), typeof(SecurityZone)} )]
+        [StObj( ItemKind = DependentItemKind.Group,
+                Children = new Type[] 
+                { 
+                    typeof( BasicPackage ), 
+                    typeof( BasicActor ), 
+                    typeof( BasicUser ), 
+                    typeof( BasicGroup ), 
+                    typeof( ZonePackage ), 
+                    typeof( ZoneGroup ), 
+                    typeof( SecurityZone ),
+                    typeof( AuthenticationPackage ),
+                    typeof( AuthenticationUser )
+                } )]
+
         class SqlDatabaseDefault : IAmbientContract
         {
         }
+
+        #region Basic Package
 
         [StObj( ItemKind = DependentItemKind.Container )]
         class BasicPackage : IAmbientContract
@@ -30,6 +44,12 @@ namespace CK.Setup.StObj.Tests
         }
 
 
+        [StObj( Container = typeof( BasicPackage ), ItemKind = DependentItemKind.Item )]
+        class BasicUser : IAmbientContract
+        {
+        }
+
+
         [StObj( Container = typeof(BasicPackage), ItemKind = DependentItemKind.Item )]
         class BasicGroup : IAmbientContract
         {
@@ -37,6 +57,10 @@ namespace CK.Setup.StObj.Tests
             {
             }
         }
+
+        #endregion
+
+        #region Zone Package
 
         class ZonePackage : BasicPackage
         {
@@ -58,16 +82,36 @@ namespace CK.Setup.StObj.Tests
             }
         }
 
+        #endregion
+
+        #region Authentication Package
+
+        [StObj( ItemKind = DependentItemKind.Container )]
+        class AuthenticationPackage : IAmbientContract
+        {
+        }
+
+        [StObj( Container = typeof( AuthenticationPackage ) )]
+        class AuthenticationUser : BasicUser
+        {
+        }
+
+        #endregion 
+
+
         [Test]
         public void LayeredArchitecture()
         {
             StObjCollector collector = new StObjCollector( TestHelper.Logger );
             collector.RegisterClass( typeof( BasicPackage ) );
             collector.RegisterClass( typeof( BasicActor ) );
+            collector.RegisterClass( typeof( BasicUser ) );
             collector.RegisterClass( typeof( BasicGroup ) );
             collector.RegisterClass( typeof( ZonePackage ) );
             collector.RegisterClass( typeof( ZoneGroup ) );
             collector.RegisterClass( typeof( SecurityZone ) );
+            collector.RegisterClass( typeof( AuthenticationPackage ) );
+            collector.RegisterClass( typeof( AuthenticationUser ) );
             collector.RegisterClass( typeof( SqlDatabaseDefault ) );           
             collector.DependencySorterHookInput = TestHelper.Trace;
             collector.DependencySorterHookOutput = sortedItems => TestHelper.Trace( sortedItems, false );
@@ -82,9 +126,9 @@ namespace CK.Setup.StObj.Tests
             var securityZone = r.Default.Find<SecurityZone>();
             var sqlDatabaseDefault = r.Default.Find<SqlDatabaseDefault>();
 
-            r.Default.CheckChildren<BasicPackage>( "BasicActor,BasicGroup" );
+            r.Default.CheckChildren<BasicPackage>( "BasicActor,BasicUser,BasicGroup" );
             r.Default.CheckChildren<ZonePackage>( "SecurityZone,ZoneGroup" );
-            r.Default.CheckChildren<SqlDatabaseDefault>( "BasicPackage,BasicActor,BasicGroup,ZonePackage,SecurityZone,ZoneGroup" );
+            r.Default.CheckChildren<SqlDatabaseDefault>( "BasicPackage,BasicActor,BasicUser,BasicGroup,ZonePackage,SecurityZone,ZoneGroup,AuthenticationPackage,AuthenticationUser" );
         }
     }
 }

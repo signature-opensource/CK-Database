@@ -2,7 +2,7 @@
 <package xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>CK-Database</id>
-    <version>1.1.1-develop</version>
+    <version>1.1.1.2-develop</version>
     <authors>Invenietis</authors>
     <owners>Invenietis</owners>
     <licenseUrl>https://github.com/Invenietis/ck-database/license</licenseUrl>
@@ -21,8 +21,10 @@
     <file src="CK.Setup\bin\Release\CK.Setup.pdb" target="lib\net40" />
     <file src="CK.Setup.Database\bin\Release\CK.Setup.Database.dll" target="lib\net40" />
     <file src="CK.Setup.Database\bin\Release\CK.Setup.Database.pdb" target="lib\net40" />
-    <file src="CK.Setup.SqlServer\bin\Release\CK.Setup.Database.SqlServer.dll" target="lib\net40" />
-    <file src="CK.Setup.SqlServer\bin\Release\CK.Setup.Database.SqlServer.pdb" target="lib\net40" />
+	<file src="CK.Setup.Dependency\bin\Release\CK.Setup.Dependency.dll" target="lib\net40" />
+    <file src="CK.Setup.Dependency\bin\Release\CK.Setup.Dependency.pdb" target="lib\net40" />
+    <file src="CK.Setup.SqlServer\bin\Release\CK.Setup.SqlServer.dll" target="lib\net40" />
+    <file src="CK.Setup.SqlServer\bin\Release\CK.Setup.SqlServer.pdb" target="lib\net40" />
     <file src="CK.Setup.StObj\bin\Release\CK.Setup.StObj.dll" target="lib\net40" />
     <file src="CK.Setup.StObj\bin\Release\CK.Setup.StObj.pdb" target="lib\net40" />
   </files>

@@ -103,8 +103,8 @@ select LastStartDate, StartCount, LastError from CKCore.tSetupMemory;
         /// On ok (when <paramref name="ok"/> is not null), the memory must be persisted.
         /// <see cref="IsStarted"/> must be true otherwise an <see cref="InvalidOperationException"/> is thrown.
         /// </summary>
-        /// <param name="ok">
-        /// Must be not null to indicate an ok. Null on success. 
+        /// <param name="error">
+        /// Must be not null to indicate an error. Null on success. 
         /// Empty or white space will raise an <see cref="ArgumentException"/>.
         /// </param>
         public void StopSetup( string error )
@@ -118,7 +118,7 @@ select LastStartDate, StartCount, LastError from CKCore.tSetupMemory;
             }
             else
             {
-                if( String.IsNullOrWhiteSpace( error ) ) throw new ArgumentException( "Must not be null or empty.", "ok" );
+                if( String.IsNullOrWhiteSpace( error ) ) throw new ArgumentException( "Must not be null or empty.", "error" );
 
                 using( var c = new SqlCommand( @"update CKCore.tSetupMemory set LastError=@LastError; select LastStartDate, StartCount from CKCore.tSetupMemory;" ) )
                 {

@@ -149,7 +149,7 @@ namespace CK.Setup
 
         IDependentItemRef IDependentItem.Generalization
         {
-            get { return null; }
+            get { return _package.Generalization != null ? new NamedDependentItemRef( DefaultContextLocNaming.AddNamePrefix( _package.Generalization.FullName, "Model." ), true ) : null; }
         }
 
         object IDependentItem.StartDependencySort()

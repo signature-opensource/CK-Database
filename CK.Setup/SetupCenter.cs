@@ -51,6 +51,16 @@ namespace CK.Setup
         }
 
         /// <summary>
+        /// Gets or sets a function that will be called with the list of items once all of them are registered.
+        /// </summary>
+        public Action<IEnumerable<IDependentItem>> DependencySorterHookInput { get; set; }
+
+        /// <summary>
+        /// Gets or sets a function that will be called when items have been successfuly sorted.
+        /// </summary>
+        public Action<IEnumerable<ISortedItem>> DependencySorterHookOutput { get; set; }
+
+        /// <summary>
         /// Gets ors sets whether the ordering for setupable items that share the same rank in the pure dependency graph must be inverted.
         /// Defaults to false. (See <see cref="DependencySorter"/> for more information.)
         /// </summary>
@@ -94,7 +104,13 @@ namespace CK.Setup
             {
                 using( _logger.OpenGroup( LogLevel.Info, "Register step." ) )
                 {
-                    SetupEngineRegisterResult r = engine.Register( OfTypeRecurse<IDependentItem>( items ), items.OfType<IDependentItemDiscoverer>(), RevertOrderingNames ? new DependencySorter.Options() { ReverseName = true } : null );
+                    DependencySorter.Options sorterOptions = new DependencySorter.Options() 
+                    { 
+                        ReverseName = RevertOrderingNames,
+                        HookInput = DependencySorterHookInput,
+                        HookOutput = DependencySorterHookOutput
+                    };
+                    SetupEngineRegisterResult r = engine.Register( OfTypeRecurse<IDependentItem>( items ), items.OfType<IDependentItemDiscoverer>(), sorterOptions );
                     if( !r.IsValid )
                     {
                         r.LogError( _logger );

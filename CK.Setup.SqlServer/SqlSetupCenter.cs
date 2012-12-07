@@ -11,10 +11,10 @@ namespace CK.Setup.SqlServer
 {
     public class SqlSetupCenter : ISetupDriverFactory
     {
-        SqlSetupContext _context;
-        SetupCenter _center;
-        SqlFileDiscoverer _fileDiscoverer;
-        DependentProtoItemCollector _sqlFiles;
+        readonly SqlSetupContext _context;
+        readonly SetupCenter _center;
+        readonly SqlFileDiscoverer _fileDiscoverer;
+        readonly DependentProtoItemCollector _sqlFiles;
 
         public SqlSetupCenter( SqlSetupContext context )
         {
@@ -56,6 +56,36 @@ namespace CK.Setup.SqlServer
         }
 
         /// <summary>
+        /// Gets or sets a function that will be called with the list of items once all of them are 
+        /// registered in the <see cref="DependencySorter"/> used by the <see cref="StObjCollector"/>.
+        /// </summary>
+        public Action<IEnumerable<IDependentItem>> StObjDependencySorterHookInput { get; set; }
+
+        /// <summary>
+        /// Gets or sets a function that will be called when items have been successfuly sorted by 
+        /// the <see cref="DependencySorter"/> used by the <see cref="StObjCollector"/>.
+        /// </summary>
+        public Action<IEnumerable<ISortedItem>> StObjDependencySorterHookOutput { get; set; }
+
+        /// <summary>
+        /// Gets or sets a function that will be called with the list of items once all of them are registered.
+        /// </summary>
+        public Action<IEnumerable<IDependentItem>> SetupDependencySorterHookInput 
+        {
+            get { return _center.DependencySorterHookInput; }
+            set { _center.DependencySorterHookInput = value; } 
+        }
+
+        /// <summary>
+        /// Gets or sets a function that will be called when items have been successfuly sorted.
+        /// </summary>
+        public Action<IEnumerable<ISortedItem>> SetupDependencySorterHookOutput
+        {
+            get { return _center.DependencySorterHookOutput; }
+            set { _center.DependencySorterHookOutput = value; }
+        }
+
+        /// <summary>
         /// Executes the setup.
         /// </summary>
         /// <param name="typeFilter">Optional filter for types. When null, all types from the registered assmblies are kept.</param>
@@ -63,7 +93,7 @@ namespace CK.Setup.SqlServer
         public bool Run( Predicate<Type> typeFilter = null )
         {
             var logger = _context.Logger;
-
+            
             StObjCollectorResult result;
             using( logger.OpenGroup( LogLevel.Info, "Collecting objects." ) )
             {
@@ -73,6 +103,8 @@ namespace CK.Setup.SqlServer
                 StObjCollector stObjC = new StObjCollector( logger, _context.StObjConfigurator, _context.StObjConfigurator, _context.StObjConfigurator );
                 stObjC.RegisterTypes( typeReg );
                 foreach( var t in _context.ExplicitRegisteredClasses ) stObjC.RegisterClass( t );
+                stObjC.DependencySorterHookInput = StObjDependencySorterHookInput;
+                stObjC.DependencySorterHookOutput = StObjDependencySorterHookOutput;
                 result = stObjC.GetResult();
                 if( result.HasFatalError ) return false;
             }

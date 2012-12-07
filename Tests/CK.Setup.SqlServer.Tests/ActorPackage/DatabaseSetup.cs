@@ -28,9 +28,15 @@ namespace CK.Setup.SqlServer.Tests.ActorPackage
             using( var context = new SqlSetupContext( SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.Logger ) ) )
             {
                 context.AssemblyRegistererConfiguration.DiscoverAssemblyNames.Add( "SqlActorPackage" );
+                context.AssemblyRegistererConfiguration.DiscoverAssemblyNames.Add( "SqlZonePackage" );
+                context.AssemblyRegistererConfiguration.DiscoverAssemblyNames.Add( "CK.Authentication.Local" );
                 using( context.Logger.OpenGroup( LogLevel.Trace, "First setup" ) )
                 {
                     SqlSetupCenter c = new SqlSetupCenter( context );
+                    c.StObjDependencySorterHookInput = TestHelper.Trace;
+                    c.StObjDependencySorterHookOutput = sortedItems => TestHelper.Trace( sortedItems, false );
+                    c.SetupDependencySorterHookInput = TestHelper.Trace;
+                    c.SetupDependencySorterHookOutput = sortedItems => TestHelper.Trace( sortedItems, false );
                     Assert.That( c.Run( typeFilter ) );
                 }
 

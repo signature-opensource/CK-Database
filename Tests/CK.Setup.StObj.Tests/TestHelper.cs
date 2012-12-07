@@ -39,7 +39,10 @@ namespace CK.Setup.StObj.Tests
 
         public static void Trace( IEnumerable<IDependentItem> e )
         {
-            foreach( var i in e ) Trace( i );
+            using( _logger.OpenGroup( LogLevel.Trace, "Dependent items" ) )
+            {
+                foreach( var i in e ) Trace( i );
+            }
         }
 
         public static void Trace( IDependentItem i )
@@ -80,9 +83,12 @@ namespace CK.Setup.StObj.Tests
 
         public static void Trace( IEnumerable<ISortedItem> e, bool skipGroupTail )
         {
-            foreach( var i in e )
-                if( i.HeadForGroup == null || skipGroupTail )
-                    Trace( i );
+            using( _logger.OpenGroup( LogLevel.Trace, "Sorted items" ) )
+            {
+                foreach( var i in e )
+                    if( i.HeadForGroup == null || skipGroupTail )
+                        Trace( i );
+            }
         }
 
         public static void Trace( ISortedItem i )
