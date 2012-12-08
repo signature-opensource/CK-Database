@@ -72,6 +72,7 @@
     <Compile Include="StObj\Impl\AmbientPropertyInfo.cs" />
     <Compile Include="StObj\Impl\AmbientContractInfo.cs" />
     <Compile Include="StObj\Impl\IAmbientPropertyOrContractAttribute.cs" />
+    <Compile Include="StObj\Impl\INamedPropertyInfo.cs" />
     <Compile Include="StObj\Impl\IStObjTypeInfoFromParent.cs" />
     <Compile Include="StObj\IStObjFinalAmbientProperty.cs" />
     <Compile Include="StObj\IStObjReference.cs" />

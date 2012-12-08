@@ -10,8 +10,9 @@ namespace CK.Setup
     {
         int SpecializationDepth { get; }
         Type Container { get; }
-        IReadOnlyCollection<AmbientPropertyInfo> AmbientProperties { get; }
-        IReadOnlyCollection<StObjPropertyInfo> StObjProperties { get; }
+        IReadOnlyList<AmbientPropertyInfo> AmbientProperties { get; }
+        IReadOnlyList<AmbientContractInfo> AmbientContracts { get; }
+        IReadOnlyList<StObjPropertyInfo> StObjProperties { get; }
         DependentItemKind ItemKind { get; }
         TrackAmbientPropertiesMode TrackAmbientProperties { get; }
     }

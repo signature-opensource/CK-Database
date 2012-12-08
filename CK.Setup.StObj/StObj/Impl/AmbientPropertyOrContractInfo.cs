@@ -9,7 +9,7 @@ using CK.Core;
 namespace CK.Setup
 {
 
-    internal class AmbientPropertyOrContractInfo
+    internal abstract class AmbientPropertyOrContractInfo : INamedPropertyInfo
     {
         readonly PropertyInfo _p;
         int _index;
@@ -18,6 +18,7 @@ namespace CK.Setup
 
         internal AmbientPropertyOrContractInfo( PropertyInfo p, bool isOptionalDefined, bool isOptional, int definerSpecializationDepth, int index )
         {
+            Debug.Assert( p != null );
             _p = p;
             _isOptionalDefined = isOptionalDefined;
             _isOptional = isOptional;
@@ -52,6 +53,34 @@ namespace CK.Setup
 
         public bool IsOptional { get { return _isOptional; } private set { _isOptional = value; } }
 
+        public abstract string Kind { get; }
+
+        protected virtual void SetGeneralizationInfo( IActivityLogger logger, AmbientPropertyOrContractInfo gen )
+        {
+            // Covariance ?
+            if( PropertyType != gen.PropertyType && !gen.PropertyType.IsAssignableFrom( PropertyType ) )
+            {
+                logger.Error( "Ambient property '{0}.{1}' type is not compatible with base property '{2}.{1}'.", DeclaringType.FullName, Name, gen.DeclaringType.FullName );
+            }
+            // A required property can not become optional.
+            if( IsOptional && !gen.IsOptional )
+            {
+                if( _isOptionalDefined )
+                {
+                    logger.Error( "Ambient property '{0}.{1}' states that it is optional but base property '{2}.{1}' is required.", DeclaringType.FullName, Name, gen.DeclaringType.FullName );
+                }
+                _isOptional = false;
+            }
+            // Context inheritance (if not defined).
+            if( Context == null )
+            {
+                Context = gen.Context;
+            }
+            // Propagates the top first definer level.
+            DefinerSpecializationDepth = gen.DefinerSpecializationDepth;
+        }
+
+
         /// <summary>
         /// An ambient property must be public or protected in order to be "specialized" either by overriding (for virtual ones)
         /// or by masking ('new' keyword in C#), typically to support covariance return type.
@@ -63,12 +92,14 @@ namespace CK.Setup
             Type t, 
             int definerSpecializationDepth, 
             List<StObjPropertyInfo> stObjProperties, 
-            out IList<AmbientPropertyInfo> apListResult )
+            out IList<AmbientPropertyInfo> apListResult,
+            out IList<AmbientContractInfo> acListResult )
         {
             Debug.Assert( stObjProperties != null );
             
             var properties = t.GetProperties( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly ).Where( p => !p.Name.Contains( '.' ) );
             apListResult = null;
+            acListResult = null;
             foreach( var p in properties )
             {
                 StObjPropertyAttribute stObjAttr = (StObjPropertyAttribute)Attribute.GetCustomAttribute( p, typeof( StObjPropertyAttribute ), false );
@@ -82,7 +113,7 @@ namespace CK.Setup
                     }
                     else
                     {
-                        stObjProperties.Add( new StObjPropertyInfo( nP, tP, p ) );
+                        stObjProperties.Add( new StObjPropertyInfo( t, nP, tP, p ) );
                     }
                     // Continue to detect Ambient properties. Properties that are both Ambient and StObj must be detected.
                 }
@@ -91,7 +122,7 @@ namespace CK.Setup
                 if( ac == null && ap == null ) continue;
                 if( stObjAttr != null || (ac != null && ap != null) )
                 {
-                    logger.Error( "Property named '{0}' for '{1}' can not be both an Ambient (Contract or Property) and a StObj property.", p.Name, p.DeclaringType.FullName );
+                    logger.Error( "Property named '{0}' for '{1}' can not be both an Ambient Contract, Ambient Property or a StObj property.", p.Name, p.DeclaringType.FullName );
                     continue;
                 }
                 IAmbientPropertyOrContractAttribute attr = ac ?? ap;
@@ -108,23 +139,32 @@ namespace CK.Setup
                 }
                 else
                 {
-                    if( apListResult == null ) apListResult = new List<AmbientPropertyInfo>();
-                    Debug.Assert( apListResult.Any( a => a.Name == p.Name ) == false, "No homonym properties in .Net framework." );
-                    apListResult.Add( new AmbientPropertyInfo( p, attr.IsOptionalDefined, attr.IsOptional, definerSpecializationDepth, apListResult.Count ) );
+                    if( attr.IsAmbientProperty )
+                    {
+                        if( apListResult == null ) apListResult = new List<AmbientPropertyInfo>();
+                        Debug.Assert( apListResult.Any( a => a.Name == p.Name ) == false, "No homonym properties in .Net framework." );
+                        apListResult.Add( new AmbientPropertyInfo( p, attr.IsOptionalDefined, attr.IsOptional, definerSpecializationDepth, apListResult.Count ) );
+                    }
+                    else
+                    {
+                        if( acListResult == null ) acListResult = new List<AmbientContractInfo>();
+                        Debug.Assert( apListResult.Any( a => a.Name == p.Name ) == false, "No homonym properties in .Net framework." );
+                        acListResult.Add( new AmbientContractInfo( p, attr.IsOptionalDefined, attr.IsOptional, definerSpecializationDepth, apListResult.Count ) );
+                    }
                 }
             }
         }
 
-        static public IEnumerable<AmbientPropertyInfo> MergeAboveAmbientProperties( IActivityLogger logger, IEnumerable<AmbientPropertyInfo> above, IList<AmbientPropertyInfo> collector )
+        static public IReadOnlyList<T> MergeWithAboveProperties<T>( IActivityLogger logger, IReadOnlyList<T> above, IList<T> collector ) where T : AmbientPropertyOrContractInfo
         {
-            if( collector == null || collector.Count == 0 ) return above ?? ReadOnlyListEmpty<AmbientPropertyInfo>.Empty;
+            if( collector == null || collector.Count == 0 ) return above ?? ReadOnlyListEmpty<T>.Empty;
             if( above != null )
             {
                 // Adds 'above' into 'collector' before returning it.
                 int nbFromAbove = 0;
-                foreach( AmbientPropertyInfo a in above )
+                foreach( T a in above )
                 {
-                    AmbientPropertyInfo exists = null;
+                    T exists = null;
                     int idxExists = nbFromAbove;
                     while( idxExists < collector.Count && (exists = collector[idxExists]).Name != a.Name ) ++idxExists;
                     if( idxExists == collector.Count )
@@ -133,54 +173,15 @@ namespace CK.Setup
                     }
                     else
                     {
-                        // Covariance ?
-                        if( exists.PropertyType != a.PropertyType && !a.PropertyType.IsAssignableFrom( exists.PropertyType ) )
-                        {
-                            logger.Error( "Ambient property '{0}.{1}' type is not compatible with base property '{2}.{1}'.", exists.DeclaringType.FullName, exists.Name, a.DeclaringType.FullName );
-                        }
-                        // A required property can not become optional.
-                        if( exists.IsOptional && !a.IsOptional )
-                        {
-                            if( exists._isOptionalDefined )
-                            {
-                                logger.Error( "Ambient property '{0}.{1}' states that it is optional but base property '{2}.{1}' is required.", exists.DeclaringType.FullName, exists.Name, a.DeclaringType.FullName );
-                            }
-                            exists._isOptional = false;
-                        }
-                        // Context inheritance (if not defined).
-                        if( exists.Context == null )
-                        {
-                            exists.Context = a.Context;
-                        }
-                        // Propagates the top first definer level.
-                        exists.DefinerSpecializationDepth = a.DefinerSpecializationDepth;
-                        // Captures the Generalization.
-                        // We keep the fact that this property overrides one above (errors have been logged if conflict/incoherency occur).
-                        // We can keep the Generalization but not a reference to the specialization since we are 
-                        // not Contextualized here, but only on a pure Type level.
-                        exists.Generalization = a;
-                        //
+                        exists.SetGeneralizationInfo( logger, a );
                         collector.RemoveAt( idxExists );
                         exists.Index = nbFromAbove;
                         collector.Insert( nbFromAbove++, exists );
-
                     }
                 }
             }
-            return collector;
+            return collector.ToReadOnlyList();
         }
-
-        /// <summary>
-        /// Recursive function to collect Ambient Properties on base types 
-        /// </summary>
-        static public IEnumerable<AmbientPropertyInfo> CreateAllAmbientPropertyList( Type type, int specializationLevel, IActivityLogger logger, List<StObjPropertyInfo> stObjProperties )
-        {
-            if( type == typeof( object ) ) return null;
-            IList<AmbientPropertyInfo> apCollector;
-            CreateAmbientPropertyListForExactType( logger, type, specializationLevel, stObjProperties, out apCollector );
-            return MergeAboveAmbientProperties( logger, CreateAllAmbientPropertyList( type.BaseType, specializationLevel - 1, logger, stObjProperties ), apCollector );
-        }
-
     }
 
 }

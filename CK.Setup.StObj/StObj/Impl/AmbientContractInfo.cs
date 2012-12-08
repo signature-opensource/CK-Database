@@ -13,5 +13,7 @@ namespace CK.Setup
         {
         }
 
+        public override string Kind { get { return "[AmbientContract]"; } }
+
     }
 }

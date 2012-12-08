@@ -12,8 +12,9 @@ namespace CK.Setup
     {
         class TypeInfoForBaseClasses : IStObjTypeInfoFromParent
         {
-            public IReadOnlyCollection<AmbientPropertyInfo> AmbientProperties { get; private set; }
-            public IReadOnlyCollection<StObjPropertyInfo> StObjProperties { get; private set; }
+            public IReadOnlyList<AmbientPropertyInfo> AmbientProperties { get; private set; }
+            public IReadOnlyList<AmbientContractInfo> AmbientContracts { get; private set; }
+            public IReadOnlyList<StObjPropertyInfo> StObjProperties { get; private set; }
             public int SpecializationDepth { get; private set; }
             public Type Container { get; private set; }
             public DependentItemKind ItemKind { get; private set; }
@@ -41,6 +42,7 @@ namespace CK.Setup
                         if( t == typeof( object ) )
                         {
                             result.AmbientProperties = ReadOnlyListEmpty<AmbientPropertyInfo>.Empty;
+                            result.AmbientContracts = ReadOnlyListEmpty<AmbientContractInfo>.Empty;
                             result.StObjProperties = ReadOnlyListEmpty<StObjPropertyInfo>.Empty;
                         }
                         else
@@ -72,10 +74,14 @@ namespace CK.Setup
                                 }
                                 tAbove = tAbove.BaseType;
                             }
-                            // Ambient Properties (uses a recursive function).
+                            // Ambient, Contracts & StObj Properties (uses a recursive function).
                             List<StObjPropertyInfo> stObjProperties = new List<StObjPropertyInfo>();
-                            var all = AmbientPropertyInfo.CreateAllAmbientPropertyList( t, result.SpecializationDepth, logger, stObjProperties );
-                            result.AmbientProperties = all != null ? all.ToReadOnlyCollection() : ReadOnlyListEmpty<AmbientPropertyInfo>.Empty;
+                            IReadOnlyList<AmbientPropertyInfo> apList;
+                            IReadOnlyList<AmbientContractInfo> acList;
+                            CreateAllAmbientPropertyList( logger, t, result.SpecializationDepth, stObjProperties, out apList, out acList );
+                            Debug.Assert( apList != null && acList != null );
+                            result.AmbientProperties = apList;
+                            result.AmbientContracts = acList;
                             result.StObjProperties = stObjProperties.ToReadOnlyList();
                         }
                         _cache.Add( t, result );
@@ -84,6 +90,34 @@ namespace CK.Setup
                 return result;
             }
 
+            /// <summary>
+            /// Recursive function to collect/merge Ambient Properties, Contracts and StObj Properties on base (non IAmbientContract) types.
+            /// </summary>
+            static void CreateAllAmbientPropertyList(
+                IActivityLogger logger,
+                Type type,
+                int specializationLevel,
+                List<StObjPropertyInfo> stObjProperties,
+                out IReadOnlyList<AmbientPropertyInfo> apListResult,
+                out IReadOnlyList<AmbientContractInfo> acListResult )
+            {
+                if( type == typeof( object ) )
+                {
+                    apListResult = ReadOnlyListEmpty<AmbientPropertyInfo>.Empty;
+                    acListResult = ReadOnlyListEmpty<AmbientContractInfo>.Empty;
+                }
+                else
+                {
+                    IList<AmbientPropertyInfo> apCollector;
+                    IList<AmbientContractInfo> acCollector;
+                    AmbientPropertyOrContractInfo.CreateAmbientPropertyListForExactType( logger, type, specializationLevel, stObjProperties, out apCollector, out acCollector );
+
+                    CreateAllAmbientPropertyList( logger, type.BaseType, specializationLevel - 1, stObjProperties, out apListResult, out acListResult );
+
+                    apListResult = AmbientPropertyOrContractInfo.MergeWithAboveProperties( logger, apListResult, apCollector );
+                    acListResult = AmbientPropertyOrContractInfo.MergeWithAboveProperties( logger, acListResult, acCollector );
+                }
+            }
         }
 
         internal StObjTypeInfo( IActivityLogger logger, AmbientTypeInfo parent, Type t )
@@ -98,9 +132,9 @@ namespace CK.Setup
             // StObj properties are then read from StObjPropertyAttribute on class
             foreach( StObjPropertyAttribute p in t.GetCustomAttributes( typeof( StObjPropertyAttribute ), Generalization == null ) )
             {
-                if( String.IsNullOrEmpty( p.PropertyName ) )
+                if( String.IsNullOrWhiteSpace( p.PropertyName ) )
                 {
-                    logger.Error( "Unamed StObj property on '{1}'. Attribute must be configured with a valid PropertyName.", t.FullName );
+                    logger.Error( "Unamed or whitespace StObj property on '{0}'. Attribute must be configured with a valid PropertyName.", t.FullName );
                 }
                 else if( p.PropertyType == null )
                 {
@@ -112,18 +146,37 @@ namespace CK.Setup
                 }
                 else
                 {
-                    stObjProperties.Add( new StObjPropertyInfo( p.PropertyName, p.PropertyType, null ) );
+                    stObjProperties.Add( new StObjPropertyInfo( t, p.PropertyName, p.PropertyType, null ) );
                 }
-            }           
+            }
             // Ambient properties for the exact Type (can be null). 
-            // In the same time, StObjPropertyAttribute that are associated to properties are collected into stObjProperties.
+            // In the same time, StObjPropertyAttribute that are associated to actual properties are collected into stObjProperties.
             IList<AmbientPropertyInfo> apCollector;
-            AmbientPropertyInfo.CreateAmbientPropertyListForExactType( logger, Type, SpecializationDepth, stObjProperties, out apCollector );
-            // For type that have no Generalization: we must handle [AmbientProperty] on base classes (no AmbientTypeInfo since they are not Ambient contract).
-            // Both fromParent and collector can be null: MergeAboveAmbientProperties handles it.
-            AmbientProperties = AmbientPropertyInfo.MergeAboveAmbientProperties( logger, infoFromParent.AmbientProperties, apCollector ).ToReadOnlyCollection();
-
+            IList<AmbientContractInfo> acCollector;
+            AmbientPropertyInfo.CreateAmbientPropertyListForExactType( logger, Type, SpecializationDepth, stObjProperties, out apCollector, out acCollector );
+            // For type that have no Generalization: we must handle [AmbientProperty], [AmbientContract] and [StObjProperty] on base classes (we may not have AmbientTypeInfo object 
+            // since they are not necessarily IAmbientContract, we use infoFromParent abstraction).
+            AmbientProperties = AmbientPropertyInfo.MergeWithAboveProperties( logger, infoFromParent.AmbientProperties, apCollector );
+            AmbientContracts = AmbientPropertyInfo.MergeWithAboveProperties( logger, infoFromParent.AmbientContracts, acCollector );
             StObjProperties = stObjProperties.ToReadOnlyList();
+            Debug.Assert( AmbientContracts != null && AmbientProperties != null && StObjProperties != null );
+
+            // Simple detection of name clashing: I prefer to keep it simple and check property kind conherency here instead of injecting 
+            // the detection inside CreateAmbientPropertyListForExactType and MergeWithAboveProperties with a multi-type property collector. 
+            // Code is complicated enough and it should be not reaally less efficient to use the dictionary below once all properties
+            // have been resolved...
+            {
+                var names = new Dictionary<string, INamedPropertyInfo>();
+                foreach( var newP in AmbientProperties.Cast<INamedPropertyInfo>().Concat( AmbientContracts ).Concat( StObjProperties ) )
+                {
+                    INamedPropertyInfo exists;
+                    if( names.TryGetValue( newP.Name, out exists ) )
+                    {
+                        logger.Error( "{0} property '{1}.{2}' is declared as a '{3}' property by '{4}'. Property names must be distinct.", newP.Kind, newP.DeclaringType.FullName, newP.Name, exists.Kind, exists.DeclaringType.FullName );
+                    }
+                    else names.Add( newP.Name, newP );
+                }
+            }
 
             #region IStObjAttribute (ItemKind, Container & Type requirements).
             // There is no Container inheritance at this level.
@@ -213,9 +266,11 @@ namespace CK.Setup
 
         public new StObjTypeInfo Generalization { get { return (StObjTypeInfo)base.Generalization; } }
 
-        public IReadOnlyCollection<AmbientPropertyInfo> AmbientProperties { get; private set; }
+        public IReadOnlyList<AmbientPropertyInfo> AmbientProperties { get; private set; }
 
-        public IReadOnlyCollection<StObjPropertyInfo> StObjProperties { get; private set; }
+        public IReadOnlyList<AmbientContractInfo> AmbientContracts { get; private set; }
+
+        public IReadOnlyList<StObjPropertyInfo> StObjProperties { get; private set; }
 
         public Type Container { get; private set; }
 

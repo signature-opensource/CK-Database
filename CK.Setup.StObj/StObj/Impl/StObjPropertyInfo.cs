@@ -8,15 +8,16 @@ using CK.Core;
 
 namespace CK.Setup
 {
-    internal class StObjPropertyInfo
+    internal class StObjPropertyInfo : INamedPropertyInfo
     {
         public readonly string Name;
         public readonly Type Type;
         public readonly PropertyInfo PropertyInfo;
 
-        public StObjPropertyInfo( string name, Type type, PropertyInfo pInfo )
+        public StObjPropertyInfo( Type declaringType, string name, Type type, PropertyInfo pInfo )
         {
-            Debug.Assert( name != null && type != null );
+            Debug.Assert( declaringType != null && name != null && type != null );
+            DeclaringType = declaringType;
             Name = name;
             Type = type;
             PropertyInfo = pInfo;
@@ -36,5 +37,18 @@ namespace CK.Setup
                 return false;
             }
         }
+
+        public Type DeclaringType { get; private set; }
+
+        string INamedPropertyInfo.Name
+        {
+            get { return Name; }
+        }
+
+        string INamedPropertyInfo.Kind
+        {
+            get { return "[StObjProperty]"; }
+        }
+
     }
 }
