@@ -104,7 +104,7 @@ namespace CK.Setup
                 }
                 else if( p.PropertyType == null )
                 {
-                    logger.Error( "StObj property named '{0}' for '{1}' has no PropertyType defined. It can be typeof(object) to accept any type.", p.PropertyName, t.FullName );
+                    logger.Error( "StObj property named '{0}' for '{1}' has no PropertyType defined. It should be typeof(object) to explicitely express that any type is accepted.", p.PropertyName, t.FullName );
                 }
                 else if( stObjProperties.Find( sP => sP.Name == p.PropertyName ) != null )
                 {
@@ -117,10 +117,11 @@ namespace CK.Setup
             }           
             // Ambient properties for the exact Type (can be null). 
             // In the same time, StObjPropertyAttribute that are associated to properties are collected into stObjProperties.
-            IList<AmbientPropertyInfo> collector = AmbientPropertyInfo.CreateAmbientPropertyListForExactType( Type, SpecializationDepth, logger, stObjProperties );
+            IList<AmbientPropertyInfo> apCollector;
+            AmbientPropertyInfo.CreateAmbientPropertyListForExactType( logger, Type, SpecializationDepth, stObjProperties, out apCollector );
             // For type that have no Generalization: we must handle [AmbientProperty] on base classes (no AmbientTypeInfo since they are not Ambient contract).
             // Both fromParent and collector can be null: MergeAboveAmbientProperties handles it.
-            AmbientProperties = AmbientPropertyInfo.MergeAboveAmbientProperties( infoFromParent.AmbientProperties, collector, logger ).ToReadOnlyCollection();
+            AmbientProperties = AmbientPropertyInfo.MergeAboveAmbientProperties( logger, infoFromParent.AmbientProperties, apCollector ).ToReadOnlyCollection();
 
             StObjProperties = stObjProperties.ToReadOnlyList();
 

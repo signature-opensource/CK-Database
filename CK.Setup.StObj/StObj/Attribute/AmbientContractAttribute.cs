@@ -5,18 +5,18 @@ using System.Text;
 
 namespace CK.Setup
 {
-    /// <summary>
-    /// Defines an ambient property: properties tagged with this attribute can be automatically set
-    /// with identically named properties value from containers.
+    // <summary>
+    /// Defines an ambient contract property: properties tagged with this attribute must 
+    /// be <see cref="IAmbientContract"/> objects and are automatically injected.
     /// </summary>
     [AttributeUsage( AttributeTargets.Property, AllowMultiple = false, Inherited = true )]
-    public class AmbientPropertyAttribute : Attribute, IAmbientPropertyOrContractAttribute
+    public class AmbientContractAttribute : Attribute, IAmbientPropertyOrContractAttribute
     {
         bool? _isOptional;
 
         /// <summary>
-        /// Gets or sets whether resolving this property is required or not.
-        /// Defaults to false (unless explicitely stated, an ambient property MUST be resolved) but when 
+        /// Gets or sets whether finding the corresponding typed <see cref="IAmbientContract"/> is required or not.
+        /// Defaults to false (unless expcitely stated, the type must be resolved) but when 
         /// is not explicitely set to true or false on a specialized property its value is given by property 
         /// definition of the base class. 
         /// </summary>
@@ -33,7 +33,7 @@ namespace CK.Setup
 
         bool IAmbientPropertyOrContractAttribute.IsAmbientProperty
         {
-            get { return true; }
+            get { return false; }
         }
     }
 }

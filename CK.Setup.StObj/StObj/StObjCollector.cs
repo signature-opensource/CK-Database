@@ -22,6 +22,7 @@ namespace CK.Setup
         readonly IStObjStructuralConfigurator _configurator;
         readonly IStObjValueResolver _dependencyResolver;
         readonly IActivityLogger _logger;
+        int _registerFatalOrErrorCount;
 
         /// <summary>
         /// Initializes a new <see cref="StObjCollector"/>.
@@ -40,14 +41,31 @@ namespace CK.Setup
         }
 
         /// <summary>
+        /// Gets the count of error or fatal that occured during <see cref="RegisterTypes"/> or <see cref="RegisterClass"/> calls.
+        /// </summary>
+        public int RegisteringFatalOrErrorCount
+        {
+            get { return _registerFatalOrErrorCount; }
+        }
+
+        /// <summary>
+        /// Sets <see cref="RegisteringFatalOrErrorCount"/> to 0.
+        /// </summary>
+        public void ClearRegisteringErrors()
+        {
+            _registerFatalOrErrorCount = 0;
+        }
+
+        /// <summary>
         /// Registers types discovered by an <see cref="AssemblyRegisterer"/>.
         /// </summary>
         /// <param name="registerer">The discoverer that contains assemblies/types.</param>
         /// <returns>The number of new discovered classes.</returns>
         public int RegisterTypes( AssemblyRegisterer registerer )
         {
-            if( registerer == null ) throw new ArgumentNullException( "discoverer" );
+            if( registerer == null ) throw new ArgumentNullException( "registerer" );
             int totalRegistered = 0;
+            using( _logger.CatchCounter( count => _registerFatalOrErrorCount += count, true ) )
             using( _logger.OpenGroup( LogLevel.Trace, "Registering {0} assemblies.", registerer.Assemblies.Count ) )
             {
                 foreach( var one in registerer.Assemblies )
@@ -72,7 +90,10 @@ namespace CK.Setup
         /// <returns>True if it is a new class for this collector, false if it has already been registered.</returns>
         public bool RegisterClass( Type c )
         {
-            return _cc.RegisterClass( c );
+            using( _logger.CatchCounter( count => _registerFatalOrErrorCount += count, true ) )
+            {
+                return _cc.RegisterClass( c );
+            }
         }
 
         /// <summary>
@@ -86,11 +107,17 @@ namespace CK.Setup
         public Action<IEnumerable<ISortedItem>> DependencySorterHookOutput { get; set; }
 
         /// <summary>
-        /// Builds and returns a <see cref="StObjCollectorResult"/>.
+        /// Builds and returns a <see cref="StObjCollectorResult"/> if no error occured during type registration.
+        /// If <see cref="RegisteringFatalOrErrorCount"/> is not equal to 0, this throws a <see cref="CKException"/>.
+        /// To ignore registering errors, calls <see cref="ClearRegisteringErrors"/> before calling this method.
         /// </summary>
         /// <returns>The result.</returns>
         public StObjCollectorResult GetResult()
         {
+            if( _registerFatalOrErrorCount > 0 )
+            {
+                throw new CKException( "There are {0} registration errors. ClearRegisteringErrors must be called before calling this GetResult method to ignore regstration errors.", _registerFatalOrErrorCount );
+            }
             AmbientContractCollectorResult<StObjTypeInfo> contracts;
             using( _logger.OpenGroup( LogLevel.Info, "Collecting Ambient Contracts and Type structure." ) )
             {

@@ -44,6 +44,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="ActivityLoggerExtensionTEMP.cs" />
     <Compile Include="AmbientContract\AmbientTypeInfo.cs" />
     <Compile Include="AmbientContract\Attribute\AddContextAttribute.cs" />
     <Compile Include="AmbientContract\AmbientContractCollector.cs" />
@@ -66,7 +67,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StObj\Attribute\AmbientPropertyAttribute.cs" />
     <Compile Include="StObj\Attribute\ContainerAttribute.cs" />
+    <Compile Include="StObj\Attribute\AmbientContractAttribute.cs" />
     <Compile Include="StObj\Attribute\StObjPropertyAttribute.cs" />
+    <Compile Include="StObj\Impl\AmbientPropertyInfo.cs" />
+    <Compile Include="StObj\Impl\AmbientContractInfo.cs" />
+    <Compile Include="StObj\Impl\IAmbientPropertyOrContractAttribute.cs" />
     <Compile Include="StObj\Impl\IStObjTypeInfoFromParent.cs" />
     <Compile Include="StObj\IStObjFinalAmbientProperty.cs" />
     <Compile Include="StObj\IStObjReference.cs" />
@@ -78,7 +83,7 @@
     <Compile Include="StObj\IStObjMutableReferenceList.cs" />
     <Compile Include="StObj\Impl\MutableReferenceWithValue.cs" />
     <Compile Include="StObj\IStObjAmbientProperty.cs" />
-    <Compile Include="StObj\Impl\AmbientPropertyInfo.cs" />
+    <Compile Include="StObj\Impl\AmbientPropertyOrContractInfo.cs" />
     <Compile Include="StObj\Impl\MutableAmbientProperty.cs" />
     <Compile Include="StObj\Impl\StObjTypeInfo.cs" />
     <Compile Include="StObj\IStObjFinalParameter.cs" />

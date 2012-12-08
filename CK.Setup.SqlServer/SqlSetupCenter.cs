@@ -105,6 +105,7 @@ namespace CK.Setup.SqlServer
                 foreach( var t in _context.ExplicitRegisteredClasses ) stObjC.RegisterClass( t );
                 stObjC.DependencySorterHookInput = StObjDependencySorterHookInput;
                 stObjC.DependencySorterHookOutput = StObjDependencySorterHookOutput;
+                if( stObjC.RegisteringFatalOrErrorCount != 0 ) return false;
                 result = stObjC.GetResult();
                 if( result.HasFatalError ) return false;
             }

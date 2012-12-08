@@ -53,6 +53,7 @@
     <Compile Include="AmbientPropertiesTests.cs" />
     <Compile Include="ActorZoneWithoutAmbientTests.cs" />
     <Compile Include="ActorZoneWithAmbientTests.cs" />
+    <Compile Include="DifferentKindOfProperties.cs" />
     <Compile Include="SchmurtzProperty.cs" />
     <Compile Include="StObjPropertiesTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

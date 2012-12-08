@@ -45,8 +45,6 @@ namespace CK.Setup
             return String.Format( "Ambient Property '{0}' of '{1}'", Name, Owner.ToString() );
         }
 
-        internal bool IsWriteable { get { return _info.IsWriteable; } }
-
         internal AmbientPropertyInfo AmbientPropertyInfo { get { return _info; } }
 
         internal int MaxSpecializationDepthSet { get { return _maxSpecializationDepthSet; } }
