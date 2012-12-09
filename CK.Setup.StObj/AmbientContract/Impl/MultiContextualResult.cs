@@ -9,17 +9,51 @@ namespace CK.Core
 {
     /// <summary>
     /// Utility class that encapsulates multiple context dependent objects of type <typeparam name="T"/> that implements <see cref="IContextualResult"/>.
-    /// At least one context exists: the <see cref="Default"/> one. Extraneous contexts are defined and 
-    /// identified by a <see cref="Type"/>. Use <see cref="Item(Type)">indexer</see> to access them.
+    /// At least one context exists: the <see cref="Default"/> one. 
+    /// Extraneous contexts are identified by a non empty nor null string. 
+    /// Use <see cref="FindContext"/> or <see cref="ContextCollection"/> to access them.
     /// </summary>
-    public class MultiContextualResult<T> : IReadOnlyCollection<T>
+    public class MultiContextualResult<T>
         where T : class, IContextualResult
     {
-        ListDictionary _contextResults;
+        readonly ListDictionary _contextResults;
+        readonly ContextCollection _contextsEx;
+
+        class ContextCollection : IReadOnlyCollection<T>
+        {
+            ListDictionary _c;
+
+            public ContextCollection( ListDictionary c )
+            {
+                _c = c;
+            }
+
+            public bool Contains( object item )
+            {
+                T c = item as T;
+                return c != null ? _c.Contains( c.Context ) : false;
+            }
+
+            public int Count
+            {
+                get { return _c.Count; }
+            }
+
+            public IEnumerator<T> GetEnumerator()
+            {
+                return _c.Values.Cast<T>().GetEnumerator();
+            }
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+            {
+                return _c.Values.GetEnumerator();
+            }
+        }
 
         internal MultiContextualResult()
         {
             _contextResults = new ListDictionary();
+            _contextsEx = new ContextCollection( _contextResults );
         }
 
         /// <summary>
@@ -30,7 +64,6 @@ namespace CK.Core
             get { return _contextResults.Count; }
         }
 
-
         /// <summary>
         /// Gets the result for the default context (<see cref="String.Empty"/>).
         /// </summary>
@@ -40,22 +73,18 @@ namespace CK.Core
         }
 
         /// <summary>
+        /// Gets the different contexts (including <see cref="Default"/>).
+        /// </summary>
+        public IReadOnlyCollection<T> Contexts { get { return _contextsEx; } }
+
+        /// <summary>
         /// Gets the result for any context or null if no such context exist.
         /// </summary>
         /// <param name="context">Type that identifies a context (null is the same as <see cref="String.Empty"/>).</param>
         /// <returns>The result for the given context.</returns>
-        public T this[string context]
+        public T FindContext( string context )
         {
-            get { return (T)_contextResults[context ?? String.Empty]; }
-        }
-
-        /// <summary>
-        /// Provides an enumerator for all results (including <see cref="Default"/>).
-        /// </summary>
-        /// <returns>Enumeration of result objects.</returns>
-        public IEnumerator<T> GetEnumerator()
-        {
-            return _contextResults.Values.Cast<T>().GetEnumerator();
+            return (T)_contextResults[context ?? String.Empty];
         }
 
         /// <summary>
@@ -91,17 +120,6 @@ namespace CK.Core
             Debug.Assert( c.Context != null );
             _contextResults.Add( c.Context, c );
             return c;
-        }
-
-        bool IReadOnlyCollection<T>.Contains( object item )
-        {
-            T c = item as T;
-            return c != null ? _contextResults.Contains( c.Context ) : false;
-        }
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return _contextResults.Values.GetEnumerator();
         }
 
     }

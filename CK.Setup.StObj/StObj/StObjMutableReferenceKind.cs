@@ -12,7 +12,7 @@ namespace CK.Setup
     public enum StObjMutableReferenceKind
     {
         /// <summary>
-        /// Not applicable.
+        /// Non applicable.
         /// </summary>
         None = 0,
 
@@ -39,17 +39,22 @@ namespace CK.Setup
         /// <summary>
         /// Child reference.
         /// </summary>
-        Child = 8,
+        Child = 16,
 
         /// <summary>
         /// Parameter from Construct method. It is a considered as a Requires.
         /// </summary>
-        ConstructParameter = 16,
+        ConstructParameter = 32,
 
         /// <summary>
         /// Ambient property.
+        /// This kind of reference can depend on the referenced StObj (see <see cref="TrackAmbientPropertiesMode"/>).
         /// </summary>
-        AmbientProperty = 32,
+        AmbientProperty = 64,
 
+        /// <summary>
+        /// Pure reference to another object without any structural constraint.
+        /// </summary>
+        AmbientContract = 128
     }
 }

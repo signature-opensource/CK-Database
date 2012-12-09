@@ -25,7 +25,7 @@ namespace CK.Setup
         IStObjMutableItem Owner { get; }
 
         /// <summary>
-        /// Gets the kind of reference (Container, Requires, RequiredBy, Group, Child, ConstructParameter or AmbientProperty).
+        /// Gets the kind of reference (Container, Requires, RequiredBy, Group, Child, ConstructParameter, AmbientProperty or AmbientContract).
         /// </summary>
         StObjMutableReferenceKind Kind { get; }
 
@@ -41,10 +41,10 @@ namespace CK.Setup
         /// Gets or the type of the reference. Can be null: container and requirements are ignored and 
         /// construct parameters are resolved to their default (<see cref="IStObjMutableParameter.IsOptional"/> must be true).
         /// Of course, for construct parameters the type must be compatible with the formal parameter's type (similar
-        /// type compatibility is required for ambient properties).
+        /// type compatibility is required for ambient properties or ambient contracts).
         /// </summary>
         /// <remarks>
-        /// Initialized with the <see cref="System.Reflection.PropertyInfo.PropertyType"/> for Ambient Properties, 
+        /// Initialized with the <see cref="System.Reflection.PropertyInfo.PropertyType"/> for Ambient Properties or Ambient Contracts, 
         /// with <see cref="System.Reflection.ParameterInfo.ParameterType"/> for parameters and with provided type 
         /// for other kind of reference (<see cref="StObjMutableReferenceKind.Requires"/>, <see cref="StObjMutableReferenceKind.RequiredBy"/>, <see cref="StObjMutableReferenceKind.Group"/>, 
         /// <see cref="StObjMutableReferenceKind.Child"/> and <see cref="StObjMutableReferenceKind.Container"/>).

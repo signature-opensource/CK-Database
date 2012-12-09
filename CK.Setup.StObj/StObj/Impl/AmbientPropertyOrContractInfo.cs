@@ -148,8 +148,8 @@ namespace CK.Setup
                     else
                     {
                         if( acListResult == null ) acListResult = new List<AmbientContractInfo>();
-                        Debug.Assert( apListResult.Any( a => a.Name == p.Name ) == false, "No homonym properties in .Net framework." );
-                        acListResult.Add( new AmbientContractInfo( p, attr.IsOptionalDefined, attr.IsOptional, definerSpecializationDepth, apListResult.Count ) );
+                        Debug.Assert( acListResult.Any( a => a.Name == p.Name ) == false, "No homonym properties in .Net framework." );
+                        acListResult.Add( new AmbientContractInfo( p, attr.IsOptionalDefined, attr.IsOptional, definerSpecializationDepth, acListResult.Count ) );
                     }
                 }
             }

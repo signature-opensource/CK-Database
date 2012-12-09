@@ -95,5 +95,24 @@ namespace CK.Setup.StObj.Tests
                 Assert.That( collector.RegisteringFatalOrErrorCount == 1 );
             }
         }
+
+
+        class InvalidAmbientContractProperty : IAmbientContract
+        {
+            [AmbientContract]
+            public DifferentKindOfProperties NotAnIAmbientContractProperty { get; protected set; }
+        }
+
+        [Test]
+        public void AmbientContractsMustBeAmbientContracts()
+        {
+            {
+                StObjCollector collector = new StObjCollector( TestHelper.Logger );
+                collector.RegisterClass( typeof( InvalidAmbientContractProperty ) );
+                var r = collector.GetResult();
+                Assert.That( r.HasFatalError );
+            }
+        }
+    
     }
 }

@@ -10,10 +10,7 @@ namespace CK.Authentication.Local
 {
     [SqlTable( "tUser", Package = typeof( Package )), Versions( "1.0.0" )]
     [SqlObjectItem( "fCukeHashPassword, fUserReadInfo, sUserCanImpersonate, sUserPwdEncrypt, sUserPwdSet" )]
-    public class tUser : SqlActorPackage.Basic.tUser
+    public class UserHome : SqlActorPackage.Basic.UserHome
     {
-        //void Construct( SqlActorPackage.Basic.tUser baseUserHome )
-        //{
-        //}
     }
 }

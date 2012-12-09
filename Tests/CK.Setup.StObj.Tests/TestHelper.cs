@@ -141,7 +141,7 @@ namespace CK.Setup.StObj.Tests
 
         public static void CheckChildren<T>( this StObjCollectorContextualResult @this, string childrenTypeNames )
         {
-            Check( @this, Find<T>( @this ).Children, childrenTypeNames );
+            Check( @this, FindStObj<T>( @this ).Children, childrenTypeNames );
         }
 
         public static void Check( this StObjCollectorContextualResult @this, IEnumerable<IStObj> items, string typeNames )
@@ -154,7 +154,7 @@ namespace CK.Setup.StObj.Tests
             }
         }
 
-        public static IStObj Find<T>( this StObjCollectorContextualResult @this )
+        public static IStObj FindStObj<T>( this StObjCollectorContextualResult @this )
         {
             return @this.StObjMapper.Items.FirstOrDefault( i => i.ObjectType == typeof(T) );
         }

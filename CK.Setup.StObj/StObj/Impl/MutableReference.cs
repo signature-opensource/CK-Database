@@ -24,7 +24,7 @@ namespace CK.Setup
         {
             Owner = owner;
             _kind = kind;
-            if( _kind == StObjMutableReferenceKind.Requires || _kind == StObjMutableReferenceKind.Group || (_kind & StObjMutableReferenceKind.Container) != 0 )
+            if( _kind == StObjMutableReferenceKind.Requires || _kind == StObjMutableReferenceKind.Group || _kind == StObjMutableReferenceKind.AmbientContract || (_kind & StObjMutableReferenceKind.Container) != 0 )
             {
                 StObjRequirementBehavior = StObjRequirementBehavior.ErrorIfNotStObj;
             }
@@ -72,7 +72,7 @@ namespace CK.Setup
                 // Context is not null: search inside this exact context.
                 // Even if the context for this reference is the one of our Owner's context, since it is explicitely set,
                 // we expect the type to actually be in this context.
-                StObjCollectorContextualResult ctxResult = cachedCollector == null || cachedCollector.Context != _context ? collector[ _context ] : cachedCollector;
+                StObjCollectorContextualResult ctxResult = cachedCollector == null || cachedCollector.Context != _context ? collector.FindContext( _context ) : cachedCollector;
                 if( ctxResult == null ) 
                 {
                     Error( logger, String.Format( "Undefined Typed context '{0}'", _context ) );
@@ -87,7 +87,7 @@ namespace CK.Setup
             }
             else
             {
-                if( cachedCollector == null || cachedCollector.Context != Owner.Context ) cachedCollector = collector[Owner.Context];
+                if( cachedCollector == null || cachedCollector.Context != Owner.Context ) cachedCollector = collector.FindContext( Owner.Context );
                 // Context is not set: first look for the type in the Owners's context.
                 // If it is not foud, look for a single type across the different contexts.
                 result = cachedCollector.Find( Type );

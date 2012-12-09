@@ -25,6 +25,9 @@ namespace CK.Setup
             IsOptional = _info.IsOptional;
         }
 
+        /// <summary>
+        /// Initializes a new marker object: the ambient property has not been found. 
+        /// </summary>
         internal MutableAmbientProperty( MutableItem owner, string unexistingPropertyName )
             : base( owner, StObjMutableReferenceKind.AmbientProperty )
         {

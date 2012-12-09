@@ -25,7 +25,7 @@ namespace CK.Setup
         /// <remarks>
         /// If this is true, it means that all property definition across the inheritance chain has [<see cref="AmbientPropertyAttribute">AmbientProperty</see>( <see cref="AmbientPropertyAttribute.IsOptional">IsOptional</see> = true ]
         /// attribute (from the most abstract property definition), because a required property can NOT become optional.
-        /// (Note that an optional ambient property may be made required by Specializations.)
+        /// (Note that the reverse is not true: an optional ambient property can perfectly be made required by Specializations.)
         /// </remarks>
         bool IsOptional { get; }
     }

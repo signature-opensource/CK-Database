@@ -7,9 +7,9 @@ using CK.Setup;
 
 namespace SqlActorPackage.Basic
 {
-    [SqlTable( "tActor", Package = typeof( Package ) ), Versions( "2.11.25" )]
+    [SqlTable( "tActor", Package = typeof( Package ) ), Versions( "2.12.9" )]
     [SqlObjectItem( "sActorCreate" )]
-    public class tActor : SqlTable
+    public class ActorHome : SqlTable
     {
     }
 }

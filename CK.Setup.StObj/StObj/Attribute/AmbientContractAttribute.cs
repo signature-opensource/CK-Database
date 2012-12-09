@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CK.Setup
 {
-    // <summary>
+    /// <summary>
     /// Defines an ambient contract property: properties tagged with this attribute must 
     /// be <see cref="IAmbientContract"/> objects and are automatically injected.
     /// </summary>

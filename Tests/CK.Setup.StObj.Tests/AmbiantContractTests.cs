@@ -181,7 +181,7 @@ namespace CK.Setup.Tests
                     CheckLocalMappings( r.Mappings, Tuple.Create( typeof( Ambient ), typeof( AmbientChild ) ), Tuple.Create( typeof( AmbientChild ), typeof( AmbientChild ) ) );
                 }
                 {
-                    var r = rAll[ "int" ];
+                    var r = rAll.FindContext( "int" );
                     Assert.That( r.AbstractTails.Count, Is.EqualTo( 0 ) );
                     Assert.That( r.ConcreteClasses.Count == 1 && r.ConcreteClasses[0].Select( a => a.Type ).SequenceEqual( new[] { typeof( Ambient ), typeof( AmbientScoped ) } ) );
                     Assert.That( r.ClassAmbiguities.Count, Is.EqualTo( 0 ) );
@@ -215,7 +215,7 @@ namespace CK.Setup.Tests
                 
                 // Whereas int context contains Ambient, AmbientScoped and AmbientScopedChild.
                 {
-                    var r = rAll[ "int" ];
+                    var r = rAll.FindContext(  "int" );
                     Assert.That( r.AbstractTails.Count, Is.EqualTo( 0 ) );
                     Assert.That( r.ConcreteClasses.Count == 1 && r.ConcreteClasses[0].Select( a => a.Type ).SequenceEqual( new[] { typeof( Ambient ), typeof( AmbientScoped ), typeof( AmbientScopedChild ) } ) );
                     Assert.That( r.ClassAmbiguities.Count, Is.EqualTo( 0 ) );
@@ -258,11 +258,11 @@ namespace CK.Setup.Tests
                 var rAll = c.GetResult();
                 CheckEmpty( rAll.Default );
 
-                var rInt = rAll[ "int" ];
+                var rInt = rAll.FindContext( "int" );
                 Assert.That( rInt, Is.Not.Null );
                 Assert.That( rInt.ConcreteClasses[0].Select( a => a.Type ).SequenceEqual( new[] { typeof( ByDefiner ) } ) );
 
-                var rLong = rAll[ "long" ];
+                var rLong = rAll.FindContext( "long" );
                 Assert.That( rLong, Is.Not.Null );
                 Assert.That( rLong.ConcreteClasses[0].Select( a => a.Type ).SequenceEqual( new[] { typeof( ByDefiner ), typeof( ScopedOtherFromDefiner ) } ) );
                 CheckLocalMappings( rLong.Mappings,

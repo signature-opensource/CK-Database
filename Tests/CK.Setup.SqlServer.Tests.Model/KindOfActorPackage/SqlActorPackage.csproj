@@ -35,12 +35,12 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Basic\tActorProfile.cs" />
-    <Compile Include="Basic\tGroup.cs" />
-    <Compile Include="Basic\tActor.cs" />
+    <Compile Include="Basic\ActorProfileHome.cs" />
+    <Compile Include="Basic\GroupHome.cs" />
+    <Compile Include="Basic\ActorHome.cs" />
     <Compile Include="Basic\Package.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Basic\tUser.cs" />
+    <Compile Include="Basic\UserHome.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">
@@ -65,16 +65,16 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Basic\Res\Model.CK.tUser.Install.2.11.25.sql" />
+    <EmbeddedResource Include="Basic\Res\Model.CK.tUser.Install.2.12.9.sql" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Basic\Res\Model.CK.tActor.Install.2.11.25.sql" />
+    <EmbeddedResource Include="Basic\Res\Model.CK.tActor.Install.2.12.9.sql" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Basic\Res\Model.CK.tGroup.Install.2.11.25.sql" />
+    <EmbeddedResource Include="Basic\Res\Model.CK.tGroup.Install.2.12.9.sql" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Basic\Res\Model.CK.tActorProfile.Install.2.11.25.sql" />
+    <EmbeddedResource Include="Basic\Res\Model.CK.tActorProfile.Install.2.12.9.sql" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Basic\Res\sUserCreate.sql" />

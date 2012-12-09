@@ -11,25 +11,28 @@ namespace CK.Setup
     {
 
         /// <summary>
-        /// Used to expose only the <see cref="Count"/> first items of a list.
+        /// Used to expose only the first items of the ultimate leaf MutableAmbientProperty list.
+        /// The number of MutableAmbientProperty exposed is the number of AmbientPropertyInfo in the AmbientProperties list of the StObjTypeInfo of
+        /// the MutableItem.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         class ListAmbientProperty : IReadOnlyList<MutableAmbientProperty>
         {
             readonly MutableItem _item;
+            readonly int _count;
 
             public ListAmbientProperty( MutableItem item )
             {
                 _item = item;
+                _count = _item._objectType.AmbientProperties.Count;
             }
 
             public int IndexOf( object item )
             {
                 int idx = -1;
                 MutableAmbientProperty a = item as MutableAmbientProperty;
-                if( a != null 
+                if( a != null
                     && a.Owner == _item._leafSpecialization
-                    && a.AmbientPropertyInfo.Index < _item._objectType.AmbientProperties.Count )
+                    && a.AmbientPropertyInfo.Index < _count )
                 {
                     idx = a.AmbientPropertyInfo.Index;
                 }
@@ -38,10 +41,10 @@ namespace CK.Setup
 
             public MutableAmbientProperty this[int index]
             {
-                get 
-                { 
-                    if( index >= _item._objectType.AmbientProperties.Count ) throw new IndexOutOfRangeException(); 
-                    return _item._specialization._allAmbientProperties[index]; 
+                get
+                {
+                    if( index >= _count ) throw new IndexOutOfRangeException();
+                    return _item._leafSpecialization._allAmbientProperties[index];
                 }
             }
 
@@ -52,12 +55,12 @@ namespace CK.Setup
 
             public int Count
             {
-                get { return _item._objectType.AmbientProperties.Count; }
+                get { return _count; }
             }
 
             public IEnumerator<MutableAmbientProperty> GetEnumerator()
             {
-                return _item._specialization._allAmbientProperties.Take( _item._objectType.AmbientProperties.Count ).GetEnumerator();
+                return _item._leafSpecialization._allAmbientProperties.Take( _count ).GetEnumerator();
             }
 
             System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
@@ -66,7 +69,67 @@ namespace CK.Setup
             }
         }
 
-        internal void ResolvePropertiesOnSpecialization( IActivityLogger logger, StObjCollectorResult result, IStObjValueResolver valueResolver )
+        /// <summary>
+        /// This is the clone of ListAmbientProperty above.
+        /// To share the implementation I need yet another unification between MutableAmbientProperty and MutableAmbientContract (which should be an interface since 
+        /// they have only in common MutableReferenceOptional), and routing calls to _specialization._allAmbientContracts or _specialization._allAmbientProperties...
+        /// I prefer duplicating code here.
+        /// </summary>
+        class ListAmbientContract : IReadOnlyList<MutableAmbientContract>
+        {
+            readonly MutableItem _item;
+            readonly int _count;
+
+            public ListAmbientContract( MutableItem item )
+            {
+                _item = item;
+                _count = _item._objectType.AmbientContracts.Count;
+            }
+
+            public int IndexOf( object item )
+            {
+                int idx = -1;
+                MutableAmbientContract c = item as MutableAmbientContract;
+                if( c != null
+                    && c.Owner == _item._leafSpecialization
+                    && c.AmbientContractInfo.Index < _count )
+                {
+                    idx = c.AmbientContractInfo.Index;
+                }
+                return idx;
+            }
+
+            public MutableAmbientContract this[int index]
+            {
+                get
+                {
+                    if( index >= _count ) throw new IndexOutOfRangeException();
+                    return _item._leafSpecialization._allAmbientContracts[index];
+                }
+            }
+
+            public bool Contains( object item )
+            {
+                return IndexOf( item ) >= 0;
+            }
+
+            public int Count
+            {
+                get { return _count; }
+            }
+
+            public IEnumerator<MutableAmbientContract> GetEnumerator()
+            {
+                return _item._leafSpecialization._allAmbientContracts.Take( _count ).GetEnumerator();
+            }
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+        }
+
+        internal void SetDirectAndResolveAmbientPropertiesOnSpecialization( IActivityLogger logger, StObjCollectorResult result, IStObjValueResolver valueResolver )
         {
             Debug.Assert( _specialization == null && _leafSpecialization == this, "We are on the  ultimate (leaf) Specialization." );
             if( _directPropertiesToSet != null )
@@ -83,7 +146,9 @@ namespace CK.Setup
                     }
                 }
             }
-            foreach( var a in _allAmbientProperties )
+            // Use _ambientPropertiesEx to work on a fixed set of MutableAmbientProperty that 
+            // correspond to the ones of this object (without the cached ones that may appear at the end of the list).
+            foreach( var a in _ambientPropertiesEx )
             {
                 EnsureCachedAmbientProperty( logger, result, valueResolver, a.Type, a.Name, a );
                 if( a.Value == Type.Missing )
@@ -250,6 +315,25 @@ namespace CK.Setup
             }
         }
 
+        internal void SetAmbientContracts( IActivityLogger logger, StObjCollectorResult collector, StObjCollectorContextualResult cachedContext )
+        {
+            Debug.Assert( _specialization == null, "Called on leaves only." );
+            foreach( var c in _allAmbientContracts )
+            {
+                MutableItem m = c.ResolveToStObj( logger, collector, cachedContext );
+                if( m != null )
+                {
+                    try
+                    {
+                        c.AmbientContractInfo.PropertyInfo.SetValue( _stObj, m.Object, null );
+                    }
+                    catch( Exception ex )
+                    {
+                        logger.Error( ex, "While setting '{0}'.", c.ToString() );
+                    }
+                }
+            }
+        }
 
     }
 }

@@ -29,6 +29,11 @@ namespace CK.Setup.StObj.Tests
         [StObj( ItemKind = DependentItemKind.Container )]
         class BasicPackage : BaseDatabaseObject
         {
+            [AmbientContract]
+            public BasicUser UserHome { get; protected set; }
+            
+            [AmbientContract]
+            public BasicGroup GroupHome { get; protected set; }
         }
 
         [StObj( Container = typeof( BasicPackage ), ItemKind = DependentItemKind.Item )]
@@ -55,6 +60,8 @@ namespace CK.Setup.StObj.Tests
 
         class ZonePackage : BasicPackage
         {
+            [AmbientContract]
+            public new ZoneGroup GroupHome { get { return (ZoneGroup)base.GroupHome; } protected set { base.GroupHome = value; } }
         }
 
         [StObj( Container = typeof( ZonePackage ), ItemKind = DependentItemKind.Item )]
@@ -111,6 +118,11 @@ namespace CK.Setup.StObj.Tests
             r.Default.CheckChildren<BasicPackage>( "BasicActor,BasicUser,BasicGroup" );
             r.Default.CheckChildren<ZonePackage>( "SecurityZone,ZoneGroup" );
             r.Default.CheckChildren<SqlDatabaseDefault>( "BasicPackage,BasicActor,BasicUser,BasicGroup,ZonePackage,SecurityZone,ZoneGroup,AuthenticationPackage,AuthenticationUser" );
+
+            var basicPackage = r.Default.StObjMapper.GetObject<BasicPackage>();
+            Assert.That( basicPackage is ZonePackage );
+            Assert.That( basicPackage.GroupHome is ZoneGroup );
+
         }
     }
 }

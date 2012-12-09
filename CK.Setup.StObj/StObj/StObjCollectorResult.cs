@@ -18,7 +18,7 @@ namespace CK.Setup
         {
             Debug.Assert( contractResult != null );
             _contractResult = contractResult;
-            foreach( AmbientContractCollectorContextualResult<StObjTypeInfo> r in contractResult )
+            foreach( AmbientContractCollectorContextualResult<StObjTypeInfo> r in contractResult.Contexts )
             {
                 Add( new StObjCollectorContextualResult( r, new StObjContextualMapper( owner, r.Mappings ) ) );
             }
@@ -49,7 +49,7 @@ namespace CK.Setup
                 if( _rootStObjs == null )
                 {
                     List<IStObj> heads = new List<IStObj>();
-                    foreach( var ctx in this )
+                    foreach( var ctx in Contexts )
                     {
                         heads.AddRange( ctx.MutableItems.Where( m => m.Generalization == null ) );
                     }
@@ -61,12 +61,12 @@ namespace CK.Setup
 
         internal IEnumerable<MutableItem> AllMutableItems
         {
-            get { return this.SelectMany( r => r.MutableItems ); }
+            get { return Contexts.SelectMany( r => r.MutableItems ); }
         }
 
         internal IEnumerable<MutableItem> FindMutableItemsFor( Type t )
         {
-            return this.Select( r => r.Find( t ) ).Where( m => m != null );
+            return Contexts.Select( r => r.Find( t ) ).Where( m => m != null );
         }
 
         internal void SetFatal()

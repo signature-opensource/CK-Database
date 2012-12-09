@@ -30,11 +30,11 @@ namespace CK.Setup
                 InfoOnType = null;
             }
 
-            public StObjProperty( StObjPropertyInfo info )
+            public StObjProperty( StObjPropertyInfo infoOnType )
             {
-                Debug.Assert( info.Type != null );
-                InfoOnType = info;
-                Name = info.Name;
+                Debug.Assert( infoOnType.Type != null );
+                InfoOnType = infoOnType;
+                Name = infoOnType.Name;
                 _value = _unsetValue;
             }
 

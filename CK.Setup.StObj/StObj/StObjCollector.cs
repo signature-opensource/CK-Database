@@ -20,7 +20,7 @@ namespace CK.Setup
     {
         readonly AmbientContractCollector<StObjTypeInfo> _cc;
         readonly IStObjStructuralConfigurator _configurator;
-        readonly IStObjValueResolver _dependencyResolver;
+        readonly IStObjValueResolver _valueResolver;
         readonly IActivityLogger _logger;
         int _registerFatalOrErrorCount;
 
@@ -37,7 +37,7 @@ namespace CK.Setup
             _logger = logger;
             _cc = new AmbientContractCollector<StObjTypeInfo>( _logger, ( l, p, t ) => new StObjTypeInfo( l, p, t ), dispatcher );
             _configurator = configurator;
-            _dependencyResolver = dependencyResolver;
+            _valueResolver = dependencyResolver;
         }
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace CK.Setup
             using( _logger.OpenGroup( LogLevel.Info, "Creating Structure Objects." ) )
             {
                 int objectCount = 0;
-                foreach( StObjCollectorContextualResult r in result )
+                foreach( StObjCollectorContextualResult r in result.Contexts )
                 {
                     using( _logger.Catch( e => r.SetFatal() ) )
                     using( _logger.OpenGroup( LogLevel.Info, "Working on Context [{0}].", r.Context ) )
@@ -200,7 +200,7 @@ namespace CK.Setup
                         {
                             try
                             {
-                                m.CallConstruct( _logger, _dependencyResolver );
+                                m.CallConstruct( _logger, _valueResolver );
                             }
                             catch( Exception ex )
                             {
@@ -215,6 +215,10 @@ namespace CK.Setup
                         // We may call here a ConstructContent( IReadOnlyList<IStObj> packageContent ).
                         // But... is it a good thing for a package object to know its content detail?
                     }
+                }
+                using( _logger.OpenGroup( LogLevel.Info, "Setting Ambient Contracts." ) )
+                {
+                    SetAmbientContracts( result );
                 }
                 if( !result.HasFatalError ) result.SetSuccess( ordered.ToReadOnlyList() );
                 return result;
@@ -258,7 +262,7 @@ namespace CK.Setup
                 m = generalization;
                 do
                 {
-                    m.ConfigureToDown( _logger, generalization, specialization );
+                    m.ConfigureTopDown( _logger, generalization, specialization );
                     if( _configurator != null ) _configurator.Configure( _logger, m );
                     r.AddStObjConfiguredItem( m );
                 }
@@ -270,17 +274,17 @@ namespace CK.Setup
         /// Transfers construct parameters type as requirements for the object, binds dependent types to their respective MutableItem,
         /// resolve generalization and container inheritance, and intializes StObjProperties.
         /// </summary>
-        internal bool PrepareDependentItems( StObjCollectorResult collector, out bool noCycleDetected )
+        bool PrepareDependentItems( StObjCollectorResult collector, out bool noCycleDetected )
         {
             noCycleDetected = true;
-            foreach( StObjCollectorContextualResult contextResult in collector )
+            foreach( StObjCollectorContextualResult contextResult in collector.Contexts )
             {
                 using( _logger.Catch( e => contextResult.SetFatal() ) )
                 using( _logger.OpenGroup( LogLevel.Info, "Working on Context [{0}].", contextResult.Context ) )
                 {
                     foreach( MutableItem item in contextResult._specializations )
                     {
-                        noCycleDetected &= item.PrepareDependendtItem( _logger, _dependencyResolver, collector, contextResult );
+                        noCycleDetected &= item.PrepareDependendtItem( _logger, _valueResolver, collector, contextResult );
                     }
                 }
             }
@@ -290,16 +294,35 @@ namespace CK.Setup
         /// <summary>
         /// This is the last step: all mutable items have now been created and configured, they are ready to be sorted.
         /// </summary>
-        internal bool ResolveAmbientProperties( StObjCollectorResult collector )
+        bool ResolveAmbientProperties( StObjCollectorResult collector )
         {
-            foreach( StObjCollectorContextualResult contextResult in collector )
+            foreach( StObjCollectorContextualResult contextResult in collector.Contexts )
             {
                 using( _logger.Catch( e => contextResult.SetFatal() ) )
                 using( _logger.OpenGroup( LogLevel.Info, "Working on Context [{0}].", contextResult.Context ) )
                 {
                     foreach( MutableItem item in contextResult._specializations )
                     {
-                        item.ResolvePropertiesOnSpecialization( _logger, collector, _dependencyResolver );
+                        item.SetDirectAndResolveAmbientPropertiesOnSpecialization( _logger, collector, _valueResolver );
+                    }
+                }
+            }
+            return !collector.HasFatalError;
+        }
+
+        /// <summary>
+        /// Finalize construction by injecting Ambient Contracts objects on specializations.
+        /// </summary>
+        bool SetAmbientContracts( StObjCollectorResult collector )
+        {
+            foreach( StObjCollectorContextualResult contextResult in collector.Contexts )
+            {
+                using( _logger.Catch( e => contextResult.SetFatal() ) )
+                using( _logger.OpenGroup( LogLevel.Info, "Working on Context [{0}].", contextResult.Context ) )
+                {
+                    foreach( MutableItem item in contextResult._specializations )
+                    {
+                        item.SetAmbientContracts( _logger, collector, contextResult );
                     }
                 }
             }

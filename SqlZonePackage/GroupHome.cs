@@ -8,9 +8,9 @@ using CK.Setup;
 namespace SqlZonePackage.Zone
 {
     [SqlTable( "tGroup", Package = typeof( Package ) ), Versions( "2.11.25" ) ]
-    public class tGroup : SqlActorPackage.Basic.tGroup
+    public class GroupHome : SqlActorPackage.Basic.GroupHome
     {
-        void Construct( tSecurityZone zone )
+        void Construct( SecurityZoneHome zone )
         {
         }
     }

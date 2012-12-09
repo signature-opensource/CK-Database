@@ -85,6 +85,12 @@ namespace CK.Setup.SqlServer
         {
             string proposal;
             string className = data.StObj.ObjectType.Name;
+            // Removes standard "Home" suffix.
+            if( className.EndsWith( "Home", StringComparison.Ordinal ) && className.Length > 4 )
+            {
+                className = className.Substring( 0, className.Length - 4 );
+            }
+
             bool shortestNameHasClassName = shortestName.Contains( className );
 
             if( shortestNameHasClassName )

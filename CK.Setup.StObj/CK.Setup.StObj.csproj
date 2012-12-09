@@ -71,12 +71,15 @@
     <Compile Include="StObj\Attribute\StObjPropertyAttribute.cs" />
     <Compile Include="StObj\Impl\AmbientPropertyInfo.cs" />
     <Compile Include="StObj\Impl\AmbientContractInfo.cs" />
+    <Compile Include="StObj\Impl\MutableAmbientContract.cs" />
+    <Compile Include="StObj\Impl\MutableReferenceOptional.cs" />
     <Compile Include="StObj\Impl\IAmbientPropertyOrContractAttribute.cs" />
     <Compile Include="StObj\Impl\INamedPropertyInfo.cs" />
     <Compile Include="StObj\Impl\IStObjTypeInfoFromParent.cs" />
     <Compile Include="StObj\IStObjFinalAmbientProperty.cs" />
+    <Compile Include="StObj\IStObjMutableAmbientContract.cs" />
     <Compile Include="StObj\IStObjReference.cs" />
-    <Compile Include="StObj\Impl\MutableItem.AmbientProperties.cs" />
+    <Compile Include="StObj\Impl\MutableItem.AmbientPropertiesOrContracts.cs" />
     <Compile Include="StObj\Impl\MutableItem.StObjProperties.cs" />
     <Compile Include="StObj\Impl\MutableReferenceList.cs" />
     <Compile Include="StObj\Impl\StObjPropertyInfo.cs" />

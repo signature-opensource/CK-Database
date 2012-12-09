@@ -15,7 +15,7 @@ namespace CK.Setup
         string FullNameWithoutContext { get; set; }
 
         /// <summary>
-        /// Checks if the proposed name can be the <see cref="FullNameWithoutContext"/>: none of our <see cref="IStObjSetupDataBase.Generalization"/> already use this name.
+        /// Checks if the proposed name can be the <see cref="FullNameWithoutContext"/>: alse if one of our <see cref="IStObjSetupDataBase.Generalization"/> already uses this name.
         /// </summary>
         /// <param name="proposedName">Name to check.</param>
         /// <returns>True if the name can be used.</returns>

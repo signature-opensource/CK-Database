@@ -16,12 +16,30 @@ namespace CK.Setup
         readonly string _context;
         readonly object _stObj;
         readonly MutableItem _specialization;
+
         /// <summary>
         /// Ambient Properties are shared by the inheritance chain (it is
         /// not null only at the specialization level).
+        /// It is a List because we use it as a cache for propagation of ambient properties (in 
+        /// EnsureCachedAmbientProperty): new properties issued from Container or Generalization are added 
+        /// and cached into this list.
         /// </summary>
         readonly List<MutableAmbientProperty> _allAmbientProperties;
+        /// <summary>
+        /// Like Ambient Properties above, Ambient Contracts are shared by the inheritance chain (it is
+        /// not null only at the specialization level), but can use here an array instead of a dynamic list
+        /// since there is no caching needed. Each MutableAmbientContract here is bound to its AmbientContractInfo
+        /// in the _objectType.AmbientContracts.
+        /// </summary>
+        readonly MutableAmbientContract[] _allAmbientContracts;
+        
+        // This is available at any level thanks to the ordering of ambient properties
+        // and the ListAmbientProperty that exposes only the start of the list: only the 
+        // properties that are available at the level appear in the list.
+        // (This is the same for AmbientContracts.)
         readonly IReadOnlyList<MutableAmbientProperty> _ambientPropertiesEx;
+        readonly IReadOnlyList<MutableAmbientContract> _ambientContractsEx;
+
         // _directPropertiesToSet is not null only on _leafSpecialization and is allocated
         // if and only if needed (by SetDirectPropertyValue).
         Dictionary<PropertyInfo,object> _directPropertiesToSet;
@@ -86,8 +104,7 @@ namespace CK.Setup
             _objectType = objectType;
             _stObj = theObject;
             _context = context;
-            _specialization = spec;
-            if( _specialization != null )
+            if( (_specialization = spec) != null )
             {
                 Debug.Assert( _specialization._generalization == null );
                 _specialization._generalization = this;
@@ -95,8 +112,14 @@ namespace CK.Setup
             else
             {
                 _allAmbientProperties = _objectType.AmbientProperties.Select( ap => new MutableAmbientProperty( this, ap ) ).ToList();
+                _allAmbientContracts = new MutableAmbientContract[_objectType.AmbientContracts.Count];
+                for( int i = _allAmbientContracts.Length-1; i >= 0; --i )
+                {
+                    _allAmbientContracts[i] = new MutableAmbientContract( this, _objectType.AmbientContracts[i] );
+                }
             }
             _ambientPropertiesEx = new ListAmbientProperty( this );
+            _ambientContractsEx = new ListAmbientContract( this );
         }
 
         public override string ToString()
@@ -106,7 +129,7 @@ namespace CK.Setup
 
         #region Configuration
 
-        internal void ConfigureToDown( IActivityLogger logger, MutableItem rootGeneralization, MutableItem leafSpecialization )
+        internal void ConfigureTopDown( IActivityLogger logger, MutableItem rootGeneralization, MutableItem leafSpecialization )
         {
             Debug.Assert( _rootGeneralization == null && _leafSpecialization == null, "Configured once and only once." );
             Debug.Assert( rootGeneralization != null && leafSpecialization != null, "Configuration sets the top & bottom of the inheritance chain." );
@@ -131,7 +154,7 @@ namespace CK.Setup
 
             if( _objectType.StObjProperties.Count > 0 ) _stObjProperties = _objectType.StObjProperties.Select( sp => new StObjProperty( sp ) ).ToList();
 
-            // StObjTypeInfo already applied inheritance of TrackAmbientProperties attribute accros StObj levels.
+            // StObjTypeInfo already applied inheritance of TrackAmbientProperties attribute accross StObj levels.
             // But since TrackAmbientProperties is "mutable" (can be configured), we only know its actual value once PrepareDependentItem has done its job:
             // inheritance by StObjType onky gives the IStObjStructuralConfigurator a more precise information.
             _trackAmbientPropertiesMode = _objectType.TrackAmbientProperties;
@@ -234,6 +257,8 @@ namespace CK.Setup
         IReadOnlyList<IStObjMutableParameter> IStObjMutableItem.ConstructParameters { get { return _constructParameterEx; } }
 
         IReadOnlyList<IStObjAmbientProperty> IStObjMutableItem.SpecializedAmbientProperties { get { return _ambientPropertiesEx; } }
+
+        IReadOnlyList<IStObjMutableAmbientContract> IStObjMutableItem.SpecializedAmbientContracts { get { return _ambientContractsEx; } }
 
         bool IStObjMutableItem.SetDirectPropertyValue( IActivityLogger logger, string propertyName, object value, string sourceDescription )
         {
