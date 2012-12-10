@@ -23,21 +23,7 @@ namespace CK.Setup.SqlServer
 
         void IStObjSetupConfigurator.ConfigureDependentItem( IActivityLogger logger, IMutableStObjSetupData data )
         {
-            if( data.IsDefaultFullNameWithoutContext )
-            {
-                var table = (SqlTable)data.StObj.Object;
-                var autoName = table.SchemaName;
-                if( data.IsFullNameWithoutContextAvailable( autoName ) )
-                {
-                    logger.Info( "SqlTable '{0}' uses its own table name '{1}' as its SetupName.", data.StObj.ObjectType.FullName, autoName );
-                }
-                else
-                {
-                    autoName = FindAvailableFullNameWithoutContext( data, autoName );
-                    logger.Info( "SqlTable '{0}' has no defined SetupName. It has been automatically computed as '{1}'. You may set a [SetupName] attribute on the class to settle it.", data.StObj.ObjectType.FullName, autoName );
-                }
-                data.FullNameWithoutContext = autoName;
-            }
+            SetAutomaticSetupFullNamewithoutContext( logger, data, "SqlTable" );
             data.ItemType = typeof( SqlTableItem );
             data.DriverType = typeof( SqlTableSetupDriver );
             data.HasModel = true;

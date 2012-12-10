@@ -1,4 +1,5 @@
-﻿
+﻿--[beginscript]
+
 create table CK.tUser 
 (
 	UserId int not null,
@@ -15,3 +16,4 @@ create table CK.tUser
 insert into CK.tUser( UserId, UserName, Email ) values( 0, '', '' );
 insert into CK.tUser( UserId, UserName, Email ) values( 1, 'System', '' );
 
+--[endscript]

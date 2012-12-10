@@ -8,7 +8,7 @@ using IntoTheWild0;
 
 namespace SqlActorPackage.Basic
 {
-    [SqlTable( "tGroup", Package = typeof( Package ) ), Versions( "2.12.9" )]
+    [SqlTable( "tGroup", Package = typeof( Package ) ), Versions( "CK.tGroup=2.12.9, 2.12.10" )]
     [SqlObjectItem( "sGroupCreate" )]
     public class GroupHome : SqlTable
     {

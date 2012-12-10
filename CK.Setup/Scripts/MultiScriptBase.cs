@@ -35,6 +35,7 @@ namespace CK.Setup
             string scriptName = Script.Name.FileName;
 
             var scripts = SplitScripts( scriptBody );
+            if( scripts == null ) return false;
             if( scripts.Count == 0 ) return true;
 
             using( scripts.Count > 1 ? Logger.OpenGroup( LogLevel.Info, "Script '{0}' splitted in {1} scripts.", scriptName, scripts.Count ) : null )
@@ -75,9 +76,10 @@ namespace CK.Setup
         /// <summary>
         /// Optionaly pre processes the script that can be split into multiple fragments.
         /// This default implementation does not split the script (it returns an enumerable of one script).
+        /// On error, specialized implementation should return null (and log an error).
         /// </summary>
         /// <param name="scriptBody">Script text to execute.</param>
-        /// <returns>Zero, one or multiple pre processed scripts.</returns>
+        /// <returns>Zero, one or multiple pre processed scripts. Null on error (an error or fatal error should have been logged).</returns>
         protected virtual IReadOnlyList<string> SplitScripts( string scriptBody )
         {
             return new ReadOnlyListMono<string>( scriptBody );

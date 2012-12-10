@@ -30,6 +30,16 @@ namespace CK.SqlServer
             IsEnd = 512,
         }
 
+        static string TokenTypeDisplayName( TokenType type )
+        {
+            switch( type )
+            {
+                case TokenType.IsScript: return "script";
+                case TokenType.IsSP: return "sp";
+                default: return type.ToString();
+            }
+        }
+
         class Token
         {
             internal Token( Match m, TokenType type )
@@ -227,7 +237,7 @@ namespace CK.SqlServer
                 Token t = _tokens[i];
                 if( !allowInnerGo && t.IsGo && scriptLevel > 0 )
                 {
-                    logger.Error( "Invalid Go batch separator inside {0}.", type.ToString().ToLowerInvariant() );
+                    logger.Error( "Invalid GO batch separator inside --[begin{0}] ... --[end{0}].", TokenTypeDisplayName( type ) );
                     return false;
                 }
                 if( (t.Type & type) != 0 )
@@ -301,7 +311,7 @@ namespace CK.SqlServer
             }
             if( scriptLevel > 0 )
             {
-                logger.Error( "Unbalanced --[begin{0}] / --[end{0}] found.", type.ToString().ToLowerInvariant() );
+                logger.Error( "Unbalanced --[begin{0}] ... --[end{0}] found.", TokenTypeDisplayName( type ) );
                 return false;
             }
             return true;

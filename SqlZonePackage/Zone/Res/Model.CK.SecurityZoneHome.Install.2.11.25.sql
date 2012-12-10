@@ -1,4 +1,5 @@
-﻿
+﻿--[beginscript]
+
 create table CK.tSecurityZone 
 (
 	SecurityZoneId int not null,
@@ -10,3 +11,5 @@ create table CK.tSecurityZone
 );
 insert into CK.tSecurityZone( SecurityZoneId, ZoneName ) values ( 0, 'Public' );
 insert into CK.tSecurityZone( SecurityZoneId, ZoneName ) values ( 1, 'System' );
+
+--[endscript]

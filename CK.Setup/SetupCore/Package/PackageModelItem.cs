@@ -208,7 +208,18 @@ namespace CK.Setup
 
         IEnumerable<VersionedName> IVersionedItem.PreviousNames
         {
-            get { return _package.PreviousNames.Select( p => new VersionedName( DefaultContextLocNaming.AddNamePrefix( p.FullName, "Model." ), p.Version ) ); }
+            get 
+            {
+                var pp = _package.PreviousNames;
+                if( pp.Any() )
+                {
+                    var f = pp.First();
+                    var name = f.FullName;
+                    var newName = DefaultContextLocNaming.AddNamePrefix( name, "Model." );
+                    var f2 = new VersionedName( newName, f.Version );
+                }
+                return _package.PreviousNames.Select( p => new VersionedName( DefaultContextLocNaming.AddNamePrefix( p.FullName, "Model." ), p.Version ) ); 
+            }
         }
 
         string IVersionedItem.ItemType

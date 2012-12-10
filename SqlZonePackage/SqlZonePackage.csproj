@@ -40,18 +40,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Package.cs" />
-    <Compile Include="GroupHome.cs" />
-    <Compile Include="SecurityZoneHome.cs" />
+    <Compile Include="Zone\Package.cs" />
+    <Compile Include="Zone\GroupHome.cs" />
+    <Compile Include="Zone\SecurityZoneHome.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Res\Model.CK.tGroup-Zone.Install.2.11.25.sql" />
+    <EmbeddedResource Include="Zone\Res\Model.CK.GroupHome-Zone.Install.2.11.25.sql" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Res\Model.CK.tSecurityZone.Install.2.11.25.sql" />
+    <EmbeddedResource Include="Zone\Res\Model.CK.SecurityZoneHome.Install.2.11.25.sql" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Res\sSecurityZoneCreate.sql" />
+    <EmbeddedResource Include="Zone\Res\sSecurityZoneCreate.sql" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.Setup.Database\CK.Setup.Database.csproj">

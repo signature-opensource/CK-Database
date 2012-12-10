@@ -1,4 +1,5 @@
-﻿
+﻿--[beginscript]
+
 create table CK.tGroup
 (
   GroupId int not null,
@@ -14,3 +15,4 @@ create table CK.tGroup
 insert into CK.tGroup( GroupId, GroupName ) values( 0, 'Public' );
 insert into CK.tGroup( GroupId, GroupName ) values( 1, 'System' );
 
+--[endscript]

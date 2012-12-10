@@ -9,7 +9,7 @@ namespace CK.Core
     {
         const char _locNameSeparator = '^';
         const char _locPathChar = '-';
-        static readonly char[] _namePrefixes = new[] { _locNameSeparator, _locPathChar };
+        static readonly char[] _nameStartChars = new[] { _locNameSeparator, ']' };
 
         /// <summary>
         /// Returns the correct full name like "[context]location^name". 
@@ -71,7 +71,7 @@ namespace CK.Core
 
         static string DoGetName( string input, int startIndex, int count )
         {
-            int iName = input.LastIndexOfAny( _namePrefixes, startIndex + count - 1, count );
+            int iName = input.LastIndexOfAny( _nameStartChars, startIndex + count - 1, count );
             if( iName < 0 ) iName = startIndex;
             else count -= (iName - startIndex);
             return input.Substring( iName, count );
@@ -127,7 +127,7 @@ namespace CK.Core
         static bool DoNameStartsWith( string input, int startIndex, int count, string prefix )
         {
             if( String.IsNullOrEmpty( prefix ) ) return true;
-            int iName = input.LastIndexOfAny( _namePrefixes, startIndex + count - 1, count );
+            int iName = input.LastIndexOfAny( _nameStartChars, startIndex + count - 1, count );
             if( iName < 0 ) iName = startIndex;
             return String.CompareOrdinal( input, iName, prefix, 0, prefix.Length ) == 0;
         }
@@ -182,7 +182,7 @@ namespace CK.Core
         static string DoAddNamePrefix( string input, int startIndex, int count, string namePrefix )
         {
             if( String.IsNullOrEmpty( namePrefix ) ) throw new ArgumentException( "namePrefix" );
-            int iName = input.LastIndexOfAny( _namePrefixes, --startIndex + count, count );
+            int iName = input.LastIndexOfAny( _nameStartChars, --startIndex + count, count );
             if( iName < 0 ) iName = startIndex;
             return input.Insert( ++iName, namePrefix );
         }

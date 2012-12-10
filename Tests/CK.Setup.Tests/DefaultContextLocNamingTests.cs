@@ -105,5 +105,17 @@ namespace CK.Setup.Dependency.Tests
             Assert.Throws<CKException>( () => DefaultContextLocNaming.Resolve( "pif" + input + "pouf", 3, input.Length, curContext, curLoc ) );
         }
 
+        [Test]
+        public void CheckAddNamePrefix()
+        {
+            Assert.That( DefaultContextLocNaming.AddNamePrefix( "CK.UserHome", "Model." ), Is.EqualTo( "Model.CK.UserHome" ) );
+            Assert.That( DefaultContextLocNaming.AddNamePrefix( "CK.UserHome-Local", "Model." ), Is.EqualTo( "Model.CK.UserHome-Local" ) );
+            Assert.That( DefaultContextLocNaming.AddNamePrefix( "^CK.UserHome", "Model." ), Is.EqualTo( "^Model.CK.UserHome" ) );
+            Assert.That( DefaultContextLocNaming.AddNamePrefix( "^CK.UserHome-Local", "Model." ), Is.EqualTo( "^Model.CK.UserHome-Local" ) );
+            Assert.That( DefaultContextLocNaming.AddNamePrefix( "[]CK.UserHome", "Model." ), Is.EqualTo( "[]Model.CK.UserHome" ) );
+            Assert.That( DefaultContextLocNaming.AddNamePrefix( "[]CK.UserHome-Local", "Model." ), Is.EqualTo( "[]Model.CK.UserHome-Local" ) );
+            Assert.That( DefaultContextLocNaming.AddNamePrefix( "[]-db^CK.UserHome", "Model." ), Is.EqualTo( "[]-db^Model.CK.UserHome" ) );
+            Assert.That( DefaultContextLocNaming.AddNamePrefix( "[]-db^CK.UserHome-Local", "Model." ), Is.EqualTo( "[]-db^Model.CK.UserHome-Local" ) );
+        }
     }
 }

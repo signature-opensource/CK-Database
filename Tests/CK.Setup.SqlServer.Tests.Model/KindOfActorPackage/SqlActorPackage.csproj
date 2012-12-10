@@ -65,16 +65,16 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Basic\Res\Model.CK.tUser.Install.2.12.9.sql" />
+    <EmbeddedResource Include="Basic\Res\Model.CK.UserHome.Install.2.12.10.sql" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Basic\Res\Model.CK.tActor.Install.2.12.9.sql" />
+    <EmbeddedResource Include="Basic\Res\Model.CK.ActorHome.Install.2.12.10.sql" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Basic\Res\Model.CK.tGroup.Install.2.12.9.sql" />
+    <EmbeddedResource Include="Basic\Res\Model.CK.GroupHome.Install.2.12.10.sql" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Basic\Res\Model.CK.tActorProfile.Install.2.12.9.sql" />
+    <EmbeddedResource Include="Basic\Res\Model.CK.ActorProfileHome.Install.2.12.10.sql" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Basic\Res\sUserCreate.sql" />

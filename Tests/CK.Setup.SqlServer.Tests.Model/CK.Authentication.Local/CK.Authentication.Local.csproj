@@ -43,7 +43,7 @@
     <EmbeddedResource Include="Res\sUserPwdEncrypt.sql" />
     <EmbeddedResource Include="Res\fUserReadInfo.sql" />
     <EmbeddedResource Include="Res\sUserCanImpersonate.sql" />
-    <EmbeddedResource Include="Res\Model.CK.tUser-Local.Install.1.0.0.sql" />
+    <EmbeddedResource Include="Res\Model.CK.UserHome-Local.Install.2.12.10.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

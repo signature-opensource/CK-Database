@@ -81,15 +81,31 @@ namespace CK.Setup.SqlServer
         {
         }
 
+        protected bool SetAutomaticSetupFullNamewithoutContext( IActivityLogger logger, IMutableStObjSetupData data, string loggedObjectTypeName )
+        {
+            if( data.IsDefaultFullNameWithoutContext )
+            {
+                var p = (SqlPackageBase)data.StObj.Object;
+                var autoName = p.Schema + '.' + data.StObj.ObjectType.Name;
+                if( data.IsFullNameWithoutContextAvailable( autoName ) )
+                {
+                    logger.Info( "{0} '{1}' uses '{2}' as its SetupName.", loggedObjectTypeName, data.StObj.ObjectType.FullName, autoName );
+                }
+                else
+                {
+                    autoName = FindAvailableFullNameWithoutContext( data, autoName );
+                    logger.Info( "{0} '{1}' has no defined SetupName. It has been automatically computed as '{2}'. You may set a [SetupName] attribute on the class to settle it.", loggedObjectTypeName, data.StObj.ObjectType.FullName, autoName );
+                }
+                data.FullNameWithoutContext = autoName;
+                return true;
+            }
+            return false;
+        }
+
         protected string FindAvailableFullNameWithoutContext( IMutableStObjSetupData data, string shortestName )
         {
             string proposal;
             string className = data.StObj.ObjectType.Name;
-            // Removes standard "Home" suffix.
-            if( className.EndsWith( "Home", StringComparison.Ordinal ) && className.Length > 4 )
-            {
-                className = className.Substring( 0, className.Length - 4 );
-            }
 
             bool shortestNameHasClassName = shortestName.Contains( className );
 

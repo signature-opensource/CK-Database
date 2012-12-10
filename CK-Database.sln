@@ -44,6 +44,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.Setup.StObj.Tests", "Tes
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared Items", "Shared Items", "{9DEAD117-3101-4DED-9FCC-8AA28CF4F34C}"
 	ProjectSection(SolutionItems) = preProject
+		Conception.docx = Conception.docx
 		SharedAssemblyInfo.cs = SharedAssemblyInfo.cs
 	EndProjectSection
 EndProject
