@@ -66,8 +66,8 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Compute the resource full name from the namespace of the <see cref="Type"/> 
-        /// and the <see cref="Path"/>.
+        /// Compute the resource full name from the namespace of the <see cref="P:Type"/> 
+        /// and the <see cref="P:Path"/> properties and combines it with the given name.
         /// </summary>
         /// <param name="name">Name of the resource. Usually a file name ('sProc.sql')</param>
         /// <returns>The full resource name.</returns>
@@ -80,17 +80,19 @@ namespace CK.Core
         /// Gets an ordered list of resource names that starts with the <paramref name="namePrefix"/>.
         /// </summary>
         /// <param name="namePrefix">Prefix for any strings.</param>
-        /// <returns>Ordered lists of available resource names (without the prefix). Resource content can then be obtained by <see cref="OpenStream"/> or <see cref="GetString"/>.</returns>
+        /// <returns>Ordered lists of available resource names (with the <paramref name="namePrefix"/>). Resource content can then be obtained by <see cref="OpenStream"/> or <see cref="GetString"/>.</returns>
         public IEnumerable<string> GetNames( string namePrefix )
         {
             if( _type == null ) return Util.EmptyStringArray;
             IReadOnlyList<string> a = _type.Assembly.GetSortedResourceNames();
+            
+            string p = ResourceName( "." );
+            namePrefix = p + namePrefix;
+
             // TODO: Use the fact that the list is sorted to 
-            // select the sub range instead of that Where linear filter.
-            string prefix = ResourceName( null );
-            string prefixName = namePrefix != null && namePrefix.Length > 0 ? prefix + '.' + namePrefix : prefix;
-            return a.Where( n => n.Length > prefixName.Length && n.StartsWith( prefixName, StringComparison.Ordinal ) )
-                    .Select( n => n.Substring( prefix.Length+1 ) );
+            // select the sub range instead of that Where linear filter.           
+            return a.Where( n => n.Length > namePrefix.Length && n.StartsWith( namePrefix, StringComparison.Ordinal ) )
+                    .Select( n => n.Substring( p.Length ) );
         }
 
         /// <summary>
@@ -164,10 +166,22 @@ namespace CK.Core
                         path = path.Substring( 2 );
                     else path = path.Substring( 1 );
                 }
-                else path = ns + '.' + path;
+                else
+                {
+                    if( path[0] == '.' )
+                        path = ns + path;
+                    else path = ns + '.' + path;
+                }
             }
             else path = ns;
-            return (name == null || name.Length == 0) ? path : path + '.' + name;
+            if( name == null || name.Length == 0 ) return path;
+            if( name[0] == '.' )
+            {
+                if( path.Length > 0 && path[path.Length - 1] == '.' ) return path + name.Substring( 1 );
+                return path + name;
+            }
+            if( path.Length > 0 && path[path.Length - 1] == '.' ) return path + name;
+            return path + '.' + name;
         }
 
         /// <summary>

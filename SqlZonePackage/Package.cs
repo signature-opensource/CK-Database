@@ -8,7 +8,7 @@ using CK.Setup;
 namespace SqlZonePackage.Zone
 {
 
-    [SqlPackage( ResourceType = typeof( Package ), ResourcePath = "Res" ), Versions( "2.11.25" )]
+    [SqlPackage( ResourceType = typeof( Package ), ResourcePath = "~SqlZonePackage.Res" ), Versions( "2.11.25" )]
     public class Package : SqlActorPackage.Basic.Package
     {
         [AmbientContract]

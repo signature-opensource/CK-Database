@@ -38,6 +38,8 @@ namespace CK.Setup.SqlServer.Tests.ActorPackage
                     c.SetupDependencySorterHookInput = TestHelper.Trace;
                     c.SetupDependencySorterHookOutput = sortedItems => TestHelper.Trace( sortedItems, false );
                     Assert.That( c.Run( typeFilter ) );
+                    if( typeFilter == null ) CheckBasicAndZone( context.DefaultSqlDatabase );
+                    else CheckBasicOnly( context.DefaultSqlDatabase );
                 }
 
                 Assert.That( context.DefaultSqlDatabase.Connection.ExecuteScalar( "select count(*) from sys.tables where name in ('tActor','tItemVersion')" ), Is.EqualTo( 2 ) );
@@ -50,8 +52,25 @@ namespace CK.Setup.SqlServer.Tests.ActorPackage
                     SqlSetupCenter c = new SqlSetupCenter( context );
                     c.RevertOrderingNames = true;
                     Assert.That( c.Run( typeFilter ) );
+                    if( typeFilter == null ) CheckBasicAndZone( context.DefaultSqlDatabase );
+                    else CheckBasicOnly( context.DefaultSqlDatabase );
                 }
             }
+        }
+
+        private static void CheckBasicAndZone( SqlManager c )
+        {
+            Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tActor where ActorId <= 1" ), Is.EqualTo( 2 ) );
+            Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tSecurityZone where SecurityZoneId <= 1" ), Is.EqualTo( 2 ) );
+            Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tUser where UserId <= 1" ), Is.EqualTo( 2 ) );
+            Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tGroup where SecurityZoneId <= 1" ), Is.EqualTo( 2 ) );
+        }
+
+        private static void CheckBasicOnly( SqlManager c )
+        {
+            Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tActor where ActorId <= 1" ), Is.EqualTo( 2 ) );
+            Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tGroup where GroupName = 'Public'" ), Is.EqualTo( 1 ) );
+            Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tUser where UserId <= 1" ), Is.EqualTo( 2 ) );
         }
     }
 }
