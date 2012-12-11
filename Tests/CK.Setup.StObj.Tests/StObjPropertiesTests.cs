@@ -36,7 +36,6 @@ namespace CK.Setup.StObj.Tests
                 StObjCollector collector = new StObjCollector( TestHelper.Logger );
                 collector.RegisterClass( typeof( SimpleContainer ) );
                 StObjCollectorResult result = collector.GetResult();
-                object p;
                 Assert.That( result.OrderedStObjs.First().GetStObjProperty( "OneIntValue" ), Is.EqualTo( 3712 ) );
             }
         }

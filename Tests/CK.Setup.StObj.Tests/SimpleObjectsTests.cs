@@ -9,6 +9,7 @@ using CK.Setup.StObj.Tests.SimpleObjects;
 
 namespace CK.Setup.StObj.Tests
 {
+    [CLSCompliant( false )]
     [TestFixture]
     public class SimpleObjectsTests
     {

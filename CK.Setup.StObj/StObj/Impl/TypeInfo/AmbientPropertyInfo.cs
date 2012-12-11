@@ -9,6 +9,8 @@ namespace CK.Setup
 {
     internal class AmbientPropertyInfo : AmbientPropertyOrContractInfo
     {
+        public new readonly static string KindName = "[AmbientProperty]";
+
         internal AmbientPropertyInfo( PropertyInfo p, bool isOptionalDefined, bool isOptional, int definerSpecializationDepth, int index )
             : base( p, isOptionalDefined, isOptional, definerSpecializationDepth, index )
         {
@@ -19,16 +21,21 @@ namespace CK.Setup
         /// </summary>
         public AmbientPropertyInfo Generalization { get; private set; }
 
-        protected override void SetGeneralizationInfo( IActivityLogger logger, AmbientPropertyOrContractInfo gen )
+        protected override void SetGeneralizationInfo( IActivityLogger logger, CovariantPropertyInfo g )
         {
-            base.SetGeneralizationInfo( logger, gen );
+            base.SetGeneralizationInfo( logger, g );
+
+            AmbientPropertyInfo gen = (AmbientPropertyInfo)g;
             // Captures the Generalization.
             // We keep the fact that this property overrides one above (errors have been logged if conflict/incoherency occur).
             // We can keep the Generalization but not a reference to the specialization since we are 
             // not Contextualized here, but only on a pure Type level.
-            Generalization = (AmbientPropertyInfo)gen;
+            Generalization = gen;
         }
 
-        public override string Kind { get { return "[AmbientProperty]"; } }
+        public override string Kind 
+        { 
+            get { return KindName; } 
+        }
     }
 }

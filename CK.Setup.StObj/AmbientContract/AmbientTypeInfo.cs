@@ -57,12 +57,14 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Gets whether this <see cref="Type"/> must be considered as an abstract type or not.
-        /// An abstract class may be considered as concrete if there is a way to concretize it for instance...
+        /// Gets whether this <see cref="Type"/> (that is abstract) must actually be considered as an abstract type or not.
+        /// An abstract class may be considered as concrete if there is a way to concretize an instance. 
+        /// This method can prepare.
         /// </summary>
-        protected virtual bool IsAnAbstractType
+        protected virtual bool AbstractTypeCanBeInstanciated()
         {
-            get { return Type.IsAbstract; }
+            Debug.Assert( Type.IsAbstract );
+            return false;
         }
 
 
@@ -107,7 +109,7 @@ namespace CK.Core
             }
             if( !concreteBelow )
             {
-                if( IsAnAbstractType )
+                if( Type.IsAbstract && !AbstractTypeCanBeInstanciated() )
                 {
                     abstractTails.Add( Type );
                 }

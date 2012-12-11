@@ -264,6 +264,11 @@ namespace CK.Setup
             ConfiguratorAttributes = (IStObjStructuralConfigurator[])Type.GetCustomAttributes( typeof( IStObjStructuralConfigurator ), false );
         }
 
+        protected override bool AbstractTypeCanBeInstanciated()
+        {
+            return false;
+        }
+
         public new StObjTypeInfo Generalization { get { return (StObjTypeInfo)base.Generalization; } }
 
         public IReadOnlyList<AmbientPropertyInfo> AmbientProperties { get; private set; }

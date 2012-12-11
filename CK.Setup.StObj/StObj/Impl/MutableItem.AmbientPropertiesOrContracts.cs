@@ -169,7 +169,7 @@ namespace CK.Setup
                         // If the property value is a StObj, extracts its actual value.
                         if( resolved != null )
                         {
-                            a.AmbientPropertyInfo.PropertyInfo.SetValue( _stObj, resolved.Object, null );
+                            a.AmbientPropertyInfo.SettablePropertyInfo.SetValue( _stObj, resolved.Object, null );
 
                             MutableItem source = this;
                             AmbientPropertyInfo sourceProp = a.AmbientPropertyInfo;
@@ -215,7 +215,7 @@ namespace CK.Setup
                                 if( resolved._trackedAmbientProperties != null ) resolved._trackedAmbientProperties.Add( new TrackedAmbientPropertyInfo( source, sourceProp ) );
                             }
                         }
-                        else a.AmbientPropertyInfo.PropertyInfo.SetValue( _stObj, value, null );
+                        else a.AmbientPropertyInfo.SettablePropertyInfo.SetValue( _stObj, value, null );
                     }
                     catch( Exception ex )
                     {
@@ -325,7 +325,7 @@ namespace CK.Setup
                 {
                     try
                     {
-                        c.AmbientContractInfo.PropertyInfo.SetValue( _stObj, m.Object, null );
+                        c.AmbientContractInfo.SettablePropertyInfo.SetValue( _stObj, m.Object, null );
                     }
                     catch( Exception ex )
                     {

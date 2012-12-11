@@ -113,6 +113,102 @@ namespace CK.Setup.StObj.Tests
                 Assert.That( r.HasFatalError );
             }
         }
-    
+
+        #region Covariance support
+
+        class CA : IAmbientContract
+        {
+        }
+
+        class CA2 : CA
+        {
+        }
+
+        class CA3 : CA2
+        {
+        }
+
+        class CB : IAmbientContract
+        {
+            [AmbientContract]
+            public CA A { get; set; }
+        }
+
+        class CB2 : CB
+        {
+            [AmbientContract]
+            public new CA2 A { get { return (CA2)base.A; } }
+        }
+
+        class CB3 : CB2
+        {
+            [AmbientContract]
+            public new CA3 A 
+            {
+                get { return (CA3)base.A; }
+                set
+                {
+                    Assert.Fail( "This is useless and is not called. This setter generates a warning." );
+                }
+            }
+        }
+
+        [Test]
+        public void CovariantPropertiesSupport()
+        {
+            {
+                StObjCollector collector = new StObjCollector( TestHelper.Logger );
+                collector.RegisterClass( typeof( CB3 ) );
+                collector.RegisterClass( typeof( CA3 ) );
+                var r = collector.GetResult();
+                Assert.That( r.HasFatalError, Is.False );
+                var cb = r.Default.StObjMapper.GetObject<CB>();
+                Assert.That( cb, Is.InstanceOf<CB3>() );
+                Assert.That( cb.A, Is.InstanceOf<CA3>() );
+            }
+        }
+
+        class CMissingSetterOnTopDefiner : IAmbientContract
+        {
+            CA2 _ca2;
+
+            [AmbientContract]
+            public CA2 A { get { return _ca2; } }
+        }
+
+        [Test]
+        public void SetterMustExistOnTopDefiner()
+        {
+            {
+                StObjCollector collector = new StObjCollector( TestHelper.Logger );
+                collector.RegisterClass( typeof( CMissingSetterOnTopDefiner ) );
+                collector.RegisterClass( typeof( CA2 ) );
+                Assert.That( collector.RegisteringFatalOrErrorCount, Is.EqualTo( 1 ) );
+            }
+        }
+
+        class CPrivateSetter : IAmbientContract
+        {
+            [AmbientContract]
+            public CA2 A { get; private set; }
+        }
+
+        [Test]
+        public void PrivateSetterWorks()
+        {
+            {
+                StObjCollector collector = new StObjCollector( TestHelper.Logger );
+                collector.RegisterClass( typeof( CPrivateSetter ) );
+                collector.RegisterClass( typeof( CA2 ) );
+                var r = collector.GetResult();
+                Assert.That( r.HasFatalError, Is.False );
+                var c = r.Default.StObjMapper.GetObject<CPrivateSetter>();
+                Assert.That( c.A, Is.InstanceOf<CA2>() );
+            }
+        }
+
+
+        #endregion
+
     }
 }

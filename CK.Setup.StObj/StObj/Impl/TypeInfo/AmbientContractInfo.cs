@@ -8,12 +8,17 @@ namespace CK.Setup
 {
     internal class AmbientContractInfo : AmbientPropertyOrContractInfo
     {
+        public new readonly static string KindName = "[AmbientContract]";
+        
         internal AmbientContractInfo( PropertyInfo p, bool isOptionalDefined, bool isOptional, int definerSpecializationDepth, int index )
             : base( p, isOptionalDefined, isOptional, definerSpecializationDepth, index )
         {
         }
 
-        public override string Kind { get { return "[AmbientContract]"; } }
+        public override string Kind 
+        { 
+            get { return KindName; } 
+        }
 
     }
 }

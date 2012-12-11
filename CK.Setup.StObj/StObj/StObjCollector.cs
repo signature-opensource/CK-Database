@@ -242,7 +242,7 @@ namespace CK.Setup
 
                 // We create items from bottom to top in order for specialization specific 
                 // data (like AllAmbientProperties) to be initalized during this creation pass.
-                object theObject = Activator.CreateInstance( pathTypes[pathTypes.Count - 1].Type );
+                object theObject = InstantiateStructuredObject( pathTypes[pathTypes.Count - 1] );
                 MutableItem specialization = null;
                 MutableItem m = null;
                 for( int iT = pathTypes.Count-1; iT >= 0; --iT )
@@ -268,6 +268,11 @@ namespace CK.Setup
                 }
                 while( (m = m.Specialization) != null );
             }
+        }
+
+        object InstantiateStructuredObject( StObjTypeInfo finalType )
+        {
+            return Activator.CreateInstance( finalType.Type );
         }
 
         /// <summary>
