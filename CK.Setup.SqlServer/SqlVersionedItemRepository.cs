@@ -101,7 +101,8 @@ namespace CK.Setup.SqlServer
             }
             _set.Parameters[0].Value = t;
             _set.Parameters[1].Value = n;
-            _set.Parameters[2].Value = v != null ? v.ToString() : null;
+            if( v != null ) _set.Parameters[2].Value = v.ToString();
+            else _set.Parameters[2].Value = DBNull.Value;
             _manager.Connection.ExecuteNonQuery( _set );
         }
 
