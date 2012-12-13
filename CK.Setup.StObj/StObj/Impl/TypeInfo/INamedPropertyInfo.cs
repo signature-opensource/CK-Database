@@ -6,7 +6,7 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
-    /// Unifies <see cref="AmbientPropertyOrContractInfo"/> and <see cref="StObjPropertyInfo"/>.
+    /// Unifies <see cref="CovariantPropertyInfo"/> and <see cref="StObjPropertyInfo"/>.
     /// </summary>
     internal interface INamedPropertyInfo
     {

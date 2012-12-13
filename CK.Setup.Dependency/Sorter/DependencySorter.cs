@@ -37,7 +37,9 @@ namespace CK.Setup
             public Action<IEnumerable<IDependentItem>> HookInput { get; set; }
 
             /// <summary>
-            /// Gets or sets a function that will be called on success.
+            /// Gets or sets a function that will be called when items have been sorted.
+            /// The final <see cref="DependencySorterResult"/> may not be successful (ie. <see cref="DependencySorterResult.HasStructureError"/> may be true),
+            /// but if a cycle has been detected, this hook is not called.
             /// </summary>
             public Action<IEnumerable<ISortedItem>> HookOutput { get; set; }
         }
@@ -360,7 +362,14 @@ namespace CK.Setup
                 get
                 {
                     var req = HeadIfGroupOrContainer != null ? HeadIfGroupOrContainer.Requires : Requires;
-                    return req == null ? ReadOnlyListEmpty<ISortedItem>.Empty : req.Where( d => !d.Optional ).Select( r => (ISortedItem)_entries[r.FullName] );
+                    return req == null 
+                        ? ReadOnlyListEmpty<ISortedItem>.Empty 
+                        : req.Where( d => !d.Optional )
+                                // We can not blindly use (ISortedItem)_entries[r.FullName] because if DependencySorterResult.HasRequiredMissing is true
+                                // and the resulting graph is nevertheless used (for Tracing by example) there will be no associated ISortedItem.
+                                // ==> We must TryGetValue and filter unexisting sorted items.
+                                .Select( r => (ISortedItem)_entries.GetValueWithDefault( r.FullName, null ) )
+                                .Where( i => i != null );
                 }
             }
 

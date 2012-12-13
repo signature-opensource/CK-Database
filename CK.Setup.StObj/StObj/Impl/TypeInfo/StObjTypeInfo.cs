@@ -264,8 +264,15 @@ namespace CK.Setup
             ConfiguratorAttributes = (IStObjStructuralConfigurator[])Type.GetCustomAttributes( typeof( IStObjStructuralConfigurator ), false );
         }
 
-        protected override bool AbstractTypeCanBeInstanciated()
+        protected override bool AbstractTypeCanBeInstanciated( IActivityLogger logger )
         {
+            Debug.Assert( TypeImplementor == null );
+            var am = TypeImplementor.GetAutoImplementMethodsFromAttributes( logger, Type );
+            if( am != null )
+            {
+                TypeImplementor = new TypeImplementor( Type, am );
+                return true;
+            }
             return false;
         }
 
@@ -304,6 +311,9 @@ namespace CK.Setup
         public readonly string[] ConstructParameterTypedContext;
 
         public readonly IStObjStructuralConfigurator[] ConfiguratorAttributes;
+
+        public TypeImplementor TypeImplementor { get; private set; }
+
 
         public string FindContextFromMapAttributes( Type t )
         {

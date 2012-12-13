@@ -111,16 +111,22 @@ namespace CK.Setup.SqlServer
             }
             
             IEnumerable<IDependentItem> stObjItems;
-            using( logger.OpenGroup( LogLevel.Info, "Creating Dependent Items from Structured Objects." ) )
-            {
-                var itemBuilder = new StObjSetupBuilder( logger, _context.StObjConfigurator );
-                stObjItems = itemBuilder.Build( result.OrderedStObjs );
-            }
             IEnumerable<IDependentItem> sqlObjectsFromFiles;
-            using( logger.OpenGroup( LogLevel.Info, "Creating Sql Objects from {0} sql files.", _sqlFiles.Count ) )
+            
+            bool hasError = false;
+            using( logger.CatchCounter( a => hasError = true ) )
             {
-                sqlObjectsFromFiles = _sqlFiles.OfType<SqlObjectProtoItem>().Select( proto => proto.CreateItem( logger ) );
+                using( logger.OpenGroup( LogLevel.Info, "Creating Dependent Items from Structured Objects." ) )
+                {
+                    var itemBuilder = new StObjSetupBuilder( logger, _context.StObjConfigurator );
+                    stObjItems = itemBuilder.Build( result.OrderedStObjs );
+                }
+                using( logger.OpenGroup( LogLevel.Info, "Creating Sql Objects from {0} sql files.", _sqlFiles.Count ) )
+                {
+                    sqlObjectsFromFiles = _sqlFiles.OfType<SqlObjectProtoItem>().Select( proto => proto.CreateItem( logger ) );
+                }
             }
+            if( hasError ) return false;
             return _center.Run( sqlObjectsFromFiles, _fileDiscoverer.DiscoveredPackages, stObjItems );
         }
 

@@ -222,6 +222,7 @@ namespace CK.Core
         /// <param name="resourceHolder">
         /// The assembly of this type must hold the resources its <see cref="Type.Namespace"/>
         /// is the path prefix of the resources.
+        /// </param>
         /// <param name="path">
         /// A sub path from the namespace of the type to the resource 
         /// itself. Can be null or <see cref="String.Empty"/> if the resources are 

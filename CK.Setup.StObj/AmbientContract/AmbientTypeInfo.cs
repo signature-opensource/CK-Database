@@ -61,7 +61,7 @@ namespace CK.Core
         /// An abstract class may be considered as concrete if there is a way to concretize an instance. 
         /// This method can prepare.
         /// </summary>
-        protected virtual bool AbstractTypeCanBeInstanciated()
+        protected virtual bool AbstractTypeCanBeInstanciated( IActivityLogger logger )
         {
             Debug.Assert( Type.IsAbstract );
             return false;
@@ -95,7 +95,7 @@ namespace CK.Core
             }
         }
 
-        internal bool CollectDeepestConcrete( List<AmbientTypeInfo> lastConcretes, List<Type> abstractTails, string context = null )
+        internal bool CollectDeepestConcrete( IActivityLogger logger, List<AmbientTypeInfo> lastConcretes, List<Type> abstractTails, string context = null )
         {
             bool concreteBelow = false;
             AmbientTypeInfo c = _firstChild;
@@ -103,13 +103,13 @@ namespace CK.Core
             {
                 if( context == null || c.MutableFinalContexts.Contains( context ) )
                 {
-                    concreteBelow |= c.CollectDeepestConcrete( lastConcretes, abstractTails, context );
+                    concreteBelow |= c.CollectDeepestConcrete( logger, lastConcretes, abstractTails, context );
                 }
                 c = c._nextSibling;
             }
             if( !concreteBelow )
             {
-                if( Type.IsAbstract && !AbstractTypeCanBeInstanciated() )
+                if( Type.IsAbstract && !AbstractTypeCanBeInstanciated( logger ) )
                 {
                     abstractTails.Add( Type );
                 }

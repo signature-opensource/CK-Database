@@ -157,6 +157,7 @@ namespace CK.Core
         class PreResult
         {
             public readonly string Context;
+            readonly IActivityLogger _logger;
 
             Dictionary<object,Type> _mappings;
             List<List<TAmbientTypeInfo>> _concreteClasses;
@@ -164,9 +165,11 @@ namespace CK.Core
             List<Type> _abstractTails;
             int _registeredCount;
 
-            public PreResult( string c )
+
+            public PreResult( IActivityLogger logger, string c )
             {
                 Context = c;
+                _logger = logger;
                 _mappings = new Dictionary<object, Type>();
                 _concreteClasses = new List<List<TAmbientTypeInfo>>();
                 _abstractTails = new List<Type>();
@@ -178,7 +181,7 @@ namespace CK.Core
                 if( newOne.Generalization == null )
                 {
                     List<AmbientTypeInfo> deepestConcretes = new List<AmbientTypeInfo>();
-                    newOne.CollectDeepestConcrete( deepestConcretes, _abstractTails, Context );
+                    newOne.CollectDeepestConcrete( _logger, deepestConcretes, _abstractTails, Context );
                     if( deepestConcretes.Count == 1 )
                     {
                         var last = deepestConcretes[0];
@@ -241,10 +244,10 @@ namespace CK.Core
         public AmbientContractCollectorResult<TAmbientTypeInfo> GetResult()
         {
             var byContext = new Dictionary<string, PreResult>();
-            byContext.Add( String.Empty, new PreResult( String.Empty ) );
+            byContext.Add( String.Empty, new PreResult( _logger, String.Empty ) );
             foreach( AmbientTypeInfo m in _roots )
             {
-                HandleContexts( m, byContext );
+                HandleContexts( _logger, m, byContext );
             }
             
             var mappings = new AmbientTypeMapper();
@@ -262,16 +265,16 @@ namespace CK.Core
             return t != typeof( IAmbientContract ) && typeof( IAmbientContract ).IsAssignableFrom( t );
         }
 
-        static void HandleContexts( AmbientTypeInfo m, Dictionary<string, PreResult> contexts )
+        static void HandleContexts( IActivityLogger logger, AmbientTypeInfo m, Dictionary<string, PreResult> contexts )
         {
             foreach( AmbientTypeInfo child in m.SpecializationsByContext( null ) )
             {
-                HandleContexts( child, contexts );
+                HandleContexts( logger, child, contexts );
                 m.MutableFinalContexts.AddRange( child.MutableFinalContexts );
             }
             foreach( string context in m.MutableFinalContexts )
             {
-                contexts.GetOrSet( context, c => new PreResult( c ) ).Add( m );
+                contexts.GetOrSet( context, c => new PreResult( logger, c ) ).Add( m );
             }
         }
 

@@ -52,6 +52,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets or sets whether any non optional missing requirement or generalization is a structure error (<see cref="HasStructureError"/> 
         /// becomes true).
+        /// Defaults to true.
         /// </summary>
         public bool ConsiderRequiredMissingAsStructureError
         {

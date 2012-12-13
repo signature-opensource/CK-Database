@@ -49,6 +49,7 @@
     </Compile>
     <Compile Include="ISqlScriptExecutor.cs" />
     <Compile Include="SimpleScriptTagHandler.cs" />
+    <Compile Include="SqlAutoImplementAttribute.cs" />
     <Compile Include="SqlCKCoreInstaller.cs" />
     <Compile Include="SqlManager.cs" />
     <Compile Include="SqlErrorMessages.cs" />
@@ -59,6 +60,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CK.Setup.StObj\CK.Setup.StObj.csproj">
+      <Project>{DF7A0B05-4B48-44C2-B6C8-6FCFD66DF8F8}</Project>
+      <Name>CK.Setup.StObj</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />

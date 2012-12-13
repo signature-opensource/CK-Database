@@ -52,8 +52,38 @@ namespace CK.Setup.SqlServer
 
         private void AddChildObjectFromResource( IActivityLogger logger, IMutableSetupItem item, SqlPackageBaseItem p, SqlPackageBase obj, string objectName )
         {
+            int schemaDot = objectName.IndexOf( '.' );
+            string externalSchema = obj.Schema;
             string fileName = objectName + ".sql";
-            string text = p.ResourceLocation.GetString( fileName, true );
+            string text = p.ResourceLocation.GetString( fileName, false );
+            if( text == null )
+            {
+                string failed = fileName;
+                // If the objectName does not contains a schema, tries the "packageSchema.objectName.sql".
+                if( schemaDot < 0 )
+                {
+                    fileName = externalSchema + '.' + fileName;
+                }
+                else
+                {
+                    // The objectName contains a schema: tries to find the resource without the schema prefix.
+                    externalSchema = objectName.Substring( 0, schemaDot );
+                    objectName = objectName.Substring( schemaDot + 1 );
+                    fileName = objectName + ".sql";
+                }
+                text = p.ResourceLocation.GetString( fileName, false );
+                if( text == null )
+                {
+                    logger.Error( "Resource for '{0}' not found (tried '{1}' and '{2}').", objectName, fileName, failed );
+                    return;
+                }
+            }
+            else if( schemaDot > 0 )
+            {
+                externalSchema = objectName.Substring( 0, schemaDot );
+                objectName = objectName.Substring( schemaDot + 1 );
+            }
+
             SqlObjectProtoItem protoObject = SqlObjectParser.Create( logger, item, text );
             if( protoObject != null )
             {
@@ -61,9 +91,9 @@ namespace CK.Setup.SqlServer
                 {
                     logger.Error( "Resource '{0}' contains the definition of '{1}'. Names must match.", fileName, protoObject.Name );
                 }
-                else if( protoObject.Schema.Length > 0 && protoObject.Schema != obj.Schema )
+                else if( protoObject.Schema.Length > 0 && protoObject.Schema != externalSchema )
                 {
-                    logger.Error( "Resource '{0}' defines the {1} in the schema '{2}' instead of '{3}'.", fileName, protoObject.ItemType, protoObject.Schema, obj.Schema );
+                    logger.Error( "Resource '{0}' defines the {1} in the schema '{2}' instead of '{3}'.", fileName, protoObject.ItemType, protoObject.Schema, externalSchema );
                 }
                 else
                 {

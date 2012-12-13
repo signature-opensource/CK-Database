@@ -8,7 +8,7 @@ namespace CK.SqlServer
 {
     internal class SqlCKCoreInstaller
     {
-        public readonly static Int16 CurrentVersion = 4;
+        public readonly static Int16 CurrentVersion = 5;
 
         /// <summary>
         /// Installs the kernel.
