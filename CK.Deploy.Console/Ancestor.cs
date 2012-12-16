@@ -1,0 +1,52 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.IO;
+
+namespace CK.Deploy.Console
+{
+    public class Ancestor
+    {
+        public class FinderResult
+        {
+            public string CommonPath { get; set; }
+            public string CodeBaseRelativePath { get; set; }
+            public string ProjectRootRelativePath { get; set; }
+        }
+
+        public static FinderResult FindCommonAncestor( DirectoryInfo codeBaseDir, DirectoryInfo projectRootDir )
+        {
+            List<DirectoryInfo> di = new List<DirectoryInfo>();
+            var codeParent = codeBaseDir.Parent;
+            while( codeParent != null )
+            {
+                di.Add( codeParent );
+                codeParent = codeParent.Parent;
+            }
+
+            var projectParent = projectRootDir.Parent;
+            while( projectParent != null )
+            {
+                if( di.Where( x => x.FullName == projectParent.FullName ).Count() != 0 )
+                {
+                    var common = di.Where( x => x.FullName == projectParent.FullName ).SingleOrDefault();
+                    if( common != null )
+                    {
+                        return new FinderResult()
+                        {
+                            CommonPath = common.FullName,
+                            CodeBaseRelativePath = codeBaseDir.FullName.Substring( common.FullName.Length + 1 ),
+                            ProjectRootRelativePath = projectRootDir.FullName.Substring( common.FullName.Length + 1 ),
+                        };
+                    }
+                }
+                else
+                {
+                    projectParent = projectParent.Parent;
+                }
+            }
+            return null;
+        }
+    }
+}
