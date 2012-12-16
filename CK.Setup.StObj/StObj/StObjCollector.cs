@@ -242,7 +242,14 @@ namespace CK.Setup
 
                 // We create items from bottom to top in order for specialization specific 
                 // data (like AllAmbientProperties) to be initalized during this creation pass.
-                object theObject = InstantiateStructuredObject( pathTypes[pathTypes.Count - 1] );
+                object theObject = pathTypes[pathTypes.Count - 1].CreateInstance( _logger );
+                // If we failed to create an instance, we ensure that an error is logged and
+                // continue the process.
+                if( theObject == null )
+                {
+                    _logger.Error( "Unable to create an instance of '{0}'.", pathTypes[pathTypes.Count - 1].Type.FullName );
+                    continue;
+                }
                 MutableItem specialization = null;
                 MutableItem m = null;
                 for( int iT = pathTypes.Count-1; iT >= 0; --iT )
@@ -268,11 +275,6 @@ namespace CK.Setup
                 }
                 while( (m = m.Specialization) != null );
             }
-        }
-
-        object InstantiateStructuredObject( StObjTypeInfo finalType )
-        {
-            return Activator.CreateInstance( finalType.Type );
         }
 
         /// <summary>

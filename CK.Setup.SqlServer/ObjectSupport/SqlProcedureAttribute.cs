@@ -6,12 +6,11 @@ using CK.Core;
 using System.Reflection.Emit;
 using System.Reflection;
 
-namespace CK.SqlServer
+namespace CK.Setup.SqlServer
 {
-    public class SqlAutoImplementAttribute : IAutoImplementorMethod
+    public class SqlProcedureAttribute : IAutoImplementorMethod
     {
-
-        public SqlAutoImplementAttribute( string schemaName )
+        public SqlProcedureAttribute( string schemaName )
         {
             SchemaName = schemaName;
         }
@@ -20,6 +19,7 @@ namespace CK.SqlServer
 
         bool IAutoImplementorMethod.Implement( IActivityLogger logger, MethodInfo m, TypeBuilder b )
         {
+            CK.Reflection.EmitHelper.ImplementStubMethod( b, m, true );
             return true;
         }
     }

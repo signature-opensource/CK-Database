@@ -6,39 +6,56 @@ using System.Reflection;
 using System.IO;
 using System.Reflection.Emit;
 using System.Threading;
+using CK.Core;
 
-namespace CK.Core
+namespace CK.Setup
 {
     public class TypeImplementor
     {
-
         static int _typeID;
 		static ModuleBuilder _moduleBuilder;
 
+        /// <summary>
+        /// This is the public key of the generated assembly.
+        /// Whenever types created inside the dynamic assembly requires access to internal types of the calling assembly, this key can be used
+        /// in the AssemblyInfo:  [assembly: InternalsVisibleTo( "CK.Setup.StObj.TypeImplementor.Assembly, PublicKey=..." )] attribute allows 
+        /// the dynamic TypeImplementor assembly to reference and make use of internal types.
+        /// </summary>
+        static readonly public string DynamicPublicKey = "00240000048000009400000006020000002400005253413100040000010001009fbf2868f04bdf33df4c8c0517bb4c3d743b5b27fcd94009d42d6607446c1887a837e66545221788ecfff8786e85564c839ff56267fe1a3225cd9d8d9caa5aae3ba5d8f67f86ff9dbc5d66f16ba95bacde6d0e02f452fae20022edaea26d31e52870358d0dda69e592ea5cef609a054dac4dbbaa02edc32fb7652df9c0e8e9cd";
+
         static TypeImplementor()
 		{
-            AssemblyName assemblyName = new AssemblyName( "TypeImplementorModule" );
+            AssemblyName assemblyName = new AssemblyName( "CK.Setup.StObj.TypeImplementor.Assembly" );
 			assemblyName.Version = new Version( 1, 0, 0, 0 );
+            StrongNameKeyPair kp;
+            using( Stream stream = Assembly.GetAssembly( typeof( TypeImplementor ) ).GetManifestResourceStream( "CK.Setup.StObj.AutoImplementor.DynamicKeyPair.snk" ) )
+            {
+                byte[] result = new byte[stream.Length];
+                stream.Read( result, 0, (int)stream.Length );
+                kp = new StrongNameKeyPair( result );
+            }
+            assemblyName.KeyPair = kp;
            
 			AssemblyBuilder assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly( assemblyName, AssemblyBuilderAccess.RunAndSave );
             _moduleBuilder = assemblyBuilder.DefineDynamicModule( "TypeImplementorModule" );
 		}
 
-        readonly Type _abstractType;
+        readonly Type _baseType;
         readonly KeyValuePair<MethodInfo,IAutoImplementorMethod>[] _methodImplementors;
 
-        public TypeImplementor( Type abstractType, KeyValuePair<MethodInfo,IAutoImplementorMethod>[] methodImplementors )
+        public TypeImplementor( Type baseType, KeyValuePair<MethodInfo,IAutoImplementorMethod>[] methodImplementors )
         {
-            if( abstractType == null ) throw new ArgumentNullException( "abstractType" );
+            if( baseType == null ) throw new ArgumentNullException( "baseType" );
             if( methodImplementors == null ) throw new ArgumentNullException( "methodImplementors" );
-            if( !abstractType.IsAbstract ) throw new ArgumentException( "Type must be abstract.", "abstractType" );
-            _abstractType = abstractType;
+            _baseType = baseType;
             _methodImplementors = methodImplementors;
         }
 
-        public virtual Type CreateType( IActivityLogger logger )
+        public virtual Type CreateType( IActivityLogger logger, bool isSealed = false )
         {
-            TypeBuilder b = _moduleBuilder.DefineType( _abstractType.Name + Interlocked.Increment( ref _typeID ).ToString(), TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed, _abstractType );
+            TypeAttributes tA = TypeAttributes.Class | TypeAttributes.Public;
+            if( isSealed ) tA |= TypeAttributes.Sealed;
+            TypeBuilder b = _moduleBuilder.DefineType( _baseType.Name + Interlocked.Increment( ref _typeID ).ToString(), tA, _baseType );
             foreach( var am in _methodImplementors )
             {
                 try
@@ -58,7 +75,7 @@ namespace CK.Core
             }
             catch( Exception ex )
             {
-                logger.Error( ex, "While implementing Type '{0}'.", _abstractType.FullName );
+                logger.Error( ex, "While implementing Type '{0}'.", _baseType.FullName );
                 return null;
             }
         }

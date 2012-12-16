@@ -1,123 +1,121 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
-//using NUnit.Framework;
-//using CK.Core;
-//using System.Data.SqlClient;
-//using System.Data;
-//using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using NUnit.Framework;
+using CK.Core;
+using System.Data.SqlClient;
+using System.Data;
+using System.IO;
 
-//namespace CK.SqlServer.Tests
-//{
+namespace CK.SqlServer.Tests
+{
 
-//    public interface ISqlCallContext
-//    {
-//        IActivityLogger Logger { get; }
+    public interface ISqlCallContext
+    {
+        IActivityLogger Logger { get; }
 
-//        SqlConnectionProvider Connection { get; }
+        SqlConnectionProvider Connection { get; }
 
-//        bool SetAmbientValue( SqlParameter p );
-//    }
+        bool SetAmbientValue( SqlParameter p );
+    }
 
-//    public class SqlCallContext : ISqlCallContext
-//    {
-//        readonly SqlManager _m;
+    public class SqlCallContext : ISqlCallContext
+    {
+        readonly SqlManager _m;
 
-//        public SqlCallContext( SqlManager m )
-//        {
-//            _m = m;
-//        }
+        public SqlCallContext( SqlManager m )
+        {
+            _m = m;
+        }
 
-//        public IActivityLogger Logger
-//        {
-//            get { return TestHelper.Logger; }
-//        }
+        public IActivityLogger Logger
+        {
+            get { return TestHelper.Logger; }
+        }
 
-//        public SqlConnectionProvider Connection
-//        {
-//            get { return _m.Connection; }
-//        }
+        public SqlConnectionProvider Connection
+        {
+            get { return _m.Connection; }
+        }
 
-//        public bool SetAmbientValue( SqlParameter p )
-//        {
-//            return false;
-//        }
-//    }
+        public bool SetAmbientValue( SqlParameter p )
+        {
+            return false;
+        }
+    }
 
-//    [TestFixture]
-//    public class CallProcedureAutoImplementor
-//    {
+    [TestFixture]
+    public class CallProcedureAutoImplementor
+    {
 
-//        class ManualCall
-//        {
+        class ManualCall
+        {
 
-//            public void CallStandardSP( ISqlCallContext ctx, int x, out int y, ref DateTime d, out string s, int z )
-//            {
-//                string spName = "CK.sStupidTest";
-//                object[] inputP = new object[] { x, d, z }; 
-//                object[] output = new object[3];
+            //[SqlAutoImplement( "CK.sChoucroute" )]
+            public void CallStandardSP( ISqlCallContext ctx, int x, out int y, ref DateTime d, out string s, int z )
+            {
+                string spName = "CK.sStupidTest";
 
-//                GenericStandardSPCall( ctx, spName, inputP, output );
+                using( SqlCommand cmd = new SqlCommand( spName ) )
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    SqlParameterCollection c = cmd.Parameters;
+                    SqlParameter p;
 
-//                y = (int)output[0];
-//                d = (DateTime)output[1];
-//                s = (string)output[2];
-//            }
+                    p = new SqlParameter( "@x", SqlDbType.Int );
+                    p.Value = x;
+                    c.Add( p );
 
-//            private static void GenericStandardSPCall( ISqlCallContext ctx, string spName, object[] inputP, object[] output )
-//            {
-//                SqlCommand cmd = new SqlCommand( spName );
-//                cmd.CommandType = CommandType.StoredProcedure;
-//                SqlCommandBuilder.DeriveParameters( cmd );
-//                int i = 0;
-//                foreach( SqlParameter p in cmd.Parameters )
-//                {
-//                    if( p.Direction == ParameterDirection.Input )
-//                    {
-//                        if( !ctx.SetAmbientValue( p ) )
-//                        {
-//                            p.Value = inputP[i++] ?? DBNull.Value;
-//                        }
-//                    }
-//                    else if( p.Direction == ParameterDirection.InputOutput )
-//                    {
-//                        p.Value = inputP[i++] ?? DBNull.Value;
-//                    }
-//                }
-//                ctx.Connection.ExecuteNonQuery( cmd );
-//                if( output.Length > 0 )
-//                {
-//                    i = 0;
-//                    foreach( SqlParameter p in cmd.Parameters )
-//                    {
-//                        if( p.Direction == ParameterDirection.Output )
-//                        {
-//                            output[i++] = p.Value;
-//                        }
-//                    }
-//                }
-//            }
-//        }
+                    SqlParameter pOut0 = new SqlParameter( "@y", SqlDbType.Int );
+                    pOut0.Direction = ParameterDirection.Output;
+                    y = default( int );
+                    c.Add( pOut0 );
+
+                    SqlParameter pOut1 = new SqlParameter( "@d", SqlDbType.DateTime );
+                    pOut1.Direction = ParameterDirection.InputOutput;
+                    pOut1.Value = d;
+                    c.Add( pOut1 );
+
+                    SqlParameter pOut2 = new SqlParameter( "@s", SqlDbType.NVarChar, 64 );
+                    pOut2.Direction = ParameterDirection.Output;
+                    s = default( string );
+                    c.Add( pOut2 );
+
+                    p = new SqlParameter( "@z", SqlDbType.Int );
+                    p.Value = z;
+                    c.Add( p );
+
+                    ctx.Connection.ExecuteNonQuery( cmd );
+
+                    y = (int)pOut0.Value;
+                    d = (DateTime)pOut1.Value;
+                    s = (string)pOut2.Value;
+                }
+            }
+        }
 
 
-//        [Test]
-//        public void ManualImplementation()
-//        {
-//            using( SqlManager m = new SqlManager() )
-//            {
-//                Assert.That( m.OpenOrCreate( ".", "CKSqlServerTests" ), "Unable to open or create CKSqlServerTests database on local server." );
-//                var install = SqlHelper.SplitGoSeparator( File.ReadAllText( TestHelper.GetScriptsFolder( "ManualImplementation.sql" ) ) );
-//                m.ExecuteScripts( install, TestHelper.Logger );
+        [Test]
+        public void ManualImplementation()
+        {
+            using( SqlManager m = new SqlManager() )
+            {
+                Assert.That( m.OpenOrCreate( ".", "CKSqlServerTests" ), "Unable to open or create CKSqlServerTests database on local server." );
+                var install = SqlHelper.SplitGoSeparator( File.ReadAllText( TestHelper.GetScriptsFolder( "ManualImplementation.sql" ) ) );
+                m.ExecuteScripts( install, TestHelper.Logger );
 
-//                SqlCallContext c = new SqlCallContext( m );
-//                ManualCall manual = new ManualCall();
-//                int y;
-//                DateTime d = DateTime.UtcNow;
-//                string s;
-//                manual.CallStandardSP( c, 3, out y, ref d, out s, 180 ); 
-//            }
-//        }
+                SqlCallContext c = new SqlCallContext( m );
+                ManualCall manual = new ManualCall();
+                int y;
+                DateTime d = DateTime.UtcNow;
+                string s;
+                manual.CallStandardSP( c, 3, out y, ref d, out s, 180 );
 
-//    }
-//}
+                Assert.That( s, Is.EqualTo( "x=3 z=180" ) );
+                Assert.That( y, Is.EqualTo( 183 ) );
+            }
+        }
+
+    }
+}

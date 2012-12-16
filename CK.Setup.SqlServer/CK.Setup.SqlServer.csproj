@@ -38,6 +38,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\CK.Core.2.7.42\lib\net40\CK.Core.dll</HintPath>
     </Reference>
+    <Reference Include="CK.Reflection">
+      <HintPath>..\packages\CK.Reflection.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -62,6 +65,7 @@
     <Compile Include="ObjectSupport\SqlPackage\SqlPackageSetupDriver.cs" />
     <Compile Include="ObjectSupport\SqlPackage\SqlPackageAttribute.cs" />
     <Compile Include="ObjectSupport\SqlPackage\SqlPackage.cs" />
+    <Compile Include="ObjectSupport\SqlProcedureAttribute.cs" />
     <Compile Include="ObjectSupport\SqlTable\SqlTableSetupDriver.cs" />
     <Compile Include="ObjectSupport\SqlTable\SqlTableItem.cs" />
     <Compile Include="ObjectSupport\SqlTable\SqlTableAttribute.cs" />

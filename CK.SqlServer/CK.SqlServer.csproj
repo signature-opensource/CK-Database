@@ -49,7 +49,6 @@
     </Compile>
     <Compile Include="ISqlScriptExecutor.cs" />
     <Compile Include="SimpleScriptTagHandler.cs" />
-    <Compile Include="SqlAutoImplementAttribute.cs" />
     <Compile Include="SqlCKCoreInstaller.cs" />
     <Compile Include="SqlManager.cs" />
     <Compile Include="SqlErrorMessages.cs" />

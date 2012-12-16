@@ -170,10 +170,8 @@ namespace CK.Setup.StObj.Tests
 
         class CMissingSetterOnTopDefiner : IAmbientContract
         {
-            CA2 _ca2;
-
             [AmbientContract]
-            public CA2 A { get { return _ca2; } }
+            public CA2 A { get { return null; } }
         }
 
         [Test]

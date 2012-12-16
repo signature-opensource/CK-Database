@@ -45,12 +45,17 @@ namespace CK.Setup.SqlServer
                 string nTrimmed = n.Trim();
                 if( nTrimmed.Length > 0 )
                 {
-                    AddChildObjectFromResource( logger, item, p, obj, nTrimmed );
+                    var protoObject = LoadScriptFromResource( logger, item, p, obj, nTrimmed );
+                    if( protoObject != null )
+                    {
+                        SqlObjectItem subItem = protoObject.CreateItem( logger );
+                        ((IMutableSetupItemContainer)item).Children.Add( subItem );
+                    }
                 }
             }
         }
 
-        private void AddChildObjectFromResource( IActivityLogger logger, IMutableSetupItem item, SqlPackageBaseItem p, SqlPackageBase obj, string objectName )
+        static private SqlObjectProtoItem LoadScriptFromResource( IActivityLogger logger, IMutableSetupItem item, SqlPackageBaseItem p, SqlPackageBase obj, string objectName )
         {
             int schemaDot = objectName.IndexOf( '.' );
             string externalSchema = obj.Schema;
@@ -75,7 +80,7 @@ namespace CK.Setup.SqlServer
                 if( text == null )
                 {
                     logger.Error( "Resource for '{0}' not found (tried '{1}' and '{2}').", objectName, fileName, failed );
-                    return;
+                    return null;
                 }
             }
             else if( schemaDot > 0 )
@@ -90,17 +95,15 @@ namespace CK.Setup.SqlServer
                 if( protoObject.ObjectName != objectName )
                 {
                     logger.Error( "Resource '{0}' contains the definition of '{1}'. Names must match.", fileName, protoObject.Name );
+                    protoObject = null;
                 }
                 else if( protoObject.Schema.Length > 0 && protoObject.Schema != externalSchema )
                 {
                     logger.Error( "Resource '{0}' defines the {1} in the schema '{2}' instead of '{3}'.", fileName, protoObject.ItemType, protoObject.Schema, externalSchema );
-                }
-                else
-                {
-                    SqlObjectItem subItem = protoObject.CreateItem( logger );
-                    ((IMutableSetupItemContainer)item).Children.Add( subItem );
+                    protoObject = null;
                 }
             }
+            return protoObject;
         }
     }
 }

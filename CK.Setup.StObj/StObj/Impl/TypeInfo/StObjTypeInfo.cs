@@ -314,6 +314,16 @@ namespace CK.Setup
 
         public TypeImplementor TypeImplementor { get; private set; }
 
+        public object CreateInstance( IActivityLogger logger )
+        {
+            if( TypeImplementor != null )
+            {
+                Type t = TypeImplementor.CreateType( logger, false );
+                if( t == null ) return null;
+                return Activator.CreateInstance( t );
+            }
+            return Activator.CreateInstance( Type );
+        }
 
         public string FindContextFromMapAttributes( Type t )
         {
