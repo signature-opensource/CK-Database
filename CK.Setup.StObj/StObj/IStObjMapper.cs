@@ -9,7 +9,7 @@ namespace CK.Setup
     /// <summary>
     /// Exposes a multi contextual type mapping.
     /// </summary>
-    public interface IStObjMapper : IReadOnlyCollection<IStObjContextualMapper>
+    public interface IStObjMapper
     {
         /// <summary>
         /// Gets the default mapper, the one identified by <see cref="String.Empty"/>.
@@ -17,10 +17,15 @@ namespace CK.Setup
         IStObjContextualMapper Default { get; }
 
         /// <summary>
+        /// Gets the different contexts (including <see cref="Default"/>).
+        /// </summary>
+        IReadOnlyCollection<IStObjContextualMapper> Contexts { get; }
+
+        /// <summary>
         /// Gets the <see cref="IStObjContextualMapper"/> or null if context is unknown.
         /// </summary>
         /// <param name="context">Context name.</param>
         /// <returns>Contextual mapping or null if no such context exists.</returns>
-        IStObjContextualMapper this[string context] { get; }
+        IStObjContextualMapper FindContext( string context );
     }
 }

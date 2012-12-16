@@ -21,7 +21,7 @@ namespace CK.Core
 
         class ContextCollection : IReadOnlyCollection<T>
         {
-            ListDictionary _c;
+            readonly ListDictionary _c;
 
             public ContextCollection( ListDictionary c )
             {

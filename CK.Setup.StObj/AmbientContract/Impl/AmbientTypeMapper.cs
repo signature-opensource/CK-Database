@@ -9,11 +9,44 @@ namespace CK.Core
 {
     internal class AmbientTypeMapper : IAmbientTypeMapper
     {
-        ListDictionary _contextMappers;
+        readonly ListDictionary _contextMappers;
+        readonly ContextCollection _contextsEx;
+
+        class ContextCollection : IReadOnlyCollection<IAmbientTypeContextualMapper>
+        {
+            readonly AmbientTypeMapper _a;
+
+            public ContextCollection( AmbientTypeMapper a )
+            {
+                _a = a;
+            }
+
+            public bool Contains( object item )
+            {
+                IAmbientTypeContextualMapper c = item as IAmbientTypeContextualMapper;
+                return c != null ? c.Owner == _a : false;
+            }
+
+            public int Count
+            {
+                get { return _a._contextMappers.Count; }
+            }
+
+            public IEnumerator<IAmbientTypeContextualMapper> GetEnumerator()
+            {
+                return _a._contextMappers.Values.Cast<IAmbientTypeContextualMapper>().GetEnumerator();
+            }
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+            {
+                return _a._contextMappers.Values.GetEnumerator();
+            }
+        }
 
         internal AmbientTypeMapper()
         {
             _contextMappers = new ListDictionary();
+            _contextsEx = new ContextCollection( this );
         }
         
         public IAmbientTypeContextualMapper Default
@@ -21,35 +54,13 @@ namespace CK.Core
             get { return (IAmbientTypeContextualMapper)_contextMappers[String.Empty]; }
         }
 
-        public IAmbientTypeContextualMapper this[string context]
+        public IReadOnlyCollection<IAmbientTypeContextualMapper> Contexts { get { return _contextsEx; } }
+
+        public IAmbientTypeContextualMapper FindContext( string context )
         {
-            get { return (IAmbientTypeContextualMapper)_contextMappers[context ?? String.Empty]; }
+            return (IAmbientTypeContextualMapper)_contextMappers[context ?? String.Empty];
         }
 
-        public bool Contains( object item )
-        {
-            IAmbientTypeContextualMapper c = item as IAmbientTypeContextualMapper;
-            return c != null ? c.Owner == this : false;
-        }
-
-        public int Count
-        {
-            get { return _contextMappers.Count; }
-        }
-
-        /// <summary>
-        /// Provides an enumerator for all typed context (including <see cref="Default"/>).
-        /// </summary>
-        /// <returns>Enumeration of <see cref=""/> objects.</returns>
-        public IEnumerator<IAmbientTypeContextualMapper> GetEnumerator()
-        {
-            return _contextMappers.Values.Cast<IAmbientTypeContextualMapper>().GetEnumerator();
-        }
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return _contextMappers.Values.GetEnumerator();
-        }
 
         internal void Add( AmbientTypeContextualMapper c )
         {

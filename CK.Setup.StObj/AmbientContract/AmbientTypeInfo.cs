@@ -59,7 +59,6 @@ namespace CK.Core
         /// <summary>
         /// Gets whether this <see cref="Type"/> (that is abstract) must actually be considered as an abstract type or not.
         /// An abstract class may be considered as concrete if there is a way to concretize an instance. 
-        /// This method can prepare.
         /// </summary>
         protected virtual bool AbstractTypeCanBeInstanciated( IActivityLogger logger )
         {
