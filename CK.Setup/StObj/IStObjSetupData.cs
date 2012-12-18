@@ -64,15 +64,6 @@ namespace CK.Setup
         string DriverTypeName { get; }
 
         /// <summary>
-        /// Gets whether a Model package is associated to this object. The Model is required by this object
-        /// and by each and every Model associated to the objects that require this object.
-        /// </summary>
-        /// <remarks>
-        /// This is not inherited.
-        /// </remarks>
-        bool HasModel { get; }
-
-        /// <summary>
         /// Gets the list of requirements (can be <see cref="IDependentItem"/> instances or named references).
         /// </summary>
         IReadOnlyList<IDependentItemRef> RequiredBy { get; }

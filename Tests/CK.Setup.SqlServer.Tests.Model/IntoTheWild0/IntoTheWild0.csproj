@@ -82,7 +82,7 @@
   <ItemGroup>
     <EmbeddedResource Include="ResPackage\Resource\Model.CK.tResDataRawText.Install.2.9.2.sql" />
     <EmbeddedResource Include="ResPackage\Resource\Model.CK.tResDataString.Install.2.9.2.sql" />
-    <EmbeddedResource Include="ResPackage\Resource\Model.ResPackage.Install.2.9.2.sql" />
+    <EmbeddedResource Include="ResPackage\Resource\Model.IntoTheWild0.ResPackage.Install.2.9.2.sql" />
     <EmbeddedResource Include="ResPackage\Resource\Model.CK.tRes.Install.2.9.2.sql" />
   </ItemGroup>
   <ItemGroup>

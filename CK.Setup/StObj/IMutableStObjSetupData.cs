@@ -53,15 +53,6 @@ namespace CK.Setup
         IDependentItemList Children { get; }
 
         /// <summary>
-        /// Gets or sets whether a Model package is associated to this object. The Model is required by this object
-        /// and by each and every Model associated to the objects that require this object.
-        /// </summary>
-        /// <remarks>
-        /// This is not inherited.
-        /// </remarks>
-        bool HasModel { get; set; }
-
-        /// <summary>
         /// Gets or sets the type of the <see cref="IDependentItem"/> to use instead of the default <see cref="StObjDynamicPackageItem"/>. 
         /// When set, this masks the <see cref="ItemTypeName"/> property,  otherwise ItemTypeName can be used to 
         /// designate a specific IDependentItem.

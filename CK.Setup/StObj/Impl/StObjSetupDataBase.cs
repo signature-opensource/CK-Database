@@ -20,7 +20,6 @@ namespace CK.Setup
         DependentItemList _requiredBy;
         DependentItemList _children;
         DependentItemGroupList _groups;
-        bool _hasModel;
 
         internal StObjSetupDataBase( IActivityLogger logger, Type t, StObjSetupDataBase parent = null )
         {
@@ -39,26 +38,6 @@ namespace CK.Setup
                 _itemTypeName = setupAttr.ItemTypeName;
                 _driverType = setupAttr.DriverType;
                 _driverTypeName = setupAttr.DriverTypeName;
-                
-                _hasModel = setupAttr.HasModel;
-            }
-            else
-            {
-                // No Package attribute...
-                if( parent != null )
-                {
-                    // _hasModel remains false (this is not because the base class has an associated Model that
-                    // a specialization has one).                   
-                    // We accept to inherit from parent HasModel, only if 
-                    // we are the root ambient contract (consider attributes on above classes to 
-                    // be kind of "definer").
-                    if( isInRoot )
-                    {
-                        _hasModel = parent.HasModel;
-                        // There is currently no other attribute that works this way
-                        // (Requirements are handled below, full name and versions are fundamentally by StObj).
-                    }
-                }
             }
             // Container full name, driver type & name inherit by default.
             if( parent != null )
@@ -135,13 +114,6 @@ namespace CK.Setup
             get { return _driverTypeName; }
             set { _driverTypeName = value; }
         }
-
-        public bool HasModel
-        {
-            get { return _hasModel; }
-            set { _hasModel = value; }
-        }
-
 
         internal static StObjSetupDataBase CreateRootData( IActivityLogger logger, Type t )
         {

@@ -26,7 +26,6 @@ namespace CK.Setup.SqlServer
             SetAutomaticSetupFullNamewithoutContext( logger, data, "SqlTable" );
             data.ItemType = typeof( SqlTableItem );
             data.DriverType = typeof( SqlTableSetupDriver );
-            data.HasModel = true;
         }
 
     }
