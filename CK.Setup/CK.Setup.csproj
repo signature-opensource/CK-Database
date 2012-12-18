@@ -142,6 +142,10 @@
       <Project>{DF7A0B05-4B48-44C2-B6C8-6FCFD66DF8F8}</Project>
       <Name>CK.Setup.StObj</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CK.StObj.Runtime\CK.StObj.Runtime.csproj">
+      <Project>{96DEDEEE-DE7D-4B14-8FDE-BC4D8D9CCB78}</Project>
+      <Name>CK.StObj.Runtime</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

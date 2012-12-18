@@ -91,6 +91,10 @@
       <Project>{95912a3b-758e-474b-af34-be24c4e3bf56}</Project>
       <Name>CK.SqlServer</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\CK.StObj.Runtime\CK.StObj.Runtime.csproj">
+      <Project>{96DEDEEE-DE7D-4B14-8FDE-BC4D8D9CCB78}</Project>
+      <Name>CK.StObj.Runtime</Name>
+    </ProjectReference>
     <ProjectReference Include="..\KindOfActorPackage\SqlActorPackage.csproj">
       <Project>{6d0d47c8-98f7-47de-b118-ad3606455f7e}</Project>
       <Name>SqlActorPackage</Name>

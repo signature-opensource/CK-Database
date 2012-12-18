@@ -7,7 +7,7 @@ namespace CK.Core
 {
 
     /// <summary>
-    /// Exposes a contextual type mapping.
+    /// Exposes type mapping for a <see cref="Context"/>.
     /// </summary>
     public interface IAmbientTypeContextualMapper
     {

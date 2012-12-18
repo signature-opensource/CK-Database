@@ -6,7 +6,7 @@ using System.Text;
 namespace CK.Core
 {
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = false )]
-    public class RemoveContextAttribute : Attribute, IContextDefiner
+    public class RemoveContextAttribute : Attribute, IAttributeContext
     {
         public RemoveContextAttribute( string context )
         {

@@ -121,10 +121,10 @@ namespace CK.Core
             return concreteBelow;
         }
 
-        static void ProcessContextAttributes<T>( Type t, Func<string, bool> action ) where T : IContextDefiner
+        static void ProcessContextAttributes<T>( Type t, Func<string, bool> action ) where T : IAttributeContext
         {
             object[] attrs = t.GetCustomAttributes( typeof( T ), false );
-            foreach( var a in attrs ) action( ((IContextDefiner)a).Context );
+            foreach( var a in attrs ) action( ((IAttributeContext)a).Context );
         }
 
         internal List<TAmbientTypeInfo> FillPath<TAmbientTypeInfo>( List<TAmbientTypeInfo> path ) where TAmbientTypeInfo : AmbientTypeInfo

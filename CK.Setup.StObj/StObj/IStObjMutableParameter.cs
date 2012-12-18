@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using CK.Core;
-
 namespace CK.Setup
 {
     /// <summary>
@@ -25,7 +24,7 @@ namespace CK.Setup
         /// If this is originally false, it means that the the formal parameter of the method is NOT optional (<see cref="IsRealParameterOptional"/> is false). 
         /// </remarks>
         bool IsOptional { get; set; }
-        
+
         /// <summary>
         /// Gets the parameter position in the list.
         /// </summary>
@@ -48,6 +47,5 @@ namespace CK.Setup
         /// </remarks>
         /// <param name="value">Value to set. Type must be compatible otherwise an exception will be thrown when calling the actual Construct method.</param>
         void SetParameterValue( object value );
-
     }
 }

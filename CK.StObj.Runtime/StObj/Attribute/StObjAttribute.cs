@@ -68,7 +68,7 @@ namespace CK.Setup
         /// <returns>
         /// Null if no <see cref="IStObjAttribute"/> is set.
         /// </returns>
-        static internal IStObjAttribute GetStObjAttributeForExactType( Type objectType, IActivityLogger logger, LogLevel multipleContainerLogLevel = LogLevel.Warn )
+        static public IStObjAttribute GetStObjAttributeForExactType( Type objectType, IActivityLogger logger, LogLevel multipleContainerLogLevel = LogLevel.Warn )
         {
             if( objectType == null ) throw new ArgumentNullException( "objectType" );
             if( logger == null ) throw new ArgumentNullException( "logger" );

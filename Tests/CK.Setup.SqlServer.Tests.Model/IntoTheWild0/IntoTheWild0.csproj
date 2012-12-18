@@ -72,6 +72,10 @@
       <Project>{D3C700E1-3546-437C-9B96-1F867A539B6A}</Project>
       <Name>CK.Setup</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\CK.StObj.Runtime\CK.StObj.Runtime.csproj">
+      <Project>{96DEDEEE-DE7D-4B14-8FDE-BC4D8D9CCB78}</Project>
+      <Name>CK.StObj.Runtime</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="ResPackage\Resource\sResDataStringSet.sql" />
