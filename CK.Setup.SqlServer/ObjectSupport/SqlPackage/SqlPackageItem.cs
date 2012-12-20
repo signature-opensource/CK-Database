@@ -12,6 +12,7 @@ namespace CK.Setup.SqlServer
         public SqlPackageItem( SqlPackage package )
             : base( "ObjPackage", typeof( SqlPackageSetupDriver ), package )
         {
+            if( Object.HasModel ) EnsureModel();
         }
 
         public SqlPackageItem( IActivityLogger logger, IStObjSetupData data )
@@ -19,6 +20,7 @@ namespace CK.Setup.SqlServer
         {
             Debug.Assert( typeof( SqlPackageSetupDriver ).IsAssignableFrom( data.DriverType ) );
             Name = data.FullNameWithoutContext;
+            if( Object.HasModel ) EnsureModel();
         }
 
         /// <summary>

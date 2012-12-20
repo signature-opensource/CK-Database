@@ -17,7 +17,6 @@ namespace CK.Setup
         string _containerFullName;
         TrackAmbientPropertiesMode _trackAmbientProperties;
         DependentItemKind _setupItemKind;
-        bool _hasModel;
 
         public SetupAttribute()
         {
@@ -120,19 +119,6 @@ namespace CK.Setup
         {
             get { return _setupItemKind; }
             set { _setupItemKind = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets whether a Model package is associated to this object. The Model is required by this object
-        /// and by each and every Model associated to the objects that require this object.
-        /// </summary>
-        /// <remarks>
-        /// This is not inherited.
-        /// </remarks>
-        public bool HasModel
-        {
-            get { return _hasModel; }
-            set { _hasModel = value; }
         }
 
         /// <summary>

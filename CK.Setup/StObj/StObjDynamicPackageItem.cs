@@ -41,7 +41,6 @@ namespace CK.Setup
             Debug.Assert( Model == null, "Initially, a DynamicPackageItem has no model." );
             Debug.Assert( data.ItemType == null || typeof( StObjDynamicPackageItem ).IsAssignableFrom( data.ItemType ), "If we are using a StObjDynamicPackageItem, this is because no explicit ItemType (nor ItemTypeName) have been set, or it is a type that specializes this." );
             ItemKind = data.StObj.ItemKind;
-            if( data.HasModel ) EnsureModel();
             SetVersionsString( data.Versions );
             Object = data.StObj.Object;
         }

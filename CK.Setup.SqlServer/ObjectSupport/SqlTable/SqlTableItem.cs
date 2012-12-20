@@ -11,12 +11,14 @@ namespace CK.Setup.SqlServer
         public SqlTableItem( SqlTable package )
             : base( "ObjTable", typeof( SqlTableSetupDriver ), package )
         {
+            EnsureModel();
         }
 
         public SqlTableItem( IActivityLogger logger, IStObjSetupData data )
             : base( logger, data )
         {
             Name = data.FullNameWithoutContext;
+            EnsureModel();
         }
 
         /// <summary>
