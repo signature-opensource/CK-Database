@@ -57,7 +57,7 @@ namespace CK.Setup
                     // Builds the StObjSetupData from the different attributes.
                     var data = new StObjSetupData( _logger, r, fromAbove );
                     // Calls any attributes that is a IStObjSetupConfigurator with the StObjSetupData.
-                    SetupAttribute.ApplyAttributesConfigurator( _logger, r.ObjectType, data );
+                    SetupAttribute.ApplyAttributesConfigurator( _logger, data );
 
                     // If the object itself is a IStObjSetupConfigurator, calls it.
                     IStObjSetupConfigurator objectItself = r.Object as IStObjSetupConfigurator;

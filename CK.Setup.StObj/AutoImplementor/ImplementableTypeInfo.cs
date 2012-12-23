@@ -19,7 +19,7 @@ namespace CK.Core
             MethodsToImplement = m;
         }
 
-        static internal ImplementableTypeInfo GetImplementableTypeInfo( IActivityLogger logger, Type abstractType )
+        static internal ImplementableTypeInfo GetImplementableTypeInfo( IActivityLogger logger, Type abstractType, ICustomAttributeProvider attributeProvider )
         {
             if( logger == null ) throw new ArgumentNullException( "logger" );
             if( abstractType == null ) throw new ArgumentNullException( "abstractType" );

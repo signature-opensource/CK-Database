@@ -108,7 +108,7 @@ namespace CK.Setup
                     // we set the property here since we are actually called from top to bottom: the property that will win is the most specialized one if
                     // the property is virtual. If the property does not inherit (which SHOULD be the normal way of implementing a StObj property), then 
                     // we are sure that every "StObj layer" has been updated with its own value.
-                    if( setIt ) p.InfoOnType.SetValue( logger, _stObj, v );
+                    if( setIt ) p.InfoOnType.SetValue( logger, _leafData.StructuredObject, v );
                 }
             }
         }
@@ -126,9 +126,9 @@ namespace CK.Setup
                     // It is a warning because if actual values work, everything is okay... but one day, it should fail.
                     logger.Warn( "StObjProperty '{0}.{1}' of type '{2}' is not compatible with the one of its {6} ('{3}.{4}' of type '{5}'). Type should be compatible since {6}'s property value will be propagated if no explicit value is set for '{7}.{1}' or if '{3}.{4}' is set with an incompatible value.",
                         ToString(), p.Name, p.Type.Name,
-                        _dContainer._objectType.Type.Name, c.Name, c.Type.Name,
+                        _dContainer.Type.Name, c.Name, c.Type.Name,
                         sourceName,
-                        _objectType.Type.Name );
+                        Type.Name );
                 }
                 if( doSetOrMerge )
                 {

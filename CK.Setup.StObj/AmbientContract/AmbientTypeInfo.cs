@@ -9,7 +9,9 @@ namespace CK.Core
     /// <summary>
     /// Encapsulate type information for an Ambient Contract class and offers a <see cref="FinalContexts"/> collection that 
     /// exposes the different contexts that contain the type.
-    /// It is a concrete class that can be specialized to capture more specific information related to the type.
+    /// It is a concrete class that can be specialized to capture more specific information related to the type: 
+    /// the virtual <see cref="CreateContextTypeInfo"/> factory method should be overrriden to create 
+    /// appropriate <see cref="AmbientContextTypeInfo{T}"/> contextualized type information.
     /// </summary>
     public class AmbientTypeInfo
     {
@@ -49,24 +51,20 @@ namespace CK.Core
             ProcessContextAttributes<RemoveContextAttribute>( t, MutableFinalContexts.Remove );
         }
 
+
+        /// <summary>
+        /// Used only for Empty Object Pattern implementations.
+        /// </summary>
+        protected AmbientTypeInfo()
+        {
+            Type = typeof( object );
+        }
+
         public AmbientTypeInfo Generalization { get; private set; }
 
         public IReadOnlyCollection<string> FinalContexts
         {
             get { return _finalContextsEx; }
-        }
-
-        /// <summary>
-        /// Gets whether this <see cref="Type"/> (that is abstract) must actually be considered as an abstract type or not.
-        /// An abstract class may be considered as concrete if there is a way to concretize an instance. 
-        /// This is called only for abstract types and if <paramref name="assembly"/> is not null.
-        /// </summary>
-        /// <param name="logger">The logger to use.</param>
-        /// <param name="assembly">The dynamic assembly to use for generated types.</param>
-        protected virtual bool AbstractTypeCanBeInstanciated( IActivityLogger logger, DynamicAssembly assembly )
-        {
-            Debug.Assert( Type.IsAbstract && assembly != null );
-            return false;
         }
 
         Type[] EnsureAllAmbientInterfaces( Func<Type,bool> ambientInterfacePredicate )
@@ -96,7 +94,9 @@ namespace CK.Core
             }
         }
 
-        internal bool CollectDeepestConcrete( IActivityLogger logger, DynamicAssembly assembly, List<AmbientTypeInfo> lastConcretes, List<Type> abstractTails, string context )
+        internal bool CollectDeepestConcrete<T,TC>( IActivityLogger logger, DynamicAssembly assembly, List<TC> lastConcretes, List<Type> abstractTails, string context )
+            where T : AmbientTypeInfo
+            where TC : AmbientContextTypeInfo<T>
         {
             Debug.Assert( context != null );
             bool concreteBelow = false;
@@ -105,36 +105,45 @@ namespace CK.Core
             {
                 if( c.MutableFinalContexts.Contains( context ) )
                 {
-                    concreteBelow |= c.CollectDeepestConcrete( logger, assembly, lastConcretes, abstractTails, context );
+                    concreteBelow |= c.CollectDeepestConcrete<T,TC>( logger, assembly, lastConcretes, abstractTails, context );
                 }
                 c = c._nextSibling;
             }
             if( !concreteBelow )
             {
-                if( Type.IsAbstract && (assembly == null || !AbstractTypeCanBeInstanciated( logger, assembly )) )
+                var ct = CreateContextTypeInfo<T,TC>( context, null );
+                if( Type.IsAbstract && (assembly == null || !ct.AbstractTypeCanBeInstanciated( logger, assembly )) )
                 {
                     abstractTails.Add( Type );
                 }
                 else
                 {
-                    lastConcretes.Add( this );
+                    lastConcretes.Add( ct );
                     concreteBelow = true;
                 }
             }
             return concreteBelow;
         }
 
+        /// <summary>
+        /// Factory method for associated contextualized type.
+        /// </summary>
+        /// <typeparam name="T">This specialized AmbientTypeInfo.</typeparam>
+        /// <typeparam name="TC">Type of associated contextualized specialization.</typeparam>
+        /// <param name="context">Context name for which the associated contextualized specialization must be instanciated.</param>
+        /// <param name="specialization">Specialization if any.</param>
+        /// <returns>Associated contextualized type information.</returns>
+        internal virtual protected TC CreateContextTypeInfo<T,TC>( string context, TC specialization )
+            where T : AmbientTypeInfo
+            where TC : AmbientContextTypeInfo<T>
+        {
+            return (TC)new AmbientContextTypeInfo<T>( (T)this, context, specialization );
+        }
+
         static void ProcessContextAttributes<T>( Type t, Func<string, bool> action ) where T : IAttributeContext
         {
             object[] attrs = t.GetCustomAttributes( typeof( T ), false );
             foreach( var a in attrs ) action( ((IAttributeContext)a).Context );
-        }
-
-        internal List<TAmbientTypeInfo> FillPath<TAmbientTypeInfo>( List<TAmbientTypeInfo> path ) where TAmbientTypeInfo : AmbientTypeInfo
-        {
-            if( Generalization != null ) Generalization.FillPath( path );
-            path.Add( (TAmbientTypeInfo)this );
-            return path;
         }
     }
 }

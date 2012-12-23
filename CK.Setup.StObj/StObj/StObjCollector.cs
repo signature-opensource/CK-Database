@@ -18,7 +18,7 @@ namespace CK.Setup
     /// </summary>
     public class StObjCollector
     {
-        readonly AmbientContractCollector<StObjTypeInfo> _cc;
+        readonly AmbientContractCollector<StObjTypeInfo,MutableItem> _cc;
         readonly IStObjStructuralConfigurator _configurator;
         readonly IStObjValueResolver _valueResolver;
         readonly IActivityLogger _logger;
@@ -37,7 +37,7 @@ namespace CK.Setup
             if( logger == null ) throw new ArgumentNullException( "logger" );
             _logger = logger;
             _assembly = new DynamicAssembly();
-            _cc = new AmbientContractCollector<StObjTypeInfo>( _logger, ( l, p, t ) => new StObjTypeInfo( l, p, t ), _assembly, dispatcher );
+            _cc = new AmbientContractCollector<StObjTypeInfo, MutableItem>( _logger, ( l, p, t ) => new StObjTypeInfo( l, p, t ), _assembly, dispatcher );
             _configurator = configurator;
             _valueResolver = dependencyResolver;
         }
@@ -120,7 +120,7 @@ namespace CK.Setup
             {
                 throw new CKException( "There are {0} registration errors. ClearRegisteringErrors must be called before calling this GetResult method to ignore regstration errors.", _registerFatalOrErrorCount );
             }
-            AmbientContractCollectorResult<StObjTypeInfo> contracts;
+            AmbientContractCollectorResult<StObjTypeInfo,MutableItem> contracts;
             using( _logger.OpenGroup( LogLevel.Info, "Collecting Ambient Contracts and Type structure." ) )
             {
                 contracts = _cc.GetResult();
@@ -235,31 +235,23 @@ namespace CK.Setup
         /// </summary>
         void CreateMutableItems( StObjCollectorContextualResult r )
         {
-            IReadOnlyList<IReadOnlyList<StObjTypeInfo>> concreteClasses = r.AmbientContractResult.ConcreteClasses;
+            IReadOnlyList<IReadOnlyList<MutableItem>> concreteClasses = r.AmbientContractResult.ConcreteClasses;
 
             for( int i = concreteClasses.Count-1; i >= 0; --i )
             {
-                IReadOnlyList<StObjTypeInfo> pathTypes = concreteClasses[i];
+                IReadOnlyList<MutableItem> pathTypes = concreteClasses[i];
                 Debug.Assert( pathTypes.Count > 0, "At least the final concrete class exists." );
 
-                // We create items from bottom to top in order for specialization specific 
-                // data (like AllAmbientProperties) to be initalized during this creation pass.
-                object theObject = pathTypes[pathTypes.Count - 1].CreateInstance( _logger );
+                MutableItem specialization = r._specializations[i] = pathTypes[pathTypes.Count - 1];
+
+                object theObject = specialization.CreateInstance( _logger );
                 // If we failed to create an instance, we ensure that an error is logged and
                 // continue the process.
                 if( theObject == null )
                 {
-                    _logger.Error( "Unable to create an instance of '{0}'.", pathTypes[pathTypes.Count - 1].Type.FullName );
+                    _logger.Error( "Unable to create an instance of '{0}'.", pathTypes[pathTypes.Count - 1].AmbientTypeInfo.Type.FullName );
                     continue;
                 }
-                MutableItem specialization = null;
-                MutableItem m = null;
-                for( int iT = pathTypes.Count-1; iT >= 0; --iT )
-                {
-                    m = new MutableItem( m, r.Context, pathTypes[iT], theObject );
-                    if( specialization == null ) specialization = r._specializations[i] = m;
-                }
-                MutableItem generalization = m;
                 // Finalize configuration by sollicitating IStObjStructuralConfigurator.
                 // It is important here to go top-down since specialized configuration 
                 // should override more general ones.
@@ -268,10 +260,11 @@ namespace CK.Setup
                 // since it is configured, but it seems useless and may block us later.
                 Debug.Assert( typeof( IStObjMutableItem ).GetProperty( "Generalization" ) == null );
                 Debug.Assert( typeof( IStObjMutableItem ).GetProperty( "Specialization" ) == null );
-                m = generalization;
+                MutableItem generalization = pathTypes[0];
+                MutableItem m = generalization;
                 do
                 {
-                    m.ConfigureTopDown( _logger, generalization, specialization );
+                    m.ConfigureTopDown( _logger, generalization );
                     if( _configurator != null ) _configurator.Configure( _logger, m );
                     r.AddStObjConfiguredItem( m );
                 }

@@ -7,107 +7,78 @@ using System.Diagnostics;
 
 namespace CK.Core
 {
+
     /// <summary>
-    /// Caches attributes that support <see cref="IAttributeAmbientContextBound"/> interface.
+    /// Contextual type information.
+    /// Offers persistent access to attributes that support <see cref="IAttributeAmbientContextBound"/> interface.
     /// </summary>
-    public class AmbientContextTypeInfo<TAmbientTypeInfo> where TAmbientTypeInfo : AmbientTypeInfo
+    public class AmbientContextTypeInfo<T> : AmbientContextAttributesCache
+        where T : AmbientTypeInfo
     {
-        struct Entry
-        {
-            public Entry( MemberInfo m, object a )
-            {
-                M = m;
-                Attr = a;
-            }
-
-            public readonly MemberInfo M;
-            public readonly object Attr;
-        }
-
-        Entry[] _all;
+        readonly AmbientContextTypeInfo<T> _specialization;
 
         /// <summary>
         /// Initializes a new <see cref="AmbientContextTypeInfo"/>. 
-        /// Attributes must be retrieved with <see cref="GetCustomAttributes"/> methods.
+        /// Attributes must be retrieved with <see cref="AmbientContextAttributesCache.GetCustomAttributes">GetCustomAttributes</see> methods.
         /// </summary>
-        /// <param name="t">Type for which <see cref="IAttributeAmbientContextBound"/> attributes must be cached.</param>
+        /// <param name="t">Type.</param>
         /// <param name="context">Context name.</param>
-        internal AmbientContextTypeInfo( TAmbientTypeInfo t, string context )
+        /// <param name="specialization">Specialization in this context. Null if this is the leaf of the specialization path.</param>
+        /// <remarks>
+        /// Contextual type information are built bottom up (from most specialized type to generalization).
+        /// </remarks>
+        internal protected AmbientContextTypeInfo( T t, string context, AmbientContextTypeInfo<T> specialization )
+            : base( t.Type )
         {
             Debug.Assert( t != null && context != null );
             AmbientTypeInfo = t;
             Context = context;
-            var all = new List<Entry>();
-            Register( all, t.Type );
-            foreach( var m in t.Type.GetMembers( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance ) )
-            {
-                Register( all, m );
-            }
-            _all = all.ToArray();
-        }
-
-        static void Register( List<Entry> all, MemberInfo m )
-        {
-            var t2 = (IAttributeAmbientContextBound[])m.GetCustomAttributes( typeof( IAttributeAmbientContextBound ), false );
-            foreach( var a in t2 )
-            {
-                a.Initialize( m );
-                all.Add( new Entry( m, a ) );
-            }
+            _specialization = specialization;
         }
 
         /// <summary>
-        /// Ambient type information.
+        /// Contextless type information.
         /// </summary>
-        public readonly TAmbientTypeInfo AmbientTypeInfo;
+        public readonly T AmbientTypeInfo;
 
         /// <summary>
-        /// Context name of this contextual information.
+        /// Context name of this contextual type information.
         /// </summary>
         public readonly string Context;
 
         /// <summary>
-        /// Gets attributes on the <see cref="Type"/> that are assignable to <paramref name="attributeType"/>.
-        /// Instances of attributes that support <see cref="IAttributeAmbientContextBound"/> are always the same. 
-        /// Other attributes are instanciated (by calling <see cref="MemberInfo.GetCustomAttributes"/>).
+        /// Gets the specialization in this <see cref="Context"/>. 
+        /// Null if this is the leaf of the specialization path.
         /// </summary>
-        /// <param name="attributeType">Type that must be supported by the attributes.</param>
-        /// <returns>A set of attributes that are guaranteed to be assignable to <paramref name="attributeType"/>.</returns>
-        public IEnumerable<object> GetCustomAttributes( Type attributeType )
-        {
-            return DoGetCustomAttributes( AmbientTypeInfo.Type, attributeType );
-        }
+        /// <remarks>
+        /// Masking (the C# new keyword) should be used on specialization to offer covariance for this property.
+        /// </remarks>
+        protected AmbientContextTypeInfo<T> Specialization { get { return _specialization; } }
 
         /// <summary>
-        /// Gets attributes on a <see cref="MethodInfo"/> that are assignable to <paramref name="attributeType"/>.
-        /// Instances of attributes that support <see cref="IAttributeAmbientContextBound"/> are always the same. 
-        /// Other attributes are instanciated (by calling <see cref="MemberInfo.GetCustomAttributes"/>).
+        /// Gets whether this Type (that is abstract) must actually be considered as an abstract type or not.
+        /// An abstract class may be considered as concrete if there is a way to concretize an instance. 
+        /// This is called only for abstract types and if <paramref name="assembly"/> is not null.
         /// </summary>
-        /// <param name="m">Method of <see cref="Type"/>.</param>
-        /// <param name="attributeType">Type that must be supported by the attributes.</param>
-        /// <returns>A set of attributes that are guaranteed to be assignable to <paramref name="attributeType"/>.</returns>
-        public IEnumerable<object> GetCustomAttributes( MethodInfo m, Type attributeType )
+        /// <param name="logger">The logger to use.</param>
+        /// <param name="assembly">The dynamic assembly to use for generated types if necessary.</param>
+        internal protected virtual bool AbstractTypeCanBeInstanciated( IActivityLogger logger, DynamicAssembly assembly )
         {
-            return DoGetCustomAttributes( m, attributeType );
+            Debug.Assert( AmbientTypeInfo.Type.IsAbstract && assembly != null );
+            return false;
         }
 
-        /// <summary>
-        /// Gets attributes on a <see cref="PropertyInfo"/> that are assignable to <paramref name="attributeType"/>.
-        /// Instances of attributes that support <see cref="IAttributeAmbientContextBound"/> are always the same. 
-        /// Other attributes are instanciated (by calling <see cref="MemberInfo.GetCustomAttributes"/>).
-        /// </summary>
-        /// <param name="p">Property of <see cref="Type"/>.</param>
-        /// <param name="attributeType">Type that must be supported by the attributes.</param>
-        /// <returns>A set of attributes that are guaranteed to be assignable to <paramref name="attributeType"/>.</returns>
-        public IEnumerable<object> GetCustomAttributes( PropertyInfo p, Type attributeType )
+        internal List<TC> CreatePathType<TC>( List<TC> path )
+            where TC : AmbientContextTypeInfo<T>
         {
-            return DoGetCustomAttributes( p, attributeType );
+            if( AmbientTypeInfo.Generalization != null ) AmbientTypeInfo.Generalization.CreateContextTypeInfo<T,TC>( Context, (TC)this ).CreatePathType( path );
+            path.Add( (TC)this );
+            return path;
         }
 
-        IEnumerable<object> DoGetCustomAttributes( MemberInfo m, Type attributeType )
+        public override string ToString()
         {
-            return _all.Where( e => e.M == m && attributeType.IsAssignableFrom( e.Attr.GetType() ) ).Select( e => e.Attr )
-                    .Concat( m.GetCustomAttributes( attributeType, false ).Where( a => !(a is IAttributeAmbientContextBound) ) );
+            return AmbientContractCollector.FormatContextualFullName( Context, Type );
         }
     }
 

@@ -9,12 +9,12 @@ namespace CK.Setup
 {
     public class StObjCollectorContextualResult : IContextualResult
     {
-        readonly AmbientContractCollectorContextualResult<StObjTypeInfo> _contractResult;
+        readonly AmbientContractCollectorContextualResult<StObjTypeInfo,MutableItem> _contractResult;
         readonly StObjContextualMapper _mappings;
         readonly internal MutableItem[] _specializations;
         bool _fatalError;
 
-        internal StObjCollectorContextualResult( AmbientContractCollectorContextualResult<StObjTypeInfo> contractResult, StObjContextualMapper mappings )
+        internal StObjCollectorContextualResult( AmbientContractCollectorContextualResult<StObjTypeInfo, MutableItem> contractResult, StObjContextualMapper mappings )
         {
             _contractResult = contractResult;
             _mappings = mappings;
@@ -45,7 +45,7 @@ namespace CK.Setup
             get { return _mappings; }
         }
 
-        internal AmbientContractCollectorContextualResult<StObjTypeInfo> AmbientContractResult
+        internal AmbientContractCollectorContextualResult<StObjTypeInfo, MutableItem> AmbientContractResult
         {
             get { return _contractResult; }
         }

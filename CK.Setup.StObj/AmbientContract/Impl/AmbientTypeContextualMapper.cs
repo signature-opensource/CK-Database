@@ -38,13 +38,15 @@ namespace CK.Core
     /// <summary>
     /// Internal implementation of <see cref="IAmbientTypeContextualMapper"/> exposed by <see cref="IAmbientTypeMapper"/>.
     /// </summary>
-    internal class AmbientTypeContextualMapper : IAmbientTypeContextualMapper
+    internal class AmbientTypeContextualMapper<T,TC> : IAmbientTypeContextualMapper
+        where T : AmbientTypeInfo
+        where TC : AmbientContextTypeInfo<T>
     {
-        Dictionary<object,Type> _map;
+        Dictionary<object,TC> _map;
         string _context;
         AmbientTypeMapper _owner;
 
-        internal AmbientTypeContextualMapper( AmbientTypeMapper owner, string context, Dictionary<object, Type> m )
+        internal AmbientTypeContextualMapper( AmbientTypeMapper owner, string context, Dictionary<object, TC> m )
         {
             Debug.Assert( context != null );
             _context = context;
@@ -65,7 +67,12 @@ namespace CK.Core
 
         public Type this[Type t]
         {
-            get { return _map.GetValueWithDefault( t, null ); }
+            get 
+            {
+                TC ctxType;
+                if( _map.TryGetValue( t, out ctxType ) ) return ctxType.AmbientTypeInfo.Type; 
+                return null; 
+            }
         }
 
         public Type HighestImplementation( Type ambientContractInterface )
@@ -75,13 +82,17 @@ namespace CK.Core
             {
                 throw new ArgumentException( "Must be an interface that specializes IAmbientContract.", "ambientContractInterface" );
             }
-            return _map.GetValueWithDefault( new AmbientContractInterfaceKey( ambientContractInterface ), null ); 
+            TC ctxType;
+            if( _map.TryGetValue( new AmbientContractInterfaceKey( ambientContractInterface ), out ctxType ) ) return ctxType.AmbientTypeInfo.Type;
+            return null;
         }
 
-        public Type HighestImplementation<T>() where T : class, IAmbientContract
+        public Type HighestImplementation<TInterface>() where TInterface : class, IAmbientContract
         {
-            if( !typeof( T ).IsInterface ) throw new ArgumentException( "Must be the type of an interface.", "T" );
-            return _map.GetValueWithDefault( new AmbientContractInterfaceKey( typeof( T ) ), null );
+            if( !typeof( TInterface ).IsInterface ) throw new ArgumentException( "Must be the type of an interface.", "T" );
+            TC ctxType;
+            if( _map.TryGetValue( new AmbientContractInterfaceKey( typeof( TInterface ) ), out ctxType ) ) return ctxType.AmbientTypeInfo.Type;
+            return null;
         }
 
         public int Count { get { return _map.Count; } }

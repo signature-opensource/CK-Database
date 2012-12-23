@@ -6,17 +6,18 @@ using System.Diagnostics;
 
 namespace CK.Core
 {
-    public class AmbientContractCollectorContextualResult<TAmbientTypeInfo> : IContextualResult
-        where TAmbientTypeInfo : AmbientTypeInfo 
+    public class AmbientContractCollectorContextualResult<T,TC> : IContextualResult
+        where T : AmbientTypeInfo
+        where TC : AmbientContextTypeInfo<T>
     {
-        AmbientTypeContextualMapper _mappings;
-        IReadOnlyList<IReadOnlyList<TAmbientTypeInfo>> _concreteClassesPath;
+        AmbientTypeContextualMapper<T,TC> _mappings;
+        IReadOnlyList<IReadOnlyList<TC>> _concreteClassesPath;
         IReadOnlyList<IReadOnlyList<Type>> _classAmbiguities;
         IReadOnlyList<IReadOnlyList<Type>> _interfaceAmbiguities;
         IReadOnlyList<Type> _abstractTails;
 
-        internal AmbientContractCollectorContextualResult( AmbientTypeContextualMapper mappings,
-                                IReadOnlyList<IReadOnlyList<TAmbientTypeInfo>> concreteClasses,
+        internal AmbientContractCollectorContextualResult( AmbientTypeContextualMapper<T, TC> mappings,
+                                IReadOnlyList<IReadOnlyList<TC>> concreteClasses,
                                 IReadOnlyList<IReadOnlyList<Type>> classAmbiguities,
                                 IReadOnlyList<IReadOnlyList<Type>> interfaceAmbiguities,
                                 IReadOnlyList<Type> abstractTails )
@@ -49,7 +50,7 @@ namespace CK.Core
         /// Gets all the paths from <see cref="IAmbientContract"/> base classes to their most specialized concrete classes 
         /// that this context contains.
         /// </summary>
-        public IReadOnlyList<IReadOnlyList<TAmbientTypeInfo>> ConcreteClasses
+        public IReadOnlyList<IReadOnlyList<TC>> ConcreteClasses
         {
             get { return _concreteClassesPath; }
         }

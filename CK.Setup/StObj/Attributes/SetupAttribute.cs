@@ -139,9 +139,9 @@ namespace CK.Setup
             return (SetupAttribute)t.GetCustomAttributes( typeof( SetupAttribute ), false ).SingleOrDefault();
         }
 
-        internal static void ApplyAttributesConfigurator( IActivityLogger logger, Type t, StObjSetupData data )
+        internal static void ApplyAttributesConfigurator( IActivityLogger logger, StObjSetupData data )
         {
-            var all = t.GetCustomAttributes( typeof( IStObjSetupConfigurator ), false );
+            var all = data.StObj.Attributes.GetCustomAttributes<IStObjSetupConfigurator>();
             foreach( IStObjSetupConfigurator c in all )
             {
                 c.ConfigureDependentItem( logger, data );
@@ -150,7 +150,7 @@ namespace CK.Setup
 
         internal static void ApplyAttributesDynamicInitializer( IActivityLogger logger, IMutableSetupItem i, IStObj o )
         {
-            var all = o.ObjectType.GetCustomAttributes( typeof( IStObjSetupDynamicInitializer ), false );
+            var all = o.Attributes.GetCustomAttributes<IStObjSetupDynamicInitializer>();
             foreach( IStObjSetupDynamicInitializer init in all )
             {
                 init.DynamicItemInitialize( logger, i, o );
