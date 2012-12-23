@@ -15,13 +15,8 @@ namespace CK.Setup.StObj.Tests
     {
 
         [AttributeUsage( AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true, Inherited = false )]
-        public class AutoImplementMethodAttribute : Attribute, IAutoImplementorMethod
+        public class AutoImplementMethodAttribute : Attribute, IAttributeAutoImplemented
         {
-            public bool Implement( IActivityLogger logger, MethodInfo m, TypeBuilder b )
-            {
-                CK.Reflection.EmitHelper.ImplementStubMethod( b, m );
-                return true;
-            }
         }
 
         internal abstract class ABase

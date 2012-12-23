@@ -37,15 +37,14 @@ namespace CK.Setup.SqlServer
             Debug.Assert( stObj.ItemKind == DependentItemKind.Container, "Since it is a SqlPackageBase." );
             Debug.Assert( item is IMutableSetupItemContainer );
 
-            SqlPackageBaseItem p = (SqlPackageBaseItem)item;
-            SqlPackageBase obj = (SqlPackageBase)stObj.Object;
+            SqlPackageBaseItem packageItem = (SqlPackageBaseItem)item;
 
             foreach( var n in CommaSeparatedObjectNames.Split( ',' ) )
             {
                 string nTrimmed = n.Trim();
                 if( nTrimmed.Length > 0 )
                 {
-                    var protoObject = LoadScriptFromResource( logger, item, p, obj, nTrimmed );
+                    var protoObject = LoadProtoItemFromResource( logger, packageItem, nTrimmed );
                     if( protoObject != null )
                     {
                         SqlObjectItem subItem = protoObject.CreateItem( logger );
@@ -55,12 +54,13 @@ namespace CK.Setup.SqlServer
             }
         }
 
-        static private SqlObjectProtoItem LoadScriptFromResource( IActivityLogger logger, IMutableSetupItem item, SqlPackageBaseItem p, SqlPackageBase obj, string objectName )
+        static internal SqlObjectProtoItem LoadProtoItemFromResource( IActivityLogger logger, SqlPackageBaseItem packageItem, string objectName )
         {
+            SqlPackageBase package = packageItem.Object;
             int schemaDot = objectName.IndexOf( '.' );
-            string externalSchema = obj.Schema;
+            string externalSchema = package.Schema;
             string fileName = objectName + ".sql";
-            string text = p.ResourceLocation.GetString( fileName, false );
+            string text = packageItem.ResourceLocation.GetString( fileName, false );
             if( text == null )
             {
                 string failed = fileName;
@@ -76,7 +76,7 @@ namespace CK.Setup.SqlServer
                     objectName = objectName.Substring( schemaDot + 1 );
                     fileName = objectName + ".sql";
                 }
-                text = p.ResourceLocation.GetString( fileName, false );
+                text = packageItem.ResourceLocation.GetString( fileName, false );
                 if( text == null )
                 {
                     logger.Error( "Resource for '{0}' not found (tried '{1}' and '{2}').", objectName, fileName, failed );
@@ -89,7 +89,7 @@ namespace CK.Setup.SqlServer
                 objectName = objectName.Substring( schemaDot + 1 );
             }
 
-            SqlObjectProtoItem protoObject = SqlObjectParser.Create( logger, item, text );
+            SqlObjectProtoItem protoObject = SqlObjectParser.Create( logger, packageItem, text );
             if( protoObject != null )
             {
                 if( protoObject.ObjectName != objectName )

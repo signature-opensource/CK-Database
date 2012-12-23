@@ -72,11 +72,17 @@ namespace CK.Core
         readonly IAmbientContractDispatcher _contextDispatcher;
         readonly Func<IActivityLogger,TAmbientTypeInfo,Type,TAmbientTypeInfo> _typeInfoFactory;
         readonly IActivityLogger _logger;
+        readonly DynamicAssembly _assembly;
 
-        public AmbientContractCollector( IActivityLogger logger, Func<IActivityLogger,TAmbientTypeInfo,Type,TAmbientTypeInfo> typeInfoFactory, IAmbientContractDispatcher contextDispatcher = null )
+        public AmbientContractCollector( 
+            IActivityLogger logger, 
+            Func<IActivityLogger,TAmbientTypeInfo,Type,TAmbientTypeInfo> typeInfoFactory, 
+            DynamicAssembly assembly = null, 
+            IAmbientContractDispatcher contextDispatcher = null )
         {
             _logger = logger;
             _contextDispatcher = contextDispatcher;
+            _assembly = assembly;
             _collector = new Dictionary<Type, TAmbientTypeInfo>();
             _roots = new List<TAmbientTypeInfo>();
             _typeInfoFactory = typeInfoFactory;
@@ -158,6 +164,7 @@ namespace CK.Core
         {
             public readonly string Context;
             readonly IActivityLogger _logger;
+            readonly DynamicAssembly _assembly;
 
             Dictionary<object,Type> _mappings;
             List<List<TAmbientTypeInfo>> _concreteClasses;
@@ -166,10 +173,12 @@ namespace CK.Core
             int _registeredCount;
 
 
-            public PreResult( IActivityLogger logger, string c )
+            public PreResult( IActivityLogger logger, string c, DynamicAssembly assembly )
             {
+                Debug.Assert( c != null );
                 Context = c;
                 _logger = logger;
+                _assembly = assembly;
                 _mappings = new Dictionary<object, Type>();
                 _concreteClasses = new List<List<TAmbientTypeInfo>>();
                 _abstractTails = new List<Type>();
@@ -181,7 +190,7 @@ namespace CK.Core
                 if( newOne.Generalization == null )
                 {
                     List<AmbientTypeInfo> deepestConcretes = new List<AmbientTypeInfo>();
-                    newOne.CollectDeepestConcrete( _logger, deepestConcretes, _abstractTails, Context );
+                    newOne.CollectDeepestConcrete( _logger, _assembly, deepestConcretes, _abstractTails, Context );
                     if( deepestConcretes.Count == 1 )
                     {
                         var last = deepestConcretes[0];
@@ -244,10 +253,10 @@ namespace CK.Core
         public AmbientContractCollectorResult<TAmbientTypeInfo> GetResult()
         {
             var byContext = new Dictionary<string, PreResult>();
-            byContext.Add( String.Empty, new PreResult( _logger, String.Empty ) );
+            byContext.Add( String.Empty, new PreResult( _logger, String.Empty, _assembly ) );
             foreach( AmbientTypeInfo m in _roots )
             {
-                HandleContexts( _logger, m, byContext );
+                HandleContexts( _logger, m, _assembly, byContext );
             }
             
             var mappings = new AmbientTypeMapper();
@@ -265,16 +274,16 @@ namespace CK.Core
             return t != typeof( IAmbientContract ) && typeof( IAmbientContract ).IsAssignableFrom( t );
         }
 
-        static void HandleContexts( IActivityLogger logger, AmbientTypeInfo m, Dictionary<string, PreResult> contexts )
+        static void HandleContexts( IActivityLogger logger, AmbientTypeInfo m, DynamicAssembly assembly, Dictionary<string, PreResult> contexts )
         {
             foreach( AmbientTypeInfo child in m.SpecializationsByContext( null ) )
             {
-                HandleContexts( logger, child, contexts );
+                HandleContexts( logger, child, assembly, contexts );
                 m.MutableFinalContexts.AddRange( child.MutableFinalContexts );
             }
             foreach( string context in m.MutableFinalContexts )
             {
-                contexts.GetOrSet( context, c => new PreResult( logger, c ) ).Add( m );
+                contexts.GetOrSet( context, c => new PreResult( logger, c, assembly ) ).Add( m );
             }
         }
 

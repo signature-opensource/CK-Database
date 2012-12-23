@@ -5,15 +5,19 @@ using System.Text;
 using CK.Core;
 using CK.Setup.Database;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace CK.Setup.SqlServer
 {
     public class SqlProcedureItem : SqlObjectItem
     {
-        internal SqlProcedureItem( SqlObjectProtoItem p )
+        readonly MethodInfo _m;
+
+        internal SqlProcedureItem( SqlObjectProtoItem p, MethodInfo m = null )
             : base( p )
         {
             Debug.Assert( p.ItemType == SqlObjectProtoItem.TypeProcedure );
+            _m = m;
         }
 
 

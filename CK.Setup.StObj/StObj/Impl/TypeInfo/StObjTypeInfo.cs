@@ -261,16 +261,17 @@ namespace CK.Setup
             }
             #endregion
 
+            // IStObjStructuralConfigurator attributes are not bound to Contextualized types (MutableItems) since they 
             ConfiguratorAttributes = (IStObjStructuralConfigurator[])Type.GetCustomAttributes( typeof( IStObjStructuralConfigurator ), false );
         }
 
-        protected override bool AbstractTypeCanBeInstanciated( IActivityLogger logger )
+        protected override bool AbstractTypeCanBeInstanciated( IActivityLogger logger, DynamicAssembly assembly )
         {
-            Debug.Assert( TypeImplementor == null );
-            var am = TypeImplementor.GetAutoImplementMethodsFromAttributes( logger, Type );
-            if( am != null )
+            Debug.Assert( ImplementableTypeInfo == null );
+            ImplementableTypeInfo = ImplementableTypeInfo.GetImplementableTypeInfo( logger, Type );
+            if( ImplementableTypeInfo != null )
             {
-                TypeImplementor = new TypeImplementor( Type, am );
+                StubType = assembly.CreateStubType( logger, ImplementableTypeInfo );
                 return true;
             }
             return false;
@@ -312,17 +313,13 @@ namespace CK.Setup
 
         public readonly IStObjStructuralConfigurator[] ConfiguratorAttributes;
 
-        public TypeImplementor TypeImplementor { get; private set; }
+        public ImplementableTypeInfo ImplementableTypeInfo { get; private set; }      
+
+        public Type StubType { get; private set; }
 
         public object CreateInstance( IActivityLogger logger )
         {
-            if( TypeImplementor != null )
-            {
-                Type t = TypeImplementor.CreateType( logger, false );
-                if( t == null ) return null;
-                return Activator.CreateInstance( t );
-            }
-            return Activator.CreateInstance( Type );
+            return Activator.CreateInstance( StubType ?? Type );
         }
 
         public string FindContextFromMapAttributes( Type t )

@@ -55,7 +55,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets or sets the type of the <see cref="IDependentItem"/> to use instead of the default <see cref="StObjDynamicPackageItem"/>. 
         /// When set, this masks the <see cref="ItemTypeName"/> property,  otherwise ItemTypeName can be used to 
-        /// designate a specific IDependentItem.
+        /// designate a specific IDependentItem type.
         /// This property is inherited.
         /// </summary>
         Type ItemType { get; set; }

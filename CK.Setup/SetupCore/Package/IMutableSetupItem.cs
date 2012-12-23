@@ -7,7 +7,7 @@ namespace CK.Setup
 {
     /// <summary>
     /// A mutable version of an <see cref="ISetupItem"/>.
-    /// Note that <see cref="IMutableSetupItemGroup"/> offers children collection.
+    /// Note that the specialized <see cref="IMutableSetupItemGroup"/> offers children collection.
     /// Its <see cref="IContextLocNaming.Context">Context</see>, <see cref="IContextLocNaming.Location">Location</see>, <see cref="IContextLocNaming.Name">Name</see> 
     /// and <see cref="ISetupItem.FullName">FullName</see> (that identify the item) and <see cref="ItemKind"/> can not be changed through this interface.
     /// </summary>

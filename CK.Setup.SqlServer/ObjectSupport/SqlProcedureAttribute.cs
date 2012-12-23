@@ -8,19 +8,27 @@ using System.Reflection;
 
 namespace CK.Setup.SqlServer
 {
-    public class SqlProcedureAttribute : IAutoImplementorMethod
+    [AttributeUsage( AttributeTargets.Method, AllowMultiple = false, Inherited = false )]
+    public class SqlProcedureAttribute : Attribute, IAttributeAutoImplemented, IStObjSetupDynamicInitializer
     {
-        public SqlProcedureAttribute( string schemaName )
+        MethodInfo _method;
+
+        public SqlProcedureAttribute( string procedureName )
         {
-            SchemaName = schemaName;
+            ProcedureName = procedureName;
         }
 
-        public string SchemaName { get; private set; }
+        public string ProcedureName { get; private set; }
 
-        bool IAutoImplementorMethod.Implement( IActivityLogger logger, MethodInfo m, TypeBuilder b )
+        void IStObjSetupDynamicInitializer.DynamicItemInitialize( IActivityLogger logger, IMutableSetupItem item, IStObj stObj )
         {
-            CK.Reflection.EmitHelper.ImplementStubMethod( b, m, true );
-            return true;
+            SqlPackageBaseItem p;
+
+            SqlObjectProtoItem proto = SqlObjectItemAttribute.LoadProtoItemFromResource( logger, (SqlPackageBaseItem)item, ProcedureName );
+            if( proto == null ) return;
+  
+
         }
+
     }
 }

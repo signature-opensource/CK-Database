@@ -22,6 +22,7 @@ namespace CK.Setup
         readonly IStObjStructuralConfigurator _configurator;
         readonly IStObjValueResolver _valueResolver;
         readonly IActivityLogger _logger;
+        readonly DynamicAssembly _assembly;
         int _registerFatalOrErrorCount;
 
         /// <summary>
@@ -35,7 +36,8 @@ namespace CK.Setup
         {
             if( logger == null ) throw new ArgumentNullException( "logger" );
             _logger = logger;
-            _cc = new AmbientContractCollector<StObjTypeInfo>( _logger, ( l, p, t ) => new StObjTypeInfo( l, p, t ), dispatcher );
+            _assembly = new DynamicAssembly();
+            _cc = new AmbientContractCollector<StObjTypeInfo>( _logger, ( l, p, t ) => new StObjTypeInfo( l, p, t ), _assembly, dispatcher );
             _configurator = configurator;
             _valueResolver = dependencyResolver;
         }

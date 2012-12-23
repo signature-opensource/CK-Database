@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using System.Diagnostics;
 using CK.Core;
+using System.Reflection;
 
 namespace CK.Setup.SqlServer
 {
@@ -90,6 +91,13 @@ namespace CK.Setup.SqlServer
             Groups = groups;
             PreviousNames = prevNames;
             TextAfterName = textAfterName;
+        }
+
+        public SqlProcedureItem CreateProcedureItem( IActivityLogger logger, MethodInfo m )
+        {
+            if( logger == null ) throw new ArgumentNullException( "logger" );
+            if( ItemType != SqlObjectProtoItem.TypeProcedure ) throw new InvalidOperationException( "Not a procedure." );
+            return new SqlProcedureItem( this, m );
         }
 
         public SqlObjectItem CreateItem( IActivityLogger logger )

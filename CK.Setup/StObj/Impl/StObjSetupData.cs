@@ -70,7 +70,7 @@ namespace CK.Setup
             set { _versions = value; }
         }
 
-        internal void ResolveTypes( IActivityLogger logger )
+        internal void ResolveItemAndDriverTypes( IActivityLogger logger )
         {
             if( ItemType == null && ItemTypeName != null ) ItemType = SimpleTypeFinder.WeakDefault.ResolveType( ItemTypeName, true );
             if( DriverType == null && DriverTypeName != null ) DriverType = SimpleTypeFinder.WeakDefault.ResolveType( DriverTypeName, true );

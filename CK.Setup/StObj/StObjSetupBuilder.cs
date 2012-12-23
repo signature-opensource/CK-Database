@@ -35,26 +35,7 @@ namespace CK.Setup
             var setupableItems = new Dictionary<IStObj, StObjSetupData>();
             BuildSetupItems( orderedObjects, setupableItems );
             BindDependencies( setupableItems );
-            foreach( var o in orderedObjects )
-            {
-                string callStep = null;
-                IMutableSetupItem item = setupableItems[o].SetupItem;
-                try
-                {
-                    callStep = "Attributes";
-                    SetupAttribute.ApplyAttributesDynamicInitializer( _logger, item, o );
-                    callStep = "Structured Object itself";
-                    if( o.Object is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)o.Object).DynamicItemInitialize( _logger, item, o );
-                    callStep = "Setup Item itself";
-                    if( item is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)item).DynamicItemInitialize( _logger, item, o );
-                    callStep = "global StObjSetupBuilder initializer";
-                    if( _dynamicInitializer != null ) _dynamicInitializer.DynamicItemInitialize( _logger, item, o );
-                }
-                catch( Exception ex )
-                {
-                    _logger.Error( ex, "While Dynamic item initialization (from {2}) of '{0}' for object '{1}'.", item.FullName, o.ObjectType.Name, callStep );
-                }
-            }
+            CallDynamicInitializer( orderedObjects, setupableItems );
             return setupableItems.Values.Select( data => data.SetupItem );
         }
 
@@ -88,7 +69,7 @@ namespace CK.Setup
                     // Creates the IMutableDependentItem (or StObjDynamicPackageItem) configured with the StObjSetupData.
                     try
                     {
-                        data.ResolveTypes( _logger );
+                        data.ResolveItemAndDriverTypes( _logger );
                         if( _setupItemFactory != null ) data.SetupItem = _setupItemFactory.CreateDependentItem( _logger, data );
                         if( data.SetupItem != null )
                         {
@@ -214,5 +195,30 @@ namespace CK.Setup
                 }
             }
         }
+
+        void CallDynamicInitializer( IReadOnlyList<IStObj> orderedObjects, Dictionary<IStObj, StObjSetupData> setupableItems )
+        {
+            foreach( var o in orderedObjects )
+            {
+                string initSource = null;
+                IMutableSetupItem item = setupableItems[o].SetupItem;
+                try
+                {
+                    initSource = "Attributes";
+                    SetupAttribute.ApplyAttributesDynamicInitializer( _logger, item, o );
+                    initSource = "Structured Object itself";
+                    if( o.Object is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)o.Object).DynamicItemInitialize( _logger, item, o );
+                    initSource = "Setup Item itself";
+                    if( item is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)item).DynamicItemInitialize( _logger, item, o );
+                    initSource = "global StObjSetupBuilder initializer";
+                    if( _dynamicInitializer != null ) _dynamicInitializer.DynamicItemInitialize( _logger, item, o );
+                }
+                catch( Exception ex )
+                {
+                    _logger.Error( ex, "While Dynamic item initialization (from {2}) of '{0}' for object '{1}'.", item.FullName, o.ObjectType.Name, initSource );
+                }
+            }
+        }
+
     }
 }

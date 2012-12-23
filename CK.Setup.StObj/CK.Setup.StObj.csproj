@@ -37,6 +37,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\CK.Core.2.7.42\lib\net40\CK.Core.dll</HintPath>
     </Reference>
+    <Reference Include="CK.Reflection">
+      <HintPath>..\packages\CK.Reflection.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
   </ItemGroup>
@@ -50,15 +53,21 @@
     <Compile Include="AmbientContract\AmbientContractCollectorContextualResult.cs" />
     <Compile Include="AmbientContract\IAmbientTypeContextualMapper.cs" />
     <Compile Include="AmbientContract\IAmbientTypeMapper.cs" />
+    <Compile Include="AmbientContract\IAttributeAmbientContextBound.cs" />
     <Compile Include="AmbientContract\Impl\AmbientTypeContextualMapper.cs" />
     <Compile Include="AmbientContract\Impl\AmbientTypeMapper.cs" />
     <Compile Include="AmbientContract\IAmbientContractDispatcher.cs" />
+    <Compile Include="AmbientContract\AmbientContextTypeInfo.cs" />
     <Compile Include="AmbientContract\Impl\IContextualResult.cs" />
     <Compile Include="AmbientContract\AmbientContractCollectorResult.cs" />
     <Compile Include="AmbientContract\Impl\MultiContextualResult.cs" />
     <Compile Include="AssemblyRegisterer.cs" />
     <Compile Include="AssemblyRegistererConfiguration.cs" />
+    <Compile Include="AutoImplementor\DynamicAssembly.cs" />
+    <Compile Include="AutoImplementor\IAttributeAutoImplemented.cs" />
     <Compile Include="AutoImplementor\IAutoImplementorMethod.cs" />
+    <Compile Include="AutoImplementor\ImplementableTypeInfo.cs" />
+    <Compile Include="AutoImplementor\PreventAutoImplementationAttribute.cs" />
     <Compile Include="AutoImplementor\TypeImplementor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StObj\Impl\TypeInfo\AmbientPropertyInfo.cs" />

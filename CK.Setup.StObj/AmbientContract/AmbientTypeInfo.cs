@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Diagnostics;
+using System.Linq;
 
 namespace CK.Core
 {
+
     /// <summary>
     /// Encapsulate type information for an Ambient Contract class and offers a <see cref="FinalContexts"/> collection that 
     /// exposes the different contexts that contain the type.
@@ -59,13 +59,15 @@ namespace CK.Core
         /// <summary>
         /// Gets whether this <see cref="Type"/> (that is abstract) must actually be considered as an abstract type or not.
         /// An abstract class may be considered as concrete if there is a way to concretize an instance. 
+        /// This is called only for abstract types and if <paramref name="assembly"/> is not null.
         /// </summary>
-        protected virtual bool AbstractTypeCanBeInstanciated( IActivityLogger logger )
+        /// <param name="logger">The logger to use.</param>
+        /// <param name="assembly">The dynamic assembly to use for generated types.</param>
+        protected virtual bool AbstractTypeCanBeInstanciated( IActivityLogger logger, DynamicAssembly assembly )
         {
-            Debug.Assert( Type.IsAbstract );
+            Debug.Assert( Type.IsAbstract && assembly != null );
             return false;
         }
-
 
         Type[] EnsureAllAmbientInterfaces( Func<Type,bool> ambientInterfacePredicate )
         {
@@ -94,21 +96,22 @@ namespace CK.Core
             }
         }
 
-        internal bool CollectDeepestConcrete( IActivityLogger logger, List<AmbientTypeInfo> lastConcretes, List<Type> abstractTails, string context = null )
+        internal bool CollectDeepestConcrete( IActivityLogger logger, DynamicAssembly assembly, List<AmbientTypeInfo> lastConcretes, List<Type> abstractTails, string context )
         {
+            Debug.Assert( context != null );
             bool concreteBelow = false;
             AmbientTypeInfo c = _firstChild;
             while( c != null )
             {
-                if( context == null || c.MutableFinalContexts.Contains( context ) )
+                if( c.MutableFinalContexts.Contains( context ) )
                 {
-                    concreteBelow |= c.CollectDeepestConcrete( logger, lastConcretes, abstractTails, context );
+                    concreteBelow |= c.CollectDeepestConcrete( logger, assembly, lastConcretes, abstractTails, context );
                 }
                 c = c._nextSibling;
             }
             if( !concreteBelow )
             {
-                if( Type.IsAbstract && !AbstractTypeCanBeInstanciated( logger ) )
+                if( Type.IsAbstract && (assembly == null || !AbstractTypeCanBeInstanciated( logger, assembly )) )
                 {
                     abstractTails.Add( Type );
                 }

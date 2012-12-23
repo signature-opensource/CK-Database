@@ -8,6 +8,8 @@ using CK.Setup.StObj.Tests;
 
 namespace CK.Setup.Tests
 {
+
+    [PreventAutoImplementation]
     public abstract class AbstractBase
     {
     }
@@ -24,10 +26,12 @@ namespace CK.Setup.Tests
     {
     }
 
+    [PreventAutoImplementation]
     public abstract class AmbientChildAbstractTail : AmbientChild
     {
     }
 
+    [PreventAutoImplementation]
     public abstract class AbstractAmbient : AbstractBase, IAmbientContract
     {
     }
@@ -61,7 +65,7 @@ namespace CK.Setup.Tests
     public class DefaultAmbientContractCollector : AmbientContractCollector<AmbientTypeInfo>
     {
         public DefaultAmbientContractCollector( IActivityLogger logger = null, IAmbientContractDispatcher contextDispatcher = null )
-            : base( logger ?? DefaultActivityLogger.Empty, ( l, p, t ) => new AmbientTypeInfo( p, t ), contextDispatcher )
+            : base( logger ?? DefaultActivityLogger.Empty, ( l, p, t ) => new AmbientTypeInfo( p, t ), null, contextDispatcher )
         {
         }
     }
