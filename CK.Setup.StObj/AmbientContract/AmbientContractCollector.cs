@@ -52,8 +52,9 @@ namespace CK.Core
         
     }
 
-    public class AmbientContractCollector<TAmbientTypeInfo> : AmbientContractCollector
-        where TAmbientTypeInfo : AmbientTypeInfo
+    public class AmbientContractCollector<T,TC> : AmbientContractCollector
+        where T : AmbientTypeInfo
+        where TC : AmbientContextTypeInfo<T>
     {
         // Today, this collector contains 2 kind of information:
         // - Type Classes mapped to their AmbientTypeInfo if considered as an Ambient contract.
@@ -67,24 +68,24 @@ namespace CK.Core
         //
         // But for the moment, interfaces can only be marked as Ambient contract statically.
         //
-        readonly Dictionary<Type, TAmbientTypeInfo> _collector;
-        readonly List<TAmbientTypeInfo> _roots;
+        readonly Dictionary<Type, T> _collector;
+        readonly List<T> _roots;
         readonly IAmbientContractDispatcher _contextDispatcher;
-        readonly Func<IActivityLogger,TAmbientTypeInfo,Type,TAmbientTypeInfo> _typeInfoFactory;
+        readonly Func<IActivityLogger,T,Type,T> _typeInfoFactory;
         readonly IActivityLogger _logger;
         readonly DynamicAssembly _assembly;
 
         public AmbientContractCollector( 
             IActivityLogger logger, 
-            Func<IActivityLogger,TAmbientTypeInfo,Type,TAmbientTypeInfo> typeInfoFactory, 
+            Func<IActivityLogger,T,Type,T> typeInfoFactory, 
             DynamicAssembly assembly = null, 
             IAmbientContractDispatcher contextDispatcher = null )
         {
             _logger = logger;
             _contextDispatcher = contextDispatcher;
             _assembly = assembly;
-            _collector = new Dictionary<Type, TAmbientTypeInfo>();
-            _roots = new List<TAmbientTypeInfo>();
+            _collector = new Dictionary<Type, T>();
+            _roots = new List<T>();
             _typeInfoFactory = typeInfoFactory;
         }
 
@@ -103,7 +104,7 @@ namespace CK.Core
             if( types == null ) throw new ArgumentNullException( "types" );
             foreach( var t in types.Where( c => c != null && c.IsClass && c != typeof(object) ) )
             {
-                TAmbientTypeInfo result;
+                T result;
                 Register( t, out result );
             }
         }
@@ -117,11 +118,11 @@ namespace CK.Core
         {
             if( c == null ) throw new ArgumentNullException( "c" );
             if( !c.IsClass ) throw new ArgumentException();
-            TAmbientTypeInfo result;
+            T result;
             return c != typeof(object) ? Register( c, out result ) : false;
         }
 
-        bool Register( Type t, out TAmbientTypeInfo result )
+        bool Register( Type t, out T result )
         {
             Debug.Assert( t != null && t != typeof( object ) && t.IsClass );
 
@@ -129,7 +130,7 @@ namespace CK.Core
             if( _collector.TryGetValue( t, out result ) ) return false;
 
             // Registers parent types whatever they are (null if not AmbientContract).
-            TAmbientTypeInfo parent = null;
+            T parent = null;
             if( t.BaseType != typeof( object ) ) Register( t.BaseType, out parent );
 
             // This is an Ambient contract if:
@@ -151,9 +152,9 @@ namespace CK.Core
             return true;
         }
 
-        TAmbientTypeInfo CreateTypeInfo( Type t, TAmbientTypeInfo parent )
+        T CreateTypeInfo( Type t, T parent )
         {
-            TAmbientTypeInfo result = _typeInfoFactory( _logger, parent, t );
+            T result = _typeInfoFactory( _logger, parent, t );
             if( parent == null ) _roots.Add( result );
             _collector.Add( t, result );
             if( _contextDispatcher != null ) _contextDispatcher.Dispatch( t, result.MutableFinalContexts );
@@ -166,8 +167,8 @@ namespace CK.Core
             readonly IActivityLogger _logger;
             readonly DynamicAssembly _assembly;
 
-            Dictionary<object,Type> _mappings;
-            List<List<TAmbientTypeInfo>> _concreteClasses;
+            Dictionary<object,TC> _mappings;
+            List<List<TC>> _concreteClasses;
             List<IReadOnlyList<Type>> _classAmbiguities;
             List<Type> _abstractTails;
             int _registeredCount;
@@ -179,8 +180,8 @@ namespace CK.Core
                 Context = c;
                 _logger = logger;
                 _assembly = assembly;
-                _mappings = new Dictionary<object, Type>();
-                _concreteClasses = new List<List<TAmbientTypeInfo>>();
+                _mappings = new Dictionary<object, TC>();
+                _concreteClasses = new List<List<TC>>();
                 _abstractTails = new List<Type>();
             }
 
@@ -189,58 +190,60 @@ namespace CK.Core
                 ++_registeredCount;
                 if( newOne.Generalization == null )
                 {
-                    List<AmbientTypeInfo> deepestConcretes = new List<AmbientTypeInfo>();
-                    newOne.CollectDeepestConcrete( _logger, _assembly, deepestConcretes, _abstractTails, Context );
+                    var deepestConcretes = new List<TC>();
+                    newOne.CollectDeepestConcrete<T,TC>( _logger, _assembly, deepestConcretes, _abstractTails, Context );
                     if( deepestConcretes.Count == 1 )
                     {
                         var last = deepestConcretes[0];
-                        var path = last.FillPath( new List<TAmbientTypeInfo>() );
+                        var path = last.CreatePathType( new List<TC>() );
                         _concreteClasses.Add( path );
-                        foreach( var m in path ) _mappings.Add( m.Type, last.Type );                    
+                        foreach( var m in path ) _mappings.Add( m.AmbientTypeInfo.Type, last );                    
                     }
                     else if( deepestConcretes.Count > 1 )
                     {
-                        deepestConcretes.Insert( 0, newOne );
+                        List<Type> ambiguousPath = new List<Type>() { newOne.Type };
+                        ambiguousPath.AddRange( deepestConcretes.Select( m => m.AmbientTypeInfo.Type ) );
+
                         if( _classAmbiguities == null ) _classAmbiguities = new List<IReadOnlyList<Type>>();
-                        _classAmbiguities.Add( deepestConcretes.Select( m => m.Type ).ToReadOnlyList() );
+                        _classAmbiguities.Add( ambiguousPath.ToReadOnlyList() );
                     }
                 }
             }
 
-            public AmbientContractCollectorContextualResult<TAmbientTypeInfo> GetResult( AmbientTypeMapper allMappings, Func<Type, bool> ambientInterfacePredicate )
+            public AmbientContractCollectorContextualResult<T,TC> GetResult( AmbientTypeMapper allMappings, Func<Type, bool> ambientInterfacePredicate )
             {
                 Dictionary<Type,List<Type>> interfaceAmbiguities = null;
-                foreach( var path in _concreteClasses )
+                foreach( List<TC> path in _concreteClasses )
                 {
-                    var finalType = path[path.Count - 1].Type;
-                    foreach( AmbientTypeInfo m in path )
+                    var finalType = path[path.Count - 1];
+                    foreach( TC ctxType in path )
                     {
-                        foreach( Type itf in m.EnsureThisAmbientInterfaces( ambientInterfacePredicate ) )
+                        foreach( Type itf in ctxType.AmbientTypeInfo.EnsureThisAmbientInterfaces( ambientInterfacePredicate ) )
                         {
-                            Type alreadyMapped;
+                            TC alreadyMapped;
                             if( _mappings.TryGetValue( itf, out alreadyMapped ) )
                             {
                                 if( interfaceAmbiguities == null ) 
                                 {
                                     interfaceAmbiguities = new Dictionary<Type,List<Type>>();
-                                    interfaceAmbiguities.Add( itf, new List<Type>() { itf, alreadyMapped, m.Type } );
+                                    interfaceAmbiguities.Add( itf, new List<Type>() { itf, alreadyMapped.AmbientTypeInfo.Type, ctxType.AmbientTypeInfo.Type } );
                                 }
                                 else
                                 {
-                                    var list = interfaceAmbiguities.GetOrSet( itf, t => new List<Type>() { itf, alreadyMapped } );
-                                    list.Add( m.Type );
+                                    var list = interfaceAmbiguities.GetOrSet( itf, t => new List<Type>() { itf, alreadyMapped.AmbientTypeInfo.Type } );
+                                    list.Add( ctxType.AmbientTypeInfo.Type );
                                 }
                             }
                             else
                             {
                                 _mappings.Add( itf, finalType );
-                                _mappings.Add( new AmbientContractInterfaceKey( itf ), m.Type );
+                                _mappings.Add( new AmbientContractInterfaceKey( itf ), ctxType );
                             }
                         }
                     }
                 }
-                AmbientTypeContextualMapper ctxMapper = new AmbientTypeContextualMapper( allMappings, Context, _mappings );
-                var ctxResult = new AmbientContractCollectorContextualResult<TAmbientTypeInfo>(
+                var ctxMapper = new AmbientTypeContextualMapper<T,TC>( allMappings, Context, _mappings );
+                var ctxResult = new AmbientContractCollectorContextualResult<T,TC>(
                     ctxMapper,
                     _concreteClasses.Select( list => list.ToReadOnlyList() ).ToReadOnlyList(),
                     _classAmbiguities != null ? new ReadOnlyListOnIList<IReadOnlyList<Type>>( _classAmbiguities ) : ReadOnlyListEmpty<IReadOnlyList<Type>>.Empty,
@@ -250,7 +253,7 @@ namespace CK.Core
             }
         }
 
-        public AmbientContractCollectorResult<TAmbientTypeInfo> GetResult()
+        public AmbientContractCollectorResult<T,TC> GetResult()
         {
             var byContext = new Dictionary<string, PreResult>();
             byContext.Add( String.Empty, new PreResult( _logger, String.Empty, _assembly ) );
@@ -260,7 +263,7 @@ namespace CK.Core
             }
             
             var mappings = new AmbientTypeMapper();
-            var r = new AmbientContractCollectorResult<TAmbientTypeInfo>( mappings, _collector );
+            var r = new AmbientContractCollectorResult<T,TC>( mappings, _collector );
             foreach( var rCtx in byContext.Values )
             {
                 r.Add( rCtx.GetResult( mappings, IsAmbientInterface ) );

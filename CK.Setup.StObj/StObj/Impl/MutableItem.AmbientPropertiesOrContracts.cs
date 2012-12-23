@@ -23,7 +23,7 @@ namespace CK.Setup
             public ListAmbientProperty( MutableItem item )
             {
                 _item = item;
-                _count = _item._objectType.AmbientProperties.Count;
+                _count = _item.AmbientTypeInfo.AmbientProperties.Count;
             }
 
             public int IndexOf( object item )
@@ -31,7 +31,7 @@ namespace CK.Setup
                 int idx = -1;
                 MutableAmbientProperty a = item as MutableAmbientProperty;
                 if( a != null
-                    && a.Owner == _item._leafSpecialization
+                    && a.Owner == _item._leafData.LeafSpecialization
                     && a.AmbientPropertyInfo.Index < _count )
                 {
                     idx = a.AmbientPropertyInfo.Index;
@@ -44,7 +44,7 @@ namespace CK.Setup
                 get
                 {
                     if( index >= _count ) throw new IndexOutOfRangeException();
-                    return _item._leafSpecialization._allAmbientProperties[index];
+                    return _item._leafData.AllAmbientProperties[index];
                 }
             }
 
@@ -60,7 +60,7 @@ namespace CK.Setup
 
             public IEnumerator<MutableAmbientProperty> GetEnumerator()
             {
-                return _item._leafSpecialization._allAmbientProperties.Take( _count ).GetEnumerator();
+                return _item._leafData.AllAmbientProperties.Take( _count ).GetEnumerator();
             }
 
             System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
@@ -83,7 +83,7 @@ namespace CK.Setup
             public ListAmbientContract( MutableItem item )
             {
                 _item = item;
-                _count = _item._objectType.AmbientContracts.Count;
+                _count = _item.AmbientTypeInfo.AmbientContracts.Count;
             }
 
             public int IndexOf( object item )
@@ -91,7 +91,7 @@ namespace CK.Setup
                 int idx = -1;
                 MutableAmbientContract c = item as MutableAmbientContract;
                 if( c != null
-                    && c.Owner == _item._leafSpecialization
+                    && c.Owner == _item._leafData.LeafSpecialization
                     && c.AmbientContractInfo.Index < _count )
                 {
                     idx = c.AmbientContractInfo.Index;
@@ -104,7 +104,7 @@ namespace CK.Setup
                 get
                 {
                     if( index >= _count ) throw new IndexOutOfRangeException();
-                    return _item._leafSpecialization._allAmbientContracts[index];
+                    return _item._leafData.AllAmbientContracts[index];
                 }
             }
 
@@ -120,7 +120,7 @@ namespace CK.Setup
 
             public IEnumerator<MutableAmbientContract> GetEnumerator()
             {
-                return _item._leafSpecialization._allAmbientContracts.Take( _count ).GetEnumerator();
+                return _item._leafData.AllAmbientContracts.Take( _count ).GetEnumerator();
             }
 
             System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
@@ -131,14 +131,14 @@ namespace CK.Setup
 
         internal void SetDirectAndResolveAmbientPropertiesOnSpecialization( IActivityLogger logger, StObjCollectorResult result, IStObjValueResolver valueResolver )
         {
-            Debug.Assert( _specialization == null && _leafSpecialization == this, "We are on the  ultimate (leaf) Specialization." );
-            if( _directPropertiesToSet != null )
+            Debug.Assert( Specialization == null && _leafData.LeafSpecialization == this, "We are on the  ultimate (leaf) Specialization." );
+            if( _leafData.DirectPropertiesToSet != null )
             {
-                foreach( var k in _directPropertiesToSet )
+                foreach( var k in _leafData.DirectPropertiesToSet )
                 {
                     try
                     {
-                        if( k.Value != Type.Missing ) k.Key.SetValue( _stObj, k.Value, null );
+                        if( k.Value != Type.Missing ) k.Key.SetValue( _leafData.StructuredObject, k.Value, null );
                     }
                     catch( Exception ex )
                     {
@@ -169,11 +169,11 @@ namespace CK.Setup
                         // If the property value is a StObj, extracts its actual value.
                         if( resolved != null )
                         {
-                            a.AmbientPropertyInfo.SettablePropertyInfo.SetValue( _stObj, resolved.Object, null );
+                            a.AmbientPropertyInfo.SettablePropertyInfo.SetValue( _leafData.StructuredObject, resolved.Object, null );
 
                             MutableItem source = this;
                             AmbientPropertyInfo sourceProp = a.AmbientPropertyInfo;
-                            Debug.Assert( sourceProp.Index < source._objectType.AmbientProperties.Count, "This is the way to test if the property is defined at the source level or not." );
+                            Debug.Assert( sourceProp.Index < source.AmbientTypeInfo.AmbientProperties.Count, "This is the way to test if the property is defined at the source level or not." );
 
                             // Walks up the chain to locate the most abstract compatible slice.
                             {
@@ -191,7 +191,7 @@ namespace CK.Setup
                             {
                                 bool sourcePropChanged = false;
                                 // If source does not define anymore sourceProp. Does it define the property with another type?
-                                while( source != null && sourceProp.Index >= source._objectType.AmbientProperties.Count )
+                                while( source != null && sourceProp.Index >= source.AmbientTypeInfo.AmbientProperties.Count )
                                 {
                                     sourcePropChanged = true;
                                     if( (sourceProp = sourceProp.Generalization) == null )
@@ -215,7 +215,7 @@ namespace CK.Setup
                                 if( resolved._trackedAmbientProperties != null ) resolved._trackedAmbientProperties.Add( new TrackedAmbientPropertyInfo( source, sourceProp ) );
                             }
                         }
-                        else a.AmbientPropertyInfo.SettablePropertyInfo.SetValue( _stObj, value, null );
+                        else a.AmbientPropertyInfo.SettablePropertyInfo.SetValue( _leafData.StructuredObject, value, null );
                     }
                     catch( Exception ex )
                     {
@@ -227,7 +227,7 @@ namespace CK.Setup
 
         MutableAmbientProperty EnsureCachedAmbientProperty( IActivityLogger logger, StObjCollectorResult result, IStObjValueResolver dependencyResolver, Type propertyType, string name, MutableAmbientProperty alreadySolved = null )
         {
-            Debug.Assert( _specialization == null );
+            Debug.Assert( Specialization == null );
             Debug.Assert( _prepareState == PrepareState.PreparedDone || _prepareState == PrepareState.CachingAmbientProperty );
             Debug.Assert( alreadySolved == null || (alreadySolved.Name == name && alreadySolved.Type == propertyType) );
 
@@ -246,7 +246,7 @@ namespace CK.Setup
                 }
                 else
                 {
-                    a = _allAmbientProperties.FirstOrDefault( p => p.Name == name );
+                    a = _leafData.AllAmbientProperties.FirstOrDefault( p => p.Name == name );
                     if( a != null && !propertyType.IsAssignableFrom( a.Type ) )
                     {
                         logger.Warn( "Looking for property named '{0}' of type '{1}': found a candidate on '{2}' but type does not match (it is '{3}'). It is ignored.", name, propertyType.Name, ToString(), a.Type.Name );
@@ -259,7 +259,7 @@ namespace CK.Setup
                     MutableItem currentLevel = this;
                     do
                     {
-                        if( currentLevel.IsOwnContainer ) a = currentLevel._dContainer._leafSpecialization.EnsureCachedAmbientProperty( logger, result, dependencyResolver, propertyType, name );
+                        if( currentLevel.IsOwnContainer ) a = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( logger, result, dependencyResolver, propertyType, name );
                         currentLevel = currentLevel.Generalization;
                     }
                     while( (a == null || a.Value == Type.Missing) && currentLevel != null );
@@ -267,7 +267,7 @@ namespace CK.Setup
                     {
                         a = new MutableAmbientProperty( this, name );
                     }
-                    _allAmbientProperties.Add( a );
+                    _leafData.AllAmbientProperties.Add( a );
                     Debug.Assert( a.IsFinalValue );
                 }
                 if( a.IsFinalValue ) return a;
@@ -279,7 +279,7 @@ namespace CK.Setup
                     MutableItem currentLevel = this;
                     do
                     {
-                        if( currentLevel.IsOwnContainer ) found = currentLevel._dContainer._leafSpecialization.EnsureCachedAmbientProperty( logger, result, dependencyResolver, propertyType, name );
+                        if( currentLevel.IsOwnContainer ) found = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( logger, result, dependencyResolver, propertyType, name );
                         currentLevel = currentLevel.Generalization;
                     }
                     while( (found == null || found.Value == Type.Missing) && currentLevel != null );
@@ -289,16 +289,16 @@ namespace CK.Setup
 
                 // Property has been explicitely set or configured for resolution at a given level.
                 // Before accepting the value or resolving it, we apply container's inheritance up to this level if it is not the most specialized one.
-                if( a.MaxSpecializationDepthSet < _objectType.SpecializationDepth )
+                if( a.MaxSpecializationDepthSet < AmbientTypeInfo.SpecializationDepth )
                 {
                     MutableAmbientProperty found = null;
                     MutableItem currentLevel = this;
                     do
                     {
-                        if( currentLevel.IsOwnContainer ) found = currentLevel._dContainer._leafSpecialization.EnsureCachedAmbientProperty( logger, result, dependencyResolver, propertyType, name );
+                        if( currentLevel.IsOwnContainer ) found = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( logger, result, dependencyResolver, propertyType, name );
                         currentLevel = currentLevel.Generalization;
                     }
-                    while( (found == null || found.Value == Type.Missing) && currentLevel != null && currentLevel._objectType.SpecializationDepth > a.MaxSpecializationDepthSet );
+                    while( (found == null || found.Value == Type.Missing) && currentLevel != null && currentLevel.AmbientTypeInfo.SpecializationDepth > a.MaxSpecializationDepthSet );
                     if( found != null && found.Value != Type.Missing )
                     {
                         a.SetValue( found.Value );
@@ -317,15 +317,15 @@ namespace CK.Setup
 
         internal void SetAmbientContracts( IActivityLogger logger, StObjCollectorResult collector, StObjCollectorContextualResult cachedContext )
         {
-            Debug.Assert( _specialization == null, "Called on leaves only." );
-            foreach( var c in _allAmbientContracts )
+            Debug.Assert( Specialization == null, "Called on leaves only." );
+            foreach( var c in _leafData.AllAmbientContracts )
             {
                 MutableItem m = c.ResolveToStObj( logger, collector, cachedContext );
                 if( m != null )
                 {
                     try
                     {
-                        c.AmbientContractInfo.SettablePropertyInfo.SetValue( _stObj, m.Object, null );
+                        c.AmbientContractInfo.SettablePropertyInfo.SetValue( _leafData.StructuredObject, m.Object, null );
                     }
                     catch( Exception ex )
                     {

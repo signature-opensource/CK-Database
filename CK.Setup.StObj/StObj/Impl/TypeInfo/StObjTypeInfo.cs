@@ -120,6 +120,8 @@ namespace CK.Setup
             }
         }
 
+        internal static readonly StObjTypeInfo Empty = new StObjTypeInfo();
+
         internal StObjTypeInfo( IActivityLogger logger, AmbientTypeInfo parent, Type t )
             : base( parent, t )
         {
@@ -261,20 +263,14 @@ namespace CK.Setup
             }
             #endregion
 
-            // IStObjStructuralConfigurator attributes are not bound to Contextualized types (MutableItems) since they 
-            ConfiguratorAttributes = (IStObjStructuralConfigurator[])Type.GetCustomAttributes( typeof( IStObjStructuralConfigurator ), false );
         }
 
-        protected override bool AbstractTypeCanBeInstanciated( IActivityLogger logger, DynamicAssembly assembly )
+        /// <summary>
+        /// Used only for Empty Object Pattern implementations.
+        /// </summary>
+        private StObjTypeInfo()
+            : base() 
         {
-            Debug.Assert( ImplementableTypeInfo == null );
-            ImplementableTypeInfo = ImplementableTypeInfo.GetImplementableTypeInfo( logger, Type );
-            if( ImplementableTypeInfo != null )
-            {
-                StubType = assembly.CreateStubType( logger, ImplementableTypeInfo );
-                return true;
-            }
-            return false;
         }
 
         public new StObjTypeInfo Generalization { get { return (StObjTypeInfo)base.Generalization; } }
@@ -311,21 +307,15 @@ namespace CK.Setup
 
         public readonly string[] ConstructParameterTypedContext;
 
-        public readonly IStObjStructuralConfigurator[] ConfiguratorAttributes;
-
-        public ImplementableTypeInfo ImplementableTypeInfo { get; private set; }      
-
-        public Type StubType { get; private set; }
-
-        public object CreateInstance( IActivityLogger logger )
-        {
-            return Activator.CreateInstance( StubType ?? Type );
-        }
-
         public string FindContextFromMapAttributes( Type t )
         {
             // Attribute ContextMap( Type, string ) is not implemented.
             return null;
+        }
+
+        protected internal override TC CreateContextTypeInfo<T, TC>( string context, TC specialization )
+        {
+            return (TC)(object)(new MutableItem( this, context, (MutableItem)((object)specialization) ));
         }
 
     }

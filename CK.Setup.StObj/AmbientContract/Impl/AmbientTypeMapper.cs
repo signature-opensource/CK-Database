@@ -62,7 +62,7 @@ namespace CK.Core
         }
 
 
-        internal void Add( AmbientTypeContextualMapper c )
+        internal void Add( IAmbientTypeContextualMapper c )
         {
             Debug.Assert( c.Context != null );
             _contextMappers.Add( c.Context, c );

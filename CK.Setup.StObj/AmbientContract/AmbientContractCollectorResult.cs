@@ -55,8 +55,9 @@ namespace CK.Core
             }
         }
 
-    public class AmbientContractCollectorResult<T> : MultiContextualResult<AmbientContractCollectorContextualResult<T>>
+    public class AmbientContractCollectorResult<T,TC> : MultiContextualResult<AmbientContractCollectorContextualResult<T,TC>>
         where T : AmbientTypeInfo
+        where TC : AmbientContextTypeInfo<T>
     {
         readonly AmbientTypeMapper _mappings;
         readonly Dictionary<Type,T> _typeInfo;

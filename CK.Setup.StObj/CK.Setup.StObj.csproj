@@ -51,9 +51,12 @@
     <Compile Include="AmbientContract\AmbientTypeInfo.cs" />
     <Compile Include="AmbientContract\AmbientContractCollector.cs" />
     <Compile Include="AmbientContract\AmbientContractCollectorContextualResult.cs" />
+    <Compile Include="AmbientContract\AmbientContextAttributesCache.cs" />
+    <Compile Include="AmbientContract\ICustomAttributeTypeProvider.cs" />
     <Compile Include="AmbientContract\IAmbientTypeContextualMapper.cs" />
     <Compile Include="AmbientContract\IAmbientTypeMapper.cs" />
     <Compile Include="AmbientContract\IAttributeAmbientContextBound.cs" />
+    <Compile Include="AmbientContract\ICustomAttributeProvider.cs" />
     <Compile Include="AmbientContract\Impl\AmbientTypeContextualMapper.cs" />
     <Compile Include="AmbientContract\Impl\AmbientTypeMapper.cs" />
     <Compile Include="AmbientContract\IAmbientContractDispatcher.cs" />
@@ -77,6 +80,7 @@
     <Compile Include="StObj\Impl\TypeInfo\CovariantPropertyInfo.cs" />
     <Compile Include="StObj\Impl\TypeInfo\INamedPropertyInfo.cs" />
     <Compile Include="StObj\Impl\TypeInfo\IStObjTypeInfoFromParent.cs" />
+    <Compile Include="StObj\Impl\TypeInfo\StObjContextTypeInfo.cs" />
     <Compile Include="StObj\IStObjFinalAmbientProperty.cs" />
     <Compile Include="StObj\IStObjMutableAmbientContract.cs" />
     <Compile Include="StObj\IStObjReference.cs" />

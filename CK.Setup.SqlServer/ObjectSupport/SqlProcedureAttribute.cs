@@ -9,7 +9,7 @@ using System.Reflection;
 namespace CK.Setup.SqlServer
 {
     [AttributeUsage( AttributeTargets.Method, AllowMultiple = false, Inherited = false )]
-    public class SqlProcedureAttribute : Attribute, IAttributeAutoImplemented, IStObjSetupDynamicInitializer
+    public class SqlProcedureAttribute : Attribute, IAttributeAutoImplemented, IAttributeAmbientContextBound, IStObjSetupDynamicInitializer
     {
         MethodInfo _method;
 
@@ -19,6 +19,11 @@ namespace CK.Setup.SqlServer
         }
 
         public string ProcedureName { get; private set; }
+
+        void IAttributeAmbientContextBound.Initialize( MemberInfo m )
+        {
+            _method = (MethodInfo)m;
+        }
 
         void IStObjSetupDynamicInitializer.DynamicItemInitialize( IActivityLogger logger, IMutableSetupItem item, IStObj stObj )
         {

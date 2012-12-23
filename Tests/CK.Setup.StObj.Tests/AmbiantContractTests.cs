@@ -62,7 +62,7 @@ namespace CK.Setup.Tests
     {
     }
 
-    public class DefaultAmbientContractCollector : AmbientContractCollector<AmbientTypeInfo>
+    public class DefaultAmbientContractCollector : AmbientContractCollector<AmbientTypeInfo,AmbientContextTypeInfo<AmbientTypeInfo>>
     {
         public DefaultAmbientContractCollector( IActivityLogger logger = null, IAmbientContractDispatcher contextDispatcher = null )
             : base( logger ?? DefaultActivityLogger.Empty, ( l, p, t ) => new AmbientTypeInfo( p, t ), null, contextDispatcher )
@@ -179,7 +179,7 @@ namespace CK.Setup.Tests
                 {
                     var r = rAll.Default;
                     Assert.That( r.AbstractTails.Count, Is.EqualTo( 1 ) );
-                    Assert.That( r.ConcreteClasses.Count == 1 && r.ConcreteClasses[0].Select( a => a.Type ).SequenceEqual( new[] { typeof( Ambient ), typeof( AmbientChild ) } ) );
+                    Assert.That( r.ConcreteClasses.Count == 1 && r.ConcreteClasses[0].Select( a => a.AmbientTypeInfo.Type ).SequenceEqual( new[] { typeof( Ambient ), typeof( AmbientChild ) } ) );
                     Assert.That( r.ClassAmbiguities.Count, Is.EqualTo( 0 ) );
                     Assert.That( r.InterfaceAmbiguities.Count, Is.EqualTo( 0 ) );
                     CheckLocalMappings( r.Mappings, Tuple.Create( typeof( Ambient ), typeof( AmbientChild ) ), Tuple.Create( typeof( AmbientChild ), typeof( AmbientChild ) ) );
@@ -187,7 +187,7 @@ namespace CK.Setup.Tests
                 {
                     var r = rAll.FindContext( "int" );
                     Assert.That( r.AbstractTails.Count, Is.EqualTo( 0 ) );
-                    Assert.That( r.ConcreteClasses.Count == 1 && r.ConcreteClasses[0].Select( a => a.Type ).SequenceEqual( new[] { typeof( Ambient ), typeof( AmbientScoped ) } ) );
+                    Assert.That( r.ConcreteClasses.Count == 1 && r.ConcreteClasses[0].Select( a => a.AmbientTypeInfo.Type ).SequenceEqual( new[] { typeof( Ambient ), typeof( AmbientScoped ) } ) );
                     Assert.That( r.ClassAmbiguities.Count, Is.EqualTo( 0 ) );
                     Assert.That( r.InterfaceAmbiguities.Count, Is.EqualTo( 0 ) );
                     CheckLocalMappings( r.Mappings, Tuple.Create( typeof( Ambient ), typeof( AmbientScoped ) ), Tuple.Create( typeof( AmbientScoped ), typeof( AmbientScoped ) ) );
@@ -215,13 +215,13 @@ namespace CK.Setup.Tests
             Action<DefaultAmbientContractCollector> check = c =>
             {
                 var rAll = c.GetResult();
-                Assert.That( rAll.Default.ConcreteClasses.Count == 1 && rAll.Default.ConcreteClasses[0][0].Type == typeof( Ambient ), "Default context contains Ambient." );
+                Assert.That( rAll.Default.ConcreteClasses.Count == 1 && rAll.Default.ConcreteClasses[0][0].AmbientTypeInfo.Type == typeof( Ambient ), "Default context contains Ambient." );
                 
                 // Whereas int context contains Ambient, AmbientScoped and AmbientScopedChild.
                 {
                     var r = rAll.FindContext(  "int" );
                     Assert.That( r.AbstractTails.Count, Is.EqualTo( 0 ) );
-                    Assert.That( r.ConcreteClasses.Count == 1 && r.ConcreteClasses[0].Select( a => a.Type ).SequenceEqual( new[] { typeof( Ambient ), typeof( AmbientScoped ), typeof( AmbientScopedChild ) } ) );
+                    Assert.That( r.ConcreteClasses.Count == 1 && r.ConcreteClasses[0].Select( a => a.AmbientTypeInfo.Type ).SequenceEqual( new[] { typeof( Ambient ), typeof( AmbientScoped ), typeof( AmbientScopedChild ) } ) );
                     Assert.That( r.ClassAmbiguities.Count, Is.EqualTo( 0 ) );
                     Assert.That( r.InterfaceAmbiguities.Count, Is.EqualTo( 0 ) );
                     CheckLocalMappings( r.Mappings,
@@ -264,11 +264,11 @@ namespace CK.Setup.Tests
 
                 var rInt = rAll.FindContext( "int" );
                 Assert.That( rInt, Is.Not.Null );
-                Assert.That( rInt.ConcreteClasses[0].Select( a => a.Type ).SequenceEqual( new[] { typeof( ByDefiner ) } ) );
+                Assert.That( rInt.ConcreteClasses[0].Select( a => a.AmbientTypeInfo.Type ).SequenceEqual( new[] { typeof( ByDefiner ) } ) );
 
                 var rLong = rAll.FindContext( "long" );
                 Assert.That( rLong, Is.Not.Null );
-                Assert.That( rLong.ConcreteClasses[0].Select( a => a.Type ).SequenceEqual( new[] { typeof( ByDefiner ), typeof( ScopedOtherFromDefiner ) } ) );
+                Assert.That( rLong.ConcreteClasses[0].Select( a => a.AmbientTypeInfo.Type ).SequenceEqual( new[] { typeof( ByDefiner ), typeof( ScopedOtherFromDefiner ) } ) );
                 CheckLocalMappings( rLong.Mappings,
                     Tuple.Create( typeof( ByDefiner ), typeof( ScopedOtherFromDefiner ) ),
                     Tuple.Create( typeof( ScopedOtherFromDefiner ), typeof( ScopedOtherFromDefiner ) ) );
@@ -280,7 +280,7 @@ namespace CK.Setup.Tests
             }
         }
 
-        private static void CheckEmpty( AmbientContractCollectorContextualResult<AmbientTypeInfo> r )
+        private static void CheckEmpty( AmbientContractCollectorContextualResult<AmbientTypeInfo, AmbientContextTypeInfo<AmbientTypeInfo>> r )
         {
             Assert.That( r.AbstractTails.Count, Is.EqualTo( 0 ) );
             Assert.That( r.AbstractTails, Is.Empty );
