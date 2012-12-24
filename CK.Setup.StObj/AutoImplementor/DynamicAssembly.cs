@@ -77,37 +77,6 @@ namespace CK.Core
             return Interlocked.Increment( ref _typeID ).ToString();
         }
 
-        /// <summary>
-        /// Implements a concrete (but fake) <see cref="Type"/> in a dynamic assembly and returns it.
-        /// </summary>
-        /// <param name="logger">Logger to use.</param>
-        /// <returns>The newly created type in the dynamic assembly.</returns>
-        public Type CreateStubType( IActivityLogger logger, ImplementableTypeInfo t )
-        {
-            TypeAttributes tA = TypeAttributes.Class | TypeAttributes.Public;
-            TypeBuilder b = _moduleBuilder.DefineType( t.AbstractType.Name + NextUniqueNumber(), tA, t.AbstractType );
-            foreach( var am in t.MethodsToImplement )
-            {
-                CK.Reflection.EmitHelper.ImplementEmptyStubMethod( b, am );
-            }
-            if( t.PropertiesToImplement.Count > 0 )
-            {
-                logger.Error( "Property auto implementation support is not yet implemented ('{0}').", t.AbstractType.FullName );
-                return null;
-            }
-            try
-            {
-                return b.CreateType();
-            }
-            catch( Exception ex )
-            {
-                logger.Error( ex, "While implementing Stub for Type '{0}'.", t.AbstractType.FullName );
-                return null;
-            }
-        }
-
-
-
     }
 
 }

@@ -56,8 +56,6 @@ namespace CK.Setup
             /// </summary>
             public ImplementableTypeInfo ImplementableTypeInfo;
 
-            public Type StubType;
-
             /// <summary>
             /// Useless to store it at each level.
             /// </summary>
@@ -153,11 +151,10 @@ namespace CK.Setup
         {
             Debug.Assert( Specialization == null && Type.IsAbstract );
             Debug.Assert( _leafData.ImplementableTypeInfo == null, "Only called once." );
-            _leafData.ImplementableTypeInfo = ImplementableTypeInfo.GetImplementableTypeInfo( logger, Type, this );
+            _leafData.ImplementableTypeInfo = ImplementableTypeInfo.CreateImplementableTypeInfo( logger, Type, this );
             if( _leafData.ImplementableTypeInfo != null )
             {
-                _leafData.StubType = assembly.CreateStubType( logger, _leafData.ImplementableTypeInfo );
-                return true;
+                return _leafData.ImplementableTypeInfo.CreateTypeFromCurrent( logger, assembly ) != null;
             }
             return false;
         }
@@ -168,10 +165,10 @@ namespace CK.Setup
         {
             Debug.Assert( Specialization == null );
             Debug.Assert( _leafData.StructuredObject == null, "Called once and only once." );
-            Debug.Assert( (_leafData.StubType ?? Type) != null, "If no type, AbstractTypeCanBeInstanciated returned false." );
             try
             {
-                return _leafData.StructuredObject = Activator.CreateInstance( _leafData.StubType ?? Type );
+                Type toInstanciate = _leafData.ImplementableTypeInfo != null ? _leafData.ImplementableTypeInfo.LastGeneratedType : Type;
+                return _leafData.StructuredObject = Activator.CreateInstance( toInstanciate );
             }
             catch( Exception ex )
             {

@@ -27,7 +27,6 @@ namespace CK.Core
         }
         readonly Entry[] _all;
 
-
         /// <summary>
         /// Exposes the Type that is managed by this object to specializations.
         /// </summary>
@@ -61,6 +60,28 @@ namespace CK.Core
         }
 
         /// <summary>
+        /// Gets whether an attribute that is assignable to the given <paramref name="attributeType"/> 
+        /// exists on the bounded type.
+        /// </summary>
+        /// <param name="attributeType">Type of requested attributes.</param>
+        /// <returns>True if at least one attribute exists.</returns>
+        public bool IsDefined( Type attributeType )
+        {
+            return Type.IsDefined( attributeType, false );
+        }
+
+        /// <summary>
+        /// Gets whether an attribute that is assignable to the given <paramref name="attributeType"/> 
+        /// exists on the given member.
+        /// </summary>
+        /// <param name="attributeType">Type of requested attributes.</param>
+        /// <returns>True if at least one attribute exists.</returns>
+        public bool IsDefined( MemberInfo m, Type attributeType )
+        {
+            return m.IsDefined( attributeType, false );
+        }
+
+        /// <summary>
         /// Gets attributes on the <see cref="P:Type"/> that are assignable to <paramref name="attributeType"/>.
         /// Instances of attributes that support <see cref="IAttributeAmbientContextBound"/> are always the same. 
         /// Other attributes are instanciated (by calling <see cref="MemberInfo.GetCustomAttributes"/>).
@@ -69,33 +90,23 @@ namespace CK.Core
         /// <returns>A set of attributes that are guaranteed to be assignable to <paramref name="attributeType"/>.</returns>
         public IEnumerable<object> GetCustomAttributes( Type attributeType )
         {
-            return DoGetCustomAttributes( Type, attributeType );
+            return GetCustomAttributes( Type, attributeType );
         }
 
         /// <summary>
-        /// Gets attributes on a <see cref="MethodInfo"/> that are assignable to <paramref name="attributeType"/>.
+        /// Gets attributes on a <see cref="MemberInfo"/> that are assignable to <paramref name="attributeType"/>.
         /// Instances of attributes that support <see cref="IAttributeAmbientContextBound"/> are always the same. 
         /// Other attributes are instanciated (by calling <see cref="MemberInfo.GetCustomAttributes"/>).
         /// </summary>
         /// <param name="m">Method of <see cref="P:Type"/>.</param>
         /// <param name="attributeType">Type that must be supported by the attributes.</param>
         /// <returns>A set of attributes that are guaranteed to be assignable to <paramref name="attributeType"/>.</returns>
-        public IEnumerable<object> GetCustomAttributes( MethodInfo m, Type attributeType )
+        public IEnumerable<object> GetCustomAttributes( MemberInfo m, Type attributeType )
         {
-            return DoGetCustomAttributes( m, attributeType );
-        }
-
-        /// <summary>
-        /// Gets attributes on a <see cref="PropertyInfo"/> that are assignable to <paramref name="attributeType"/>.
-        /// Instances of attributes that support <see cref="IAttributeAmbientContextBound"/> are always the same. 
-        /// Other attributes are instanciated (by calling <see cref="MemberInfo.GetCustomAttributes"/>).
-        /// </summary>
-        /// <param name="p">Property of <see cref="P:Type"/>.</param>
-        /// <param name="attributeType">Type that must be supported by the attributes.</param>
-        /// <returns>A set of attributes that are guaranteed to be assignable to <paramref name="attributeType"/>.</returns>
-        public IEnumerable<object> GetCustomAttributes<T>( PropertyInfo p, Type attributeType )
-        {
-            return DoGetCustomAttributes( p, attributeType );
+            GuardMember( m );
+            if( attributeType == null ) throw new ArgumentNullException( "attributeType" );
+            return _all.Where( e => e.M == m && attributeType.IsAssignableFrom( e.Attr.GetType() ) ).Select( e => e.Attr )
+                    .Concat( m.GetCustomAttributes( attributeType, false ).Where( a => !(a is IAttributeAmbientContextBound) ) );
         }
 
         /// <summary>
@@ -104,69 +115,32 @@ namespace CK.Core
         /// Other attributes are instanciated (by calling <see cref="MemberInfo.GetCustomAttributes"/>).
         /// </summary>
         /// <typeparam name="T">Type that must be supported by the attributes.</typeparam>
-        /// <returns>A set of attributes that are guaranteed to be assignable to <typeparamref name="T"/>.</returns>
+        /// <returns>A set of typed attributes.</returns>
         public IEnumerable<T> GetCustomAttributes<T>()
         {
-            return DoGetCustomAttributes<T>( Type );
+            return GetCustomAttributes<T>( Type );
         }
 
         /// <summary>
-        /// Gets attributes on a <see cref="MethodInfo"/> that are assignable to <typeparamref name="T"/>.
+        /// Gets attributes on a <see cref="MemberInfo"/> that are assignable to <typeparamref name="T"/>.
         /// Instances of attributes that support <see cref="IAttributeAmbientContextBound"/> are always the same. 
         /// Other attributes are instanciated (by calling <see cref="MemberInfo.GetCustomAttributes"/>).
         /// </summary>
         /// <typeparam name="T">Type that must be supported by the attributes.</typeparam>
         /// <param name="m">Method of <see cref="P:Type"/>.</param>
-        /// <returns>A set of attributes that are guaranteed to be assignable to <typeparamref name="T"/>.</returns>
-        public IEnumerable<T> GetCustomAttributes<T>( MethodInfo m )
+        /// <returns>A set of typed attributes.</returns>
+        public IEnumerable<T> GetCustomAttributes<T>( MemberInfo m )
         {
-            return DoGetCustomAttributes<T>( m );
-        }
-
-        /// <summary>
-        /// Gets attributes on a <see cref="PropertyInfo"/> that are assignable to <typeparamref name="T"/>.
-        /// Instances of attributes that support <see cref="IAttributeAmbientContextBound"/> are always the same. 
-        /// Other attributes are instanciated (by calling <see cref="MemberInfo.GetCustomAttributes"/>).
-        /// </summary>
-        /// <typeparam name="T">Type that must be supported by the attributes.</typeparam>
-        /// <param name="p">Property of <see cref="P:Type"/>.</param>
-        /// <returns>A set of attributes that are guaranteed to be assignable to <typeparamref name="T"/>.</returns>
-        public IEnumerable<T> GetCustomAttributes<T>( PropertyInfo p )
-        {
-            return DoGetCustomAttributes<T>( p );
-        }
-
-        IEnumerable<object> ICustomAttributeProvider.GetCustomAttributes( MemberInfo m, Type attributeType )
-        {
-            return DoGetCustomAttributes( m, attributeType );
-        }
-
-        private IEnumerable<object> DoGetCustomAttributes( MemberInfo m, Type attributeType )
-        {
-            Guard( m );
-            if( attributeType == null ) throw new ArgumentNullException( "attributeType" );
-            return _all.Where( e => e.M == m && attributeType.IsAssignableFrom( e.Attr.GetType() ) ).Select( e => e.Attr )
-                    .Concat( m.GetCustomAttributes( attributeType, false ).Where( a => !(a is IAttributeAmbientContextBound) ) );
-        }
-
-        void Guard( MemberInfo m )
-        {
-            if( m == null ) throw new ArgumentNullException( "m" );
-            if( m != Type && !m.DeclaringType.IsAssignableFrom( Type ) ) throw new CKException( "Member {0}.{1} does not belong to {2}.", m.DeclaringType.FullName, m.Name, Type.FullName );
-        }
-
-        IEnumerable<T> ICustomAttributeProvider.GetCustomAttributes<T>( MemberInfo m )
-        {
-            return DoGetCustomAttributes<T>( m );
-        }
-
-        private IEnumerable<T> DoGetCustomAttributes<T>( MemberInfo m )
-        {
-            Guard( m );
+            GuardMember( m );
             return _all.Where( e => e.M == m && e.Attr is T ).Select( e => (T)e.Attr )
                     .Concat( m.GetCustomAttributes( typeof( T ), false ).Where( a => !(a is IAttributeAmbientContextBound) ).Select( a => (T)a ) );
         }
 
+        void GuardMember( MemberInfo m )
+        {
+            if( m == null ) throw new ArgumentNullException( "m" );
+            if( m != Type && !m.DeclaringType.IsAssignableFrom( Type ) ) throw new CKException( "Member {0}.{1} does not belong to {2}.", m.DeclaringType.FullName, m.Name, Type.FullName );
+        }
 
     }
 
