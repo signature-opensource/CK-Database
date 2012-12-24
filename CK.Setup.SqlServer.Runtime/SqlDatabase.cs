@@ -8,7 +8,7 @@ using System.Diagnostics;
 namespace CK.Setup.SqlServer
 {
 
-    [Setup( ItemType = typeof( SqlDatabaseItem ), ItemKind = DependentItemKind.Group, TrackAmbientProperties = TrackAmbientPropertiesMode.AddPropertyHolderAsChildren )]
+    [Setup( ItemKind = DependentItemKindSpec.Group, TrackAmbientProperties = TrackAmbientPropertiesMode.AddPropertyHolderAsChildren, ItemTypeName = "CK.Setup.SqlServer.SqlDatabaseItem,CK.Setup.SqlServer" )]
     public class SqlDatabase
     {
         /// <summary>

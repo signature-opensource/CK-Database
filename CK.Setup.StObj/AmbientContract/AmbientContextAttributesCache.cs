@@ -54,8 +54,18 @@ namespace CK.Core
             var attr = (IAttributeAmbientContextBound[])m.GetCustomAttributes( typeof( IAttributeAmbientContextBound ), false );
             foreach( var a in attr )
             {
-                a.Initialize( m );
-                all.Add( new Entry( m, a ) );
+                IAttributeAmbientContextBoundWithMember initRequired = a as IAttributeAmbientContextBoundWithMember;
+                if( initRequired != null ) initRequired.Initialize( m );
+                AmbientContextBoundDelegationAttribute delegated = a as AmbientContextBoundDelegationAttribute;
+                object finalAttributeToUse = a;
+                if( delegated != null )
+                {
+                    Type dT = SimpleTypeFinder.WeakDefault.ResolveType( delegated.ActualAttributeTypeAssemblyQualifiedName, true );
+                    finalAttributeToUse = Activator.CreateInstance( dT, new object[] { a } );
+                    initRequired = finalAttributeToUse as IAttributeAmbientContextBoundWithMember;
+                    if( initRequired != null ) initRequired.Initialize( m );
+                }
+                all.Add( new Entry( m, finalAttributeToUse ) );
             }
         }
 

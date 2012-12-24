@@ -21,19 +21,10 @@ namespace CK.Setup
             _requires = requires;
         }
 
-        static internal DependentItemList GetRequirements( IActivityLogger logger, Type t, Type attrType )
-        {
-            Debug.Assert( logger != null );
-            Debug.Assert( t != null );
-            Debug.Assert( attrType != null && typeof( RequiresAttribute ).IsAssignableFrom( attrType ) );
-            DependentItemList result = new DependentItemList();
-            var all = (RequiresAttribute[])t.GetCustomAttributes( attrType, false );
-            foreach( var a in all )
-            {
-                result.AddCommaSeparatedString( a._requires );
-            }
-            return result;
-        }
+        /// <summary>
+        /// Gets a comma separated list of item names.
+        /// </summary>
+        public string Requirements { get { return _requires; } }
 
     }
 }

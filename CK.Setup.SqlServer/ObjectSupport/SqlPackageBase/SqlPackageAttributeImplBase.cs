@@ -6,39 +6,16 @@ using CK.Core;
 
 namespace CK.Setup.SqlServer
 {
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple=false, Inherited=false )]
-    public class SqlPackageAttributeBase : Attribute, IStObjStructuralConfigurator
+    public abstract class SqlPackageAttributeImplBase : IStObjStructuralConfigurator
     {
-        /// <summary>
-        /// Gets or sets the <see cref="SqlDatabase"/> type targeted by the package. Let it to null to use the ambient one.
-        /// The <see cref="SqlPackage.Database"/> property is automatically set (see remarks).
-        /// </summary>
-        /// <remarks>
-        /// The type must be a specialization of <see cref="SqlDatabase"/>. 
-        /// If it supports <see cref="IAmbientContract"/>, the property is bound to the corresponding ambient contract instance. 
-        /// </remarks>
-        public Type Database { get; set; }
+        readonly SqlPackageAttributeBase _attr;
 
-        /// <summary>
-        /// Gets or sets the package to which this package belongs.
-        /// </summary>
-        public Type Package { get; set; }
+        protected SqlPackageAttributeImplBase( SqlPackageAttributeBase a )
+        {
+            _attr = a;
+        }
 
-        /// <summary>
-        /// Gets or sets the sql schema to use.
-        /// </summary>
-        public string Schema { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Resource path to use for the <see cref="ResourceLocator"/>. 
-        /// </summary>
-        public string ResourcePath { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Resource Type to use for the <see cref="ResourceLocator"/>.
-        /// When null (the default that should rarely be changed), the decorated type is used.
-        /// </summary>
-        public Type ResourceType { get; set; }
+        protected SqlPackageAttributeBase Attribute { get { return _attr; } }
 
         void IStObjStructuralConfigurator.Configure( IActivityLogger logger, IStObjMutableItem o )
         {
@@ -46,33 +23,33 @@ namespace CK.Setup.SqlServer
             {
                 logger.Error( "{0}: Attribute {1} must be set only on class that specialize SqlPackageBase.", o.ToString(), GetType().Name );
             }
-            if( Package != null )
+            if( Attribute.Package != null )
             {
-                if( o.Container.Type == null ) o.Container.Type = Package;
-                else if( o.Container.Type != Package )
+                if( o.Container.Type == null ) o.Container.Type = Attribute.Package;
+                else if( o.Container.Type != Attribute.Package )
                 {
-                    logger.Error( "{0}: Attribute {3} sets Package to be '{1}' but it is already '{2}'.", o.ToString(), Package.Name, o.Container.Type, GetType().Name );
+                    logger.Error( "{0}: Attribute {3} sets Package to be '{1}' but it is already '{2}'.", o.ToString(), Attribute.Package.Name, o.Container.Type, GetType().Name );
                 }
             }
-            if( Database != null )
+            if( Attribute.Database != null )
             {
-                if( !typeof( SqlDatabase ).IsAssignableFrom( Database ) )
+                if( !typeof( SqlDatabase ).IsAssignableFrom( Attribute.Database ) )
                 {
                     logger.Error( "{0}: Database type property must reference a type that specializes SqlDatabase.", o.ToString() );
                 }
                 else
                 {
-                    o.SetAmbiantPropertyConfiguration( logger, "Database", null, Database, StObjRequirementBehavior.WarnIfNotStObj );
+                    o.SetAmbiantPropertyConfiguration( logger, "Database", null, Attribute.Database, StObjRequirementBehavior.WarnIfNotStObj );
                 }
             }
-            if( ResourceType != null || ResourcePath != null )
+            if( Attribute.ResourceType != null || Attribute.ResourcePath != null )
             {
                 // ResourceLocation is a StObjProperty.
-                o.SetStObjPropertyValue( logger, "ResourceLocation", new ResourceLocator( ResourceType, ResourcePath ) ); 
+                o.SetStObjPropertyValue( logger, "ResourceLocation", new ResourceLocator( Attribute.ResourceType, Attribute.ResourcePath ) ); 
             }
-            if( Schema != null )
+            if( Attribute.Schema != null )
             {
-                o.SetAmbiantPropertyValue( logger, "Schema", Schema );
+                o.SetAmbiantPropertyValue( logger, "Schema", Attribute.Schema );
             }
             ConfigureMutableItem( logger, o );
         }

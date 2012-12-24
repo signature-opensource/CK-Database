@@ -32,11 +32,6 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -54,29 +49,13 @@
     <EmbeddedResource Include="Res\sSecurityZoneCreate.sql" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CK.Setup.Database\CK.Setup.Database.csproj">
-      <Project>{571795b1-f1ec-4edf-9f17-01945ade0535}</Project>
-      <Name>CK.Setup.Database</Name>
+    <ProjectReference Include="..\CK.Setup.Runtime\CK.Setup.Runtime.csproj">
+      <Project>{64DA8104-2C71-4D52-8F44-D34738F6D564}</Project>
+      <Name>CK.Setup.Runtime</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">
-      <Project>{87f54185-5226-4eee-8d59-5d03e6c1ab7c}</Project>
-      <Name>CK.Setup.Dependency</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.Setup.SqlServer\CK.Setup.SqlServer.csproj">
-      <Project>{9a0bce15-00ef-411b-8283-68aed047fce5}</Project>
-      <Name>CK.Setup.SqlServer</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.Setup.StObj\CK.Setup.StObj.csproj">
-      <Project>{df7a0b05-4b48-44c2-b6c8-6fcfd66df8f8}</Project>
-      <Name>CK.Setup.StObj</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.Setup\CK.Setup.csproj">
-      <Project>{d3c700e1-3546-437c-9b96-1f867a539b6a}</Project>
-      <Name>CK.Setup</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.SqlServer\CK.SqlServer.csproj">
-      <Project>{95912a3b-758e-474b-af34-be24c4e3bf56}</Project>
-      <Name>CK.SqlServer</Name>
+    <ProjectReference Include="..\CK.Setup.SqlServer.Runtime\CK.Setup.SqlServer.Runtime.csproj">
+      <Project>{B64D3D2A-FD2B-4731-8559-8A52C3A45351}</Project>
+      <Name>CK.Setup.SqlServer.Runtime</Name>
     </ProjectReference>
     <ProjectReference Include="..\CK.StObj.Runtime\CK.StObj.Runtime.csproj">
       <Project>{96DEDEEE-DE7D-4B14-8FDE-BC4D8D9CCB78}</Project>

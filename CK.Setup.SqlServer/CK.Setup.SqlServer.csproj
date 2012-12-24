@@ -55,23 +55,18 @@
     <Compile Include="ObjectSupport\SqlDatabase\SqlDatabaseConnectionItem.cs" />
     <Compile Include="ObjectSupport\SqlDatabase\SqlDatabaseConnectionSetupDriver.cs" />
     <Compile Include="ObjectSupport\SqlDatabase\SqlDatabaseItem.cs" />
-    <Compile Include="ObjectSupport\SqlDatabase\SqlDefaultDatabase.cs" />
-    <Compile Include="ObjectSupport\SqlObjectItemAttribute.cs" />
+    <Compile Include="ObjectSupport\SqlObjectItemAttributeImpl.cs" />
+    <Compile Include="ObjectSupport\SqlPackageBase\SqlPackageAttributeImplBase.cs" />
     <Compile Include="ObjectSupport\SqlPackageBase\SqlPackageBaseSetupDriver.cs" />
-    <Compile Include="ObjectSupport\SqlPackageBase\SqlPackageAttributeBase.cs" />
-    <Compile Include="ObjectSupport\SqlPackageBase\SqlPackageBase.cs" />
     <Compile Include="ObjectSupport\SqlPackageBase\SqlPackageBaseItem.cs" />
+    <Compile Include="ObjectSupport\SqlPackage\SqlPackageAttributeImpl.cs" />
     <Compile Include="ObjectSupport\SqlPackage\SqlPackageItem.cs" />
     <Compile Include="ObjectSupport\SqlPackage\SqlPackageSetupDriver.cs" />
-    <Compile Include="ObjectSupport\SqlPackage\SqlPackageAttribute.cs" />
-    <Compile Include="ObjectSupport\SqlPackage\SqlPackage.cs" />
     <Compile Include="ObjectSupport\SqlProcedureAttribute.cs" />
+    <Compile Include="ObjectSupport\SqlTable\SqlTableAttributeImpl.cs" />
     <Compile Include="ObjectSupport\SqlTable\SqlTableSetupDriver.cs" />
     <Compile Include="ObjectSupport\SqlTable\SqlTableItem.cs" />
-    <Compile Include="ObjectSupport\SqlTable\SqlTableAttribute.cs" />
-    <Compile Include="ObjectSupport\SqlTable\SqlTable.cs" />
     <Compile Include="SqlManagerProvider.cs" />
-    <Compile Include="ObjectSupport\SqlDatabase\SqlDatabase.cs" />
     <Compile Include="ObjectSupport\SqlDatabase\SqlDatabaseSetupDriver.cs" />
     <Compile Include="Labo\Tests.cs" />
     <Compile Include="SqlMultiScript.cs" />
@@ -94,6 +89,14 @@
     <ProjectReference Include="..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">
       <Project>{87F54185-5226-4EEE-8D59-5D03E6C1AB7C}</Project>
       <Name>CK.Setup.Dependency</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CK.Setup.Runtime\CK.Setup.Runtime.csproj">
+      <Project>{64DA8104-2C71-4D52-8F44-D34738F6D564}</Project>
+      <Name>CK.Setup.Runtime</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CK.Setup.SqlServer.Runtime\CK.Setup.SqlServer.Runtime.csproj">
+      <Project>{B64D3D2A-FD2B-4731-8559-8A52C3A45351}</Project>
+      <Name>CK.Setup.SqlServer.Runtime</Name>
     </ProjectReference>
     <ProjectReference Include="..\CK.Setup.StObj\CK.Setup.StObj.csproj">
       <Project>{DF7A0B05-4B48-44C2-B6C8-6FCFD66DF8F8}</Project>

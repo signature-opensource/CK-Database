@@ -174,12 +174,12 @@ namespace CK.Setup.StObj.Tests
 
         #region Buggy & Valid Model
 
-        [StObj( ItemKind = DependentItemKind.Container )]
+        [StObj( ItemKind = DependentItemKindSpec.Container )]
         class C1 : IAmbientContract
         {
         }
 
-        [StObj( Container = typeof( C1 ), ItemKind = DependentItemKind.Container )]
+        [StObj( Container = typeof( C1 ), ItemKind = DependentItemKindSpec.Container )]
         class C2InC1 : IAmbientContract
         {
         }
@@ -213,7 +213,7 @@ namespace CK.Setup.StObj.Tests
             Assert.That( result.HasFatalError, Is.True );
         }
 
-        [StObj( ItemKind = DependentItemKind.Container, Container = typeof(C2InC1), Children = new Type[]{ typeof( C1 ) } )]
+        [StObj( ItemKind = DependentItemKindSpec.Container, Container = typeof( C2InC1 ), Children = new Type[] { typeof( C1 ) } )]
         class C3ContainsC1 : IAmbientContract
         {
         }

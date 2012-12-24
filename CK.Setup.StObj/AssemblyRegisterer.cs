@@ -257,7 +257,17 @@ namespace CK.Core
                     }
                     catch( Exception ex )
                     {
-                        _logger.Error( ex );
+                        using( _logger.OpenGroup( LogLevel.Error, ex ) )
+                        {
+                            ReflectionTypeLoadException exr = ex as ReflectionTypeLoadException;
+                            if( exr != null )
+                            {
+                                foreach( Exception exLoad in exr.LoaderExceptions )
+                                {
+                                    _logger.Error( exLoad.Message );
+                                }
+                            }
+                        }
                     }
                 }
             }

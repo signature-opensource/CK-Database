@@ -63,6 +63,14 @@
       <Project>{87F54185-5226-4EEE-8D59-5D03E6C1AB7C}</Project>
       <Name>CK.Setup.Dependency</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\CK.Setup.Runtime\CK.Setup.Runtime.csproj">
+      <Project>{64DA8104-2C71-4D52-8F44-D34738F6D564}</Project>
+      <Name>CK.Setup.Runtime</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\CK.Setup.SqlServer.Runtime\CK.Setup.SqlServer.Runtime.csproj">
+      <Project>{B64D3D2A-FD2B-4731-8559-8A52C3A45351}</Project>
+      <Name>CK.Setup.SqlServer.Runtime</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\CK.Setup.StObj\CK.Setup.StObj.csproj">
       <Project>{DF7A0B05-4B48-44C2-B6C8-6FCFD66DF8F8}</Project>
       <Name>CK.Setup.StObj</Name>
@@ -90,10 +98,6 @@
     <ProjectReference Include="..\..\SqlZonePackage\SqlZonePackage.csproj">
       <Project>{3ff4bf4a-3a28-4ad6-bff1-e87f11124e31}</Project>
       <Name>SqlZonePackage</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.Setup.SqlServer.Tests.Model\CK.Authentication.Local\CK.Authentication.Local.csproj">
-      <Project>{346344c2-f522-4b69-914c-e911b3c3d92b}</Project>
-      <Name>CK.Authentication.Local</Name>
     </ProjectReference>
     <ProjectReference Include="..\CK.Setup.SqlServer.Tests.Model\IntoTheWild0\IntoTheWild0.csproj">
       <Project>{94F93F54-E70F-45B4-BB7B-4ADB82059257}</Project>

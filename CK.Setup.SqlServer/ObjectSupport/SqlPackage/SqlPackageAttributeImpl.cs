@@ -6,23 +6,18 @@ using CK.Core;
 
 namespace CK.Setup.SqlServer
 {
-    public class SqlPackageAttribute : SqlPackageAttributeBase, ISetupNameAttribute, IStObjSetupConfigurator
+    public class SqlPackageAttributeImpl : SqlPackageAttributeImplBase, IStObjSetupConfigurator
     {
-        /// <summary>
-        /// Gets or sets whether this package has an associated Model.
-        /// Defaults to false.
-        /// </summary>
-        public bool HasModel { get; set; }
+        public SqlPackageAttributeImpl( SqlPackageAttribute a )
+            : base( a )
+        {
+        }
 
-        /// <summary>
-        /// Gets or sets the full name (for the setup process).
-        /// Defaults to the <see cref="Type.Name"/> of the decorated package type.
-        /// </summary>
-        public string FullName { get; set; }
+        protected new SqlPackageAttribute Attribute { get { return (SqlPackageAttribute)base.Attribute; } }
 
         protected override void ConfigureMutableItem( IActivityLogger logger, IStObjMutableItem o )
         {
-            o.SetDirectPropertyValue( logger, "HasModel", HasModel );
+            o.SetDirectPropertyValue( logger, "HasModel", Attribute.HasModel );
         }
 
         void IStObjSetupConfigurator.ConfigureDependentItem( IActivityLogger logger, IMutableStObjSetupData data )

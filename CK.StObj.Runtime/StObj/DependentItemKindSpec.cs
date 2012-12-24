@@ -2,10 +2,10 @@
 namespace CK.Setup
 {
     /// <summary>
-    /// Describes the kind of a <see cref="IDependentItem"/>.
-    /// Used by <see cref="IDependentItemContainerTyped"/> to dynamically restrict its type.
+    /// Describes the kind of a dependent item.
+    /// Used by container to dynamically restrict its type.
     /// </summary>
-    public enum DependentItemKind
+    public enum DependentItemKindSpec
     {
         /// <summary>
         /// Unknown type can be used for instance to dynamically adjust the behavior of the item.
@@ -13,17 +13,17 @@ namespace CK.Setup
         Unknown,
 
         /// <summary>
-        /// Considers the item as a pure <see cref="IDependentItem"/>.
+        /// Considers the item as a pure dependent item.
         /// </summary>
         Item,
 
         /// <summary>
-        /// Considers the item as a <see cref="IDependentItemGroup"/>.
+        /// Considers the item as a group.
         /// </summary>
         Group,
 
         /// <summary>
-        /// Considers the item as a <see cref="IDependentItemContainer"/>.
+        /// Considers the item as a container.
         /// </summary>
         Container
     }

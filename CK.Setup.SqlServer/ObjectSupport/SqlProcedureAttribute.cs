@@ -20,20 +20,14 @@ namespace CK.Setup.SqlServer
 
         public string ProcedureName { get; private set; }
 
-        void IAttributeAmbientContextBound.Initialize( MemberInfo m )
-        {
-            _method = (MethodInfo)m;
-        }
-
         void IStObjSetupDynamicInitializer.DynamicItemInitialize( IActivityLogger logger, IMutableSetupItem item, IStObj stObj )
         {
             SqlPackageBaseItem p;
 
-            SqlObjectProtoItem proto = SqlObjectItemAttribute.LoadProtoItemFromResource( logger, (SqlPackageBaseItem)item, ProcedureName );
+            SqlObjectProtoItem proto = SqlObjectItemAttributeImpl.LoadProtoItemFromResource( logger, (SqlPackageBaseItem)item, ProcedureName );
             if( proto == null ) return;
   
 
         }
-
     }
 }

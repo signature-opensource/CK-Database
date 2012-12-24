@@ -20,7 +20,7 @@ namespace CK.Setup
         /// Gets the kind of object (simple item, group or container).
         /// This property is inherited from base classes that are not Ambient Contracts.
         /// </summary>
-        DependentItemKind ItemKind { get; }
+        DependentItemKindSpec ItemKind { get; }
 
         /// <summary>
         /// Gets how Ambient Properties that reference the object must be tracked.

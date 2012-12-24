@@ -49,8 +49,6 @@
     <Compile Include="ContextLocName\ContextLocName.cs" />
     <Compile Include="ContextLocName\DefaultContextLocNaming.cs" />
     <Compile Include="ContextLocName\IContextLocNaming.cs" />
-    <Compile Include="Core\AssemblyExtension.cs" />
-    <Compile Include="Core\ResourceLocator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -111,13 +109,8 @@
     <Compile Include="SetupCore\Version\IVersionedItemRepository.cs" />
     <Compile Include="SetupCore\Version\MultiVersionManager.cs" />
     <Compile Include="SetupCore\Version\VersionedName.cs" />
-    <Compile Include="StObj\Attributes\ChildrenAttribute.cs" />
-    <Compile Include="StObj\Attributes\GroupsAttribute.cs" />
-    <Compile Include="StObj\Attributes\RequiredByAttribute.cs" />
-    <Compile Include="StObj\Attributes\IRequirementsAttribute.cs" />
-    <Compile Include="StObj\Attributes\RequiresAttribute.cs" />
-    <Compile Include="StObj\Attributes\SetupAttribute.cs" />
     <Compile Include="SetupCore\ISetupItem.cs" />
+    <Compile Include="StObj\Impl\AttributesReader.cs" />
     <Compile Include="StObj\IStObjSetupDynamicInitializer.cs" />
     <Compile Include="StObj\IStObjSetupItemFactory.cs" />
     <Compile Include="StObj\IMutableStObjSetupData.cs" />
@@ -128,15 +121,16 @@
     <Compile Include="StObj\IStObjSetupData.cs" />
     <Compile Include="StObj\StObjDynamicPackageItem.cs" />
     <Compile Include="StObj\Impl\StObjSetupData.cs" />
-    <Compile Include="StObj\Attributes\VersionsAttribute.cs" />
-    <Compile Include="StObj\Attributes\ISetupNameAttribute.cs" />
-    <Compile Include="StObj\Attributes\SetupNameAttribute.cs" />
     <Compile Include="StObj\StObjSetupBuilder.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">
       <Project>{87F54185-5226-4EEE-8D59-5D03E6C1AB7C}</Project>
       <Name>CK.Setup.Dependency</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CK.Setup.Runtime\CK.Setup.Runtime.csproj">
+      <Project>{64DA8104-2C71-4D52-8F44-D34738F6D564}</Project>
+      <Name>CK.Setup.Runtime</Name>
     </ProjectReference>
     <ProjectReference Include="..\CK.Setup.StObj\CK.Setup.StObj.csproj">
       <Project>{DF7A0B05-4B48-44C2-B6C8-6FCFD66DF8F8}</Project>

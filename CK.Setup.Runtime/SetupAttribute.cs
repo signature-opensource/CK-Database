@@ -7,7 +7,7 @@ using CK.Core;
 namespace CK.Setup
 {
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = false, Inherited = false )]
-    public class SetupAttribute : Attribute, ISetupNameAttribute, IStObjAttribute
+    public class SetupAttribute : Attribute, IAttributeSetupName, IStObjAttribute
     {
         string _name;
         Type _itemType;
@@ -16,7 +16,7 @@ namespace CK.Setup
         string _driverTypeName;
         string _containerFullName;
         TrackAmbientPropertiesMode _trackAmbientProperties;
-        DependentItemKind _setupItemKind;
+        DependentItemKindSpec _setupItemKind;
 
         public SetupAttribute()
         {
@@ -115,7 +115,7 @@ namespace CK.Setup
         /// When let to <see cref="DependentItemKind.Unknown"/>, this property is inherited (it is eventually 
         /// considered as <see cref="DependentItemKind.Container"/> when not set).
         /// </summary>
-        public DependentItemKind ItemKind
+        public DependentItemKindSpec ItemKind
         {
             get { return _setupItemKind; }
             set { _setupItemKind = value; }
@@ -133,31 +133,6 @@ namespace CK.Setup
         Type[] IStObjAttribute.Children { get { return null; } }
 
         Type[] IStObjAttribute.Groups { get { return null; } }
-
-        static internal SetupAttribute GetSetupAttribute( Type t )
-        {
-            return (SetupAttribute)t.GetCustomAttributes( typeof( SetupAttribute ), false ).SingleOrDefault();
-        }
-
-        internal static void ApplyAttributesConfigurator( IActivityLogger logger, StObjSetupData data )
-        {
-            var all = data.StObj.Attributes.GetCustomAttributes<IStObjSetupConfigurator>();
-            foreach( IStObjSetupConfigurator c in all )
-            {
-                c.ConfigureDependentItem( logger, data );
-            }
-        }
-
-        internal static void ApplyAttributesDynamicInitializer( IActivityLogger logger, IMutableSetupItem i, IStObj o )
-        {
-            var all = o.Attributes.GetCustomAttributes<IStObjSetupDynamicInitializer>();
-            foreach( IStObjSetupDynamicInitializer init in all )
-            {
-                init.DynamicItemInitialize( logger, i, o );
-            }
-        }
-        
-        
 
     }
 }

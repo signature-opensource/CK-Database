@@ -6,7 +6,7 @@ using CK.Core;
 
 namespace CK.Setup.SqlServer
 {
-    [StObj( ItemKind = DependentItemKind.Container )]
+    [StObj( ItemKind = DependentItemKindSpec.Container )]
     [StObjProperty( PropertyName = "ResourceLocation", PropertyType = typeof(ResourceLocator) ) ]
     public class SqlPackageBase 
     {

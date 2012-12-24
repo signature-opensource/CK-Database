@@ -57,8 +57,14 @@ namespace CK.Setup
                     // Builds the StObjSetupData from the different attributes.
                     var data = new StObjSetupData( _logger, r, fromAbove );
                     // Calls any attributes that is a IStObjSetupConfigurator with the StObjSetupData.
-                    SetupAttribute.ApplyAttributesConfigurator( _logger, data );
-
+                    // ApplyAttributesConfigurator
+                    {
+                        var all = data.StObj.Attributes.GetCustomAttributes<IStObjSetupConfigurator>();
+                        foreach( IStObjSetupConfigurator c in all )
+                        {
+                            c.ConfigureDependentItem( _logger, data );
+                        }
+                    }
                     // If the object itself is a IStObjSetupConfigurator, calls it.
                     IStObjSetupConfigurator objectItself = r.Object as IStObjSetupConfigurator;
                     if( objectItself != null ) objectItself.ConfigureDependentItem( _logger, data );
@@ -205,7 +211,14 @@ namespace CK.Setup
                 try
                 {
                     initSource = "Attributes";
-                    SetupAttribute.ApplyAttributesDynamicInitializer( _logger, item, o );
+                    // ApplyAttributesDynamicInitializer
+                    {
+                        var all = o.Attributes.GetCustomAttributes<IStObjSetupDynamicInitializer>();
+                        foreach( IStObjSetupDynamicInitializer init in all )
+                        {
+                            init.DynamicItemInitialize( _logger, item, o );
+                        }
+                    }
                     initSource = "Structured Object itself";
                     if( o.Object is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)o.Object).DynamicItemInitialize( _logger, item, o );
                     initSource = "Setup Item itself";

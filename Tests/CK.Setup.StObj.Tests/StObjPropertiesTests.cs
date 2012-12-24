@@ -24,7 +24,7 @@ namespace CK.Setup.StObj.Tests
         }
 
         [StObjPropertySetAttribute( PropertyName = "OneIntValue", PropertyValue = 3712 )]
-        [StObj( ItemKind = DependentItemKind.Container )]
+        [StObj( ItemKind = DependentItemKindSpec.Container )]
         public class SimpleContainer : IAmbientContract
         {
         }
@@ -42,22 +42,22 @@ namespace CK.Setup.StObj.Tests
 
         #region Mergeable & Propagation
 
-        [StObj( ItemKind = DependentItemKind.Container )]
+        [StObj( ItemKind = DependentItemKindSpec.Container )]
         public class SpecializedContainer : SimpleContainer
         {
         }
 
-        [StObj( Container = typeof( SpecializedContainer ), ItemKind = DependentItemKind.Item )]
+        [StObj( Container = typeof( SpecializedContainer ), ItemKind = DependentItemKindSpec.Item )]
         public class BaseObject : IAmbientContract
         {
         }
 
-        [StObj( ItemKind = DependentItemKind.Item )]
+        [StObj( ItemKind = DependentItemKindSpec.Item )]
         public class SpecializedObject : BaseObject
         {
         }
 
-        [StObj( Container = typeof( SpecializedContainer ), ItemKind = DependentItemKind.Item )]
+        [StObj( Container = typeof( SpecializedContainer ), ItemKind = DependentItemKindSpec.Item )]
         public class SpecializedObjectWithExplicitContainer : SpecializedObject
         {
         }

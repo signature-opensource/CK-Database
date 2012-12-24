@@ -21,18 +21,10 @@ namespace CK.Setup
             _groups = groups;
         }
 
-        static internal DependentItemGroupList GetGroups( IActivityLogger logger, Type t )
-        {
-            Debug.Assert( logger != null );
-            Debug.Assert( t != null );
-            DependentItemGroupList result = new DependentItemGroupList();
-            var all = (GroupsAttribute[])t.GetCustomAttributes( typeof(GroupsAttribute), false );
-            foreach( var a in all )
-            {
-                result.AddCommaSeparatedString( a._groups );
-            }
-            return result;
-        }
+        /// <summary>
+        /// Gets a comma separated list of group names.
+        /// </summary>
+        public string Groups { get { return _groups; } }
 
     }
 }

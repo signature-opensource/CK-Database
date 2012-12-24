@@ -51,11 +51,11 @@ namespace CK.Setup
                             result.SpecializationDepth = 1;
                             // For ItemKind & TrackAmbientProperties, walks up the inheritance chain and combines the StObjAttribute.
                             // We compute the SpecializationDepth: once we know it, we can inject it the Ambient Properties discovery.
-                            var a = CK.Setup.StObjAttribute.GetStObjAttributeForExactType( t, logger );
+                            var a = AttributesReader.GetStObjAttributeForExactType( t, logger );
                             if( a != null )
                             {
                                 result.Container = a.Container;
-                                result.ItemKind = a.ItemKind;
+                                result.ItemKind = (DependentItemKind)a.ItemKind;
                                 result.TrackAmbientProperties = a.TrackAmbientProperties;
                             }
                             Type tAbove = t.BaseType;
@@ -64,11 +64,11 @@ namespace CK.Setup
                                 result.SpecializationDepth = result.SpecializationDepth + 1;
                                 if( !result.IsFullyDefined )
                                 {
-                                    var aAbove = CK.Setup.StObjAttribute.GetStObjAttributeForExactType( tAbove, logger );
+                                    var aAbove = AttributesReader.GetStObjAttributeForExactType( tAbove, logger );
                                     if( aAbove != null )
                                     {
                                         if( result.Container == null ) result.Container = aAbove.Container;
-                                        if( result.ItemKind == DependentItemKind.Unknown ) result.ItemKind = aAbove.ItemKind;
+                                        if( result.ItemKind == DependentItemKind.Unknown ) result.ItemKind = (DependentItemKind)aAbove.ItemKind;
                                         if( result.TrackAmbientProperties == TrackAmbientPropertiesMode.Unknown ) result.TrackAmbientProperties = aAbove.TrackAmbientProperties;
                                     }
                                 }
@@ -182,11 +182,11 @@ namespace CK.Setup
 
             #region IStObjAttribute (ItemKind, Container & Type requirements).
             // There is no Container inheritance at this level.
-            var a = CK.Setup.StObjAttribute.GetStObjAttributeForExactType( t, logger );
+            var a = AttributesReader.GetStObjAttributeForExactType( t, logger );
             if( a != null )
             {
                 Container = a.Container;
-                ItemKind = a.ItemKind;
+                ItemKind = (DependentItemKind)a.ItemKind;
                 TrackAmbientProperties = a.TrackAmbientProperties;
                 RequiredBy = a.RequiredBy;
                 Requires = a.Requires;

@@ -140,10 +140,10 @@ namespace CK.Core
             return (TC)new AmbientContextTypeInfo<T>( (T)this, context, specialization );
         }
 
-        static void ProcessContextAttributes<T>( Type t, Func<string, bool> action ) where T : IAttributeContext
+        static void ProcessContextAttributes<T>( Type t, Func<string, bool> action ) where T : IAddOrRemoveContextAttribute
         {
             object[] attrs = t.GetCustomAttributes( typeof( T ), false );
-            foreach( var a in attrs ) action( ((IAttributeContext)a).Context );
+            foreach( var a in attrs ) action( ((IAddOrRemoveContextAttribute)a).Context );
         }
     }
 }

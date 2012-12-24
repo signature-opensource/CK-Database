@@ -23,8 +23,8 @@ namespace CK.Setup
         {
             _stObj = o;
 
-            _fullNameWithoutContext = SetupNameAttribute.GetFullName( logger, false, o.ObjectType );
-            _versions = VersionsAttribute.GetVersionsString( o.ObjectType );
+            _fullNameWithoutContext = AttributesReader.GetFullName( logger, false, o.ObjectType );
+            _versions = AttributesReader.GetVersionsString( o.ObjectType );
             _requiresEx = new ReadOnlyListOnIList<IDependentItemRef>( Requires );
             _requiredByEx = new ReadOnlyListOnIList<IDependentItemRef>( RequiredBy );
             _childrenEx = new ReadOnlyListOnIList<IDependentItemRef>( Children );
@@ -52,7 +52,6 @@ namespace CK.Setup
             }
             return true;
         }
-
 
         public bool IsDefaultFullNameWithoutContext
         {

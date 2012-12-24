@@ -13,7 +13,7 @@ namespace CK.Setup.StObj.Tests
     [CLSCompliant(false)]
     public class ActorZoneWithAmbientTests
     {
-        [StObj( ItemKind = DependentItemKind.Group, TrackAmbientProperties = TrackAmbientPropertiesMode.AddPropertyHolderAsChildren )] 
+        [StObj( ItemKind = DependentItemKindSpec.Group, TrackAmbientProperties = TrackAmbientPropertiesMode.AddPropertyHolderAsChildren )] 
         class SqlDatabaseDefault : IAmbientContract
         {
         }
@@ -26,7 +26,7 @@ namespace CK.Setup.StObj.Tests
 
         #region Basic Package
 
-        [StObj( ItemKind = DependentItemKind.Container )]
+        [StObj( ItemKind = DependentItemKindSpec.Container )]
         class BasicPackage : BaseDatabaseObject
         {
             [AmbientContract]
@@ -36,17 +36,17 @@ namespace CK.Setup.StObj.Tests
             public BasicGroup GroupHome { get; protected set; }
         }
 
-        [StObj( Container = typeof( BasicPackage ), ItemKind = DependentItemKind.Item )]
+        [StObj( Container = typeof( BasicPackage ), ItemKind = DependentItemKindSpec.Item )]
         class BasicActor : BaseDatabaseObject
         {
         }
 
-        [StObj( Container = typeof( BasicPackage ), ItemKind = DependentItemKind.Item )]
+        [StObj( Container = typeof( BasicPackage ), ItemKind = DependentItemKindSpec.Item )]
         class BasicUser : BaseDatabaseObject
         {
         }
 
-        [StObj( Container = typeof( BasicPackage ), ItemKind = DependentItemKind.Item )]
+        [StObj( Container = typeof( BasicPackage ), ItemKind = DependentItemKindSpec.Item )]
         class BasicGroup : BaseDatabaseObject
         {
             void Construct( BasicActor actor )
@@ -64,15 +64,15 @@ namespace CK.Setup.StObj.Tests
             public new ZoneGroup GroupHome { get { return (ZoneGroup)base.GroupHome; } protected set { base.GroupHome = value; } }
         }
 
-        [StObj( Container = typeof( ZonePackage ), ItemKind = DependentItemKind.Item )]
+        [StObj( Container = typeof( ZonePackage ), ItemKind = DependentItemKindSpec.Item )]
         class ZoneGroup : BasicGroup
         {
             void Construct( SecurityZone zone )
             {
             }
         }
-        
-        [StObj( Container = typeof( ZonePackage ), ItemKind = DependentItemKind.Item )]
+
+        [StObj( Container = typeof( ZonePackage ), ItemKind = DependentItemKindSpec.Item )]
         class SecurityZone : BaseDatabaseObject
         {
             void Construct( BasicGroup group )
@@ -84,7 +84,7 @@ namespace CK.Setup.StObj.Tests
 
         #region Authentication Package
 
-        [StObj( ItemKind = DependentItemKind.Container )]
+        [StObj( ItemKind = DependentItemKindSpec.Container )]
         class AuthenticationPackage : BaseDatabaseObject
         {
         }

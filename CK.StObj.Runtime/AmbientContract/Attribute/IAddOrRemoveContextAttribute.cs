@@ -8,7 +8,7 @@ namespace CK.Core
     /// <summary>
     /// Interface that unifies <see cref="AddContextAttribute"/> and <see cref="RemoveContextAttribute"/>.
     /// </summary>
-    public interface IAttributeContext
+    public interface IAddOrRemoveContextAttribute
     {
         string Context { get; }
     }

@@ -11,22 +11,14 @@ namespace CK.Setup.SqlServer
     /// Declares a resource that contains a Sql procedure, function or view associated to a type.
     /// Multiples object names like "sUserCreate, sUserDestroy, sUserUpgrade" can be defined.
     /// </summary>
-    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = false )]
-    public class SqlObjectItemAttribute : Attribute, IStObjSetupDynamicInitializer
+    public class SqlObjectItemAttributeImpl : IStObjSetupDynamicInitializer
     {
-        /// <summary>
-        /// Initializes a new <see cref="SqlObjectItemAttribute"/> with (potentially) multiple object names.
-        /// </summary>
-        /// <param name="commaSeparatedObjectNames">Name or multiple comma separated names.</param>
-        public SqlObjectItemAttribute( string commaSeparatedObjectNames )
-        {
-            CommaSeparatedObjectNames = commaSeparatedObjectNames;
-        }
+        readonly SqlObjectItemAttribute Attribute;
 
-        /// <summary>
-        /// Gets a Sql object name or multiple comma separated names.
-        /// </summary>
-        public string CommaSeparatedObjectNames { get; private set; }
+        public SqlObjectItemAttributeImpl( SqlObjectItemAttribute a )
+        {
+            Attribute = a;
+        }
 
         void IStObjSetupDynamicInitializer.DynamicItemInitialize( IActivityLogger logger, IMutableSetupItem item, IStObj stObj )
         {
@@ -39,7 +31,7 @@ namespace CK.Setup.SqlServer
 
             SqlPackageBaseItem packageItem = (SqlPackageBaseItem)item;
 
-            foreach( var n in CommaSeparatedObjectNames.Split( ',' ) )
+            foreach( var n in Attribute.CommaSeparatedObjectNames.Split( ',' ) )
             {
                 string nTrimmed = n.Trim();
                 if( nTrimmed.Length > 0 )

@@ -36,14 +36,14 @@ namespace CK.Setup.StObj.Tests
         }
 
         [DirectPropertySet( PropertyName = "OneIntValue", PropertyValue = 3712 )]
-        [StObj( ItemKind = DependentItemKind.Container )]
+        [StObj( ItemKind = DependentItemKindSpec.Container )]
         public class SimpleObjectDirect : IAmbientContract
         {
             public int OneIntValue { get; set; }
         }
 
         [AmbientPropertySet( PropertyName = "OneIntValue", PropertyValue = 3712 )]
-        [StObj( ItemKind = DependentItemKind.Container )]
+        [StObj( ItemKind = DependentItemKindSpec.Container )]
         public class SimpleObjectAmbient : IAmbientContract
         {
             [AmbientProperty]
@@ -210,7 +210,7 @@ namespace CK.Setup.StObj.Tests
         }
 
         [AmbientPropertySet( PropertyName = "OneIntValue", PropertyValue = 1111111 )]
-        [StObj( ItemKind = DependentItemKind.Container )]
+        [StObj( ItemKind = DependentItemKindSpec.Container )]
         public class AnotherContainer : IAmbientContract
         {
             [AmbientProperty]
@@ -284,7 +284,7 @@ namespace CK.Setup.StObj.Tests
         {
         }
 
-        [StObj( ItemKind=DependentItemKind.Container)]
+        [StObj( ItemKind = DependentItemKindSpec.Container )]
         class C1 : BaseForObject, IAmbientContract
         {
         }

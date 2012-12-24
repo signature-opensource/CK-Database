@@ -13,7 +13,7 @@ namespace CK.Setup.StObj.Tests
     [CLSCompliant(false)]
     public class ActorZoneWithoutAmbientTests
     {
-        [StObj( ItemKind = DependentItemKind.Group,
+        [StObj( ItemKind = DependentItemKindSpec.Group,
                 Children = new Type[] 
                 { 
                     typeof( BasicPackage ), 
@@ -33,24 +33,24 @@ namespace CK.Setup.StObj.Tests
 
         #region Basic Package
 
-        [StObj( ItemKind = DependentItemKind.Container )]
+        [StObj( ItemKind = DependentItemKindSpec.Container )]
         class BasicPackage : IAmbientContract
         {
         }
 
-        [StObj( Container = typeof( BasicPackage ), ItemKind = DependentItemKind.Item )]
+        [StObj( Container = typeof( BasicPackage ), ItemKind = DependentItemKindSpec.Item )]
         class BasicActor : IAmbientContract
         {
         }
 
 
-        [StObj( Container = typeof( BasicPackage ), ItemKind = DependentItemKind.Item )]
+        [StObj( Container = typeof( BasicPackage ), ItemKind = DependentItemKindSpec.Item )]
         class BasicUser : IAmbientContract
         {
         }
 
 
-        [StObj( Container = typeof(BasicPackage), ItemKind = DependentItemKind.Item )]
+        [StObj( Container = typeof( BasicPackage ), ItemKind = DependentItemKindSpec.Item )]
         class BasicGroup : IAmbientContract
         {
             void Construct( BasicActor actor )
@@ -66,7 +66,7 @@ namespace CK.Setup.StObj.Tests
         {
         }
 
-        [StObj( Container = typeof( ZonePackage ), ItemKind = DependentItemKind.Item )]
+        [StObj( Container = typeof( ZonePackage ), ItemKind = DependentItemKindSpec.Item )]
         class ZoneGroup : BasicGroup
         {
             void Construct( SecurityZone zone )
@@ -74,7 +74,7 @@ namespace CK.Setup.StObj.Tests
             }
         }
 
-        [StObj( Container = typeof( ZonePackage ), ItemKind = DependentItemKind.Item )]
+        [StObj( Container = typeof( ZonePackage ), ItemKind = DependentItemKindSpec.Item )]
         class SecurityZone : IAmbientContract
         {
             void Construct( BasicGroup group )
@@ -86,7 +86,7 @@ namespace CK.Setup.StObj.Tests
 
         #region Authentication Package
 
-        [StObj( ItemKind = DependentItemKind.Container )]
+        [StObj( ItemKind = DependentItemKindSpec.Container )]
         class AuthenticationPackage : IAmbientContract
         {
         }

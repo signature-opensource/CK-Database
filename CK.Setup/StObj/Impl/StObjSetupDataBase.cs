@@ -26,11 +26,11 @@ namespace CK.Setup
             _parent = parent as IStObjSetupData;
             bool isInRoot = _parent == null;
 
-            _requires = RequiresAttribute.GetRequirements( logger, t, typeof( RequiresAttribute ) );
-            _requiredBy = RequiresAttribute.GetRequirements( logger, t, typeof( RequiredByAttribute ) );
-            _children = RequiresAttribute.GetRequirements( logger, t, typeof( ChildrenAttribute ) );
-            _groups = GroupsAttribute.GetGroups( logger, t );
-            SetupAttribute setupAttr = SetupAttribute.GetSetupAttribute( t );
+            _requires = AttributesReader.GetRequirements( logger, t, typeof( RequiresAttribute ) );
+            _requiredBy = AttributesReader.GetRequirements( logger, t, typeof( RequiredByAttribute ) );
+            _children = AttributesReader.GetRequirements( logger, t, typeof( ChildrenAttribute ) );
+            _groups = AttributesReader.GetGroups( logger, t );
+            SetupAttribute setupAttr = AttributesReader.GetSetupAttribute( t );
             if( setupAttr != null )
             {
                 _containerFullName = setupAttr.ContainerFullName;

@@ -10,8 +10,8 @@ namespace CK.Core
     /// See <see cref="IAutoImplementorMethod"/> and <see cref="IAutoImplementorProperty"/>
     /// that are able to actually implement methods and properties.
     /// Attributes that support those interfaces can directly provide an implementation: when an attribute only support
-    /// this <see cref="IAttributeAutoImplemented"/> marker, the implementation is a stub provided by <see cref="CK.Reflection.EmitHelper.ImplementEmptyStubMethod"/>
-    /// or <see cref="CK.Reflection.EmitHelper.ImplementEmptyStubProperty"/>.
+    /// this <see cref="IAttributeAutoImplemented"/> marker, the implementation is a stub provided by CK.Reflection.EmitHelper.ImplementEmptyStubMethod 
+    /// or CK.Reflection.EmitHelper.ImplementEmptyStubProperty helpers.
     /// </remarks>
     public interface IAttributeAutoImplemented
     {

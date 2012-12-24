@@ -29,11 +29,5 @@ namespace CK.Setup
             get { return _versions; }
         }
 
-        static internal string GetVersionsString( Type t )
-        {
-            var a = (VersionsAttribute)t.GetCustomAttributes( typeof( VersionsAttribute ), false ).SingleOrDefault();
-            return a != null ? a.VersionsString : null;
-        }
-
     }
 }

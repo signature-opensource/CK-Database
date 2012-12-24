@@ -9,7 +9,7 @@ namespace CK.Setup
     /// Enables any attributes other than <see cref="SetupAttribute"/> and <see cref="SetupName"/> 
     /// to carry the full name of a setup object.
     /// </summary>
-    public interface ISetupNameAttribute
+    public interface IAttributeSetupName
     {
         /// <summary>
         /// Gets the full name of the setup object.
