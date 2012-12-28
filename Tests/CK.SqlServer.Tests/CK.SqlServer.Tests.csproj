@@ -59,9 +59,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\CK.Setup.StObj\CK.Setup.StObj.csproj">
+    <ProjectReference Include="..\..\CK.StObj.Engine\CK.StObj.Engine.csproj">
       <Project>{DF7A0B05-4B48-44C2-B6C8-6FCFD66DF8F8}</Project>
-      <Name>CK.Setup.StObj</Name>
+      <Name>CK.StObj.Engine</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\CK.SqlServer\CK.SqlServer.csproj">
       <Project>{95912A3B-758E-474B-AF34-BE24C4E3BF56}</Project>

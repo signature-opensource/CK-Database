@@ -57,9 +57,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\CK.Setup\CK.Setup.csproj">
+    <ProjectReference Include="..\..\CK.Setupable.Engine\CK.Setupable.Engine.csproj">
       <Project>{D3C700E1-3546-437C-9B96-1F867A539B6A}</Project>
-      <Name>CK.Setup</Name>
+      <Name>CK.Setupable.Engine</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
