@@ -9,6 +9,19 @@ namespace CK.StObj.Engine.Tests
     [CLSCompliant(false)]
     public class ActorZoneWithAmbientTests
     {
+        public class AmbientPropertySetAttribute : Attribute, IStObjStructuralConfigurator
+        {
+            public string PropertyName { get; set; }
+
+            public object PropertyValue { get; set; }
+
+            public void Configure( IActivityLogger logger, IStObjMutableItem o )
+            {
+                o.SetAmbiantPropertyValue( logger, PropertyName, PropertyValue, "AmbientPropertySetAttribute" );
+            }
+        }
+
+
         [StObj( ItemKind = DependentItemKindSpec.Group, TrackAmbientProperties = TrackAmbientPropertiesMode.AddPropertyHolderAsChildren )] 
         class SqlDatabaseDefault : IAmbientContract
         {
@@ -18,11 +31,16 @@ namespace CK.StObj.Engine.Tests
         {
             [AmbientProperty]
             public SqlDatabaseDefault Database { get; set; }
+            
+            [AmbientProperty]
+            public string Schema { get; set; }
         }
 
         #region Basic Package
 
+        // We want BasicActor, BasicUser and BasicGroup to be in CK schema since they belong to BasicPackage.
         [StObj( ItemKind = DependentItemKindSpec.Container )]
+        [AmbientPropertySet( PropertyName = "Schema", PropertyValue = "CK" )]
         class BasicPackage : BaseDatabaseObject
         {
             [AmbientContract]
@@ -54,10 +72,11 @@ namespace CK.StObj.Engine.Tests
 
         #region Zone Package
 
+        // ZonePackage specializes BasicPackage. Its Schema is the same as BasicPackage (CK).
         class ZonePackage : BasicPackage
         {
             [AmbientContract]
-            public new ZoneGroup GroupHome { get { return (ZoneGroup)base.GroupHome; } protected set { base.GroupHome = value; } }
+            public new ZoneGroup GroupHome { get { return (ZoneGroup)base.GroupHome; } }
         }
 
         [StObj( Container = typeof( ZonePackage ), ItemKind = DependentItemKindSpec.Item )]
@@ -68,6 +87,7 @@ namespace CK.StObj.Engine.Tests
             }
         }
 
+        // This new object in ZonePackage will be in CK schema.
         [StObj( Container = typeof( ZonePackage ), ItemKind = DependentItemKindSpec.Item )]
         class SecurityZone : BaseDatabaseObject
         {
@@ -80,13 +100,22 @@ namespace CK.StObj.Engine.Tests
 
         #region Authentication Package
 
+        // This new Package introduces a new Schema: CKAuth.
+        // The objects that are specializations of objects from other packages must stay in CK.
+        // But a new object like AuthenticationDetail must be in CKAuth.
         [StObj( ItemKind = DependentItemKindSpec.Container )]
+        [AmbientPropertySet( PropertyName = "Schema", PropertyValue = "CKAuth" )] 
         class AuthenticationPackage : BaseDatabaseObject
         {
         }
 
         [StObj( Container = typeof( AuthenticationPackage ) )]
         class AuthenticationUser : BasicUser
+        {
+        }
+
+        [StObj( Container = typeof( AuthenticationPackage ) )]
+        class AuthenticationDetail : BaseDatabaseObject
         {
         }
 
@@ -105,6 +134,7 @@ namespace CK.StObj.Engine.Tests
             collector.RegisterClass( typeof( SecurityZone ) );
             collector.RegisterClass( typeof( AuthenticationPackage ) );
             collector.RegisterClass( typeof( AuthenticationUser ) );
+            collector.RegisterClass( typeof( AuthenticationDetail ) );
             collector.RegisterClass( typeof( SqlDatabaseDefault ) );
             collector.DependencySorterHookInput = TestHelper.Trace;
             collector.DependencySorterHookOutput = sortedItems => TestHelper.Trace( sortedItems, false );
@@ -113,12 +143,18 @@ namespace CK.StObj.Engine.Tests
             Assert.That( r.HasFatalError, Is.False );
             r.Default.CheckChildren<BasicPackage>( "BasicActor,BasicUser,BasicGroup" );
             r.Default.CheckChildren<ZonePackage>( "SecurityZone,ZoneGroup" );
-            r.Default.CheckChildren<SqlDatabaseDefault>( "BasicPackage,BasicActor,BasicUser,BasicGroup,ZonePackage,SecurityZone,ZoneGroup,AuthenticationPackage,AuthenticationUser" );
+            r.Default.CheckChildren<SqlDatabaseDefault>( "BasicPackage,BasicActor,BasicUser,BasicGroup,ZonePackage,SecurityZone,ZoneGroup,AuthenticationPackage,AuthenticationUser,AuthenticationDetail" );
 
             var basicPackage = r.Default.StObjMapper.GetObject<BasicPackage>();
             Assert.That( basicPackage is ZonePackage );
             Assert.That( basicPackage.GroupHome is ZoneGroup );
+            Assert.That( basicPackage.Schema, Is.EqualTo( "CK" ) );
 
+            var authenticationUser = r.Default.StObjMapper.GetObject<AuthenticationUser>();
+            Assert.That( authenticationUser.Schema, Is.EqualTo( "CK" ) );
+            
+            var authenticationDetail = r.Default.StObjMapper.GetObject<AuthenticationDetail>();
+            Assert.That( authenticationDetail.Schema, Is.EqualTo( "CKAuth" ) );
         }
     }
 }

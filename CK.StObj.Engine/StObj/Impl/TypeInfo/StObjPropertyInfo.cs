@@ -13,14 +13,16 @@ namespace CK.Setup
         public readonly string Name;
         public readonly Type Type;
         public readonly PropertyInfo PropertyInfo;
+        public readonly PropertyResolutionSource ResolutionSource;
 
-        public StObjPropertyInfo( Type declaringType, string name, Type type, PropertyInfo pInfo )
+        public StObjPropertyInfo( Type declaringType, PropertyResolutionSource source, string name, Type type, PropertyInfo pInfo )
         {
             Debug.Assert( declaringType != null && name != null && type != null );
             DeclaringType = declaringType;
             Name = name;
             Type = type;
             PropertyInfo = pInfo;
+            ResolutionSource = source;
         }
 
         internal bool SetValue( IActivityLogger logger, object stObj, object v )

@@ -444,7 +444,7 @@ namespace CK.Setup
                 {
                     foreach( MutableParameter t in _constructParameterEx )
                     {
-                        if( !t.HasBeenSet )
+                        if( t.Value == Type.Missing )
                         {
                             MutableItem dep = t.ResolveToStObj( logger, collector, cachedCollector );
                             if( dep != null ) req.Add( dep );
@@ -602,7 +602,7 @@ namespace CK.Setup
                 }
                 else
                 {
-                    if( !t.HasBeenSet )
+                    if( t.Value == Type.Missing )
                     {
                         // Parameter reference have already been resolved as dependencies for graph construction since 
                         // no Value has been explicitely set for the parameter.

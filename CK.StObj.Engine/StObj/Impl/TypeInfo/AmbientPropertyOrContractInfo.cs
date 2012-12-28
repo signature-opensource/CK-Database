@@ -82,10 +82,10 @@ namespace CK.Setup
                         logger.Error( "StObj property named '{0}' for '{1}' is defined more than once. It should be declared only once.", p.Name, p.DeclaringType.FullName );
                         continue;
                     }
-                    stObjProperties.Add( new StObjPropertyInfo( t, nP, tP, p ) );
+                    stObjProperties.Add( new StObjPropertyInfo( t, stObjAttr.ResolutionSource, nP, tP, p ) );
                     // Continue to detect Ambient properties. Properties that are both Ambient and StObj must be detected.
                 }
-                IAmbientPropertyOrContractAttribute ap = (AmbientPropertyAttribute)Attribute.GetCustomAttribute( p, typeof( AmbientPropertyAttribute ), false );
+                AmbientPropertyAttribute ap = (AmbientPropertyAttribute)Attribute.GetCustomAttribute( p, typeof( AmbientPropertyAttribute ), false );
                 IAmbientPropertyOrContractAttribute ac = (AmbientContractAttribute)Attribute.GetCustomAttribute( p, typeof( AmbientContractAttribute ), false );
                 if( ac != null || ap != null )
                 {
@@ -106,7 +106,7 @@ namespace CK.Setup
                     if( attr.IsAmbientProperty )
                     {
                         if( apListResult == null ) apListResult = new List<AmbientPropertyInfo>();
-                        var amb = new AmbientPropertyInfo( p, attr.IsOptionalDefined, attr.IsOptional, definerSpecializationDepth, apListResult.Count );
+                        var amb = new AmbientPropertyInfo( p, attr.IsOptionalDefined, attr.IsOptional, ap.IsResolutionSourceDefined, ap.ResolutionSource, definerSpecializationDepth, apListResult.Count );
                         apListResult.Add( amb );
                     }
                     else

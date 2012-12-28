@@ -16,7 +16,7 @@ namespace CK.Setup
         bool IsOptional { get; }
 
         /// <summary>
-        /// Gets whether tha attribute defines the <see cref="IsOptional"/> value or if it must be inherited.
+        /// Gets whether that attribute defines the <see cref="IsOptional"/> value or if it must be inherited.
         /// </summary>
         bool IsOptionalDefined { get; }
 

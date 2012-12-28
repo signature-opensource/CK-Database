@@ -21,7 +21,5 @@ namespace CK.Setup
         }
 
         public object Value { get; protected set; }
-
-        internal bool HasBeenSet { get { return Value != Type.Missing; } }
     }
 }

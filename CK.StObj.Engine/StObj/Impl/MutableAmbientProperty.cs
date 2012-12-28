@@ -53,7 +53,7 @@ namespace CK.Setup
         internal int MaxSpecializationDepthSet { get { return _maxSpecializationDepthSet; } }
 
         /// <summary>
-        /// Public in oreder to implement IStObjFinalAmbientProperty.SetFinalValue.
+        /// Sets the final value. Public in order to implement IStObjFinalAmbientProperty.SetValue.
         /// </summary>
         public void SetValue( object value )
         {

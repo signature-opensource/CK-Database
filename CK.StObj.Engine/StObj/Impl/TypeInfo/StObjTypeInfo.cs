@@ -148,7 +148,7 @@ namespace CK.Setup
                 }
                 else
                 {
-                    stObjProperties.Add( new StObjPropertyInfo( t, p.PropertyName, p.PropertyType, null ) );
+                    stObjProperties.Add( new StObjPropertyInfo( t, p.ResolutionSource, p.PropertyName, p.PropertyType, null ) );
                 }
             }
             // Ambient properties for the exact Type (can be null). 

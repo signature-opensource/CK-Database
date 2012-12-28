@@ -58,6 +58,7 @@
     <Compile Include="ActorZoneWithoutAmbientTests.cs" />
     <Compile Include="ActorZoneWithAmbientTests.cs" />
     <Compile Include="AutoImplementationTests.cs" />
+    <Compile Include="AmbientPropertiesPropagationTests.cs" />
     <Compile Include="DifferentKindOfProperties.cs" />
     <Compile Include="SchmurtzProperty.cs" />
     <Compile Include="StObjPropertiesTests.cs" />
@@ -81,6 +82,7 @@
     <Compile Include="SimpleObjects\WithLevel3\IAbstractionB.cs" />
     <Compile Include="SimpleObjects\WithLevel3\ObjectALevel4.cs" />
     <Compile Include="SimpleObjects\WithLevel3\ObjectBLevel2.cs" />
+    <Compile Include="StructuralConfiguratorHelper.cs" />
     <Compile Include="TestHelper.cs" />
   </ItemGroup>
   <ItemGroup>

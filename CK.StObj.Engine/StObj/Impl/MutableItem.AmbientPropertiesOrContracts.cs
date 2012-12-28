@@ -253,7 +253,7 @@ namespace CK.Setup
                         return null;
                     }
                 }
-                // Never seen this property: we must find it in our containers.
+                // Never seen this property: we must find it in our containers (since it is not defined by any StObj in the specialization chain).
                 if( a == null )
                 {
                     MutableItem currentLevel = this;
@@ -265,48 +265,65 @@ namespace CK.Setup
                     while( (a == null || a.Value == Type.Missing) && currentLevel != null );
                     if( a == null )
                     {
+                        // Not found: registers the marker.
                         a = new MutableAmbientProperty( this, name );
                     }
                     _leafData.AllAmbientProperties.Add( a );
                     Debug.Assert( a.IsFinalValue );
+                    // We necessarily leave here...
                 }
                 if( a.IsFinalValue ) return a;
 
-                // Property has been explicitely set to Type.Missing in order to inherit from its containers.
-                if( a.UseValue && a.Value == Type.Missing )
-                {
-                    MutableAmbientProperty found = null;
-                    MutableItem currentLevel = this;
-                    do
-                    {
-                        if( currentLevel.IsOwnContainer ) found = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( logger, result, dependencyResolver, propertyType, name );
-                        currentLevel = currentLevel.Generalization;
-                    }
-                    while( (found == null || found.Value == Type.Missing) && currentLevel != null );
-                    a.SetValue( found == null ? Type.Missing : found.Value );
-                    return a;
-                }
+                Debug.Assert( a.Value == Type.Missing || a.MaxSpecializationDepthSet > 0, "a Value exists => it has been set." );
 
-                // Property has been explicitely set or configured for resolution at a given level.
-                // Before accepting the value or resolving it, we apply container's inheritance up to this level if it is not the most specialized one.
-                if( a.MaxSpecializationDepthSet < AmbientTypeInfo.SpecializationDepth )
+                MutableAmbientProperty foundFromOther = null;
+                // If the property has not been set to a value or not configured (a.MaxSpecializationDepthSet == 0), 
+                // OR the value has been set to Missing to use resolution (this is a way to cancel any previous settings).
+                if( a.MaxSpecializationDepthSet == 0 || (a.Value == Type.Missing && a.UseValue) )
                 {
-                    MutableAmbientProperty found = null;
+                    if( a.AmbientPropertyInfo.ResolutionSource == PropertyResolutionSource.FromGeneralizationAndThenContainer )
+                    {
+                        MutableItem currentLevel = _leafData.RootGeneralization;
+                        do
+                        {
+                            if( currentLevel.IsOwnContainer ) foundFromOther = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( logger, result, dependencyResolver, propertyType, name );
+                            currentLevel = currentLevel.Specialization;
+                        }
+                        while( (foundFromOther == null || foundFromOther.Value == Type.Missing) && currentLevel != null );
+                    }
+                    else if( a.AmbientPropertyInfo.ResolutionSource == PropertyResolutionSource.FromContainerAndThenGeneralization )
+                    {
+                        MutableItem currentLevel = this;
+                        do
+                        {
+                            if( currentLevel.IsOwnContainer ) foundFromOther = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( logger, result, dependencyResolver, propertyType, name );
+                            currentLevel = currentLevel.Generalization;
+                        }
+                        while( (foundFromOther == null || foundFromOther.Value == Type.Missing) && currentLevel != null );
+                    }
+                }
+                // A Value exists: the property has been explicitely set or configured for resolution at a given level.
+                // If we are in "FromContainerAndThenGeneralization" mode, before accepting the value or resolving it, we apply container's inheritance up to this level if it is not the most specialized one.
+                // If not ("None" or "FromGeneralizationAndThenContainer") we have nothing to do.
+                if( a.AmbientPropertyInfo.ResolutionSource == PropertyResolutionSource.FromContainerAndThenGeneralization && a.MaxSpecializationDepthSet < AmbientTypeInfo.SpecializationDepth )
+                {
                     MutableItem currentLevel = this;
                     do
                     {
-                        if( currentLevel.IsOwnContainer ) found = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( logger, result, dependencyResolver, propertyType, name );
+                        if( currentLevel.IsOwnContainer ) foundFromOther = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( logger, result, dependencyResolver, propertyType, name );
                         currentLevel = currentLevel.Generalization;
                     }
-                    while( (found == null || found.Value == Type.Missing) && currentLevel != null && currentLevel.AmbientTypeInfo.SpecializationDepth > a.MaxSpecializationDepthSet );
-                    if( found != null && found.Value != Type.Missing )
-                    {
-                        a.SetValue( found.Value );
-                        return a;
-                    }
+                    while( (foundFromOther == null || foundFromOther.Value == Type.Missing) && currentLevel != null && currentLevel.AmbientTypeInfo.SpecializationDepth > a.MaxSpecializationDepthSet );
                 }
-                // No value found from containers: we may have to solve it.
-                a.SetValue( a.UseValue ? a.Value : a.ResolveToStObj( logger, result, null ) );
+                if( foundFromOther != null && foundFromOther.Value != Type.Missing )
+                {
+                    a.SetValue( foundFromOther.Value );
+                }
+                else
+                {
+                    // No value found from containers or generalization: we may have to solve it.
+                    a.SetValue( a.UseValue ? a.Value : a.ResolveToStObj( logger, result, null ) );
+                }
                 return a;
             }
             finally

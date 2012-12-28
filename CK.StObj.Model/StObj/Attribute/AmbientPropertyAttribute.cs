@@ -13,6 +13,15 @@ namespace CK.Setup
     public class AmbientPropertyAttribute : Attribute, IAmbientPropertyOrContractAttribute
     {
         bool? _isOptional;
+        PropertyResolutionSource? _source;
+
+        /// <summary>
+        /// Initializes a new <see cref="AmbientPropertyAttribute"/>.
+        /// </summary>
+        public AmbientPropertyAttribute()
+        {
+            _source = PropertyResolutionSource.FromGeneralizationAndThenContainer;
+        }
 
         /// <summary>
         /// Gets or sets whether resolving this property is required or not.
@@ -24,6 +33,25 @@ namespace CK.Setup
         {
             get { return _isOptional.HasValue ? _isOptional.Value : false; }
             set { _isOptional = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="PropertyResolutionSource"/> for this property.
+        /// Defaults to <see cref="PropertyResolutionSource.FromGeneralizationAndThenContainer"/>, but when 
+        /// it is not explicitely set, its value is inherited from the property definition of the base class. 
+        /// </summary>
+        public PropertyResolutionSource ResolutionSource
+        {
+            get { return _source.HasValue ? _source.Value : PropertyResolutionSource.FromGeneralizationAndThenContainer; }
+            set { _source = value; }
+        }
+
+        /// <summary>
+        /// Gets whether <see cref="ResolutionSource"/> has been set.
+        /// </summary>
+        public bool IsResolutionSourceDefined
+        {
+            get { return _source.HasValue; }
         }
 
         bool IAmbientPropertyOrContractAttribute.IsOptionalDefined

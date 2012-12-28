@@ -48,21 +48,6 @@ namespace CK.StObj.Engine.Tests
             public int OneIntValue { get; set; }
         }
 
-        class StructuralConfigurator : IStObjStructuralConfigurator
-        {
-            readonly Action<IStObjMutableItem> _conf;
-
-            public StructuralConfigurator( Action<IStObjMutableItem> conf )
-            {
-                _conf = conf;
-            }
-
-            public void Configure( IActivityLogger logger, IStObjMutableItem o )
-            {
-                _conf( o );
-            }
-        }
-
         class ConfiguratorOneIntValueSetTo42 : IStObjStructuralConfigurator
         {
             public void Configure( IActivityLogger logger, IStObjMutableItem o )
@@ -187,81 +172,6 @@ namespace CK.StObj.Engine.Tests
             collector.RegisterClass( typeof( SimpleObjectInsideAmbiant ) );
             StObjCollectorResult result = collector.GetResult();
             Assert.That( result.Default.StObjMapper.GetObject<SimpleObjectInsideAmbiant>().OneIntValue, Is.EqualTo( 42 ), "Of course, ambient properties propagate their values." );
-        }
-
-        #endregion
-
-        #region Propagation to specialization.
-
-
-        public class InheritedSimpleObject : SimpleObjectAmbient
-        {
-        }
-
-        [AmbientPropertySet( PropertyName = "OneIntValue", PropertyValue = 9878654 )]
-        public class InheritedSimpleObjectWithSet : SimpleObjectAmbient
-        {
-        }
-
-        public class InheritedSimpleObjectWithoutSet : InheritedSimpleObjectWithSet
-        {
-        }
-
-        [AmbientPropertySet( PropertyName = "OneIntValue", PropertyValue = 1111111 )]
-        [StObj( ItemKind = DependentItemKindSpec.Container )]
-        public class AnotherContainer : IAmbientContract
-        {
-            [AmbientProperty]
-            public int OneIntValue { get; set; }
-        }
-
-        [Test]
-        public void PropagationThroughSpecializationAndContainer()
-        {
-            {
-                StObjCollector collector = new StObjCollector( TestHelper.Logger, null, new ConfiguratorOneIntValueSetTo42() );
-                collector.RegisterClass( typeof( InheritedSimpleObject ) );
-                StObjCollectorResult result = collector.GetResult();
-                Assert.That( result.Default.StObjMapper.GetObject<InheritedSimpleObject>().OneIntValue, Is.EqualTo( 42 ), "Since InheritedSimpleObject is a SimpleObjectAmbient, it has been configured." );
-            }
-            {
-                StObjCollector collector = new StObjCollector( TestHelper.Logger, null, new ConfiguratorOneIntValueSetTo42() );
-                collector.RegisterClass( typeof( InheritedSimpleObjectWithSet ) );
-                StObjCollectorResult result = collector.GetResult();
-                Assert.That( result.Default.StObjMapper.GetObject<InheritedSimpleObjectWithSet>().OneIntValue, Is.EqualTo( 9878654 ), "More specialized InheritedSimpleObjectWithSet has been set." );
-            }
-            {
-                StObjCollector collector = new StObjCollector( TestHelper.Logger, null,
-                                                new StructuralConfigurator( o => { if( o.ObjectType.Name == "InheritedSimpleObjectWithSet" ) o.Container.Type = typeof( AnotherContainer ); } ) );
-                collector.RegisterClass( typeof( AnotherContainer ) );
-                collector.RegisterClass( typeof( InheritedSimpleObjectWithSet ) );
-                StObjCollectorResult result = collector.GetResult();
-                Assert.That( result.Default.StObjMapper.Find<InheritedSimpleObjectWithSet>().Container.ObjectType.Name, Is.EqualTo( "AnotherContainer" ), "Container has changed." );
-                Assert.That( result.Default.StObjMapper.GetObject<InheritedSimpleObjectWithSet>().OneIntValue, Is.EqualTo( 9878654 ), "Property does not change since it is set on the class itself." );
-            }
-            {
-                StObjCollector collector = new StObjCollector( TestHelper.Logger, null,
-                                                new StructuralConfigurator( o => { if( o.ObjectType.Name == "InheritedSimpleObjectWithoutSet" ) o.Container.Type = typeof( AnotherContainer ); } ) );
-                collector.RegisterClass( typeof( AnotherContainer ) );
-                collector.RegisterClass( typeof( InheritedSimpleObjectWithoutSet ) );
-                StObjCollectorResult result = collector.GetResult();
-                Assert.That( result.Default.StObjMapper.Find<InheritedSimpleObjectWithSet>().Container, Is.Null, "Container of InheritedSimpleObjectWithSet has NOT changed (no container)." );
-                Assert.That( result.Default.StObjMapper.Find<InheritedSimpleObjectWithoutSet>().Container.ObjectType.Name, Is.EqualTo( "AnotherContainer" ), "Container of InheritedSimpleObjectWithoutSet has changed." );
-
-                Assert.That( result.Default.StObjMapper.GetObject<InheritedSimpleObjectWithoutSet>().OneIntValue, Is.EqualTo( 1111111 ), "Here, the container's value takes precedence since Property is NOT set on the class itself but on its Generalization." );
-            }
-            {
-                StObjCollector collector = new StObjCollector( TestHelper.Logger, null,
-                                                new StructuralConfigurator( o => { if( o.ObjectType.Name == "InheritedSimpleObjectWithSet" ) o.Container.Type = typeof( AnotherContainer ); } ) );
-                collector.RegisterClass( typeof( AnotherContainer ) );
-                collector.RegisterClass( typeof( InheritedSimpleObjectWithoutSet ) );
-                StObjCollectorResult result = collector.GetResult();
-                Assert.That( result.Default.StObjMapper.Find<InheritedSimpleObjectWithSet>().Container.ObjectType.Name, Is.EqualTo( "AnotherContainer" ), "Container of InheritedSimpleObjectWithSet has changed." );
-                Assert.That( result.Default.StObjMapper.Find<InheritedSimpleObjectWithoutSet>().Container.ObjectType.Name, Is.EqualTo( "AnotherContainer" ), "Container of InheritedSimpleObjectWithoutSet is inherited." );
-                Assert.That( result.Default.StObjMapper.Find<InheritedSimpleObjectWithoutSet>().ConfiguredContainer, Is.Null, "Container is inherited, not directly configured for the object." );
-
-                Assert.That( result.Default.StObjMapper.GetObject<InheritedSimpleObjectWithoutSet>().OneIntValue, Is.EqualTo( 9878654 ), "The inherited value is used since container is (also) inherited." );
-            }
         }
 
         #endregion

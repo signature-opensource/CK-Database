@@ -13,11 +13,12 @@ namespace CK.Setup
     {
 
         /// <summary>
-        /// Intitalize a new attribute on an existing property <see cref="PropertyName"/> and <see cref="PropertyType"/>
+        /// Initialize a new attribute on an existing property <see cref="PropertyName"/> and <see cref="PropertyType"/>
         /// are the one of the property.
         /// </summary>
         public StObjPropertyAttribute()
         {
+            ResolutionSource = PropertyResolutionSource.FromContainerAndThenGeneralization;
         }
         
         /// <summary>
@@ -30,7 +31,14 @@ namespace CK.Setup
         {
             PropertyName = propertyName;
             PropertyType = propertyType;
+            ResolutionSource = PropertyResolutionSource.FromContainerAndThenGeneralization;
         }
+
+        /// <summary>
+        /// Gets or sets the <see cref="PropertyResolutionSource"/> for this property.
+        /// Defaults to <see cref="PropertyResolutionSource.FromContainerAndThenGeneralization"/>.
+        /// </summary>
+        public PropertyResolutionSource ResolutionSource { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the StObj property. When the attribute is set on an actual property, this 

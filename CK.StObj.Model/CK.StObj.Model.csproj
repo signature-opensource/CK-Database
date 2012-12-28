@@ -71,6 +71,7 @@
     <Compile Include="StObj\Attribute\StObjAttribute.cs" />
     <Compile Include="StObj\Attribute\StObjPropertyAttribute.cs" />
     <Compile Include="StObj\DependentItemKindSpec.cs" />
+    <Compile Include="StObj\PropertyResolutionSource.cs" />
     <Compile Include="StObj\TrackAmbientPropertiesMode.cs" />
   </ItemGroup>
   <ItemGroup>

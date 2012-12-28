@@ -10,10 +10,13 @@ namespace CK.Setup
     internal class AmbientPropertyInfo : AmbientPropertyOrContractInfo
     {
         public new readonly static string KindName = "[AmbientProperty]";
+        readonly bool _isSourceDefined;
 
-        internal AmbientPropertyInfo( PropertyInfo p, bool isOptionalDefined, bool isOptional, int definerSpecializationDepth, int index )
+        internal AmbientPropertyInfo( PropertyInfo p, bool isOptionalDefined, bool isOptional, bool isSourceDefined, PropertyResolutionSource source, int definerSpecializationDepth, int index )
             : base( p, isOptionalDefined, isOptional, definerSpecializationDepth, index )
         {
+            _isSourceDefined = isSourceDefined;
+            ResolutionSource = source;
         }
 
         /// <summary>
@@ -21,11 +24,14 @@ namespace CK.Setup
         /// </summary>
         public AmbientPropertyInfo Generalization { get; private set; }
 
+        public PropertyResolutionSource ResolutionSource { get; private set; }
+
         protected override void SetGeneralizationInfo( IActivityLogger logger, CovariantPropertyInfo g )
         {
             base.SetGeneralizationInfo( logger, g );
 
             AmbientPropertyInfo gen = (AmbientPropertyInfo)g;
+            if( !_isSourceDefined ) ResolutionSource = gen.ResolutionSource;
             // Captures the Generalization.
             // We keep the fact that this property overrides one above (errors have been logged if conflict/incoherency occur).
             // We can keep the Generalization but not a reference to the specialization since we are 

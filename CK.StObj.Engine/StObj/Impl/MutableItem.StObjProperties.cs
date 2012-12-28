@@ -76,9 +76,18 @@ namespace CK.Setup
             if( _stObjProperties == null ) return;
             foreach( StObjProperty p in _stObjProperties )
             {
-                // Check the Type constraint that could potentially hurt one day.
-                bool containerHasSetOrMerged = IsOwnContainer && HandleStObjPropertySource( logger, p, _dContainer, "Container", true );
-                if( _generalization != null ) HandleStObjPropertySource( logger, p, _generalization, "Generalization", !containerHasSetOrMerged );
+                if( p.InfoOnType == null || p.InfoOnType.ResolutionSource == PropertyResolutionSource.FromContainerAndThenGeneralization )
+                {
+                    // Check the Type constraint that could potentially hurt one day.
+                    bool containerHasSetOrMerged = IsOwnContainer && HandleStObjPropertySource( logger, p, _dContainer, "Container", true );
+                    if( _generalization != null ) HandleStObjPropertySource( logger, p, _generalization, "Generalization", !containerHasSetOrMerged );
+                }
+                else if( p.InfoOnType.ResolutionSource == PropertyResolutionSource.FromGeneralizationAndThenContainer )
+                {
+                    // Check the Type constraint that could potentially hurt one day.
+                    bool generalizationHasSetOrMerged = _generalization != null && HandleStObjPropertySource( logger, p, _generalization, "Generalization", true );
+                    if( IsOwnContainer ) HandleStObjPropertySource( logger, p, _dContainer, "Container", !generalizationHasSetOrMerged );
+                }
                 // If the value is missing (it has never been set or has been explicitely "removed"), we have nothing to do.
                 // If the type is not constrained, we have nothing to do.
                 object v = p.Value;
@@ -151,20 +160,24 @@ namespace CK.Setup
             return false;
         }
 
-        StObjProperty GetStObjProperty( string propertyName )
+        StObjProperty GetStObjProperty( string propertyName, PropertyResolutionSource source = PropertyResolutionSource.FromContainerAndThenGeneralization )
         {
             if( _stObjProperties != null )
             {
                 int idx = _stObjProperties.FindIndex( p => p.Name == propertyName );
                 if( idx >= 0 ) return _stObjProperties[idx];
             }
-            return GetStObjPropertyFromContainerOrGeneralization( propertyName );
-        }
-
-        private StObjProperty GetStObjPropertyFromContainerOrGeneralization( string propertyName )
-        {
-            StObjProperty result = IsOwnContainer ? _dContainer.GetStObjProperty( propertyName ) : null;
-            if( result == null && _generalization != null ) result = _generalization.GetStObjProperty( propertyName );
+            StObjProperty result = null;
+            if( source == PropertyResolutionSource.FromContainerAndThenGeneralization )
+            {
+                result = IsOwnContainer ? _dContainer.GetStObjProperty( propertyName ) : null;
+                if( result == null && _generalization != null ) result = _generalization.GetStObjProperty( propertyName );
+            }
+            else
+            {
+                result = _generalization != null ? _dContainer.GetStObjProperty( propertyName, PropertyResolutionSource.FromGeneralizationAndThenContainer ) : null;
+                if( result == null && IsOwnContainer ) result = _dContainer.GetStObjProperty( propertyName, PropertyResolutionSource.FromGeneralizationAndThenContainer );
+            }
             return result;
         }
 

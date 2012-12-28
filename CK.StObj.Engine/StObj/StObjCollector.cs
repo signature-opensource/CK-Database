@@ -118,7 +118,7 @@ namespace CK.Setup
         {
             if( _registerFatalOrErrorCount > 0 )
             {
-                throw new CKException( "There are {0} registration errors. ClearRegisteringErrors must be called before calling this GetResult method to ignore regstration errors.", _registerFatalOrErrorCount );
+                throw new CKException( "There are {0} registration errors. ClearRegisteringErrors must be called before calling this GetResult method to ignore registration errors.", _registerFatalOrErrorCount );
             }
             AmbientContractCollectorResult<StObjTypeInfo,MutableItem> contracts;
             using( _logger.OpenGroup( LogLevel.Info, "Collecting Ambient Contracts and Type structure." ) )
