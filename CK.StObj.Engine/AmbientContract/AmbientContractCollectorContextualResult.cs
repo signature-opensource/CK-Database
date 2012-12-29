@@ -94,7 +94,7 @@ namespace CK.Core
         public void LogErrorAndWarnings( IActivityLogger logger )
         {
             if( logger == null ) throw new ArgumentNullException( "logger" );
-            using( logger.OpenGroup( LogLevel.Trace, "Ambient Contract for context '{1}': {0} mappings for {2} concrete paths.", _mappings.Count, Context, _concreteClassesPath.Count ) )
+            using( logger.OpenGroup( LogLevel.Trace, "Ambient Contract for context '{1}': {0} mappings for {2} concrete paths.", _mappings.MappedTypeCount, Context, _concreteClassesPath.Count ) )
             {
                 foreach( var a in _classAmbiguities )
                 {

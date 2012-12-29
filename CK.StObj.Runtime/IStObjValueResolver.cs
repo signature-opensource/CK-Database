@@ -22,7 +22,7 @@ namespace CK.Setup
         void ResolveParameterValue( IActivityLogger logger, IStObjFinalParameter parameter );
         
         /// <summary>
-        /// Dynamically called for each ambient property onky if automatic resolution failed to locate a StObj.
+        /// Dynamically called for each ambient property only if automatic resolution failed to locate a StObj.
         /// The <see cref="IStObjFinalAmbientProperty.SetValue"/> can be used to set the property value.
         /// </summary>
         /// <param name="logger">The logger to use.</param>

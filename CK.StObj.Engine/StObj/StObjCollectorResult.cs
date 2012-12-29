@@ -7,9 +7,11 @@ using System.Diagnostics;
 
 namespace CK.Setup
 {
-    public class StObjCollectorResult : MultiContextualResult<StObjCollectorContextualResult>
+    public partial class StObjCollectorResult : MultiContextualResult<StObjCollectorContextualResult>
     {
         readonly AmbientContractCollectorResult<StObjTypeInfo,MutableItem> _contractResult;
+        readonly int _totalSpecializationCount;
+        readonly MemoryCapturedBuild _builder;
         IReadOnlyList<MutableItem> _orderedStObjs;
         bool _fatal;
 
@@ -19,8 +21,10 @@ namespace CK.Setup
             _contractResult = contractResult;
             foreach( var r in contractResult.Contexts )
             {
-                Add( new StObjCollectorContextualResult( r, new StObjContextualMapper( owner, r.Mappings ) ) );
+                var c = Add( new StObjCollectorContextualResult( r, new StObjContextualMapper( owner, r.Mappings ) ) );
+                _totalSpecializationCount += c._specializations.Length;
             }
+            _builder = new MemoryCapturedBuild();
         }
 
         /// <summary>
@@ -30,7 +34,15 @@ namespace CK.Setup
         {
             get { return _fatal || _contractResult.HasFatalError || base.HasFatalError; }
         }
-        
+
+        /// <summary>
+        /// Gets the total number of of specializations.
+        /// </summary>
+        public int TotalSpecializationCount
+        {
+            get { return _totalSpecializationCount; }
+        }
+
         /// <summary>
         /// Gets all the <see cref="IStObj"/> ordered by their dependencies.
         /// Empty if <see cref="HasFatalError"/> is true.
@@ -40,15 +52,9 @@ namespace CK.Setup
             get { return _orderedStObjs; }
         }
 
-        public void GenerateFinalAssembly( IActivityLogger logger )
+        internal ICapturedBuild Builder
         {
-            if( HasFatalError ) throw new InvalidOperationException();
-            DynamicAssembly a = new DynamicAssembly( DynamicAssembly.DefaultAssemblyName );
-            foreach( var m in _orderedStObjs )
-            {
-                if( m.Specialization == null ) m.CreateFinalType( logger, a );
-            }
-
+            get { return _builder; }
         }
 
         internal IEnumerable<MutableItem> AllMutableItems

@@ -24,7 +24,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Property is resolved first from the Generalization and, if not found, from its Containers.
-        /// This is the default for <see cref="AmbientPropertyAttribute">AmbientProperty</see> and <see cref="AmbientContractPropertyAttribute">AmbientContract</see> properties.
+        /// This is the default for <see cref="AmbientPropertyAttribute">AmbientProperty</see>.
         /// </summary>
         FromGeneralizationAndThenContainer
     }

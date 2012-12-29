@@ -37,10 +37,10 @@ namespace CK.Setup
             }
         }
 
-        public void CreateFinalType( IActivityLogger logger, DynamicAssembly a )
+        public Type CreateFinalType( IActivityLogger logger, DynamicAssembly a )
         {
             Debug.Assert( Specialization == null );
-            if( _leafData.ImplementableTypeInfo != null ) _leafData.ImplementableTypeInfo.CreateFinalType( logger, a, true );
+            return _leafData.ImplementableTypeInfo == null ? Type : _leafData.ImplementableTypeInfo.CreateFinalType( logger, a, storeAsLastGeneratedType: false );
         }
     }
 }

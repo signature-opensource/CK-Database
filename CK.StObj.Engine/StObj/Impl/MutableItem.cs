@@ -61,6 +61,11 @@ namespace CK.Setup
             /// </summary>
             public MutableItem RootGeneralization;
 
+            /// <summary>
+            /// The index in the final ordered list of specialization.
+            /// This is updated right after items have been sorted.
+            /// </summary>
+            public int SpecializationIndexOrdered;
         }
 
         readonly LeafData _leafData;
@@ -566,9 +571,10 @@ namespace CK.Setup
         /// <summary>
         /// Called by StObjCollector once the mutable items have been sorted.
         /// </summary>
-        /// <param name="idx">The <see cref="IndexOrdered"/>.</param>
+        /// <param name="idx">The index in the whole ordered list of items.</param>
+        /// <param name="idxSpecialization">Maintained index for specialization only.</param>
         /// <param name="requiresFromSorter">Cleaned up requirements (no Generalization nor Containers).</param>
-        internal void SetSorterData( int idx, IEnumerable<ISortedItem> requiresFromSorter, IEnumerable<ISortedItem> childrenFromSorter, IEnumerable<ISortedItem> groupsFromSorter )
+        internal void SetSorterData( int idx, ref int idxSpecialization, IEnumerable<ISortedItem> requiresFromSorter, IEnumerable<ISortedItem> childrenFromSorter, IEnumerable<ISortedItem> groupsFromSorter )
         {
             Debug.Assert( IndexOrdered == 0 );
             IndexOrdered = idx;
@@ -577,19 +583,33 @@ namespace CK.Setup
             _dGroups = groupsFromSorter.Select( s => (MutableItem)s.Item ).ToReadOnlyList();
             // requiredBy are useless.
             _dRequiredBy = null;
+            // Increments Specialization index.
+            if( Specialization == null )
+            {
+                _leafData.SpecializationIndexOrdered = idxSpecialization++;
+            }
         }
 
         /// <summary>
-        /// This is the natural index to reference a IStObj in a setup phasis.
+        /// This is the index to use to reference a IStObj in a setup phasis (cross context).
+        /// To reference a StructuredObject, use the <see cref="SpecializationIndexOrdered"/>.
         /// </summary>
         public int IndexOrdered { get; private set; }
 
-        internal void CallConstruct( IActivityLogger logger, IStObjValueResolver valueResolver )
+        /// <summary>
+        /// Index to use to reference the specialization among all other specialization (cross context).
+        /// </summary>
+        public int SpecializationIndexOrdered 
+        {
+            get { return _leafData.SpecializationIndexOrdered; } 
+        }
+
+        internal void CallConstruct( IActivityLogger logger, ICapturedBuild builder, IStObjValueResolver valueResolver )
         {
             Debug.Assert( _constructParameterEx != null, "Always allocated." );
 
             if( AmbientTypeInfo.Construct == null ) return;
-
+            
             object[] parameters = new object[_constructParameterEx.Count];
             int i = 0;
             foreach( MutableParameter t in _constructParameterEx )
@@ -599,14 +619,16 @@ namespace CK.Setup
                 if( t.IsSetupLogger )
                 {
                     t.SetParameterValue( logger );
+                    builder.PushSetupLogger();
                 }
                 else
                 {
+                    MutableItem resolved = null;
                     if( t.Value == Type.Missing )
                     {
                         // Parameter reference have already been resolved as dependencies for graph construction since 
                         // no Value has been explicitely set for the parameter.
-                        MutableItem resolved = t.CachedResolvedStObj;
+                        resolved = t.CachedResolvedStObj;
                         if( resolved != null )
                         {
                             Debug.Assert( resolved.Object != Type.Missing );
@@ -625,10 +647,19 @@ namespace CK.Setup
                         }
                     }
                     if( valueResolver != null ) valueResolver.ResolveParameterValue( logger, t );
+                    if( resolved != null && t.Value == resolved.Object )
+                    {
+                        builder.PushStObj( resolved );
+                    }
+                    else
+                    {
+                        builder.PushValue( t.Value );
+                    }
                 }
                 parameters[i++] = t.Value;
             }
             AmbientTypeInfo.Construct.Invoke( _leafData.StructuredObject, parameters );
+            builder.PushCall( this, AmbientTypeInfo.Construct );
         }
 
         #region IDependentItemContainerAsk Members

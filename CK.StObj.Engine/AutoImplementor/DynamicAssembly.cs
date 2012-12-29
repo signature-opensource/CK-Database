@@ -16,6 +16,7 @@ namespace CK.Core
     {
         int _typeID;
         ModuleBuilder _moduleBuilder;
+        AssemblyBuilder _assemblyBuilder;
 
         /// <summary>
         /// This is the public key of the generated assembly.
@@ -40,7 +41,7 @@ namespace CK.Core
         /// <summary>
         /// Default assembly name.
         /// </summary>
-        static readonly public string DefaultAssemblyName = "CK.StObj.AutoAssembly";
+        public const string DefaultAssemblyName = "CK.StObj.AutoAssembly";
 
         static DynamicAssembly()
         {
@@ -57,24 +58,27 @@ namespace CK.Core
         /// that can only <see cref="AssemblyBuilderAccess.Run"/>.
         /// </summary>
         public DynamicAssembly()
-            : this( DefaultAssemblyName+".Memory", AssemblyBuilderAccess.Run )
+            : this( null, DefaultAssemblyName+".Memory", null, AssemblyBuilderAccess.Run )
         {
         }
 
         /// <summary>
         /// Initializes a new <see cref="DynamicAssembly"/> with the given name and access.
         /// </summary>
-        /// <param name="assemblyName">Name to use. Can be <see cref="DefaultAssemblyName"/>.</param>
+        /// <param name="directory">Directory where the assembly must be saved.</param>
+        /// <param name="assemblyName">Name to use.</param>
         /// <param name="access">Typical accesses are Run and RunAndSave (the default).</param>
-        public DynamicAssembly( string assemblyName, AssemblyBuilderAccess access = AssemblyBuilderAccess.RunAndSave )
+        public DynamicAssembly( string directory, string assemblyName = DefaultAssemblyName, StrongNameKeyPair signature = null, AssemblyBuilderAccess access = AssemblyBuilderAccess.RunAndSave )
         {
             if( String.IsNullOrWhiteSpace( assemblyName ) ) throw new ArgumentException( "Name is invalid.", "assemblyName." );
             AssemblyName aName = new AssemblyName( assemblyName );
             aName.Version = new Version( 1, 0, 0, 0 );
-            aName.KeyPair = DynamicKeyPair;
+            if( signature != null ) aName.KeyPair = signature;
 
-            AssemblyBuilder assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly( aName, access );
-            _moduleBuilder = assemblyBuilder.DefineDynamicModule( "TypeImplementorModule" );
+            _assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly( aName, access, directory );
+            if( (access&AssemblyBuilderAccess.Save) != AssemblyBuilderAccess.Save )
+                _moduleBuilder = _assemblyBuilder.DefineDynamicModule( aName.Name );
+            else _moduleBuilder = _assemblyBuilder.DefineDynamicModule( aName.Name, aName.Name + ".dll" );
         }
 
         /// <summary>
@@ -92,6 +96,11 @@ namespace CK.Core
         public string NextUniqueNumber()
         {
             return Interlocked.Increment( ref _typeID ).ToString();
+        }
+
+        public void Save()
+        {
+            _assemblyBuilder.Save( _assemblyBuilder.GetName().Name + ".dll" );
         }
 
     }

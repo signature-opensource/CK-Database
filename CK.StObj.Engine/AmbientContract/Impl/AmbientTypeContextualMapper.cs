@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using System.Collections;
 
 namespace CK.Core
 {
-
     /// <summary>
-    /// Internal wrapper for keys in <see cref="AmbientTypeContextualMapper"/>: when wrapped in this class,
+    /// Wrapper for keys in Type mapping dictionaries: when wrapped in this class,
     /// the Type is the key of its highest implementation instead of its final concrete class.
     /// This enables the use of one and only one dictionnary for Mappings (Type => Final Type) as well as 
     /// highest implementation association (Ambient contract interface => its highest implementation).
@@ -19,7 +19,6 @@ namespace CK.Core
 
         public AmbientContractInterfaceKey( Type ambientContractInterface )
         {
-            Debug.Assert( typeof(IAmbientContract).IsAssignableFrom( ambientContractInterface ) );
             InterfaceType = ambientContractInterface;
         }
 
@@ -60,19 +59,21 @@ namespace CK.Core
             get { return _owner; }
         }
 
+        public IDictionary GetRawMappings()
+        {
+            return _map;
+        }
+
         public string Context
         {
             get { return _context; }
         }
 
-        public Type this[Type t]
+        public Type MapType( Type t )
         {
-            get 
-            {
-                TC ctxType;
-                if( _map.TryGetValue( t, out ctxType ) ) return ctxType.AmbientTypeInfo.Type; 
-                return null; 
-            }
+            TC ctxType;
+            if( _map.TryGetValue( t, out ctxType ) ) return ctxType.AmbientTypeInfo.Type; 
+            return null; 
         }
 
         public Type HighestImplementation( Type ambientContractInterface )
@@ -95,7 +96,7 @@ namespace CK.Core
             return null;
         }
 
-        public int Count { get { return _map.Count; } }
+        public int MappedTypeCount { get { return _map.Count; } }
 
         public bool IsMapped( Type t )
         {

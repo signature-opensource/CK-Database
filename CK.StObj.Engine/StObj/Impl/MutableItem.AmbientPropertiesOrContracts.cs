@@ -138,7 +138,10 @@ namespace CK.Setup
                 {
                     try
                     {
-                        if( k.Value != Type.Missing ) k.Key.SetValue( _leafData.StructuredObject, k.Value, null );
+                        if( k.Value != Type.Missing )
+                        {
+                            k.Key.SetValue( _leafData.StructuredObject, k.Value, null );
+                        }
                     }
                     catch( Exception ex )
                     {

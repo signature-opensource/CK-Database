@@ -298,9 +298,9 @@ namespace CK.Setup.Tests
             foreach( var e in expected )
             {
                 Assert.That( actual.IsMapped( e.Item1 ), "Key type: " + e.Item1 + " exists." );
-                Assert.That( actual[e.Item1], Is.EqualTo( e.Item2 ), "Type : " + e.Item1 + " is mapped to " + e.Item2 );
+                Assert.That( actual.MapType( e.Item1 ), Is.EqualTo( e.Item2 ), "Type : " + e.Item1 + " is mapped to " + e.Item2 );
             }
-            Assert.That( actual.Count, Is.EqualTo( expected.Count() ), "No extra mappings exist." );
+            Assert.That( actual.MappedTypeCount, Is.EqualTo( expected.Count() ), "No extra mappings exist." );
         }
 
     }

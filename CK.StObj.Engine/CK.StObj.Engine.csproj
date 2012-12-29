@@ -68,6 +68,10 @@
     <Compile Include="AutoImplementor\ImplementableAbstractPropertyInfo.cs" />
     <Compile Include="AutoImplementor\ImplementableTypeInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StObj\Impl\Builder\RawOutStream.cs" />
+    <Compile Include="StObj\StObjCollectorResult.FinalAssembly.cs" />
+    <Compile Include="StObj\Impl\Builder\ICapturedBuild.cs" />
+    <Compile Include="StObj\Impl\Builder\MemoryCapturedBuild.cs" />
     <Compile Include="StObj\Impl\MutableItem.StructuredObject.cs" />
     <Compile Include="StObj\Impl\TypeInfo\AmbientPropertyInfo.cs" />
     <Compile Include="StObj\Impl\TypeInfo\AmbientContractInfo.cs" />

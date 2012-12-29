@@ -9,7 +9,7 @@ namespace CK.Core
 {
 
     /// <summary>
-    /// Contextual type information.
+    /// Contextual type information: it is an <see cref="AmbientTypeInfo"/> inside a <see cref="Context"/>.
     /// Offers persistent access to attributes that support <see cref="IAttributeAmbientContextBound"/> interface.
     /// </summary>
     public class AmbientContextTypeInfo<T> : AmbientContextAttributesCache

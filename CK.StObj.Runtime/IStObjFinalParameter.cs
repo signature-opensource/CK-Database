@@ -44,8 +44,8 @@ namespace CK.Setup
         /// Sets the <see cref="Value"/> for this parameter.
         /// </summary>
         /// <remarks>
-        /// The <see cref="IStObjMutableParameter"/> also exposes this method: by using <see cref="IStObjMutableParameter.SetParameterValue"/> from <see cref="IStObjStructuralConfigurator.Configure"/>, the 
-        /// explicit value is injected and breaks (suppress) the potential dependency to this <see cref="IStObjReference.Context"/>/<see cref="IStObjReference.Type"/>.
+        /// The <see cref="IStObjMutableParameter"/> also exposes this method: by using <see cref="IStObjMutableParameter.SetParameterValue"/> method from <see cref="IStObjStructuralConfigurator.Configure"/>, 
+        /// the explicit value is injected and breaks (suppress) the potential dependency to this [<see cref="IStObjReference.Context"/>]<see cref="IStObjReference.Type"/>.
         /// </remarks>
         /// <param name="value">Value to set. Type must be compatible otherwise an exception will be thrown when calling the actual Construct method.</param>
         void SetParameterValue( object value );

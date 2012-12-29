@@ -3,15 +3,10 @@
 namespace CK.Core
 {
     /// <summary>
-    /// Exposes a contextual type to object mapping.
+    /// Extends <see cref="IContextualTypeMap"/> to expose Type to Object resolution.
     /// </summary>
-    public interface IContextualObjectMap
+    public interface IContextualObjectMap : IContextualTypeMap
     {
-        /// <summary>
-        /// Gets the name of the context.
-        /// </summary>
-        string Context { get; }
-
         /// <summary>
         /// Gets the structured object or null if no mapping exists.
         /// </summary>

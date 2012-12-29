@@ -58,6 +58,7 @@
     <Compile Include="AutoImplementor\IAutoImplementorMethod.cs" />
     <Compile Include="AutoImplementor\IAutoImplementorProperty.cs" />
     <Compile Include="AutoImplementor\PreventAutoImplementationAttribute.cs" />
+    <Compile Include="IContextualTypeMap.cs" />
     <Compile Include="StObjContextRoot.cs" />
     <Compile Include="IContextualObjectMap.cs" />
     <Compile Include="IContextRoot.cs" />

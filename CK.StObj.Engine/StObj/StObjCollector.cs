@@ -190,6 +190,7 @@ namespace CK.Setup
             using( _logger.Catch( e => result.SetFatal() ) )
             using( _logger.OpenGroup( LogLevel.Info, "Initializing object graph." ) )
             {
+                int idxSpecialization = 0;
                 List<MutableItem> ordered = new List<MutableItem>();
                 foreach( ISortedItem sorted in sortResult.SortedItems )
                 {
@@ -197,12 +198,12 @@ namespace CK.Setup
                     // Calls Construct on Head for Groups.
                     if( m.ItemKind == DependentItemKindSpec.Item || sorted.IsGroupHead )
                     {
-                        m.SetSorterData( ordered.Count, sorted.Requires, sorted.Children, sorted.Groups );
+                        m.SetSorterData( ordered.Count, ref idxSpecialization, sorted.Requires, sorted.Children, sorted.Groups );
                         using( _logger.OpenGroup( LogLevel.Trace, "Constructing '{0}'.", m.ToString() ) )
                         {
                             try
                             {
-                                m.CallConstruct( _logger, _valueResolver );
+                                m.CallConstruct( _logger, result.Builder, _valueResolver );
                             }
                             catch( Exception ex )
                             {
