@@ -52,9 +52,10 @@ namespace CK.Core
         
     }
 
-    public class AmbientContractCollector<T,TC> : AmbientContractCollector
+    public class AmbientContractCollector<CT,T,TC> : AmbientContractCollector
+        where CT : AmbientContextualTypeMap<T, TC>
         where T : AmbientTypeInfo
-        where TC : AmbientContextTypeInfo<T>
+        where TC : AmbientContextualTypeInfo<T, TC>
     {
         // Today, this collector contains 2 kind of information:
         // - Type Classes mapped to their AmbientTypeInfo if considered as an Ambient contract.
@@ -66,18 +67,22 @@ namespace CK.Core
         //   they do not make classes that implement them Ambient contract classes nor do they make their specialized interfaces Ambient contracts).
         // - Type Interfaces mapped to null for interfaces that we already know as beeing "totally normal".
         //
-        // But for the moment, interfaces can only be marked as Ambient contract statically.
+        // But for the moment, interfaces can only be marked as Ambient Contract statically.
         //
         readonly Dictionary<Type, T> _collector;
         readonly List<T> _roots;
         readonly IAmbientContractDispatcher _contextDispatcher;
+
+        readonly Func<IActivityLogger, AmbientTypeMap<CT>> _mapFactory;
         readonly Func<IActivityLogger,T,Type,T> _typeInfoFactory;
+        
         readonly IActivityLogger _logger;
         readonly DynamicAssembly _tempAssembly;
 
         public AmbientContractCollector( 
-            IActivityLogger logger, 
-            Func<IActivityLogger,T,Type,T> typeInfoFactory, 
+            IActivityLogger logger,
+            Func<IActivityLogger, AmbientTypeMap<CT>> mapFactory,
+            Func<IActivityLogger, T, Type, T> typeInfoFactory,
             DynamicAssembly tempAssembly = null, 
             IAmbientContractDispatcher contextDispatcher = null )
         {
@@ -86,6 +91,7 @@ namespace CK.Core
             _tempAssembly = tempAssembly;
             _collector = new Dictionary<Type, T>();
             _roots = new List<T>();
+            _mapFactory = mapFactory;
             _typeInfoFactory = typeInfoFactory;
         }
 
@@ -163,7 +169,7 @@ namespace CK.Core
 
         class PreResult
         {
-            public readonly string Context;
+            public readonly CT Context;
             readonly IActivityLogger _logger;
             readonly DynamicAssembly _assembly;
 
@@ -173,14 +179,13 @@ namespace CK.Core
             List<Type> _abstractTails;
             int _registeredCount;
 
-
-            public PreResult( IActivityLogger logger, string c, DynamicAssembly assembly )
+            public PreResult( IActivityLogger logger, CT c, DynamicAssembly assembly )
             {
                 Debug.Assert( c != null );
                 Context = c;
                 _logger = logger;
                 _assembly = assembly;
-                _mappings = new Dictionary<object, TC>();
+                _mappings = c.RawMappings;
                 _concreteClasses = new List<List<TC>>();
                 _abstractTails = new List<Type>();
             }
@@ -210,7 +215,7 @@ namespace CK.Core
                 }
             }
 
-            public AmbientContractCollectorContextualResult<T,TC> GetResult( AmbientTypeMapper allMappings, Func<Type, bool> ambientInterfacePredicate )
+            public AmbientContractCollectorContextualResult<CT,T,TC> GetResult( AmbientTypeMap<CT> allMappings, Func<Type, bool> ambientInterfacePredicate )
             {
                 Dictionary<Type,List<Type>> interfaceAmbiguities = null;
                 foreach( List<TC> path in _concreteClasses )
@@ -242,9 +247,8 @@ namespace CK.Core
                         }
                     }
                 }
-                var ctxMapper = new AmbientTypeContextualMapper<T,TC>( allMappings, Context, _mappings );
-                var ctxResult = new AmbientContractCollectorContextualResult<T,TC>(
-                    ctxMapper,
+                var ctxResult = new AmbientContractCollectorContextualResult<CT,T,TC>(
+                    Context,
                     _concreteClasses.Select( list => list.ToReadOnlyList() ).ToReadOnlyList(),
                     _classAmbiguities != null ? new ReadOnlyListOnIList<IReadOnlyList<Type>>( _classAmbiguities ) : ReadOnlyListEmpty<IReadOnlyList<Type>>.Empty,
                     interfaceAmbiguities != null ? interfaceAmbiguities.Values.Select( list => list.ToReadOnlyList() ).ToReadOnlyList() : ReadOnlyListEmpty<IReadOnlyList<Type>>.Empty,
@@ -253,18 +257,17 @@ namespace CK.Core
             }
         }
 
-        public AmbientContractCollectorResult<T,TC> GetResult()
+        public AmbientContractCollectorResult<CT,T,TC> GetResult()
         {
+            var mappings = _mapFactory( _logger );
             var byContext = new Dictionary<string, PreResult>();
-            byContext.Add( String.Empty, new PreResult( _logger, String.Empty, _tempAssembly ) );
+            byContext.Add( String.Empty, new PreResult( _logger, mappings.CreateAndAddContext<T,TC>( _logger, String.Empty ), _tempAssembly ) );
             foreach( AmbientTypeInfo m in _roots )
             {
-                HandleContexts( _logger, m, _tempAssembly, byContext );
+                HandleContexts( m, byContext, mappings.CreateAndAddContext<T,TC> );
             }
-            
-            var mappings = new AmbientTypeMapper();
-            var r = new AmbientContractCollectorResult<T,TC>( mappings, _collector );
-            foreach( var rCtx in byContext.Values )
+            var r = new AmbientContractCollectorResult<CT,T,TC>( mappings, _collector );
+            foreach( PreResult rCtx in byContext.Values )
             {
                 r.Add( rCtx.GetResult( mappings, IsAmbientInterface ) );
             }
@@ -277,16 +280,16 @@ namespace CK.Core
             return t != typeof( IAmbientContract ) && typeof( IAmbientContract ).IsAssignableFrom( t );
         }
 
-        static void HandleContexts( IActivityLogger logger, AmbientTypeInfo m, DynamicAssembly assembly, Dictionary<string, PreResult> contexts )
+        void HandleContexts( AmbientTypeInfo m, Dictionary<string, PreResult> contexts, Func<IActivityLogger,string,CT> contextCreator )
         {
             foreach( AmbientTypeInfo child in m.SpecializationsByContext( null ) )
             {
-                HandleContexts( logger, child, assembly, contexts );
+                HandleContexts( child, contexts, contextCreator );
                 m.MutableFinalContexts.AddRange( child.MutableFinalContexts );
             }
             foreach( string context in m.MutableFinalContexts )
             {
-                contexts.GetOrSet( context, c => new PreResult( logger, c, assembly ) ).Add( m );
+                contexts.GetOrSet( context, c => new PreResult( _logger, contextCreator( _logger, c ), _tempAssembly ) ).Add( m );
             }
         }
 

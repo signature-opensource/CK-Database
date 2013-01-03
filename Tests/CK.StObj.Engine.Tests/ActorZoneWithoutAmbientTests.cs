@@ -114,13 +114,6 @@ namespace CK.StObj.Engine.Tests
             
             var r = collector.GetResult();
             Assert.That( r.HasFatalError, Is.False );
-            var basicPackage = r.Default.FindStObj<BasicPackage>();
-            var basicActor = r.Default.FindStObj<BasicActor>();
-            var basicGroup = r.Default.FindStObj<BasicGroup>();
-            var zonePackage = r.Default.FindStObj<ZonePackage>();
-            var zoneGroup = r.Default.FindStObj<ZoneGroup>();
-            var securityZone = r.Default.FindStObj<SecurityZone>();
-            var sqlDatabaseDefault = r.Default.FindStObj<SqlDatabaseDefault>();
 
             r.Default.CheckChildren<BasicPackage>( "BasicActor,BasicUser,BasicGroup" );
             r.Default.CheckChildren<ZonePackage>( "SecurityZone,ZoneGroup" );

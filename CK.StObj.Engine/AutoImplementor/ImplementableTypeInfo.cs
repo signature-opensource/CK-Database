@@ -252,13 +252,15 @@ namespace CK.Core
                 }
             }
             List<ImplementableAbstractPropertyInfo> properties = new List<ImplementableAbstractPropertyInfo>();
-            var pCandidates = abstractType.GetProperties( BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public ).Where( p => p.GetGetMethod().IsAbstract || p.GetSetMethod().IsAbstract );
+            var pCandidates = abstractType.GetProperties( BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public );
             foreach( var p in pCandidates )
             {
                 ++nbUncovered;
-                if( !p.GetSetMethod().IsAbstract || !p.GetGetMethod().IsAbstract )
+                MethodInfo mGet = p.GetGetMethod( true );
+                MethodInfo mSet = p.GetSetMethod( true );
+                if( mGet == null || mSet == null || !mGet.IsAbstract || !mSet.IsAbstract )
                 {
-                    logger.Error( "Property {0}.{1} is not a valid abstract property (both getter and setter must be abstract).", p.DeclaringType.FullName, p.Name );
+                    logger.Error( "Property {0}.{1} is not a valid abstract property (both getter and setter must exist and be abstract).", p.DeclaringType.FullName, p.Name );
                 }
                 else
                 {

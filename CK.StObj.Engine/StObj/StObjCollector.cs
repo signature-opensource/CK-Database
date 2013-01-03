@@ -18,7 +18,7 @@ namespace CK.Setup
     /// </summary>
     public class StObjCollector
     {
-        readonly AmbientContractCollector<StObjTypeInfo,MutableItem> _cc;
+        readonly AmbientContractCollector<StObjContextualMapper,StObjTypeInfo,MutableItem> _cc;
         readonly IStObjStructuralConfigurator _configurator;
         readonly IStObjValueResolver _valueResolver;
         readonly IActivityLogger _logger;
@@ -37,7 +37,7 @@ namespace CK.Setup
             if( logger == null ) throw new ArgumentNullException( "logger" );
             _logger = logger;
             _tempAssembly = new DynamicAssembly();
-            _cc = new AmbientContractCollector<StObjTypeInfo, MutableItem>( _logger, ( l, p, t ) => new StObjTypeInfo( l, p, t ), _tempAssembly, dispatcher );
+            _cc = new AmbientContractCollector<StObjContextualMapper,StObjTypeInfo, MutableItem>( _logger, l => new StObjMapper(), ( l, p, t ) => new StObjTypeInfo( l, p, t ), _tempAssembly, dispatcher );
             _configurator = configurator;
             _valueResolver = dependencyResolver;
         }
@@ -120,7 +120,7 @@ namespace CK.Setup
             {
                 throw new CKException( "There are {0} registration errors. ClearRegisteringErrors must be called before calling this GetResult method to ignore registration errors.", _registerFatalOrErrorCount );
             }
-            AmbientContractCollectorResult<StObjTypeInfo,MutableItem> contracts;
+            AmbientContractCollectorResult<StObjContextualMapper,StObjTypeInfo,MutableItem> contracts;
             using( _logger.OpenGroup( LogLevel.Info, "Collecting Ambient Contracts and Type structure." ) )
             {
                 contracts = _cc.GetResult();
@@ -138,9 +138,9 @@ namespace CK.Setup
                     using( _logger.Catch( e => r.SetFatal() ) )
                     using( _logger.OpenGroup( LogLevel.Info, "Working on Context [{0}].", r.Context ) )
                     {
-                        CreateMutableItems( r );
-                        _logger.CloseGroup( String.Format( " {0} items created for {1} types.", r.MutableItems.Count, r.AmbientContractResult.ConcreteClasses.Count ) );
-                        objectCount += r.MutableItems.Count;
+                        int nbItems = CreateMutableItems( r );
+                        _logger.CloseGroup( String.Format( " {0} items created for {1} types.", nbItems, r.AmbientContractResult.ConcreteClasses.Count ) );
+                        objectCount += nbItems;
                     }
                 }
                 if( result.HasFatalError ) return result;
@@ -157,7 +157,7 @@ namespace CK.Setup
                     Debug.Assert( result.HasFatalError );
                     return result;
                 }
-                if( !ResolveAmbientProperties( result ) )
+                if( !ResolvePreConstructAndPostBuildProperties( result ) )
                 {
                     _logger.CloseGroup( "Resolving Ambient Properties failed." );
                     Debug.Assert( result.HasFatalError );
@@ -203,7 +203,7 @@ namespace CK.Setup
                         {
                             try
                             {
-                                m.CallConstruct( _logger, result.Builder, _valueResolver );
+                                m.CallConstruct( _logger, result.BuildValueCollector, _valueResolver );
                             }
                             catch( Exception ex )
                             {
@@ -221,7 +221,7 @@ namespace CK.Setup
                 }
                 using( _logger.OpenGroup( LogLevel.Info, "Setting Ambient Contracts." ) )
                 {
-                    SetAmbientContracts( result );
+                    SetPostBuildProperties( result );
                 }
                 if( !result.HasFatalError ) result.SetSuccess( ordered.ToReadOnlyList() );
                 return result;
@@ -234,14 +234,15 @@ namespace CK.Setup
         /// to an instance created through its default constructor.
         /// This is the very first step.
         /// </summary>
-        void CreateMutableItems( StObjCollectorContextualResult r )
+        int CreateMutableItems( StObjCollectorContextualResult r )
         {
             IReadOnlyList<IReadOnlyList<MutableItem>> concreteClasses = r.AmbientContractResult.ConcreteClasses;
-
+            int nbItems = 0;
             for( int i = concreteClasses.Count-1; i >= 0; --i )
             {
                 IReadOnlyList<MutableItem> pathTypes = concreteClasses[i];
                 Debug.Assert( pathTypes.Count > 0, "At least the final concrete class exists." );
+                nbItems += pathTypes.Count;
 
                 MutableItem specialization = r._specializations[i] = pathTypes[pathTypes.Count - 1];
 
@@ -267,10 +268,10 @@ namespace CK.Setup
                 {
                     m.ConfigureTopDown( _logger, generalization );
                     if( _configurator != null ) _configurator.Configure( _logger, m );
-                    r.AddStObjConfiguredItem( m );
                 }
                 while( (m = m.Specialization) != null );
             }
+            return nbItems;
         }
 
         /// <summary>
@@ -297,7 +298,7 @@ namespace CK.Setup
         /// <summary>
         /// This is the last step: all mutable items have now been created and configured, they are ready to be sorted.
         /// </summary>
-        bool ResolveAmbientProperties( StObjCollectorResult collector )
+        bool ResolvePreConstructAndPostBuildProperties( StObjCollectorResult collector )
         {
             foreach( StObjCollectorContextualResult contextResult in collector.Contexts )
             {
@@ -306,7 +307,7 @@ namespace CK.Setup
                 {
                     foreach( MutableItem item in contextResult._specializations )
                     {
-                        item.SetDirectAndResolveAmbientPropertiesOnSpecialization( _logger, collector, _valueResolver );
+                        item.ResolvePreConstructAndPostBuildProperties( _logger, collector, contextResult, _valueResolver );
                     }
                 }
             }
@@ -314,9 +315,9 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Finalize construction by injecting Ambient Contracts objects on specializations.
+        /// Finalize construction by injecting Ambient Contracts objects and PostBuild Ambient Properties on specializations.
         /// </summary>
-        bool SetAmbientContracts( StObjCollectorResult collector )
+        bool SetPostBuildProperties( StObjCollectorResult collector )
         {
             foreach( StObjCollectorContextualResult contextResult in collector.Contexts )
             {
@@ -325,7 +326,7 @@ namespace CK.Setup
                 {
                     foreach( MutableItem item in contextResult._specializations )
                     {
-                        item.SetAmbientContracts( _logger, collector, contextResult );
+                        item.SetPostBuildProperties( _logger, collector, contextResult );
                     }
                 }
             }

@@ -147,10 +147,10 @@ namespace CK.StObj.Engine.Tests
 
         public static void CheckChildren<T>( this StObjCollectorContextualResult @this, string childrenTypeNames )
         {
-            Check( @this, FindStObj<T>( @this ).Children, childrenTypeNames );
+            Check( @this, @this.StObjMap.ToStObj( typeof(T) ).Children, childrenTypeNames );
         }
 
-        public static void Check( this StObjCollectorContextualResult @this, IEnumerable<IStObj> items, string typeNames )
+        public static void Check( this StObjCollectorContextualResult @this, IEnumerable<IStObjRuntime> items, string typeNames )
         {
             var s1 = items.Select( i => i.ObjectType.Name ).OrderBy( Util.FuncIdentity );
             var s2 = typeNames.Split( ',' ).OrderBy( Util.FuncIdentity );
@@ -159,12 +159,6 @@ namespace CK.StObj.Engine.Tests
                 Assert.Fail( "Expecting '{0}' but was '{1}'.", String.Join( ", ", s2 ), String.Join( ", ", s1 ) );
             }
         }
-
-        public static IStObj FindStObj<T>( this StObjCollectorContextualResult @this )
-        {
-            return @this.StObjMapper.Items.FirstOrDefault( i => i.ObjectType == typeof(T) );
-        }
-
 
     }
 }

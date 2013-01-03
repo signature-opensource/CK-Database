@@ -24,22 +24,22 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Initializes a set of <see cref="ISetupItem"/> given a dependency-ordered list of <see cref="IStObj"/> objects.
+        /// Initializes a set of <see cref="ISetupItem"/> given a dependency-ordered list of <see cref="IStObjRuntime"/> objects.
         /// </summary>
-        /// <param name="rootObjects">Root <see cref="IStObj"/> objects.</param>
+        /// <param name="rootObjects">Root <see cref="IStObjRuntime"/> objects.</param>
         /// <returns>A set of setup items.</returns>
-        public IEnumerable<ISetupItem> Build( IReadOnlyList<IStObj> orderedObjects )
+        public IEnumerable<ISetupItem> Build( IReadOnlyList<IStObjRuntime> orderedObjects )
         {
             if( orderedObjects == null ) throw new ArgumentNullException( "rootObjects" );
 
-            var setupableItems = new Dictionary<IStObj, StObjSetupData>();
+            var setupableItems = new Dictionary<IStObjRuntime, StObjSetupData>();
             BuildSetupItems( orderedObjects, setupableItems );
             BindDependencies( setupableItems );
             CallDynamicInitializer( orderedObjects, setupableItems );
             return setupableItems.Values.Select( data => data.SetupItem );
         }
 
-        void BuildSetupItems( IReadOnlyList<IStObj> orderedObjects, Dictionary<IStObj, StObjSetupData> setupableItems )
+        void BuildSetupItems( IReadOnlyList<IStObjRuntime> orderedObjects, Dictionary<IStObjRuntime, StObjSetupData> setupableItems )
         {
             using( _logger.OpenGroup( LogLevel.Info, "Building setupable items from {0} Structure Objects.", orderedObjects.Count ) )
             {
@@ -114,25 +114,25 @@ namespace CK.Setup
             }
         }
 
-        void BindDependencies( Dictionary<IStObj, StObjSetupData> setupableItems )
+        void BindDependencies( Dictionary<IStObjRuntime, StObjSetupData> setupableItems )
         {
             using( _logger.OpenGroup( LogLevel.Info, "Binding dependencies." ) )
             {
                 foreach( StObjSetupData data in setupableItems.Values )
                 {
                     BindContainer( setupableItems, data );
-                    foreach( IStObj req in data.StObj.Requires )
+                    foreach( IStObjRuntime req in data.StObj.Requires )
                     {
                         StObjSetupData reqD = setupableItems[req];
                         data.SetupItem.Requires.Add( reqD.SetupItem.GetReference() );
                     }
-                    foreach( IStObj group in data.StObj.Groups )
+                    foreach( IStObjRuntime group in data.StObj.Groups )
                     {
                         StObjSetupData gData = setupableItems[group];
                         IMutableSetupItemGroup g = gData.SetupItem as IMutableSetupItemGroup;
                         if( g == null )
                         {
-                            _logger.Error( "Structure Object '{0}' declares '{1}' as a Group, but the latter is not a IMutableSetupItemGroup (only a IMutableSetupItem).", data.FullName, gData.FullName );
+                            _logger.Error( "Structure Item '{0}' declares '{1}' as a Group, but the latter is not a IMutableSetupItemGroup (only a IMutableSetupItem).", data.FullName, gData.FullName );
                         }
                         else
                         {
@@ -145,11 +145,11 @@ namespace CK.Setup
                         IMutableSetupItemGroup g = data.SetupItem as IMutableSetupItemGroup;
                         if( g == null )
                         {
-                            _logger.Error( "Structure Object '{0}' has associated children but it is not a IMutableSetupItemGroup (only a IMutableSetupItem).", data.FullName );
+                            _logger.Error( "Structure Item '{0}' has associated children but it is not a IMutableSetupItemGroup (only a IMutableSetupItem).", data.FullName );
                         }
                         else
                         {
-                            foreach( IStObj child in data.StObj.Children )
+                            foreach( IStObjRuntime child in data.StObj.Children )
                             {
                                 StObjSetupData c = setupableItems[child];
                                 g.Children.Add( c.SetupItem.GetReference() );
@@ -160,9 +160,9 @@ namespace CK.Setup
             }
         }
 
-        void BindContainer( Dictionary<IStObj, StObjSetupData> setupableItems, StObjSetupData data )
+        void BindContainer( Dictionary<IStObjRuntime, StObjSetupData> setupableItems, StObjSetupData data )
         {
-            IStObj existingStObjContainer = data.StObj.ConfiguredContainer;
+            IStObjRuntime existingStObjContainer = data.StObj.ConfiguredContainer;
             StObjSetupData existing = existingStObjContainer != null ? setupableItems[existingStObjContainer] : null;
             if( existing != null )
             {
@@ -170,7 +170,7 @@ namespace CK.Setup
                 {
                     if( existing.FullNameWithoutContext != data.ContainerFullName )
                     {
-                        _logger.Error( "Structure Object '{0}' is bound to Container named '{1}' but the PackageAttribute states that it must be in '{2}'.", data.FullName, existing.FullNameWithoutContext, data.ContainerFullName );
+                        _logger.Error( "Structure Item '{0}' is bound to Container named '{1}' but the PackageAttribute states that it must be in '{2}'.", data.FullName, existing.FullNameWithoutContext, data.ContainerFullName );
                     }
                     // Even when a mismatch exists, we continue and bind the container configred at the StObj level (trying to raise more errors).
                 }
@@ -179,11 +179,11 @@ namespace CK.Setup
                 {
                     if( existing.SetupItem != null )
                     {
-                        _logger.Error( "Structure Object '{0}' is bound to a Container named '{1}' but the corresponding IDependentItem is not a IDependentItemContainer (its type is '{2}').", data.FullName, existing.FullNameWithoutContext, existing.SetupItem.GetType().FullName );
+                        _logger.Error( "Structure Item '{0}' is bound to a Container named '{1}' but the corresponding IDependentItem is not a IDependentItemContainer (its type is '{2}').", data.FullName, existing.FullNameWithoutContext, existing.SetupItem.GetType().FullName );
                     }
                     else
                     {
-                        _logger.Error( "Structure Object '{0}' is bound to a Container named '{1}' but the corresponding IDependentItem has not been successfully created.", data.FullName, existing.FullNameWithoutContext );
+                        _logger.Error( "Structure Item '{0}' is bound to a Container named '{1}' but the corresponding IDependentItem has not been successfully created.", data.FullName, existing.FullNameWithoutContext );
                     }
                 }
                 else
@@ -202,7 +202,7 @@ namespace CK.Setup
             }
         }
 
-        void CallDynamicInitializer( IReadOnlyList<IStObj> orderedObjects, Dictionary<IStObj, StObjSetupData> setupableItems )
+        void CallDynamicInitializer( IReadOnlyList<IStObjRuntime> orderedObjects, Dictionary<IStObjRuntime, StObjSetupData> setupableItems )
         {
             foreach( var o in orderedObjects )
             {
@@ -219,7 +219,7 @@ namespace CK.Setup
                             init.DynamicItemInitialize( _logger, item, o );
                         }
                     }
-                    initSource = "Structured Object itself";
+                    initSource = "Structured Item itself";
                     if( o.Object is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)o.Object).DynamicItemInitialize( _logger, item, o );
                     initSource = "Setup Item itself";
                     if( item is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)item).DynamicItemInitialize( _logger, item, o );

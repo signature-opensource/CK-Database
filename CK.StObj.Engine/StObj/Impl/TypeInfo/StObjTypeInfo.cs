@@ -209,7 +209,7 @@ namespace CK.Setup
             #endregion
 
             #region Construct method & parameters
-            Construct = t.GetMethod( "Construct", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic );
+            Construct = t.GetMethod( "Construct", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly );
             if( Construct != null )
             {
                 if( Construct.IsVirtual )
@@ -266,7 +266,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Used only for Empty Object Pattern implementations.
+        /// Used only for Empty Item Pattern implementations.
         /// </summary>
         private StObjTypeInfo()
             : base() 
@@ -313,7 +313,7 @@ namespace CK.Setup
             return null;
         }
 
-        protected internal override TC CreateContextTypeInfo<T, TC>( string context, TC specialization )
+        protected internal override TC CreateContextTypeInfo<T, TC>( IAmbientContextualTypeMap context, TC specialization )
         {
             return (TC)(object)(new MutableItem( this, context, (MutableItem)((object)specialization) ));
         }

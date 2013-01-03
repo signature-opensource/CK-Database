@@ -12,7 +12,7 @@ namespace CK.Core
     /// When used with another type or a member of another type from the one provided 
     /// in the constructor, an exception is thrown.
     /// </summary>
-    public class AmbientContextAttributesCache : ICustomAttributeTypeProvider
+    public class AmbientContextualAttributesCache : ICustomAttributeTypeProvider
     {
         struct Entry
         {
@@ -33,10 +33,10 @@ namespace CK.Core
         protected readonly Type Type;
 
         /// <summary>
-        /// Initializes a new <see cref="AmbientContextAttributesCache"/>.
+        /// Initializes a new <see cref="AmbientContextualAttributesCache"/>.
         /// </summary>
         /// <param name="t"></param>
-        public AmbientContextAttributesCache( Type t )
+        public AmbientContextualAttributesCache( Type t )
         {
             if( t == null ) throw new ArgumentNullException( "t" );
             Type = t;

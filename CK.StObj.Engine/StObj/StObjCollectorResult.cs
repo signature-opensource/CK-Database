@@ -9,22 +9,22 @@ namespace CK.Setup
 {
     public partial class StObjCollectorResult : MultiContextualResult<StObjCollectorContextualResult>
     {
-        readonly AmbientContractCollectorResult<StObjTypeInfo,MutableItem> _contractResult;
+        readonly AmbientContractCollectorResult<StObjContextualMapper,StObjTypeInfo,MutableItem> _contractResult;
         readonly int _totalSpecializationCount;
-        readonly MemoryCapturedBuild _builder;
+        readonly BuildValueCollector _buildValueCollector;
         IReadOnlyList<MutableItem> _orderedStObjs;
         bool _fatal;
 
-        internal StObjCollectorResult( StObjMapper owner, AmbientContractCollectorResult<StObjTypeInfo, MutableItem> contractResult )
+        internal StObjCollectorResult( StObjMapper owner, AmbientContractCollectorResult<StObjContextualMapper,StObjTypeInfo, MutableItem> contractResult )
         {
             Debug.Assert( contractResult != null );
             _contractResult = contractResult;
             foreach( var r in contractResult.Contexts )
             {
-                var c = Add( new StObjCollectorContextualResult( r, new StObjContextualMapper( owner, r.Mappings ) ) );
+                var c = Add( new StObjCollectorContextualResult( r ) );
                 _totalSpecializationCount += c._specializations.Length;
             }
-            _builder = new MemoryCapturedBuild();
+            _buildValueCollector = new BuildValueCollector();
         }
 
         /// <summary>
@@ -44,27 +44,27 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets all the <see cref="IStObj"/> ordered by their dependencies.
+        /// Gets all the <see cref="IStObjRuntime"/> ordered by their dependencies.
         /// Empty if <see cref="HasFatalError"/> is true.
         /// </summary>
-        public IReadOnlyList<IStObj> OrderedStObjs
+        public IReadOnlyList<IStObjRuntime> OrderedStObjs
         {
             get { return _orderedStObjs; }
         }
 
-        internal ICapturedBuild Builder
+        internal BuildValueCollector BuildValueCollector
         {
-            get { return _builder; }
+            get { return _buildValueCollector; }
         }
 
         internal IEnumerable<MutableItem> AllMutableItems
         {
-            get { return Contexts.SelectMany( r => r.MutableItems ); }
+            get { return Contexts.SelectMany( r => r.InternalMapper.RawMappings.Values ); }
         }
 
-        internal IEnumerable<MutableItem> FindMutableItemsFor( Type t )
+        internal IEnumerable<MutableItem> FindHighestImplFor( Type t )
         {
-            return Contexts.Select( r => r.Find( t ) ).Where( m => m != null );
+            return Contexts.Select( r => r.InternalMapper.ToHighestImpl( t ) ).Where( m => m != null );
         }
 
         internal void SetFatal()

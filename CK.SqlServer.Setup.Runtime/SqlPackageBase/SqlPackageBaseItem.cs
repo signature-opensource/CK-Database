@@ -26,7 +26,7 @@ namespace CK.SqlServer.Setup
         public SqlPackageBaseItem( IActivityLogger logger, IStObjSetupData data )
             : base( logger, data )
         {
-            Context = data.StObj.Context;
+            Context = data.StObj.Context.Context;
             Location = Object.Database.Name;
             ResourceLocation = (ResourceLocator)data.StObj.GetStObjProperty( "ResourceLocation" );
         }

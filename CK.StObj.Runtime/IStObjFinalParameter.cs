@@ -35,7 +35,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets the current value that will be used. 
-        /// If it has not been resolved to a <see cref="IStObj.Object"/> instance or "structurally" set by one <see cref="IStObjStructuralConfigurator"/>, it is <see cref="Type.Missing"/>. 
+        /// If it has not been resolved to a <see cref="IStObjRuntime.Object"/> instance or "structurally" set by one <see cref="IStObjStructuralConfigurator"/>, it is <see cref="Type.Missing"/>. 
         /// Use <see cref="SetParameterValue"/> to set it.
         /// </summary>
         object Value { get; }

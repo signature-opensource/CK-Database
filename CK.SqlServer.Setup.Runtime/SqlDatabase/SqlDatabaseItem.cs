@@ -18,7 +18,7 @@ namespace CK.SqlServer.Setup
         public SqlDatabaseItem( IActivityLogger logger, IStObjSetupData data )
         {
             Object = (SqlDatabase)data.StObj.Object;
-            Context = data.StObj.Context;
+            Context = data.StObj.Context.Context;
             Location = Object.Name;
             ItemKind = (DependentItemKind)data.StObj.ItemKind;
             ConnectionItem = new SqlDatabaseConnectionItem( this );

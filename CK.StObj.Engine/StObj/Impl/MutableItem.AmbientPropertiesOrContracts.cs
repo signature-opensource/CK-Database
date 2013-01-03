@@ -129,26 +129,25 @@ namespace CK.Setup
             }
         }
 
-        internal void SetDirectAndResolveAmbientPropertiesOnSpecialization( IActivityLogger logger, StObjCollectorResult result, IStObjValueResolver valueResolver )
+        internal void ResolvePreConstructAndPostBuildProperties( IActivityLogger logger, StObjCollectorResult result, StObjCollectorContextualResult contextResult, IStObjValueResolver valueResolver )
         {
             Debug.Assert( Specialization == null && _leafData.LeafSpecialization == this, "We are on the  ultimate (leaf) Specialization." );
             if( _leafData.DirectPropertiesToSet != null )
             {
                 foreach( var k in _leafData.DirectPropertiesToSet )
                 {
-                    try
-                    {
-                        if( k.Value != Type.Missing )
-                        {
-                            k.Key.SetValue( _leafData.StructuredObject, k.Value, null );
-                        }
-                    }
-                    catch( Exception ex )
-                    {
-                        logger.Error( ex, "While setting direct property '{1}.{0}'.", k.Key.Name, k.Key.DeclaringType.FullName );
-                    }
+                    if( k.Value != Type.Missing ) RootGeneralization.AddPreConstructProperty( k.Key, k.Value, result.BuildValueCollector ); 
                 }
             }
+            foreach( var c in _leafData.AllAmbientContracts )
+            {
+                MutableItem m = c.ResolveToStObj( logger, result, contextResult );
+                if( m != null )
+                {
+                    AddPostBuildProperty( c.AmbientContractInfo.SettablePropertyInfo, m, result.BuildValueCollector );
+                }
+            }
+
             // Use _ambientPropertiesEx to work on a fixed set of MutableAmbientProperty that 
             // correspond to the ones of this object (without the cached ones that may appear at the end of the list).
             foreach( var a in _ambientPropertiesEx )
@@ -165,20 +164,54 @@ namespace CK.Setup
                 }
                 else
                 {
-                    // Actual ambient property setting.
-                    try
+                    // Ambient property setting: when it is a StObj, it depends on the relationship between the items.
+                    MutableItem resolved = value as MutableItem;
+                    // If the property value is a StObj, extracts its actual value.
+                    if( resolved != null )
                     {
-                        MutableItem resolved = value as MutableItem;
-                        // If the property value is a StObj, extracts its actual value.
-                        if( resolved != null )
+                        MutableItem highestSetSource = null;
+                        MutableItem highestSetResolved = null; 
+
+                        MutableItem source = this;
+                        AmbientPropertyInfo sourceProp = a.AmbientPropertyInfo;
+                        Debug.Assert( sourceProp.Index < source.AmbientTypeInfo.AmbientProperties.Count, "This is the way to test if the property is defined at the source level or not." );
+
+                        // Walks up the chain to locate the most abstract compatible slice.
                         {
-                            a.AmbientPropertyInfo.SettablePropertyInfo.SetValue( _leafData.StructuredObject, resolved.Object, null );
-
-                            MutableItem source = this;
-                            AmbientPropertyInfo sourceProp = a.AmbientPropertyInfo;
-                            Debug.Assert( sourceProp.Index < source.AmbientTypeInfo.AmbientProperties.Count, "This is the way to test if the property is defined at the source level or not." );
-
+                            MutableItem genResolved = resolved.Generalization;
+                            while( genResolved != null && sourceProp.PropertyType.IsAssignableFrom( genResolved.ObjectType ) )
+                            {
+                                resolved = genResolved;
+                                genResolved = genResolved.Generalization;
+                            }
+                        }
+                        if( resolved._trackedAmbientProperties != null )
+                        {
+                            if( resolved._trackAmbientPropertiesMode == TrackAmbientPropertiesMode.AddPropertyHolderAsChildren || resolved._trackAmbientPropertiesMode == TrackAmbientPropertiesMode.PropertyHolderRequiresThis )
+                            {
+                                highestSetSource = source;
+                                highestSetResolved = resolved;
+                            }
+                            resolved._trackedAmbientProperties.Add( new TrackedAmbientPropertyInfo( source, sourceProp ) );
+                        }
+                        // Walks up the source chain and adjusts the resolved target accordingly.
+                        while( (source = source.Generalization) != null && resolved._needsTrackedAmbientProperties )
+                        {
+                            bool sourcePropChanged = false;
+                            // If source does not define anymore sourceProp. Does it define the property with another type?
+                            while( source != null && sourceProp.Index >= source.AmbientTypeInfo.AmbientProperties.Count )
+                            {
+                                sourcePropChanged = true;
+                                if( (sourceProp = sourceProp.Generalization) == null )
+                                {
+                                    // No property defined anymore at this level: we do not have anything more to do.
+                                    source = null;
+                                }
+                            }
+                            if( source == null ) break;
+                            Debug.Assert( sourceProp != null );
                             // Walks up the chain to locate the most abstract compatible slice.
+                            if( sourcePropChanged )
                             {
                                 MutableItem genResolved = resolved.Generalization;
                                 while( genResolved != null && sourceProp.PropertyType.IsAssignableFrom( genResolved.ObjectType ) )
@@ -187,42 +220,28 @@ namespace CK.Setup
                                     genResolved = genResolved.Generalization;
                                 }
                             }
-                            if( resolved._trackedAmbientProperties != null ) resolved._trackedAmbientProperties.Add( new TrackedAmbientPropertyInfo( source, sourceProp ) );
-
-                            // Walks up the source chain and adjusts the resolved target accordingly.
-                            while( (source = source.Generalization) != null && resolved._needsTrackedAmbientProperties )
+                            if( resolved._trackedAmbientProperties != null )
                             {
-                                bool sourcePropChanged = false;
-                                // If source does not define anymore sourceProp. Does it define the property with another type?
-                                while( source != null && sourceProp.Index >= source.AmbientTypeInfo.AmbientProperties.Count )
+                                if( resolved._trackAmbientPropertiesMode == TrackAmbientPropertiesMode.AddPropertyHolderAsChildren || resolved._trackAmbientPropertiesMode == TrackAmbientPropertiesMode.PropertyHolderRequiresThis )
                                 {
-                                    sourcePropChanged = true;
-                                    if( (sourceProp = sourceProp.Generalization) == null )
-                                    {
-                                        // No property defined anymore at this level: we do not have anything more to do.
-                                        source = null;
-                                    }
+                                    highestSetSource = source;
+                                    highestSetResolved = resolved;
                                 }
-                                if( source == null ) break;
-                                Debug.Assert( sourceProp != null );
-                                // Walks up the chain to locate the most abstract compatible slice.
-                                if( sourcePropChanged )
-                                {
-                                    MutableItem genResolved = resolved.Generalization;
-                                    while( genResolved != null && sourceProp.PropertyType.IsAssignableFrom( genResolved.ObjectType ) )
-                                    {
-                                        resolved = genResolved;
-                                        genResolved = genResolved.Generalization;
-                                    }
-                                }
-                                if( resolved._trackedAmbientProperties != null ) resolved._trackedAmbientProperties.Add( new TrackedAmbientPropertyInfo( source, sourceProp ) );
+                                resolved._trackedAmbientProperties.Add( new TrackedAmbientPropertyInfo( source, sourceProp ) );
                             }
                         }
-                        else a.AmbientPropertyInfo.SettablePropertyInfo.SetValue( _leafData.StructuredObject, value, null );
+                        if( highestSetSource != null )
+                        {
+                            highestSetSource.AddPreConstructProperty( a.AmbientPropertyInfo.SettablePropertyInfo, highestSetResolved, result.BuildValueCollector );
+                        }
+                        else
+                        {
+                            AddPostBuildProperty( a.AmbientPropertyInfo.SettablePropertyInfo, resolved, result.BuildValueCollector );
+                        }
                     }
-                    catch( Exception ex )
+                    else
                     {
-                        logger.Error( ex, "While setting ambient property '{1}.{0}'.", a.Name, a.AmbientPropertyInfo.DeclaringType.FullName );
+                        RootGeneralization.AddPreConstructProperty( a.AmbientPropertyInfo.SettablePropertyInfo, value, result.BuildValueCollector ); 
                     }
                 }
             }
@@ -332,26 +351,6 @@ namespace CK.Setup
             finally
             {
                 _prepareState = PrepareState.PreparedDone;
-            }
-        }
-
-        internal void SetAmbientContracts( IActivityLogger logger, StObjCollectorResult collector, StObjCollectorContextualResult cachedContext )
-        {
-            Debug.Assert( Specialization == null, "Called on leaves only." );
-            foreach( var c in _leafData.AllAmbientContracts )
-            {
-                MutableItem m = c.ResolveToStObj( logger, collector, cachedContext );
-                if( m != null )
-                {
-                    try
-                    {
-                        c.AmbientContractInfo.SettablePropertyInfo.SetValue( _leafData.StructuredObject, m.Object, null );
-                    }
-                    catch( Exception ex )
-                    {
-                        logger.Error( ex, "While setting '{0}'.", c.ToString() );
-                    }
-                }
             }
         }
 

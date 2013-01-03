@@ -57,14 +57,6 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Gets the total number of contexts (at least one since <see cref="Default"/> is always available).
-        /// </summary>
-        public int Count
-        {
-            get { return _contextResults.Count; }
-        }
-
-        /// <summary>
         /// Gets the result for the default context (<see cref="String.Empty"/>).
         /// </summary>
         public T Default

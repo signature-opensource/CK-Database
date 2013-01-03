@@ -48,7 +48,7 @@
     <Compile Include="ICustomAttributeProvider.cs" />
     <Compile Include="ICustomAttributeTypeProvider.cs" />
     <Compile Include="IDynamicAssembly.cs" />
-    <Compile Include="IStObj.cs" />
+    <Compile Include="IStObjRuntime.cs" />
     <Compile Include="IStObjAmbientProperty.cs" />
     <Compile Include="IStObjFinalAmbientProperty.cs" />
     <Compile Include="IStObjFinalParameter.cs" />

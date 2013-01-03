@@ -5,13 +5,14 @@ using System.Text;
 
 namespace CK.Core
 {
-    public class AmbientContractCollectorResult<T,TC> : MultiContextualResult<AmbientContractCollectorContextualResult<T,TC>>
+    public class AmbientContractCollectorResult<CT,T,TC> : MultiContextualResult<AmbientContractCollectorContextualResult<CT,T,TC>>
+        where CT : AmbientContextualTypeMap<T,TC>
         where T : AmbientTypeInfo
-        where TC : AmbientContextTypeInfo<T>
+        where TC : AmbientContextualTypeInfo<T,TC>
     {
-        readonly AmbientTypeMapper _mappings;
+        readonly AmbientTypeMap<CT> _mappings;
 
-        internal AmbientContractCollectorResult( AmbientTypeMapper mappings, Dictionary<Type, T> typeInfo )
+        internal AmbientContractCollectorResult( AmbientTypeMap<CT> mappings, Dictionary<Type, T> typeInfo )
         {
             _mappings = mappings;
            
@@ -92,7 +93,7 @@ namespace CK.Core
         public void LogErrorAndWarnings( IActivityLogger logger )
         {
             if( logger == null ) throw new ArgumentNullException( "logger" );
-            using( logger.OpenGroup( LogLevel.Trace, "Ambient Contract discovering: {0} context(s).", Count ) )
+            using( logger.OpenGroup( LogLevel.Trace, "Ambient Contract discovering: {0} context(s).", Contexts.Count ) )
             {
                 Foreach( r => r.LogErrorAndWarnings( logger ) );
             }
@@ -101,7 +102,7 @@ namespace CK.Core
         /// <summary>
         /// Gets the type mapper for the multiple existing contexts.
         /// </summary>
-        public IAmbientTypeMapper Mappings
+        public IAmbientTypeMap Mappings
         {
             get { return _mappings; }
         }

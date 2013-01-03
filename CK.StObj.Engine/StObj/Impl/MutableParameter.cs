@@ -39,6 +39,12 @@ namespace CK.Setup
             get { return _param.ParameterType == typeof( IActivityLogger ) && _param.Name == "logger"; }
         }
 
+        /// <summary>
+        /// Stores the index of the runtime value to use. 0 for null, Positive for objects collected in BuildValueCollector, the negative IndexOrdered+1 for StObj
+        /// and Int32.MaxValue for the setup Logger.
+        /// </summary>
+        internal int BuilderValueIndex;
+
         public override string ToString()
         {
             string s = String.Format( "Construct parameter '{0}' (n°{1}) for '{2}'", Name, Index+1, Owner.ToString() );

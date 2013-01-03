@@ -12,28 +12,34 @@ namespace CK.Core
     /// Contextual type information: it is an <see cref="AmbientTypeInfo"/> inside a <see cref="Context"/>.
     /// Offers persistent access to attributes that support <see cref="IAttributeAmbientContextBound"/> interface.
     /// </summary>
-    public class AmbientContextTypeInfo<T> : AmbientContextAttributesCache
+    public class AmbientContextualTypeInfo<T,TC> : AmbientContextualAttributesCache
         where T : AmbientTypeInfo
+        where TC : AmbientContextualTypeInfo<T, TC>
     {
-        readonly AmbientContextTypeInfo<T> _specialization;
+        readonly TC _specialization;
+        TC _generalization;
 
         /// <summary>
-        /// Initializes a new <see cref="AmbientContextTypeInfo"/>. 
-        /// Attributes must be retrieved with <see cref="AmbientContextAttributesCache.GetCustomAttributes">GetCustomAttributes</see> methods.
+        /// Initializes a new <see cref="AmbientContextualTypeInfo"/>. 
+        /// Attributes must be retrieved with <see cref="AmbientContextualAttributesCache.GetCustomAttributes">GetCustomAttributes</see> methods.
         /// </summary>
         /// <param name="t">Type.</param>
-        /// <param name="context">Context name.</param>
+        /// <param name="context">Context.</param>
         /// <param name="specialization">Specialization in this context. Null if this is the leaf of the specialization path.</param>
         /// <remarks>
         /// Contextual type information are built bottom up (from most specialized type to generalization).
         /// </remarks>
-        internal protected AmbientContextTypeInfo( T t, string context, AmbientContextTypeInfo<T> specialization )
+        internal protected AmbientContextualTypeInfo( T t, IAmbientContextualTypeMap context, TC specialization )
             : base( t.Type )
         {
-            Debug.Assert( t != null && context != null );
+            Debug.Assert( t != null );
             AmbientTypeInfo = t;
             Context = context;
             _specialization = specialization;
+            if( _specialization != null )
+            {
+                _specialization._generalization = (TC)this;
+            }
         }
 
         /// <summary>
@@ -42,18 +48,21 @@ namespace CK.Core
         public readonly T AmbientTypeInfo;
 
         /// <summary>
-        /// Context name of this contextual type information.
+        /// Context of this contextual type information.
         /// </summary>
-        public readonly string Context;
+        public IAmbientContextualTypeMap Context { get; private set; }
 
         /// <summary>
         /// Gets the specialization in this <see cref="Context"/>. 
         /// Null if this is the leaf of the specialization path.
         /// </summary>
-        /// <remarks>
-        /// Masking (the C# new keyword) should be used on specialization to offer covariance for this property.
-        /// </remarks>
-        protected AmbientContextTypeInfo<T> Specialization { get { return _specialization; } }
+        public TC Specialization { get { return _specialization; } }
+
+        /// <summary>
+        /// Gets the generalization in this <see cref="Context"/>. 
+        /// Null if this is the root of the specialization path.
+        /// </summary>
+        public TC Generalization { get { return _generalization; } }
 
         /// <summary>
         /// Gets whether this Type (that is abstract) must actually be considered as an abstract type or not.
@@ -68,8 +77,7 @@ namespace CK.Core
             return false;
         }
 
-        internal List<TC> CreatePathType<TC>( List<TC> path )
-            where TC : AmbientContextTypeInfo<T>
+        internal List<TC> CreatePathType( List<TC> path )
         {
             if( AmbientTypeInfo.Generalization != null ) AmbientTypeInfo.Generalization.CreateContextTypeInfo<T,TC>( Context, (TC)this ).CreatePathType( path );
             path.Add( (TC)this );
@@ -78,7 +86,7 @@ namespace CK.Core
 
         public override string ToString()
         {
-            return AmbientContractCollector.FormatContextualFullName( Context, Type );
+            return AmbientContractCollector.FormatContextualFullName( Context.Context, Type );
         }
     }
 

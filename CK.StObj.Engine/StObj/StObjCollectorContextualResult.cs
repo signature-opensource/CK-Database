@@ -9,15 +9,13 @@ namespace CK.Setup
 {
     public class StObjCollectorContextualResult : IContextualResult
     {
-        readonly AmbientContractCollectorContextualResult<StObjTypeInfo,MutableItem> _contractResult;
-        readonly StObjContextualMapper _mappings;
+        readonly AmbientContractCollectorContextualResult<StObjContextualMapper,StObjTypeInfo,MutableItem> _contractResult;
         readonly internal MutableItem[] _specializations;
         bool _fatalError;
 
-        internal StObjCollectorContextualResult( AmbientContractCollectorContextualResult<StObjTypeInfo, MutableItem> contractResult, StObjContextualMapper mappings )
+        internal StObjCollectorContextualResult( AmbientContractCollectorContextualResult<StObjContextualMapper,StObjTypeInfo, MutableItem> contractResult )
         {
             _contractResult = contractResult;
-            _mappings = mappings;
             _specializations = new MutableItem[_contractResult.ConcreteClasses.Count];
         }
 
@@ -38,31 +36,24 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the <see cref="IStObjContextualMapper"/> that exposes structured objects.
+        /// Gets the <see cref="IContextualStObjMapRuntime"/> that exposes structured objects.
         /// </summary>
-        public IStObjContextualMapper StObjMapper
+        public IContextualStObjMapRuntime StObjMap
         {
-            get { return _mappings; }
+            get { return (IContextualStObjMapRuntime)_contractResult.Mappings; }
         }
 
-        internal AmbientContractCollectorContextualResult<StObjTypeInfo, MutableItem> AmbientContractResult
+        /// <summary>
+        /// Gets the <see cref="IContextualStObjMap"/> that exposes structured objects.
+        /// </summary>
+        internal StObjContextualMapper InternalMapper
+        {
+            get { return _contractResult.Mappings; }
+        }
+
+        internal AmbientContractCollectorContextualResult<StObjContextualMapper,StObjTypeInfo, MutableItem> AmbientContractResult
         {
             get { return _contractResult; }
-        }
-
-        internal void AddStObjConfiguredItem( MutableItem item )
-        {
-            _mappings.Add( item );
-        }
-
-        internal ICollection<MutableItem> MutableItems
-        {
-            get { return _mappings.MutableItems; }
-        }
-
-        internal MutableItem Find( Type t )
-        {
-            return _mappings.Find( t );
         }
 
         internal void SetFatal()

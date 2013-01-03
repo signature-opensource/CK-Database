@@ -38,7 +38,7 @@ namespace CK.Setup
         string Context { get; }
 
         /// <summary>
-        /// Gets or the type of the reference. Can be null: container and requirements are ignored and 
+        /// Gets the type of the reference. Can be null: container and requirements are ignored and 
         /// construct parameters are resolved to their default (<see cref="IStObjMutableParameter.IsOptional"/> must be true).
         /// Of course, for construct parameters the type must be compatible with the formal parameter's type (similar
         /// type compatibility is required for ambient properties or ambient contracts).
@@ -52,7 +52,7 @@ namespace CK.Setup
         Type Type { get; }
 
         /// <summary>
-        /// Gets or sets whether this reference must be satisfied with an available <see cref="IStObj"/> if the <see cref="P:Type"/> is not null.
+        /// Gets whether this reference must be satisfied with an available <see cref="IStObjRuntime"/> if the <see cref="P:Type"/> is not null.
         /// <para>
         /// Defaults to <see cref="StObjRequirementBehavior.ErrorIfNotStObj"/> for <see cref="IStObjMutableItem.Requires"/> and <see cref="IStObjMutableItem.Container"/> 
         /// (a described dependency is required unless explicitely declared as optional by <see cref="IStObjStructuralConfigurator"/>).

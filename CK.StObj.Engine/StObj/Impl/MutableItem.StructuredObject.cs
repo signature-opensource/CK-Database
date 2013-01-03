@@ -28,7 +28,7 @@ namespace CK.Setup
             try
             {
                 Type toInstanciate = _leafData.ImplementableTypeInfo != null ? _leafData.ImplementableTypeInfo.LastGeneratedType : Type;
-                return _leafData.StructuredObject = Activator.CreateInstance( toInstanciate );
+                return _leafData.StructuredObject = Activator.CreateInstance( toInstanciate, true );
             }
             catch( Exception ex )
             {

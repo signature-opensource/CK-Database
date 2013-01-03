@@ -10,7 +10,7 @@ using System.Collections;
 namespace CK.Setup
 {
 
-    partial class MutableItem : StObjContextTypeInfo, IStObj, IStObjMutableItem, IDependentItemContainerTyped, IDependentItemContainerRef
+    partial class MutableItem : StObjContextTypeInfo, IStObjRuntime, IStObjMutableItem, IDependentItemContainerTyped, IDependentItemContainerRef
     {
         class LeafData
         {
@@ -42,8 +42,7 @@ namespace CK.Setup
             /// </summary>
             public readonly MutableAmbientContract[] AllAmbientContracts;
 
-            // _directPropertiesToSet is not null only on _leafSpecialization and is allocated
-            // if and only if needed (by SetDirectPropertyValue).
+            // Direct properties are collected at leaf level and are allocated only if needed (by SetDirectPropertyValue).
             public Dictionary<PropertyInfo,object> DirectPropertiesToSet;
 
             /// <summary>
@@ -66,6 +65,8 @@ namespace CK.Setup
             /// This is updated right after items have been sorted.
             /// </summary>
             public int SpecializationIndexOrdered;
+
+            public List<PropertySetter> PostBuildProperties;
         }
 
         readonly LeafData _leafData;
@@ -77,8 +78,6 @@ namespace CK.Setup
         readonly IReadOnlyList<MutableAmbientProperty> _ambientPropertiesEx;
         readonly IReadOnlyList<MutableAmbientContract> _ambientContractsEx;
 
-        MutableItem _generalization;
-
         MutableReference _container;
         MutableReferenceList _requires;
         MutableReferenceList _requiredBy;
@@ -88,6 +87,7 @@ namespace CK.Setup
         IReadOnlyList<MutableParameter> _constructParameterEx;
         DependentItemKind _itemKind;
         List<StObjProperty> _stObjProperties;
+        List<PropertySetter> _preConstruct;
 
         string _dFullName;
         MutableItem _dContainer;
@@ -119,7 +119,7 @@ namespace CK.Setup
         PrepareState _prepareState;
 
         /// <summary>
-        /// Used only for Empty Object Pattern implementations.
+        /// Used only for Empty Item Pattern implementations.
         /// </summary>
         internal MutableItem()
         {
@@ -128,14 +128,13 @@ namespace CK.Setup
         /// <summary>
         /// Called from Specialization up to Generalization.
         /// </summary>
-        internal MutableItem( StObjTypeInfo objectType, string context, MutableItem specialization )
+        internal MutableItem( StObjTypeInfo objectType, IAmbientContextualTypeMap context, MutableItem specialization )
             : base(objectType, context, specialization ) 
         {
             Debug.Assert( context != null );
             if( Specialization != null )
             {
-                Debug.Assert( Specialization._generalization == null );
-                Specialization._generalization = this;
+                Debug.Assert( Specialization.Generalization == this );
                 _leafData = Specialization._leafData;
             }
             else
@@ -157,7 +156,7 @@ namespace CK.Setup
         internal void ConfigureTopDown( IActivityLogger logger, MutableItem rootGeneralization )
         {
             Debug.Assert( _leafData.RootGeneralization == null || _leafData.RootGeneralization == rootGeneralization );
-            Debug.Assert( (rootGeneralization == this) == (_generalization == null) );
+            Debug.Assert( (rootGeneralization == this) == (Generalization == null) );
 
             _leafData.RootGeneralization = rootGeneralization;
             ApplyTypeInformation( logger );
@@ -242,14 +241,22 @@ namespace CK.Setup
 
         #endregion
 
-        internal MutableItem Generalization
+        public new IContextualStObjMap Context
         {
-            get { return _generalization; }
+            get { return (IContextualStObjMap)base.Context; }
         }
 
-        internal new MutableItem Specialization
+        /// <summary>
+        /// Never null.
+        /// </summary>
+        internal MutableItem LeafSpecialization
         {
-            get { return (MutableItem)base.Specialization; }
+            get { return _leafData.LeafSpecialization; }
+        }
+
+        internal MutableItem RootGeneralization
+        {
+            get { return _leafData.RootGeneralization; }
         }
 
         #region IStObjMutableItem is called during Configuration
@@ -266,6 +273,8 @@ namespace CK.Setup
             set { _trackAmbientPropertiesMode = value; }
         }
 
+        string IStObjMutableItem.Context { get { return base.Context.Context; } }
+
         IStObjMutableReference IStObjMutableItem.Container { get { return _container; } }
 
         IStObjMutableReferenceList IStObjMutableItem.Children { get { return _children; } }
@@ -276,7 +285,7 @@ namespace CK.Setup
 
         IStObjMutableReferenceList IStObjMutableItem.Groups { get { return _groups; } }
 
-        IReadOnlyList<IStObjMutableParameter> IStObjMutableItem.ConstructParameters { get { return _constructParameterEx; } }
+        public IReadOnlyList<IStObjMutableParameter> ConstructParameters { get { return _constructParameterEx; } }
 
         IReadOnlyList<IStObjAmbientProperty> IStObjMutableItem.SpecializedAmbientProperties { get { return _ambientPropertiesEx; } }
 
@@ -303,7 +312,7 @@ namespace CK.Setup
 
             // Direct property set.
             // Targets the specialization to honor property covariance.
-            PropertyInfo p = _leafData.LeafSpecialization.Type.GetProperty( propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, null, Type.EmptyTypes, null );
+            PropertyInfo p = _leafData.LeafSpecialization.Type.GetProperty( propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
             if( p == null || !p.CanWrite )
             {
                 logger.Error( "Unable to set direct property '{1}.{0}' structural value. It must exist and be writeable (on type '{2}'). (Source:{3})", propertyName, Type.FullName, _leafData.LeafSpecialization.Type.FullName, sourceDescription );
@@ -384,13 +393,15 @@ namespace CK.Setup
                         ResolveDirectReferences( logger, collector, cachedCollector );
                         if( _dContainer != null ) result &= _dContainer.PrepareDependendtItem( logger, dependencyResolver, collector, cachedCollector );
                         // Prepares Generalization and inherits from it as needed.
-                        if( _generalization != null )
+                        if( Generalization != null )
                         {
-                            result &= _generalization.PrepareDependendtItem( logger, dependencyResolver, collector, cachedCollector );
-                            if( _dContainer == null ) _dContainer = _generalization._dContainer;
-                            if( _itemKind == DependentItemKind.Unknown ) _itemKind = _generalization._itemKind;
-                            if( _trackAmbientPropertiesMode == TrackAmbientPropertiesMode.Unknown ) _trackAmbientPropertiesMode = _generalization._trackAmbientPropertiesMode;
-                            _needsTrackedAmbientProperties = _generalization._needsTrackedAmbientProperties;
+                            result &= Generalization.PrepareDependendtItem( logger, dependencyResolver, collector, cachedCollector );
+                            if( _dContainer == null ) _dContainer = Generalization._dContainer;
+                            if( _itemKind == DependentItemKind.Unknown ) _itemKind = Generalization._itemKind;
+                            if( _trackAmbientPropertiesMode == TrackAmbientPropertiesMode.Unknown ) _trackAmbientPropertiesMode = Generalization._trackAmbientPropertiesMode;
+                            // Sets it to true even if this level does not require it in order to follow the path in ResolvePreConstructAndPostBuildProperties:
+                            // this captures the fact that this level or above needs to track the ambient properties.
+                            _needsTrackedAmbientProperties = Generalization._needsTrackedAmbientProperties;
                         }
                         // Check configuration.
                         if( _itemKind == DependentItemKind.Unknown )
@@ -400,7 +411,7 @@ namespace CK.Setup
                         }
                         if( _trackAmbientPropertiesMode == TrackAmbientPropertiesMode.Unknown ) _trackAmbientPropertiesMode = TrackAmbientPropertiesMode.None;
                         
-                        // Allocates Ambient Properties now that we know the final configuration for it.
+                        // Allocates Ambient Properties tracking now that we know the final configuration for it.
                         Debug.Assert( _trackAmbientPropertiesMode != TrackAmbientPropertiesMode.Unknown );
                         if( _trackAmbientPropertiesMode != TrackAmbientPropertiesMode.None )
                         {
@@ -409,7 +420,7 @@ namespace CK.Setup
                         }
                         // We can handle StObjProperties (check type coherency and propagate values) since the Container and 
                         // the Generalization have been prepared, StObj properties can safely be located and propagated to this StObj.
-                        CheckStObjProperties( logger );
+                        CheckStObjProperties( logger, collector.BuildValueCollector );
 
                         // For AmbientProperties, this can not be done the same way: Ambient Properties are "projected to the leaf": they 
                         // have to be managed at the most specialized level: this is done in the next preparation step.
@@ -428,7 +439,7 @@ namespace CK.Setup
         {
             Debug.Assert( _container != null && _constructParameterEx != null );
             bool result = true;
-            _dFullName = AmbientContractCollector.FormatContextualFullName( Context, Type );
+            _dFullName = AmbientContractCollector.FormatContextualFullName( Context.Context, Type );
             _dContainer = _container.ResolveToStObj( logger, collector, cachedCollector );
             // Requirement intialization.
             HashSet<MutableItem> req = new HashSet<MutableItem>();
@@ -604,64 +615,6 @@ namespace CK.Setup
             get { return _leafData.SpecializationIndexOrdered; } 
         }
 
-        internal void CallConstruct( IActivityLogger logger, ICapturedBuild builder, IStObjValueResolver valueResolver )
-        {
-            Debug.Assert( _constructParameterEx != null, "Always allocated." );
-
-            if( AmbientTypeInfo.Construct == null ) return;
-            
-            object[] parameters = new object[_constructParameterEx.Count];
-            int i = 0;
-            foreach( MutableParameter t in _constructParameterEx )
-            {
-                // We inject our "setup logger" only if it is exactly the formal parameter: ... , IActivityLogger logger, ...
-                // This enforces code homogeneity and let room for any other IActivityLogger injection.
-                if( t.IsSetupLogger )
-                {
-                    t.SetParameterValue( logger );
-                    builder.PushSetupLogger();
-                }
-                else
-                {
-                    MutableItem resolved = null;
-                    if( t.Value == Type.Missing )
-                    {
-                        // Parameter reference have already been resolved as dependencies for graph construction since 
-                        // no Value has been explicitely set for the parameter.
-                        resolved = t.CachedResolvedStObj;
-                        if( resolved != null )
-                        {
-                            Debug.Assert( resolved.Object != Type.Missing );
-                            t.SetParameterValue( resolved.Object );
-                        }
-                        else if( !t.IsRealParameterOptional )
-                        {
-                            if( !t.IsOptional )
-                            {
-                                // By throwing an exception here, we stop the process and avoid the construction 
-                                // of an invalid object graph...
-                                // This behavior (FailFastOnFailureToResolve) may be an option once. For the moment: log the error.
-                                logger.Fatal( "{0}: Unable to resolve non optional. Attempting to use a default value to continue the setup process in order to detect other errors.", t.ToString() );
-                            }
-                            t.SetParameterValue( t.Type.IsValueType ? Activator.CreateInstance( t.Type ) : null );
-                        }
-                    }
-                    if( valueResolver != null ) valueResolver.ResolveParameterValue( logger, t );
-                    if( resolved != null && t.Value == resolved.Object )
-                    {
-                        builder.PushStObj( resolved );
-                    }
-                    else
-                    {
-                        builder.PushValue( t.Value );
-                    }
-                }
-                parameters[i++] = t.Value;
-            }
-            AmbientTypeInfo.Construct.Invoke( _leafData.StructuredObject, parameters );
-            builder.PushCall( this, AmbientTypeInfo.Construct );
-        }
-
         #region IDependentItemContainerAsk Members
 
         string IDependentItem.FullName
@@ -671,7 +624,7 @@ namespace CK.Setup
 
         IDependentItemRef IDependentItem.Generalization
         {
-            get { return _generalization; }
+            get { return Generalization; }
         }
 
         IDependentItemContainerRef IDependentItem.Container
@@ -773,14 +726,9 @@ namespace CK.Setup
             get { return Type; }
         }
 
-        public new string Context
-        {
-            get { return base.Context; }
-        }
-
         IStObj IStObj.Generalization
         {
-            get { return _generalization; }
+            get { return Generalization; }
         }
 
         IStObj IStObj.Specialization
@@ -788,43 +736,53 @@ namespace CK.Setup
             get { return Specialization; }
         }
 
-        IStObj IStObj.RootGeneralization
+        IStObjRuntime IStObjRuntime.Generalization
+        {
+            get { return Generalization; }
+        }
+
+        IStObjRuntime IStObjRuntime.Specialization
+        {
+            get { return Specialization; }
+        }
+
+        IStObjRuntime IStObjRuntime.RootGeneralization
         {
             get { return _leafData.RootGeneralization; }
         }
 
-        IStObj IStObj.LeafSpecialization
+        IStObjRuntime IStObjRuntime.LeafSpecialization
         {
             get { return _leafData.LeafSpecialization; }
         }
 
-        IStObj IStObj.ConfiguredContainer 
+        IStObjRuntime IStObjRuntime.ConfiguredContainer 
         {
             get { return IsOwnContainer ? _dContainer : null; } 
         }
 
-        IStObj IStObj.Container 
+        IStObjRuntime IStObjRuntime.Container 
         { 
             get { return _dContainer; } 
         }
 
-        IReadOnlyList<IStObj> IStObj.Requires 
+        IReadOnlyList<IStObjRuntime> IStObjRuntime.Requires 
         {
             get { return _dRequires; } 
         }
 
-        IReadOnlyList<IStObj> IStObj.Children
+        IReadOnlyList<IStObjRuntime> IStObjRuntime.Children
         {
             get { return _dChildren; }
         }
 
-        IReadOnlyList<IStObj> IStObj.Groups
+        IReadOnlyList<IStObjRuntime> IStObjRuntime.Groups
         {
             get { return _dGroups; }
         }
 
 
-        IReadOnlyList<IStObjTrackedAmbientPropertyInfo> IStObj.TrackedAmbientProperties
+        IReadOnlyList<IStObjTrackedAmbientPropertyInfo> IStObjRuntime.TrackedAmbientProperties
         {
             get 
             { 
@@ -833,7 +791,7 @@ namespace CK.Setup
             }
         }
 
-        object IStObj.GetStObjProperty( string propertyName )
+        object IStObjRuntime.GetStObjProperty( string propertyName )
         {
             StObjProperty p = GetStObjProperty( propertyName );
             return p != null ? p.Value : Type.Missing;

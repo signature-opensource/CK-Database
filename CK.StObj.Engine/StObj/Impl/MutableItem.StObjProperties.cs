@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using CK.Core;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using CK.Core;
 
 namespace CK.Setup
 {
@@ -53,7 +53,6 @@ namespace CK.Setup
             {
                 get { return _value != _unsetValue; }
             }
-
         }
 
         void SetStObjProperty( string propertyName, object value )
@@ -71,7 +70,7 @@ namespace CK.Setup
             }
         }
 
-        void CheckStObjProperties( IActivityLogger logger )
+        void CheckStObjProperties( IActivityLogger logger, BuildValueCollector valueCollector )
         {
             if( _stObjProperties == null ) return;
             foreach( StObjProperty p in _stObjProperties )
@@ -80,12 +79,12 @@ namespace CK.Setup
                 {
                     // Check the Type constraint that could potentially hurt one day.
                     bool containerHasSetOrMerged = IsOwnContainer && HandleStObjPropertySource( logger, p, _dContainer, "Container", true );
-                    if( _generalization != null ) HandleStObjPropertySource( logger, p, _generalization, "Generalization", !containerHasSetOrMerged );
+                    if( Generalization != null ) HandleStObjPropertySource( logger, p, Generalization, "Generalization", !containerHasSetOrMerged );
                 }
                 else if( p.InfoOnType.ResolutionSource == PropertyResolutionSource.FromGeneralizationAndThenContainer )
                 {
                     // Check the Type constraint that could potentially hurt one day.
-                    bool generalizationHasSetOrMerged = _generalization != null && HandleStObjPropertySource( logger, p, _generalization, "Generalization", true );
+                    bool generalizationHasSetOrMerged = Generalization != null && HandleStObjPropertySource( logger, p, Generalization, "Generalization", true );
                     if( IsOwnContainer ) HandleStObjPropertySource( logger, p, _dContainer, "Container", !generalizationHasSetOrMerged );
                 }
                 // If the value is missing (it has never been set or has been explicitely "removed"), we have nothing to do.
@@ -113,11 +112,10 @@ namespace CK.Setup
                             }
                         }
                     }
-                    // Since CheckStObjProperties is called from PrepareDependentItem after having called PrepareDependentItem on Generalization (if any),
-                    // we set the property here since we are actually called from top to bottom: the property that will win is the most specialized one if
-                    // the property is virtual. If the property does not inherit (which SHOULD be the normal way of implementing a StObj property), then 
-                    // we are sure that every "StObj layer" has been updated with its own value.
-                    if( setIt ) p.InfoOnType.SetValue( logger, _leafData.StructuredObject, v );
+                    if( setIt )
+                    {
+                        AddPreConstructProperty( p.InfoOnType.PropertyInfo, v, valueCollector );
+                    }
                 }
             }
         }
@@ -171,11 +169,11 @@ namespace CK.Setup
             if( source == PropertyResolutionSource.FromContainerAndThenGeneralization )
             {
                 result = IsOwnContainer ? _dContainer.GetStObjProperty( propertyName ) : null;
-                if( result == null && _generalization != null ) result = _generalization.GetStObjProperty( propertyName );
+                if( result == null && Generalization != null ) result = Generalization.GetStObjProperty( propertyName );
             }
             else
             {
-                result = _generalization != null ? _dContainer.GetStObjProperty( propertyName, PropertyResolutionSource.FromGeneralizationAndThenContainer ) : null;
+                result = Generalization != null ? Generalization.GetStObjProperty( propertyName, PropertyResolutionSource.FromGeneralizationAndThenContainer ) : null;
                 if( result == null && IsOwnContainer ) result = _dContainer.GetStObjProperty( propertyName, PropertyResolutionSource.FromGeneralizationAndThenContainer );
             }
             return result;

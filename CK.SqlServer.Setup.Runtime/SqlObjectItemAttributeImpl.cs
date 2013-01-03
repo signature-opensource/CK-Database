@@ -18,7 +18,7 @@ namespace CK.SqlServer.Setup
             Attribute = a;
         }
 
-        void IStObjSetupDynamicInitializer.DynamicItemInitialize( IActivityLogger logger, IMutableSetupItem item, IStObj stObj )
+        void IStObjSetupDynamicInitializer.DynamicItemInitialize( IActivityLogger logger, IMutableSetupItem item, IStObjRuntime stObj )
         {
             if( !(stObj.Object is SqlPackageBase) )
             {

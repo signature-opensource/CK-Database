@@ -59,9 +59,12 @@
     <Compile Include="AutoImplementor\IAutoImplementorProperty.cs" />
     <Compile Include="AutoImplementor\PreventAutoImplementationAttribute.cs" />
     <Compile Include="IContextualTypeMap.cs" />
-    <Compile Include="StObjContextRoot.cs" />
-    <Compile Include="IContextualObjectMap.cs" />
-    <Compile Include="IContextRoot.cs" />
+    <Compile Include="IContextualStObjMap.cs" />
+    <Compile Include="IContextualRoot.cs" />
+    <Compile Include="IStObj.cs" />
+    <Compile Include="StObjModelExtension.cs" />
+    <Compile Include="StObj\Impl\StObj.cs" />
+    <Compile Include="StObj\Impl\StObjContextRoot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StObj\Attribute\AmbientContractAttribute.cs" />
     <Compile Include="StObj\Attribute\AmbientPropertyAttribute.cs" />
@@ -73,7 +76,9 @@
     <Compile Include="StObj\Attribute\StObjPropertyAttribute.cs" />
     <Compile Include="StObj\DependentItemKindSpec.cs" />
     <Compile Include="StObj\PropertyResolutionSource.cs" />
+    <Compile Include="StObj\Impl\StObjContext.cs" />
     <Compile Include="StObj\TrackAmbientPropertiesMode.cs" />
+    <Compile Include="StObj\Impl\StructuredObjectCache.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

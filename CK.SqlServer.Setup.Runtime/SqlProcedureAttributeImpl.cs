@@ -13,7 +13,7 @@ namespace CK.SqlServer.Setup
             Attribute = a;
         }
 
-        void IStObjSetupDynamicInitializer.DynamicItemInitialize( IActivityLogger logger, IMutableSetupItem item, IStObj stObj )
+        void IStObjSetupDynamicInitializer.DynamicItemInitialize( IActivityLogger logger, IMutableSetupItem item, IStObjRuntime stObj )
         {
             SqlObjectProtoItem proto = SqlObjectItemAttributeImpl.LoadProtoItemFromResource( logger, (SqlPackageBaseItem)item, Attribute.ProcedureName );
             if( proto == null ) return;

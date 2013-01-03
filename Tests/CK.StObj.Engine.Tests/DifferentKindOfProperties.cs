@@ -159,7 +159,7 @@ namespace CK.StObj.Engine.Tests
                 collector.RegisterClass( typeof( CA3 ) );
                 var r = collector.GetResult();
                 Assert.That( r.HasFatalError, Is.False );
-                var cb = r.Default.StObjMapper.GetObject<CB>();
+                var cb = r.Default.StObjMap.Obtain<CB>();
                 Assert.That( cb, Is.InstanceOf<CB3>() );
                 Assert.That( cb.A, Is.InstanceOf<CA3>() );
             }
@@ -197,7 +197,7 @@ namespace CK.StObj.Engine.Tests
                 collector.RegisterClass( typeof( CA2 ) );
                 var r = collector.GetResult();
                 Assert.That( r.HasFatalError, Is.False );
-                var c = r.Default.StObjMapper.GetObject<CPrivateSetter>();
+                var c = r.Default.StObjMap.Obtain<CPrivateSetter>();
                 Assert.That( c.A, Is.InstanceOf<CA2>() );
             }
         }

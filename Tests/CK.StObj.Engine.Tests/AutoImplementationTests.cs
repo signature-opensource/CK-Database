@@ -41,7 +41,7 @@ namespace CK.StObj.Engine.Tests
                 collector.RegisterClass( typeof( A2 ) );
                 StObjCollectorResult result = collector.GetResult();
                 Assert.That( result.HasFatalError, Is.False );
-                Assert.That( result.Default.StObjMapper.GetObject<A>(), Is.Not.Null );
+                Assert.That( result.Default.StObjMap.Obtain<A>(), Is.Not.Null );
             }
 
         }

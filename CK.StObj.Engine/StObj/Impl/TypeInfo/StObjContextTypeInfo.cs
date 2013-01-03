@@ -16,18 +16,18 @@ namespace CK.Setup
     /// This could be removed in favor of sole MutableItem class, but I prefer introducing it for a better (if possible)
     /// comprehension of the architecture.
     /// </remarks>
-    internal abstract class StObjContextTypeInfo : AmbientContextTypeInfo<StObjTypeInfo>
+    internal abstract class StObjContextTypeInfo : AmbientContextualTypeInfo<StObjTypeInfo,MutableItem>
     {
-        internal StObjContextTypeInfo( StObjTypeInfo t, string context, StObjContextTypeInfo specialization )
+        internal StObjContextTypeInfo( StObjTypeInfo t, IAmbientContextualTypeMap context, MutableItem specialization )
             : base( t, context, specialization )
         {
         }
 
         /// <summary>
-        /// Used only for Empty Object Pattern implementations.
+        /// Used only for Empty Item Pattern implementations.
         /// </summary>
         protected StObjContextTypeInfo()
-            : base( StObjTypeInfo.Empty, String.Empty, null )
+            : base( StObjTypeInfo.Empty, null, null )
         {
         }
 

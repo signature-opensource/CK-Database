@@ -11,22 +11,12 @@ namespace CK.Setup
     /// types in its inheritance chain.
     /// The <see cref="Object">Structured Object</see> itself is built based on already built dependencies from top to bottom thanks to its "Construct" methods. 
     /// </summary>
-    public interface IStObj
+    public interface IStObjRuntime : IStObj
     {
         /// <summary>
         /// Gets the associated object instance (the final, most specialized, structured object).
         /// </summary>
         object Object { get; }
-
-        /// <summary>
-        /// Gets the associated type (the "slice" of the object).
-        /// </summary>
-        Type ObjectType { get; }
-
-        /// <summary>
-        /// Gets the context name where the structure object resides.
-        /// </summary>
-        string Context { get; }
 
         /// <summary>
         /// Gets the provider for attributes. Attributes that are marked with <see cref="IAttributeAmbientContextBound"/> are cached
@@ -45,54 +35,54 @@ namespace CK.Setup
         DependentItemKindSpec ItemKind { get; }
 
         /// <summary>
-        /// Gets the parent <see cref="IStObj"/> in the inheritance chain (the one associated to the base class of this <see cref="ObjectType"/>).
+        /// Gets the parent <see cref="IStObjRuntime"/> in the inheritance chain (the one associated to the base class of this <see cref="ObjectType"/>).
         /// May be null.
         /// </summary>
-        IStObj Generalization { get; }
+        new IStObjRuntime Generalization { get; }
 
         /// <summary>
-        /// Gets the child <see cref="IStObj"/> in the inheritance chain.
+        /// Gets the child <see cref="IStObjRuntime"/> in the inheritance chain.
         /// May be null.
         /// </summary>
-        IStObj Specialization { get; }
+        new IStObjRuntime Specialization { get; }
 
         /// <summary>
-        /// Gets the ultimate generalization <see cref="IStObj"/> in the inheritance chain. Never null (can be this object itself).
+        /// Gets the ultimate generalization <see cref="IStObjRuntime"/> in the inheritance chain. Never null (can be this object itself).
         /// </summary>
-        IStObj RootGeneralization { get; }
+        IStObjRuntime RootGeneralization { get; }
 
         /// <summary>
-        /// Gets the ultimate specialization <see cref="IStObj"/> in the inheritance chain. Never null (can be this object itself).
+        /// Gets the ultimate specialization <see cref="IStObjRuntime"/> in the inheritance chain. Never null (can be this object itself).
         /// </summary>
-        IStObj LeafSpecialization { get; }
+        IStObjRuntime LeafSpecialization { get; }
 
         /// <summary>
         /// Gets the configured container for this object. If this <see cref="Container"/> has been inherited 
         /// from its <see cref="Generalization"/>, this ConfiguredContainer is null.
         /// </summary>
-        IStObj ConfiguredContainer { get; }
+        IStObjRuntime ConfiguredContainer { get; }
 
         /// <summary>
         /// Gets the container of this object. If no container has been explicitely associated for the object, this is the
         /// container of its <see cref="Generalization"/> (if it exists). May be null.
         /// </summary>
-        IStObj Container { get; }
+        IStObjRuntime Container { get; }
 
         /// <summary>
         /// Gets a list of required objects. This list combines the requirements of this items (explicitely required types, 
         /// construct parameters, etc.) and any RequiredBy from other objects.
         /// </summary>
-        IReadOnlyList<IStObj> Requires { get; }
+        IReadOnlyList<IStObjRuntime> Requires { get; }
 
         /// <summary>
         /// Gets a list of Group objects to which this object belongs.
         /// </summary>
-        IReadOnlyList<IStObj> Groups { get; }
+        IReadOnlyList<IStObjRuntime> Groups { get; }
 
         /// <summary>
         /// Gets a list of children objects when this <see cref="ItemKind"/> is either a <see cref="DependentItemKind.Group"/> or a <see cref="DependentItemKind.Container"/>.
         /// </summary>
-        IReadOnlyList<IStObj> Children { get; }
+        IReadOnlyList<IStObjRuntime> Children { get; }
 
         /// <summary>
         /// Gets the list of Ambient Properties that reference this object.

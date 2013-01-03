@@ -5,13 +5,12 @@ using System.Linq;
 
 namespace CK.Core
 {
-
     /// <summary>
     /// Encapsulate type information for an Ambient Contract class and offers a <see cref="FinalContexts"/> collection that 
     /// exposes the different contexts that contain the type.
     /// It is a concrete class that can be specialized to capture more specific information related to the type: 
     /// the virtual <see cref="CreateContextTypeInfo"/> factory method should be overrriden to create 
-    /// appropriate <see cref="AmbientContextTypeInfo{T}"/> contextualized type information.
+    /// appropriate <see cref="AmbientContextualTypeInfo{T}"/> contextualized type information.
     /// </summary>
     public class AmbientTypeInfo
     {
@@ -53,7 +52,7 @@ namespace CK.Core
 
 
         /// <summary>
-        /// Used only for Empty Object Pattern implementations.
+        /// Used only for Empty Item Pattern implementations.
         /// </summary>
         protected AmbientTypeInfo()
         {
@@ -94,16 +93,16 @@ namespace CK.Core
             }
         }
 
-        internal bool CollectDeepestConcrete<T,TC>( IActivityLogger logger, DynamicAssembly assembly, List<TC> lastConcretes, List<Type> abstractTails, string context )
+        internal bool CollectDeepestConcrete<T, TC>( IActivityLogger logger, DynamicAssembly assembly, List<TC> lastConcretes, List<Type> abstractTails, IAmbientContextualTypeMap context )
             where T : AmbientTypeInfo
-            where TC : AmbientContextTypeInfo<T>
+            where TC : AmbientContextualTypeInfo<T,TC>
         {
             Debug.Assert( context != null );
             bool concreteBelow = false;
             AmbientTypeInfo c = _firstChild;
             while( c != null )
             {
-                if( c.MutableFinalContexts.Contains( context ) )
+                if( c.MutableFinalContexts.Contains( context.Context ) )
                 {
                     concreteBelow |= c.CollectDeepestConcrete<T,TC>( logger, assembly, lastConcretes, abstractTails, context );
                 }
@@ -133,11 +132,11 @@ namespace CK.Core
         /// <param name="context">Context name for which the associated contextualized specialization must be instanciated.</param>
         /// <param name="specialization">Specialization if any.</param>
         /// <returns>Associated contextualized type information.</returns>
-        internal virtual protected TC CreateContextTypeInfo<T,TC>( string context, TC specialization )
+        internal virtual protected TC CreateContextTypeInfo<T, TC>( IAmbientContextualTypeMap context, TC specialization )
             where T : AmbientTypeInfo
-            where TC : AmbientContextTypeInfo<T>
+            where TC : AmbientContextualTypeInfo<T, TC>
         {
-            return (TC)new AmbientContextTypeInfo<T>( (T)this, context, specialization );
+            return (TC)new AmbientContextualTypeInfo<T,TC>( (T)this, context, specialization );
         }
 
         static void ProcessContextAttributes<T>( Type t, Func<string, bool> action ) where T : IAddOrRemoveContextAttribute

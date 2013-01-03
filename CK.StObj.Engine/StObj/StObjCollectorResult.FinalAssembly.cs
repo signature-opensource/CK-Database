@@ -21,54 +21,99 @@ namespace CK.Setup
             DynamicAssembly a = new DynamicAssembly( directory, assemblyName ?? DynamicAssembly.DefaultAssemblyName );
             
             TypeBuilder root = a.ModuleBuilder.DefineType( StObjContextRoot.RootContextTypeName, TypeAttributes.Class | TypeAttributes.Sealed, typeof( StObjContextRoot ), Type.EmptyTypes );
-            {
-                var ctor = root.DefineConstructor( MethodAttributes.Public, CallingConventions.Standard, Type.EmptyTypes );
-                var g = ctor.GetILGenerator();
-                var baseCtor = root.BaseType.GetConstructor( BindingFlags.NonPublic|BindingFlags.Instance, null, Type.EmptyTypes, null );
-                g.Emit( OpCodes.Ldarg_0 );
-                g.Emit( OpCodes.Call, baseCtor );
-                g.Emit( OpCodes.Ret );
-            }
+            FinalizeTypesCreationAndCreateCtor( logger, a, root );
             root.CreateType();
 
-            Type[] finalTypes = new Type[_totalSpecializationCount];
-            foreach( var m in _orderedStObjs )
-            {
-                if( m.Specialization == null )
-                {
-                    finalTypes[m.SpecializationIndexOrdered] = m.CreateFinalType( logger, a );
-                }
-            }
-
             RawOutStream outS = new RawOutStream();
-            outS.Serialize( finalTypes );
-            
             outS.Writer.Write( Contexts.Count );
             foreach( var c in Contexts )
             {
                 outS.Writer.Write( c.Context );
-                outS.Writer.Flush();
-                // Serializes an array of Tuple<Type,int> for Type to final Type mappings.
+                IDictionary all = c.InternalMapper.RawMappings;
+                var typeMapping = all.Cast<KeyValuePair<object, MutableItem>>().Where( e => e.Key is Type );
+                int typeMappingCount = typeMapping.Count();
+                // Serializes multiple ...,Type.AssemblyQualifiedName,int,... for Type to final Type/Item mappings (where index is the IndexOrdered in allTypes).
+                // We skip highest implementation Type mappings - AmbientContractInterfaceKey keys - since there is no ToStObj mapping on final (runtime) IContextualStObjMap.
+                outS.Writer.Write( typeMappingCount );
+                foreach( var e in typeMapping  )
                 {
-                    var mappings = c.StObjMapper.TypeMappings.GetRawMappings().Cast<KeyValuePair<object,MutableItem>>()
-                                    .Where( e => e.Key is Type )
-                                    .Select( e => Tuple.Create( (Type)e.Key, e.Value.SpecializationIndexOrdered ) );
-                    outS.Serialize( mappings.ToArray() );
-
-                }
-                // Serializes Tuple<Type,Type> for Type to final Type mappings.
-                {
-                    var mappings = c.StObjMapper.TypeMappings.GetRawMappings().Cast<KeyValuePair<object, MutableItem>>()
-                                    .Where( e => e.Key is AmbientContractInterfaceKey )
-                                    .Select( e => Tuple.Create( ((AmbientContractInterfaceKey)e.Key).InterfaceType, e.Value.AmbientTypeInfo.Type ) );
-                    outS.Serialize( mappings.ToArray() );
+                    outS.Writer.Write( ((Type)e.Key).AssemblyQualifiedName );
+                    outS.Writer.Write( e.Value.IndexOrdered );
                 }
             }
+            outS.Writer.Flush();
+            // Once Contexts are serialized, we serialize the values that have been injected during graph construction.
+            outS.Formatter.Serialize( outS.Memory, _buildValueCollector.Values.ToArray() );
+
+            outS.Writer.Write( _totalSpecializationCount );
+            foreach( var m in _orderedStObjs )
+            {
+                outS.Writer.Write( m.Context.Context );
+                outS.Writer.Write( m.Generalization != null ? m.Generalization.IndexOrdered : -1 );
+                outS.Writer.Write( m.Specialization != null ? m.Specialization.IndexOrdered : -1 );
+                outS.Writer.Write( m.LeafSpecialization.IndexOrdered );
+                outS.Writer.Write( m.SpecializationIndexOrdered );
+
+                if( m.AmbientTypeInfo.Construct != null )
+                {
+                    outS.Writer.Write( m.ConstructParameters.Count );
+                    foreach( MutableParameter p in m.ConstructParameters )
+                    {
+                        outS.Writer.Write( p.BuilderValueIndex );
+                    }
+                }
+                else outS.Writer.Write( -1 );
+                m.WritePreConstructProperties( outS.Writer );
+                if( m.Specialization == null ) m.WritePostBuildProperties( outS.Writer );
+             }
+            // Generates the Resource BLOB now.
             outS.Memory.Position = 0;
             a.ModuleBuilder.DefineManifestResource( StObjContextRoot.RootContextTypeName + ".Data", outS.Memory, ResourceAttributes.Private );
             
             a.Save();
         }
 
+        private void FinalizeTypesCreationAndCreateCtor( IActivityLogger logger, DynamicAssembly a, TypeBuilder root )
+        {
+            var ctor = root.DefineConstructor( MethodAttributes.Public, CallingConventions.Standard, new Type[] { typeof( IActivityLogger ) } );
+            var g = ctor.GetILGenerator();
+
+            LocalBuilder locLogger = g.DeclareLocal( typeof( IActivityLogger ) );
+            g.LdArg( 1 );
+            g.StLoc( locLogger );
+
+            LocalBuilder allTypes = g.DeclareLocal( typeof( Type[] ) );
+            g.LdInt32( _orderedStObjs.Count );
+            g.Emit( OpCodes.Newarr, typeof( Type ) );
+            g.StLoc( allTypes );
+
+            MethodInfo typeFromToken = typeof( Type ).GetMethod( "GetTypeFromHandle", BindingFlags.Static | BindingFlags.Public );
+
+            foreach( var m in _orderedStObjs )
+            {
+                Type t = null;
+                if( m.Specialization == null )
+                {
+                    t = m.CreateFinalType( logger, a );
+                }
+                else
+                {
+                    t = m.AmbientTypeInfo.Type;
+                }
+                g.LdLoc( allTypes );
+                g.LdInt32( m.IndexOrdered );
+                g.Emit( OpCodes.Ldtoken, t );
+                g.Emit( OpCodes.Call, typeFromToken );
+                g.Emit( OpCodes.Stelem_Ref );
+            }
+            
+            var baseCtor = root.BaseType.GetConstructor( BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof( IActivityLogger ), typeof( Type[] ) }, null );
+            g.LdArg( 0 );
+            g.LdArg( 1 );
+            g.LdLoc( allTypes );
+            g.Emit( OpCodes.Call, baseCtor );
+
+            g.Emit( OpCodes.Ret );
+        }
     }
 }

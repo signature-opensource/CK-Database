@@ -7,7 +7,7 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// Factory for items associated to <see cref="IStObj"/>.
+    /// Factory for items associated to <see cref="IStObjRuntime"/>.
     /// </summary>
     public interface IStObjSetupItemFactory
     {

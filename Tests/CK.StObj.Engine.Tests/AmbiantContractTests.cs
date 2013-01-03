@@ -62,10 +62,47 @@ namespace CK.Setup.Tests
     {
     }
 
-    public class DefaultAmbientContractCollector : AmbientContractCollector<AmbientTypeInfo,AmbientContextTypeInfo<AmbientTypeInfo>>
+    public class AmbientRoot : AmbientTypeMap<ContextForTypes>
+    {
+        protected override IAmbientContextualTypeMap CreateContext<T,TC>( IActivityLogger logger, string context )
+        {
+            return new ContextForTypes( this, context );
+        }
+    }
+
+    public class ContextForTypes : AmbientContextualTypeMap<TypeInfo, TypeInsideContext>
+    {
+        public ContextForTypes( IAmbientTypeMap owner, string c )
+            : base( owner, c )
+        {
+        }
+    }
+
+    public class TypeInfo : AmbientTypeInfo
+    {
+        public TypeInfo( TypeInfo parent, Type t )
+            : base( parent, t )
+        {
+        }
+
+        protected override TC CreateContextTypeInfo<T, TC>( IAmbientContextualTypeMap context, TC specialization )
+        {
+            return (TC)(object)(new TypeInsideContext( this, context, (TypeInsideContext)(object)specialization ) );
+        }
+    }
+
+    public class TypeInsideContext : AmbientContextualTypeInfo<TypeInfo, TypeInsideContext>
+    {
+        public TypeInsideContext( TypeInfo t, IAmbientContextualTypeMap context, TypeInsideContext specialization )
+            : base( t, context, specialization )
+        {
+        }
+    }
+
+    public class DefaultAmbientContractCollector : AmbientContractCollector<ContextForTypes,TypeInfo,TypeInsideContext>
     {
         public DefaultAmbientContractCollector( IActivityLogger logger = null, IAmbientContractDispatcher contextDispatcher = null )
-            : base( logger ?? DefaultActivityLogger.Empty, ( l, p, t ) => new AmbientTypeInfo( p, t ), null, contextDispatcher )
+            : base( logger ?? DefaultActivityLogger.Empty, l => new AmbientRoot(), ( l, p, t ) => new TypeInfo( p, t ), null, contextDispatcher )
         {
         }
     }
@@ -245,7 +282,7 @@ namespace CK.Setup.Tests
                 Assert.That( c.RegisteredTypeCount, Is.EqualTo( 3 ), "AbstractBase, Base, ScopedBaseDefiner" );
                 var rAll = c.GetResult();
                 CheckEmpty( rAll.Default );
-                Assert.That( rAll.Count, Is.EqualTo( 1 ) );
+                Assert.That( rAll.Contexts.Count, Is.EqualTo( 1 ) );
             };
             {
                 DefaultAmbientContractCollector c = new DefaultAmbientContractCollector();
@@ -280,7 +317,7 @@ namespace CK.Setup.Tests
             }
         }
 
-        private static void CheckEmpty( AmbientContractCollectorContextualResult<AmbientTypeInfo, AmbientContextTypeInfo<AmbientTypeInfo>> r )
+        private static void CheckEmpty( AmbientContractCollectorContextualResult<ContextForTypes,TypeInfo,TypeInsideContext> r )
         {
             Assert.That( r.AbstractTails.Count, Is.EqualTo( 0 ) );
             Assert.That( r.AbstractTails, Is.Empty );
@@ -293,12 +330,12 @@ namespace CK.Setup.Tests
             CheckLocalMappings( r.Mappings );
         }
 
-        static void CheckLocalMappings( IAmbientTypeContextualMapper actual, params Tuple<Type, Type>[] expected )
+        static void CheckLocalMappings( IAmbientContextualTypeMap actual, params Tuple<Type, Type>[] expected )
         {
             foreach( var e in expected )
             {
                 Assert.That( actual.IsMapped( e.Item1 ), "Key type: " + e.Item1 + " exists." );
-                Assert.That( actual.MapType( e.Item1 ), Is.EqualTo( e.Item2 ), "Type : " + e.Item1 + " is mapped to " + e.Item2 );
+                Assert.That( actual.ToLeafType( e.Item1 ), Is.EqualTo( e.Item2 ), "Type : " + e.Item1 + " is mapped to " + e.Item2 );
             }
             Assert.That( actual.MappedTypeCount, Is.EqualTo( expected.Count() ), "No extra mappings exist." );
         }

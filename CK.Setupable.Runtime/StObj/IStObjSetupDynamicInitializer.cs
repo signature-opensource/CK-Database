@@ -23,7 +23,7 @@ namespace CK.Setup
         /// When implemented by the structured object itself, it may be called multiple times: once for each StObj slice in 
         /// its hierarchy.
         /// </remarks>
-        void DynamicItemInitialize( IActivityLogger logger, IMutableSetupItem item, IStObj stObj );
+        void DynamicItemInitialize( IActivityLogger logger, IMutableSetupItem item, IStObjRuntime stObj );
     }
 
 

@@ -14,10 +14,10 @@ namespace CK.Setup
         IStObjSetupData Generalization { get; }
 
         /// <summary>
-        /// Gets the associated <see cref="IStObj"/>.
+        /// Gets the associated <see cref="IStObjRuntime"/>.
         /// Never null.
         /// </summary>
-        IStObj StObj { get; }
+        IStObjRuntime StObj { get; }
 
         /// <summary>
         /// Gets the [contextualized] full name of the object.
@@ -25,7 +25,7 @@ namespace CK.Setup
         string FullName { get; }
 
         /// <summary>
-        /// Gets whether the <see cref="FullName"/> is the default one (default full name is the <see cref="IStObj.ObjectType">StObj.ObjectType</see>.<see cref="Type.FullName">FullName</see>).
+        /// Gets whether the <see cref="FullName"/> is the default one (default full name is the <see cref="IStObjRuntime.ObjectType">StObj.ObjectType</see>.<see cref="Type.FullName">FullName</see>).
         /// </summary>
         bool IsDefaultFullNameWithoutContext { get; }
     }

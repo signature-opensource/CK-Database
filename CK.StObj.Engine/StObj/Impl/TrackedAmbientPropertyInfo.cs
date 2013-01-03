@@ -17,7 +17,7 @@ namespace CK.Setup
             AmbientPropertyInfo = p;
         }
 
-        IStObj IStObjTrackedAmbientPropertyInfo.Owner
+        IStObjRuntime IStObjTrackedAmbientPropertyInfo.Owner
         {
             get { return Owner; }
         }

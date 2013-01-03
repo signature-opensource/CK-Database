@@ -145,15 +145,15 @@ namespace CK.StObj.Engine.Tests
             r.Default.CheckChildren<ZonePackage>( "SecurityZone,ZoneGroup" );
             r.Default.CheckChildren<SqlDatabaseDefault>( "BasicPackage,BasicActor,BasicUser,BasicGroup,ZonePackage,SecurityZone,ZoneGroup,AuthenticationPackage,AuthenticationUser,AuthenticationDetail" );
 
-            var basicPackage = r.Default.StObjMapper.GetObject<BasicPackage>();
+            var basicPackage = r.Default.StObjMap.Obtain<BasicPackage>();
             Assert.That( basicPackage is ZonePackage );
             Assert.That( basicPackage.GroupHome is ZoneGroup );
             Assert.That( basicPackage.Schema, Is.EqualTo( "CK" ) );
 
-            var authenticationUser = r.Default.StObjMapper.GetObject<AuthenticationUser>();
+            var authenticationUser = r.Default.StObjMap.Obtain<AuthenticationUser>();
             Assert.That( authenticationUser.Schema, Is.EqualTo( "CK" ) );
             
-            var authenticationDetail = r.Default.StObjMapper.GetObject<AuthenticationDetail>();
+            var authenticationDetail = r.Default.StObjMap.Obtain<AuthenticationDetail>();
             Assert.That( authenticationDetail.Schema, Is.EqualTo( "CKAuth" ) );
         }
     }

@@ -78,7 +78,7 @@ namespace CK.Setup
                     Error( logger, String.Format( "Undefined Typed context '{0}'", _context ) );
                     return null;
                 }
-                result = ctxResult.Find( Type );
+                result = ctxResult.InternalMapper.ToHighestImpl( Type );
                 if( result == null )
                 {
                     WarnOrErrorIfStObjRequired( logger, String.Format( "{0} not found", AmbientContractCollector.FormatContextualFullName( _context, Type ) ) );
@@ -87,13 +87,13 @@ namespace CK.Setup
             }
             else
             {
-                if( cachedCollector == null || cachedCollector.Context != Owner.Context ) cachedCollector = collector.FindContext( Owner.Context );
+                if( cachedCollector == null || cachedCollector.Context != Owner.Context.Context ) cachedCollector = collector.FindContext( Owner.Context.Context );
                 // Context is not set: first look for the type in the Owners's context.
                 // If it is not foud, look for a single type across the different contexts.
-                result = cachedCollector.Find( Type );
+                result = cachedCollector.InternalMapper.ToHighestImpl( Type );
                 if( result == null )
                 {
-                    var all = collector.FindMutableItemsFor( Type ).ToList();
+                    var all = collector.FindHighestImplFor( Type ).ToList();
                     if( all.Count == 0 )
                     {
                         // Do not use WarnOrErrorIfStObjRequired since we want to handle optional value type or string not found without any warning.

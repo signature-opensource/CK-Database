@@ -6,17 +6,18 @@ using System.Diagnostics;
 
 namespace CK.Core
 {
-    public class AmbientContractCollectorContextualResult<T,TC> : IContextualResult
+    public class AmbientContractCollectorContextualResult<CT,T,TC> : IContextualResult
+        where CT : AmbientContextualTypeMap<T,TC>
         where T : AmbientTypeInfo
-        where TC : AmbientContextTypeInfo<T>
+        where TC : AmbientContextualTypeInfo<T,TC>
     {
-        AmbientTypeContextualMapper<T,TC> _mappings;
+        CT _mappings;
         IReadOnlyList<IReadOnlyList<TC>> _concreteClassesPath;
         IReadOnlyList<IReadOnlyList<Type>> _classAmbiguities;
         IReadOnlyList<IReadOnlyList<Type>> _interfaceAmbiguities;
         IReadOnlyList<Type> _abstractTails;
 
-        internal AmbientContractCollectorContextualResult( AmbientTypeContextualMapper<T, TC> mappings,
+        internal AmbientContractCollectorContextualResult( CT mappings,
                                 IReadOnlyList<IReadOnlyList<TC>> concreteClasses,
                                 IReadOnlyList<IReadOnlyList<Type>> classAmbiguities,
                                 IReadOnlyList<IReadOnlyList<Type>> interfaceAmbiguities,
@@ -41,7 +42,7 @@ namespace CK.Core
         /// <summary>
         /// Gets the type mapper for this context.
         /// </summary>
-        public IAmbientTypeContextualMapper Mappings
+        public CT Mappings
         {
             get { return _mappings; }
         }
@@ -85,7 +86,6 @@ namespace CK.Core
         {
             get { return _classAmbiguities.Count != 0 || _interfaceAmbiguities.Count != 0; } 
         }
-
 
         /// <summary>
         /// Logs detailed information about discovered ambient contracts.
