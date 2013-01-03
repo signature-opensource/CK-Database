@@ -424,7 +424,12 @@ namespace CK.SqlServer
         /// </param>
         public void AcquireConnection( SqlCommand cmd, out bool mustClose )
         {
-            cmd.Connection = AcquireConn( out mustClose );
+            if( cmd == null ) throw new ArgumentNullException( "cmd" );
+            if( cmd.Connection == null )
+            {
+                cmd.Connection = AcquireConn( out mustClose );
+            }
+            else mustClose = false;
         }
 
         /// <summary>
@@ -436,8 +441,14 @@ namespace CK.SqlServer
         public void ReleaseConnection( SqlCommand cmd, bool mustClose )
         {
             if( mustClose ) cmd.Connection.Close();
-            if( cmd.Connection == _oCon ) _oConIsWorking = false;
-            cmd.Connection = null;
+            
+            if( cmd.Connection == _oCon )
+            {
+                _oConIsWorking = false;
+                cmd.Connection = null;
+            }
+            
+            if( mustClose ) cmd.Connection = null;
         }
 
         SqlConnection AcquireConn( out bool mustClose )
