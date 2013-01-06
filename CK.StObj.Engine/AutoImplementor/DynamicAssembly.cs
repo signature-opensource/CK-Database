@@ -38,11 +38,6 @@ namespace CK.Core
         /// </summary>
         static readonly public StrongNameKeyPair DynamicKeyPair;
 
-        /// <summary>
-        /// Default assembly name.
-        /// </summary>
-        public const string DefaultAssemblyName = "CK.StObj.AutoAssembly";
-
         static DynamicAssembly()
         {
             using( Stream stream = Assembly.GetAssembly( typeof( DynamicAssembly ) ).GetManifestResourceStream( "CK.Setup.AutoImplementor.DynamicKeyPair.snk" ) )
@@ -54,11 +49,11 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Initializes a new temporary <see cref="DynamicAssembly"/> with a name set to <see cref="DefaultAssemblyName"/>+".Memory" and 
+        /// Initializes a new temporary <see cref="DynamicAssembly"/> with a name set to <see cref="StObjFinalAssemblyConfiguration.DefaultAssemblyName"/>+".Memory" and 
         /// that can only <see cref="AssemblyBuilderAccess.Run"/>.
         /// </summary>
         public DynamicAssembly()
-            : this( null, DefaultAssemblyName + ".Memory", null, AssemblyBuilderAccess.Run )
+            : this( null, StObjFinalAssemblyConfiguration.DefaultAssemblyName + ".Memory", null, null, AssemblyBuilderAccess.Run )
         {
         }
 
@@ -67,9 +62,10 @@ namespace CK.Core
         /// </summary>
         /// <param name="directory">Directory where the assembly must be saved. Must not be null if the assembly must be saved.</param>
         /// <param name="assemblyName">Name to use.</param>
-        /// <param name="signature"></param>
+        /// <param name="externalVersionStamp">Embedded stamp. Used to detect the need to rebuild the assembly.</param>
+        /// <param name="signature">Key pair to use to sign the dll.</param>
         /// <param name="access">Typical accesses are Run and RunAndSave (the default).</param>
-        public DynamicAssembly( string directory, string assemblyName = DefaultAssemblyName, StrongNameKeyPair signature = null, AssemblyBuilderAccess access = AssemblyBuilderAccess.RunAndSave )
+        public DynamicAssembly( string directory, string assemblyName = StObjFinalAssemblyConfiguration.DefaultAssemblyName, string externalVersionStamp = null, StrongNameKeyPair signature = null, AssemblyBuilderAccess access = AssemblyBuilderAccess.RunAndSave )
         {
             bool mustSave = (access & AssemblyBuilderAccess.Save) == AssemblyBuilderAccess.Save;
 

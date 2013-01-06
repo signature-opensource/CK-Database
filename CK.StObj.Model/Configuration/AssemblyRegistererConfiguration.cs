@@ -8,6 +8,7 @@ namespace CK.Core
     /// <summary>
     /// Holds a configuration that describes which assemblies must be processed.
     /// </summary>
+    [Serializable]
     public class AssemblyRegistererConfiguration
     {
         readonly HashSet<string> _ignoredAssemblies;

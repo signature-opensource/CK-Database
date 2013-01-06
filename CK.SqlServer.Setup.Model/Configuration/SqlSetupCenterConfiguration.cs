@@ -5,7 +5,8 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
-    public class SqlSetupCenterConfiguration
+    [Serializable]
+    public class SqlSetupCenterConfiguration : IStObjEngineConfiguration
     {
         readonly SetupCenterConfiguration _config;
         readonly List<SqlDatabaseDescriptor> _databases;
@@ -19,6 +20,7 @@ namespace CK.SqlServer.Setup
         public SqlSetupCenterConfiguration()
         {
             _config = new SetupCenterConfiguration();
+            _config.ExplicitRegisteredClasses.Add( typeof( SqlDefaultDatabase ) );
             _databases = new List<SqlDatabaseDescriptor>();
             _ckPackageDirectories = new List<string>();
             _sqlFileDirectories = new List<string>();
@@ -65,7 +67,18 @@ namespace CK.SqlServer.Setup
             get { return _sqlFileDirectories; }
         }
 
+        #region IStObjEngineConfiguration members
 
+        string IStObjEngineConfiguration.BuilderAssemblyQualifiedName
+        {
+            get { return "CK.SqlServer.Setup.SqlSetupCenter, CK.SqlServer.Setup.Engine"; }
+        }
 
+        StObjFinalAssemblyConfiguration IStObjEngineConfiguration.StObjFinalAssemblyConfiguration
+        {
+            get { return _config.StObjFinalAssemblyConfiguration; }
+        }
+
+        #endregion
     }
 }

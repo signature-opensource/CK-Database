@@ -8,6 +8,7 @@ namespace CK.SqlServer.Setup
     /// <summary>
     /// Associates a name to a connection string.
     /// </summary>
+    [Serializable]
     public class SqlDatabaseDescriptor
     {
         /// <summary>

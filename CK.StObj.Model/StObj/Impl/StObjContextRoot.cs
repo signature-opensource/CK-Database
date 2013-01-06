@@ -29,6 +29,21 @@ namespace CK.Core
             }
         }
 
+        public static StObjContextRoot LoadOrBuild( IStObjEngineConfiguration config, IActivityLogger logger = null, bool forceBuild = false )
+        {
+            throw new NotImplementedException();
+        }
+
+        public static StObjContextRoot Build( IStObjEngineConfiguration config, IActivityLogger logger = null )
+        {
+            if( config == null ) throw new ArgumentNullException( "config" );
+            if( logger == null ) logger = DefaultActivityLogger.Empty;
+
+            Activator.CreateInstance( SimpleTypeFinder.WeakDefault.ResolveType( config.BuilderAssemblyQualifiedName, true ), logger, config );
+
+            return null;
+        }
+
         readonly StObjContext _defaultContext;
         readonly StObjContext[] _contexts;
         readonly IReadOnlyCollection<StObjContext> _contextsEx;

@@ -24,7 +24,7 @@ namespace CK.Setup
         {
             if( config == null ) throw new ArgumentNullException( "config" );
             if( config.DoNotGenerateFinalAssembly ) return;
-            GenerateFinalAssembly( logger, config.Directory, config.AssemblyName, config.SignAssembly, config.SignKeyPair );
+            GenerateFinalAssembly( logger, config.Directory, config.AssemblyName, config.ExternalVersionStamp, config.SignAssembly, config.SignKeyPair );
         }
 
         /// <summary>
@@ -33,21 +33,21 @@ namespace CK.Setup
         /// <param name="logger">Logger to use.</param>
         /// <param name="directory">See <see cref="StObjFinalAssemblyConfiguration.Directory"/>.</param>
         /// <param name="assemblyName">See <see cref="StObjFinalAssemblyConfiguration.AssemblyName"/>.</param>
+        /// <param name="externalVersionStamp">See <see cref="StObjFinalAssemblyConfiguration.ExternalVersionStamp"/>.</param>
         /// <param name="signAssembly">See <see cref="StObjFinalAssemblyConfiguration.SignAssembly"/>.</param>
         /// <param name="signKeyPair">See <see cref="StObjFinalAssemblyConfiguration.SignKeyPair"/>.</param>
-        public void GenerateFinalAssembly( IActivityLogger logger, string directory = null, string assemblyName = null, bool signAssembly = false, StrongNameKeyPair signKeyPair = null )
+        public void GenerateFinalAssembly( IActivityLogger logger, string directory = null, string assemblyName = null, string externalVersionStamp = null, bool signAssembly = false, StrongNameKeyPair signKeyPair = null )
         {
             if( logger == null ) throw new ArgumentNullException( "logger" );
             if( HasFatalError ) throw new InvalidOperationException();
-            if( directory == null )
+            if( String.IsNullOrEmpty( directory ) )
             {
-                Assembly core = typeof( StObjContextRoot ).Assembly;
-                directory = Path.GetDirectoryName( new Uri( core.CodeBase ).LocalPath );
-                logger.Info( "No directory has been specified for final assembly. Trying to use the local path of the CodeBase of CK.StObj.Model assembly: {0}", directory );
+                directory = StObjFinalAssemblyConfiguration.GetFinalDirectory( directory );
+                logger.Info( "No directory has been specified for final assembly. Trying to use the path of CK.StObj.Model assembly: {0}", directory );
             }
-            if( assemblyName == null )
+            if( String.IsNullOrEmpty( assemblyName ) )
             {
-                assemblyName = DynamicAssembly.DefaultAssemblyName;
+                assemblyName = StObjFinalAssemblyConfiguration.GetFinalAssemblyName( assemblyName );
                 logger.Info( "No assembly name has been specified for final assembly. Using default: {0}", assemblyName );
             }
             if( signAssembly )
@@ -56,7 +56,7 @@ namespace CK.Setup
             }
             else if( signKeyPair != null ) throw new ArgumentException( "A StrongNameKeyPair has been provided but signAssembly flag is false. signKeyPair must be null in this case." );
 
-            DynamicAssembly a = new DynamicAssembly( directory, assemblyName, signKeyPair );
+            DynamicAssembly a = new DynamicAssembly( directory, assemblyName, externalVersionStamp, signKeyPair );
             
             TypeBuilder root = a.ModuleBuilder.DefineType( StObjContextRoot.RootContextTypeName, TypeAttributes.Class | TypeAttributes.Sealed, typeof( StObjContextRoot ), Type.EmptyTypes );
             FinalizeTypesCreationAndCreateCtor( logger, a, root );

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using CK.Core;
+using System.Diagnostics;
 
 namespace CK.SqlServer.Setup
 {
@@ -14,6 +15,7 @@ namespace CK.SqlServer.Setup
         {
             public string ConnectionString;
             public SqlManager Manager;
+            public bool DoNotDispose;
         }
 
         public SqlManagerProvider( IActivityLogger logger )
@@ -25,7 +27,8 @@ namespace CK.SqlServer.Setup
 
         internal void AddDefaultDatabase( SqlManager m )
         {
-            Item i = new Item() { ConnectionString = m.CurrentConnectionString, Manager = m };
+            Debug.Assert( m.IsOpen() );
+            Item i = new Item() { ConnectionString = m.CurrentConnectionString, Manager = m, DoNotDispose = true };
             _items.Add( SqlDatabase.DefaultDatabaseName, i );
             _items.Add( i.ConnectionString, i );
         }
@@ -83,7 +86,7 @@ namespace CK.SqlServer.Setup
             {
                 foreach( var item in _items )
                 {
-                    if( item.Key != null && item.Value.Manager != null ) item.Value.Manager.Dispose();
+                    if( item.Key != null && item.Value.Manager != null && item.Value.DoNotDispose == false ) item.Value.Manager.Dispose();
                 }
                 _items.Clear();
             }

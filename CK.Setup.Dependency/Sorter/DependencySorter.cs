@@ -434,6 +434,7 @@ namespace CK.Setup
                         if( items != null ) r.Register( items );
                     }
                 }
+                r.FinalizeRegister();
                 Debug.Assert( _entries.Values.All( o => o is Entry ), "No more start values in dictionary once registered done." );
             }
 
@@ -462,6 +463,10 @@ namespace CK.Setup
                     {
                         RegisterEntry( e, null, null );
                     }
+                }
+
+                public void FinalizeRegister()
+                {
                     foreach( Entry nc in _namedContainersToBind )
                     {
                         Debug.Assert( nc.Item.Container != null && !(nc.Item.Container is IDependentItemContainer) );

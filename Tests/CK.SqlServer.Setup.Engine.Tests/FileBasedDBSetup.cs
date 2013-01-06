@@ -21,10 +21,14 @@ namespace CK.SqlServer.Setup.Engine.Tests
 
             using( var defaultDB = SqlManager.OpenOrCreate( ".", "Test", TestHelper.Logger ) )
             {
+                defaultDB.SchemaDropAllObjects( "Test", true );
+                defaultDB.SchemaDropAllObjects( "CKCore", false );
                 using( TestHelper.Logger.OpenGroup( LogLevel.Trace, "First setup" ) )
                 {
                     using( SqlSetupCenter c = new SqlSetupCenter( TestHelper.Logger, config, defaultDB ) )
                     {
+                        //c.SetupDependencySorterHookInput = TestHelper.Trace;
+                        //c.SetupDependencySorterHookOutput = all => TestHelper.Trace( all, true );
                         Assert.That( c.Run() );
                     }
                 }
@@ -50,13 +54,23 @@ namespace CK.SqlServer.Setup.Engine.Tests
             config.SqlFileDirectories.Add( TestHelper.GetScriptsFolder( "InstallFromScratchWithView" ) );
             config.SetupConfiguration.StObjFinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
 
-            using( var defaultDB = SqlManager.OpenOrCreate( ".", "Test", TestHelper.Logger ) )
+            using( var defaultDB = SqlManager.OpenOrCreate( ".", "TestWithView", TestHelper.Logger ) )
             {
+                config.DefaultDatabaseConnectionString = defaultDB.CurrentConnectionString;
                 using( var c = new SqlSetupCenter( TestHelper.Logger, config, defaultDB ) )
                 {
                     Assert.That( c.Run() );
                 }
                 Assert.That( defaultDB.Connection.ExecuteScalar( "select Id from dbo.vTestView" ), Is.EqualTo( 3712 ) );
+                defaultDB.Connection.ExecuteNonQuery( "drop view dbo.vTestView" );
+                defaultDB.Connection.ExecuteNonQuery( "drop table dbo.tTestV" );
+                defaultDB.SchemaDropAllObjects( "CKCore", false );
+            }
+            // From scratch now: the database is empty.
+            using( var c = new SqlSetupCenter( TestHelper.Logger, config ) )
+            {
+                Assert.That( c.Run() );
+                Assert.That( c.DefaultSqlDatabase.Connection.ExecuteScalar( "select Id from dbo.vTestView" ), Is.EqualTo( 3712 ) );
             }
         }
 

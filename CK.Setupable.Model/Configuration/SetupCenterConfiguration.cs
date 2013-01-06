@@ -5,6 +5,7 @@ using CK.Setup;
 
 namespace CK.Setup
 {
+    [Serializable]
     public class SetupCenterConfiguration
     {
         readonly AssemblyRegistererConfiguration _regConf;
@@ -39,7 +40,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets a list of class types that will be explicitely registered (even if they belong to
-        /// a assembly that is not discovered or appears in <see cref="AssemblyRegistererConfiguration.IgnoredAssemblyNames"/>).
+        /// an assembly that is not discovered or appears in <see cref="AssemblyRegistererConfiguration.IgnoredAssemblyNames"/>).
         /// </summary>
         public IList<Type> ExplicitRegisteredClasses
         {

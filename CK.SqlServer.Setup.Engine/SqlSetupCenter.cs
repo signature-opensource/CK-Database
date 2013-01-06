@@ -183,6 +183,7 @@ namespace CK.SqlServer.Setup
                         {
                             DiscoverFilePackages( d );
                         }
+                        e.Register( _sqlFileDiscoverer.DiscoveredPackages );
                     }
                 }
                 if( _config.SqlFileDirectories.Count > 0 )
