@@ -59,6 +59,12 @@ namespace CK.Setup
         }
 
         /// <summary>
+        /// Gets ors sets whether the ordering of StObj that share the same rank in the dependency graph must be inverted.
+        /// Defaults to false. (See <see cref="DependencySorter"/> for more information.)
+        /// </summary>
+        public bool RevertOrderingNames { get; set; }
+
+        /// <summary>
         /// Registers types discovered by an <see cref="AssemblyRegisterer"/>.
         /// </summary>
         /// <param name="registerer">The discoverer that contains assemblies/types.</param>
@@ -167,7 +173,8 @@ namespace CK.Setup
                                                                                                 { 
                                                                                                     SkipDependencyToContainer = true, 
                                                                                                     HookInput = DependencySorterHookInput, 
-                                                                                                    HookOutput = DependencySorterHookOutput 
+                                                                                                    HookOutput = DependencySorterHookOutput,
+                                                                                                    ReverseName = RevertOrderingNames
                                                                                                 } );
                 Debug.Assert( sortResult.HasRequiredMissing == false, 
                     "A missing requirement can not exist at this stage since we only inject existing Mutable items: missing unresolved dependencies are handled by PrepareDependentItems that logs Errors when needed." );

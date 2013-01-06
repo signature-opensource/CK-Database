@@ -59,7 +59,6 @@
     <Compile Include="SqlScriptExecutor.cs" />
     <Compile Include="SqlScriptTypeHandler.cs" />
     <Compile Include="SqlSetupCenter.cs" />
-    <Compile Include="SqlSetupContext.cs" />
     <Compile Include="SqlVersionedItemRepository.cs" />
   </ItemGroup>
   <ItemGroup>

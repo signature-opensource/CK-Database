@@ -7,16 +7,16 @@ using System.Diagnostics;
 
 namespace CK.Setup
 {
-    public class StObjSetupBuilder
+    public class StObjSetupItemBuilder
     {
         readonly IActivityLogger _logger;
         readonly IStObjSetupConfigurator _configurator;
         readonly IStObjSetupItemFactory _setupItemFactory;
         readonly IStObjSetupDynamicInitializer _dynamicInitializer;
 
-        public StObjSetupBuilder( IActivityLogger logger, IStObjSetupConfigurator configurator = null, IStObjSetupItemFactory setupItemFactory = null, IStObjSetupDynamicInitializer dynamicInitializer = null )
+        public StObjSetupItemBuilder( IActivityLogger logger, IStObjSetupConfigurator configurator = null, IStObjSetupItemFactory setupItemFactory = null, IStObjSetupDynamicInitializer dynamicInitializer = null )
         {
-            if( logger == null ) throw new ArgumentNullException( "logger" );
+            if( logger == null ) throw new ArgumentNullException( "_logger" );
             _logger = logger;
             _configurator = configurator;
             _setupItemFactory = setupItemFactory;

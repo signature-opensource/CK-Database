@@ -7,8 +7,8 @@ namespace CK.SqlServer.Setup
 
     public class SqlManagerProvider : ISqlManagerProvider, IDisposable
     {
-        IActivityLogger _logger;
-        Dictionary<string, Item> _items;
+        readonly IActivityLogger _logger;
+        readonly Dictionary<string, Item> _items;
 
         class Item
         {
@@ -18,7 +18,7 @@ namespace CK.SqlServer.Setup
 
         public SqlManagerProvider( IActivityLogger logger )
         {
-            if( logger == null ) throw new ArgumentNullException( "logger" );
+            if( logger == null ) throw new ArgumentNullException( "_logger" );
             _logger = logger;
             _items = new Dictionary<string, Item>();
         }
@@ -79,13 +79,13 @@ namespace CK.SqlServer.Setup
 
         public void Dispose()
         {
-            if( _items != null )
+            if( _items.Count > 0 )
             {
                 foreach( var item in _items )
                 {
                     if( item.Key != null && item.Value.Manager != null ) item.Value.Manager.Dispose();
                 }
-                _items = null;
+                _items.Clear();
             }
         }
 

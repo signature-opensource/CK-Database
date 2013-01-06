@@ -18,7 +18,7 @@ namespace CK.Setup
         /// </summary>
         /// <param name="logger">Logger to use.</param>
         /// <param name="item">The setup item for the object slice.</param>
-        /// <param name="stObj">The StObj gives detailed information on the object slice.</param>
+        /// <param name="stObj">The StObj (the object slice).</param>
         /// <remarks>
         /// When implemented by the structured object itself, it may be called multiple times: once for each StObj slice in 
         /// its hierarchy.

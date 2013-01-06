@@ -59,7 +59,8 @@ namespace CK.StObj.Engine.Tests
                 collector.DependencySorterHookOutput = sortedItems => TestHelper.Trace( sortedItems, false );
                 var r = collector.GetResult();
                 Assert.That( r.HasFatalError, Is.False );
-                r.GenerateFinalAssembly( TestHelper.Logger, TestHelper.BinFolder, "TEST_SimpleEmit" );
+                // Null as directory => use CK.StObj.Model folder.
+                r.GenerateFinalAssembly( TestHelper.Logger, null, "TEST_SimpleEmit" );
 
                 StObjContextRoot c = StObjContextRoot.Load( "TEST_SimpleEmit", TestHelper.Logger );
                 Assert.That( typeof( B ).IsAssignableFrom( c.Default.ToLeafType( typeof( A ) ) ) );

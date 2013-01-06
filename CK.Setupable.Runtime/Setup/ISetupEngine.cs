@@ -12,6 +12,13 @@ namespace CK.Setup
     public interface ISetupEngine
     {
         /// <summary>
+        /// Triggered before registration (at the beginning of <see cref="Register"/>).
+        /// This event fires before the <see cref="SetupEvent"/> (with <see cref="SetupEvent.Step"/> set to None), and enables
+        /// registration of setup items.
+        /// </summary>
+        event EventHandler<RegisterSetupEventArgs> RegisterSetupEvent;
+
+        /// <summary>
         /// Triggered for each steps of <see cref="SetupStep"/>: None (before registration), Init, Install, Settle and Done.
         /// </summary>
         event EventHandler<SetupEventArgs> SetupEvent;
@@ -34,6 +41,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gives access to the ordered list of all the <see cref="DriverBase"/> that participate to Setup.
+        /// This list is filled after <see cref="RegisterSetupEvent"/> (and <see cref="SetupEvent"/> with <see cref="SetupStep.None"/>) and before <see cref="SetupStep.Init"/>.
         /// </summary>
         IDriverList AllDrivers { get; }
 

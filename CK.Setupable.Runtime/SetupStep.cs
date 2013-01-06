@@ -6,11 +6,12 @@ namespace CK.Setup
     /// </summary>
     public enum SetupStep
     {
-        None    = 0,
-        Init    = 1,
+        None = 0,
+        Init = 1,
         Install = 3,
-        Settle  = 5,
-        Done    = 7
+        Settle = 5,
+        Success = 7,
+        Disposed = 8
     }
 
 }

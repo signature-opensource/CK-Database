@@ -9,7 +9,7 @@ namespace CK.Setup
 {
     /// <summary>
     /// Core setup object. Contains the execution context and all ambient services required to
-    /// process a setup.
+    /// process a setup. It is in charge of item ordering, setup drivers management and Init/Install/Settle steps.
     /// It does not contain anything related to script management: the <see cref="SetupCenter"/> wraps
     /// this class and offers package script support (see <see cref="SetupCenter.ScriptTypeManager"/> and <see cref="SetupCenter.Scripts"/>).
     /// </summary>
@@ -99,16 +99,23 @@ namespace CK.Setup
         {
             public readonly static ISetupDriverFactory Default = new DefaultDriverfactory();
 
-            SetupDriver ISetupDriverFactory.CreateDriver( Type containerType, SetupDriver.BuildInfo info )
+            SetupDriver ISetupDriverFactory.CreateDriver( Type type, SetupDriver.BuildInfo info )
             {
-                return (SetupDriver)Activator.CreateInstance( containerType, info );
+                return (SetupDriver)Activator.CreateInstance( type, info );
             }
         }
 
+        /// <summary>
+        /// Initializes a new setup engine.
+        /// </summary>
+        /// <param name="versionRepository">Provides version information about items already installed.</param>
+        /// <param name="memory">Provides persistent memory to setup participants.</param>
+        /// <param name="_logger">Logger to use.</param>
+        /// <param name="driverFactory">Factory for setup drivers.</param>
         public SetupEngine( IVersionedItemRepository versionRepository, ISetupSessionMemory memory, IActivityLogger logger, ISetupDriverFactory driverFactory )
         {
             if( versionRepository == null ) throw new ArgumentNullException( "versionRepository" );
-            if( logger == null ) throw new ArgumentNullException( "logger" );
+            if( logger == null ) throw new ArgumentNullException( "_logger" );
             if( memory == null ) throw new ArgumentNullException( "memory" );
             _versionRepository = versionRepository;
             _memory = memory;
@@ -116,6 +123,13 @@ namespace CK.Setup
             _logger = logger;
             _drivers = new DriverList( this );
         }
+
+        /// <summary>
+        /// Triggered before registration (at the beginning of <see cref="Register"/>).
+        /// This event fires before the <see cref="SetupEvent"/> (with <see cref="SetupEvent.Step"/> set to None), and enables
+        /// registration of setup items.
+        /// </summary>
+        public event EventHandler<RegisterSetupEventArgs> RegisterSetupEvent;
 
         /// <summary>
         /// Triggered for each steps of <see cref="SetupStep"/>: None (before registration), Init, Install, Settle and Done.
@@ -137,35 +151,51 @@ namespace CK.Setup
             get { return _logger; }
         }
 
+        /// <summary>
+        /// Gives access to the ordered list of all the <see cref="DriverBase"/> that participate to Setup.
+        /// This list is filled after <see cref="RegisterSetupEvent"/> (and <see cref="SetupEvent"/> with <see cref="SetupStep.None"/>) and before <see cref="SetupStep.Init"/>.
+        /// </summary>
         public IDriverList AllDrivers
         {
             get { return _drivers; }
         }
 
+        /// <summary>
+        /// Gets the current state of the engine.
+        /// </summary>
         public SetupEngineState State
         {
             get { return _state; }
         }
 
         /// <summary>
-        /// Registers any number of <see cref="IDependentItem"/> and/or <see cref="IDependentItemDiscoverer"/> and optionnaly registers them
-        /// with an inverted setup order between independant items (see <see cref="DependencySorter"/> for more information).
+        /// Registers any number of <see cref="IDependentItem"/> and/or <see cref="IDependentItemDiscoverer"/>.
         /// </summary>
         /// <param name="items">Set of <see cref="IDependentItem"/></param>
         /// <param name="discoverers">Set of <see cref="IDependentItemDiscoverer"/>.</param>
+        /// <param name="options">Optional configuration for dependency graph computation (see <see cref="DependencySorter"/> for more information).</param>
         /// <returns>A <see cref="SetupEngineRegisterResult"/> that captures detailed information about the registration result.</returns>
-        /// <param name="options">Optional configuration for dependecy graph computation.</param>
         public SetupEngineRegisterResult Register( IEnumerable<IDependentItem> items, IEnumerable<IDependentItemDiscoverer> discoverers, DependencySorter.Options options = null )
         {
             CheckState( SetupEngineState.None );
-            
-            // Because of the SetupEngineRegisterResult encapsulation for this Register phasis, it is not easy to reuse FireSetupEvent.
-            if( SetupEvent != null )
+
+            var hRegisterSetupEvent = RegisterSetupEvent;
+            var hSetupEvent = SetupEvent;
+            if( hRegisterSetupEvent != null || hSetupEvent != null )
             {
-                var e = new SetupEventArgs( SetupStep.None );
+                var e = new RegisterSetupEventArgs();
                 try
                 {
-                    SetupEvent( this, e );
+                    if( hRegisterSetupEvent != null )
+                    {
+                        hRegisterSetupEvent( this, e );
+                        if( e.CancelReason == null )
+                        {
+                            if( e.RegisteredItems != null ) items = items.Concat( e.RegisteredItems );
+                            if( e.RegisteredDiscoverers != null ) discoverers = discoverers.Concat( e.RegisteredDiscoverers );
+                        }
+                    }
+                    if( hSetupEvent != null ) hSetupEvent( this, e );
                     if( e.CancelReason != null )
                     {
                         return new SetupEngineRegisterResult( null ) { CancelReason = e.CancelReason };
@@ -194,7 +224,7 @@ namespace CK.Setup
                         {
                             var head = (GroupHeadSetupDriver)_drivers[item.HeadForGroup.FullName];
                             typeToCreate = ResolveDriverType( item );
-                            SetupDriver c = _driverFactory.CreateDriver( typeToCreate, new SetupDriver.BuildInfo( head, item ) );
+                            SetupDriver c = CreateSetupDriver( typeToCreate, new SetupDriver.BuildInfo( head, item ) );
                             d = head.Group = c;
                         }
                         else
@@ -211,10 +241,10 @@ namespace CK.Setup
                             else
                             {
                                 typeToCreate = ResolveDriverType( item );
-                                d = _driverFactory.CreateDriver( typeToCreate, new SetupDriver.BuildInfo( this, item, externalVersion ) );
+                                d = CreateSetupDriver( typeToCreate, new SetupDriver.BuildInfo( this, item, externalVersion ) );
                             }
                         }
-                        if( d == null ) throw new Exception( String.Format( "Driver Factory returned null for item {0}, type '{1}'.", item.FullName, typeToCreate ) );
+                        Debug.Assert( d != null, "Otherwise an exception is thrown by CreateSetupDriver that will be caught as the result.UnexpectedError." );
                         _drivers.Add( d );
                         var hE = DriverEvent;
                         if( hE != null )
@@ -240,11 +270,23 @@ namespace CK.Setup
                 _drivers.Clear();
             }
             if( result.IsValid ) _state = SetupEngineState.Registered;
-            else 
+            else
             {
-                SafeFireSetupEvent( SetupStep.None, true );
+                SafeFireSetupEvent( SetupStep.None, errorOccured: true );
             }
             return result;
+        }
+
+        private SetupDriver CreateSetupDriver( Type typeToCreate, SetupDriver.BuildInfo buildInfo )
+        {
+            try
+            {
+                return _driverFactory.CreateDriver( typeToCreate, buildInfo ) ?? DefaultDriverfactory.Default.CreateDriver( typeToCreate, buildInfo );
+            }
+            catch( Exception ex )
+            {
+                throw new CKException( ex, "While creating SetupDriver for item '{1}', type='{0}'.", typeToCreate.FullName, buildInfo.SortedItem.FullName );
+            }
         }
 
         private bool SafeFireSetupEvent( SetupStep step, bool errorOccured = false )
@@ -401,7 +443,7 @@ namespace CK.Setup
                 return false;
             }
             _state = SetupEngineState.Settled;
-            SafeFireSetupEvent( SetupStep.Done );
+            SafeFireSetupEvent( SetupStep.Success );
             return true;
         }
 
@@ -428,6 +470,7 @@ namespace CK.Setup
                     }
                 }
                 _state |= SetupEngineState.Disposed;
+                SafeFireSetupEvent( SetupStep.Disposed );
             }
         }
 

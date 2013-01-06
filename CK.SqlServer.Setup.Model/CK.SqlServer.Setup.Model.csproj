@@ -45,6 +45,8 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Attributes\SqlObjectItemAttribute.cs" />
+    <Compile Include="Configuration\SqlDatabaseDescriptor.cs" />
+    <Compile Include="Configuration\SqlSetupCenterConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlDatabase.cs" />
     <Compile Include="SqlDefaultDatabase.cs" />

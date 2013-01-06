@@ -15,28 +15,43 @@ namespace CK.SqlServer.Setup.Engine.Tests
         [Test]
         public void IntoTheWild0()
         {
-            using( var context = new SqlSetupContext( SqlManager.OpenOrCreate( ".", "IntoTheWild", TestHelper.Logger ) ) )
+            string defaultDBConnectionString;
+            using( var defaultDB = SqlManager.OpenOrCreate( ".", "IntoTheWild", TestHelper.Logger ) )
             {
-                context.SqlDatabases.Add( "dbHisto", context.DefaultSqlDatabase.CurrentConnectionString );
-                context.AssemblyRegistererConfiguration.DiscoverAssemblyNames.Add( "IntoTheWild0" );
+                defaultDBConnectionString = defaultDB.Connection.ConnectionString;
+
+                var config = new SqlSetupCenterConfiguration();
+                config.Databases.Add( new SqlDatabaseDescriptor( "dbHisto", defaultDBConnectionString ) );
+                config.SetupConfiguration.AssemblyRegistererConfiguration.DiscoverAssemblyNames.Add( "IntoTheWild0" );
+                config.SetupConfiguration.StObjFinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
 
                 // Try normally with any existing database if it exists.
+                using( SqlSetupCenter c = new SqlSetupCenter( TestHelper.Logger, config, defaultDB ) )
                 {
-
-                    SqlSetupCenter c = new SqlSetupCenter( context );
                     Assert.That( c.Run() );
-                    Assert.That( context.DefaultSqlDatabase.Connection.ExecuteScalar( "select ResName from CK.tRes where ResId=1" ), Is.EqualTo( "System" ) );
                 }
-                // Drop CK and CKCore and retries in reverse order.
+                Assert.That( defaultDB.Connection.ExecuteScalar( "select ResName from CK.tRes where ResId=1" ), Is.EqualTo( "System" ) );
+                // Drop CK and CKCore schema.
                 {
-                    context.DefaultSqlDatabase.SchemaDropAllObjects( "CK", true );
-                    context.DefaultSqlDatabase.SchemaDropAllObjects( "CKCore", false );
-                    Assert.That( context.DefaultSqlDatabase.Connection.ExecuteScalar( "select count(*) from sys.tables where name in ('tSystem','tRes','tResDataRawText')" ), Is.EqualTo( 0 ) );
+                    defaultDB.SchemaDropAllObjects( "CK", true );
+                    defaultDB.SchemaDropAllObjects( "CKCore", false );
+                    Assert.That( defaultDB.Connection.ExecuteScalar( "select count(*) from sys.tables where name in ('tSystem','tRes','tResDataRawText')" ), Is.EqualTo( 0 ) );
+                }
+            }
+            // Database exists, but is empty. Retries with an autonomous configuration (in reverse order).
+            {
 
-                    SqlSetupCenter c = new SqlSetupCenter( context );
-                    c.RevertOrderingNames = true;
+                var config = new SqlSetupCenterConfiguration();
+                config.DefaultDatabaseConnectionString = defaultDBConnectionString;
+                config.Databases.Add( new SqlDatabaseDescriptor( "dbHisto", defaultDBConnectionString ) );
+                config.SetupConfiguration.AssemblyRegistererConfiguration.DiscoverAssemblyNames.Add( "IntoTheWild0" );
+                config.SetupConfiguration.RevertOrderingNames = true;
+                config.SetupConfiguration.StObjFinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
+
+                using( SqlSetupCenter c = new SqlSetupCenter( TestHelper.Logger, config ) )
+                {
                     Assert.That( c.Run() );
-                    Assert.That( context.DefaultSqlDatabase.Connection.ExecuteScalar( "select ResName from CK.tRes where ResId=1" ), Is.EqualTo( "System" ) );
+                    Assert.That( c.DefaultSqlDatabase.Connection.ExecuteScalar( "select ResName from CK.tRes where ResId=1" ), Is.EqualTo( "System" ) );
                 }
             }
         }

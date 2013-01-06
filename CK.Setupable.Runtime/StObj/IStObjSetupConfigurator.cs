@@ -13,16 +13,16 @@ namespace CK.Setup
     /// This interface can be implemented by different kind of objects:
     /// <list type="number">
     /// <item>
-    ///     <term>On an Attribute that is applied to a StObj class.</term>
-    ///     <description>Its <see cref="ConfigureDependentItem"/> will be called right after the object instanciation.</description>
+    ///     <term>By an Attribute that is applied to Structured Object classes.</term>
+    ///     <description>Its <see cref="ConfigureDependentItem"/> will be called right after the object instanciation (for the corresponding "slice").</description>
     /// </item>
     /// <item>
-    ///     <term>On the StObj class itself.</term>
-    ///     <description>Its <see cref="ConfigureDependentItem"/> will be called after the ones of the attributes.</description>
+    ///     <term>By the Structured Object class itself.</term>
+    ///     <description>Its <see cref="ConfigureDependentItem"/> will be called after the ones of the attributes (for each "slice" of the object, from top most base class to the most specialized one).</description>
     /// </item>
     /// <item>
     ///     <term>As a parameter to the <see cref="StObjSetupBuilder"/> .</term>
-    ///     <description>Its <see cref="ConfigureDependentItem"/> will be called last for all StObj beeing setup.</description>
+    ///     <description>Its <see cref="ConfigureDependentItem"/> will be called last for all StObj beeing setup (for each "slice" of each object).</description>
     /// </item>
     /// </list>
     /// </remarks>

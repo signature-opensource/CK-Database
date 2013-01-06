@@ -58,6 +58,8 @@
     <Compile Include="AutoImplementor\IAutoImplementorMethod.cs" />
     <Compile Include="AutoImplementor\IAutoImplementorProperty.cs" />
     <Compile Include="AutoImplementor\PreventAutoImplementationAttribute.cs" />
+    <Compile Include="Configuration\AssemblyRegistererConfiguration.cs" />
+    <Compile Include="Configuration\StObjFinalAssemblyConfiguration.cs" />
     <Compile Include="IContextualTypeMap.cs" />
     <Compile Include="IContextualStObjMap.cs" />
     <Compile Include="IContextualRoot.cs" />

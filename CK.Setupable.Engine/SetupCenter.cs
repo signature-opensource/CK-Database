@@ -9,28 +9,38 @@ namespace CK.Setup
 {
     public class SetupCenter
     {
-        IVersionedItemRepository _versionRepository; 
-        ISetupSessionMemoryProvider _memory;
-        IActivityLogger _logger;
-        ISetupDriverFactory _driverFactory;
-        
-        ScriptCollector _scripts;
-        ScriptTypeManager _scriptTypeManager;
+        readonly IVersionedItemRepository _versionRepository; 
+        readonly ISetupSessionMemoryProvider _memory;
+        readonly SetupCenterConfiguration _config;
+        readonly SetupableConfigurator _configurator;
+        readonly IActivityLogger _logger;
 
-        public SetupCenter( IVersionedItemRepository versionRepository, ISetupSessionMemoryProvider memory, IActivityLogger logger, ISetupDriverFactory driverFactory )
+        readonly ScriptCollector _scripts;
+        readonly ScriptTypeManager _scriptTypeManager;
+        readonly EventHandler<RegisterSetupEventArgs> _relayRegisterSetupEvent;
+        readonly EventHandler<SetupEventArgs> _relaySetupEvent;
+        readonly EventHandler<DriverEventArgs> _relayDriverEvent;
+
+        public SetupCenter( IActivityLogger logger, SetupCenterConfiguration config, IVersionedItemRepository versionRepository, ISetupSessionMemoryProvider memory, SetupableConfigurator configurator = null )
         {
+            if( logger == null ) throw new ArgumentNullException( "_logger" );
+            if( config == null ) throw new ArgumentNullException( "config" );
             if( versionRepository == null ) throw new ArgumentNullException( "versionRepository" );
             if( memory == null ) throw new ArgumentNullException( "memory" );
-            if( logger == null ) throw new ArgumentNullException( "logger" );
-            if( driverFactory == null ) throw new ArgumentNullException( "driverFactory" );
 
+            _logger = logger;
             _versionRepository = versionRepository;
             _memory = memory;
-            _logger = logger;
-            _driverFactory = driverFactory;
+            _config = config;
+            _configurator = new SetupableConfigurator( configurator );
 
             _scriptTypeManager = new ScriptTypeManager();
             _scripts = new ScriptCollector( _scriptTypeManager );
+            _relayRegisterSetupEvent = OnEngineRegisterSetupEvent;
+            _relaySetupEvent = OnEngineSetupEvent;
+            _relayDriverEvent = OnEngineDriverEvent;
+
+            new StObjSetupHook( this, _config, _configurator );
         }
 
         /// <summary>
@@ -51,7 +61,39 @@ namespace CK.Setup
         }
 
         /// <summary>
+        /// Gets the _logger that should be used for the whole setup process.
+        /// </summary>
+        public IActivityLogger Logger
+        {
+            get { return _logger; }
+        }
+
+        /// <summary>
+        /// Gets or sets a <see cref="SetupableConfigurator"/> that will be used.
+        /// This can be changed at any moment during setup: the current configurator will always be used.
+        /// When setting it, care should be taken to not break the chain by setting the current configurator as the <see cref="SetupableConfigurator.Previous"/>.
+        /// </summary>
+        public SetupableConfigurator SetupableConfigurator
+        {
+            get { return _configurator.Previous; }
+            set { _configurator.Previous = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a function that will be called with the list of StObjs once all of them are 
+        /// registered in the <see cref="DependencySorter"/> used by the <see cref="StObjCollector"/>.
+        /// </summary>
+        public Action<IEnumerable<IDependentItem>> StObjDependencySorterHookInput { get; set; }
+
+        /// <summary>
+        /// Gets or sets a function that will be called when StObjs have been successfuly sorted by 
+        /// the <see cref="DependencySorter"/> used by the <see cref="StObjCollector"/>.
+        /// </summary>
+        public Action<IEnumerable<ISortedItem>> StObjDependencySorterHookOutput { get; set; }
+
+        /// <summary>
         /// Gets or sets a function that will be called with the list of items once all of them are registered.
+        /// This can be used to dump detailed information about items registration and ordering.
         /// </summary>
         public Action<IEnumerable<IDependentItem>> DependencySorterHookInput { get; set; }
 
@@ -59,18 +101,30 @@ namespace CK.Setup
         /// Gets or sets a function that will be called when items have been sorted.
         /// The final <see cref="DependencySorterResult"/> may not be successful (ie. <see cref="DependencySorterResult.HasStructureError"/> may be true),
         /// but if a cycle has been detected, this hook is not called.
+        /// This can be used to dump detailed information about items registration and ordering.
         /// </summary>
         public Action<IEnumerable<ISortedItem>> DependencySorterHookOutput { get; set; }
 
         /// <summary>
-        /// Gets ors sets whether the ordering for setupable items that share the same rank in the pure dependency graph must be inverted.
-        /// Defaults to false. (See <see cref="DependencySorter"/> for more information.)
+        /// Triggered before registration (at the beginning of <see cref="SetupEgine.Register"/>).
+        /// This event fires before the <see cref="SetupEvent"/> (with <see cref="SetupEvent.Step"/> set to None), and enables
+        /// registration of setup items.
         /// </summary>
-        public bool RevertOrderingNames { get; set; }
+        public event EventHandler<RegisterSetupEventArgs> RegisterSetupEvent;
 
         /// <summary>
-        /// Registers any number of <see cref="IDependentItem"/> and/or <see cref="IDependentItemDiscoverer"/> and executes
-        /// the whole setup process (<see cref="SetupEngine.RunInit"/>, <see cref="SetupEngine.RunInit"/>, <see cref="SetupEngine.RunInstall"/>, <see cref="SetupEngine.RunSettle"/>).
+        /// Triggered for each steps of <see cref="SetupStep"/>: None (before registration), Init, Install, Settle and Done.
+        /// </summary>
+        public event EventHandler<SetupEventArgs> SetupEvent;
+
+        /// <summary>
+        /// Triggered for each <see cref="DriverBase"/> setup phasis.
+        /// </summary>
+        public event EventHandler<DriverEventArgs> DriverEvent;       
+
+        /// <summary>
+        /// Registers any number of <see cref="IDependentItem"/> and/or <see cref="IDependentItemDiscoverer"/> and/or <see cref="IEnumerable"/> of such objects (recursively) and executes
+        /// the whole setup process (<see cref="SetupEngine.Register"/>, <see cref="SetupEngine.RunInit"/>, <see cref="SetupEngine.RunInstall"/>, <see cref="SetupEngine.RunSettle"/>).
         /// </summary>
         /// <param name="items">Objects that can be <see cref="IDependentItem"/>, <see cref="IDependentItemDiscoverer"/> or both.</param>
         /// <returns>A <see cref="SetupEngineRegisterResult"/> that captures detailed information about the registration result.</returns>
@@ -108,7 +162,7 @@ namespace CK.Setup
                 {
                     DependencySorter.Options sorterOptions = new DependencySorter.Options() 
                     { 
-                        ReverseName = RevertOrderingNames,
+                        ReverseName = _config.RevertOrderingNames,
                         HookInput = DependencySorterHookInput,
                         HookOutput = DependencySorterHookOutput
                     };
@@ -171,7 +225,6 @@ namespace CK.Setup
             }
         }
 
-
         private SetupEngine CreateEngine( ISetupSessionMemory m )
         {
             SetupEngine engine = null;
@@ -182,10 +235,38 @@ namespace CK.Setup
                 {
                     _logger.Info( "{0} previous Setup attempt(s). Last on {2}, error was: '{1}'.", _memory.StartCount, _memory.LastError, _memory.LastStartDate );
                 }
-                engine = new SetupEngine( _versionRepository, m, _logger, _driverFactory );
+                engine = new SetupEngine( _versionRepository, m, _logger, _configurator );
                 ScriptSetupHandlerBuilder scriptBuilder = new ScriptSetupHandlerBuilder( engine, _scripts, _scriptTypeManager );
+                engine.RegisterSetupEvent += _relayRegisterSetupEvent;
+                engine.SetupEvent += _relaySetupEvent;
+                engine.DriverEvent += _relayDriverEvent;
             }
             return engine;
+        }
+
+        void OnEngineRegisterSetupEvent( object sender, RegisterSetupEventArgs e )
+        {
+            var h = RegisterSetupEvent;
+            if( h != null ) h( this, e );
+        }
+
+        void OnEngineSetupEvent( object sender, SetupEventArgs e )
+        {
+            var h = SetupEvent;
+            if( h != null ) h( this, e );
+            if( e.Step == SetupStep.Disposed )
+            {
+                var engine = (SetupEngine)sender;
+                engine.RegisterSetupEvent -= _relayRegisterSetupEvent;
+                engine.SetupEvent -= _relaySetupEvent;
+                engine.DriverEvent -= _relayDriverEvent;
+            }
+        }
+
+        void OnEngineDriverEvent( object sender, DriverEventArgs e )
+        {
+            var h = DriverEvent;
+            if( h != null ) h( this, e );
         }
 
     }

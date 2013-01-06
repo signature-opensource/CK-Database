@@ -58,9 +58,17 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CK.Setupable.Model\CK.Setupable.Model.csproj">
+      <Project>{64DA8104-2C71-4D52-8F44-D34738F6D564}</Project>
+      <Name>CK.Setupable.Model</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CK.SqlServer.Setup.Engine\CK.SqlServer.Setup.Engine.csproj">
       <Project>{9A0BCE15-00EF-411B-8283-68AED047FCE5}</Project>
       <Name>CK.SqlServer.Setup.Engine</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj">
+      <Project>{B64D3D2A-FD2B-4731-8559-8A52C3A45351}</Project>
+      <Name>CK.SqlServer.Setup.Model</Name>
     </ProjectReference>
     <ProjectReference Include="..\CK.StObj.Engine\CK.StObj.Engine.csproj">
       <Project>{DF7A0B05-4B48-44C2-B6C8-6FCFD66DF8F8}</Project>
@@ -73,6 +81,10 @@
     <ProjectReference Include="..\CK.SqlServer\CK.SqlServer.csproj">
       <Project>{95912A3B-758E-474B-AF34-BE24C4E3BF56}</Project>
       <Name>CK.SqlServer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CK.StObj.Model\CK.StObj.Model.csproj">
+      <Project>{96DEDEEE-DE7D-4B14-8FDE-BC4D8D9CCB78}</Project>
+      <Name>CK.StObj.Model</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

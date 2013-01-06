@@ -106,17 +106,16 @@ namespace CK.Deploy.Console
                 logger.Info( string.Format( "FilePath: {0}", args.FilePath ) );
                 logger.Info( "ConnectionString: " + args.ConnectionString );
             }
+            
+            var config = new SqlSetupCenterConfiguration();
+            config.DefaultDatabaseConnectionString = args.ConnectionString;
+            config.SetupConfiguration.StObjFinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
+            config.FilePackageDirectories.Add( args.FilePath );
+            config.SqlFileDirectories.Add( args.FilePath );
 
-            using( var context = new SqlSetupContext( args.ConnectionString, logger ) )
+            using( SqlSetupCenter c = new SqlSetupCenter( logger, config ) )
             {
-                //if( !context.DefaultSqlDatabase.IsOpen() ) context.DefaultSqlDatabase.Open( context.DefaultSqlDatabase.Server );
-                using( context.Logger.OpenGroup( LogLevel.Trace, "First setup" ) )
-                {
-                    SqlSetupCenter c = new SqlSetupCenter( context );
-                    c.DiscoverFilePackages( args.FilePath );
-                    c.DiscoverSqlFiles( args.FilePath );
-                    c.Run();
-                }
+                c.Run();
             }
         }
 
@@ -129,7 +128,6 @@ namespace CK.Deploy.Console
                 var console = new ActivityLoggerConsoleSink();
                 var logger = DefaultActivityLogger.Create().Register( console );
 
-
                 using( logger.OpenGroup( LogLevel.Info, "Begin dbSetup with:" ) )
                 {
                     logger.Info( string.Format( "RootPath: {0}", args.AbsoluteRootPath ) );
@@ -139,19 +137,16 @@ namespace CK.Deploy.Console
                     logger.Info( "ConnectionString: " + args.ConnectionString );
                 }
 
-                using( var context = new SqlSetupContext( args.ConnectionString, logger ) )
+                var config = new SqlSetupCenterConfiguration();
+                config.DefaultDatabaseConnectionString = args.ConnectionString;
+                config.SetupConfiguration.StObjFinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
+                var rootedPaths = args.RelativeFilePaths.Select( p => Path.Combine( args.AbsoluteRootPath, p ) );
+                config.FilePackageDirectories.AddRange( rootedPaths );
+                config.SqlFileDirectories.AddRange( rootedPaths );
+                config.SetupConfiguration.AssemblyRegistererConfiguration.DiscoverAssemblyNames.AddRange( args.AssemblyNames );
+                using( SqlSetupCenter c = new SqlSetupCenter( logger, config ) )
                 {
-                    using( context.Logger.OpenGroup( LogLevel.Trace, "First setup" ) )
-                    {
-                        SqlSetupCenter c = new SqlSetupCenter( context );
-                        foreach( var item in args.RelativeFilePaths )
-                        {
-                            c.DiscoverFilePackages( Path.Combine( args.AbsoluteRootPath, item ) );
-                            c.DiscoverSqlFiles( Path.Combine( args.AbsoluteRootPath, item ) );
-                        }
-                        context.AssemblyRegistererConfiguration.DiscoverAssemblyNames.AddRange( args.AssemblyNames );
-                        c.Run();
-                    }
+                    c.Run();
                 }
             }
             finally

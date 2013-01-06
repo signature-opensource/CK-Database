@@ -12,11 +12,11 @@ namespace CK.Setup
         /// <summary>
         /// Initializes a new instance of <see cref="MultiScriptBase"/>.
         /// </summary>
-        /// <param name="logger">The logger to use.</param>
+        /// <param name="_logger">The _logger to use.</param>
         /// <param name="script">Script to execute.</param>
         public MultiScriptBase( IActivityLogger logger, ISetupScript script )
         {
-            if( logger == null ) throw new ArgumentNullException( "logger" );
+            if( logger == null ) throw new ArgumentNullException( "_logger" );
             if( script == null ) throw new ArgumentNullException( "script" );
 
             Logger = logger;

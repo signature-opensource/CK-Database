@@ -9,16 +9,54 @@ using System.Reflection;
 using CK.Reflection;
 using System.Resources;
 using System.Collections;
+using System.IO;
 
 namespace CK.Setup
 {
     public partial class StObjCollectorResult : MultiContextualResult<StObjCollectorContextualResult>
     {
-
-        public void GenerateFinalAssembly( IActivityLogger logger, string directory, string assemblyName = null )
+        /// <summary>
+        /// Generates final assembly (or not depending on <see cref="StObjFinalAssemblyConfiguration.DoNotGenerateFinalAssembly"/>.
+        /// </summary>
+        /// <param name="logger">Logger to use.</param>
+        /// <param name="config">The <see cref="StObjFinalAssemblyConfiguration"/> to use.</param>
+        public void GenerateFinalAssembly( IActivityLogger logger, StObjFinalAssemblyConfiguration config )
         {
+            if( config == null ) throw new ArgumentNullException( "config" );
+            if( config.DoNotGenerateFinalAssembly ) return;
+            GenerateFinalAssembly( logger, config.Directory, config.AssemblyName, config.SignAssembly, config.SignKeyPair );
+        }
+
+        /// <summary>
+        /// Generates final assembly.
+        /// </summary>
+        /// <param name="logger">Logger to use.</param>
+        /// <param name="directory">See <see cref="StObjFinalAssemblyConfiguration.Directory"/>.</param>
+        /// <param name="assemblyName">See <see cref="StObjFinalAssemblyConfiguration.AssemblyName"/>.</param>
+        /// <param name="signAssembly">See <see cref="StObjFinalAssemblyConfiguration.SignAssembly"/>.</param>
+        /// <param name="signKeyPair">See <see cref="StObjFinalAssemblyConfiguration.SignKeyPair"/>.</param>
+        public void GenerateFinalAssembly( IActivityLogger logger, string directory = null, string assemblyName = null, bool signAssembly = false, StrongNameKeyPair signKeyPair = null )
+        {
+            if( logger == null ) throw new ArgumentNullException( "logger" );
             if( HasFatalError ) throw new InvalidOperationException();
-            DynamicAssembly a = new DynamicAssembly( directory, assemblyName ?? DynamicAssembly.DefaultAssemblyName );
+            if( directory == null )
+            {
+                Assembly core = typeof( StObjContextRoot ).Assembly;
+                directory = Path.GetDirectoryName( new Uri( core.CodeBase ).LocalPath );
+                logger.Info( "No directory has been specified for final assembly. Trying to use the local path of the CodeBase of CK.StObj.Model assembly: {0}", directory );
+            }
+            if( assemblyName == null )
+            {
+                assemblyName = DynamicAssembly.DefaultAssemblyName;
+                logger.Info( "No assembly name has been specified for final assembly. Using default: {0}", assemblyName );
+            }
+            if( signAssembly )
+            {
+                if( signKeyPair == null ) signKeyPair = DynamicAssembly.DynamicKeyPair;
+            }
+            else if( signKeyPair != null ) throw new ArgumentException( "A StrongNameKeyPair has been provided but signAssembly flag is false. signKeyPair must be null in this case." );
+
+            DynamicAssembly a = new DynamicAssembly( directory, assemblyName, signKeyPair );
             
             TypeBuilder root = a.ModuleBuilder.DefineType( StObjContextRoot.RootContextTypeName, TypeAttributes.Class | TypeAttributes.Sealed, typeof( StObjContextRoot ), Type.EmptyTypes );
             FinalizeTypesCreationAndCreateCtor( logger, a, root );

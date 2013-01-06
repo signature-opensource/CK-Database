@@ -69,10 +69,11 @@
     <Compile Include="SetupCore\ISetupDriverFactory.cs" />
     <Compile Include="SetupCore\SetupEngine.cs" />
     <Compile Include="StObj\Impl\AttributesReader.cs" />
-    <Compile Include="StObj\StObjConfigurator.cs" />
+    <Compile Include="SetupableConfigurator.cs" />
     <Compile Include="StObj\Impl\StObjSetupDataBase.cs" />
     <Compile Include="StObj\Impl\StObjSetupData.cs" />
-    <Compile Include="StObj\StObjSetupBuilder.cs" />
+    <Compile Include="StObj\StObjSetupHook.cs" />
+    <Compile Include="StObj\StObjSetupItemBuilder.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">

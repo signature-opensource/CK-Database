@@ -32,12 +32,12 @@ namespace CK.Core
         /// Its value is: "00240000048000009400000006020000002400005253413100040000010001009fbf2868f04bdf33df4c8c0517bb4c3d743b5b27fcd94009d42d6607446c1887a837e66545221788ecfff8786e85564c839ff56267fe1a3225cd9d8d9caa5aae3ba5d8f67f86ff9dbc5d66f16ba95bacde6d0e02f452fae20022edaea26d31e52870358d0dda69e592ea5cef609a054dac4dbbaa02edc32fb7652df9c0e8e9cd"
         /// </remarks>
         static readonly public string DynamicPublicKey = "00240000048000009400000006020000002400005253413100040000010001009fbf2868f04bdf33df4c8c0517bb4c3d743b5b27fcd94009d42d6607446c1887a837e66545221788ecfff8786e85564c839ff56267fe1a3225cd9d8d9caa5aae3ba5d8f67f86ff9dbc5d66f16ba95bacde6d0e02f452fae20022edaea26d31e52870358d0dda69e592ea5cef609a054dac4dbbaa02edc32fb7652df9c0e8e9cd";
-        
+
         /// <summary>
-        /// This is the key used to signe the dynamic assembly.
+        /// A default key that can be used to sign the dynamic assembly.
         /// </summary>
         static readonly public StrongNameKeyPair DynamicKeyPair;
-        
+
         /// <summary>
         /// Default assembly name.
         /// </summary>
@@ -58,27 +58,32 @@ namespace CK.Core
         /// that can only <see cref="AssemblyBuilderAccess.Run"/>.
         /// </summary>
         public DynamicAssembly()
-            : this( null, DefaultAssemblyName+".Memory", null, AssemblyBuilderAccess.Run )
+            : this( null, DefaultAssemblyName + ".Memory", null, AssemblyBuilderAccess.Run )
         {
         }
 
         /// <summary>
         /// Initializes a new <see cref="DynamicAssembly"/> with the given name and access.
         /// </summary>
-        /// <param name="directory">Directory where the assembly must be saved.</param>
+        /// <param name="directory">Directory where the assembly must be saved. Must not be null if the assembly must be saved.</param>
         /// <param name="assemblyName">Name to use.</param>
+        /// <param name="signature"></param>
         /// <param name="access">Typical accesses are Run and RunAndSave (the default).</param>
         public DynamicAssembly( string directory, string assemblyName = DefaultAssemblyName, StrongNameKeyPair signature = null, AssemblyBuilderAccess access = AssemblyBuilderAccess.RunAndSave )
         {
+            bool mustSave = (access & AssemblyBuilderAccess.Save) == AssemblyBuilderAccess.Save;
+
+            // Default behavior of .Net DefineDynamicAssembly is to use the current directory (horrible).
+            if( mustSave && directory == null ) throw new ArgumentNullException( "directory" );
             if( String.IsNullOrWhiteSpace( assemblyName ) ) throw new ArgumentException( "Name is invalid.", "assemblyName." );
+
             AssemblyName aName = new AssemblyName( assemblyName );
             aName.Version = new Version( 1, 0, 0, 0 );
             if( signature != null ) aName.KeyPair = signature;
-
             _assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly( aName, access, directory );
-            if( (access&AssemblyBuilderAccess.Save) != AssemblyBuilderAccess.Save )
-                _moduleBuilder = _assemblyBuilder.DefineDynamicModule( aName.Name );
-            else _moduleBuilder = _assemblyBuilder.DefineDynamicModule( aName.Name, aName.Name + ".dll" );
+            if( mustSave )
+                _moduleBuilder = _assemblyBuilder.DefineDynamicModule( aName.Name, aName.Name + ".dll" );
+            else _moduleBuilder = _assemblyBuilder.DefineDynamicModule( aName.Name );
         }
 
         /// <summary>

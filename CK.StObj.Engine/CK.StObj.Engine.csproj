@@ -63,7 +63,6 @@
     <Compile Include="AmbientContract\Collector\AmbientContractCollectorResult.cs" />
     <Compile Include="AmbientContract\Collector\MultiContextualResult.cs" />
     <Compile Include="AssemblyRegisterer.cs" />
-    <Compile Include="AssemblyRegistererConfiguration.cs" />
     <Compile Include="AutoImplementor\DynamicAssembly.cs" />
     <Compile Include="AutoImplementor\ImplementableAbstractMethodInfo.cs" />
     <Compile Include="AutoImplementor\ImplementableAbstractPropertyInfo.cs" />

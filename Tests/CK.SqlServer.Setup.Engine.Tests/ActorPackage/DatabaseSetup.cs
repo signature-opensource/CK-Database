@@ -25,35 +25,40 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
         private static void InstallDropAndReverseInstall( Predicate<Type> typeFilter )
         {
-            using( var context = new SqlSetupContext( SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.Logger ) ) )
+            var config = new SqlSetupCenterConfiguration();
+            config.SetupConfiguration.AssemblyRegistererConfiguration.DiscoverAssemblyNames.Add( "SqlActorPackage" );
+            config.SetupConfiguration.AssemblyRegistererConfiguration.DiscoverAssemblyNames.Add( "SqlZonePackage" );
+            config.SetupConfiguration.AssemblyRegistererConfiguration.DiscoverAssemblyNames.Add( "CK.Authentication.Local" );
+            config.SetupConfiguration.TypeFilter = typeFilter;
+            config.SetupConfiguration.StObjFinalAssemblyConfiguration.AssemblyName = "InstallDropAndReverseInstall";
+
+            using( var db = SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.Logger ) )
             {
-                context.AssemblyRegistererConfiguration.DiscoverAssemblyNames.Add( "SqlActorPackage" );
-                context.AssemblyRegistererConfiguration.DiscoverAssemblyNames.Add( "SqlZonePackage" );
-                context.AssemblyRegistererConfiguration.DiscoverAssemblyNames.Add( "CK.Authentication.Local" );
-                using( context.Logger.OpenGroup( LogLevel.Trace, "First setup" ) )
+                using( var c = new SqlSetupCenter( TestHelper.Logger, config, db ) )
                 {
-                    SqlSetupCenter c = new SqlSetupCenter( context );
                     c.StObjDependencySorterHookInput = TestHelper.Trace;
                     c.StObjDependencySorterHookOutput = sortedItems => TestHelper.Trace( sortedItems, false );
                     c.SetupDependencySorterHookInput = TestHelper.Trace;
                     c.SetupDependencySorterHookOutput = sortedItems => TestHelper.Trace( sortedItems, false );
                     Assert.That( c.Run( typeFilter ) );
-                    if( typeFilter == null ) CheckBasicAndZone( context.DefaultSqlDatabase );
-                    else CheckBasicOnly( context.DefaultSqlDatabase );
+                    if( typeFilter == null ) CheckBasicAndZone( db );
+                    else CheckBasicOnly( db );
                 }
 
-                Assert.That( context.DefaultSqlDatabase.Connection.ExecuteScalar( "select count(*) from sys.tables where name in ('tActor','tItemVersion')" ), Is.EqualTo( 2 ) );
-                context.DefaultSqlDatabase.SchemaDropAllObjects( "CK", true );
-                context.DefaultSqlDatabase.SchemaDropAllObjects( "CKCore", false );
-                Assert.That( context.DefaultSqlDatabase.Connection.ExecuteScalar( "select count(*) from sys.tables where name in ('tSystem','tItemVersion')" ), Is.EqualTo( 0 ) );
+                Assert.That( db.Connection.ExecuteScalar( "select count(*) from sys.tables where name in ('tActor','tItemVersion')" ), Is.EqualTo( 2 ) );
+                db.SchemaDropAllObjects( "CK", true );
+                db.SchemaDropAllObjects( "CKCore", false );
+                Assert.That( db.Connection.ExecuteScalar( "select count(*) from sys.tables where name in ('tSystem','tItemVersion')" ), Is.EqualTo( 0 ) );
 
-                using( context.Logger.OpenGroup( LogLevel.Trace, "Second setup" ) )
+                using( TestHelper.Logger.OpenGroup( LogLevel.Trace, "Second setup (reverse order)" ) )
                 {
-                    SqlSetupCenter c = new SqlSetupCenter( context );
-                    c.RevertOrderingNames = true;
-                    Assert.That( c.Run( typeFilter ) );
-                    if( typeFilter == null ) CheckBasicAndZone( context.DefaultSqlDatabase );
-                    else CheckBasicOnly( context.DefaultSqlDatabase );
+                    config.SetupConfiguration.RevertOrderingNames = true;
+                    using( var c = new SqlSetupCenter( TestHelper.Logger, config, db ) )
+                    {
+                        Assert.That( c.Run() );
+                        if( typeFilter == null ) CheckBasicAndZone( db );
+                        else CheckBasicOnly( db );
+                    }
                 }
             }
         }

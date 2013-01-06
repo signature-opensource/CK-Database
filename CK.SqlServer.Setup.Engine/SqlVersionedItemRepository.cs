@@ -281,7 +281,7 @@ begin
 	set @ItemType = Upper(@ItemType);
 	select @ItemVersion = t.ItemVersion from CKCore.tItemVersion t where t.FullName = @FullName;
 		
-	-- Temporary: lookup version on extended properties for default context and database.
+	-- Temporary: lookup version on extended properties for default config and database.
 	if @@ROWCOUNT = 0 
 		and (@ItemType = 'TABLE' or @ItemType = 'PROCEDURE' or @ItemType = 'FUNCTION'  or @ItemType = 'VIEW')
 		and SUBSTRING(@FullName,1,5)='[]db^'  

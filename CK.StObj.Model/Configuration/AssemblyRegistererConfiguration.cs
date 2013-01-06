@@ -6,15 +6,15 @@ using System.Text;
 namespace CK.Core
 {
     /// <summary>
-    /// Holds a static configuration that can be used by <see cref="AssemblyRegisterer"/>.
+    /// Holds a configuration that describes which assemblies must be processed.
     /// </summary>
     public class AssemblyRegistererConfiguration
     {
-        HashSet<string> _ignoredAssemblies;
-        List<string> _whiteListNoRecurse;
-        List<string> _whiteList;
+        readonly HashSet<string> _ignoredAssemblies;
+        readonly List<string> _whiteListNoRecurse;
+        readonly List<string> _whiteList;
 
-        string[] _defaultIgnored = new string[]
+        readonly static string[] _defaultIgnored = new string[]
             {
                 "System", "System.Core", "System.Data", "System.Data.DataSetExtensions", "System.Data.Xml", "System.Data.Xml.Linq",
                 "CK.Core", "CK.Setup.Dependency", "CK.Setup.StObj", "CK.Setup.Database", "CK.SqlServer", "CK.Setup",
@@ -48,10 +48,6 @@ namespace CK.Core
         /// Assembly names from this list will be explicitely loaded but their references will NOT be discovered. 
         /// Use <see cref="DiscoverRecurseAssemblyNames"/> to recursively discover referenced assemblies.
         /// </summary>
-        /// <remarks>
-        /// This makes little sense to use this list in conjunction with <see cref="AutomaticAssemblyDiscovering"/> even if assemblies 
-        /// in this list will be loaded after the recursive of currently loaded assemblies.
-        /// </remarks>
         public IList<string> DiscoverAssemblyNames
         {
             get { return _whiteListNoRecurse; }

@@ -13,20 +13,21 @@ namespace CK.Core
     public interface IAmbientContractDispatcher
     {
         /// <summary>
-        /// Dispatchs the type to zero, one or mutiple contexts or keeps it in the programmatically defined contexts.
-        /// Clearing <paramref name="contexts"/> removes the type from the whole setup.
-        /// </summary>
-        /// <param name="t">The type to map.</param>
-        /// <param name="contexts">Contexts into which the type is defined. This set can be changed.</param>
-        void Dispatch( Type t, ISet<string> contexts );
-
-        /// <summary>
         /// This method is called for any class Type that are not <see cref="AmbientContractCollector.IsStaticallyTypedAmbientContract">statically typed</see>
         /// as an ambient contract.
-        /// As long as the implmentation returns true for a Type, any specialization are automatically considered as an Ambient contract.
+        /// As long as the implementation returns true for a Type, any specialization are automatically considered as an Ambient contract.
         /// </summary>
         /// <param name="t">Type that may be considered as an ambient contract.</param>
         /// <returns>Whether this type (and all its specializations) should be considered as an ambient contract.</returns>
         bool IsAmbientContractClass( Type t );
+
+        /// <summary>
+        /// Dispatchs the type to zero, one or mutiple contexts or keeps it in the programmatically defined contexts.
+        /// Clearing <paramref name="contexts"/> removes the type from the whole setup.
+        /// </summary>
+        /// <param name="t">The type to map.</param>
+        /// <param name="contexts">Context names into which the type is defined. This set can be changed.</param>
+        void Dispatch( Type t, ISet<string> contexts );
+
     }
 }

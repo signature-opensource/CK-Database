@@ -26,7 +26,7 @@ namespace CK.Database.Setup
         public SqlFileDiscoverer( ISqlObjectParser sqlObjectParser, IActivityLogger logger )
         {
             if( sqlObjectParser == null ) throw new ArgumentNullException( "sqlObjectBuilder" );
-            if( logger == null ) throw new ArgumentNullException( "logger" );
+            if( logger == null ) throw new ArgumentNullException( "_logger" );
  
             _sqlObjectParser = sqlObjectParser;
             _logger = logger;

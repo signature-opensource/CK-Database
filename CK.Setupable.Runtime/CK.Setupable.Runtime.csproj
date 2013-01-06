@@ -55,6 +55,7 @@
     <Compile Include="Scripts\IScriptCollector.cs" />
     <Compile Include="Scripts\ISetupScript.cs" />
     <Compile Include="Scripts\ResSetupScript.cs" />
+    <Compile Include="Setup\RegisterSetupEventArgs.cs" />
     <Compile Include="Setup\DriverBase.cs" />
     <Compile Include="Setup\DriverEventArgs.cs" />
     <Compile Include="Setup\DriverListExtension.cs" />

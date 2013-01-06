@@ -15,7 +15,7 @@ namespace CK.Setup
     public interface IStObjStructuralConfigurator
     {
         /// <summary>
-        /// Enables configration of items before setup process.
+        /// Enables configuration of items before setup process.
         /// To remove a class from a setup, <see cref="IAmbientContractDispatcher"/> must be used.
         /// </summary>
         /// <param name="o">The item to configure.</param>

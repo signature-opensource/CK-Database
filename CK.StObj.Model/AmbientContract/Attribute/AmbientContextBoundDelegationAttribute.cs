@@ -7,14 +7,14 @@ namespace CK.Core
 {
 
     /// <summary>
-    /// Bound attributes, thanks to the cache, makes delegation for maximal decoupling. This base class can be used
+    /// Bound attributes, thanks to the cache, makes delegation for maximal decoupling easy. This base class can be used
     /// by attributes that must appear on runtime objects to split their implementation into assemblies that will 
     /// be loaded only at setup time.
     /// </summary>
     public abstract class AmbientContextBoundDelegationAttribute : Attribute, IAttributeAmbientContextBound
     {
         /// <summary>
-        /// Initializes a new <see cref="AmbientContextBoundDelegationAttribute"/> that delegates to another object.
+        /// Initializes a new <see cref="AmbientContextBoundDelegationAttribute"/> that delegates its behaviors to another object.
         /// </summary>
         /// <param name="actualAttributeTypeAssemblyQualifiedName">Assembly Qualified Name of the object that will replace this attribute during setup.</param>
         protected AmbientContextBoundDelegationAttribute( string actualAttributeTypeAssemblyQualifiedName )

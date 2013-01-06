@@ -53,11 +53,11 @@ namespace CK.Setup
         /// Logs any error: <see cref="UnexpectedError"/> and any <see cref="DependencySorterResult"/> errors. 
         /// Does nothing if <see cref="IsValid"/> is true.
         /// </summary>
-        /// <param name="logger">The logger to use.</param>
+        /// <param name="_logger">The _logger to use.</param>
         public void LogError( IActivityLogger logger )
         {
             Debug.Assert( SortResult != null || (UnexpectedError != null || CancelReason != null), "(SortResult == null) ==> (UnexpectedError != null || CancelReason != null)" );
-            if( logger == null ) throw new ArgumentNullException( "logger" );
+            if( logger == null ) throw new ArgumentNullException( "_logger" );
             if( !IsValid )
             {
                 if( UnexpectedError != null ) logger.Fatal( UnexpectedError );
