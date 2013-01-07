@@ -25,15 +25,15 @@ namespace CK.Setup.SqlServer
         {
             _connection = FindManager( _sqlProvider, Engine.Logger, Item.SqlDatabase );
             if( _connection == null ) return false;
+            foreach( var name in Item.SqlDatabase.Schemas )
+            {
+                _connection.ExecuteOneScript( String.Format( "if not exists(select 1 from sys.schemas where name = '{0}') begin exec( 'create schema {0}' ); end", name ), Engine.Logger );
+            }
             return base.Init();
         }
 
         protected override bool Install()
         {
-            foreach( var name in Item.SqlDatabase.Schemas )
-            {
-                _connection.ExecuteOneScript( String.Format( "if not exists(select 1 from sys.schemas where name = '{0}') begin exec( 'create schema {0}' ); end", name ), Engine.Logger );
-            }
             return true;
         }
 
