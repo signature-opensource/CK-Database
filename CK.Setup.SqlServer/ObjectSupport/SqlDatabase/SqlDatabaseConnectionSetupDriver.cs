@@ -10,7 +10,7 @@ namespace CK.Setup.SqlServer
     internal class SqlDatabaseConnectionSetupDriver : SetupDriver
     {
         readonly ISqlManagerProvider _sqlProvider;
-        SqlManager _connection;
+        internal protected SqlManager _connection;
 
         public SqlDatabaseConnectionSetupDriver( BuildInfo info, ISqlManagerProvider sqlProvider )
             : base( info )

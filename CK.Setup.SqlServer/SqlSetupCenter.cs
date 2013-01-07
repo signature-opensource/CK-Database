@@ -22,10 +22,10 @@ namespace CK.Setup.SqlServer
             _context = context;
             var versionRepo = new SqlVersionedItemRepository( _context.DefaultSqlDatabase );
             var memory = new SqlSetupSessionMemoryProvider( _context.DefaultSqlDatabase );
-            _center = new SetupCenter( versionRepo, memory,_context.Logger, this );
+            _center = new SetupCenter( versionRepo, memory, _context.Logger, this );
             _sqlFiles = new DependentProtoItemCollector();
             _fileDiscoverer = new SqlFileDiscoverer( new SqlObjectParser(), _context.Logger );
-            
+
             var sqlHandler = new SqlScriptTypeHandler( _context );
             // Registers source "res-sql" first: resource scripts have low priority.
             sqlHandler.RegisterSource( "res-sql" );
@@ -39,9 +39,9 @@ namespace CK.Setup.SqlServer
         /// Gets ors sets whether the ordering for setupable items that share the same rank in the pure dependency graph must be inverted.
         /// Defaults to false. (See <see cref="DependencySorter"/> for more information.)
         /// </summary>
-        public bool RevertOrderingNames 
+        public bool RevertOrderingNames
         {
-            get { return _center.RevertOrderingNames; } 
+            get { return _center.RevertOrderingNames; }
             set { _center.RevertOrderingNames = value; }
         }
 
@@ -70,10 +70,10 @@ namespace CK.Setup.SqlServer
         /// <summary>
         /// Gets or sets a function that will be called with the list of items once all of them are registered.
         /// </summary>
-        public Action<IEnumerable<IDependentItem>> SetupDependencySorterHookInput 
+        public Action<IEnumerable<IDependentItem>> SetupDependencySorterHookInput
         {
             get { return _center.DependencySorterHookInput; }
-            set { _center.DependencySorterHookInput = value; } 
+            set { _center.DependencySorterHookInput = value; }
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace CK.Setup.SqlServer
         public bool Run( Predicate<Type> typeFilter = null )
         {
             var logger = _context.Logger;
-            
+
             StObjCollectorResult result;
             using( logger.OpenGroup( LogLevel.Info, "Collecting objects." ) )
             {
@@ -109,10 +109,10 @@ namespace CK.Setup.SqlServer
                 result = stObjC.GetResult();
                 if( result.HasFatalError ) return false;
             }
-            
+
             IEnumerable<IDependentItem> stObjItems;
             IEnumerable<IDependentItem> sqlObjectsFromFiles;
-            
+
             bool hasError = false;
             using( logger.CatchCounter( a => hasError = true ) )
             {
@@ -132,6 +132,11 @@ namespace CK.Setup.SqlServer
 
         SetupDriver ISetupDriverFactory.CreateDriver( Type driverType, SetupDriver.BuildInfo info )
         {
+            return CreateDriver( driverType, info );
+        }
+
+        protected internal virtual SetupDriver CreateDriver( Type driverType, SetupDriver.BuildInfo info )
+        {
             if( driverType == typeof( SqlObjectSetupDriver ) ) return new SqlObjectSetupDriver( info, _context );
             if( driverType == typeof( SetupDriver ) ) return new SetupDriver( info );
             if( driverType == typeof( SqlDatabaseSetupDriver ) ) return new SqlDatabaseSetupDriver( info );
@@ -140,7 +145,5 @@ namespace CK.Setup.SqlServer
             if( driverType == typeof( SqlTableSetupDriver ) ) return new SqlTableSetupDriver( info );
             return null;
         }
-
-
     }
 }

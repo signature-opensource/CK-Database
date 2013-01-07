@@ -23,7 +23,7 @@ namespace CK.Setup.SqlServer.Tests
                 // Try normally with any existing database if it exists.
                 {
 
-                    SqlSetupCenter c = new SqlSetupCenter( context );
+                    SqlSetupCenter c = SqlSetupCenterFactory.Create( context );
                     Assert.That( c.Run() );
                     Assert.That( context.DefaultSqlDatabase.Connection.ExecuteScalar( "select ResName from CK.tRes where ResId=1" ), Is.EqualTo( "System" ) );
                 }
@@ -33,7 +33,7 @@ namespace CK.Setup.SqlServer.Tests
                     context.DefaultSqlDatabase.SchemaDropAllObjects( "CKCore", false );
                     Assert.That( context.DefaultSqlDatabase.Connection.ExecuteScalar( "select count(*) from sys.tables where name in ('tSystem','tRes','tResDataRawText')" ), Is.EqualTo( 0 ) );
 
-                    SqlSetupCenter c = new SqlSetupCenter( context );
+                    SqlSetupCenter c = SqlSetupCenterFactory.Create( context );
                     c.RevertOrderingNames = true;
                     Assert.That( c.Run() );
                     Assert.That( context.DefaultSqlDatabase.Connection.ExecuteScalar( "select ResName from CK.tRes where ResId=1" ), Is.EqualTo( "System" ) );

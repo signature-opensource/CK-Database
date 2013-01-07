@@ -18,7 +18,7 @@ namespace CK.Setup.SqlServer.Tests
             {
                 using( context.Logger.OpenGroup( LogLevel.Trace, "First setup" ) )
                 {
-                    SqlSetupCenter c = new SqlSetupCenter( context );
+                    SqlSetupCenter c = SqlSetupCenterFactory.Create( context );
                     c.DiscoverFilePackages( TestHelper.GetScriptsFolder( "InstallFromScratch" ) );
                     c.DiscoverSqlFiles( TestHelper.GetScriptsFolder( "InstallFromScratch" ) );
                     Assert.That( c.Run() );
@@ -29,7 +29,7 @@ namespace CK.Setup.SqlServer.Tests
                 
                 using( context.Logger.OpenGroup( LogLevel.Trace, "Second setup" ) )
                 {
-                    SqlSetupCenter c = new SqlSetupCenter( context );
+                    SqlSetupCenter c = SqlSetupCenterFactory.Create( context );
                     c.DiscoverFilePackages( TestHelper.GetScriptsFolder( "InstallFromScratch" ) );
                     c.DiscoverSqlFiles( TestHelper.GetScriptsFolder( "InstallFromScratch" ) );
                     Assert.That( c.Run() );
