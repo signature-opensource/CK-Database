@@ -195,19 +195,29 @@ namespace CK.Core
                 ++_registeredCount;
                 if( newOne.Generalization == null )
                 {
-                    var deepestConcretes = new List<TC>();
-                    newOne.CollectDeepestConcrete<T,TC>( _logger, _assembly, deepestConcretes, _abstractTails, Context );
+                    var deepestConcretes = new List<Tuple<TC,object>>();
+                    newOne.CollectDeepestConcrete<T, TC>( _logger, Context, null, _assembly, deepestConcretes, _abstractTails );
                     if( deepestConcretes.Count == 1 )
                     {
-                        var last = deepestConcretes[0];
-                        var path = last.CreatePathType( new List<TC>() );
+                        var last = deepestConcretes[0].Item1;
+                        var path = new List<TC>();
+                        last.InitializeBottomUp( null, deepestConcretes[0].Item2 );
+                        path.Add( last );
+                        TC spec = last, toInit = last;
+                        while( (toInit = toInit.Generalization) != null )
+                        {
+                            toInit.InitializeBottomUp( spec, null );
+                            path.Add( toInit );
+                            spec = toInit;
+                        }
+                        path.Reverse();
                         _concreteClasses.Add( path );
                         foreach( var m in path ) _mappings.Add( m.AmbientTypeInfo.Type, last );                    
                     }
                     else if( deepestConcretes.Count > 1 )
                     {
                         List<Type> ambiguousPath = new List<Type>() { newOne.Type };
-                        ambiguousPath.AddRange( deepestConcretes.Select( m => m.AmbientTypeInfo.Type ) );
+                        ambiguousPath.AddRange( deepestConcretes.Select( m => m.Item1.AmbientTypeInfo.Type ) );
 
                         if( _classAmbiguities == null ) _classAmbiguities = new List<IReadOnlyList<Type>>();
                         _classAmbiguities.Add( ambiguousPath.ToReadOnlyList() );

@@ -14,7 +14,8 @@ namespace CK.Core
     /// </summary>
     /// <remarks>
     /// This interface does not say anything about the members that are requested. 
-    /// Specialization or implementation may restrict the accepted members.
+    /// Specialization or implementation may restrict the accepted members: <see cref="ICustomAttributeMultiProvider"/> for instance
+    /// is bound to a <see cref="Type"/> (FYI: a Type is a <see cref="MemberInfo"/>).
     /// </remarks>
     public interface ICustomAttributeProvider
     {
@@ -22,24 +23,25 @@ namespace CK.Core
         /// Gets whether an attribute that is assignable to the given <paramref name="attributeType"/> 
         /// exists on the given member.
         /// </summary>
+        /// <param name="m">The member info (can be a <see cref="Type"/>).</param>
         /// <param name="attributeType">Type of requested attributes.</param>
         /// <returns>True if at least one attribute exists.</returns>
         bool IsDefined( MemberInfo m, Type attributeType );
 
         /// <summary>
-        /// Gets a set of attributes that are assignable to the given <see cref="attributeType"/>.
+        /// Gets all of attributes that are assignable to the given <paramref cref="attributeType"/>.
         /// </summary>
         /// <param name="m">The member info (can be a <see cref="Type"/>).</param>
         /// <param name="attributeType">Type of requested attributes.</param>
-        /// <returns>A set of attributes that are guaranteed to be assignable to <paramref name="attributeType"/>.</returns>
+        /// <returns>A set of attributes that are guaranteed to be assignable to <paramref name="attributeType"/>. Can be null or empty.</returns>
         IEnumerable<object> GetCustomAttributes( MemberInfo m, Type attributeType );
 
         /// <summary>
-        /// Strongly typed version.
+        /// Gets all of attributes that are assignable to the given <typeparamref name="T"/>.
         /// </summary>
         /// <typeparam name="T">Type of the attributes.</typeparam>
         /// <param name="m">The member info (can be a <see cref="Type"/>).</param>
-        /// <returns>A set of typed attributes.</returns>
+        /// <returns>A set of typed attributes. Can be null or empty.</returns>
         IEnumerable<T> GetCustomAttributes<T>( MemberInfo m );
     }
 }

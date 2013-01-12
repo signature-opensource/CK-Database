@@ -78,7 +78,6 @@ namespace CK.Core
             get { return _lastGeneratedType ?? AbstractType; }
         }
 
-
         /// <summary>
         /// Simple relaying to mono listener.
         /// </summary>
@@ -104,6 +103,69 @@ namespace CK.Core
             MethodsToImplement = m;
             foreach( var ap in p ) ap._type = this;
             foreach( var am in m ) am._type = this;
+        }
+
+        /// <summary>
+        /// Attempts to create a new <see cref="ImplementableTypeInfo"/>. If the type is marked with <see cref="PreventAutoImplementationAttribute"/> or that one
+        /// of its abstract methods (or properties) misses <see cref="IAttributeAutoImplemented"/> or <see cref="IAutoImplementorMethod"/> (<see cref="IAutoImplementorProperty"/>
+        /// for properties), null is returned.
+        /// </summary>
+        /// <param name="logger">The logger to use.</param>
+        /// <param name="abstractType">Abstract type to automatically implement if possible.</param>
+        /// <param name="attributeProvider">Attributes provider that will be used.</param>
+        /// <returns>An instance of <see cref="ImplementableTypeInfo"/> or null if the type is not automatically implementable.</returns>
+        static public ImplementableTypeInfo CreateImplementableTypeInfo( IActivityLogger logger, Type abstractType, ICustomAttributeProvider attributeProvider )
+        {
+            if( logger == null ) throw new ArgumentNullException( "logger" );
+            if( abstractType == null ) throw new ArgumentNullException( "abstractType" );
+            if( !abstractType.IsAbstract ) throw new ArgumentException( "Type must be abstract.", "abstractType" );
+            if( attributeProvider == null ) throw new ArgumentNullException( "attributeProvider" );
+
+            if( abstractType.IsDefined( typeof( PreventAutoImplementationAttribute ), false ) ) return null;
+
+            var candidates = abstractType.GetMethods( BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public ).Where( m => !m.IsSpecialName && m.IsAbstract );
+            int nbUncovered = 0;
+            List<ImplementableAbstractMethodInfo> methods = new List<ImplementableAbstractMethodInfo>();
+            foreach( var m in candidates )
+            {
+                ++nbUncovered;
+                IAutoImplementorMethod impl = attributeProvider.GetCustomAttributes<IAutoImplementorMethod>( m ).SingleOrDefault();
+                if( impl == null && attributeProvider.IsDefined( m, typeof( IAttributeAutoImplemented ) ) ) impl = EmptyImplementor;
+                if( impl != null )
+                {
+                    --nbUncovered;
+                    methods.Add( new ImplementableAbstractMethodInfo( m, impl ) );
+                }
+            }
+            List<ImplementableAbstractPropertyInfo> properties = new List<ImplementableAbstractPropertyInfo>();
+            var pCandidates = abstractType.GetProperties( BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public );
+            foreach( var p in pCandidates )
+            {
+               
+                MethodInfo mGet = p.GetGetMethod( true );
+                MethodInfo mSet = p.GetSetMethod( true );
+                bool isAbstract = (mGet != null && mGet.IsAbstract) || (mSet != null && mSet.IsAbstract);
+                if( isAbstract )
+                { 
+                    ++nbUncovered;
+                    if( mGet == null || mSet == null || !mGet.IsAbstract || !mSet.IsAbstract )
+                    {
+                        logger.Error( "Property {0}.{1} is not a valid abstract property (both getter and setter must exist and be abstract).", p.DeclaringType.FullName, p.Name );
+                    }
+                    else
+                    {
+                        IAutoImplementorProperty impl = attributeProvider.GetCustomAttributes<IAutoImplementorProperty>( p ).SingleOrDefault();
+                        if( impl == null && attributeProvider.IsDefined( p, typeof( IAttributeAutoImplemented ) ) ) impl = EmptyImplementor;
+                        if( impl != null )
+                        {
+                            --nbUncovered;
+                            properties.Add( new ImplementableAbstractPropertyInfo( p, impl ) );
+                        }
+                    }
+                }
+            }
+            if( nbUncovered > 0 ) return null;
+            return new ImplementableTypeInfo( abstractType, properties.ToReadOnlyList(), methods.ToReadOnlyList() );
         }
 
         /// <summary>
@@ -155,6 +217,7 @@ namespace CK.Core
             return t;
         }
 
+
         private Type DoCreateType( IActivityLogger logger, IDynamicAssembly assembly, Type current, bool finalImplementation )
         {
             TypeAttributes tA = TypeAttributes.Class | TypeAttributes.Public;
@@ -174,7 +237,14 @@ namespace CK.Core
                     {
                         try
                         {
-                            if( !m.Implement( logger, am.Method, b, !finalImplementation ) ) return null;
+                            if( !m.Implement( logger, am.Method, b, !finalImplementation ) )
+                            {
+                                if( finalImplementation )
+                                {
+                                    logger.Error( "Method '{0}.{1}' can not be implemented by its IAutoImplementorMethod.", AbstractType.FullName, am.Method.Name );
+                                }
+                                else EmptyImplementor.Implement( logger, am.Method, b, true );
+                            }
                         }
                         catch( Exception ex )
                         {
@@ -198,7 +268,14 @@ namespace CK.Core
                     {
                         try
                         {
-                            if( !p.Implement( logger, ap.Property, b, !finalImplementation ) ) return null;
+                            if( !p.Implement( logger, ap.Property, b, !finalImplementation ) )
+                            {
+                                if( finalImplementation )
+                                {
+                                    logger.Error( "Property '{0}.{1}' can not be implemented by its IAutoImplementorProperty.", AbstractType.FullName, ap.Property.Name );
+                                }
+                                else EmptyImplementor.Implement( logger, ap.Property, b, true );
+                            }
                         }
                         catch( Exception ex )
                         {
@@ -218,65 +295,6 @@ namespace CK.Core
                 return null;
             }
         }
-
-        /// <summary>
-        /// Attempts to create a new <see cref="ImplementableTypeInfo"/>. If the type is marked with <see cref="PreventAutoImplementationAttribute"/> or that one
-        /// of its abstract methods (or properties) misses <see cref="IAttributeAutoImplemented"/> or <see cref="IAutoImplementorMethod"/> (<see cref="IAutoImplementorProperty"/>
-        /// for properties), null is returned.
-        /// </summary>
-        /// <param name="logger">The logger to use.</param>
-        /// <param name="abstractType">Abstract type to automatically implement if possible.</param>
-        /// <param name="attributeProvider">Attributes provider taht will be used.</param>
-        /// <returns>An instance of <see cref="ImplementableTypeInfo"/> or null if the type is not automatically implementable.</returns>
-        static public ImplementableTypeInfo CreateImplementableTypeInfo( IActivityLogger logger, Type abstractType, ICustomAttributeProvider attributeProvider )
-        {
-            if( logger == null ) throw new ArgumentNullException( "logger" );
-            if( abstractType == null ) throw new ArgumentNullException( "abstractType" );
-            if( !abstractType.IsAbstract ) throw new ArgumentException( "Type must be abstract.", "abstractType" );
-            if( attributeProvider == null ) throw new ArgumentNullException( "attributeProvider" );
-
-            if( abstractType.IsDefined( typeof( PreventAutoImplementationAttribute ), false ) ) return null;
-
-            var candidates = abstractType.GetMethods( BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public ).Where( m => !m.IsSpecialName && m.IsAbstract );
-            int nbUncovered = 0;
-            List<ImplementableAbstractMethodInfo> methods = new List<ImplementableAbstractMethodInfo>();
-            foreach( var m in candidates )
-            {
-                ++nbUncovered;
-                IAutoImplementorMethod impl = attributeProvider.GetCustomAttributes<IAutoImplementorMethod>( m ).SingleOrDefault();
-                if( impl == null && attributeProvider.IsDefined( m, typeof( IAttributeAutoImplemented ) ) ) impl = EmptyImplementor;
-                if( impl != null )
-                {
-                    --nbUncovered;
-                    methods.Add( new ImplementableAbstractMethodInfo( m, impl ) );
-                }
-            }
-            List<ImplementableAbstractPropertyInfo> properties = new List<ImplementableAbstractPropertyInfo>();
-            var pCandidates = abstractType.GetProperties( BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public );
-            foreach( var p in pCandidates )
-            {
-                ++nbUncovered;
-                MethodInfo mGet = p.GetGetMethod( true );
-                MethodInfo mSet = p.GetSetMethod( true );
-                if( mGet == null || mSet == null || !mGet.IsAbstract || !mSet.IsAbstract )
-                {
-                    logger.Error( "Property {0}.{1} is not a valid abstract property (both getter and setter must exist and be abstract).", p.DeclaringType.FullName, p.Name );
-                }
-                else
-                {
-                    IAutoImplementorProperty impl = attributeProvider.GetCustomAttributes<IAutoImplementorProperty>( p ).SingleOrDefault();
-                    if( impl == null && attributeProvider.IsDefined( p, typeof( IAttributeAutoImplemented ) ) ) impl = EmptyImplementor;
-                    if( impl != null )
-                    {
-                        --nbUncovered;
-                        properties.Add( new ImplementableAbstractPropertyInfo( p, impl ) );
-                    }
-                }
-            }
-            if( nbUncovered > 0 ) return null;
-            return new ImplementableTypeInfo( abstractType, properties.ToReadOnlyList(), methods.ToReadOnlyList() );
-        }
-
 
         internal void ImplementorChanged( ImplementableAbstractMethodInfo m )
         {

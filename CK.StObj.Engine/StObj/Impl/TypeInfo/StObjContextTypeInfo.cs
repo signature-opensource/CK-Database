@@ -18,8 +18,8 @@ namespace CK.Setup
     /// </remarks>
     internal abstract class StObjContextTypeInfo : AmbientContextualTypeInfo<StObjTypeInfo,MutableItem>
     {
-        internal StObjContextTypeInfo( StObjTypeInfo t, IAmbientContextualTypeMap context, MutableItem specialization )
-            : base( t, context, specialization )
+        internal StObjContextTypeInfo( StObjTypeInfo t, MutableItem generalization, IContextualTypeMap context )
+            : base( t, generalization, context )
         {
         }
 
@@ -37,9 +37,9 @@ namespace CK.Setup
         /// </summary>
         /// <remarks>
         /// All attributes related to <see cref="ObjectType"/> (either on the type itself or on any of its members) should be retrieved 
-        /// thanks to this method otherwise stateful attributes may not work correctly.
+        /// thanks to this method otherwise stateful attributes will not work correctly.
         /// </remarks>
-        public ICustomAttributeTypeProvider Attributes 
+        public ICustomAttributeMultiProvider Attributes 
         {
             get { return this; } 
         }

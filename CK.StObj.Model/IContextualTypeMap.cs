@@ -31,5 +31,6 @@ namespace CK.Core
         /// <returns>True if <paramref name="t"/> is mapped in this context, false otherwise.</returns>
         bool IsMapped( Type t );
 
+        IContextualRoot<IContextualTypeMap> AllContexts { get; }
     }
 }

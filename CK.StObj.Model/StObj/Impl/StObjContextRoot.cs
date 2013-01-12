@@ -9,16 +9,16 @@ using System.Reflection.Emit;
 
 namespace CK.Core
 {
-    public abstract class StObjContextRoot : IContextualRoot<IContextualStObjMap>
+    public abstract class StObjContextRoot : IStObjMap
     {
         public static readonly string RootContextTypeName = "CK.StObj.GeneratedRootContext";
 
-        public static StObjContextRoot Load( string assemblyName, IActivityLogger logger = null )
+        public static IStObjMap Load( string assemblyName, IActivityLogger logger = null )
         {
             return Load( Assembly.Load( assemblyName ), logger );
         }
 
-        public static StObjContextRoot Load( Assembly a, IActivityLogger logger = null )
+        public static IStObjMap Load( Assembly a, IActivityLogger logger = null )
         {
             if( logger == null ) logger = DefaultActivityLogger.Empty;
             using( logger.OpenGroup( LogLevel.Info, "Loading dynamic '{0}'", a.FullName ) )
@@ -29,7 +29,7 @@ namespace CK.Core
             }
         }
 
-        public static StObjContextRoot LoadOrBuild( IStObjEngineConfiguration config, IActivityLogger logger = null, bool forceBuild = false )
+        public static IStObjMap LoadOrBuild( IStObjEngineConfiguration config, IActivityLogger logger = null, bool forceBuild = false )
         {
             throw new NotImplementedException();
         }

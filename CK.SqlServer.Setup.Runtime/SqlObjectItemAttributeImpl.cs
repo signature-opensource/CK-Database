@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using CK.Core;
 using CK.Setup;
@@ -29,22 +30,27 @@ namespace CK.SqlServer.Setup
 
             SqlPackageBaseItem packageItem = (SqlPackageBaseItem)item;
 
+            HashSet<string> already = new HashSet<string>();
             foreach( var n in Attribute.CommaSeparatedObjectNames.Split( ',' ) )
             {
                 string nTrimmed = n.Trim();
                 if( nTrimmed.Length > 0 )
                 {
-                    var protoObject = LoadProtoItemFromResource( logger, packageItem, nTrimmed );
-                    if( protoObject != null )
+                    if( already.Add( nTrimmed ) )
                     {
-                        SqlObjectItem subItem = protoObject.CreateItem( logger );
-                        ((IMutableSetupItemContainer)item).Children.Add( subItem );
+                        var protoObject = LoadProtoItemFromResource( logger, packageItem, nTrimmed );
+                        if( protoObject != null )
+                        {
+                            SqlObjectItem subItem = protoObject.CreateItem( logger );
+                            ((IMutableSetupItemContainer)item).Children.Add( subItem );
+                        }
                     }
+                    else logger.Warn( "Duplicate name '{0}' in SqlObjectItem attribute of '{1}'.", nTrimmed, item.FullName );
                 }
             }
         }
 
-        static internal SqlObjectProtoItem LoadProtoItemFromResource( IActivityLogger logger, SqlPackageBaseItem packageItem, string objectName )
+        static internal SqlObjectProtoItem LoadProtoItemFromResource( IActivityLogger logger, SqlPackageBaseItem packageItem, string objectName, string expectedItemType = null )
         {
             SqlPackageBase package = packageItem.Object;
             int schemaDot = objectName.IndexOf( '.' );
@@ -69,7 +75,7 @@ namespace CK.SqlServer.Setup
                 text = packageItem.ResourceLocation.GetString( fileName, false );
                 if( text == null )
                 {
-                    logger.Error( "Resource for '{0}' not found (tried '{1}' and '{2}').", objectName, fileName, failed );
+                    logger.Error( "Resource '{0}' of '{3}' not found (tried '{1}' and '{2}').", objectName, fileName, failed, packageItem.FullName );
                     return null;
                 }
             }
@@ -82,14 +88,19 @@ namespace CK.SqlServer.Setup
             SqlObjectProtoItem protoObject = SqlObjectParser.Create( logger, packageItem, text );
             if( protoObject != null )
             {
-                if( protoObject.ObjectName != objectName )
+                if( expectedItemType != null  && protoObject.ItemType != expectedItemType )
                 {
-                    logger.Error( "Resource '{0}' contains the definition of '{1}'. Names must match.", fileName, protoObject.Name );
+                    logger.Error( "Resource '{0}' of '{1}' is a '{2}' whereas a '{3}' is expected.", fileName, packageItem.FullName, protoObject.ItemType, expectedItemType );
+                    protoObject = null;
+                }
+                else if( protoObject.ObjectName != objectName )
+                {
+                    logger.Error( "Resource '{0}' of '{2}' contains the definition of '{1}'. Names must match.", fileName, protoObject.Name, packageItem.FullName );
                     protoObject = null;
                 }
                 else if( protoObject.Schema.Length > 0 && protoObject.Schema != externalSchema )
                 {
-                    logger.Error( "Resource '{0}' defines the {1} in the schema '{2}' instead of '{3}'.", fileName, protoObject.ItemType, protoObject.Schema, externalSchema );
+                    logger.Error( "Resource '{0}' of '{4}' defines the {1} in the schema '{2}' instead of '{3}'.", fileName, protoObject.ItemType, protoObject.Schema, externalSchema, packageItem.FullName );
                     protoObject = null;
                 }
             }

@@ -313,9 +313,9 @@ namespace CK.Setup
             return null;
         }
 
-        protected internal override TC CreateContextTypeInfo<T, TC>( IAmbientContextualTypeMap context, TC specialization )
+        protected internal override TC CreateContextTypeInfo<T, TC>( TC generalization, IContextualTypeMap context )
         {
-            return (TC)(object)(new MutableItem( this, context, (MutableItem)((object)specialization) ));
+            return (TC)(object)(new MutableItem( this, (MutableItem)((object)generalization), context ));
         }
 
     }

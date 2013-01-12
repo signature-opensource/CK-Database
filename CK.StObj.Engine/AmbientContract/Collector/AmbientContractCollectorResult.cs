@@ -102,7 +102,7 @@ namespace CK.Core
         /// <summary>
         /// Gets the type mapper for the multiple existing contexts.
         /// </summary>
-        public IAmbientTypeMap Mappings
+        public IContextualRoot<IContextualTypeMap> Mappings
         {
             get { return _mappings; }
         }

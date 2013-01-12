@@ -156,6 +156,8 @@ namespace CK.Setup
 
         private bool DoRun( object[] items, ISetupSessionMemory m )
         {
+            bool hasError = false;
+            using( _logger.CatchCounter( nbError => hasError = true ) )
             using( SetupEngine engine = CreateEngine( m ) )
             {
                 using( _logger.OpenGroup( LogLevel.Info, "Register step." ) )
@@ -187,7 +189,7 @@ namespace CK.Setup
                     if( !engine.RunSettle() ) return false;
                 }
             }
-            return true;
+            return !hasError;
         }
 
         static IEnumerable<T> OfTypeRecurse<T>( IEnumerable e )

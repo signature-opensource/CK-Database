@@ -62,7 +62,7 @@ namespace CK.StObj.Engine.Tests
                 // Null as directory => use CK.StObj.Model folder.
                 r.GenerateFinalAssembly( TestHelper.Logger, null, "TEST_SimpleEmit" );
 
-                StObjContextRoot c = StObjContextRoot.Load( "TEST_SimpleEmit", TestHelper.Logger );
+                IStObjMap c = StObjContextRoot.Load( "TEST_SimpleEmit", TestHelper.Logger );
                 Assert.That( typeof( B ).IsAssignableFrom( c.Default.ToLeafType( typeof( A ) ) ) );
                 Assert.That( c.Default.ToLeafType( typeof( IC ) ), Is.SameAs( typeof( D ) ) );
                 Assert.That( c.Default.Obtain<B>().Auto(3), Is.EqualTo( 0 ) );
@@ -147,7 +147,7 @@ namespace CK.StObj.Engine.Tests
                     Assert.That( typeof( A ).GetProperty( "StObjPower" ).GetValue( theA, null ), Is.EqualTo( "This is the A property." ) );
                 }
                 r.GenerateFinalAssembly( TestHelper.Logger, TestHelper.BinFolder, "TEST_ConstructCalled" );
-                StObjContextRoot c = StObjContextRoot.Load( "TEST_ConstructCalled", TestHelper.Logger );
+                IStObjMap c = StObjContextRoot.Load( "TEST_ConstructCalled", TestHelper.Logger );
                 {
                     Assert.That( c.Default.Obtain<B>().TheA, Is.SameAs( c.Default.Obtain<A>() ).And.SameAs( c.Default.Obtain<ASpec>() ) );
                     Assert.That( c.Default.Obtain<ASpec>().TheB, Is.SameAs( c.Default.Obtain<B>() ) );

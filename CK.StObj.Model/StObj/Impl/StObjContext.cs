@@ -23,6 +23,16 @@ namespace CK.Core
                 get { return _name; }
             }
 
+            IContextualRoot<IContextualTypeMap> IContextualTypeMap.AllContexts 
+            {
+                get { return _root; } 
+            }
+            
+            public IStObjMap AllContexts
+            {
+                get { return _root; }
+            }
+            
             public int MappedTypeCount
             {
                 get { return _mappings.Count; }

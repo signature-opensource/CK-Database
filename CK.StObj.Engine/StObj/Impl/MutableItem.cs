@@ -69,7 +69,7 @@ namespace CK.Setup
             public List<PropertySetter> PostBuildProperties;
         }
 
-        readonly LeafData _leafData;
+        LeafData _leafData;
 
         // This is available at any level thanks to the ordering of ambient properties
         // and the ListAmbientProperty that exposes only the start of the list: only the 
@@ -126,12 +126,20 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Called from Specialization up to Generalization.
+        /// Called from Generalization to Specialization.
         /// </summary>
-        internal MutableItem( StObjTypeInfo objectType, IAmbientContextualTypeMap context, MutableItem specialization )
-            : base(objectType, context, specialization ) 
+        internal MutableItem( StObjTypeInfo objectType, MutableItem generalization, IContextualTypeMap context )
+            : base( objectType, generalization, context ) 
         {
             Debug.Assert( context != null );
+            // These 2 lists can be initialized here (even if they can not work until InitializeBottomUp is called).
+            _ambientPropertiesEx = new ListAmbientProperty( this );
+            _ambientContractsEx = new ListAmbientContract( this );
+        }
+
+        internal override void InitializeBottomUp( MutableItem specialization, object abstractTypeInfo )
+        {
+            base.InitializeBottomUp( specialization, abstractTypeInfo );
             if( Specialization != null )
             {
                 Debug.Assert( Specialization.Generalization == this );
@@ -141,14 +149,13 @@ namespace CK.Setup
             {
                 var ap = AmbientTypeInfo.AmbientProperties.Select( p => new MutableAmbientProperty( this, p ) ).ToList();
                 var ac = new MutableAmbientContract[AmbientTypeInfo.AmbientContracts.Count];
-                for( int i = ac.Length-1; i >= 0; --i )
+                for( int i = ac.Length - 1; i >= 0; --i )
                 {
                     ac[i] = new MutableAmbientContract( this, AmbientTypeInfo.AmbientContracts[i] );
                 }
                 _leafData = new LeafData( this, ap, ac );
+                _leafData.ImplementableTypeInfo = (ImplementableTypeInfo)abstractTypeInfo;
             }
-            _ambientPropertiesEx = new ListAmbientProperty( this );
-            _ambientContractsEx = new ListAmbientContract( this );
         }
 
         #region Configuration
@@ -232,7 +239,7 @@ namespace CK.Setup
 
         void ConfigureFromAttributes( IActivityLogger logger )
         {
-            foreach( var c in GetCustomAttributes<IStObjStructuralConfigurator>() )
+            foreach( var c in GetAllCustomAttributes<IStObjStructuralConfigurator>() )
             {
                 c.Configure( logger, this );
             }

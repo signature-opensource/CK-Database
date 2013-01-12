@@ -10,8 +10,8 @@ namespace CK.Core
     /// <summary>
     /// Exposes a multi contextual type mapping.
     /// </summary>
-    public class AmbientTypeMap<CT> : IAmbientTypeMap
-        where CT : class, IAmbientContextualTypeMap
+    public class AmbientTypeMap<CT> : IContextualRoot<IContextualTypeMap>
+        where CT : class, IContextualTypeMap
     {
         readonly ListDictionary _contextMappers;
         readonly ContextCollection _contextsEx;
@@ -28,7 +28,7 @@ namespace CK.Core
             public bool Contains( object item )
             {
                 CT c = item as CT;
-                return c != null ? c.Owner == _a : false;
+                return c != null ? c.AllContexts == _a : false;
             }
 
             public int Count
@@ -86,26 +86,26 @@ namespace CK.Core
             return (CT)c;
         }
 
-        protected virtual IAmbientContextualTypeMap CreateContext<T, TC>( IActivityLogger logger, string context )
+        protected virtual IContextualTypeMap CreateContext<T, TC>( IActivityLogger logger, string context )
             where T : AmbientTypeInfo
             where TC : AmbientContextualTypeInfo<T, TC>
         {
-            return (IAmbientContextualTypeMap)new AmbientContextualTypeMap<T, TC>( this, context );
+            return (IContextualTypeMap)new AmbientContextualTypeMap<T, TC>( this, context );
         }
 
         #region IAmbientTypeMap Members
 
-        IAmbientContextualTypeMap IContextualRoot<IAmbientContextualTypeMap>.Default
+        IContextualTypeMap IContextualRoot<IContextualTypeMap>.Default
         {
             get { return Default; }
         }
 
-        IReadOnlyCollection<IAmbientContextualTypeMap> IContextualRoot<IAmbientContextualTypeMap>.Contexts
+        IReadOnlyCollection<IContextualTypeMap> IContextualRoot<IContextualTypeMap>.Contexts
         {
             get { return Contexts; }
         }
 
-        IAmbientContextualTypeMap IContextualRoot<IAmbientContextualTypeMap>.FindContext( string context )
+        IContextualTypeMap IContextualRoot<IContextualTypeMap>.FindContext( string context )
         {
             return FindContext( context );
         }

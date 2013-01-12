@@ -9,10 +9,8 @@ using System.Reflection;
 namespace CK.SqlServer.Setup
 {
     [AttributeUsage( AttributeTargets.Method, AllowMultiple = false, Inherited = false )]
-    public class SqlProcedureAttribute : AmbientContextBoundDelegationAttribute, IAttributeAutoImplemented
+    public class SqlProcedureAttribute : AmbientContextBoundDelegationAttribute
     {
-        MethodInfo _method;
-
         public SqlProcedureAttribute( string procedureName )
             : base( "CK.SqlServer.Setup.SqlProcedureAttributeImpl, CK.SqlServer.Setup.Runtime" )
         {

@@ -53,8 +53,6 @@
     <Compile Include="AmbientContract\Collector\AmbientContractCollector.cs" />
     <Compile Include="AmbientContract\Collector\AmbientContractCollectorContextualResult.cs" />
     <Compile Include="AmbientContract\AmbientContextualAttributesCache.cs" />
-    <Compile Include="AmbientContract\IAmbientContextualTypeMap.cs" />
-    <Compile Include="AmbientContract\IAmbientTypeMap.cs" />
     <Compile Include="AmbientContract\AmbientContractInterfaceKey.cs" />
     <Compile Include="AmbientContract\AmbientContextualTypeMap.cs" />
     <Compile Include="AmbientContract\AmbientTypeMap.cs" />

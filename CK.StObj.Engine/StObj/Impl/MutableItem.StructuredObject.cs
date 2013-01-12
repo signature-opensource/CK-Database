@@ -7,19 +7,27 @@ using CK.Core;
 
 namespace CK.Setup
 {
+
     partial class MutableItem
     {
-        protected internal override bool AbstractTypeCanBeInstanciated( IActivityLogger logger, DynamicAssembly assembly )
+        protected internal override bool AbstractTypeCanBeInstanciated( IActivityLogger logger, DynamicAssembly assembly, out object abstractTypeInfo )
         {
             Debug.Assert( Specialization == null && Type.IsAbstract );
-            Debug.Assert( _leafData.ImplementableTypeInfo == null, "Only called once." );
-            _leafData.ImplementableTypeInfo = ImplementableTypeInfo.CreateImplementableTypeInfo( logger, Type, this );
-            if( _leafData.ImplementableTypeInfo != null )
+
+            List<ICustomAttributeProvider> combined = new List<ICustomAttributeProvider>();
+            var p = this;
+            do { combined.Add( p ); p = p.Generalization; } while( p != null );
+
+            ImplementableTypeInfo autoImpl = ImplementableTypeInfo.CreateImplementableTypeInfo( logger, Type, new CustomAttributeProviderComposite( combined ) );
+            if( autoImpl != null && autoImpl.CreateTypeFromCurrent( logger, assembly ) != null )
             {
-                return _leafData.ImplementableTypeInfo.CreateTypeFromCurrent( logger, assembly ) != null;
+                abstractTypeInfo = autoImpl;
+                return true;
             }
+            abstractTypeInfo = null;
             return false;
         }
+
 
         public object CreateStructuredObject( IActivityLogger logger )
         {

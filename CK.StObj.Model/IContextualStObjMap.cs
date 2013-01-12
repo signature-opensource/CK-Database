@@ -17,9 +17,13 @@ namespace CK.Core
         /// <summary>
         /// Gets the structured object or null if no mapping exists.
         /// </summary>
-        /// <param name="t">Key type (that supports IAmbientContract).</param>
+        /// <param name="t">Key type (that must be an Ambient Contract).</param>
         /// <returns>Structured object instance or null if the type has not been mapped.</returns>
         object Obtain( Type t );
 
+        /// <summary>
+        /// Access to all contexts.
+        /// </summary>
+        new IStObjMap AllContexts { get; }
     }
 }

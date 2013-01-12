@@ -19,6 +19,5 @@ namespace CK.SqlServer.Setup
 
         public MethodInfo MethodInfo { get; set; }
 
-
     }
 }

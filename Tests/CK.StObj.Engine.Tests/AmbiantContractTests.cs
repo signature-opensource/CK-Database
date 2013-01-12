@@ -64,7 +64,7 @@ namespace CK.Setup.Tests
 
     public class AmbientRoot : AmbientTypeMap<ContextForTypes>
     {
-        protected override IAmbientContextualTypeMap CreateContext<T,TC>( IActivityLogger logger, string context )
+        protected override IContextualTypeMap CreateContext<T,TC>( IActivityLogger logger, string context )
         {
             return new ContextForTypes( this, context );
         }
@@ -72,7 +72,7 @@ namespace CK.Setup.Tests
 
     public class ContextForTypes : AmbientContextualTypeMap<TypeInfo, TypeInsideContext>
     {
-        public ContextForTypes( IAmbientTypeMap owner, string c )
+        public ContextForTypes( IContextualRoot<IContextualTypeMap> owner, string c )
             : base( owner, c )
         {
         }
@@ -85,16 +85,16 @@ namespace CK.Setup.Tests
         {
         }
 
-        protected override TC CreateContextTypeInfo<T, TC>( IAmbientContextualTypeMap context, TC specialization )
+        protected override TC CreateContextTypeInfo<T, TC>( TC generalization, IContextualTypeMap context )
         {
-            return (TC)(object)(new TypeInsideContext( this, context, (TypeInsideContext)(object)specialization ) );
+            return (TC)(object)(new TypeInsideContext( this, (TypeInsideContext)(object)generalization, context ));
         }
     }
 
     public class TypeInsideContext : AmbientContextualTypeInfo<TypeInfo, TypeInsideContext>
     {
-        public TypeInsideContext( TypeInfo t, IAmbientContextualTypeMap context, TypeInsideContext specialization )
-            : base( t, context, specialization )
+        public TypeInsideContext( TypeInfo t, TypeInsideContext generalization, IContextualTypeMap context )
+            : base( t, generalization, context )
         {
         }
     }
@@ -330,7 +330,7 @@ namespace CK.Setup.Tests
             CheckLocalMappings( r.Mappings );
         }
 
-        static void CheckLocalMappings( IAmbientContextualTypeMap actual, params Tuple<Type, Type>[] expected )
+        static void CheckLocalMappings( IContextualTypeMap actual, params Tuple<Type, Type>[] expected )
         {
             foreach( var e in expected )
             {

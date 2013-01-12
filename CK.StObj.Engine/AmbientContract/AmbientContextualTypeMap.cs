@@ -11,15 +11,15 @@ namespace CK.Core
     /// <summary>
     ///
     /// </summary>
-    public class AmbientContextualTypeMap<T, TC> : IAmbientContextualTypeMap
+    public class AmbientContextualTypeMap<T, TC> : IContextualTypeMap
         where T : AmbientTypeInfo
         where TC : AmbientContextualTypeInfo<T, TC>
     {
         Dictionary<object,TC> _map;
         string _context;
-        IAmbientTypeMap _owner;
+        IContextualRoot<IContextualTypeMap> _owner;
 
-        internal protected AmbientContextualTypeMap( IAmbientTypeMap owner, string context )
+        internal protected AmbientContextualTypeMap( IContextualRoot<IContextualTypeMap> owner, string context )
         {
             Debug.Assert( context != null );
             _context = context;
@@ -27,7 +27,7 @@ namespace CK.Core
             _owner = owner;
         }
 
-        public IAmbientTypeMap Owner
+        public IContextualRoot<IContextualTypeMap> AllContexts
         {
             get { return _owner; }
         }

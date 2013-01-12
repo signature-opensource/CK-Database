@@ -36,14 +36,11 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void AbstractDetection()
         {
-            {
-                StObjCollector collector = new StObjCollector( TestHelper.Logger );
-                collector.RegisterClass( typeof( A2 ) );
-                StObjCollectorResult result = collector.GetResult();
-                Assert.That( result.HasFatalError, Is.False );
-                Assert.That( result.Default.StObjMap.Obtain<A>(), Is.Not.Null );
-            }
-
+            StObjCollector collector = new StObjCollector( TestHelper.Logger );
+            collector.RegisterClass( typeof( A2 ) );
+            StObjCollectorResult result = collector.GetResult();
+            Assert.That( result.HasFatalError, Is.False );
+            Assert.That( result.Default.StObjMap.Obtain<A>(), Is.Not.Null.And.AssignableTo<A2>() );
         }
 
     }

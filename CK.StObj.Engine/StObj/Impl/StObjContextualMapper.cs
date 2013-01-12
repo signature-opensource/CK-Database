@@ -19,6 +19,12 @@ namespace CK.Setup
             return (IStObj)base.ToLeaf( t );
         }
 
+        IStObjMap IContextualStObjMap.AllContexts
+        {
+            get { return (IStObjMap)base.AllContexts; }
+        }
+
+
         IStObjRuntime IContextualStObjMapRuntime.ToLeaf( Type t )
         {
             return (IStObjRuntime)base.ToLeaf( t );

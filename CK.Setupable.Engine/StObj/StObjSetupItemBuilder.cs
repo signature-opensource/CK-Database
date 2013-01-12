@@ -59,7 +59,7 @@ namespace CK.Setup
                     // Calls any attributes that is a IStObjSetupConfigurator with the StObjSetupData.
                     // ApplyAttributesConfigurator
                     {
-                        var all = data.StObj.Attributes.GetCustomAttributes<IStObjSetupConfigurator>();
+                        var all = data.StObj.Attributes.GetAllCustomAttributes<IStObjSetupConfigurator>();
                         foreach( IStObjSetupConfigurator c in all )
                         {
                             c.ConfigureDependentItem( _logger, data );
@@ -213,7 +213,7 @@ namespace CK.Setup
                     initSource = "Attributes";
                     // ApplyAttributesDynamicInitializer
                     {
-                        var all = o.Attributes.GetCustomAttributes<IStObjSetupDynamicInitializer>();
+                        var all = o.Attributes.GetAllCustomAttributes<IStObjSetupDynamicInitializer>();
                         foreach( IStObjSetupDynamicInitializer init in all )
                         {
                             init.DynamicItemInitialize( _logger, item, o );

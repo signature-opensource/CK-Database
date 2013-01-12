@@ -24,9 +24,9 @@ namespace CK.Setup
         /// </summary>
         /// <remarks>
         /// All attributes related to <see cref="ObjectType"/> (either on the type itself or on any of its members) should be retrieved 
-        /// thanks to this method otherwise stateful attributes may not work correctly.
+        /// thanks to this method otherwise stateful attributes will not work correctly.
         /// </remarks>
-        ICustomAttributeTypeProvider Attributes { get; }
+        ICustomAttributeMultiProvider Attributes { get; }
 
         /// <summary>
         /// Gets kind of structure object for this StObj. It can be a <see cref="DependentItemKindSpec.Item"/>, 

@@ -14,8 +14,11 @@ namespace CK.Core
         /// <param name="logger">The logger to use.</param>
         /// <param name="m">The method to implement.</param>
         /// <param name="b">The type builder to use.</param>
-        /// <param name="isVirtual">True to implement a virtual method. False to seal it.</param>
-        /// <returns>False to indicate that an error occured and that continuing to generate type is useless.</returns>
+        /// <param name="isVirtual">True if a virtual method must be implemented. False if it must be sealed.</param>
+        /// <returns>
+        /// True if the method is actually implemented, false if, for any reason, another implementation (empty for instance) must be generated 
+        /// (for instance, whenver the method is not ready to be implemented). Any error must be logged into the <paramref name="logger"/>.
+        /// </returns>
         bool Implement( IActivityLogger logger, MethodInfo m, TypeBuilder b, bool isVirtual );
     }
 

@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2010
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.Setupable.Engine", "CK.Setupable.Engine\CK.Setupable.Engine.csproj", "{D3C700E1-3546-437C-9B96-1F867A539B6A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.Setupable.Engine.Tests", "Tests\CK.Setupable.Engine.Tests\CK.Setupable.Engine.Tests.csproj", "{93FFB017-2D16-440F-A7A9-55F637944C8F}"
@@ -40,6 +40,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.StObj.Engine.Tests", "Te
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared Items", "Shared Items", "{9DEAD117-3101-4DED-9FCC-8AA28CF4F34C}"
 	ProjectSection(SolutionItems) = preProject
+		Conception.docx = Conception.docx
 		SharedAssemblyInfo.cs = SharedAssemblyInfo.cs
 	EndProjectSection
 EndProject

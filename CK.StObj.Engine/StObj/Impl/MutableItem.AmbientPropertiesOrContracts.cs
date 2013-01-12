@@ -9,7 +9,6 @@ namespace CK.Setup
 {
     partial class MutableItem
     {
-
         /// <summary>
         /// Used to expose only the first items of the ultimate leaf MutableAmbientProperty list.
         /// The number of MutableAmbientProperty exposed is the number of AmbientPropertyInfo in the AmbientProperties list of the StObjTypeInfo of

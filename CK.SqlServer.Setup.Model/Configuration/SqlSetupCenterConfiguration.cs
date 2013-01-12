@@ -24,6 +24,7 @@ namespace CK.SqlServer.Setup
             _databases = new List<SqlDatabaseDescriptor>();
             _ckPackageDirectories = new List<string>();
             _sqlFileDirectories = new List<string>();
+            UseIndependantAppDomain = true;
         }
 
         /// <summary>
@@ -67,6 +68,13 @@ namespace CK.SqlServer.Setup
             get { return _sqlFileDirectories; }
         }
 
+        /// <summary>
+        /// Gets or sets whether the setup phasis must be executed in a new AppDomain.
+        /// Defaults to true.
+        /// </summary>
+        public bool UseIndependantAppDomain { get; set; }
+
+
         #region IStObjEngineConfiguration members
 
         string IStObjEngineConfiguration.BuilderAssemblyQualifiedName
@@ -80,5 +88,6 @@ namespace CK.SqlServer.Setup
         }
 
         #endregion
+
     }
 }

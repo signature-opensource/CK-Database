@@ -93,10 +93,13 @@ namespace CK.Core
             }
         }
 
-        internal bool CollectDeepestConcrete<T, TC>( IActivityLogger logger, DynamicAssembly assembly, List<TC> lastConcretes, List<Type> abstractTails, IAmbientContextualTypeMap context )
+        internal bool CollectDeepestConcrete<T, TC>( IActivityLogger logger, IContextualTypeMap context, TC generalization, DynamicAssembly assembly, List<Tuple<TC,object>> lastConcretes, List<Type> abstractTails )
             where T : AmbientTypeInfo
             where TC : AmbientContextualTypeInfo<T,TC>
         {
+            // Creates the TC associated to T in context here: it may be unused but this is required
+            // in order for AbstractTypeCanBeInstanciated to be able to use Generalization information (attributes cache).
+            var ct = CreateContextTypeInfo<T, TC>( generalization, context );
             Debug.Assert( context != null );
             bool concreteBelow = false;
             AmbientTypeInfo c = _firstChild;
@@ -104,20 +107,20 @@ namespace CK.Core
             {
                 if( c.MutableFinalContexts.Contains( context.Context ) )
                 {
-                    concreteBelow |= c.CollectDeepestConcrete<T,TC>( logger, assembly, lastConcretes, abstractTails, context );
+                    concreteBelow |= c.CollectDeepestConcrete<T, TC>( logger, context, ct, assembly, lastConcretes, abstractTails );
                 }
                 c = c._nextSibling;
             }
             if( !concreteBelow )
             {
-                var ct = CreateContextTypeInfo<T,TC>( context, null );
-                if( Type.IsAbstract && (assembly == null || !ct.AbstractTypeCanBeInstanciated( logger, assembly )) )
+                object abstractTypeInfo = null;
+                if( Type.IsAbstract && (assembly == null || !ct.AbstractTypeCanBeInstanciated( logger, assembly, out abstractTypeInfo )) )
                 {
                     abstractTails.Add( Type );
                 }
                 else
                 {
-                    lastConcretes.Add( ct );
+                    lastConcretes.Add( Tuple.Create( ct, abstractTypeInfo ) );
                     concreteBelow = true;
                 }
             }
@@ -130,13 +133,13 @@ namespace CK.Core
         /// <typeparam name="T">This specialized AmbientTypeInfo.</typeparam>
         /// <typeparam name="TC">Type of associated contextualized specialization.</typeparam>
         /// <param name="context">Context name for which the associated contextualized specialization must be instanciated.</param>
-        /// <param name="specialization">Specialization if any.</param>
+        /// <param name="generalization">Generalization if any (null for root of Types path).</param>
         /// <returns>Associated contextualized type information.</returns>
-        internal virtual protected TC CreateContextTypeInfo<T, TC>( IAmbientContextualTypeMap context, TC specialization )
+        internal virtual protected TC CreateContextTypeInfo<T, TC>( TC generalization, IContextualTypeMap context )
             where T : AmbientTypeInfo
             where TC : AmbientContextualTypeInfo<T, TC>
         {
-            return (TC)new AmbientContextualTypeInfo<T,TC>( (T)this, context, specialization );
+            return (TC)new AmbientContextualTypeInfo<T,TC>( (T)this, generalization, context );
         }
 
         static void ProcessContextAttributes<T>( Type t, Func<string, bool> action ) where T : IAddOrRemoveContextAttribute

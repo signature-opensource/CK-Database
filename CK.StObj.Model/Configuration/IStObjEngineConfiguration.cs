@@ -18,7 +18,12 @@ namespace CK.Core
         /// this <see cref="IStObjEngineConfiguration"/>.
         /// </summary>
         string BuilderAssemblyQualifiedName { get; }
-        
+
+        /// <summary>
+        /// Gets or sets whether the setup phasis must be executed in a new AppDomain. 
+        /// </summary>
+        bool UseIndependantAppDomain { get; set; }
+
         /// <summary>
         /// Gets the configuration related to final assembly generation.
         /// </summary>
