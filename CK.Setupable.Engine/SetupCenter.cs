@@ -180,7 +180,7 @@ namespace CK.Setup
                 {
                     if( !engine.RunInit() ) return false;
                 }
-                using( _logger.OpenGroup( LogLevel.Info, "Run step." ) )
+                using( _logger.OpenGroup( LogLevel.Info, "Install step." ) )
                 {
                     if( !engine.RunInstall() ) return false;
                 }

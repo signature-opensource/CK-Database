@@ -34,12 +34,14 @@ namespace CK.Core
             throw new NotImplementedException();
         }
 
-        public static StObjContextRoot Build( IStObjEngineConfiguration config, IActivityLogger logger = null )
+        public static IStObjMap Build( IStObjEngineConfiguration config, IActivityLogger logger = null )
         {
             if( config == null ) throw new ArgumentNullException( "config" );
             if( logger == null ) logger = DefaultActivityLogger.Empty;
 
-            Activator.CreateInstance( SimpleTypeFinder.WeakDefault.ResolveType( config.BuilderAssemblyQualifiedName, true ), logger, config );
+            /// 
+
+            object builder = Activator.CreateInstance( SimpleTypeFinder.WeakDefault.ResolveType( config.BuilderAssemblyQualifiedName, true ), logger, config );
 
             return null;
         }

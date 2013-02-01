@@ -19,7 +19,6 @@ namespace CK.SqlServer.Setup
                 | RegexOptions.IgnoreCase
                 | RegexOptions.ExplicitCapture );
 
-
         IDependentProtoItem ISqlObjectParser.Create( IActivityLogger logger, IContextLocNaming externalName, string text )
         {
             return SqlObjectParser.Create( logger, externalName, text, null );
@@ -45,7 +44,7 @@ namespace CK.SqlServer.Setup
                 logger.Error( "Expected Sql object of type '{0}' but found a {1}.", expectedType, type );
                 return null;
             }
-            
+
             string header = text.Substring( 0, mSqlObject.Index );
             string textAfterName = text.Substring( mSqlObject.Index + mSqlObject.Length );
 
@@ -78,7 +77,7 @@ namespace CK.SqlServer.Setup
                 logger.Error( "-- Version=X.Y.Z (with Major.Minor.Build) must appear first in header." );
             }
             string databaseOrSchema = mSqlObject.Groups[2].Value;
-            string schema = mSqlObject.Groups[3].Value;            
+            string schema = mSqlObject.Groups[3].Value;
             string name = mSqlObject.Groups[4].Value;
             if( schema.Length == 0 && databaseOrSchema.Length > 0 )
             {

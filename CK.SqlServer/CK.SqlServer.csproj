@@ -57,6 +57,11 @@
     <Compile Include="SqlConnectionProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlHelper.cs" />
+    <Compile Include="SqlTokenizer\SqlIdentifiers.cs" />
+    <Compile Include="SqlTokenizer\SourceLocation.cs" />
+    <Compile Include="SqlTokenizer\SqlTokeniser.cs" />
+    <Compile Include="SqlTokenizer\SqlTokeniserError.cs" />
+    <Compile Include="SqlTokenizer\SqlTokeniserToken.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
