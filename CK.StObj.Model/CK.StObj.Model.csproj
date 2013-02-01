@@ -60,6 +60,7 @@
     <Compile Include="AutoImplementor\PreventAutoImplementationAttribute.cs" />
     <Compile Include="Configuration\AssemblyRegistererConfiguration.cs" />
     <Compile Include="Configuration\IStObjEngineConfiguration.cs" />
+    <Compile Include="Configuration\StObjBuilderAppDomainConfiguration.cs" />
     <Compile Include="Configuration\StObjFinalAssemblyConfiguration.cs" />
     <Compile Include="IStObjMap.cs" />
     <Compile Include="IContextualTypeMap.cs" />
