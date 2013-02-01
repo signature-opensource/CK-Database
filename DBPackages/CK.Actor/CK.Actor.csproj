@@ -35,7 +35,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="CK.Actor.ck" />
+    <None Include="CK.Actor.ck">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Sql\CK.sActorCreate.sql" />
