@@ -28,7 +28,6 @@ namespace CK.SqlServer
         bool			_skipComments;
         bool            _comparisonContext;
 
-        long            _integerValue;
         string          _identifierValue;
 
         StringBuilder	_buffer;
@@ -452,36 +451,6 @@ namespace CK.SqlServer
             return true;
         }
 
-        /// <summary>
-        /// Reads a number and forwards head on success. 
-        /// May return <see cref="Double.NaN"/> and does not forward the head if current token is not a number (<see cref="IsNumber"/> is false)
-        /// or if the double can not be parsed by <see cref="Double.TryParse"/>. 
-        /// </summary>
-        /// <returns>The number or <see cref="Double.NaN"/> if <see cref="IsNumber"/> is false.</returns>
-        public bool IsDouble( out double d )
-        {
-            d = 0;
-            if( (_token & (int)SqlTokeniserToken.IsNumber) == 0 ) return false;
-            d = ReadDouble();
-            return true;
-        }
-
-        /// <summary>
-        /// Reads the current number and forwards head. Throws an <see cref="InvalidOperationException"/> if <see cref="IsNumber"/> is false.
-        /// </summary>
-        /// <returns>The number. It can be <see cref="Double.NaN"/> or <see cref="Double.PositiveInfinity"/>.</returns>
-        public double ReadDouble()
-        {
-            Double d;
-            if( _token == (int)SqlTokeniserToken.Float )
-            {
-                Double.TryParse( _buffer.ToString(), NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out d );
-            }
-            else d = _integerValue;
-            Forward();
-            return d;
-        }
-
         private string ReadBuffer()
         {
             Debug.Assert( _token > 0 );
@@ -556,12 +525,12 @@ namespace CK.SqlServer
 
         static private bool IsIdentifierStartChar( int c )
         {
-            return c == '_' || c == '$' || c == '@' || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+            return c == '@' || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
         }
 
         static private bool IsIdentifierChar( int c )
         {
-            return IsIdentifierStartChar( c ) || (c >= '0' && c <= '9');
+            return IsIdentifierStartChar( c ) || c == '_' || c == '$' || (c >= '0' && c <= '9');
         }
 
         static private int FromHexDigit( int c )
@@ -691,7 +660,7 @@ namespace CK.SqlServer
             if( ic == -1 ) return (int)SqlTokeniserError.EndOfInput;
             switch( ic )
             {
-                case '\'': return ReadString( ic );
+                case '\'': return ReadString( false );
                 case '=': return _comparisonContext ? (int)SqlTokeniserToken.Equal : (int)SqlTokeniserToken.Assign;
                 case '*': return Read( '=' ) ? (int)SqlTokeniserToken.MultAssign : (int)SqlTokeniserToken.Mult;
                 case '!':
@@ -724,12 +693,13 @@ namespace CK.SqlServer
                         return ReadNumber( ic, true );
                     }
                     return (int)SqlTokeniserToken.Dot;
+
+                case '[': return ReadQuotedIdentifier( ']', SqlTokeniserToken.IdentifierQuotedBracket );
+                case '"': return ReadQuotedIdentifier( '"', SqlTokeniserToken.IdentifierQuoted );
                 case '{': return (int)SqlTokeniserToken.OpenCurly;
                 case '}': return (int)SqlTokeniserToken.CloseCurly;
                 case '(': return (int)SqlTokeniserToken.OpenPar;
-                case ')': return (int)SqlTokeniserToken.ClosePar;
-                case '[': return (int)SqlTokeniserToken.OpenSquare;
-                case ']': return (int)SqlTokeniserToken.CloseSquare;
+                case ')': return (int)SqlTokeniserToken.ClosePar;               
                 case ';': return (int)SqlTokeniserToken.SemiColon;
                 case ',': return (int)SqlTokeniserToken.Comma;
                 case '/':
@@ -762,45 +732,38 @@ namespace CK.SqlServer
             }
         }
 
+        /// <summary>
+        /// Quoted "horrible identifier" or [horrible identifier].
+        /// </summary>
+        /// <param name="end">Ending char.</param>
+        /// <param name="token">Token type.</param>
+        /// <returns>Token or error value.</returns>
+        private int ReadQuotedIdentifier( char end, SqlTokeniserToken token )
+        {
+            _buffer.Length = 0;
+            int ic;
+            while( (ic = Read()) != -1 )
+            {
+                if( ic == end ) return (int)token;
+                _buffer.Append( (char)ic );
+            }
+            return (int)SqlTokeniserError.ErrorIdentifierUnterminated;
+        }
+
         private int ReadAllKindOfNumber( int firstDigit )
         {
             Debug.Assert( firstDigit >= 0 && firstDigit <= 9 );
-            if( firstDigit == 0 && Read( 'x' ) ) return ReadHexNumber();
-            return ReadNumber( firstDigit, false );
-        }
-
-        private int ReadHexNumber()
-        {
-            ulong uValue;
-            int nbD = IsPositiveHexNumber( out uValue, -1 );
-            if( nbD == 0 ) return (int)SqlTokeniserError.ErrorNumberUnterminatedValue;
-            _integerValue = (int)uValue;
-            return (int)SqlTokeniserToken.HexNumber;
-        }
-
-        /// <summary>
-        /// Returns the number of processed digits.
-        /// </summary>
-        private int IsPositiveHexNumber( out ulong val, int maxNbDigit )
-        {
-            unchecked
+            if( firstDigit == 0 && Read( 'x' ) )
             {
-                int nbDigit = 0;
-                val = 0;
-                int vHex;
-                while( (vHex = FromHexDigit( Peek() )) >= 0 )
+                _buffer.Length = 0;
+                _buffer.Append( "0x" );
+                while( FromHexDigit( Peek() ) >= 0 )
                 {
-                    Debug.Assert( vHex < 16 );
-                    if( nbDigit < 16 )
-                    {
-                        val *= 16;
-                        val += (uint)vHex;
-                    }
-                    Read();
-                    if( ++nbDigit == maxNbDigit ) break;
+                    _buffer.Append( (char)Read() );
                 }
-                return nbDigit;
+                return (int)SqlTokeniserToken.Binary;
             }
+            return ReadNumber( firstDigit, false );
         }
 
         /// <summary>
@@ -813,7 +776,6 @@ namespace CK.SqlServer
             int nextRequired = 0;
             _buffer.Length = 0;
             if( hasDot ) _buffer.Append( "0." );
-            else _integerValue = firstDigit;
             _buffer.Append( (char)(firstDigit+'0') );
             for( ; ; )
             {
@@ -822,7 +784,6 @@ namespace CK.SqlServer
                 {
                     Read();
                     _buffer.Append( (char)ic );
-                    if( !hasDot ) _integerValue = _integerValue * 10 + (ic - '0');
                     nextRequired = 0;
                     continue;
                 }
@@ -844,93 +805,38 @@ namespace CK.SqlServer
                         Read();
                         hasDot = true;
                         _buffer.Append( '.' );
-                        // Dot can be the last character. 
-                        // Use 2 to remember that dot has been found: we consider it as an integer value.
-                        nextRequired = 2;
+                        // Dot can be the last character. It is considered as a decimal.
                         continue;
                     }
                     return (int)SqlTokeniserError.ErrorNumberIdentifierStartsImmediately;
                 }
 
                 if( nextRequired == 1 ) return (int)SqlTokeniserError.ErrorNumberUnterminatedValue;
-                // To be valid, the number must be followed by an operator, a punctuation or a statement separator (the ';')
-                // or a line ending (recall that awful javascript "feature": lines without ending ';' 
-                // are automagically corrected if 'needed').
-                // We do not handle all cases here, except the 45DD.
                 if( IsIdentifierStartChar( ic ) ) return (int)SqlTokeniserError.ErrorNumberIdentifierStartsImmediately;
                 break;
             }
             if( hasDot )
             {
-                // Consider number terminated by dot as integer.
-                if( nextRequired != 2 ) return (int)SqlTokeniserToken.Float;
+                if( hasExp ) return (int)SqlTokeniserToken.Float;
+                return (int)SqlTokeniserToken.Decimal;
             }
             return (int)SqlTokeniserToken.Integer;
         }
 
-        private int ReadString( int quote )
+        private int ReadString( bool unicode )
         {
             _buffer.Length = 0;
-            ulong icu;
             for( ; ; )
             {
                 int ic = Read();
                 if( ic == -1 ) return (int)SqlTokeniserError.ErrorStringUnterminated;
-                if( ic == quote ) break;
-                else if( ic == '\\' )
+                if( ic == '\'' )
                 {
-                    ic = Read();
-                    switch( ic )
-                    {
-                        case '"': break;
-                        case '\'': break;
-                        case '\\': break;
-                        case 'r': ic = '\r'; break;
-                        case 'n': ic = '\n'; break;
-                        case 't': ic = '\t'; break;
-                        case 'b': ic = '\b'; break;
-                        case 'v': ic = '\v'; break;
-                        case 'f': ic = '\f'; break;
-                        case 'u':
-                            // Reads an Unicode Char like \uXXXX
-                            icu = 0;
-                            unchecked
-                            {
-                                int vHex;
-                                for( int x = 0; x < 4; ++x )
-                                {
-                                    vHex = FromHexDigit( Peek() );
-                                    if( vHex < 0 ) return (int)SqlTokeniserError.ErrorStringEmbeddedUnicodeValue;
-                                    Debug.Assert( vHex < 16 );
-                                    icu *= 16;
-                                    icu += (uint)vHex;
-                                    Read();
-                                }
-                            }
-                            ic = (int)icu;
-                            break;
-                        case 'x':
-                            // Allow only \xNN (2 digits): this is the norm.
-                            if( IsPositiveHexNumber( out icu, 2 ) != 2 ) return (int)SqlTokeniserError.ErrorStringEmbeddedHexaValue;
-                            ic = (int)icu;
-                            break;
-                        case '\r':  // Read transforms Line Separator '\u2028' and Paragraph Separator '\u2029' in '\n' 
-                            // New JS (1.5?) supports the \ as a line continuation: we can just continue our loop...
-                            // If a \n follows, we eat it. If no '\n' follows, this is an error.
-                            if( !Read( '\n' ) ) return (int)SqlTokeniserError.ErrorStringUnexpectedCRInLineContinuation;
-                            ic = '\n';
-                            break;
-                        case '\n':
-                            // Read transforms Line Separator '\u2028' and Paragraph Separator '\u2029' in '\n' 
-                            // New JS (1.5?) supports the \ as a line continuation: we can just continue our loop...
-                            break;
-                        case -1: return (int)SqlTokeniserError.ErrorStringUnterminated;
-                        default: break;
-                    }
+                    if( Peek() != '\'' ) return unicode ? (int)SqlTokeniserToken.UnicodeString : (int)SqlTokeniserToken.String;
+                    Read();
                 }
                 _buffer.Append( (char)ic );
             }
-            return (int)SqlTokeniserToken.String;
         }
 
         private int ReadIdentifier( int ic )

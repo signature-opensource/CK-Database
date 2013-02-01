@@ -6,32 +6,11 @@ namespace CK.SqlServer
     /// Tokens definition.
     /// </summary>
     /// <remarks>
-    /// 
-    /// From http://msdn.microsoft.com/en-us/library/z3ks45k7%28v=vs.94%29.aspx
-    /// 
-    /// Operator                                    Description
-    ///
-    /// 15  . [ (                                   Field access, array indexing, function calls, and expression grouping
-    /// 14  ++ -- - ~ ! delete new typeof void      Unary operators, return data type, object creation, undefined values
-    /// 13  * / %                                   Multiplication, division, modulo division
-    /// 12  + - +                                   Addition, subtraction, string concatenation
-    /// 11  &lt;&lt; &gt;&gt; &gt;&gt;&gt;          Bit shifting
-    /// 10  &lt; &lt;= &gt; &gt;= instanceof        Less than, less than or equal, greater than, greater than or equal, instanceof
-    ///  9  == != === !==                           Equality, inequality, strict equality, and strict inequality
-    ///  8  &amp;                                   Bitwise AND
-    ///  7  ^                                       Bitwise XOR
-    ///  6  |                                       Bitwise OR
-    ///  5  &amp;&amp;                              Logical AND
-    ///  4  ||                                      Logical OR
-    ///  3  ?                                       Conditional (?:)
-    ///  2  = OP=                                   Assignment, assignment with operation (such as += and &=)
-    ///  1  ,                                       Multiple evaluation
-    ///  
     /// There are only 8 operator precedence levels in T-SQL (http://msdn.microsoft.com/en-us/library/ms190276.aspx).
     /// 
     /// Operator                                                            Description
     ///
-    /// 10       . [ (                                                      Dotted names, identifiers, calls, and expression grouping
+    /// 10       . (                                                        Dotted names, expression grouping.
     /// 9        ~                                                          Bitwise NOT
     /// 8        * /  %                                                     Multiplication, division, modulo division.
     /// 7        + - &amp; ^ |                                              + (for "Positive", "Add" and "Concatenate"), - (for "Negative" and "Subtract"), Bitwise AND, Bitwise Exclusive OR, and Bitwise OR.
@@ -54,14 +33,11 @@ namespace CK.SqlServer
         ErrorInvalidChar = SqlTokeniserError.ErrorInvalidChar,
         ErrorStringMask = SqlTokeniserError.ErrorStringMask,
         ErrorNumberMask = SqlTokeniserError.ErrorNumberMask,
-        ErrorRegexMask = SqlTokeniserError.ErrorRegexMask,
+        ErrorIdentifierMask = SqlTokeniserError.ErrorIdentifierMask,
+        ErrorIdentifierUnterminated = SqlTokeniserError.ErrorIdentifierUnterminated,
         ErrorStringUnterminated = SqlTokeniserError.ErrorStringUnterminated,
-        ErrorStringEmbeddedUnicodeValue = SqlTokeniserError.ErrorStringEmbeddedUnicodeValue,
-        ErrorStringEmbeddedHexaValue = SqlTokeniserError.ErrorStringEmbeddedHexaValue,
-        ErrorStringUnexpectedCRInLineContinuation = SqlTokeniserError.ErrorStringUnexpectedCRInLineContinuation,
         ErrorNumberUnterminatedValue = SqlTokeniserError.ErrorNumberUnterminatedValue,
         ErrorNumberValue = SqlTokeniserError.ErrorNumberValue,
-        ErrorRegexUnterminated = SqlTokeniserError.ErrorRegexUnterminated,
         #endregion
 
         #region Operator precedence bits n°25 to 21 (levels from 0 to 15).
@@ -326,12 +302,12 @@ namespace CK.SqlServer
         #endregion
 
         /// <summary>
-        /// String token like 'a string'.
+        /// String literal like 'string'.
         /// </summary>
         String = IsString | 1,
 
         /// <summary>
-        /// Unicode string like N'a string'.
+        /// Unicode string literal like N'string'.
         /// </summary>
         UnicodeString = IsString | 2,
 
@@ -342,22 +318,24 @@ namespace CK.SqlServer
 
         /// <summary>
         /// Integer constants like 1894 or 2.
-        /// Bits are integer 0 and 1.
         /// </summary>
+        /// <remarks>
+        /// Bits are integer 0 and 1.
+        /// </remarks>
         Integer = IsNumber | 2,
 
         /// <summary>
-        /// Decimal constants like 1894.1204 or 2.0.
+        /// Decimal literals like 1894.1204 or 2.0.
         /// </summary>
         Decimal = IsNumber | 3,
  
         /// <summary>
-        /// Float and real constants like 101.5E5 or 0.5e-2.
+        /// Float and real literals like 101.5E5 or .5e-2.
         /// </summary>
         Float = IsNumber | 4,
 
         /// <summary>
-        /// Money constants like $12 or $542023.14.
+        /// Money literals like $12 or $542023.14.
         /// </summary>
         Money = IsNumber | 5,
 
@@ -367,9 +345,24 @@ namespace CK.SqlServer
         Identifier = IsIdentifier | 1,
 
         /// <summary>
+        /// Identifier "Quoted token".
+        /// </summary>
+        IdentifierQuoted = IsIdentifier | 1,
+
+        /// <summary>
+        /// Identifier [Quoted token].
+        /// </summary>
+        IdentifierQuotedBracket = IsIdentifier | 1,
+
+        /// <summary>
         /// Keyword token.
         /// </summary>
         Keyword = IsIdentifier | 2,
+
+        /// <summary>
+        /// Keyword token.
+        /// </summary>
+        Variable = IsIdentifier | 3,
 
         /// <summary>
         /// Star comment: /*...*/
@@ -387,7 +380,6 @@ namespace CK.SqlServer
         SemiColon = IsPunctuation | 3,
 
         RoundBracket = IsBracket | 1,
-        SquareBracket = IsBracket | 2,
         CurlyBracket = IsBracket | 4,
         OpenBracket = IsBracket | 8,
         CloseBracket = IsBracket | 16,
@@ -396,8 +388,6 @@ namespace CK.SqlServer
         ClosePar = RoundBracket | CloseBracket,
         OpenCurly = CurlyBracket | OpenBracket,
         CloseCurly = CurlyBracket | CloseBracket,
-        OpenSquare = SquareBracket | OpenBracket | OpLevel10,
-        CloseSquare = SquareBracket | CloseBracket,
 
     }
 

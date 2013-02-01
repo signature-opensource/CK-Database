@@ -41,26 +41,20 @@ namespace CK.SqlServer
         ErrorNumberMask = ErrorMask | (1 << 27),
 
         /// <summary>
-        /// Error regex mask.
+        /// Error Identifer mask.
         /// </summary>
-        ErrorRegexMask = ErrorMask | (1 << 26),
+        ErrorIdentifierMask = ErrorMask | (1 << 26),
 
         /// <summary>
         /// Whenever a non terminated string is encountered.
         /// </summary>
         ErrorStringUnterminated = ErrorStringMask | 1,
+
         /// <summary>
-        /// Bad Unicode value embedded in a string.
+        /// Whenever a non terminated identifier is encountered.
         /// </summary>
-        ErrorStringEmbeddedUnicodeValue = ErrorStringMask | 2,
-        /// <summary>
-        /// Bad hexadecimal value embedded in a string.
-        /// </summary>
-        ErrorStringEmbeddedHexaValue = ErrorStringMask | 4,
-        /// <summary>
-        /// Line continuation \ followed by a \r without \n after it.
-        /// </summary>
-        ErrorStringUnexpectedCRInLineContinuation = ErrorStringMask | 8,
+        ErrorIdentifierUnterminated = ErrorIdentifierMask | 1,
+
 
         /// <summary>
         /// Unterminated number.
@@ -75,9 +69,5 @@ namespace CK.SqlServer
         /// </summary>
         ErrorNumberIdentifierStartsImmediately = ErrorNumberMask | 4,
 
-        /// <summary>
-        /// Whenever a non terminated regular expression.
-        /// </summary>
-        ErrorRegexUnterminated = ErrorRegexMask | 1,
     }
 }
