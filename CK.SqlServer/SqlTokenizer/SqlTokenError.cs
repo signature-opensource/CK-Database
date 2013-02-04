@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CK.SqlServer
 {
-    public enum SqlTokeniserError
+    public enum SqlTokenError
     {
         None = 0,
 

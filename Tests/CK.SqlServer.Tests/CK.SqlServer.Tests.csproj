@@ -55,6 +55,7 @@
     <Compile Include="CallProcedureAutoImplementor.cs" />
     <Compile Include="MultiScriptTests.cs" />
     <Compile Include="SimpleScriptTagHandlerTests.cs" />
+    <Compile Include="SqlTokenizerTest.cs" />
     <Compile Include="TestHelper.cs" />
     <Compile Include="ErrorHandlingTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -76,6 +77,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="TSqlParsing\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />

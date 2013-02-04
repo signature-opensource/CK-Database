@@ -44,7 +44,7 @@ namespace CK.Setup
                 foreach( var oneScript in scripts )
                 {
                     using( scripts.Count > 1
-                            ? Logger.OpenGroup( LogLevel.Trace, "Executing script n°{0}/{1}.", numScript, scripts.Count )
+                            ? Logger.OpenGroup( LogLevel.Trace, "Executing script n°{0}/{1}.", numScript + 1, scripts.Count )
                             : Logger.OpenGroup( LogLevel.Trace, "Executing '{0}'.", scriptName ) )
                     {
                         bool ok;

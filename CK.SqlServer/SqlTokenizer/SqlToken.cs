@@ -22,22 +22,22 @@ namespace CK.SqlServer
     ///
     /// </remarks>
     [Flags]
-    public enum SqlTokeniserToken
+    public enum SqlToken
     {
         None = 0,
 
         #region JSParserError values bits n°31 to 26.
-        IsErrorOrEndOfInput = SqlTokeniserError.IsErrorOrEndOfInput,
-        EndOfInput = SqlTokeniserError.EndOfInput,
-        ErrorMask = SqlTokeniserError.ErrorMask,
-        ErrorInvalidChar = SqlTokeniserError.ErrorInvalidChar,
-        ErrorStringMask = SqlTokeniserError.ErrorStringMask,
-        ErrorNumberMask = SqlTokeniserError.ErrorNumberMask,
-        ErrorIdentifierMask = SqlTokeniserError.ErrorIdentifierMask,
-        ErrorIdentifierUnterminated = SqlTokeniserError.ErrorIdentifierUnterminated,
-        ErrorStringUnterminated = SqlTokeniserError.ErrorStringUnterminated,
-        ErrorNumberUnterminatedValue = SqlTokeniserError.ErrorNumberUnterminatedValue,
-        ErrorNumberValue = SqlTokeniserError.ErrorNumberValue,
+        IsErrorOrEndOfInput = SqlTokenError.IsErrorOrEndOfInput,
+        EndOfInput = SqlTokenError.EndOfInput,
+        ErrorMask = SqlTokenError.ErrorMask,
+        ErrorInvalidChar = SqlTokenError.ErrorInvalidChar,
+        ErrorStringMask = SqlTokenError.ErrorStringMask,
+        ErrorNumberMask = SqlTokenError.ErrorNumberMask,
+        ErrorIdentifierMask = SqlTokenError.ErrorIdentifierMask,
+        ErrorIdentifierUnterminated = SqlTokenError.ErrorIdentifierUnterminated,
+        ErrorStringUnterminated = SqlTokenError.ErrorStringUnterminated,
+        ErrorNumberUnterminatedValue = SqlTokenError.ErrorNumberUnterminatedValue,
+        ErrorNumberValue = SqlTokenError.ErrorNumberValue,
         #endregion
 
         #region Operator precedence bits n°25 to 21 (levels from 0 to 15).
@@ -258,7 +258,7 @@ namespace CK.SqlServer
         #endregion
 
         LogicalOrSetCount = 10,
-        #region IsLogicalOrSet: not, or, and, all, any, between, exists, in, some and like.
+        #region IsLogicalOrSet: not, or, and, all, any (same as "some"), between, exists, in and like.
         /// <summary>
         /// NOT operator.
         /// </summary>
@@ -276,7 +276,7 @@ namespace CK.SqlServer
         /// </summary>
         All = IsLogicalOrSet | OpLevel03 | 4,
         /// <summary>
-        /// ANY operator.
+        /// ANY operator (synonym of SOME).
         /// </summary>
         Any = IsLogicalOrSet | OpLevel03 | 5,
         /// <summary>
@@ -292,13 +292,9 @@ namespace CK.SqlServer
         /// </summary>
         In = IsLogicalOrSet | OpLevel03 | 8,
         /// <summary>
-        /// SOME operator.
-        /// </summary>
-        Some = IsLogicalOrSet | OpLevel03 | 9,
-        /// <summary>
         /// LIKE operator.
         /// </summary>
-        Like = IsLogicalOrSet | OpLevel03 | 10,
+        Like = IsLogicalOrSet | OpLevel03 | 9,
         #endregion
 
         /// <summary>
@@ -312,7 +308,8 @@ namespace CK.SqlServer
         UnicodeString = IsString | 2,
 
         /// <summary>
-        /// Binary string constant like 0x12Ef or 0x69048AEFDD010E.
+        /// Binary string constant like 0x12Ef or 0x69048AEFDD010E
+        /// is a kind of Number.
         /// </summary>
         Binary = IsNumber | 1,
 
@@ -347,22 +344,22 @@ namespace CK.SqlServer
         /// <summary>
         /// Identifier "Quoted token".
         /// </summary>
-        IdentifierQuoted = IsIdentifier | 1,
+        IdentifierQuoted = IsIdentifier | 2,
 
         /// <summary>
         /// Identifier [Quoted token].
         /// </summary>
-        IdentifierQuotedBracket = IsIdentifier | 1,
+        IdentifierQuotedBracket = IsIdentifier | 3,
 
         /// <summary>
         /// Keyword token.
         /// </summary>
-        Keyword = IsIdentifier | 2,
+        Keyword = IsIdentifier | 4,
 
         /// <summary>
-        /// Keyword token.
+        /// Variable token.
         /// </summary>
-        Variable = IsIdentifier | 3,
+        Variable = IsIdentifier | 5,
 
         /// <summary>
         /// Star comment: /*...*/
