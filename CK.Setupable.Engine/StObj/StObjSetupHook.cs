@@ -19,11 +19,11 @@ namespace CK.Setup
             _center = center;
             _config = config;
             _configurator = internalRelay;
-            _center.RegisterSetupEvent += new EventHandler<RegisterSetupEventArgs>( center_RegisterSetupEvent );
-            _center.SetupEvent += new EventHandler<SetupEventArgs>( _center_SetupEvent );
+            _center.RegisterSetupEvent += new EventHandler<RegisterSetupEventArgs>( OnRegisterSetupEvent );
+            _center.SetupEvent += new EventHandler<SetupEventArgs>( OnSetupEvent );
         }
 
-        void center_RegisterSetupEvent( object sender, RegisterSetupEventArgs e )
+        void OnRegisterSetupEvent( object sender, RegisterSetupEventArgs e )
         {
             var logger = _center.Logger;
             
@@ -67,7 +67,7 @@ namespace CK.Setup
             _resultToGenerate = result;
         }
 
-        void _center_SetupEvent( object sender, SetupEventArgs e )
+        void OnSetupEvent( object sender, SetupEventArgs e )
         {
             if( e.Step == SetupStep.Success )
             {

@@ -5,6 +5,9 @@ using System.Text;
 using NUnit.Framework;
 using CK.Core;
 using CK.Setup;
+using System.IO;
+using System.CodeDom.Compiler;
+using System.Reflection;
 
 namespace CK.StObj.Engine.Tests
 {
@@ -165,5 +168,8 @@ namespace CK.StObj.Engine.Tests
         {
             new CConstructCalledAndStObjProperties().DoTest();
         }
+
+
+
     }
 }

@@ -6,6 +6,7 @@ using System.Reflection;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Reflection.Emit;
+using System.Threading;
 
 namespace CK.Core
 {
@@ -34,15 +35,89 @@ namespace CK.Core
             throw new NotImplementedException();
         }
 
-        public static StObjContextRoot Build( IStObjEngineConfiguration config, IActivityLogger logger = null )
+        /// <summary>
+        /// Find the common ancestor of all the directory in the list. All the path list MUST be rooted.
+        /// Return null if non.
+        /// </summary>
+        /// <param name="dirlist">List of directory to analyze</param>
+        /// <returns>The common full path</returns>
+        public static string FindCommonAncestor( IList<string> dirlist )
+        {
+            var orderedList = dirlist.OrderBy( x => x );
+            DirectoryInfo commonDirectory = orderedList.Select( x => new DirectoryInfo( x ) ).FirstOrDefault();
+            string common = null;
+            while( common == null && commonDirectory != null )
+            {
+                if( orderedList.All( x => x.StartsWith( commonDirectory.FullName ) ) )
+                {
+                    common = commonDirectory.FullName;
+                }
+                else
+                {
+                    commonDirectory = commonDirectory.Parent;
+                }
+            }
+            return common;
+        }
+
+        public static bool Build( IStObjEngineConfiguration config, IActivityLogger logger = null, Action<AppDomain> appDomainHook = null )
         {
             if( config == null ) throw new ArgumentNullException( "config" );
             if( logger == null ) logger = DefaultActivityLogger.Empty;
 
-            Activator.CreateInstance( SimpleTypeFinder.WeakDefault.ResolveType( config.BuilderAssemblyQualifiedName, true ), logger, config );
+            if( config.StObjBuilderAppDomainConfiguration.UseIndependentAppDomain )
+            {
+                IList<string> dirPath = new List<string>( config.StObjBuilderAppDomainConfiguration.ProbePaths );
 
-            return null;
+                var result = FindCommonAncestor( dirPath );
+                if( result == null )
+                    throw new ApplicationException( string.Format( "All the probe paths must have a common ancestor. No ancestor can be found with : {0}", string.Join( "\n", dirPath ) ) );
+
+
+                AppDomainSetup setup = AppDomain.CurrentDomain.SetupInformation;
+                setup.ApplicationBase = result;
+                //setup.DisallowApplicationBaseProbing = true; 
+                setup.PrivateBinPathProbe = "*";
+                setup.PrivateBinPath = string.Join( ";", config.StObjBuilderAppDomainConfiguration.ProbePaths );
+                var appdomain = AppDomain.CreateDomain( "StObjContextRoot.Build.IndependentAppDomain", null, setup );
+                if( appDomainHook != null ) appDomainHook( appdomain );
+
+                using( Semaphore semaphore = new Semaphore( 0, 1, "local" ) )
+                {
+                    appdomain.SetData( "config", config );
+                    appdomain.SetData( "logger", logger );
+                    appdomain.DoCallBack( new CrossAppDomainDelegate( LaunchRunCrossDomain ) );
+                    semaphore.WaitOne();
+                    return true;
+                }
+            }
+            else
+            {
+                return LaunchRun( config, logger );
+            }
+            //return false;
         }
+
+        private static bool LaunchRun( IStObjEngineConfiguration config, IActivityLogger logger )
+        {
+            IStObjBuilder runner = (IStObjBuilder)Activator.CreateInstance( SimpleTypeFinder.WeakDefault.ResolveType( config.BuilderAssemblyQualifiedName, true ), logger, config );
+            runner.Run();
+            return true;
+        }
+
+        private static void LaunchRunCrossDomain()
+        {
+            Semaphore semaphore = Semaphore.OpenExisting( "local" );
+            try
+            {
+                LaunchRun( (IStObjEngineConfiguration)AppDomain.CurrentDomain.GetData( "config" ), (IActivityLogger)AppDomain.CurrentDomain.GetData( "logger" ) );
+            }
+            finally
+            {
+                if( semaphore != null ) semaphore.Release();
+            }
+        }
+
 
         readonly StObjContext _defaultContext;
         readonly StObjContext[] _contexts;

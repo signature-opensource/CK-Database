@@ -62,6 +62,7 @@
     <Compile Include="Configuration\IStObjEngineConfiguration.cs" />
     <Compile Include="Configuration\StObjBuilderAppDomainConfiguration.cs" />
     <Compile Include="Configuration\StObjFinalAssemblyConfiguration.cs" />
+    <Compile Include="IStObjBuilder.cs" />
     <Compile Include="IStObjMap.cs" />
     <Compile Include="IContextualTypeMap.cs" />
     <Compile Include="IContextualStObjMap.cs" />

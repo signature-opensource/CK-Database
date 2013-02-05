@@ -59,6 +59,7 @@
     <Compile Include="AutoImplementationTests.cs" />
     <Compile Include="AmbientPropertiesPropagationTests.cs" />
     <Compile Include="DifferentKindOfProperties.cs" />
+    <Compile Include="DynamicGenerationAppDomainTests.cs" />
     <Compile Include="DynamicGenerationTests.cs" />
     <Compile Include="SchmurtzProperty.cs" />
     <Compile Include="StObjPropertiesTests.cs" />
