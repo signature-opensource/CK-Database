@@ -11,6 +11,7 @@ namespace CK.Setup
         readonly AssemblyRegistererConfiguration _regConf;
         readonly List<Type> _regTypeList;
         readonly StObjFinalAssemblyConfiguration _finalAssemblyConf;
+        readonly StObjBuilderAppDomainConfiguration _builderAppdomainConf;
 
         /// <summary>
         /// Initializes a new <see cref="SetupCenterConfiguration"/>.
@@ -20,6 +21,7 @@ namespace CK.Setup
             _regConf = new AssemblyRegistererConfiguration();
             _regTypeList = new List<Type>();
             _finalAssemblyConf = new StObjFinalAssemblyConfiguration();
+            _builderAppdomainConf = new StObjBuilderAppDomainConfiguration();
         }
 
         /// <summary>
@@ -36,6 +38,14 @@ namespace CK.Setup
         public StObjFinalAssemblyConfiguration StObjFinalAssemblyConfiguration
         {
             get { return _finalAssemblyConf; }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="StObjBuilderAppDomainConfiguration"/> that describes the appdomain options during setup phasis.
+        /// </summary>
+        public StObjBuilderAppDomainConfiguration StObjBuilderAppDomainConfiguration
+        {
+            get { return _builderAppdomainConf; }
         }
 
         /// <summary>

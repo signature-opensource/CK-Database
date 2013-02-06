@@ -14,6 +14,7 @@ namespace CK.StObj.Engine.Tests
         static ActivityLoggerConsoleSink _console;
         static string _scriptFolder;
         static string _binFolder;
+        static string _tempFolder;
 
         static TestHelper()
         {
@@ -120,6 +121,11 @@ namespace CK.StObj.Engine.Tests
             get { if( _binFolder == null ) InitalizePaths(); return _binFolder; }
         }
 
+        public static string TempFolder
+        {
+            get { if( _tempFolder == null ) InitalizePaths(); return _tempFolder; }
+        }
+
         public static string GetScriptsFolder( string testName )
         {
             return Path.Combine( FolderScript, testName );
@@ -135,10 +141,14 @@ namespace CK.StObj.Engine.Tests
 
             // => Debug/
             _binFolder = p = Path.GetDirectoryName( p );
+            
             // => Tests/
             p = Path.GetDirectoryName( p );
+            _tempFolder = Path.Combine( p, "Temp" ); // => Output/Tests/Temp
+            
             // => Output/
             p = Path.GetDirectoryName( p );
+            
             // => CK-Database/
             p = Path.GetDirectoryName( p );
             // ==> Tests/CK.StObj.Engine.Tests/Scripts
