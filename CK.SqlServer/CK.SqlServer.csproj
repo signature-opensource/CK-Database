@@ -57,6 +57,24 @@
     <Compile Include="SqlConnectionProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlHelper.cs" />
+    <Compile Include="SqlParser\SqlCommentExpr.cs" />
+    <Compile Include="SqlParser\SqlParameterListExpr.cs" />
+    <Compile Include="SqlParser\SqlTypeExpr.cs" />
+    <Compile Include="SqlParser\SqlTypedIdentifier.cs" />
+    <Compile Include="SqlParser\SqlAssignExpr.cs" />
+    <Compile Include="SqlParser\SqlBinaryExpr.cs" />
+    <Compile Include="SqlParser\SqlParameterExpr.cs" />
+    <Compile Include="SqlParser\SqlIdentifierExpr.cs" />
+    <Compile Include="SqlParser\SqlNullExpr.cs" />
+    <Compile Include="SqlParser\SqlLiteralStringExpr.cs" />
+    <Compile Include="SqlParser\SqlLiteralFloatExpr.cs" />
+    <Compile Include="SqlParser\SqlLiteralNumericExpr.cs" />
+    <Compile Include="SqlParser\SqlLiteralIntegerExpr.cs" />
+    <Compile Include="SqlParser\SqlLiteralMoneyExpr.cs" />
+    <Compile Include="SqlParser\IExprVisitor.cs" />
+    <Compile Include="SqlParser\SqlExpr.cs" />
+    <Compile Include="SqlParser\SqlLiteralExpr.cs" />
+    <Compile Include="SqlParser\SqlSyntaxErrorExpr.cs" />
     <Compile Include="SqlTokenizer\SqlReservedKeyword.cs" />
     <Compile Include="SqlTokenizer\SourceLocation.cs" />
     <Compile Include="SqlTokenizer\SqlTokeniser.cs" />
@@ -66,6 +84,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

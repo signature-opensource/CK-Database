@@ -29,15 +29,20 @@ namespace CK.SqlServer
         bool            _comparisonContext;
 
         string          _identifierValue;
+        int             _integerValue;
 
         StringBuilder	_buffer;
+        string	        _bufferString;
         int				_token;
         int             _prevNonCommentToken;
+
+        char[] _moneyPrefix = new char[] { '\u0024', '\u00A2', '\u00A3', '\u00A4', '\u00A5', '\u09F2', '\u09F3', '\u0E3F', '\u17DB', '\u20A0', '\u20A1', '\u20A2', '\u20A3', '\u20A4', '\u20A5', '\u20A6', '\u20A7', '\u20A8', '\u20A9', '\u20AA', '\u20AB', '\u20AC', '\u20AD', '\u20AE', '\u20AF', '\u20B0', '\u20B1', '\u20B9', '\uFDFC', '\uFDFC', '\uFE69', '\uFF04', '\uFFE0', '\uFFE1', '\uFFE5', '\uFFE6' };
 
         #endregion
 
         public SqlTokeniser()
         {
+            Debug.Assert( _moneyPrefix.IsSortedStrict(), "So that BinaryFind works." );
             _skipComments = true;
             _buffer = new StringBuilder( 512 );
         }
@@ -59,6 +64,7 @@ namespace CK.SqlServer
             _charPos = 0;
             _nextC = 0;
             _token = 0;
+            ClearBuffer();
             NextToken2();
             return _token >= 0;
         }
@@ -262,6 +268,147 @@ namespace CK.SqlServer
             get { return _prevCharPosTokenEnd; }
         }
 
+        /// <summary>
+        /// Reads a comment (with its opening and closing tags) and forwards head. Returns null and 
+        /// does not forward the head if current token is not a comment. 
+        /// To be able to read comments (ie. returning not null here) requires <see cref="SkipComments"/> to be false.
+        /// </summary>
+        /// <returns></returns>
+        public string ReadComment()
+        {
+            return _token > 0 && (_token & (int)SqlToken.IsComment) != 0 ? ReadBuffer() : null;
+        }
+
+        /// <summary>
+        /// Reads a string value and forwards head. 
+        /// Returns null and does not forward the head if current token is not a string. 
+        /// </summary>
+        /// <returns></returns>
+        public string ReadString()
+        {
+            return _token > 0 && (_token & (int)SqlToken.IsString) != 0 ? ReadBuffer() : null;
+        }
+
+        /// <summary>
+        /// Reads an identifier and forwards head. 
+        /// Returns null and does not forward the head if current token is not an identifier. 
+        /// </summary>
+        /// <returns></returns>
+        public string ReadIdentifier()
+        {
+            string id = null;
+            if( IsIdentifier )
+            {
+                id = _identifierValue;
+                Forward();
+            }
+            return id;
+        }
+
+        /// <summary>
+        /// Reads a dotted identifier and forwards head (stops on any non identifier nor dot token). 
+        /// Returns null and does not forward the head if current token is not an identifier. 
+        /// </summary>
+        /// <remarks>
+        /// If the identifier ends with a dot, this last dot is kept in the result.
+        /// </remarks>
+        /// <returns>The dotted identifier or null if not found.</returns>
+        public string ReadDottedIdentifier()
+        {
+            string multiId = null;
+            string id = ReadIdentifier();
+            if( id != null )
+            {
+                multiId = id;
+                while( _token == (int)SqlToken.Dot )
+                {
+                    multiId += '.';
+                    Forward();
+                    id = ReadIdentifier();
+                    if( id == null ) break;
+                    multiId += id;
+                }
+            }
+            return multiId;
+        }
+
+        /// <summary>
+        /// Reads an identifier and forwards head. 
+        /// Returns false and does not forward the head if current token is not an identifier. 
+        /// </summary>
+        /// <returns>True if the identifier matches and head has been forwarded.</returns>
+        public bool MatchIdentifier( string identifier, StringComparison comparisonType = StringComparison.InvariantCultureIgnoreCase )
+        {
+            if( _token > 0
+                && (_token & (int)SqlToken.IsIdentifier) != 0
+                && String.Compare( _identifierValue, identifier, comparisonType ) == 0 )
+            {
+                Forward();
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Match identifier. Forward the head on success and can throw an exception
+        /// if not found.
+        /// </summary>
+        public bool MatchIdentifier( string identifier, bool throwError )
+        {
+            if( !MatchIdentifier( identifier ) )
+            {
+                if( throwError )
+                {
+                    throw new CKException( "Identifier '{0}' expected. {1}.", identifier, _location );
+                }
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Matches a token. Forwards the head on success.
+        /// </summary>
+        /// <param name="token">Must be one of <see cref="SqlToken"/> value (not an Error one).</param>
+        /// <returns>True if the given token matches.</returns>
+        public bool Match( SqlToken token )
+        {
+            if( token < 0 ) throw new ArgumentException( "Token must not be an Error token." );
+            if( _token == (int)token )
+            {
+                Forward();
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Matches a token. Forwards the head on success and can throw an error
+        /// if token does not match.
+        /// </summary>
+        /// <param name="token">Token to match (must not be an Error one).</param>
+        /// <returns>True if the given token matches.</returns>
+        public bool Match( SqlToken token, bool throwError )
+        {
+            if( !Match( token ) )
+            {
+                if( throwError )
+                    throw new CKException( "Token {0} expected. {1}.", token.ToString(), _location );
+                return false;
+            }
+            return true;
+        }
+
+        private string ReadBuffer()
+        {
+            Debug.Assert( _token > 0 );
+            string r = _bufferString ?? (_bufferString = _buffer.ToString());
+            Forward();
+            return r;
+        }
+
+        #region Explain Token
+
         static string[] _assignOperator = { "=", "|=", "&=", "^=", "+=", "-=", "/=", "*=", "%=" };
         static string[] _operator = { "|", "^", "&", "+", "-", "*", "/", "%", "~" };
         static string[] _compareOperator = { "=", ">", "<", ">=", "<=", "<>", "!=", "!>", "!<" };
@@ -308,144 +455,7 @@ namespace CK.SqlServer
             return SqlToken.None.ToString();
         }
 
-        /// <summary>
-        /// Reads a comment (with its opening and closing tags) and forwards head. Returns null and 
-        /// does not forward the head if current token is not a comment. 
-        /// To be able to read comments (ie. returning not null here) requires <see cref="SkipComments"/> to be false.
-        /// </summary>
-        /// <returns></returns>
-        public string ReadComment()
-        {
-            return _token > 0 && (_token & (int)SqlToken.IsComment) != 0 ? ReadBuffer() : null;
-        }
-
-        /// <summary>
-        /// Reads a string value and forwards head. Returns null and 
-        /// does not forward the head if current token is not a string. 
-        /// </summary>
-        /// <returns></returns>
-        public string ReadString()
-        {
-            return _token > 0 && (_token & (int)SqlToken.IsString) != 0 ? ReadBuffer() : null;
-        }
-
-
-        /// <summary>
-        /// Reads an identifier and forwards head. Returns null and 
-        /// does not forward the head if current token is not an identifier. 
-        /// </summary>
-        /// <returns></returns>
-        public string ReadIdentifier()
-        {
-            string id = null;
-            if( IsIdentifier )
-            {
-                id = _identifierValue;
-                Forward();
-            }
-            return id;
-        }
-
-        /// <summary>
-        /// Reads a dotted identifier and forwards head (stops on any non identifier nor dot token). 
-        /// Returns null and does not forward the head if current token is not an identifier. 
-        /// </summary>
-        /// <remarks>
-        /// If the identifier ends with a dot, this last dot is kept in the result.
-        /// </remarks>
-        /// <returns>The dotted identifier or null if not found.</returns>
-        public string ReadDottedIdentifier()
-        {
-            string multiId = null;
-            string id = ReadIdentifier();
-            if( id != null )
-            {
-                multiId = id;
-                while( _token == (int)SqlToken.Dot )
-                {
-                    multiId += '.';
-                    Forward();
-                    id = ReadIdentifier();
-                    if( id == null ) break;
-                    multiId += id;
-                }
-            }
-            return multiId;
-        }
-
-        /// <summary>
-        /// Reads an identifier and forwards head. Returns false and 
-        /// does not forward the head if current token is not an identifier. 
-        /// </summary>
-        /// <returns>True if the identifier matches and head has been forwarded.</returns>
-        public bool MatchIdentifier( string identifier, StringComparison comparisonType = StringComparison.Ordinal )
-        {
-            if( _token > 0
-                && (_token & (int)SqlToken.IsIdentifier) != 0
-                && String.Compare( _identifierValue, identifier, comparisonType ) == 0 )
-            {
-                Forward();
-                return true;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Match identifier. Forward the head on success and can throw an exception
-        /// if not found.
-        /// </summary>
-        public bool MatchIdentifier( string identifier, bool throwError )
-        {
-            if( !MatchIdentifier( identifier ) )
-            {
-                if( throwError )
-                    throw new CKException( "Identifier '{0}' expected. {1}.", identifier, _location );
-                return false;
-            }
-            return true;
-        }
-
-
-        /// <summary>
-        /// Matches a token. Forwards the head on success.
-        /// </summary>
-        /// <param name="token">Must be one of <see cref="SqlToken"/> value (not an Error one).</param>
-        /// <returns>True if the given token matches.</returns>
-        public bool Match( SqlToken token )
-        {
-            if( token < 0 ) throw new ArgumentException( "Token must not be an Error token." );
-            if( _token == (int)token )
-            {
-                Forward();
-                return true;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Matches a token. Forwards the head on success and can throw an error
-        /// if token does not match.
-        /// </summary>
-        /// <param name="token">Token to match (must not be an Error one).</param>
-        /// <returns>True if the given token matches.</returns>
-        public bool Match( SqlToken token, bool throwError )
-        {
-            if( !Match( token ) )
-            {
-                if( throwError )
-                    throw new CKException( "Token {0} expected. {1}.", token.ToString(), _location );
-                return false;
-            }
-            return true;
-        }
-
-        private string ReadBuffer()
-        {
-            Debug.Assert( _token > 0 );
-            string r = _buffer.ToString();
-            Forward();
-            return r;
-        }
+        #endregion
 
         #region Basic input
         int Peek()
@@ -532,31 +542,6 @@ namespace CK.SqlServer
         }
 
         #endregion
-
-        int HandleStarComment()
-        {
-            _buffer.Clear();
-            int ic;
-            while( (ic = Read()) != -1 )
-            {
-                if( ic == '*' && Read( '/' ) ) return (int)SqlToken.StarComment;
-                _buffer.Append( (char)ic );
-            }
-            return (int)SqlTokenError.EndOfInput;
-        }
-
-        int HandleLineComment()
-        {
-            _buffer.Clear();
-            int ic;
-            while( (ic = Read()) != -1 )
-            {
-                if( ic == '\r' || ic == '\n' ) return (int)SqlToken.LineComment;
-                _buffer.Append( (char)ic );
-            }
-            return (int)SqlTokenError.EndOfInput;
-        }
-
 
         int NextToken2()
         {
@@ -654,13 +639,66 @@ namespace CK.SqlServer
                         if( ic == 'N' )
                         {
                             if( Read( '\'' ) ) return ReadString( true );
+                            return ReadIdentifier( ic );
                         }
+                        
                         int digit = FromDecDigit( ic );
                         if( digit >= 0 ) return ReadAllKindOfNumber( digit );
+                        
+                        if( Array.BinarySearch( _moneyPrefix, (char)ic ) >= 0 )
+                        {
+                            return ReadMoney( ic );
+                        }
+                        
                         if( IsIdentifierStartChar( ic ) ) return ReadIdentifier( ic );
+                        
                         return (int)SqlTokenError.ErrorInvalidChar;
                     }
             }
+        }
+
+        private int ReadMoney( int ic )
+        {
+            ClearBuffer();
+            _buffer.Append( (char)ic );
+            for( ; ; )
+            {
+                if( (ic = Read()) == -1 ) return (int)SqlToken.Money;
+                if( ic != ' ' )
+                {
+                    if( Read( '-' ) ) _buffer.Append( '-' );
+                    int digit = FromDecDigit( ic );
+                    if( digit >= 0 )
+                    {
+                        ReadAllKindOfNumber( digit );
+                    }
+                    return (int)SqlTokenError.ErrorInvalidChar;
+                }
+            }
+        }
+
+        int HandleStarComment()
+        {
+            ClearBuffer();
+            int ic;
+            while( (ic = Read()) != -1 )
+            {
+                if( ic == '*' && Read( '/' ) ) return (int)SqlToken.StarComment;
+                _buffer.Append( (char)ic );
+            }
+            return (int)SqlTokenError.EndOfInput;
+        }
+
+        int HandleLineComment()
+        {
+            ClearBuffer();
+            int ic;
+            while( (ic = Read()) != -1 )
+            {
+                if( ic == '\r' || ic == '\n' ) return (int)SqlToken.LineComment;
+                _buffer.Append( (char)ic );
+            }
+            return (int)SqlTokenError.EndOfInput;
         }
 
         /// <summary>
@@ -669,9 +707,9 @@ namespace CK.SqlServer
         /// <param name="end">Ending char.</param>
         /// <param name="token">Token type.</param>
         /// <returns>Token or error value.</returns>
-        private int ReadQuotedIdentifier( char end, SqlToken token )
+        int ReadQuotedIdentifier( char end, SqlToken token )
         {
-            _buffer.Length = 0;
+            ClearBuffer();
             int ic;
             while( (ic = Read()) != -1 )
             {
@@ -685,13 +723,12 @@ namespace CK.SqlServer
             return (int)SqlTokenError.ErrorIdentifierUnterminated;
         }
 
-        private int ReadAllKindOfNumber( int firstDigit )
+        int ReadAllKindOfNumber( int firstDigit )
         {
             Debug.Assert( firstDigit >= 0 && firstDigit <= 9 );
             if( firstDigit == 0 && Read( 'x' ) )
             {
-                _buffer.Length = 0;
-                _buffer.Append( "0x" );
+                ClearBuffer().Append( "0x" );
                 while( FromHexDigit( Peek() ) >= 0 )
                 {
                     _buffer.Append( (char)Read() );
@@ -705,11 +742,11 @@ namespace CK.SqlServer
         /// May return an error code or a number token.
         /// Whatever the read result is, the buffer contains the token.
         /// </summary>
-        private int ReadNumber( int firstDigit, bool hasDot )
+        int ReadNumber( int firstDigit, bool hasDot )
         {
             bool hasExp = false;
             int nextRequired = 0;
-            _buffer.Length = 0;
+            ClearBuffer();
             if( hasDot ) _buffer.Append( "0." );
             _buffer.Append( (char)(firstDigit + '0') );
             for( ; ; )
@@ -755,12 +792,14 @@ namespace CK.SqlServer
                 if( hasExp ) return (int)SqlToken.Float;
                 return (int)SqlToken.Decimal;
             }
-            return (int)SqlToken.Integer;
+            _bufferString = _buffer.ToString();
+            if( Int32.TryParse( _bufferString, out _integerValue ) ) return (int)SqlToken.Integer;
+            return (int)SqlToken.Decimal;
         }
 
-        private int ReadString( bool unicode )
+        int ReadString( bool unicode )
         {
-            _buffer.Length = 0;
+            ClearBuffer();
             for( ; ; )
             {
                 int ic = Read();
@@ -774,12 +813,12 @@ namespace CK.SqlServer
             }
         }
 
-        static private bool IsIdentifierStartChar( int c )
+        static bool IsIdentifierStartChar( int c )
         {
             return c == '@' || c == '#' || c == '_' || Char.IsLetter( (char)c );
         }
 
-        static private bool IsIdentifierChar( int c )
+        static bool IsIdentifierChar( int c )
         {
             return IsIdentifierStartChar( c ) || Char.IsDigit( (char)c );
         }
@@ -816,18 +855,18 @@ namespace CK.SqlServer
         /// 5. Supplementary characters are not allowed.
         /// 
         /// </remarks>
-        private int ReadIdentifier( int ic )
+        int ReadIdentifier( int ic )
         {
             Debug.Assert( IsIdentifierStartChar( ic ) );
             bool isVar = ic == '@';
-            _buffer.Length = 0;
+            ClearBuffer();
             for( ; ; )
             {
                 _buffer.Append( (char)ic );
                 if( (IsIdentifierChar( ic = Peek() )) ) Read();
                 else break;
             }
-            _identifierValue = _buffer.ToString();
+            _identifierValue = _bufferString = _buffer.ToString();
             if( isVar ) return (int)SqlToken.Variable;
 
             object mapped = SqlReservedKeyword.MapKeyword( _identifierValue );
@@ -842,6 +881,13 @@ namespace CK.SqlServer
                 return (int)mapped;
             }
             return (int)SqlToken.Identifier;
+        }
+
+        StringBuilder ClearBuffer()
+        {
+            _bufferString = null;
+            _buffer.Clear();
+            return _buffer;
         }
 
     }

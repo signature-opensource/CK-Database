@@ -322,7 +322,8 @@ namespace CK.SqlServer
         Integer = IsNumber | 2,
 
         /// <summary>
-        /// Decimal literals like 1894.1204 or 2.0.
+        /// Decimal literals like 1894.1204 or 2.0. 
+        /// "Decimal" is the ISO name of Sql Server specific "numeric".
         /// </summary>
         Decimal = IsNumber | 3,
  
