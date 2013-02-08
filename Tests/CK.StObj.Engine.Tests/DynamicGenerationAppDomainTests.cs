@@ -45,23 +45,29 @@ namespace CK.StObj.Engine.Tests
 
             try
             {
-                StObjBuilderAppDomainConfiguration appDomainConfig = new StObjBuilderAppDomainConfiguration();
-                appDomainConfig.UseIndependentAppDomain = false;
+                using( StringWriter sw = new StringWriter() )
+                {
+                    ((IDefaultActivityLogger)TestHelper.Logger).Register( new ActivityLoggerTextWriterSink( sw ) );
+                    StObjBuilderAppDomainConfiguration appDomainConfig = new StObjBuilderAppDomainConfiguration();
+                    appDomainConfig.UseIndependentAppDomain = false;
 
-                StObjFinalAssemblyConfiguration assemblyConfig = new StObjFinalAssemblyConfiguration();
-                assemblyConfig.Directory = Path.Combine( localTestDir, "Output" );
-                assemblyConfig.AssemblyName = "MyLittleAssembly";
-                if( !Directory.Exists( assemblyConfig.Directory ) ) Directory.CreateDirectory( assemblyConfig.Directory );
+                    StObjFinalAssemblyConfiguration assemblyConfig = new StObjFinalAssemblyConfiguration();
+                    assemblyConfig.Directory = Path.Combine( localTestDir, "Output" );
+                    assemblyConfig.AssemblyName = "MyLittleAssembly";
+                    if( !Directory.Exists( assemblyConfig.Directory ) ) Directory.CreateDirectory( assemblyConfig.Directory );
 
-                var config = new StObjEngineConfigurationTest( appDomainConfig, assemblyConfig );
+                    var config = new StObjEngineConfigurationTest( appDomainConfig, assemblyConfig );
 
-                AppDomain createdAppDomain = null;
-                Assert.That( StObjContextRoot.Build( config, TestHelper.Logger, x => createdAppDomain = x ), Is.True, "Build process must return true with UseIndependentAppDomain = false;" );
+                    AppDomain createdAppDomain = null;
+                    Assert.That( StObjContextRoot.Build( config, TestHelper.Logger, x => createdAppDomain = x ), Is.True, "Build process must return true with UseIndependentAppDomain = false;" );
 
-                Assert.That( File.Exists( Path.Combine( assemblyConfig.Directory, "MyLittleAssembly.dll" ) ), Is.True );
-                Assert.That( createdAppDomain, Is.Null );
+                    Assert.That( File.Exists( Path.Combine( assemblyConfig.Directory, "MyLittleAssembly.dll" ) ), Is.True );
+                    Assert.That( createdAppDomain, Is.Null );
 
-                File.Delete( Path.Combine( assemblyConfig.Directory, "MyLittleAssembly.dll" ) );
+                    File.Delete( Path.Combine( assemblyConfig.Directory, "MyLittleAssembly.dll" ) );
+
+                    Assert.That( sw.ToString(), Is.Not.Empty );
+                }
             }
             finally
             {
@@ -144,7 +150,7 @@ namespace CK.StObj.Engine.Tests
 
                 using( StringWriter sw = new StringWriter() )
                 {
-                    ((IDefaultActivityLogger)TestHelper.Logger).Register( new TestLoggerDebugger( sw ) );
+                    ((IDefaultActivityLogger)TestHelper.Logger).Register( new ActivityLoggerTextWriterSink( sw ) );
                     AppDomain createdAppDomain = null;
                     Assert.That( StObjContextRoot.Build( config, TestHelper.Logger, x => createdAppDomain = x ), Is.True, "Build process must return true with UseIndependentAppDomain = true;" );
                     Assert.That( File.Exists( Path.Combine( assemblyConfig.Directory, "MyLittleAssembly.dll" ) ), Is.True, "Build must generate dll" );
@@ -170,14 +176,6 @@ namespace CK.StObj.Engine.Tests
             finally
             {
                 Directory.Delete( localTestDir, true );
-            }
-        }
-
-        public class TestLoggerDebugger : ActivityLoggerTextWriterSink
-        {
-            public TestLoggerDebugger( TextWriter tw )
-                : base(tw)
-            {
             }
         }
 
@@ -308,7 +306,7 @@ namespace CK.StObj.Engine.Tests
             public void Run()
             {
                 if( Config.RunHook != null ) Config.RunHook( this );
-                StObjCollector collector = new StObjCollector( TestHelper.Logger );
+                StObjCollector collector = new StObjCollector( Logger );
                 collector.RegisterClass( typeof( TestObjBuilder.B ) );
                 collector.RegisterClass( typeof( TestObjBuilder.D ) );
                 collector.DependencySorterHookInput = TestHelper.Trace;
