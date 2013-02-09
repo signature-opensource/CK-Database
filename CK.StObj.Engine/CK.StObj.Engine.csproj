@@ -63,6 +63,7 @@
     <Compile Include="AutoImplementor\ImplementableAbstractMethodInfo.cs" />
     <Compile Include="AutoImplementor\ImplementableAbstractPropertyInfo.cs" />
     <Compile Include="AutoImplementor\ImplementableTypeInfo.cs" />
+    <Compile Include="BasicStObjBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StObj\IContextualStObjMapRuntime.cs" />
     <Compile Include="StObj\Impl\Builder\BuildValueCollector.cs" />

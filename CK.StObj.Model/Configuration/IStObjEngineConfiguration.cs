@@ -7,27 +7,29 @@ using CK.Core;
 namespace CK.Core
 {
     /// <summary>
-    /// Provides minimal configuration required to produce 
-    /// a final (compiled) assembly. Thanks to this abstraction, <see cref="StObjContextRoot"/>
+    /// Provides minimal configuration required to produce a final (compiled) assembly.
+    /// Thanks to this abstraction, <see cref="StObjContextRoot"/> is able to handle build/setup phasis 
+    /// that involve any higher level APIs than StObj itself.
     /// </summary>
     public interface IStObjEngineConfiguration
     {
         /// <summary>
         /// Gets the Assembly Qualified Name of a <see cref="Type"/> that must have a public
         /// constructor that accepts an <see cref="IActivityLogger"/> and an instance of 
-        /// this <see cref="IStObjEngineConfiguration"/>. It must support <see cref="IStObjBuilder"/>.
+        /// this <see cref="IStObjEngineConfiguration"/>.
+        /// It must support <see cref="IStObjBuilder"/>.
         /// </summary>
         string BuilderAssemblyQualifiedName { get; }
 
         /// <summary>
-        /// Gets the configuration related to the app domain is the setup phasis.
+        /// Gets the configuration that describes how Application Domain must be used during build.
         /// </summary>
-        StObjBuilderAppDomainConfiguration StObjBuilderAppDomainConfiguration { get; }
+        BuilderAppDomainConfiguration AppDomainConfiguration { get; }
 
         /// <summary>
         /// Gets the configuration related to final assembly generation.
         /// </summary>
-        StObjFinalAssemblyConfiguration StObjFinalAssemblyConfiguration { get; }
+        BuilderFinalAssemblyConfiguration FinalAssemblyConfiguration { get; }
 
     }
 }

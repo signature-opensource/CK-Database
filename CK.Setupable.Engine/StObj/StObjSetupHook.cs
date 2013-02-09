@@ -32,7 +32,7 @@ namespace CK.Setup
             {
                 AssemblyRegisterer typeReg = new AssemblyRegisterer( logger );
                 typeReg.TypeFilter = _config.TypeFilter;
-                typeReg.Discover( _config.AssemblyRegistererConfiguration );
+                typeReg.Discover( _config.AppDomainConfiguration.Assemblies );
                 StObjCollector stObjC = new StObjCollector( logger, _configurator, _configurator, _configurator );
                 stObjC.RegisterTypes( typeReg );
                 foreach( var t in _config.ExplicitRegisteredClasses ) stObjC.RegisterClass( t );
@@ -71,7 +71,7 @@ namespace CK.Setup
         {
             if( e.Step == SetupStep.Success )
             {
-                _resultToGenerate.GenerateFinalAssembly( _center.Logger, _config.StObjFinalAssemblyConfiguration );
+                _resultToGenerate.GenerateFinalAssembly( _center.Logger, _config.FinalAssemblyConfiguration );
             }
         }
 

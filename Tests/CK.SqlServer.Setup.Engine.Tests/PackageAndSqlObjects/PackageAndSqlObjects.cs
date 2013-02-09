@@ -22,8 +22,8 @@ namespace CK.SqlServer.Setup.Engine.Tests
 
                 var config = new SqlSetupCenterConfiguration();
                 config.Databases.Add( new SqlDatabaseDescriptor( "dbHisto", defaultDBConnectionString ) );
-                config.SetupConfiguration.AssemblyRegistererConfiguration.DiscoverAssemblyNames.Add( "IntoTheWild0" );
-                config.SetupConfiguration.StObjFinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
+                config.SetupConfiguration.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.Add( "IntoTheWild0" );
+                config.SetupConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
 
                 // Try normally with any existing database if it exists.
                 using( SqlSetupCenter c = new SqlSetupCenter( TestHelper.Logger, config, defaultDB ) )
@@ -44,9 +44,9 @@ namespace CK.SqlServer.Setup.Engine.Tests
                 var config = new SqlSetupCenterConfiguration();
                 config.DefaultDatabaseConnectionString = defaultDBConnectionString;
                 config.Databases.Add( new SqlDatabaseDescriptor( "dbHisto", defaultDBConnectionString ) );
-                config.SetupConfiguration.AssemblyRegistererConfiguration.DiscoverAssemblyNames.Add( "IntoTheWild0" );
+                config.SetupConfiguration.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.Add( "IntoTheWild0" );
                 config.SetupConfiguration.RevertOrderingNames = true;
-                config.SetupConfiguration.StObjFinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
+                config.SetupConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
 
                 using( SqlSetupCenter c = new SqlSetupCenter( TestHelper.Logger, config ) )
                 {

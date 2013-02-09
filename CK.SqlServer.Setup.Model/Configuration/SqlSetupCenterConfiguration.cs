@@ -24,7 +24,7 @@ namespace CK.SqlServer.Setup
             _databases = new List<SqlDatabaseDescriptor>();
             _ckPackageDirectories = new List<string>();
             _sqlFileDirectories = new List<string>();
-            _config.StObjBuilderAppDomainConfiguration.UseIndependentAppDomain = true;
+            _config.AppDomainConfiguration.UseIndependentAppDomain = true;
         }
 
         /// <summary>
@@ -76,14 +76,14 @@ namespace CK.SqlServer.Setup
             get { return "CK.SqlServer.Setup.SqlSetupCenter, CK.SqlServer.Setup.Engine"; }
         }
 
-        StObjFinalAssemblyConfiguration IStObjEngineConfiguration.StObjFinalAssemblyConfiguration
+        BuilderFinalAssemblyConfiguration IStObjEngineConfiguration.FinalAssemblyConfiguration
         {
-            get { return _config.StObjFinalAssemblyConfiguration; }
+            get { return _config.FinalAssemblyConfiguration ; }
         }
 
-        StObjBuilderAppDomainConfiguration IStObjEngineConfiguration.StObjBuilderAppDomainConfiguration
+        BuilderAppDomainConfiguration IStObjEngineConfiguration.AppDomainConfiguration
         {
-            get { return _config.StObjBuilderAppDomainConfiguration; }
+            get { return _config.AppDomainConfiguration; }
         }
 
         #endregion

@@ -8,42 +8,33 @@ namespace CK.Setup
     [Serializable]
     public class SetupCenterConfiguration
     {
-        readonly AssemblyRegistererConfiguration _regConf;
         readonly List<Type> _regTypeList;
-        readonly StObjFinalAssemblyConfiguration _finalAssemblyConf;
-        readonly StObjBuilderAppDomainConfiguration _builderAppdomainConf;
+        readonly BuilderFinalAssemblyConfiguration _finalAssemblyConf;
+        readonly BuilderAppDomainConfiguration _builderAppdomainConf;
 
         /// <summary>
         /// Initializes a new <see cref="SetupCenterConfiguration"/>.
         /// </summary>
         public SetupCenterConfiguration()
         {
-            _regConf = new AssemblyRegistererConfiguration();
             _regTypeList = new List<Type>();
-            _finalAssemblyConf = new StObjFinalAssemblyConfiguration();
-            _builderAppdomainConf = new StObjBuilderAppDomainConfiguration();
+            _finalAssemblyConf = new BuilderFinalAssemblyConfiguration();
+            _builderAppdomainConf = new BuilderAppDomainConfiguration();
         }
 
         /// <summary>
-        /// Gets the <see cref="AssemblyRegistererConfiguration"/> that describes assemblies that must participate (or not) to setup.
+        /// Gets the <see cref="BuilderFinalAssemblyConfiguration"/> that describes final assembly generation options.
         /// </summary>
-        public AssemblyRegistererConfiguration AssemblyRegistererConfiguration
-        {
-            get { return _regConf; }
-        }
-
-        /// <summary>
-        /// Gets the <see cref="StObjFinalAssemblyConfiguration"/> that describes final assembly generation options.
-        /// </summary>
-        public StObjFinalAssemblyConfiguration StObjFinalAssemblyConfiguration
+        public BuilderFinalAssemblyConfiguration FinalAssemblyConfiguration
         {
             get { return _finalAssemblyConf; }
         }
 
         /// <summary>
-        /// Gets the <see cref="StObjBuilderAppDomainConfiguration"/> that describes the appdomain options during setup phasis.
+        /// Gets the <see cref="BuilderAppDomainConfiguration"/> that describes the Application Domain related 
+        /// options to use during setup phasis.
         /// </summary>
-        public StObjBuilderAppDomainConfiguration StObjBuilderAppDomainConfiguration
+        public BuilderAppDomainConfiguration AppDomainConfiguration
         {
             get { return _builderAppdomainConf; }
         }

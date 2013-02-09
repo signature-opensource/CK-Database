@@ -44,7 +44,12 @@ namespace CK.SqlServer.Setup
         public string PhysicalDatabaseName { get; private set; }
 
         public string Container { get; private set; }
+
+        /// <summary>
+        /// Gets the version (null when '*' is used).
+        /// </summary>
         public Version Version { get; private set; }
+        
         public string ItemType { get; private set; }
         public DependentItemKind ItemKind { get { return DependentItemKind.Item; } }
         public string Generalization { get { return null; } }

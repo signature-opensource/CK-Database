@@ -26,11 +26,11 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
         private static void InstallDropAndReverseInstall( Predicate<Type> typeFilter )
         {
             var config = new SqlSetupCenterConfiguration();
-            config.SetupConfiguration.AssemblyRegistererConfiguration.DiscoverAssemblyNames.Add( "SqlActorPackage" );
-            config.SetupConfiguration.AssemblyRegistererConfiguration.DiscoverAssemblyNames.Add( "SqlZonePackage" );
-            config.SetupConfiguration.AssemblyRegistererConfiguration.DiscoverAssemblyNames.Add( "CK.Authentication.Local" );
+            config.SetupConfiguration.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.Add( "SqlActorPackage" );
+            config.SetupConfiguration.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.Add( "SqlZonePackage" );
+            config.SetupConfiguration.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.Add( "CK.Authentication.Local" );
             config.SetupConfiguration.TypeFilter = typeFilter;
-            config.SetupConfiguration.StObjFinalAssemblyConfiguration.AssemblyName = "InstallDropAndReverseInstall";
+            config.SetupConfiguration.FinalAssemblyConfiguration.AssemblyName = "InstallDropAndReverseInstall";
 
             using( var db = SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.Logger ) )
             {

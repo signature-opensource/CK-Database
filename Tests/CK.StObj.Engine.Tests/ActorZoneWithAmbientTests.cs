@@ -136,8 +136,8 @@ namespace CK.StObj.Engine.Tests
             collector.RegisterClass( typeof( AuthenticationUser ) );
             collector.RegisterClass( typeof( AuthenticationDetail ) );
             collector.RegisterClass( typeof( SqlDatabaseDefault ) );
-            collector.DependencySorterHookInput = TestHelper.Trace;
-            collector.DependencySorterHookOutput = sortedItems => TestHelper.Trace( sortedItems, false );
+            collector.DependencySorterHookInput = items => TestHelper.Logger.TraceDependentItem( items );
+            collector.DependencySorterHookOutput = sortedItems => TestHelper.Logger.TraceSortedItem( sortedItems, false );
 
             var r = collector.GetResult();
             Assert.That( r.HasFatalError, Is.False );

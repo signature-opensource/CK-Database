@@ -14,7 +14,8 @@ namespace CK.SqlServer.Setup
                                             | RegexOptions.IgnoreCase
                                             | RegexOptions.ExplicitCapture );
 
-        static Regex _rHeader = new Regex( @"^\s*--\s*Version\s*=\s*(?<1>\d+(\.\d+)*|\*)(\s*,?\s*((Package\s*=\s*(?<2>(\w|\.|-)+))|(Requires\s*=\s*{\s*((?<3>\??(\w+|-|\.)+)\s*,?\s*)*})|((Groups\s*=\s*{\s*((?<4>(\w+|-|\.)+)\s*,?\s*)*}))|((RequiredBy\s*=\s*{\s*((?<5>(\w+|-|\.)+)\s*,?\s*)*}))|(PreviousNames\s*=\s*{\s*(((?<6>(\w|\.|-)+)\s*=\s*(?<6>\d+\.\d+\.\d+(\.\d+)?))\s*,?\s*)*})))*",
+        static Regex _rHeader = new Regex( @"^\s*--\s*Version\s*=\s*(?<1>\d+(\.\d+)*|\*)\s*(,\s*(Package\s*=\s*(?<2>(\w|\.|-)+)|Requires\s*=\s*{\s*(?<3>\??(\w+|-|\^|\[|]|\.)+)\s*(,\s*(?<3>\??(\w+|-|\^|\[|]|\.)+)\s*)*}|Groups\s*=\s*{\s*(?<4>(\w+|-|\^|\[|]|\.)+)\s*(,\s*(?<4>(\w+|-|\^|\[|]|\.)+)\s*)*}|RequiredBy\s*=\s*{\s*(?<5>(\w+|-|\^|\[|]|\.)+)\s*(,\s*(?<5>(\w+|-|\^|\[|]|\.)+)\s*)*}|PreviousNames\s*=\s*{\s*((?<6>(\w+|-|\^|\[|]|\.)+)\s*=\s*(?<6>\d+\.\d+\.\d+(\.\d+)?))\s*(,\s*((?<6>(\w+|-|\^|\[|]|\.)+)\s*=\s*(?<6>\d+(\.\d+){1,3}))\s*)*})\s*)*",
+        // static Regex _rHeader = new Regex( @"^\s*--\s*Version\s*=\s*(?<1>\d+(\.\d+)*|\*)(\s*,?\s*((Package\s*=\s*(?<2>(\w|\.|-)+))|(Requires\s*=\s*{\s*((?<3>\??(\w+|-|\.)+)\s*,?\s*)*})|((Groups\s*=\s*{\s*((?<4>(\w+|-|\.)+)\s*,?\s*)*}))|((RequiredBy\s*=\s*{\s*((?<5>(\w+|-|\.)+)\s*,?\s*)*}))|(PreviousNames\s*=\s*{\s*(((?<6>(\w|\.|-)+)\s*=\s*(?<6>\d+\.\d+\.\d+(\.\d+)?))\s*,?\s*)*})))*",
                 RegexOptions.CultureInvariant
                 | RegexOptions.IgnoreCase
                 | RegexOptions.ExplicitCapture );

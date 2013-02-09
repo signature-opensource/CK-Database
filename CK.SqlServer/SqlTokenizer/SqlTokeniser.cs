@@ -36,7 +36,7 @@ namespace CK.SqlServer
         int				_token;
         int             _prevNonCommentToken;
 
-        char[] _moneyPrefix = new char[] { '\u0024', '\u00A2', '\u00A3', '\u00A4', '\u00A5', '\u09F2', '\u09F3', '\u0E3F', '\u17DB', '\u20A0', '\u20A1', '\u20A2', '\u20A3', '\u20A4', '\u20A5', '\u20A6', '\u20A7', '\u20A8', '\u20A9', '\u20AA', '\u20AB', '\u20AC', '\u20AD', '\u20AE', '\u20AF', '\u20B0', '\u20B1', '\u20B9', '\uFDFC', '\uFDFC', '\uFE69', '\uFF04', '\uFFE0', '\uFFE1', '\uFFE5', '\uFFE6' };
+        char[] _moneyPrefix = new char[] { '\u0024', '\u00A2', '\u00A3', '\u00A4', '\u00A5', '\u09F2', '\u09F3', '\u0E3F', '\u17DB', '\u20A0', '\u20A1', '\u20A2', '\u20A3', '\u20A4', '\u20A5', '\u20A6', '\u20A7', '\u20A8', '\u20A9', '\u20AA', '\u20AB', '\u20AC', '\u20AD', '\u20AE', '\u20AF', '\u20B0', '\u20B1', '\u20B9', '\uFDFC', '\uFE69', '\uFF04', '\uFFE0', '\uFFE1', '\uFFE5', '\uFFE6' };
 
         #endregion
 

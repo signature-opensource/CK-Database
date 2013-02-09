@@ -31,7 +31,7 @@ namespace CK.SqlServer
 
         public override string ToString()
         {
-            if( IsLineComment ) return "-- " + Comment + Environment.NewLine;
+            if( IsLineComment ) return "--" + Comment + Environment.NewLine;
             return "/*" + Comment + "*/";
         }
     }

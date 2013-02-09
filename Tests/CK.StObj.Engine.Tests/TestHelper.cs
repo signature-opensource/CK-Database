@@ -39,15 +39,15 @@ namespace CK.StObj.Engine.Tests
 
         #region Trace for IDependentItem
 
-        public static void Trace( IEnumerable<IDependentItem> e )
+        public static void TraceDependentItem( this IActivityLogger @this, IEnumerable<IDependentItem> e )
         {
-            using( _logger.OpenGroup( LogLevel.Trace, "Dependent items" ) )
+            using( @this.OpenGroup( LogLevel.Trace, "Dependent items" ) )
             {
-                foreach( var i in e ) Trace( i );
+                foreach( var i in e ) TraceDependentItem( @this, i );
             }
         }
 
-        public static void Trace( IDependentItem i )
+        public static void TraceDependentItem( this IActivityLogger @this, IDependentItem i )
         {
             using( _logger.OpenGroup( LogLevel.Trace, "FullName = {0}", i.FullName ) )
             {
@@ -83,17 +83,17 @@ namespace CK.StObj.Engine.Tests
 
         #region Trace for ISortedItem
 
-        public static void Trace( IEnumerable<ISortedItem> e, bool skipGroupTail )
+        public static void TraceSortedItem( this IActivityLogger @this, IEnumerable<ISortedItem> e, bool skipGroupTail )
         {
             using( _logger.OpenGroup( LogLevel.Trace, "Sorted items" ) )
             {
                 foreach( var i in e )
                     if( i.HeadForGroup == null || skipGroupTail )
-                        Trace( i );
+                        TraceSortedItem( @this, i );
             }
         }
 
-        public static void Trace( ISortedItem i )
+        public static void TraceSortedItem( this IActivityLogger @this, ISortedItem i )
         {
             using( _logger.OpenGroup( LogLevel.Trace, "[{1}]FullName = {0}", i.FullName, i.ItemKind.ToString()[0] ) )
             {

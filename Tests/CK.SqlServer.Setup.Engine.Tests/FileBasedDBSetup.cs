@@ -17,7 +17,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
             SqlSetupCenterConfiguration config = new SqlSetupCenterConfiguration();
             config.FilePackageDirectories.Add( TestHelper.GetScriptsFolder( "InstallFromScratch" ) );
             config.SqlFileDirectories.Add( TestHelper.GetScriptsFolder( "InstallFromScratch" ) );
-            config.SetupConfiguration.StObjFinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
+            config.SetupConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
 
             using( var defaultDB = SqlManager.OpenOrCreate( ".", "Test", TestHelper.Logger ) )
             {
@@ -52,7 +52,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
             SqlSetupCenterConfiguration config = new SqlSetupCenterConfiguration();
             config.FilePackageDirectories.Add( TestHelper.GetScriptsFolder( "InstallFromScratchWithView" ) );
             config.SqlFileDirectories.Add( TestHelper.GetScriptsFolder( "InstallFromScratchWithView" ) );
-            config.SetupConfiguration.StObjFinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
+            config.SetupConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
 
             using( var defaultDB = SqlManager.OpenOrCreate( ".", "TestWithView", TestHelper.Logger ) )
             {
@@ -80,7 +80,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
             SqlSetupCenterConfiguration config = new SqlSetupCenterConfiguration();
             config.FilePackageDirectories.Add( TestHelper.GetScriptsFolder( "InstallFromScratchWithSPDependsOnVersion" ) );
             config.SqlFileDirectories.Add( TestHelper.GetScriptsFolder( "InstallFromScratchWithSPDependsOnVersion" ) );
-            config.SetupConfiguration.StObjFinalAssemblyConfiguration.AssemblyName = "InstallPackageWithSPDependsOnVersion";
+            config.SetupConfiguration.FinalAssemblyConfiguration.AssemblyName = "InstallPackageWithSPDependsOnVersion";
 
             using( var defaultDB = SqlManager.OpenOrCreate( ".", "Test", TestHelper.Logger ) )
             {

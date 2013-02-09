@@ -58,8 +58,8 @@ namespace CK.StObj.Engine.Tests
                 StObjCollector collector = new StObjCollector( TestHelper.Logger );
                 collector.RegisterClass( typeof( B ) );
                 collector.RegisterClass( typeof( D ) );
-                collector.DependencySorterHookInput = TestHelper.Trace;
-                collector.DependencySorterHookOutput = sortedItems => TestHelper.Trace( sortedItems, false );
+                collector.DependencySorterHookInput = items => TestHelper.Logger.TraceDependentItem( items );
+                collector.DependencySorterHookOutput = sortedItems => TestHelper.Logger.TraceSortedItem( sortedItems, false );
                 var r = collector.GetResult();
                 Assert.That( r.HasFatalError, Is.False );
                 // Null as directory => use CK.StObj.Model folder.
@@ -134,8 +134,8 @@ namespace CK.StObj.Engine.Tests
                 StObjCollector collector = new StObjCollector( TestHelper.Logger, null, new StObjPropertyConfigurator() );
                 collector.RegisterClass( typeof( B ) );
                 collector.RegisterClass( typeof( ASpec ) );
-                collector.DependencySorterHookInput = TestHelper.Trace;
-                collector.DependencySorterHookOutput = sortedItems => TestHelper.Trace( sortedItems, false );
+                collector.DependencySorterHookInput = items => TestHelper.Logger.TraceDependentItem( items );
+                collector.DependencySorterHookOutput = sortedItems => TestHelper.Logger.TraceSortedItem( sortedItems, false );
                 var r = collector.GetResult();
                 {
                     Assert.That( r.HasFatalError, Is.False );

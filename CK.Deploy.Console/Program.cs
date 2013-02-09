@@ -109,7 +109,7 @@ namespace CK.Deploy.Console
             
             var config = new SqlSetupCenterConfiguration();
             config.DefaultDatabaseConnectionString = args.ConnectionString;
-            config.SetupConfiguration.StObjFinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
+            config.SetupConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
             config.FilePackageDirectories.Add( args.FilePath );
             config.SqlFileDirectories.Add( args.FilePath );
 
@@ -139,11 +139,11 @@ namespace CK.Deploy.Console
 
                 var config = new SqlSetupCenterConfiguration();
                 config.DefaultDatabaseConnectionString = args.ConnectionString;
-                config.SetupConfiguration.StObjFinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
+                config.SetupConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
                 var rootedPaths = args.RelativeFilePaths.Select( p => Path.Combine( args.AbsoluteRootPath, p ) );
                 config.FilePackageDirectories.AddRange( rootedPaths );
                 config.SqlFileDirectories.AddRange( rootedPaths );
-                config.SetupConfiguration.AssemblyRegistererConfiguration.DiscoverAssemblyNames.AddRange( args.AssemblyNames );
+                config.SetupConfiguration.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.AddRange( args.AssemblyNames );
                 using( SqlSetupCenter c = new SqlSetupCenter( logger, config ) )
                 {
                     c.Run();

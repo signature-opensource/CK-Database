@@ -21,52 +21,62 @@ namespace CK.StObj.Engine.Tests
             string di2 = @"C:\Test\toto\titi\bidule";
             string di3 = @"C:\Test\toto\titi";
 
-            var result = StObjContextRoot.FindCommonAncestor( new List<string> { di1, di2, di3 } );
+            var result = StObjContextRoot.FindCommonAncestor( new []{ di1, di2, di3 } );
             Assert.That( result, Is.EqualTo( @"C:\Test\toto\titi" ) );
 
             string di4 = @"C:\Test\toto\tata";
-            result = StObjContextRoot.FindCommonAncestor( new List<string> { di1, di2, di3, di4 } );
+            result = StObjContextRoot.FindCommonAncestor( new []{ di1, di2, di3, di4 } );
             Assert.That( result, Is.EqualTo( @"C:\Test\toto" ) );
 
             string di5 = @"C:\Test\tata";
-            result = StObjContextRoot.FindCommonAncestor( new List<string> { di1, di2, di3, di4, di5 } );
+            result = StObjContextRoot.FindCommonAncestor( new []{ di1, di2, di3, di4, di5 } );
             Assert.That( result, Is.EqualTo( @"C:\Test" ) );
 
             string di6 = @"D:\Test\tata";
-            result = StObjContextRoot.FindCommonAncestor( new List<string> { di1, di2, di3, di4, di5, di6 } );
+            result = StObjContextRoot.FindCommonAncestor( new []{ di1, di2, di3, di4, di5, di6 } );
             Assert.That( result, Is.Null );
         }
 
         [Test]
         public void BuildInCurrentAppDomain()
         {
-            var localTestDir = Path.Combine( TestHelper.TempFolder, "CK.StObj.Engine.Tests.Build" );
-            if( !Directory.Exists( localTestDir ) ) Directory.CreateDirectory( localTestDir );
-
+            AppDomain other = null;
             try
             {
-                using( StringWriter sw = new StringWriter() )
+                other = AppDomain.CreateDomain( "Test" );
+                other.DoCallBack( ProcessInCurrentAppDomain );
+            }
+            finally
+            {
+                AppDomain.Unload( other );
+            }
+        }
+
+        static void ProcessInCurrentAppDomain()
+        {
+            var localTestDir = Path.Combine( TestHelper.TempFolder, "BuildInCurrentAppDomain" );
+            try
+            {
+                string outputDir = Path.Combine( localTestDir, "Output" );
+                if( !Directory.Exists( outputDir ) ) Directory.CreateDirectory( outputDir );
+
+                File.Delete( Path.Combine( TestHelper.BinFolder, "AutoGenTestObjBuilder.dll" ) );
+                GenerateAutoGenTestObjBuilderDll( TestHelper.BinFolder );
+
+                // Cleanup any previous run traces.
+                File.Delete( Path.Combine( outputDir, "MyLittleAssembly.dll" ) );
+
+                var config = new StObjEngineConfigurationTest();
+                config.AppDomainConfiguration.UseIndependentAppDomain = false;
+                config.FinalAssemblyConfiguration.Directory = outputDir;
+                config.FinalAssemblyConfiguration.AssemblyName = "MyLittleAssembly";
+                config.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.Add( "AutoGenTestObjBuilder, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" );
+
+                using( StObjBuildResult result = StObjContextRoot.Build( config, TestHelper.Logger ) )
                 {
-                    ((IDefaultActivityLogger)TestHelper.Logger).Register( new ActivityLoggerTextWriterSink( sw ) );
-                    StObjBuilderAppDomainConfiguration appDomainConfig = new StObjBuilderAppDomainConfiguration();
-                    appDomainConfig.UseIndependentAppDomain = false;
-
-                    StObjFinalAssemblyConfiguration assemblyConfig = new StObjFinalAssemblyConfiguration();
-                    assemblyConfig.Directory = Path.Combine( localTestDir, "Output" );
-                    assemblyConfig.AssemblyName = "MyLittleAssembly";
-                    if( !Directory.Exists( assemblyConfig.Directory ) ) Directory.CreateDirectory( assemblyConfig.Directory );
-
-                    var config = new StObjEngineConfigurationTest( appDomainConfig, assemblyConfig );
-
-                    AppDomain createdAppDomain = null;
-                    Assert.That( StObjContextRoot.Build( config, TestHelper.Logger, x => createdAppDomain = x ), Is.True, "Build process must return true with UseIndependentAppDomain = false;" );
-
-                    Assert.That( File.Exists( Path.Combine( assemblyConfig.Directory, "MyLittleAssembly.dll" ) ), Is.True );
-                    Assert.That( createdAppDomain, Is.Null );
-
-                    File.Delete( Path.Combine( assemblyConfig.Directory, "MyLittleAssembly.dll" ) );
-
-                    Assert.That( sw.ToString(), Is.Not.Empty );
+                    Assert.That( result.Success, Is.True, "Build succeed..." );
+                    Assert.That( result.IndependentAppDomain, Is.Null, "...in this app domain." );
+                    Assert.That( File.Exists( Path.Combine( outputDir, "MyLittleAssembly.dll" ) ), Is.True, "Build generated the dll." );
                 }
             }
             finally
@@ -78,22 +88,13 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void GenerateDllTests()
         {
-            //Inject current test dll folder
-            var codeBase = Assembly.GetExecutingAssembly().CodeBase;
-            // Code base is like "file:///C:/Users/Spi/Documents/Dev4/CK-Database/Output/Tests/Debug/CK.Setup.SqlServer.Tests.DLL"
-            if( !codeBase.StartsWith( "file:///" ) )
-                throw new ApplicationException( "Code base must start with file:/// protocol." );
-            codeBase = codeBase.Substring( 8 ).Replace( '/', System.IO.Path.DirectorySeparatorChar );
-
-            string binDir = new DirectoryInfo( codeBase ).Parent.FullName;
-
+            string binDir = TestHelper.BinFolder;
             string inputDir = Path.Combine( binDir, "Input" );
-
             try
             {
-                GenerateDll( inputDir );
-                Assert.That( File.Exists( Path.Combine( inputDir, "AutoGenTestObjBuilder.dll" ) ), Is.True, "Test input dll must be generated" );
-                Assert.That( AppDomain.CurrentDomain.GetAssemblies().Where( x => x.FullName.Contains( "AutoGenTestObjBuilder" ) ).Count(), Is.EqualTo( 0 ) );
+                GenerateAutoGenTestObjBuilderDll( inputDir );
+                Assert.That( File.Exists( Path.Combine( inputDir, "AutoGenTestObjBuilder.dll" ) ), Is.True, "Dll has been generated" );
+                Assert.That( AppDomain.CurrentDomain.GetAssemblies().Any( x => x.FullName.Contains( "AutoGenTestObjBuilder" ) ), Is.False );
 
                 AppDomainSetup setup = AppDomain.CurrentDomain.SetupInformation;
                 setup.ApplicationBase = inputDir;
@@ -102,10 +103,6 @@ namespace CK.StObj.Engine.Tests
                 var appdomain = AppDomain.CreateDomain( "StObjContextRoot.Build.IndependentAppDomain", null, setup );
 
                 File.Copy( Path.Combine( binDir, "CK.StObj.Engine.Tests.dll" ), Path.Combine( inputDir, "CK.StObj.Engine.Tests.dll" ) );
-
-                // EXCEPTION //
-                Assert.Throws( typeof( FileNotFoundException ), () => appdomain.Load( "AutoGenTestObjBuilder, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" ) );
-                // EXCEPTION //
 
                 var o = (AppDomainAnalyzer)Activator.CreateInstance( appdomain, typeof( AppDomainAnalyzer ).Assembly.FullName, typeof( AppDomainAnalyzer ).FullName ).Unwrap();
                 o.LoadAssembly( "AutoGenTestObjBuilder, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" );
@@ -124,53 +121,55 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void BuildWithIndependentAppDomain()
         {
-            var localTestDir = Path.Combine( TestHelper.TempFolder, "CK.StObj.Engine.Tests.Build" );
-            if( !Directory.Exists( localTestDir ) ) Directory.CreateDirectory( localTestDir );
+            ProcessInIndependentAppDomain();
+            //AppDomain other = null;
+            //try
+            //{
+            //    other = AppDomain.CreateDomain( "Test" );
+            //    other.DoCallBack( ProcessInIndependentAppDomain );
+            //}
+            //finally
+            //{
+            //    AppDomain.Unload( other );
+            //}
+        }
 
+        static private void ProcessInIndependentAppDomain()
+        {
+            var localTestDir = Path.Combine( TestHelper.TempFolder, "BuildWithIndependentAppDomain" );
             try
             {
-                StObjBuilderAppDomainConfiguration appDomainConfig = new StObjBuilderAppDomainConfiguration();
-                appDomainConfig.UseIndependentAppDomain = true;
-
-                StObjFinalAssemblyConfiguration assemblyConfig = new StObjFinalAssemblyConfiguration();
-                assemblyConfig.Directory = Path.Combine( localTestDir, "Output" );
-                assemblyConfig.AssemblyName = "MyLittleAssembly";
-                if( !Directory.Exists( assemblyConfig.Directory ) ) Directory.CreateDirectory( assemblyConfig.Directory );
-
-                var config = new StObjEngineConfigurationTest( appDomainConfig, assemblyConfig );
-
                 string inputDir = Path.Combine( localTestDir, "Input" );
-                GenerateDll( inputDir );
-                Assert.That( File.Exists( Path.Combine( inputDir, "AutoGenTestObjBuilder.dll" ) ), Is.True, "Test input dll must be generated" );
+                GenerateAutoGenTestObjBuilderDll( inputDir );
+                Assert.That( File.Exists( Path.Combine( inputDir, "AutoGenTestObjBuilder.dll" ) ), Is.True, "Test input dll must heve been generated." );
 
-                appDomainConfig.ProbePaths.Add( inputDir );
-                appDomainConfig.ProbePaths.Add( TestHelper.BinFolder );
+                string outputDir = Path.Combine( localTestDir, "Output" );
+                if( !Directory.Exists( outputDir ) ) Directory.CreateDirectory( outputDir );
 
-                config.RunHook = config.BuildRunHook;
+                // Cleanup any previous run traces.
+                File.Delete( Path.Combine( outputDir, "MyLittleAssembly.dll" ) );
 
-                using( StringWriter sw = new StringWriter() )
+                var config = new StObjEngineConfigurationTest();
+                config.AppDomainConfiguration.UseIndependentAppDomain = true;
+                config.FinalAssemblyConfiguration.Directory = outputDir;
+                config.FinalAssemblyConfiguration.AssemblyName = "MyLittleAssembly";
+
+                config.AppDomainConfiguration.ProbePaths.Add( inputDir );
+                config.AppDomainConfiguration.ProbePaths.Add( TestHelper.BinFolder );
+                config.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.Add( "AutoGenTestObjBuilder, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" );
+
+                using( StObjBuildResult result = StObjContextRoot.Build( config, TestHelper.Logger ) )
                 {
-                    ((IDefaultActivityLogger)TestHelper.Logger).Register( new ActivityLoggerTextWriterSink( sw ) );
-                    AppDomain createdAppDomain = null;
-                    Assert.That( StObjContextRoot.Build( config, TestHelper.Logger, x => createdAppDomain = x ), Is.True, "Build process must return true with UseIndependentAppDomain = true;" );
-                    Assert.That( File.Exists( Path.Combine( assemblyConfig.Directory, "MyLittleAssembly.dll" ) ), Is.True, "Build must generate dll" );
+                    Assert.That( result.Success, Is.True, "Build succeed..." );
+                    Assert.That( result.IndependentAppDomain, Is.Not.Null.And.Not.EqualTo( AppDomain.CurrentDomain ), "...in an independant AppDomain." );
+                    Assert.That( result.IndependentAppDomain.BaseDirectory, Is.EqualTo( Directory.GetParent( TestHelper.TempFolder ).FullName ) );
 
-                    Assert.That( createdAppDomain, Is.Not.Null );
-                    Assert.That( createdAppDomain, Is.Not.EqualTo( AppDomain.CurrentDomain ) );
+                    Assert.That( File.Exists( Path.Combine( outputDir, "MyLittleAssembly.dll" ) ), Is.True, "Build generated the dll." );
 
-                    var o = (AppDomainAnalyzer)Activator.CreateInstance( createdAppDomain, typeof( AppDomainAnalyzer ).Assembly.FullName, typeof( AppDomainAnalyzer ).FullName ).Unwrap();
-                    var assembly = o.GetAllAssemblyNames();
-                    Assert.That( assembly.Where( x => x.Contains( "AutoGenTestObjBuilder" ) ).Count(), Is.GreaterThan( 0 ) );
-                    Assert.That( AppDomain.CurrentDomain.GetAssemblies().Where( x => x.FullName.Contains( "AutoGenTestObjBuilder" ) ).Count(), Is.EqualTo( 0 ) );
-
-                    Assert.That( createdAppDomain.BaseDirectory, Is.EqualTo( Directory.GetParent( TestHelper.TempFolder ).FullName ) );
-
-                    foreach( var item in appDomainConfig.ProbePaths )
-                    {
-                        Assert.That( createdAppDomain.SetupInformation.PrivateBinPath, Is.StringContaining( item ) );
-                    }
-
-                    Assert.That( sw.ToString(), Is.Not.Empty );
+                    var analyser = (AppDomainAnalyzer)result.IndependentAppDomain.CreateInstanceAndUnwrap( typeof( AppDomainAnalyzer ).Assembly.FullName, typeof( AppDomainAnalyzer ).FullName );
+                    string[] assemblies = analyser.GetAllAssemblyNames();
+                    Assert.That( assemblies.Any( x => x.Contains( "AutoGenTestObjBuilder" ) ), Is.True );
+                    Assert.That( AppDomain.CurrentDomain.GetAssemblies().Any( x => x.FullName.Contains( "AutoGenTestObjBuilder" ) ), Is.False, "AutoGenTestObjBuilder has not been loaded in this application domain." );
                 }
             }
             finally
@@ -179,24 +178,31 @@ namespace CK.StObj.Engine.Tests
             }
         }
 
-        void GenerateDll( string inputDir )
-        {
+        static void GenerateAutoGenTestObjBuilderDll( string dir )
+        {           
             CompilerParameters parameters = new CompilerParameters();
             parameters.GenerateExecutable = false;
-            parameters.OutputAssembly = Path.Combine( inputDir, "AutoGenTestObjBuilder.dll" );
+            parameters.OutputAssembly = Path.Combine( dir, "AutoGenTestObjBuilder.dll" );
             parameters.ReferencedAssemblies.Add( "CK.Core.dll" );
             parameters.ReferencedAssemblies.Add( "CK.Reflection.dll" );
             parameters.ReferencedAssemblies.Add( "CK.StObj.Model.dll" );
-            if( !Directory.Exists( inputDir ) ) Directory.CreateDirectory( inputDir );
+            if( !Directory.Exists( dir ) ) Directory.CreateDirectory( dir );
 
-            DirectoryInfo dinfo = Directory.CreateDirectory( inputDir );
-            Assert.That( dinfo.Exists );
-            if( !File.Exists( dinfo.FullName + "\\CK.Core.dll" ) )
-                File.Copy( @"D:\Dev\Dev4\ck-database\Output\Tests\Debug\CK.Core.dll", dinfo.FullName + "\\CK.Core.dll", true );
-            if( !File.Exists( dinfo.FullName + "\\CK.Reflection.dll" ) )
-                File.Copy( @"D:\Dev\Dev4\ck-database\Output\Tests\Debug\CK.Reflection.dll", dinfo.FullName + "\\CK.Reflection.dll", true );
-            if( !File.Exists( dinfo.FullName + "\\CK.StObj.Model.dll" ) )
-                File.Copy( @"D:\Dev\Dev4\ck-database\Output\Tests\Debug\CK.StObj.Model.dll", dinfo.FullName + "\\CK.StObj.Model.dll", true );
+            DirectoryInfo d = new DirectoryInfo( dir );
+
+            Assert.That( d.Exists );
+            if( !File.Exists( Path.Combine( d.FullName, "CK.Core.dll" ) ) )
+            {
+                File.Copy( Path.Combine( TestHelper.BinFolder, @"CK.Core.dll" ), Path.Combine( d.FullName, "CK.Core.dll" ), true );
+            }
+            if( !File.Exists( Path.Combine( d.FullName, "CK.Reflection.dll" ) ) )
+            {
+                File.Copy( Path.Combine( TestHelper.BinFolder, @"CK.Reflection.dll" ), Path.Combine( d.FullName, "CK.Reflection.dll" ), true );
+            }
+            if( !File.Exists( Path.Combine( d.FullName, "CK.StObj.Model.dll" ) ) )
+            {
+                File.Copy( Path.Combine( TestHelper.BinFolder, @"CK.StObj.Model.dll" ), Path.Combine( d.FullName, "CK.StObj.Model.dll" ), true );
+            }
 
             CompilerResults r = CodeDomProvider.CreateProvider( "C#" ).CompileAssemblyFromSource( parameters,
                 @"  using System;
@@ -246,11 +252,9 @@ namespace CK.StObj.Engine.Tests
                         }
                     }"
             );
-            foreach( CompilerError item in r.Errors )
-            {
-                Console.WriteLine( item.ErrorText );
-            }
+            foreach( CompilerError item in r.Errors ) Console.WriteLine( item.ErrorText );
             Assert.That( r.Errors.Count, Is.EqualTo( 0 ) );
+            Assert.That( File.Exists( r.PathToAssembly ) );
         }
 
         public class AppDomainAnalyzer : MarshalByRefObject
@@ -269,92 +273,26 @@ namespace CK.StObj.Engine.Tests
         [Serializable]
         public class StObjEngineConfigurationTest : IStObjEngineConfiguration
         {
-            internal StObjEngineConfigurationTest( StObjBuilderAppDomainConfiguration appDomainConfig, StObjFinalAssemblyConfiguration assemblyConfig )
+            public StObjEngineConfigurationTest()
             {
-                StObjBuilderAppDomainConfiguration = appDomainConfig;
-                StObjFinalAssemblyConfiguration = assemblyConfig;
+                AppDomainConfiguration = new BuilderAppDomainConfiguration();
+                FinalAssemblyConfiguration = new BuilderFinalAssemblyConfiguration();
             }
 
             public string BuilderAssemblyQualifiedName
             {
-                get { return typeof( StObjEngineBuilderTest ).AssemblyQualifiedName; }
+                get { return "CK.Setup.BasicStObjBuilder, CK.StObj.Engine"; }
             }
 
-            public StObjBuilderAppDomainConfiguration StObjBuilderAppDomainConfiguration { get; private set; }
+            public BuilderAppDomainConfiguration AppDomainConfiguration { get; private set; }
 
-            public StObjFinalAssemblyConfiguration StObjFinalAssemblyConfiguration { get; private set; }
+            public BuilderFinalAssemblyConfiguration FinalAssemblyConfiguration { get; private set; }
 
-            public Action<StObjEngineBuilderTest> RunHook { get; set; }
+            public Action<IActivityLogger,BasicStObjBuilder> RunHook { get; set; }
 
-            public void BuildRunHook( StObjEngineBuilderTest test )
+            public void BuildRunHook( IActivityLogger logger, BasicStObjBuilder config )
             {
                 AppDomain.CurrentDomain.Load( "AutoGenTestObjBuilder, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" );
-            }
-        }
-
-        public class StObjEngineBuilderTest : IStObjBuilder
-        {
-            internal IActivityLogger Logger;
-            internal StObjEngineConfigurationTest Config;
-
-            public StObjEngineBuilderTest( IActivityLogger logger, IStObjEngineConfiguration engineConfig )
-            {
-                Logger = logger;
-                Config = (StObjEngineConfigurationTest)engineConfig;
-            }
-
-            public void Run()
-            {
-                if( Config.RunHook != null ) Config.RunHook( this );
-                StObjCollector collector = new StObjCollector( Logger );
-                collector.RegisterClass( typeof( TestObjBuilder.B ) );
-                collector.RegisterClass( typeof( TestObjBuilder.D ) );
-                collector.DependencySorterHookInput = TestHelper.Trace;
-                collector.DependencySorterHookOutput = sortedItems => TestHelper.Trace( sortedItems, false );
-                var r = collector.GetResult();
-                Assert.That( r.HasFatalError, Is.False );
-                // Null as directory => use CK.StObj.Model folder.
-                r.GenerateFinalAssembly( Logger, Config.StObjFinalAssemblyConfiguration );
-            }
-        }
-
-
-        public class TestObjBuilder
-        {
-            class AutoImplementedAttribute : Attribute, IAutoImplementorMethod
-            {
-                public bool Implement( IActivityLogger logger, System.Reflection.MethodInfo m, System.Reflection.Emit.TypeBuilder b, bool isVirtual )
-                {
-                    CK.Reflection.EmitHelper.ImplementEmptyStubMethod( b, m, isVirtual );
-                    return true;
-                }
-            }
-
-            public class A : IAmbientContract
-            {
-            }
-
-            public abstract class B : A
-            {
-                [AutoImplemented]
-                public abstract int Auto( int i );
-            }
-
-            public interface IC : IAmbientContract
-            {
-                A TheA { get; }
-            }
-
-            public class C : IC
-            {
-                [AmbientContract]
-                public A TheA { get; private set; }
-            }
-
-            public class D : C
-            {
-                [AmbientProperty( IsOptional = true )]
-                public string AnOptionalString { get; private set; }
             }
         }
     }

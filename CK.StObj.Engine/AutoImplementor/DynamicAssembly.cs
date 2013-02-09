@@ -49,11 +49,11 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Initializes a new temporary <see cref="DynamicAssembly"/> with a name set to <see cref="StObjFinalAssemblyConfiguration.DefaultAssemblyName"/>+".Memory" and 
+        /// Initializes a new temporary <see cref="DynamicAssembly"/> with a name set to <see cref="BuilderFinalAssemblyConfiguration.DefaultAssemblyName"/>+".Memory" and 
         /// that can only <see cref="AssemblyBuilderAccess.Run"/>.
         /// </summary>
         public DynamicAssembly()
-            : this( null, StObjFinalAssemblyConfiguration.DefaultAssemblyName + ".Memory", null, null, AssemblyBuilderAccess.Run )
+            : this( null, BuilderFinalAssemblyConfiguration.DefaultAssemblyName + ".Memory", null, null, AssemblyBuilderAccess.Run )
         {
         }
 
@@ -65,7 +65,7 @@ namespace CK.Core
         /// <param name="externalVersionStamp">Embedded stamp. Used to detect the need to rebuild the assembly.</param>
         /// <param name="signature">Key pair to use to sign the dll.</param>
         /// <param name="access">Typical accesses are Run and RunAndSave (the default).</param>
-        public DynamicAssembly( string directory, string assemblyName = StObjFinalAssemblyConfiguration.DefaultAssemblyName, string externalVersionStamp = null, StrongNameKeyPair signature = null, AssemblyBuilderAccess access = AssemblyBuilderAccess.RunAndSave )
+        public DynamicAssembly( string directory, string assemblyName = BuilderFinalAssemblyConfiguration.DefaultAssemblyName, string externalVersionStamp = null, StrongNameKeyPair signature = null, AssemblyBuilderAccess access = AssemblyBuilderAccess.RunAndSave )
         {
             bool mustSave = (access & AssemblyBuilderAccess.Save) == AssemblyBuilderAccess.Save;
 

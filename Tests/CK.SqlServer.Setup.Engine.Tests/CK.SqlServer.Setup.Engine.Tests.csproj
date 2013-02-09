@@ -56,6 +56,7 @@
     <Compile Include="PackageAndSqlObjects\PackageAndSqlObjects.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ActorPackage\DatabaseSetup.cs" />
+    <Compile Include="ShallowParserTests.cs" />
     <Compile Include="TestHelper.cs" />
   </ItemGroup>
   <ItemGroup>

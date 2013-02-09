@@ -41,7 +41,7 @@ namespace CK.Core
         /// </summary>
         /// <param name="dirlist">List of directory to analyze</param>
         /// <returns>The common full path</returns>
-        public static string FindCommonAncestor( IList<string> dirlist )
+        public static string FindCommonAncestor( IEnumerable<string> dirlist )
         {
             var orderedList = dirlist.OrderBy( x => x );
             DirectoryInfo commonDirectory = orderedList.Select( x => new DirectoryInfo( x ) ).FirstOrDefault();
@@ -60,64 +60,96 @@ namespace CK.Core
             return common;
         }
 
-        public static bool Build( IStObjEngineConfiguration config, IActivityLogger logger = null, Action<AppDomain> appDomainHook = null )
+        class AppDomainCommunication : MarshalByRefObject
+        {
+            readonly object _locker = new object();
+            bool _done;
+            bool _success;
+
+            public AppDomainCommunication( IActivityLogger logger, IStObjEngineConfiguration config )
+            {
+                if( !config.GetType().IsSerializable ) throw new InvalidOperationException( "IStObjEngineConfiguration must be serializable." );
+                _locker = new object();
+                LoggerBridge = new ActivityLoggerClientBridge( logger );
+                Config = config;
+            }
+
+            public IActivityLoggerClient LoggerBridge { get; private set; }
+
+            public IStObjEngineConfiguration Config { get; private set; }
+
+            public bool WaitForResult()
+            {
+                lock( _locker )
+                    while( !_done )
+                        Monitor.Wait( _locker );
+                return _success;
+            }
+
+            public void SetResult( bool success )
+            {
+                _success = success;
+                lock( _locker )
+                {
+                    _done = true;
+                    Monitor.Pulse( _locker );
+                }
+            }
+        }
+
+        public static StObjBuildResult Build( IStObjEngineConfiguration config, IActivityLogger logger = null )
         {
             if( config == null ) throw new ArgumentNullException( "config" );
-            if( logger == null ) logger = DefaultActivityLogger.Empty;
+            if( logger == null ) logger = DefaultActivityLogger.Create();
 
-            if( config.StObjBuilderAppDomainConfiguration.UseIndependentAppDomain )
+            if( config.AppDomainConfiguration.UseIndependentAppDomain )
             {
-                IList<string> dirPath = new List<string>( config.StObjBuilderAppDomainConfiguration.ProbePaths );
-
-                var result = FindCommonAncestor( dirPath );
+                var result = FindCommonAncestor( config.AppDomainConfiguration.ProbePaths );
                 if( result == null )
-                    throw new ApplicationException( string.Format( "All the probe paths must have a common ancestor. No ancestor can be found with : {0}", string.Join( "\n", dirPath ) ) );
-
-
+                {
+                    throw new CKException( "All the probe paths must have a common ancestor. No ancestor found for: '{0}'.", string.Join( "', '", config.AppDomainConfiguration.ProbePaths ) );
+                }
                 AppDomainSetup setup = AppDomain.CurrentDomain.SetupInformation;
                 setup.ApplicationBase = result;
-                //setup.DisallowApplicationBaseProbing = true; 
-                setup.PrivateBinPathProbe = "*";
-                setup.PrivateBinPath = string.Join( ";", config.StObjBuilderAppDomainConfiguration.ProbePaths );
-                var appdomain = AppDomain.CreateDomain( "StObjContextRoot.Build.IndependentAppDomain", null, setup );
-                if( appDomainHook != null ) appDomainHook( appdomain );
-
-                using( Semaphore semaphore = new Semaphore( 0, 1, "local" ) )
-                {
-                    appdomain.SetData( "config", config );
-                    appdomain.SetData( "logger", logger );
-                    appdomain.DoCallBack( new CrossAppDomainDelegate( LaunchRunCrossDomain ) );
-                    semaphore.WaitOne();
-                    return true;
-                }
+                // Do not use ApplicationBase, use only Probe paths.
+                setup.PrivateBinPathProbe = String.Empty;
+                setup.PrivateBinPath = string.Join( ";", config.AppDomainConfiguration.ProbePaths );
+                var appDomain = AppDomain.CreateDomain( "StObjContextRoot.Build.IndependentAppDomain", null, setup );
+                AppDomainCommunication appDomainComm = new AppDomainCommunication( logger, config );
+                appDomain.SetData( "ck-appDomainComm", appDomainComm );
+                appDomain.DoCallBack( new CrossAppDomainDelegate( LaunchRunCrossDomain ) );
+                return new StObjBuildResult( appDomainComm.WaitForResult(), appDomain, logger );
             }
             else
             {
-                return LaunchRun( config, logger );
+                return new StObjBuildResult( LaunchRun( logger, config ), null, null );
             }
-            //return false;
         }
 
-        private static bool LaunchRun( IStObjEngineConfiguration config, IActivityLogger logger )
+        private static bool LaunchRun( IActivityLogger logger, IStObjEngineConfiguration config )
         {
             IStObjBuilder runner = (IStObjBuilder)Activator.CreateInstance( SimpleTypeFinder.WeakDefault.ResolveType( config.BuilderAssemblyQualifiedName, true ), logger, config );
-            runner.Run();
-            return true;
+            return runner.Run();
         }
 
         private static void LaunchRunCrossDomain()
         {
-            Semaphore semaphore = Semaphore.OpenExisting( "local" );
+            AppDomain thisDomain = AppDomain.CurrentDomain;
+            AppDomainCommunication appDomainComm = (AppDomainCommunication)thisDomain.GetData( "ck-appDomainComm" );
+            
+            IDefaultActivityLogger logger = DefaultActivityLogger.Create();
             try
             {
-                LaunchRun( (IStObjEngineConfiguration)AppDomain.CurrentDomain.GetData( "config" ), (IActivityLogger)AppDomain.CurrentDomain.GetData( "logger" ) );
+                logger.Output.RegisterClient( appDomainComm.LoggerBridge );
+                logger.Warn( "Pouf..." );
+                appDomainComm.SetResult( LaunchRun( logger, appDomainComm.Config ) );
             }
-            finally
+            catch( Exception ex )
             {
-                if( semaphore != null ) semaphore.Release();
+                logger.Fatal( ex );
+                appDomainComm.SetResult( false );
             }
         }
-
 
         readonly StObjContext _defaultContext;
         readonly StObjContext[] _contexts;
