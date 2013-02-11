@@ -38,17 +38,73 @@ namespace CK.StObj.Engine.Tests
         }
 
         [Test]
+        public void Test()
+        {
+            var callingDomain = AppDomain.CurrentDomain;
+
+            Console.WriteLine( "------------------1CallingDomain---------------------------" );
+            Console.WriteLine( callingDomain.FriendlyName );
+            Console.WriteLine( callingDomain.SetupInformation.ApplicationBase );
+            Console.WriteLine( callingDomain.SetupInformation.PrivateBinPath );
+            Console.WriteLine( "--------------------/1-------------------------" );
+
+            var domain = AppDomain.CreateDomain( "xrq-test-domain2", null, null );
+
+            Console.WriteLine( "--------------------2-------------------------" );
+            Console.WriteLine( domain.FriendlyName );
+            Console.WriteLine( domain.SetupInformation.ApplicationBase );
+            Console.WriteLine( domain.SetupInformation.PrivateBinPath );
+            Console.WriteLine( "--------------------/2-------------------------" );
+
+            AppDomain.Unload( domain );
+
+            var setup = new AppDomainSetup()
+            {
+                ApplicationBase = callingDomain.SetupInformation.ApplicationBase
+            };
+
+            domain = AppDomain.CreateDomain( "xrq-test-domain3", null, setup );
+
+            Console.WriteLine( "---------------------3------------------------" );
+            Console.WriteLine( domain.FriendlyName );
+            Console.WriteLine( domain.SetupInformation.ApplicationBase );
+            Console.WriteLine( domain.SetupInformation.PrivateBinPath );
+            Console.WriteLine( "----------------------/3-----------------------" );
+
+            var assembly = Assembly.GetExecutingAssembly().CodeBase;
+
+            //var facade = domain.CreateInstanceFromAndUnwrap(
+            //    assembly,
+            //    "AppDomainInNUnit.Facade" ) as Facade;
+
+            //facade.Run( new[] { "some", "args" } );
+
+            AppDomain.Unload( domain );
+        }
+
+
+        public class Caller : MarshalByRefObject
+        {
+            public void Run()
+            {
+                Console.WriteLine( AppDomain.CurrentDomain.FriendlyName );
+            }
+        }
+
+        [Test]
         public void BuildInCurrentAppDomain()
         {
             AppDomain other = null;
             try
             {
-                other = AppDomain.CreateDomain( "Test" );
-                other.DoCallBack( ProcessInCurrentAppDomain );
+                var setup = new AppDomainSetup() { ApplicationBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase };
+                other = AppDomain.CreateDomain( "CK-Test-Separate-Domain", null, setup );
+                var c = (Caller)other.CreateInstanceFromAndUnwrap( typeof( DynamicGenerationAppDomainTests ).Assembly.FullName, typeof( Caller ).FullName );
+                c.Run();
             }
             finally
             {
-                AppDomain.Unload( other );
+                if( other != null ) AppDomain.Unload( other );
             }
         }
 
