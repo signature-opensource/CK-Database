@@ -7,14 +7,13 @@ using System.Text;
 
 namespace CK.SqlServer
 {
-    public class SqlNullExpr : SqlLiteralExpr
+    public class SqlExprNull : SqlExprBaseMonoToken
     {
-        public SqlNullExpr( SourceLocation location )
-            : base( location, SqlToken.Identifier )
+        public SqlExprNull( SqlTokenIdentifier tokenIdentifier )
+            : base( tokenIdentifier )
         {
+            if( String.Compare( tokenIdentifier.Name, "null", StringComparison.OrdinalIgnoreCase ) != 0 ) throw new ArgumentException( "Invalid null token.", "tokenIdentifier" );
         }
-
-        public override string LiteralValue { get { return "null"; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

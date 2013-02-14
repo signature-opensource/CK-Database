@@ -4,26 +4,23 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using CK.Core;
 
 namespace CK.SqlServer
 {
-    public class SqlLiteralIntegerExpr : SqlLiteralExpr
+    public class SqlExprParameterList : SqlExprBaseListWithSeparatorList<SqlExprParameter>
     {
-        public SqlLiteralIntegerExpr( SourceLocation location, int value )
-            : base( location, SqlToken.Integer )
+        public SqlExprParameterList( IEnumerable<SqlToken> tokens )
+            : base( tokens )
         {
-            Value = value;
         }
-
-        public int Value { get; private set; }
-
-        public override string LiteralValue { get { return Value.ToString( CultureInfo.InvariantCulture ); } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )
         {
             return visitor.Visit( this );
         }
+
     }
 
 }

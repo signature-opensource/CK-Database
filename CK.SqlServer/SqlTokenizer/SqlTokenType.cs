@@ -22,22 +22,34 @@ namespace CK.SqlServer
     ///
     /// </remarks>
     [Flags]
-    public enum SqlToken
+    public enum SqlTokenType
     {
+        /// <summary>
+        /// Not a token per-se.
+        /// Can be used to denote white space.
+        /// </summary>
         None = 0,
 
-        #region JSParserError values bits n°31 to 26.
-        IsErrorOrEndOfInput = SqlTokenError.IsErrorOrEndOfInput,
-        EndOfInput = SqlTokenError.EndOfInput,
-        ErrorMask = SqlTokenError.ErrorMask,
-        ErrorInvalidChar = SqlTokenError.ErrorInvalidChar,
-        ErrorStringMask = SqlTokenError.ErrorStringMask,
-        ErrorNumberMask = SqlTokenError.ErrorNumberMask,
-        ErrorIdentifierMask = SqlTokenError.ErrorIdentifierMask,
-        ErrorIdentifierUnterminated = SqlTokenError.ErrorIdentifierUnterminated,
-        ErrorStringUnterminated = SqlTokenError.ErrorStringUnterminated,
-        ErrorNumberUnterminatedValue = SqlTokenError.ErrorNumberUnterminatedValue,
-        ErrorNumberValue = SqlTokenError.ErrorNumberValue,
+        #region SqlTokenTypeError values bits (negative values)
+        /// <summary>
+        /// Any negative value indicates an error or the end of the input.
+        /// </summary>
+        IsErrorOrEndOfInput = SqlTokenTypeError.IsErrorOrEndOfInput,       
+        /// <summary>
+        /// Same value as <see cref="SqlTokenTypeError.EndOfInput"/>.
+        /// The two most significant bits are set.
+        /// </summary>
+        EndOfInput = SqlTokenTypeError.EndOfInput,
+        
+        ErrorMask = SqlTokenTypeError.ErrorMask,
+        ErrorInvalidChar = SqlTokenTypeError.ErrorInvalidChar,
+        ErrorStringMask = SqlTokenTypeError.ErrorStringMask,
+        ErrorNumberMask = SqlTokenTypeError.ErrorNumberMask,
+        ErrorIdentifierMask = SqlTokenTypeError.ErrorIdentifierMask,
+        ErrorIdentifierUnterminated = SqlTokenTypeError.ErrorIdentifierUnterminated,
+        ErrorStringUnterminated = SqlTokenTypeError.ErrorStringUnterminated,
+        ErrorNumberUnterminatedValue = SqlTokenTypeError.ErrorNumberUnterminatedValue,
+        ErrorNumberValue = SqlTokenTypeError.ErrorNumberValue,
         #endregion
 
         #region Operator precedence bits n°25 to 21 (levels from 0 to 15).
@@ -62,7 +74,35 @@ namespace CK.SqlServer
         OpLevel15 = 15 << OpLevelShift,
         #endregion
 
-        #region Token discriminators bits n°19 to 9 (IsAssignOperator to IsString) - (8 is unused).
+
+        /// <summary>
+        /// Combines all IsXXXXOperator (Assign, Basic, Compare, LogicalOrSet).
+        /// </summary>
+        AllOperatorMask = IsAssignOperator | IsBasicOperator | IsCompareOperator | IsLogicalOrSetOperator,
+
+        /// <summary>
+        /// Mask that covers IsXXX discriminators (including <see cref="IsComment"/>).
+        /// </summary>
+        TokenDiscriminatorMask = AllOperatorMask
+                                    |IsBracket
+                                    |IsIdentifier
+                                    |IsNumber
+                                    |IsPunctuation
+                                    |IsString
+                                    |IsComment,
+
+        /// <summary>
+        /// Mask that covers operators, punctuations and brakets: the token is fully defined by 
+        /// the <see cref="SqlTokenType"/> itself (no associated value is necessary).
+        /// </summary>
+        TerminalMask = AllOperatorMask | IsBracket | IsPunctuation,
+
+        /// <summary>
+        /// Mask that covers literals: IsString & IsNumber.
+        /// </summary>
+        LitteralMask = IsString | IsNumber,
+
+        #region Token discriminators bits n°19 to 9 (IsAssignOperator to IsComment) - (10 & 9 are unused).
         /// <summary>
         /// Covers = |= &amp;= ^= += -= /= *= and %=.
         /// </summary>
@@ -71,7 +111,7 @@ namespace CK.SqlServer
         /// <summary>
         /// Covers binary operators |, ^, &amp; +, -, /, *, % and the unary ~ (bitwise not).
         /// </summary>
-        IsOperator = 1 << 18,
+        IsBasicOperator = 1 << 18,
 
         /// <summary>
         /// Covers [], () and {}.
@@ -84,38 +124,41 @@ namespace CK.SqlServer
         IsCompareOperator = 1 << 16,
 
         /// <summary>
-        /// Covers /* ... */ block as well as -- line comment.
-        /// </summary>
-        IsComment = 1 << 15,
-
-        /// <summary>
         /// Covers identifiers.
         /// </summary>
-        IsIdentifier = 1 << 14,
+        IsIdentifier = 1 << 15,
 
         /// <summary>
         /// Covers NOT, AND, ALL, ANY, BETWEEN, EXISTS, IN, SOME, LIKE and OR
         /// </summary>
-        IsLogicalOrSet = 1 << 13,
+        IsLogicalOrSetOperator = 1 << 14,
 
         /// <summary>
-        /// Covers float and integer (hexadecimal). 
+        /// Covers binary, money, float and integer (hexadecimal). 
         /// </summary>
-        IsNumber = 1 << 12,
+        IsNumber = 1 << 13,
 
         /// <summary>
         /// Covers dot ".", comma "," and semicolon ";".
         /// </summary>
-        IsPunctuation = 1 << 11,
+        IsPunctuation = 1 << 12,
 
         /// <summary>
-        /// Covers strings.
+        /// Covers strings ('string' or N'string').
         /// </summary>
-        IsString = 1 << 9,
+        IsString = 1 << 11,
 
         /// <summary>
+        /// Unused
         /// </summary>
-        // IsUnused = 1 << 8,
+        // IsUnused = 1 << 10,
+        // IsUnused = 1 << 9,
+
+        /// <summary>
+        /// Covers /* ... */ block as well as -- line comment.
+        /// </summary>
+        IsComment = 1 << 8,
+
         #endregion
 
         AssignOperatorCount = 9,
@@ -167,51 +210,51 @@ namespace CK.SqlServer
 
         #endregion
 
-        OperatorCount = 9,
-        #region IsOperator: |, ^, &amp; +, -, /, *, % and the unary ~.
+        BasicOperatorCount = 9,
+        #region IsBasicOperator: |, ^, &, +, -, /, *, % and the unary ~.
 
         /// <summary>
         /// Single pipe (|) bitwise OR operator.
         /// </summary>
-        BitwiseOr = IsOperator | OpLevel07 | 1,
+        BitwiseOr = IsBasicOperator | OpLevel07 | 1,
 
         /// <summary>
         /// Xor binary (^) operator.
         /// </summary>
-        BitwiseXOr = IsOperator | OpLevel07 | 2,
+        BitwiseXOr = IsBasicOperator | OpLevel07 | 2,
 
         /// <summary>
-        /// Single ampersand (&) binary And operator.
+        /// Single ampersand (&amp;) binary And operator.
         /// </summary>
-        BitwiseAnd = IsOperator | OpLevel07 | 3,
+        BitwiseAnd = IsBasicOperator | OpLevel07 | 3,
 
         /// <summary>
         /// Plus operator.
         /// </summary>
-        Plus = IsOperator | OpLevel07 | 4,
+        Plus = IsBasicOperator | OpLevel07 | 4,
 
         /// <summary>
         /// Minus operator.
         /// </summary>
-        Minus = IsOperator | OpLevel07 | 5,
+        Minus = IsBasicOperator | OpLevel07 | 5,
 
         /// <summary>
         /// Mult operator.
         /// </summary>
-        Mult = IsOperator | OpLevel08 | 6,
+        Mult = IsBasicOperator | OpLevel08 | 6,
 
         /// <summary>
         /// Divide operator.
         /// </summary>
-        Divide = IsOperator | OpLevel08 | 7,
+        Divide = IsBasicOperator | OpLevel08 | 7,
         /// <summary>
         /// Modulo.
         /// </summary>
-        Modulo = IsOperator | OpLevel08 | 8,
+        Modulo = IsBasicOperator | OpLevel08 | 8,
         /// <summary>
         /// Biwise Not (~).
         /// </summary>
-        BitwiseNot = IsOperator | OpLevel09 | 9,
+        BitwiseNot = IsBasicOperator | OpLevel09 | 9,
 
         #endregion
 
@@ -257,44 +300,44 @@ namespace CK.SqlServer
 
         #endregion
 
-        LogicalOrSetCount = 10,
+        LogicalOrSetCount = 9,
         #region IsLogicalOrSet: not, or, and, all, any (same as "some"), between, exists, in and like.
         /// <summary>
         /// NOT operator.
         /// </summary>
-        Not = IsLogicalOrSet | OpLevel05 | 1,
+        Not = IsLogicalOrSetOperator | OpLevel05 | 1,
         /// <summary>
         /// Logical OR operator.
         /// </summary>
-        Or = IsLogicalOrSet | OpLevel03 | 2,
+        Or = IsLogicalOrSetOperator | OpLevel03 | 2,
         /// <summary>
         /// Logical AND operator.
         /// </summary>
-        And = IsLogicalOrSet | OpLevel04 | 3,
+        And = IsLogicalOrSetOperator | OpLevel04 | 3,
         /// <summary>
         /// ALL operator.
         /// </summary>
-        All = IsLogicalOrSet | OpLevel03 | 4,
+        All = IsLogicalOrSetOperator | OpLevel03 | 4,
         /// <summary>
         /// ANY operator (synonym of SOME).
         /// </summary>
-        Any = IsLogicalOrSet | OpLevel03 | 5,
+        Any = IsLogicalOrSetOperator | OpLevel03 | 5,
         /// <summary>
         /// BETWEEN operator.
         /// </summary>
-        Between = IsLogicalOrSet | OpLevel03 | 6,
+        Between = IsLogicalOrSetOperator | OpLevel03 | 6,
         /// <summary>
         /// EXISTS operator.
         /// </summary>
-        Exists = IsLogicalOrSet | OpLevel03 | 7,
+        Exists = IsLogicalOrSetOperator | OpLevel03 | 7,
         /// <summary>
         /// IN operator.
         /// </summary>
-        In = IsLogicalOrSet | OpLevel03 | 8,
+        In = IsLogicalOrSetOperator | OpLevel03 | 8,
         /// <summary>
         /// LIKE operator.
         /// </summary>
-        Like = IsLogicalOrSet | OpLevel03 | 9,
+        Like = IsLogicalOrSetOperator | OpLevel03 | 9,
         #endregion
 
         /// <summary>
@@ -338,29 +381,80 @@ namespace CK.SqlServer
         Money = IsNumber | 5,
 
         /// <summary>
-        /// Identifier token.
+        /// Identifier token (not "quoted" nor [quoted]).
         /// </summary>
-        Identifier = IsIdentifier | 1,
+        IdentifierNaked = IsIdentifier,
+
+        /// <summary>
+        /// Denotes a "quoted identifier".
+        /// </summary>
+        IsIdentifierQuoted = 1 << 7,
+
+        /// <summary>
+        /// Denotes a [Quoted identifier].
+        /// </summary>
+        IsIdentifierQuotedBracket = 1 << 6,
+
+        /// <summary>
+        /// Mask that covers IdentifierTypeXXX values.
+        /// </summary>
+        IdentifierTypeMask = (1 << 6) - 1,
+
+        /// <summary>
+        /// Mask that covers IsIdentifierQuoted and IsIdentifierQuotedBracket bits.
+        /// </summary>
+        IdentifierQuoteMask = IsIdentifierQuoted | IsIdentifierQuotedBracket,
 
         /// <summary>
         /// Identifier "Quoted token".
         /// </summary>
-        IdentifierQuoted = IsIdentifier | 2,
+        IdentifierQuoted = IsIdentifier | IsIdentifierQuoted,
 
         /// <summary>
         /// Identifier [Quoted token].
         /// </summary>
-        IdentifierQuotedBracket = IsIdentifier | 3,
+        IdentifierQuotedBracket = IsIdentifier | IsIdentifierQuotedBracket,
 
         /// <summary>
-        /// Keyword token.
+        /// Reserved keyword. See <see cref="SqlReservedKeyword"/>.
         /// </summary>
-        Keyword = IsIdentifier | 4,
+        IdentifierTypeReservedKeyword = IsIdentifier | 1,
 
         /// <summary>
-        /// Variable token.
+        /// Variable token: identifier that starts with @.
         /// </summary>
-        Variable = IsIdentifier | 5,
+        IdentifierTypeVariable = IsIdentifier | 2,
+
+
+        IdentifierTypeVariant = IsIdentifier | 3,
+        IdentifierTypeXml = IsIdentifier | 4,
+        IdentifierTypeDateTimeOffset = IsIdentifier | 5,
+        IdentifierTypeDateTime2 = IsIdentifier | 6,
+        IdentifierTypeDateTime = IsIdentifier | 7,
+        IdentifierTypeSmallDateTime = IsIdentifier | 8,
+        IdentifierTypeDate = IsIdentifier | 9,
+        IdentifierTypeTime = IsIdentifier | 10,
+        IdentifierTypeFloat = IsIdentifier | 11,
+        IdentifierTypeReal = IsIdentifier | 12,
+        IdentifierTypeDecimal = IsIdentifier | 13,
+        IdentifierTypeMoney = IsIdentifier | 14,
+        IdentifierTypeSmallMoney = IsIdentifier | 15,
+        IdentifierTypeBigInt = IsIdentifier | 16,
+        IdentifierTypeInt = IsIdentifier | 17,
+        IdentifierTypeSmallInt = IsIdentifier | 18,
+        IdentifierTypeTinyInt = IsIdentifier | 19,
+        IdentifierTypeBit = IsIdentifier | 20,
+        IdentifierTypeNText = IsIdentifier | 21,
+        IdentifierTypeText = IsIdentifier | 22,
+        IdentifierTypeImage = IsIdentifier | 23,
+        IdentifierTypeTimestamp = IsIdentifier | 24,
+        IdentifierTypeUniqueIdentifier = IsIdentifier | 25,
+        IdentifierTypeNVarChar = IsIdentifier | 26,
+        IdentifierTypeNChar = IsIdentifier | 27,
+        IdentifierTypeVarChar = IsIdentifier | 28,
+        IdentifierTypeChar = IsIdentifier | 29,
+        IdentifierTypeVarBinary = IsIdentifier | 30,
+        IdentifierTypeBinary = IsIdentifier | 31,
 
         /// <summary>
         /// Star comment: /*...*/
@@ -371,7 +465,6 @@ namespace CK.SqlServer
         /// Line comment: --... 
         /// </summary>
         LineComment = IsComment | 2,
-
 
         Dot = IsPunctuation | OpLevel10 | 1,
         Comma = IsPunctuation | 2,

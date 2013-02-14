@@ -42,21 +42,21 @@ namespace CK.Javascript.Tests
             SqlTokeniser p = new SqlTokeniser();
             p.SkipComments = false;
 
-            Assert.That( SqlTokeniser.Explain( SqlToken.Identifier ), Is.EqualTo( "identifier" ) );
-            Assert.That( SqlTokeniser.Explain( SqlToken.IdentifierQuoted ), Is.EqualTo( "\"quoted identifier\"" ) );
-            Assert.That( SqlTokeniser.Explain( SqlToken.IdentifierQuotedBracket ), Is.EqualTo( "[quoted identifier]" ) );
-            Assert.That( SqlTokeniser.Explain( SqlToken.Variable ), Is.EqualTo( "@var" ) );
-            Assert.That( SqlTokeniser.Explain( SqlToken.Keyword ), Is.EqualTo( "keyword" ) );
-            Assert.That( SqlTokeniser.Explain( SqlToken.String ), Is.EqualTo( "'string'" ) );
-            Assert.That( SqlTokeniser.Explain( SqlToken.UnicodeString ), Is.EqualTo( "N'unicode string'" ) );
-            Assert.That( SqlTokeniser.Explain( SqlToken.StarComment ), Is.EqualTo( "/* ... */" ) );
-            Assert.That( SqlTokeniser.Explain( SqlToken.LineComment ), Is.EqualTo( "-- ..." + Environment.NewLine ) );
+            Assert.That( SqlTokeniser.Explain( SqlTokenType.IdentifierNaked ), Is.EqualTo( "identifier" ) );
+            Assert.That( SqlTokeniser.Explain( SqlTokenType.IdentifierQuoted ), Is.EqualTo( "\"quoted identifier\"" ) );
+            Assert.That( SqlTokeniser.Explain( SqlTokenType.IdentifierQuotedBracket ), Is.EqualTo( "[quoted identifier]" ) );
+            Assert.That( SqlTokeniser.Explain( SqlTokenType.IdentifierTypeVariable ), Is.EqualTo( "@var" ) );
+            Assert.That( SqlTokeniser.Explain( SqlTokenType.IdentifierTypeReservedKeyword ), Is.EqualTo( "keyword" ) );
+            Assert.That( SqlTokeniser.Explain( SqlTokenType.String ), Is.EqualTo( "'string'" ) );
+            Assert.That( SqlTokeniser.Explain( SqlTokenType.UnicodeString ), Is.EqualTo( "N'unicode string'" ) );
+            Assert.That( SqlTokeniser.Explain( SqlTokenType.StarComment ), Is.EqualTo( "/* ... */" ) );
+            Assert.That( SqlTokeniser.Explain( SqlTokenType.LineComment ), Is.EqualTo( "-- ..." + Environment.NewLine ) );
 
-            Assert.That( SqlTokeniser.Explain( SqlToken.Integer ), Is.EqualTo( "42" ) );
-            Assert.That( SqlTokeniser.Explain( SqlToken.Float ), Is.EqualTo( "6.02214129e+23" ) );
-            Assert.That( SqlTokeniser.Explain( SqlToken.Binary ), Is.EqualTo( "0x00CF12A4" ) );
-            Assert.That( SqlTokeniser.Explain( SqlToken.Decimal ), Is.EqualTo( "124.587" ) );
-            Assert.That( SqlTokeniser.Explain( SqlToken.Money ), Is.EqualTo( "$548.7" ) );
+            Assert.That( SqlTokeniser.Explain( SqlTokenType.Integer ), Is.EqualTo( "42" ) );
+            Assert.That( SqlTokeniser.Explain( SqlTokenType.Float ), Is.EqualTo( "6.02214129e+23" ) );
+            Assert.That( SqlTokeniser.Explain( SqlTokenType.Binary ), Is.EqualTo( "0x00CF12A4" ) );
+            Assert.That( SqlTokeniser.Explain( SqlTokenType.Decimal ), Is.EqualTo( "124.587" ) );
+            Assert.That( SqlTokeniser.Explain( SqlTokenType.Money ), Is.EqualTo( "$548.7" ) );
 
             string s = @"create table [a.b] . tC ( TheName nvarchar ( 1254 ) ) ;
 /* Comment
@@ -109,6 +109,36 @@ end";
                 .Replace( "end", "keyword" );
 
             Assert.That( recompose, Is.EqualTo( s ) );
+        }
+
+
+
+        [Test]
+        public void Numbers()
+        {
+            //
+            //  select [ ]=1, [Val] = '0', Type = cast(sql_variant_property(0,'BaseType')  as varchar(20)), [Precision]=cast(sql_variant_property(0,'Precision') as varchar(20)), [Scale]= cast(sql_variant_property(0,'Scale') as varchar(20)), [MaxLength] = cast(sql_variant_property(0,'MaxLength') as varchar(20))
+            //  union
+            //  select 2, '.3', cast(sql_variant_property(.3,'BaseType')  as varchar(20)), cast(sql_variant_property(.3,'Precision') as varchar(20)), cast(sql_variant_property(.3,'Scale') as varchar(20)), [MaxLength] = cast(sql_variant_property(.3,'MaxLength') as varchar(20))
+            //  union
+            //  select 3, '3.3', cast(sql_variant_property(3.3,'BaseType')  as varchar(20)), cast(sql_variant_property(3.3,'Precision') as varchar(20)), cast(sql_variant_property(3.3,'Scale') as varchar(20)), [MaxLength] = cast(sql_variant_property(3.3,'MaxLength') as varchar(20))
+            //  union
+            //  select 4, '0.3', cast(sql_variant_property(0.3,'BaseType')  as varchar(20)), cast(sql_variant_property(0.3,'Precision') as varchar(20)), cast(sql_variant_property(0.3,'Scale') as varchar(20)), [MaxLength] = cast(sql_variant_property(0.3,'MaxLength') as varchar(20))
+            //  union
+            //  select 5, '0003.3', cast(sql_variant_property(0003.3,'BaseType')  as varchar(20)), cast(sql_variant_property(0003.3,'Precision') as varchar(20)), cast(sql_variant_property(0003.3,'Scale') as varchar(20)), [MaxLength] = cast(sql_variant_property(0003.3,'MaxLength') as varchar(20))
+            //  union
+            //  select 6, '3.', cast(sql_variant_property(3.,'BaseType')  as varchar(20)), cast(sql_variant_property(3.,'Precision') as varchar(20)), cast(sql_variant_property(3.,'Scale') as varchar(20)), [MaxLength] = cast(sql_variant_property(3.,'MaxLength') as varchar(20))
+            //
+            // ==> 
+            //  	    Val	    Type	    Precision	Scale
+            //  	1	0	    int	        10	        0	  
+            //  	2	.3	    numeric	    1	        1	
+            //  	3	3.3	    numeric	    2	        1	
+            //  	4	0.3	    numeric	    1	        1	
+            //  	5	0003.3	numeric	    2	        1	
+            //  	6	3.	    numeric	    1	        0
+
+            SqlTokeniser p = new SqlTokeniser();
         }
 
 

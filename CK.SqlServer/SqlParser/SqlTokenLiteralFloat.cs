@@ -4,26 +4,22 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using CK.Core;
 
 namespace CK.SqlServer
 {
-    public class SqlLiteralFloatExpr : SqlLiteralExpr
+    public class SqlTokenLiteralFloat : SqlTokenLiteral
     {
-        public SqlLiteralFloatExpr( SourceLocation location, double value )
-            : base( location, SqlToken.Float )
+        public SqlTokenLiteralFloat( SqlTokenType t, double value, IReadOnlyList<SqlTrivia> leadingTrivia = null, IReadOnlyList<SqlTrivia> trailingTrivia = null )
+            : base( t, leadingTrivia, trailingTrivia )
         {
+            if( t != SqlTokenType.Float ) throw new ArgumentException( "Invalid token type.", "t" );
             Value = value;
         }
 
         public double Value { get; private set; }
 
         public override string LiteralValue { get { return Value.ToString( CultureInfo.InvariantCulture ); } }
-
-        [DebuggerStepThrough]
-        internal protected override T Accept<T>( IExprVisitor<T> visitor )
-        {
-            return visitor.Visit( this );
-        }
     }
 
 

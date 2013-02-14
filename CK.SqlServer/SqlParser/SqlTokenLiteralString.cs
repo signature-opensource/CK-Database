@@ -4,29 +4,26 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using CK.Core;
 
 namespace CK.SqlServer
 {
-    public class SqlLiteralStringExpr : SqlLiteralExpr
+    public class SqlTokenLiteralString : SqlTokenLiteral
     {
-        public SqlLiteralStringExpr( SourceLocation location, SqlToken t, string value )
-            : base( location, t )
+        public SqlTokenLiteralString( SqlTokenType t, string value, IReadOnlyList<SqlTrivia> leadingTrivia = null, IReadOnlyList<SqlTrivia> trailingTrivia = null )
+            : base( t, leadingTrivia, trailingTrivia )
         {
+            if( (t & SqlTokenType.IsString) == 0 ) throw new ArgumentException( "Invalid token type.", "t" );
             if( value == null ) throw new ArgumentNullException( "value" );
             Value = value;
         }
 
-        public bool IsUnicode { get { return SqlToken == SqlServer.SqlToken.UnicodeString; } }
+        public bool IsUnicode { get { return TokenType == SqlTokenType.UnicodeString; } }
 
         public string Value { get; private set; }
 
         public override string LiteralValue { get { return String.Format( IsUnicode ? "N'{0}'" : "'{0}'", SqlHelper.SqlEncode( Value ) ); } }
 
-        [DebuggerStepThrough]
-        internal protected override T Accept<T>( IExprVisitor<T> visitor )
-        {
-            return visitor.Visit( this );
-        }
     }
 
 }

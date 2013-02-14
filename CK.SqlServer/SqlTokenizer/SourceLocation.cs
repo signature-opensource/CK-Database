@@ -10,15 +10,14 @@ namespace CK.SqlServer
     {
         public const string NoSource = "(no source)";
 
-        public static readonly SourceLocation Empty = new SourceLocation() { Source = NoSource };
+        public static readonly SourceLocation Empty = new SourceLocation() { SourceName = NoSource };
 
-        public string Source;
-        public int Line;
-        public int Column;
+        public string SourceName;
+        public int Index;
 
         public override int GetHashCode()
         {
-            return Util.Hash.Combine( Util.Hash.StartValue, Source, Line, Column ).GetHashCode();
+            return Util.Hash.Combine( Util.Hash.StartValue, SourceName, Index ).GetHashCode();
         }
 
         public override bool Equals( object obj )
@@ -26,14 +25,14 @@ namespace CK.SqlServer
             if( obj is SourceLocation )
             {
                 SourceLocation other = (SourceLocation)obj;
-                return Line == other.Line && Column == other.Column && Source == other.Source;
+                return Index == other.Index && SourceName == other.SourceName;
             }
             return false;
         }
 
         public override string ToString()
         {
-            return String.Format( "{0} - line {1}, column {2}", Source, Line, Column );
+            return String.Format( "{0} ({2})", SourceName, Index );
         }
     }
 }

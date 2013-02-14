@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CK.SqlServer
 {
-    public enum SqlTokenError
+    public enum SqlTokenTypeError
     {
         None = 0,
 
@@ -20,6 +20,7 @@ namespace CK.SqlServer
         /// The end of input (the two most sgnificant bit set).
         /// </summary>
         EndOfInput = IsErrorOrEndOfInput | (1 << 30),
+        
         /// <summary>
         /// Error mask.
         /// </summary>
@@ -55,15 +56,16 @@ namespace CK.SqlServer
         /// </summary>
         ErrorIdentifierUnterminated = ErrorIdentifierMask | 1,
 
-
         /// <summary>
         /// Unterminated number.
         /// </summary>
         ErrorNumberUnterminatedValue = ErrorNumberMask | 1,
+
         /// <summary>
         /// Invalid number value.
         /// </summary>
         ErrorNumberValue = ErrorNumberMask | 2,
+
         /// <summary>
         /// Number value is immediately followed by an identifier: 45D for example.
         /// </summary>

@@ -6,15 +6,12 @@ using System.Text;
 
 namespace CK.SqlServer
 {
-    public class SqlSyntaxErrorExpr : SqlExpr
+    public class SqlExprSyntaxError : SqlExprBaseMonoToken
     {
-        public SqlSyntaxErrorExpr( SourceLocation location, string errorMessageFormat, params object[] messageParameters )
-            : base( location )
+        public SqlExprSyntaxError( SqlTokenError error )
+            : base( error )
         {
-            ErrorMessage = String.Format( errorMessageFormat, messageParameters );
         }
-
-        public string ErrorMessage { get; private set; }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )
@@ -24,7 +21,7 @@ namespace CK.SqlServer
 
         public override string ToString()
         {
-            return "Syntax: " + ErrorMessage;
+            return "Syntax: " + Token.TokenType;
         }
     }
 
