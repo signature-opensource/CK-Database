@@ -27,17 +27,87 @@ using System.Collections.Generic;
 namespace CK.Core
 {
     /// <summary>
-    /// A <see cref="IActivityLoggerClient"/> and <see cref="IMuxActivityLoggerClient"/> that marshals what it receives into another <see cref="IActivityLogger"/>
-    /// by reproducing the log calls.
+    /// ActivityLoggerBridge enable IActivityLogger to be use cross AppDomain. In pair with ActivityLoggerClientBridge it can log activity from an appdomain to another.
+    /// ActivityLoggerBridge must be create in origin appdomain and plug on the final activity logger.
+    /// ActivityLoggerClientBridge must be create in remote appdomain, plug on the ActivityLoggerBridge (ActivityLoggerBridge is MarshalByRefObject) and register in an
+    /// IActivityLogger in remote AppDomain.
     /// </summary>
-    public class ActivityLoggerClientBridge : MarshalByRefObject, IActivityLoggerClient, IMuxActivityLoggerClient
+    public class ActivityLoggerBridge : MarshalByRefObject
     {
         IActivityLogger _logger;
+
+        public ActivityLoggerBridge( IActivityLogger logger )
+        {
+            _logger = logger;
+        }
+
+        internal void ChangeFilter( LogLevelFilter newValue )
+        {
+            _logger.Filter = newValue;
+        }
+
+        internal void UnfilteredLog( LogLevel level, string text )
+        {
+            _logger.UnfilteredLog( level, text );
+        }
+
+        internal void OpenGroup( LogLevel logLevel, Exception exception, string groupText )
+        {
+            _logger.OpenGroup( logLevel, exception, groupText );
+        }
+
+        internal void CloseGroup()
+        {
+            _logger.CloseGroup();
+        }
+
+        internal void CloseGroup( string conclusion )
+        {
+            _logger.CloseGroup( conclusion );
+        }
+
+        internal void CloseGroup( MultiConclusion multiConclusion )
+        {
+            _logger.CloseGroup( multiConclusion );
+        }
+    }
+
+
+    [Serializable]
+    class MultiConclusion
+    {
+        string[] _conclusions;
+
+        internal MultiConclusion( IReadOnlyList<ActivityLogGroupConclusion> c )
+        {
+            _conclusions = new string[c.Count];
+            for( int i = 0; i < c.Count; ++i )
+            {
+                _conclusions[i] = c[i].ToString();
+            }
+        }
+
+        public object[] Conclusions { get { return _conclusions; } }
+
+        public override string ToString()
+        {
+            return String.Join( ", ", _conclusions );
+        }
+    }
+
+    /// <summary>
+    /// A <see cref="IActivityLoggerClient"/> and <see cref="IMuxActivityLoggerClient"/> that enable log to be done cross AppDomain. Must be use in pair 
+    /// with ActivityLoggerBridge.
+    /// ActivityLoggerClientBridge must be create in remote AppDomain and ActivityLoggerBridge that is MarshalByRefObject must be create in final logger AppDomain.
+    /// </summary>
+    public class ActivityLoggerClientBridge : IActivityLoggerClient, IMuxActivityLoggerClient
+    {
+        ActivityLoggerBridge _logger;
 
         /// <summary>
         /// Initialize a new <see cref="ActivityLoggerClientBridge"/> bound to an existing <see cref="IActivityLogger"/>.
         /// </summary>
-        public ActivityLoggerClientBridge( IActivityLogger logger )
+        public ActivityLoggerClientBridge( ActivityLoggerBridge logger )
         {
             if( logger == null ) throw new ArgumentNullException( "logger" );
             _logger = logger;
@@ -45,7 +115,7 @@ namespace CK.Core
 
         void IActivityLoggerClient.OnFilterChanged( LogLevelFilter current, LogLevelFilter newValue )
         {
-            _logger.Filter = newValue;
+            _logger.ChangeFilter( newValue );
         }
 
         void IActivityLoggerClient.OnUnfilteredLog( LogLevel level, string text )
@@ -61,28 +131,6 @@ namespace CK.Core
         void IActivityLoggerClient.OnGroupClosing( IActivityLogGroup group, IList<ActivityLogGroupConclusion> conclusions )
         {
             // Does nothing.
-        }
-
-        [Serializable]
-        class MultiConclusion
-        {
-            string[] _conclusions;
-
-            internal MultiConclusion( IReadOnlyList<ActivityLogGroupConclusion> c )
-            {
-                _conclusions = new string[c.Count];
-                for( int i = 0; i < c.Count; ++i )
-                {
-                    _conclusions[i] = c[i].ToString();
-                }
-            }
-
-            public object[] Conclusions { get { return _conclusions; } }
-
-            public override string ToString()
-            {
-                return String.Join( ", ", _conclusions );
-            }
         }
 
         void IActivityLoggerClient.OnGroupClosed( IActivityLogGroup group, IReadOnlyList<ActivityLogGroupConclusion> conclusions )

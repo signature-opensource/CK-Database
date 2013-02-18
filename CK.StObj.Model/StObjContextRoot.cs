@@ -70,11 +70,11 @@ namespace CK.Core
             {
                 if( !config.GetType().IsSerializable ) throw new InvalidOperationException( "IStObjEngineConfiguration must be serializable." );
                 _locker = new object();
-                LoggerBridge = new ActivityLoggerClientBridge( logger );
+                LoggerBridge = new ActivityLoggerBridge( logger );
                 Config = config;
             }
 
-            public IActivityLoggerClient LoggerBridge { get; private set; }
+            public ActivityLoggerBridge LoggerBridge { get; private set; }
 
             public IStObjEngineConfiguration Config { get; private set; }
 
@@ -128,6 +128,7 @@ namespace CK.Core
 
         private static bool LaunchRun( IActivityLogger logger, IStObjEngineConfiguration config )
         {
+            logger.Info( "AppDomain.CurrentDomain.FriendlyName : {0}", AppDomain.CurrentDomain.FriendlyName );
             IStObjBuilder runner = (IStObjBuilder)Activator.CreateInstance( SimpleTypeFinder.WeakDefault.ResolveType( config.BuilderAssemblyQualifiedName, true ), logger, config );
             return runner.Run();
         }
@@ -138,10 +139,15 @@ namespace CK.Core
             AppDomainCommunication appDomainComm = (AppDomainCommunication)thisDomain.GetData( "ck-appDomainComm" );
             
             IDefaultActivityLogger logger = DefaultActivityLogger.Create();
+            foreach( var item in logger.Output.RegisteredClients.ToArray() )
+	        {
+                logger.Output.NonRemoveableClients.Remove( item );
+                logger.Output.UnregisterClient( item );
+	        }
+            
             try
             {
-                logger.Output.RegisterClient( appDomainComm.LoggerBridge );
-                logger.Warn( "Pouf..." );
+                logger.Output.RegisterClient( new ActivityLoggerClientBridge( appDomainComm.LoggerBridge ) );
                 appDomainComm.SetResult( LaunchRun( logger, appDomainComm.Config ) );
             }
             catch( Exception ex )

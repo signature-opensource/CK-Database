@@ -85,9 +85,10 @@ namespace CK.StObj.Engine.Tests
 
         public class Caller : MarshalByRefObject
         {
-            public void Run()
+            public void Run( TextWriter s )
             {
-                Console.WriteLine( AppDomain.CurrentDomain.FriendlyName );
+                Console.SetOut( s );
+                ProcessInCurrentAppDomain();
             }
         }
 
@@ -97,10 +98,14 @@ namespace CK.StObj.Engine.Tests
             AppDomain other = null;
             try
             {
-                var setup = new AppDomainSetup() { ApplicationBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase };
+                var setup = new AppDomainSetup() 
+                { 
+                    ApplicationBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase,
+                    PrivateBinPath = AppDomain.CurrentDomain.SetupInformation.PrivateBinPath
+                };
                 other = AppDomain.CreateDomain( "CK-Test-Separate-Domain", null, setup );
-                var c = (Caller)other.CreateInstanceFromAndUnwrap( typeof( DynamicGenerationAppDomainTests ).Assembly.FullName, typeof( Caller ).FullName );
-                c.Run();
+                var c = (Caller)other.CreateInstanceAndUnwrap( typeof( DynamicGenerationAppDomainTests ).Assembly.FullName, typeof( Caller ).FullName );
+                c.Run( Console.Out );
             }
             finally
             {
@@ -279,14 +284,22 @@ namespace CK.StObj.Engine.Tests
                                 }
                             }
 
+                            [StObj( ItemKind=DependentItemKindSpec.Item )]
                             public class A : IAmbientContract
                             {
                             }
-
+                            
+                            
                             public abstract class B : A
                             {
                                 [AutoImplemented]
                                 public abstract int Auto( int i );
+                            }
+
+                            public abstract class E : B
+                            {
+                                [AutoImplemented]
+                                public abstract int AutoEE( int i );
                             }
 
                             public interface IC : IAmbientContract
