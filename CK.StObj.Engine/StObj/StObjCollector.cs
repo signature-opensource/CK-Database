@@ -295,7 +295,7 @@ namespace CK.Setup
                 {
                     foreach( MutableItem item in contextResult._specializations )
                     {
-                        noCycleDetected &= item.PrepareDependendtItem( _logger, _valueResolver, collector, contextResult );
+                        noCycleDetected &= item.PrepareDependentItem( _logger, _valueResolver, collector, contextResult );
                     }
                 }
             }

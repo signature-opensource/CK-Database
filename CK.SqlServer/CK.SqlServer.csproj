@@ -58,69 +58,83 @@
     <Compile Include="SqlConnectionProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlHelper.cs" />
-    <Compile Include="SqlParser\IAbstractExpr.cs" />
-    <Compile Include="SqlParser\SqlExprBaseListWithSeparatorList.cs" />
-    <Compile Include="SqlParser\SqlExprBaseListWithSeparator.cs" />
-    <Compile Include="SqlParser\SqlExprParameter.cs" />
-    <Compile Include="SqlParser\SqlExprTypedIdentifier.cs" />
-    <Compile Include="SqlParser\SqlExprTypeUserDefined.cs" />
-    <Compile Include="SqlParser\ISqlExprUnifiedType.cs" />
-    <Compile Include="SqlParser\SqlExprType.cs" />
-    <Compile Include="SqlParser\SqlExprSyntaxError.cs" />
-    <Compile Include="SqlParser\SqlExprTypeWithSize.cs" />
-    <Compile Include="SqlParser\SqlExprTypeSimple.cs" />
-    <Compile Include="SqlParser\SqlExprTypeDateAndTime.cs" />
-    <Compile Include="SqlParser\SqlExprTypeDecimal.cs" />
-    <Compile Include="SqlParser\SqlExprMultiIdentifier.cs" />
-    <Compile Include="SqlParser\SqlExprNull.cs">
+    <Compile Include="SqlParser\Expr\SqlExprStUnmodeled.cs" />
+    <Compile Include="SqlParser\Expr\SqlExprStBlock.cs" />
+    <Compile Include="SqlParser\Expr\SqlExprBaseSt.cs" />
+    <Compile Include="SqlParser\Expr\SqlExprStatementList.cs" />
+    <Compile Include="SqlParser\Expr\SqlExprUnmodeledTokens.cs" />
+    <Compile Include="SqlParser\Expr\SqlExprParameterDefaultValue.cs" />
+    <Compile Include="SqlParser\Expr\SqlExprTerminal.cs" />
+    <Compile Include="SqlParser\Expr\SqlExprLiteral.cs" />
+    <Compile Include="SqlParser\Expr\SqlExprUnaryOperator.cs" />
+    <Compile Include="SqlParser\SqlAnalyser.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SqlParser\SqlExprParameterList.cs" />
-    <Compile Include="SqlParser\SqlTokenTerminal.cs" />
-    <Compile Include="SqlParser\SqlExprBaseMonoToken.cs" />
+    <Compile Include="SqlParser\Expr\SqlExprStStoredProc.cs" />
+    <Compile Include="SqlParser\TokenReader.cs" />
+    <Compile Include="SqlTokenizer\IAbstractExpr.cs" />
+    <Compile Include="SqlParser\Expr\SqlExprBaseListWithSeparatorList.cs" />
+    <Compile Include="SqlParser\Expr\SqlExprBaseListWithSeparator.cs" />
+    <Compile Include="SqlParser\Expr\SqlExprParameter.cs" />
+    <Compile Include="SqlParser\Expr\SqlExprTypedIdentifier.cs" />
+    <Compile Include="SqlParser\Expr\SqlExprTypeDeclUserDefined.cs" />
+    <Compile Include="SqlParser\Expr\ISqlExprUnifiedTypeDecl.cs" />
+    <Compile Include="SqlParser\Expr\SqlExprTypeDecl.cs" />
+    <Compile Include="SqlParser\Expr\SqlExprSyntaxError.cs" />
+    <Compile Include="SqlParser\Expr\SqlExprTypeDeclWithSize.cs" />
+    <Compile Include="SqlParser\Expr\SqlExprTypeDeclSimple.cs" />
+    <Compile Include="SqlParser\Expr\SqlExprTypeDeclDateAndTime.cs" />
+    <Compile Include="SqlParser\Expr\SqlExprTypeDeclDecimal.cs" />
+    <Compile Include="SqlParser\Expr\SqlExprMultiIdentifier.cs" />
+    <Compile Include="SqlParser\Expr\SqlExprNull.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SqlParser\Expr\SqlExprParameterList.cs" />
+    <Compile Include="SqlTokenizer\Token\SqlTokenTerminal.cs" />
+    <Compile Include="SqlParser\Expr\SqlExprBaseMonoToken.cs" />
     <Compile Include="SqlParser\IExprVisitor.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SqlParser\SqlExprAssign.cs">
+    <Compile Include="SqlParser\Expr\SqlExprAssign.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SqlParser\SqlExprBaseBinary.cs">
+    <Compile Include="SqlParser\Expr\SqlExprBaseBinary.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SqlParser\SqlExprIdentifier.cs">
+    <Compile Include="SqlParser\Expr\SqlExprIdentifier.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SqlParser\SqlTokenError.cs" />
-    <Compile Include="SqlParser\SqlTokenIdentifier.cs">
+    <Compile Include="SqlTokenizer\Token\SqlTokenError.cs" />
+    <Compile Include="SqlTokenizer\Token\SqlTokenIdentifier.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SqlParser\SqlTokenLiteralBinary.cs" />
-    <Compile Include="SqlParser\SqlTokenLiteralFloat.cs">
+    <Compile Include="SqlTokenizer\Token\SqlTokenLiteralBinary.cs" />
+    <Compile Include="SqlTokenizer\Token\SqlTokenLiteralFloat.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SqlParser\SqlTokenLiteralInteger.cs">
+    <Compile Include="SqlTokenizer\Token\SqlTokenLiteralInteger.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SqlParser\SqlTokenLiteralMoney.cs">
+    <Compile Include="SqlTokenizer\Token\SqlTokenLiteralMoney.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SqlParser\SqlTokenLiteralDecimal.cs">
+    <Compile Include="SqlTokenizer\Token\SqlTokenLiteralDecimal.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SqlParser\SqlTokenLiteralString.cs">
+    <Compile Include="SqlTokenizer\Token\SqlTokenLiteralString.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SqlParser\SqlTrivia.cs" />
-    <Compile Include="SqlParser\SqlToken.cs" />
-    <Compile Include="SqlParser\SqlExpr.cs">
+    <Compile Include="SqlTokenizer\SqlTrivia.cs" />
+    <Compile Include="SqlTokenizer\SqlToken.cs" />
+    <Compile Include="SqlParser\Expr\SqlExpr.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SqlParser\SqlTokenLiteral.cs">
+    <Compile Include="SqlTokenizer\Token\SqlTokenBaseLiteral.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="SqlTokenizer\SqlReservedKeyword.cs" />
     <Compile Include="SqlTokenizer\SourceLocation.cs" />
-    <Compile Include="SqlTokenizer\SqlTokeniser.cs" />
+    <Compile Include="SqlTokenizer\SqlTokenizer.cs" />
     <Compile Include="SqlTokenizer\SqlTokenTypeError.cs" />
     <Compile Include="SqlTokenizer\SqlTokenType.cs" />
   </ItemGroup>

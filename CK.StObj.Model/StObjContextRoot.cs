@@ -30,7 +30,7 @@ namespace CK.Core
             }
         }
 
-        public static IStObjMap LoadOrBuild( IStObjEngineConfiguration config, IActivityLogger logger = null, bool forceBuild = false )
+        public static StObjBuildResult LoadOrBuild( IStObjEngineConfiguration config, IActivityLogger logger = null, bool forceBuild = false )
         {
             throw new NotImplementedException();
         }
@@ -128,7 +128,7 @@ namespace CK.Core
 
         private static bool LaunchRun( IActivityLogger logger, IStObjEngineConfiguration config )
         {
-            logger.Info( "AppDomain.CurrentDomain.FriendlyName : {0}", AppDomain.CurrentDomain.FriendlyName );
+            logger.Info( "AppDomain.CurrentDomain.FriendlyName: {0}", AppDomain.CurrentDomain.FriendlyName );
             IStObjBuilder runner = (IStObjBuilder)Activator.CreateInstance( SimpleTypeFinder.WeakDefault.ResolveType( config.BuilderAssemblyQualifiedName, true ), logger, config );
             return runner.Run();
         }

@@ -380,7 +380,7 @@ namespace CK.Setup
 
         #endregion
 
-        internal bool PrepareDependendtItem( IActivityLogger logger, IStObjValueResolver dependencyResolver, StObjCollectorResult collector, StObjCollectorContextualResult cachedCollector )
+        internal bool PrepareDependentItem( IActivityLogger logger, IStObjValueResolver dependencyResolver, StObjCollectorResult collector, StObjCollectorContextualResult cachedCollector )
         {
             if( _prepareState == PrepareState.PreparedDone ) return true;
             using( logger.OpenGroup( LogLevel.Trace, "Preparing '{0}'.", ToString() ) )
@@ -398,11 +398,11 @@ namespace CK.Setup
                         _prepareState = PrepareState.RecursePreparing;
                         
                         ResolveDirectReferences( logger, collector, cachedCollector );
-                        if( _dContainer != null ) result &= _dContainer.PrepareDependendtItem( logger, dependencyResolver, collector, cachedCollector );
+                        if( _dContainer != null ) result &= _dContainer.PrepareDependentItem( logger, dependencyResolver, collector, cachedCollector );
                         // Prepares Generalization and inherits from it as needed.
                         if( Generalization != null )
                         {
-                            result &= Generalization.PrepareDependendtItem( logger, dependencyResolver, collector, cachedCollector );
+                            result &= Generalization.PrepareDependentItem( logger, dependencyResolver, collector, cachedCollector );
                             if( _dContainer == null ) _dContainer = Generalization._dContainer;
                             if( _itemKind == DependentItemKind.Unknown ) _itemKind = Generalization._itemKind;
                             if( _trackAmbientPropertiesMode == TrackAmbientPropertiesMode.Unknown ) _trackAmbientPropertiesMode = Generalization._trackAmbientPropertiesMode;
@@ -413,7 +413,7 @@ namespace CK.Setup
                         // Check configuration.
                         if( _itemKind == DependentItemKind.Unknown )
                         {
-                            logger.Warn( "ItemKind is not specified. It defaults to SimpleItem. It should be set explicitely to either SimpleItem, Group or Container." );
+                            logger.Warn( "Since ItemKind is not specified on this base class ('{0}'), it defaults to SimpleItem. It should be explicitely set to either SimpleItem, Group or Container.", ToString() );
                             _itemKind = DependentItemKind.Item;
                         }
                         if( _trackAmbientPropertiesMode == TrackAmbientPropertiesMode.Unknown ) _trackAmbientPropertiesMode = TrackAmbientPropertiesMode.None;
@@ -432,6 +432,7 @@ namespace CK.Setup
                         // For AmbientProperties, this can not be done the same way: Ambient Properties are "projected to the leaf": they 
                         // have to be managed at the most specialized level: this is done in the next preparation step.
                     }
+                    logger.CloseGroup( String.Format( "ItemKind is {0}", _itemKind.ToString() ) );
                     return result;
 
                 }

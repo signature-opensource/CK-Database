@@ -14,11 +14,14 @@ namespace CK.SqlServer
     /// 9        ~                                                          Bitwise NOT
     /// 8        * /  %                                                     Multiplication, division, modulo division.
     /// 7        + - &amp; ^ |                                              + (for "Positive", "Add" and "Concatenate"), - (for "Negative" and "Subtract"), Bitwise AND, Bitwise Exclusive OR, and Bitwise OR.
-    /// 6        = &gt; &lt; &gt;= &lt;= &lt;&gt; != !&gt; !&lt;            Comparison operators (last 3 ones are not ISO).
+    /// 6        =(1) &gt; &lt; &gt;= &lt;= &lt;&gt; != !&gt; !&lt;         Comparison operators (last 3 ones are not ISO).
     /// 5        NOT                                                        Logical NOT.
     /// 4        AND                                                        Logical AND.
     /// 3        ALL, ANY, BETWEEN, EXISTS, IN, SOME, LIKE, OR              Set operators, LIKE and logical OR.
     /// 2        = += -= *= /= %= &amp;= |= ^=                              Assignments (IsAssignOperator).
+    /// 
+    /// (1) For '=' token, disambiguisation between Comparison and Assignment requires a context hint: we need to know if we are in a "comparison context" or not.
+    ///     This must be done at a higher level than in <see cref="SqlTokenizer"/>.
     ///
     /// </remarks>
     [Flags]
@@ -40,16 +43,17 @@ namespace CK.SqlServer
         /// The two most significant bits are set.
         /// </summary>
         EndOfInput = SqlTokenTypeError.EndOfInput,
-        
+
+        IsError = SqlTokenTypeError.IsError,
         ErrorMask = SqlTokenTypeError.ErrorMask,
+        ErrorTokenizerMask = SqlTokenTypeError.ErrorTokenizerMask,
+
         ErrorInvalidChar = SqlTokenTypeError.ErrorInvalidChar,
-        ErrorStringMask = SqlTokenTypeError.ErrorStringMask,
-        ErrorNumberMask = SqlTokenTypeError.ErrorNumberMask,
-        ErrorIdentifierMask = SqlTokenTypeError.ErrorIdentifierMask,
         ErrorIdentifierUnterminated = SqlTokenTypeError.ErrorIdentifierUnterminated,
         ErrorStringUnterminated = SqlTokenTypeError.ErrorStringUnterminated,
         ErrorNumberUnterminatedValue = SqlTokenTypeError.ErrorNumberUnterminatedValue,
         ErrorNumberValue = SqlTokenTypeError.ErrorNumberValue,
+        ErrorNumberIdentifierStartsImmediately = SqlTokenTypeError.ErrorNumberIdentifierStartsImmediately,
         #endregion
 
         #region Operator precedence bits n°25 to 21 (levels from 0 to 15).
@@ -98,7 +102,7 @@ namespace CK.SqlServer
         TerminalMask = AllOperatorMask | IsBracket | IsPunctuation,
 
         /// <summary>
-        /// Mask that covers literals: IsString & IsNumber.
+        /// Mask that covers literals: IsString &amp; IsNumber.
         /// </summary>
         LitteralMask = IsString | IsNumber,
 
@@ -396,11 +400,6 @@ namespace CK.SqlServer
         IsIdentifierQuotedBracket = 1 << 6,
 
         /// <summary>
-        /// Mask that covers IdentifierTypeXXX values.
-        /// </summary>
-        IdentifierTypeMask = (1 << 6) - 1,
-
-        /// <summary>
         /// Mask that covers IsIdentifierQuoted and IsIdentifierQuotedBracket bits.
         /// </summary>
         IdentifierQuoteMask = IsIdentifierQuoted | IsIdentifierQuotedBracket,
@@ -416,15 +415,23 @@ namespace CK.SqlServer
         IdentifierQuotedBracket = IsIdentifier | IsIdentifierQuotedBracket,
 
         /// <summary>
-        /// Reserved keyword. See <see cref="SqlReservedKeyword"/>.
+        /// Mask that covers IdentifierTypeXXX values (without IsIdentifier, IsIdentifierQuoted and IsIdentifierQuotedBracket bits).
+        /// When one of IdentifierTypeMask bit is set, the identifier is a reserved word regardless of its quotes (like int or "int" or [int] that is IdentifierTypeInt, 
+        /// or null, "null" or [null] that is a IdentifierTypeReservedKeyword, or a @variable).
+        /// An identifier corresponds to a type like int, datetime2, etc. if and only if (t&amp;IsIdentifier) != 0 && (t&amp;IdentifierMask)>2;
         /// </summary>
-        IdentifierTypeReservedKeyword = IsIdentifier | 1,
+        IdentifierMask = (1 << 6) - 1,
+
+        /// <summary>
+        /// Reserved keyword. See <see cref="SqlReservedKeyword"/>.
+        /// That is not a @variable nor a known type like IdentifierTypeDateTime or IdentifierTypeInt.
+        /// </summary>
+        IdentifierReservedKeyword = IsIdentifier | 1,
 
         /// <summary>
         /// Variable token: identifier that starts with @.
         /// </summary>
-        IdentifierTypeVariable = IsIdentifier | 2,
-
+        IdentifierVariable = IsIdentifier | 2,
 
         IdentifierTypeVariant = IsIdentifier | 3,
         IdentifierTypeXml = IsIdentifier | 4,

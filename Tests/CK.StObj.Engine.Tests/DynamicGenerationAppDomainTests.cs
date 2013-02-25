@@ -183,16 +183,6 @@ namespace CK.StObj.Engine.Tests
         public void BuildWithIndependentAppDomain()
         {
             ProcessInIndependentAppDomain();
-            //AppDomain other = null;
-            //try
-            //{
-            //    other = AppDomain.CreateDomain( "Test" );
-            //    other.DoCallBack( ProcessInIndependentAppDomain );
-            //}
-            //finally
-            //{
-            //    AppDomain.Unload( other );
-            //}
         }
 
         static private void ProcessInIndependentAppDomain()

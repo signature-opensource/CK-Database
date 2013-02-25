@@ -13,54 +13,66 @@ namespace CK.Javascript.Tests
         [Test]
         public void EmptyInputAndComments()
         {
-            SqlTokeniser p = new SqlTokeniser();
-            p.SkipComments = false;
+            SqlTokenizer p = new SqlTokenizer();
 
             p.Reset( "" );
-            Assert.That( p.IsEndOfInput );
+            IsEndOfInput( p );
 
             p.Reset( "\r\n\t " );
-            Assert.That( p.IsEndOfInput );
+            IsEndOfInput( p );
+            CollectionAssert.AreEquivalent( p.Token.LeadingTrivia.Select( t => t.Text ), new[] { "\r\n\t " } );
+            CollectionAssert.IsEmpty( p.Token.TrailingTrivia );
 
             p.Reset( "\r\n\t  --Comment\r\n \t\r\n /*Other\r\nComment...*/ \r\n" );
-            Assert.That( !p.IsEndOfInput );
-            Assert.That( p.IsComment );
-            Assert.That( p.ReadComment(), Is.EqualTo( "Comment" ) );
-            Assert.That( p.IsComment );
-            Assert.That( p.ReadComment(), Is.EqualTo( "Other\r\nComment..." ) );
-            Assert.That( p.IsEndOfInput );
+            IsEndOfInput( p );
+            CollectionAssert.AreEquivalent( p.Token.LeadingTrivia.Select( t => t.Text ), new[] { "\r\n\t  ", "Comment", " \t\r\n ", "Other\r\nComment...", " \r\n" } );
+            CollectionAssert.IsEmpty( p.Token.TrailingTrivia );
+        }
 
-            p.SkipComments = true;
-            p.Reset( "\r\n\t  --Comment\r\n \t\r\n /*Other\r\nComment/* \r\n" );
-            Assert.That( p.IsEndOfInput );
+        private static void IsEndOfInput( SqlTokenizer p )
+        {
+            Assert.That( p.Token is SqlTokenError );
+            Assert.That( p.Token.TokenType, Is.EqualTo( SqlTokenType.EndOfInput ) );
+            Assert.That( ((SqlTokenError)p.Token).IsEndOfInput );
+            Assert.That( !p.Forward() );
+            Assert.That( p.Token is SqlTokenError );
+            Assert.That( p.Token.TokenType, Is.EqualTo( SqlTokenType.EndOfInput ) );
+            Assert.That( ((SqlTokenError)p.Token).IsEndOfInput );
+        }
 
+        [Test]
+        public void TokenExplainBasic()
+        {
+            Assert.That( SqlTokenizer.Explain( SqlTokenType.IdentifierNaked ), Is.EqualTo( "identifier" ) );
+            Assert.That( SqlTokenizer.Explain( SqlTokenType.IdentifierQuoted ), Is.EqualTo( "\"quoted identifier\"" ) );
+            Assert.That( SqlTokenizer.Explain( SqlTokenType.IdentifierQuotedBracket ), Is.EqualTo( "[quoted identifier]" ) );
+            Assert.That( SqlTokenizer.Explain( SqlTokenType.IdentifierVariable ), Is.EqualTo( "@var" ) );
+            Assert.That( SqlTokenizer.Explain( SqlTokenType.IdentifierReservedKeyword ), Is.EqualTo( "keyword" ) );
+
+            Assert.That( SqlTokenizer.Explain( SqlTokenType.IdentifierTypeXml ), Is.EqualTo( "type" ) );
+            Assert.That( SqlTokenizer.Explain( SqlTokenType.IdentifierTypeInt ), Is.EqualTo( "type" ) );
+            Assert.That( SqlTokenizer.Explain( SqlTokenType.IdentifierTypeVarChar ), Is.EqualTo( "type" ) );
+            Assert.That( SqlTokenizer.Explain( SqlTokenType.IdentifierTypeDateTime ), Is.EqualTo( "type" ) );
+
+            Assert.That( SqlTokenizer.Explain( SqlTokenType.String ), Is.EqualTo( "'string'" ) );
+            Assert.That( SqlTokenizer.Explain( SqlTokenType.UnicodeString ), Is.EqualTo( "N'unicode string'" ) );
+            Assert.That( SqlTokenizer.Explain( SqlTokenType.StarComment ), Is.EqualTo( "/* ... */" ) );
+            Assert.That( SqlTokenizer.Explain( SqlTokenType.LineComment ), Is.EqualTo( "-- ..." + Environment.NewLine ) );
+
+            Assert.That( SqlTokenizer.Explain( SqlTokenType.Integer ), Is.EqualTo( "42" ) );
+            Assert.That( SqlTokenizer.Explain( SqlTokenType.Float ), Is.EqualTo( "6.02214129e+23" ) );
+            Assert.That( SqlTokenizer.Explain( SqlTokenType.Binary ), Is.EqualTo( "0x00CF12A4" ) );
+            Assert.That( SqlTokenizer.Explain( SqlTokenType.Decimal ), Is.EqualTo( "124.587" ) );
+            Assert.That( SqlTokenizer.Explain( SqlTokenType.Money ), Is.EqualTo( "$548.7" ) );
         }
 
         [Test]
         public void TokenExplain()
         {
-            SqlTokeniser p = new SqlTokeniser();
-            p.SkipComments = false;
-
-            Assert.That( SqlTokeniser.Explain( SqlTokenType.IdentifierNaked ), Is.EqualTo( "identifier" ) );
-            Assert.That( SqlTokeniser.Explain( SqlTokenType.IdentifierQuoted ), Is.EqualTo( "\"quoted identifier\"" ) );
-            Assert.That( SqlTokeniser.Explain( SqlTokenType.IdentifierQuotedBracket ), Is.EqualTo( "[quoted identifier]" ) );
-            Assert.That( SqlTokeniser.Explain( SqlTokenType.IdentifierTypeVariable ), Is.EqualTo( "@var" ) );
-            Assert.That( SqlTokeniser.Explain( SqlTokenType.IdentifierTypeReservedKeyword ), Is.EqualTo( "keyword" ) );
-            Assert.That( SqlTokeniser.Explain( SqlTokenType.String ), Is.EqualTo( "'string'" ) );
-            Assert.That( SqlTokeniser.Explain( SqlTokenType.UnicodeString ), Is.EqualTo( "N'unicode string'" ) );
-            Assert.That( SqlTokeniser.Explain( SqlTokenType.StarComment ), Is.EqualTo( "/* ... */" ) );
-            Assert.That( SqlTokeniser.Explain( SqlTokenType.LineComment ), Is.EqualTo( "-- ..." + Environment.NewLine ) );
-
-            Assert.That( SqlTokeniser.Explain( SqlTokenType.Integer ), Is.EqualTo( "42" ) );
-            Assert.That( SqlTokeniser.Explain( SqlTokenType.Float ), Is.EqualTo( "6.02214129e+23" ) );
-            Assert.That( SqlTokeniser.Explain( SqlTokenType.Binary ), Is.EqualTo( "0x00CF12A4" ) );
-            Assert.That( SqlTokeniser.Explain( SqlTokenType.Decimal ), Is.EqualTo( "124.587" ) );
-            Assert.That( SqlTokeniser.Explain( SqlTokenType.Money ), Is.EqualTo( "$548.7" ) );
-
+            SqlTokenizer p = new SqlTokenizer();
             string s = @"create table [a.b] . tC ( TheName nvarchar ( 1254 ) ) ;
-/* Comment
-(not skipped)*/
+/* Comment is trivia
+(skipped)*/
 create procedure [a.b] . [sSP] ( @X int , @Y int ) 
 as
 begin
@@ -68,14 +80,15 @@ begin
   exec [a.b] . sOther @p = @X ;
 end";
             p.Reset( s );
-            StringBuilder sbR  = new StringBuilder();
-            while( !p.IsEndOfInput )
+
+            StringBuilder b  = new StringBuilder();
+            while( !p.IsErrorOrEndOfInput )
             {
-                if( sbR.Length > 0 ) sbR.Append( ' ' );
-                sbR.Append( SqlTokeniser.Explain( p.CurrentToken ) );
+                if( b.Length > 0 ) b.Append( ' ' );
+                b.Append( SqlTokenizer.Explain( p.Token.TokenType ) );
                 p.Forward();
             }
-            string recompose = sbR.ToString();
+            string recompose = b.ToString();
 
             s = s.Replace( "[a.b]", "[quoted identifier]" )
                 .Replace( "tC", "identifier" )
@@ -90,17 +103,17 @@ end";
                 .Replace( "sOther", "identifier" );
 
             // Whitespace
-            s = s.Replace( "/* Comment\r\n(not skipped)*/", "/* ... */" )
+            s = s.Replace( "/* Comment is trivia\r\n(skipped)*/", "" )
                 .Replace( "\r\n", " " )
                 .Replace( "  ", " " )
                 .Replace( "  ", " " )
                 .Replace( "  ", " " );
 
-            // Keywords
+            // Keywords & type
             s = s.Replace( "create", "keyword" )
                 .Replace( "table", "keyword" )
-                .Replace( "nvarchar", "keyword" )
-                .Replace( "int", "keyword" )
+                .Replace( "nvarchar", "type" )
+                .Replace( "int", "type" )
                 .Replace( "procedure", "keyword" )
                 .Replace( "as", "keyword" )
                 .Replace( "begin", "keyword" )
@@ -112,35 +125,56 @@ end";
         }
 
 
+        [Test]
+        public void Rewriting()
+        {
+            SqlTokenizer p = new SqlTokenizer();
+            string s = @"create table [a.b] . tC ( TheName nvarchar ( 1254 ) ) ;
+/* Comment is trivia
+(not skipped)*/
+create procedure [a.b].[sSP]( @X int, @Y int ) 
+as
+begin
+  declare @g nvarchar ( 42 ) = N'Oups'; -- End of line comment...
+  exec [a.b].sOther @p = @X, @v = $1235.12;
+  declare @x1 decimal = .34;
+  declare @x2 float = .45e12;
+end";
+            StringBuilder b  = new StringBuilder();
+            foreach( var t in p.Parse( s ) ) t.Write( b );
+            string s2 = b.ToString();
+
+            // Fix: .34 is changed as 0.34 (decimal), .45e12 becomes 0.45e12 (float).
+            Assert.That( s2, Is.EqualTo( s.Replace( ".34", "0.34" ).Replace( ".45e12", "0.45e12" ) ) );
+        }
 
         [Test]
         public void Numbers()
         {
-            //
-            //  select [ ]=1, [Val] = '0', Type = cast(sql_variant_property(0,'BaseType')  as varchar(20)), [Precision]=cast(sql_variant_property(0,'Precision') as varchar(20)), [Scale]= cast(sql_variant_property(0,'Scale') as varchar(20)), [MaxLength] = cast(sql_variant_property(0,'MaxLength') as varchar(20))
-            //  union
-            //  select 2, '.3', cast(sql_variant_property(.3,'BaseType')  as varchar(20)), cast(sql_variant_property(.3,'Precision') as varchar(20)), cast(sql_variant_property(.3,'Scale') as varchar(20)), [MaxLength] = cast(sql_variant_property(.3,'MaxLength') as varchar(20))
-            //  union
-            //  select 3, '3.3', cast(sql_variant_property(3.3,'BaseType')  as varchar(20)), cast(sql_variant_property(3.3,'Precision') as varchar(20)), cast(sql_variant_property(3.3,'Scale') as varchar(20)), [MaxLength] = cast(sql_variant_property(3.3,'MaxLength') as varchar(20))
-            //  union
-            //  select 4, '0.3', cast(sql_variant_property(0.3,'BaseType')  as varchar(20)), cast(sql_variant_property(0.3,'Precision') as varchar(20)), cast(sql_variant_property(0.3,'Scale') as varchar(20)), [MaxLength] = cast(sql_variant_property(0.3,'MaxLength') as varchar(20))
-            //  union
-            //  select 5, '0003.3', cast(sql_variant_property(0003.3,'BaseType')  as varchar(20)), cast(sql_variant_property(0003.3,'Precision') as varchar(20)), cast(sql_variant_property(0003.3,'Scale') as varchar(20)), [MaxLength] = cast(sql_variant_property(0003.3,'MaxLength') as varchar(20))
-            //  union
-            //  select 6, '3.', cast(sql_variant_property(3.,'BaseType')  as varchar(20)), cast(sql_variant_property(3.,'Precision') as varchar(20)), cast(sql_variant_property(3.,'Scale') as varchar(20)), [MaxLength] = cast(sql_variant_property(3.,'MaxLength') as varchar(20))
-            //
-            // ==> 
-            //  	    Val	    Type	    Precision	Scale
-            //  	1	0	    int	        10	        0	  
-            //  	2	.3	    numeric	    1	        1	
-            //  	3	3.3	    numeric	    2	        1	
-            //  	4	0.3	    numeric	    1	        1	
-            //  	5	0003.3	numeric	    2	        1	
-            //  	6	3.	    numeric	    1	        0
+            SqlTokenizer p = new SqlTokenizer();
 
-            SqlTokeniser p = new SqlTokeniser();
+            AssertRewrite( p, "0", "0" );
+            AssertRewrite( p, "0.23", "0.23" );
+            AssertRewrite( p, ".23", "0.23" );
+            AssertRewrite( p, "0000.23", "0.23" );
+
+            AssertRewrite( p, "$", "$0" );
+            //AssertRewrite( p, "$1", "$1" );
+            AssertRewrite( p, "$1.", "$1.0" );
+            AssertRewrite( p, "£.233", "£0.233" );
+            AssertRewrite( p, "£    .23", "£0.23" );
+            AssertRewrite( p, "$   0000.23", "$0.23" );
+
+            AssertRewrite( p, ".45E+12", "0.45e12" );
+            AssertRewrite( p, "00012.147e-4", "12.147e-4" );
         }
 
-
+        static void AssertRewrite( SqlTokenizer p, string toParse, string rewritten )
+        {
+            StringBuilder b  = new StringBuilder();
+            foreach( var t in p.Parse( toParse ) ) t.Write( b );
+            string r = b.ToString();
+            Assert.That( r, Is.EqualTo( rewritten ) );
+        }
     }
 }
