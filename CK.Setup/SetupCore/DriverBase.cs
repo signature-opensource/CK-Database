@@ -30,6 +30,11 @@ namespace CK.Setup
                 get { return _drivers.FirstOrDefault( d => d.Item.FullName == fullName ); }
             }
 
+            public DriverBase this[ IDependentItem item]
+            {
+                get { return _drivers.FirstOrDefault( d => d.Item == item ); }
+            }
+
             public bool Contains( object item )
             {
                 return IndexOf( item ) >= 0;
@@ -63,7 +68,7 @@ namespace CK.Setup
 
         }
 
-        internal DriverBase( SetupEngine engine, ISortedItem sortedItem, VersionedName externalVersion, IDriverList directDependencies )
+        internal DriverBase( SetupEngine engine, ISortedItem sortedItem, VersionedName externalVersion, IDriverList headDirectDependencies = null )
         {
             Engine = engine;
             _item = sortedItem.Item;
@@ -71,7 +76,7 @@ namespace CK.Setup
             Rank = sortedItem.Rank;
             FullName = sortedItem.FullName;
             ExternalVersion = externalVersion;
-            DirectDependencies = directDependencies ?? new DirectList( sortedItem.Requires.Select( d => Engine.AllDrivers[d.FullName] ).OrderBy( d => d.Index ).ToArray() );
+            DirectDependencies = headDirectDependencies ?? new DirectList( sortedItem.Requires.Select( d => Engine.AllDrivers[d.FullName] ).OrderBy( d => d.Index ).ToArray() );
         }
 
         /// <summary>
@@ -84,13 +89,27 @@ namespace CK.Setup
         }
 
         /// <summary>
+        /// If <see cref="Item"/> implements <see cref="IVersionedItem"/>, its version is returned (it can be null).
+        /// Otherwise, null is returned.
+        /// Null has always the same semantics: the item is not versioned.
+        /// </summary>
+        public Version ItemVersion 
+        {
+            get 
+            {
+                IVersionedItem v = _item as IVersionedItem;
+                return v != null ? v.Version : null;
+            }
+        }
+
+        /// <summary>
         /// Whether this driver is the head of a container.
         /// </summary>
-        public abstract bool IsContainerHead { get; }
+        internal abstract bool IsGroupHead { get; }
 
         /// <summary>
         /// Gets the full name associated to this driver.
-        /// It ends with ".Head" if <see cref="IsContainerHead"/> is true.
+        /// It ends with ".Head" if <see cref="IsGroupHead"/> is true.
         /// </summary>
         public readonly string FullName;
 
@@ -127,5 +146,6 @@ namespace CK.Setup
         internal abstract bool ExecuteInstall();
         
         internal abstract bool ExecuteSettle();
+
     }
 }

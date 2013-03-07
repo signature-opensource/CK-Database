@@ -149,6 +149,22 @@ namespace CK.SqlServer
         }
 
         /// <summary>
+        /// Creates a new <see cref="SqlManager"/> bound to a server and a database with an attempt to create if it does not exist.
+        /// </summary>
+        /// <param name="server">Server name.</param>
+        /// <param name="database">Database name.</param>
+        /// <param name="logger">
+        /// Logger to use, when null an exception is thrown on error. 
+        /// Otherwise any exceptions are routed to it and it is associated as the <see cref="SqlManager.Logger"/>.</param>
+        /// <returns>A new <see cref="SqlManager"/> or null if an error occured and no <paramref name="logger"/> is provided.</returns>
+        public static SqlManager OpenOrCreate( string server, string database, IActivityLogger logger = null )
+        {
+            SqlManager m = new SqlManager();
+            if( logger != null ) m.Logger = logger;
+            return m.OpenOrCreate( server, database ) ? m : null;
+        }
+
+        /// <summary>
         /// Gets the <see cref="SqlConnectionProvider"/> of this <see cref="SqlManager"/>.
         /// </summary>
         public SqlConnectionProvider Connection
@@ -157,7 +173,7 @@ namespace CK.SqlServer
         }
 
         /// <summary>
-        /// True if the connection to the current database is managed directly,
+        /// True if the connection to the current database is managed directly by server and database name,
         /// false if the <see cref="OpenFromConnectionString"/> method has been used.
         /// </summary>
         /// <returns></returns>
@@ -375,19 +391,21 @@ namespace CK.SqlServer
                 }
                 if( database.Length > 0 )
                 {
+                    bool success = false;
                     try
                     {
                         _oCon.InternalConnection.ChangeDatabase( database );
+                        success = true;
                     }
                     catch
                     {
                         if( !autoCreate ) throw;
-                        bool create = CreateDatabase( database );
-                        hasBeenCreated = true;
-                        return create;
+                        success = CreateDatabase( database );
+                        if( success ) hasBeenCreated = true;
                     }
                     _oCon.ConnectionString = CurrentConnectionString;
                     _oCon.Open();
+                    return success;
                 }
                 return true;
             }
@@ -414,7 +432,8 @@ namespace CK.SqlServer
 
         /// <summary>
         /// Try to create a database. The connection must be opened (but it can be on another database).
-        /// On success, the connection si bound to the newly created database.
+        /// On success, the connection si bound to the newly created database in <see cref="IsAutoConnectMode"/> (existing 
+        /// connection string set by a previous call to <see cref="OpenFromConnectionString"/> is lost).
         /// </summary>
         /// <param name="databaseName">
         /// The name of the database to create. 
@@ -431,9 +450,11 @@ namespace CK.SqlServer
                 CheckAction( "create", databaseName );
                 _oCon.InternalConnection.ChangeDatabase( "master" );
                 _oCon.ExecuteNonQuery( cmd );
-                _oCon.InternalConnection.ChangeDatabase( databaseName );
-                // Refresh cached connections.
-                SqlConnection.ClearPool( _oCon.InternalConnection );
+                _oCon.InternalConnection.ChangeDatabase( databaseName ); 
+                // Refresh all cached connections.
+                SqlConnection.ClearAllPools();
+                _oCon.ConnectionString = CurrentConnectionString;
+                _oCon.Open();
                 return true;
             }
             catch( Exception e )
@@ -454,7 +475,7 @@ namespace CK.SqlServer
         /// <summary>
         /// Ensures that the CKCore kernel is installed.
         /// </summary>
-        /// <param name="logger">The logger to use.</param>
+        /// <param name="logger">The logger to use. Can not be null.</param>
         /// <returns>True on success.</returns>
         public bool EnsureCKCoreIsInstalled( IActivityLogger logger )
         {
@@ -464,6 +485,46 @@ namespace CK.SqlServer
                 _ckCoreInstalled = SqlCKCoreInstaller.Install( this, logger );
             }
             return _ckCoreInstalled;
+        }
+
+        /// <summary>
+        /// Tries to remove all objects from a given schema.
+        /// </summary>
+        /// <param name="schemaName">Name of the schema. Must not be null nor empty.</param>
+        /// <returns>Always true if no <see cref="Logger"/> is set (an exception
+        /// will be thrown in case of failure). If a <see cref="Logger"/> is set,
+        /// this method will return true or false to indicate success.</returns>
+        public bool SchemaDropAllObjects( string schemaName, bool dropSchema )
+        {
+            if( String.IsNullOrEmpty( schemaName ) 
+                || schemaName.IndexOf( '\'' ) >= 0
+                || schemaName.IndexOf( ';' ) >= 0 ) throw new ArgumentException( "schemaName" );
+            try
+            {
+                using( var c = new SqlCommand( "CKCore.sSchemaDropAllObjects" ) )
+                {
+                    c.CommandType = CommandType.StoredProcedure;
+                    c.Parameters.AddWithValue( "@SchemaName", schemaName );
+                    _oCon.ExecuteNonQuery( c );
+                    if( dropSchema )
+                    {
+                        c.CommandType = CommandType.Text;
+                        c.CommandText = String.Format( "if exists(select 1 from sys.schemas where name = '{0}') drop schema {0};", schemaName );
+                        _oCon.ExecuteNonQuery( c );
+                    }
+                }
+                if( schemaName == "CKCore" ) _ckCoreInstalled = false;
+            }
+            catch( Exception ex )
+            {
+                if( _logger != null )
+                {
+                    _logger.Error( ex );
+                    return false;
+                }
+                throw;
+            }
+            return true;
         }
 
         /// <summary>

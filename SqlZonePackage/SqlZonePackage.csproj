@@ -1,0 +1,97 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{3FF4BF4A-3A28-4AD6-BFF1-E87F11124E31}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SqlZonePackage</RootNamespace>
+    <AssemblyName>SqlZonePackage</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Package.cs" />
+    <Compile Include="GroupHome.cs" />
+    <Compile Include="SecurityZoneHome.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Res\Model.CK.GroupHome-Zone.Install.2.11.25.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Res\Model.CK.SecurityZoneHome.Install.2.11.25.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Res\sSecurityZoneCreate.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CK.Setup.Database\CK.Setup.Database.csproj">
+      <Project>{571795b1-f1ec-4edf-9f17-01945ade0535}</Project>
+      <Name>CK.Setup.Database</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">
+      <Project>{87f54185-5226-4eee-8d59-5d03e6c1ab7c}</Project>
+      <Name>CK.Setup.Dependency</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CK.Setup.SqlServer\CK.Setup.SqlServer.csproj">
+      <Project>{9a0bce15-00ef-411b-8283-68aed047fce5}</Project>
+      <Name>CK.Setup.SqlServer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CK.Setup.StObj\CK.Setup.StObj.csproj">
+      <Project>{df7a0b05-4b48-44c2-b6c8-6fcfd66df8f8}</Project>
+      <Name>CK.Setup.StObj</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CK.Setup\CK.Setup.csproj">
+      <Project>{d3c700e1-3546-437c-9b96-1f867a539b6a}</Project>
+      <Name>CK.Setup</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CK.SqlServer\CK.SqlServer.csproj">
+      <Project>{95912a3b-758e-474b-af34-be24c4e3bf56}</Project>
+      <Name>CK.SqlServer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tests\CK.Setup.SqlServer.Tests.Model\KindOfActorPackage\SqlActorPackage.csproj">
+      <Project>{6d0d47c8-98f7-47de-b118-ad3606455f7e}</Project>
+      <Name>SqlActorPackage</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Res\CKCore.sSecurityZoneSPInCKCoreSchema.sql" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

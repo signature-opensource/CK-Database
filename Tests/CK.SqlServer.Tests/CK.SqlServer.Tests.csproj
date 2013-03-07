@@ -34,11 +34,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CK.Core, Version=0.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\CK.Core.2.7.3\lib\net40\CK.Core.dll</HintPath>
+    <Reference Include="CK.Core, Version=2.7.42.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\CK.Core.2.7.42\lib\net40\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="nunit.framework, Version=2.5.9.10348, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Env\NUnit\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -47,6 +48,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="CallProcedureAutoImplementor.cs" />
     <Compile Include="MultiScriptTests.cs" />
     <Compile Include="SimpleScriptTagHandlerTests.cs" />
     <Compile Include="TestHelper.cs" />
@@ -54,12 +59,17 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\CK.Setup.StObj\CK.Setup.StObj.csproj">
+      <Project>{DF7A0B05-4B48-44C2-B6C8-6FCFD66DF8F8}</Project>
+      <Name>CK.Setup.StObj</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\CK.SqlServer\CK.SqlServer.csproj">
       <Project>{95912A3B-758E-474B-AF34-BE24C4E3BF56}</Project>
       <Name>CK.SqlServer</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Scripts\ManualImplementation.sql" />
     <Content Include="Scripts\ErrorHandling.Install.sql" />
     <Content Include="Scripts\ErrorHandling.MicroTests.sql" />
   </ItemGroup>

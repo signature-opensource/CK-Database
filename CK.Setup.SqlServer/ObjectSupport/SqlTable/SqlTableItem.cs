@@ -1,0 +1,33 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using CK.Core;
+
+namespace CK.Setup.SqlServer
+{
+    public class SqlTableItem : SqlPackageBaseItem
+    {
+        public SqlTableItem( SqlTable package )
+            : base( "ObjTable", typeof( SqlTableSetupDriver ), package )
+        {
+            EnsureModel();
+        }
+
+        public SqlTableItem( IActivityLogger logger, IStObjSetupData data )
+            : base( logger, data )
+        {
+            Name = data.FullNameWithoutContext;
+            EnsureModel();
+        }
+
+        /// <summary>
+        /// Masked to formally be associated to <see cref="SqlTable"/>.
+        /// </summary>
+        public new SqlTable Object
+        { 
+            get { return (SqlTable)base.Object; } 
+        }
+
+    }
+}

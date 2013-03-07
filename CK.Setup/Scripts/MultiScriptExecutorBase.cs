@@ -11,11 +11,12 @@ namespace CK.Setup
         /// and <see cref="MultiScriptBase.ExecuteScript">executes</see> it.
         /// </summary>
         /// <param name="logger">The logger to use.</param>
+        /// <param name="driver">The item driver for which the script is executed.</param>
         /// <param name="script">The script to execute.</param>
         /// <returns>True on success, false to stop the setup process.</returns>
-        public virtual bool ExecuteScript( IActivityLogger logger, ISetupScript script )
+        public virtual bool ExecuteScript( IActivityLogger logger, SetupDriver driver, ISetupScript script )
         {
-            MultiScriptBase m = CreateMultiScript( logger, script );
+            MultiScriptBase m = CreateMultiScript( logger, driver, script );
             return m != null ? m.ExecuteScript() : false;
         }
 
@@ -23,12 +24,13 @@ namespace CK.Setup
         /// Must create a new <see cref="MultiScriptBase"/>.
         /// </summary>
         /// <param name="logger">The logger to use.</param>
+        /// <param name="driver">The item driver for which the script is executed.</param>
         /// <param name="script">The script to process.</param>
         /// <returns>
         /// A ready to run <see cref="MultiScriptBase"/> or null if it is not possible for any reason to execute the script. 
         /// In such case, an error or a fatal error SHOULD have been logged since this will stop the setup process.
         /// </returns>
-        protected abstract MultiScriptBase CreateMultiScript( IActivityLogger logger, ISetupScript script );
+        protected abstract MultiScriptBase CreateMultiScript( IActivityLogger logger, SetupDriver driver, ISetupScript script );
 
     }
 }

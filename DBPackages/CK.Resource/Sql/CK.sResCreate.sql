@@ -3,10 +3,12 @@
 -- Finds or creates a resource by name.
 --
 create procedure CK.sResCreate 
-	@ResName varchar(96),
+(
+	@ActorId	int,
+	@ResName	varchar(96),
 	@ResIdResult int output
-as 
-begin
+)
+as begin
 
 	select @ResIdResult = r.ResId from CK.tRes r where r.ResName = @ResName;
 	if @@RowCount = 0 

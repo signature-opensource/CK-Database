@@ -29,8 +29,12 @@ namespace CK.Setup
             {
                 bool opt = fullName[0] == '?';
                 if( opt ) fullName = fullName.Substring( 1 );
-                int i = FindIndex( d => d.Optional == opt && d.FullName == fullName );
-                if( i >= 0 ) RemoveAt( i );
+
+                int i = 0;
+                while( (i = FindIndex( i, d => d.Optional == opt && d.FullName == fullName )) >= 0 )
+                {
+                    RemoveAt( i );
+                }
             }
         }
 
@@ -48,7 +52,6 @@ namespace CK.Setup
                 }
             }
         }
-
 
         /// <summary>
         /// Splits the parameter on the comma and <see cref="Add(string)">adds</see> the multiple full names.

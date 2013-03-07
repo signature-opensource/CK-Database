@@ -9,47 +9,141 @@ using System.Reflection;
 
 namespace CK.Setup.SqlServer
 {
-    public class SqlSetupCenter
+    public class SqlSetupCenter : ISetupDriverFactory
     {
-        SqlSetupContext _context;
-        SetupCenter _center;
-        SqlFileDiscoverer _fileDiscoverer;
-        AmbiantContractCollector _collector;
+        readonly SqlSetupContext _context;
+        readonly SetupCenter _center;
+        readonly SqlFileDiscoverer _fileDiscoverer;
+        readonly DependentProtoItemCollector _sqlFiles;
 
         public SqlSetupCenter( SqlSetupContext context )
         {
             if( context == null ) throw new ArgumentNullException( "context" );
             _context = context;
-            var versionRepo = new SqlVersionedItemRepository( _context.DefaultDatabase );
-            var memory = new SqlSetupSessionMemoryProvider( _context.DefaultDatabase );
-            _center = new SetupCenter( versionRepo, memory,_context.Logger, _context );
-            _fileDiscoverer = new SqlFileDiscoverer( new SqlObjectBuilder(), _context.Logger );
-            _collector = new AmbiantContractCollector();
-            _center.ScriptTypeManager.Register( new SqlScriptTypeHandler( _context.DefaultDatabase ) );
+            var versionRepo = new SqlVersionedItemRepository( _context.DefaultSqlDatabase );
+            var memory = new SqlSetupSessionMemoryProvider( _context.DefaultSqlDatabase );
+            _center = new SetupCenter( versionRepo, memory, _context.Logger, this );
+            _sqlFiles = new DependentProtoItemCollector();
+            _fileDiscoverer = new SqlFileDiscoverer( new SqlObjectParser(), _context.Logger );
+
+            var sqlHandler = new SqlScriptTypeHandler( _context );
+            // Registers source "res-sql" first: resource scripts have low priority.
+            sqlHandler.RegisterSource( "res-sql" );
+            // Then registers "file-sql".
+            sqlHandler.RegisterSource( SqlFileDiscoverer.DefaultSourceName );
+
+            _center.ScriptTypeManager.Register( sqlHandler );
+        }
+
+        /// <summary>
+        /// Gets ors sets whether the ordering for setupable items that share the same rank in the pure dependency graph must be inverted.
+        /// Defaults to false. (See <see cref="DependencySorter"/> for more information.)
+        /// </summary>
+        public bool RevertOrderingNames
+        {
+            get { return _center.RevertOrderingNames; }
+            set { _center.RevertOrderingNames = value; }
         }
 
         public bool DiscoverFilePackages( string directoryPath )
         {
-            return _fileDiscoverer.DiscoverPackages( directoryPath );
+            return _fileDiscoverer.DiscoverPackages( String.Empty, SqlDefaultDatabase.DefaultDatabaseName, directoryPath );
         }
 
         public bool DiscoverSqlFiles( string directoryPath )
         {
-            return _fileDiscoverer.DiscoverSqlFiles( directoryPath, _center.Scripts );
+            return _fileDiscoverer.DiscoverSqlFiles( String.Empty, SqlDefaultDatabase.DefaultDatabaseName, directoryPath, _sqlFiles, _center.Scripts );
         }
 
-        public void DiscoverObjects( Assembly assembly )
+        /// <summary>
+        /// Gets or sets a function that will be called with the list of items once all of them are 
+        /// registered in the <see cref="DependencySorter"/> used by the <see cref="StObjCollector"/>.
+        /// </summary>
+        public Action<IEnumerable<IDependentItem>> StObjDependencySorterHookInput { get; set; }
+
+        /// <summary>
+        /// Gets or sets a function that will be called when items have been successfuly sorted by 
+        /// the <see cref="DependencySorter"/> used by the <see cref="StObjCollector"/>.
+        /// </summary>
+        public Action<IEnumerable<ISortedItem>> StObjDependencySorterHookOutput { get; set; }
+
+        /// <summary>
+        /// Gets or sets a function that will be called with the list of items once all of them are registered.
+        /// </summary>
+        public Action<IEnumerable<IDependentItem>> SetupDependencySorterHookInput
         {
-            _collector.Register( assembly.GetTypes() ); 
+            get { return _center.DependencySorterHookInput; }
+            set { _center.DependencySorterHookInput = value; }
         }
 
-        public bool Run()
+        /// <summary>
+        /// Gets or sets a function that will be called when items have been successfuly sorted.
+        /// </summary>
+        public Action<IEnumerable<ISortedItem>> SetupDependencySorterHookOutput
         {
-            var r = _collector.GetResult();
-            if( !r.CheckErrorAndWarnings( _context.Logger ) ) return false;
+            get { return _center.DependencySorterHookOutput; }
+            set { _center.DependencySorterHookOutput = value; }
+        }
 
+        /// <summary>
+        /// Executes the setup.
+        /// </summary>
+        /// <param name="typeFilter">Optional filter for types. When null, all types from the registered assmblies are kept.</param>
+        /// <returns>True if no error occured. False otherwise.</returns>
+        public bool Run( Predicate<Type> typeFilter = null )
+        {
+            var logger = _context.Logger;
 
-            return _center.Run( _fileDiscoverer );
+            StObjCollectorResult result;
+            using( logger.OpenGroup( LogLevel.Info, "Collecting objects." ) )
+            {
+                AssemblyRegisterer typeReg = new AssemblyRegisterer( logger );
+                typeReg.TypeFilter = typeFilter;
+                typeReg.Discover( _context.AssemblyRegistererConfiguration );
+                StObjCollector stObjC = new StObjCollector( logger, _context.StObjConfigurator, _context.StObjConfigurator, _context.StObjConfigurator );
+                stObjC.RegisterTypes( typeReg );
+                foreach( var t in _context.ExplicitRegisteredClasses ) stObjC.RegisterClass( t );
+                stObjC.DependencySorterHookInput = StObjDependencySorterHookInput;
+                stObjC.DependencySorterHookOutput = StObjDependencySorterHookOutput;
+                if( stObjC.RegisteringFatalOrErrorCount != 0 ) return false;
+                result = stObjC.GetResult();
+                if( result.HasFatalError ) return false;
+            }
+
+            IEnumerable<IDependentItem> stObjItems;
+            IEnumerable<IDependentItem> sqlObjectsFromFiles;
+
+            bool hasError = false;
+            using( logger.CatchCounter( a => hasError = true ) )
+            {
+                using( logger.OpenGroup( LogLevel.Info, "Creating Dependent Items from Structured Objects." ) )
+                {
+                    var itemBuilder = new StObjSetupBuilder( logger, _context.StObjConfigurator );
+                    stObjItems = itemBuilder.Build( result.OrderedStObjs );
+                }
+                using( logger.OpenGroup( LogLevel.Info, "Creating Sql Objects from {0} sql files.", _sqlFiles.Count ) )
+                {
+                    sqlObjectsFromFiles = _sqlFiles.OfType<SqlObjectProtoItem>().Select( proto => proto.CreateItem( logger ) );
+                }
+            }
+            if( hasError ) return false;
+            return _center.Run( sqlObjectsFromFiles, _fileDiscoverer.DiscoveredPackages, stObjItems );
+        }
+
+        SetupDriver ISetupDriverFactory.CreateDriver( Type driverType, SetupDriver.BuildInfo info )
+        {
+            return CreateDriver( driverType, info );
+        }
+
+        protected internal virtual SetupDriver CreateDriver( Type driverType, SetupDriver.BuildInfo info )
+        {
+            if( driverType == typeof( SqlObjectSetupDriver ) ) return new SqlObjectSetupDriver( info, _context );
+            if( driverType == typeof( SetupDriver ) ) return new SetupDriver( info );
+            if( driverType == typeof( SqlDatabaseSetupDriver ) ) return new SqlDatabaseSetupDriver( info );
+            if( driverType == typeof( SqlDatabaseConnectionSetupDriver ) ) return new SqlDatabaseConnectionSetupDriver( info, _context );
+            if( driverType == typeof( SqlPackageSetupDriver ) ) return new SqlPackageSetupDriver( info );
+            if( driverType == typeof( SqlTableSetupDriver ) ) return new SqlTableSetupDriver( info );
+            return null;
         }
     }
 }

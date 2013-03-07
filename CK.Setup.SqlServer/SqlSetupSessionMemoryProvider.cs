@@ -10,7 +10,7 @@ namespace CK.Setup.SqlServer
 {
     /// <summary>
     /// Sql Server based memory provider for the setup.
-    /// It is used by <see cref="PackageSqlScriptExecutor"/> (created by <see cref="SqlScriptTypeHandler"/>)
+    /// It is used by <see cref="SqlScriptExecutor"/> (created by <see cref="SqlScriptTypeHandler"/>)
     /// to skip already executed scripts.
     /// </summary>
     public class SqlSetupSessionMemoryProvider : ISetupSessionMemoryProvider, ISetupSessionMemory
@@ -103,8 +103,8 @@ select LastStartDate, StartCount, LastError from CKCore.tSetupMemory;
         /// On ok (when <paramref name="ok"/> is not null), the memory must be persisted.
         /// <see cref="IsStarted"/> must be true otherwise an <see cref="InvalidOperationException"/> is thrown.
         /// </summary>
-        /// <param name="ok">
-        /// Must be not null to indicate an ok. Null on success. 
+        /// <param name="error">
+        /// Must be not null to indicate an error. Null on success. 
         /// Empty or white space will raise an <see cref="ArgumentException"/>.
         /// </param>
         public void StopSetup( string error )
@@ -118,7 +118,7 @@ select LastStartDate, StartCount, LastError from CKCore.tSetupMemory;
             }
             else
             {
-                if( String.IsNullOrWhiteSpace( error ) ) throw new ArgumentException( "Must not be null or empty.", "ok" );
+                if( String.IsNullOrWhiteSpace( error ) ) throw new ArgumentException( "Must not be null or empty.", "error" );
 
                 using( var c = new SqlCommand( @"update CKCore.tSetupMemory set LastError=@LastError; select LastStartDate, StartCount from CKCore.tSetupMemory;" ) )
                 {
@@ -139,9 +139,9 @@ select LastStartDate, StartCount, LastError from CKCore.tSetupMemory;
             if( String.IsNullOrWhiteSpace( itemKey ) || itemKey.Length > 255 ) throw new ArgumentException( "Must not be null or empty or longer than 255 characters.", "itemKey" );
 
             using( var c = new SqlCommand( @"
-merge CKCore.tSetupMemoryItem as target 
-using (select ItemKey = @ItemKey) as source
-on target.ItemKey = source.ItemKey
+merge CKCore.tSetupMemoryItem as t 
+using (select ItemKey = @ItemKey) as s
+on t.ItemKey = s.ItemKey
 when matched then update set ItemValue = @ItemValue
 when not matched then insert(ItemKey,ItemValue) values (@ItemKey, @ItemValue);" ) )
             {

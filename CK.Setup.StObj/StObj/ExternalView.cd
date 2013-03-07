@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Comment CommentText="Configuration of the structure.&#xD;&#xA;&#xD;&#xA;- Contexts into which Construct parameters and Ambient properties are searched can be modified.&#xD;&#xA;&#xD;&#xA;- Construct parameters and Ambient properties values can be injected.&#xD;&#xA;&#xD;&#xA;- Container can be changed.&#xD;&#xA;&#xD;&#xA;- Requires/RequiredBy can be cancelled.&#xD;&#xA;&#xD;&#xA;">
+    <Position X="0.5" Y="0.5" Height="1.823" Width="5.033" />
+  </Comment>
+  <Interface Name="CK.Setup.IAmbientProperty">
+    <Position X="10.75" Y="5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>StObj\IAmbientProperty.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="CK.Setup.IParameter">
+    <Position X="12.75" Y="5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAA=</HashCode>
+      <FileName>StObj\IParameter.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="CK.Setup.IMutableAmbientProperty">
+    <Position X="2.5" Y="7.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>StObj\IMutableAmbientProperty.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="CK.Setup.IMutableParameter">
+    <Position X="5" Y="7.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAA=</HashCode>
+      <FileName>StObj\IMutableParameter.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="CK.Setup.IMutableReference">
+    <Position X="3.75" Y="2.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAACAAgBAAAAAAAAgAAAAAAAAAAAAAQAAAAAAAAA=</HashCode>
+      <FileName>StObj\IMutableReference.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="CK.Setup.IMutableResolvableReference">
+    <Position X="4" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAIAAAAAAAAAA=</HashCode>
+      <FileName>StObj\IMutableResolvableReference.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="CK.Setup.IResolvableReference">
+    <Position X="11.75" Y="1.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAACAAgAAAAAAAAAAAAQAAgAAAAAAIQAgAAAAAAA=</HashCode>
+      <FileName>StObj\IResolvableReference.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="CK.Setup.IStObj">
+    <Position X="9" Y="1.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AABAAAQAQgAAAACAAAAAAAAAAAAAAAAAAMAAAAACAkA=</HashCode>
+      <FileName>StObj\IStObj.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="CK.Setup.IStObjMutableItem">
+    <Position X="1" Y="4" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>QAAAAAQAAgAAAACAAAAAAAAAAAAgAAAAAIBAAAACAAA=</HashCode>
+      <FileName>StObj\IStObjMutableItem.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="CK.Setup.IStObjMapper">
+    <Position X="7.75" Y="5.75" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAACAAAIAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>StObj\IStObjMapper.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="CK.Setup.IStObjContextualMapper">
+    <Position X="10.25" Y="6.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAgAAACAAgAAAAAACAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>StObj\IStObjContextualMapper.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="CK.Setup.IStObjStructuralConfigurator">
+    <Position X="0.75" Y="2.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>StObj\IStObjStructuralConfigurator.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

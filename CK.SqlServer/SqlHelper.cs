@@ -27,12 +27,13 @@ namespace CK.SqlServer
         {
             if( cmd.CommandType == System.Data.CommandType.StoredProcedure )
             {
-                w.Write( "exec {0} ", cmd.CommandText );
+                w.Write( "exec {0} <= ", cmd.CommandText );
                 WriteCallParameters( w, cmd.Parameters );
             }
             else
             {
                 WriteCallParameters( w, cmd.Parameters );
+                w.Write( " => " );
                 w.Write( cmd.CommandText );
             }
             return w;
@@ -91,6 +92,8 @@ namespace CK.SqlServer
                 case SqlDbType.Real: return Convert.ToString( v, CultureInfo.InvariantCulture );
                 case SqlDbType.Money: return Convert.ToString( v, CultureInfo.InvariantCulture );
                 case SqlDbType.Xml: return String.Format( "cast( '{0}' as xml )", SqlEncode( Convert.ToString( v, CultureInfo.InvariantCulture ) ) );
+                case SqlDbType.Structured: return Convert.ToString( v, CultureInfo.InvariantCulture );
+
                 default: throw new Exception( "No sql string representation for:" + dbType.ToString() );
             }
         }
