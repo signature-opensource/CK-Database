@@ -16,7 +16,7 @@ namespace CK.SqlServer
     {
         readonly IAbstractExpr[] _components;
 
-        public SqlExprIn( SqlExpr left, SqlTokenTerminal notToken, SqlTokenTerminal inToken, SqlExprGenericBlockList values )
+        public SqlExprIn( SqlExpr left, SqlTokenTerminal notToken, SqlTokenTerminal inToken, SqlExprList values )
         {
             _components = notToken != null 
                             ? CreateArray( left, notToken, inToken, values ) 
@@ -36,7 +36,7 @@ namespace CK.SqlServer
 
         public SqlTokenTerminal InToken { get { return (SqlTokenTerminal)_components[IsNotIn ? 2 : 1]; } }
 
-        public SqlExprGenericBlockList Values { get { return (SqlExprGenericBlockList)_components[IsNotIn ? 3 : 2]; } }
+        public SqlExprList Values { get { return (SqlExprList)_components[IsNotIn ? 3 : 2]; } }
 
         public override IEnumerable<IAbstractExpr> Components { get { return _components; } }
 

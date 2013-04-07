@@ -32,7 +32,7 @@ namespace CK.SqlServer
             get { return Opener.Count == 0; }
         }
 
-        public override ISqlExprEnclosable Enclose( SqlExprMultiToken<SqlTokenOpenPar> opener, SqlExprMultiToken<SqlTokenClosePar> closer )
+        public override ISqlExprEnclosable Enclose( SqlTokenOpenPar opener, SqlTokenClosePar closer )
         {
             if( !CanEnclose ) throw new InvalidOperationException();
             return new SqlExprColumnList( EncloseComponents( opener, closer ) );

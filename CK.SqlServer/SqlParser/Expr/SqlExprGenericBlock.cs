@@ -69,7 +69,7 @@ namespace CK.SqlServer
             get { return true; }
         }
 
-        public ISqlExprEnclosable Enclose( SqlExprMultiToken<SqlTokenOpenPar> openPar, SqlExprMultiToken<SqlTokenClosePar> closePar )
+        public ISqlExprEnclosable Enclose( SqlTokenOpenPar openPar, SqlTokenClosePar closePar )
         {
             return new SqlExprGenericBlock( CreateArray( openPar, _components, closePar ) );
         }
@@ -77,31 +77,6 @@ namespace CK.SqlServer
         public IEnumerable<IAbstractExpr> ComponentsWithoutParenthesis
         {
             get { return _components.Skip( 1 ).Take( _components.Length - 2 ); }
-        }
-
-        /// <summary>
-        /// Lifts the block (all its contained expressions are lifted). 
-        /// If there is only one expression that can be enclosed by the <see cref="Opener"/>/<see cref="Closer"/> of this 
-        /// block (or if this block has no parenthesis), the only expression (enclosed) is returned (this block is useless).
-        /// </summary>
-        internal override SqlExpr LiftedExpression
-        {
-            get
-            {
-                if( _components.Length != 3 )
-                {
-                    IAbstractExpr[] l = ApplyLift( _components );
-                    return l == null ? this : new SqlExprGenericBlock( l );
-                }
-                SqlExpr e = _components[1] as SqlExpr;
-                if( e == null ) return this;
-                var lifted = e.LiftedExpression;
-                if( Opener.Count == 0 ) return lifted;
-                ISqlExprEnclosable enc = lifted as ISqlExprEnclosable;
-                if( enc != null && enc.CanEnclose ) return (SqlExpr)enc.Enclose( Opener, Closer );
-                if( ReferenceEquals( lifted, e ) ) return this;
-                return new SqlExprGenericBlock( CreateArray( Opener, lifted, Closer ) );
-            }
         }
 
         public override IEnumerable<IAbstractExpr> Components { get { return _components; } }

@@ -9,7 +9,6 @@ namespace CK.SqlServer
 
         T Visit( SqlExprUnmodeledTokens e );
         T Visit( SqlExprGenericBlock e );
-        T Visit( SqlExprGenericBlockList e );
         T Visit( SqlExprKoCall e );
         T Visit( SqlExprStIf e );
         

@@ -12,21 +12,6 @@ namespace CK.SqlServer
     {
         readonly IAbstractExpr[] _components;
 
-        ///// <summary>
-        ///// Initializes a new <see cref="SqlExprBaseListWithSeparator{T}"/> of <typeparamref name="T"/> with an <see cref="Opener"/> and a <see cref="Closer"/> 
-        ///// and with <paramref name="validSeparator"/> that is <see cref="IsCommaSeparator"/> by default.
-        ///// </summary>
-        ///// <param name="exprOrTokens">List of tokens or expressions.</param>
-        ///// <param name="validSeparator">Defaults to a predicate that checks that separators are commas (see <see cref="IsCommaSeparator"/>).</param>
-        //public SqlExprBaseListWithSeparator( SqlExprMultiToken<SqlTokenOpenPar> opener, IList<IAbstractExpr> exprOrTokens, SqlExprMultiToken<SqlTokenClosePar> closer, bool allowEmpty, Predicate<IAbstractExpr> validSeparator = null )
-        //{
-        //    if( opener == null ) throw new ArgumentNullException( "opener" );
-        //    if( exprOrTokens == null ) throw new ArgumentNullException( "exprOrTokens" );
-        //    if( closer == null ) throw new ArgumentNullException( "closer" );
-        //    _components = CreateArray( opener, exprOrTokens, 0, exprOrTokens.Count, closer );
-        //    CheckArray( _components, allowEmpty, true, opener.Count > 0, validSeparator ?? IsCommaSeparator );
-        //}
-
         /// <summary>
         /// Initializes a new <see cref="SqlExprBaseListWithSeparator{T}"/> of <typeparamref name="T"/> enclosed in a <see cref="SqlTokenOpenPar"/> and a <see cref="SqlTokenClosePar"/> 
         /// and with <paramref name="validSeparator"/> that is to <see cref="IsCommaSeparator"/> by default.
@@ -61,7 +46,7 @@ namespace CK.SqlServer
             _components = components;
         }
 
-        internal IAbstractExpr[] EncloseComponents( SqlExprMultiToken<SqlTokenOpenPar> opener, SqlExprMultiToken<SqlTokenClosePar> closer )
+        internal IAbstractExpr[] EncloseComponents( SqlTokenOpenPar opener, SqlTokenClosePar closer )
         {
             return CreateArray( opener, _components, closer );
         }
@@ -88,7 +73,7 @@ namespace CK.SqlServer
         /// <param name="opener">New opening parenthesis.</param>
         /// <param name="closer">New closing parenthesis.</param>
         /// <returns>A clone of this object enclosed by the new tokens.</returns>
-        public abstract ISqlExprEnclosable Enclose( SqlExprMultiToken<SqlTokenOpenPar> opener, SqlExprMultiToken<SqlTokenClosePar> closer );
+        public abstract ISqlExprEnclosable Enclose( SqlTokenOpenPar opener, SqlTokenClosePar closer );
 
         /// <summary>
         /// Gets the content (items and separators) without <see cref="Opener"/> nor <see cref="Closer"/>.

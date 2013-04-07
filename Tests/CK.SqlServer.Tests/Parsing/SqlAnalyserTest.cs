@@ -60,12 +60,12 @@ namespace CK.SqlServer.Tests.Parsing
         [Test]
         public void ParseIn()
         {
-            Check( "@i in ( 1, 2, 3 )", "In(@i∈¤{{1}{2}{3}}¤)" );
-            Check( "@i not in ( 1, 2 )", "NotIn(@i∈¤{{1}{2}}¤)" );
-            Check( "2*~5 not in ( 7 )", "NotIn([2*~[5]]∈¤{{7}}¤)" );
-            Check( "not 2*~5 not in ( 7 )", "not[NotIn([2*~[5]]∈¤{{7}}¤)]" );
-            Check( "not 2*~5 not in ( 7 ) or 1=1", "[not[NotIn([2*~[5]]∈¤{{7}}¤)]or[1=1]]" );
-            Check( "3 in (4+5,6,select Power from CK.tShmurtz) or 1=1", "[In(3∈¤{{[4+5]}{6}{select-Power-from-CK.tShmurtz}}¤)or[1=1]]" );
+            Check( "@i in ( 1, 2, 3 )", "In(@i∈¤{1,2,3}¤)" );
+            Check( "@i not in ( 1, 2 )", "NotIn(@i∈¤{1,2}¤)" );
+            Check( "2*~5 not in ( 7 )", "NotIn([2*~[5]]∈¤{7}¤)" );
+            Check( "not 2*~5 not in ( 7 )", "not[NotIn([2*~[5]]∈¤{7}¤)]" );
+            Check( "not 2*~5 not in ( 7 ) or 1=1", "[not[NotIn([2*~[5]]∈¤{7}¤)]or[1=1]]" );
+            Check( "3 in (4+5,6,select Power from CK.tShmurtz) or 1=1", "[In(3∈¤{[4+5],6,{select-Power-from-CK.tShmurtz}}¤)or[1=1]]" );
         }
 
         [Test]
@@ -83,7 +83,7 @@ namespace CK.SqlServer.Tests.Parsing
                                                      print '1';
                                                    else print 2, 9, 'toto';" );
 
-            Assert.That( ExplainWriter.Write( ifS ), Is.EqualTo( "if[IsNull(@i)]then[<print¤{{'1'}}¤>]else[<print¤{{2}{9}{'toto'}}¤>]" ) );
+            Assert.That( ExplainWriter.Write( ifS ), Is.EqualTo( "if[IsNull(@i)]then[<print¤{'1'}¤>]else[<print¤{2,9,'toto'}¤>]" ) );
 
             ifS = ParseStatement<SqlExprStIf>( @"if exists(select * from sys.tables) print N'OK';" );
             Assert.That( ExplainWriter.Write( ifS ), Is.EqualTo( "if[call:exists({select-*-from-sys.tables})]then[<print¤{{N'OK'}}¤>]" ) );

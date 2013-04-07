@@ -24,13 +24,13 @@ namespace CK.SqlServer
         bool CanEnclose { get; }
 
         /// <summary>
-        /// Creates a new enclosable that is enclosed by new pair(s) of parenthesis.
+        /// Creates a new enclosable that is enclosed by a new pair of parenthesis.
         /// Must throw an <see cref="InvalidOperationException"/> if <see cref="CanEnclose"/> is false.
         /// </summary>
         /// <param name="openPar">New opening parenthesis.</param>
         /// <param name="closePar">New closing parenthesis.</param>
         /// <returns>A clone of this object enclosed by the new parenthesis.</returns>
-        ISqlExprEnclosable Enclose( SqlExprMultiToken<SqlTokenOpenPar> openPar, SqlExprMultiToken<SqlTokenClosePar> closePar );
+        ISqlExprEnclosable Enclose( SqlTokenOpenPar openPar, SqlTokenClosePar closePar );
 
         /// <summary>
         /// Gets the components of this expression: it is a mix of <see cref="SqlToken"/> and <see cref="SqlExpr"/>

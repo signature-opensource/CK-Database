@@ -62,14 +62,6 @@ namespace CK.SqlServer
             return new SqlExprGenericBlock( modified.ToArray() );
         }
 
-        public virtual SqlExpr Visit( SqlExprGenericBlockList e )
-        {
-            List<IAbstractExpr> modified = VisitExprComponents( e.ComponentsWithoutParenthesis, e.Opener, e.Closer );
-            if( modified == null ) return e;
-            return new SqlExprGenericBlockList( modified.ToArray() );
-
-        }
-
         public virtual SqlExpr Visit( SqlExprKoCall e )
         {
             List<IAbstractExpr> modified = VisitExprComponents( e.Components );
@@ -102,7 +94,7 @@ namespace CK.SqlServer
         {
             SqlExpr vC = VisitExpr( e.Content );
             if( ReferenceEquals( vC, e.Content ) ) return e;
-            return new SqlExprStUnmodeled( e.Identifier, (SqlExprGenericBlockList)vC, e.StatementTerminator );
+            return new SqlExprStUnmodeled( e.Identifier, (SqlExprList)vC, e.StatementTerminator );
         }
 
         public virtual SqlExpr Visit( SqlExprStStoredProc e )

@@ -187,7 +187,7 @@ namespace CK.SqlServer
             bool IsUnmodeledStatement( out SqlExprStUnmodeled st, SqlTokenIdentifier id )
             {
                 st = null;
-                SqlExprGenericBlockList content;
+                SqlExprList content;
                 if( !IsGenericBlockList( out content, false ) ) return false;
                 st = new SqlExprStUnmodeled( id, content, GetOptionalTerminator() );
                 return true;
@@ -228,7 +228,7 @@ namespace CK.SqlServer
 
                 if( R.Current.TokenType != SqlTokenType.OpenPar ) return false;
 
-                if( !IsList<SqlExprIdentifier>( out openPar, out items, out closePar, true, IsMonoIdentifier ) ) return false;
+                if( !IsCommaList<SqlExprIdentifier>( out openPar, out items, out closePar, true, IsMonoIdentifier ) ) return false;
                 columns = new SqlExprColumnList( openPar, items, closePar );
                 return true;
             }
@@ -274,7 +274,7 @@ namespace CK.SqlServer
                 SqlTokenOpenPar openPar;
                 SqlTokenClosePar closePar;
                 List<IAbstractExpr> items;
-                if( !IsList<SqlExprParameter>( out openPar, out items, out closePar, requiresParenthesis, IsParameter ) ) return false;
+                if( !IsCommaList<SqlExprParameter>( out openPar, out items, out closePar, requiresParenthesis, IsParameter ) ) return false;
                 parameters = openPar != null ? new SqlExprParameterList( openPar, items, closePar ) : new SqlExprParameterList( items );
                 return true;
             }

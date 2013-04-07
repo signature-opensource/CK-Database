@@ -84,7 +84,6 @@
     <Compile Include="SqlParser\Expr\SqlExprBinaryOperator.cs" />
     <Compile Include="SqlParser\Expr\ISqlIdentifier.cs" />
     <Compile Include="SqlParser\Expr\SqlExprBaseExprList.cs" />
-    <Compile Include="SqlParser\Expr\SqlExprGenericBlockList.cs" />
     <Compile Include="SqlParser\SqlAnalyser.LowLevel.cs" />
     <Compile Include="SqlParser\SqlAnalyser.Expression.cs" />
     <Compile Include="SqlParser\Expr\SqlExprGenericBlock.cs" />

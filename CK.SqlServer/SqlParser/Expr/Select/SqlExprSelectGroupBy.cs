@@ -16,7 +16,7 @@ namespace CK.SqlServer
     {
         readonly IAbstractExpr[] _components;
 
-        public SqlExprSelectGroupBy( SqlTokenIdentifier groupToken, SqlTokenIdentifier byToken, SqlExprGenericBlockList groupContent, SqlTokenIdentifier havingToken = null, SqlExpr havingExpression = null )
+        public SqlExprSelectGroupBy( SqlTokenIdentifier groupToken, SqlTokenIdentifier byToken, SqlExprGenericBlock groupContent, SqlTokenIdentifier havingToken = null, SqlExpr havingExpression = null )
         {
             if( havingToken != null )
             {

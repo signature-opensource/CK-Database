@@ -22,7 +22,7 @@ namespace CK.SqlServer
             /// <param name="expectParenthesis">True to expect parenthesis. An error is set if the current token is not an opening parenthesis.</param>
             /// <param name="match">Function that knows how to match an expression. If this function returns true and a null item, null is not collected into the items.</param>
             /// <returns>True on success. Can be false only if <paramref name="expectParenthesis"/> is true.</returns>
-            bool IsList<T>( out SqlTokenOpenPar openPar, out List<IAbstractExpr> items, out SqlTokenClosePar closePar, bool expectParenthesis, IsExprFunc<T> match ) where T : SqlExpr
+            bool IsCommaList<T>( out SqlTokenOpenPar openPar, out List<IAbstractExpr> items, out SqlTokenClosePar closePar, bool expectParenthesis, IsExprFunc<T> match ) where T : SqlExpr
             {
                 items = null;
                 closePar = null;

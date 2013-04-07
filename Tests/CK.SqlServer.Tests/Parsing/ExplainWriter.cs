@@ -133,10 +133,16 @@ namespace CK.SqlServer.Tests.Parsing
             return e;
         }
 
-        public override SqlExpr Visit( SqlExprGenericBlockList e )
+        public override SqlExpr Visit( SqlExprList e )
         {
             Out.Append( "¤{" );
-            base.Visit( e );
+            bool one = false;
+            foreach( var item in e )
+            {
+                if( one ) Out.Append( ',' );
+                one = true;
+                VisitExpr( item );
+            }
             Out.Append( "}¤" );
             return e;
         }

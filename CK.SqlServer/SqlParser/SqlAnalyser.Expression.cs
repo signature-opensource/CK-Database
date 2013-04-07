@@ -75,14 +75,7 @@ namespace CK.SqlServer
                 {
                     SqlTokenOpenPar openPar = R.Read<SqlTokenOpenPar>();
                     //if( IsSelect
-                    // Since out is a ref with an attribute, covariance is not supported:
-                    // one can not write IsGenericBlock( out e, ... since e is a SqlExpr.
-                    SqlExprGenericBlock b;
-                    if( IsGenericBlock( out b, openPar, false ) )
-                    {
-                        e = b;
-                        return true;
-                    }
+                    if( IsGenericBlock( out e, openPar, false ) ) return true;
                     return R.SetCurrentError( "Expected )." );
                 }
                 return false;
@@ -96,9 +89,9 @@ namespace CK.SqlServer
                 int precedenceLevel = R.CurrentPrecedenceLevel;
                 if( R.Current.TokenType == SqlTokenType.OpenPar )
                 {
-                    SqlExprGenericBlockList parenthesis;
+                    SqlExprList parenthesis;
                     if( !IsGenericBlockList( out parenthesis, true ) ) return false;
-                    left = new SqlExprKoCall( left, parenthesis.LiftedContent );
+                    left = new SqlExprKoCall( left, parenthesis );
                     return true;
                 }
                 if( (R.Current.TokenType & SqlTokenType.IsAssignOperator) != 0 )
@@ -180,7 +173,7 @@ namespace CK.SqlServer
             {
                 Debug.Assert( R.Current.TokenType == SqlTokenType.In );
                 SqlTokenTerminal inToken = R.Read<SqlTokenTerminal>();
-                SqlExprGenericBlockList values;
+                SqlExprList values;
                 if( !IsGenericBlockList( out values, true ) ) return false;
                 left = new SqlExprIn( left, notToken, inToken, values );
                 return true;
@@ -192,18 +185,23 @@ namespace CK.SqlServer
             /// <param name="e">The list.</param>
             /// <param name="expectParenthesis">True to set an error if the current token is not an opening parenthesis.</param>
             /// <returns>True on success.</returns>
-            bool IsGenericBlockList( out SqlExprGenericBlockList e, bool expectParenthesis )
+            bool IsGenericBlockList( out SqlExprList e, bool expectParenthesis )
             {
                 e = null;
                 SqlTokenOpenPar openPar;
                 SqlTokenClosePar closePar;
                 List<IAbstractExpr> items;
-                if( !IsList<SqlExprGenericBlock>( out openPar, out items, out closePar, expectParenthesis, MatchGenericBlockInList ) ) return false;
-                e = openPar != null ? new SqlExprGenericBlockList( openPar, items, closePar ) : new SqlExprGenericBlockList( items );
+                if( !IsCommaList<SqlExpr>( out openPar, out items, out closePar, expectParenthesis, MatchGenericBlockInList ) ) return false;
+                if( items.Count == 1 && items[0] is SqlExprList )
+                {
+                    e = (SqlExprList)items[0];
+                    if( openPar != null ) e = (SqlExprList)e.Enclose( openPar, closePar );
+                }
+                else e = openPar != null ? new SqlExprList( openPar, items, closePar ) : new SqlExprList( items );
                 return true;
             }
 
-            bool MatchGenericBlockInList( out SqlExprGenericBlock e, bool expected )
+            bool MatchGenericBlockInList( out SqlExpr e, bool expected )
             {
                 return IsGenericBlock( out e, SqlExpr.IsCommaOrCloseParenthesisOrTerminator, expected );
             }
@@ -215,27 +213,26 @@ namespace CK.SqlServer
             /// <param name="closer">Predicate that detects the stopper (will NOT be added to the expression).</param>
             /// <param name="expectAtLeastOne">True to set an error if the block is empty (no expressions in it).</param>
             /// <returns>True if a block has sucessfully been found.</returns>
-            bool IsGenericBlock( out SqlExprGenericBlock block, Predicate<SqlToken> stopper, bool expectAtLeastOne )
+            bool IsGenericBlock( out SqlExpr block, Predicate<SqlToken> stopper, bool expectAtLeastOne )
             {
                 if( stopper == null ) throw new ArgumentNullException( "stopper" );
                 return IsGenericBlockInternal( out block, null, stopper, expectAtLeastOne );
             }
 
             /// <summary>
-            /// Reads a <see cref="SqlExprGenericBlock"/> (a list of expressions or tokens) with 
-            /// an <see cref="SqlExprGenericBlock.Opener"/> and a <see cref="SqlExprGenericBlock.Closer"/> tokens.
+            /// Reads a <see cref="SqlExprGenericBlock"/> (a list of expressions or tokens) enclosed in parenthesis: the stopper is the closing parenthesis. 
             /// </summary>
             /// <param name="block">Read block.</param>
             /// <param name="openPar">Opening parenthesis (will be the very first token).</param>
             /// <param name="expectAtLeastOne">True to set an error if the block is empty (no expressions in it).</param>
             /// <returns>True if a block has sucessfully been found.</returns>
-            bool IsGenericBlock( out SqlExprGenericBlock block, SqlTokenOpenPar openPar, bool expectAtLeastOne )
+            bool IsGenericBlock( out SqlExpr block, SqlTokenOpenPar openPar, bool expectAtLeastOne )
             {
                 if( openPar == null ) throw new ArgumentNullException( "opener" );
                 return IsGenericBlockInternal( out block, openPar,  t => t is SqlTokenClosePar, expectAtLeastOne );
             }
 
-            bool IsGenericBlockInternal( out SqlExprGenericBlock block, SqlTokenOpenPar openPar, Predicate<SqlToken> closer, bool setErrorIfEmpty )
+            bool IsGenericBlockInternal( out SqlExpr block, SqlTokenOpenPar openPar, Predicate<SqlToken> closer, bool setErrorIfEmpty )
             {
                 block = null;
                 List<IAbstractExpr> exprs = new List<IAbstractExpr>();
@@ -258,13 +255,24 @@ namespace CK.SqlServer
                     {
                         // If an opener exists, we always create the block.
                         Debug.Assert( R.Current is SqlTokenClosePar );
-                        block = new SqlExprGenericBlock( openPar, exprs, (SqlTokenClosePar)R.Current );
-                        R.MoveNext();
+                        SqlTokenClosePar closePar = R.Read<SqlTokenClosePar>();
+                        if( exprs.Count == 1 )
+                        {
+                            ISqlExprEnclosable enc = exprs[0] as ISqlExprEnclosable;
+                            if( enc != null && enc.CanEnclose )
+                            {
+                                block = (SqlExpr)enc.Enclose( openPar, closePar );
+                                return true;
+                            }
+                        }
+                        block = new SqlExprGenericBlock( openPar, exprs, closePar );
+                        return true;
                     }
-                    else
+                    // When no opener/closer exist and the block is empty, we do not instanciate it.
+                    if( exprs.Count > 0 )
                     {
-                        // When no opener/closer exist and the block is empty, we do not instanciate it.
-                        if( exprs.Count > 0 ) block = new SqlExprGenericBlock( exprs );
+                        if( exprs.Count == 1 && exprs[0] is SqlExpr) block = (SqlExpr)exprs[0];
+                        else block = new SqlExprGenericBlock( exprs );
                     }
                     return true;
                 }

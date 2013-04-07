@@ -15,7 +15,7 @@ namespace CK.SqlServer
     {
         readonly IAbstractExpr[] _components;
 
-        public SqlExprSelectFrom( SqlTokenIdentifier fromToken, SqlExprGenericBlockList fromContent )
+        public SqlExprSelectFrom( SqlTokenIdentifier fromToken, SqlExprGenericBlock fromContent )
         {
             _components = CreateArray( fromToken, fromContent );
         }

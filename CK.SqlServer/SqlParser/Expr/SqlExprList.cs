@@ -14,13 +14,22 @@ namespace CK.SqlServer
     public class SqlExprList : SqlExprBaseExprList<SqlExpr>
     {
         /// <summary>
-        /// Initializes a new list of expressions with optional enclosing parentheses.
+        /// Initializes a new list of expressions with enclosing parentheses.
         /// </summary>
         /// <param name="openPar">Opening parenthesis. Can not be null.</param>
         /// <param name="tokens">Comma separated list of <see cref="SqlExpr"/> (possibly empty).</param>
         /// <param name="closePar">Closing parenthesis. Can not be null.</param>
         public SqlExprList( SqlTokenOpenPar openPar, IList<IAbstractExpr> tokens, SqlTokenClosePar closePar )
             : base( openPar, tokens, closePar, true )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new list of expressions without enclosing parentheses.
+        /// </summary>
+        /// <param name="tokens">Comma separated list of <see cref="SqlExpr"/> (possibly empty).</param>
+        public SqlExprList( IList<IAbstractExpr> tokens )
+            : base( tokens, true )
         {
         }
 
@@ -34,9 +43,9 @@ namespace CK.SqlServer
             get { return true; }
         }
 
-        public override ISqlExprEnclosable Enclose( SqlExprMultiToken<SqlTokenOpenPar> opener, SqlExprMultiToken<SqlTokenClosePar> closer )
+        public override ISqlExprEnclosable Enclose( SqlTokenOpenPar opener, SqlTokenClosePar closer )
         {
-            return new SqlExprList( EncloseComponents( opener, closer ) );
+            return new SqlExprList( CreateArray( opener, closer ) );
         }
 
         [DebuggerStepThrough]

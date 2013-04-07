@@ -11,7 +11,7 @@ namespace CK.SqlServer
     {
         readonly IAbstractExpr[] _components;
 
-        public SqlExprKoCall( SqlExpr funName, ISqlExprList<SqlExpr> parameters )
+        public SqlExprKoCall( SqlExpr funName, SqlExprList parameters )
         {
             if( funName == null ) throw new ArgumentNullException( "targetName" );
             if( parameters == null ) throw new ArgumentNullException( "parameters" );
@@ -25,7 +25,7 @@ namespace CK.SqlServer
 
         public SqlExpr FunName { get { return (SqlExpr)_components[0]; } }
 
-        public ISqlExprList<SqlExpr> Parameters { get { return (ISqlExprList<SqlExpr>)_components[1]; } }
+        public SqlExprList Parameters { get { return (SqlExprList)_components[1]; } }
 
         public override sealed IEnumerable<IAbstractExpr> Components { get { return _components; } }
 

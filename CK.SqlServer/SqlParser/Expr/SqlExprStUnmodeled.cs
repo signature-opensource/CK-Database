@@ -13,14 +13,14 @@ namespace CK.SqlServer
     /// </summary>
     public class SqlExprStUnmodeled : SqlExprBaseSt
     {
-        public SqlExprStUnmodeled( SqlTokenIdentifier id, SqlExprGenericBlockList content, SqlTokenTerminal statementTerminator = null )
+        public SqlExprStUnmodeled( SqlTokenIdentifier id, SqlExprList content, SqlTokenTerminal statementTerminator = null )
             : base( CreateArray( id, content ), statementTerminator )
         {
         }
         
         public SqlTokenIdentifier Identifier { get { return (SqlTokenIdentifier)At(0); } }
 
-        public SqlExprGenericBlockList Content { get { return (SqlExprGenericBlockList)At(1); } }
+        public SqlExprList Content { get { return (SqlExprList)At( 1 ); } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

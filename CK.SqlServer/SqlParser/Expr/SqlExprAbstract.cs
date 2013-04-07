@@ -76,6 +76,7 @@ namespace CK.SqlServer
             int i = 1;
             foreach( var e in content )
             {
+                if( i < skippedContent ) continue; 
                 c[i++] = e;
                 if( i == contentLength ) break;
             }
@@ -89,7 +90,7 @@ namespace CK.SqlServer
             return CreateArray( SqlExprMultiToken<SqlTokenOpenPar>.Create( openPar ), content, 0, contentLength, SqlExprMultiToken<SqlTokenClosePar>.Create( closePar ) );
         }
 
-        static internal IAbstractExpr[] CreateArray( SqlExprMultiToken<SqlTokenOpenPar> prefix, IAbstractExpr[] enclosedComponents, SqlExprMultiToken<SqlTokenClosePar> suffix )
+        static internal IAbstractExpr[] CreateArray( SqlTokenOpenPar prefix, IAbstractExpr[] enclosedComponents, SqlTokenClosePar suffix )
         {
             Debug.Assert( prefix != null && enclosedComponents != null && suffix != null );
             Debug.Assert( enclosedComponents.Length >= 2 );
