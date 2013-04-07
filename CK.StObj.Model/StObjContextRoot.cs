@@ -182,7 +182,7 @@ namespace CK.Core
                 BinaryReader reader = new BinaryReader( s );
 
                 _contexts = new StObjContext[reader.ReadInt32()];
-                _contextsEx = new ReadOnlyListOnIList<StObjContext>( _contexts );
+                _contextsEx = new CKReadOnlyListOnIList<StObjContext>( _contexts );
                 _defaultContext = ReadContexts( reader );
 
                 BinaryFormatter formatter = new BinaryFormatter();

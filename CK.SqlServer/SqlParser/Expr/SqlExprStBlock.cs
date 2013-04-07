@@ -9,31 +9,20 @@ using CK.Core;
 namespace CK.SqlServer
 {
     /// <summary>
+    /// A block is defined by begin...end enclosing keywords.
     /// </summary>
     public class SqlExprStBlock : SqlExprBaseSt
     {
-        readonly SqlTokenIdentifier _begin;
-        readonly SqlExprStatementList _body;
-        readonly SqlTokenIdentifier _end;
-
         public SqlExprStBlock( SqlTokenIdentifier begin, SqlExprStatementList body, SqlTokenIdentifier end, SqlTokenTerminal statementTerminator = null )
-            : base( statementTerminator )
+            : base( CreateArray( begin, body, end ), statementTerminator )
         {
-            _begin = begin;
-            _body = body;
-            _end = end;
         }
 
-        public SqlTokenIdentifier Begin { get { return _begin; } }
+        public SqlTokenIdentifier Begin { get { return (SqlTokenIdentifier)At(0); } }
 
-        public SqlExprStatementList Body { get { return _body; } }
+        public SqlExprStatementList Body { get { return (SqlExprStatementList)At(1); } }
 
-        public SqlTokenIdentifier End { get { return _end; } }
-
-        protected override IEnumerable<SqlToken> GetStatementTokens()
-        {
-            return new ReadOnlyListMono<SqlToken>( _begin ).Concat( _body.Tokens ).Concat( new ReadOnlyListMono<SqlToken>( _end ) );
-        }
+        public SqlTokenIdentifier End { get { return (SqlTokenIdentifier)At(2); } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

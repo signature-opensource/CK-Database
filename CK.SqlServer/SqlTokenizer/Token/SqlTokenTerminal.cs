@@ -17,6 +17,8 @@ namespace CK.SqlServer
         public static readonly SqlTokenTerminal Dot = new SqlTokenTerminal( SqlTokenType.Dot, null, null );
         public static readonly SqlTokenTerminal Comma = new SqlTokenTerminal( SqlTokenType.Comma, null, null );
         public static readonly SqlTokenTerminal SemiColon = new SqlTokenTerminal( SqlTokenType.SemiColon, null, null );
+        public static readonly SqlTokenTerminal OpenPar = new SqlTokenOpenPar( null, null );
+        public static readonly SqlTokenTerminal ClosePar = new SqlTokenClosePar( null, null );
 
         public SqlTokenTerminal( SqlTokenType t, IReadOnlyList<SqlTrivia> leadingTrivia = null, IReadOnlyList<SqlTrivia> trailingTrivia = null )
             : base( t, leadingTrivia, trailingTrivia )

@@ -163,7 +163,7 @@ namespace CK.Core
         /// <returns>Enumeration of members.</returns>
         public IEnumerable<MemberInfo> GetMembers()
         {
-            return _typeMembers.Concat( new ReadOnlyListMono<MemberInfo>( Type ) );
+            return _typeMembers.Concat( new CKReadOnlyListMono<MemberInfo>( Type ) );
         }
 
     }

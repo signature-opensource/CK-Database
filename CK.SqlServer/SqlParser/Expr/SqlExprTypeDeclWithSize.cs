@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using CK.Core;
 
 namespace CK.SqlServer
 {
@@ -21,7 +22,7 @@ namespace CK.SqlServer
             {
                 throw new ArgumentException( "Expected char, varchar, nchar, nvarchar, binary, varbinary.", "id" );
             }
-            _tokens = new SqlToken[] { id };
+            _tokens = CreateArray( id );
             DbType = dbType.Value;
             SyntaxSize = 0;
         }
@@ -41,7 +42,7 @@ namespace CK.SqlServer
                 && !(size is SqlTokenIdentifier && ((SqlTokenIdentifier)size).NameEquals("max")) ) throw new ArgumentException( "Size must be an integer greater than 0 or max.", "size" );
             if( closePar == null ) throw new ArgumentNullException( "closePar" );
             if( closePar.TokenType != SqlTokenType.ClosePar ) throw new ArgumentException( "Must be ')'.", "closePar" );
-            _tokens = new SqlToken[] { id, openPar, size, closePar };
+            _tokens = CreateArray( id, openPar, size, closePar );
             DbType = dbType.Value;
             SyntaxSize = size is SqlTokenLiteralInteger ? ((SqlTokenLiteralInteger)size).Value : -1;
         }
@@ -51,7 +52,7 @@ namespace CK.SqlServer
             Debug.Assert( id != null );
             Debug.Assert( dbType == SqlReservedKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType ).Value );
             Debug.Assert( dbType == SqlDbType.Char || dbType != SqlDbType.VarChar || dbType != SqlDbType.NChar || dbType != SqlDbType.NVarChar || dbType != SqlDbType.Binary || dbType != SqlDbType.VarBinary );
-            _tokens = new SqlToken[] { id };
+            _tokens = CreateArray( id );
             DbType = dbType;
             SyntaxSize = 0;
         }
@@ -63,11 +64,12 @@ namespace CK.SqlServer
             Debug.Assert( dbType == SqlReservedKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType ).Value );
             Debug.Assert( dbType == SqlDbType.Char || dbType != SqlDbType.VarChar || dbType != SqlDbType.NChar || dbType != SqlDbType.NVarChar || dbType != SqlDbType.Binary || dbType != SqlDbType.VarBinary );
             Debug.Assert( (size is SqlTokenLiteralInteger && ((SqlTokenLiteralInteger)size).Value > 0) || (size is SqlTokenIdentifier && ((SqlTokenIdentifier)size).NameEquals( "max" )) );
-            _tokens = new SqlToken[] { id, openPar, size, closePar };
+            _tokens = CreateArray( id, openPar, size, closePar );
             DbType = dbType;
             SyntaxSize = size is SqlTokenLiteralInteger ? ((SqlTokenLiteralInteger)size).Value : -1;
         }
 
+        public override IEnumerable<IAbstractExpr> Components { get { return _tokens; } }
 
         public override IEnumerable<SqlToken> Tokens { get { return _tokens; } }
 

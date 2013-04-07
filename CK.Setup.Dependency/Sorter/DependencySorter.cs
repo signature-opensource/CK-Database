@@ -363,7 +363,7 @@ namespace CK.Setup
                 {
                     var req = HeadIfGroupOrContainer != null ? HeadIfGroupOrContainer.Requires : Requires;
                     return req == null 
-                        ? ReadOnlyListEmpty<ISortedItem>.Empty 
+                        ? CKReadOnlyListEmpty<ISortedItem>.Empty 
                         : req.Where( d => !d.Optional )
                                 // We can not blindly use (ISortedItem)_entries[r.FullName] because if DependencySorterResult.HasRequiredMissing is true
                                 // and the resulting graph is nevertheless used (for Tracing by example) there will be no associated ISortedItem.
@@ -389,7 +389,7 @@ namespace CK.Setup
                 {
                     // Groups is only on the Group (not on its head).
                     var holder = GroupIfHead ?? this;
-                    return holder.Groups != null ? (IEnumerable<ISortedItem>)holder.Groups : ReadOnlyListEmpty<ISortedItem>.Empty;
+                    return holder.Groups != null ? (IEnumerable<ISortedItem>)holder.Groups : CKReadOnlyListEmpty<ISortedItem>.Empty;
                 }
             }
 

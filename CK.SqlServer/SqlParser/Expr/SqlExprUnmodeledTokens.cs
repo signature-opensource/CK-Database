@@ -11,13 +11,15 @@ namespace CK.SqlServer
 {
     public class SqlExprUnmodeledTokens : SqlExpr
     {
-        SqlToken[] _tokens;
+        readonly SqlToken[] _tokens;
 
         public SqlExprUnmodeledTokens( IEnumerable<SqlToken> tokens )
         {
             if( tokens == null ) throw new ArgumentNullException( "tokens" );
             _tokens = tokens.ToArray();
         }
+
+        public override IEnumerable<IAbstractExpr> Components { get { return _tokens; } }
 
         public override IEnumerable<SqlToken> Tokens { get { return _tokens; } }
 

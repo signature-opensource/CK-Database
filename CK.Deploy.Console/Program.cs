@@ -99,7 +99,8 @@ namespace CK.Deploy.Console
         public static void RunV1( V1Args args )
         {
             var console = new ActivityLoggerConsoleSink();
-            var logger = DefaultActivityLogger.Create().Register( console );
+            var logger = DefaultActivityLogger.Create();
+            logger.Tap.Register( console );
 
             using( logger.OpenGroup( LogLevel.Info, "Begin dbSetup with:" ) )
             {
@@ -126,7 +127,8 @@ namespace CK.Deploy.Console
                 V2Args args = (V2Args)AppDomain.CurrentDomain.GetData( "MainArgs" );
 
                 var console = new ActivityLoggerConsoleSink();
-                var logger = DefaultActivityLogger.Create().Register( console );
+                var logger = DefaultActivityLogger.Create();
+                logger.Tap.Register( console );
 
                 using( logger.OpenGroup( LogLevel.Info, "Begin dbSetup with:" ) )
                 {

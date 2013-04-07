@@ -5,11 +5,71 @@ using System.Text;
 using NUnit.Framework;
 using CK.SqlServer;
 
-namespace CK.Javascript.Tests
+namespace CK.SqlServer.Tests.Parsing
 {
     [TestFixture]
     public class SqlTokenizerTest
     {
+        [Test]
+        public void SimpleTokens()
+        {
+            var s = "1 = 1 and 0 = 0 and 2 = 2";
+            SqlTokenizer t = new SqlTokenizer();
+            var e = t.Parse( s ).GetEnumerator();
+            Assert.That( e.MoveNext() && (e.Current.TokenType & SqlTokenType.IsNumber) != 0 && e.Current.ToString() == "1" );
+            Assert.That( e.MoveNext() && e.Current.TokenType == SqlTokenType.Equal && e.Current.ToString() == "=" );
+            Assert.That( e.MoveNext() && (e.Current.TokenType & SqlTokenType.IsNumber) != 0 && e.Current.ToString() == "1" );
+            Assert.That( e.MoveNext() && e.Current.TokenType == SqlTokenType.And && e.Current.ToString() == "and" );
+            Assert.That( e.MoveNext() && (e.Current.TokenType & SqlTokenType.IsNumber) != 0 && e.Current.ToString() == "0" );
+            Assert.That( e.MoveNext() && e.Current.TokenType == SqlTokenType.Equal && e.Current.ToString() == "=" );
+            Assert.That( e.MoveNext() && (e.Current.TokenType & SqlTokenType.IsNumber) != 0 && e.Current.ToString() == "0" );
+            Assert.That( e.MoveNext() && e.Current.TokenType == SqlTokenType.And && e.Current.ToString() == "and" );
+            Assert.That( e.MoveNext() && (e.Current.TokenType & SqlTokenType.IsNumber) != 0 && e.Current.ToString() == "2" );
+            Assert.That( e.MoveNext() && e.Current.TokenType == SqlTokenType.Equal && e.Current.ToString() == "=" );
+            Assert.That( e.MoveNext() && (e.Current.TokenType & SqlTokenType.IsNumber) != 0 && e.Current.ToString() == "2" );
+            Assert.That( e.MoveNext() && e.Current.TokenType == SqlTokenType.EndOfInput );
+            Assert.That( !e.MoveNext() );
+        }
+
+        [Test]
+        public void ToStringHelper()
+        {
+            SqlTokenizer p = new SqlTokenizer();
+            Assert.That( p.ToString(), Is.EqualTo( "<no input>" ) );
+
+            p.Reset( "a" );
+            Assert.That( p.ToString( 1 ), Is.EqualTo( "a[[HEAD]]" ) );
+            p.Forward();
+            Assert.That( p.ToString( 20 ), Is.EqualTo( "a[[HEAD]]" ) );
+            
+            p.Reset( "aa bb cc dd" );
+            Assert.That( p.ToString( 1 ), Is.EqualTo( "... [[HEAD]]..." ) );
+            Assert.That( p.ToString( 2 ), Is.EqualTo( "...a [[HEAD]]..." ) );
+            Assert.That( p.ToString( 3 ), Is.EqualTo( "aa [[HEAD]]..." ) );
+            Assert.That( p.ToString( 4 ), Is.EqualTo( "aa [[HEAD]]b..." ) );
+            p.Forward();
+            Assert.That( p.ToString( 1 ), Is.EqualTo( "... [[HEAD]]..." ) );
+            Assert.That( p.ToString( 2 ), Is.EqualTo( "...b [[HEAD]]..." ) );
+            Assert.That( p.ToString( 3 ), Is.EqualTo( "...bb [[HEAD]]..." ) );
+            Assert.That( p.ToString( 4 ), Is.EqualTo( "... bb [[HEAD]]..." ) );
+            Assert.That( p.ToString( 5 ), Is.EqualTo( "...a bb [[HEAD]]..." ) );
+            Assert.That( p.ToString( 6 ), Is.EqualTo( "aa bb [[HEAD]]..." ) );
+            Assert.That( p.ToString( 7 ), Is.EqualTo( "aa bb [[HEAD]]c..." ) );
+            Assert.That( p.ToString( 8 ), Is.EqualTo( "aa bb [[HEAD]]cc..." ) );
+            Assert.That( p.ToString( 9 ), Is.EqualTo( "aa bb [[HEAD]]cc ..." ) );
+            Assert.That( p.ToString( 10 ), Is.EqualTo( "aa bb [[HEAD]]cc d..." ) );
+            Assert.That( p.ToString( 11 ), Is.EqualTo( "aa bb [[HEAD]]cc dd" ) );
+            Assert.That( p.ToString( 1000 ), Is.EqualTo( "aa bb [[HEAD]]cc dd" ) );
+            p.Forward();
+            p.Forward();
+            Assert.That( p.ToString( 1 ), Is.EqualTo( "...d[[HEAD]]" ) );
+            Assert.That( p.ToString( 2 ), Is.EqualTo( "...dd[[HEAD]]" ) );
+            p.Forward();
+            Assert.That( p.ToString( 3 ), Is.EqualTo( "... dd[[HEAD]]" ) );
+            Assert.That( p.ToString( 4 ), Is.EqualTo( "...c dd[[HEAD]]" ) );
+            Assert.That( p.ToString( 11 ), Is.EqualTo( "aa bb cc dd[[HEAD]]" ) );
+        }
+        
         [Test]
         public void EmptyInputAndComments()
         {
@@ -124,7 +184,6 @@ end";
             Assert.That( recompose, Is.EqualTo( s ) );
         }
 
-
         [Test]
         public void Rewriting()
         {
@@ -141,7 +200,7 @@ begin
   declare @x2 float = .45e12;
 end";
             StringBuilder b  = new StringBuilder();
-            foreach( var t in p.Parse( s ) ) t.Write( b );
+            foreach( var t in p.ParseWithoutError( s ) ) t.Write( b );
             string s2 = b.ToString();
 
             // Fix: .34 is changed as 0.34 (decimal), .45e12 becomes 0.45e12 (float).
@@ -172,7 +231,7 @@ end";
         static void AssertRewrite( SqlTokenizer p, string toParse, string rewritten )
         {
             StringBuilder b  = new StringBuilder();
-            foreach( var t in p.Parse( toParse ) ) t.Write( b );
+            foreach( var t in p.ParseWithoutError( toParse ) ) t.Write( b );
             string r = b.ToString();
             Assert.That( r, Is.EqualTo( rewritten ) );
         }

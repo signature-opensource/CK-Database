@@ -133,7 +133,7 @@ namespace CK.Core
             // Does nothing.
         }
 
-        void IActivityLoggerClient.OnGroupClosed( IActivityLogGroup group, IReadOnlyList<ActivityLogGroupConclusion> conclusions )
+        void IActivityLoggerClient.OnGroupClosed( IActivityLogGroup group, ICKReadOnlyList<ActivityLogGroupConclusion> conclusions )
         {
             if( conclusions.Count == 0 ) _logger.CloseGroup();
             else if( conclusions.Count == 1 ) _logger.CloseGroup( conclusions[0].ToString() );
@@ -162,7 +162,7 @@ namespace CK.Core
             // Does nothing.
         }
 
-        void IMuxActivityLoggerClient.OnGroupClosed( IActivityLogger sender, IActivityLogGroup group, IReadOnlyList<ActivityLogGroupConclusion> conclusions )
+        void IMuxActivityLoggerClient.OnGroupClosed( IActivityLogger sender, IActivityLogGroup group, ICKReadOnlyList<ActivityLogGroupConclusion> conclusions )
         {
             if( conclusions.Count == 0 ) _logger.CloseGroup();
             else if( conclusions.Count == 1 ) _logger.CloseGroup( conclusions[0].ToString() );

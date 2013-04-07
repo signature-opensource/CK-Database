@@ -9,7 +9,7 @@ using System.Text;
 
 namespace CK.SqlServer
 {
-    public class SqlExprTypeDeclSimple : SqlExprBaseMonoToken, ISqlExprUnifiedTypeDecl
+    public class SqlExprTypeDeclSimple : SqlExprBaseMonoToken<SqlTokenIdentifier>, ISqlExprUnifiedTypeDecl
     {
         public SqlExprTypeDeclSimple( SqlTokenIdentifier id )
             : base( id )

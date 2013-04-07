@@ -9,25 +9,18 @@ using CK.Core;
 namespace CK.SqlServer
 {
     /// <summary>
+    /// Captures any statement. It is an identifier followed by any number of comma separated list of mere <see cref="SqlToken"/>s or <see cref="SqlExpr"/>.
     /// </summary>
     public class SqlExprStUnmodeled : SqlExprBaseSt
     {
-        readonly SqlTokenIdentifier _id;
-        readonly IReadOnlyList<IAbstractExpr> _expr;
-
-        public SqlExprStUnmodeled( SqlTokenIdentifier id, IEnumerable<SqlExpr> expressions, SqlTokenTerminal statementTerminator = null )
-            : base( statementTerminator )
+        public SqlExprStUnmodeled( SqlTokenIdentifier id, SqlExprGenericBlockList content, SqlTokenTerminal statementTerminator = null )
+            : base( CreateArray( id, content ), statementTerminator )
         {
-            _id = id;
-            _expr = new ReadOnlyListMono<IAbstractExpr>( id ).Concat( expressions ).ToReadOnlyList();
         }
+        
+        public SqlTokenIdentifier Identifier { get { return (SqlTokenIdentifier)At(0); } }
 
-        protected override IEnumerable<SqlToken> GetStatementTokens()
-        {
-            return Flatten( _expr );
-        }
-
-        public SqlTokenIdentifier Identifier { get { return _id; } }
+        public SqlExprGenericBlockList Content { get { return (SqlExprGenericBlockList)At(1); } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

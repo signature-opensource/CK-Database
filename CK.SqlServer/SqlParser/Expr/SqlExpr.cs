@@ -9,46 +9,35 @@ using System.Globalization;
 
 namespace CK.SqlServer
 {
-    public abstract class SqlExpr : IAbstractExpr
+    public abstract class SqlExpr : SqlExprAbstract
     {
-        /// <summary>
-        /// Gets the tokens that compose this expression.
-        /// Never null nor empty: an expression covers at least one token.
-        /// </summary>
-        public abstract IEnumerable<SqlToken> Tokens { get; }
-
-        /// <summary>
-        /// Overriden to generate the representation of an expression as the result of the <see cref="Write"/> method.
-        /// </summary>
-        /// <returns>String representation.</returns>
-        public override string ToString()
-        {
-            StringBuilder b = new StringBuilder();
-            Write( b );
-            return b.ToString();
-        }
-
-        /// <summary>
-        /// Writing an expression is, by default, calling <see cref="SqlToken.Write"/> on each of its <see cref="Tokens"/>.
-        /// </summary>
-        /// <param name="b">StringBuilder to write into.</param>
-        public virtual void Write( StringBuilder b )
-        {
-            foreach( var t in Tokens ) t.Write( b );
-        }
-
         internal protected abstract T Accept<T>( IExprVisitor<T> visitor );
 
-
-        static internal IEnumerable<SqlToken> Flatten( IEnumerable<IAbstractExpr> e )
-        {
-            foreach( var a in e )
-            {
-                SqlToken t = a as SqlToken;
-                if( t != null ) yield return t;
-                foreach( var ta in Flatten( a.Tokens ) ) yield return ta;
-            }
+        internal virtual SqlExpr LiftedExpression 
+        { 
+            get { return this; } 
         }
+
+        internal static IAbstractExpr[] ApplyLift( IAbstractExpr[] t )
+        {
+            IAbstractExpr[] modified = null;
+            int len = t.Length;
+            for( int i = 0; i < len; i++ )
+            {
+                SqlExpr o = t[i] as SqlExpr;
+                if( o != null )
+                {
+                    SqlExpr r = o.LiftedExpression;
+                    if( !ReferenceEquals( r, o ) )
+                    {
+                        if( modified == null ) modified = (IAbstractExpr[])t.Clone();
+                        modified[i] = r;
+                    }
+                }
+            }
+            return modified;
+        }
+
     }
 
 }

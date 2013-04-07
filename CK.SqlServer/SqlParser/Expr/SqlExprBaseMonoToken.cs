@@ -8,18 +8,23 @@ using CK.Core;
 
 namespace CK.SqlServer
 {
-    public abstract class SqlExprBaseMonoToken : SqlExpr
+    public abstract class SqlExprBaseMonoToken<T> : SqlExpr 
+        where T : SqlToken 
     {
-        readonly ReadOnlyListMono<SqlToken> _token;
+        readonly T[] _token;
 
-        protected SqlExprBaseMonoToken( SqlToken t )
+        protected SqlExprBaseMonoToken( T t )
         {
-            _token = new ReadOnlyListMono<SqlToken>( t );
+            _token = new[]{ t };
         }
 
-        public SqlToken Token { get { return _token[0]; } }
+        public T Token { get { return _token[0]; } }
+
+        public override IEnumerable<IAbstractExpr> Components { get { return _token; } }
 
         public override IEnumerable<SqlToken> Tokens { get { return _token; } }
+
+        protected IEnumerable<T> TypedTokens { get { return _token; } }
     }
 
 

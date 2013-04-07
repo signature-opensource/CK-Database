@@ -1,0 +1,52 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using CK.Core;
+
+namespace CK.SqlServer
+{
+    /// <summary>
+    /// 
+    /// </summary>
+    public class SqlExprStIf : SqlExprBaseSt
+    {
+        public SqlExprStIf( SqlTokenIdentifier ifToken, SqlExpr condition, SqlExprBaseSt thenStatement, SqlTokenIdentifier elseToken, SqlExprBaseSt elseStatement, SqlTokenTerminal terminator )
+            : base( BuildComponents( ifToken, condition, thenStatement, elseToken, elseStatement ),  terminator )
+        {
+        }
+        
+        internal SqlExprStIf( IAbstractExpr[] components )
+            : base( components )
+        {
+        }
+
+        static IAbstractExpr[] BuildComponents( SqlTokenIdentifier ifToken, SqlExpr condition, SqlExprBaseSt thenStatement, SqlTokenIdentifier elseToken, SqlExprBaseSt elseStatement )
+        {
+            if( ifToken == null || !ifToken.NameEquals( "if" ) ) throw new ArgumentException( "ifToken" );
+            if( condition == null ) throw new ArgumentNullException( "condition" );
+            if( thenStatement == null ) throw new ArgumentNullException( "thenStatement" );
+            if( (elseToken == null) != (elseStatement == null) ) throw new ArgumentException( "An else token requires and is required by an else statement." );
+
+            return elseToken != null ? CreateArray( ifToken, condition, thenStatement, elseToken, elseStatement ) : CreateArray( ifToken, condition, thenStatement );
+        }
+
+        public SqlTokenIdentifier IfToken { get { return (SqlTokenIdentifier)At(0); } }
+        public SqlExpr Condition { get { return (SqlExpr)At(1); } }
+        public SqlExprBaseSt ThenStatement { get { return (SqlExprBaseSt)At(2); } }
+        public bool HasElse { get { return Count > 3; } }
+        public SqlTokenIdentifier ElseToken { get { return HasElse ? (SqlTokenIdentifier)At(3) : null; } }
+        public SqlExprBaseSt ElseStatement { get { return HasElse ? (SqlExprBaseSt)At(4) : null; } }
+
+        [DebuggerStepThrough]
+        internal protected override T Accept<T>( IExprVisitor<T> visitor )
+        {
+            return visitor.Visit( this );
+        }
+
+    }
+
+
+}

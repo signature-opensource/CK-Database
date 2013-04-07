@@ -19,7 +19,8 @@ namespace CK.StObj.Engine.Tests
         static TestHelper()
         {
             _console = new ActivityLoggerConsoleSink();
-            _logger = DefaultActivityLogger.Create().Register( _console );
+            _logger = DefaultActivityLogger.Create();
+            _logger.Tap.Register( _console );
         }
 
         public static IActivityLogger Logger
@@ -29,11 +30,11 @@ namespace CK.StObj.Engine.Tests
 
         public static bool LogsToConsole
         {
-            get { return _logger.RegisteredSinks.Contains( _console ); }
+            get { return _logger.Tap.RegisteredSinks.Contains( _console ); }
             set
             {
-                if( value ) _logger.Register( _console );
-                else _logger.Unregister( _console );
+                if( value ) _logger.Tap.Register( _console );
+                else _logger.Tap.Unregister( _console );
             }
         }
 

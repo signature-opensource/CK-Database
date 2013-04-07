@@ -7,17 +7,22 @@ using System.Text;
 
 namespace CK.SqlServer
 {
-    public class SqlAssignExpr : SqlExprBaseBinary
+    public class SqlExprAssign : SqlExprBaseBinary
     {
-        public SqlAssignExpr( SqlExprIdentifier identifier, SqlTokenTerminal assignToken, SqlExpr right )
-            : base( identifier, assignToken, right )
+        public SqlExprAssign( ISqlIdentifier identifier, SqlTokenTerminal assignToken, SqlExpr right )
+            : base( (SqlExpr)identifier, assignToken, right )
         {
             if( (assignToken.TokenType & SqlTokenType.IsAssignOperator) == 0 ) throw new ArgumentException( "Invalid assign token.", "assignToken" );
         }
 
-        public new SqlExprIdentifier Left { get { return (SqlExprIdentifier)base.Left; } }
+        internal SqlExprAssign( IAbstractExpr[] newComponents )
+            : base( newComponents )
+        {
+        }
 
-        public SqlToken AssignToken { get { return Middle; } }
+        public new ISqlIdentifier Left { get { return (ISqlIdentifier)base.Left; } }
+
+        public SqlTokenTerminal AssignToken { get { return (SqlTokenTerminal)Middle; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

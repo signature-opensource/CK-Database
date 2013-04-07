@@ -15,7 +15,7 @@ namespace CK.SqlServer
     /// has a Precision of 23 and a Scale of 3 in terms of digits, but here, we consider Precision and Scale to be 0 (non applicable) since 'datetime(p,s)' is not valid.
     /// To make this more explicit, our Size/Precision/Scale has been prefixed with 'Syntax'.
     /// </remarks>
-    public interface ISqlExprUnifiedTypeDecl
+    public interface ISqlExprUnifiedTypeDecl : IAbstractExpr
     {
         /// <summary>
         /// Gets the database type.
@@ -49,9 +49,5 @@ namespace CK.SqlServer
         /// </summary>
         int SyntaxSecondScale { get; }
 
-        /// <summary>
-        /// Gets the tokens (just like any <see cref="SqlExpr"/>).
-        /// </summary>
-        IEnumerable<SqlToken> Tokens { get; }
     }
 }

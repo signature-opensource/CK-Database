@@ -6,17 +6,18 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using CK.Core;
 
 namespace CK.SqlServer
 {
     public class SqlExprTypeDeclDateAndTime : SqlExpr, ISqlExprUnifiedTypeDecl
     {
-        SqlToken[] _tokens;
+        readonly SqlToken[] _tokens;
 
         public SqlExprTypeDeclDateAndTime( SqlTokenIdentifier id )
         {
             if( id == null ) throw new ArgumentNullException( "token" );
-            _tokens = new SqlToken[] { id };
+            _tokens = CreateArray( id );
             SqlDbType? dbType = SqlReservedKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType );
             if( !dbType.HasValue
                 || (dbType.Value != SqlDbType.DateTime2 && dbType.Value != SqlDbType.Time && dbType.Value != SqlDbType.DateTimeOffset && dbType.Value != SqlDbType.DateTime && dbType.Value != SqlDbType.Date && dbType.Value != SqlDbType.SmallDateTime) )
@@ -41,7 +42,7 @@ namespace CK.SqlServer
             if( secondScale.Value > 7 ) throw new ArgumentException( "Fractional seconds precision must be less or equal to 7.", "secondScale" );
             if( closePar == null ) throw new ArgumentNullException( "closePar" );
             if( closePar.TokenType != SqlTokenType.ClosePar ) throw new ArgumentException( "Must be ')'.", "closePar" );
-            _tokens = new SqlToken[] { id, openPar, secondScale, closePar };
+            _tokens = CreateArray( id, openPar, secondScale, closePar );
             DbType = dbType.Value;
             SyntaxSecondScale = secondScale.Value;
         }
@@ -52,8 +53,8 @@ namespace CK.SqlServer
             Debug.Assert( openPar.TokenType == SqlTokenType.OpenPar && closePar.TokenType == SqlTokenType.ClosePar );
             Debug.Assert( dbType == SqlReservedKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType ).Value && (dbType == SqlDbType.DateTime2 || dbType == SqlDbType.Time || dbType == SqlDbType.DateTimeOffset) );
             Debug.Assert( secondScale.Value >= 0 && secondScale.Value <= 7 );
-            
-            _tokens = new SqlToken[] { id, openPar, secondScale, closePar };
+
+            _tokens = CreateArray( id, openPar, secondScale, closePar );
             DbType = dbType;
             SyntaxSecondScale = secondScale.Value;
         }
@@ -62,10 +63,12 @@ namespace CK.SqlServer
         {
             Debug.Assert( id != null );
             Debug.Assert( SqlReservedKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType ).Value == dbType );
-            _tokens = new SqlToken[] { id };
+            _tokens = CreateArray( id );
             DbType = dbType;
             SyntaxSecondScale = -1;
         }
+
+        public override IEnumerable<IAbstractExpr> Components { get { return _tokens; } }
 
         public override IEnumerable<SqlToken> Tokens { get { return _tokens; } }
 

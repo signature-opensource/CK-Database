@@ -6,14 +6,13 @@ using System.Text;
 namespace CK.SqlServer
 {
     /// <summary>
-    /// Composite base for token manipulation.
-    /// Ultimate abstraction of an expression contains at least one <see cref="SqlToken"/>.
+    /// Composite base for token or expression manipulation.
     /// </summary>
     public interface IAbstractExpr
     {
         /// <summary>
         /// Gets the tokens that compose this expression.
-        /// Never null nor empty: an expression covers at least one token.
+        /// Never null but can be empty.
         /// </summary>
         IEnumerable<SqlToken> Tokens { get; }
     }

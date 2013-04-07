@@ -11,27 +11,27 @@ namespace CK.SqlServer
 {
 
     /// <summary>
-    /// A user defined type is denoted by a dotted identifier [dbo].DefinedType or sinlge identifier like geometry.
+    /// A user defined type is denoted by a dotted identifier [dbo].DefinedType or single identifier like geometry.
     /// </summary>
-    public class SqlExprTypeDeclUserDefined : SqlExprBaseListWithSeparator<SqlTokenIdentifier>, ISqlExprUnifiedTypeDecl
+    public class SqlExprTypeDeclUserDefined : SqlExprBaseMultiIdentifier, ISqlExprUnifiedTypeDecl
     {
-        public SqlExprTypeDeclUserDefined( IEnumerable<SqlToken> tokens )
-            : base( tokens, false, IsDotSeparator )
+        public SqlExprTypeDeclUserDefined( IList<IAbstractExpr> tokens )
+            : base( tokens, IsDotSeparator )
         {
         }
 
         internal SqlExprTypeDeclUserDefined( IAbstractExpr[] tokens )
             : base( tokens )
         {
-            Debug.Assert( tokens != null );
-            DebugCheckArray( tokens, false, IsDotSeparator );
         }
 
-        public int IdentifierCount { get { return NonSeparatorCount; } }
-
-        public IEnumerable<SqlTokenIdentifier> Identifiers { get { return NonSeparatorTokens; } }
-
         public SqlDbType DbType { get { return SqlDbType.Udt; } }
+
+        public new SqlExprTypeDeclUserDefined RemoveQuoteIfPossible( bool keepIfReservedKeyword )
+        {
+            IAbstractExpr[] c = base.RemoveQuoteIfPossible( keepIfReservedKeyword );
+            return c != null ? new SqlExprTypeDeclUserDefined( c ) : this;
+        }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

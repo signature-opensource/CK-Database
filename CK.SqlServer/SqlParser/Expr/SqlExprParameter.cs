@@ -10,8 +10,7 @@ namespace CK.SqlServer
 {
     public class SqlExprParameter : SqlExpr
     {
-        readonly SqlTokenIdentifier _outputClause;
-        readonly SqlTokenIdentifier _readonlyClause;
+        readonly IAbstractExpr[] _components;
 
         public SqlExprParameter( SqlExprTypedIdentifier declVar, SqlExprParameterDefaultValue defaultValue = null, SqlTokenIdentifier outputClause = null, SqlTokenIdentifier readonlyClause = null )
         {
@@ -29,29 +28,96 @@ namespace CK.SqlServer
             {
                 throw new ArgumentException( "Must be readonly.", "readonlyClause" );
             }
-            Variable = declVar;
-            DefaultValue = defaultValue;
-            _outputClause = outputClause;
-            _readonlyClause = readonlyClause;
+            //
+            if( defaultValue == null )
+            {
+                if( outputClause == null )
+                {
+                    if( readonlyClause == null )
+                    {
+                        _components = CreateArray( declVar );
+                    }
+                    else
+                    {
+                        _components = CreateArray( declVar, readonlyClause );
+                    }
+                }
+                else 
+                {
+                    if( readonlyClause == null )
+                    {
+                        _components = CreateArray( declVar, outputClause );
+                    }
+                    else
+                    {
+                        _components = CreateArray( declVar, outputClause, readonlyClause );
+                    }
+                }
+            }
+            else
+            {
+                if( outputClause == null )
+                {
+                    if( readonlyClause == null )
+                    {
+                        _components = CreateArray( declVar, defaultValue );
+                    }
+                    else
+                    {
+                        _components = CreateArray( declVar, defaultValue, readonlyClause );
+                    }
+                }
+                else 
+                {
+                    if( readonlyClause == null )
+                    {
+                        _components = CreateArray( declVar, defaultValue, outputClause );
+                    }
+                    else
+                    {
+                        _components = CreateArray( declVar, defaultValue, outputClause, readonlyClause );
+                    }
+                }
+            }
         }
 
-        public SqlExprTypedIdentifier Variable { get; private set; }
-
-        public SqlExprParameterDefaultValue DefaultValue { get; private set; }
-
-        public bool IsOutput { get { return _outputClause != null; } }
-
-        public bool IsreadOnly { get { return _readonlyClause != null; } }
-
-        public override IEnumerable<SqlToken> Tokens
+        internal SqlExprParameter( IAbstractExpr[] newComponents )
         {
+            _components = newComponents;
+        }
+
+        public SqlExprTypedIdentifier Variable { get { return (SqlExprTypedIdentifier)_components[0]; } }
+
+        public SqlExprParameterDefaultValue DefaultValue { get { return _components.Length > 1 ? _components[1] as SqlExprParameterDefaultValue : null; } }
+
+        public bool IsOutput { get { return OptionClause != null; } }
+
+        public bool IsReadOnly { get { return ReadOnlyClause != null; } }
+
+        public SqlTokenIdentifier ReadOnlyClause { get { var t = LastTokenClause; return t != null && t.NameEquals( "readonly" ) ? t : null; } }
+
+        public SqlTokenIdentifier OptionClause 
+        { 
             get 
             {
-                var t = Variable.Tokens;
-                if( DefaultValue != null ) t = t.Concat( DefaultValue.Tokens );
-                if( _outputClause != null ) t = t.Concat( new ReadOnlyListMono<SqlToken>( _outputClause ) );
+                var t = LastTokenClause;
+                if( t == null ) return null;
+                if( !t.NameEquals( "output" ) )
+                {
+                    t = AnteLastTokenClause;
+                    Debug.Assert( t == null || t.NameEquals( "output" ) );
+                }
                 return t;
-            }
+            } 
+        }
+
+        SqlTokenIdentifier LastTokenClause { get { return _components.Length > 1 ? _components[_components.Length - 1] as SqlTokenIdentifier : null; } }
+
+        SqlTokenIdentifier AnteLastTokenClause { get { return _components.Length > 2 ? _components[_components.Length - 2] as SqlTokenIdentifier : null; } }
+
+        public override sealed IEnumerable<IAbstractExpr> Components
+        {
+            get { return _components; }
         }
 
         [DebuggerStepThrough]

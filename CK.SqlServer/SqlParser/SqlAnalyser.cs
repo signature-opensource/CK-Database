@@ -8,151 +8,230 @@ using CK.SqlServer;
 
 namespace CK.SqlServer
 {
-        public class ExprAnalyser
+        public partial class SqlAnalyser
         {
-            readonly TokenReader R;
+            readonly SqlTokenReader R;
 
-            ExprAnalyser( IEnumerable<SqlToken> tokens )
+            public class ErrorResult
             {
-                R = new TokenReader( tokens );
+                public readonly string ErrorMessage;
+                public readonly string HeadSource;
+                public bool IsError { get { return this != NoError; } }
+                public static implicit operator bool( ErrorResult r ) { return r == NoError; }
+                
+                internal ErrorResult( string errorMessage, string headSource )
+                {
+                    Debug.Assert( NoError == null || (errorMessage != null && headSource != null) );
+                    ErrorMessage = errorMessage;
+                    HeadSource = headSource;
+                }
+
+                public override string ToString()
+                {
+                    return IsError ? String.Format( "Error: {0}\r\nText: {1}", ErrorMessage, HeadSource ) : "<success>";
+                }
+
+                static internal readonly ErrorResult NoError = new ErrorResult( null, null );
             }
 
-            public static SqlExpr Analyse( IEnumerable<SqlToken> tokens )
+            [DebuggerStepThrough]
+            public static ErrorResult ParseStatement( out SqlExprBaseSt statement, string text )
             {
-                if( tokens == null ) throw new ArgumentNullException( "tokens" );
-                return new ExprAnalyser( tokens ).Expression( 0 );
+                SqlAnalyser a = new SqlAnalyser( new SqlTokenizer(), text );
+                if( a.IsStatement( out statement, true ) ) return ErrorResult.NoError;
+                return a.CreateErrorResult();
             }
 
-            SqlExpr Expression( int rightBindingPower )
+            [DebuggerStepThrough]
+            public static ErrorResult ParseExpression( out SqlExpr expression, string text )
             {
-                if( R.IsErrorOrEndOfInput )
-                {
-                    return new SqlExprSyntaxError( (SqlTokenError)R.Current );
-                }
-                SqlExpr left = HandleNud();
-                while( !(left is SqlExprSyntaxError) && rightBindingPower < R.CurrentPrecedenceLevel )
-                {
-                    left = HandleLed( left );
-                }
-                return left;
+                SqlAnalyser a = new SqlAnalyser( new SqlTokenizer(), text );
+                if( a.IsExpression( out expression, 0, true ) ) return ErrorResult.NoError;
+                return a.CreateErrorResult();
             }
 
-            SqlExpr HandleNud()
+            SqlAnalyser( SqlTokenizer t, string text )
             {
-                Debug.Assert( !R.IsErrorOrEndOfInput );
-                // Handles strings and numbers.
-                if( (R.Current.TokenType & SqlTokenType.LitteralMask) != 0 ) return new SqlExprLiteral( R.Read<SqlTokenBaseLiteral>() );
-                if( R.Current.TokenType == SqlTokenType.IdentifierReservedKeyword ) return HandleUnquotedKeyword( R.Read<SqlTokenIdentifier>() );
-                if( (R.Current.TokenType & SqlTokenType.IsIdentifier) != 0 ) return new SqlExprIdentifier( R.Read<SqlTokenIdentifier>() );
-
-                if( R.Current.TokenType == SqlTokenType.Minus ) return new SqlExprUnaryOperator( R.Read<SqlTokenTerminal>(), Expression( 0 ) );
-                if( R.Current.TokenType == SqlTokenType.OpenPar )
-                {
-                    SqlExpr e = Expression( 0 );
-                    return R.Match( SqlTokenType.ClosePar ) ? e : new SqlExprSyntaxError( "Expected )." );
-                }
-                return new SqlExprSyntaxError( "Unexpected token: " + R.Current.ToString() );
+                R = new SqlTokenReader( t.Parse( text ), t.ToString );
+                R.MoveNext();
             }
 
-            SqlExpr HandleLed( SqlExpr left )
+            public override string ToString()
             {
-                if( (R.Current.TokenType & SqlTokenType.IsAssignOperator) != 0 )
-                {
-                    if( !(left is SqlExprIdentifier) ) return new SqlExprSyntaxError( "Assignment must follow an identifier." );
-                    return new SqlAssignExpr( (SqlExprIdentifier)left, R.Read<SqlTokenTerminal>(), Expression( 0 ) );
-                }
-                return new SqlExprSyntaxError( "Unexpected token: " + left.ToString() );
+                return R.ToString();
             }
 
-            SqlExpr HandleUnquotedKeyword( SqlTokenIdentifier id )
+            ErrorResult CreateErrorResult()
             {
-                if( id.NameEquals( "null" ) ) return new SqlExprNull( id );
-
-                if( id.NameEquals( "begin" ) )
-                {
-                    SqlExprStatementList body;
-//                    if( !IsStatementList( out body ) ) return R.ExtractError();
-                    SqlTokenIdentifier end;
-                    if( !IsUnquotedKeyword( out end, "end", true ) ) return R.ExtractError();
-//                    return new SqlExprStBlock( id, body, end );
-                }
-                if( id.NameEquals( "create" ) || id.NameEquals( "alter" ) )
-                {
-                    SqlTokenIdentifier type;
-                    SqlExprMultiIdentifier name;
-                    if( !IsUnquotedKeyword( out type ) || !IsMultiIdentifier( out name ) ) return R.ExtractError();
-                    if( type.NameEquals( "procedure" ) || type.NameEquals( "proc" ) )
-                    {
-//                        return HandleAlterOrCreateProcedure( id, type, name );
-                    }
-                    if( type.NameEquals( "view" ) )
-                    {
-                        return HandleAlterOrCreateView( id, type, name );
-                    }
-                    if( type.NameEquals( "function" ) )
-                    {
-                        return HandleAlterOrCreateFunction( id, type, name );
-                    }
-//                    return HandleAlterOrCreateSomething( id, type, name );
-                }
-                return new SqlExprIdentifier( id );
+                return new ErrorResult( R.GetErrorMessage(), R.ToString() );
             }
 
             bool IsStatement( out SqlExprBaseSt statement, bool expected = true )
             {
                 statement = null;
-                if( R.Current.TokenType != SqlTokenType.IdentifierReservedKeyword )
+                SqlTokenIdentifier id = R.Current as SqlTokenIdentifier;
+                // A statement starts with an identifier that must be non quoted and not a variable.
+                if( id == null || id.IsQuoted || id.IsVariable )
                 {
-                    if( expected ) R.SetLastError( "Statement expected." );
+                    if( R.Current.TokenType == SqlTokenType.SemiColon )
+                    {
+                        statement = new SqlExprStEmpty( R.Read<SqlTokenTerminal>() );
+                        return true;
+                    }
+                    if( expected ) R.SetCurrentError( "Statement expected." );
                     return false;
                 }
-                SqlTokenIdentifier id = (SqlTokenIdentifier)R.Current;
+                if( !id.IsKeywordName )
+                {
+                    // If it is not a reserved keyword, it can only be 
+                    // a label definition.
+                    SqlTokenTerminal colon;
+                    if( id.TrailingTrivia.Count > 0
+                        || (colon = R.RawLookup as SqlTokenTerminal) == null 
+                        || colon.TokenType != SqlTokenType.Colon 
+                        || colon.LeadingTrivia.Count > 0 )
+                    {
+                        if( expected ) R.SetCurrentError( "Statement expected." );
+                        return false;
+                    }
+                    R.MoveNext();
+                    R.MoveNext();
+                    statement = new SqlExprStLabelDef( id, colon );
+                }
+                if( id.NameEquals( "end" ) )
+                {
+                    if( expected ) R.SetCurrentError( "Statement expected." );
+                    return false;
+                }
                 if( id.NameEquals( "begin" ) )
                 {
                     R.MoveNext();
                     SqlExprStatementList body;
-//                    if( !IsStatementList( out body ) ) return false;
+                    if( !IsStatementList( out body, true ) ) return false;
                     SqlTokenIdentifier end;
-                    if( !IsUnquotedKeyword( out end, "end", true ) ) return false;
-//                    statement = new SqlExprStBlock( id, body, end );
+                    if( !R.IsUnquotedKeyword( out end, "end", true ) ) return false;
+                    statement = new SqlExprStBlock( id, body, end );
                     return true;
                 }
                 if( id.NameEquals( "create" ) || id.NameEquals( "alter" ) )
                 {
                     R.MoveNext();
                     SqlTokenIdentifier type;
-                    if( !IsUnquotedKeyword( out type ) ) return false;
+                    if( !R.IsUnquotedKeyword( out type ) ) return false;
                     if( type.NameEquals( "procedure" ) || type.NameEquals( "proc" ) )
                     {
                         SqlExprStStoredProc sp;
                         if( !IsStoredProcedure( out sp, id, type ) ) return false;
                         statement = sp;
+                        return true;
                     }
-                    //return HandleAlterOrCreateSomething( id, type );
+                    if( type.NameEquals( "view" ) )
+                    {
+                        SqlExprStView view;
+                        if( !IsView( out view, id, type ) ) return false;
+                        statement = view;
+                        return true;
+                    }
                 }
-                if( id.NameEquals( "set" ) )
+                if( id.NameEquals( "break" ) || id.NameEquals( "continue" ) )
                 {
                     R.MoveNext();
-                    SqlExprStUnmodeled st;
-//                    if( !IsUnmodeledStatement( out st, id ) ) return false;
+                    statement = new SqlExprStMonoStatement( id, GetOptionalTerminator() );
+                    return true;
                 }
 
-                if( expected ) R.SetLastError( "Unknown statement: {0}.", R.Current.ToString() );
-                return false;
+                if( id.NameEquals( "if" ) )
+                {
+                    R.MoveNext();
+                    SqlExpr expr;
+                    if( !IsExpression( out expr, 0, true ) ) return false;
+                    SqlExprBaseSt thenSt;
+                    if( !IsStatement( out thenSt, true ) ) return false;
+                    SqlTokenIdentifier elseToken;
+                    SqlExprBaseSt elseSt = null;
+                    if( R.IsUnquotedKeyword( out elseToken, "else", false ) )
+                    {
+                        if( !IsStatement( out elseSt, true ) ) return false;
+                    }
+                    statement = new SqlExprStIf( id, expr, thenSt, elseToken, elseSt, GetOptionalTerminator() );
+                    return true;
+                }
+                R.MoveNext();
+                SqlExprStUnmodeled st;
+                if( !IsUnmodeledStatement( out st, id ) ) return false;
+                statement = st;
+                return true;
             }
 
-            //private bool IsUnmodeledStatement( out SqlExprStUnmodeled st, SqlTokenIdentifier id )
-            //{
-            //    SqlTokenTerminal term;
-            //    List<SqlExpr> expressions = new List<SqlExpr>();
-            //    while( !IsToken( out term, SqlTokenType.SemiColon, false ) )
-            //    {
+            bool IsStatementList( out SqlExprStatementList l, bool atLeastOneStatement )
+            {
+                l = null;
+                List<SqlExprBaseSt> statements = new List<SqlExprBaseSt>();
+                SqlExprBaseSt st;
+                while( IsStatement( out st, false ) )
+                {
+                    statements.Add( st );
+                }
+                if( statements.Count == 0 )
+                {
+                    if( atLeastOneStatement && !R.IsError ) R.SetCurrentError( "At least one statement expected." );
+                    return false;
+                }
+                l = new SqlExprStatementList( statements );
+                return !R.IsError;
+            }
 
-            //    }
+            /// <summary>
+            /// Matches a statement up to the next statement terminator ';'.
+            /// </summary>
+            bool IsUnmodeledStatement( out SqlExprStUnmodeled st, SqlTokenIdentifier id )
+            {
+                st = null;
+                SqlExprGenericBlockList content;
+                if( !IsGenericBlockList( out content, false ) ) return false;
+                st = new SqlExprStUnmodeled( id, content, GetOptionalTerminator() );
+                return true;
+            }
 
-            //    SqlExpr e = Expression( 0 );
+            bool IsView( out SqlExprStView view, SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type )
+            {
+                view = null;
 
-            //}
+                SqlExprMultiIdentifier name;
+                if( !IsMultiIdentifier( out name, true ) ) return false;
+
+                SqlExprColumnList columns;
+                IsColumnList( out columns );
+
+                SqlExprUnmodeledTokens options;
+                SqlTokenIdentifier asToken;
+                if( !IsUnmodeledUntil( out options, out asToken, t => t.IsUnquotedKeyword && t.NameEquals( "as" ) ) ) return false;
+
+                SqlExprBaseSt selectStatement;
+                SqlExprStUnmodeled select;
+                if( !IsStatement( out selectStatement, true ) 
+                    || (select = selectStatement as SqlExprStUnmodeled) == null 
+                    || select.Identifier.NameEquals( "select" ) )
+                {
+                    return R.SetCurrentError( "Select statement expected." ); 
+                }
+                view = new SqlExprStView( alterOrCreate, type, name, columns, options, asToken, select, GetOptionalTerminator() );
+                return true;
+            }
+
+            bool IsColumnList( out SqlExprColumnList columns )
+            {
+                columns = null;
+                SqlTokenOpenPar openPar;
+                SqlTokenClosePar closePar;
+                List<IAbstractExpr> items;
+
+                if( R.Current.TokenType != SqlTokenType.OpenPar ) return false;
+
+                if( !IsList<SqlExprIdentifier>( out openPar, out items, out closePar, true, IsMonoIdentifier ) ) return false;
+                columns = new SqlExprColumnList( openPar, items, closePar );
+                return true;
+            }
 
             bool IsStoredProcedure( out SqlExprStStoredProc sp, SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type )
             {
@@ -166,71 +245,38 @@ namespace CK.SqlServer
 
                 SqlExprUnmodeledTokens options;
                 SqlTokenIdentifier asToken;
-                if( !ReadUntil( out options, out asToken, t => t.IsUnquotedKeyword && t.NameEquals( "as" ) ) ) return false;
+                if( !IsUnmodeledUntil( out options, out asToken, t => t.IsUnquotedKeyword && t.NameEquals( "as" ) ) ) return false;
 
                 SqlTokenIdentifier begin, end = null;
-                IsUnquotedKeyword( out begin, "begin", false );
+                R.IsUnquotedKeyword( out begin, "begin", false );
 
                 SqlExprStatementList bodyStatements;
-//                if( !IsStatementList( out bodyStatements ) ) return false;
+                if( !IsStatementList( out bodyStatements, true ) ) return false;
 
-                if( begin != null ) IsUnquotedKeyword( out end, "end", true );
+                if( begin != null ) R.IsUnquotedKeyword( out end, "end", true );
 
-                SqlTokenTerminal term;
-                IsToken( out term, SqlTokenType.SemiColon, false );
-
-                //if( begin == null )
-                //{
-                //    sp = new SqlExprStStoredProc( alterOrCreate, type, name, parameters, options, asToken, bodyStatements, term );
-                //}
-                //else
-                //{
-                //    sp = new SqlExprStStoredProc( alterOrCreate, type, name, parameters, options, asToken, begin, bodyStatements, end, term );
-                //}
+                SqlTokenTerminal term = GetOptionalTerminator();
+                
+                if( begin == null )
+                {
+                    sp = new SqlExprStStoredProc( alterOrCreate, type, name, parameters, options, asToken, bodyStatements, term );
+                }
+                else
+                {
+                    sp = new SqlExprStStoredProc( alterOrCreate, type, name, parameters, options, asToken, begin, bodyStatements, end, term );
+                }
                 return true;
             }
-
-            //private bool IsStatementList( out SqlExprStatementList l )
-            //{
-
-            //}
 
             bool IsParameterList( out SqlExprParameterList parameters, bool requiresParenthesis )
             {
                 parameters = null;
-                
-                SqlTokenTerminal openPar;
-                if( !IsToken( out openPar, SqlTokenType.OpenPar, requiresParenthesis ) && requiresParenthesis ) return false;
-
-                var exprs = new List<IAbstractExpr>();
-                SqlExprParameter param;
-                if( IsParameter( out param, false ) )
-                {
-                    exprs.Add( param );
-                    SqlTokenTerminal comma;
-                    while( IsToken( out comma, SqlTokenType.Comma, false ) )
-                    {
-                        exprs.Add( comma );
-                        IsParameter( out param, true );
-                        exprs.Add( param );
-                    }
-                }
-                
-                SqlTokenTerminal closePar = null;
-                if( openPar != null && !IsToken( out closePar, SqlTokenType.ClosePar, true ) ) return false;
-
-                parameters = new SqlExprParameterList( openPar, closePar, exprs.ToArray() );
+                SqlTokenOpenPar openPar;
+                SqlTokenClosePar closePar;
+                List<IAbstractExpr> items;
+                if( !IsList<SqlExprParameter>( out openPar, out items, out closePar, requiresParenthesis, IsParameter ) ) return false;
+                parameters = openPar != null ? new SqlExprParameterList( openPar, items, closePar ) : new SqlExprParameterList( items );
                 return true;
-            }
-
-            private SqlExpr HandleAlterOrCreateFunction( SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type, SqlExprMultiIdentifier name )
-            {
-                throw new NotImplementedException();
-            }
-
-            private SqlExpr HandleAlterOrCreateView( SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type, SqlExprMultiIdentifier name )
-            {
-                throw new NotImplementedException();
             }
 
             bool IsParameter( out SqlExprParameter parameter, bool expected = true )
@@ -242,29 +288,29 @@ namespace CK.SqlServer
                 SqlExprParameterDefaultValue defValue = null;
                 {
                     SqlTokenTerminal assign;
-                    if( IsToken( out assign, SqlTokenType.Assign, false ) )
+                    if( R.IsToken( out assign, SqlTokenType.Assign, false ) )
                     {
                         SqlTokenIdentifier variable;
-                        if( IsToken( out variable, SqlTokenType.IdentifierVariable, false ) )
+                        if( R.IsToken( out variable, SqlTokenType.IdentifierVariable, false ) )
                         {
                             defValue = new SqlExprParameterDefaultValue( assign, variable );
                         }
                         else
                         {
                             SqlTokenTerminal minusSign;
-                            IsToken( out minusSign, false );
+                            R.IsToken( out minusSign, false );
                             SqlTokenBaseLiteral value;
-                            if( !IsToken( out value, true ) ) return false;
+                            if( !R.IsToken( out value, true ) ) return false;
                             defValue = new SqlExprParameterDefaultValue( assign, minusSign, value );
                         }
                     }
                 }
 
                 SqlTokenIdentifier outputClause;
-                IsUnquotedKeyword( out outputClause, t => t.NameEquals( "out" ) || t.NameEquals( "output" ), false );
+                R.IsUnquotedKeyword( out outputClause, t => t.NameEquals( "out" ) || t.NameEquals( "output" ), false );
 
                 SqlTokenIdentifier readonlyClause;
-                IsUnquotedKeyword( out readonlyClause, t => t.NameEquals( "readonly" ) );
+                R.IsUnquotedKeyword( out readonlyClause, "readonly", false );
 
                 parameter = new SqlExprParameter( declVar, defValue, outputClause, readonlyClause );
                 return true;
@@ -274,7 +320,7 @@ namespace CK.SqlServer
             {
                 declVar = null;
                 SqlTokenIdentifier identifier;
-                if( !IsToken( out identifier, idFilter, expected ) ) return false;
+                if( !R.IsToken( out identifier, idFilter, expected ) ) return false;
 
                 SqlExprTypeDecl typeDecl;
                 if( !IsTypeDecl( out typeDecl, true ) ) return false;
@@ -287,7 +333,7 @@ namespace CK.SqlServer
             {
                 typeDecl = null;
                 SqlTokenIdentifier id;
-                if( IsToken( out id, t => t.IsTypeName, false ) )
+                if( R.IsToken( out id, t => t.IsTypeName, false ) )
                 {
                     Debug.Assert( SqlReservedKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType ).HasValue, "TokenType has been mapped to a SqlDbType." );
 
@@ -307,16 +353,16 @@ namespace CK.SqlServer
                         case SqlDbType.DateTimeOffset:
                             {
                                 SqlTokenTerminal openPar, closePar;
-                                if( IsToken( out openPar, SqlTokenType.OpenPar, false ) )
+                                if( R.IsToken( out openPar, SqlTokenType.OpenPar, false ) )
                                 {
                                     SqlTokenLiteralInteger fractSecond;
-                                    if( !IsToken( out fractSecond, true ) ) return false;
+                                    if( !R.IsToken( out fractSecond, true ) ) return false;
                                     if( fractSecond.Value > 7 )
                                     {
-                                        R.SetLastError( "Fractional seconds precision must be less or equal to 7." );
+                                        R.SetCurrentError( "Fractional seconds precision must be less or equal to 7." );
                                         return false;
                                     }
-                                    if( !IsToken( out closePar, SqlTokenType.ClosePar, true ) ) return false;
+                                    if( !R.IsToken( out closePar, SqlTokenType.ClosePar, true ) ) return false;
                                     typeDecl = new SqlExprTypeDecl( new SqlExprTypeDeclDateAndTime( id, openPar, fractSecond, closePar, dbType ) );
                                 }
                                 else typeDecl = new SqlExprTypeDecl( new SqlExprTypeDeclDateAndTime( id, dbType ) );
@@ -325,30 +371,30 @@ namespace CK.SqlServer
                         case SqlDbType.Decimal:
                             {
                                 SqlTokenTerminal openPar, comma, closePar;
-                                if( IsToken( out openPar, SqlTokenType.OpenPar, false ) )
+                                if( R.IsToken( out openPar, SqlTokenType.OpenPar, false ) )
                                 {
                                     SqlTokenLiteralInteger precision;
-                                    if( !IsToken( out precision, true ) ) return false;
+                                    if( !R.IsToken( out precision, true ) ) return false;
                                     if( precision.Value > 38 )
                                     {
-                                        R.SetLastError( "Precision must be less or equal to 38." );
+                                        R.SetCurrentError( "Precision must be less or equal to 38." );
                                         return false;
                                     }
-                                    if( IsToken( out comma, SqlTokenType.Comma, false ) )
+                                    if( R.IsToken( out comma, SqlTokenType.Comma, false ) )
                                     {
                                         SqlTokenLiteralInteger scale;
-                                        if( !IsToken( out scale, true ) ) return false;
+                                        if( !R.IsToken( out scale, true ) ) return false;
                                         if( scale.Value > precision.Value )
                                         {
-                                            R.SetLastError( "Scale must be less or equal to Precision." );
+                                            R.SetCurrentError( "Scale must be less or equal to Precision." );
                                             return false;
                                         }
-                                        if( !IsToken( out closePar, SqlTokenType.ClosePar, true ) ) return false;
+                                        if( !R.IsToken( out closePar, SqlTokenType.ClosePar, true ) ) return false;
                                         typeDecl = new SqlExprTypeDecl( new SqlExprTypeDeclDecimal( id, openPar, precision, comma, scale, closePar ) );
                                     }
                                     else
                                     {
-                                        if( !IsToken( out closePar, SqlTokenType.ClosePar, true ) ) return false;
+                                        if( !R.IsToken( out closePar, SqlTokenType.ClosePar, true ) ) return false;
                                         typeDecl = new SqlExprTypeDecl( new SqlExprTypeDeclDecimal( id, openPar, precision, closePar ) );
                                     }
                                 }
@@ -363,17 +409,17 @@ namespace CK.SqlServer
                         case SqlDbType.VarBinary:
                             {
                                 SqlTokenTerminal openPar, closePar;
-                                if( IsToken( out openPar, SqlTokenType.OpenPar, false ) )
+                                if( R.IsToken( out openPar, SqlTokenType.OpenPar, false ) )
                                 {
                                     SqlTokenIdentifier sizeMax;
                                     SqlTokenLiteralInteger size = null;
-                                    if( !IsUnquotedKeyword( out sizeMax, "max", false ) && !IsToken( out size, true ) ) return false;
+                                    if( !R.IsUnquotedKeyword( out sizeMax, "max", false ) && !R.IsToken( out size, true ) ) return false;
                                     if( size != null && size.Value == 0 )
                                     {
-                                        R.SetLastError( "Size can not be 0." );
+                                        R.SetCurrentError( "Size can not be 0." );
                                         return false;
                                     }
-                                    if( !IsToken( out closePar, SqlTokenType.ClosePar, true ) ) return false;
+                                    if( !R.IsToken( out closePar, SqlTokenType.ClosePar, true ) ) return false;
                                     typeDecl = new SqlExprTypeDecl( new SqlExprTypeDeclWithSize( id, openPar, (SqlToken)size ?? sizeMax, closePar, dbType ) );
                                 }
                                 else typeDecl = new SqlExprTypeDecl( new SqlExprTypeDeclWithSize( id, dbType ) );
@@ -397,35 +443,11 @@ namespace CK.SqlServer
                 return true;
             }
 
-            bool IsUnquotedKeyword( out SqlTokenIdentifier keyword, string name, bool setLastError = true )
-            {
-                Predicate<SqlTokenIdentifier> p = null;
-                if( name != null ) p = (t => t.NameEquals( name ));
-                return IsUnquotedKeyword( out keyword, p, setLastError );
-            }
-
-            bool IsUnquotedKeyword( out SqlTokenIdentifier keyword, Predicate<SqlTokenIdentifier> filter = null, bool expected = true )
-            {
-                if( R.Current.TokenType == SqlTokenType.IdentifierReservedKeyword )
-                {
-                    SqlTokenIdentifier t = (SqlTokenIdentifier)R.Current;
-                    if( filter == null || filter( t ) )
-                    {
-                        keyword = t;
-                        R.MoveNext();
-                        return true;
-                    }
-                }
-                if( expected ) R.SetLastError( "Reserved Keyword expected." );
-                keyword = null;
-                return false;
-            }
-
             bool IsMonoIdentifier( out SqlExprIdentifier id, bool expected = true )
             {
                 id = null;
                 SqlTokenIdentifier token;
-                if( !IsToken( out token, expected ) ) return false;
+                if( !R.IsToken( out token, expected ) ) return false;
                 id = new SqlExprIdentifier( token );
                 return true;
             }
@@ -448,16 +470,81 @@ namespace CK.SqlServer
                 return true;
             }
 
+            /// <summary>
+            /// Reads a <see cref="SqlExprIdentifier"/> or a <see cref="SqlExprMultiIdentifier"/> depending
+            /// on the dots. Both of them supports <see cref="ISqlIdentifier"/>.
+            /// </summary>
+            /// <param name="id">The expression. Not null on success.</param>
+            /// <param name="expected">True to set an error if the current token(s) can not be read as one or more identifiers.</param>
+            /// <returns>True on success. False if the current token(s) can not be read as one or more identifiers.</returns>
+            bool IsMonoOrMultiIdentifier( out SqlExpr id, bool expected = true )
+            {
+                id = null;
+                IAbstractExpr[] multi;
+                if( !IsMultipleIdentifierArray( out multi, expected ) ) return false;
+                if( multi.Length == 1 ) id = new SqlExprIdentifier( (SqlTokenIdentifier)multi[0] );
+                else id = new SqlExprMultiIdentifier( multi );
+                return true;
+            }
+
+            class StarTransformer : IEnumerator<SqlToken>
+            {
+                readonly IEnumerator<SqlToken> _r;
+                SqlToken _current;
+
+                public StarTransformer( IEnumerator<SqlToken> r )
+                {
+                    _r = r;
+                }
+                
+                public SqlToken Current
+                {
+                    get 
+                    {
+                        if( _current == null )
+                        {
+                            _current = _r.Current;
+                            if( _current.TokenType == SqlTokenType.Mult )
+                            {
+                                _current = new SqlTokenIdentifier( SqlTokenType.IdentifierStar, "*", _current.LeadingTrivia, _current.TrailingTrivia );
+                            }
+                        }
+                        return _current;
+                    }
+                }
+
+                public void Dispose()
+                {
+                    _r.Dispose();
+                }
+
+                object System.Collections.IEnumerator.Current
+                {
+                    get { return Current; }
+                }
+
+                public bool MoveNext()
+                {
+                    _current = null;
+                    return _r.MoveNext();
+                }
+
+                public void Reset()
+                {
+                    _r.Reset();
+                }
+            }
+
             bool IsMultipleIdentifierArray( out IAbstractExpr[] multi, bool expected = true )
             {
                 multi = null;
-                if( (R.Current.TokenType & SqlTokenType.IsIdentifier) != 0 )
+                if( (R.Current.TokenType & SqlTokenType.IsIdentifier) != 0 || R.Current.TokenType == SqlTokenType.Mult )
                 {
-                    string error = SqlExprMultiIdentifier.BuildArray( R, out multi );
-                    if( error != null ) return R.SetLastError( error );
+                    string error = SqlExprMultiIdentifier.BuildArray( new StarTransformer( R ), out multi );
+                    if( error != null ) return R.SetCurrentError( error );
                     return true;
                 }
-                if( expected ) R.SetLastError( "Expected identifier." );
+                if( expected ) R.SetCurrentError( "Expected identifier." );
                 return false;
             }
 
@@ -465,62 +552,21 @@ namespace CK.SqlServer
             /// Collects tokens in an <see cref="SqlExprUnmodeledTokens"/> until a given token is found.
             /// </summary>
             /// <typeparam name="T">Type of the stopper token.</typeparam>
-            /// <param name="tokens">An unmodeled list of tokens. Null if the stopper occurs immediately.</param>
+            /// <param name="tokens">An unmodeled list of tokens. Null if the stopper occurs immediately or an error occured.</param>
             /// <param name="stopper">Stopper eventually found.</param>
             /// <param name="stopperDefinition">Predicate that defines the stop.</param>
             /// <returns>True if a stopper has been found. False if an error or the end of input has been encountered.</returns>
-            bool ReadUntil<T>( out SqlExprUnmodeledTokens tokens, out T stopper, Predicate<T> stopperDefinition ) where T : SqlToken
+            bool IsUnmodeledUntil<T>( out SqlExprUnmodeledTokens tokens, out T stopper, Predicate<T> stopperDefinition ) where T : SqlToken
             {
                 Debug.Assert( stopperDefinition != null );
                 tokens = null;
-                stopper = null;
+                
+                List<SqlToken> all;
+                if( !R.IsTokenList( out all, out stopper, stopperDefinition, false ) ) return false;
 
-                List<SqlToken> all = new List<SqlToken>();
-                while( !IsToken( out stopper, stopperDefinition ) )
-                {
-                    if( R.IsErrorOrEndOfInput )
-                    {
-                        if( R.LastError == null ) R.SetLastError( R.Current.TokenType == SqlTokenType.EndOfInput ? "Unexpected end of input." : R.Current.ToString() );
-                        return false;
-                    }
-                    all.Add( R.Current );
-                    R.MoveNext();
-                }
-                if( all.Count > 0 ) tokens = new SqlExprUnmodeledTokens( all );
+                if( all != null && all.Count > 0 ) tokens = new SqlExprUnmodeledTokens( all );
                 return true;
             }
-
-            bool IsToken<T>( out T t, bool expected = true ) where T : SqlToken
-            {
-                return IsToken( out t, null, expected );
-            }
-
-            bool IsToken<T>( out T t, Predicate<T> filter = null, bool expected = true ) where T : SqlToken
-            {
-                t = R.Current as T;
-                if( t != null && (filter == null || filter(t)) )
-                {
-                    t = R.Read<T>();
-                    return true;
-                }
-                if( expected ) R.SetLastError( "Expected '{0}'. ", typeof( T ).Name.Replace( "SqlToken", String.Empty ) );
-                t = null;
-                return false;
-            }
-
-            bool IsToken<T>( out T t, SqlTokenType type, bool expected = true ) where T : SqlToken
-            {
-                if( R.Current is T && R.Current.TokenType == type )
-                {
-                    t = R.Read<T>();
-                    return true;
-                }
-                if( expected ) R.SetLastError( "Expected token '{0}'. ", type );
-                t = null;
-                return false;
-            }
-
-
 
         }
 

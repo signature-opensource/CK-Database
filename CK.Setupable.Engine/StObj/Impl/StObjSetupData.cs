@@ -25,10 +25,10 @@ namespace CK.Setup
 
             _fullNameWithoutContext = AttributesReader.GetFullName( logger, false, o.ObjectType );
             _versions = AttributesReader.GetVersionsString( o.ObjectType );
-            _requiresEx = new ReadOnlyListOnIList<IDependentItemRef>( Requires );
-            _requiredByEx = new ReadOnlyListOnIList<IDependentItemRef>( RequiredBy );
-            _childrenEx = new ReadOnlyListOnIList<IDependentItemRef>( Children );
-            _groupsEx = new ReadOnlyListOnIList<IDependentItemGroupRef>( Groups );
+            _requiresEx = new CKReadOnlyListOnIList<IDependentItemRef>( Requires );
+            _requiredByEx = new CKReadOnlyListOnIList<IDependentItemRef>( RequiredBy );
+            _childrenEx = new CKReadOnlyListOnIList<IDependentItemRef>( Children );
+            _groupsEx = new CKReadOnlyListOnIList<IDependentItemGroupRef>( Groups );
         }
 
         public IStObjRuntime StObj

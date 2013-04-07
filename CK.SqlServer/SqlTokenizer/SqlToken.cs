@@ -19,8 +19,8 @@ namespace CK.SqlServer
             if( t > 0 && (t & (SqlTokenType.TokenDiscriminatorMask & ~SqlTokenType.IsComment)) == 0 ) throw new ArgumentException( "Invalid token type." );
             
             TokenType = t;
-            LeadingTrivia = leadingTrivia ?? ReadOnlyListEmpty<SqlTrivia>.Empty;
-            TrailingTrivia = trailingTrivia ?? ReadOnlyListEmpty<SqlTrivia>.Empty;
+            LeadingTrivia = leadingTrivia ?? CKReadOnlyListEmpty<SqlTrivia>.Empty;
+            TrailingTrivia = trailingTrivia ?? CKReadOnlyListEmpty<SqlTrivia>.Empty;
         }
 
         public readonly SqlTokenType TokenType;
@@ -34,6 +34,11 @@ namespace CK.SqlServer
             foreach( var t in TrailingTrivia ) t.Write( b );
         }
 
+        public void WriteWithoutTrivias( StringBuilder b )
+        {
+            DoWrite( b );
+        }
+
         abstract protected void DoWrite( StringBuilder b );
 
         public override string ToString()
@@ -45,7 +50,7 @@ namespace CK.SqlServer
 
         IEnumerable<SqlToken> IAbstractExpr.Tokens
         {
-            get { return new ReadOnlyListMono<SqlToken>( this ); }
+            get { return new CKReadOnlyListMono<SqlToken>( this ); }
         }
     }
 
