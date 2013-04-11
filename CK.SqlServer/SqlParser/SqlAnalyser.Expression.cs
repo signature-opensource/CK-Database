@@ -94,6 +94,23 @@ namespace CK.SqlServer
                     left = new SqlExprKoCall( left, parenthesis );
                     return true;
                 }
+                if( R.Current.TokenType == SqlTokenType.Comma )
+                {
+                    Debug.Assert( !(left is SqlExprList) );
+                    var items = new List<IAbstractExpr>();
+                    items.Add( left );
+                    items.Add( R.Read<SqlTokenTerminal>() );
+                    for( ; ; )
+                    {
+                        SqlExpr next;
+                        if( !IsExpression( out next, SqlTokenizer.PrecedenceLevel( SqlTokenType.Comma ), true ) ) return false;
+                        items.Add( next );
+                        SqlTokenTerminal comma;
+                        if( !R.IsToken<SqlTokenTerminal>( out comma, SqlTokenType.Comma, false ) ) break;
+                        items.Add( comma );
+                    }
+                    left = new SqlExprList( items );
+                }
                 if( (R.Current.TokenType & SqlTokenType.IsAssignOperator) != 0 )
                 {
                     if( !(left is ISqlIdentifier) ) return false;
@@ -101,8 +118,16 @@ namespace CK.SqlServer
                     {
                         SqlTokenTerminal assign = R.Read<SqlTokenTerminal>();
                         SqlExpr right;
-                        if( !IsExpression( out right, precedenceLevel, true ) ) return false;
-                        left = new SqlExprAssign( (ISqlIdentifier)left, assign, right );
+                        R.AssignmentContext = false;
+                        try
+                        {
+                            if( !IsExpression( out right, precedenceLevel, true ) ) return false;
+                            left = new SqlExprAssign( (ISqlIdentifier)left, assign, right );
+                        }
+                        finally
+                        {
+                            R.AssignmentContext = true;
+                        }
                     }
                     return true;
                 }
@@ -180,7 +205,7 @@ namespace CK.SqlServer
             }
 
             /// <summary>
-            /// Reads a comma separated list of generic blocks.
+            /// Reads a comma separated list of expressions.
             /// </summary>
             /// <param name="e">The list.</param>
             /// <param name="expectParenthesis">True to set an error if the current token is not an opening parenthesis.</param>
@@ -222,7 +247,7 @@ namespace CK.SqlServer
             /// <summary>
             /// Reads a <see cref="SqlExprGenericBlock"/> (a list of expressions or tokens) enclosed in parenthesis: the stopper is the closing parenthesis. 
             /// </summary>
-            /// <param name="block">Read block.</param>
+            /// <param name="block">Read expression.</param>
             /// <param name="openPar">Opening parenthesis (will be the very first token).</param>
             /// <param name="expectAtLeastOne">True to set an error if the block is empty (no expressions in it).</param>
             /// <returns>True if a block has sucessfully been found.</returns>
@@ -240,7 +265,7 @@ namespace CK.SqlServer
                 {
                     // If it is not the closer nor the end, it must be a valid expression: we expect it.
                     SqlExpr e;
-                    if( !IsExpression( out e, 0, expected: true ) ) break;
+                    if( !IsExpression( out e, SqlTokenizer.PrecedenceLevel( SqlTokenType.Comma ), expected: true ) ) break;
                     exprs.Add( e );
                 }
                 // If we expect something and nothing was found and no error was previously set, we set an error.

@@ -34,7 +34,7 @@ namespace CK.SqlServer
     ///                                                                     
     /// 
     /// 2        = += -= *= /= %= &amp;= |= ^=                              Assignments (IsAssignOperator).
-    /// 1        ,                                                          List separator (comma).
+    /// 1        , UNION EXCEPT INTERSECT                                   List separator (comma).
     /// 
     /// (1) For '=' token, disambiguisation between Comparison and Assignment requires a context hint: we need to know if we are in a "assignment context" or not.
     ///     This must be done at a higher level than in <see cref="SqlTokenizer"/>.
@@ -276,14 +276,10 @@ namespace CK.SqlServer
         /// </summary>
         BitwiseNot = IsBasicOperator | OpLevel09 | 9,
 
-        /// <summary>
-        /// IS operator.
-        /// </summary>
-        Is = IsBasicOperator | OpLevel06 | 10,
         #endregion
 
-        CompareOperatorCount = 12,
-        #region IsCompareOperator: =, >, <, >=, <=, <>, !=, !> and !<. Plus LIKE and BETWEEN.
+        CompareOperatorCount = 13,
+        #region IsCompareOperator: =, >, <, >=, <=, <>, !=, !> and !<. Plus LIKE, IN, IS and BETWEEN.
         /// <summary>
         /// = character.
         /// </summary>
@@ -332,11 +328,15 @@ namespace CK.SqlServer
         /// <summary>
         /// IN operator.
         /// </summary>
-        In = IsCompareOperator | OpLevel06 | 12,
+        In = IsCompareOperator | OpLevel06 | 12,       
+        /// <summary>
+        /// IS operator.
+        /// </summary>
+        Is = IsCompareOperator | OpLevel06 | 13,
         #endregion
 
         LogicalOrSetCount = 3,
-        #region IsLogicalOrSet: not, or, and. Keywords all, any (same as "some") and exists are identifiers (handled as KoCall).
+        #region IsLogicalOrSet: not, or, and (Keywords all, any - same as "some" - and exists are identifiers handled as KoCall).
         /// <summary>
         /// NOT operator.
         /// </summary>

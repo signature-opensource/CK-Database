@@ -215,7 +215,7 @@ namespace CK.SqlServer
 
         static string[] _assignOperator = { "=", "|=", "&=", "^=", "+=", "-=", "/=", "*=", "%=" };
         static string[] _basicOperator = { "|", "^", "&", "+", "-", "*", "/", "%", "~" };
-        static string[] _compareOperator = { "=", ">", "<", ">=", "<=", "<>", "!=", "!>", "!<", "between", "like", "in"  };
+        static string[] _compareOperator = { "=", ">", "<", ">=", "<=", "<>", "!=", "!>", "!<", "between", "like", "in", "is" };
         static string[] _logicalOrSet = { "not", "or", "and" };
         static string[] _punctuations = { ".", ",", ";", ":", "::" };
 

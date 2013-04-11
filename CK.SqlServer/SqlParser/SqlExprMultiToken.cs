@@ -15,8 +15,8 @@ namespace CK.SqlServer
     {
         readonly T[] _tokens;
 
-        static T[] _empty = new T[0];
-        static SqlExprMultiToken<T> _emptyExpr = new SqlExprMultiToken<T>();
+        static readonly T[] _empty = new T[0];
+        static readonly public SqlExprMultiToken<T> Empty = new SqlExprMultiToken<T>();
 
         SqlExprMultiToken()
         {
@@ -47,11 +47,6 @@ namespace CK.SqlServer
             _tokens = new T[head._tokens.Length + tail._tokens.Length];
             head._tokens.CopyTo( _tokens, 0 );
             tail._tokens.CopyTo( _tokens, head._tokens.Length );
-        }
-
-        public static SqlExprMultiToken<T> Create()
-        {
-            return _emptyExpr;
         }
 
         public static SqlExprMultiToken<T> Create( T token )

@@ -36,7 +36,7 @@ namespace CK.SqlServer
         public SqlExprBaseListWithSeparator( IList<IAbstractExpr> exprOrTokens, bool allowEmpty, Predicate<IAbstractExpr> validSeparator = null )
         {
             if( exprOrTokens == null ) throw new ArgumentNullException( "exprOrTokens" );
-            _components = CreateArray( SqlExprMultiToken<SqlTokenOpenPar>.Create(), exprOrTokens, 0, exprOrTokens.Count, SqlExprMultiToken<SqlTokenClosePar>.Create() );
+            _components = CreateArray( SqlExprMultiToken<SqlTokenOpenPar>.Empty, exprOrTokens, 0, exprOrTokens.Count, SqlExprMultiToken<SqlTokenClosePar>.Empty );
             CheckArray( _components, allowEmpty, true, false, validSeparator ?? IsCommaSeparator );
         }
 

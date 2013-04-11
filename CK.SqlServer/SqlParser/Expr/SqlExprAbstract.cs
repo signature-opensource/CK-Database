@@ -73,12 +73,11 @@ namespace CK.SqlServer
                             && skippedContent >= 0 && contentLength >= 0 && skippedContent + contentLength <= content.Count() );
             var c = new IAbstractExpr[++contentLength + 1];
             c[0] = prefix;
-            int i = 1;
-            foreach( var e in content )
+            int i = 0;
+            foreach( var e in content.Skip( skippedContent ) )
             {
-                if( i < skippedContent ) continue; 
-                c[i++] = e;
                 if( i == contentLength ) break;
+                c[++i] = e;
             }
             c[contentLength] = suffix;
             return c;
@@ -100,7 +99,7 @@ namespace CK.SqlServer
             SqlExprMultiToken<SqlTokenOpenPar> existOpen = (SqlExprMultiToken<SqlTokenOpenPar>)enclosedComponents[0];
             SqlExprMultiToken<SqlTokenClosePar> existClose = (SqlExprMultiToken<SqlTokenClosePar>)enclosedComponents[enclosedComponents.Length-1];
 
-            return CreateArray( SqlExprMultiToken<SqlTokenOpenPar>.Create( prefix, existOpen ), enclosedComponents, 1, enclosedComponents.Length, SqlExprMultiToken<SqlTokenClosePar>.Create( existClose, suffix ) );
+            return CreateArray( SqlExprMultiToken<SqlTokenOpenPar>.Create( prefix, existOpen ), enclosedComponents, 1, enclosedComponents.Length-2, SqlExprMultiToken<SqlTokenClosePar>.Create( existClose, suffix ) );
         }
 
 

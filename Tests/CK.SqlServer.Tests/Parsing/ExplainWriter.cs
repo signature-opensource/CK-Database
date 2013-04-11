@@ -24,7 +24,7 @@ namespace CK.SqlServer.Tests.Parsing
         public override SqlExpr Visit( SqlExprAssign e )
         {
             Out.Append( '[' );
-            WriteIdentifier( e.Left );
+            WriteIdentifier( e.Identifier );
             Out.Append( SqlTokenizer.Explain( e.AssignToken.TokenType ) );
             VisitExpr( e.Right );           
             Out.Append( ']' );
@@ -116,7 +116,7 @@ namespace CK.SqlServer.Tests.Parsing
 
         public override SqlExpr Visit( SqlExprGenericBlock e )
         {
-            Out.Append( '{' );
+            Out.Append( "¤{" );
             bool one = false;
             foreach( var item in e.ComponentsWithoutParenthesis )
             {
@@ -129,13 +129,13 @@ namespace CK.SqlServer.Tests.Parsing
                 }
                 else item.Tokens.WriteTokensWithoutTrivias( "-", Out );
             }
-            Out.Append( '}' );
+            Out.Append( "}¤" );
             return e;
         }
 
         public override SqlExpr Visit( SqlExprList e )
         {
-            Out.Append( "¤{" );
+            Out.Append( '{' );
             bool one = false;
             foreach( var item in e )
             {
@@ -143,7 +143,7 @@ namespace CK.SqlServer.Tests.Parsing
                 one = true;
                 VisitExpr( item );
             }
-            Out.Append( "}¤" );
+            Out.Append( '}' );
             return e;
         }
 

@@ -14,18 +14,27 @@ namespace CK.SqlServer.Tests.Parsing
         [Test]
         public void ParseExpression01()
         {
-            Check( "(~2)", "{~[2]}" );
-            Check( "~ 0 * 1 = (~2) * 3", "[[~[0]*1]=[{~[2]}*3]]" );
+            Check( "a", "a" );
+            // Identifiers are not enclosable: a generic block is built to carry the parenthesis.
+            Check( "(a)", "¤{a}¤" );
+            // SqlExprBinaryOperator is enclosable.
+            Check( "a-b", "[a-b]" );
+            Check( "(a-b)", "[a-b]" );
+            Check( "( ( ( (a-b))))", "[a-b]" );
+            // SqlExprUnaryOperator is enclosable.
+            Check( "(~2)", "~[2]" );
+            Check( "~ 0 * 1 = (~2) * 3", "[[~[0]*1]=[~[2]*3]]" );
             Check( "0 + 1  * 2 >= ~3 / 4 + 1", "[[0+[1*2]]>=[[~[3]/4]+1]]" );
             Check( "1 = 1 and 0 = 0 and 2 = 2", "[[[1=1]and[0=0]]and[2=2]]" );
             Check( "1 = 1 and 0 = 0 or 2 = 2", "[[[1=1]and[0=0]]or[2=2]]" );
             Check( "1 = 1 or 1 = 1 and 0 = 1", "[[1=1]or[[1=1]and[0=1]]]" );
-            Check( "(a+(b)+c)", "{[[a+{b}]+c]}" );
-            Check( "(a >= b)", "{[a>=b]}" );
-            Check( "(1 = 1 or 1 = 1) and 0 = 1", "[{[[1=1]or[1=1]]}and[0=1]]" );
+            Check( "(a+(b)+c)", "[[a+¤{b}¤]+c]" );
+            Check( "(a >= b)", "[a>=b]" );
+            Check( "(1 = 1 or 1 = 1) and 0 = 1", "[[[1=1]or[1=1]]and[0=1]]" );
             Check( "not 1 = 1 or 1 = 1", "[not[[1=1]]or[1=1]]" );
-            Check( "not (1 = 1 or 1 = 1)", "not[{[[1=1]or[1=1]]}]" );
-        }
+            Check( "not (1 = 1 or 1 = 1)", "not[[[1=1]or[1=1]]]" );
+            Check( "a-b, a*8+3", "{[a-b],[[a*8]+3]}" );
+       }
 
         [Test]
         public void ParseIsNull()
@@ -33,9 +42,10 @@ namespace CK.SqlServer.Tests.Parsing
             Check( "~@i is null", "IsNull(~[@i])" );
             Check( "~@i is not null", "IsNotNull(~[@i])" );
             Check( "~@i * 8 is null", "IsNull([~[@i]*8])" );
-            Check( "~@i * (a*b) is not null", "IsNotNull([~[@i]*{[a*b]}])" );
+            Check( "~@i * (a*b) is not null", "IsNotNull([~[@i]*[a*b]])" );
             Check( "not ~@i is null", "not[IsNull(~[@i])]" );
             Check( "not ~@i is null and 1=0", "[not[IsNull(~[@i])]and[1=0]]" );
+            Check( "not ((((~@i) is null)))", "not[IsNull(~[@i])]" );
         }
 
         [Test]
@@ -60,12 +70,12 @@ namespace CK.SqlServer.Tests.Parsing
         [Test]
         public void ParseIn()
         {
-            Check( "@i in ( 1, 2, 3 )", "In(@i∈¤{1,2,3}¤)" );
-            Check( "@i not in ( 1, 2 )", "NotIn(@i∈¤{1,2}¤)" );
-            Check( "2*~5 not in ( 7 )", "NotIn([2*~[5]]∈¤{7}¤)" );
-            Check( "not 2*~5 not in ( 7 )", "not[NotIn([2*~[5]]∈¤{7}¤)]" );
-            Check( "not 2*~5 not in ( 7 ) or 1=1", "[not[NotIn([2*~[5]]∈¤{7}¤)]or[1=1]]" );
-            Check( "3 in (4+5,6,select Power from CK.tShmurtz) or 1=1", "[In(3∈¤{[4+5],6,{select-Power-from-CK.tShmurtz}}¤)or[1=1]]" );
+            Check( "@i in ( 1, 2, 3 )", "In(@i∈{1,2,3})" );
+            Check( "@i not in ( 1, 2 )", "NotIn(@i∈{1,2})" );
+            Check( "2*~5 not in ( 7 )", "NotIn([2*~[5]]∈{7})" );
+            Check( "not 2*~5 not in ( 7 )", "not[NotIn([2*~[5]]∈{7})]" );
+            Check( "not 2*~5 not in ( 7 ) or 1=1", "[not[NotIn([2*~[5]]∈{7})]or[1=1]]" );
+            Check( "3 in (4+5,6,select Power from CK.tShmurtz) or 1=1", "[In(3∈{[4+5],6,¤{select-Power-from-CK.tShmurtz}¤})or[1=1]]" );
         }
 
         [Test]
@@ -73,7 +83,7 @@ namespace CK.SqlServer.Tests.Parsing
         {
             Check( "3 + AnyCall()", "[3+call:AnyCall()]" );
             Check( "3 + AnyCall(5, N'kjkj'+8))", "[3+call:AnyCall(5,[N'kjkj'+8])]" );
-            Check( "3 < all (select Power from dbo.tNuclearPlant)", "[3<call:all({select-Power-from-dbo.tNuclearPlant})]" );
+            Check( "3 < all (select Power from dbo.tNuclearPlant)", "[3<call:all(¤{select-Power-from-dbo.tNuclearPlant}¤)]" );
         }
 
         [Test]
@@ -83,10 +93,10 @@ namespace CK.SqlServer.Tests.Parsing
                                                      print '1';
                                                    else print 2, 9, 'toto';" );
 
-            Assert.That( ExplainWriter.Write( ifS ), Is.EqualTo( "if[IsNull(@i)]then[<print¤{'1'}¤>]else[<print¤{2,9,'toto'}¤>]" ) );
+            Assert.That( ExplainWriter.Write( ifS ), Is.EqualTo( "if[IsNull(@i)]then[<print{'1'}>]else[<print{2,9,'toto'}>]" ) );
 
             ifS = ParseStatement<SqlExprStIf>( @"if exists(select * from sys.tables) print N'OK';" );
-            Assert.That( ExplainWriter.Write( ifS ), Is.EqualTo( "if[call:exists({select-*-from-sys.tables})]then[<print¤{{N'OK'}}¤>]" ) );
+            Assert.That( ExplainWriter.Write( ifS ), Is.EqualTo( "if[call:exists(¤{select-*-from-sys.tables}¤)]then[<print{N'OK'}>]" ) );
 
         }
 
@@ -96,6 +106,7 @@ namespace CK.SqlServer.Tests.Parsing
             var r = SqlAnalyser.ParseExpression( out e, text );
             Assert.That( r.IsError, Is.False, r.ToString() );
             Assert.That( ExplainWriter.Write( e ), Is.EqualTo( explained ) );
+            Assert.That( text, Is.EqualTo( e.ToString() ) );
         }
 
         //[Test]

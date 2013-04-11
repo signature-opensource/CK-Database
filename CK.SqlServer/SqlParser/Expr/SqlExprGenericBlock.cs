@@ -23,7 +23,7 @@ namespace CK.SqlServer
         public SqlExprGenericBlock( IList<IAbstractExpr> componentsOnly )
         {
             if( componentsOnly == null ) throw new ArgumentNullException( "components" );
-            _components = CreateArray( SqlExprMultiToken<SqlTokenOpenPar>.Create(), componentsOnly, 0, componentsOnly.Count, SqlExprMultiToken<SqlTokenClosePar>.Create() );
+            _components = CreateArray( SqlExprMultiToken<SqlTokenOpenPar>.Empty, componentsOnly, 0, componentsOnly.Count, SqlExprMultiToken<SqlTokenClosePar>.Empty );
         }
 
         /// <summary>
