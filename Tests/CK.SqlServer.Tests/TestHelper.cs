@@ -16,7 +16,7 @@ namespace CK.SqlServer.Tests
         static TestHelper()
         {
             _console = new ActivityLoggerConsoleSink();
-            _logger = DefaultActivityLogger.Create();
+            _logger = new DefaultActivityLogger( true );
             _logger.Tap.Register( _console );
         }
 

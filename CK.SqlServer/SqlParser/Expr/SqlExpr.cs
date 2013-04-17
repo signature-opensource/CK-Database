@@ -11,6 +11,8 @@ namespace CK.SqlServer
 {
     public abstract class SqlExpr : SqlExprAbstract
     {
+
+
         internal protected abstract T Accept<T>( IExprVisitor<T> visitor );
     }
 

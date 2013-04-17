@@ -51,7 +51,7 @@ namespace CK.SqlServer
 
         public IEnumerable<IAbstractExpr> ComponentsWithoutParenthesis
         {
-            get { throw new NotImplementedException(); }
+            get { return _components.Skip( 1 ).Take( _components.Length - 2 ); }
         }
     }
 

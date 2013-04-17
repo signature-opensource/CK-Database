@@ -25,7 +25,6 @@ namespace CK.SqlServer
 
         public SqlExprMultiToken<SqlTokenOpenPar> Opener { get { return (SqlExprMultiToken<SqlTokenOpenPar>)_components[0]; } }
 
-
         public SqlToken Operator { get { return (SqlToken)_components[1]; } }
 
         public SqlExpr Expression { get { return (SqlExpr)_components[2]; } }
@@ -52,7 +51,7 @@ namespace CK.SqlServer
 
         public IEnumerable<IAbstractExpr> ComponentsWithoutParenthesis
         {
-            get { throw new NotImplementedException(); }
+            get { return _components.Skip( 1 ).Take( _components.Length - 2 ); }
         }
 
     }

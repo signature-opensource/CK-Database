@@ -176,7 +176,7 @@ namespace CK.SqlServer.Tests.Parsing
             if( e.HasEscape )
             {
                 Out.Append( ',' );
-                Out.Append( e.EscapeChar.Value );
+                Out.Append( e.EscapeChar.LiteralValue );
             } 
             Out.Append( ')' );
             return e;

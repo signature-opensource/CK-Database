@@ -31,7 +31,7 @@ namespace CK.SqlServer
     ///                                                                     But, for the sake of coherency, IN and BETWEEN are considered just like LIKE.
     ///          (Set operators are considered as identifiers                                                                    
     ///          for KoCall: ALL, ANY, EXISTS, SOME)                        All these operators are "like" function call i.e.: exist(...) or any(...).
-    ///                                                                     
+    ///                                                                     Exists is enclosable (like other KoCall) whereas any, some and all are not enclosable.
     /// 
     /// 2        = += -= *= /= %= &amp;= |= ^=                              Assignments (IsAssignOperator).
     /// 1        , UNION EXCEPT INTERSECT                                   List separator (comma).

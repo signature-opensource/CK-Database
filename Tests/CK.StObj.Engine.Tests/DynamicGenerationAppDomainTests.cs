@@ -20,20 +20,22 @@ namespace CK.StObj.Engine.Tests
             string di1 = @"C:\Test\toto\titi\truc";
             string di2 = @"C:\Test\toto\titi\bidule";
             string di3 = @"C:\Test\toto\titi";
+            string di4 = @"C:\Test\toto\tata";
+            string di5 = @"C:\Test\tata";
 
             var result = StObjContextRoot.FindCommonAncestor( new []{ di1, di2, di3 } );
             Assert.That( result, Is.EqualTo( @"C:\Test\toto\titi" ) );
 
-            string di4 = @"C:\Test\toto\tata";
             result = StObjContextRoot.FindCommonAncestor( new []{ di1, di2, di3, di4 } );
             Assert.That( result, Is.EqualTo( @"C:\Test\toto" ) );
 
-            string di5 = @"C:\Test\tata";
-            result = StObjContextRoot.FindCommonAncestor( new []{ di1, di2, di3, di4, di5 } );
+            result = StObjContextRoot.FindCommonAncestor( new[] { di1, di2, di3, di4, di5 } );
             Assert.That( result, Is.EqualTo( @"C:\Test" ) );
 
-            string di6 = @"D:\Test\tata";
-            result = StObjContextRoot.FindCommonAncestor( new []{ di1, di2, di3, di4, di5, di6 } );
+            result = StObjContextRoot.FindCommonAncestor( new[] { di1, di2, di3, di4, di5, @"C:\Test\tatanogood" } );
+            Assert.That( result, Is.EqualTo( @"C:\Test" ) );
+
+            result = StObjContextRoot.FindCommonAncestor( new[] { di1, di2, di3, di4, di5, @"D:\Test\tata" } );
             Assert.That( result, Is.Null );
         }
 

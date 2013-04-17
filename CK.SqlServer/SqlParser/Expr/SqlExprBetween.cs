@@ -12,15 +12,15 @@ namespace CK.SqlServer
     /// <summary>
     /// 
     /// </summary>
-    public class SqlExprBetween : SqlExpr
+    public class SqlExprBetween : SqlExpr, ISqlExprEnclosable
     {
         readonly IAbstractExpr[] _components;
 
         public SqlExprBetween( SqlExpr left, SqlTokenTerminal notToken, SqlTokenTerminal betweenToken, SqlExpr start, SqlTokenTerminal andToken, SqlExpr stop )
         {
-            _components = notToken != null 
-                            ? CreateArray( left, notToken, betweenToken, start, andToken, stop ) 
-                            : CreateArray( left, betweenToken, start, andToken, stop );
+            _components = notToken != null
+                            ? CreateArray( SqlExprMultiToken<SqlTokenOpenPar>.Empty, left, notToken, betweenToken, start, andToken, stop, SqlExprMultiToken<SqlTokenClosePar>.Empty )
+                            : CreateArray( SqlExprMultiToken<SqlTokenOpenPar>.Empty, left, betweenToken, start, andToken, stop, SqlExprMultiToken<SqlTokenClosePar>.Empty );
         }
 
         internal SqlExprBetween( IAbstractExpr[] newComponents )
@@ -28,21 +28,37 @@ namespace CK.SqlServer
             _components = newComponents;
         }
 
-        public SqlExpr Left { get { return (SqlExpr)_components[0]; } }
+        public SqlExprMultiToken<SqlTokenOpenPar> Opener { get { return (SqlExprMultiToken<SqlTokenOpenPar>)_components[0]; } }
 
-        public bool IsNotBetween { get { return _components.Length == 6; } }
+        public SqlExpr Left { get { return (SqlExpr)_components[1]; } }
 
-        public SqlTokenTerminal NotToken { get { return IsNotBetween ? (SqlTokenTerminal)_components[1] : null; } }
+        public bool IsNotBetween { get { return _components.Length == 8; } }
 
-        public SqlTokenTerminal BetweenToken { get { return (SqlTokenTerminal)_components[IsNotBetween ? 2 : 1]; } }
+        public SqlTokenTerminal NotToken { get { return IsNotBetween ? (SqlTokenTerminal)_components[2] : null; } }
 
-        public SqlExpr Start { get { return (SqlExpr)_components[IsNotBetween ? 3 : 2]; } }
+        public SqlTokenTerminal BetweenToken { get { return (SqlTokenTerminal)_components[IsNotBetween ? 3 : 2]; } }
 
-        public SqlTokenTerminal AndToken { get { return (SqlTokenTerminal)_components[IsNotBetween ? 4 : 3]; } }
+        public SqlExpr Start { get { return (SqlExpr)_components[IsNotBetween ? 4 : 3]; } }
 
-        public SqlExpr Stop { get { return (SqlExpr)_components[IsNotBetween ? 5 : 4]; } }
+        public SqlTokenTerminal AndToken { get { return (SqlTokenTerminal)_components[IsNotBetween ? 5 : 4]; } }
+
+        public SqlExpr Stop { get { return (SqlExpr)_components[IsNotBetween ? 6 : 5]; } }
+
+        public SqlExprMultiToken<SqlTokenClosePar> Closer { get { return (SqlExprMultiToken<SqlTokenClosePar>)_components[_components.Length-1]; } }
 
         public override IEnumerable<IAbstractExpr> Components { get { return _components; } }
+
+        public bool CanEnclose { get { return true; } }
+
+        public ISqlExprEnclosable Enclose( SqlTokenOpenPar openPar, SqlTokenClosePar closePar )
+        {
+            return new SqlExprBetween( CreateArray( openPar, _components, closePar ) );
+        }
+
+        public IEnumerable<IAbstractExpr> ComponentsWithoutParenthesis
+        {
+            get { return _components.Skip( 1 ).Take( _components.Length - 2 ); }
+        }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

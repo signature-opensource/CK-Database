@@ -12,7 +12,7 @@ namespace CK.SqlServer
     /// <summary>
     /// 
     /// </summary>
-    public class SqlExprLike : SqlExpr
+    public class SqlExprLike : SqlExpr, ISqlExprEnclosable
     {
         readonly IAbstractExpr[] _components;
 
@@ -22,24 +22,24 @@ namespace CK.SqlServer
             {
                 if( escapeToken == null )
                 {
-                    _components = CreateArray( left, likeToken, pattern );
+                    _components = CreateArray( SqlExprMultiToken<SqlTokenOpenPar>.Empty, left, likeToken, pattern, SqlExprMultiToken<SqlTokenClosePar>.Empty );
                 }
                 else
                 {
                     if( escapeChar == null ) throw new ArgumentNullException( "escape" );
-                    _components = CreateArray( left, likeToken, pattern, escapeToken, escapeChar );
+                    _components = CreateArray( SqlExprMultiToken<SqlTokenOpenPar>.Empty, left, likeToken, pattern, escapeToken, escapeChar, SqlExprMultiToken<SqlTokenClosePar>.Empty );
                 }
             }
             else
             {
                 if( escapeToken == null )
                 {
-                    _components = CreateArray( left, notToken, likeToken, pattern );
+                    _components = CreateArray( SqlExprMultiToken<SqlTokenOpenPar>.Empty, left, notToken, likeToken, pattern, SqlExprMultiToken<SqlTokenClosePar>.Empty );
                 }
                 else
                 {
                     if( escapeChar == null ) throw new ArgumentNullException( "escape" );
-                    _components = CreateArray( left, notToken, likeToken, pattern, escapeToken, escapeChar );
+                    _components = CreateArray( SqlExprMultiToken<SqlTokenOpenPar>.Empty, left, notToken, likeToken, pattern, escapeToken, escapeChar, SqlExprMultiToken<SqlTokenClosePar>.Empty );
                 }
             }
         }
@@ -49,23 +49,39 @@ namespace CK.SqlServer
             _components = newComponents;
         }
 
-        public SqlExpr Left { get { return (SqlExpr)_components[0]; } }
+        public SqlExprMultiToken<SqlTokenOpenPar> Opener { get { return (SqlExprMultiToken<SqlTokenOpenPar>)_components[0]; } }
 
-        public bool IsNotLike { get { return _components.Length == 4 || _components.Length == 6; } }
+        public SqlExpr Left { get { return (SqlExpr)_components[1]; } }
 
-        public SqlTokenTerminal NotToken { get { return IsNotLike ? (SqlTokenTerminal)_components[1] : null; } }
+        public bool IsNotLike { get { return _components.Length == 6 || _components.Length == 8; } }
 
-        public SqlTokenTerminal LikeToken { get { return (SqlTokenTerminal)_components[IsNotLike ? 2 : 1]; } }
+        public SqlTokenTerminal NotToken { get { return IsNotLike ? (SqlTokenTerminal)_components[2] : null; } }
 
-        public SqlExpr Pattern { get { return (SqlExpr)_components[IsNotLike ? 3 : 2]; } }
+        public SqlTokenTerminal LikeToken { get { return (SqlTokenTerminal)_components[IsNotLike ? 3 : 2]; } }
 
-        public bool HasEscape { get { return _components.Length > 4; } }
+        public SqlExpr Pattern { get { return (SqlExpr)_components[IsNotLike ? 4 : 3]; } }
 
-        public SqlTokenIdentifier EscapeToken { get { return HasEscape ? (SqlTokenIdentifier)_components[IsNotLike ? 4 : 3] : null; } }
+        public bool HasEscape { get { return _components.Length > 6; } }
 
-        public SqlTokenLiteralString EscapeChar { get { return HasEscape ? (SqlTokenLiteralString)_components[IsNotLike ? 5 : 4] : null; } }
+        public SqlTokenIdentifier EscapeToken { get { return HasEscape ? (SqlTokenIdentifier)_components[IsNotLike ? 5 : 4] : null; } }
+
+        public SqlTokenLiteralString EscapeChar { get { return HasEscape ? (SqlTokenLiteralString)_components[IsNotLike ? 6 : 5] : null; } }
+
+        public SqlExprMultiToken<SqlTokenClosePar> Closer { get { return (SqlExprMultiToken<SqlTokenClosePar>)_components[_components.Length - 1]; } }
 
         public override IEnumerable<IAbstractExpr> Components { get { return _components; } }
+
+        public bool CanEnclose { get { return true; } }
+
+        public ISqlExprEnclosable Enclose( SqlTokenOpenPar openPar, SqlTokenClosePar closePar )
+        {
+            return new SqlExprLike( CreateArray( openPar, _components, closePar ) );
+        }
+
+        public IEnumerable<IAbstractExpr> ComponentsWithoutParenthesis
+        {
+            get { return _components.Skip( 1 ).Take( _components.Length - 2 ); }
+        }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )
