@@ -31,7 +31,7 @@ namespace CK.SqlServer
         public bool IsKeywordName { get { return (TokenType & ~SqlTokenType.IdentifierQuoteMask) == SqlTokenType.IdentifierReservedKeyword; } }
 
         /// <summary>
-        /// True for keyword names like int or output (but not for [int], NotAKeyword or "output"). 
+        /// True for keyword names like int or output (but not for [int], NotAKeyword nor "output"). 
         /// </summary>
         public bool IsUnquotedKeyword { get { return TokenType == SqlTokenType.IdentifierReservedKeyword; } }
         
@@ -69,7 +69,7 @@ namespace CK.SqlServer
             // - If the identifier is a known (reserved) keyword like [int].
             //      OR 
             // - If the name itself does not require quotes (like [Space with dots...]). 
-            if( (TokenType & SqlTokenType.IdentifierMask) != 0 || !SqlTokenizer.IsQuoteRequired( Name ) )
+            if( (TokenType & SqlTokenType.IdentifierMask) != 0 || !SqlToken.IsQuoteRequired( Name ) )
             {
                 return new SqlTokenIdentifier( TokenType & ~SqlTokenType.IdentifierQuoteMask, Name, LeadingTrivia, TrailingTrivia );
             }

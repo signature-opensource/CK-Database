@@ -8,11 +8,14 @@ using CK.Core;
 
 namespace CK.SqlServer
 {
-    public class SqlExprParameter : SqlExpr
+    public class SqlExprParameter : SqlNoExpr
     {
-        readonly IAbstractExpr[] _components;
-
         public SqlExprParameter( SqlExprTypedIdentifier declVar, SqlExprParameterDefaultValue defaultValue = null, SqlTokenIdentifier outputClause = null, SqlTokenIdentifier readonlyClause = null )
+            : this( Build( declVar, defaultValue, outputClause, readonlyClause ) )
+        {
+        }
+
+        static ISqlItem[] Build( SqlExprTypedIdentifier declVar, SqlExprParameterDefaultValue defaultValue, SqlTokenIdentifier outputClause, SqlTokenIdentifier readonlyClause )
         {
             if( declVar == null ) throw new ArgumentNullException( "declVar" );
             if( !declVar.Identifier.IsVariable ) throw new ArgumentException( "Must be a @VariableName", "variable" );
@@ -24,7 +27,7 @@ namespace CK.SqlServer
                 throw new ArgumentException( "Must be out or output.", "outputClause" );
             }
             if( readonlyClause != null
-                && (!readonlyClause.IsUnquotedKeyword || String.Compare( outputClause.Name, "readonly", StringComparison.OrdinalIgnoreCase ) != 0 ) )
+                && (!readonlyClause.IsUnquotedKeyword || String.Compare( outputClause.Name, "readonly", StringComparison.OrdinalIgnoreCase ) != 0) )
             {
                 throw new ArgumentException( "Must be readonly.", "readonlyClause" );
             }
@@ -35,22 +38,22 @@ namespace CK.SqlServer
                 {
                     if( readonlyClause == null )
                     {
-                        _components = CreateArray( declVar );
+                        return CreateArray( declVar );
                     }
                     else
                     {
-                        _components = CreateArray( declVar, readonlyClause );
+                        return CreateArray( declVar, readonlyClause );
                     }
                 }
-                else 
+                else
                 {
                     if( readonlyClause == null )
                     {
-                        _components = CreateArray( declVar, outputClause );
+                        return CreateArray( declVar, outputClause );
                     }
                     else
                     {
-                        _components = CreateArray( declVar, outputClause, readonlyClause );
+                        return CreateArray( declVar, outputClause, readonlyClause );
                     }
                 }
             }
@@ -60,35 +63,35 @@ namespace CK.SqlServer
                 {
                     if( readonlyClause == null )
                     {
-                        _components = CreateArray( declVar, defaultValue );
+                        return CreateArray( declVar, defaultValue );
                     }
                     else
                     {
-                        _components = CreateArray( declVar, defaultValue, readonlyClause );
+                        return CreateArray( declVar, defaultValue, readonlyClause );
                     }
                 }
-                else 
+                else
                 {
                     if( readonlyClause == null )
                     {
-                        _components = CreateArray( declVar, defaultValue, outputClause );
+                        return CreateArray( declVar, defaultValue, outputClause );
                     }
                     else
                     {
-                        _components = CreateArray( declVar, defaultValue, outputClause, readonlyClause );
+                        return CreateArray( declVar, defaultValue, outputClause, readonlyClause );
                     }
                 }
             }
         }
 
-        internal SqlExprParameter( IAbstractExpr[] newComponents )
+        internal SqlExprParameter( ISqlItem[] items )
+            : base( items )
         {
-            _components = newComponents;
         }
 
-        public SqlExprTypedIdentifier Variable { get { return (SqlExprTypedIdentifier)_components[0]; } }
+        public SqlExprTypedIdentifier Variable { get { return (SqlExprTypedIdentifier)Slots[0]; } }
 
-        public SqlExprParameterDefaultValue DefaultValue { get { return _components.Length > 1 ? _components[1] as SqlExprParameterDefaultValue : null; } }
+        public SqlExprParameterDefaultValue DefaultValue { get { return Slots.Length > 1 ? Slots[1] as SqlExprParameterDefaultValue : null; } }
 
         public bool IsOutput { get { return OptionClause != null; } }
 
@@ -111,14 +114,9 @@ namespace CK.SqlServer
             } 
         }
 
-        SqlTokenIdentifier LastTokenClause { get { return _components.Length > 1 ? _components[_components.Length - 1] as SqlTokenIdentifier : null; } }
+        SqlTokenIdentifier LastTokenClause { get { return Slots.Length > 1 ? Slots[Slots.Length - 1] as SqlTokenIdentifier : null; } }
 
-        SqlTokenIdentifier AnteLastTokenClause { get { return _components.Length > 2 ? _components[_components.Length - 2] as SqlTokenIdentifier : null; } }
-
-        public override sealed IEnumerable<IAbstractExpr> Components
-        {
-            get { return _components; }
-        }
+        SqlTokenIdentifier AnteLastTokenClause { get { return Slots.Length > 2 ? Slots[Slots.Length - 2] as SqlTokenIdentifier : null; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

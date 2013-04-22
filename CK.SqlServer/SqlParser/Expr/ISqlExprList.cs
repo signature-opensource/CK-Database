@@ -4,7 +4,7 @@ using CK.Core;
 
 namespace CK.SqlServer
 {
-    public interface ISqlExprList<out T> : ISqlExprEnclosable, IReadOnlyList<T> where T : SqlExpr
+    public interface ISqlExprList<out T> : IReadOnlyList<T> where T : SqlItem
     {
         /// <summary>
         /// Gets the number of <see cref="SeparatorTokens"/>.
@@ -14,7 +14,7 @@ namespace CK.SqlServer
         /// <summary>
         /// Gets the separators.
         /// </summary>
-        IEnumerable<IAbstractExpr> SeparatorTokens { get; }
+        IEnumerable<ISqlItem> SeparatorTokens { get; }
         
     }
 }

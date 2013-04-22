@@ -14,12 +14,12 @@ namespace CK.SqlServer
         {
         }
 
-        internal SqlExprStView( IAbstractExpr[] newComponents )
+        internal SqlExprStView( ISqlItem[] newComponents )
             : base( newComponents )
         {
         }
 
-        static IAbstractExpr[] Build( SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type, SqlExprMultiIdentifier name, SqlExprColumnList columns, SqlExprUnmodeledTokens options, SqlTokenIdentifier asToken, SqlExprStUnmodeled select )
+        static ISqlItem[] Build( SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type, SqlExprMultiIdentifier name, SqlExprColumnList columns, SqlExprUnmodeledTokens options, SqlTokenIdentifier asToken, SqlExprStUnmodeled select )
         {
             if( columns == null ) 
             {
@@ -45,34 +45,34 @@ namespace CK.SqlServer
             }
         }
 
-        public SqlTokenIdentifier AlterOrCreate { get { return (SqlTokenIdentifier)At(0); } }
+        public SqlTokenIdentifier AlterOrCreate { get { return (SqlTokenIdentifier)Slots[0]; } }
 
-        public SqlTokenIdentifier ObjectType { get { return (SqlTokenIdentifier)At(1); } }
+        public SqlTokenIdentifier ObjectType { get { return (SqlTokenIdentifier)Slots[1]; } }
 
-        public SqlExprMultiIdentifier Name { get { return (SqlExprMultiIdentifier)At(2); } }
+        public SqlExprMultiIdentifier Name { get { return (SqlExprMultiIdentifier)Slots[2]; } }
 
-        public bool HasOptions { get { return Count == 6 || (Count > 4 && At(3) is SqlExprUnmodeledTokens); } }
+        public bool HasOptions { get { return Slots.Length == 6 || (Slots.Length > 4 && Slots[3] is SqlExprUnmodeledTokens); } }
 
-        public bool HasColumns { get { return Count == 6 || (Count > 4 && At(3) is SqlExprColumnList); } }
+        public bool HasColumns { get { return Slots.Length == 6 || (Slots.Length > 4 && Slots[3] is SqlExprColumnList); } }
 
         public SqlExprColumnList Columns 
         { 
-            get { return Count != 4 ? At(3) as SqlExprColumnList : null; } 
+            get { return Slots.Length != 4 ? Slots[3] as SqlExprColumnList : null; } 
         }
 
         public SqlExprUnmodeledTokens Options 
         { 
             get 
             { 
-                if( Count == 4 ) return null;
-                if( Count == 6 ) return (SqlExprUnmodeledTokens)At(4);
-                return At(3) as SqlExprUnmodeledTokens; 
+                if( Slots.Length == 4 ) return null;
+                if( Slots.Length == 6 ) return (SqlExprUnmodeledTokens)Slots[4];
+                return Slots[3] as SqlExprUnmodeledTokens; 
             } 
         }
 
-        public SqlTokenIdentifier AsToken { get { return  (SqlTokenIdentifier)At(Count-2); } }
+        public SqlTokenIdentifier AsToken { get { return  (SqlTokenIdentifier)Slots[Slots.Length-2]; } }
 
-        public SqlExprStUnmodeled Select { get { return (SqlExprStUnmodeled)At(Count-1); } }
+        public SqlExprStUnmodeled Select { get { return (SqlExprStUnmodeled)Slots[Slots.Length-1]; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

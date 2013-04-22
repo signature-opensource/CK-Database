@@ -11,20 +11,18 @@ namespace CK.SqlServer
     public abstract class SqlExprBaseMonoToken<T> : SqlExpr 
         where T : SqlToken 
     {
-        readonly T[] _token;
-
         protected SqlExprBaseMonoToken( T t )
+            : this( CreateArray( SqlToken.EmptyOpenPar, t, SqlToken.EmptyClosePar ) )
         {
-            _token = new[]{ t };
         }
 
-        public T Token { get { return _token[0]; } }
+        internal SqlExprBaseMonoToken( ISqlItem[] components )
+            : base( components )
+        {
+        }
 
-        public override IEnumerable<IAbstractExpr> Components { get { return _token; } }
+        public T Token { get { return (T)Slots[1]; } }
 
-        public override IEnumerable<SqlToken> Tokens { get { return _token; } }
-
-        protected IEnumerable<T> TypedTokens { get { return _token; } }
     }
 
 

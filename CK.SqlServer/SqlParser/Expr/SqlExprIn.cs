@@ -12,49 +12,34 @@ namespace CK.SqlServer
     /// <summary>
     /// 
     /// </summary>
-    public class SqlExprIn : SqlExpr, ISqlExprEnclosable
+    public class SqlExprIn : SqlExpr
     {
-        readonly IAbstractExpr[] _components;
-
-        public SqlExprIn( SqlExpr left, SqlTokenTerminal notToken, SqlTokenTerminal inToken, SqlExprList values )
+        public SqlExprIn( SqlExpr left, SqlTokenTerminal notToken, SqlTokenTerminal inToken, SqlExprCommaList values )
+            : this( Build( left, notToken, inToken, values ) )
         {
-            _components = notToken != null
-                            ? CreateArray( SqlExprMultiToken<SqlTokenOpenPar>.Empty, left, notToken, inToken, values, SqlExprMultiToken<SqlTokenClosePar>.Empty )
-                            : CreateArray( SqlExprMultiToken<SqlTokenOpenPar>.Empty, left, inToken, values, SqlExprMultiToken<SqlTokenClosePar>.Empty );
         }
 
-        internal SqlExprIn( IAbstractExpr[] newComponents )
+        static ISqlItem[] Build( SqlExpr left, SqlTokenTerminal notToken, SqlTokenTerminal inToken, SqlExprCommaList values )
         {
-            _components = newComponents;
+            return notToken != null
+                            ? CreateArray( SqlToken.EmptyOpenPar, left, notToken, inToken, values, SqlToken.EmptyClosePar )
+                            : CreateArray( SqlToken.EmptyOpenPar, left, inToken, values, SqlToken.EmptyClosePar );
         }
 
-        public SqlExprMultiToken<SqlTokenOpenPar> Opener { get { return (SqlExprMultiToken<SqlTokenOpenPar>)_components[0]; } }
-
-        public SqlExpr Left { get { return (SqlExpr)_components[1]; } }
-
-        public bool IsNotIn { get { return _components.Length == 6; } }
-
-        public SqlTokenTerminal NotToken { get { return IsNotIn ? (SqlTokenTerminal)_components[2] : null; } }
-
-        public SqlTokenTerminal InToken { get { return (SqlTokenTerminal)_components[IsNotIn ? 3 : 2]; } }
-
-        public SqlExprList Values { get { return (SqlExprList)_components[IsNotIn ? 4 : 3]; } }
-
-        public SqlExprMultiToken<SqlTokenClosePar> Closer { get { return (SqlExprMultiToken<SqlTokenClosePar>)_components[IsNotIn ? 5 : 4]; } }
-
-        public override IEnumerable<IAbstractExpr> Components { get { return _components; } }
-
-        public bool CanEnclose { get { return true; } }
-
-        public ISqlExprEnclosable Enclose( SqlTokenOpenPar openPar, SqlTokenClosePar closePar )
+        internal SqlExprIn( ISqlItem[] newComponents )
+            : base( newComponents )
         {
-            return new SqlExprIn( CreateArray( openPar, _components, closePar ) );
         }
 
-        public IEnumerable<IAbstractExpr> ComponentsWithoutParenthesis
-        {
-            get { return _components.Skip( 1 ).Take( _components.Length - 2 ); }
-        }
+        public SqlExpr Left { get { return (SqlExpr)Slots[1]; } }
+
+        public bool IsNotIn { get { return Slots.Length == 6; } }
+
+        public SqlTokenTerminal NotToken { get { return IsNotIn ? (SqlTokenTerminal)Slots[2] : null; } }
+
+        public SqlTokenTerminal InToken { get { return (SqlTokenTerminal)Slots[IsNotIn ? 3 : 2]; } }
+
+        public SqlExprCommaList Values { get { return (SqlExprCommaList)Slots[IsNotIn ? 4 : 3]; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

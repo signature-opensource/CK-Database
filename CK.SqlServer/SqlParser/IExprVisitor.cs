@@ -5,10 +5,10 @@ namespace CK.SqlServer
 {
     public interface IExprVisitor<T>
     {
-        T VisitExpr( SqlExpr e );
+        T VisitExpr( SqlItem e );
 
         T Visit( SqlExprUnmodeledTokens e );
-        T Visit( SqlExprGenericBlock e );
+        T Visit( SqlExprRawItemList e );
         T Visit( SqlExprKoCall e );
         T Visit( SqlExprStIf e );
         
@@ -47,15 +47,22 @@ namespace CK.SqlServer
         T Visit( SqlExprLike e );
         T Visit( SqlExprBetween e );
         T Visit( SqlExprIn e );
-        T Visit( SqlExprList e );
+        T Visit( SqlExprCommaList e );
 
-        T Visit( SqlExprSelectSpec e );
-        T Visit( SqlExprSelectHeader e );
-        T Visit( SqlExprSelectColumnList e );
-        T Visit( SqlExprSelectColumn e );
-        T Visit( SqlExprSelectInto e );
-        T Visit( SqlExprSelectFrom e );
-        T Visit( SqlExprSelectWhere e );
-        T Visit( SqlExprSelectGroupBy e );
+        T Visit( SelectSpecification e );
+        T Visit( SelectHeader e );
+        T Visit( SelectColumnList e );
+        T Visit( SelectColumn e );
+        T Visit( SelectInto e );
+        T Visit( SelectFrom e );
+        T Visit( SelectWhere e );
+        T Visit( SelectGroupBy e );
+        T Visit( SelectCombineOperator e );
+        T Visit( SelectOrderBy e );
+        T Visit( SelectFor e );
+        T Visit( SelectOption e );
+        
+
+        T Visit( SelectQuery e );
     }
 }

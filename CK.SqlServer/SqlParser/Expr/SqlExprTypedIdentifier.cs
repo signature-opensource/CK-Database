@@ -11,22 +11,28 @@ namespace CK.SqlServer
     /// <summary>
     /// An identifier (a <see cref="SqlTokenIdentifier"/>, typically a variable name) followed by a type declaration (<see cref="SqlExprTypeDecl"/>).
     /// </summary>
-    public class SqlExprTypedIdentifier : SqlExpr
+    public class SqlExprTypedIdentifier : SqlNoExpr
     {
-        readonly IAbstractExpr[] _components;
-
         public SqlExprTypedIdentifier( SqlTokenIdentifier identifier, SqlExprTypeDecl type )
+            : base( Build( identifier, type ) )
+        {
+        }
+
+        private static ISqlItem[] Build( SqlTokenIdentifier identifier, SqlExprTypeDecl type )
         {
             if( identifier == null ) throw new ArgumentNullException( "identifier" );
             if( type == null ) throw new ArgumentNullException( "type" );
-            _components = CreateArray( identifier, type );
+            return CreateArray( identifier, type );
         }
 
-        public SqlTokenIdentifier Identifier { get { return (SqlTokenIdentifier)_components[0]; } }
+        internal SqlExprTypedIdentifier( ISqlItem[] items )
+            : base( items )
+        {
+        }
 
-        public SqlExprTypeDecl TypeDecl { get { return (SqlExprTypeDecl)_components[1]; } }
+        public SqlTokenIdentifier Identifier { get { return (SqlTokenIdentifier)Slots[0]; } }
 
-        public override IEnumerable<IAbstractExpr> Components { get { return _components; } }
+        public SqlExprTypeDecl TypeDecl { get { return (SqlExprTypeDecl)Slots[1]; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

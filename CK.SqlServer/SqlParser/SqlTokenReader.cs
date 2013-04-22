@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using CK.Core;
 
 namespace CK.SqlServer
 {
@@ -15,6 +16,8 @@ namespace CK.SqlServer
     {
         readonly IEnumerable<SqlToken> _tokens;
         readonly Func<string> _currentAnalyzedText;
+        readonly IDisposable _leaveAssignement;
+        readonly IDisposable _enterAssignement;
         IEnumerator<SqlToken> _e;
         SqlToken _c;
         SqlToken _rawLookup;
@@ -23,6 +26,8 @@ namespace CK.SqlServer
         public SqlTokenReader( IEnumerable<SqlToken> tokens, Func<string> currentAnalyzedText = null )
         {
             Debug.Assert( tokens != null );
+            _leaveAssignement = Util.CreateDisposableAction( () => _assignmentContext = false );
+            _enterAssignement = Util.CreateDisposableAction( () => _assignmentContext = true );
             _tokens = tokens;
             if( (_currentAnalyzedText = currentAnalyzedText) == null )
             {
@@ -35,7 +40,13 @@ namespace CK.SqlServer
         public bool AssignmentContext
         {
             get { return _assignmentContext; }
-            set { _assignmentContext = value; }
+        }
+
+        public IDisposable SetAssignmentContext( bool assignment )
+        {
+            if( _assignmentContext == assignment ) return Util.EmptyDisposable;
+            if( (_assignmentContext = assignment) ) return _leaveAssignement;
+            return _enterAssignement;
         }
 
         /// <summary>

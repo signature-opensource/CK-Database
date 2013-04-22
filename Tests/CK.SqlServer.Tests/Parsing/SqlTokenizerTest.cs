@@ -8,6 +8,7 @@ using CK.SqlServer;
 namespace CK.SqlServer.Tests.Parsing
 {
     [TestFixture]
+    [Category( "SqlTokenizer" )]
     public class SqlTokenizerTest
     {
         [Test]
@@ -205,6 +206,96 @@ end";
 
             // Fix: .34 is changed as 0.34 (decimal), .45e12 becomes 0.45e12 (float).
             Assert.That( s2, Is.EqualTo( s.Replace( ".34", "0.34" ).Replace( ".45e12", "0.45e12" ) ) );
+        }
+
+        [Test]
+        public void IdentifiersAndTerminal()
+        {
+            SqlTokenizer p = new SqlTokenizer();
+            SqlToken t;
+            SqlTokenIdentifier tU;
+            t = p.ParseWithoutError( "IdentifierNaked" ).ElementAt( 0 );
+            Assert.That( t.TokenType == SqlTokenType.IdentifierNaked );
+            Assert.That( t is SqlTokenIdentifier );
+            Assert.That( ((SqlTokenIdentifier)t).IsUnquotedKeyword, Is.False );
+            Assert.That( ((SqlTokenIdentifier)t).RemoveQuoteIfPossible( false ), Is.SameAs( t ) );
+            Assert.That( t.ToString(), Is.EqualTo( "IdentifierNaked" ) );
+
+            t = p.ParseWithoutError( "[IdentifierQuotedBracket]" ).ElementAt( 0 );
+            Assert.That( t.TokenType == SqlTokenType.IdentifierQuotedBracket );
+            Assert.That( t is SqlTokenIdentifier );
+            Assert.That( ((SqlTokenIdentifier)t).IsUnquotedKeyword, Is.False );
+            tU = ((SqlTokenIdentifier)t).RemoveQuoteIfPossible( true );
+            Assert.That( tU, Is.Not.SameAs( t ) );
+            Assert.That( t.ToString(), Is.EqualTo( "[IdentifierQuotedBracket]" ) );
+            Assert.That( tU.ToString(), Is.EqualTo( "IdentifierQuotedBracket" ) );
+
+            t = p.ParseWithoutError( "[Identifier Quoted Bracket]" ).ElementAt( 0 );
+            Assert.That( t.TokenType == SqlTokenType.IdentifierQuotedBracket );
+            Assert.That( t is SqlTokenIdentifier );
+            Assert.That( ((SqlTokenIdentifier)t).IsUnquotedKeyword, Is.False );
+            Assert.That( t.ToString(), Is.EqualTo( "[Identifier Quoted Bracket]" ) );
+            tU = ((SqlTokenIdentifier)t).RemoveQuoteIfPossible( true );
+            Assert.That( tU, Is.SameAs( t ) );
+
+            t = p.ParseWithoutError( "LiKE" ).ElementAt( 0 );
+            Assert.That( t.TokenType == SqlTokenType.Like );
+            Assert.That( t is SqlTokenTerminal );
+            Assert.That( t.ToString(), Is.EqualTo( "like" ) );
+
+            t = p.ParseWithoutError( "[LiKE]" ).ElementAt( 0 );
+            Assert.That( t.TokenType == (SqlTokenType.IdentifierQuotedBracket | SqlTokenType.IdentifierReservedKeyword) );
+            Assert.That( t is SqlTokenIdentifier );
+            Assert.That( ((SqlTokenIdentifier)t).IsUnquotedKeyword, Is.False );
+            Assert.That( t.ToString(), Is.EqualTo( "[LiKE]" ) );
+            tU = ((SqlTokenIdentifier)t).RemoveQuoteIfPossible( true );
+            Assert.That( tU, Is.SameAs( t ) );
+            tU = ((SqlTokenIdentifier)t).RemoveQuoteIfPossible( false );
+            Assert.That( tU, Is.Not.SameAs( t ) );
+            Assert.That( tU.ToString(), Is.EqualTo( "LiKE" ) );
+
+            t = p.ParseWithoutError( "IN" ).ElementAt( 0 );
+            Assert.That( t.TokenType == SqlTokenType.In );
+            Assert.That( t is SqlTokenTerminal );
+            Assert.That( t.ToString(), Is.EqualTo( "in" ) );
+
+            t = p.ParseWithoutError( "[IN]" ).ElementAt( 0 );
+            Assert.That( t.TokenType == (SqlTokenType.IdentifierQuotedBracket | SqlTokenType.IdentifierReservedKeyword) );
+            Assert.That( t is SqlTokenIdentifier );
+            Assert.That( ((SqlTokenIdentifier)t).IsUnquotedKeyword, Is.False );
+            Assert.That( t.ToString(), Is.EqualTo( "[IN]" ) );
+            tU = ((SqlTokenIdentifier)t).RemoveQuoteIfPossible( true );
+            Assert.That( tU, Is.SameAs( t ) );
+            tU = ((SqlTokenIdentifier)t).RemoveQuoteIfPossible( false );
+            Assert.That( tU, Is.Not.SameAs( t ) );
+            Assert.That( tU.ToString(), Is.EqualTo( "IN" ) );
+
+            t = p.ParseWithoutError( "int" ).ElementAt( 0 );
+            Assert.That( t.TokenType == SqlTokenType.IdentifierTypeInt );
+            tU = ((SqlTokenIdentifier)t).RemoveQuoteIfPossible( true );
+            Assert.That( tU, Is.SameAs( t ) );
+
+            t = p.ParseWithoutError( "[int]" ).ElementAt( 0 );
+            Assert.That( t.TokenType == (SqlTokenType.IdentifierQuotedBracket | SqlTokenType.IdentifierTypeInt) );
+            Assert.That( t is SqlTokenIdentifier );
+            Assert.That( ((SqlTokenIdentifier)t).IsUnquotedKeyword, Is.False );
+            tU = ((SqlTokenIdentifier)t).RemoveQuoteIfPossible( true );
+            Assert.That( tU, Is.SameAs( t ) );
+            tU = ((SqlTokenIdentifier)t).RemoveQuoteIfPossible( false );
+            Assert.That( tU, Is.Not.SameAs( t ) );
+            Assert.That( tU.ToString(), Is.EqualTo( "int" ) );
+
+            t = p.ParseWithoutError( @"""iNt""" ).ElementAt( 0 );
+            Assert.That( t.TokenType == (SqlTokenType.IdentifierQuoted | SqlTokenType.IdentifierTypeInt) );
+            Assert.That( t is SqlTokenIdentifier );
+            Assert.That( ((SqlTokenIdentifier)t).IsUnquotedKeyword, Is.False );
+            Assert.That( t.ToString(), Is.EqualTo( @"""iNt""" ) );
+            tU = ((SqlTokenIdentifier)t).RemoveQuoteIfPossible( true );
+            Assert.That( tU, Is.SameAs( t ) );
+            tU = ((SqlTokenIdentifier)t).RemoveQuoteIfPossible( false );
+            Assert.That( tU, Is.Not.SameAs( t ) );
+            Assert.That( tU.ToString(), Is.EqualTo( "iNt" ) );
+
         }
 
         [Test]

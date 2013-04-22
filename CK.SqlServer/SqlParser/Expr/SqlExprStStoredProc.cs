@@ -10,21 +10,21 @@ namespace CK.SqlServer
     public class SqlExprStStoredProc : SqlExprBaseSt
     {
         public SqlExprStStoredProc( SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type, SqlExprMultiIdentifier name, SqlExprParameterList parameters, SqlExprUnmodeledTokens options, SqlTokenIdentifier asToken, SqlExprStatementList bodyStatements, SqlTokenTerminal term )
-            : base( BuildComponents( alterOrCreate, type, name, parameters, options, asToken, null, bodyStatements, null ), term )
+            : base( Build( alterOrCreate, type, name, parameters, options, asToken, null, bodyStatements, null ), term )
         {
         }
 
         public SqlExprStStoredProc( SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type, SqlExprMultiIdentifier name, SqlExprParameterList parameters, SqlExprUnmodeledTokens options, SqlTokenIdentifier asToken, SqlTokenIdentifier begin, SqlExprStatementList bodyStatements, SqlTokenIdentifier end, SqlTokenTerminal term )
-            : base( BuildComponents( alterOrCreate, type, name, parameters, options, asToken, begin, bodyStatements, end ), term )
+            : base( Build( alterOrCreate, type, name, parameters, options, asToken, begin, bodyStatements, end ), term )
         {
         }
 
-        internal SqlExprStStoredProc( SqlExprStStoredProc e, IAbstractExpr[] newComponents )
-            : base( CreateArray( newComponents ), e.StatementTerminator )
+        internal SqlExprStStoredProc( ISqlItem[] items )
+            : base( items )
         {
         }
 
-        static IAbstractExpr[] BuildComponents( SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type, SqlExprMultiIdentifier name, SqlExprParameterList parameters, SqlExprUnmodeledTokens options, SqlTokenIdentifier asToken, SqlTokenIdentifier begin, SqlExprStatementList bodyStatements, SqlTokenIdentifier end )
+        static ISqlItem[] Build( SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type, SqlExprMultiIdentifier name, SqlExprParameterList parameters, SqlExprUnmodeledTokens options, SqlTokenIdentifier asToken, SqlTokenIdentifier begin, SqlExprStatementList bodyStatements, SqlTokenIdentifier end )
         {
             if( options != null )
             {
@@ -52,27 +52,27 @@ namespace CK.SqlServer
             }
         }
 
-        public SqlTokenIdentifier AlterOrCreate { get { return (SqlTokenIdentifier)At(0); } }
+        public SqlTokenIdentifier AlterOrCreate { get { return (SqlTokenIdentifier)Slots[0]; } }
 
-        public SqlTokenIdentifier ObjectType { get { return (SqlTokenIdentifier)At(1); } }
+        public SqlTokenIdentifier ObjectType { get { return (SqlTokenIdentifier)Slots[1]; } }
 
-        public SqlExprMultiIdentifier Name { get { return (SqlExprMultiIdentifier)At(2); } }
+        public SqlExprMultiIdentifier Name { get { return (SqlExprMultiIdentifier)Slots[2]; } }
 
-        public SqlExprParameterList Parameters { get { return (SqlExprParameterList)At(3); } }
+        public SqlExprParameterList Parameters { get { return (SqlExprParameterList)Slots[3]; } }
 
-        public bool HasOptions { get { return Count == 9 || Count == 7; } }
+        public bool HasOptions { get { return Slots.Length == 9 || Slots.Length == 7; } }
 
-        public SqlExprUnmodeledTokens Options { get { return HasOptions ? (SqlExprUnmodeledTokens)At(4) : null; } }
+        public SqlExprUnmodeledTokens Options { get { return HasOptions ? (SqlExprUnmodeledTokens)Slots[4] : null; } }
 
-        public SqlTokenIdentifier AsToken { get { return (SqlTokenIdentifier)At(HasOptions ? 5 : 4); } }
+        public SqlTokenIdentifier AsToken { get { return (SqlTokenIdentifier)Slots[HasOptions ? 5 : 4]; } }
 
-        public bool HasBeginEnd { get { return Count == 8 || Count == 6; } }
+        public bool HasBeginEnd { get { return Slots.Length == 8 || Slots.Length == 6; } }
 
-        public SqlTokenIdentifier Begin { get { return HasBeginEnd ? (SqlTokenIdentifier)At(Count - 3) : null; } }
+        public SqlTokenIdentifier Begin { get { return HasBeginEnd ? (SqlTokenIdentifier)Slots[Slots.Length - 3] : null; } }
 
-        public SqlExprStatementList BodyStatements { get { return (SqlExprStatementList)At( HasBeginEnd ? Count - 2 : Count - 1 ); } }
+        public SqlExprStatementList BodyStatements { get { return (SqlExprStatementList)Slots[ HasBeginEnd ? Slots.Length - 2 : Slots.Length - 1 ]; } }
 
-        public SqlTokenIdentifier End { get { return HasBeginEnd ? (SqlTokenIdentifier)At( Count - 1 ) : null; } }
+        public SqlTokenIdentifier End { get { return HasBeginEnd ? (SqlTokenIdentifier)Slots[ Slots.Length - 1 ] : null; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

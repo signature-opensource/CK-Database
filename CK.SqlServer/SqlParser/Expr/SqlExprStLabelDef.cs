@@ -9,7 +9,7 @@ using CK.Core;
 namespace CK.SqlServer
 {
     /// <summary>
-    /// 
+    /// Label definition (a target for the goto).
     /// </summary>
     public class SqlExprStLabelDef : SqlExprBaseSt
     {
@@ -18,7 +18,7 @@ namespace CK.SqlServer
         {
         }
 
-        static IAbstractExpr[] BuildComponents( SqlTokenIdentifier id, SqlTokenTerminal statementTerminator )
+        static ISqlItem[] BuildComponents( SqlTokenIdentifier id, SqlTokenTerminal statementTerminator )
         {
             if( id == null
                 || id.IsQuoted
@@ -30,7 +30,7 @@ namespace CK.SqlServer
             return CreateArray( id );
         }
 
-        public SqlTokenIdentifier Identifier { get { return (SqlTokenIdentifier)At(0); } }
+        public SqlTokenIdentifier Identifier { get { return (SqlTokenIdentifier)Slots[0]; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

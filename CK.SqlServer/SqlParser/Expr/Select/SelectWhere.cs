@@ -11,24 +11,22 @@ namespace CK.SqlServer
     /// <summary>
     /// Captures the optional "Where ..." select part.
     /// </summary>
-    public class SqlExprSelectWhere : SqlExpr
+    public class SelectWhere : SqlNoExpr
     {
-        readonly IAbstractExpr[] _components;
-
-        public SqlExprSelectWhere( SqlTokenIdentifier whereToken, SqlExpr expression )
+        public SelectWhere( SqlTokenIdentifier whereToken, SqlExpr expression )
+            : this( CreateArray( whereToken, expression ) )
         {
-            _components = CreateArray( whereToken, expression );
         }
 
-        internal SqlExprSelectWhere( IAbstractExpr[] newContent )
+        internal SelectWhere( ISqlItem[] items )
+            : base( items )
         {
-            _components = newContent;
         }
 
-        public override IEnumerable<IAbstractExpr> Components
-        {
-            get { return _components; }
-        }
+        public SqlTokenIdentifier WhereToken { get { return (SqlTokenIdentifier)Slots[0]; } }
+        
+        public SqlExpr Expression { get { return (SqlExpr)Slots[1]; } }
+
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

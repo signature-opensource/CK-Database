@@ -19,7 +19,7 @@ namespace CK.SqlServer
             if( id == null ) throw new ArgumentNullException( "id" );
         }
 
-        public SqlTokenIdentifier Identifier { get { return (SqlTokenIdentifier)At(0); } }
+        public SqlTokenIdentifier Identifier { get { return (SqlTokenIdentifier)Slots[0]; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

@@ -11,24 +11,21 @@ namespace CK.SqlServer
     /// <summary>
     /// Captures the optional "From ..." select part.
     /// </summary>
-    public class SqlExprSelectFrom : SqlExpr
+    public class SelectFrom : SqlNoExpr
     {
-        readonly IAbstractExpr[] _components;
-
-        public SqlExprSelectFrom( SqlTokenIdentifier fromToken, SqlExprGenericBlock fromContent )
+        public SelectFrom( SqlTokenIdentifier fromToken, SqlExpr content )
+            : this( CreateArray( fromToken, content ) )
         {
-            _components = CreateArray( fromToken, fromContent );
         }
 
-        internal SqlExprSelectFrom( IAbstractExpr[] newContent )
+        internal SelectFrom( ISqlItem[] items )
+            : base( items )
         {
-            _components = newContent;
         }
 
-        public override IEnumerable<IAbstractExpr> Components
-        {
-            get { return _components; }
-        }
+        public SqlTokenIdentifier FromToken { get { return (SqlTokenIdentifier)Slots[0]; } }
+        
+        public SqlExpr Content { get { return (SqlExpr)Slots[1]; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

@@ -32,7 +32,6 @@ namespace CK.SqlServer
             "fillfactor",
             "public",
             "asc",
-            "for",
             "raiserror",
             "authorization",
             "foreign",
@@ -43,7 +42,6 @@ namespace CK.SqlServer
             "begin",
             "freetexttable",
             "reconfigure",
-            "from",
             "references",
             "break",
             "full",
@@ -58,7 +56,6 @@ namespace CK.SqlServer
             "grant",
             "return",
             "cascade",
-            "group",
             "revert",
             "case",
             "having",
@@ -90,10 +87,8 @@ namespace CK.SqlServer
             "insert",
             "select",
             "constraint",
-            "intersect",
             "session_user",
             "contains",
-            "into",
             "set",
             "containstable",
             "setuser",
@@ -141,7 +136,6 @@ namespace CK.SqlServer
             "tsequal",
             "delete",
             "off",
-            "union",
             "deny",
             "offsets",
             "unique",
@@ -164,20 +158,16 @@ namespace CK.SqlServer
             "openxml",
             "values",
             "dump",
-            "option",
             "varying",
             "else",
             "view",
             "end",
-            "order",
             "waitfor",
             "errlvl",
             "outer",
             "when",
             "escape",
             "over",
-            "where",
-            "except",
             "percent",
             "while",
             "exec",
@@ -185,7 +175,15 @@ namespace CK.SqlServer
             "with",
             "execute",
             "plan",
-            "writetext"
+            "writetext",
+
+            "into", 
+            "from", 
+            "where",
+            "group",
+            "order",
+            "for", 
+            "option"
         };
         #endregion
 
@@ -288,6 +286,7 @@ namespace CK.SqlServer
             _keywords.Add( "char", SqlTokenType.IdentifierTypeChar );
             _keywords.Add( "varbinary", SqlTokenType.IdentifierTypeVarBinary );
             _keywords.Add( "binary", SqlTokenType.IdentifierTypeBinary );
+
             _keywords.Add( "or", SqlTokenType.Or );
             _keywords.Add( "and", SqlTokenType.And );
             _keywords.Add( "not", SqlTokenType.Not );
@@ -295,10 +294,17 @@ namespace CK.SqlServer
             _keywords.Add( "in", SqlTokenType.In );
             _keywords.Add( "is", SqlTokenType.Is );
             _keywords.Add( "like", SqlTokenType.Like );
+            _keywords.Add( "union", SqlTokenType.Union );
+            _keywords.Add( "intersect", SqlTokenType.Intersect );
+            _keywords.Add( "except", SqlTokenType.Except );
 
+            Debug.Assert( _keywords.Keys.Intersect( _sqlServerReserved ).Any() == false ); 
             // Reserved keywords.
             foreach( string s in _sqlServerReserved )
             {
+                #if DEBUG
+                if( _keywords.ContainsKey( s ) ) Debugger.Break();
+                #endif
                 _keywords.Add( s, s );
             }
         }

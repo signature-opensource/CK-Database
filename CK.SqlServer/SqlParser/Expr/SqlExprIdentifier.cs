@@ -23,28 +23,20 @@ namespace CK.SqlServer
 
         public bool IsVariable { get { return Token.IsVariable; } }
 
-        public SqlTokenIdentifier this[ int index ]
+        SqlTokenIdentifier ISqlIdentifier.IdentifierAt( int index )
         {
-            get 
-            { 
-                if( index != 0 ) throw new ArgumentOutOfRangeException();
-                return Token;
-            }
+            if( index != 0 ) throw new ArgumentOutOfRangeException();
+            return Token;
         }
 
-        int IReadOnlyCollection<SqlTokenIdentifier>.Count
+        int ISqlIdentifier.IdentifiersCount
         {
             get { return 1; }
         }
 
-        IEnumerator<SqlTokenIdentifier> IEnumerable<SqlTokenIdentifier>.GetEnumerator()
+        IEnumerable<SqlTokenIdentifier> ISqlIdentifier.Identifiers
         {
-            return TypedTokens.GetEnumerator();
-        }
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return TypedTokens.GetEnumerator();
+            get { return ItemsWithoutParenthesis.Cast<SqlTokenIdentifier>(); }
         }
 
         [DebuggerStepThrough]

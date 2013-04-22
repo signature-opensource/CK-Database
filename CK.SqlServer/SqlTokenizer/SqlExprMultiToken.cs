@@ -10,13 +10,18 @@ namespace CK.SqlServer
     /// Composition of similar tokens (can be empty).
     /// Used with <see cref="SqlTokenOpenPar"/> and <see cref="SqlTokenClosePar"/>.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public sealed class SqlExprMultiToken<T> : IAbstractExpr, IReadOnlyList<T> where T : SqlToken
+    /// <typeparam name="T">Token type (must be a <see cref="SqlToken"/>).</typeparam>
+    public sealed class SqlExprMultiToken<T> : ISqlItem, IReadOnlyList<T> where T : SqlToken
     {
         readonly T[] _tokens;
 
         static readonly T[] _empty = new T[0];
         static readonly public SqlExprMultiToken<T> Empty = new SqlExprMultiToken<T>();
+
+        public SqlExprMultiToken( params T[] tokens )
+        {
+            _tokens = tokens;
+        }
 
         SqlExprMultiToken()
         {
@@ -59,33 +64,32 @@ namespace CK.SqlServer
         {
             if( prefix == null ) throw new ArgumentNullException( "prefix" );
             if( tail == null ) throw new ArgumentNullException( "tail" );
-            return new SqlExprMultiToken<T>( prefix, tail );
+            return tail != Empty ? new SqlExprMultiToken<T>( prefix, tail ) : Create( prefix );
         }
 
         public static SqlExprMultiToken<T> Create( SqlExprMultiToken<T> head, T suffix )
         {
             if( head == null ) throw new ArgumentNullException( "head" );
             if( suffix == null ) throw new ArgumentNullException( "suffix" );
-            return new SqlExprMultiToken<T>( head, suffix );
+            return head != Empty ? new SqlExprMultiToken<T>( head, suffix ) : Create( suffix );
         }
 
         public static SqlExprMultiToken<T> Create( SqlExprMultiToken<T> head, SqlExprMultiToken<T> tail )
         {
             if( head == null ) throw new ArgumentNullException( "head" );
             if( tail == null ) throw new ArgumentNullException( "tail" );
+            if( head == Empty ) return tail;
+            if( tail == Empty ) return head;
             return new SqlExprMultiToken<T>( head, tail );
         }
 
+        public IReadOnlyCollection<T> Tokens { get { return _tokens; } }
 
-        public IEnumerable<T> Tokens
-        {
-            get { return _tokens; }
-        }
+        IEnumerable<SqlToken> ISqlItem.Tokens  { get { return _tokens; } }
 
-        IEnumerable<SqlToken> IAbstractExpr.Tokens
-        {
-            get { return _tokens; }
-        }
+        public SqlToken LastOrEmptyToken { get { return _tokens == _empty ? SqlToken.Empty : _tokens[_tokens.Length-1]; } }
+
+        public SqlToken FirstOrEmptyToken { get { return _tokens == _empty ? SqlToken.Empty : _tokens[0]; ; } }
 
         public T this[int index]
         {

@@ -11,6 +11,11 @@ namespace CK.SqlServer
 {
     public struct SqlTrivia
     {
+        /// <summary>
+        /// A single space.
+        /// </summary>
+        public static readonly IReadOnlyList<SqlTrivia> OneSpace = new CKReadOnlyListMono<SqlTrivia>( new SqlTrivia( SqlTokenType.None, " " ) );
+
         public SqlTrivia( SqlTokenType tokenType, string text )
         {
             if( tokenType != SqlTokenType.None && tokenType != SqlTokenType.LineComment && tokenType != SqlTokenType.StarComment )

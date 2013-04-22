@@ -187,8 +187,8 @@ namespace CK.SqlServer
             bool IsUnmodeledStatement( out SqlExprStUnmodeled st, SqlTokenIdentifier id )
             {
                 st = null;
-                SqlExprList content;
-                if( !IsGenericBlockList( out content, false ) ) return false;
+                SqlExprCommaList content;
+                if( !IsCommaList( out content, false ) ) return false;
                 st = new SqlExprStUnmodeled( id, content, GetOptionalTerminator() );
                 return true;
             }
@@ -224,7 +224,7 @@ namespace CK.SqlServer
                 columns = null;
                 SqlTokenOpenPar openPar;
                 SqlTokenClosePar closePar;
-                List<IAbstractExpr> items;
+                List<ISqlItem> items;
 
                 if( R.Current.TokenType != SqlTokenType.OpenPar ) return false;
 
@@ -273,7 +273,7 @@ namespace CK.SqlServer
                 parameters = null;
                 SqlTokenOpenPar openPar;
                 SqlTokenClosePar closePar;
-                List<IAbstractExpr> items;
+                List<ISqlItem> items;
                 if( !IsCommaList<SqlExprParameter>( out openPar, out items, out closePar, requiresParenthesis, IsParameter ) ) return false;
                 parameters = openPar != null ? new SqlExprParameterList( openPar, items, closePar ) : new SqlExprParameterList( items );
                 return true;
@@ -455,7 +455,7 @@ namespace CK.SqlServer
             bool IsTypeDeclUserDefined( out SqlExprTypeDeclUserDefined udt, bool expected = true )
             {
                 udt = null;
-                IAbstractExpr[] multi;
+                ISqlItem[] multi;
                 if( !IsMultipleIdentifierArray( out multi, expected ) ) return false;
                 udt = new SqlExprTypeDeclUserDefined( multi );
                 return true;
@@ -464,9 +464,9 @@ namespace CK.SqlServer
             bool IsMultiIdentifier( out SqlExprMultiIdentifier id, bool expected = true )
             {
                 id = null;
-                IAbstractExpr[] multi;
+                ISqlItem[] multi;
                 if( !IsMultipleIdentifierArray( out multi, expected ) ) return false;
-                id = new SqlExprMultiIdentifier( multi );
+                id = new SqlExprMultiIdentifier( false, multi );
                 return true;
             }
 
@@ -480,10 +480,10 @@ namespace CK.SqlServer
             bool IsMonoOrMultiIdentifier( out SqlExpr id, bool expected = true )
             {
                 id = null;
-                IAbstractExpr[] multi;
+                ISqlItem[] multi;
                 if( !IsMultipleIdentifierArray( out multi, expected ) ) return false;
                 if( multi.Length == 1 ) id = new SqlExprIdentifier( (SqlTokenIdentifier)multi[0] );
-                else id = new SqlExprMultiIdentifier( multi );
+                else id = new SqlExprMultiIdentifier( false, multi );
                 return true;
             }
 
@@ -496,21 +496,16 @@ namespace CK.SqlServer
                 {
                     _r = r;
                 }
-                
+
+                internal static SqlTokenIdentifier FromMultToken( SqlToken mult )
+                {
+                    Debug.Assert( mult.TokenType == SqlTokenType.Mult );
+                    return new SqlTokenIdentifier( SqlTokenType.IdentifierStar, "*", mult.LeadingTrivia, mult.TrailingTrivia );
+                }
+
                 public SqlToken Current
                 {
-                    get 
-                    {
-                        if( _current == null )
-                        {
-                            _current = _r.Current;
-                            if( _current.TokenType == SqlTokenType.Mult )
-                            {
-                                _current = new SqlTokenIdentifier( SqlTokenType.IdentifierStar, "*", _current.LeadingTrivia, _current.TrailingTrivia );
-                            }
-                        }
-                        return _current;
-                    }
+                    get { return _current ?? ((_current = _r.Current).TokenType == SqlTokenType.Mult ? _current = FromMultToken( _current ) : _current); }
                 }
 
                 public void Dispose()
@@ -535,7 +530,7 @@ namespace CK.SqlServer
                 }
             }
 
-            bool IsMultipleIdentifierArray( out IAbstractExpr[] multi, bool expected = true )
+            bool IsMultipleIdentifierArray( out ISqlItem[] multi, bool expected = true )
             {
                 multi = null;
                 if( (R.Current.TokenType & SqlTokenType.IsIdentifier) != 0 || R.Current.TokenType == SqlTokenType.Mult )
@@ -560,7 +555,7 @@ namespace CK.SqlServer
             {
                 Debug.Assert( stopperDefinition != null );
                 tokens = null;
-                
+               
                 List<SqlToken> all;
                 if( !R.IsTokenList( out all, out stopper, stopperDefinition, false ) ) return false;
 

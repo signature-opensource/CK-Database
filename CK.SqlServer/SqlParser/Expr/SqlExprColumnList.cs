@@ -16,26 +16,15 @@ namespace CK.SqlServer
         /// <param name="openPar">Opening parenthesis. Can not be null.</param>
         /// <param name="tokens">Comma separated list of <see cref="SqlExprIdentifier"/> (can not be empty).</param>
         /// <param name="closePar">Closing parenthesis. Can not be null.</param>
-        public SqlExprColumnList( SqlTokenOpenPar openPar, IList<IAbstractExpr> tokens, SqlTokenClosePar closePar )
+        public SqlExprColumnList( SqlTokenOpenPar openPar, IList<ISqlItem> tokens, SqlTokenClosePar closePar )
             : base( openPar, tokens, closePar, false )
         {
         }
 
-        internal SqlExprColumnList( IAbstractExpr[] newComponents )
+        internal SqlExprColumnList( ISqlItem[] newComponents )
             : base( newComponents )
         {
             Debug.Assert( NonSeparatorCount > 0, "Column list must not be empty." );
-        }
-
-        public override bool CanEnclose
-        {
-            get { return Opener.Count == 0; }
-        }
-
-        public override ISqlExprEnclosable Enclose( SqlTokenOpenPar openPar, SqlTokenClosePar closePar )
-        {
-            if( !CanEnclose ) throw new InvalidOperationException();
-            return new SqlExprColumnList( EncloseComponents( openPar, closePar ) );
         }
 
         [DebuggerStepThrough]

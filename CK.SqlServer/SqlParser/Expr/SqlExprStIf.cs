@@ -14,16 +14,16 @@ namespace CK.SqlServer
     public class SqlExprStIf : SqlExprBaseSt
     {
         public SqlExprStIf( SqlTokenIdentifier ifToken, SqlExpr condition, SqlExprBaseSt thenStatement, SqlTokenIdentifier elseToken, SqlExprBaseSt elseStatement, SqlTokenTerminal terminator )
-            : base( BuildComponents( ifToken, condition, thenStatement, elseToken, elseStatement ),  terminator )
+            : base( Build( ifToken, condition, thenStatement, elseToken, elseStatement ),  terminator )
         {
         }
         
-        internal SqlExprStIf( IAbstractExpr[] components )
+        internal SqlExprStIf( ISqlItem[] components )
             : base( components )
         {
         }
 
-        static IAbstractExpr[] BuildComponents( SqlTokenIdentifier ifToken, SqlExpr condition, SqlExprBaseSt thenStatement, SqlTokenIdentifier elseToken, SqlExprBaseSt elseStatement )
+        static ISqlItem[] Build( SqlTokenIdentifier ifToken, SqlExpr condition, SqlExprBaseSt thenStatement, SqlTokenIdentifier elseToken, SqlExprBaseSt elseStatement )
         {
             if( ifToken == null || !ifToken.NameEquals( "if" ) ) throw new ArgumentException( "ifToken" );
             if( condition == null ) throw new ArgumentNullException( "condition" );
@@ -33,12 +33,12 @@ namespace CK.SqlServer
             return elseToken != null ? CreateArray( ifToken, condition, thenStatement, elseToken, elseStatement ) : CreateArray( ifToken, condition, thenStatement );
         }
 
-        public SqlTokenIdentifier IfToken { get { return (SqlTokenIdentifier)At(0); } }
-        public SqlExpr Condition { get { return (SqlExpr)At(1); } }
-        public SqlExprBaseSt ThenStatement { get { return (SqlExprBaseSt)At(2); } }
-        public bool HasElse { get { return Count > 3; } }
-        public SqlTokenIdentifier ElseToken { get { return HasElse ? (SqlTokenIdentifier)At(3) : null; } }
-        public SqlExprBaseSt ElseStatement { get { return HasElse ? (SqlExprBaseSt)At(4) : null; } }
+        public SqlTokenIdentifier IfToken { get { return (SqlTokenIdentifier)Slots[0]; } }
+        public SqlExpr Condition { get { return (SqlExpr)Slots[1]; } }
+        public SqlExprBaseSt ThenStatement { get { return (SqlExprBaseSt)Slots[2]; } }
+        public bool HasElse { get { return Slots.Length > 3; } }
+        public SqlTokenIdentifier ElseToken { get { return HasElse ? (SqlTokenIdentifier)Slots[3] : null; } }
+        public SqlExprBaseSt ElseStatement { get { return HasElse ? (SqlExprBaseSt)Slots[4] : null; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

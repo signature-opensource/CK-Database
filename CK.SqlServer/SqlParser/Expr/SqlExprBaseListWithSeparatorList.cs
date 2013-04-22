@@ -8,26 +8,15 @@ using CK.Core;
 
 namespace CK.SqlServer
 {
-    public abstract class SqlExprBaseListWithSeparatorList<T> : SqlExprBaseListWithSeparator<T>, IReadOnlyList<T> where T : class, IAbstractExpr
+    public abstract class SqlExprBaseListWithSeparatorList<T> : SqlExprBaseListWithSeparator<T>, IReadOnlyList<T> where T : class, ISqlItem
     {
-        ///// <summary>
-        ///// Initializes a new <see cref="SqlExprBaseListWithSeparator{T}"/> of <typeparamref name="T"/> with an <see cref="Opener"/> and a <see cref="Closer"/> 
-        ///// and with <paramref name="validSeparator"/> that is <see cref="IsCommaSeparator"/> by default.
-        ///// </summary>
-        ///// <param name="exprOrTokens">List of tokens or expressions.</param>
-        ///// <param name="validSeparator">Defaults to a predicate that checks that separators are commas (see <see cref="IsCommaSeparator"/>).</param>
-        //public SqlExprBaseListWithSeparatorList( SqlExprMultiToken<SqlTokenOpenPar> opener, IList<IAbstractExpr> exprOrTokens, SqlExprMultiToken<SqlTokenClosePar> closer, bool allowEmpty, Predicate<IAbstractExpr> validSeparator = null )
-        //    : base( opener, exprOrTokens, closer, allowEmpty, validSeparator )
-        //{
-        //}
-
         /// <summary>
         /// Initializes a new <see cref="SqlExprBaseListWithSeparatorList{T}"/> of <typeparamref name="T"/> enclosed in a <see cref="SqlTokenOpenPar"/> and a <see cref="SqlTokenClosePar"/> 
         /// and with <paramref name="validSeparator"/> that is to <see cref="IsCommaSeparator"/> by default.
         /// </summary>
         /// <param name="exprOrTokens">List of tokens or expressions.</param>
         /// <param name="validSeparator">Defaults to a predicate that checks that separators are commas (see <see cref="IsCommaSeparator"/>).</param>
-        public SqlExprBaseListWithSeparatorList( SqlTokenOpenPar openPar, IList<IAbstractExpr> exprOrTokens, SqlTokenClosePar closePar, bool allowEmpty, Predicate<IAbstractExpr> validSeparator = null )
+        public SqlExprBaseListWithSeparatorList( SqlTokenOpenPar openPar, IList<ISqlItem> exprOrTokens, SqlTokenClosePar closePar, bool allowEmpty, Predicate<ISqlItem> validSeparator = null )
             : base( openPar, exprOrTokens, closePar, allowEmpty, validSeparator )
         {
         }
@@ -38,12 +27,12 @@ namespace CK.SqlServer
         /// </summary>
         /// <param name="exprOrTokens">List of tokens or expressions.</param>
         /// <param name="validSeparator">Defaults to a predicate that checks that separators are commas (see <see cref="IsCommaSeparator"/>).</param>
-        public SqlExprBaseListWithSeparatorList( IList<IAbstractExpr> exprOrTokens, bool allowEmpty, Predicate<IAbstractExpr> validSeparator = null )
+        public SqlExprBaseListWithSeparatorList( IList<ISqlItem> exprOrTokens, bool allowEmpty, Predicate<ISqlItem> validSeparator = null )
             : base( exprOrTokens, allowEmpty, validSeparator )
         {
         }
 
-        internal SqlExprBaseListWithSeparatorList( IAbstractExpr[] components )
+        internal SqlExprBaseListWithSeparatorList( ISqlItem[] components )
             : base( components )
         {
         }

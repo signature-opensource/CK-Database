@@ -5,28 +5,28 @@ using CK.Core;
 
 namespace CK.SqlServer
 {
-    public class SqlExprVisitor : IExprVisitor<SqlExpr>
+    public class SqlExprVisitor : IExprVisitor<SqlItem>
     {
-        public virtual SqlExpr VisitExpr( SqlExpr e )
+        public virtual SqlItem VisitExpr( SqlItem e )
         {
             return e.Accept( this );
         }
 
-        protected List<IAbstractExpr> VisitExprComponents( IEnumerable<IAbstractExpr> components, IAbstractExpr prefixToKeep = null, IAbstractExpr suffixToKeep = null )
+        protected List<ISqlItem> VisitExprComponents( IEnumerable<ISqlItem> components, ISqlItem prefixToKeep = null, ISqlItem suffixToKeep = null )
         {
-            List<IAbstractExpr> modified = null;
+            List<ISqlItem> modified = null;
             int i = 0;
             foreach( var a in components )
             {
-                SqlExpr ce = a as SqlExpr;
+                var ce = a as SqlItem;
                 if( ce != null )
                 {
-                    SqlExpr ve = VisitExpr( ce );
+                    SqlItem ve = VisitExpr( ce );
                     if( !ReferenceEquals( ce, ve ) )
                     {
                         if( modified == null )
                         {
-                            modified = new List<IAbstractExpr>( i+1 );
+                            modified = new List<ISqlItem>( i+1 );
                             if( prefixToKeep != null ) modified.Add( prefixToKeep );
                             if( i > 0 )
                             {
@@ -50,282 +50,320 @@ namespace CK.SqlServer
             return modified;
         }
 
-        public virtual SqlExpr Visit( SqlExprUnmodeledTokens e )
+        public virtual SqlItem Visit( SqlExprUnmodeledTokens e )
         {
             return e;
         }
 
-        public virtual SqlExpr Visit( SqlExprGenericBlock e )
+        public virtual SqlItem Visit( SqlExprRawItemList e )
         {
-            List<IAbstractExpr> modified = VisitExprComponents( e.ComponentsWithoutParenthesis, e.Opener, e.Closer );
+            List<ISqlItem> modified = VisitExprComponents( e.ItemsWithoutParenthesis, e.Opener, e.Closer );
             if( modified == null ) return e;
-            return new SqlExprGenericBlock( modified.ToArray() );
+            return new SqlExprRawItemList( modified.ToArray() );
         }
 
-        public virtual SqlExpr Visit( SqlExprKoCall e )
+        public virtual SqlItem Visit( SqlExprKoCall e )
         {
-            List<IAbstractExpr> modified = VisitExprComponents( e.Components );
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
             if( modified == null ) return e;
-            return new SqlExprKoCall( e, modified.ToArray() );
+            return new SqlExprKoCall( modified.ToArray() );
         }
 
-        public virtual SqlExpr Visit( SqlExprStIf e )
+        public virtual SqlItem Visit( SqlExprStIf e )
         {
-            List<IAbstractExpr> modified = VisitExprComponents( e.Components );
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
             if( modified == null ) return e;
             return new SqlExprStIf( modified.ToArray() );
         }
 
-        public virtual SqlExpr Visit( SqlExprStatementList e )
+        public virtual SqlItem Visit( SqlExprStatementList e )
         {
-            List<IAbstractExpr> modified = VisitExprComponents( e.Components );
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
             if( modified == null ) return e;
             return new SqlExprStatementList( (SqlExprBaseSt[])modified.ToArray() );
         }
 
-        public virtual SqlExpr Visit( SqlExprStBlock e )
+        public virtual SqlItem Visit( SqlExprStBlock e )
         {
-            SqlExpr vB = VisitExpr( e.Body );
+            SqlExprStatementList vB = (SqlExprStatementList)VisitExpr( e.Body );
             if( ReferenceEquals( vB, e.Body ) ) return e;
-            return new SqlExprStBlock( e.Begin, (SqlExprStatementList)vB, e.End, e.StatementTerminator );
+            return new SqlExprStBlock( e.Begin, vB, e.End, e.StatementTerminator );
         }
 
-        public virtual SqlExpr Visit( SqlExprStUnmodeled e )
+        public virtual SqlItem Visit( SqlExprStUnmodeled e )
         {
-            SqlExpr vC = VisitExpr( e.Content );
+            SqlExprCommaList vC = (SqlExprCommaList)VisitExpr( e.Content );
             if( ReferenceEquals( vC, e.Content ) ) return e;
-            return new SqlExprStUnmodeled( e.Identifier, (SqlExprList)vC, e.StatementTerminator );
+            return new SqlExprStUnmodeled( e.Identifier, vC, e.StatementTerminator );
         }
 
-        public virtual SqlExpr Visit( SqlExprStStoredProc e )
+        public virtual SqlItem Visit( SqlExprStStoredProc e )
         {
-            List<IAbstractExpr> modified = VisitExprComponents( e.Components );
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
             if( modified == null ) return e;
-            return new SqlExprStStoredProc( e, modified.ToArray() );
+            return new SqlExprStStoredProc( modified.ToArray() );
         }
 
-        public virtual SqlExpr Visit( SqlExprStMonoStatement e )
+        public virtual SqlItem Visit( SqlExprStMonoStatement e )
         {
             return e;
         }
 
-        public virtual SqlExpr Visit( SqlExprStLabelDef e )
+        public virtual SqlItem Visit( SqlExprStLabelDef e )
         {
             return e;
         }
 
-        public virtual SqlExpr Visit( SqlExprStEmpty e )
+        public virtual SqlItem Visit( SqlExprStEmpty e )
         {
             return e;
         }
 
-        public virtual SqlExpr Visit( SqlExprStView e )
+        public virtual SqlItem Visit( SqlExprStView e )
         {
-            List<IAbstractExpr> modified = VisitExprComponents( e.Components );
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
             if( modified == null ) return e;
             return new SqlExprStView( modified.ToArray() );
         }
 
-        public virtual SqlExpr Visit( SqlExprColumnList e )
+        public virtual SqlItem Visit( SqlExprColumnList e )
         {
-            List<IAbstractExpr> modified = VisitExprComponents( e.Components );
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
             if( modified == null ) return e;
             return new SqlExprColumnList( modified.ToArray() );
         }
 
-        public virtual SqlExpr Visit( SqlExprList e )
+        public virtual SqlItem Visit( SqlExprCommaList e )
         {
-            List<IAbstractExpr> modified = VisitExprComponents( e.Components );
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
             if( modified == null ) return e;
-            return new SqlExprList( modified.ToArray() );
+            return new SqlExprCommaList( modified.ToArray() );
         }
 
-        public virtual SqlExpr Visit( SqlExprIdentifier e )
+        public virtual SqlItem Visit( SqlExprIdentifier e )
         {
             return e;
         }
 
-        public virtual SqlExpr Visit( SqlExprMultiIdentifier e )
+        public virtual SqlItem Visit( SqlExprMultiIdentifier e )
         {
             return e;
         }
 
-        public virtual SqlExpr Visit( SqlExprTerminal e )
+        public virtual SqlItem Visit( SqlExprTerminal e )
         {
             return e;
         }
 
-        public virtual SqlExpr Visit( SqlExprLiteral e )
+        public virtual SqlItem Visit( SqlExprLiteral e )
         {
             return e;
         }
 
-        public virtual SqlExpr Visit( SqlExprNull e )
+        public virtual SqlItem Visit( SqlExprNull e )
         {
             return e;
         }
 
-        public virtual SqlExpr Visit( SqlExprUnaryOperator e )
+        public virtual SqlItem Visit( SqlExprUnaryOperator e )
         {
-            SqlExpr vE = VisitExpr( e.Expression );
+            SqlExpr vE = (SqlExpr)VisitExpr( e.Expression );
             if( ReferenceEquals( vE, e.Expression ) ) return e;
+            if( vE == null ) return null;
             return new SqlExprUnaryOperator( e.Operator, vE );
         }
 
-        public virtual SqlExpr Visit( SqlExprTypeDecl e )
+        public virtual SqlItem Visit( SqlExprTypeDecl e )
         {
-            SqlExpr vE = VisitExpr( (SqlExpr)e.ActualType );
+            SqlItem vE = VisitExpr( (SqlItem)e.ActualType );
             if( ReferenceEquals( vE, e.ActualType ) ) return e;
             return new SqlExprTypeDecl( (ISqlExprUnifiedTypeDecl)vE );
         }
 
-        public virtual SqlExpr Visit( SqlExprTypeDeclDecimal e )
+        public virtual SqlItem Visit( SqlExprTypeDeclDecimal e )
         {
             return e;
         }
 
-        public virtual SqlExpr Visit( SqlExprTypeDeclDateAndTime e )
+        public virtual SqlItem Visit( SqlExprTypeDeclDateAndTime e )
         {
             return e;
         }
 
-        public virtual SqlExpr Visit( SqlExprTypeDeclSimple e )
+        public virtual SqlItem Visit( SqlExprTypeDeclSimple e )
         {
             return e;
         }
 
-        public virtual SqlExpr Visit( SqlExprTypeDeclWithSize e )
+        public virtual SqlItem Visit( SqlExprTypeDeclWithSize e )
         {
             return e;
         }
 
-        public virtual SqlExpr Visit( SqlExprTypeDeclUserDefined e )
+        public virtual SqlItem Visit( SqlExprTypeDeclUserDefined e )
         {
             return e;
         }
 
-        public virtual SqlExpr Visit( SqlExprTypedIdentifier e )
+        public virtual SqlItem Visit( SqlExprTypedIdentifier e )
         {
             return e;
         }
 
-        public virtual SqlExpr Visit( SqlExprParameter e )
+        public virtual SqlItem Visit( SqlExprParameter e )
         {
-            List<IAbstractExpr> modified = VisitExprComponents( e.Components );
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
             if( modified == null ) return e;
             return new SqlExprParameter( modified.ToArray() );
         }
 
-        public virtual SqlExpr Visit( SqlExprParameterDefaultValue e )
+        public virtual SqlItem Visit( SqlExprParameterDefaultValue e )
         {
             return e;
         }
 
-        public virtual SqlExpr Visit( SqlExprParameterList e )
+        public virtual SqlItem Visit( SqlExprParameterList e )
         {
-            List<IAbstractExpr> modified = VisitExprComponents( e.Components );
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
             if( modified == null ) return e;
             return new SqlExprParameterList( modified.ToArray() );
         }
 
-        public virtual SqlExpr Visit( SqlExprAssign e )
+        public virtual SqlItem Visit( SqlExprAssign e )
         {
-            List<IAbstractExpr> modified = VisitExprComponents( e.Components );
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
             if( modified == null ) return e;
             return new SqlExprAssign( modified.ToArray() );
         }
 
-        public virtual SqlExpr Visit( SqlExprBinaryOperator e )
+        public virtual SqlItem Visit( SqlExprBinaryOperator e )
         {
-            List<IAbstractExpr> modified = VisitExprComponents( e.Components );
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
             if( modified == null ) return e;
             return new SqlExprBinaryOperator( modified.ToArray() );
         }
 
-        public virtual SqlExpr Visit( SqlExprIsNull e )
+        public virtual SqlItem Visit( SqlExprIsNull e )
         {
-            SqlExpr vE = VisitExpr( e.Left );
+            SqlExpr vE = (SqlExpr)VisitExpr( e.Left );
             if( ReferenceEquals( vE, e ) ) return e;
             return new SqlExprIsNull( vE, e.IsToken, e.NotToken, e.NullToken );
         }
 
-        public virtual SqlExpr Visit( SqlExprLike e )
+        public virtual SqlItem Visit( SqlExprLike e )
         {
-            List<IAbstractExpr> modified = VisitExprComponents( e.Components );
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
             if( modified == null ) return e;
             return new SqlExprLike( modified.ToArray() );
         }
 
-        public virtual SqlExpr Visit( SqlExprBetween e )
+        public virtual SqlItem Visit( SqlExprBetween e )
         {
-            List<IAbstractExpr> modified = VisitExprComponents( e.Components );
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
             if( modified == null ) return e;
             return new SqlExprBetween( modified.ToArray() );
         }
 
-        public virtual SqlExpr Visit( SqlExprIn e )
+        public virtual SqlItem Visit( SqlExprIn e )
         {
-            List<IAbstractExpr> modified = VisitExprComponents( e.Components );
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
             if( modified == null ) return e;
             return new SqlExprIn( modified.ToArray() );
         }
 
-        public virtual SqlExpr Visit( SqlExprSelectSpec e )
+        public virtual SqlItem Visit( SelectSpecification e )
         {
-            List<IAbstractExpr> modified = VisitExprComponents( e.Components );
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
             if( modified == null ) return e;
-            return new SqlExprSelectSpec( modified.ToArray() );
+            return new SelectSpecification( modified.ToArray() );
         }
 
-        public virtual SqlExpr Visit( SqlExprSelectColumn e )
+        public virtual SqlItem Visit( SelectColumn e )
         {
-            List<IAbstractExpr> modified = VisitExprComponents( e.Components );
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
             if( modified == null ) return e;
-            return new SqlExprSelectColumn( modified.ToArray() );
+            return new SelectColumn( modified.ToArray() );
         }
 
-        public virtual SqlExpr Visit( SqlExprSelectColumnList e )
+        public virtual SqlItem Visit( SelectColumnList e )
         {
-            List<IAbstractExpr> modified = VisitExprComponents( e.Components );
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
             if( modified == null ) return e;
-            return new SqlExprSelectColumnList( modified.ToArray() );
+            return new SelectColumnList( modified.ToArray() );
         }
 
-        public virtual SqlExpr Visit( SqlExprSelectHeader e )
+        public virtual SqlItem Visit( SelectHeader e )
         {
-            List<IAbstractExpr> modified = VisitExprComponents( e.Components );
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
             if( modified == null ) return e;
-            return new SqlExprSelectHeader( modified.ToArray() );
+            return new SelectHeader( modified.ToArray() );
         }
 
-        public virtual SqlExpr Visit( SqlExprSelectInto e )
+        public virtual SqlItem Visit( SelectInto e )
         {
-            List<IAbstractExpr> modified = VisitExprComponents( e.Components );
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
             if( modified == null ) return e;
-            return new SqlExprSelectInto( modified.ToArray() );
-        }        
-
-        public virtual SqlExpr Visit( SqlExprSelectFrom e )
-        {
-            List<IAbstractExpr> modified = VisitExprComponents( e.Components );
-            if( modified == null ) return e;
-            return new SqlExprSelectFrom( modified.ToArray() );
-        }        
-
-        public virtual SqlExpr Visit( SqlExprSelectWhere e )
-        {
-            List<IAbstractExpr> modified = VisitExprComponents( e.Components );
-            if( modified == null ) return e;
-            return new SqlExprSelectWhere( modified.ToArray() );
+            return new SelectInto( modified.ToArray() );
         }
 
-        public virtual SqlExpr Visit( SqlExprSelectGroupBy e )
+        public virtual SqlItem Visit( SelectFrom e )
         {
-            List<IAbstractExpr> modified = VisitExprComponents( e.Components );
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
             if( modified == null ) return e;
-            return new SqlExprSelectGroupBy( modified.ToArray() );
-        }        
+            return new SelectFrom( modified.ToArray() );
+        }
 
+        public virtual SqlItem Visit( SelectWhere e )
+        {
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
+            if( modified == null ) return e;
+            return new SelectWhere( modified.ToArray() );
+        }
+
+        public virtual SqlItem Visit( SelectGroupBy e )
+        {
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
+            if( modified == null ) return e;
+            return new SelectGroupBy( modified.ToArray() );
+        }
+
+        public virtual SqlItem Visit( SelectCombineOperator e )
+        {
+            ISelectSpecification lE = (ISelectSpecification)VisitExpr( e.Left );
+            ISelectSpecification rE = (ISelectSpecification)VisitExpr( e.Right );
+            if( ReferenceEquals( lE, e.Left ) && ReferenceEquals( rE, e.Right ) ) return e;
+            if( lE == null ) return (SqlItem)lE;
+            if( rE == null ) return (SqlItem)rE;
+            return new SelectCombineOperator( SqlItem.CreateArray( e.Opener, lE, e.Operator, rE, e.Closer ) );
+        }
+
+        public virtual SqlItem Visit( SelectOrderBy e )
+        {
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
+            if( modified == null ) return e;
+            return new SelectOrderBy( modified.ToArray() );
+        }
+
+        public virtual SqlItem Visit( SelectFor e )
+        {
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
+            if( modified == null ) return e;
+            return new SelectFor( modified.ToArray() );
+        }
+
+        public virtual SqlItem Visit( SelectOption e )
+        {
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
+            if( modified == null ) return e;
+            return new SelectOption( modified.ToArray() );
+        }
+
+        public virtual SqlItem Visit( SelectQuery e )
+        {
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
+            if( modified == null ) return e;
+            return new SelectQuery( modified.ToArray() );
+        }
 
     }
 }

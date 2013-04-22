@@ -12,7 +12,7 @@ namespace CK.SqlServer
     /// List of <see cref="SqlExprBaseSt">statements</see>. 
     /// It is not a statement itself: the <see cref="SqlExprStBlock"/> is the composite statement (begin...end).
     /// </summary>
-    public class SqlExprStatementList : SqlExpr, IReadOnlyList<SqlExprBaseSt>
+    public class SqlExprStatementList : SqlItem, IReadOnlyList<SqlExprBaseSt>
     {
         readonly SqlExprBaseSt[] _statements;
 
@@ -34,10 +34,14 @@ namespace CK.SqlServer
             get { return this; }
         }
 
-        public override sealed IEnumerable<IAbstractExpr> Components
+        public override sealed IEnumerable<ISqlItem> Components
         {
             get { return _statements; }
         }
+
+        public override SqlToken FirstOrEmptyToken { get { return _statements[0].FirstOrEmptyToken; } }
+
+        public override SqlToken LastOrEmptyToken { get { return _statements[_statements.Length-1].LastOrEmptyToken; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

@@ -13,7 +13,7 @@ namespace CK.SqlServer
     /// </summary>
     public class SqlExprStEmpty : SqlExprBaseSt
     {
-        static IAbstractExpr[] _empty = new IAbstractExpr[0];
+        static ISqlItem[] _empty = new ISqlItem[0];
 
         public SqlExprStEmpty( SqlTokenTerminal statementTerminator )
             : base( _empty, statementTerminator )

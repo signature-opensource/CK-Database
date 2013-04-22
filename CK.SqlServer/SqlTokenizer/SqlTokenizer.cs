@@ -179,44 +179,13 @@ namespace CK.SqlServer
             return t > 0 ? (((int)(t & SqlTokenType.OpLevelMask)) >> (int)SqlTokenType.OpLevelShift) << 1 : 0;
         }
 
-        /// <summary>
-        /// True if the token is a @variable or a literal value ('string' or 0x5454 number for instance).
-        /// </summary>
-        /// <param name="t">Token to test.</param>
-        /// <returns>True for a variable or a literal.</returns>
-        static public bool IsVariableNameOrLiteral( SqlTokenType t )
-        {
-            return t == SqlTokenType.IdentifierVariable || (t & SqlTokenType.LitteralMask) != 0;
-        }
-
-        /// <summary>
-        /// Tests whether an identifier must be quoted (it is empty, starts with @ or contains a character that is not valid).
-        /// </summary>
-        /// <param name="identifier">Identifier to test.</param>
-        /// <returns>True if the identifier can be used without surrounding quotes.</returns>
-        static public bool IsQuoteRequired( string identifier )
-        {
-            if( identifier == null ) throw new ArgumentNullException( "identifier" );
-            if( identifier.Length > 0 )
-            {
-                char c = identifier[0];
-                if( c != '@' && IsIdentifierStartChar( c ) )
-                {
-                    int i = 1;
-                    while( i < identifier.Length )
-                        if( !IsIdentifierChar( identifier[i++] ) ) break;
-                    if( i == identifier.Length ) return false;
-                }
-            }
-            return true;
-        }
-
         #region Explain Token
 
         static string[] _assignOperator = { "=", "|=", "&=", "^=", "+=", "-=", "/=", "*=", "%=" };
         static string[] _basicOperator = { "|", "^", "&", "+", "-", "*", "/", "%", "~" };
         static string[] _compareOperator = { "=", ">", "<", ">=", "<=", "<>", "!=", "!>", "!<", "between", "like", "in", "is" };
         static string[] _logicalOrSet = { "not", "or", "and" };
+        static string[] _selectPart = { "union", "except", "intersect" };
         static string[] _punctuations = { ".", ",", ";", ":", "::" };
 
         public static string Explain( SqlTokenType t )
@@ -225,6 +194,7 @@ namespace CK.SqlServer
             Debug.Assert( _basicOperator.Length == (int)SqlTokenType.BasicOperatorCount );
             Debug.Assert( _compareOperator.Length == (int)SqlTokenType.CompareOperatorCount );
             Debug.Assert( _logicalOrSet.Length == (int)SqlTokenType.LogicalOrSetCount );
+            Debug.Assert( _selectPart.Length == (int)SqlTokenType.SelectPartCount );
             Debug.Assert( _punctuations.Length == (int)SqlTokenType.PunctuationCount );
             if( t < 0 )
             {
@@ -234,6 +204,7 @@ namespace CK.SqlServer
             if( (t & SqlTokenType.IsBasicOperator) != 0 ) return _basicOperator[((int)t & 15) - 1];
             if( (t & SqlTokenType.IsCompareOperator) != 0 ) return _compareOperator[((int)t & 15) - 1];
             if( (t & SqlTokenType.IsLogicalOrSetOperator) != 0 ) return _logicalOrSet[((int)t & 15) - 1];
+            if( (t & SqlTokenType.IsSelectPart) != 0 ) return _selectPart[((int)t & 15) - 1];
             if( (t & SqlTokenType.IsPunctuation) != 0 ) return _punctuations[((int)t & 15) - 1];
 
             if( t == SqlTokenType.String ) return "'string'";
@@ -527,7 +498,7 @@ namespace CK.SqlServer
                             return ReadMoney( ic );
                         }
                         
-                        if( IsIdentifierStartChar( ic ) ) return ReadIdentifier( ic );
+                        if( SqlToken.IsIdentifierStartChar( ic ) ) return ReadIdentifier( ic );
                         
                         return (int)SqlTokenTypeError.ErrorInvalidChar;
                     }
@@ -572,7 +543,7 @@ namespace CK.SqlServer
                 }
                 if( !hasDigit ) _buffer.Append( '0' );
             }
-            if( IsIdentifierStartChar( ic ) ) return (int)SqlTokenTypeError.ErrorNumberUnterminatedValue;
+            if( SqlToken.IsIdentifierStartChar( ic ) ) return (int)SqlTokenTypeError.ErrorNumberUnterminatedValue;
             return (int)SqlTokenType.Money;
         }
 
@@ -676,7 +647,7 @@ namespace CK.SqlServer
                 }
 
                 if( nextRequired == 1 ) return (int)SqlTokenTypeError.ErrorNumberUnterminatedValue;
-                if( IsIdentifierStartChar( ic ) ) return (int)SqlTokenTypeError.ErrorNumberIdentifierStartsImmediately;
+                if( SqlToken.IsIdentifierStartChar( ic ) ) return (int)SqlTokenTypeError.ErrorNumberIdentifierStartsImmediately;
                 break;
             }
             _bufferString = _buffer.ToString();
@@ -718,16 +689,6 @@ namespace CK.SqlServer
             }
         }
 
-        static bool IsIdentifierStartChar( int c )
-        {
-            return c == '@' || c == '#' || c == '_' || Char.IsLetter( (char)c );
-        }
-
-        static bool IsIdentifierChar( int c )
-        {
-            return IsIdentifierStartChar( c ) || Char.IsDigit( (char)c );
-        }
-
         /// <summary>
         /// 
         /// </summary>
@@ -762,13 +723,13 @@ namespace CK.SqlServer
         /// </remarks>
         int ReadIdentifier( int ic )
         {
-            Debug.Assert( IsIdentifierStartChar( ic ) );
+            Debug.Assert( SqlToken.IsIdentifierStartChar( ic ) );
             bool isVar = ic == '@';
             ClearBuffer();
             for( ; ; )
             {
                 _buffer.Append( (char)ic );
-                if( (IsIdentifierChar( ic = Peek() )) ) Read();
+                if( (SqlToken.IsIdentifierChar( ic = Peek() )) ) Read();
                 else break;
             }
             _identifierValue = _bufferString = _buffer.ToString();
@@ -780,11 +741,9 @@ namespace CK.SqlServer
             {
                 if( mapped is string )
                 {
-                    _identifierValue = (string)mapped;
                     return (int)SqlTokenType.IdentifierReservedKeyword;
                 }
                 // Mapped to a SqlTokenType (like SqlTokenType.Or or SqlTokenType.IdentifierTypeNVarChar).
-                _identifierValue = _identifierValue.ToLowerInvariant();
                 return (int)mapped;
             }
             return (int)SqlTokenType.IdentifierNaked;
@@ -814,13 +773,25 @@ namespace CK.SqlServer
                         {
                             if( mapped is string )
                             {
-                                _identifierValue = (string)mapped;
-                                return (int)(SqlTokenType.IdentifierReservedKeyword | (token & SqlTokenType.IdentifierQuoteMask));
+                                return (int)(SqlTokenType.IdentifierReservedKeyword | token);
                             }
-                            Debug.Assert( ((int)mapped & (int)SqlTokenType.IsIdentifier) != 0, "IsIdentifier bit is set." );
-                            Debug.Assert( ((int)mapped & (int)SqlTokenType.IdentifierMask) != 0, "And a value for a known type." );
-                            _identifierValue = _identifierValue.ToLowerInvariant();
-                            return (int)mapped | (int)(token & SqlTokenType.IdentifierQuoteMask);
+                            int mappedType = (int)mapped;
+                            if( (mappedType & (int)SqlTokenType.IsIdentifier) != 0 )
+                            {
+                                Debug.Assert( SqlReservedKeyword.FromSqlTokenTypeToSqlDbType( (SqlTokenType)mapped ).HasValue, "And a value for a known type." );
+                                return mappedType | (int)token;
+                            }
+                            Debug.Assert( mappedType == (int)SqlTokenType.Or
+                                            || mappedType == (int)SqlTokenType.And
+                                            || mappedType == (int)SqlTokenType.Not
+                                            || mappedType == (int)SqlTokenType.Between
+                                            || mappedType == (int)SqlTokenType.In
+                                            || mappedType == (int)SqlTokenType.Is
+                                            || mappedType == (int)SqlTokenType.Like
+                                            || mappedType == (int)SqlTokenType.Union
+                                            || mappedType == (int)SqlTokenType.Intersect
+                                            || mappedType == (int)SqlTokenType.Except , "It is an operator (needs precedence level)." );
+                            return (int)(SqlTokenType.IdentifierReservedKeyword | token);
                         }
                         // Return the raw IdentifierQuoted or IdentifierQuotedBracket.
                         return (int)token;

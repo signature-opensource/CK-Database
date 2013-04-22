@@ -11,24 +11,20 @@ namespace CK.SqlServer
     /// <summary>
     /// Captures the optional "INTO table".
     /// </summary>
-    public class SqlExprSelectInto : SqlExpr
+    public class SelectInto : SqlNoExpr
     {
-        readonly IAbstractExpr[] _components;
 
-        public SqlExprSelectInto( SqlTokenIdentifier intoToken, SqlExprMultiIdentifier tableName )
+        public SelectInto( SqlTokenIdentifier intoToken, SqlExprMultiIdentifier tableName )
+            : this( CreateArray( intoToken, tableName ) )
         {
-            _components = CreateArray( intoToken, tableName );
         }
 
-        internal SqlExprSelectInto( IAbstractExpr[] newComponents )
+        internal SelectInto( ISqlItem[] items )
+            : base( items )
         {
-            _components = newComponents;
         }
 
-        public override IEnumerable<IAbstractExpr> Components
-        {
-            get { return _components; }
-        }
+        public SqlExprMultiIdentifier TableName { get { return (SqlExprMultiIdentifier)Slots[1]; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

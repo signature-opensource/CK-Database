@@ -10,18 +10,18 @@ namespace CK.SqlServer
     /// 
     /// Operator                                                            Description
     ///
-    /// 10       . (                                                        Dotted names, expression grouping.
-    /// 9        ~                                                          Bitwise NOT.
-    /// 8        * /  %                                                     Multiplication, division, modulo division.
-    /// 7        + - &amp; ^ |                                              + (for "Positive", "Add" and "Concatenate"), - (for "Negative" and "Subtract"), Bitwise AND, Bitwise Exclusive OR, and Bitwise OR.
+    /// 15       . (                                                        Dotted names, expression grouping.
+    /// 14       ~                                                          Bitwise NOT.
+    /// 13       * /  %                                                     Multiplication, division, modulo division.
+    /// 12       + - &amp; ^ |                                              + (for "Positive", "Add" and "Concatenate"), - (for "Negative" and "Subtract"), Bitwise AND, Bitwise Exclusive OR, and Bitwise OR.
     /// 
-    /// 6        =(1) &gt; &lt; &gt;= &lt;= &lt;&gt; != !&gt; !&lt;         Comparison operators (last 3 ones are not ISO). 
+    /// 11       =(1) &gt; &lt; &gt;= &lt;= &lt;&gt; != !&gt; !&lt;         Comparison operators (last 3 ones are not ISO). 
     ///          IS BETWEEN LIKE IN                                         I added the IS keyword to handle IS [NOT] NULL and moved BETWEEN, IN and LIKE to this level and category.
     ///          
-    /// 5        NOT                                                        Logical NOT (NOT as a LED introduces Between and Like. NOT has a 10 -strongest- left binding power).
-    /// 4        AND                                                        Logical AND.
+    /// 10       NOT                                                        Logical NOT (NOT as a LED introduces Between and Like. NOT has a 10 -strongest- left binding power).
+    /// 9        AND                                                        Logical AND.
     /// 
-    /// 3        OR                                                         Logical OR.
+    /// 8        OR                                                         Logical OR.
     ///          (moved to "comparison": IN, BETWEEN and LIKE)              Note: BETWEEN, IN and LIKE are here in the doc. 
     ///                                                                     It's not the right level up to me since the they can be followed by expressions and then by AND or OR operators.
     ///                                                                     Such AND or OR operators must not take precedence on the LIKE/IN/BETWEEN operator.
@@ -31,14 +31,18 @@ namespace CK.SqlServer
     ///                                                                     But, for the sake of coherency, IN and BETWEEN are considered just like LIKE.
     ///          (Set operators are considered as identifiers                                                                    
     ///          for KoCall: ALL, ANY, EXISTS, SOME)                        All these operators are "like" function call i.e.: exist(...) or any(...).
-    ///                                                                     Exists is enclosable (like other KoCall) whereas any, some and all are not enclosable.
+    ///                                                                     Note: Exists is enclosable (like other KoCall) whereas any, some and all are not enclosable.
     /// 
-    /// 2        = += -= *= /= %= &amp;= |= ^=                              Assignments (IsAssignOperator).
-    /// 1        , UNION EXCEPT INTERSECT                                   List separator (comma).
+    /// 7        = += -= *= /= %= &amp;= |= ^=                              Assignments (IsAssignOperator).
+    ///        
+    /// 4       Intersect, Group, Order, For, Option                        Intersect, union and except have the same level as comma in msdn.                     
+    /// 3       Except                                                      They act as binary operators beween SelectSpecification.                  
+    /// 2       Union                                                                        
+    /// 1        ,                                                          List separator (comma)
     /// 
     /// (1) For '=' token, disambiguisation between Comparison and Assignment requires a context hint: we need to know if we are in a "assignment context" or not.
     ///     This must be done at a higher level than in <see cref="SqlTokenizer"/>.
-    ///
+    /// 
     /// </remarks>
     [Flags]
     public enum SqlTokenType
@@ -82,12 +86,12 @@ namespace CK.SqlServer
         OpLevel03 = 3 << OpLevelShift,
         OpLevel04 = 4 << OpLevelShift,
         OpLevel05 = 5 << OpLevelShift,
-        OpLevel06 = 6 << OpLevelShift, OpComparisonLevel = OpLevel06, OpNotRightLevel = OpLevel06,
+        OpLevel06 = 6 << OpLevelShift, 
         OpLevel07 = 7 << OpLevelShift,
-        OpLevel08 = 8 << OpLevelShift,
+        OpLevel08 = 8 << OpLevelShift, 
         OpLevel09 = 9 << OpLevelShift,
         OpLevel10 = 10 << OpLevelShift,
-        OpLevel11 = 11 << OpLevelShift,
+        OpLevel11 = 11 << OpLevelShift, OpComparisonLevel = OpLevel11, OpNotRightLevel = OpLevel11,
         OpLevel12 = 12 << OpLevelShift,
         OpLevel13 = 13 << OpLevelShift,
         OpLevel14 = 14 << OpLevelShift,
@@ -103,12 +107,13 @@ namespace CK.SqlServer
         /// Mask that covers IsXXX discriminators (including <see cref="IsComment"/>).
         /// </summary>
         TokenDiscriminatorMask = AllOperatorMask
-                                    |IsBracket
-                                    |IsIdentifier
-                                    |IsNumber
-                                    |IsPunctuation
-                                    |IsString
-                                    |IsComment,
+                                    | IsSelectPart
+                                    | IsBracket
+                                    | IsIdentifier
+                                    | IsNumber
+                                    | IsPunctuation
+                                    | IsString
+                                    | IsComment,
 
         /// <summary>
         /// Mask that covers operators, punctuations and brakets: the token is fully defined by 
@@ -121,7 +126,7 @@ namespace CK.SqlServer
         /// </summary>
         LitteralMask = IsString | IsNumber,
 
-        #region Token discriminators bits n°19 to 9 (IsAssignOperator to IsComment) - (10 & 9 are unused).
+        #region Token discriminators bits n°19 to 9 (IsAssignOperator to IsComment) - (9 is unused).
         /// <summary>
         /// Covers = |= &amp;= ^= += -= /= *= and %=.
         /// </summary>
@@ -149,7 +154,7 @@ namespace CK.SqlServer
         IsIdentifier = 1 << 15,
 
         /// <summary>
-        /// Covers NOT, AND, ALL, ANY, EXISTS, IN, SOME and OR
+        /// Covers NOT, OR, AND.
         /// </summary>
         IsLogicalOrSetOperator = 1 << 14,
 
@@ -169,9 +174,10 @@ namespace CK.SqlServer
         IsString = 1 << 11,
 
         /// <summary>
-        /// Unused
+        /// Covers select related tokens: union, intersect, except, order, for, option.
         /// </summary>
-        // IsUnused = 1 << 10,
+        IsSelectPart = 1 << 10,
+
         // IsUnused = 1 << 9,
 
         /// <summary>
@@ -186,47 +192,47 @@ namespace CK.SqlServer
         /// <summary>
         /// Single equal character (=).
         /// </summary>
-        Assign = IsAssignOperator | OpLevel02 | 1,
+        Assign = IsAssignOperator | OpLevel07 | 1,
 
         /// <summary>
         /// Bitwise Or assignment (|=).
         /// </summary>
-        BitwiseOrAssign = IsAssignOperator | OpLevel02 | 2,
+        BitwiseOrAssign = IsAssignOperator | OpLevel07 | 2,
 
         /// <summary>
         /// Bitwise And assignment (&=).
         /// </summary>
-        BitwiseAndAssign = IsAssignOperator | OpLevel02 | 3,
+        BitwiseAndAssign = IsAssignOperator | OpLevel07 | 3,
 
         /// <summary>
         /// Xor binary (^) operator assignment (^=).
         /// </summary>
-        BitwiseXOrAssign = IsAssignOperator | OpLevel02 | 4,
+        BitwiseXOrAssign = IsAssignOperator | OpLevel07 | 4,
 
         /// <summary>
         /// Add assignment (+=).
         /// </summary>
-        PlusAssign = IsAssignOperator | OpLevel02 | 5,
+        PlusAssign = IsAssignOperator | OpLevel07 | 5,
 
         /// <summary>
         /// Substract assignment (-=).
         /// </summary>
-        MinusAssign = IsAssignOperator | OpLevel02 | 6,
+        MinusAssign = IsAssignOperator | OpLevel07 | 6,
 
         /// <summary>
         /// Divide assignment (/=).
         /// </summary>
-        DivideAssign = IsAssignOperator | OpLevel02 | 7,
+        DivideAssign = IsAssignOperator | OpLevel07 | 7,
 
         /// <summary>
         /// Multiplication assignment (*=).
         /// </summary>
-        MultAssign = IsAssignOperator | OpLevel02 | 8,
+        MultAssign = IsAssignOperator | OpLevel07 | 8,
 
         /// <summary>
         /// Modulo assignment (%=).
         /// </summary>
-        ModuloAssign = IsAssignOperator | OpLevel02 | AssignOperatorCount,
+        ModuloAssign = IsAssignOperator | OpLevel07 | AssignOperatorCount,
 
         #endregion
 
@@ -236,45 +242,45 @@ namespace CK.SqlServer
         /// <summary>
         /// Single pipe (|) bitwise OR operator.
         /// </summary>
-        BitwiseOr = IsBasicOperator | OpLevel07 | 1,
+        BitwiseOr = IsBasicOperator | OpLevel12 | 1,
 
         /// <summary>
         /// Xor binary (^) operator.
         /// </summary>
-        BitwiseXOr = IsBasicOperator | OpLevel07 | 2,
+        BitwiseXOr = IsBasicOperator | OpLevel12 | 2,
 
         /// <summary>
         /// Single ampersand (&amp;) binary And operator.
         /// </summary>
-        BitwiseAnd = IsBasicOperator | OpLevel07 | 3,
+        BitwiseAnd = IsBasicOperator | OpLevel12 | 3,
 
         /// <summary>
         /// Plus operator.
         /// </summary>
-        Plus = IsBasicOperator | OpLevel07 | 4,
+        Plus = IsBasicOperator | OpLevel12 | 4,
 
         /// <summary>
         /// Minus operator.
         /// </summary>
-        Minus = IsBasicOperator | OpLevel07 | 5,
+        Minus = IsBasicOperator | OpLevel12 | 5,
 
         /// <summary>
         /// Mult operator.
         /// </summary>
-        Mult = IsBasicOperator | OpLevel08 | 6,
+        Mult = IsBasicOperator | OpLevel13 | 6,
 
         /// <summary>
         /// Divide operator.
         /// </summary>
-        Divide = IsBasicOperator | OpLevel08 | 7,
+        Divide = IsBasicOperator | OpLevel13 | 7,
         /// <summary>
         /// Modulo.
         /// </summary>
-        Modulo = IsBasicOperator | OpLevel08 | 8,
+        Modulo = IsBasicOperator | OpLevel13 | 8,
         /// <summary>
         /// Biwise Not (~).
         /// </summary>
-        BitwiseNot = IsBasicOperator | OpLevel09 | 9,
+        BitwiseNot = IsBasicOperator | OpLevel14 | 9,
 
         #endregion
 
@@ -283,56 +289,56 @@ namespace CK.SqlServer
         /// <summary>
         /// = character.
         /// </summary>
-        Equal = IsCompareOperator | OpLevel06 | 1,
+        Equal = IsCompareOperator | OpLevel11 | 1,
         /// <summary>
         /// One single &gt; character.
         /// </summary>
-        Greater = IsCompareOperator | OpLevel06 | 2,
+        Greater = IsCompareOperator | OpLevel11 | 2,
         /// <summary>
         /// One single &lt; character.
         /// </summary>
-        Less = IsCompareOperator | OpLevel06 | 3,
+        Less = IsCompareOperator | OpLevel11 | 3,
         /// <summary>
         /// Greater than or equal (&gt;)
         /// </summary>
-        GreaterOrEqual = IsCompareOperator | OpLevel06 | 4,
+        GreaterOrEqual = IsCompareOperator | OpLevel11 | 4,
         /// <summary>
         /// Less than or equal (&lt;=) 
         /// </summary>
-        LessOrEqual = IsCompareOperator | OpLevel06 | 5,
+        LessOrEqual = IsCompareOperator | OpLevel11 | 5,
         /// <summary>
         /// &lt;&gt; (Not Equal To)
         /// </summary>
-        NotEqualTo = IsCompareOperator | OpLevel06 | 6,
+        NotEqualTo = IsCompareOperator | OpLevel11 | 6,
         
         /// <summary>
         /// C-like difference operator !=.
         /// </summary>
-        Different = IsCompareOperator | OpLevel06 | 7,
+        Different = IsCompareOperator | OpLevel11 | 7,
         /// <summary>
         /// !&gt; (Not Greater Than)
         /// </summary>
-        NotGreaterThan = IsCompareOperator | OpLevel06 | 8,
+        NotGreaterThan = IsCompareOperator | OpLevel11 | 8,
         /// <summary>
         /// !lt; (Not Less Than)
         /// </summary>
-        NotLessThan = IsCompareOperator | OpLevel06 | 9,
+        NotLessThan = IsCompareOperator | OpLevel11 | 9,
         /// <summary>
         /// BETWEEN operator.
         /// </summary>
-        Between = IsCompareOperator | OpLevel06 | 10,
+        Between = IsCompareOperator | OpLevel11 | 10,
         /// <summary>
         /// LIKE operator.
         /// </summary>
-        Like = IsCompareOperator | OpLevel06 | 11,
+        Like = IsCompareOperator | OpLevel11 | 11,
         /// <summary>
         /// IN operator.
         /// </summary>
-        In = IsCompareOperator | OpLevel06 | 12,       
+        In = IsCompareOperator | OpLevel11 | 12,       
         /// <summary>
         /// IS operator.
         /// </summary>
-        Is = IsCompareOperator | OpLevel06 | 13,
+        Is = IsCompareOperator | OpLevel11 | 13,
         #endregion
 
         LogicalOrSetCount = 3,
@@ -340,32 +346,51 @@ namespace CK.SqlServer
         /// <summary>
         /// NOT operator.
         /// </summary>
-        Not = IsLogicalOrSetOperator | OpLevel05 | 1,
+        Not = IsLogicalOrSetOperator | OpLevel10 | 1,
         /// <summary>
         /// Logical OR operator.
         /// </summary>
-        Or = IsLogicalOrSetOperator | OpLevel03 | 2,
+        Or = IsLogicalOrSetOperator | OpLevel08 | 2,
         /// <summary>
         /// Logical AND operator.
         /// </summary>
-        And = IsLogicalOrSetOperator | OpLevel04 | 3,
+        And = IsLogicalOrSetOperator | OpLevel09 | 3,
+        #endregion
+        
+        SelectPartCount = 3,
+        #region IsSelectPart: union, except, intersect
+        /// <summary>
+        /// Union between select specification (lowest precedence).
+        /// </summary>
+        Union = IsSelectPart | OpLevel02 | 1,
+        /// <summary>
+        /// Except between select specification.
+        /// </summary>
+        Except = IsSelectPart | OpLevel03 | 2,
+        /// <summary>
+        /// Intersect between select specification (highest precedence).
+        /// </summary>
+        Intersect = IsSelectPart | OpLevel04 | 3,
         #endregion
 
         PunctuationCount = 5,
         #region Punctuations
-        Dot = IsPunctuation | OpLevel10 | 1,
+        /// <summary>
+        /// One dot.
+        /// </summary>
+        Dot = IsPunctuation | OpLevel15 | 1,
+        /// <summary>
+        /// The comma.
+        /// </summary>
         Comma = IsPunctuation | OpLevel01 | 2,
-
         /// <summary>
         /// Statement terminator;
         /// </summary>
         SemiColon = IsPunctuation | 3,
-
         /// <summary>
         /// One single colon.
         /// </summary>
         Colon = IsPunctuation | 4,
-
         /// <summary>
         /// Two colons :: are used to call static CLR methods.
         /// </summary>
@@ -445,8 +470,8 @@ namespace CK.SqlServer
         /// <summary>
         /// Mask that covers IdentifierTypeXXX values (without IsIdentifier, IsIdentifierQuoted and IsIdentifierQuotedBracket bits).
         /// When one of IdentifierTypeMask bit is set, the identifier is a reserved word regardless of its quotes (like int or "int" or [int] that is IdentifierTypeInt, 
-        /// or null, "null" or [null] that is a IdentifierTypeReservedKeyword, or a @variable).
-        /// An identifier corresponds to a type like int, datetime2, etc. if and only if (t&amp;IsIdentifier) != 0 && (t&amp;IdentifierMask)>2;
+        /// or null, "null" or [null] that is a IdentifierReservedKeyword, or a @variable).
+        /// Type Identifier: an identifier corresponds to a type like int, datetime2, etc. (SqlDbType) if and only if (t&amp;IsIdentifier) != 0 && (t&amp;IdentifierMask)&gt;3;
         /// </summary>
         IdentifierMask = (1 << 6) - 1,
 
@@ -464,7 +489,7 @@ namespace CK.SqlServer
 
         /// <summary>
         /// Star (*) token considered as an identifier instead of <see cref="Mult"/>.
-        /// This tken type is not produced by <see cref="SqlTokenizer"/> (transforming the token
+        /// This token type is not produced by <see cref="SqlTokenizer"/> (transforming the token
         /// requires more knowledge of the syntactic context).
         /// </summary>
         IdentifierStar = IsIdentifier | 3,
@@ -514,7 +539,7 @@ namespace CK.SqlServer
         OpenBracket = IsBracket | 8,
         CloseBracket = IsBracket | 16,
 
-        OpenPar = RoundBracket | OpenBracket | OpLevel10,
+        OpenPar = RoundBracket | OpenBracket | OpLevel15,
         ClosePar = RoundBracket | CloseBracket,
         OpenCurly = CurlyBracket | OpenBracket,
         CloseCurly = CurlyBracket | CloseBracket,

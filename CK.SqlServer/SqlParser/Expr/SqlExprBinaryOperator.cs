@@ -15,7 +15,7 @@ namespace CK.SqlServer
             if( !IsValidOperator( op.TokenType ) ) throw new ArgumentException();
         }
 
-        internal SqlExprBinaryOperator( IAbstractExpr[] newComponents )
+        internal SqlExprBinaryOperator( ISqlItem[] newComponents )
             : base( newComponents )
         {
             Debug.Assert( IsValidOperator( Middle.TokenType ) );
@@ -38,11 +38,6 @@ namespace CK.SqlServer
         public new SqlTokenTerminal Middle { get { return (SqlTokenTerminal)base.Middle; } }
 
         public SqlTokenTerminal Operator { get { return (SqlTokenTerminal)base.Middle; } }
-
-        public override ISqlExprEnclosable Enclose( SqlTokenOpenPar openPar, SqlTokenClosePar closePar )
-        {
-            return new SqlExprBinaryOperator( EncloseComponents( openPar, closePar ) );
-        }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

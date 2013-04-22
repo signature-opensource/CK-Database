@@ -17,20 +17,12 @@ namespace CK.SqlServer
         public static void WriteTokensWithoutTrivias( this IEnumerable<SqlToken> @this, string separator, StringBuilder b )
         {
             bool one = false;
-            foreach( var t in @this )
+            foreach( SqlToken t in @this )
             {
                 if( one ) b.Append( separator );
                 one = true;
                 t.WriteWithoutTrivias( b );
             }
-        }
-
-        /// <summary>
-        /// Gets the number of enclosing parenthesis around the <see cref="ISqlExprEnclosable.ComponentsWithoutParenthesis"/>.
-        /// </summary>
-        public static int ParenthesisCount( this ISqlExprEnclosable @this )
-        {
-            return @this.Opener.Count;
         }
     }
 }

@@ -8,7 +8,7 @@ using CK.Core;
 
 namespace CK.SqlServer
 {
-    public class SqlExprParameterDefaultValue : SqlExpr
+    public class SqlExprParameterDefaultValue : SqlItem
     {
         readonly SqlToken[] _tokens;
 
@@ -31,9 +31,11 @@ namespace CK.SqlServer
 
         public bool IsVariable { get { return _tokens.Length == 2 && _tokens[1].TokenType == SqlTokenType.IdentifierVariable; } }
 
-        public override IEnumerable<IAbstractExpr> Components { get { return _tokens; } }
+        public sealed override IEnumerable<ISqlItem> Components { get { return _tokens; } }
 
-        public override IEnumerable<SqlToken> Tokens { get { return _tokens; } }
+        public override SqlToken FirstOrEmptyToken { get { return _tokens[0]; } }
+
+        public override SqlToken LastOrEmptyToken { get { return _tokens[_tokens.Length - 1]; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

@@ -9,25 +9,26 @@ namespace CK.SqlServer
 {
     public class SqlExprKoCall : SqlExpr
     {
-        readonly IAbstractExpr[] _components;
+        public SqlExprKoCall( SqlItem funName, SqlExprCommaList parameters )
+            : this( Build( funName, parameters ) )
+        {
+        }
 
-        public SqlExprKoCall( SqlExpr funName, SqlExprList parameters )
+        static ISqlItem[] Build( SqlItem funName, SqlExprCommaList parameters )
         {
             if( funName == null ) throw new ArgumentNullException( "targetName" );
             if( parameters == null ) throw new ArgumentNullException( "parameters" );
-            _components = CreateArray( funName, parameters );
+            return CreateArray( SqlToken.EmptyOpenPar, funName, parameters, SqlToken.EmptyClosePar );
         }
 
-        internal SqlExprKoCall( SqlExprKoCall origin, IAbstractExpr[] newComponents )
+        internal SqlExprKoCall( ISqlItem[] newComponents )
+            : base( newComponents )
         {
-            _components = newComponents;
         }
 
-        public SqlExpr FunName { get { return (SqlExpr)_components[0]; } }
+        public SqlItem FunName { get { return (SqlItem)Slots[1]; } }
 
-        public SqlExprList Parameters { get { return (SqlExprList)_components[1]; } }
-
-        public override sealed IEnumerable<IAbstractExpr> Components { get { return _components; } }
+        public SqlExprCommaList Parameters { get { return (SqlExprCommaList)Slots[2]; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

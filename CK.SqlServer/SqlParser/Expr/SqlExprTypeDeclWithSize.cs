@@ -10,7 +10,7 @@ using CK.Core;
 
 namespace CK.SqlServer
 {
-    public class SqlExprTypeDeclWithSize : SqlExpr, ISqlExprUnifiedTypeDecl
+    public class SqlExprTypeDeclWithSize : SqlItem, ISqlExprUnifiedTypeDecl
     {
         readonly SqlToken[] _tokens;
 
@@ -69,19 +69,20 @@ namespace CK.SqlServer
             SyntaxSize = size is SqlTokenLiteralInteger ? ((SqlTokenLiteralInteger)size).Value : -1;
         }
 
-        public override IEnumerable<IAbstractExpr> Components { get { return _tokens; } }
+        public override IEnumerable<ISqlItem> Components { get { return _tokens; } }
 
         public override IEnumerable<SqlToken> Tokens { get { return _tokens; } }
 
-        public SqlTokenIdentifier TypeIdentifier 
-        {
-            get { return (SqlTokenIdentifier)_tokens[0]; } 
-        }
+        public SqlTokenIdentifier TypeIdentifier { get { return (SqlTokenIdentifier)_tokens[0]; } }
 
         public SqlDbType DbType { get; private set; }
 
         public int SyntaxSize { get; private set; }
 
+        public override SqlToken FirstOrEmptyToken { get { return _tokens[0]; } }
+
+        public override SqlToken LastOrEmptyToken { get { return _tokens[_tokens.Length - 1]; } }
+        
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )
         {
