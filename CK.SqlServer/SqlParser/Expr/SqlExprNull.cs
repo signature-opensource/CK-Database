@@ -7,7 +7,7 @@ using System.Text;
 
 namespace CK.SqlServer
 {
-    public class SqlExprNull : SqlExprBaseMonoToken
+    public class SqlExprNull : SqlExprBaseMonoToken<SqlTokenIdentifier>
     {
         public SqlExprNull( SqlTokenIdentifier tokenIdentifier )
             : base( tokenIdentifier )

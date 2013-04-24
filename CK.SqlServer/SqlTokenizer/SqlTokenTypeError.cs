@@ -21,7 +21,7 @@ namespace CK.SqlServer
         EndOfInput = IsErrorOrEndOfInput,
 
         /// <summary>
-        /// Error bit (all kind of errors).
+        /// Error bit (all kind of errors, but not the end of the input).
         /// </summary>
         IsError = 1 << 30,
 

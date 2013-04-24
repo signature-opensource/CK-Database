@@ -13,8 +13,8 @@ namespace CK.Setup
     /// </summary>
     public class MultiVersionManager
     {
-        SortedArrayList<Version> _versions;
-        SortedArrayKeyList<VersionedName,Version> _previousNames;
+        CKSortedArrayList<Version> _versions;
+        CKSortedArrayKeyList<VersionedName,Version> _previousNames;
 
         static Regex _rVersions = new Regex( @"((?<2>(\w|\.|-)+)\s*=)?\s*(?<1>\d+\.\d+\.\d+),?",
                 RegexOptions.Singleline
@@ -27,7 +27,7 @@ namespace CK.Setup
         /// </summary>
         public MultiVersionManager()
         {
-            _versions = new SortedArrayList<Version>();
+            _versions = new CKSortedArrayList<Version>();
         }
 
         /// <summary>
@@ -83,9 +83,9 @@ namespace CK.Setup
         /// Gets the sorted list of <see cref="VersionedName"/> if it exists (an empty list if no 
         /// previous names have been set).
         /// </summary>
-        public IReadOnlyList<VersionedName> PreviousNames
+        public ICKReadOnlyList<VersionedName> PreviousNames
         {
-            get { return _previousNames ?? ReadOnlyListEmpty<VersionedName>.Empty; }
+            get { return _previousNames ?? CKReadOnlyListEmpty<VersionedName>.Empty; }
         }
 
         /// <summary>
@@ -131,9 +131,9 @@ namespace CK.Setup
             }
         }
 
-        private SortedArrayKeyList<VersionedName, Version> EnsurePreviousName()
+        private CKSortedArrayKeyList<VersionedName, Version> EnsurePreviousName()
         {
-            if( _previousNames == null ) _previousNames = new SortedArrayKeyList<VersionedName, Version>( v => v.Version );
+            if( _previousNames == null ) _previousNames = new CKSortedArrayKeyList<VersionedName, Version>( v => v.Version );
             return _previousNames;
         }
 

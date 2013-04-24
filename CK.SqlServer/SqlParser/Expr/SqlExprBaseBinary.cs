@@ -10,28 +10,29 @@ namespace CK.SqlServer
 {
     public abstract class SqlExprBaseBinary : SqlExpr
     {
-        readonly ReadOnlyListMono<SqlToken> _middleToken;
+        protected SqlExprBaseBinary( SqlExpr left, ISqlItem middle, SqlExpr right )
+            : this( Build( left, middle, right ) )
+        {
+        }
 
-        protected SqlExprBaseBinary( SqlExpr left, SqlToken middle, SqlExpr right )
+        static ISqlItem[] Build( SqlItem left, ISqlItem middle, SqlItem right )
         {
             if( left == null ) throw new ArgumentNullException( "left" );
             if( middle == null ) throw new ArgumentNullException( "middle" );
             if( right == null ) throw new ArgumentNullException( "right" );
-            Left = left;
-            _middleToken = new ReadOnlyListMono<SqlToken>( middle );
-            Right = right;
+            return CreateArray( SqlToken.EmptyOpenPar, left, middle, right, SqlToken.EmptyClosePar );
         }
 
-        public SqlExpr Left { get; private set; }
-
-        protected SqlToken Middle { get { return _middleToken[0]; } }
-
-        public SqlExpr Right { get; private set; }
-
-        public override IEnumerable<SqlToken> Tokens
+        protected SqlExprBaseBinary( ISqlItem[] newComponents )
+            : base( newComponents )
         {
-            get { return Left.Tokens.Concat( _middleToken.Concat( Right.Tokens ) ); }
         }
+
+        public SqlExpr Left { get { return (SqlExpr)Slots[1]; } }
+
+        protected ISqlItem Middle { get { return Slots[2]; } }
+
+        public SqlExpr Right { get { return (SqlExpr)Slots[3]; } }
 
     }
 

@@ -622,14 +622,16 @@ namespace CK.SqlServer
                 {
                     FailCount = FailCount + 1;
                     if( _logger == null ) throw;
-                    if( _logger.Filter > LogLevelFilter.Trace )
+                    // If the logger is tracing, the text has already been logged.
+                    if( _logger.Filter <= LogLevelFilter.Trace ) _logger.Error( e );
+                    else 
                     {
+                        // If the text is not already logged, then we unconditionnaly log it below the error.
                         using( _logger.OpenGroup( LogLevel.Error, e ) )
                         {
-                            _logger.UnfilteredLog( LogLevel.Info, script );
+                            _logger.UnfilteredLog( ActivityLogger.RegisteredTags.EmptyTrait, LogLevel.Info, script, DateTime.UtcNow );
                         }
                     }
-                    else _logger.Error( e );
                 }
                 return LastSucceed;
             }

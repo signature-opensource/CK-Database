@@ -230,7 +230,7 @@ namespace CK.Setup
             if( StructureError != DependentItemStructureError.None )
             {
                 TextWriter writer = new StringWriter();
-                IDefaultActivityLogger l = DefaultActivityLogger.Create();
+                IDefaultActivityLogger l = new DefaultActivityLogger( generateErrorCounterConlusion: true );
                 l.Tap.Register( new ActivityLoggerTextWriterSink( writer ) );
                 LogError( l );
                 return writer.ToString();

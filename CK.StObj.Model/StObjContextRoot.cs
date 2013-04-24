@@ -41,8 +41,21 @@ namespace CK.Core
         /// </summary>
         /// <param name="dirlist">List of directory to analyze</param>
         /// <returns>The common full path</returns>
-        public static string FindCommonAncestor( IEnumerable<string> dirlist )
+        public static string FindCommonAncestor( IList<string> dirlist )
         {
+            int maxLen;
+            if( dirlist == null || dirlist.Count == 0 || (maxLen = dirlist[0].Length) == 0 ) return null;
+            if( dirlist.Count == 1 ) return dirlist[0];
+            Char cU1 = Char.ToUpperInvariant( dirlist[0][0] );
+            for( int i = 1; i < dirlist.Count; ++i )
+            {
+                int l = dirlist[i].Length;
+                if( l == 0 ) return null;
+                if( maxLen > l ) maxLen = l;
+                if( Char.ToUpperInvariant( dirlist[i][0] ) != cU1 ) return null;
+            }
+            // To be continued with an external loop from 1 to maxLen (to catch chars) and an internal one from 0 to dirlist.Count (for each strings).
+
             var orderedList = dirlist.OrderBy( x => x );
             DirectoryInfo commonDirectory = orderedList.Select( x => new DirectoryInfo( x ) ).FirstOrDefault();
             string common = null;
@@ -70,11 +83,11 @@ namespace CK.Core
             {
                 if( !config.GetType().IsSerializable ) throw new InvalidOperationException( "IStObjEngineConfiguration must be serializable." );
                 _locker = new object();
-                LoggerBridge = new ActivityLoggerBridge( logger );
+                LoggerBridge = logger.Output.ExternalInput;
                 Config = config;
             }
 
-            public ActivityLoggerBridge LoggerBridge { get; private set; }
+            public ActivityLoggerBridgeTarget LoggerBridge { get; private set; }
 
             public IStObjEngineConfiguration Config { get; private set; }
 
@@ -100,7 +113,7 @@ namespace CK.Core
         public static StObjBuildResult Build( IStObjEngineConfiguration config, IActivityLogger logger = null )
         {
             if( config == null ) throw new ArgumentNullException( "config" );
-            if( logger == null ) logger = DefaultActivityLogger.Create();
+            if( logger == null ) logger = new ActivityLogger();
 
             if( config.AppDomainConfiguration.UseIndependentAppDomain )
             {
@@ -111,12 +124,15 @@ namespace CK.Core
                 }
                 AppDomainSetup setup = AppDomain.CurrentDomain.SetupInformation;
                 setup.ApplicationBase = result;
-                // Do not use ApplicationBase, use only Probe paths.
+
+                /// PrivateBinPathProbe (from msdn):
+                /// Set this property to any non-null string value, including String.Empty (""), to exclude the application directory path — that is, 
+                /// ApplicationBase — from the search path for the application, and to search for assemblies only in PrivateBinPath. 
                 setup.PrivateBinPathProbe = String.Empty;
                 setup.PrivateBinPath = string.Join( ";", config.AppDomainConfiguration.ProbePaths );
                 var appDomain = AppDomain.CreateDomain( "StObjContextRoot.Build.IndependentAppDomain", null, setup );
                 AppDomainCommunication appDomainComm = new AppDomainCommunication( logger, config );
-                appDomain.SetData( "ck-appDomainComm", appDomainComm );
+                appDomain.SetData( "CK-AppDomainComm", appDomainComm );
                 appDomain.DoCallBack( new CrossAppDomainDelegate( LaunchRunCrossDomain ) );
                 return new StObjBuildResult( appDomainComm.WaitForResult(), appDomain, logger );
             }
@@ -135,19 +151,11 @@ namespace CK.Core
 
         private static void LaunchRunCrossDomain()
         {
-            AppDomain thisDomain = AppDomain.CurrentDomain;
-            AppDomainCommunication appDomainComm = (AppDomainCommunication)thisDomain.GetData( "ck-appDomainComm" );
-            
-            IDefaultActivityLogger logger = DefaultActivityLogger.Create();
-            foreach( var item in logger.Output.RegisteredClients.ToArray() )
-	        {
-                logger.Output.NonRemoveableClients.Remove( item );
-                logger.Output.UnregisterClient( item );
-	        }
-            
+            AppDomainCommunication appDomainComm = (AppDomainCommunication)AppDomain.CurrentDomain.GetData( "CK-AppDomainComm" );
+            IActivityLogger logger = new ActivityLogger();
             try
             {
-                logger.Output.RegisterClient( new ActivityLoggerClientBridge( appDomainComm.LoggerBridge ) );
+                logger.Output.RegisterClient( new ActivityLoggerBridge( appDomainComm.LoggerBridge ) );
                 appDomainComm.SetResult( LaunchRun( logger, appDomainComm.Config ) );
             }
             catch( Exception ex )
@@ -182,7 +190,7 @@ namespace CK.Core
                 BinaryReader reader = new BinaryReader( s );
 
                 _contexts = new StObjContext[reader.ReadInt32()];
-                _contextsEx = new ReadOnlyListOnIList<StObjContext>( _contexts );
+                _contextsEx = new CKReadOnlyListOnIList<StObjContext>( _contexts );
                 _defaultContext = ReadContexts( reader );
 
                 BinaryFormatter formatter = new BinaryFormatter();

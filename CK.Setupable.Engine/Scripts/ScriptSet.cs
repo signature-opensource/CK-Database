@@ -165,7 +165,7 @@ namespace CK.Setup
         {
             _fullName = fullName;
             _handlers = new List<ForHandler>();
-            _handlersEx = new ReadOnlyListOnIList<ForHandler>( _handlers );
+            _handlersEx = new CKReadOnlyListOnIList<ForHandler>( _handlers );
         }
 
         /// <summary>

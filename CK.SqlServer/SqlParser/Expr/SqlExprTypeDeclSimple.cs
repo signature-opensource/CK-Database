@@ -9,27 +9,39 @@ using System.Text;
 
 namespace CK.SqlServer
 {
-    public class SqlExprTypeDeclSimple : SqlExprBaseMonoToken, ISqlExprUnifiedTypeDecl
+    public class SqlExprTypeDeclSimple : SqlItem, ISqlExprUnifiedTypeDecl
     {
+        readonly SqlTokenIdentifier[] _tokens;
+
         public SqlExprTypeDeclSimple( SqlTokenIdentifier id )
-            : base( id )
         {
-            SqlDbType? dbType = SqlReservedKeyword.FromSqlTokenTypeToSqlDbType( Token.TokenType );
+            SqlDbType? dbType = SqlReservedKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType );
             if( !dbType.HasValue )
             {
                 throw new ArgumentException( "Invalid type.", "id" );
             }
             DbType = dbType.Value;
+            _tokens = CreateArray( id );
         }
 
-        internal SqlExprTypeDeclSimple( SqlTokenIdentifier token, SqlDbType dbType )
-            : base( token )
+        internal SqlExprTypeDeclSimple( SqlTokenIdentifier id, SqlDbType dbType )
         {
-            Debug.Assert( dbType == SqlReservedKeyword.FromSqlTokenTypeToSqlDbType( Token.TokenType ) );
+            Debug.Assert( dbType == SqlReservedKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType ) );
             DbType = dbType;
+            _tokens = CreateArray( id );
         }
 
         public SqlDbType DbType { get; private set; }
+
+        public override IEnumerable<ISqlItem> Components { get { return _tokens; } }
+
+        public override IEnumerable<SqlToken> Tokens { get { return _tokens; } }
+
+        public SqlTokenIdentifier TypeIdentifier { get { return (SqlTokenIdentifier)_tokens[0]; } }
+
+        public override SqlToken FirstOrEmptyToken { get { return _tokens[0]; } }
+
+        public override SqlToken LastOrEmptyToken { get { return _tokens[_tokens.Length - 1]; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

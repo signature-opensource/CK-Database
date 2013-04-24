@@ -8,14 +8,12 @@ using CK.Core;
 
 namespace CK.SqlServer
 {
-    public class SqlExprTerminal : SqlExprBaseMonoToken
+    public class SqlExprTerminal : SqlExprBaseMonoToken<SqlTokenTerminal>
     {
         protected SqlExprTerminal( SqlTokenTerminal t )
             : base( t )
         {
         }
-
-        public new SqlTokenTerminal Token { get { return (SqlTokenTerminal)base.Token; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

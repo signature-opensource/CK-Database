@@ -6,10 +6,11 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using CK.Core;
 
 namespace CK.SqlServer
 {
-    public class SqlExprTypeDeclDecimal : SqlExpr, ISqlExprUnifiedTypeDecl
+    public class SqlExprTypeDeclDecimal : SqlItem, ISqlExprUnifiedTypeDecl
     {
         readonly SqlToken[] _tokens;
 
@@ -20,8 +21,7 @@ namespace CK.SqlServer
             {
                 throw new ArgumentException( "Invalid decimal token.", "id" );
             }
-
-            _tokens = new SqlToken[] { id };
+            _tokens = CreateArray( id );
             SyntaxPrecision = 0;
             SyntaxScale = 0;
         }
@@ -43,7 +43,7 @@ namespace CK.SqlServer
                 throw new ArgumentException( "Invalid precision.", "precision" );
             }
 
-            _tokens = new SqlToken[] { id, openPar, precision, closePar };
+            _tokens = CreateArray( id, openPar, precision, closePar );
             SyntaxPrecision = (byte)precision.Value;
             SyntaxScale = 0;
         }
@@ -71,18 +71,21 @@ namespace CK.SqlServer
             {
                 throw new ArgumentException( "Invalid scale (must be less or equalt to precision).", "scale" );
             }
-            
-            _tokens = new SqlToken[] { id, openPar, precision, comma, scale, closePar };
+
+            _tokens = CreateArray( id, openPar, precision, comma, scale, closePar );
             SyntaxPrecision = (byte)precision.Value;
             SyntaxScale = (byte)scale.Value;
         }
 
+        public override IEnumerable<ISqlItem> Components { get { return _tokens; } }
+
         public override IEnumerable<SqlToken> Tokens { get { return _tokens; } }
 
-        public SqlTokenIdentifier TypeIdentifier 
-        {
-            get { return (SqlTokenIdentifier)_tokens[0]; } 
-        }
+        public SqlTokenIdentifier TypeIdentifier  { get { return (SqlTokenIdentifier)_tokens[0]; } }
+
+        public override SqlToken FirstOrEmptyToken { get { return _tokens[0]; } }
+
+        public override SqlToken LastOrEmptyToken { get { return _tokens[_tokens.Length - 1]; } }
 
         public SqlDbType DbType { get { return SqlDbType.Decimal; } }
 

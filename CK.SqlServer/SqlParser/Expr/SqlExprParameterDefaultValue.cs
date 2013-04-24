@@ -8,7 +8,7 @@ using CK.Core;
 
 namespace CK.SqlServer
 {
-    public class SqlExprParameterDefaultValue : SqlExpr
+    public class SqlExprParameterDefaultValue : SqlItem
     {
         readonly SqlToken[] _tokens;
 
@@ -18,7 +18,7 @@ namespace CK.SqlServer
             if( minusSign != null && minusSign.TokenType == SqlTokenType.Minus ) throw new ArgumentException( "Must be null or minus." );
             if( value == null ) throw new ArgumentNullException( "value" );
 
-            _tokens = minusSign == null ? new SqlToken[] { assignToken, value } : new SqlToken[] { assignToken, minusSign, value };
+            _tokens = minusSign == null ? CreateArray( assignToken, value ) : CreateArray( assignToken, minusSign, value );
         }
 
         public SqlExprParameterDefaultValue( SqlTokenTerminal assignToken, SqlTokenIdentifier variable )
@@ -26,12 +26,16 @@ namespace CK.SqlServer
             if( assignToken == null ) throw new ArgumentNullException( "assignToken" );
             if( variable == null ) throw new ArgumentNullException( "variable" );
 
-            _tokens = new SqlToken[] { assignToken, variable };
+            _tokens = CreateArray( assignToken, variable );
         }
 
         public bool IsVariable { get { return _tokens.Length == 2 && _tokens[1].TokenType == SqlTokenType.IdentifierVariable; } }
 
-        public override IEnumerable<SqlToken> Tokens { get { return _tokens; } }
+        public sealed override IEnumerable<ISqlItem> Components { get { return _tokens; } }
+
+        public override SqlToken FirstOrEmptyToken { get { return _tokens[0]; } }
+
+        public override SqlToken LastOrEmptyToken { get { return _tokens[_tokens.Length - 1]; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

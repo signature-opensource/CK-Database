@@ -41,9 +41,9 @@ namespace CK.Setup
                         result = new TypeInfoForBaseClasses();
                         if( t == typeof( object ) )
                         {
-                            result.AmbientProperties = ReadOnlyListEmpty<AmbientPropertyInfo>.Empty;
-                            result.AmbientContracts = ReadOnlyListEmpty<AmbientContractInfo>.Empty;
-                            result.StObjProperties = ReadOnlyListEmpty<StObjPropertyInfo>.Empty;
+                            result.AmbientProperties = CKReadOnlyListEmpty<AmbientPropertyInfo>.Empty;
+                            result.AmbientContracts = CKReadOnlyListEmpty<AmbientContractInfo>.Empty;
+                            result.StObjProperties = CKReadOnlyListEmpty<StObjPropertyInfo>.Empty;
                         }
                         else
                         {
@@ -103,8 +103,8 @@ namespace CK.Setup
             {
                 if( type == typeof( object ) )
                 {
-                    apListResult = ReadOnlyListEmpty<AmbientPropertyInfo>.Empty;
-                    acListResult = ReadOnlyListEmpty<AmbientContractInfo>.Empty;
+                    apListResult = CKReadOnlyListEmpty<AmbientPropertyInfo>.Empty;
+                    acListResult = CKReadOnlyListEmpty<AmbientContractInfo>.Empty;
                 }
                 else
                 {

@@ -15,7 +15,7 @@ namespace CK.Setup
         readonly ScriptTypeManager _typeManager;
         readonly Dictionary<string,ScriptSet> _scripts;
         readonly HashSet<string> _scriptSources;
-        readonly ReadOnlyCollectionOnISet<string> _scriptSourcesEx;
+        readonly CKReadOnlyCollectionOnISet<string> _scriptSourcesEx;
 
         /// <summary>
         /// Initializes a new <see cref="ScriptCollector"/> bound to a <see cref="ScriptTypeManager"/>.
@@ -26,7 +26,7 @@ namespace CK.Setup
             if( typeManager == null ) throw new ArgumentNullException( "typeManager" );
             _scripts = new Dictionary<string, ScriptSet>( StringComparer.OrdinalIgnoreCase );
             _scriptSources = new HashSet<string>();
-            _scriptSourcesEx = new ReadOnlyCollectionOnISet<string>( _scriptSources );
+            _scriptSourcesEx = new CKReadOnlyCollectionOnISet<string>( _scriptSources );
             _typeManager = typeManager;
         }
 

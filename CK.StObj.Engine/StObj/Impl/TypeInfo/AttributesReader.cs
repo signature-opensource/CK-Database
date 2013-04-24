@@ -50,7 +50,7 @@ namespace CK.Setup
                         {
                             string msg = String.Format( "Attribute {0} for type {1} specifies Container type '{2}' but attribute {3} specifies Container type '{4}'. Container is '{4}'.",
                                                                         attr.GetType().Name, objectType.FullName, containerDefiner.GetType().Name, attr.Container.FullName );
-                            logger.UnfilteredLog( multipleContainerLogLevel, msg );
+                            logger.UnfilteredLog( ActivityLogger.RegisteredTags.EmptyTrait, multipleContainerLogLevel, msg, DateTime.UtcNow );
                         }
                     }
                 }

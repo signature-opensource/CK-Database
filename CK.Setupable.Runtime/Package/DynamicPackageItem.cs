@@ -77,7 +77,7 @@ namespace CK.Setup
 
         IEnumerable<IDependentItem> IDependentItemDiscoverer.GetOtherItemsToRegister()
         {
-            return _model != null ? new ReadOnlyListMono<IDependentItem>( _model ) : null;
+            return _model != null ? new CKReadOnlyListMono<IDependentItem>( _model ) : null;
         }
 
     }

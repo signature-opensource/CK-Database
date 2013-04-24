@@ -8,7 +8,7 @@ using CK.Core;
 
 namespace CK.SqlServer
 {
-    public class SqlTokenLiteralFloat : SqlTokenBaseLiteral
+    public sealed class SqlTokenLiteralFloat : SqlTokenBaseLiteral
     {
         readonly string _literal;
 

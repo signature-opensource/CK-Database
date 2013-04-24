@@ -8,7 +8,7 @@ using CK.Core;
 
 namespace CK.SqlServer
 {
-    public class SqlTokenLiteralInteger : SqlTokenBaseLiteral
+    public sealed class SqlTokenLiteralInteger : SqlTokenBaseLiteral
     {
         public SqlTokenLiteralInteger( SqlTokenType t, int value, IReadOnlyList<SqlTrivia> leadingTrivia = null, IReadOnlyList<SqlTrivia> trailingTrivia = null )
             : base( t, leadingTrivia, trailingTrivia )

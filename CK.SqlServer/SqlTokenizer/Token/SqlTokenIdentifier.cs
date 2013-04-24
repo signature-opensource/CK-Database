@@ -8,7 +8,10 @@ using CK.Core;
 
 namespace CK.SqlServer
 {
-    public class SqlTokenIdentifier : SqlToken
+    /// <summary>
+    /// Token for identifiers. An identifier can be <see cref="IsQuoted"/>, be <see cref="IsVariable"/>, be <see cref="IsKeywordName"/>.
+    /// </summary>
+    public sealed class SqlTokenIdentifier : SqlToken
     {
         readonly string _name;
 
@@ -28,14 +31,19 @@ namespace CK.SqlServer
         public bool IsKeywordName { get { return (TokenType & ~SqlTokenType.IdentifierQuoteMask) == SqlTokenType.IdentifierReservedKeyword; } }
 
         /// <summary>
-        /// True for keyword names like int or output (but not for [int], NotAKeyword or "output"). 
+        /// True for keyword names like int or output (but not for [int], NotAKeyword nor "output"). 
         /// </summary>
         public bool IsUnquotedKeyword { get { return TokenType == SqlTokenType.IdentifierReservedKeyword; } }
+        
+        /// <summary>
+        /// True for star (*) identifier. 
+        /// </summary>
+        public bool IsStar { get { return TokenType == SqlTokenType.IdentifierStar; } }
 
         /// <summary>
         /// True for type names like int or [datetime2] or sql_variant. 
         /// </summary>
-        public bool IsTypeName { get { return (int)(TokenType&SqlTokenType.IdentifierMask) > 2; } }
+        public bool IsTypeName { get { return (int)(TokenType&SqlTokenType.IdentifierMask) >= 4; } }
 
         /// <summary>
         /// True if this <see cref="SqlTokenIdentifier"/> is [quoted] or "quoted".
@@ -61,7 +69,7 @@ namespace CK.SqlServer
             // - If the identifier is a known (reserved) keyword like [int].
             //      OR 
             // - If the name itself does not require quotes (like [Space with dots...]). 
-            if( (TokenType & SqlTokenType.IdentifierMask) != 0 || !SqlTokenizer.IsQuoteRequired( Name ) )
+            if( (TokenType & SqlTokenType.IdentifierMask) != 0 || !SqlToken.IsQuoteRequired( Name ) )
             {
                 return new SqlTokenIdentifier( TokenType & ~SqlTokenType.IdentifierQuoteMask, Name, LeadingTrivia, TrailingTrivia );
             }

@@ -236,7 +236,7 @@ namespace CK.Setup
 
         IEnumerable<IDependentItem> IDependentItemDiscoverer.GetOtherItemsToRegister()
         {
-            return new ReadOnlyListMono<IDependentItem>( _package );
+            return new CKReadOnlyListMono<IDependentItem>( _package );
         }
     }
 

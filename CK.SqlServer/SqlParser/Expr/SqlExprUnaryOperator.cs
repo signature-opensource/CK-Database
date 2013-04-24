@@ -9,24 +9,26 @@ namespace CK.SqlServer
 {
     public class SqlExprUnaryOperator : SqlExpr
     {
-        readonly ReadOnlyListMono<SqlTokenTerminal> _firstToken;
-        
-        public SqlExprUnaryOperator( SqlTokenTerminal op, SqlExpr rightExpr )
+        public SqlExprUnaryOperator( SqlToken op, SqlExpr rightExpr )
+            : this( Build( op, rightExpr ) )
+        {
+        }
+
+        static ISqlItem[] Build( SqlToken op, SqlExpr rightExpr )
         {
             if( op == null ) throw new ArgumentNullException( "op" );
             if( rightExpr == null ) throw new ArgumentNullException( "rightExpr" );
-            _firstToken = new ReadOnlyListMono<SqlTokenTerminal>( op );
-            Expression = rightExpr;
+            return CreateArray( SqlToken.EmptyOpenPar, op, rightExpr, SqlToken.EmptyClosePar );
         }
 
-        public SqlTokenTerminal Operator { get { return _firstToken[0]; } }
-
-        public SqlExpr Expression { get; private set; }
-
-        public override IEnumerable<SqlToken> Tokens
+        internal SqlExprUnaryOperator( ISqlItem[] newComponents )
+            : base( newComponents )
         {
-            get { return _firstToken.Concat( Expression.Tokens ); }
         }
+
+        public SqlToken Operator { get { return (SqlToken)Slots[1]; } }
+
+        public SqlExpr Expression { get { return (SqlExpr)Slots[2]; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

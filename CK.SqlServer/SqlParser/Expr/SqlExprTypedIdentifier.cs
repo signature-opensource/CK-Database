@@ -4,29 +4,35 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using CK.Core;
 
 namespace CK.SqlServer
 {
-    public class SqlExprTypedIdentifier : SqlExprBaseMonoToken
+    /// <summary>
+    /// An identifier (a <see cref="SqlTokenIdentifier"/>, typically a variable name) followed by a type declaration (<see cref="SqlExprTypeDecl"/>).
+    /// </summary>
+    public class SqlExprTypedIdentifier : SqlNoExpr
     {
         public SqlExprTypedIdentifier( SqlTokenIdentifier identifier, SqlExprTypeDecl type )
-            : base( identifier )
+            : base( Build( identifier, type ) )
+        {
+        }
+
+        private static ISqlItem[] Build( SqlTokenIdentifier identifier, SqlExprTypeDecl type )
         {
             if( identifier == null ) throw new ArgumentNullException( "identifier" );
             if( type == null ) throw new ArgumentNullException( "type" );
-
-            Identifier = identifier;
-            TypeDecl = type;
+            return CreateArray( identifier, type );
         }
 
-        public SqlTokenIdentifier Identifier { get; private set; }
-
-        public SqlExprTypeDecl TypeDecl { get; private set; }
-
-        public override IEnumerable<SqlToken> Tokens
+        internal SqlExprTypedIdentifier( ISqlItem[] items )
+            : base( items )
         {
-            get { return base.Tokens.Concat( TypeDecl.Tokens ); }
         }
+
+        public SqlTokenIdentifier Identifier { get { return (SqlTokenIdentifier)Slots[0]; } }
+
+        public SqlExprTypeDecl TypeDecl { get { return (SqlExprTypeDecl)Slots[1]; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

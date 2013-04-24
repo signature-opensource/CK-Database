@@ -8,89 +8,103 @@ using CK.Core;
 
 namespace CK.SqlServer
 {
-    public abstract class SqlExprBaseListWithSeparator<T> : SqlExpr where T : IAbstractExpr
+    public abstract class SqlExprBaseListWithSeparator<T> : SqlExpr where T : ISqlItem
     {
-        readonly IAbstractExpr[] _tokens;
-
         /// <summary>
-        /// Initializes a new <see cref="SqlExprBaseListWithSeparator{T}"/> of <typeparamref name="T"/> with <paramref name="validSeparator"/> sets to <see cref="IsCommaSeparator"/> by default.
+        /// Initializes a new <see cref="SqlExprBaseListWithSeparator{T}"/> of <typeparamref name="T"/> enclosed in a <see cref="SqlTokenOpenPar"/> and a <see cref="SqlTokenClosePar"/> 
+        /// and with <paramref name="validSeparator"/> that is to <see cref="IsCommaSeparator"/> by default.
         /// </summary>
         /// <param name="exprOrTokens">List of tokens or expressions.</param>
         /// <param name="validSeparator">Defaults to a predicate that checks that separators are commas (see <see cref="IsCommaSeparator"/>).</param>
-        public SqlExprBaseListWithSeparator( IEnumerable<IAbstractExpr> exprOrTokens, bool allowEmpty, Predicate<IAbstractExpr> validSeparator = null )
+        public SqlExprBaseListWithSeparator( SqlTokenOpenPar openPar, IList<ISqlItem> exprOrTokens, SqlTokenClosePar closePar, bool allowEmpty, Predicate<ISqlItem> validSeparator = null )
+            : this( Build( openPar, exprOrTokens, closePar, allowEmpty, validSeparator ) )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new <see cref="SqlExprBaseListWithSeparator{T}"/> of <typeparamref name="T"/> without <see cref="Opener"/> nor <see cref="Closer"/> 
+        /// and with <paramref name="validSeparator"/> that is set to <see cref="SqlToken.IsCommaSeparator"/> by default.
+        /// </summary>
+        /// <param name="exprOrTokens">List of tokens or expressions.</param>
+        /// <param name="validSeparator">Defaults to a predicate that checks that separators are commas (see <see cref="SqlToken.IsCommaSeparator"/>).</param>
+        public SqlExprBaseListWithSeparator( IList<ISqlItem> exprOrTokens, bool allowEmpty, Predicate<ISqlItem> validSeparator = null )
+            : this( Build( exprOrTokens, allowEmpty, validSeparator ) )
+        {
+        }
+
+        static ISqlItem[] Build( SqlTokenOpenPar openPar, IList<ISqlItem> exprOrTokens, SqlTokenClosePar closePar, bool allowEmpty, Predicate<ISqlItem> validSeparator = null )
+        {
+            if( openPar == null ) throw new ArgumentNullException( "openPar" );
+            if( exprOrTokens == null ) throw new ArgumentNullException( "exprOrTokens" );
+            if( closePar == null ) throw new ArgumentNullException( "closePar" );
+            var c = CreateArray( openPar, exprOrTokens, exprOrTokens.Count, closePar );
+            CheckArray( c, allowEmpty, true, true, validSeparator ?? SqlToken.IsCommaSeparator );
+            return c;
+        }
+
+        static ISqlItem[] Build( IList<ISqlItem> exprOrTokens, bool allowEmpty, Predicate<ISqlItem> validSeparator = null )
         {
             if( exprOrTokens == null ) throw new ArgumentNullException( "exprOrTokens" );
-            IAbstractExpr[] a = exprOrTokens.ToArray();
-            CheckArray( a, allowEmpty, validSeparator ?? IsCommaSeparator );
-            _tokens = a;
+            var c = CreateArray( SqlExprMultiToken<SqlTokenOpenPar>.Empty, exprOrTokens, 0, exprOrTokens.Count, SqlExprMultiToken<SqlTokenClosePar>.Empty );
+            CheckArray( c, allowEmpty, true, false, validSeparator ?? SqlToken.IsCommaSeparator );
+            return c;
         }
 
-        internal SqlExprBaseListWithSeparator( IAbstractExpr[] tokens )
+        internal SqlExprBaseListWithSeparator( ISqlItem[] components )
+            : base( components )
         {
-            Debug.Assert( tokens != null );
-            _tokens = tokens;
         }
 
         /// <summary>
-        /// True if the <see cref="IAbstractExpr"/> is a comma token.
+        /// Gets the number of <see cref="SeparatorTokens"/>.
         /// </summary>
-        /// <param name="t">Potential comma token.</param>
-        /// <returns>Whether the token is a comma or not.</returns>
-        static public bool IsCommaSeparator( IAbstractExpr t )
-        {
-            return (t is SqlToken) && ((SqlToken)t).TokenType == SqlTokenType.Comma;
-        }
+        public int SeparatorCount { get { return Slots.Length / 2 - 1; } }
 
         /// <summary>
-        /// True if the <see cref="IAbstractExpr"/> is a dot token.
+        /// Gets the separators token.
         /// </summary>
-        /// <param name="t">Potential dot token.</param>
-        /// <returns>Whether the token is a comma or not.</returns>
-        static public bool IsDotSeparator( IAbstractExpr t )
-        {
-            return (t is SqlToken) && ((SqlToken)t).TokenType == SqlTokenType.Dot;
-        }
+        public IEnumerable<ISqlItem> SeparatorTokens { get { return ItemsWithoutParenthesis.Skip( 1 ).Where( ( x, i ) => i % 2 != 0 ); } }
 
-        public override IEnumerable<SqlToken> Tokens { get { return Flatten( _tokens ); } }
+        protected ISqlItem SeparatorTokenAt( int i ) { return Slots[(i+1) * 2]; }
 
-        protected int SeparatorCount { get { return _tokens.Length / 2; } }
+        protected int NonSeparatorCount { get { return (Slots.Length + 1) / 2 - 1; } }
 
-        protected IEnumerable<IAbstractExpr> SeparatorTokens { get { return _tokens.Where( ( x, i ) => i % 2 == 1 ); } }
+        protected IEnumerable<T> NonSeparatorTokens { get { return ItemsWithoutParenthesis.Where( ( x, i ) => i % 2 == 0 ).Cast<T>(); } }
 
-        protected IAbstractExpr SeparatorTokenAt( int i )
-        {
-            return _tokens[i * 2 + 1];
-        }
-
-        protected int NonSeparatorCount { get { return (_tokens.Length + 1) / 2; } }
-        
-        protected IEnumerable<T> NonSeparatorTokens { get { return _tokens.Where( ( x, i ) => i % 2 == 0 ).Cast<T>(); } }
-
-        protected T NonSeparatorTokenAt( int i )
-        {
-            return (T)_tokens[i* 2];
-        }
+        protected T NonSeparatorTokenAt( int i ) { return (T)Slots[i* 2+1]; }
 
         [Conditional("DEBUG")]
-        protected static void DebugCheckArray( IAbstractExpr[] t, bool allowEmpty, Predicate<IAbstractExpr> validSeparator )
+        protected static void DebugCheckArray( ISqlItem[] t, bool allowEmpty, bool hasOpenerAndCloser, bool atLeastOneOpener, Predicate<ISqlItem> validSeparator )
         {
-            CheckArray( t, allowEmpty, validSeparator );
+            CheckArray( t, allowEmpty, hasOpenerAndCloser, atLeastOneOpener, validSeparator );
         }
 
-        private static void CheckArray( IAbstractExpr[] t, bool allowEmpty, Predicate<IAbstractExpr> validSeparator )
+        internal static void CheckArray( ISqlItem[] t, bool allowEmpty, bool hasOpenerAndCloser, bool atLeastOneOpener, Predicate<ISqlItem> validSeparator )
         {
             int len = t.Length;
-            if( (len % 2) == 0 && (!allowEmpty && len == 0) ) throw new ArgumentException( "There must be an odd number of elements.", "tokens" );
+            int offset = 0;
+            if( hasOpenerAndCloser )
+            {
+                len -= 2;
+                offset = 1;
+                if( len < 0 ) throw new ArgumentException( "There must be at least the opener/closer pair.", "tokens" );
+                SqlExprMultiToken<SqlTokenOpenPar> opener = t[0] as SqlExprMultiToken<SqlTokenOpenPar>;
+                SqlExprMultiToken<SqlTokenClosePar> closer = t[t.Length - 1] as SqlExprMultiToken<SqlTokenClosePar>;
+                if( opener == null || closer == null ) throw new ArgumentException( "Opener/Closer not found.", "tokens" );
+                if( opener.Count != closer.Count ) throw new ArgumentException( "Opener/Closer are not balanced.", "tokens" );
+                if( atLeastOneOpener && opener.Count == 0 ) throw new ArgumentException( "There must be at least one parenthesis.", "tokens" );
+            }
+            if( (len % 2) == 0 && (len != 0 || !allowEmpty) ) throw new ArgumentException( "There must be an odd number of elements.", "tokens" );
             len = (len + 1) / 2;
             for( int i = 0; i < len; ++i )
             {
-                if( !(t[i * 2] is T) )
+                if( !(t[i * 2 + offset] is T) )
                 {
                     throw new ArgumentException( String.Format( "Invalid token at {0}. It must be {1}.", i * 2, typeof( T ).Name ), "tokens" );
                 }
                 if( validSeparator != null && i > 0 )
                 {
-                    if( !validSeparator( t[i * 2 - 1] ) )
+                    if( !validSeparator( t[i * 2 - 1 + offset] ) )
                     {
                         throw new ArgumentException( String.Format( "Invalid separator at {0}.", i * 2 - 1, typeof( T ).Name ), "tokens" );
                     }
@@ -98,22 +112,23 @@ namespace CK.SqlServer
             }
         }
 
-        static internal string BuildArray( IEnumerator<IAbstractExpr> tokens, bool allowEmpty, Predicate<IAbstractExpr> validSeparator, string elementName, out IAbstractExpr[] result )
+        internal static string BuildArray( IEnumerator<ISqlItem> tokens, bool allowEmpty, Predicate<ISqlItem> validSeparator, string elementName, out ISqlItem[] result )
         {
             Debug.Assert( tokens != null );
             result = null;
-            List<IAbstractExpr> all = new List<IAbstractExpr>();
-            IAbstractExpr element = tokens.Current;
+            List<ISqlItem> all = new List<ISqlItem>();
+            ISqlItem element = tokens.Current;
             if( element is T )
             {
                 all.Add( element );
-                IAbstractExpr separator;
+                ISqlItem separator;
                 while( tokens.MoveNext() && validSeparator( separator = tokens.Current ) )
                 {
                     if( !tokens.MoveNext() || !((element = tokens.Current) is T) )
                     {
                         return String.Format( "Missing {0} after {1}.", elementName, separator.ToString() );
                     }
+                    all.Add( separator );
                     all.Add( element );
                 }
             }
@@ -122,34 +137,34 @@ namespace CK.SqlServer
             return null;
         }
 
-        protected List<IAbstractExpr> ReplaceNonSeparator( Func<T, T> replacer )
+        protected ISqlItem[] ReplaceNonSeparator( Func<T, ISqlItem> replacer )
         {
-            return ReplaceNonSeparator( _tokens, replacer );
+            return ReplaceNonSeparator( Slots, true, replacer );
         }
 
-        static List<IAbstractExpr> ReplaceNonSeparator( IList<IAbstractExpr> tokens, Func<T, T> replacer )
+        internal static ISqlItem[] ReplaceNonSeparator( ISqlItem[] t, bool hasOpenerAndCloser, Func<T, ISqlItem> replacer )
         {
-            bool changed = false;
-            List<IAbstractExpr> newT = new List<IAbstractExpr>( tokens.Count );
-            for( int i = 0; i < tokens.Count; ++i )
+            ISqlItem[] modified = null;
+            int len = t.Length;
+            int i = 0;
+            if( hasOpenerAndCloser )
             {
-                var o = (T)tokens[i];
-                T r = replacer( o );
-                if( ReferenceEquals( r, o ) ) newT.Add( r );
-                else
-                {
-                    changed = true;
-                    if( r != null ) newT.Add( r );
-                    else
-                    {
-                        ++i;
-                        continue;
-                    }
-                }
-                newT.Add( tokens[++i] );
+                len -= 1;
+                i = 1;
             }
-            return changed ? newT : null;
+            for(; i < len; i += 2 )
+            {
+                var o = (T)t[i];
+                ISqlItem r = replacer( o );
+                if( !ReferenceEquals( r, o ) )
+                {
+                    if( modified == null ) modified = (ISqlItem[])t.Clone();
+                    modified[i] = r;
+                }
+            }
+            return modified;
         }
+
 
     }
 

@@ -8,46 +8,80 @@ using CK.Core;
 
 namespace CK.SqlServer
 {
-    public class SqlExprMultiIdentifier : SqlExprBaseListWithSeparatorList<SqlTokenIdentifier>
+
+    public class SqlExprMultiIdentifier : SqlExpr, ISqlIdentifier
     {
-        public SqlExprMultiIdentifier( IEnumerable<SqlToken> tokens )
-            : base( tokens, false, IsDotSeparator )
+        /// <summary>
+        /// Initializes a new <see cref="SqlExprMultiIdentifier"/> that may be enclosed or not. 
+        /// Separator is <see cref="IsDotOrDoubleColonSeparator"/>.
+        /// </summary>
+        /// <param name="isEnclosed">Whether given tokens are enclosed or not.</param>
+        /// <param name="tokens">Identifiers and separator tokens. It may be enclosed or not.</param>
+        public SqlExprMultiIdentifier( bool isEnclosed, IList<ISqlItem> tokens )
+            : this( Build( isEnclosed, tokens ) )
         {
         }
 
-        internal SqlExprMultiIdentifier( IAbstractExpr[] tokens )
-            : base( tokens )
+        static ISqlItem[] Build( bool isEnclosed, IList<ISqlItem> tokens )
         {
-            Debug.Assert( tokens != null );
-            DebugCheckArray( tokens, false, IsDotSeparator );
+            if( tokens.Count == 0 ) throw new ArgumentException();
+            ISqlItem[] r;
+            if( isEnclosed ) r = tokens.ToArray();
+            else r = CreateParArray( tokens.AsReadOnlyList() );
+            SqlExprBaseListWithSeparator<SqlTokenIdentifier>.CheckArray( r, false, true, false, SqlToken.IsDotOrDoubleColonSeparator );
+            return r;
         }
 
-        static internal string BuildArray( IEnumerator<IAbstractExpr> tokens, out IAbstractExpr[] result )
+        internal SqlExprMultiIdentifier( ISqlItem[] slots )
+            : base( slots )
         {
-            return BuildArray( tokens, false, IsDotSeparator, "identifier", out result );
         }
 
-        public int IdentifierCount { get { return base.NonSeparatorCount; } }
+        static internal string BuildArray( IEnumerator<ISqlItem> tokens, out ISqlItem[] result )
+        {
+            return SqlExprBaseListWithSeparator<SqlTokenIdentifier>.BuildArray( tokens, false, SqlToken.IsDotOrDoubleColonSeparator, "identifier", out result );
+        }
 
-        public IEnumerable<SqlTokenIdentifier> Identifiers { get { return base.NonSeparatorTokens; } }
+        /// <summary>
+        /// Gets the number of <see cref="SeparatorTokens"/>.
+        /// </summary>
+        public int SeparatorCount { get { return (Slots.Length / 2) - 1; } }
+
+        /// <summary>
+        /// Gets the separators token.
+        /// </summary>
+        public IEnumerable<SqlTokenTerminal> SeparatorTokens { get { return ItemsWithoutParenthesis.Where( ( x, i ) => i % 2 != 0 ).Cast<SqlTokenTerminal>(); } }
+        
+        public SqlTokenIdentifier IdentifierAt( int index )
+        {
+            return (SqlTokenIdentifier)Slots[index * 2 + 1];
+        }
+
+        public int IdentifiersCount
+        {
+            get { return (Slots.Length - 1) / 2; }
+        }
+
+        public IEnumerable<SqlTokenIdentifier> Identifiers
+        {
+            get { return ItemsWithoutParenthesis.Where( ( x, i ) => i % 2 == 0 ).Cast<SqlTokenIdentifier>(); }
+        }
 
         public SqlExprMultiIdentifier RemoveQuoteIfPossible( bool keepIfReservedKeyword )
         {
-            SqlExprMultiIdentifier result = this;
-            var tokenList = ReplaceNonSeparator( t => t.RemoveQuoteIfPossible( keepIfReservedKeyword ) );
-            if( tokenList != null )
-            {
-                Debug.Assert( tokenList.Count > 0 );
-                result = new SqlExprMultiIdentifier( tokenList.ToArray() );
-            }
-            return this;
+            ISqlItem[] c = SqlExprBaseListWithSeparator<SqlTokenIdentifier>.ReplaceNonSeparator( Slots, true, t => t.RemoveQuoteIfPossible( keepIfReservedKeyword ) );
+            return c != null ? new SqlExprMultiIdentifier( c ) : this;
         }
-
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )
         {
             return visitor.Visit( this );
+        }
+
+        bool ISqlIdentifier.IsVariable
+        {
+            get { return false; }
         }
     }
 

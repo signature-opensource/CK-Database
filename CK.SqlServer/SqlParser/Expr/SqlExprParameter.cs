@@ -8,12 +8,14 @@ using CK.Core;
 
 namespace CK.SqlServer
 {
-    public class SqlExprParameter : SqlExpr
+    public class SqlExprParameter : SqlNoExpr
     {
-        readonly SqlTokenIdentifier _outputClause;
-        readonly SqlTokenIdentifier _readonlyClause;
-
         public SqlExprParameter( SqlExprTypedIdentifier declVar, SqlExprParameterDefaultValue defaultValue = null, SqlTokenIdentifier outputClause = null, SqlTokenIdentifier readonlyClause = null )
+            : this( Build( declVar, defaultValue, outputClause, readonlyClause ) )
+        {
+        }
+
+        static ISqlItem[] Build( SqlExprTypedIdentifier declVar, SqlExprParameterDefaultValue defaultValue, SqlTokenIdentifier outputClause, SqlTokenIdentifier readonlyClause )
         {
             if( declVar == null ) throw new ArgumentNullException( "declVar" );
             if( !declVar.Identifier.IsVariable ) throw new ArgumentException( "Must be a @VariableName", "variable" );
@@ -25,34 +27,96 @@ namespace CK.SqlServer
                 throw new ArgumentException( "Must be out or output.", "outputClause" );
             }
             if( readonlyClause != null
-                && (!readonlyClause.IsUnquotedKeyword || String.Compare( outputClause.Name, "readonly", StringComparison.OrdinalIgnoreCase ) != 0 ) )
+                && (!readonlyClause.IsUnquotedKeyword || String.Compare( outputClause.Name, "readonly", StringComparison.OrdinalIgnoreCase ) != 0) )
             {
                 throw new ArgumentException( "Must be readonly.", "readonlyClause" );
             }
-            Variable = declVar;
-            DefaultValue = defaultValue;
-            _outputClause = outputClause;
-            _readonlyClause = readonlyClause;
-        }
-
-        public SqlExprTypedIdentifier Variable { get; private set; }
-
-        public SqlExprParameterDefaultValue DefaultValue { get; private set; }
-
-        public bool IsOutput { get { return _outputClause != null; } }
-
-        public bool IsreadOnly { get { return _readonlyClause != null; } }
-
-        public override IEnumerable<SqlToken> Tokens
-        {
-            get 
+            //
+            if( defaultValue == null )
             {
-                var t = Variable.Tokens;
-                if( DefaultValue != null ) t = t.Concat( DefaultValue.Tokens );
-                if( _outputClause != null ) t = t.Concat( new ReadOnlyListMono<SqlToken>( _outputClause ) );
-                return t;
+                if( outputClause == null )
+                {
+                    if( readonlyClause == null )
+                    {
+                        return CreateArray( declVar );
+                    }
+                    else
+                    {
+                        return CreateArray( declVar, readonlyClause );
+                    }
+                }
+                else
+                {
+                    if( readonlyClause == null )
+                    {
+                        return CreateArray( declVar, outputClause );
+                    }
+                    else
+                    {
+                        return CreateArray( declVar, outputClause, readonlyClause );
+                    }
+                }
+            }
+            else
+            {
+                if( outputClause == null )
+                {
+                    if( readonlyClause == null )
+                    {
+                        return CreateArray( declVar, defaultValue );
+                    }
+                    else
+                    {
+                        return CreateArray( declVar, defaultValue, readonlyClause );
+                    }
+                }
+                else
+                {
+                    if( readonlyClause == null )
+                    {
+                        return CreateArray( declVar, defaultValue, outputClause );
+                    }
+                    else
+                    {
+                        return CreateArray( declVar, defaultValue, outputClause, readonlyClause );
+                    }
+                }
             }
         }
+
+        internal SqlExprParameter( ISqlItem[] items )
+            : base( items )
+        {
+        }
+
+        public SqlExprTypedIdentifier Variable { get { return (SqlExprTypedIdentifier)Slots[0]; } }
+
+        public SqlExprParameterDefaultValue DefaultValue { get { return Slots.Length > 1 ? Slots[1] as SqlExprParameterDefaultValue : null; } }
+
+        public bool IsOutput { get { return OptionClause != null; } }
+
+        public bool IsReadOnly { get { return ReadOnlyClause != null; } }
+
+        public SqlTokenIdentifier ReadOnlyClause { get { var t = LastTokenClause; return t != null && t.NameEquals( "readonly" ) ? t : null; } }
+
+        public SqlTokenIdentifier OptionClause 
+        { 
+            get 
+            {
+                var t = LastTokenClause;
+                if( t == null ) return null;
+                if( !t.NameEquals( "output" ) )
+                {
+                    t = AnteLastTokenClause;
+                    Debug.Assert( t == null || t.NameEquals( "output" ) );
+                }
+                return t;
+            } 
+        }
+
+        SqlTokenIdentifier LastTokenClause { get { return Slots.Length > 1 ? Slots[Slots.Length - 1] as SqlTokenIdentifier : null; } }
+
+        SqlTokenIdentifier AnteLastTokenClause { get { return Slots.Length > 2 ? Slots[Slots.Length - 2] as SqlTokenIdentifier : null; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

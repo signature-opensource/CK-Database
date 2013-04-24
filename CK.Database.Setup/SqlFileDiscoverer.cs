@@ -32,7 +32,7 @@ namespace CK.Database.Setup
             _logger = logger;
 
             _packages = new List<DynamicPackageItem>();
-            _packagesEx = new ReadOnlyListOnIList<DynamicPackageItem>( _packages );
+            _packagesEx = new CKReadOnlyListOnIList<DynamicPackageItem>( _packages );
         }
 
         public int PackageDiscoverErrorCount

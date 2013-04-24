@@ -48,7 +48,7 @@ namespace CK.Core
             _logger = logger;
             _index = new Dictionary<Assembly, DiscoveredInfo>();
             _list = new List<DiscoveredInfo>();
-            _listEx = new ReadOnlyListOnIList<DiscoveredInfo>( _list );
+            _listEx = new CKReadOnlyListOnIList<DiscoveredInfo>( _list );
         }
 
         /// <summary>

@@ -57,14 +57,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\CK.Setupable.Engine\CK.Setupable.Engine.csproj">
-      <Project>{D3C700E1-3546-437C-9B96-1F867A539B6A}</Project>
-      <Name>CK.Setupable.Engine</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="CK.Core">
-      <HintPath>..\..\packages\CK.Core.2.7.43\lib\net40\CK.Core.dll</HintPath>
+    <Reference Include="CK.Core, Version=2.8.6.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\CK.Core.2.8.6-develop\lib\net40\CK.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
