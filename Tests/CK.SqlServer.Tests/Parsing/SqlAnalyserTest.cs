@@ -4,6 +4,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 
 namespace CK.SqlServer.Tests.Parsing
@@ -34,23 +35,134 @@ namespace CK.SqlServer.Tests.Parsing
         public void SelectFromWhere()
         {
             Check( "select from dbo.fC( (5 * 2) ) where x = 4", "[select-()-from[call:dbo.fC([5*2])]-where[[x=4]]]" );
-            Check( "select X from a where x = 4 order by z", "[select-(X)-from[a]-where[[x=4]]-orderBy[z]]" );
+            Check( "select X from a where x = 4 order by z", "OrderBy([select-(X)-from[a]-where[[x=4]]],z)" );
             Check( "select from t group by a, b with rollup", "[select-()-from[t]-groupBy[¤{a-,-b-with-rollup}¤]]" );
             Check( "select from t group by rollup(a,b)", "[select-()-from[t]-groupBy[call:rollup(a,b)]]" );
             
             Check( "select from t inner join z on z.id = [group].gid group by rollup(a,b)",
                     "[select-()-from[¤{t-inner-join-z-on-[z.id=[group].gid]}¤]-groupBy[call:rollup(a,b)]]" );
 
-            Check( "select * from a order by z asc, r desc", "[select-(*)-from[a]-orderBy[¤{z-asc-,-r-desc}¤]]" );
+            Check( "select * from a order by z asc, r desc", "OrderBy([select-(*)-from[a]],¤{z-asc-,-r-desc}¤)" );
             Check( @"SELECT top (3) DepartmentID, Name, GroupName
                         FROM HumanResources.Department
-                        ORDER BY DepartmentID ASC 
+                        order by DepartmentID ASC 
                             OFFSET @StartingRowNumber - 1 ROWS 
                             FETCH NEXT @EndingRowNumber - @StartingRowNumber + 1 ROWS ONLY",
-                    "[SELECT-top-(-3-)-(DepartmentID,Name,GroupName)-from[HumanResources.Department]-orderBy[¤{DepartmentID-ASC-OFFSET-[@StartingRowNumber-1]-ROWS-FETCH-NEXT-[[@EndingRowNumber-@StartingRowNumber]+1]-ROWS-ONLY}¤]]" );
+                    @"OrderBy( [SELECT-top-(-3-)-(DepartmentID,Name,GroupName)-from[HumanResources.Department]],
+                               ¤{DepartmentID-ASC-OFFSET-[@StartingRowNumber-1]-ROWS-FETCH-NEXT-[[@EndingRowNumber-@StartingRowNumber]+1]-ROWS-ONLY}¤
+                             )" );
 
-            Check( "select from t group by rollup(a,b), nimp * [order by] order by s, k offset (@i+8) rows fetch next 45 - 8 rows only",
-                    "[select-()-from[t]-groupBy[¤{call:rollup(a,b)-,-[nimp*[order by]]}¤]-orderBy[¤{s-,-k-call:offset([@i+8])-rows-fetch-next-[45-8]-rows-only}¤]]" );
+            Check( "select from t group by rollup(a,b), nimp * [order\"by] order by s, k offset (@i+8) rows fetch next 45 - 8 rows only",
+                    @"OrderBy( 
+                                [select-()-from[t]-groupBy[¤{call:rollup(a,b)-,-[nimp*[order""by]]}¤]],
+                                ¤{s-,-k-call:offset([@i+8])-rows-fetch-next-[45-8]-rows-only}¤
+                              )" );
+        }
+
+        [Test]
+        public void SelectUnionIntersect()
+        {
+            // -- intersect > union
+            var intersectStrongerThanUnion = @"[
+                                                    [select-(1)]
+                                                  union
+                                                    [ [select-(2)]intersect[select-(0)] ]
+                                               ]";
+            Check( "select 1 union select 2 intersect select 0", intersectStrongerThanUnion );
+	        // -- Same as 
+	        Check( "select 1 union (select 2 intersect select 0)", intersectStrongerThanUnion );
+	        // -- Not the same as 
+            Check( "(select 1 union select 2) intersect select 0", @"[
+                                                                          [ [select-(1)]union[select-(2)] ]
+                                                                       intersect
+                                                                          [select-(0)]
+                                                                     ]" );
+        }
+
+        [Test]
+        public void SelectUnionAllExcept()
+        {
+            // -- except > union
+            var exceptStrongerThanUnion = @"[
+                                                [select-(1)]
+                                              union-all
+                                                [ [select-(2)]except[select-(1)] ]
+                                            ]";
+            Check( "select 1 union all select 2 except select 1", exceptStrongerThanUnion );
+
+	        // -- Same as 
+	        Check( "select 1 union all (select 2 except select 1)", exceptStrongerThanUnion );
+	        
+            // -- Not the same as 
+            Check( "(select 1 union all select 2) except select 1", @"[
+                                                                            [ [select-(1)]union-all[select-(2)] ]
+                                                                        except
+                                                                            [select-(1)]
+                                                                      ]" );
+        }
+
+        [Test]
+        public void SelectExceptIntersect()
+        {
+            // -- intersect > except
+            var sc1 = "(select 1 union select 2 union select 3)";
+            var c1 = "[[[select-(1)]union[select-(2)]]union[select-(3)]]";
+            Check( sc1, c1 );
+            
+            var sc2 = "(select 1 union select 2)";
+            var c2 = "[[select-(1)]union[select-(2)]]";
+            Check( sc2, c2 );
+            
+            var sc3 = "(select 1)";
+            var c3 = "[select-(1)]";
+            Check( sc3, c3 );
+
+            var intersectStrongerThanExpect = "["+c1+"except["+c2+"intersect"+c3+"]]";
+            Check( sc1 +" except "+ sc2 + " intersect " + sc3, intersectStrongerThanExpect );
+	        // -- Same as 
+            Check( sc1 + " except " + "(" + sc2 + " intersect " + sc3 + ")", intersectStrongerThanExpect );
+            // -- Not the same as 
+            Check( "(" + sc1 + " except " + sc2 + ")" + " intersect " + sc3, "[[" + c1 + "except" + c2 + "]intersect" + c3 + "]" );
+        }
+
+        [Test]
+        public void SelectUnionAndOrderBy()
+        {
+            {
+                var sc1 = "(((((select name from sys.tables where X))))) order by name";
+                Check( sc1, "OrderBy([select-(name)-from[sys.tables]-where[X]],name)" );
+            }
+            {
+                // This is not syntaxically valid.
+                var sc1 = "((select name from sys.tables where X) order by name) for xml auto";
+                Check( sc1, "For(OrderBy([select-(name)-from[sys.tables]-where[X]],name),¤{xml-auto}¤)" );
+            }
+            {
+                var sc1 = @"((((
+	                            (select name from sys.tables where name like '%a%')
+                            union
+	                            (((select 'u'+name from sys.tables where name like '%a%')))
+                            ))))
+                            order by name desc
+                            for xml auto";
+                var sc2 = @"select name from sys.tables where name like '%a%'
+                            union
+                            select 'u'+name from sys.tables where name like '%a%'
+                            order by name desc
+                            for xml auto";
+                var c = @"For(
+                                OrderBy(
+                                        [
+                                                [select-(name)-from[sys.tables]-where[Like(name,'%a%')]]
+                                             union
+                                                [select-(['u'+name])-from[sys.tables]-where[Like(name,'%a%')]]
+                                        ], ¤{name-desc}¤
+                                     ), ¤{xml-auto}¤
+                              )";
+
+                Check( sc1, c );
+                Check( sc2, c );
+            }
         }
 
         [Test]
@@ -161,7 +273,7 @@ namespace CK.SqlServer.Tests.Parsing
             SqlExpr e;
             var r = SqlAnalyser.ParseExpression( out e, text );
             Assert.That( r.IsError, Is.False, r.ToString() );
-            Assert.That( ExplainWriter.Write( e ), Is.EqualTo( explained ) );
+            Assert.That( ExplainWriter.Write( e ), Is.EqualTo( Regex.Replace( explained, @"\s*", String.Empty ) ) );
             Assert.That( textAutoCorrected ?? text, Is.EqualTo( e.ToString() ) );
         }
 

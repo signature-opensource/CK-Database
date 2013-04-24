@@ -117,7 +117,7 @@ namespace CK.SqlServer
                 {
                     R.MoveNext();
                     SqlTokenIdentifier type;
-                    if( !R.IsUnquotedKeyword( out type ) ) return false;
+                    if( !R.IsUnquotedKeyword( out type, true ) ) return false;
                     if( type.NameEquals( "procedure" ) || type.NameEquals( "proc" ) )
                     {
                         SqlExprStStoredProc sp;

@@ -21,26 +21,32 @@ namespace CK.SqlServer
         public SelectCombineOperator( ISelectSpecification left, SqlTokenTerminal union, SqlTokenIdentifier all, ISelectSpecification right, SelectOrderBy orderBy = null, SelectFor forPart = null )
             : this( Build( left, union, all, right, orderBy, forPart ) )
         {
-            if( union.TokenType != SqlTokenType.Union || !all.NameEquals( "all" ) ) throw new ArgumentException();
+            if( union.TokenType == SqlTokenType.Union && all != null && !all.NameEquals( "all" ) ) throw new ArgumentException();
         }
 
         static ISqlItem[] Build( ISelectSpecification left, SqlTokenTerminal op, SqlTokenIdentifier all, ISelectSpecification right, SelectOrderBy orderBy, SelectFor forPart )
         {
             Debug.Assert( left != null && op != null && right != null );
             ISqlItem o = all != null ? (ISqlItem)new SqlExprMultiToken<SqlToken>( op, all ) : op;
+            return Build( SqlToken.EmptyOpenPar, left, o, right, orderBy, forPart, SqlToken.EmptyClosePar );
+        }
+
+        static ISqlItem[] Build( SqlExprMultiToken<SqlTokenOpenPar> opener, ISelectSpecification left, ISqlItem op, ISelectSpecification right, SelectOrderBy orderBy, SelectFor forPart, SqlExprMultiToken<SqlTokenClosePar> closer )
+        {
+            Debug.Assert( opener != null && left != null && op != null && right != null && closer != null );
             if( orderBy != null )
             {
                 if( forPart != null )
                 {
-                    return CreateArray( SqlToken.EmptyOpenPar, left, o, right, orderBy, forPart, SqlToken.EmptyClosePar );
+                    return CreateArray( opener, left, op, right, orderBy, forPart, closer );
                 }
-                return CreateArray( SqlToken.EmptyOpenPar, left, o, right, orderBy, SqlToken.EmptyClosePar );
+                return CreateArray( opener, left, op, right, orderBy, closer );
             }
             else if( forPart != null )
             {
-                return CreateArray( SqlToken.EmptyOpenPar, left, o, right, forPart, SqlToken.EmptyClosePar );
+                return CreateArray( opener, left, op, right, forPart, closer );
             }
-            return CreateArray( SqlToken.EmptyOpenPar, left, o, right, SqlToken.EmptyClosePar );
+            return CreateArray( opener, left, op, right, closer );
         }
 
         internal SelectCombineOperator( ISqlItem[] slots )
@@ -48,14 +54,14 @@ namespace CK.SqlServer
         {
             Debug.Assert( Slots.Length >= 5 && Slots.Length <= 7 );
             Debug.Assert( Slots[1] is ISelectSpecification && Slots[3] is ISelectSpecification );
-            Debug.Assert( Slots.Length != 5 || (Slots[4] is SelectOrderBy || Slots[4] is SelectFor) );
+            Debug.Assert( Slots.Length != 6 || (Slots[4] is SelectOrderBy || Slots[4] is SelectFor) );
             Debug.Assert( Slots.Length < 7 || (Slots[4] is SelectOrderBy && Slots[5] is SelectFor) );
             Debug.Assert( IsValidOperator( OperatorToken.TokenType ) 
                                 && (UnionAll == null
-                                || (UnionAll != null
-                                    && UnionAll[0].TokenType == SqlTokenType.Union
-                                    && UnionAll[1] is SqlTokenIdentifier
-                                    && ((SqlTokenIdentifier)UnionAll[1]).NameEquals( "all" ))) );
+                                    || (UnionAll != null
+                                        && UnionAll[0].TokenType == SqlTokenType.Union
+                                        && UnionAll[1] is SqlTokenIdentifier
+                                        && ((SqlTokenIdentifier)UnionAll[1]).NameEquals( "all" ))) );
         }
 
         static public bool IsValidOperator( SqlTokenType op )
@@ -92,24 +98,16 @@ namespace CK.SqlServer
 
         public ISelectSpecification RightSelect { get { return (ISelectSpecification)Slots[3]; } }
 
-        public bool HasExtensions { get { return Slots.Length > 5; } }
+        public SelectOrderBy OrderByClause { get { return Slots.Length == 6 ? Slots[4] as SelectOrderBy : (Slots.Length == 7 ? (SelectOrderBy)Slots[4] : null); } }
 
-        public bool ExtractExtensions( out SelectOrderBy orderBy, out SelectFor forPart, out ISelectSpecification cleaned )
+        public SelectFor ForClause { get { return Slots.Length == 6 ? Slots[4] as SelectFor : (Slots.Length == 7 ? (SelectFor)Slots[5] : null); } }
+
+        public ISelectSpecification SetExtensions( SelectOrderBy orderBy, SelectFor forPart )
         {
-            orderBy = null;
-            forPart = null;
-            cleaned = this;
-            if( !HasExtensions ) return false;
-            if( Slots.Length == 6 )
-                if( Slots[4] is SelectFor ) forPart = (SelectFor)Slots[4];
-                else orderBy = (SelectOrderBy)Slots[4];
-            else
-            {
-                orderBy = (SelectOrderBy)Slots[4];
-                forPart = (SelectFor)Slots[5];
-            }
-            cleaned = new SelectCombineOperator( new ISqlItem[5] { Slots[0], Slots[1], Slots[2], Slots[3], Closer } );
-            return true;
+            SelectOrderBy o = OrderByClause;
+            SelectFor f = ForClause;
+            if( orderBy == o && forPart == f ) return this;
+            return new SelectCombineOperator( Build( Opener, LeftSelect, Operator, RightSelect, orderBy, forPart, Closer ) );
         }
 
         [DebuggerStepThrough]

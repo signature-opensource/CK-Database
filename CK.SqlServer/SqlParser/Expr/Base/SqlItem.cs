@@ -63,11 +63,13 @@ namespace CK.SqlServer
 
         static internal SqlToken[] CreateArray( params SqlToken[] e )
         {
+            Debug.Assert( e != null && e.All( i => i != null ) );
             return e;
         }
 
         static internal SqlTokenIdentifier[] CreateArray( params SqlTokenIdentifier[] e )
         {
+            Debug.Assert( e != null && e.All( i => i != null ) );
             return e;
         }
 

@@ -181,8 +181,6 @@ namespace CK.SqlServer
             "from", 
             "where",
             "group",
-            "order",
-            "for", 
             "option"
         };
         #endregion
@@ -297,6 +295,8 @@ namespace CK.SqlServer
             _keywords.Add( "union", SqlTokenType.Union );
             _keywords.Add( "intersect", SqlTokenType.Intersect );
             _keywords.Add( "except", SqlTokenType.Except );
+            _keywords.Add( "order", SqlTokenType.Order );
+            _keywords.Add( "for", SqlTokenType.For );
 
             Debug.Assert( _keywords.Keys.Intersect( _sqlServerReserved ).Any() == false ); 
             // Reserved keywords.

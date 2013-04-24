@@ -9,12 +9,12 @@ using CK.Core;
 namespace CK.SqlServer
 {
     /// <summary>
-    /// Captures the optional "For ..." select part.
+    /// Select "For" operator.
     /// </summary>
-    public class SelectFor : SqlNoExpr
+    public class SelectFor : SqlExpr, ISelectSpecification
     {
-        public SelectFor( SqlTokenIdentifier forToken, SqlExpr content )
-            : this( CreateArray( forToken, content ) )
+        public SelectFor( ISelectSpecification select, SqlTokenTerminal forToken, SqlExpr content )
+            : this( CreateArray( SqlToken.EmptyOpenPar, select, forToken, content, SqlToken.EmptyClosePar ) )
         {
         }
 
@@ -23,13 +23,26 @@ namespace CK.SqlServer
         {
         }
 
-        public SqlExpr Expression { get { return (SqlExpr)Slots[2]; } }
+        public ISelectSpecification Select { get { return (ISelectSpecification)Slots[1]; } }
 
+        public SqlExpr SelectExpr { get { return (SqlExpr)Slots[1]; } }
+
+        public SqlExpr ForExpression { get { return (SqlExpr)Slots[3]; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )
         {
             return visitor.Visit( this );
+        }
+
+        public SqlTokenType CombinationKind
+        {
+            get { return SqlTokenType.For; }
+        }
+
+        public SelectColumnList Columns
+        {
+            get { return Select.Columns; }
         }
 
     }

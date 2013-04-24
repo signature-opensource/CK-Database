@@ -125,7 +125,7 @@ namespace CK.SqlServer
                 }
                 if( (R.Current.TokenType & SqlTokenType.IsAssignOperator) != 0 )
                 {
-                    if( !(left is ISqlIdentifier) ) return R.SetCurrentError( "Unexpected =. Assignement must follow an identifier." );
+                    if( !(left is ISqlIdentifier) ) return R.SetCurrentError( "Unexpected '='. Assignement must follow an identifier." );
                     else
                     {
                         SqlTokenTerminal assign = R.Read<SqlTokenTerminal>();
@@ -169,25 +169,33 @@ namespace CK.SqlServer
                 }
                 if( (R.Current.TokenType & SqlTokenType.IsSelectPart) != 0 )
                 {
-                    Debug.Assert( SelectCombineOperator.IsValidOperator( R.Current.TokenType ) );
-                    SqlTokenTerminal op = R.Read<SqlTokenTerminal>();
                     ISelectSpecification lSelect = left as ISelectSpecification;
-                    if( lSelect == null ) return R.SetCurrentError( "Unexpected {op}.", op.TokenType.ToString() );
+                    if( lSelect == null ) return false;
+                    SqlTokenTerminal op = R.Read<SqlTokenTerminal>();
+                    if( op.TokenType == SqlTokenType.Order )
+                    {
+                        SqlTokenIdentifier by;
+                        SqlExpr content;
+                        if( !R.IsUnquotedKeyword( out by, "by", true ) ) return false;
+                        if( !IsExpressionOrRawList( out content, SelectPartStopper, true ) ) return false;
+                        left = new SelectOrderBy( lSelect, op, by, content );
+                        return true;
+                    }
+                    if( op.TokenType == SqlTokenType.For )
+                    {
+                        SqlExpr content;
+                        if( !IsExpressionOrRawList( out content, SelectPartStopper, true ) ) return false;
+                        left = new SelectFor( lSelect, op, content );
+                        return true;
+                    }
+                    Debug.Assert( SelectCombineOperator.IsValidOperator( op.TokenType ) );
                     SqlTokenIdentifier all = null;
-                    if( op.TokenType == SqlTokenType.Union ) R.IsUnquotedKeyword( out all, "all" );
+                    if( op.TokenType == SqlTokenType.Union ) R.IsUnquotedKeyword( out all, "all", false );
                     SqlExpr right;
                     if( !IsExpression( out right, precedenceLevel, true ) ) return false;
                     ISelectSpecification rSelect = right as ISelectSpecification;
                     if( rSelect == null ) return R.SetCurrentError( "Expected select expression." );
-                        
-                    SelectOrderBy orderBy = null;
-                    SelectFor forPart = null;
-                    if( rSelect.Opener.Count > 0 || !rSelect.ExtractExtensions( out orderBy, out forPart, out rSelect ) )
-                    {
-                        if( !IsSelectSpecificationExtension( out orderBy, out forPart ) ) return false;
-                    }
-                    if( all != null ) left = new SelectCombineOperator( lSelect, op, all, rSelect, orderBy, forPart );
-                    else left = new SelectCombineOperator( lSelect, op, rSelect, orderBy, forPart );
+                    left = new SelectCombineOperator( lSelect, op, all, rSelect );
                     return true;
                 }
                 return false;
@@ -238,7 +246,7 @@ namespace CK.SqlServer
             /// <summary>
             /// Reads one and only one expression (comma stops it).
             /// </summary>
-            /// <param name="e">The read exprexxion.</param>
+            /// <param name="e">The read expression.</param>
             /// <param name="parenthesisRequired">True to raise an error if no opening parenthesis exists.</param>
             /// <returns>True on success.</returns>
             bool IsOneExpression( out SqlExpr e, bool parenthesisRequired )

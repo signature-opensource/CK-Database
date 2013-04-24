@@ -211,7 +211,7 @@ namespace CK.SqlServer.Tests.Parsing
 
         public override SqlItem Visit( SelectSpecification e )
         {
-            Out.Append( "[" );
+            Out.Append( '[' );
             VisitExpr( e.Header );
             Out.Append( "-" );
             VisitExpr( e.Columns );
@@ -219,9 +219,7 @@ namespace CK.SqlServer.Tests.Parsing
             if( e.FromClause != null ) VisitExpr( e.FromClause );
             if( e.WhereClause != null ) VisitExpr( e.WhereClause );
             if( e.GroupByClause != null ) VisitExpr( e.GroupByClause );
-            if( e.OrderByClause != null ) VisitExpr( e.OrderByClause );
-            if( e.ForClause != null ) VisitExpr( e.ForClause );
-            Out.Append( "]" );
+            Out.Append( ']' );
             return e;
         }
 
@@ -298,17 +296,31 @@ namespace CK.SqlServer.Tests.Parsing
 
         public override SqlItem Visit( SelectOrderBy e )
         {
-            Out.Append( "-orderBy[" );
-            VisitExpr( e.Expression );
-            Out.Append( "]" );
+            Out.Append( "OrderBy(" );
+            VisitExpr( e.SelectExpr );
+            Out.Append( "," );
+            VisitExpr( e.OrderByExpression );
+            Out.Append( ")" );
             return e;
         }
 
         public override SqlItem Visit( SelectFor e )
         {
-            Out.Append( "-for[" );
-            VisitExpr( e.Expression );
-            Out.Append( "]" );
+            Out.Append( "For(" );
+            VisitExpr( e.SelectExpr );
+            Out.Append( "," );
+            VisitExpr( e.ForExpression );
+            Out.Append( ")" );
+            return e;
+        }
+
+        public override SqlItem Visit( SelectCombineOperator e )
+        {
+            Out.Append( '[' );
+            VisitExpr( e.Left );
+            e.Operator.Tokens.WriteTokensWithoutTrivias( "-", Out );
+            VisitExpr( e.Right );
+            Out.Append( ']' );
             return e;
         }
 

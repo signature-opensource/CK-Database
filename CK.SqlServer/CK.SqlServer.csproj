@@ -172,7 +172,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="SqlTokenizer\SqlReservedKeyword.cs" />
-    <Compile Include="SqlTokenizer\SourceLocation.cs" />
     <Compile Include="SqlTokenizer\SqlTokenizer.cs" />
     <Compile Include="SqlTokenizer\SqlTokenTypeError.cs" />
     <Compile Include="SqlTokenizer\SqlTokenType.cs" />

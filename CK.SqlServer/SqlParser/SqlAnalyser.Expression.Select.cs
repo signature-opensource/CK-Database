@@ -60,8 +60,6 @@ namespace CK.SqlServer
                     SelectFrom from = null;
                     SelectWhere where = null;
                     SelectGroupBy groupBy = null;
-                    SelectOrderBy orderBy = null;
-                    SelectFor forPart = null;                   
                     if( c == SpecificationPart.Into )
                     {
                         SqlTokenIdentifier partName = R.Read<SqlTokenIdentifier>(); 
@@ -102,37 +100,33 @@ namespace CK.SqlServer
                         groupBy = new SelectGroupBy( partName, by, content, having, havingClause );
                         c = IsSpecificationPart( R.Current );
                     }
-                    if( allowExtension && (c == SpecificationPart.Order || c == SpecificationPart.For) )
-                    {
-                        if( !IsSelectSpecificationExtension( out orderBy, out forPart ) ) return false;
-                    }
-                    e = new SelectSpecification( header, columns, into, from, where, groupBy, orderBy, forPart );
+                    e = new SelectSpecification( header, columns, into, from, where, groupBy );
                 }
                 return true;
             }
 
-            private bool IsSelectSpecificationExtension( out SelectOrderBy orderBy, out SelectFor forPart )
-            {
-                orderBy = null;
-                forPart = null;
-                if( SqlToken.IsUnquotedIdentifier( R.Current, "order" ) )
-                {
-                    SqlTokenIdentifier partName = R.Read<SqlTokenIdentifier>();
-                    SqlTokenIdentifier by;
-                    SqlExpr content;
-                    if( !R.IsUnquotedKeyword( out by, "by", true ) ) return false;
-                    if( !IsExpressionOrRawList( out content, SelectPartStopper, true ) ) return false;
-                    orderBy = new SelectOrderBy( partName, by, content );
-                }
-                if( SqlToken.IsUnquotedIdentifier( R.Current, "for" ) )
-                {
-                    SqlTokenIdentifier partName = R.Read<SqlTokenIdentifier>();
-                    SqlExpr content;
-                    if( !IsExpressionOrRawList( out content, SelectPartStopper, true ) ) return false;
-                    forPart = new SelectFor( partName, content );
-                }
-                return true;
-            }
+            //private bool IsSelectSpecificationExtension( out SelectOrderBy orderBy, out SelectFor forPart )
+            //{
+            //    orderBy = null;
+            //    forPart = null;
+            //    if( SqlToken.IsUnquotedIdentifier( R.Current, "order" ) )
+            //    {
+            //        SqlTokenIdentifier partName = R.Read<SqlTokenIdentifier>();
+            //        SqlTokenIdentifier by;
+            //        SqlExpr content;
+            //        if( !R.IsUnquotedKeyword( out by, "by", true ) ) return false;
+            //        if( !IsExpressionOrRawList( out content, SelectPartStopper, true ) ) return false;
+            //        orderBy = new SelectOrderBy( partName, by, content );
+            //    }
+            //    if( SqlToken.IsUnquotedIdentifier( R.Current, "for" ) )
+            //    {
+            //        SqlTokenIdentifier partName = R.Read<SqlTokenIdentifier>();
+            //        SqlExpr content;
+            //        if( !IsExpressionOrRawList( out content, SelectPartStopper, true ) ) return false;
+            //        forPart = new SelectFor( partName, content );
+            //    }
+            //    return true;
+            //}
 
             bool IsSelectColumnList( out SelectColumnList e, bool expectAtLeastOne )
             {
@@ -186,8 +180,8 @@ namespace CK.SqlServer
             bool SelectPartStopper( SqlToken t )
             {
                 return t.TokenType == SqlTokenType.EndOfInput
-                        || (t.TokenType & SqlTokenType.IsSelectPart) != 0
                         || SqlToken.IsCloseParenthesisOrTerminator( t )
+                        || (t.TokenType & SqlTokenType.IsSelectPart) != 0
                         || IsSpecificationPart( t ) != SpecificationPart.None
                         || SqlToken.IsUnquotedIdentifier( t, "having", "option" );
             }
@@ -203,9 +197,7 @@ namespace CK.SqlServer
                 Into = 1,
                 From = 2,
                 Where = 3,
-                Group = 4,
-                Order = 5,
-                For = 6
+                Group = 4
             }
 
             SpecificationPart IsSpecificationPart( SqlToken t )
@@ -218,8 +210,6 @@ namespace CK.SqlServer
                     else if( id.NameEquals( "from" ) ) c = SpecificationPart.From;
                     else if( id.NameEquals( "where" ) ) c = SpecificationPart.Where;
                     else if( id.NameEquals( "group" ) ) c = SpecificationPart.Group;
-                    else if( id.NameEquals( "order" ) ) c = SpecificationPart.Order;
-                    else if( id.NameEquals( "for" ) ) c = SpecificationPart.For;
                 }
                 return c;
             }

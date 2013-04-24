@@ -35,9 +35,10 @@ namespace CK.SqlServer
     /// 
     /// 7        = += -= *= /= %= &amp;= |= ^=                              Assignments (IsAssignOperator).
     ///        
-    /// 4       Intersect, Group, Order, For, Option                        Intersect, union and except have the same level as comma in msdn.                     
-    /// 3       Except                                                      They act as binary operators beween SelectSpecification.                  
-    /// 2       Union                                                                        
+    /// 5       Intersect                                                   Intersect, union and except have the same level as comma in msdn (it is not true: inersect &gt; except &gt; union [all]).                     
+    /// 4       Except                                                      They act as binary operators beween SelectSpecification.                  
+    /// 3       Union                                                                        
+    /// 2       Order, For                                                  Consider them as operators (where left side is ISelectSpecification).
     /// 1        ,                                                          List separator (comma)
     /// 
     /// (1) For '=' token, disambiguisation between Comparison and Assignment requires a context hint: we need to know if we are in a "assignment context" or not.
@@ -99,15 +100,14 @@ namespace CK.SqlServer
         #endregion
 
         /// <summary>
-        /// Combines all IsXXXXOperator (Assign, Basic, Compare, LogicalOrSet).
+        /// Combines all IsXXXXOperator (Assign, Basic, Compare, LogicalOrSet and SelectPart).
         /// </summary>
-        AllOperatorMask = IsAssignOperator | IsBasicOperator | IsCompareOperator | IsLogicalOrSetOperator,
+        AllOperatorMask = IsAssignOperator | IsBasicOperator | IsCompareOperator | IsLogicalOrSetOperator | IsSelectPart,
 
         /// <summary>
         /// Mask that covers IsXXX discriminators (including <see cref="IsComment"/>).
         /// </summary>
         TokenDiscriminatorMask = AllOperatorMask
-                                    | IsSelectPart
                                     | IsBracket
                                     | IsIdentifier
                                     | IsNumber
@@ -174,7 +174,7 @@ namespace CK.SqlServer
         IsString = 1 << 11,
 
         /// <summary>
-        /// Covers select related tokens: union, intersect, except, order, for, option.
+        /// Covers select related tokens: union, intersect, except.
         /// </summary>
         IsSelectPart = 1 << 10,
 
@@ -357,20 +357,28 @@ namespace CK.SqlServer
         And = IsLogicalOrSetOperator | OpLevel09 | 3,
         #endregion
         
-        SelectPartCount = 3,
-        #region IsSelectPart: union, except, intersect
+        SelectPartCount = 5,
+        #region IsSelectPart: union, except, intersect, order and for.
         /// <summary>
         /// Union between select specification (lowest precedence).
         /// </summary>
-        Union = IsSelectPart | OpLevel02 | 1,
+        Union = IsSelectPart | OpLevel03 | 1,
         /// <summary>
         /// Except between select specification.
         /// </summary>
-        Except = IsSelectPart | OpLevel03 | 2,
+        Except = IsSelectPart | OpLevel04 | 2,
         /// <summary>
         /// Intersect between select specification (highest precedence).
         /// </summary>
-        Intersect = IsSelectPart | OpLevel04 | 3,
+        Intersect = IsSelectPart | OpLevel05 | 3,
+        /// <summary>
+        /// Order By is considered as an operator.
+        /// </summary>
+        Order = IsSelectPart | OpLevel02 | 4,
+        /// <summary>
+        /// For (xml, browse...) is considered as an operator.
+        /// </summary>
+        For = IsSelectPart | OpLevel02 | 5,
         #endregion
 
         PunctuationCount = 5,

@@ -211,7 +211,7 @@ namespace CK.SqlServer
         /// <param name="type">Type of the token.</param>
         /// <param name="expected">True to set an error if the current token is not of the expected type.</param>
         /// <returns>True on success.</returns>
-        public bool IsToken<T>( out T t, SqlTokenType type, bool expected = true ) where T : SqlToken
+        public bool IsToken<T>( out T t, SqlTokenType type, bool expected ) where T : SqlToken
         {
             if( Current.TokenType == type && Current is T )
             {
@@ -223,19 +223,42 @@ namespace CK.SqlServer
             return false;
         }
 
-        public bool IsUnquotedKeyword( out SqlTokenIdentifier keyword, string name, bool expected = true )
-        {
-            Predicate<SqlTokenIdentifier> p = null;
-            if( name != null ) p = (t => t.NameEquals( name ));
-            return IsUnquotedKeyword( out keyword, p, expected );
-        }
-
-        public bool IsUnquotedKeyword( out SqlTokenIdentifier keyword, Predicate<SqlTokenIdentifier> filter = null, bool expected = true )
+        public bool IsUnquotedKeyword( out SqlTokenIdentifier keyword, bool expected )
         {
             if( Current.TokenType == SqlTokenType.IdentifierReservedKeyword )
             {
+                keyword = Read<SqlTokenIdentifier>();
+                return true;
+            }
+            if( expected ) SetCurrentError( "Reserved Keyword expected." );
+            keyword = null;
+            return false;
+        }
+
+        public bool IsUnquotedKeyword( out SqlTokenIdentifier keyword, string name, bool expected )
+        {
+            if( name == null ) throw new ArgumentNullException( "name" );
+            if( Current.TokenType == SqlTokenType.IdentifierReservedKeyword )
+            {
                 SqlTokenIdentifier t = (SqlTokenIdentifier)Current;
-                if( filter == null || filter( t ) )
+                if( t.NameEquals( name ) )
+                {
+                    keyword = Read<SqlTokenIdentifier>();
+                    return true;
+                }
+            }
+            if( expected ) SetCurrentError( "Expected reserved keyword '{0}'.", name );
+            keyword = null;
+            return false;
+        }
+
+        public bool IsUnquotedKeyword( out SqlTokenIdentifier keyword, Predicate<SqlTokenIdentifier> filter, bool expected )
+        {
+            if( filter == null ) throw new ArgumentNullException( "filter" );
+            if( Current.TokenType == SqlTokenType.IdentifierReservedKeyword )
+            {
+                SqlTokenIdentifier t = (SqlTokenIdentifier)Current;
+                if( filter( t ) )
                 {
                     keyword = t;
                     MoveNext();

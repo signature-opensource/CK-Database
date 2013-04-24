@@ -185,7 +185,7 @@ namespace CK.SqlServer
         static string[] _basicOperator = { "|", "^", "&", "+", "-", "*", "/", "%", "~" };
         static string[] _compareOperator = { "=", ">", "<", ">=", "<=", "<>", "!=", "!>", "!<", "between", "like", "in", "is" };
         static string[] _logicalOrSet = { "not", "or", "and" };
-        static string[] _selectPart = { "union", "except", "intersect" };
+        static string[] _selectPart = { "union", "except", "intersect", "order", "for" };
         static string[] _punctuations = { ".", ",", ";", ":", "::" };
 
         public static string Explain( SqlTokenType t )
