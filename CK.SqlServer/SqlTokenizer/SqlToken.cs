@@ -187,7 +187,7 @@ namespace CK.SqlServer
         static public bool IsCommaOrCloseParenthesisOrTerminator( ISqlItem t )
         {
             SqlToken token = t as SqlToken;
-            return token != null && (token.TokenType == SqlTokenType.Comma || token.TokenType == SqlTokenType.ClosePar || token.TokenType == SqlTokenType.SemiColon);
+            return token != null && (token.TokenType == SqlTokenType.EndOfInput || token.TokenType == SqlTokenType.Comma || token.TokenType == SqlTokenType.ClosePar || token.TokenType == SqlTokenType.SemiColon);
         }
 
         /// <summary>

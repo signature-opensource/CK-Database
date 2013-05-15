@@ -10,14 +10,23 @@ namespace CK.SqlServer.Setup
 {
     public class SqlProcedureItem : SqlObjectItem
     {
-        internal SqlProcedureItem( SqlObjectProtoItem p, MethodInfo m = null )
+        readonly SqlExprStStoredProc _storedProc;
+
+        internal SqlProcedureItem( SqlObjectProtoItem p, SqlExprStStoredProc storedProc = null, MethodInfo m = null )
             : base( p )
         {
             Debug.Assert( p.ItemType == SqlObjectProtoItem.TypeProcedure );
             MethodInfo = m;
+            _storedProc = storedProc;
         }
 
         public MethodInfo MethodInfo { get; set; }
+
+        /// <summary>
+        /// Gets the original parsed stored procedure. 
+        /// Can be null if an error occured during parsing.
+        /// </summary>
+        public SqlExprStStoredProc OriginalStatement { get { return _storedProc; } }
 
     }
 }

@@ -231,7 +231,7 @@ namespace CK.Core
                     if( m == null && finalImplementation ) m = am.LastImplementor;
                     if( m == null || (m == EmptyImplementor && finalImplementation) )
                     {
-                        logger.Error( "Method '{0}.{1}' has no valid associated IAutoImplementorMethod.", AbstractType.FullName, am.Method.Name );
+                        logger.Fatal( "Method '{0}.{1}' has no valid associated IAutoImplementorMethod.", AbstractType.FullName, am.Method.Name );
                     }
                     else
                     {
@@ -241,14 +241,14 @@ namespace CK.Core
                             {
                                 if( finalImplementation )
                                 {
-                                    logger.Error( "Method '{0}.{1}' can not be implemented by its IAutoImplementorMethod.", AbstractType.FullName, am.Method.Name );
+                                    logger.Fatal( "Method '{0}.{1}' can not be implemented by its IAutoImplementorMethod.", AbstractType.FullName, am.Method.Name );
                                 }
                                 else EmptyImplementor.Implement( logger, am.Method, b, true );
                             }
                         }
                         catch( Exception ex )
                         {
-                            logger.Error( ex, "While implementing method '{0}.{1}'.", AbstractType.FullName, am.Method.Name );
+                            logger.Fatal( ex, "While implementing method '{0}.{1}'.", AbstractType.FullName, am.Method.Name );
                             return null;
                         }
                     }
@@ -262,7 +262,7 @@ namespace CK.Core
                     if( p == null && finalImplementation ) p = ap.LastImplementor;
                     if( p == null || (p == EmptyImplementor && finalImplementation) )
                     {
-                        logger.Error( "Property '{0}.{1}' has no valid associated IAutoImplementorProperty.", AbstractType.FullName, ap.Property.Name );
+                        logger.Fatal( "Property '{0}.{1}' has no valid associated IAutoImplementorProperty.", AbstractType.FullName, ap.Property.Name );
                     }
                     else
                     {
@@ -272,14 +272,14 @@ namespace CK.Core
                             {
                                 if( finalImplementation )
                                 {
-                                    logger.Error( "Property '{0}.{1}' can not be implemented by its IAutoImplementorProperty.", AbstractType.FullName, ap.Property.Name );
+                                    logger.Fatal( "Property '{0}.{1}' can not be implemented by its IAutoImplementorProperty.", AbstractType.FullName, ap.Property.Name );
                                 }
                                 else EmptyImplementor.Implement( logger, ap.Property, b, true );
                             }
                         }
                         catch( Exception ex )
                         {
-                            logger.Error( ex, "While implementing property '{0}.{1}'.", AbstractType.FullName, ap.Property.Name );
+                            logger.Fatal( ex, "While implementing property '{0}.{1}'.", AbstractType.FullName, ap.Property.Name );
                             return null;
                         }
                     }
@@ -291,7 +291,7 @@ namespace CK.Core
             }
             catch( Exception ex )
             {
-                logger.Error( ex, "While implementing Type '{0}'.", AbstractType.FullName );
+                logger.Fatal( ex, "While implementing Type '{0}'.", AbstractType.FullName );
                 return null;
             }
         }

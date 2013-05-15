@@ -1,4 +1,5 @@
-﻿using CK.Setup;
+﻿using System.Data.SqlClient;
+using CK.Setup;
 using CK.SqlServer.Setup;
 
 namespace SqlActorPackage.Basic
@@ -11,7 +12,7 @@ namespace SqlActorPackage.Basic
         }
 
         [SqlProcedure( "sUserCreate" )]
-        public abstract int Create( string userName );
+        public abstract SqlCommand Create();
 
     }
 }

@@ -12,9 +12,9 @@ namespace CK.Setup
     /// used to dynamically refuse to be referenced as a Container by other items) that must be provided through implementations of abstract methods.
     /// </summary>
     /// <remarks>
-    /// The <see cref="ContainerItemBase"/> must be used for container that do not have versions.
+    /// The <see cref="DynamicContainerItem"/> must be used for container that do not have versions.
     /// </remarks>
-    public abstract class PackageItemBase : DynamicDependentItem, IMutableSetupItemContainer, IPackageItem
+    public abstract class PackageItemBase : DynamicDependentItem, IMutableSetupItemContainer, IPackageItem, IDependentItemContainerRef
     {
         DependentItemList _children;
 
@@ -41,6 +41,11 @@ namespace CK.Setup
         public IDependentItemList Children
         {
             get { return _children ?? (_children = new DependentItemList()); }
+        }
+
+        bool IDependentItemRef.Optional
+        {
+            get { return false; }
         }
 
         object IDependentItem.StartDependencySort()

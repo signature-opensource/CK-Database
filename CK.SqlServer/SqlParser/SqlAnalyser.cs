@@ -4,6 +4,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using CK.Core;
 using CK.SqlServer;
 
 namespace CK.SqlServer
@@ -32,6 +33,23 @@ namespace CK.SqlServer
                 }
 
                 static internal readonly ErrorResult NoError = new ErrorResult( null, null );
+
+                /// <summary>
+                /// Logs the error message if <see cref="IsError"/> is true, otherwise does nothing.
+                /// </summary>
+                /// <param name="logLevel">Log level to use.</param>
+                /// <param name="logger">Logger to log into.</param>
+                public void LogOnError( LogLevel logLevel, IActivityLogger logger )
+                {
+                    if( logger == null ) throw new ArgumentNullException( "logger" );
+                    if( IsError )
+                    {
+                        using( logger.OpenGroup( logLevel, ErrorMessage ) )
+                        {
+                            logger.Info( HeadSource );
+                        }
+                    }
+                }
             }
 
             [DebuggerStepThrough]
@@ -40,6 +58,24 @@ namespace CK.SqlServer
                 SqlAnalyser a = new SqlAnalyser( new SqlTokenizer(), text );
                 if( a.IsStatement( out statement, true ) ) return ErrorResult.NoError;
                 return a.CreateErrorResult();
+            }
+
+            [DebuggerStepThrough]
+            public static ErrorResult ParseStatement<T>( out T statement, string text ) where T : SqlExprBaseSt
+            {
+                statement = null;
+
+                SqlExprBaseSt st;
+                SqlAnalyser a = new SqlAnalyser( new SqlTokenizer(), text );
+                if( !a.IsStatement( out st, true ) ) return a.CreateErrorResult();
+
+                statement = st as T;
+                if( statement == null )
+                {
+                    a.R.SetCurrentError( "Expected '{0}' statement but found a '{1}'.", statement.GetType().Name, st.GetType().Name );
+                    return a.CreateErrorResult();
+                }
+                return ErrorResult.NoError;
             }
 
             [DebuggerStepThrough]
@@ -109,7 +145,7 @@ namespace CK.SqlServer
                     SqlExprStatementList body;
                     if( !IsStatementList( out body, true ) ) return false;
                     SqlTokenIdentifier end;
-                    if( !R.IsUnquotedKeyword( out end, "end", true ) ) return false;
+                    if( !R.IsUnquotedReservedKeyword( out end, "end", true ) ) return false;
                     statement = new SqlExprStBlock( id, body, end );
                     return true;
                 }
@@ -117,7 +153,7 @@ namespace CK.SqlServer
                 {
                     R.MoveNext();
                     SqlTokenIdentifier type;
-                    if( !R.IsUnquotedKeyword( out type, true ) ) return false;
+                    if( !R.IsUnquotedReservedKeyword( out type, true ) ) return false;
                     if( type.NameEquals( "procedure" ) || type.NameEquals( "proc" ) )
                     {
                         SqlExprStStoredProc sp;
@@ -149,7 +185,7 @@ namespace CK.SqlServer
                     if( !IsStatement( out thenSt, true ) ) return false;
                     SqlTokenIdentifier elseToken;
                     SqlExprBaseSt elseSt = null;
-                    if( R.IsUnquotedKeyword( out elseToken, "else", false ) )
+                    if( R.IsUnquotedReservedKeyword( out elseToken, "else", false ) )
                     {
                         if( !IsStatement( out elseSt, true ) ) return false;
                     }
@@ -248,12 +284,12 @@ namespace CK.SqlServer
                 if( !IsUnmodeledUntil( out options, out asToken, t => t.IsUnquotedKeyword && t.NameEquals( "as" ) ) ) return false;
 
                 SqlTokenIdentifier begin, end = null;
-                R.IsUnquotedKeyword( out begin, "begin", false );
+                R.IsUnquotedReservedKeyword( out begin, "begin", false );
 
                 SqlExprStatementList bodyStatements;
                 if( !IsStatementList( out bodyStatements, true ) ) return false;
 
-                if( begin != null ) R.IsUnquotedKeyword( out end, "end", true );
+                if( begin != null ) R.IsUnquotedReservedKeyword( out end, "end", true );
 
                 SqlTokenTerminal term = GetOptionalTerminator();
                 
@@ -283,10 +319,10 @@ namespace CK.SqlServer
             {
                 parameter = null;
                 SqlExprTypedIdentifier declVar;
-                if( !IsTypedIdentifer( out declVar, t => t.IsVariable, expected ) ) return false;
-
                 SqlExprParameterDefaultValue defValue = null;
+                using( R.SetAssignmentContext( true ) )
                 {
+                    if( !IsTypedIdentifer( out declVar, t => t.IsVariable, expected ) ) return false;
                     SqlTokenTerminal assign;
                     if( R.IsToken( out assign, SqlTokenType.Assign, false ) )
                     {
@@ -305,12 +341,11 @@ namespace CK.SqlServer
                         }
                     }
                 }
-
                 SqlTokenIdentifier outputClause;
-                R.IsUnquotedKeyword( out outputClause, t => t.NameEquals( "out" ) || t.NameEquals( "output" ), false );
+                R.IsUnquotedIdentifier( out outputClause, "out" , "output", false );
 
                 SqlTokenIdentifier readonlyClause;
-                R.IsUnquotedKeyword( out readonlyClause, "readonly", false );
+                R.IsUnquotedIdentifier( out readonlyClause, "readonly", false );
 
                 parameter = new SqlExprParameter( declVar, defValue, outputClause, readonlyClause );
                 return true;
@@ -413,7 +448,7 @@ namespace CK.SqlServer
                                 {
                                     SqlTokenIdentifier sizeMax;
                                     SqlTokenLiteralInteger size = null;
-                                    if( !R.IsUnquotedKeyword( out sizeMax, "max", false ) && !R.IsToken( out size, true ) ) return false;
+                                    if( !R.IsUnquotedIdentifier( out sizeMax, "max", false ) && !R.IsToken( out size, true ) ) return false;
                                     if( size != null && size.Value == 0 )
                                     {
                                         R.SetCurrentError( "Size can not be 0." );

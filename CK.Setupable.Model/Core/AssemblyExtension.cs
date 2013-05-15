@@ -20,7 +20,7 @@ namespace CK.Core
         static public IReadOnlyList<string> GetSortedResourceNames( this Assembly assembly )
         {
             if( assembly == null ) throw new ArgumentNullException( "assembly" );
-            // We don't care about duplicate computation & set. "Out of lock" Add in GetOrAdd is okay.
+            // We don't care about duplicate computation and set. "Out of lock" Add in GetOrAdd is okay.
             return _cache.GetOrAdd( assembly, a =>
             {
                 var l = a.GetManifestResourceNames();

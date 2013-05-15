@@ -91,9 +91,9 @@ namespace CK.SqlServer
                         SqlExpr content;
                         SqlTokenIdentifier having;
                         SqlExpr havingClause = null;
-                        if( !R.IsUnquotedKeyword( out by, "by", true ) ) return false;
+                        if( !R.IsUnquotedReservedKeyword( out by, "by", true ) ) return false;
                         if( !IsExpressionOrRawList( out content, SelectPartStopper, true ) ) return false;
-                        if( R.IsUnquotedKeyword( out having, "having", false ) )
+                        if( R.IsUnquotedReservedKeyword( out having, "having", false ) )
                         {
                             if( !IsOneExpression( out havingClause, false ) ) return false;
                         }
@@ -159,7 +159,7 @@ namespace CK.SqlServer
                     {
                         SqlTokenIdentifier asToken;
                         SqlExprIdentifier colName = null;
-                        if( R.IsUnquotedKeyword( out asToken, "as", false ) )
+                        if( R.IsUnquotedReservedKeyword( out asToken, "as", false ) )
                         {
                             if( !IsMonoIdentifier( out colName, true ) ) return false;
                             column = new SelectColumn( e, asToken, colName );
@@ -225,9 +225,9 @@ namespace CK.SqlServer
                 SqlTokenIdentifier with = null;
                 SqlTokenIdentifier ties = null;
 
-                if( !R.IsUnquotedKeyword( out select, "select", expected ) ) return false;
-                if( !R.IsUnquotedKeyword( out allOrDistinct, "all", false ) ) R.IsUnquotedKeyword( out allOrDistinct, "distinct", false );
-                if( R.IsUnquotedKeyword( out top, "top", false ) )
+                if( !R.IsUnquotedReservedKeyword( out select, "select", expected ) ) return false;
+                if( !R.IsUnquotedReservedKeyword( out allOrDistinct, "all", false ) ) R.IsUnquotedReservedKeyword( out allOrDistinct, "distinct", false );
+                if( R.IsUnquotedReservedKeyword( out top, "top", false ) )
                 {
                     SqlTokenLiteralInteger intVal;
                     if( R.IsToken( out intVal, false ) )
@@ -236,9 +236,9 @@ namespace CK.SqlServer
                         topExpression.MutableEnclose( SqlTokenOpenPar.OpenPar, SqlTokenOpenPar.ClosePar );
                     }
                     else if( !IsOneExpression( out topExpression, true ) ) return false;
-                    if( R.IsUnquotedKeyword( out percent, "percent", false ) )
+                    if( R.IsUnquotedReservedKeyword( out percent, "percent", false ) )
                     {
-                        if( R.IsUnquotedKeyword( out with, "with", false ) ) R.IsUnquotedKeyword( out ties, "ties", true );
+                        if( R.IsUnquotedReservedKeyword( out with, "with", false ) ) R.IsUnquotedReservedKeyword( out ties, "ties", true );
                     }
                 }
                 e = new SelectHeader( select, allOrDistinct, top, topExpression, percent, with, ties );

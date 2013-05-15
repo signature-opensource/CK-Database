@@ -144,7 +144,7 @@ namespace CK.SqlServer
                     SqlTokenTerminal notToken;
                     R.IsToken( out notToken, SqlTokenType.Not, false );
                     SqlTokenIdentifier nullToken;
-                    if( !R.IsUnquotedKeyword( out nullToken, "null", true ) ) return false;
+                    if( !R.IsUnquotedReservedKeyword( out nullToken, "null", true ) ) return false;
                     left = new SqlExprIsNull( left, isToken, notToken, nullToken );
                     return true;
                 }
@@ -176,7 +176,7 @@ namespace CK.SqlServer
                     {
                         SqlTokenIdentifier by;
                         SqlExpr content;
-                        if( !R.IsUnquotedKeyword( out by, "by", true ) ) return false;
+                        if( !R.IsUnquotedReservedKeyword( out by, "by", true ) ) return false;
                         if( !IsExpressionOrRawList( out content, SelectPartStopper, true ) ) return false;
                         left = new SelectOrderBy( lSelect, op, by, content );
                         return true;
@@ -190,7 +190,7 @@ namespace CK.SqlServer
                     }
                     Debug.Assert( SelectCombineOperator.IsValidOperator( op.TokenType ) );
                     SqlTokenIdentifier all = null;
-                    if( op.TokenType == SqlTokenType.Union ) R.IsUnquotedKeyword( out all, "all", false );
+                    if( op.TokenType == SqlTokenType.Union ) R.IsUnquotedReservedKeyword( out all, "all", false );
                     SqlExpr right;
                     if( !IsExpression( out right, precedenceLevel, true ) ) return false;
                     ISelectSpecification rSelect = right as ISelectSpecification;
@@ -224,7 +224,7 @@ namespace CK.SqlServer
                 if( !IsExpression( out pattern, SqlTokenizer.PrecedenceLevel( SqlTokenType.OpComparisonLevel ), true ) ) return false;
                 SqlTokenIdentifier escapeToken;
                 SqlTokenLiteralString escapeChar = null;
-                if( R.IsUnquotedKeyword( out escapeToken, "escape", false ) )
+                if( R.IsUnquotedReservedKeyword( out escapeToken, "escape", false ) )
                 {
                     if( !R.IsToken( out escapeChar, true ) ) return false;
                 }

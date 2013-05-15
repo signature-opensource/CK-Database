@@ -729,6 +729,9 @@ namespace CK.Setup
             get { return _leafData.StructuredObject; }
         }
 
+        /// <summary>
+        /// Gets the type of the structure object.
+        /// </summary>
         public Type ObjectType
         {
             get { return Type; }

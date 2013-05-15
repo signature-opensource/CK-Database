@@ -20,14 +20,13 @@ namespace CK.SqlServer
             if( declVar == null ) throw new ArgumentNullException( "declVar" );
             if( !declVar.Identifier.IsVariable ) throw new ArgumentException( "Must be a @VariableName", "variable" );
             if( outputClause != null
-                && (!outputClause.IsUnquotedKeyword
-                        || (String.Compare( outputClause.Name, "out", StringComparison.OrdinalIgnoreCase ) != 0
-                            && String.Compare( outputClause.Name, "output", StringComparison.OrdinalIgnoreCase ) != 0)) )
+                && String.Compare( outputClause.Name, "out", StringComparison.OrdinalIgnoreCase ) != 0
+                && String.Compare( outputClause.Name, "output", StringComparison.OrdinalIgnoreCase ) != 0 )
             {
                 throw new ArgumentException( "Must be out or output.", "outputClause" );
             }
             if( readonlyClause != null
-                && (!readonlyClause.IsUnquotedKeyword || String.Compare( outputClause.Name, "readonly", StringComparison.OrdinalIgnoreCase ) != 0) )
+                && String.Compare( outputClause.Name, "readonly", StringComparison.OrdinalIgnoreCase ) != 0 )
             {
                 throw new ArgumentException( "Must be readonly.", "readonlyClause" );
             }
@@ -93,13 +92,22 @@ namespace CK.SqlServer
 
         public SqlExprParameterDefaultValue DefaultValue { get { return Slots.Length > 1 ? Slots[1] as SqlExprParameterDefaultValue : null; } }
 
-        public bool IsOutput { get { return OptionClause != null; } }
+        public bool IsOutput { get { return OutputToken != null; } }
 
-        public bool IsReadOnly { get { return ReadOnlyClause != null; } }
+        public bool IsInputOutput 
+        { 
+            get 
+            {
+                if( OutputToken == null ) return false;
+                return Tokens.SelectMany( t => t.LeadingTrivia.Concat( t.TrailingTrivia ).Where( trivia => trivia.TokenType != SqlTokenType.None ) ).Any( trivia => trivia.Text.Contains( "input" ) );
+            } 
+        }
+        
+        public bool IsReadOnly { get { return ReadOnlyToken != null; } }
 
-        public SqlTokenIdentifier ReadOnlyClause { get { var t = LastTokenClause; return t != null && t.NameEquals( "readonly" ) ? t : null; } }
+        public SqlTokenIdentifier ReadOnlyToken { get { var t = LastTokenClause; return t != null && t.NameEquals( "readonly" ) ? t : null; } }
 
-        public SqlTokenIdentifier OptionClause 
+        public SqlTokenIdentifier OutputToken 
         { 
             get 
             {

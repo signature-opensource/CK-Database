@@ -223,7 +223,7 @@ namespace CK.SqlServer
             return false;
         }
 
-        public bool IsUnquotedKeyword( out SqlTokenIdentifier keyword, bool expected )
+        public bool IsUnquotedReservedKeyword( out SqlTokenIdentifier keyword, bool expected )
         {
             if( Current.TokenType == SqlTokenType.IdentifierReservedKeyword )
             {
@@ -235,9 +235,11 @@ namespace CK.SqlServer
             return false;
         }
 
-        public bool IsUnquotedKeyword( out SqlTokenIdentifier keyword, string name, bool expected )
+        public bool IsUnquotedReservedKeyword( out SqlTokenIdentifier keyword, string name, bool expected )
         {
             if( name == null ) throw new ArgumentNullException( "name" );
+            Debug.Assert( SqlReservedKeyword.MapKeyword( name ) != null, name + " is NOT a keyword!" );
+
             if( Current.TokenType == SqlTokenType.IdentifierReservedKeyword )
             {
                 SqlTokenIdentifier t = (SqlTokenIdentifier)Current;
@@ -252,21 +254,27 @@ namespace CK.SqlServer
             return false;
         }
 
-        public bool IsUnquotedKeyword( out SqlTokenIdentifier keyword, Predicate<SqlTokenIdentifier> filter, bool expected )
+        public bool IsUnquotedIdentifier( out SqlTokenIdentifier identifier, string name, bool expected )
         {
-            if( filter == null ) throw new ArgumentNullException( "filter" );
-            if( Current.TokenType == SqlTokenType.IdentifierReservedKeyword )
+            if( SqlToken.IsUnquotedIdentifier( Current, name ) )
             {
-                SqlTokenIdentifier t = (SqlTokenIdentifier)Current;
-                if( filter( t ) )
-                {
-                    keyword = t;
-                    MoveNext();
-                    return true;
-                }
+                identifier = Read<SqlTokenIdentifier>();
+                return true;
             }
-            if( expected ) SetCurrentError( "Reserved Keyword expected." );
-            keyword = null;
+            if( expected ) SetCurrentError( "Expected '{0}' identifier.", name );
+            identifier = null;
+            return false;
+        }
+
+        public bool IsUnquotedIdentifier( out SqlTokenIdentifier identifier, string name, string altName, bool expected )
+        {
+            if( SqlToken.IsUnquotedIdentifier( Current, name, altName ) )
+            {
+                identifier = Read<SqlTokenIdentifier>();
+                return true;
+            }
+            if( expected ) SetCurrentError( "Expected '{0}' or '{1}' identifier.", name, altName );
+            identifier = null;
             return false;
         }
 

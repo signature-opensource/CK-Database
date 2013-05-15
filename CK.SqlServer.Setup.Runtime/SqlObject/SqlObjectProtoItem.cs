@@ -59,8 +59,10 @@ namespace CK.SqlServer.Setup
         public IEnumerable<string> Children { get { return null; } }
         public IEnumerable<VersionedName> PreviousNames { get; private set; }
             
-        public string TextAfterName { get; private set; }
+        public string FullOriginalText { get; private set; }
             
+        public string TextAfterName { get; private set; }
+
         internal SqlObjectProtoItem(
                     IContextLocNaming externalName,
                     string itemType,
@@ -74,7 +76,8 @@ namespace CK.SqlServer.Setup
                     IEnumerable<string> requiredBy,
                     IEnumerable<string> groups,
                     IEnumerable<VersionedName> prevNames,
-                    string textAfterName )
+                    string textAfterName,
+                    string fullOriginalText )
         {
             Debug.Assert( externalName != null );
             
@@ -94,13 +97,17 @@ namespace CK.SqlServer.Setup
             Groups = groups;
             PreviousNames = prevNames;
             TextAfterName = textAfterName;
+            FullOriginalText = fullOriginalText;
         }
 
         public SqlProcedureItem CreateProcedureItem( IActivityLogger logger, MethodInfo m )
         {
             if( logger == null ) throw new ArgumentNullException( "logger" );
             if( ItemType != SqlObjectProtoItem.TypeProcedure ) throw new InvalidOperationException( "Not a procedure." );
-            return new SqlProcedureItem( this, m );
+            SqlExprStStoredProc sp;
+            var error = SqlAnalyser.ParseStatement( out sp, FullOriginalText );
+            error.LogOnError( LogLevel.Error, logger );
+            return new SqlProcedureItem( this, sp, m );
         }
 
         public SqlObjectItem CreateItem( IActivityLogger logger )
@@ -109,7 +116,7 @@ namespace CK.SqlServer.Setup
             SqlObjectItem result = null;
             if( ItemType == SqlObjectProtoItem.TypeProcedure )
             {
-                result = new SqlProcedureItem( this );
+                result = CreateProcedureItem( logger, null );
             }
             else if( ItemType == SqlObjectProtoItem.TypeView )
             {

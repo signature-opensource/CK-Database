@@ -177,6 +177,11 @@ namespace CK.SqlServer
             "plan",
             "writetext",
 
+            // These are NOT reserved keywords...
+            // "output",
+            // "readonly",
+            // "max",
+
             "into", 
             "from", 
             "where",

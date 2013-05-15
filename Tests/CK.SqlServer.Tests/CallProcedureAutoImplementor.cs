@@ -51,6 +51,32 @@ namespace CK.SqlServer.Tests
 
         class ManualCall
         {
+            public SqlCommand StandardSP()
+            {
+                SqlCommand cmd = new SqlCommand( "CK.StupidTest" );
+                cmd.CommandType = CommandType.StoredProcedure;
+                SqlParameterCollection c = cmd.Parameters;
+                SqlParameter p;
+                p = new SqlParameter( "@x", SqlDbType.Int );
+                c.Add( p );
+
+                SqlParameter pOut0 = new SqlParameter( "@y", SqlDbType.Int );
+                pOut0.Direction = ParameterDirection.Output;
+                c.Add( pOut0 );
+
+                SqlParameter pOut1 = new SqlParameter( "@d", SqlDbType.DateTime );
+                pOut1.Direction = ParameterDirection.InputOutput;
+                c.Add( pOut1 );
+
+                SqlParameter pOut2 = new SqlParameter( "@s", SqlDbType.NVarChar, 64 );
+                pOut2.Direction = ParameterDirection.Output;
+                c.Add( pOut2 );
+
+                p = new SqlParameter( "@z", SqlDbType.Int );
+                c.Add( p );
+
+                return cmd;
+            }
 
             //[SqlAutoImplement( "CK.sChoucroute" )]
             public void CallStandardSP( ISqlCallContext ctx, int x, out int y, ref DateTime d, out string s, int z )

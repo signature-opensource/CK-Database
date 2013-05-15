@@ -86,7 +86,7 @@ namespace CK.SqlServer.Setup
                 schema = databaseOrSchema;
                 databaseOrSchema = tmp;
             }
-            return new SqlObjectProtoItem( externalName, type, databaseOrSchema, schema, name, header, version, packageName, requires, groups, requiredBy, previousNames, textAfterName );
+            return new SqlObjectProtoItem( externalName, type, databaseOrSchema, schema, name, header, version, packageName, requires, groups, requiredBy, previousNames, textAfterName, text );
         }
 
     }

@@ -28,6 +28,8 @@ namespace CK.SqlServer.Setup
             _objectName = p.ObjectName;
             _protoItem = p;
             _type = p.ItemType;
+            // Keeps the physical database name if the proto item defines it.
+            // It is currently unused.
             _physicalDB = p.PhysicalDatabaseName;
             
             _version = p.Version;
