@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using CK.Core;
@@ -56,7 +57,13 @@ namespace CK.Setup
                 using( logger.OpenGroup( LogLevel.Info, "Creating Setup Items from Structured Objects." ) )
                 {
                     var itemBuilder = new StObjSetupItemBuilder( logger, _configurator, _configurator, _configurator );
-                    e.Register( itemBuilder.Build( result.OrderedStObjs ) );
+                    var setupItems = itemBuilder.Build( result.OrderedStObjs );
+                    if( setupItems == null )
+                    {
+                        Debug.Assert( hasError );
+                        logger.CloseGroup( "Unable to create Setup items for StObjs." );
+                    }
+                    else e.Register( setupItems );
                 }
             }
             if( hasError )

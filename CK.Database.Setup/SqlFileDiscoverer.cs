@@ -206,7 +206,7 @@ namespace CK.Database.Setup
 
         bool DoRegisterSql( ParsedFileName f, DependentProtoItemCollector itemCollector, IScriptCollector collector, Func<string> readContent, Func<ISetupScript> createSetupScript )
         {
-            if( f.SetupStep != SetupStep.None )
+            if( f.SetupStep != SetupStep.PreInit )
             {
                 // It is a script related to a package: if a collector exists, register a SetupScript.
                 if( collector == null ) return true;

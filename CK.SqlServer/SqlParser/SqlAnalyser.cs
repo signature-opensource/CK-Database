@@ -289,7 +289,7 @@ namespace CK.SqlServer
                 SqlExprStatementList bodyStatements;
                 if( !IsStatementList( out bodyStatements, true ) ) return false;
 
-                if( begin != null ) R.IsUnquotedReservedKeyword( out end, "end", true );
+                if( begin != null && !R.IsUnquotedReservedKeyword( out end, "end", true ) ) return false;
 
                 SqlTokenTerminal term = GetOptionalTerminator();
                 

@@ -17,14 +17,14 @@ namespace CK.SqlServer.Setup
             _attr = a;
         }
 
-        void IStObjSetupDynamicInitializer.DynamicItemInitialize( IActivityLogger logger, IMutableSetupItem item, IStObjRuntime stObj )
+        void IStObjSetupDynamicInitializer.DynamicItemInitialize( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjRuntime stObj )
         {
             SqlPackageBaseItem package = (SqlPackageBaseItem)item;
             // 2 - Attempts to load the resource.
-            SqlObjectProtoItem proto = SqlObjectItemAttributeImpl.LoadProtoItemFromResource( logger, package, _attr.ProcedureName, SqlObjectProtoItem.TypeProcedure );
+            SqlObjectProtoItem proto = SqlObjectItemAttributeImpl.LoadProtoItemFromResource( state.Logger, package, _attr.ProcedureName, SqlObjectProtoItem.TypeProcedure );
             if( proto == null ) return;
             // On success, creates the SqlProcedureItem bound to the MethodInfo that must call it.
-            _item = proto.CreateProcedureItem( logger, _method );
+            _item = proto.CreateProcedureItem( state.Logger, _method );
             // Early binds the SqlProcedureItem to the item (its containing package) if it has none 
             // or if the name fits. (This is optional and can be changed later.)
             if( _item.Container == null || _item.Container.FullName == package.FullName ) _item.Container = package;

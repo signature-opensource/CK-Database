@@ -22,7 +22,7 @@ namespace CK.Setupable.Engine.Tests
             Assert.That( result.FromVersion, Is.Null );
             Assert.That( result.Version, Is.EqualTo( new Version( 1, 2, 3 ) ) );
             Assert.That( result.IsContent, Is.False );
-            Assert.That( result.SetupStep, Is.EqualTo( SetupStep.None ) );
+            Assert.That( result.SetupStep, Is.EqualTo( SetupStep.PreInit ) );
             Assert.That( result.FullName, Is.EqualTo( "[C]Loc^Test" ) );
 
             Assert.That( ParsedFileName.TryParse( String.Empty, "Loc", "Test.InstallContent.1.2.3.to.1.2.4.sql", @"C:\", true, out result ) );

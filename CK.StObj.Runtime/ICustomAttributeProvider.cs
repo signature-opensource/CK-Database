@@ -29,7 +29,7 @@ namespace CK.Core
         bool IsDefined( MemberInfo m, Type attributeType );
 
         /// <summary>
-        /// Gets all of attributes that are assignable to the given <paramref cref="attributeType"/>.
+        /// Gets all the attributes that are assignable to the given <paramref cref="attributeType"/>.
         /// </summary>
         /// <param name="m">The member info (can be a <see cref="Type"/>).</param>
         /// <param name="attributeType">Type of requested attributes.</param>
@@ -37,7 +37,7 @@ namespace CK.Core
         IEnumerable<object> GetCustomAttributes( MemberInfo m, Type attributeType );
 
         /// <summary>
-        /// Gets all of attributes that are assignable to the given <typeparamref name="T"/>.
+        /// Gets all the attributes that are assignable to the given <typeparamref name="T"/>.
         /// </summary>
         /// <typeparam name="T">Type of the attributes.</typeparam>
         /// <param name="m">The member info (can be a <see cref="Type"/>).</param>

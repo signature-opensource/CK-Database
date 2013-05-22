@@ -19,7 +19,7 @@ namespace CK.SqlServer.Setup
             Attribute = a;
         }
 
-        void IStObjSetupDynamicInitializer.DynamicItemInitialize( IActivityLogger logger, IMutableSetupItem item, IStObjRuntime stObj )
+        void IStObjSetupDynamicInitializer.DynamicItemInitialize( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjRuntime stObj )
         {
             if( !(stObj.Object is SqlPackageBase) )
             {
@@ -38,14 +38,14 @@ namespace CK.SqlServer.Setup
                 {
                     if( already.Add( nTrimmed ) )
                     {
-                        var protoObject = LoadProtoItemFromResource( logger, packageItem, nTrimmed );
+                        var protoObject = LoadProtoItemFromResource( state.Logger, packageItem, nTrimmed );
                         if( protoObject != null )
                         {
-                            SqlObjectItem subItem = protoObject.CreateItem( logger );
+                            SqlObjectItem subItem = protoObject.CreateItem( state.Logger );
                             ((IMutableSetupItemContainer)item).Children.Add( subItem );
                         }
                     }
-                    else logger.Warn( "Duplicate name '{0}' in SqlObjectItem attribute of '{1}'.", nTrimmed, item.FullName );
+                    else state.Logger.Warn( "Duplicate name '{0}' in SqlObjectItem attribute of '{1}'.", nTrimmed, item.FullName );
                 }
             }
         }

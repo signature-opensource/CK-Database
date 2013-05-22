@@ -7,7 +7,7 @@ namespace CK.Core
 {
     /// <summary>
     /// This interface can be used to dynamically consider any Type as an Ambient contract and 
-    /// explicitely dispatch types into typed context at the very beginning of
+    /// explicitely dispatch types into type contexts at the very beginning of
     /// the discovering/setup process. 
     /// </summary>
     public interface IAmbientContractDispatcher

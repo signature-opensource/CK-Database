@@ -55,9 +55,20 @@ namespace CK.SqlServer
                         e = select;
                         return true;
                     }
-                    if( R.IsError ) return false; 
+                    if( R.IsError ) return false;
                     SqlTokenIdentifier id = R.Read<SqlTokenIdentifier>();
                     if( id.NameEquals( "null" ) ) e = new SqlExprNull( id );
+                    else if( id.NameEquals( "case" ) )
+                    {
+                        SqlExprCase caseExpr;
+                        if( !MatchCaseExpression( out caseExpr, id ) )
+                        {
+                            Debug.Assert( R.IsError );
+                            return false;
+                        }
+                        e = caseExpr;
+                        return true;
+                    }
                     else e = new SqlExprIdentifier( id );
                     return true;
                 }
@@ -94,7 +105,7 @@ namespace CK.SqlServer
             }
 
             /// <summary>
-            /// Combines the LED (LEft Denotation): The token has something to left (postfix or infix).
+            /// Combines the LED (LEft Denotation): The token has something at its left (postfix or infix).
             /// </summary>
             bool ExpressionCombineLed( ref SqlExpr left )
             {
@@ -242,6 +253,47 @@ namespace CK.SqlServer
                 return true;
             }
 
+            bool MatchCaseExpression( out SqlExprCase e, SqlTokenIdentifier caseToken )
+            {
+                e = null;
+                SqlExpr exprSimple = null;
+                SqlTokenIdentifier whenToken;
+                if( !R.IsUnquotedReservedKeyword( out whenToken, "when", false ) )
+                {
+                    // Simple case.
+                    if( !IsExpression( out exprSimple, 0, true ) ) return false;
+                    if( !R.IsUnquotedReservedKeyword( out whenToken, "when", true ) ) return false;
+                }
+                Debug.Assert( whenToken != null );
+                List<ISqlItem> whenItems = new List<ISqlItem>();
+                do
+                {
+                    SqlExpr expr;
+                    if( !IsExpression( out expr, 0, true ) ) return false;
+                    SqlTokenIdentifier thenToken;
+                    if( !R.IsUnquotedReservedKeyword( out thenToken, "then", true ) ) return false;
+                    SqlExpr exprValue;
+                    if( !IsExpression( out exprValue, 0, true ) ) return false;
+                    whenItems.Add( whenToken );
+                    whenItems.Add( expr );
+                    whenItems.Add( thenToken );
+                    whenItems.Add( exprValue );
+                }
+                while( R.IsUnquotedReservedKeyword( out whenToken, "when", false ) );
+                SqlExprCaseWhenSelector whenSelector = new SqlExprCaseWhenSelector( whenItems );
+                
+                SqlExpr exprElse = null;
+                SqlTokenIdentifier elseToken;
+                if( R.IsUnquotedReservedKeyword( out elseToken, "else", false ) )
+                {
+                    if( !IsExpression( out exprElse, 0, true ) ) return false;
+                }
+                SqlTokenIdentifier endToken;
+                if( !R.IsUnquotedReservedKeyword( out endToken, "end", true ) ) return false;
+
+                e = new SqlExprCase( caseToken, exprSimple, whenSelector, elseToken, exprElse, endToken );
+                return true;
+            }
 
             /// <summary>
             /// Reads one and only one expression (comma stops it).

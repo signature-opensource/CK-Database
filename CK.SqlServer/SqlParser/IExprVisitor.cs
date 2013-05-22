@@ -47,6 +47,9 @@ namespace CK.SqlServer
         T Visit( SqlExprLike e );
         T Visit( SqlExprBetween e );
         T Visit( SqlExprIn e );
+        T Visit( SqlExprCase e );
+        T Visit( SqlExprCaseWhenSelector e );
+
         T Visit( SqlExprCommaList e );
 
         T Visit( SelectSpecification e );

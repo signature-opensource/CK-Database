@@ -15,7 +15,7 @@ namespace CK.Setup
         internal List<IDependentItemDiscoverer> RegisteredDiscoverers;
 
         internal RegisterSetupEventArgs()
-            : base( SetupStep.None )
+            : base( SetupStep.PreInit )
         {
         }
 

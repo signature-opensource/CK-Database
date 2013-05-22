@@ -74,6 +74,7 @@
     <Compile Include="StObj\IStObjSetupData.cs" />
     <Compile Include="StObj\IStObjSetupDataBase.cs" />
     <Compile Include="StObj\IStObjSetupDynamicInitializer.cs" />
+    <Compile Include="StObj\IStObjSetupDynamicPostDependencyActions.cs" />
     <Compile Include="StObj\IStObjSetupItemFactory.cs" />
     <Compile Include="StObj\StObjDynamicPackageItem.cs" />
     <Compile Include="Version\IVersionedItem.cs" />

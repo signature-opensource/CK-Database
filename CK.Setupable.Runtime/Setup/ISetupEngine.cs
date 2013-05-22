@@ -41,7 +41,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gives access to the ordered list of all the <see cref="DriverBase"/> that participate to Setup.
-        /// This list is filled after <see cref="RegisterSetupEvent"/> (and <see cref="SetupEvent"/> with <see cref="SetupStep.None"/>) and before <see cref="SetupStep.Init"/>.
+        /// This list is filled after <see cref="RegisterSetupEvent"/> (and <see cref="SetupEvent"/> with <see cref="SetupStep.PreInit"/>) and before <see cref="SetupStep.Init"/>.
         /// </summary>
         IDriverList AllDrivers { get; }
 

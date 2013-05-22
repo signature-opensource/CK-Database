@@ -200,7 +200,15 @@ namespace CK.SqlServer.Setup
                 {
                     using( logger.OpenGroup( LogLevel.Info, "Creating Sql Objects from {0} sql files.", _sqlFiles.Count ) )
                     {
-                        e.Register( _sqlFiles.OfType<SqlObjectProtoItem>().Select( proto => proto.CreateItem( logger ) ) );
+                        List<IDependentItem> items = new List<IDependentItem>();
+                        foreach( var proto in _sqlFiles.OfType<SqlObjectProtoItem>() )
+                        {
+                            var item = proto.CreateItem( logger );
+                            if( item == null ) hasError = true;
+                            else items.Add( item );
+                        }
+                        if( hasError ) logger.Info( "At least one Sql Object creation failed." );
+                        else e.Register( items );
                     }
                 }
             }

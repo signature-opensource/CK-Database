@@ -104,10 +104,22 @@ namespace CK.SqlServer.Setup
         {
             if( logger == null ) throw new ArgumentNullException( "logger" );
             if( ItemType != SqlObjectProtoItem.TypeProcedure ) throw new InvalidOperationException( "Not a procedure." );
-            SqlExprStStoredProc sp;
-            var error = SqlAnalyser.ParseStatement( out sp, FullOriginalText );
-            error.LogOnError( LogLevel.Error, logger );
-            return new SqlProcedureItem( this, sp, m );
+            try
+            {
+                SqlExprStStoredProc sp;
+                var error = SqlAnalyser.ParseStatement( out sp, FullOriginalText );
+                error.LogOnError( LogLevel.Error, logger );
+                return new SqlProcedureItem( this, sp, m );
+            }
+            catch( Exception ex )
+            {
+                using( logger.OpenGroup( LogLevel.Error, ex, "While parsing {0}.", FullName ) )
+                {
+                    logger.Filter = LogLevelFilter.Info;
+                    logger.Info( FullOriginalText );
+                }
+                return null;
+            }
         }
 
         public SqlObjectItem CreateItem( IActivityLogger logger )

@@ -58,6 +58,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlHelper.cs" />
     <Compile Include="SqlParser\Expr\Base\SqlNoExpr.cs" />
+    <Compile Include="SqlParser\Expr\SqlExprCaseWhenSelector.cs" />
+    <Compile Include="SqlParser\Expr\SqlExprCase.cs" />
     <Compile Include="SqlParser\Expr\ISelectSpecificication.cs" />
     <Compile Include="SqlParser\Expr\Select\SelectOption.cs" />
     <Compile Include="SqlParser\Expr\Select\SelectFor.cs" />

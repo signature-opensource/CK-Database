@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using CK.Core;
 using System.Diagnostics;
+using System.Collections;
 
 namespace CK.Setup
 {
@@ -35,7 +36,7 @@ namespace CK.Setup
             var setupableItems = new Dictionary<IStObjRuntime, StObjSetupData>();
             BuildSetupItems( orderedObjects, setupableItems );
             BindDependencies( setupableItems );
-            CallDynamicInitializer( orderedObjects, setupableItems );
+            if( !CallDynamicInitializer( orderedObjects, setupableItems ) ) return null;
             return setupableItems.Values.Select( data => data.SetupItem );
         }
 
@@ -202,12 +203,86 @@ namespace CK.Setup
             }
         }
 
-        void CallDynamicInitializer( IReadOnlyList<IStObjRuntime> orderedObjects, Dictionary<IStObjRuntime, StObjSetupData> setupableItems )
+
+        class DynamicInitializerState : IStObjSetupDynamicInitializerState
         {
+            readonly StObjSetupItemBuilder _builder;
+            readonly IDictionary _memory;
+            readonly List<PushedAction> _actions;
+
+            class PushedAction
+            {
+                public PushedAction( IMutableSetupItem item, IStObjRuntime stObj, Action<IStObjSetupDynamicInitializerState, IMutableSetupItem, IStObjRuntime> action )
+                {
+                    Item = item;
+                    StObj = stObj;
+                    Action = action;
+                }
+
+                public readonly IMutableSetupItem Item;
+                public readonly IStObjRuntime StObj;
+                public readonly Action<IStObjSetupDynamicInitializerState, IMutableSetupItem, IStObjRuntime> Action;
+            }
+
+            internal DynamicInitializerState( StObjSetupItemBuilder builder )
+            {
+                _builder = builder;
+                _memory = new Hashtable();
+                _actions = new List<PushedAction>();
+            }
+
+            public IActivityLogger Logger
+            {
+                get { return _builder._logger; }
+            }
+
+            public IDictionary Memory
+            {
+                get { return _memory; }
+            }
+            
+            public IMutableSetupItem CurrentItem;
+            public IStObjRuntime CurrentStObj;
+
+            public void PushAction( Action<IStObjSetupDynamicInitializerState, IMutableSetupItem, IStObjRuntime> a )
+            {
+                _actions.Add( new PushedAction( CurrentItem, CurrentStObj, a ) );
+            }
+
+            internal bool ExecuteActions()
+            {
+                bool success = true;
+                int i = 0;
+                while( i < _actions.Count )
+                {
+                    PushedAction a = _actions[i];
+                    try
+                    {
+                        CurrentItem = a.Item;
+                        CurrentStObj = a.StObj;
+                        a.Action( this, CurrentItem, CurrentStObj );
+                    }
+                    catch( Exception ex )
+                    {
+                        Logger.Error( ex, "While calling a pushed action on '{0}'.", CurrentItem.FullName );
+                        success = false;
+                    }
+                    ++i;
+                }
+                return success;
+            }
+        }
+
+        bool CallDynamicInitializer( IReadOnlyList<IStObjRuntime> orderedObjects, Dictionary<IStObjRuntime, StObjSetupData> setupableItems )
+        {
+            var state = new DynamicInitializerState( this );
+            bool success = true;
             foreach( var o in orderedObjects )
             {
-                string initSource = null;
                 IMutableSetupItem item = setupableItems[o].SetupItem;
+                state.CurrentItem = item;
+                state.CurrentStObj = o;
+                string initSource = null;
                 try
                 {
                     initSource = "Attributes";
@@ -216,21 +291,24 @@ namespace CK.Setup
                         var all = o.Attributes.GetAllCustomAttributes<IStObjSetupDynamicInitializer>();
                         foreach( IStObjSetupDynamicInitializer init in all )
                         {
-                            init.DynamicItemInitialize( _logger, item, o );
+                            init.DynamicItemInitialize( state, item, o );
                         }
                     }
                     initSource = "Structured Item itself";
-                    if( o.Object is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)o.Object).DynamicItemInitialize( _logger, item, o );
+                    if( o.Object is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)o.Object).DynamicItemInitialize( state, item, o );
                     initSource = "Setup Item itself";
-                    if( item is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)item).DynamicItemInitialize( _logger, item, o );
+                    if( item is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)item).DynamicItemInitialize( state, item, o );
                     initSource = "global StObjSetupBuilder initializer";
-                    if( _dynamicInitializer != null ) _dynamicInitializer.DynamicItemInitialize( _logger, item, o );
+                    if( _dynamicInitializer != null ) _dynamicInitializer.DynamicItemInitialize( state, item, o );
                 }
                 catch( Exception ex )
                 {
                     _logger.Error( ex, "While Dynamic item initialization (from {2}) of '{0}' for object '{1}'.", item.FullName, o.ObjectType.Name, initSource );
+                    success = false;
                 }
             }
+            // On success, we execute the pushed actions.
+            return success ? state.ExecuteActions() : false;
         }
 
     }

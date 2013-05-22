@@ -14,7 +14,7 @@ namespace CK.Setup
         /// Gets the current step. See remarks.
         /// </summary>
         /// <remarks>
-        /// the step <see cref="SetupStep.None"/> is used during registration (right after <see cref="DriverBase"/> object 
+        /// the step <see cref="SetupStep.PreInit"/> is used during registration (right after <see cref="DriverBase"/> object 
         /// instanciation: its dependencies' drivers are available but not the whole set of drivers).
         /// </remarks>
         public SetupStep Step { get; private set; }

@@ -153,7 +153,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gives access to the ordered list of all the <see cref="DriverBase"/> that participate to Setup.
-        /// This list is filled after <see cref="RegisterSetupEvent"/> (and <see cref="SetupEvent"/> with <see cref="SetupStep.None"/>) and before <see cref="SetupStep.Init"/>.
+        /// This list is filled after <see cref="RegisterSetupEvent"/> (and <see cref="SetupEvent"/> with <see cref="SetupStep.PreInit"/>) and before <see cref="SetupStep.Init"/>.
         /// </summary>
         public IDriverList AllDrivers
         {
@@ -215,7 +215,7 @@ namespace CK.Setup
                 result = new SetupEngineRegisterResult( DependencySorter.OrderItems( items, discoverers, options ) );
                 if( result.IsValid )
                 {
-                    var reusableEvent = new DriverEventArgs( SetupStep.None );
+                    var reusableEvent = new DriverEventArgs( SetupStep.PreInit );
                     foreach( var item in result.SortResult.SortedItems )
                     {
                         DriverBase d;
@@ -272,7 +272,7 @@ namespace CK.Setup
             if( result.IsValid ) _state = SetupEngineState.Registered;
             else
             {
-                SafeFireSetupEvent( SetupStep.None, errorOccured: true );
+                SafeFireSetupEvent( SetupStep.PreInit, errorOccured: true );
             }
             return result;
         }
@@ -294,7 +294,7 @@ namespace CK.Setup
             if( SetupEvent == null ) return true;
             using( _logger.OpenGroup( LogLevel.Trace, errorOccured ? "Raising error event during {0}." : "Raising {0} setup event.", step ) )
             {
-                var e = new SetupEventArgs( step );
+                var e = new SetupEventArgs( step, errorOccured );
                 try
                 {
                     SetupEvent( this, e );

@@ -271,6 +271,20 @@ namespace CK.SqlServer
             return new SqlExprIn( modified.ToArray() );
         }
 
+        public virtual SqlItem Visit( SqlExprCase e )
+        {
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
+            if( modified == null ) return e;
+            return new SqlExprCase( modified.ToArray() );
+        }
+
+        public virtual SqlItem Visit( SqlExprCaseWhenSelector e )
+        {
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
+            if( modified == null ) return e;
+            return new SqlExprCaseWhenSelector( modified.ToArray() );
+        }
+
         public virtual SqlItem Visit( SelectSpecification e )
         {
             List<ISqlItem> modified = VisitExprComponents( e.Components );

@@ -168,6 +168,36 @@ namespace CK.SqlServer.Tests.Parsing
             return e;
         }
 
+        public override SqlItem Visit( SqlExprCase e )
+        {
+            Out.Append( "case" );
+            if( e.IsSimpleCase )
+            {
+                Out.Append( '(' );
+                VisitExpr( e.Expression );
+                Out.Append( ')' );
+            }
+            VisitExpr( e.WhenSelector );
+            if( e.HasElse )
+            {
+                Out.Append( ':' );
+                VisitExpr( e.ElseExpression );
+            }
+            return e;
+        }
+
+        public override SqlItem Visit( SqlExprCaseWhenSelector e )
+        {
+            for( int i = 0; i < e.Count; ++i )
+            {
+                Out.Append( ':' );
+                VisitExpr( e.ExpressionAt( i ) );
+                Out.Append( "=>" );
+                VisitExpr( e.ExpressionValueAt( i ) );
+            }
+            return e;
+        }
+
         public override SqlItem Visit( SqlExprLike e )
         {
             Out.Append( e.IsNotLike ? "NotLike(" : "Like(" );

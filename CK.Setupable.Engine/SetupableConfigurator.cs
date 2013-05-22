@@ -111,12 +111,12 @@ namespace CK.Setup
         /// <summary>
         /// Empty implementation of <see cref="IStObjSetupDynamicInitializer.DynamicItemInitialize"/> (calls <see cref="Previous"/> if it is not null).
         /// </summary>
-        /// <param name="_logger">Logger to use.</param>
+        /// <param name="state">Context for dynamic initialization.</param>
         /// <param name="item">The setup item for the object slice.</param>
         /// <param name="stObj">The StObj (the object slice).</param>
-        public virtual void DynamicItemInitialize( IActivityLogger logger, IMutableSetupItem item, IStObjRuntime stObj )
+        public virtual void DynamicItemInitialize( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjRuntime stObj )
         {
-            if( _previous != null ) _previous.DynamicItemInitialize( logger, item, stObj );
+            if( _previous != null ) _previous.DynamicItemInitialize( state, item, stObj );
         }
 
         /// <summary>

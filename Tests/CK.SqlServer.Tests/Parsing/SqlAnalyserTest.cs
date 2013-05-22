@@ -256,6 +256,29 @@ namespace CK.SqlServer.Tests.Parsing
         }
 
         [Test]
+        public void ParseSimpleCase()
+        {
+            Check( "case @i when 0 then 1 end", "case(@i):0=>1" );
+            Check( "case @i+7 when 0.2 then 1.6 when 3+@i then null end", "case([@i+7]):0.2=>1.6:[3+@i]=>null" );
+            Check( "case 0 when 0 then 1 else 2 end", "case(0):0=>1:2" );
+            Check( "case 0 when 0 then 1 else @i*8 end", "case(0):0=>1:[@i*8]" );
+        }
+
+        [Test]
+        public void ParseSearchCase()
+        {
+            Check( "case when 0=0 then 1 end", "case:[0=0]=>1" );
+            Check( "case when 0>1 then 1 when 0<1 then null end", "case:[0>1]=>1:[0<1]=>null" );
+            Check( "case when 0<>5 then 4 else ((5/8)) end", "case:[0<>5]=>4:[5/8]" );
+        }
+
+        [Test]
+        public void ParseSelectAssign()
+        {
+            Check( "select @hid = hierarchyid::GetRoot(), @i = 87/7", "[select-(@hid-=-call:hierarchyid::GetRoot(),@i-=-[87/7])]" );
+        }
+
+        [Test]
         public void ParseIf()
         {
             var ifS = ParseStatement<SqlExprStIf>( @"if @i is null
@@ -275,6 +298,21 @@ namespace CK.SqlServer.Tests.Parsing
             Assert.That( r.IsError, Is.False, r.ToString() );
             Assert.That( ExplainWriter.Write( e ), Is.EqualTo( Regex.Replace( explained, @"\s*", String.Empty ) ) );
             Assert.That( textAutoCorrected ?? text, Is.EqualTo( e.ToString() ) );
+        }
+
+        [Test]
+        public void ParseStoredProcedureWithoutTerminator()
+        {
+            var sp = ReadStatement<SqlExprStStoredProc>( "sProcWithoutTerminator.sql" );
+
+            Assert.That( sp.Name.ToString(), Is.EqualTo( "sProcWithoutTerminator\r\n" ) );
+            Assert.That( sp.Parameters[0].IsOutput, Is.False );
+            Assert.That( sp.Parameters[0].IsReadOnly, Is.False );
+            Assert.That( sp.Parameters[0].DefaultValue, Is.Null );
+            Assert.That( sp.Parameters[0].Variable.Identifier.IsVariable, Is.True );
+            Assert.That( sp.Parameters[0].Variable.Identifier.Name, Is.EqualTo( "@P" ) );
+            Assert.That( sp.Parameters[0].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.Int ) );
+            Assert.That( sp.BodyStatements.Statements.Count, Is.EqualTo( 1 ) );
         }
 
         [Test]

@@ -162,7 +162,7 @@ namespace CK.Setup
         {
             get
             {
-                if( _step == SetupStep.None ) return SetupCallGroupStep.None;
+                if( _step == SetupStep.PreInit ) return SetupCallGroupStep.None;
                 if( _step == SetupStep.Init ) return _isContent ? SetupCallGroupStep.InitContent : SetupCallGroupStep.Init;
                 if( _step == SetupStep.Install ) return _isContent ? SetupCallGroupStep.InstallContent : SetupCallGroupStep.Install;
                 return _isContent ? SetupCallGroupStep.SettleContent : SetupCallGroupStep.Settle;
@@ -244,7 +244,7 @@ namespace CK.Setup
             if( !DefaultContextLocNaming.Combine( curContext, curLoc, ref context, ref location ) ) return false;
             Version f = null;
             Version v = null;
-            SetupStep step = SetupStep.None;
+            SetupStep step = SetupStep.PreInit;
             bool isContent = false;
             Match m = _rVersion.Match( n );
             if( m.Success )
