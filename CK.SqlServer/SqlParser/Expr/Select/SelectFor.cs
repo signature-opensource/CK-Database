@@ -13,7 +13,7 @@ namespace CK.SqlServer
     /// </summary>
     public class SelectFor : SqlExpr, ISelectSpecification
     {
-        public SelectFor( ISelectSpecification select, SqlTokenTerminal forToken, SqlExpr content )
+        public SelectFor( ISelectSpecification select, SqlTokenIdentifier forToken, SqlExpr content )
             : this( CreateArray( SqlToken.EmptyOpenPar, select, forToken, content, SqlToken.EmptyClosePar ) )
         {
         }

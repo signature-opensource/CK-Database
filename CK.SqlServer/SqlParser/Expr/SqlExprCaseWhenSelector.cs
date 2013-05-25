@@ -12,10 +12,8 @@ namespace CK.SqlServer
     /// <summary>
     /// Defines "when Expression then ExpressionValue" items of <see cref="SqlExprCase"/> expression.
     /// </summary>
-    public class SqlExprCaseWhenSelector : SqlItem
+    public class SqlExprCaseWhenSelector : SqlNoExpr
     {
-        readonly ISqlItem[] Slots;
-
         public SqlExprCaseWhenSelector( IList<ISqlItem> items )
             : this( Build( items ) )
         {
@@ -53,24 +51,9 @@ namespace CK.SqlServer
         }
 
         internal SqlExprCaseWhenSelector( ISqlItem[] newComponents )
+            : base( newComponents )
         {
             Debug.Assert( Build( newComponents ) != null );
-            Slots = newComponents;
-        }
-
-        public override IEnumerable<ISqlItem> Components
-        {
-            get { return Slots; }
-        }
-
-        public override SqlToken FirstOrEmptyToken
-        {
-            get { return Slots[0].FirstOrEmptyToken; }
-        }
-
-        public override SqlToken LastOrEmptyToken
-        {
-            get { return Slots[Slots.Length-1].LastOrEmptyToken; }
         }
 
         /// <summary>

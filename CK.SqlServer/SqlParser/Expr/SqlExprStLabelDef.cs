@@ -14,19 +14,19 @@ namespace CK.SqlServer
     public class SqlExprStLabelDef : SqlExprBaseSt
     {
         public SqlExprStLabelDef( SqlTokenIdentifier id, SqlTokenTerminal statementTerminator )
-            : base( BuildComponents( id, statementTerminator ), statementTerminator )
+            : base( Build( id, statementTerminator ), statementTerminator )
         {
         }
 
-        static ISqlItem[] BuildComponents( SqlTokenIdentifier id, SqlTokenTerminal statementTerminator )
+        static ISqlItem[] Build( SqlTokenIdentifier id, SqlTokenTerminal statementTerminator )
         {
             if( id == null
                 || id.IsQuoted
-                || id.IsKeywordName
+                || SqlKeyword.IsReservedKeyword( id.Name )
                 || id.TrailingTrivia.Count > 0
                 || statementTerminator == null
                 || statementTerminator.TokenType != SqlTokenType.Colon
-                || statementTerminator.LeadingTrivia.Count > 0 ) throw new ArgumentException( "Invalid label: definition." );
+                || statementTerminator.LeadingTrivia.Count > 0 ) throw new ArgumentException( "Invalid 'label:' definition." );
             return CreateArray( id );
         }
 

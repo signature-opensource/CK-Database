@@ -44,7 +44,7 @@ namespace CK.SqlServer
         /// <param name="trailingTrivia">Trailing trivias if any.</param>
         public SqlToken( SqlTokenType tokenType, IReadOnlyList<SqlTrivia> leadingTrivia = null, IReadOnlyList<SqlTrivia> trailingTrivia = null )
         {
-            if( tokenType > 0 && (tokenType & (SqlTokenType.TokenDiscriminatorMask & ~SqlTokenType.IsComment)) == 0 ) throw new ArgumentException( "Invalid token type." );
+            if( tokenType > 0 && ((tokenType & SqlTokenType.TokenDiscriminatorMask) == 0 || (tokenType&SqlTokenType.IsComment) !=0) ) throw new ArgumentException( "Invalid token type." );
             
             TokenType = tokenType;
             LeadingTrivia = leadingTrivia ?? CKReadOnlyListEmpty<SqlTrivia>.Empty;
@@ -202,18 +202,60 @@ namespace CK.SqlServer
         }
 
         /// <summary>
-        /// True if the token is a @variable or a literal value ('string' or 0x5454 number for instance).
+        /// True if the <see cref="ISqlItem"/> is a closing parenthesis, a terminator ; token or a <see cref="SqlTokenType.IdentifierReservedStatement"/>.
+        /// </summary>
+        /// <param name="t">Closing parenthesis or semicolon token.</param>
+        /// <returns>Whether the token is closing parenthesis or the statement terminator.</returns>
+        static public bool IsCloseParenthesisOrTerminatorOrPossibleStartStatement( ISqlItem t )
+        {
+            SqlToken token = t as SqlToken;
+            return token != null 
+                && (token.TokenType == SqlTokenType.ClosePar 
+                    || token.TokenType == SqlTokenType.SemiColon
+                    || (token.TokenType & SqlTokenType.IdentifierTypeMask) == SqlTokenType.IdentifierReservedStatement);
+        }
+
+        /// <summary>
+        /// True if the <see cref="SqlToken"/> is the terminator ; token or a <see cref="SqlTokenType.IdentifierReservedStatement"/>.
+        /// </summary>
+        /// <param name="t">Token to test.</param>
+        /// <returns>Whether the token is the statement terminator or the possible start of a new statement.</returns>
+        static public bool IsTerminatorOrPossibleStartStatement( SqlToken t )
+        {
+            if( t == null ) throw new ArgumentNullException( "t" );
+            return t.TokenType == SqlTokenType.SemiColon
+                    || (t.TokenType & SqlTokenType.IdentifierTypeMask) == SqlTokenType.IdentifierReservedStatement;
+        }
+
+        /// <summary>
+        /// True if the <see cref="ISqlItem"/> is a select operator: <see cref="SqlTokenType.Union"/>, <see cref="SqlTokenType.Except"/>, 
+        /// <see cref="SqlTokenType.Intersect"/>, <see cref="SqlTokenType.Order"/> and <see cref="SqlTokenType.For"/>.
+        /// </summary>
+        /// <param name="t">Token type.</param>
+        /// <returns>Whether the token is a select operator.</returns>
+        static public bool IsSelectOperator( SqlTokenType t )
+        {
+            return t == SqlTokenType.Union 
+                    || t == SqlTokenType.Except 
+                    || t == SqlTokenType.Intersect 
+                    || t == SqlTokenType.Order 
+                    || t == SqlTokenType.For;
+        }
+
+        /// <summary>
+        /// True if the token is a @variable (or @@SystemFunction like @@RowCount) or a 
+        /// literal value ('string' or 0x5454 number for instance).
         /// </summary>
         /// <param name="t">Token to test.</param>
         /// <returns>True for a variable or a literal.</returns>
         static public bool IsVariableNameOrLiteral( SqlTokenType t )
         {
-            return t == SqlTokenType.IdentifierVariable || (t & SqlTokenType.LitteralMask) != 0;
+            return t == SqlTokenType.IdentifierVariable || (t > 0 && (t & SqlTokenType.LitteralMask) != 0);
         }
 
         internal static bool IsIdentifierStartChar( int c )
         {
-            return c == '@' || c == '#' || c == '_' || Char.IsLetter( (char)c );
+            return c == '@' || c == '#' || c == '$' || c == '_' || Char.IsLetter( (char)c );
         }
 
         internal static bool IsIdentifierChar( int c )
@@ -222,7 +264,7 @@ namespace CK.SqlServer
         }
 
         /// <summary>
-        /// Tests whether an identifier must be quoted (it is empty, starts with @ or contains a character that is not valid).
+        /// Tests whether an identifier must be quoted (it is empty, starts with @, or $ or contains a character that is not valid).
         /// </summary>
         /// <param name="identifier">Identifier to test.</param>
         /// <returns>True if the identifier can be used without surrounding quotes.</returns>
@@ -232,7 +274,7 @@ namespace CK.SqlServer
             if( identifier.Length > 0 )
             {
                 char c = identifier[0];
-                if( c != '@' && IsIdentifierStartChar( c ) )
+                if( c != '@' && c != '$' && IsIdentifierStartChar( c ) )
                 {
                     int i = 1;
                     while( i < identifier.Length )

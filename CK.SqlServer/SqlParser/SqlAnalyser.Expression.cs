@@ -31,7 +31,6 @@ namespace CK.SqlServer
                 return !R.IsError;
             }
 
-
             /// <summary>
             /// Handles NUD (NUll left Denotation): the token has nothing to its left (it is a prefix).
             /// </summary>
@@ -46,37 +45,6 @@ namespace CK.SqlServer
                 {
                     e = new SqlExprLiteral( R.Read<SqlTokenBaseLiteral>() );
                     return true;
-                }
-                if( R.Current.TokenType == SqlTokenType.IdentifierReservedKeyword )
-                {
-                    SelectSpecification select;
-                    if( IsSelectSpecification( out select, true, false ) )
-                    {
-                        e = select;
-                        return true;
-                    }
-                    if( R.IsError ) return false;
-                    SqlTokenIdentifier id = R.Read<SqlTokenIdentifier>();
-                    if( id.NameEquals( "null" ) ) e = new SqlExprNull( id );
-                    else if( id.NameEquals( "case" ) )
-                    {
-                        SqlExprCase caseExpr;
-                        if( !MatchCaseExpression( out caseExpr, id ) )
-                        {
-                            Debug.Assert( R.IsError );
-                            return false;
-                        }
-                        e = caseExpr;
-                        return true;
-                    }
-                    else e = new SqlExprIdentifier( id );
-                    return true;
-                }
-                if( (R.Current.TokenType & SqlTokenType.IsIdentifier) != 0 )
-                {
-                    // This shortcuts the nud/led mechanism by directly handling 
-                    // the . as a top precedence level operator.
-                    return IsMonoOrMultiIdentifier( out e );
                 }
                 if( R.Current.TokenType == SqlTokenType.Minus 
                     || R.Current.TokenType == SqlTokenType.Plus 
@@ -101,6 +69,40 @@ namespace CK.SqlServer
                     if( IsExpressionOrRawList( out e, openPar, false ) ) return true;
                     return R.SetCurrentError( "Expected )." );
                 }
+                if( (R.Current.TokenType & SqlTokenType.IsIdentifier) != 0 )
+                {
+                    SqlTokenIdentifier id = R.Read<SqlTokenIdentifier>();
+                    if( id.TokenType == SqlTokenType.Null )
+                    {
+                        e = new SqlExprNull( id );
+                        return true;
+                    }
+                    if( id.TokenType == SqlTokenType.Select )
+                    {
+                        SelectSpecification select;
+                        if( !MatchSelectSpecification( out select, id, true ) )
+                        {
+                            Debug.Assert( R.IsError );
+                            return false;
+                        }
+                        e = select;
+                        return true;
+                    }
+                    if( id.TokenType == SqlTokenType.Case )
+                    {
+                        SqlExprCase caseExpr;
+                        if( !MatchCaseExpression( out caseExpr, id ) )
+                        {
+                            Debug.Assert( R.IsError );
+                            return false;
+                        }
+                        e = caseExpr;
+                        return true;
+                    }
+                    // This shortcuts the nud/led mechanism by directly handling 
+                    // the . or the :: as a top precedence level operator.
+                    return IsMonoOrMultiIdentifier( out e, true, id );
+                }
                 return false;
             }
 
@@ -112,6 +114,9 @@ namespace CK.SqlServer
                 int precedenceLevel = R.CurrentPrecedenceLevel;
                 if( R.Current.TokenType == SqlTokenType.OpenPar )
                 {
+                    // This prevents (select a)(select b) multiple statements
+                    // to be considered as a call.
+                    if( left is ISelectSpecification ) return false;
                     SqlExprCommaList parenthesis;
                     if( !IsCommaList( out parenthesis, true ) ) return false;
                     left = new SqlExprKoCall( left, parenthesis );
@@ -151,57 +156,56 @@ namespace CK.SqlServer
                 }
                 if( R.Current.TokenType == SqlTokenType.Is )
                 {
-                    SqlTokenTerminal isToken = R.Read<SqlTokenTerminal>();
-                    SqlTokenTerminal notToken;
+                    SqlTokenIdentifier isToken = R.Read<SqlTokenIdentifier>();
+                    SqlTokenIdentifier notToken;
                     R.IsToken( out notToken, SqlTokenType.Not, false );
                     SqlTokenIdentifier nullToken;
-                    if( !R.IsUnquotedReservedKeyword( out nullToken, "null", true ) ) return false;
+                    if( !R.IsToken( out nullToken, SqlTokenType.Null, true ) ) return false;
                     left = new SqlExprIsNull( left, isToken, notToken, nullToken );
                     return true;
                 }
                 if( R.Current.TokenType == SqlTokenType.Not )
                 {
-                    SqlTokenTerminal notToken = R.Read<SqlTokenTerminal>();
-                    if( R.Current.TokenType == SqlTokenType.Like ) return IsExprLike( ref left, notToken );
-                    if( R.Current.TokenType == SqlTokenType.Between ) return IsExprBetween( ref left, notToken );
-                    if( R.Current.TokenType == SqlTokenType.In ) return IsExprIn( ref left, notToken );
-                    return R.SetCurrentError( "Like, between or in expected." );
+                    if( R.RawLookup.TokenType == SqlTokenType.Like ) return IsExprLike( ref left, R.Read<SqlTokenIdentifier>() );
+                    if( R.RawLookup.TokenType == SqlTokenType.Between ) return IsExprBetween( ref left, R.Read<SqlTokenIdentifier>() );
+                    if( R.RawLookup.TokenType == SqlTokenType.In ) return IsExprIn( ref left, R.Read<SqlTokenIdentifier>() );
+                    return false;
                 }
                 if( R.Current.TokenType == SqlTokenType.Like ) return IsExprLike( ref left, null );
                 if( R.Current.TokenType == SqlTokenType.Between ) return IsExprBetween( ref left, null );
                 if( R.Current.TokenType == SqlTokenType.In ) return IsExprIn( ref left, null );
                 if( SqlExprBinaryOperator.IsValidOperator( R.Current.TokenType ) )
                 {
-                    SqlTokenTerminal cmp = R.Read<SqlTokenTerminal>();
+                    SqlToken cmp = R.Read<SqlToken>();
                     SqlExpr right;
                     if( !IsExpression( out right, precedenceLevel, true ) ) return false;
                     left = new SqlExprBinaryOperator( left, cmp, right );
                     return true;
                 }
-                if( (R.Current.TokenType & SqlTokenType.IsSelectPart) != 0 )
+                if( SqlToken.IsSelectOperator( R.Current.TokenType ) )
                 {
                     ISelectSpecification lSelect = left as ISelectSpecification;
                     if( lSelect == null ) return false;
-                    SqlTokenTerminal op = R.Read<SqlTokenTerminal>();
+                    SqlTokenIdentifier op = R.Read<SqlTokenIdentifier>();
                     if( op.TokenType == SqlTokenType.Order )
                     {
                         SqlTokenIdentifier by;
                         SqlExpr content;
-                        if( !R.IsUnquotedReservedKeyword( out by, "by", true ) ) return false;
-                        if( !IsExpressionOrRawList( out content, SelectPartStopper, true ) ) return false;
+                        if( !R.IsToken( out by, SqlTokenType.By, true ) ) return false;
+                        if( !IsExpressionOrRawList( out content, SelectPartStopper, false, true ) ) return false;
                         left = new SelectOrderBy( lSelect, op, by, content );
                         return true;
                     }
                     if( op.TokenType == SqlTokenType.For )
                     {
                         SqlExpr content;
-                        if( !IsExpressionOrRawList( out content, SelectPartStopper, true ) ) return false;
+                        if( !IsExpressionOrRawList( out content, SelectPartStopper, false, true ) ) return false;
                         left = new SelectFor( lSelect, op, content );
                         return true;
                     }
                     Debug.Assert( SelectCombineOperator.IsValidOperator( op.TokenType ) );
                     SqlTokenIdentifier all = null;
-                    if( op.TokenType == SqlTokenType.Union ) R.IsUnquotedReservedKeyword( out all, "all", false );
+                    if( op.TokenType == SqlTokenType.Union ) R.IsToken( out all, SqlTokenType.All, false );
                     SqlExpr right;
                     if( !IsExpression( out right, precedenceLevel, true ) ) return false;
                     ISelectSpecification rSelect = right as ISelectSpecification;
@@ -212,13 +216,13 @@ namespace CK.SqlServer
                 return false;
             }
 
-            bool IsExprBetween( ref SqlExpr left, SqlTokenTerminal notToken )
+            bool IsExprBetween( ref SqlExpr left, SqlTokenIdentifier notToken )
             {
                 Debug.Assert( R.Current.TokenType == SqlTokenType.Between );
-                SqlTokenTerminal betweenToken = R.Read<SqlTokenTerminal>();
+                SqlTokenIdentifier betweenToken = R.Read<SqlTokenIdentifier>();
                 SqlExpr start;
                 if( !IsExpression( out start, SqlTokenizer.PrecedenceLevel( SqlTokenType.OpComparisonLevel ), true ) ) return false;
-                SqlTokenTerminal andToken;
+                SqlTokenIdentifier andToken;
                 if( !R.IsToken( out andToken, SqlTokenType.And, true ) ) return false;
                 SqlExpr stop;
                 if( !IsExpression( out stop, SqlTokenizer.PrecedenceLevel( SqlTokenType.OpComparisonLevel ), true ) ) return false;
@@ -227,15 +231,15 @@ namespace CK.SqlServer
                 return true;
             }
 
-            bool IsExprLike( ref SqlExpr left, SqlTokenTerminal notToken )
+            bool IsExprLike( ref SqlExpr left, SqlTokenIdentifier notToken )
             {
                 Debug.Assert( R.Current.TokenType == SqlTokenType.Like );
-                SqlTokenTerminal likeToken = R.Read<SqlTokenTerminal>();
+                SqlTokenIdentifier likeToken = R.Read<SqlTokenIdentifier>();
                 SqlExpr pattern;
                 if( !IsExpression( out pattern, SqlTokenizer.PrecedenceLevel( SqlTokenType.OpComparisonLevel ), true ) ) return false;
                 SqlTokenIdentifier escapeToken;
                 SqlTokenLiteralString escapeChar = null;
-                if( R.IsUnquotedReservedKeyword( out escapeToken, "escape", false ) )
+                if( R.IsToken( out escapeToken, SqlTokenType.Escape, false ) )
                 {
                     if( !R.IsToken( out escapeChar, true ) ) return false;
                 }
@@ -243,10 +247,10 @@ namespace CK.SqlServer
                 return true;
             }
 
-            bool IsExprIn( ref SqlExpr left, SqlTokenTerminal notToken )
+            bool IsExprIn( ref SqlExpr left, SqlTokenIdentifier notToken )
             {
                 Debug.Assert( R.Current.TokenType == SqlTokenType.In );
-                SqlTokenTerminal inToken = R.Read<SqlTokenTerminal>();
+                SqlTokenIdentifier inToken = R.Read<SqlTokenIdentifier>();
                 SqlExprCommaList values;
                 if( !IsCommaList( out values, true ) ) return false;
                 left = new SqlExprIn( left, notToken, inToken, values );
@@ -258,11 +262,11 @@ namespace CK.SqlServer
                 e = null;
                 SqlExpr exprSimple = null;
                 SqlTokenIdentifier whenToken;
-                if( !R.IsUnquotedReservedKeyword( out whenToken, "when", false ) )
+                if( !R.IsToken( out whenToken, SqlTokenType.When, false ) )
                 {
                     // Simple case.
                     if( !IsExpression( out exprSimple, 0, true ) ) return false;
-                    if( !R.IsUnquotedReservedKeyword( out whenToken, "when", true ) ) return false;
+                    if( !R.IsToken( out whenToken, SqlTokenType.When, true ) ) return false;
                 }
                 Debug.Assert( whenToken != null );
                 List<ISqlItem> whenItems = new List<ISqlItem>();
@@ -271,7 +275,7 @@ namespace CK.SqlServer
                     SqlExpr expr;
                     if( !IsExpression( out expr, 0, true ) ) return false;
                     SqlTokenIdentifier thenToken;
-                    if( !R.IsUnquotedReservedKeyword( out thenToken, "then", true ) ) return false;
+                    if( !R.IsToken( out thenToken, SqlTokenType.Then, true ) ) return false;
                     SqlExpr exprValue;
                     if( !IsExpression( out exprValue, 0, true ) ) return false;
                     whenItems.Add( whenToken );
@@ -279,17 +283,17 @@ namespace CK.SqlServer
                     whenItems.Add( thenToken );
                     whenItems.Add( exprValue );
                 }
-                while( R.IsUnquotedReservedKeyword( out whenToken, "when", false ) );
+                while( R.IsToken( out whenToken, SqlTokenType.When, false ) );
                 SqlExprCaseWhenSelector whenSelector = new SqlExprCaseWhenSelector( whenItems );
                 
                 SqlExpr exprElse = null;
                 SqlTokenIdentifier elseToken;
-                if( R.IsUnquotedReservedKeyword( out elseToken, "else", false ) )
+                if( R.IsToken( out elseToken, SqlTokenType.Else, false ) )
                 {
                     if( !IsExpression( out exprElse, 0, true ) ) return false;
                 }
                 SqlTokenIdentifier endToken;
-                if( !R.IsUnquotedReservedKeyword( out endToken, "end", true ) ) return false;
+                if( !R.IsToken( out endToken, SqlTokenType.End, true ) ) return false;
 
                 e = new SqlExprCase( caseToken, exprSimple, whenSelector, elseToken, exprElse, endToken );
                 return true;
@@ -312,7 +316,7 @@ namespace CK.SqlServer
             }
             
             /// <summary>
-            /// Reads a comma separated list of expressions.
+            /// Reads a comma separated list of expressions (that can be <see cref="SqlExprRawItemList"/>).
             /// </summary>
             /// <param name="e">The list.</param>
             /// <param name="expectParenthesis">True to set an error if the current token is not an opening parenthesis.</param>
@@ -335,7 +339,7 @@ namespace CK.SqlServer
 
             bool MatchInList( out SqlExpr e, bool expected )
             {
-                return IsExpressionOrRawList( out e, SqlToken.IsCommaOrCloseParenthesisOrTerminator, expected );
+                return IsExpressionOrRawList( out e, SqlToken.IsCommaOrCloseParenthesisOrTerminator, false, expected );
             }
 
             /// <summary>
@@ -344,12 +348,13 @@ namespace CK.SqlServer
             /// </summary>
             /// <param name="e">Read expression.</param>
             /// <param name="closer">Predicate that detects the stopper (will NOT be added to the expression).</param>
+            /// <param name="blindlyAcceptCurrentToken">True to accept the current token whatever it is.</param>
             /// <param name="expectAtLeastOne">True to set an error if the expression is empty (no expressions in it).</param>
             /// <returns>True if an expression has sucessfully been found (it may be a <see cref="SqlExprRawItemList"/>).</returns>
-            bool IsExpressionOrRawList( out SqlExpr e, Predicate<SqlToken> stopper, bool expectAtLeastOne )
+            bool IsExpressionOrRawList( out SqlExpr e, Predicate<SqlToken> stopper, bool blindlyAcceptCurrentToken, bool expectAtLeastOne )
             {
                 if( stopper == null ) throw new ArgumentNullException( "stopper" );
-                return IsExpressionOrRawListInternal( out e, null, stopper, expectAtLeastOne );
+                return IsExpressionOrRawListInternal( out e, null, stopper, blindlyAcceptCurrentToken, expectAtLeastOne );
             }
 
             /// <summary>
@@ -363,16 +368,17 @@ namespace CK.SqlServer
             bool IsExpressionOrRawList( out SqlExpr e, SqlTokenOpenPar openPar, bool expectAtLeastOne )
             {
                 if( openPar == null ) throw new ArgumentNullException( "opener" );
-                return IsExpressionOrRawListInternal( out e, openPar,  t => t is SqlTokenClosePar, expectAtLeastOne );
+                return IsExpressionOrRawListInternal( out e, openPar,  t => t is SqlTokenClosePar, false, expectAtLeastOne );
             }
 
-            bool IsExpressionOrRawListInternal( out SqlExpr e, SqlTokenOpenPar openPar, Predicate<SqlToken> closer, bool setErrorIfEmpty )
+            bool IsExpressionOrRawListInternal( out SqlExpr e, SqlTokenOpenPar openPar, Predicate<SqlToken> closer, bool blindlyAcceptCurrentToken, bool setErrorIfEmpty )
             {
                 e = null;
                 List<ISqlItem> exprs = new List<ISqlItem>();
                 SqlExpr lastExpr = null;
-                while( !(R.IsErrorOrEndOfInput || closer( R.Current )) )
+                while( blindlyAcceptCurrentToken || !(R.IsErrorOrEndOfInput || closer( R.Current )) )
                 {
+                    blindlyAcceptCurrentToken = false;
                     // If it is not the closer nor the end, it may be a valid expression.
                     if( IsExpression( out lastExpr, SqlTokenizer.PrecedenceLevel( SqlTokenType.Comma ), expected: false ) ) exprs.Add( lastExpr );
                     else

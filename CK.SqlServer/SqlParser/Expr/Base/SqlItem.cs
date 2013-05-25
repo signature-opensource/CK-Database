@@ -9,6 +9,11 @@ using System.Globalization;
 
 namespace CK.SqlServer
 {
+    /// <summary>
+    /// Abstract base class for <see cref="SqlExpr"/> (enclosable in parenthesis and base of all objects that are handled by <see cref="SqlAnalyser.ParseExpression"/>) 
+    /// and <see cref="SqlNoExpr"/> (not enclosable and base class for <see cref="SqlExprBaseSt">statements</see>).
+    /// It should not be specialized directly: inherit from SqlExpr or SqlNoExpr.
+    /// </summary>
     public abstract class SqlItem : ISqlItem
     {
         /// <summary>
@@ -109,23 +114,23 @@ namespace CK.SqlServer
             return CreateArray( SqlExprMultiToken<SqlTokenOpenPar>.Create( openPar ), content, 0, contentLength, SqlExprMultiToken<SqlTokenClosePar>.Create( closePar ) );
         }
 
-        static internal ISqlItem[] CreateParArray( IReadOnlyList<ISqlItem> content )
+        static internal ISqlItem[] CreateEnclosedArray( IReadOnlyList<ISqlItem> content )
         {
             Debug.Assert( content.Count == 0 || !(content.First() is SqlExprMultiToken<SqlTokenOpenPar>) );
             return CreateArray( SqlToken.EmptyOpenPar, content, 0, content.Count, SqlToken.EmptyClosePar );
         }
 
-        static internal ISqlItem[] CreateArray( SqlTokenOpenPar prefix, IReadOnlyList<ISqlItem> enclosedComponents, SqlTokenClosePar suffix )
+        static internal ISqlItem[] CreateEnclosedArray( SqlTokenOpenPar prefix, IReadOnlyList<ISqlItem> alreadyEnclosedComponents, SqlTokenClosePar suffix )
         {
-            Debug.Assert( prefix != null && enclosedComponents != null && suffix != null );
-            Debug.Assert( enclosedComponents.Count >= 2 );
-            Debug.Assert( enclosedComponents[0] is SqlExprMultiToken<SqlTokenOpenPar> );
-            Debug.Assert( enclosedComponents[enclosedComponents.Count-1] is SqlExprMultiToken<SqlTokenClosePar> );
+            Debug.Assert( prefix != null && alreadyEnclosedComponents != null && suffix != null );
+            Debug.Assert( alreadyEnclosedComponents.Count >= 2 );
+            Debug.Assert( alreadyEnclosedComponents[0] is SqlExprMultiToken<SqlTokenOpenPar> );
+            Debug.Assert( alreadyEnclosedComponents[alreadyEnclosedComponents.Count - 1] is SqlExprMultiToken<SqlTokenClosePar> );
 
-            SqlExprMultiToken<SqlTokenOpenPar> existOpen = (SqlExprMultiToken<SqlTokenOpenPar>)enclosedComponents[0];
-            SqlExprMultiToken<SqlTokenClosePar> existClose = (SqlExprMultiToken<SqlTokenClosePar>)enclosedComponents[enclosedComponents.Count - 1];
+            SqlExprMultiToken<SqlTokenOpenPar> existOpen = (SqlExprMultiToken<SqlTokenOpenPar>)alreadyEnclosedComponents[0];
+            SqlExprMultiToken<SqlTokenClosePar> existClose = (SqlExprMultiToken<SqlTokenClosePar>)alreadyEnclosedComponents[alreadyEnclosedComponents.Count - 1];
 
-            return CreateArray( SqlExprMultiToken<SqlTokenOpenPar>.Create( prefix, existOpen ), enclosedComponents, 1, enclosedComponents.Count - 2, SqlExprMultiToken<SqlTokenClosePar>.Create( existClose, suffix ) );
+            return CreateArray( SqlExprMultiToken<SqlTokenOpenPar>.Create( prefix, existOpen ), alreadyEnclosedComponents, 1, alreadyEnclosedComponents.Count - 2, SqlExprMultiToken<SqlTokenClosePar>.Create( existClose, suffix ) );
         }
 
         static internal IEnumerable<SqlToken> Flatten( IEnumerable<ISqlItem> e )

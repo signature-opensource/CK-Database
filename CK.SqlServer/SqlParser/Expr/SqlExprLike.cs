@@ -14,12 +14,12 @@ namespace CK.SqlServer
     /// </summary>
     public class SqlExprLike : SqlExpr
     {
-        public SqlExprLike( SqlExpr left, SqlTokenTerminal notToken, SqlTokenTerminal likeToken, SqlExpr pattern, SqlTokenIdentifier escapeToken = null, SqlTokenLiteralString escapeChar = null )
+        public SqlExprLike( SqlExpr left, SqlTokenIdentifier notToken, SqlTokenIdentifier likeToken, SqlExpr pattern, SqlTokenIdentifier escapeToken = null, SqlTokenLiteralString escapeChar = null )
             : this( Build( left, notToken, likeToken, pattern, escapeToken, escapeChar ) )
         {
         }
 
-        static ISqlItem[] Build( SqlExpr left, SqlTokenTerminal notToken, SqlTokenTerminal likeToken, SqlExpr pattern, SqlTokenIdentifier escapeToken = null, SqlTokenLiteralString escapeChar = null )
+        static ISqlItem[] Build( SqlExpr left, SqlTokenIdentifier notToken, SqlTokenIdentifier likeToken, SqlExpr pattern, SqlTokenIdentifier escapeToken = null, SqlTokenLiteralString escapeChar = null )
         {
             if( notToken == null )
             {
@@ -56,9 +56,9 @@ namespace CK.SqlServer
 
         public bool IsNotLike { get { return Slots.Length == 6 || Slots.Length == 8; } }
 
-        public SqlTokenTerminal NotToken { get { return IsNotLike ? (SqlTokenTerminal)Slots[2] : null; } }
+        public SqlTokenIdentifier NotToken { get { return IsNotLike ? (SqlTokenIdentifier)Slots[2] : null; } }
 
-        public SqlTokenTerminal LikeToken { get { return (SqlTokenTerminal)Slots[IsNotLike ? 3 : 2]; } }
+        public SqlTokenIdentifier LikeToken { get { return (SqlTokenIdentifier)Slots[IsNotLike ? 3 : 2]; } }
 
         public SqlExpr Pattern { get { return (SqlExpr)Slots[IsNotLike ? 4 : 3]; } }
 

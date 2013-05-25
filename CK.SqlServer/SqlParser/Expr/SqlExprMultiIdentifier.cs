@@ -27,7 +27,7 @@ namespace CK.SqlServer
             if( tokens.Count == 0 ) throw new ArgumentException();
             ISqlItem[] r;
             if( isEnclosed ) r = tokens.ToArray();
-            else r = CreateParArray( tokens.AsReadOnlyList() );
+            else r = CreateEnclosedArray( tokens.AsReadOnlyList() );
             SqlExprBaseListWithSeparator<SqlTokenIdentifier>.CheckArray( r, false, true, false, SqlToken.IsDotOrDoubleColonSeparator );
             return r;
         }
@@ -37,9 +37,9 @@ namespace CK.SqlServer
         {
         }
 
-        static internal string BuildArray( IEnumerator<ISqlItem> tokens, out ISqlItem[] result )
+        static internal string BuildArray( IEnumerator<ISqlItem> tokens, out ISqlItem[] result, SqlTokenIdentifier firstForLookup = null )
         {
-            return SqlExprBaseListWithSeparator<SqlTokenIdentifier>.BuildArray( tokens, false, SqlToken.IsDotOrDoubleColonSeparator, "identifier", out result );
+            return SqlExprBaseListWithSeparator<SqlTokenIdentifier>.BuildArray( tokens, false, SqlToken.IsDotOrDoubleColonSeparator, "identifier", out result, firstForLookup );
         }
 
         /// <summary>

@@ -16,10 +16,10 @@ namespace CK.SqlServer
         readonly SqlToken _asOrEqual;
         readonly SqlExpr _definition;
 
-        static readonly SqlTokenIdentifier _autoAsToken = new SqlTokenIdentifier( SqlTokenType.IdentifierReservedKeyword, "as", SqlTrivia.OneSpace, SqlTrivia.OneSpace );
-        static readonly SqlTokenIdentifier _autoAsTokenNoLeft = new SqlTokenIdentifier( SqlTokenType.IdentifierReservedKeyword, "as", null, SqlTrivia.OneSpace );
-        static readonly SqlTokenIdentifier _autoAsTokenNoRight = new SqlTokenIdentifier( SqlTokenType.IdentifierReservedKeyword, "as", SqlTrivia.OneSpace, null );
-        static readonly SqlTokenIdentifier _autoAsTokenNoSpace = new SqlTokenIdentifier( SqlTokenType.IdentifierReservedKeyword, "as", null, null );
+        static readonly SqlTokenIdentifier _autoAsToken = new SqlTokenIdentifier( SqlTokenType.IdentifierStandard, "as", SqlTrivia.OneSpace, SqlTrivia.OneSpace );
+        static readonly SqlTokenIdentifier _autoAsTokenNoLeft = new SqlTokenIdentifier( SqlTokenType.IdentifierStandard, "as", null, SqlTrivia.OneSpace );
+        static readonly SqlTokenIdentifier _autoAsTokenNoRight = new SqlTokenIdentifier( SqlTokenType.IdentifierStandard, "as", SqlTrivia.OneSpace, null );
+        static readonly SqlTokenIdentifier _autoAsTokenNoSpace = new SqlTokenIdentifier( SqlTokenType.IdentifierStandard, "as", null, null );
 
         public SelectColumn( ISqlIdentifier colName, SqlTokenTerminal assignToken, SqlExpr definition )
             : this( Build( colName, assignToken, definition ) )

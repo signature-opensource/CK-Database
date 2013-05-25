@@ -14,7 +14,7 @@ namespace CK.SqlServer
     /// </summary>
     public class SqlExprBetween : SqlExpr
     {
-        public SqlExprBetween( SqlExpr left, SqlTokenTerminal notToken, SqlTokenTerminal betweenToken, SqlExpr  start, SqlTokenTerminal andToken, SqlItem stop )
+        public SqlExprBetween( SqlExpr left, SqlTokenIdentifier notToken, SqlTokenIdentifier betweenToken, SqlExpr start, SqlTokenIdentifier andToken, SqlItem stop )
             : this( Build( left, notToken, betweenToken, start, andToken, stop ) )
         {
         }
@@ -24,7 +24,7 @@ namespace CK.SqlServer
         {
         }
 
-        static ISqlItem[] Build( SqlExpr left, SqlTokenTerminal notToken, SqlTokenTerminal betweenToken, SqlExpr start, SqlTokenTerminal andToken, SqlItem stop )
+        static ISqlItem[] Build( SqlExpr left, SqlTokenIdentifier notToken, SqlTokenIdentifier betweenToken, SqlExpr start, SqlTokenIdentifier andToken, SqlItem stop )
         {
             return notToken != null
                             ? CreateArray( SqlToken.EmptyOpenPar, left, notToken, betweenToken, start, andToken, stop, SqlToken.EmptyClosePar )
@@ -35,13 +35,13 @@ namespace CK.SqlServer
 
         public bool IsNotBetween { get { return Slots.Length == 8; } }
 
-        public SqlTokenTerminal NotToken { get { return IsNotBetween ? (SqlTokenTerminal)Slots[2] : null; } }
+        public SqlTokenIdentifier NotToken { get { return IsNotBetween ? (SqlTokenIdentifier)Slots[2] : null; } }
 
-        public SqlTokenTerminal BetweenToken { get { return (SqlTokenTerminal)Slots[IsNotBetween ? 3 : 2]; } }
+        public SqlTokenIdentifier BetweenToken { get { return (SqlTokenIdentifier)Slots[IsNotBetween ? 3 : 2]; } }
 
         public SqlExpr Start { get { return (SqlExpr)Slots[IsNotBetween ? 4 : 3]; } }
 
-        public SqlTokenTerminal AndToken { get { return (SqlTokenTerminal)Slots[IsNotBetween ? 5 : 4]; } }
+        public SqlTokenIdentifier AndToken { get { return (SqlTokenIdentifier)Slots[IsNotBetween ? 5 : 4]; } }
 
         public SqlExpr Stop { get { return (SqlExpr)Slots[IsNotBetween ? 6 : 5]; } }
 

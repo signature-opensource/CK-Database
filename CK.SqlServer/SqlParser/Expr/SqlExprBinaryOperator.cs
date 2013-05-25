@@ -9,7 +9,7 @@ namespace CK.SqlServer
 {
     public class SqlExprBinaryOperator : SqlExprBaseBinary
     {
-        public SqlExprBinaryOperator( SqlExpr left, SqlTokenTerminal op, SqlExpr right )
+        public SqlExprBinaryOperator( SqlExpr left, SqlToken op, SqlExpr right )
             : base( left, op, right )
         {
             if( !IsValidOperator( op.TokenType ) ) throw new ArgumentException();
@@ -35,9 +35,9 @@ namespace CK.SqlServer
             return false;
         }
 
-        public new SqlTokenTerminal Middle { get { return (SqlTokenTerminal)base.Middle; } }
+        public new SqlToken Middle { get { return (SqlToken)base.Middle; } }
 
-        public SqlTokenTerminal Operator { get { return (SqlTokenTerminal)base.Middle; } }
+        public SqlToken Operator { get { return (SqlToken)base.Middle; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

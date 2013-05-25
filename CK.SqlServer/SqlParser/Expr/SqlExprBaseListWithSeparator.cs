@@ -8,7 +8,7 @@ using CK.Core;
 
 namespace CK.SqlServer
 {
-    public abstract class SqlExprBaseListWithSeparator<T> : SqlExpr where T : ISqlItem
+    public abstract class SqlExprBaseListWithSeparator<T> : SqlExpr where T : class, ISqlItem
     {
         /// <summary>
         /// Initializes a new <see cref="SqlExprBaseListWithSeparator{T}"/> of <typeparamref name="T"/> enclosed in a <see cref="SqlTokenOpenPar"/> and a <see cref="SqlTokenClosePar"/> 
@@ -112,17 +112,30 @@ namespace CK.SqlServer
             }
         }
 
-        internal static string BuildArray( IEnumerator<ISqlItem> tokens, bool allowEmpty, Predicate<ISqlItem> validSeparator, string elementName, out ISqlItem[] result )
+        internal static string BuildArray( IEnumerator<ISqlItem> tokens, bool allowEmpty, Predicate<ISqlItem> validSeparator, string elementName, out ISqlItem[] result, T firstForLookup = null )
         {
             Debug.Assert( tokens != null );
             result = null;
             List<ISqlItem> all = new List<ISqlItem>();
-            ISqlItem element = tokens.Current;
-            if( element is T )
+            ISqlItem element = firstForLookup;
+            if( element != null ) all.Add( firstForLookup );
+            else 
             {
-                all.Add( element );
+                element = tokens.Current;
+                if( element is T )
+                {
+                    all.Add( element );
+                    if( !tokens.MoveNext() )
+                    {
+                        result = all.ToArray();
+                        return null;
+                    }
+                }
+            }
+            if( all.Count > 0 )
+            {
                 ISqlItem separator;
-                while( tokens.MoveNext() && validSeparator( separator = tokens.Current ) )
+                while( validSeparator( separator = tokens.Current ) )
                 {
                     if( !tokens.MoveNext() || !((element = tokens.Current) is T) )
                     {
@@ -130,6 +143,7 @@ namespace CK.SqlServer
                     }
                     all.Add( separator );
                     all.Add( element );
+                    if( !tokens.MoveNext() ) break;
                 }
             }
             if( all.Count == 0 && !allowEmpty ) return String.Format( "Expected {0}.", elementName );

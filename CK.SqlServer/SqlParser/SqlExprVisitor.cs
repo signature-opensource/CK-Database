@@ -76,6 +76,13 @@ namespace CK.SqlServer
             return new SqlExprStIf( modified.ToArray() );
         }
 
+        public virtual SqlItem Visit( SqlExprStBeginTran e )
+        {
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
+            if( modified == null ) return e;
+            return new SqlExprStBeginTran( modified.ToArray() );
+        }
+
         public virtual SqlItem Visit( SqlExprStatementList e )
         {
             List<ISqlItem> modified = VisitExprComponents( e.Components );
@@ -92,9 +99,9 @@ namespace CK.SqlServer
 
         public virtual SqlItem Visit( SqlExprStUnmodeled e )
         {
-            SqlExprCommaList vC = (SqlExprCommaList)VisitExpr( e.Content );
+            SqlExpr vC = (SqlExpr)VisitExpr( e.Content );
             if( ReferenceEquals( vC, e.Content ) ) return e;
-            return new SqlExprStUnmodeled( e.Identifier, vC, e.StatementTerminator );
+            return new SqlExprStUnmodeled( vC, e.StatementTerminator );
         }
 
         public virtual SqlItem Visit( SqlExprStStoredProc e )

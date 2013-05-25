@@ -11,7 +11,8 @@ namespace CK.SqlServer
         T Visit( SqlExprRawItemList e );
         T Visit( SqlExprKoCall e );
         T Visit( SqlExprStIf e );
-        
+
+        T Visit( SqlExprStBeginTran e );
         T Visit( SqlExprStatementList e );
         T Visit( SqlExprStBlock e );       
         T Visit( SqlExprStUnmodeled e );

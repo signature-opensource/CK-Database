@@ -9,24 +9,22 @@ using System.Globalization;
 
 namespace CK.SqlServer
 {
-    public class SqlExprUnmodeledTokens : SqlItem
+    public class SqlExprUnmodeledTokens : SqlNoExpr
     {
-        readonly SqlToken[] _tokens;
-
         public SqlExprUnmodeledTokens( IEnumerable<SqlToken> tokens )
+            : base( Build( tokens ) )
         {
-            if( tokens == null ) throw new ArgumentNullException( "tokens" );
-            _tokens = tokens.ToArray();
-            if( _tokens.Length == 0 ) throw new ArgumentException( "tokens" );
         }
 
-        public override IEnumerable<ISqlItem> Components { get { return _tokens; } }
+        static ISqlItem[] Build( IEnumerable<SqlToken> tokens )
+        {
+            if( tokens == null ) throw new ArgumentNullException( "tokens" );
+            ISqlItem[] t = tokens.ToArray();
+            if( t.Length == 0 ) throw new ArgumentException( "tokens" );
+            return t;
+        }
 
-        public override IEnumerable<SqlToken> Tokens { get { return _tokens; } }
-
-        public override SqlToken FirstOrEmptyToken { get { return _tokens[0]; } }
-        
-        public override SqlToken LastOrEmptyToken { get { return _tokens[_tokens.Length-1]; } }
+        public override IEnumerable<SqlToken> Tokens { get { return (IEnumerable<SqlToken>)Slots; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

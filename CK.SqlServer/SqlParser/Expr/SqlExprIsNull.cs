@@ -14,12 +14,12 @@ namespace CK.SqlServer
     /// </summary>
     public class SqlExprIsNull : SqlExpr
     {
-        public SqlExprIsNull( SqlItem left, SqlTokenTerminal isToken, SqlTokenTerminal notToken, SqlTokenIdentifier nullToken )
+        public SqlExprIsNull( SqlItem left, SqlTokenIdentifier isToken, SqlTokenIdentifier notToken, SqlTokenIdentifier nullToken )
             : this( Build( left, isToken, notToken, nullToken ) )
         {
         }
 
-        static ISqlItem[] Build( SqlItem left, SqlTokenTerminal isToken, SqlTokenTerminal notToken, SqlTokenIdentifier nullToken )
+        static ISqlItem[] Build( SqlItem left, SqlTokenIdentifier isToken, SqlTokenIdentifier notToken, SqlTokenIdentifier nullToken )
         {
             return notToken != null 
                         ? CreateArray( SqlExprMultiToken<SqlTokenOpenPar>.Empty, left, isToken, notToken, nullToken, SqlExprMultiToken<SqlTokenClosePar>.Empty )
@@ -33,11 +33,11 @@ namespace CK.SqlServer
 
         public SqlItem Left { get { return (SqlItem)Slots[1]; } }
 
-        public SqlTokenTerminal IsToken { get { return (SqlTokenTerminal)Slots[2]; } }
+        public SqlTokenIdentifier IsToken { get { return (SqlTokenIdentifier)Slots[2]; } }
 
         public bool IsNotNull { get { return Slots.Length == 6; } }
 
-        public SqlTokenTerminal NotToken { get { return IsNotNull ? (SqlTokenTerminal)Slots[3] : null; } }
+        public SqlTokenIdentifier NotToken { get { return IsNotNull ? (SqlTokenIdentifier)Slots[3] : null; } }
 
         public SqlTokenIdentifier NullToken { get { return (SqlTokenIdentifier)Slots[IsNotNull ? 4 : 3]; } }
 

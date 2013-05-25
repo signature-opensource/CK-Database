@@ -114,10 +114,18 @@ namespace CK.SqlServer
                         statement = new SqlExprStEmpty( R.Read<SqlTokenTerminal>() );
                         return true;
                     }
+                    if( R.Current.TokenType == SqlTokenType.OpenPar )
+                    {
+                        SqlExpr e;
+                        if( !IsExpression( out e, 0, true ) ) return false;
+                        statement = new SqlExprStUnmodeled( e, GetOptionalTerminator() );
+                        return true;
+                    }
                     if( expected ) R.SetCurrentError( "Statement expected." );
                     return false;
                 }
-                if( !id.IsKeywordName )
+                bool canBeAStatement = id.IsReservedStartStatement || id.TokenType == SqlTokenType.With || id.TokenType == SqlTokenType.Throw;
+                if( !canBeAStatement )
                 {
                     // If it is not a reserved keyword, it can only be 
                     // a label definition.
@@ -133,35 +141,55 @@ namespace CK.SqlServer
                     R.MoveNext();
                     R.MoveNext();
                     statement = new SqlExprStLabelDef( id, colon );
+                    return true;
                 }
-                if( id.NameEquals( "end" ) )
+                if( id.TokenType == SqlTokenType.End )
                 {
                     if( expected ) R.SetCurrentError( "Statement expected." );
                     return false;
                 }
-                if( id.NameEquals( "begin" ) )
+                if( id.TokenType == SqlTokenType.Begin )
                 {
                     R.MoveNext();
+                    SqlTokenIdentifier transaction;
+                    // "tran" and "transaction" both map to SqlTokenType.Transaction.
+                    if( R.IsToken( out transaction, SqlTokenType.Transaction, false ) )
+                    {
+                        SqlTokenIdentifier tranNameOrVariable;
+                        SqlTokenIdentifier withToken = null;
+                        SqlTokenIdentifier markToken = null;
+                        SqlTokenLiteralString description = null;
+                        if( R.IsToken( out tranNameOrVariable, false ) )
+                        {
+                            if( R.IsToken( out withToken, SqlTokenType.With, false ) )
+                            {
+                                if( !R.IsUnquotedIdentifier( out markToken, "mark", true ) ) return false;
+                                R.IsToken( out description, false );
+                            }
+                        }
+                        statement = new SqlExprStBeginTran( id, transaction, tranNameOrVariable, withToken, markToken, description, GetOptionalTerminator() );
+                        return true;
+                    }
                     SqlExprStatementList body;
                     if( !IsStatementList( out body, true ) ) return false;
                     SqlTokenIdentifier end;
-                    if( !R.IsUnquotedReservedKeyword( out end, "end", true ) ) return false;
+                    if( !R.IsToken( out end, SqlTokenType.End, true ) ) return false;
                     statement = new SqlExprStBlock( id, body, end );
                     return true;
                 }
-                if( id.NameEquals( "create" ) || id.NameEquals( "alter" ) )
+                if( id.TokenType == SqlTokenType.Create || id.TokenType == SqlTokenType.Alter )
                 {
                     R.MoveNext();
                     SqlTokenIdentifier type;
-                    if( !R.IsUnquotedReservedKeyword( out type, true ) ) return false;
-                    if( type.NameEquals( "procedure" ) || type.NameEquals( "proc" ) )
+                    if( !R.IsToken( out type, true ) ) return false;
+                    if( type.TokenType == SqlTokenType.Procedure )
                     {
                         SqlExprStStoredProc sp;
                         if( !IsStoredProcedure( out sp, id, type ) ) return false;
                         statement = sp;
                         return true;
                     }
-                    if( type.NameEquals( "view" ) )
+                    if( type.TokenType == SqlTokenType.View )
                     {
                         SqlExprStView view;
                         if( !IsView( out view, id, type ) ) return false;
@@ -169,14 +197,13 @@ namespace CK.SqlServer
                         return true;
                     }
                 }
-                if( id.NameEquals( "break" ) || id.NameEquals( "continue" ) )
+                if( id.TokenType == SqlTokenType.Break || id.TokenType == SqlTokenType.Continue )
                 {
                     R.MoveNext();
                     statement = new SqlExprStMonoStatement( id, GetOptionalTerminator() );
                     return true;
                 }
-
-                if( id.NameEquals( "if" ) )
+                if( id.TokenType == SqlTokenType.If )
                 {
                     R.MoveNext();
                     SqlExpr expr;
@@ -185,17 +212,16 @@ namespace CK.SqlServer
                     if( !IsStatement( out thenSt, true ) ) return false;
                     SqlTokenIdentifier elseToken;
                     SqlExprBaseSt elseSt = null;
-                    if( R.IsUnquotedReservedKeyword( out elseToken, "else", false ) )
+                    if( R.IsToken( out elseToken, SqlTokenType.Else, false ) )
                     {
                         if( !IsStatement( out elseSt, true ) ) return false;
                     }
                     statement = new SqlExprStIf( id, expr, thenSt, elseToken, elseSt, GetOptionalTerminator() );
                     return true;
                 }
-                R.MoveNext();
-                SqlExprStUnmodeled st;
-                if( !IsUnmodeledStatement( out st, id ) ) return false;
-                statement = st;
+                SqlExpr unmodeled;
+                if( !IsExpressionOrRawList( out unmodeled, SqlToken.IsTerminatorOrPossibleStartStatement, true, true ) ) return false;
+                statement = new SqlExprStUnmodeled( unmodeled, GetOptionalTerminator() );
                 return true;
             }
 
@@ -217,18 +243,6 @@ namespace CK.SqlServer
                 return !R.IsError;
             }
 
-            /// <summary>
-            /// Matches a statement up to the next statement terminator ';'.
-            /// </summary>
-            bool IsUnmodeledStatement( out SqlExprStUnmodeled st, SqlTokenIdentifier id )
-            {
-                st = null;
-                SqlExprCommaList content;
-                if( !IsCommaList( out content, false ) ) return false;
-                st = new SqlExprStUnmodeled( id, content, GetOptionalTerminator() );
-                return true;
-            }
-
             bool IsView( out SqlExprStView view, SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type )
             {
                 view = null;
@@ -241,17 +255,11 @@ namespace CK.SqlServer
 
                 SqlExprUnmodeledTokens options;
                 SqlTokenIdentifier asToken;
-                if( !IsUnmodeledUntil( out options, out asToken, t => t.IsUnquotedKeyword && t.NameEquals( "as" ) ) ) return false;
+                if( !IsUnmodeledUntil( out options, out asToken, t => t.TokenType == SqlTokenType.As ) ) return false;
 
-                SqlExprBaseSt selectStatement;
-                SqlExprStUnmodeled select;
-                if( !IsStatement( out selectStatement, true ) 
-                    || (select = selectStatement as SqlExprStUnmodeled) == null 
-                    || select.Identifier.NameEquals( "select" ) )
-                {
-                    return R.SetCurrentError( "Select statement expected." ); 
-                }
-                view = new SqlExprStView( alterOrCreate, type, name, columns, options, asToken, select, GetOptionalTerminator() );
+                SqlExprBaseSt body;
+                if( !IsStatement( out body, true ) ) return false;
+                view = new SqlExprStView( alterOrCreate, type, name, columns, options, asToken, body, GetOptionalTerminator() );
                 return true;
             }
 
@@ -281,15 +289,15 @@ namespace CK.SqlServer
 
                 SqlExprUnmodeledTokens options;
                 SqlTokenIdentifier asToken;
-                if( !IsUnmodeledUntil( out options, out asToken, t => t.IsUnquotedKeyword && t.NameEquals( "as" ) ) ) return false;
+                if( !IsUnmodeledUntil( out options, out asToken, t => t.TokenType == SqlTokenType.As ) ) return false;
 
                 SqlTokenIdentifier begin, end = null;
-                R.IsUnquotedReservedKeyword( out begin, "begin", false );
+                R.IsUnquotedIdentifier( out begin, "begin", false );
 
                 SqlExprStatementList bodyStatements;
                 if( !IsStatementList( out bodyStatements, true ) ) return false;
 
-                if( begin != null && !R.IsUnquotedReservedKeyword( out end, "end", true ) ) return false;
+                if( begin != null && !R.IsUnquotedIdentifier( out end, "end", true ) ) return false;
 
                 SqlTokenTerminal term = GetOptionalTerminator();
                 
@@ -368,12 +376,12 @@ namespace CK.SqlServer
             {
                 typeDecl = null;
                 SqlTokenIdentifier id;
-                if( R.IsToken( out id, t => t.IsTypeName, false ) )
+                if( R.IsToken( out id, t => t.IsDbType, false ) )
                 {
-                    Debug.Assert( SqlReservedKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType ).HasValue, "TokenType has been mapped to a SqlDbType." );
+                    Debug.Assert( SqlKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType ).HasValue, "TokenType has been mapped to a SqlDbType." );
 
                     #region Type mapped to SqlDbType.
-                    SqlDbType dbType = SqlReservedKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType ).Value;
+                    SqlDbType dbType = SqlKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType ).Value;
                     switch( dbType )
                     {
                         case SqlDbType.Date:
@@ -496,11 +504,11 @@ namespace CK.SqlServer
                 return true;
             }
 
-            bool IsMultiIdentifier( out SqlExprMultiIdentifier id, bool expected = true )
+            bool IsMultiIdentifier( out SqlExprMultiIdentifier id, bool expected, SqlTokenIdentifier firstForLookup = null )
             {
                 id = null;
                 ISqlItem[] multi;
-                if( !IsMultipleIdentifierArray( out multi, expected ) ) return false;
+                if( !IsMultipleIdentifierArray( out multi, expected, firstForLookup ) ) return false;
                 id = new SqlExprMultiIdentifier( false, multi );
                 return true;
             }
@@ -512,11 +520,11 @@ namespace CK.SqlServer
             /// <param name="id">The expression. Not null on success.</param>
             /// <param name="expected">True to set an error if the current token(s) can not be read as one or more identifiers.</param>
             /// <returns>True on success. False if the current token(s) can not be read as one or more identifiers.</returns>
-            bool IsMonoOrMultiIdentifier( out SqlExpr id, bool expected = true )
+            bool IsMonoOrMultiIdentifier( out SqlExpr id, bool expected, SqlTokenIdentifier firstForLookup = null )
             {
                 id = null;
                 ISqlItem[] multi;
-                if( !IsMultipleIdentifierArray( out multi, expected ) ) return false;
+                if( !IsMultipleIdentifierArray( out multi, expected, firstForLookup ) ) return false;
                 if( multi.Length == 1 ) id = new SqlExprIdentifier( (SqlTokenIdentifier)multi[0] );
                 else id = new SqlExprMultiIdentifier( false, multi );
                 return true;
@@ -565,12 +573,12 @@ namespace CK.SqlServer
                 }
             }
 
-            bool IsMultipleIdentifierArray( out ISqlItem[] multi, bool expected = true )
+            bool IsMultipleIdentifierArray( out ISqlItem[] multi, bool expected, SqlTokenIdentifier firstForLookup = null )
             {
                 multi = null;
-                if( (R.Current.TokenType & SqlTokenType.IsIdentifier) != 0 || R.Current.TokenType == SqlTokenType.Mult )
+                if( firstForLookup != null || ( R.Current.TokenType & SqlTokenType.IsIdentifier ) != 0 || R.Current.TokenType == SqlTokenType.Mult )
                 {
-                    string error = SqlExprMultiIdentifier.BuildArray( new StarTransformer( R ), out multi );
+                    string error = SqlExprMultiIdentifier.BuildArray( new StarTransformer( R ), out multi, firstForLookup );
                     if( error != null ) return R.SetCurrentError( error );
                     return true;
                 }
@@ -582,10 +590,10 @@ namespace CK.SqlServer
             /// Collects tokens in an <see cref="SqlExprUnmodeledTokens"/> until a given token is found.
             /// </summary>
             /// <typeparam name="T">Type of the stopper token.</typeparam>
-            /// <param name="tokens">An unmodeled list of tokens. Null if the stopper occurs immediately or an error occured.</param>
-            /// <param name="stopper">Stopper eventually found.</param>
+            /// <param name="tokens">An unmodeled list of tokens. Null if the stopper occurs immediately or an error occured on the first token.</param>
+            /// <param name="stopper">Stopper eventually found. Null if the end of input or an error has been encountered.</param>
             /// <param name="stopperDefinition">Predicate that defines the stop.</param>
-            /// <returns>True if a stopper has been found. False if an error or the end of input has been encountered.</returns>
+            /// <returns>True if no error occured. The stopper is null if the end of input has been encountered.</returns>
             bool IsUnmodeledUntil<T>( out SqlExprUnmodeledTokens tokens, out T stopper, Predicate<T> stopperDefinition ) where T : SqlToken
             {
                 Debug.Assert( stopperDefinition != null );

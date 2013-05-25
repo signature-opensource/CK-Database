@@ -285,10 +285,10 @@ namespace CK.SqlServer.Tests.Parsing
                                                      print '1';
                                                    else print 2, 9, 'toto';" );
 
-            Assert.That( ExplainWriter.Write( ifS ), Is.EqualTo( "if[IsNull(@i)]then[<print{'1'}>]else[<print{2,9,'toto'}>]" ) );
+            Assert.That( ExplainWriter.Write( ifS ), Is.EqualTo( "if[IsNull(@i)]then[<¤{print-'1'}¤>]else[<¤{print-2-,-9-,-'toto'}¤>]" ) );
 
             ifS = ParseStatement<SqlExprStIf>( @"if exists(select t.* from sys.tables t) print N'OK';" );
-            Assert.That( ExplainWriter.Write( ifS ), Is.EqualTo( "if[call:exists([select-(t.*)-from[¤{sys.tables-t}¤]])]then[<print{N'OK'}>]" ) );
+            Assert.That( ExplainWriter.Write( ifS ), Is.EqualTo( "if[call:exists([select-(t.*)-from[¤{sys.tables-t}¤]])]then[<¤{print-N'OK'}¤>]" ) );
         }
 
         private static void Check( string text, string explained, string textAutoCorrected = null )
@@ -316,6 +316,16 @@ namespace CK.SqlServer.Tests.Parsing
         }
 
         [Test]
+        public void ParseStrangeStoredProcedure()
+        {
+            var sp = ReadStatement<SqlExprStStoredProc>( "sStrange.sql" );
+
+            Assert.That( sp.Name.ToString(), Is.EqualTo( "sStrange\r\n" ) );
+            Assert.That( sp.Parameters, Is.Empty );
+            Assert.That( sp.BodyStatements.Statements.Count, Is.EqualTo( 5 ) );
+        }
+
+        [Test]
         public void ParseStoredProcedure01()
         {
             var sp = ReadStatement<SqlExprStStoredProc>( "sStoredProcedure01.sql" );
@@ -328,6 +338,16 @@ namespace CK.SqlServer.Tests.Parsing
             Assert.That( sp.Parameters[0].Variable.Identifier.Name, Is.EqualTo( "@ProcId" ) );
             Assert.That( sp.Parameters[0].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.Int ) );
             Assert.That( sp.BodyStatements.Statements.Count, Is.EqualTo( 2 ) );
+        }
+
+        [Test]
+        public void ParseStoredProcedure02()
+        {
+            var sp = ReadStatement<SqlExprStStoredProc>( "sStoredProcedure02.sql" );
+
+            Assert.That( sp.Name.ToString(), Is.EqualTo( "CK.sResDataStringSet -- Merge inside.\r\n" ) );
+            Assert.That( sp.Parameters.Count, Is.EqualTo( 2 ) );
+            Assert.That( sp.BodyStatements.Statements.Count, Is.EqualTo( 6 ), "Since Merge is not implemented, update, set and insert unmodeled statements are created." );
         }
 
         [Test]
@@ -420,6 +440,7 @@ namespace CK.SqlServer.Tests.Parsing
             Assert.That( !r.IsError, r.ToString() );
             Assert.That( statement, Is.InstanceOf<T>() );
             T s = (T)statement;
+            Assert.That( statement.ToString(), Is.EqualTo( text ) );
             return s;
         }
 

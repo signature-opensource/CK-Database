@@ -9,6 +9,10 @@ using System.Globalization;
 
 namespace CK.SqlServer
 {
+    /// <summary>
+    /// Non enclosable items specializes this base class. SqlNoExpr is the base class for <see cref="SqlExprBaseSt">statements</see>,
+    /// but can also be used for parts of a <see cref="SqlExpr"/>.
+    /// </summary>
     public abstract class SqlNoExpr : SqlItem
     {
         readonly protected ISqlItem[] Slots;
@@ -26,14 +30,14 @@ namespace CK.SqlServer
         public override IEnumerable<ISqlItem> Components { get { return Slots; } }
 
         /// <summary>
-        /// Gets the last token of the expression.
-        /// </summary>
-        public sealed override SqlToken LastOrEmptyToken { get { return Slots.Length > 0 ? Slots[Slots.Length - 1].LastOrEmptyToken : SqlToken.Empty; } }
-
-        /// <summary>
         /// Gets the first token of the expression.
         /// </summary>
         public sealed override SqlToken FirstOrEmptyToken { get { return Slots.Length > 0 ? Slots[0].FirstOrEmptyToken : SqlToken.Empty; } }
+
+        /// <summary>
+        /// Gets the last token of the expression.
+        /// </summary>
+        public sealed override SqlToken LastOrEmptyToken { get { return Slots.Length > 0 ? Slots[Slots.Length - 1].LastOrEmptyToken : SqlToken.Empty; } }
 
     }
 

@@ -12,22 +12,22 @@ namespace CK.SqlServer
     /// </summary>
     public class SelectCombineOperator : SqlExpr, ISelectSpecification
     {
-        public SelectCombineOperator( ISelectSpecification left, SqlTokenTerminal exceptUnionOrIntercept, ISelectSpecification right, SelectOrderBy orderBy = null, SelectFor forPart = null )
+        public SelectCombineOperator( ISelectSpecification left, SqlTokenIdentifier exceptUnionOrIntercept, ISelectSpecification right, SelectOrderBy orderBy = null, SelectFor forPart = null )
             : this( Build( left, exceptUnionOrIntercept, null, right, orderBy, forPart ) )
         {
             if( !IsValidOperator( exceptUnionOrIntercept.TokenType ) ) throw new ArgumentException();
         }
 
-        public SelectCombineOperator( ISelectSpecification left, SqlTokenTerminal union, SqlTokenIdentifier all, ISelectSpecification right, SelectOrderBy orderBy = null, SelectFor forPart = null )
+        public SelectCombineOperator( ISelectSpecification left, SqlTokenIdentifier union, SqlTokenIdentifier all, ISelectSpecification right, SelectOrderBy orderBy = null, SelectFor forPart = null )
             : this( Build( left, union, all, right, orderBy, forPart ) )
         {
             if( union.TokenType == SqlTokenType.Union && all != null && !all.NameEquals( "all" ) ) throw new ArgumentException();
         }
 
-        static ISqlItem[] Build( ISelectSpecification left, SqlTokenTerminal op, SqlTokenIdentifier all, ISelectSpecification right, SelectOrderBy orderBy, SelectFor forPart )
+        static ISqlItem[] Build( ISelectSpecification left, SqlTokenIdentifier op, SqlTokenIdentifier all, ISelectSpecification right, SelectOrderBy orderBy, SelectFor forPart )
         {
             Debug.Assert( left != null && op != null && right != null );
-            ISqlItem o = all != null ? (ISqlItem)new SqlExprMultiToken<SqlToken>( op, all ) : op;
+            ISqlItem o = all != null ? (ISqlItem)new SqlExprMultiToken<SqlTokenIdentifier>( op, all ) : op;
             return Build( SqlToken.EmptyOpenPar, left, o, right, orderBy, forPart, SqlToken.EmptyClosePar );
         }
 
@@ -77,7 +77,7 @@ namespace CK.SqlServer
 
         SqlExprMultiToken<SqlToken> UnionAll { get { return Slots[2] as SqlExprMultiToken<SqlToken>; } }
 
-        SqlTokenTerminal OperatorToken { get { return Slots[2] is SqlTokenTerminal ? (SqlTokenTerminal)Slots[2] : (SqlTokenTerminal)((SqlExprMultiToken<SqlToken>)Slots[2])[0]; } }
+        SqlTokenIdentifier OperatorToken { get { return Slots[2] is SqlTokenIdentifier ? (SqlTokenIdentifier)Slots[2] : ((SqlExprMultiToken<SqlTokenIdentifier>)Slots[2])[0]; } }
 
         /// <summary>
         /// Gets the operator token type: it can be: <see cref="SqlTokenType.Union"/>, <see cref="SqlTokenType.Except"/>, <see cref="SqlTokenType.Intersect"/>.

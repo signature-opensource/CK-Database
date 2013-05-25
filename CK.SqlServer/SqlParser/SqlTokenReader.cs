@@ -223,37 +223,6 @@ namespace CK.SqlServer
             return false;
         }
 
-        public bool IsUnquotedReservedKeyword( out SqlTokenIdentifier keyword, bool expected )
-        {
-            if( Current.TokenType == SqlTokenType.IdentifierReservedKeyword )
-            {
-                keyword = Read<SqlTokenIdentifier>();
-                return true;
-            }
-            if( expected ) SetCurrentError( "Reserved Keyword expected." );
-            keyword = null;
-            return false;
-        }
-
-        public bool IsUnquotedReservedKeyword( out SqlTokenIdentifier keyword, string name, bool expected )
-        {
-            if( name == null ) throw new ArgumentNullException( "name" );
-            Debug.Assert( SqlReservedKeyword.MapKeyword( name ) != null, name + " is NOT a keyword!" );
-
-            if( Current.TokenType == SqlTokenType.IdentifierReservedKeyword )
-            {
-                SqlTokenIdentifier t = (SqlTokenIdentifier)Current;
-                if( t.NameEquals( name ) )
-                {
-                    keyword = Read<SqlTokenIdentifier>();
-                    return true;
-                }
-            }
-            if( expected ) SetCurrentError( "Expected reserved keyword '{0}'.", name );
-            keyword = null;
-            return false;
-        }
-
         public bool IsUnquotedIdentifier( out SqlTokenIdentifier identifier, string name, bool expected )
         {
             if( SqlToken.IsUnquotedIdentifier( Current, name ) )
@@ -279,7 +248,8 @@ namespace CK.SqlServer
         }
 
         /// <summary>
-        /// Reads a list of tokens until a <paramref name="stopper"/> or the end of input is encountered.
+        /// Reads a list of tokens until a <paramref name="stopper"/> or the end of input or 
+        /// an error is encountered (in such case, stopper is set to null).
         /// </summary>
         /// <typeparam name="T">Type of tokens.</typeparam>
         /// <param name="tokens">List of tokens or null if no tokens have been collected.</param>
@@ -292,7 +262,7 @@ namespace CK.SqlServer
             Debug.Assert( stopperDefinition != null );
             tokens = null;
             stopper = null;
-            while( !IsErrorOrEndOfInput && !IsToken( out stopper, stopperDefinition ) )
+            while( !IsErrorOrEndOfInput && !IsToken( out stopper, stopperDefinition, false ) )
             {
                 if( tokens == null ) tokens = new List<SqlToken>();
                 tokens.Add( Current );
@@ -359,8 +329,8 @@ namespace CK.SqlServer
         public override string ToString()
         {
             string shortToken = Current.ToString();
-            if( shortToken.Length > 20 ) shortToken = shortToken.Substring( 0, 20 ) + "...";
-            string msg = String.Format( "{0} - {1}", Current.GetType().Name.Replace( "SqlToken", String.Empty ), shortToken );
+            if( shortToken.Length > 50 ) shortToken = shortToken.Substring( 0, 50 ) + "...";
+            string msg = String.Format( "{0}: '{1}'", Current.GetType().Name.Replace( "SqlToken", String.Empty ), shortToken );
             if( _currentAnalyzedText != null ) msg += " - Text:" + _currentAnalyzedText();
             return msg;
         }

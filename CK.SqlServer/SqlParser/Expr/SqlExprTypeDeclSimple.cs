@@ -15,7 +15,7 @@ namespace CK.SqlServer
 
         public SqlExprTypeDeclSimple( SqlTokenIdentifier id )
         {
-            SqlDbType? dbType = SqlReservedKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType );
+            SqlDbType? dbType = SqlKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType );
             if( !dbType.HasValue )
             {
                 throw new ArgumentException( "Invalid type.", "id" );
@@ -26,7 +26,7 @@ namespace CK.SqlServer
 
         internal SqlExprTypeDeclSimple( SqlTokenIdentifier id, SqlDbType dbType )
         {
-            Debug.Assert( dbType == SqlReservedKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType ) );
+            Debug.Assert( dbType == SqlKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType ) );
             DbType = dbType;
             _tokens = CreateArray( id );
         }

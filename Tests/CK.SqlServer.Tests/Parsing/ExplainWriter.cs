@@ -25,7 +25,7 @@ namespace CK.SqlServer.Tests.Parsing
         {
             Out.Append( '[' );
             WriteIdentifier( e.Identifier );
-            Out.Append( SqlTokenizer.Explain( e.AssignToken.TokenType ) );
+            Out.Append( e.AssignToken.ToString() );
             VisitExpr( e.Right );           
             Out.Append( ']' );
             return e;
@@ -35,7 +35,7 @@ namespace CK.SqlServer.Tests.Parsing
         {
             Out.Append( '[' );
             VisitExpr( e.Left );
-            Out.Append( SqlTokenizer.Explain( e.Middle.TokenType ) );
+            Out.Append( e.Middle.ToString().ToLowerInvariant() );
             VisitExpr( e.Right );
             Out.Append( ']' );
             return e;
@@ -77,7 +77,7 @@ namespace CK.SqlServer.Tests.Parsing
 
         public override SqlItem Visit( SqlExprStUnmodeled e )
         {
-            Out.Append( '<' ).Append( e.Identifier.Name );
+            Out.Append( '<' );
             VisitExpr( e.Content );
             Out.Append( '>' );
             return e;
@@ -109,7 +109,7 @@ namespace CK.SqlServer.Tests.Parsing
 
         public override SqlItem Visit( SqlExprUnaryOperator e )
         {
-            Out.Append( SqlTokenizer.Explain( e.Operator.TokenType ) ).Append( '[' );
+            Out.Append( e.Operator.ToString().ToLowerInvariant() ).Append( '[' );
             VisitExpr( e.Expression );
             Out.Append( ']' );
             return e;

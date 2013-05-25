@@ -58,6 +58,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlHelper.cs" />
     <Compile Include="SqlParser\Expr\Base\SqlNoExpr.cs" />
+    <Compile Include="SqlParser\Expr\SqlExprStBeginTran.cs" />
     <Compile Include="SqlParser\Expr\SqlExprCaseWhenSelector.cs" />
     <Compile Include="SqlParser\Expr\SqlExprCase.cs" />
     <Compile Include="SqlParser\Expr\ISelectSpecificication.cs" />
@@ -173,7 +174,7 @@
     <Compile Include="SqlTokenizer\Token\SqlTokenBaseLiteral.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SqlTokenizer\SqlReservedKeyword.cs" />
+    <Compile Include="SqlTokenizer\SqlKeyword.cs" />
     <Compile Include="SqlTokenizer\SqlTokenizer.cs" />
     <Compile Include="SqlTokenizer\SqlTokenTypeError.cs" />
     <Compile Include="SqlTokenizer\SqlTokenType.cs" />

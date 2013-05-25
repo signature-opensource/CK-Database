@@ -18,7 +18,7 @@ namespace CK.SqlServer
         {
             if( id == null ) throw new ArgumentNullException( "token" );
             _tokens = CreateArray( id );
-            SqlDbType? dbType = SqlReservedKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType );
+            SqlDbType? dbType = SqlKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType );
             if( !dbType.HasValue
                 || (dbType.Value != SqlDbType.DateTime2 && dbType.Value != SqlDbType.Time && dbType.Value != SqlDbType.DateTimeOffset && dbType.Value != SqlDbType.DateTime && dbType.Value != SqlDbType.Date && dbType.Value != SqlDbType.SmallDateTime) )
             {
@@ -31,7 +31,7 @@ namespace CK.SqlServer
         public SqlExprTypeDeclDateAndTime( SqlTokenIdentifier id, SqlTokenTerminal openPar, SqlTokenLiteralInteger secondScale, SqlTokenTerminal closePar )
         {
             if( id == null ) throw new ArgumentNullException( "id" );
-            SqlDbType? dbType = SqlReservedKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType );
+            SqlDbType? dbType = SqlKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType );
             if( !dbType.HasValue || (dbType.Value != SqlDbType.DateTime2 && dbType.Value != SqlDbType.Time && dbType.Value != SqlDbType.DateTimeOffset) )
             {
                 throw new ArgumentException( "Invalid date/time type (must be datetime2, time or datetimeoffset).", "id" );
@@ -51,7 +51,7 @@ namespace CK.SqlServer
         {
             Debug.Assert( id != null && openPar != null && secondScale != null && closePar != null );
             Debug.Assert( openPar.TokenType == SqlTokenType.OpenPar && closePar.TokenType == SqlTokenType.ClosePar );
-            Debug.Assert( dbType == SqlReservedKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType ).Value && (dbType == SqlDbType.DateTime2 || dbType == SqlDbType.Time || dbType == SqlDbType.DateTimeOffset) );
+            Debug.Assert( dbType == SqlKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType ).Value && (dbType == SqlDbType.DateTime2 || dbType == SqlDbType.Time || dbType == SqlDbType.DateTimeOffset) );
             Debug.Assert( secondScale.Value >= 0 && secondScale.Value <= 7 );
 
             _tokens = CreateArray( id, openPar, secondScale, closePar );
@@ -62,7 +62,7 @@ namespace CK.SqlServer
         internal SqlExprTypeDeclDateAndTime( SqlTokenIdentifier id, SqlDbType dbType )
         {
             Debug.Assert( id != null );
-            Debug.Assert( SqlReservedKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType ).Value == dbType );
+            Debug.Assert( SqlKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType ).Value == dbType );
             _tokens = CreateArray( id );
             DbType = dbType;
             SyntaxSecondScale = -1;

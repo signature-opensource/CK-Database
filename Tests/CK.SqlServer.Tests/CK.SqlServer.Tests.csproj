@@ -73,6 +73,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Parsing\Scripts\sStoredProcedure02.sql" />
+    <Content Include="Parsing\Scripts\sStrange.sql" />
     <Content Include="Parsing\Scripts\sProcWithoutTerminator.sql" />
     <Content Include="Parsing\Scripts\sStoredProcedureInputOutput.sql" />
     <Content Include="Parsing\Scripts\sStoredProcedure01.sql" />

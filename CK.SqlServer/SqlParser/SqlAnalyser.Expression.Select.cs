@@ -10,43 +10,12 @@ namespace CK.SqlServer
 {
         public partial class SqlAnalyser
         {
-            //bool IsSelectQuery( out SelectQuery e, bool expected )
-            //{
-            //    e = null;
-            //    ISelectSpecification spec;
-            //    SelectContinuation c;
-            //    if( !IsSelectSpecification( out spec, out c, expected ) ) return false;
-            //    return false;
-            //}
-
-            //bool IsSelectSpecification( out ISelectSpecification e, out SelectContinuation c, bool expected )
-            //{
-            //    e = null;
-            //    SelectSpecification nud;
-            //    if( !IsSelectSpecificationInternal( out nud, out c, expected ) ) return false;
-            //    e = nud;
-            //    Debug.Assert( SqlTokenType.Intersect > SqlTokenType.Except && SqlTokenType.Except > SqlTokenType.Union, "Order matters: it is the precedence level." );
-            //    while( (c & SelectContinuation.IsCombination) != 0 && (int)c > (int)e.CombinationKind )
-            //    {
-            //        SqlTokenTerminal op = R.Read<SqlTokenTerminal>();
-            //        SqlTokenIdentifier allOrDistinct = null;
-            //        if( op.TokenType == SqlTokenType.Union )
-            //        {
-            //            if( !R.IsUnquotedKeyword( out allOrDistinct, "all", false ) ) R.IsUnquotedKeyword( out allOrDistinct, "distinct", false );
-            //        }
-            //        ISelectSpecification led;
-            //        if( !IsSelectSpecification( out led, out c, true ) ) return false;
-            //        e = new SelectCombineOperator( e, op, allOrDistinct, led );
-            //    }
-            //    return true;
-            //}
-
-            bool IsSelectSpecification( out SelectSpecification e, bool allowExtension, bool expected )
+            bool MatchSelectSpecification( out SelectSpecification e, SqlTokenIdentifier select, bool allowExtension )
             {
                 e = null;
                 SelectHeader header;
                 SelectColumnList columns;
-                if( !IsSelectHeader( out header, expected ) ) return false;
+                if( !MatchSelectHeader( out header, select ) ) return false;
                 if( !IsSelectColumnList( out columns, false ) ) return false;
                 
                 SpecificationPart c = IsSpecificationPart( R.Current );
@@ -72,7 +41,7 @@ namespace CK.SqlServer
                     {
                         SqlTokenIdentifier partName = R.Read<SqlTokenIdentifier>(); 
                         SqlExpr content;
-                        if( !IsExpressionOrRawList( out content, SelectPartStopper, true ) ) return false;
+                        if( !IsExpressionOrRawList( out content, SelectPartStopper, false, true ) ) return false;
                         from = new SelectFrom( partName, content );
                         c = IsSpecificationPart( R.Current );
                     }
@@ -91,9 +60,9 @@ namespace CK.SqlServer
                         SqlExpr content;
                         SqlTokenIdentifier having;
                         SqlExpr havingClause = null;
-                        if( !R.IsUnquotedReservedKeyword( out by, "by", true ) ) return false;
-                        if( !IsExpressionOrRawList( out content, SelectPartStopper, true ) ) return false;
-                        if( R.IsUnquotedReservedKeyword( out having, "having", false ) )
+                        if( !R.IsUnquotedIdentifier( out by, "by", true ) ) return false;
+                        if( !IsExpressionOrRawList( out content, SelectPartStopper, false, true ) ) return false;
+                        if( R.IsUnquotedIdentifier( out having, "having", false ) )
                         {
                             if( !IsOneExpression( out havingClause, false ) ) return false;
                         }
@@ -104,29 +73,6 @@ namespace CK.SqlServer
                 }
                 return true;
             }
-
-            //private bool IsSelectSpecificationExtension( out SelectOrderBy orderBy, out SelectFor forPart )
-            //{
-            //    orderBy = null;
-            //    forPart = null;
-            //    if( SqlToken.IsUnquotedIdentifier( R.Current, "order" ) )
-            //    {
-            //        SqlTokenIdentifier partName = R.Read<SqlTokenIdentifier>();
-            //        SqlTokenIdentifier by;
-            //        SqlExpr content;
-            //        if( !R.IsUnquotedKeyword( out by, "by", true ) ) return false;
-            //        if( !IsExpressionOrRawList( out content, SelectPartStopper, true ) ) return false;
-            //        orderBy = new SelectOrderBy( partName, by, content );
-            //    }
-            //    if( SqlToken.IsUnquotedIdentifier( R.Current, "for" ) )
-            //    {
-            //        SqlTokenIdentifier partName = R.Read<SqlTokenIdentifier>();
-            //        SqlExpr content;
-            //        if( !IsExpressionOrRawList( out content, SelectPartStopper, true ) ) return false;
-            //        forPart = new SelectFor( partName, content );
-            //    }
-            //    return true;
-            //}
 
             bool IsSelectColumnList( out SelectColumnList e, bool expectAtLeastOne )
             {
@@ -159,7 +105,7 @@ namespace CK.SqlServer
                     {
                         SqlTokenIdentifier asToken;
                         SqlExprIdentifier colName = null;
-                        if( R.IsUnquotedReservedKeyword( out asToken, "as", false ) )
+                        if( R.IsUnquotedIdentifier( out asToken, "as", false ) )
                         {
                             if( !IsMonoIdentifier( out colName, true ) ) return false;
                             column = new SelectColumn( e, asToken, colName );
@@ -180,8 +126,8 @@ namespace CK.SqlServer
             bool SelectPartStopper( SqlToken t )
             {
                 return t.TokenType == SqlTokenType.EndOfInput
-                        || SqlToken.IsCloseParenthesisOrTerminator( t )
-                        || (t.TokenType & SqlTokenType.IsSelectPart) != 0
+                        || SqlToken.IsCloseParenthesisOrTerminatorOrPossibleStartStatement( t )
+                        || SqlToken.IsSelectOperator( t.TokenType )
                         || IsSpecificationPart( t ) != SpecificationPart.None
                         || SqlToken.IsUnquotedIdentifier( t, "having", "option" );
             }
@@ -203,7 +149,7 @@ namespace CK.SqlServer
             SpecificationPart IsSpecificationPart( SqlToken t )
             {
                 SpecificationPart c = SpecificationPart.None;
-                SqlTokenIdentifier id = R.Current as SqlTokenIdentifier;
+                SqlTokenIdentifier id = t as SqlTokenIdentifier;
                 if( id != null && !id.IsQuoted )
                 {
                     if( id.NameEquals( "into" ) ) c = SpecificationPart.Into;
@@ -214,10 +160,9 @@ namespace CK.SqlServer
                 return c;
             }
 
-            bool IsSelectHeader( out SelectHeader e, bool expected )
+            bool MatchSelectHeader( out SelectHeader e, SqlTokenIdentifier select )
             {
                 e = null;
-                SqlTokenIdentifier select;
                 SqlTokenIdentifier allOrDistinct = null;
                 SqlTokenIdentifier top = null;
                 SqlExpr topExpression = null;
@@ -225,9 +170,8 @@ namespace CK.SqlServer
                 SqlTokenIdentifier with = null;
                 SqlTokenIdentifier ties = null;
 
-                if( !R.IsUnquotedReservedKeyword( out select, "select", expected ) ) return false;
-                if( !R.IsUnquotedReservedKeyword( out allOrDistinct, "all", false ) ) R.IsUnquotedReservedKeyword( out allOrDistinct, "distinct", false );
-                if( R.IsUnquotedReservedKeyword( out top, "top", false ) )
+                R.IsUnquotedIdentifier( out allOrDistinct, "all", "distinct", false );
+                if( R.IsUnquotedIdentifier( out top, "top", false ) )
                 {
                     SqlTokenLiteralInteger intVal;
                     if( R.IsToken( out intVal, false ) )
@@ -236,9 +180,9 @@ namespace CK.SqlServer
                         topExpression.MutableEnclose( SqlTokenOpenPar.OpenPar, SqlTokenOpenPar.ClosePar );
                     }
                     else if( !IsOneExpression( out topExpression, true ) ) return false;
-                    if( R.IsUnquotedReservedKeyword( out percent, "percent", false ) )
+                    if( R.IsUnquotedIdentifier( out percent, "percent", false ) )
                     {
-                        if( R.IsUnquotedReservedKeyword( out with, "with", false ) ) R.IsUnquotedReservedKeyword( out ties, "ties", true );
+                        if( R.IsUnquotedIdentifier( out with, "with", false ) ) R.IsUnquotedIdentifier( out ties, "ties", true );
                     }
                 }
                 e = new SelectHeader( select, allOrDistinct, top, topExpression, percent, with, ties );

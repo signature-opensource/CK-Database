@@ -18,7 +18,7 @@ namespace CK.SqlServer
         /// </summary>
         /// <param name="items">List of any kind of <see cref="ISqlItem"/> that compose this block.</param>
         public SqlExprRawItemList( IList<ISqlItem> items )
-            : this( CreateParArray( items.AsReadOnlyList() ) )
+            : this( CreateEnclosedArray( items.AsReadOnlyList() ) )
         {
         }
 
@@ -31,7 +31,7 @@ namespace CK.SqlServer
         /// This MUST not contain the <see cref="Opener"/> and/or the <see cref="Closer"/>.</param>
         /// <param name="closePar">Closing parentehsis.</param>
         public SqlExprRawItemList( SqlTokenOpenPar openPar, IList<ISqlItem> items, SqlTokenClosePar closePar )
-            : this( CreateArray( openPar, items.AsReadOnlyList(), closePar ) )
+            : this( CreateArray( openPar, items.AsReadOnlyList(), items.Count, closePar ) )
         {
         }
 

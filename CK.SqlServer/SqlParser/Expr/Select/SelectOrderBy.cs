@@ -13,7 +13,7 @@ namespace CK.SqlServer
     /// </summary>
     public class SelectOrderBy : SqlExpr, ISelectSpecification
     {
-        public SelectOrderBy( ISelectSpecification select, SqlTokenTerminal orderToken, SqlTokenIdentifier byToken, SqlExpr content )
+        public SelectOrderBy( ISelectSpecification select, SqlTokenIdentifier orderToken, SqlTokenIdentifier byToken, SqlExpr content )
             : this( CreateArray( SqlToken.EmptyOpenPar, select, orderToken, byToken, content, SqlToken.EmptyClosePar ) )
         {
         }

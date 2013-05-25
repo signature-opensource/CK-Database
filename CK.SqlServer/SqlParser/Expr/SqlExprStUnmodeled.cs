@@ -9,18 +9,17 @@ using CK.Core;
 namespace CK.SqlServer
 {
     /// <summary>
-    /// Captures any statement. It is an identifier followed by any number of comma separated list of mere <see cref="SqlToken"/>s or <see cref="SqlExpr"/>.
+    /// Captures any statement: it can be any <see cref="SqlExpr"/>.
     /// </summary>
     public class SqlExprStUnmodeled : SqlExprBaseSt
     {
-        public SqlExprStUnmodeled( SqlTokenIdentifier id, SqlExprCommaList content, SqlTokenTerminal statementTerminator = null )
-            : base( CreateArray( id, content ), statementTerminator )
+        public SqlExprStUnmodeled( SqlExpr content, SqlTokenTerminal statementTerminator = null )
+            : base( CreateArray( content ), statementTerminator )
         {
+            if( content == null ) throw new ArgumentNullException( "content" );
         }
-        
-        public SqlTokenIdentifier Identifier { get { return (SqlTokenIdentifier)Slots[0]; } }
 
-        public SqlExprCommaList Content { get { return (SqlExprCommaList)Slots[1]; } }
+        public SqlExpr Content { get { return (SqlExpr)Slots[0]; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

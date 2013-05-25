@@ -67,7 +67,7 @@ namespace CK.SqlServer
 
         protected ISqlItem[] EncloseComponents( SqlTokenOpenPar openPar, SqlTokenClosePar closePar )
         {
-            return CreateArray( openPar, Slots, closePar );
+            return CreateEnclosedArray( openPar, Slots, closePar );
         }
 
     }

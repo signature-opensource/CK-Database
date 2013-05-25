@@ -17,7 +17,7 @@ namespace CK.SqlServer
         public SqlExprTypeDeclWithSize( SqlTokenIdentifier id )
         {
             if( id == null ) throw new ArgumentNullException( "id" );
-            SqlDbType? dbType = SqlReservedKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType );
+            SqlDbType? dbType = SqlKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType );
             if( !dbType.HasValue || (dbType != SqlDbType.Char && dbType != SqlDbType.VarChar && dbType != SqlDbType.NChar && dbType != SqlDbType.NVarChar && dbType != SqlDbType.Binary && dbType != SqlDbType.VarBinary) )
             {
                 throw new ArgumentException( "Expected char, varchar, nchar, nvarchar, binary, varbinary.", "id" );
@@ -30,7 +30,7 @@ namespace CK.SqlServer
         public SqlExprTypeDeclWithSize( SqlTokenIdentifier id, SqlTokenTerminal openPar, SqlToken size, SqlTokenTerminal closePar )
         {
             if( id == null ) throw new ArgumentNullException( "id" );
-            SqlDbType? dbType = SqlReservedKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType );
+            SqlDbType? dbType = SqlKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType );
             if( !dbType.HasValue || (dbType != SqlDbType.Char && dbType != SqlDbType.VarChar && dbType != SqlDbType.NChar && dbType != SqlDbType.NVarChar && dbType != SqlDbType.Binary && dbType != SqlDbType.VarBinary) )
             {
                 throw new ArgumentException( "Expected char, varchar, nchar, nvarchar, binary, varbinary.", "id" );
@@ -50,7 +50,7 @@ namespace CK.SqlServer
         internal SqlExprTypeDeclWithSize( SqlTokenIdentifier id, SqlDbType dbType )
         {
             Debug.Assert( id != null );
-            Debug.Assert( dbType == SqlReservedKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType ).Value );
+            Debug.Assert( dbType == SqlKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType ).Value );
             Debug.Assert( dbType == SqlDbType.Char || dbType != SqlDbType.VarChar || dbType != SqlDbType.NChar || dbType != SqlDbType.NVarChar || dbType != SqlDbType.Binary || dbType != SqlDbType.VarBinary );
             _tokens = CreateArray( id );
             DbType = dbType;
@@ -61,7 +61,7 @@ namespace CK.SqlServer
         {
             Debug.Assert( id != null && openPar != null && size != null && closePar != null );
             Debug.Assert( openPar.TokenType == SqlTokenType.OpenPar && closePar.TokenType == SqlTokenType.ClosePar );
-            Debug.Assert( dbType == SqlReservedKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType ).Value );
+            Debug.Assert( dbType == SqlKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType ).Value );
             Debug.Assert( dbType == SqlDbType.Char || dbType != SqlDbType.VarChar || dbType != SqlDbType.NChar || dbType != SqlDbType.NVarChar || dbType != SqlDbType.Binary || dbType != SqlDbType.VarBinary );
             Debug.Assert( (size is SqlTokenLiteralInteger && ((SqlTokenLiteralInteger)size).Value > 0) || (size is SqlTokenIdentifier && ((SqlTokenIdentifier)size).NameEquals( "max" )) );
             _tokens = CreateArray( id, openPar, size, closePar );
