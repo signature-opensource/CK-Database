@@ -8,10 +8,5 @@ namespace CK.SqlServer.Setup
 {
     public class SqlPackage : SqlPackageBase, IAmbientContractDefiner
     {
-        /// <summary>
-        /// Gets or sets whether this package is associated to a Model.
-        /// Defaults to false.
-        /// </summary>
-        public bool HasModel { get; set; }
     }
 }

@@ -6,7 +6,7 @@ using System.Text;
 namespace CK.Core
 {
     /// <summary>
-    /// Exposes multiple methods that manipulate <see cref=""/>
+    /// Exposes multiple methods that manipulate location names.
     /// </summary>
     public static class DefaultContextLocNaming
     {

@@ -93,7 +93,7 @@ namespace CK.Setup
         /// versions (<see cref="VersionList"/>) and in <see cref="PreviousNames"/>.
         /// </summary>
         /// <param name="fullName">The name of the package valid for the <paramref name="version"/>.</param>
-        /// <param name="version">The version asociated to the <see cref="fullName"/>.</param>
+        /// <param name="version">The version asociated to the <paramref name="fullName"/>.</param>
         public void AddOrSetPreviousName( string fullName, Version version )
         {
             if( String.IsNullOrWhiteSpace( fullName ) ) throw new ArgumentException( "fullName" );

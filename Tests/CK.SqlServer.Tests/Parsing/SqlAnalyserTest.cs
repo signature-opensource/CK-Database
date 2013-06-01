@@ -58,6 +58,20 @@ namespace CK.SqlServer.Tests.Parsing
                                 ¤{s-,-k-call:offset([@i+8])-rows-fetch-next-[45-8]-rows-only}¤
                               )" );
         }
+        
+        [Test]
+        public void SelectWithOrder()
+        {
+            var s = @"
+SELECT SalesOrderID, ProductID, OrderQty,
+        SUM(OrderQty) OVER(PARTITION BY SalesOrderID) AS Total,
+        ""Percent by ProductID"" = CAST(1. * OrderQty / SUM(OrderQty) OVER(PARTITION BY SalesOrderID)*100 AS DECIMAL(5,2))
+        FROM Sales.SalesOrderDetail 
+        WHERE SalesOrderID IN(43659,43664);
+";
+            Check( s, "" );
+
+        }
 
         [Test]
         public void SelectUnionIntersect()

@@ -8,7 +8,7 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// Fully mutable <see cref="IDependentItemContainer"/> and <see cref="IVersionnedItem"/> with a an optional associated <see cref="Model"/> package
+    /// Fully mutable <see cref="IDependentItemContainer"/> and <see cref="IVersionedItem"/> with a an optional associated <see cref="Model"/> package
     /// and  configurable type for the associated <see cref="SetupDriver"/>.
     /// </summary>
     /// <remarks>

@@ -12,7 +12,7 @@ namespace CK.Setup
         /// </summary>
         /// <param name="driverType">SetupDriver type to create.</param>
         /// <param name="info">Internal constructor information.</param>
-        /// <returns>A setup driver. Null if not able to create it (a basic <see cref="Activator.CreateInstance"/> will be used to create the driver).</returns>
+        /// <returns>A setup driver. Null if not able to create it (a basic <see cref="Activator.CreateInstance(Type)"/> will be used to create the driver).</returns>
         SetupDriver CreateDriver( Type driverType, SetupDriver.BuildInfo info );
     }
 }

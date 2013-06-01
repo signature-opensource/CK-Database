@@ -14,7 +14,10 @@ namespace CK.SqlServer
         /// Initializes a new <see cref="SqlExprBaseListWithSeparator{T}"/> of <typeparamref name="T"/> enclosed in a <see cref="SqlTokenOpenPar"/> and a <see cref="SqlTokenClosePar"/> 
         /// and with <paramref name="validSeparator"/> that is to <see cref="IsCommaSeparator"/> by default.
         /// </summary>
-        /// <param name="exprOrTokens">List of tokens or expressions.</param>
+        /// <param name="openPar">Opening parenthesis.</param>
+        /// <param name="exprOrCommaTokens">List of tokens or expressions.</param>
+        /// <param name="closePar">Closing parenthesis.</param>
+        /// <param name="allowEmpty">False to throw an argument exception if the <paramref name="exprOrCommaTokens"/> is empty.</param>
         /// <param name="validSeparator">Defaults to a predicate that checks that separators are commas (see <see cref="IsCommaSeparator"/>).</param>
         public SqlExprBaseListWithSeparator( SqlTokenOpenPar openPar, IList<ISqlItem> exprOrTokens, SqlTokenClosePar closePar, bool allowEmpty, Predicate<ISqlItem> validSeparator = null )
             : this( Build( openPar, exprOrTokens, closePar, allowEmpty, validSeparator ) )

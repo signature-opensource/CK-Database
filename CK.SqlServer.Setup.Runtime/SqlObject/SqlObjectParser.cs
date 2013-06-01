@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using CK.Core;
-using CK.Database.Setup;
 using CK.Setup;
 
 namespace CK.SqlServer.Setup
@@ -52,7 +51,7 @@ namespace CK.SqlServer.Setup
             Match mHeader = _rHeader.Match( header );
             if( !mHeader.Success )
             {
-                logger.Warn( "Unable to read object header: {0}", text.Substring( 0, Math.Max( text.Length, 80 ) ) );
+                logger.Error( "Invalid header: -- Version=X.Y.Z (with Major.Minor.Build) or Version=* must appear first in header. Header='{0}...'", text.Substring( 0, Math.Max( text.Length, 80 ) ) );
                 return null;
             }
             string packageName = null;
@@ -75,7 +74,8 @@ namespace CK.SqlServer.Setup
             if( mHeader.Groups[1].Length == 1 ) version = null;
             else if( !Version.TryParse( mHeader.Groups[1].Value, out version ) || version.Revision != -1 || version.Build == -1 )
             {
-                logger.Error( "-- Version=X.Y.Z (with Major.Minor.Build) must appear first in header." );
+                logger.Error( "-- Version=X.Y.Z (with Major.Minor.Build) or Version=* must appear first in header." );
+                return null;
             }
             string databaseOrSchema = mSqlObject.Groups[2].Value;
             string schema = mSqlObject.Groups[3].Value;

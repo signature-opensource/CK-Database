@@ -158,7 +158,7 @@ namespace CK.SqlServer
 
         /// <summary>
         /// Reads the <see cref="Current"/> token that must be of the given type (otherwise an exception is thrown).
-        /// Use <see cref="IsToken"/> methods to test its type before reading the current token.
+        /// Use <see cref="IsToken{T}"/> methods to test its type before reading the current token.
         /// </summary>
         /// <typeparam name="T">Type of the current token.</typeparam>
         /// <returns>The current token cast in the given type.</returns>

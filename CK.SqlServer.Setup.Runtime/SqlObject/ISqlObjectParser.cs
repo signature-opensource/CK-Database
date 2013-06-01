@@ -5,8 +5,12 @@ using System.Text;
 using CK.Core;
 using CK.Setup;
 
-namespace CK.Database.Setup
+namespace CK.Setup
 {
+    /// <summary>
+    /// Abstraction of sql parser.
+    /// This is not Sql Server specific.
+    /// </summary>
     public interface ISqlObjectParser
     {
         IDependentProtoItem Create( IActivityLogger logger, IContextLocNaming externalName, string text );

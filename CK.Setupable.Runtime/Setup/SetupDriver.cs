@@ -7,17 +7,21 @@ using System.Diagnostics;
 namespace CK.Setup
 {
     /// <summary>
-    /// Generic driver for <see cref="IDependentItem"/> (also handles the composite <see cref="IDependentItemGoup"/>).
+    /// Generic driver for <see cref="IDependentItem"/> (also handles the composite <see cref="IDependentItemGroup"/>).
     /// </summary>
     public class SetupDriver : DriverBase
     {
         List<ISetupHandler> _handlers;
         internal readonly DriverBase Head;
 
+        /// <summary>
+        /// Encapsulates construction information for <see cref="SetupDriver"/> objects.
+        /// This is an opaque parameter that enables the abstract base SetupDriver to be correclty intialized.
+        /// </summary>
         public class BuildInfo
         {
             internal BuildInfo( ISetupEngine engine, ISortedItem sortedItem, VersionedName externalVersion )
-            {
+            {               
                 Head = null;
                 Engine = engine;
                 SortedItem = sortedItem;
@@ -38,6 +42,10 @@ namespace CK.Setup
             internal readonly DriverBase Head;
         }
 
+        /// <summary>
+        /// Initializes a new <see cref="SetupDriver"/>.
+        /// </summary>
+        /// <param name="info">Opaque parameter built by the framework.</param>
         public SetupDriver( BuildInfo info )
             : base( info.Engine, info.SortedItem, info.ExternalVersion, info.Head != null ? info.Head.DirectDependencies : null )
         {
@@ -50,6 +58,9 @@ namespace CK.Setup
             get { return false; }
         }
 
+        /// <summary>
+        /// Gets whether this <see cref="SetupDriver"/> is associated to a group or a container.
+        /// </summary>
         public bool IsGroup 
         { 
             get { return Head != null; } 
@@ -57,7 +68,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Provides a way for this driver to load scripts (<see cref="ISetupScript"/> abstraction) from any storage 
-        /// and to register them in the given <see cref="ScriptCollector"/>.
+        /// and to register them in the given <see cref="IScriptCollector"/>.
         /// </summary>
         /// <param name="scripts">Collector for scripts.</param>
         /// <returns>True on success. False when an error occured that must stop the setup process.</returns>
@@ -200,31 +211,55 @@ namespace CK.Setup
 
         #endregion
 
+        /// <summary>
+        /// Does nothing (always returns true).
+        /// </summary>
+        /// <returns>Always true.</returns>
         internal protected virtual bool Init()
         {
             return true;
         }
 
+        /// <summary>
+        /// Does nothing (always returns true).
+        /// </summary>
+        /// <returns>Always true.</returns>
         protected virtual bool InitContent()
         {
             return true;
         }
 
+        /// <summary>
+        /// Does nothing (always returns true).
+        /// </summary>
+        /// <returns>Always true.</returns>
         internal protected virtual bool Install()
         {
             return true;
         }
 
+        /// <summary>
+        /// Does nothing (always returns true).
+        /// </summary>
+        /// <returns>Always true.</returns>
         protected virtual bool InstallContent()
         {
             return true;
         }
 
+        /// <summary>
+        /// Does nothing (always returns true).
+        /// </summary>
+        /// <returns>Always true.</returns>
         internal protected virtual bool Settle()
         {
             return true;
         }
 
+        /// <summary>
+        /// Does nothing (always returns true).
+        /// </summary>
+        /// <returns>Always true.</returns>
         protected virtual bool SettleContent()
         {
             return true;

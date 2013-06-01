@@ -124,7 +124,7 @@ namespace CK.Setup
         /// </summary>
         /// <remarks>
         /// <para>
-        /// The "no version" script should always be applied by <see cref="ScriptSetupHandler"/>.
+        /// The "no version" script should always be executed.
         /// This offers a coherency between versioned and non-versioned items and enables versioned items to behave like a non-versioned one.
         /// </para>
         /// <para>
@@ -195,11 +195,11 @@ namespace CK.Setup
         /// fails to parse the given file name.
         /// </summary>
         /// <param name="curContext">Current context identifier. It will be used as the <see cref="Context"/> if <paramref name="fileName"/> does not contain it. Null if no current context exist.</param>
-        /// <param name="curLoc">Current location identifier. It will be used as the <see cref="Loc"/> if <paramref name="fileName"/> does not contain a location. Null if no current location exist.</param>
+        /// <param name="curLoc">Current location identifier. It will be used as the <see cref="Location"/> if <paramref name="fileName"/> does not contain a location. Null if no current location exist.</param>
         /// <param name="fileName">The file name. Should not start with a path.</param>
         /// <param name="extraPath">Path part (prefix) of the <paramref name="fileName"/>.</param>
         /// <param name="hasExtension">True to ignore the trailing extension (.xxx). False if the <paramref name="fileName"/> does not end with an extension.</param>
-        /// <param name="result">The parsed result.</param>
+        /// <returns>The parsed result.</returns>
         static public ParsedFileName Parse( string curContext, string curLoc, string fileName, object extraPath, bool hasExtension )
         {
             ParsedFileName r;
@@ -217,7 +217,7 @@ namespace CK.Setup
         /// with ".U.V.W.to.X.Y.Z").
         /// </summary>
         /// <param name="curContext">Current context identifier. It will be used as the <see cref="Context"/> if <paramref name="fileName"/> does not contain it. Null if no current context exist.</param>
-        /// <param name="curLoc">Current location identifier. It will be used as the <see cref="Loc"/> if <paramref name="fileName"/> does not contain a location. Null if no current location exist.</param>
+        /// <param name="curLoc">Current location identifier. It will be used as the <see cref="Location"/> if <paramref name="fileName"/> does not contain a location. Null if no current location exist.</param>
         /// <param name="fileName">The file name. Should not start with a path.</param>
         /// <param name="extraPath">Path part (context dependant data) of the <paramref name="fileName"/>.</param>
         /// <param name="hasExtension">

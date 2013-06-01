@@ -5,10 +5,10 @@ using CK.Core;
 using CK.Setup;
 using NUnit.Framework;
 
-namespace CK.Database.Setup.Tests
+namespace CK.SqlServer.Setup.Engine.Tests
 {
     [TestFixture]
-    public class FileBased
+    public class FileBasedDiscoveringAndParsing
     {
         [Test]
         public void XmlPackage()
@@ -85,7 +85,7 @@ namespace CK.Database.Setup.Tests
             typeManager.Register( new SqlScriptTypeHandler() );
             ScriptCollector collector = new ScriptCollector( typeManager );
             SqlFileDiscoverer discoverer = new SqlFileDiscoverer( new SqlObjectParserStub(), TestHelper.Logger );
-            Assert.That( discoverer.DiscoverSqlFiles( null, null, TestHelper.GetScriptsFolder( "FromOpenTo" ), new DependentProtoItemCollector(), collector ), Is.True );
+            Assert.That( discoverer.DiscoverSqlFiles( null, null, TestHelper.GetScriptsFolder( "FileBased/FromOpenTo" ), new DependentProtoItemCollector(), collector ), Is.True );
 
             bool caseDiffer;
             ScriptSet scripts = collector.Find( "Test", out caseDiffer );
@@ -136,7 +136,7 @@ namespace CK.Database.Setup.Tests
             
             SqlFileDiscoverer discoverer = new SqlFileDiscoverer( new SqlObjectParserStub(), TestHelper.Logger );
 
-            Assert.That( discoverer.DiscoverSqlFiles( null, null, TestHelper.GetScriptsFolder( "AllSteps" ), new DependentProtoItemCollector(), collector ), Is.True );
+            Assert.That( discoverer.DiscoverSqlFiles( null, null, TestHelper.GetScriptsFolder( "FileBased/AllSteps" ), new DependentProtoItemCollector(), collector ), Is.True );
 
             bool caseDiffer;
             ScriptSet scripts = collector.Find( "test", out caseDiffer );

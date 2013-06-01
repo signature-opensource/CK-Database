@@ -60,7 +60,7 @@ namespace CK.Setup
         /// </summary>
         /// <remarks>
         /// When let to null (and no <see cref="DriverType"/> is specified either), 
-        /// the standard <see cref="PackageDriver"/> is used.
+        /// the standard <see cref="SetupDriver"/> is used.
         /// </remarks>
         string DriverTypeName { get; }
 

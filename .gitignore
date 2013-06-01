@@ -31,3 +31,4 @@ Runtime/Current/
 /packages/
 *.nupkg
 CK-Database.Tests.VisualState.xml
+*.nuspec

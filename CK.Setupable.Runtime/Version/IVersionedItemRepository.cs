@@ -27,7 +27,7 @@ namespace CK.Setup
         /// Version is not required here: the item with the provided name will 
         /// be deleted regardless of its version.
         /// </summary>
-        /// <param name="fullName">The <see cref="IVersionedItem.FullName"/> to remove.</param>
+        /// <param name="fullName">The <see cref="IDependentItem.FullName">FullName</see> to remove.</param>
         void Delete( string fullName );
 
     }

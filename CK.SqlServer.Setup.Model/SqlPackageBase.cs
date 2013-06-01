@@ -25,5 +25,11 @@ namespace CK.SqlServer.Setup
         [AmbientProperty]
         public string Schema { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether this package is associated to a Model.
+        /// Defaults to false.
+        /// </summary>
+        public bool HasModel { get; set; }
+
     }
 }

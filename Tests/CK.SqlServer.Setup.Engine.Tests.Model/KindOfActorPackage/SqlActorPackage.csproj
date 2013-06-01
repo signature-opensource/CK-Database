@@ -34,9 +34,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CK.Core, Version=2.8.8.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+    <Reference Include="CK.Core, Version=2.8.10.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\CK.Core.2.8.8-develop\lib\net40\CK.Core.dll</HintPath>
+      <HintPath>..\..\..\packages\CK.Core.2.8.10\lib\net40\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -69,16 +69,16 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Basic\Res\Model.CK.UserHome.Install.2.12.10.sql" />
+    <EmbeddedResource Include="Basic\Res\CK.UserHome.Init.2.12.10.sql" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Basic\Res\Model.CK.ActorHome.Install.2.12.10.sql" />
+    <EmbeddedResource Include="Basic\Res\CK.ActorHome.Init.2.12.10.sql" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Basic\Res\Model.CK.GroupHome.Install.2.12.10.sql" />
+    <EmbeddedResource Include="Basic\Res\CK.GroupHome.Init.2.12.10.sql" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Basic\Res\Model.CK.ActorProfileHome.Install.2.12.10.sql" />
+    <EmbeddedResource Include="Basic\Res\CK.ActorProfileHome.Init.2.12.10.sql" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Basic\Res\sUserCreate.sql" />

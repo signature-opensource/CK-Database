@@ -32,11 +32,12 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\CK.Setupable.Runtime.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CK.Core, Version=2.8.8.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+    <Reference Include="CK.Core, Version=2.8.10.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\CK.Core.2.8.8-develop\lib\net40\CK.Core.dll</HintPath>
+      <HintPath>..\packages\CK.Core.2.8.10\lib\net40\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -102,7 +103,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">
-      <Project>{87F54185-5226-4EEE-8D59-5D03E6C1AB7C}</Project>
+      <Project>{87f54185-5226-4eee-8d59-5d03e6c1ab7c}</Project>
       <Name>CK.Setup.Dependency</Name>
     </ProjectReference>
     <ProjectReference Include="..\CK.Setupable.Model\CK.Setupable.Model.csproj">

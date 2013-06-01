@@ -19,8 +19,10 @@ namespace CK.SqlServer
         /// <summary>
         /// Initializes a new <see cref="SqlExprBaseExprList{T}"/> of <typeparamref name="T"/> enclosed in a <see cref="SqlTokenOpenPar"/> and a <see cref="SqlTokenClosePar"/>.
         /// </summary>
+        /// <param name="openPar">Opening parenthesis.</param>
         /// <param name="exprOrCommaTokens">List of tokens or expressions.</param>
-        /// <param name="validSeparator">Defaults to a predicate that checks that separators are commas (see <see cref="SqlToken.IsCommaSeparator"/>).</param>
+        /// <param name="closePar">Closing parenthesis.</param>
+        /// <param name="allowEmpty">False to throw an argument exception if the <paramref name="exprOrCommaTokens"/> is empty.</param>
         public SqlExprBaseExprList( SqlTokenOpenPar openPar, IList<ISqlItem> exprOrCommaTokens, SqlTokenClosePar closePar, bool allowEmpty )
             : base( openPar, exprOrCommaTokens, closePar, allowEmpty, SqlToken.IsCommaSeparator )
         {

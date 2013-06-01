@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CK.SqlServer.Setup</RootNamespace>
-    <AssemblyName>CK.Setup.SqlServer.Model</AssemblyName>
+    <AssemblyName>CK.SqlServer.Setup.Model</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
@@ -32,11 +32,12 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\CK.SqlServer.Setup.Model.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CK.Core, Version=2.8.8.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+    <Reference Include="CK.Core, Version=2.8.10.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\CK.Core.2.8.8-develop\lib\net40\CK.Core.dll</HintPath>
+      <HintPath>..\packages\CK.Core.2.8.10\lib\net40\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

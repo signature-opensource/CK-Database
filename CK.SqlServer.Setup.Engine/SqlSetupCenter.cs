@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using CK.Core;
-using CK.Database.Setup;
 using CK.Setup;
 
 namespace CK.SqlServer.Setup

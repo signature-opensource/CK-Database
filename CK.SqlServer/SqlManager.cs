@@ -735,7 +735,7 @@ namespace CK.SqlServer
             {
                 if( err.Class <= 10 )
                 {
-                    _logger.Error( "{0} ({1}): {2}.", err.Procedure, err.LineNumber, err.Message );
+                    _logger.Info( "{0} ({1}): {2}.", err.Procedure, err.LineNumber, err.Message );
                 }
                 else if( err.Class <= 16 )
                 {
@@ -743,14 +743,15 @@ namespace CK.SqlServer
                 }
                 else
                 {
-                    _logger.Warn( "Error at {0}", err.Source );
-                    _logger.Warn( "Number: {0}", err.Number );
-                    _logger.Warn( "State: {0}", err.State );
-                    _logger.Warn( "Class: {0}", err.Class );
-                    _logger.Warn( "Server: {0}", err.Server );
-                    _logger.Warn( "Procedure: {0}", err.Procedure );
-                    _logger.Warn( "LineNumber: {0}", err.LineNumber );
-                    _logger.Warn( "Message: {0}", err.Message );
+                    _logger.Error( "Sql Server error at '{0}'\r\nClass='{1}'\r\nMessage: '{2}'\r\nProcedure: '{6}'\r\nLineNumber: '{7}'\r\nNumber: '{3}'\r\nState: '{4}'\r\nServer: '{5}'", 
+                                        err.Source, 
+                                        err.Class, 
+                                        err.Message, 
+                                        err.Number, 
+                                        err.State, 
+                                        err.Server, 
+                                        err.Procedure, 
+                                        err.LineNumber );
                 }
             }
         }

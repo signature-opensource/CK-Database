@@ -33,9 +33,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CK.Core, Version=2.8.8.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+    <Reference Include="CK.Core, Version=2.8.10.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\CK.Core.2.8.8-develop\lib\net40\CK.Core.dll</HintPath>
+      <HintPath>..\..\..\packages\CK.Core.2.8.10\lib\net40\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -47,10 +47,10 @@
     <Compile Include="SecurityZoneHome.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Res\Model.CK.GroupHome-Zone.Install.2.11.25.sql" />
+    <EmbeddedResource Include="Res\CK.GroupHome-Zone.Init.2.11.25.sql" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Res\Model.CK.SecurityZoneHome.Install.2.11.25.sql" />
+    <EmbeddedResource Include="Res\CK.SecurityZoneHome.Init.2.11.25.sql" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Res\sSecurityZoneCreate.sql" />

@@ -6,7 +6,7 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
-    /// The different states of the <see cref="SetupEngine"/>.
+    /// The different states of the <see cref="ISetupEngine"/>.
     /// </summary>
     [Flags]
     public enum SetupEngineState

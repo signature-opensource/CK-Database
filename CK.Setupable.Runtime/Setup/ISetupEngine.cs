@@ -12,8 +12,8 @@ namespace CK.Setup
     public interface ISetupEngine
     {
         /// <summary>
-        /// Triggered before registration (at the beginning of <see cref="Register"/>).
-        /// This event fires before the <see cref="SetupEvent"/> (with <see cref="SetupEvent.Step"/> set to None), and enables
+        /// Triggered before registration (at the beginning of the Register step).
+        /// This event fires before the <see cref="SetupEvent"/> (with <see cref="SetupEventArgs.Step"/> set to None), and enables
         /// registration of setup items.
         /// </summary>
         event EventHandler<RegisterSetupEventArgs> RegisterSetupEvent;

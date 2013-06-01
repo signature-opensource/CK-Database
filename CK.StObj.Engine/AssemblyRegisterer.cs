@@ -119,7 +119,7 @@ namespace CK.Core
         
         /// <summary>
         /// Gets the list of assemblies that have been discovered so far. 
-        /// Use <see cref="ClearDiscoveredInfo"/> for <see cref="DiscoverRecurse"/> to be able to 
+        /// Use <see cref="Clear(Assembly)"/> for <see cref="DiscoverRecurse(Assembly)"/> to be able to 
         /// discover again an assembly.
         /// </summary>
         public IReadOnlyList<DiscoveredInfo> Assemblies
@@ -128,7 +128,7 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Finds an existing <see cref="DiscoverRecurse"/>ed information. Returns null if not found.
+        /// Finds an existing discovered information. Returns null if not found.
         /// </summary>
         /// <param name="a">The assembly.</param>
         /// <returns>A <see cref="DiscoveredInfo"/> or null if not found.</returns>

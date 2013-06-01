@@ -2,6 +2,9 @@
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Mutable list of <see cref="IDependentItemGroupRef"/> that also manages addig a dependency by name.
+    /// </summary>
     public interface IDependentItemGroupList : IList<IDependentItemGroupRef>
     {
         /// <summary>
@@ -25,7 +28,7 @@ namespace CK.Setup
         /// <summary>
         /// Splits the parameter on the comma and <see cref="Add(string)">adds</see> the multiple full names.
         /// </summary>
-        /// <param name="commaSeparatedRequires">Comma separated full names. When null or empty, nothing is added.</param>
-        void AddCommaSeparatedString( string commaSeparatedRequires );
+        /// <param name="commaSeparatedReferences">Comma separated full names. When null or empty, nothing is added.</param>
+        void AddCommaSeparatedString( string commaSeparatedReferences );
     }
 }

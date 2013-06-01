@@ -32,15 +32,18 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\CK.SqlServer.Setup.Engine.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CK.Core, Version=2.8.8.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+    <Reference Include="CK.Core, Version=2.8.10.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\CK.Core.2.8.8-develop\lib\net40\CK.Core.dll</HintPath>
+      <HintPath>..\packages\CK.Core.2.8.10\lib\net40\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
+    <Reference Include="System.XML" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedAssemblyInfo.cs">
@@ -48,6 +51,7 @@
     </Compile>
     <Compile Include="Labo\Copy of Tests.cs" />
     <Compile Include="Labo\PathImpl.cs" />
+    <Compile Include="SqlFileDiscoverer.cs" />
     <Compile Include="SqlManagerProvider.cs" />
     <Compile Include="Labo\Tests.cs" />
     <Compile Include="SqlMultiScript.cs" />
@@ -59,12 +63,8 @@
     <Compile Include="SqlVersionedItemRepository.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CK.Database.Setup\CK.Database.Setup.csproj">
-      <Project>{571795B1-F1EC-4EDF-9F17-01945ADE0535}</Project>
-      <Name>CK.Database.Setup</Name>
-    </ProjectReference>
     <ProjectReference Include="..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">
-      <Project>{87F54185-5226-4EEE-8D59-5D03E6C1AB7C}</Project>
+      <Project>{87f54185-5226-4eee-8d59-5d03e6c1ab7c}</Project>
       <Name>CK.Setup.Dependency</Name>
     </ProjectReference>
     <ProjectReference Include="..\CK.Setupable.Model\CK.Setupable.Model.csproj">

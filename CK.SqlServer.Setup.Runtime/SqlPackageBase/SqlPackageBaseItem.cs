@@ -16,6 +16,7 @@ namespace CK.SqlServer.Setup
         protected SqlPackageBaseItem( string itemType, object driverType, object obj )
             : base( itemType, driverType, obj )
         {
+            if( Object.HasModel ) EnsureModel();
         }
 
         /// <summary>
@@ -27,8 +28,9 @@ namespace CK.SqlServer.Setup
             : base( logger, data )
         {
             Context = data.StObj.Context.Context;
-            Location = Object.Database.Name;
+            if( Object.Database != null ) Location = Object.Database.Name;
             ResourceLocation = (ResourceLocator)data.StObj.GetStObjProperty( "ResourceLocation" );
+            if( Object.HasModel ) EnsureModel();
         }
 
         /// <summary>

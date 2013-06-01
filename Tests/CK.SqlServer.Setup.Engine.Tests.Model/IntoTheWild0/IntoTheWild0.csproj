@@ -34,9 +34,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CK.Core, Version=2.8.8.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+    <Reference Include="CK.Core, Version=2.8.10.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\CK.Core.2.8.8-develop\lib\net40\CK.Core.dll</HintPath>
+      <HintPath>..\..\..\packages\CK.Core.2.8.10\lib\net40\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -48,9 +48,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResPackage\ResPackage.cs" />
     <Compile Include="SqlHistoDatabase.cs" />
-    <Compile Include="ResPackage\tRes.cs" />
-    <Compile Include="ResPackage\tResDataRawText.cs" />
-    <Compile Include="ResPackage\tResDataString.cs" />
+    <Compile Include="ResPackage\ResHome.cs" />
+    <Compile Include="ResPackage\ResDataRawTextHome.cs" />
+    <Compile Include="ResPackage\ResDataStringHome.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\CK.Setupable.Model\CK.Setupable.Model.csproj">
@@ -73,10 +73,10 @@
     <EmbeddedResource Include="ResPackage\Resource\sResRemove.sql" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="ResPackage\Resource\Model.CK.tResDataRawText.Install.2.9.2.sql" />
-    <EmbeddedResource Include="ResPackage\Resource\Model.CK.tResDataString.Install.2.9.2.sql" />
-    <EmbeddedResource Include="ResPackage\Resource\Model.IntoTheWild0.ResPackage.Install.2.9.2.sql" />
-    <EmbeddedResource Include="ResPackage\Resource\Model.CK.tRes.Install.2.9.2.sql" />
+    <EmbeddedResource Include="ResPackage\Resource\CK.ResDataRawTextHome.Init.2.9.2.sql" />
+    <EmbeddedResource Include="ResPackage\Resource\CK.ResDataStringHome.Init.2.9.2.sql" />
+    <EmbeddedResource Include="ResPackage\Resource\IntoTheWild0.ResPackage.Init.2.9.2.sql" />
+    <EmbeddedResource Include="ResPackage\Resource\CK.ResHome.Init.2.9.2.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

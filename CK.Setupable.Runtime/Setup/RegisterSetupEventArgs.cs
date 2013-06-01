@@ -7,7 +7,7 @@ namespace CK.Setup
 {
     /// <summary>
     /// Event argument for registration step.
-    /// Adds registering capacity to <see cref="SetupEngine.SetupEvent"/>.
+    /// Adds registering capacity to <see cref="ISetupEngine.SetupEvent"/>.
     /// </summary>
     public class RegisterSetupEventArgs : SetupEventArgs
     {
@@ -43,7 +43,7 @@ namespace CK.Setup
         /// <summary>
         /// Registers multiple <see cref="IDependentItem"/> objects.
         /// </summary>
-        /// <param name="item">Object to register.</param>
+        /// <param name="items">Objects to register.</param>
         public void Register( IEnumerable<IDependentItem> items )
         {
             if( items == null ) throw new ArgumentNullException( "items" );

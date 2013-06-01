@@ -6,8 +6,12 @@ using System.Xml.Linq;
 using CK.Core;
 using CK.Setup;
 
-namespace CK.Database.Setup
+namespace CK.Setup
 {
+    /// <summary>
+    /// Discovers ".sql" (sql script files) and ".ck" (<see cref="DynamicPackageItem"/> expressed as xml).
+    /// This is not Sql Server specific.
+    /// </summary>
     public class SqlFileDiscoverer
     {
         /// <summary>

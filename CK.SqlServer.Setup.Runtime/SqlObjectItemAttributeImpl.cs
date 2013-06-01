@@ -42,7 +42,7 @@ namespace CK.SqlServer.Setup
                         if( protoObject != null )
                         {
                             SqlObjectItem subItem = protoObject.CreateItem( state.Logger );
-                            ((IMutableSetupItemContainer)item).Children.Add( subItem );
+                            packageItem.Children.Add( subItem );
                         }
                     }
                     else state.Logger.Warn( "Duplicate name '{0}' in SqlObjectItem attribute of '{1}'.", nTrimmed, item.FullName );
@@ -103,6 +103,7 @@ namespace CK.SqlServer.Setup
                     logger.Error( "Resource '{0}' of '{4}' defines the {1} in the schema '{2}' instead of '{3}'.", fileName, protoObject.ItemType, protoObject.Schema, externalSchema, packageItem.FullName );
                     protoObject = null;
                 }
+                else logger.Trace( "Loaded {0} '{1}' of '{2}'.", protoObject.ItemType, protoObject.Name, packageItem.FullName );
             }
             return protoObject;
         }

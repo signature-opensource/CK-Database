@@ -11,6 +11,8 @@ namespace CK.SqlServer.Setup
         public SqlPackageSetupDriver( BuildInfo info )
             : base( info ) 
         {
+            string schema = Item.Object.Schema;
+            if( schema != null && Item.Object.Database != null ) Item.Object.Database.EnsureSchema( schema ); 
         }
 
         public new SqlPackageItem Item { get { return (SqlPackageItem)base.Item; } }

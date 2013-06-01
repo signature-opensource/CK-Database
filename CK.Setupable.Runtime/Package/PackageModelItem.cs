@@ -8,7 +8,7 @@ namespace CK.Setup
 {
     /// <summary>
     /// A PackageModel is a <see cref="IPackageItem"/> associated to a <see cref="IPackageItem"/>.
-    /// A Model <see cref="FullName"/> is the "Model." prefix followed by the <see cref="DynamicPackageItem.FullName"/>.
+    /// A Model <see cref="FullName"/> is the "Model." prefix followed by the FullName of the <see cref="Package"/>.
     /// </summary>
     /// <remarks>
     /// Since there can be at most one Model per Package, a PackageModel should only be built or removed by its owner Package itself 
@@ -28,7 +28,7 @@ namespace CK.Setup
         /// <summary>
         /// Initializes a new <see cref="PackageModelItem"/>.
         /// </summary>
-        /// <param name="p">The associated package.</param>
+        /// <param name="package">The associated package.</param>
         public PackageModelItem( IPackageItem package )
         {
             if( package == null ) throw new ArgumentNullException( "package" );
@@ -47,7 +47,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets or sets whether any <see cref="Package"/> requirements (that is not itself a Model) is automatically projected as a requirement to its Model on 
         /// this Model (the package name is prefixed with "?Model.").
-        /// Defaults to true and applies to <see cref="DynamicPackageItem.Requires"/> and <see cref="DynamicPackageItem.RequiredBy"/>.
+        /// Defaults to true and applies to Requires and RequiredBy relations.
         /// </summary>
         /// <remarks>
         /// <para>
