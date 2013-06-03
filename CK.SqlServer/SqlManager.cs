@@ -23,6 +23,8 @@ namespace CK.SqlServer
         IActivityLogger         _logger;
         bool					_checkTranCount;
         bool                    _ckCoreInstalled;
+        bool                    _missingDependencyIsError;
+        bool                    _ignoreMissingDependencyIsError;
 
         /// <summary>
         /// Main database properties.
@@ -211,6 +213,30 @@ namespace CK.SqlServer
         {
             get { return _checkTranCount; }
             set { _checkTranCount = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets whether whenever a creation script is executed, the informational message
+        /// 'The module 'X' depends on the missing object 'Y'. The module will still be created; however, it cannot run successfully until the object exists.' 
+        /// must be logged as a <see cref="LogLevel.Error"/>. When false, this is a <see cref="LogLevel.Info"/>.
+        /// Defaults to false.
+        /// Note that if <see cref="IgnoreMissingDependencyIsError"/> is true, this property has no effect and a missing dependency will remain informational.
+        /// </summary>
+        public bool MissingDependencyIsError
+        {
+            get { return _missingDependencyIsError; }
+            set { _missingDependencyIsError = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets whether <see cref="MissingDependencyIsError"/> must be ignored.
+        /// When true, MissingDependencyIsError is always considered to be false.
+        /// Defaults to true (MissingDependencyIsError is honored).
+        /// </summary>
+        public bool IgnoreMissingDependencyIsError
+        {
+            get { return _ignoreMissingDependencyIsError; }
+            set { _ignoreMissingDependencyIsError = value; }
         }
 
         /// <summary>
@@ -735,11 +761,17 @@ namespace CK.SqlServer
             {
                 if( err.Class <= 10 )
                 {
-                    _logger.Info( "{0} ({1}): {2}.", err.Procedure, err.LineNumber, err.Message );
+                    if( _missingDependencyIsError && err.Number == 2007 )
+                    {
+                        _logger.Error( "Missing Dependency (MissingDependencyIsError configuration is true for this object).\r\n"
+                                      + "You can set MissingDependencyIsError to false for this object, or set IgnoreMissingDependencyIsError configuration to true to globally ignore this error (but it is better to correctly manage Requirements).\r\n"
+                                      + "{0} ({1}): {2}", err.Procedure, err.LineNumber, err.Message );
+                    }
+                    else _logger.Info( "{0} ({1}): {2}", err.Procedure, err.LineNumber, err.Message );
                 }
                 else if( err.Class <= 16 )
                 {
-                    _logger.Warn( "{0} ({1}): {2}.", err.Procedure, err.LineNumber, err.Message );
+                    _logger.Warn( "{0} ({1}): {2}", err.Procedure, err.LineNumber, err.Message );
                 }
                 else
                 {

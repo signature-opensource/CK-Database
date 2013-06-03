@@ -52,7 +52,6 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="CallProcedureAutoImplementor.cs" />
-    <Compile Include="Demo.cs" />
     <Compile Include="MultiScriptTests.cs" />
     <Compile Include="Parsing\ExplainWriter.cs" />
     <Compile Include="Parsing\SqlAnalyserTest.cs" />

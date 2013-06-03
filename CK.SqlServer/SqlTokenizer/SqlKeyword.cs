@@ -22,7 +22,6 @@ namespace CK.SqlServer
             "exit",
             "primary",
             "external",
-            "fetch",
             "file",
             "fillfactor",
             "public",
@@ -50,7 +49,6 @@ namespace CK.SqlServer
             "right",
             "checkpoint",
             "identity",
-            "close",
             "identity_insert",
             "rowcount",
             "clustered",
@@ -101,7 +99,6 @@ namespace CK.SqlServer
             "unique",
             "unpivot",
             "disk",
-            "open",
             "distinct",
             "opendatasource",
             "distributed",
@@ -193,13 +190,16 @@ namespace CK.SqlServer
             // "goto",
             // "while",
             // "if",
+            // "deallocate",
+            // "close",
+            // "fetch",
+            // "open",
 
             "raiserror",
             "return",
             "waitfor",
             "use",
             "truncate",
-            "deallocate",
             "print",
             "commit",
             "rollback",
@@ -289,6 +289,7 @@ namespace CK.SqlServer
             _keywords = new Dictionary<string, SqlTokenType>( StringComparer.InvariantCultureIgnoreCase );
 
             // Identifiers mapped to SqlTokenType.
+            
             // SqlDbType mapping.
             _keywords.Add( "sql_variant", SqlTokenType.IdentifierTypeVariant );
             _keywords.Add( "xml", SqlTokenType.IdentifierTypeXml );
@@ -320,6 +321,19 @@ namespace CK.SqlServer
             _keywords.Add( "char", SqlTokenType.IdentifierTypeChar );
             _keywords.Add( "varbinary", SqlTokenType.IdentifierTypeVarBinary );
             _keywords.Add( "binary", SqlTokenType.IdentifierTypeBinary );
+
+            // SqlTokenType.IdentifierStandardStatement values: these are not reserved keywords but they can start a statement.
+            _keywords.Add( "throw", SqlTokenType.Throw );
+            _keywords.Add( "get", SqlTokenType.Get );
+            _keywords.Add( "move", SqlTokenType.Move );
+            _keywords.Add( "receive", SqlTokenType.Receive );
+            _keywords.Add( "send", SqlTokenType.Send );
+
+            // SqlTokenType.IdentifierStandard values: these are not reserved keywords.
+            _keywords.Add( "try", SqlTokenType.Try );
+            _keywords.Add( "catch", SqlTokenType.Catch );
+            _keywords.Add( "dialog", SqlTokenType.Dialog );
+            _keywords.Add( "conversation", SqlTokenType.Conversation );
 
             // LogicalOperator (they are reserved keywords).
             _keywords.Add( "or", SqlTokenType.Or );
@@ -385,6 +399,10 @@ namespace CK.SqlServer
             _keywords.Add( "goto", SqlTokenType.Goto );
             _keywords.Add( "while", SqlTokenType.While );
             _keywords.Add( "if", SqlTokenType.If );
+            _keywords.Add( "deallocate", SqlTokenType.Deallocate );
+            _keywords.Add( "close", SqlTokenType.Close );
+            _keywords.Add( "fetch", SqlTokenType.Fetch );
+            _keywords.Add( "open", SqlTokenType.Open );
 
             // Reserved keywords.
             foreach( string s in _sqlServerReserved )

@@ -20,6 +20,7 @@ namespace CK.SqlServer.Setup
         DependentItemList _requiredBy;
         DependentItemGroupList _groups;
         IDependentItemContainerRef _container;
+        bool? _missingDependencyIsError;
 
         internal SqlObjectItem( SqlObjectProtoItem p )
         {
@@ -37,6 +38,7 @@ namespace CK.SqlServer.Setup
             if( p.RequiredBy != null ) RequiredBy.Add( p.RequiredBy );
             if( p.Groups != null ) Groups.Add( p.Groups );
             if( p.Container != null ) _container = new NamedDependentItemContainerRef( p.Container );
+            _missingDependencyIsError = p.MissingDependencyIsError;
         }
 
         /// <summary>
@@ -108,6 +110,19 @@ namespace CK.SqlServer.Setup
                 }
 
             }
+        }
+
+        /// <summary>
+        /// Gets or sets whether when installing, the informational message 'The module 'X' depends 
+        /// on the missing object 'Y'. The module will still be created; however, it cannot run successfully until the object exists.' 
+        /// must be logged as a <see cref="LogLevel.Error"/>. When false, this is a <see cref="LogLevel.Info"/>.
+        /// Sets first by MissingDependencyIsError is text, otherwise an attribute (that should default to true should be applied).
+        /// When not set, it is considered to be true.
+        /// </summary>
+        public bool? MissingDependencyIsError
+        {
+            get { return _missingDependencyIsError; }
+            set { _missingDependencyIsError = value; }
         }
 
         public IDependentItemList Requires

@@ -47,7 +47,7 @@ namespace CK.SqlServer.Setup
             if( config == null ) throw new ArgumentNullException( "config" );
             _config = config;
 
-            _databases = new SqlManagerProvider( logger );
+            _databases = new SqlManagerProvider( logger, m => m.IgnoreMissingDependencyIsError = _config.IgnoreMissingDependencyIsError );
             if( defaultDatabase == null )
             {
                 _databases.Add( SqlDatabase.DefaultDatabaseName, _config.DefaultDatabaseConnectionString );
@@ -56,7 +56,8 @@ namespace CK.SqlServer.Setup
             else
             {
                 if( !defaultDatabase.IsOpen() ) throw new ArgumentException( "Database manager must be opened.", "defaultDatabase" );
-                _databases.AddDefaultDatabase( defaultDatabase );
+                defaultDatabase.IgnoreMissingDependencyIsError = config.IgnoreMissingDependencyIsError;
+                _databases.AddConfiguredDefaultDatabase( defaultDatabase );
                 _defaultDatabase = defaultDatabase;
             }
             foreach( var db in _config.Databases )

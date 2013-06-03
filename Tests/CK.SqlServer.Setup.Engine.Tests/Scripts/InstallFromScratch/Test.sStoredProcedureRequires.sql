@@ -7,5 +7,6 @@ as
 begin
 	--[beginsp]
 	select P = @P;
+	exec Test.MissingProc;
 	--[endsp]
 end

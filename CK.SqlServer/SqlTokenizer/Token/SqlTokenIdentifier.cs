@@ -45,9 +45,18 @@ namespace CK.SqlServer
         public bool IsVariable { get { return TokenType == SqlTokenType.IdentifierVariable; } }
 
         /// <summary>
-        /// True if this <see cref="SqlTokenIdentifier"/> is an identifier that starts a statement (select, create, declare, etc.).
+        /// True if this <see cref="SqlTokenIdentifier"/> is a reserved keyword that starts a statement (select, create, declare, etc.)
+        /// or a standard identifer that also can start a statement (throw, get, move, etc.).
         /// </summary>
-        public bool IsReservedStartStatement { get { return (TokenType & SqlTokenType.IdentifierTypeMask) == SqlTokenType.IdentifierReservedStatement; } }
+        public bool IsStartStatement 
+        { 
+            get 
+            {
+                Debug.Assert( SqlTokenType.IdentifierStandardStatement == SqlTokenType.IsIdentifier
+                                && SqlTokenType.IdentifierReservedStatement == (SqlTokenType.IsIdentifier + (1 << 11)), "Statement identifiers must be the first ones." );
+                return (TokenType & SqlTokenType.IdentifierTypeMask) <= SqlTokenType.IdentifierReservedStatement; 
+            } 
+        }
 
         public SqlTokenIdentifier RemoveQuoteIfPossible( bool keepIfReservedKeyword )
         {

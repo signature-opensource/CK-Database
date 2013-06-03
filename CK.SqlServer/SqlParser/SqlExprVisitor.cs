@@ -97,6 +97,14 @@ namespace CK.SqlServer
             return new SqlExprStBlock( e.Begin, vB, e.End, e.StatementTerminator );
         }
 
+        public virtual SqlItem Visit( SqlExprStTryCatch e )
+        {
+            SqlExprStatementList vB = (SqlExprStatementList)VisitExpr( e.Body );
+            SqlExprStatementList vC = (SqlExprStatementList)VisitExpr( e.BodyCatch );
+            if( ReferenceEquals( vB, e.Body ) && ReferenceEquals( vC, e.BodyCatch) ) return e;
+            return new SqlExprStTryCatch( e.BeginTry, vB, e.EndTryBeginCatch, vC, e.EndCatch, e.StatementTerminator );
+        }
+
         public virtual SqlItem Visit( SqlExprStUnmodeled e )
         {
             SqlExpr vC = (SqlExpr)VisitExpr( e.Content );

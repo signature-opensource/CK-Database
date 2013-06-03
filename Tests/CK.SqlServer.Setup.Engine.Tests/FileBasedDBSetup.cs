@@ -9,6 +9,7 @@ using CK.SqlServer;
 namespace CK.SqlServer.Setup.Engine.Tests
 {
     [TestFixture]
+    [Category("DBSetup")]
     public class FileBasedDBSetup
     {
         [Test]
@@ -23,12 +24,20 @@ namespace CK.SqlServer.Setup.Engine.Tests
             {
                 defaultDB.SchemaDropAllObjects( "Test", true );
                 defaultDB.SchemaDropAllObjects( "CKCore", false );
-                using( TestHelper.Logger.OpenGroup( LogLevel.Trace, "First setup" ) )
+                using( TestHelper.Logger.OpenGroup( LogLevel.Trace, "First setup (will fail due to a MissingDependencyIsError configuration)." ) )
                 {
                     using( SqlSetupCenter c = new SqlSetupCenter( TestHelper.Logger, config, defaultDB ) )
                     {
                         //c.SetupDependencySorterHookInput = TestHelper.Trace;
                         //c.SetupDependencySorterHookOutput = all => TestHelper.Trace( all, true );
+                        Assert.That( c.Run(), Is.False );
+                    }
+                }
+                config.IgnoreMissingDependencyIsError = true;
+                using( TestHelper.Logger.OpenGroup( LogLevel.Trace, "Second setup (will succeed since SqlSetupCenterConfiguration.IgnoreMissingDependencyIsError is true)." ) )
+                {
+                    using( SqlSetupCenter c = new SqlSetupCenter( TestHelper.Logger, config, defaultDB ) )
+                    {
                         Assert.That( c.Run() );
                     }
                 }
@@ -36,7 +45,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
                 defaultDB.ExecuteOneScript( "drop procedure Test.sOneStoredProcedure;" );
                 defaultDB.ExecuteOneScript( "drop function Test.fTest;" );
 
-                using( TestHelper.Logger.OpenGroup( LogLevel.Trace, "Second setup" ) )
+                using( TestHelper.Logger.OpenGroup( LogLevel.Trace, "Third setup." ) )
                 {
                     using( SqlSetupCenter c = new SqlSetupCenter( TestHelper.Logger, config, defaultDB ) )
                     {
@@ -56,6 +65,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
 
             using( var defaultDB = SqlManager.OpenOrCreate( ".", "TestWithView", TestHelper.Logger ) )
             {
+                defaultDB.IgnoreMissingDependencyIsError = true;
                 config.DefaultDatabaseConnectionString = defaultDB.CurrentConnectionString;
                 using( var c = new SqlSetupCenter( TestHelper.Logger, config, defaultDB ) )
                 {

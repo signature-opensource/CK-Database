@@ -42,7 +42,7 @@ namespace CK.Setup
 
         void BuildSetupItems( IReadOnlyList<IStObjRuntime> orderedObjects, Dictionary<IStObjRuntime, StObjSetupData> setupableItems )
         {
-            using( _logger.OpenGroup( LogLevel.Info, "Building setupable items from {0} Structure Objects.", orderedObjects.Count ) )
+            using( _logger.OpenGroup( LogLevel.Info, "Building setupable items from {0} Structure Objects (calling IStObjSetupConfigurator.ConfigureDependentItem and IStObjSetupItemFactory.CreateDependentItem for each of them).", orderedObjects.Count ) )
             {
                 foreach( var r in orderedObjects )
                 {
@@ -117,7 +117,7 @@ namespace CK.Setup
 
         void BindDependencies( Dictionary<IStObjRuntime, StObjSetupData> setupableItems )
         {
-            using( _logger.OpenGroup( LogLevel.Info, "Binding dependencies." ) )
+            using( _logger.OpenGroup( LogLevel.Info, "Binding dependencies between Setupable items." ) )
             {
                 foreach( StObjSetupData data in setupableItems.Values )
                 {
@@ -231,15 +231,11 @@ namespace CK.Setup
                 _actions = new List<PushedAction>();
             }
 
-            public IActivityLogger Logger
-            {
-                get { return _builder._logger; }
-            }
+            public IActivityLogger Logger { get { return _builder._logger; } }
 
-            public IDictionary Memory
-            {
-                get { return _memory; }
-            }
+            public IDictionary Memory { get { return _memory; } }
+
+            public int PushedActionsCount { get { return _actions.Count; } }
             
             public IMutableSetupItem CurrentItem;
             public IStObjRuntime CurrentStObj;
@@ -275,40 +271,50 @@ namespace CK.Setup
 
         bool CallDynamicInitializer( IReadOnlyList<IStObjRuntime> orderedObjects, Dictionary<IStObjRuntime, StObjSetupData> setupableItems )
         {
-            var state = new DynamicInitializerState( this );
-            bool success = true;
-            foreach( var o in orderedObjects )
+            using( _logger.OpenGroup( LogLevel.Info, "Dynamic initialization of Setup items (calling IStObjSetupDynamicInitializer.DynamicItemInitialize for each of them)." ) )
             {
-                IMutableSetupItem item = setupableItems[o].SetupItem;
-                state.CurrentItem = item;
-                state.CurrentStObj = o;
-                string initSource = null;
-                try
+                var state = new DynamicInitializerState( this );
+                bool success = true;
+                foreach( var o in orderedObjects )
                 {
-                    initSource = "Attributes";
-                    // ApplyAttributesDynamicInitializer
+                    IMutableSetupItem item = setupableItems[o].SetupItem;
+                    state.CurrentItem = item;
+                    state.CurrentStObj = o;
+                    string initSource = null;
+                    try
                     {
-                        var all = o.Attributes.GetAllCustomAttributes<IStObjSetupDynamicInitializer>();
-                        foreach( IStObjSetupDynamicInitializer init in all )
+                        initSource = "Attributes";
+                        // ApplyAttributesDynamicInitializer
                         {
-                            init.DynamicItemInitialize( state, item, o );
+                            var all = o.Attributes.GetAllCustomAttributes<IStObjSetupDynamicInitializer>();
+                            foreach( IStObjSetupDynamicInitializer init in all )
+                            {
+                                init.DynamicItemInitialize( state, item, o );
+                            }
                         }
+                        initSource = "Structured Item itself";
+                        if( o.Object is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)o.Object).DynamicItemInitialize( state, item, o );
+                        initSource = "Setup Item itself";
+                        if( item is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)item).DynamicItemInitialize( state, item, o );
+                        initSource = "global StObjSetupBuilder initializer";
+                        if( _dynamicInitializer != null ) _dynamicInitializer.DynamicItemInitialize( state, item, o );
                     }
-                    initSource = "Structured Item itself";
-                    if( o.Object is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)o.Object).DynamicItemInitialize( state, item, o );
-                    initSource = "Setup Item itself";
-                    if( item is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)item).DynamicItemInitialize( state, item, o );
-                    initSource = "global StObjSetupBuilder initializer";
-                    if( _dynamicInitializer != null ) _dynamicInitializer.DynamicItemInitialize( state, item, o );
+                    catch( Exception ex )
+                    {
+                        _logger.Error( ex, "While Dynamic item initialization (from {2}) of '{0}' for object '{1}'.", item.FullName, o.ObjectType.Name, initSource );
+                        success = false;
+                    }
                 }
-                catch( Exception ex )
+                // On success, we execute the pushed actions.
+                if( success && state.PushedActionsCount > 0 )
                 {
-                    _logger.Error( ex, "While Dynamic item initialization (from {2}) of '{0}' for object '{1}'.", item.FullName, o.ObjectType.Name, initSource );
-                    success = false;
+                    using( _logger.OpenGroup( LogLevel.Info, "Executing {0} deferred actions.", state.PushedActionsCount ) )
+                    {
+                        success = state.ExecuteActions();
+                    }
                 }
+                return success;
             }
-            // On success, we execute the pushed actions.
-            return success ? state.ExecuteActions() : false;
         }
 
     }

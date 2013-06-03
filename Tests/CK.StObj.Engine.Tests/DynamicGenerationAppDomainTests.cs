@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using CK.Core;
 using CK.Setup;
 using NUnit.Framework;
@@ -12,6 +13,7 @@ using NUnit.Framework;
 namespace CK.StObj.Engine.Tests
 {
     [TestFixture]
+    [Category( "DynamicGeneration" )]
     public class DynamicGenerationAppDomainTests
     {
         [Test]
@@ -126,8 +128,10 @@ namespace CK.StObj.Engine.Tests
                 File.Delete( Path.Combine( TestHelper.BinFolder, "AutoGenTestObjBuilder.dll" ) );
                 GenerateAutoGenTestObjBuilderDll( TestHelper.BinFolder );
 
+                string fileName = Path.Combine( outputDir, "MyLittleAssembly.dll" );
+
                 // Cleanup any previous run traces.
-                File.Delete( Path.Combine( outputDir, "MyLittleAssembly.dll" ) );
+                File.Delete( fileName );
 
                 var config = new StObjEngineConfigurationTest();
                 config.AppDomainConfiguration.UseIndependentAppDomain = false;
@@ -135,11 +139,35 @@ namespace CK.StObj.Engine.Tests
                 config.FinalAssemblyConfiguration.AssemblyName = "MyLittleAssembly";
                 config.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.Add( "AutoGenTestObjBuilder, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" );
 
-                using( StObjBuildResult result = StObjContextRoot.Build( config, TestHelper.Logger ) )
+                string extVersionStamp =  "The external Version Stamp is currently in InformationalVersionAttribute." + Guid.NewGuid().ToString();
+                config.FinalAssemblyConfiguration.ExternalVersionStamp = extVersionStamp;
+
+                DateTime buildTime1;
+                using( StObjBuildResult result = StObjContextRoot.Build( config, TestHelper.Logger, forceBuild: true ) )
                 {
                     Assert.That( result.Success, Is.True, "Build succeed..." );
                     Assert.That( result.IndependentAppDomain, Is.Null, "...in this app domain." );
-                    Assert.That( File.Exists( Path.Combine( outputDir, "MyLittleAssembly.dll" ) ), Is.True, "Build generated the dll." );
+                    Assert.That( result.AssemblyAlreadyExists, Is.False, "...we did not ask..." );
+                    Assert.That( result.ExternalVersionStamp, Is.EqualTo( extVersionStamp ) );
+                    Assert.That( File.Exists( fileName ), Is.True, "Build generated the dll." );
+                    buildTime1 = File.GetLastWriteTimeUtc( fileName );
+                }
+                using( StObjBuildResult result = StObjContextRoot.Build( config, TestHelper.Logger, forceBuild: false ) )
+                {
+                    Assert.That( result.Success, Is.True, "Build succeed..." );
+                    Assert.That( result.IndependentAppDomain, Is.Not.Null, "...used to read the version stamp." );
+                    Assert.That( result.AssemblyAlreadyExists, Is.True );
+                    Assert.That( result.ExternalVersionStamp, Is.EqualTo( extVersionStamp ) );
+                    Assert.That( File.GetLastWriteTimeUtc( fileName ), Is.EqualTo( buildTime1 ) );
+                }
+                Thread.Sleep( 200 );
+                using( StObjBuildResult result = StObjContextRoot.Build( config, TestHelper.Logger, forceBuild: true ) )
+                {
+                    Assert.That( result.Success, Is.True, "Build succeed..." );
+                    Assert.That( result.IndependentAppDomain, Is.Null, "...no read of the version stamp." );
+                    Assert.That( result.AssemblyAlreadyExists, Is.False );
+                    Assert.That( result.ExternalVersionStamp, Is.EqualTo( extVersionStamp ) );
+                    Assert.That( File.GetLastWriteTimeUtc( fileName ), Is.GreaterThan( buildTime1 ) );
                 }
             }
             finally
@@ -184,11 +212,6 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void BuildWithIndependentAppDomain()
         {
-            ProcessInIndependentAppDomain();
-        }
-
-        static private void ProcessInIndependentAppDomain()
-        {
             var localTestDir = Path.Combine( TestHelper.TempFolder, "BuildWithIndependentAppDomain" );
             try
             {
@@ -199,6 +222,8 @@ namespace CK.StObj.Engine.Tests
                 string outputDir = Path.Combine( localTestDir, "Output" );
                 if( !Directory.Exists( outputDir ) ) Directory.CreateDirectory( outputDir );
 
+                string fileName = Path.Combine( outputDir, "MyLittleAssembly.dll" );
+
                 // Cleanup any previous run traces.
                 File.Delete( Path.Combine( outputDir, "MyLittleAssembly.dll" ) );
 
@@ -206,28 +231,48 @@ namespace CK.StObj.Engine.Tests
                 config.AppDomainConfiguration.UseIndependentAppDomain = true;
                 config.FinalAssemblyConfiguration.Directory = outputDir;
                 config.FinalAssemblyConfiguration.AssemblyName = "MyLittleAssembly";
+                config.FinalAssemblyConfiguration.ExternalVersionStamp = "VersionStamp!" + Guid.NewGuid();
 
                 config.AppDomainConfiguration.ProbePaths.Add( inputDir );
                 config.AppDomainConfiguration.ProbePaths.Add( TestHelper.BinFolder );
                 config.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.Add( "AutoGenTestObjBuilder, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" );
 
-                using( StObjBuildResult result = StObjContextRoot.Build( config, TestHelper.Logger ) )
+                DateTime buildTime1;
+                using( StObjBuildResult result = StObjContextRoot.Build( config, TestHelper.Logger, forceBuild: false ) )
                 {
                     Assert.That( result.Success, Is.True, "Build succeed..." );
                     Assert.That( result.IndependentAppDomain, Is.Not.Null.And.Not.EqualTo( AppDomain.CurrentDomain ), "...in an independant AppDomain." );
                     Assert.That( result.IndependentAppDomain.BaseDirectory, Is.EqualTo( Directory.GetParent( TestHelper.TempFolder ).FullName ) );
+                    Assert.That( result.AssemblyAlreadyExists, Is.False );
 
-                    Assert.That( File.Exists( Path.Combine( outputDir, "MyLittleAssembly.dll" ) ), Is.True, "Build generated the dll." );
+                    Assert.That( File.Exists( fileName ), Is.True, "Build generated the dll." );
+                    buildTime1 = File.GetLastWriteTimeUtc( fileName );
 
                     var analyser = (AppDomainAnalyzer)result.IndependentAppDomain.CreateInstanceAndUnwrap( typeof( AppDomainAnalyzer ).Assembly.FullName, typeof( AppDomainAnalyzer ).FullName );
                     string[] assemblies = analyser.GetAllAssemblyNames();
                     Assert.That( assemblies.Any( x => x.Contains( "AutoGenTestObjBuilder" ) ), Is.True );
                     Assert.That( AppDomain.CurrentDomain.GetAssemblies().Any( x => x.FullName.Contains( "AutoGenTestObjBuilder" ) ), Is.False, "AutoGenTestObjBuilder has not been loaded in this application domain." );
                 }
+                Thread.Sleep( 200 );
+                using( StObjBuildResult result = StObjContextRoot.Build( config, TestHelper.Logger, forceBuild: false ) )
+                {
+                    Assert.That( result.Success, Is.True, "Succeed: found the previous one." );
+                    Assert.That( result.IndependentAppDomain, Is.Not.Null.And.Not.EqualTo( AppDomain.CurrentDomain ), "...we looked for the version stamp in an independant AppDomain." );
+                    Assert.That( result.AssemblyAlreadyExists, Is.True );
+                    Assert.That( File.GetLastWriteTimeUtc( fileName ), Is.EqualTo( buildTime1 ) );
+                }
             }
             finally
             {
-                Directory.Delete( localTestDir, true );
+                Thread.Sleep( 200 );
+                try
+                {
+                    Directory.Delete( localTestDir, true );
+                }
+                catch( Exception ex )
+                {
+                    TestHelper.Logger.Error( ex, "While deleting temporary folder." );
+                }
             }
         }
 

@@ -13,6 +13,10 @@ namespace CK.Core
     /// </summary>
     public interface IStObjBuilder
     {
+        /// <summary>
+        /// Runs the full build of the system.
+        /// </summary>
+        /// <returns>True on success, false otherwise.</returns>
         bool Run();
     }
 }

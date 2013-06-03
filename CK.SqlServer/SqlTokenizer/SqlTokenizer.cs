@@ -226,6 +226,7 @@ namespace CK.SqlServer
                 {
                     case SqlTokenType.IdentifierStandard: return "identifier";
                     case SqlTokenType.IdentifierReserved: return "reserved";
+                    case SqlTokenType.IdentifierStandardStatement:
                     case SqlTokenType.IdentifierReservedStatement: return "statement";
                     case SqlTokenType.IdentifierQuoted: return "\"quoted identifier\"";
                     case SqlTokenType.IdentifierQuotedBracket: return "[quoted identifier]";

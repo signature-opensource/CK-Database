@@ -34,6 +34,11 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Can be empty but not null.
         /// </summary>
+        public bool? MissingDependencyIsError { get; private set; }
+
+        /// <summary>
+        /// Can be empty but not null.
+        /// </summary>
         public string ObjectName { get; private set; }
 
         public string Header { get; private set; }
@@ -72,6 +77,7 @@ namespace CK.SqlServer.Setup
                     string header,
                     Version v,
                     string packageName,
+                    bool? missingDependencyIsError,
                     IEnumerable<string> requires,
                     IEnumerable<string> requiredBy,
                     IEnumerable<string> groups,
@@ -98,6 +104,7 @@ namespace CK.SqlServer.Setup
             PreviousNames = prevNames;
             TextAfterName = textAfterName;
             FullOriginalText = fullOriginalText;
+            MissingDependencyIsError = missingDependencyIsError;
         }
 
         public SqlProcedureItem CreateProcedureItem( IActivityLogger logger, MethodInfo m )

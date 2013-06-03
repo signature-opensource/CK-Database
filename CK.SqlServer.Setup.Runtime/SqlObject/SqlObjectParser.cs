@@ -14,7 +14,11 @@ namespace CK.SqlServer.Setup
                                             | RegexOptions.ExplicitCapture );
 
         static Regex _rHeader = new Regex( @"^\s*--\s*Version\s*=\s*(?<1>\d+(\.\d+)*|\*)\s*(,\s*(Package\s*=\s*(?<2>(\w|\.|-)+)|Requires\s*=\s*{\s*(?<3>\??(\w+|-|\^|\[|]|\.)+)\s*(,\s*(?<3>\??(\w+|-|\^|\[|]|\.)+)\s*)*}|Groups\s*=\s*{\s*(?<4>(\w+|-|\^|\[|]|\.)+)\s*(,\s*(?<4>(\w+|-|\^|\[|]|\.)+)\s*)*}|RequiredBy\s*=\s*{\s*(?<5>(\w+|-|\^|\[|]|\.)+)\s*(,\s*(?<5>(\w+|-|\^|\[|]|\.)+)\s*)*}|PreviousNames\s*=\s*{\s*((?<6>(\w+|-|\^|\[|]|\.)+)\s*=\s*(?<6>\d+\.\d+\.\d+(\.\d+)?))\s*(,\s*((?<6>(\w+|-|\^|\[|]|\.)+)\s*=\s*(?<6>\d+(\.\d+){1,3}))\s*)*})\s*)*",
-        // static Regex _rHeader = new Regex( @"^\s*--\s*Version\s*=\s*(?<1>\d+(\.\d+)*|\*)(\s*,?\s*((Package\s*=\s*(?<2>(\w|\.|-)+))|(Requires\s*=\s*{\s*((?<3>\??(\w+|-|\.)+)\s*,?\s*)*})|((Groups\s*=\s*{\s*((?<4>(\w+|-|\.)+)\s*,?\s*)*}))|((RequiredBy\s*=\s*{\s*((?<5>(\w+|-|\.)+)\s*,?\s*)*}))|(PreviousNames\s*=\s*{\s*(((?<6>(\w|\.|-)+)\s*=\s*(?<6>\d+\.\d+\.\d+(\.\d+)?))\s*,?\s*)*})))*",
+                RegexOptions.CultureInvariant
+                | RegexOptions.IgnoreCase
+                | RegexOptions.ExplicitCapture );
+
+        static Regex _rMissingDep = new Regex( @"MissingDependencyIsError\s*=\s*(?<1>\w+)",
                 RegexOptions.CultureInvariant
                 | RegexOptions.IgnoreCase
                 | RegexOptions.ExplicitCapture );
@@ -77,6 +81,18 @@ namespace CK.SqlServer.Setup
                 logger.Error( "-- Version=X.Y.Z (with Major.Minor.Build) or Version=* must appear first in header." );
                 return null;
             }
+            bool? missingDep = null;
+            Match missDep = _rMissingDep.Match( header );
+            if( missDep.Success )
+            {
+                bool m;
+                if( !bool.TryParse( missDep.Groups[1].Value, out m ) )
+                {
+                    logger.Error( "Invalid syntax: it should be MissingDependencyIsError = true or MissingDependencyIsError = false." );
+                    return null;
+                }
+                missingDep = m;
+            }
             string databaseOrSchema = mSqlObject.Groups[2].Value;
             string schema = mSqlObject.Groups[3].Value;
             string name = mSqlObject.Groups[4].Value;
@@ -86,7 +102,7 @@ namespace CK.SqlServer.Setup
                 schema = databaseOrSchema;
                 databaseOrSchema = tmp;
             }
-            return new SqlObjectProtoItem( externalName, type, databaseOrSchema, schema, name, header, version, packageName, requires, groups, requiredBy, previousNames, textAfterName, text );
+            return new SqlObjectProtoItem( externalName, type, databaseOrSchema, schema, name, header, version, packageName, missingDep, requires, groups, requiredBy, previousNames, textAfterName, text );
         }
 
     }

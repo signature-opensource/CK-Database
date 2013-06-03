@@ -110,6 +110,7 @@ namespace CK.SqlServer.Tests.Parsing
             Assert.That( SqlTokenizer.Explain( SqlTokenType.IdentifierVariable ), Is.EqualTo( "@var" ) );
             Assert.That( SqlTokenizer.Explain( SqlTokenType.IdentifierReserved ), Is.EqualTo( "reserved" ) );
             Assert.That( SqlTokenizer.Explain( SqlTokenType.IdentifierReservedStatement ), Is.EqualTo( "statement" ) );
+            Assert.That( SqlTokenizer.Explain( SqlTokenType.IdentifierStandardStatement ), Is.EqualTo( "statement" ) );
             Assert.That( SqlTokenizer.Explain( SqlTokenType.IdentifierSpecial ), Is.EqualTo( "identifier-special" ) );
         
             Assert.That( SqlTokenizer.Explain( SqlTokenType.IdentifierStar ), Is.EqualTo( "*" ) );

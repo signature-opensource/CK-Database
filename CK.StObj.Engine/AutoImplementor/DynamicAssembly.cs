@@ -61,7 +61,7 @@ namespace CK.Core
         /// Initializes a new <see cref="DynamicAssembly"/> with the given name and access.
         /// </summary>
         /// <param name="directory">Directory where the assembly must be saved. Must not be null if the assembly must be saved.</param>
-        /// <param name="assemblyName">Name to use.</param>
+        /// <param name="assemblyName">Name to use. If acces has <see cref="AssemblyBuilderAccess.Save"/> bit set, the name of the dll will be with ".dll" suffix.</param>
         /// <param name="externalVersionStamp">Embedded stamp. Used to detect the need to rebuild the assembly.</param>
         /// <param name="signature">Key pair to use to sign the dll.</param>
         /// <param name="access">Typical accesses are Run and RunAndSave (the default).</param>
@@ -77,11 +77,17 @@ namespace CK.Core
             aName.Version = new Version( 1, 0, 0, 0 );
             if( signature != null ) aName.KeyPair = signature;
             _assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly( aName, access, directory );
+            if( externalVersionStamp != null )
+            {
+                var ctor = typeof(AssemblyInformationalVersionAttribute).GetConstructor( new Type[] { typeof( string ) } );
+                CustomAttributeBuilder attr = new CustomAttributeBuilder( ctor, new object[] { externalVersionStamp } );
+                _assemblyBuilder.SetCustomAttribute( attr );
+            }
             if( mustSave )
                 _moduleBuilder = _assemblyBuilder.DefineDynamicModule( aName.Name, aName.Name + ".dll" );
             else _moduleBuilder = _assemblyBuilder.DefineDynamicModule( aName.Name );
         }
-
+            
         /// <summary>
         /// Gets the <see cref="ModuleBuilder"/> for this <see cref="DynamicAssembly"/>.
         /// </summary>
@@ -99,6 +105,10 @@ namespace CK.Core
             return Interlocked.Increment( ref _typeID ).ToString();
         }
 
+        /// <summary>
+        /// Saves the dynamic assembly as a ".dll".
+        /// This <see cref="DynamicAssembly"/> must have been constructed with an AssemblyBuilderAccess that has <see cref="AssemblyBuilderAccess.Save"/> bit set.
+        /// </summary>
         public void Save()
         {
             _assemblyBuilder.Save( _assemblyBuilder.GetName().Name + ".dll" );

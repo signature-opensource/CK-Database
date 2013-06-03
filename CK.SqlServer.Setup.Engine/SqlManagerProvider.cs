@@ -10,6 +10,7 @@ namespace CK.SqlServer.Setup
     {
         readonly IActivityLogger _logger;
         readonly Dictionary<string, Item> _items;
+        readonly Action<SqlManager> _dbConfigurator;
 
         class Item
         {
@@ -18,14 +19,15 @@ namespace CK.SqlServer.Setup
             public bool DoNotDispose;
         }
 
-        public SqlManagerProvider( IActivityLogger logger )
+        public SqlManagerProvider( IActivityLogger logger, Action<SqlManager> dbConfigurator = null )
         {
             if( logger == null ) throw new ArgumentNullException( "_logger" );
             _logger = logger;
             _items = new Dictionary<string, Item>();
+            _dbConfigurator = dbConfigurator ?? Util.ActionVoid;
         }
 
-        internal void AddDefaultDatabase( SqlManager m )
+        internal void AddConfiguredDefaultDatabase( SqlManager m )
         {
             Debug.Assert( m.IsOpen() );
             Item i = new Item() { ConnectionString = m.CurrentConnectionString, Manager = m, DoNotDispose = true };
@@ -47,17 +49,20 @@ namespace CK.SqlServer.Setup
                 Item i;
                 if( _items.TryGetValue( name, out i ) )
                 {
-                    if( i.Manager == null )
-                    {
-                        SqlManager m = new SqlManager();
-                        m.Logger = _logger;
-                        m.OpenFromConnectionString( i.ConnectionString );
-                        i.Manager = m;
-                    }
+                    if( i.Manager == null ) CreateManager( i );
                     return i.Manager;
                 }
             }
             return null;
+        }
+
+        void CreateManager( Item i )
+        {
+            SqlManager m = new SqlManager();
+            m.Logger = _logger;
+            m.OpenFromConnectionString( i.ConnectionString );
+            _dbConfigurator( m );
+            i.Manager = m;
         }
 
         public SqlManager FindManagerByConnectionString( string connectionString )
@@ -67,13 +72,7 @@ namespace CK.SqlServer.Setup
                 Item i;
                 if( _items.TryGetValue( connectionString, out i ) )
                 {
-                    if( i.Manager == null )
-                    {
-                        SqlManager m = new SqlManager();
-                        m.Logger = _logger;
-                        m.OpenFromConnectionString( i.ConnectionString );
-                        i.Manager = m;
-                    }
+                    if( i.Manager == null ) CreateManager( i );
                     return i.Manager;
                 }
             }

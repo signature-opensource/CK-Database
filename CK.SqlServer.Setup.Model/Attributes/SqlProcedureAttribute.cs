@@ -15,9 +15,21 @@ namespace CK.SqlServer.Setup
             : base( "CK.SqlServer.Setup.SqlProcedureAttributeImpl, CK.SqlServer.Setup.Runtime" )
         {
             ProcedureName = procedureName;
+            MissingDependencyIsError = true;
         }
 
+        /// <summary>
+        /// Gets or sets the procedure name.
+        /// </summary>
         public string ProcedureName { get; private set; }
+
+        /// <summary>
+        /// Gets or sets whether when installing, the informational message 'The module 'X' depends 
+        /// on the missing object 'Y'. The module will still be created; however, it cannot run successfully until the object exists.' 
+        /// must be logged as a <see cref="LogLevel.Error"/>. When false, this is a <see cref="LogLevel.Info"/>.
+        /// Defaults to true.
+        /// </summary>
+        public bool MissingDependencyIsError { get; set; }
 
     }
 }

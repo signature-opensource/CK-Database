@@ -25,7 +25,11 @@ namespace CK.SqlServer.Setup
             if( proto == null ) return;
             // On success, creates the SqlProcedureItem bound to the MethodInfo that must call it.
             _item = proto.CreateProcedureItem( state.Logger, _method );
-            if( _item != null ) packageItem.Children.Add( _item );
+            if( _item != null )
+            {
+                if( !_item.MissingDependencyIsError.HasValue ) _item.MissingDependencyIsError = _attr.MissingDependencyIsError;
+                packageItem.Children.Add( _item );
+            }
         }
 
         bool IAutoImplementorMethod.Implement( IActivityLogger logger, MethodInfo m, TypeBuilder tB, bool isVirtual )

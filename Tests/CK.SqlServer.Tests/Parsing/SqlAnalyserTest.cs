@@ -361,7 +361,7 @@ SELECT SalesOrderID, ProductID, OrderQty,
 
             Assert.That( sp.Name.ToString(), Is.EqualTo( "CK.sResDataStringSet -- Merge inside.\r\n" ) );
             Assert.That( sp.Parameters.Count, Is.EqualTo( 2 ) );
-            Assert.That( sp.BodyStatements.Statements.Count, Is.EqualTo( 6 ), "Since Merge is not implemented, update, set and insert unmodeled statements are created." );
+            Assert.That( sp.BodyStatements.Statements.Count, Is.EqualTo( 1 ), "Unmodeled." );
         }
 
         [Test]

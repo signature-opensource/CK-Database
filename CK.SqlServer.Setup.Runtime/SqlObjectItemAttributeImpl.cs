@@ -42,7 +42,11 @@ namespace CK.SqlServer.Setup
                         if( protoObject != null )
                         {
                             SqlObjectItem subItem = protoObject.CreateItem( state.Logger );
-                            packageItem.Children.Add( subItem );
+                            if( subItem != null )
+                            {
+                                if( !subItem.MissingDependencyIsError.HasValue ) subItem.MissingDependencyIsError = Attribute.MissingDependencyIsError;
+                                packageItem.Children.Add( subItem );
+                            }
                         }
                     }
                     else state.Logger.Warn( "Duplicate name '{0}' in SqlObjectItem attribute of '{1}'.", nTrimmed, item.FullName );

@@ -390,48 +390,64 @@ namespace CK.SqlServer
         IdentifierValueMask = 0xFF,
 
         /// <summary>
-        /// Any identifier like “max”, a table name, but not a reserved keyword like keyword like “when”, “select” or “else”
-        /// nor an <see cref="IdentifierDbType"/>.
+        /// Not reserved keywords that can start a statement like “throw”, “get”, “move”, “receive”, etc.
         /// </summary>
-        IdentifierStandard = IsIdentifier | 0,
-        
-        /// <summary>
-        /// Identifiers that are reserved keywords (like “identity_insert”, “clustered”, “rule”, “as”, etc.) but cannot start a statement.
-        /// </summary>
-        IdentifierReserved = IsIdentifier | 1 << 11,
+        IdentifierStandardStatement = IsIdentifier | 0,
 
         /// <summary>
         /// Reserved keywords that starts a statement: “select”, “create”, “declare “set”, etc.
         /// </summary>
-        IdentifierReservedStatement = IsIdentifier | 2 << 11,
+        IdentifierReservedStatement = IsIdentifier | 1 << 11,
+
+        /// <summary>
+        /// Any identifier like “max”, a table name, but not a reserved keyword like keyword like “when”, “select” or “else”
+        /// nor an <see cref="IdentifierDbType"/>.
+        /// </summary>
+        IdentifierStandard = IsIdentifier | 2 << 11,
+        
+        /// <summary>
+        /// Identifiers that are reserved keywords (like “identity_insert”, “clustered”, “rule”, “as”, etc.) but cannot start a statement.
+        /// </summary>
+        IdentifierReserved = IsIdentifier | 3 << 11,
 
         /// <summary>
         /// Denotes a "quoted identifier".
         /// </summary>
-        IdentifierQuoted = IsIdentifier | 3 << 11,
+        IdentifierQuoted = IsIdentifier | 4 << 11,
         
         /// <summary>
         /// Denotes a [Quoted identifier].
         /// </summary>
-        IdentifierQuotedBracket = IsIdentifier | 4 << 11,
+        IdentifierQuotedBracket = IsIdentifier | 5 << 11,
         
         /// <summary>
         /// Special identifiers like star (in “select t.* from t)”, $identity, $Partition, etc.
         /// </summary>
-        IdentifierSpecial = IsIdentifier | 5 << 11,
+        IdentifierSpecial = IsIdentifier | 6 << 11,
 
         /// <summary>
         /// SqlDbType like int, smallint, datetime, xml, etc.
         /// </summary>
-        IdentifierDbType = IsIdentifier | 6 << 11,
+        IdentifierDbType = IsIdentifier | 7 << 11,
 
         /// <summary>
         /// Variable token like @myVariableName or @@SystemFunctions like @@RowCount or @@Error.
         /// </summary>
-        IdentifierVariable = IsIdentifier | 7 << 11,
+        IdentifierVariable = IsIdentifier | 8 << 11,
+
+        #region IdentifierStandardStatement values
+        Throw = IdentifierStandardStatement | 1,
+        Move = IdentifierStandardStatement | 2,
+        Get = IdentifierStandardStatement | 3,
+        Receive = IdentifierStandardStatement | 4,
+        Send = IdentifierStandardStatement | 5,
+        #endregion
 
         #region IdentifierStandard values
-        Throw = IdentifierStandard | 1,
+        Try             = IdentifierStandard | 1,
+        Catch           = IdentifierStandard | 2,
+        Dialog          = IdentifierStandard | 3,
+        Conversation    = IdentifierStandard | 4,
         #endregion
 
         #region IdentifierSpecial values
@@ -533,10 +549,9 @@ namespace CK.SqlServer
         Option      = IdentifierReservedFirstNonOperator + 27,
         Add         = IdentifierReservedFirstNonOperator + 28,
         Database    = IdentifierReservedFirstNonOperator + 29,
-
         #endregion
 
-        #region IdentifierReservedStart values
+        #region IdentifierReservedStatement values
         Select      = IdentifierReservedStatement | 1,
         Begin       = IdentifierReservedStatement | 2,
         End         = IdentifierReservedStatement | 3,
@@ -549,6 +564,10 @@ namespace CK.SqlServer
         Goto        = IdentifierReservedStatement | 10,
         While       = IdentifierReservedStatement | 11,
         If          = IdentifierReservedStatement | 12,
+        Deallocate  = IdentifierReservedStatement | 13,
+        Close       = IdentifierReservedStatement | 14,
+        Open        = IdentifierReservedStatement | 15,
+        Fetch       = IdentifierReservedStatement | 16,
         #endregion
 
         #region IdentifierDbType values

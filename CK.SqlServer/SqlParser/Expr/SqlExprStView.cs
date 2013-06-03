@@ -9,7 +9,7 @@ namespace CK.SqlServer
 {
     public class SqlExprStView : SqlExprBaseSt
     {
-        public SqlExprStView( SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type, SqlExprMultiIdentifier name, SqlExprColumnList columns, SqlExprUnmodeledTokens options, SqlTokenIdentifier asToken, SqlExprBaseSt select, SqlTokenTerminal term )
+        public SqlExprStView( SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type, SqlExprMultiIdentifier name, SqlExprColumnList columns, SqlExprUnmodeledTokens options, SqlTokenIdentifier asToken, SqlItem select, SqlTokenTerminal term )
             : base( Build( alterOrCreate, type, name, columns, options, asToken, select ), term )
         {
         }
@@ -19,7 +19,7 @@ namespace CK.SqlServer
         {
         }
 
-        static ISqlItem[] Build( SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type, SqlExprMultiIdentifier name, SqlExprColumnList columns, SqlExprUnmodeledTokens options, SqlTokenIdentifier asToken, SqlExprBaseSt select )
+        static ISqlItem[] Build( SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type, SqlExprMultiIdentifier name, SqlExprColumnList columns, SqlExprUnmodeledTokens options, SqlTokenIdentifier asToken, SqlItem select )
         {
             if( columns == null ) 
             {
@@ -72,7 +72,7 @@ namespace CK.SqlServer
 
         public SqlTokenIdentifier AsToken { get { return  (SqlTokenIdentifier)Slots[Slots.Length-2]; } }
 
-        public SqlExprBaseSt Select { get { return (SqlExprBaseSt)Slots[Slots.Length - 1]; } }
+        public SqlItem Select { get { return (SqlItem)Slots[Slots.Length - 1]; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

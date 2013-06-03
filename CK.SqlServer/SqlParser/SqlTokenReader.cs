@@ -50,6 +50,73 @@ namespace CK.SqlServer
         }
 
         /// <summary>
+        /// Collects tokens.
+        /// </summary>
+        public class Collector : List<SqlToken>, IDisposable
+        {
+            readonly SqlTokenReader _r;
+
+            internal Collector( SqlTokenReader r, bool addCurrentToken )
+            {
+                _r = r;
+                if( addCurrentToken ) Add( _r._c );
+                _r.TokenRead += this.Add;
+            }
+
+            /// <summary>
+            /// Collects all tokens up to the end (or to the next semi colon terminator).
+            /// Saves the semi colon terminator if possible.
+            /// </summary>
+            /// <returns></returns>
+            public SqlTokenTerminal ReadToEnd( bool stopAtSemiColon = false )
+            {
+                SqlTokenTerminal term = null;
+                if( stopAtSemiColon )
+                {
+                    do
+                    {
+                        if( term.TokenType == SqlTokenType.SemiColon )
+                        {
+                            term = _r.Read<SqlTokenTerminal>();
+                            break;
+                        }
+                    }
+                    while( _r.MoveNext() );
+                }
+                else
+                {
+                    while( _r.MoveNext() ) ;
+                    if( Count > 0 && this[Count - 1].TokenType == SqlTokenType.SemiColon )
+                    {
+                        term = (SqlTokenTerminal)this[Count - 1];
+                        RemoveAt( Count - 1 );
+                    }
+                }
+                return term;
+            }
+
+            public void Dispose()
+            {
+                _r.TokenRead -= this.Add;
+            }
+
+        }
+
+        /// <summary>
+        /// Opens a disposable collector for tokens read by <see cref="MoveNext"/>.
+        /// </summary>
+        /// <returns>A disposable collector.</returns>
+        public Collector OpenCollector( bool skipCurrentToken = false )
+        {
+            return new Collector( this, !skipCurrentToken );
+        }
+
+        /// <summary>
+        /// Fires at each <see cref="MoveNext"/>.
+        /// </summary>
+        public event Action<SqlToken> TokenRead;
+
+        /// <summary>
         /// Gets the current token.
         /// </summary>
         public SqlToken Current 
@@ -115,7 +182,6 @@ namespace CK.SqlServer
                 return (_c.TokenType&SqlTokenType.IsError) != 0;
             }
         }
-
 
         /// <summary>
         /// Sets the <see cref="Current"/> token as beeing a <see cref="SqlTokenError"/>.
@@ -292,6 +358,11 @@ namespace CK.SqlServer
             if( _e == null ) throw new ObjectDisposedException( "TokenReader" );
             if( _c == SqlTokenError.EndOfInput ) return false;
             _c = _rawLookup;
+            if( _c.TokenType > 0 )
+            {
+                var h = TokenRead;
+                if( h != null ) h( _c );
+            }
             if( _c.TokenType == SqlTokenType.Equal && _assignmentContext ) _c = new SqlTokenTerminal( SqlTokenType.Assign, _c.LeadingTrivia, _c.TrailingTrivia );
             _rawLookup = _e.MoveNext() ? _e.Current : SqlTokenError.EndOfInput;
             return true;

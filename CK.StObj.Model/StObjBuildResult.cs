@@ -6,36 +6,43 @@ using System.Text;
 namespace CK.Core
 {
     /// <summary>
-    /// Encapsulates the result of the <see cref="StObjContextRoot.Build"/> or <see cref="StObjContextRoot.LoadOrBuild"/> methods.
+    /// Encapsulates the result of the <see cref="StObjContextRoot.Build"/> method.
+    /// Must be <see cref="Dispose"/>d once done.
     /// </summary>
     public class StObjBuildResult : IDisposable
     {
         readonly IActivityLogger _logger;
 
-        internal StObjBuildResult( bool success, AppDomain d, IActivityLogger loggerForAppDomainUnloadError )
+        internal StObjBuildResult( bool success, string externalVersionStamp, bool assemblyAlreadyExists, AppDomain d, IActivityLogger loggerForAppDomainUnloadError )
         {
             Success = success;
+            ExternalVersionStamp = externalVersionStamp;
+            AssemblyAlreadyExists = assemblyAlreadyExists;
             IndependentAppDomain = d;
             _logger = loggerForAppDomainUnloadError;
         }
 
         /// <summary>
-        /// Gets wether the build succeeded.
+        /// Gets whether the build succeeded or the assembly with the same <see cref="BuilderFinalAssemblyConfiguration.ExternalVersionStamp"/> already exists.
         /// </summary>
         public bool Success { get; private set; }
 
         /// <summary>
-        /// Gets the independent Application Domain that has been used.
-        /// It is not null if and only if <see cref="BuilderAppDomainConfiguration.UseIndependentAppDomain"/> is true and 
-        /// this <see cref="StObjBuildResult"/> has not been disposed.
+        /// Gets whether the assembly with the same <see cref="BuilderFinalAssemblyConfiguration.ExternalVersionStamp"/> has been found.
         /// </summary>
-        public AppDomain IndependentAppDomain { get; private set; }
+        public bool AssemblyAlreadyExists { get; private set; }
 
         /// <summary>
-        /// Gets the final <see cref="IStObjMap"/> to use. This is available (not null) 
-        /// if and only if <see cref="Success"/> is true and <see cref="StObjContextRoot.LoadOrBuild"/> has been called.
+        /// Gets the version stamp of the built or already existing assembly.
+        /// When a build has been done, it is the same as the input <see cref="BuilderFinalAssemblyConfiguration.ExternalVersionStamp"/>.
         /// </summary>
-        public IStObjMap StObjMap { get; internal set; }
+        public string ExternalVersionStamp { get; private set; }
+
+        /// <summary>
+        /// Gets the independent Application Domain that has been used to get the version stamp and/or build the assembly.
+        /// It is null if this <see cref="StObjBuildResult"/> has not been disposed or if no independent domain was needed.
+        /// </summary>
+        public AppDomain IndependentAppDomain { get; private set; }
 
         /// <summary>
         /// Unloads the <see cref="IndependentAppDomain"/> if it exists.

@@ -7,6 +7,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Reflection.Emit;
 using System.Threading;
+using System.Diagnostics;
 
 namespace CK.Core
 {
@@ -14,11 +15,23 @@ namespace CK.Core
     {
         public static readonly string RootContextTypeName = "CK.StObj.GeneratedRootContext";
 
+        /// <summary>
+        /// Loads a previously generated assembly by its assembly name.
+        /// </summary>
+        /// <param name="a">Assembly name that will be loaded in the current AppDomain.</param>
+        /// <param name="logger">Optional logger for loading operation.</param>
+        /// <returns>A <see cref="IStObjMap"/> that provides access to the objects graph.</returns>
         public static IStObjMap Load( string assemblyName, IActivityLogger logger = null )
         {
             return Load( Assembly.Load( assemblyName ), logger );
         }
 
+        /// <summary>
+        /// Loads a previously generated assembly.
+        /// </summary>
+        /// <param name="a">Assembly (loaded in the current AppDomain).</param>
+        /// <param name="logger">Optional logger for loading operation.</param>
+        /// <returns>A <see cref="IStObjMap"/> that provides access to the objects graph.</returns>
         public static IStObjMap Load( Assembly a, IActivityLogger logger = null )
         {
             if( logger == null ) logger = DefaultActivityLogger.Empty;
@@ -28,11 +41,6 @@ namespace CK.Core
                 Type t = a.GetType( RootContextTypeName, true );
                 return (StObjContextRoot)Activator.CreateInstance( t, new object[] { logger } );
             }
-        }
-
-        public static StObjBuildResult LoadOrBuild( IStObjEngineConfiguration config, IActivityLogger logger = null, bool forceBuild = false )
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -73,19 +81,33 @@ namespace CK.Core
             return common;
         }
 
+        enum AppDomainMode
+        {
+            ForceBuild,
+            BuildIfRequired,
+            GetVersionStamp,
+            ResultFoundExisting
+        }
+
         class AppDomainCommunication : MarshalByRefObject
         {
             readonly object _locker = new object();
             bool _done;
             bool _success;
 
-            public AppDomainCommunication( IActivityLogger logger, IStObjEngineConfiguration config )
+            public AppDomainCommunication( IActivityLogger logger, IStObjEngineConfiguration config, AppDomainMode m )
             {
                 if( !config.GetType().IsSerializable ) throw new InvalidOperationException( "IStObjEngineConfiguration must be serializable." );
                 _locker = new object();
                 LoggerBridge = logger.Output.ExternalInput;
                 Config = config;
+                if( m != AppDomainMode.GetVersionStamp ) VersionStampRead = config.FinalAssemblyConfiguration.ExternalVersionStamp;
+                Mode = m;
             }
+
+            public string VersionStampRead { get; set; }
+
+            public AppDomainMode Mode { get; set; }
 
             public ActivityLoggerBridgeTarget LoggerBridge { get; private set; }
 
@@ -110,36 +132,39 @@ namespace CK.Core
             }
         }
 
-        public static StObjBuildResult Build( IStObjEngineConfiguration config, IActivityLogger logger = null )
+        /// <summary>
+        /// Runs a build based on the given serializable <paramref name="config"/> object. 
+        /// The returned <see cref="StObjBuildResult"/> must be disposed once done with it.
+        /// </summary>
+        /// <param name="config">Configuration object. It must be serializable.</param>
+        /// <param name="logger">Optional logger.</param>
+        /// <returns>A disposable result.</returns>
+        public static StObjBuildResult Build( IStObjEngineConfiguration config, IActivityLogger logger = null, bool forceBuild = false )
         {
             if( config == null ) throw new ArgumentNullException( "config" );
             if( logger == null ) logger = new ActivityLogger();
 
+            StObjBuildResult r = null;
             if( config.AppDomainConfiguration.UseIndependentAppDomain )
             {
-                var result = FindCommonAncestor( config.AppDomainConfiguration.ProbePaths );
-                if( result == null )
-                {
-                    throw new CKException( "All the probe paths must have a common ancestor. No ancestor found for: '{0}'.", string.Join( "', '", config.AppDomainConfiguration.ProbePaths ) );
-                }
-                AppDomainSetup setup = AppDomain.CurrentDomain.SetupInformation;
-                setup.ApplicationBase = result;
-
-                /// PrivateBinPathProbe (from msdn):
-                /// Set this property to any non-null string value, including String.Empty (""), to exclude the application directory path — that is, 
-                /// ApplicationBase — from the search path for the application, and to search for assemblies only in PrivateBinPath. 
-                setup.PrivateBinPathProbe = String.Empty;
-                setup.PrivateBinPath = string.Join( ";", config.AppDomainConfiguration.ProbePaths );
-                var appDomain = AppDomain.CreateDomain( "StObjContextRoot.Build.IndependentAppDomain", null, setup );
-                AppDomainCommunication appDomainComm = new AppDomainCommunication( logger, config );
-                appDomain.SetData( "CK-AppDomainComm", appDomainComm );
-                appDomain.DoCallBack( new CrossAppDomainDelegate( LaunchRunCrossDomain ) );
-                return new StObjBuildResult( appDomainComm.WaitForResult(), appDomain, logger );
+                r = BuildOrGetVersionStampInIndependentAppDomain( config, logger, forceBuild ? AppDomainMode.ForceBuild : AppDomainMode.BuildIfRequired );
             }
             else
             {
-                return new StObjBuildResult( LaunchRun( logger, config ), null, null );
+                if( !forceBuild && config.FinalAssemblyConfiguration.ExternalVersionStamp != null )
+                {
+                    // Extracts the Version stamp of the existing dll (if any) in an independent AppDomain to
+                    // avoid cluttering the ReflectionOnly context of the current AppDomain.
+                    r = BuildOrGetVersionStampInIndependentAppDomain( config, logger, AppDomainMode.GetVersionStamp );
+                    if( !r.Success || r.ExternalVersionStamp != config.FinalAssemblyConfiguration.ExternalVersionStamp )
+                    {
+                        r.Dispose();
+                        r = null;
+                    }
+                }
+                if( r == null ) r = new StObjBuildResult( LaunchRun( logger, config ), config.FinalAssemblyConfiguration.ExternalVersionStamp, false, null, null );
             }
+            return r;
         }
 
         private static bool LaunchRun( IActivityLogger logger, IStObjEngineConfiguration config )
@@ -149,14 +174,105 @@ namespace CK.Core
             return runner.Run();
         }
 
+        private static StObjBuildResult BuildOrGetVersionStampInIndependentAppDomain( IStObjEngineConfiguration config, IActivityLogger logger, AppDomainMode m )
+        {
+            AppDomainSetup thisSetup = AppDomain.CurrentDomain.SetupInformation;
+            AppDomainSetup setup = new AppDomainSetup();
+
+            if( m == AppDomainMode.GetVersionStamp )
+            {
+                setup.ApplicationBase = thisSetup.ApplicationBase;
+                setup.PrivateBinPathProbe = thisSetup.PrivateBinPathProbe;
+                setup.PrivateBinPath = thisSetup.PrivateBinPath;
+            }
+            else
+            {
+                var result = FindCommonAncestor( config.AppDomainConfiguration.ProbePaths );
+                if( result == null )
+                {
+                    throw new CKException( "All the probe paths must have a common ancestor. No ancestor found for: '{0}'.", string.Join( "', '", config.AppDomainConfiguration.ProbePaths ) );
+                }
+                setup.ApplicationBase = result;
+                /// PrivateBinPathProbe (from msdn):
+                /// Set this property to any non-null string value, including String.Empty (""), to exclude the application directory path — that is, 
+                /// ApplicationBase — from the search path for the application, and to search for assemblies only in PrivateBinPath. 
+                setup.PrivateBinPathProbe = String.Empty;
+                setup.PrivateBinPath = string.Join( ";", config.AppDomainConfiguration.ProbePaths );
+            }
+            var appDomain = AppDomain.CreateDomain( "StObjContextRoot.Build.IndependentAppDomain", null, setup );
+            AppDomainCommunication appDomainComm = new AppDomainCommunication( logger, config, m );
+            appDomain.SetData( "CK-AppDomainComm", appDomainComm );
+            appDomain.DoCallBack( new CrossAppDomainDelegate( LaunchRunCrossDomain ) );
+            return new StObjBuildResult( appDomainComm.WaitForResult(), appDomainComm.VersionStampRead, appDomainComm.Mode == AppDomainMode.ResultFoundExisting, appDomain, logger );
+        }
+
         private static void LaunchRunCrossDomain()
         {
             AppDomainCommunication appDomainComm = (AppDomainCommunication)AppDomain.CurrentDomain.GetData( "CK-AppDomainComm" );
+            var config = appDomainComm.Config;
             IActivityLogger logger = new ActivityLogger();
             try
             {
                 logger.Output.RegisterClient( new ActivityLoggerBridge( appDomainComm.LoggerBridge ) );
-                appDomainComm.SetResult( LaunchRun( logger, appDomainComm.Config ) );
+                string existingVersionStamp = null;
+                if( appDomainComm.Mode == AppDomainMode.GetVersionStamp
+                    || (appDomainComm.Mode == AppDomainMode.BuildIfRequired && config.FinalAssemblyConfiguration.ExternalVersionStamp != null) )
+                {
+                    // If no directory has been specified for final assembly. Trying to use the path of CK.StObj.Model assembly.
+                    // If no assembly name has been specified for final assembly. Using default name.
+                    // ==> This mimics GenerateFinalAssembly behavior.
+                    string directory = config.FinalAssemblyConfiguration.Directory;
+                    if( String.IsNullOrEmpty( directory ) ) directory = BuilderFinalAssemblyConfiguration.GetFinalDirectory( directory );
+                    string assemblyName = config.FinalAssemblyConfiguration.AssemblyName;
+                    if( String.IsNullOrEmpty( assemblyName ) ) assemblyName = BuilderFinalAssemblyConfiguration.GetFinalAssemblyName( assemblyName );
+
+                    string p = Path.Combine( directory, assemblyName + ".dll" );
+                    try
+                    {
+                        if( File.Exists( p ) )
+                        {
+                            Assembly a = Assembly.ReflectionOnlyLoadFrom( p );
+                            foreach( var attr in a.GetCustomAttributesData() )
+                            {
+                                if( typeof( AssemblyInformationalVersionAttribute ).IsAssignableFrom( attr.Constructor.DeclaringType ) )
+                                {
+                                    if( attr.ConstructorArguments.Count > 0 ) existingVersionStamp = attr.ConstructorArguments[0].Value as string;
+                                    break;
+                                }
+                            }
+                            if( appDomainComm.Mode == AppDomainMode.BuildIfRequired )
+                            {
+                                if( existingVersionStamp == config.FinalAssemblyConfiguration.ExternalVersionStamp )
+                                {
+                                    logger.Info( "File '{0}' already exists with the expected Version stamp. Building it again is useless.", p );
+                                    appDomainComm.Mode = AppDomainMode.ResultFoundExisting;
+                                }
+                                else logger.Trace( "File '{0}' already exists but Version stamp differs. Building is required.", p );
+                            }
+                            else if( appDomainComm.Mode == AppDomainMode.GetVersionStamp )
+                            {
+                                if( existingVersionStamp != null ) appDomainComm.Mode = AppDomainMode.ResultFoundExisting;
+                            }
+                            appDomainComm.VersionStampRead = existingVersionStamp;
+                        }
+                        else logger.Trace( "File '{0}' does not exist.", p );
+                    }
+                    catch( Exception ex )
+                    {
+                        logger.Error( ex, "While trying to read version stamp from '{0}'.", p );
+                    }
+                }
+                // Conclusion: if a build is required, run it, otherwise if a version has been read, it is a success.
+                if( appDomainComm.Mode == AppDomainMode.ResultFoundExisting || appDomainComm.Mode == AppDomainMode.GetVersionStamp )
+                {
+                    appDomainComm.SetResult( existingVersionStamp != null );
+                }
+                else
+                {
+                    // Updates the VersionStampRead on the output.
+                    appDomainComm.VersionStampRead = config.FinalAssemblyConfiguration.ExternalVersionStamp;
+                    appDomainComm.SetResult( LaunchRun( logger, config ) );
+                }
             }
             catch( Exception ex )
             {

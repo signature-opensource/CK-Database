@@ -12,6 +12,7 @@ using System.Reflection;
 namespace CK.StObj.Engine.Tests
 {
     [TestFixture]
+    [Category( "DynamicGeneration" )]
     public class DynamicGenerationTests
     {
         public class CSimpleEmit
@@ -149,7 +150,9 @@ namespace CK.StObj.Engine.Tests
                     Assert.That( theA.StObjPower, Is.EqualTo( "ASpec level property." ) );
                     Assert.That( typeof( A ).GetProperty( "StObjPower" ).GetValue( theA, null ), Is.EqualTo( "This is the A property." ) );
                 }
+                
                 r.GenerateFinalAssembly( TestHelper.Logger, TestHelper.BinFolder, "TEST_ConstructCalled" );
+
                 IStObjMap c = StObjContextRoot.Load( "TEST_ConstructCalled", TestHelper.Logger );
                 {
                     Assert.That( c.Default.Obtain<B>().TheA, Is.SameAs( c.Default.Obtain<A>() ).And.SameAs( c.Default.Obtain<ASpec>() ) );

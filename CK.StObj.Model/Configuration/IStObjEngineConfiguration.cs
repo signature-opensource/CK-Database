@@ -10,14 +10,14 @@ namespace CK.Core
     /// Provides minimal configuration required to produce a final (compiled) assembly.
     /// Thanks to this abstraction, <see cref="StObjContextRoot"/> is able to handle build/setup phasis 
     /// that involve any higher level APIs than StObj itself.
+    /// Objects that supports this interface must be serializable.
     /// </summary>
     public interface IStObjEngineConfiguration
     {
         /// <summary>
-        /// Gets the Assembly Qualified Name of a <see cref="Type"/> that must have a public
-        /// constructor that accepts an <see cref="IActivityLogger"/> and an instance of 
+        /// Gets the Assembly Qualified Name of a <see cref="Type"/> that supports <see cref="IStObjBuilder"/>.
+        /// It must have a public constructor that accepts an <see cref="IActivityLogger"/> and an instance of 
         /// this <see cref="IStObjEngineConfiguration"/>.
-        /// It must support <see cref="IStObjBuilder"/>.
         /// </summary>
         string BuilderAssemblyQualifiedName { get; }
 

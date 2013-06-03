@@ -9,17 +9,17 @@ using CK.Core;
 namespace CK.SqlServer
 {
     /// <summary>
-    /// Captures any statement: it can be any <see cref="SqlExpr"/>.
+    /// Captures any statement: it can be any <see cref="SqlExpr"/> or <see cref="SqlNoExpr"/>.
     /// </summary>
     public class SqlExprStUnmodeled : SqlExprBaseSt
     {
-        public SqlExprStUnmodeled( SqlExpr content, SqlTokenTerminal statementTerminator = null )
+        public SqlExprStUnmodeled( SqlItem content, SqlTokenTerminal statementTerminator = null )
             : base( CreateArray( content ), statementTerminator )
         {
             if( content == null ) throw new ArgumentNullException( "content" );
         }
 
-        public SqlExpr Content { get { return (SqlExpr)Slots[0]; } }
+        public SqlItem Content { get { return (SqlItem)Slots[0]; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

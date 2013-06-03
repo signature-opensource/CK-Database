@@ -13,6 +13,7 @@ namespace CK.SqlServer.Setup
         readonly List<string> _ckPackageDirectories;
         readonly List<string> _sqlFileDirectories;
         string _defaultDatabaseConnectionString;
+        bool _ignoreMissingDependencyIsError;
 
         /// <summary>
         /// Initializes a new <see cref="SqlSetupCenterConfiguration"/> with a new, uninitialized <see cref="SetupConfiguration"/>.
@@ -29,6 +30,8 @@ namespace CK.SqlServer.Setup
 
         /// <summary>
         /// Configuration for <see cref="SetupCenter"/>.
+        /// Note that, by default, <see cref="SetupCenterConfiguration.AppDomainConfiguration"/>.<see cref="BuilderAppDomainConfiguration.UseIndependentAppDomain">UseIndependentAppDomain</see>
+        /// is set to true.
         /// </summary>
         public SetupCenterConfiguration SetupConfiguration
         {
@@ -42,6 +45,19 @@ namespace CK.SqlServer.Setup
         {
             get { return _defaultDatabaseConnectionString; }
             set { _defaultDatabaseConnectionString = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets whether when installing, the informational message 'The module 'X' depends 
+        /// on the missing object 'Y'. The module will still be created; however, it cannot run successfully until the object exists.' 
+        /// must always be logged as a <see cref="LogLevel.Info"/>.
+        /// Defaults to false: objects that support a MissingDependencyIsError property (sets to true) will fail with an error if a missing dependency is detected.
+        /// This applies to all <see cref="Databases"/>.
+        /// </summary>
+        public bool IgnoreMissingDependencyIsError
+        {
+            get { return _ignoreMissingDependencyIsError; }
+            set { _ignoreMissingDependencyIsError = value; }
         }
 
         /// <summary>

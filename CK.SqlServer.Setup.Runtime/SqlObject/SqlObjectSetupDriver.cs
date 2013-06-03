@@ -31,20 +31,36 @@ namespace CK.SqlServer.Setup
  
             string s;
             StringWriter w = new StringWriter();
-            
-            Item.WriteDrop( w );
-            s = w.GetStringBuilder().ToString();
-            if( !m.ExecuteOneScript( s, Engine.Logger ) ) return false;
-            w.GetStringBuilder().Clear();
-            
-            Item.WriteCreate( w );
-            s = w.GetStringBuilder().ToString();
 
-            var tagHandler = new SimpleScriptTagHandler( s );
-            if( !tagHandler.Expand( Engine.Logger, true ) ) return false;
-            var scripts = tagHandler.SplitScript();
-            if( !m.ExecuteScripts( scripts.Select( c => c.Body ), Engine.Logger ) ) return false;
+            IDisposable configRestorer = null;
+            bool itemMissingDependencyIsError = Item.MissingDependencyIsError.HasValue ? Item.MissingDependencyIsError.Value : true;
+            if( m.MissingDependencyIsError != itemMissingDependencyIsError )
+            {
+                if( m.IgnoreMissingDependencyIsError )
+                {
+                    if( itemMissingDependencyIsError ) Engine.Logger.Trace( "SqlManager is configured to ignore MissingDependencyIsError." );
+                }
+                else
+                {
+                    m.MissingDependencyIsError = itemMissingDependencyIsError;
+                    configRestorer = Util.CreateDisposableAction( () => m.MissingDependencyIsError = !m.MissingDependencyIsError );
+                }
+            }
+            using( configRestorer )
+            {
+                Item.WriteDrop( w );
+                s = w.GetStringBuilder().ToString();
+                if( !m.ExecuteOneScript( s, Engine.Logger ) ) return false;
+                w.GetStringBuilder().Clear();
 
+                Item.WriteCreate( w );
+                s = w.GetStringBuilder().ToString();
+
+                var tagHandler = new SimpleScriptTagHandler( s );
+                if( !tagHandler.Expand( Engine.Logger, true ) ) return false;
+                var scripts = tagHandler.SplitScript();
+                if( !m.ExecuteScripts( scripts.Select( c => c.Body ), Engine.Logger ) ) return false;
+            }
             return true;
         }
 

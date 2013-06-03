@@ -212,6 +212,7 @@ namespace CK.SqlServer
             return token != null 
                 && (token.TokenType == SqlTokenType.ClosePar 
                     || token.TokenType == SqlTokenType.SemiColon
+                    || (token.TokenType & SqlTokenType.IdentifierTypeMask) == SqlTokenType.IdentifierStandardStatement
                     || (token.TokenType & SqlTokenType.IdentifierTypeMask) == SqlTokenType.IdentifierReservedStatement);
         }
 
@@ -224,6 +225,7 @@ namespace CK.SqlServer
         {
             if( t == null ) throw new ArgumentNullException( "t" );
             return t.TokenType == SqlTokenType.SemiColon
+                    || (t.TokenType & SqlTokenType.IdentifierTypeMask) == SqlTokenType.IdentifierStandardStatement
                     || (t.TokenType & SqlTokenType.IdentifierTypeMask) == SqlTokenType.IdentifierReservedStatement;
         }
 

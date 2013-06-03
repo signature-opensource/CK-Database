@@ -166,10 +166,11 @@ namespace CK.SqlServer
                 }
                 if( R.Current.TokenType == SqlTokenType.Not )
                 {
-                    if( R.RawLookup.TokenType == SqlTokenType.Like ) return IsExprLike( ref left, R.Read<SqlTokenIdentifier>() );
-                    if( R.RawLookup.TokenType == SqlTokenType.Between ) return IsExprBetween( ref left, R.Read<SqlTokenIdentifier>() );
-                    if( R.RawLookup.TokenType == SqlTokenType.In ) return IsExprIn( ref left, R.Read<SqlTokenIdentifier>() );
-                    return false;
+                    SqlTokenIdentifier notToken = R.Read<SqlTokenIdentifier>();
+                    if( R.Current.TokenType == SqlTokenType.Like ) return IsExprLike( ref left, notToken );
+                    if( R.Current.TokenType == SqlTokenType.Between ) return IsExprBetween( ref left, notToken );
+                    if( R.Current.TokenType == SqlTokenType.In ) return IsExprIn( ref left, notToken );
+                    return R.SetCurrentError( "Expected 'like', 'between' or 'in'." );
                 }
                 if( R.Current.TokenType == SqlTokenType.Like ) return IsExprLike( ref left, null );
                 if( R.Current.TokenType == SqlTokenType.Between ) return IsExprBetween( ref left, null );
