@@ -41,7 +41,7 @@ namespace CK.Setup
                 Debug.Assert( covered.All( c => s.Name.Version > c.Name.FromVersion ), "The covering script brings the system to a version strictely greater than the starting point of any covered script." );
                 CoveredScripts = BuildCoveringScripts( covered ).ToReadOnlyList();
             }
-            else CoveredScripts = ReadOnlyListEmpty<CoveringScript>.Empty;
+            else CoveredScripts = CKReadOnlyListEmpty<CoveringScript>.Empty;
         }
 
         static internal List<CoveringScript> BuildCoveringScripts( List<ISetupScript> scripts )

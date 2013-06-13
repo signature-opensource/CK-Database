@@ -80,7 +80,7 @@ namespace CK.Setup
 
         static public IReadOnlyList<T> MergeWithAboveProperties<T>( IActivityLogger logger, IReadOnlyList<T> above, IList<T> collector ) where T : CovariantPropertyInfo
         {
-            if( collector == null || collector.Count == 0 ) return above ?? ReadOnlyListEmpty<T>.Empty;
+            if( collector == null || collector.Count == 0 ) return above ?? CKReadOnlyListEmpty<T>.Empty;
             int nbFromAbove = 0;
             if( above != null )
             {

@@ -25,7 +25,7 @@ namespace CK.Core
             {
                 var l = a.GetManifestResourceNames();
                 Array.Sort( l, StringComparer.Ordinal );
-                return new ReadOnlyListOnIList<string>( l ); 
+                return new CKReadOnlyListOnIList<string>( l ); 
             } );
 
         }

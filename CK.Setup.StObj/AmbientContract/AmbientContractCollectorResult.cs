@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CK.Core
 {
-    class ReadOnlyDictionaryOnDictionary<T, TKey> : IReadOnlyUniqueKeyedCollection<T, TKey>
+    class ReadOnlyDictionaryOnDictionary<T, TKey> : ICKReadOnlyUniqueKeyedCollection<T, TKey>
         {
             readonly Dictionary<TKey,T> _map;
             readonly Func<T,TKey> _keyer;
@@ -60,7 +60,7 @@ namespace CK.Core
     {
         readonly AmbientTypeMapper _mappings;
         readonly Dictionary<Type,T> _typeInfo;
-        readonly IReadOnlyUniqueKeyedCollection<T, Type> _typeInfoEx;
+        readonly ICKReadOnlyUniqueKeyedCollection<T, Type> _typeInfoEx;
 
         internal AmbientContractCollectorResult( AmbientTypeMapper mappings, Dictionary<Type, T> typeInfo )
         {
@@ -86,7 +86,7 @@ namespace CK.Core
         /// Gets an indexed collection of <typeparam name="T"/> that are <see cref="AmbientTypeInfo"/>: this provides a central 
         /// mapping from ambient classes to any associated information.
         /// </summary>
-        public IReadOnlyUniqueKeyedCollection<T, Type> TypeInformation
+        public ICKReadOnlyUniqueKeyedCollection<T, Type> TypeInformation
         {
             get { return _typeInfoEx; }
         }

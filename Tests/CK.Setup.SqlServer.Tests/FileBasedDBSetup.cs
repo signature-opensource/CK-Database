@@ -40,7 +40,7 @@ namespace CK.Setup.SqlServer.Tests
         [Test]
         public void InstallPackageWithView()
         {
-            using( var context = new SqlSetupContext( SqlManager.OpenOrCreate( ".", "Test", TestHelper.Logger ) ) )
+            using( var context = new SqlSetupContext( SqlManager.OpenOrCreate( ".", "TestVRelease", TestHelper.Logger ) ) )
             {
                 SqlSetupCenter c = new SqlSetupCenter( context );
                 c.DiscoverFilePackages( TestHelper.GetScriptsFolder( "InstallFromScratchWithView" ) );

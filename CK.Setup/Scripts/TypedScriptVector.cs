@@ -25,8 +25,8 @@ namespace CK.Setup
         {
             Debug.Assert( maxScript != null );
             Debug.Assert( noVersion == null || (noVersion.ScriptSource == maxScript.ScriptSource) );
-            if( noVersion != null ) Scripts = new ReadOnlyListOnIList<CoveringScript>( new[] { new CoveringScript( maxScript ), new CoveringScript( noVersion ) } );
-            else Scripts = new ReadOnlyListMono<CoveringScript>( new CoveringScript( maxScript ) );
+            if( noVersion != null ) Scripts = new CKReadOnlyListOnIList<CoveringScript>( new[] { new CoveringScript( maxScript ), new CoveringScript( noVersion ) } );
+            else Scripts = new CKReadOnlyListMono<CoveringScript>( new CoveringScript( maxScript ) );
             Final = maxScript.Name.Version;
         }
 
@@ -42,7 +42,7 @@ namespace CK.Setup
                         ? new[] { new CoveringScript( startingScript ), new CoveringScript( migrationScript ), new CoveringScript( noVersion ) }
                         : new[] { new CoveringScript( startingScript ), new CoveringScript( migrationScript ) };
 
-            Scripts = new ReadOnlyListOnIList<CoveringScript>( a );
+            Scripts = new CKReadOnlyListOnIList<CoveringScript>( a );
             Final = migrationScript.Name.Version;
         }
 

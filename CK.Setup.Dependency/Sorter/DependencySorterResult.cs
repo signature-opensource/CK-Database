@@ -26,10 +26,10 @@ namespace CK.Setup
             }
             else
             {
-                SortedItems = new ReadOnlyListOnIList<DependencySorter.Entry>( result );
+                SortedItems = new CKReadOnlyListOnIList<DependencySorter.Entry>( result );
                 _cycle = null;
             }
-            ItemIssues = itemIssues != null && itemIssues.Count > 0 ? new ReadOnlyListOnIList<DependentItemIssue>( itemIssues ) : ReadOnlyListEmpty<DependentItemIssue>.Empty;
+            ItemIssues = itemIssues != null && itemIssues.Count > 0 ? new CKReadOnlyListOnIList<DependentItemIssue>( itemIssues ) : CKReadOnlyListEmpty<DependentItemIssue>.Empty;
             _requiredMissingIsError = true;
             _itemIssueWithStructureErrorCount = -1;
         }

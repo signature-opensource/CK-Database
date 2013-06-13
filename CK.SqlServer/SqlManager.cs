@@ -626,7 +626,7 @@ namespace CK.SqlServer
                     {
                         using( _logger.OpenGroup( LogLevel.Error, e ) )
                         {
-                            _logger.UnfilteredLog( LogLevel.Info, script );
+                            _logger.UnfilteredLog( ActivityLogger.EmptyTag, LogLevel.Info, script, DateTime.UtcNow );
                         }
                     }
                     else _logger.Error( e );
