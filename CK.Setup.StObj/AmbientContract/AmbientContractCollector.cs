@@ -234,9 +234,9 @@ namespace CK.Core
                 var ctxResult = new AmbientContractCollectorContextualResult<TAmbientTypeInfo>(
                     ctxMapper,
                     _concreteClasses.Select( list => list.ToReadOnlyList() ).ToReadOnlyList(),
-                    _classAmbiguities != null ? new ReadOnlyListOnIList<IReadOnlyList<Type>>( _classAmbiguities ) : ReadOnlyListEmpty<IReadOnlyList<Type>>.Empty,
-                    interfaceAmbiguities != null ? interfaceAmbiguities.Values.Select( list => list.ToReadOnlyList() ).ToReadOnlyList() : ReadOnlyListEmpty<IReadOnlyList<Type>>.Empty,
-                    new ReadOnlyListOnIList<Type>( _abstractTails ) );
+                    _classAmbiguities != null ? new CKReadOnlyListOnIList<IReadOnlyList<Type>>( _classAmbiguities ) : CKReadOnlyListEmpty<IReadOnlyList<Type>>.Empty,
+                    interfaceAmbiguities != null ? interfaceAmbiguities.Values.Select( list => list.ToReadOnlyList() ).ToReadOnlyList() : CKReadOnlyListEmpty<IReadOnlyList<Type>>.Empty,
+                    new CKReadOnlyListOnIList<Type>( _abstractTails ) );
                 return ctxResult;
             }
         }

@@ -33,7 +33,7 @@ namespace CK.Core
             if( t == null ) throw new ArgumentNullException( "t" );
             Type = t;
             MutableFinalContexts = new HashSet<string>();
-            _finalContextsEx = new ReadOnlyCollectionOnISet<string>( MutableFinalContexts );
+            _finalContextsEx = new CKReadOnlyCollectionOnISet<string>( MutableFinalContexts );
             if( (Generalization = parent) == null )
             {
                 _nextSibling = null;

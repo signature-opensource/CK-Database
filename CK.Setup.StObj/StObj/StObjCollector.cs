@@ -65,7 +65,7 @@ namespace CK.Setup
         {
             if( registerer == null ) throw new ArgumentNullException( "registerer" );
             int totalRegistered = 0;
-            using( _logger.CatchCounter( count => _registerFatalOrErrorCount += count, true ) )
+            using( _logger.CatchCounter( count => _registerFatalOrErrorCount += count ) )
             using( _logger.OpenGroup( LogLevel.Trace, "Registering {0} assemblies.", registerer.Assemblies.Count ) )
             {
                 foreach( var one in registerer.Assemblies )
@@ -90,7 +90,7 @@ namespace CK.Setup
         /// <returns>True if it is a new class for this collector, false if it has already been registered.</returns>
         public bool RegisterClass( Type c )
         {
-            using( _logger.CatchCounter( count => _registerFatalOrErrorCount += count, true ) )
+            using( _logger.CatchCounter( count => _registerFatalOrErrorCount += count ) )
             {
                 return _cc.RegisterClass( c );
             }

@@ -15,7 +15,7 @@ namespace CK.Setup.SqlServer.Tests
         [Test]
         public void IntoTheWild0()
         {
-            using( var context = new SqlSetupContext( SqlManager.OpenOrCreate( ".", "IntoTheWild", TestHelper.Logger ) ) )
+            using( var context = new SqlSetupContext( SqlManager.OpenOrCreate( ".", "IntoTheWildVRelease", TestHelper.Logger ) ) )
             {
                 context.SqlDatabases.Add( "dbHisto", context.DefaultSqlDatabase.CurrentConnectionString );
                 context.AssemblyRegistererConfiguration.DiscoverAssemblyNames.Add( "IntoTheWild0" );

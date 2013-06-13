@@ -17,7 +17,7 @@ namespace CK.Setup
         internal StObjContextualMapper( StObjMapper owner, IAmbientTypeContextualMapper typeMappings )
         {
             _items = new Dictionary<Type, MutableItem>();
-            _itemsEx = new ReadOnlyCollectionOnICollection<MutableItem>( _items.Values );
+            _itemsEx = new CKReadOnlyCollectionOnICollection<MutableItem>( _items.Values );
             _typeMappings = typeMappings;
             _owner = owner;
             _owner.Add( this );

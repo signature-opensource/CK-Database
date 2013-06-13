@@ -14,7 +14,8 @@ namespace CK.Setup.Database.Tests
         static TestHelper()
         {
             _console = new ActivityLoggerConsoleSink();
-            _logger = DefaultActivityLogger.Create().Register( _console );
+            _logger = new DefaultActivityLogger();
+            _logger.Tap.Register( _console );
         }
 
         public static IActivityLogger Logger
@@ -24,11 +25,11 @@ namespace CK.Setup.Database.Tests
 
         public static bool LogsToConsole
         {
-            get { return _logger.RegisteredSinks.Contains( _console ); }
+            get { return _logger.Tap.RegisteredSinks.Contains( _console ); }
             set 
             {
-                if( value ) _logger.Register( _console );
-                else _logger.Unregister( _console );
+                if( value ) _logger.Tap.Register( _console );
+                else _logger.Tap.Unregister( _console );
             }
         }
 
@@ -45,11 +46,13 @@ namespace CK.Setup.Database.Tests
         private static void InitalizePaths()
         {
             string p = System.Reflection.Assembly.GetExecutingAssembly().CodeBase;
-            // Code base is like "file:///C:/Users/Spi/Documents/Dev4/CK-Database/Output/Tests/Debug/CK.Setup.Database.Tests.DLL"
+            // Code base is like "file:///C:/Users/Spi/Documents/Dev4/CK-Database/Output/Tests/Debug/NET40/CK.Setup.Database.Tests.DLL"
             StringAssert.StartsWith( "file:///", p, "Code base must start with file:/// protocol." );
 
             p = p.Substring( 8 ).Replace( '/', System.IO.Path.DirectorySeparatorChar );
 
+            // => NET40/
+            p = Path.GetDirectoryName( p );
             // => Debug/
             p = Path.GetDirectoryName( p );
             // => Tests/

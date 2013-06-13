@@ -72,8 +72,8 @@ namespace CK.Setup
         internal void SetFatal()
         {
             _fatal = true;
-            _rootStObjs = ReadOnlyListEmpty<IStObj>.Empty;
-            _orderedStObjs = ReadOnlyListEmpty<IStObj>.Empty;
+            _rootStObjs = CKReadOnlyListEmpty<IStObj>.Empty;
+            _orderedStObjs = CKReadOnlyListEmpty<IStObj>.Empty;
         }
 
         internal void SetSuccess( IReadOnlyList<IStObj> ordered )

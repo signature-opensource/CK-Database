@@ -77,7 +77,7 @@ namespace CK.Setup
         public bool Run( params object[] items )
         {
             ActivityLoggerPathCatcher path = new ActivityLoggerPathCatcher();
-            _logger.Output.RegisterMuxClient( path );
+            _logger.Output.RegisterClient( path );
             ISetupSessionMemory m = null;
             try
             {
@@ -94,7 +94,7 @@ namespace CK.Setup
             }
             finally
             {
-                _logger.Output.UnregisterMuxClient( path );
+                _logger.Output.UnregisterClient( path );
             }
             if( m != null ) _memory.StopSetup( path.LastErrorPath.ToStringPath() );
             return false;

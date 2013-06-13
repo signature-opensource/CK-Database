@@ -201,11 +201,11 @@ namespace CK.Setup
                     }
                     parameters[idx] = p;
                 }
-                _constructParameterEx = new ReadOnlyListOnIList<MutableParameter>( parameters );
+                _constructParameterEx = new CKReadOnlyListOnIList<MutableParameter>( parameters );
             }
             else
             {
-                _constructParameterEx = ReadOnlyListEmpty<MutableParameter>.Empty;
+                _constructParameterEx = CKReadOnlyListEmpty<MutableParameter>.Empty;
             }
         }
 
@@ -781,7 +781,7 @@ namespace CK.Setup
             get 
             { 
                 if( _trackedAmbientProperties == null ) return null;
-                return _trackedAmbientPropertiesEx ?? (_trackedAmbientPropertiesEx = new ReadOnlyListOnIList<TrackedAmbientPropertyInfo>( _trackedAmbientProperties )); 
+                return _trackedAmbientPropertiesEx ?? (_trackedAmbientPropertiesEx = new CKReadOnlyListOnIList<TrackedAmbientPropertyInfo>( _trackedAmbientProperties )); 
             }
         }
 

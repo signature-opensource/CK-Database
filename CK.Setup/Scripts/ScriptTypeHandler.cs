@@ -22,7 +22,7 @@ namespace CK.Setup
             }
             _name = _name.Remove( _name.Length - 17 );
             _sources = new List<ScriptSource>();
-            _sourcesEx = new ReadOnlyListOnIList<ScriptSource>( _sources );
+            _sourcesEx = new CKReadOnlyListOnIList<ScriptSource>( _sources );
         }
 
         /// <summary>

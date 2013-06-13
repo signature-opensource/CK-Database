@@ -25,7 +25,7 @@ namespace CK.Setup.SqlServer.Tests.ActorPackage
 
         private static void InstallDropAndReverseInstall( Predicate<Type> typeFilter )
         {
-            using( var context = new SqlSetupContext( SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.Logger ) ) )
+            using( var context = new SqlSetupContext( SqlManager.OpenOrCreate( ".", "ActorPackageVRelease", TestHelper.Logger ) ) )
             {
                 context.AssemblyRegistererConfiguration.DiscoverAssemblyNames.Add( "SqlActorPackage" );
                 context.AssemblyRegistererConfiguration.DiscoverAssemblyNames.Add( "SqlZonePackage" );
