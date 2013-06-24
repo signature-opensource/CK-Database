@@ -6,6 +6,7 @@ using System.Reflection.Emit;
 using System.Reflection;
 using System.Threading;
 using System.IO;
+using System.Collections;
 
 namespace CK.Core
 {
@@ -15,8 +16,10 @@ namespace CK.Core
     public class DynamicAssembly : IDynamicAssembly
     {
         int _typeID;
-        ModuleBuilder _moduleBuilder;
-        AssemblyBuilder _assemblyBuilder;
+        readonly ModuleBuilder _moduleBuilder;
+        readonly AssemblyBuilder _assemblyBuilder;
+        readonly IDictionary _memory;
+        readonly List<Action<IDynamicAssembly>> _postActions;
 
         /// <summary>
         /// This is the public key of the generated assembly.
@@ -86,6 +89,8 @@ namespace CK.Core
             if( mustSave )
                 _moduleBuilder = _assemblyBuilder.DefineDynamicModule( aName.Name, aName.Name + ".dll" );
             else _moduleBuilder = _assemblyBuilder.DefineDynamicModule( aName.Name );
+            _memory = new Hashtable();
+            _postActions = new List<Action<IDynamicAssembly>>();
         }
             
         /// <summary>
@@ -106,11 +111,37 @@ namespace CK.Core
         }
 
         /// <summary>
+        /// Gets a shared dictionary associated to the dynamic assembly. 
+        /// Methods that generate code can rely on this to store shared information as required by their generation process.
+        /// </summary>
+        public IDictionary Memory { get { return _memory; } }
+
+        /// <summary>
+        /// Pushes an action that will be executed before the generation of the final assembly: use this to 
+        /// create final type from a <see cref="TypeBuilder"/> or to execute any action that must be done at the end 
+        /// of the generation process.
+        /// An action can be pushed at any moment: a pushed action can push another action.
+        /// </summary>
+        /// <param name="postAction">Action to execute.</param>
+        public void PushFinalAction( Action<IDynamicAssembly> postAction )
+        {
+            if( postAction == null ) throw new ArgumentNullException( "postAction" );
+            _postActions.Add( postAction );
+        }
+
+        /// <summary>
         /// Saves the dynamic assembly as a ".dll".
         /// This <see cref="DynamicAssembly"/> must have been constructed with an AssemblyBuilderAccess that has <see cref="AssemblyBuilderAccess.Save"/> bit set.
         /// </summary>
         public void Save()
         {
+            int i = 0;
+            while( i < _postActions.Count )
+            {
+                var a = _postActions[i];
+                _postActions[i++] = null;
+                a( this );
+            }
             _assemblyBuilder.Save( _assemblyBuilder.GetName().Name + ".dll" );
         }
 

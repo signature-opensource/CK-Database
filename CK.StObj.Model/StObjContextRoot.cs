@@ -13,7 +13,12 @@ namespace CK.Core
 {
     public abstract class StObjContextRoot : IStObjMap
     {
+        /// <summary>
+        /// Holds the name of the root class.
+        /// </summary>
         public static readonly string RootContextTypeName = "CK.StObj.GeneratedRootContext";
+
+        static readonly HashSet<Assembly> _alreadyLoaded = new HashSet<Assembly>();
 
         /// <summary>
         /// Loads a previously generated assembly by its assembly name.
@@ -35,7 +40,13 @@ namespace CK.Core
         public static IStObjMap Load( Assembly a, IActivityLogger logger = null )
         {
             if( logger == null ) logger = DefaultActivityLogger.Empty;
-            using( logger.OpenGroup( LogLevel.Info, "Loading dynamic '{0}'", a.FullName ) )
+            bool loaded;
+            lock( _alreadyLoaded ) 
+            {
+                loaded = _alreadyLoaded.Contains( a );
+                if( !loaded ) _alreadyLoaded.Add( a );
+            }
+            using( loaded ? null : logger.OpenGroup( LogLevel.Info, "Loading dynamic '{0}'", a.FullName ) )
             {
                 if( a == null ) throw new ArgumentNullException( "a" );
                 Type t = a.GetType( RootContextTypeName, true );

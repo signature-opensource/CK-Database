@@ -24,5 +24,19 @@ namespace CK.SqlServer
                 t.WriteWithoutTrivias( b );
             }
         }
+
+        /// <summary>
+        /// Returs a string for an <see cref="IEnumerable"/> of <see cref="SqlToken"/> without its trivias. 
+        /// Calls <see cref="SqlToken.WriteWithoutTrivias"/> on each token.
+        /// </summary>
+        /// <param name="this">An <see cref="IEnumerable"/> of <see cref="SqlToken"/></param>
+        /// <param name="separator">Separator between tokens.</param>
+        /// <returns>Tokens without trivias.</returns>
+        public static string ToStringWithoutTrivias( this IEnumerable<SqlToken> @this, string separator )
+        {
+            StringBuilder b = new StringBuilder();
+            @this.WriteTokensWithoutTrivias( separator, b );
+            return b.ToString();
+        }
     }
 }

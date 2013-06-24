@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Collections;
 
 namespace CK.Core
 {
@@ -11,13 +12,13 @@ namespace CK.Core
     {
         public class StubImplementor : IAutoImplementorMethod, IAutoImplementorProperty
         {
-            public bool Implement( IActivityLogger logger, MethodInfo m, TypeBuilder b, bool isVirtual )
+            public bool Implement( IActivityLogger logger, MethodInfo m, IDynamicAssembly dynamicAssembly, TypeBuilder b, bool isVirtual )
             {
                 CK.Reflection.EmitHelper.ImplementEmptyStubMethod( b, m, isVirtual );
                 return true;
             }
 
-            public bool Implement( IActivityLogger logger, PropertyInfo p, TypeBuilder b, bool isVirtual )
+            public bool Implement( IActivityLogger logger, PropertyInfo p, IDynamicAssembly dynamicAssembly, TypeBuilder b, bool isVirtual )
             {
                 CK.Reflection.EmitHelper.ImplementStubProperty( b, p, isVirtual );
                 return true;
@@ -237,13 +238,13 @@ namespace CK.Core
                     {
                         try
                         {
-                            if( !m.Implement( logger, am.Method, b, !finalImplementation ) )
+                            if( !m.Implement( logger, am.Method, assembly, b, !finalImplementation ) )
                             {
                                 if( finalImplementation )
                                 {
                                     logger.Fatal( "Method '{0}.{1}' can not be implemented by its IAutoImplementorMethod.", AbstractType.FullName, am.Method.Name );
                                 }
-                                else EmptyImplementor.Implement( logger, am.Method, b, true );
+                                else EmptyImplementor.Implement( logger, am.Method, assembly, b, true );
                             }
                         }
                         catch( Exception ex )
@@ -268,13 +269,13 @@ namespace CK.Core
                     {
                         try
                         {
-                            if( !p.Implement( logger, ap.Property, b, !finalImplementation ) )
+                            if( !p.Implement( logger, ap.Property, assembly, b, !finalImplementation ) )
                             {
                                 if( finalImplementation )
                                 {
                                     logger.Fatal( "Property '{0}.{1}' can not be implemented by its IAutoImplementorProperty.", AbstractType.FullName, ap.Property.Name );
                                 }
-                                else EmptyImplementor.Implement( logger, ap.Property, b, true );
+                                else EmptyImplementor.Implement( logger, ap.Property, assembly, b, true );
                             }
                         }
                         catch( Exception ex )

@@ -74,6 +74,18 @@ namespace CK.SqlServer
 
         public SqlTokenIdentifier End { get { return HasBeginEnd ? (SqlTokenIdentifier)Slots[ Slots.Length - 1 ] : null; } }
 
+        public string ToStringSignature( bool withOptions )
+        {
+            string s = Name.Tokens.ToStringWithoutTrivias( String.Empty );
+            s += ' ' + Parameters.ToStringClean();
+            if( withOptions && HasOptions )
+            {
+                s += ' ';
+                s += Options.Tokens.ToStringWithoutTrivias( " " );
+            }
+            return s;
+        }
+
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )
         {

@@ -12,7 +12,7 @@ namespace SqlActorPackage.Basic
         }
 
         [SqlProcedure( "sUserCreate" )]
-        public abstract SqlCommand Create();
+        public abstract SqlCommand CmdCreate( string userName, out int userIdResult );
 
     }
 }

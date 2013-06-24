@@ -314,7 +314,7 @@ namespace CK.StObj.Engine.Tests
                         {
                             class AutoImplementedAttribute : Attribute, IAutoImplementorMethod
                             {
-                                public bool Implement( IActivityLogger logger, System.Reflection.MethodInfo m, System.Reflection.Emit.TypeBuilder b, bool isVirtual )
+                                public bool Implement( IActivityLogger logger, System.Reflection.MethodInfo m, IDynamicAssembly a, System.Reflection.Emit.TypeBuilder b, bool isVirtual )
                                 {
                                     CK.Reflection.EmitHelper.ImplementEmptyStubMethod( b, m, isVirtual );
                                     return true;

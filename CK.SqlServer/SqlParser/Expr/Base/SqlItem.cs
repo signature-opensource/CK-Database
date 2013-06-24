@@ -39,6 +39,7 @@ namespace CK.SqlServer
 
         /// <summary>
         /// Overriden to generate the representation of an expression as the result of the <see cref="Write"/> method.
+        /// This includes the trivias.
         /// </summary>
         /// <returns>String representation.</returns>
         public override string ToString()
@@ -50,6 +51,7 @@ namespace CK.SqlServer
 
         /// <summary>
         /// Writing an expression is, by default, calling <see cref="SqlToken.Write"/> on each of its <see cref="Tokens"/>.
+        /// This includes the trivias.
         /// </summary>
         /// <param name="b">StringBuilder to write into.</param>
         public void Write( StringBuilder b )

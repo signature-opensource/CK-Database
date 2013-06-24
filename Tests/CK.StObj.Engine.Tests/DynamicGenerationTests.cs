@@ -8,6 +8,7 @@ using CK.Setup;
 using System.IO;
 using System.CodeDom.Compiler;
 using System.Reflection;
+using System.Collections;
 
 namespace CK.StObj.Engine.Tests
 {
@@ -20,7 +21,7 @@ namespace CK.StObj.Engine.Tests
 
             class AutoImplementedAttribute : Attribute, IAutoImplementorMethod
             {
-                public bool Implement( IActivityLogger logger, System.Reflection.MethodInfo m, System.Reflection.Emit.TypeBuilder b, bool isVirtual )
+                public bool Implement( IActivityLogger logger, System.Reflection.MethodInfo m, IDynamicAssembly dynamicAssembly, System.Reflection.Emit.TypeBuilder b, bool isVirtual )
                 {
                     CK.Reflection.EmitHelper.ImplementEmptyStubMethod( b, m, isVirtual );
                     return true;

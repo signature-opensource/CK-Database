@@ -92,6 +92,11 @@ namespace CK.SqlServer
 
         public SqlExprParameterDefaultValue DefaultValue { get { return Slots.Length > 1 ? Slots[1] as SqlExprParameterDefaultValue : null; } }
 
+        /// <summary>
+        /// Gets whether the parameter is a pure input parameter or an output one with a /*input*/ tag.
+        /// </summary>
+        public bool IsInput { get { return OutputToken == null || IsInputOutput; } }
+        
         public bool IsOutput { get { return OutputToken != null; } }
 
         public bool IsInputOutput 
@@ -125,6 +130,19 @@ namespace CK.SqlServer
         SqlTokenIdentifier LastTokenClause { get { return Slots.Length > 1 ? Slots[Slots.Length - 1] as SqlTokenIdentifier : null; } }
 
         SqlTokenIdentifier AnteLastTokenClause { get { return Slots.Length > 2 ? Slots[Slots.Length - 2] as SqlTokenIdentifier : null; } }
+
+        public string ToStringClean()
+        {
+            string s = Variable.ToStringClean();
+            if( DefaultValue != null ) s += " " + DefaultValue.Tokens.ToStringWithoutTrivias( " " );
+            if( IsOutput )
+            {
+                if( IsInputOutput ) s += " /*input*/output";
+                else s += " output";
+            }
+            if( IsReadOnly ) s += " readonly";
+            return s;
+        }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )

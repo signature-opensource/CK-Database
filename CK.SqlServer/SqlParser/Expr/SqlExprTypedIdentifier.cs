@@ -34,6 +34,13 @@ namespace CK.SqlServer
 
         public SqlExprTypeDecl TypeDecl { get { return (SqlExprTypeDecl)Slots[1]; } }
 
+        public string ToStringClean()
+        {
+            string s = Identifier.Name;
+            s += " " + TypeDecl.Tokens.ToStringWithoutTrivias( String.Empty );
+            return s;
+        }
+
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )
         {

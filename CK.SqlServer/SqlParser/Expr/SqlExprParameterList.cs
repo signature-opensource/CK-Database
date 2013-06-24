@@ -35,6 +35,15 @@ namespace CK.SqlServer
         {
         }
 
+        /// <summary>
+        /// Gets the comma separated parameter list without the trivias.
+        /// </summary>
+        /// <returns>A well formatted, clean, string.</returns>
+        public string ToStringClean()
+        {
+            return String.Join( ", ", this.Select( p => p.ToStringClean() ) );
+        }
+
         [DebuggerStepThrough]
         internal protected override T Accept<T>( IExprVisitor<T> visitor )
         {

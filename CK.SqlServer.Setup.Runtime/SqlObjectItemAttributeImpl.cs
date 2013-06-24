@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using CK.Core;
 using CK.Setup;
 
@@ -38,14 +39,22 @@ namespace CK.SqlServer.Setup
                 {
                     if( already.Add( nTrimmed ) )
                     {
-                        var protoObject = LoadProtoItemFromResource( state.Logger, packageItem, nTrimmed );
-                        if( protoObject != null )
+                        string[] names = BuildNames( packageItem.Object, nTrimmed );
+                        if( names == null )
                         {
-                            SqlObjectItem subItem = protoObject.CreateItem( state.Logger );
-                            if( subItem != null )
+                            state.Logger.Error( "Invalid object name '{0}' in SqlObjectItem attribute of '{1}'.", nTrimmed, item.FullName );
+                        }
+                        else
+                        {
+                            var protoObject = LoadProtoItemFromResource( state.Logger, packageItem, names );
+                            if( protoObject != null )
                             {
-                                if( !subItem.MissingDependencyIsError.HasValue ) subItem.MissingDependencyIsError = Attribute.MissingDependencyIsError;
-                                packageItem.Children.Add( subItem );
+                                SqlObjectItem subItem = protoObject.CreateItem( state.Logger );
+                                if( subItem != null )
+                                {
+                                    if( !subItem.MissingDependencyIsError.HasValue ) subItem.MissingDependencyIsError = Attribute.MissingDependencyIsError;
+                                    packageItem.Children.Add( subItem );
+                                }
                             }
                         }
                     }
@@ -54,39 +63,47 @@ namespace CK.SqlServer.Setup
             }
         }
 
-        static internal SqlObjectProtoItem LoadProtoItemFromResource( IActivityLogger logger, SqlPackageBaseItem packageItem, string objectName, string expectedItemType = null )
+        /// <summary>
+        /// Builds an array of object names [schema.name, schema, name].
+        /// </summary>
+        /// <param name="package">Sql package that declares the object.</param>
+        /// <param name="objectName">Object name. May contain a schema or not.</param>
+        /// <returns>The first one is always of the form 'schema.object'. It is the exact one. Null on invalid names.</returns>
+        static internal string[] BuildNames( SqlPackageBase package, string objectName )
         {
-            SqlPackageBase package = packageItem.Object;
             int schemaDot = objectName.IndexOf( '.' );
-            string externalSchema = package.Schema;
-            string fileName = objectName + ".sql";
+            if( schemaDot == 0 || schemaDot == objectName.Length-1 ) return null;
+            if( schemaDot > 0 )
+            {
+                return new[]{ 
+                    objectName, // schema.obj
+                    objectName.Substring( 0, schemaDot ), // schema
+                    objectName.Substring( schemaDot + 1 ) // obj 
+                }; 
+            }
+            else 
+            {
+                 return new[]{ 
+                     package.Schema + '.' + objectName, // schema.obj
+                     package.Schema, // schema
+                     objectName // obj 
+                 };
+            }
+        }
+
+        static internal SqlObjectProtoItem LoadProtoItemFromResource( IActivityLogger logger, SqlPackageBaseItem packageItem, string[] names, string expectedItemType = null )
+        {
+            string fileName = names[0] + ".sql";
             string text = packageItem.ResourceLocation.GetString( fileName, false );
             if( text == null )
             {
-                string failed = fileName;
-                // If the objectName does not contains a schema, tries the "packageSchema.objectName.sql".
-                if( schemaDot < 0 )
-                {
-                    fileName = externalSchema + '.' + fileName;
-                }
-                else
-                {
-                    // The objectName contains a schema: tries to find the resource without the schema prefix.
-                    externalSchema = objectName.Substring( 0, schemaDot );
-                    objectName = objectName.Substring( schemaDot + 1 );
-                    fileName = objectName + ".sql";
-                }
+                fileName = names[2] + ".sql";
                 text = packageItem.ResourceLocation.GetString( fileName, false );
-                if( text == null )
-                {
-                    logger.Error( "Resource '{0}' of '{3}' not found (tried '{1}' and '{2}').", objectName, fileName, failed, packageItem.FullName );
-                    return null;
-                }
             }
-            else if( schemaDot > 0 )
+            if( text == null )
             {
-                externalSchema = objectName.Substring( 0, schemaDot );
-                objectName = objectName.Substring( schemaDot + 1 );
+                logger.Error( "Resource '{0}' of '{1}' not found (tried '{2}' and '{3}').", names[0], packageItem.FullName , names[0] + ".sql", fileName );
+                return null;
             }
 
             SqlObjectProtoItem protoObject = SqlObjectParser.Create( logger, packageItem, text );
@@ -97,14 +114,14 @@ namespace CK.SqlServer.Setup
                     logger.Error( "Resource '{0}' of '{1}' is a '{2}' whereas a '{3}' is expected.", fileName, packageItem.FullName, protoObject.ItemType, expectedItemType );
                     protoObject = null;
                 }
-                else if( protoObject.ObjectName != objectName )
+                else if( protoObject.ObjectName != names[2] )
                 {
                     logger.Error( "Resource '{0}' of '{2}' contains the definition of '{1}'. Names must match.", fileName, protoObject.Name, packageItem.FullName );
                     protoObject = null;
                 }
-                else if( protoObject.Schema.Length > 0 && protoObject.Schema != externalSchema )
+                else if( protoObject.Schema.Length > 0 && protoObject.Schema != names[1] )
                 {
-                    logger.Error( "Resource '{0}' of '{4}' defines the {1} in the schema '{2}' instead of '{3}'.", fileName, protoObject.ItemType, protoObject.Schema, externalSchema, packageItem.FullName );
+                    logger.Error( "Resource '{0}' of '{4}' defines the {1} in the schema '{2}' instead of '{3}'.", fileName, protoObject.ItemType, protoObject.Schema, names[1], packageItem.FullName );
                     protoObject = null;
                 }
                 else logger.Trace( "Loaded {0} '{1}' of '{2}'.", protoObject.ItemType, protoObject.Name, packageItem.FullName );

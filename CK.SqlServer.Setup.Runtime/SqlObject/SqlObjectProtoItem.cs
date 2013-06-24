@@ -107,7 +107,7 @@ namespace CK.SqlServer.Setup
             MissingDependencyIsError = missingDependencyIsError;
         }
 
-        public SqlProcedureItem CreateProcedureItem( IActivityLogger logger, MethodInfo m )
+        public SqlProcedureItem CreateProcedureItem( IActivityLogger logger )
         {
             if( logger == null ) throw new ArgumentNullException( "logger" );
             if( ItemType != SqlObjectProtoItem.TypeProcedure ) throw new InvalidOperationException( "Not a procedure." );
@@ -116,7 +116,7 @@ namespace CK.SqlServer.Setup
                 SqlExprStStoredProc sp;
                 var error = SqlAnalyser.ParseStatement( out sp, FullOriginalText );
                 error.LogOnError( LogLevel.Error, logger );
-                return new SqlProcedureItem( this, sp, m );
+                return new SqlProcedureItem( this, sp );
             }
             catch( Exception ex )
             {
@@ -135,7 +135,7 @@ namespace CK.SqlServer.Setup
             SqlObjectItem result = null;
             if( ItemType == SqlObjectProtoItem.TypeProcedure )
             {
-                result = CreateProcedureItem( logger, null );
+                result = CreateProcedureItem( logger );
             }
             else if( ItemType == SqlObjectProtoItem.TypeView )
             {

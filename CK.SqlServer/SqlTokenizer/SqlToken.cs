@@ -78,7 +78,7 @@ namespace CK.SqlServer
         }
 
         /// <summary>
-        /// 
+        /// Writes the token without its leading nor traling trivias.
         /// </summary>
         /// <param name="b">The <see cref="StringBuilder"/> to write to.</param>
         public void WriteWithoutTrivias( StringBuilder b )
