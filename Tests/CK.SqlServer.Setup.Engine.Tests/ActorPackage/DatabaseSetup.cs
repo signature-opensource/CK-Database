@@ -10,21 +10,28 @@ using System.Data.SqlClient;
 namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 {
     [TestFixture]
+    [Category( "DBSetup" )]
     public class DatabaseSetup
     {
         [Test]
-        public void InstallBasic()
+        public void InstallActorBasicFromScracth()
         {
-            InstallDropAndReverseInstall( t => t.Namespace.StartsWith( "SqlActorPackage.Basic" ), "InstallDropAndReverseInstall" );
+            InstallDropAndReverseInstall( true, t => t.Namespace.StartsWith( "SqlActorPackage.Basic" ), "InstallDropAndReverseInstall" );
         }
 
         [Test]
-        public void InstallZone()
+        public void InstallActorBasic()
         {
-            InstallDropAndReverseInstall( null, "InstallDropAndReverseInstall.WithZone" );
+            InstallDropAndReverseInstall( false, t => t.Namespace.StartsWith( "SqlActorPackage.Basic" ), "InstallDropAndReverseInstall" );
         }
 
-        private static void InstallDropAndReverseInstall( Predicate<Type> typeFilter, string dllName )
+        [Test]
+        public void InstallActorWithZone()
+        {
+            InstallDropAndReverseInstall( false, null, "InstallDropAndReverseInstall.WithZone" );
+        }
+
+        private static void InstallDropAndReverseInstall( bool resetFirst, Predicate<Type> typeFilter, string dllName )
         {
             var config = new SqlSetupCenterConfiguration();
             config.SetupConfiguration.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.Add( "SqlActorPackage" );
@@ -35,6 +42,11 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
             using( var db = SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.Logger ) )
             {
+                if( resetFirst )
+                {
+                    db.SchemaDropAllObjects( "CK", true );
+                    db.SchemaDropAllObjects( "CKCore", false );
+                }
                 using( var c = new SqlSetupCenter( TestHelper.Logger, config, db ) )
                 {
                     //c.StObjDependencySorterHookInput = TestHelper.Trace;

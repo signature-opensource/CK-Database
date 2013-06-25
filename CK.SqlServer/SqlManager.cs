@@ -670,21 +670,35 @@ namespace CK.SqlServer
                 {
                     try
                     {
-                        if( _databaseName != null && _databaseName != _manager.DatabaseName )
-                        {
-                            if( _logger != null ) _logger.Info( "Current database automatically restored from {0} to {1}.", _manager.DatabaseName, _databaseName );
-                            _command.Connection.ChangeDatabase( _databaseName );
-                        }
                         if( _tranCount >= 0 )
                         {
                             int tranCountAfter = (int)_manager.Connection.ExecuteScalar( "select @@TranCount" );
                             if( _tranCount != tranCountAfter )
                             {
                                 string msg = String.Format( "Transaction count differ: {0} before, {1} after.", _tranCount, tranCountAfter );
+                                int nbRollbak = tranCountAfter - _tranCount;
+                                if( _tranCount == 0 && nbRollbak > 0 )
+                                {
+                                    msg += " Attempting rollbak: ";
+                                    try
+                                    {
+                                        _manager.Connection.ExecuteNonQuery( "rollback" );
+                                        msg += "Succeed.";
+                                    }
+                                    catch( Exception ex )
+                                    {
+                                        msg += "Failed -> " + ex.Message;
+                                    }
+                                }
                                 if( _logger != null ) _logger.Error( msg );
                                 else if( LastSucceed ) throw new Exception( msg );
                             }
                         }                       
+                        if( _databaseName != null && _databaseName != _manager.DatabaseName )
+                        {
+                            if( _logger != null ) _logger.Info( "Current database automatically restored from {0} to {1}.", _manager.DatabaseName, _databaseName );
+                            _command.Connection.ChangeDatabase( _databaseName );
+                        }
                     }
                     catch( Exception ex )
                     {
