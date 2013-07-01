@@ -56,6 +56,9 @@ namespace CK.SqlServer
 
         public SqlTokenIdentifier ObjectType { get { return (SqlTokenIdentifier)Slots[1]; } }
 
+        /// <summary>
+        /// Gets the name of the procedure (may start with the Schema).
+        /// </summary>
         public SqlExprMultiIdentifier Name { get { return (SqlExprMultiIdentifier)Slots[2]; } }
 
         public SqlExprParameterList Parameters { get { return (SqlExprParameterList)Slots[3]; } }

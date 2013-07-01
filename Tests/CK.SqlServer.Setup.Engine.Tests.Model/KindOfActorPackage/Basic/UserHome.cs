@@ -14,5 +14,11 @@ namespace SqlActorPackage.Basic
         [SqlProcedure( "sUserCreate" )]
         public abstract SqlCommand CmdCreate( string userName, out int userIdResult );
 
+        [SqlProcedure( "sUserExists" )]
+        public abstract void CmdExists( ref SqlCommand cmdExists, string userName, out bool existsResult );
+
+        [SqlProcedure( "sUserExists2" )]
+        public abstract void CmdExists2( ref SqlCommand cmdExists, int userPart1, int userPart2, out bool existsResult );
+
     }
 }

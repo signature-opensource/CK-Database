@@ -97,8 +97,14 @@ namespace CK.SqlServer
         /// </summary>
         public bool IsInput { get { return OutputToken == null || IsInputOutput; } }
         
+        /// <summary>
+        /// Gets whether the parameter is output. It can be /*input*/output (see <see cref="IsInputOutput"/>).
+        /// </summary>
         public bool IsOutput { get { return OutputToken != null; } }
 
+        /// <summary>
+        /// Gets whether the parameter is input and output (by ref). <see cref="IsOutput"/> is true: the parameter uses the '/*input*/output' syntax.
+        /// </summary>
         public bool IsInputOutput 
         { 
             get 

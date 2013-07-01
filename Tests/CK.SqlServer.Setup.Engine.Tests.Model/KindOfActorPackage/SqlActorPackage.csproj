@@ -37,9 +37,9 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CK.Core, Version=2.8.11.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+    <Reference Include="CK.Core, Version=2.8.14.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\CK.Core.2.8.11\lib\net45\CK.Core.dll</HintPath>
+      <HintPath>..\..\..\packages\CK.Core.2.8.14\lib\net45\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -93,7 +93,16 @@
     <EmbeddedResource Include="Basic\Res\sGroupCreate.sql" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Basic\Res\sUserExists.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Basic\Res\sUserExists2.sql" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Basic\Res\sActorGuidRefTest.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />

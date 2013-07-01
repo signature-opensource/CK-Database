@@ -8,6 +8,7 @@ using System.Reflection.Emit;
 using CK.Core;
 using CK.Reflection;
 using System.Linq;
+using System.Text;
 
 namespace CK.SqlServer.Setup
 {
@@ -15,16 +16,22 @@ namespace CK.SqlServer.Setup
     {
 
 
-        private bool GenerateCreateSqlCommand( bool createOrSetValues, IActivityLogger logger, MethodInfo createCommand, SqlExprParameterList sqlParameters, MethodInfo m, ParameterInfo[] mParameters, TypeBuilder tB, bool isVirtual )
+        private bool GenerateCreateSqlCommand( bool createOrSetValues, IActivityLogger logger, MethodInfo createCommand, SqlExprMultiIdentifier sqlName, SqlExprParameterList sqlParameters, MethodInfo m, ParameterInfo[] mParameters, TypeBuilder tB, bool isVirtual )
         {
             MethodAttributes mA = m.Attributes & ~(MethodAttributes.Abstract | MethodAttributes.VtableLayoutMask);
             if( isVirtual ) mA |= MethodAttributes.Virtual;
             MethodBuilder mB = tB.DefineMethod( m.Name, mA, m.ReturnType, ReflectionHelper.CreateParametersType( mParameters ) );
             ILGenerator g = mB.GetILGenerator();
-
+            // Start by initializing out parameters to their Type's defalut value.
+            for( int iM = createOrSetValues ? 1 : 0; iM < mParameters.Length; ++iM )
+            {
+                ParameterInfo mP = mParameters[iM];
+                if( mP.IsOut ) g.StoreDefaultValueForOutParameter( mP );
+            }
             LocalBuilder locCmd = g.DeclareLocal( SqlObjectItem.TypeCommand );
             LocalBuilder locParams = g.DeclareLocal( SqlObjectItem.TypeParameterCollection );
             LocalBuilder locOneParam = g.DeclareLocal( SqlObjectItem.TypeParameter );
+            LocalBuilder tempObjToSet = g.DeclareLocal( typeof(object) );
 
             Label setValues = g.DefineLabel();
             if( createOrSetValues )
@@ -51,6 +58,8 @@ namespace CK.SqlServer.Setup
             g.Emit( OpCodes.Callvirt, SqlObjectItem.MCommandGetParameters );
             g.StLoc( locParams );
 
+            // We are in the Create command part.
+            // Analyses parameters and generate removing of optional parameters if C# does not use them.
             int nbError = 0;
             Debug.Assert( mParameters.Length - 1 <= sqlParameters.Count );
             var notFound = new List<SqlExprParameter>( sqlParameters );
@@ -82,16 +91,10 @@ namespace CK.SqlServer.Setup
                         valuesToSetParam.Add( mP );
                         valuesToSetSqlIndex.Add( iSFound );
                     }
-                    // Sets a default value on the output parameter.
-                    if( mP.IsOut )  g.StoreDefaultValueForOutParameter( mP );
                     iS = iSFound + 1;
                 }
             }
-            if( nbError != 0 )
-            {
-                logger.Error( "Stored procedure parameters are: {0}", sqlParameters.ToStringClean() );
-            }
-            else
+            if( nbError == 0 )
             {
                 // If there are sql parameters not covered, then they MUST
                 // have a default value or be purely output.
@@ -128,15 +131,46 @@ namespace CK.SqlServer.Setup
                     }
                 }
             }
+            if( nbError != 0 )
+            {
+                StringBuilder b = new StringBuilder();
+                b.Append( "Method '" ).Append( m.DeclaringType.Name ).Append( '.' ).Append( m.Name ).Append( "': " );
+                bool atLeastOne = false;
+                for( int iM = createOrSetValues ? 1 : 0; iM < mParameters.Length; ++iM )
+                {
+                    if( atLeastOne ) b.Append( ", " );
+                    else atLeastOne = true;
+                    ParameterInfo mP = mParameters[iM];
+                    if( mP.ParameterType.IsByRef )
+                    {
+                        b.Append( mP.IsOut ? "out " : "ref " ).Append( mP.ParameterType.GetElementType().Name );
+                    }
+                    else b.Append( mP.ParameterType.Name );
+                    b.Append( ' ' ).Append( mP.Name );
+                }
+                b.Append( Environment.NewLine );
+                b.Append( "Procedure '" );
+                sqlName.Tokens.WriteTokensWithoutTrivias( String.Empty, b );
+                b.Append( "': " ).Append( sqlParameters.ToStringClean() );
+                logger.Filter = LogLevelFilter.Info;
+                logger.Info( b.ToString() );
+            }
+            // Entering the SetValues part.
+            if( createOrSetValues ) g.MarkLabel( setValues );
             if( valuesToSetParam != null )
             {
-                g.MarkLabel( setValues );
                 for( int i = 0; i < valuesToSetParam.Count; ++i )
                 {
                     g.LdLoc( locParams );
                     g.LdInt32( valuesToSetSqlIndex[i] );
                     g.Emit( OpCodes.Callvirt, SqlObjectItem.MParameterCollectionGetParameter );
+                    Label notNull = g.DefineLabel();
                     g.LdArgBox( valuesToSetParam[i] );
+                    g.Emit( OpCodes.Dup );
+                    g.Emit( OpCodes.Brtrue_S, notNull );
+                    g.Emit( OpCodes.Pop );
+                    g.Emit( OpCodes.Ldsfld, SqlObjectItem.FieldDBNullValue );
+                    g.MarkLabel( notNull );
                     g.Emit( OpCodes.Callvirt, SqlObjectItem.MParameterSetValue );
                 }
             }
@@ -163,7 +197,55 @@ namespace CK.SqlServer.Setup
 
         bool CheckParameter( ParameterInfo mP, SqlExprParameter p, IActivityLogger logger )
         {
-            return true;
+            int nbError = CheckParameterDirection( mP, p, logger );
+            //TODO: Check .Net type against: p.Variable.TypeDecl.ActualType.DbType 
+            return nbError == 0;
+        }
+
+        private static int CheckParameterDirection( ParameterInfo mP, SqlExprParameter p, IActivityLogger logger )
+        {
+            int nbError = 0;
+            bool sqlIsInputOutput = p.IsInputOutput;
+            bool sqlIsOutput = sqlIsInputOutput || p.IsOutput;
+            bool sqlIsInput = sqlIsInputOutput || p.IsInput;
+            Debug.Assert( sqlIsInput || sqlIsOutput );
+            if( mP.ParameterType.IsByRef )
+            {
+                if( mP.IsOut )
+                {
+                    if( sqlIsInputOutput )
+                    {
+                        logger.Error( "Sql parameter '{0}' is an /*input*/output parameter. The method '{1}' must use 'ref' for it (not 'out').", p.Variable.Identifier.Name, mP.Member.Name );
+                        ++nbError;
+                    }
+                    else if( sqlIsInput )
+                    {
+                        Debug.Assert( !sqlIsOutput );
+                        logger.Error( "Sql parameter '{0}' is an input parameter. The method '{1}' can not use 'out' for it (and 'ref' modifier will be useless).", p.Variable.Identifier.Name, mP.Member.Name );
+                        ++nbError;
+                    }
+                }
+                else
+                {
+                    if( !sqlIsOutput )
+                    {
+                        logger.Warn( "Sql parameter '{0}' is not an output parameter. The method '{1}' uses 'ref' for it that is useless.", p.Variable.Identifier.Name, mP.Member.Name );
+                    }
+                }
+            }
+            else
+            {
+                if( sqlIsInputOutput )
+                {
+                    logger.Warn( "Sql parameter '{0}' is an /*input*/output parameter. The method '{1}' should use 'ref' to retreive the new value after the call.", p.Variable.Identifier.Name, mP.Member.Name );
+                }
+                else if( sqlIsOutput )
+                {
+                    logger.Error( "Sql parameter '{0}' is an output parameter. The method '{1}' must use 'out' for the parameter (you can also simply remove the method's parameter the output value can be ignored).", p.Variable.Identifier.Name, mP.Member.Name );
+                    ++nbError;
+                }
+            }
+            return nbError;
         }
 
     }

@@ -115,7 +115,7 @@ namespace CK.Setup
         public SetupEngine( IVersionedItemRepository versionRepository, ISetupSessionMemory memory, IActivityLogger logger, ISetupDriverFactory driverFactory )
         {
             if( versionRepository == null ) throw new ArgumentNullException( "versionRepository" );
-            if( logger == null ) throw new ArgumentNullException( "_logger" );
+            if( logger == null ) throw new ArgumentNullException( "logger" );
             if( memory == null ) throw new ArgumentNullException( "memory" );
             _versionRepository = versionRepository;
             _memory = memory;

@@ -6,6 +6,7 @@ using NUnit.Framework;
 using CK.Core;
 using CK.SqlServer;
 using System.Data.SqlClient;
+using System.Data;
 
 namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 {
@@ -84,8 +85,20 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             {
                 Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tActor where ActorId <= 1" ), Is.EqualTo( 2 ) );
                 Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tGroup where GroupName = 'Public'" ), Is.EqualTo( 1 ) );
-                CallCreateUser( c, map );
+                Assert.That( CallExistsUser( c, map, Guid.NewGuid().ToString() ), Is.False );
+                
+                int idUInt = CallCreateUser( c, map, "1020" );
+                bool result =  CallExistsUser2( c, map, 10, 20 );
+                Assert.That( result, Is.True );
+                Assert.That( CallExistsUser2( c, map, 10, 25 ), Is.False );
+
+                int idAlbert = CallCreateUser( c, map, "Albert" );
+                Assert.That( CallExistsUser( c, map, "Albert" ), Is.True );
                 CallCreateGroupBasic( c, map, "BasicGroup" );
+
+                Guid? inAndOut = Guid.NewGuid();
+                Assert.That( CallGuidRefTest( c, map, null, ref inAndOut, manualImplementation:false ), Is.EqualTo( "@InOnly is null, @InAndOut is not null." ) );
+                Assert.That( inAndOut, Is.Null );
             }
         }
 
@@ -95,18 +108,103 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             {
                 Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tActor where ActorId <= 1" ), Is.EqualTo( 2 ) );
                 Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tSecurityZone where SecurityZoneId <= 1" ), Is.EqualTo( 2 ) );
-                CallCreateUser( c, map );
+                CallCreateUser( c, map, Guid.NewGuid().ToString() );
                 CallCreateGroupZone( c, map, 0, "ZoneGroupIn0" );
                 CallCreateGroupZone( c, map, 1, "ZoneGroupIn1" );
                 CallDemoCreateGroup( c, map, "DemoCreate" );
             }
         }
 
-        static int CallCreateUser( SqlManager c, IStObjMap map )
+        static string CallGuidRefTest( SqlManager c, IStObjMap map, Guid? inOnly, ref Guid? inAndOut, bool manualImplementation = false )
+        {
+            var actorHome = map.Default.Obtain<SqlActorPackage.Basic.ActorHome>();
+            string text;
+            SqlCommand cmd = null;
+            if( manualImplementation )
+            {
+                actorHome.ManualCmdGuidRefTest( ref cmd, inOnly, ref inAndOut, out text );
+            }
+            else
+            {
+                actorHome.CmdGuidRefTest( ref cmd, inOnly, ref inAndOut, out text );
+            }
+            c.Connection.ExecuteNonQuery( cmd );
+            
+            object o = cmd.Parameters["@InAndOut"].Value;
+            inAndOut = o == DBNull.Value ? null : (Guid?)o;
+            
+            text = (string)cmd.Parameters["@TextResult"].Value;
+            cmd.Dispose();
+            return text;
+        }
+
+        static bool CallExistsUser( SqlManager c, IStObjMap map, string name )
+        {
+            var userHome = map.Default.Obtain<SqlActorPackage.Basic.UserHome>();
+            bool exists;
+            SqlCommand cmd = null;
+            userHome.CmdExists( ref cmd, name, out exists );
+            c.Connection.ExecuteNonQuery( cmd );
+            exists = (bool)cmd.Parameters["@ExistsResult"].Value;
+            cmd.Dispose();
+            return exists;
+        }
+
+        static bool CallExistsUser2( SqlManager c, IStObjMap map, int userPart1, int userPart2 )
+        {
+            var userHome = map.Default.Obtain<SqlActorPackage.Basic.UserHome>();
+            bool exists = true;
+            SqlCommand cmd = null;
+            //CmdExists2( ref cmd, userPart1, userPart2, out exists );
+            userHome.CmdExists2( ref cmd, userPart1, userPart2, out exists );
+            c.Connection.ExecuteNonQuery( cmd );
+            exists = (bool)cmd.Parameters["@ExistsResult"].Value;
+            cmd.Dispose();
+            return exists;
+        }
+
+        static void CmdExists2(ref SqlCommand commandRef1, int num1, int num2, out bool flagRef1)
+        {
+            SqlParameterCollection parameters;
+            SqlCommand command = commandRef1;
+            if (command != null)
+            {
+                parameters = command.Parameters;
+                flagRef1 = new bool();
+            }
+            else
+            {
+                parameters = (command = dbCKsUserExists2()).Parameters;
+                flagRef1 = new bool();
+            }
+            parameters[0].Value = num1;
+            parameters[1].Value = num2;
+            parameters[2].Value = (bool) flagRef1;
+            commandRef1 = command;
+        }
+
+
+        internal static SqlCommand dbCKsUserExists2()
+        {
+            SqlCommand command = new SqlCommand("CK.sUserExists2") {
+                CommandType = System.Data.CommandType.StoredProcedure
+            };
+            SqlParameterCollection parameters = command.Parameters;
+            SqlParameter parameter = new SqlParameter("@UserPart1", SqlDbType.Int);
+            parameters.Add(parameter);
+            parameter = new SqlParameter("@UserPart2", SqlDbType.Int);
+            parameters.Add(parameter);
+            parameter = new SqlParameter("@ExistsResult", SqlDbType.Bit);
+            parameters.Add(parameter);
+            return command;
+        }
+
+
+        static int CallCreateUser( SqlManager c, IStObjMap map, string name )
         {
             var userHome = map.Default.Obtain<SqlActorPackage.Basic.UserHome>();
             int userId;
-            using( SqlCommand cmd = userHome.CmdCreate( Guid.NewGuid().ToString(), out userId ) )
+            using( SqlCommand cmd = userHome.CmdCreate( name, out userId ) )
             {
                 c.Connection.ExecuteNonQuery( cmd );
                 userId = (int)cmd.Parameters["@UserIdResult"].Value;

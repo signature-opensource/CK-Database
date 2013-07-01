@@ -141,7 +141,7 @@ namespace CK.SqlServer.Setup
                     logger.Error( "Method '{0}.{1}' has more parameters than '{2}'.", m.DeclaringType.FullName, m.Name, item.FullName );
                     return false;
                 }
-                return GenerateCreateSqlCommand( createOrSetValues, logger, mCreateCommand, sqlParameters, m, mParameters, tB, isVirtual );
+                return GenerateCreateSqlCommand( createOrSetValues, logger, mCreateCommand, item.OriginalStatement.Name, sqlParameters, m, mParameters, tB, isVirtual );
             }
         }
 

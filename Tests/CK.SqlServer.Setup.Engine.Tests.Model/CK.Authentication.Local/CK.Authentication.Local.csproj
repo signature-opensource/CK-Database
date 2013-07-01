@@ -50,20 +50,9 @@
     <EmbeddedResource Include="Res\Model.CK.UserHome-Local.Install.2.12.10.sql" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="Properties\CK.Authentication.Local.nuspec" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="CK.Authentication">
-      <HintPath>..\..\..\packages\CK.Authentication.1.1.4.1\lib\net40\CK.Authentication.dll</HintPath>
-    </Reference>
-    <Reference Include="CK.Authentication.Web">
-      <HintPath>..\..\..\packages\CK.Authentication.Web.1.1.4.1\lib\net40\CK.Authentication.Web.dll</HintPath>
-    </Reference>
-    <Reference Include="CK.Core, Version=2.8.11.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\CK.Core.2.8.11\lib\net45\CK.Core.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
