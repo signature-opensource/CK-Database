@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Data;
 using System.Data.SqlClient;
@@ -8,8 +8,8 @@ using System.Xml;
 namespace CK.SqlServer
 {
     /// <summary>
-    /// Offers methods such as <see cref="ExecuteNonQuery"/> and <see cref="ExecuteScalar"/>
-    /// that safely reuse one connection instead of creating new ones.
+    /// Offers methods such as ExecuteNonQuery and ExecuteScalar that safely reuse 
+    /// one connection instead of creating new ones.
     /// </summary>
     public class SqlConnectionProvider : IDisposable
     {

@@ -1,0 +1,36 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace CK.Setup
+{
+    /// <summary>
+    /// Defines the <see cref="IStObjMutableReference.StObjRequirementBehavior"/> values.
+    /// </summary>
+    public enum StObjRequirementBehavior
+    {
+        /// <summary>
+        /// The reference is not necessarily an existing <see cref="IAmbientContract"/> (a <see cref="IStObjRuntime"/>).
+        /// if an existing IStObj can not be found, the <see cref="IStObjValueResolver"/> is automatically sollicited.
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// A warn is emitted if the reference is not a <see cref="IStObjRuntime"/>, and the <see cref="IStObjValueResolver"/>
+        /// is sollicited.
+        /// </summary>
+        WarnIfNotStObj,
+
+        /// <summary>
+        /// The reference must be an existing <see cref="IAmbientContract"/> (a <see cref="IStObjRuntime"/>).
+        /// </summary>
+        ErrorIfNotStObj,
+
+        /// <summary>
+        /// The reference must be satisfied only by <see cref="IStObjValueResolver"/>. 
+        /// Any existing <see cref="IAmbientContract"/> (a <see cref="IStObjRuntime"/>) that could do the job are ignored.
+        /// </summary>
+        ExternalReference
+    }
+}

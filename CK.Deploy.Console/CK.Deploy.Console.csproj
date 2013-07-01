@@ -10,8 +10,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CK.Deploy.Console</RootNamespace>
     <AssemblyName>CK.Deploy.Console</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
@@ -25,6 +26,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -34,18 +36,15 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CK.Core">
-      <HintPath>..\packages\CK.Core.2.7.42\lib\net40\CK.Core.dll</HintPath>
+    <Reference Include="CK.Core, Version=2.8.14.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\CK.Core.2.8.14\lib\net45\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedAssemblyInfo.cs">
@@ -57,31 +56,38 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
     <None Include="SampledbSetup.bat" />
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CK.Setup.Database\CK.Setup.Database.csproj">
-      <Project>{571795B1-F1EC-4EDF-9F17-01945ADE0535}</Project>
-      <Name>CK.Setup.Database</Name>
+    <ProjectReference Include="..\CK.Setupable.Model\CK.Setupable.Model.csproj">
+      <Project>{64DA8104-2C71-4D52-8F44-D34738F6D564}</Project>
+      <Name>CK.Setupable.Model</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CK.Setup.SqlServer\CK.Setup.SqlServer.csproj">
+    <ProjectReference Include="..\CK.SqlServer.Setup.Engine\CK.SqlServer.Setup.Engine.csproj">
       <Project>{9A0BCE15-00EF-411B-8283-68AED047FCE5}</Project>
-      <Name>CK.Setup.SqlServer</Name>
+      <Name>CK.SqlServer.Setup.Engine</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CK.Setup.StObj\CK.Setup.StObj.csproj">
+    <ProjectReference Include="..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj">
+      <Project>{B64D3D2A-FD2B-4731-8559-8A52C3A45351}</Project>
+      <Name>CK.SqlServer.Setup.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CK.StObj.Engine\CK.StObj.Engine.csproj">
       <Project>{DF7A0B05-4B48-44C2-B6C8-6FCFD66DF8F8}</Project>
-      <Name>CK.Setup.StObj</Name>
+      <Name>CK.StObj.Engine</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CK.Setup\CK.Setup.csproj">
+    <ProjectReference Include="..\CK.Setupable.Engine\CK.Setupable.Engine.csproj">
       <Project>{D3C700E1-3546-437C-9B96-1F867A539B6A}</Project>
-      <Name>CK.Setup</Name>
+      <Name>CK.Setupable.Engine</Name>
     </ProjectReference>
     <ProjectReference Include="..\CK.SqlServer\CK.SqlServer.csproj">
       <Project>{95912A3B-758E-474B-AF34-BE24C4E3BF56}</Project>
       <Name>CK.SqlServer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CK.StObj.Model\CK.StObj.Model.csproj">
+      <Project>{96DEDEEE-DE7D-4B14-8FDE-BC4D8D9CCB78}</Project>
+      <Name>CK.StObj.Model</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

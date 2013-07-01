@@ -1,0 +1,135 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{DF7A0B05-4B48-44C2-B6C8-6FCFD66DF8F8}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>CK.Setup</RootNamespace>
+    <AssemblyName>CK.StObj.Engine</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\CK.StObj.Engine.xml</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="CK.Core, Version=2.8.14.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\CK.Core.2.8.14\lib\net45\CK.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="CK.Reflection, Version=2.8.14.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\CK.Reflection.2.8.14\lib\net45\CK.Reflection.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="AmbientContract\AmbientTypeInfo.cs" />
+    <Compile Include="AmbientContract\Collector\AmbientContractCollector.cs" />
+    <Compile Include="AmbientContract\Collector\AmbientContractCollectorContextualResult.cs" />
+    <Compile Include="AmbientContract\AmbientContextualAttributesCache.cs" />
+    <Compile Include="AmbientContract\AmbientContractInterfaceKey.cs" />
+    <Compile Include="AmbientContract\AmbientContextualTypeMap.cs" />
+    <Compile Include="AmbientContract\AmbientTypeMap.cs" />
+    <Compile Include="AmbientContract\AmbientContextualTypeInfo.cs" />
+    <Compile Include="AmbientContract\Collector\IContextualResult.cs" />
+    <Compile Include="AmbientContract\Collector\AmbientContractCollectorResult.cs" />
+    <Compile Include="AmbientContract\Collector\MultiContextualResult.cs" />
+    <Compile Include="AssemblyRegisterer.cs" />
+    <Compile Include="AutoImplementor\DynamicAssembly.cs" />
+    <Compile Include="AutoImplementor\ImplementableAbstractMethodInfo.cs" />
+    <Compile Include="AutoImplementor\ImplementableAbstractPropertyInfo.cs" />
+    <Compile Include="AutoImplementor\ImplementableTypeInfo.cs" />
+    <Compile Include="BasicStObjBuilder.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StObj\IContextualStObjMapRuntime.cs" />
+    <Compile Include="StObj\Impl\Builder\BuildValueCollector.cs" />
+    <Compile Include="StObj\Impl\Builder\RawOutStream.cs" />
+    <Compile Include="StObj\Impl\MutableItem.Construct.cs" />
+    <Compile Include="StObj\StObjCollectorResult.FinalAssembly.cs" />
+    <Compile Include="StObj\Impl\MutableItem.StructuredObject.cs" />
+    <Compile Include="StObj\Impl\TypeInfo\AmbientPropertyInfo.cs" />
+    <Compile Include="StObj\Impl\TypeInfo\AmbientContractInfo.cs" />
+    <Compile Include="StObj\Impl\MutableAmbientContract.cs" />
+    <Compile Include="StObj\Impl\MutableReferenceOptional.cs" />
+    <Compile Include="StObj\Impl\TypeInfo\AttributesReader.cs" />
+    <Compile Include="StObj\Impl\TypeInfo\CovariantPropertyInfo.cs" />
+    <Compile Include="StObj\Impl\TypeInfo\INamedPropertyInfo.cs" />
+    <Compile Include="StObj\Impl\TypeInfo\IStObjTypeInfoFromParent.cs" />
+    <Compile Include="StObj\Impl\TypeInfo\StObjContextTypeInfo.cs" />
+    <Compile Include="StObj\Impl\MutableItem.AmbientPropertiesOrContracts.cs" />
+    <Compile Include="StObj\Impl\MutableItem.StObjProperties.cs" />
+    <Compile Include="StObj\Impl\MutableReferenceList.cs" />
+    <Compile Include="StObj\Impl\TypeInfo\StObjPropertyInfo.cs" />
+    <Compile Include="StObj\Impl\TrackedAmbientPropertyInfo.cs" />
+    <Compile Include="StObj\Impl\MutableReferenceWithValue.cs" />
+    <Compile Include="StObj\Impl\TypeInfo\AmbientPropertyOrContractInfo.cs" />
+    <Compile Include="StObj\Impl\MutableAmbientProperty.cs" />
+    <Compile Include="StObj\Impl\TypeInfo\StObjTypeInfo.cs" />
+    <Compile Include="StObj\Impl\StObjMapper.cs" />
+    <Compile Include="StObj\Impl\StObjContextualMapper.cs" />
+    <Compile Include="StObj\Impl\MutableReference.cs" />
+    <Compile Include="StObj\Impl\MutableParameter.cs" />
+    <Compile Include="StObj\StObjCollectorResult.cs" />
+    <Compile Include="StObj\StObjCollector.cs" />
+    <Compile Include="StObj\Impl\MutableItem.cs" />
+    <Compile Include="StObj\StObjCollectorContextualResult.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">
+      <Project>{87F54185-5226-4EEE-8D59-5D03E6C1AB7C}</Project>
+      <Name>CK.Setup.Dependency</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CK.StObj.Model\CK.StObj.Model.csproj">
+      <Project>{96DEDEEE-DE7D-4B14-8FDE-BC4D8D9CCB78}</Project>
+      <Name>CK.StObj.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CK.StObj.Runtime\CK.StObj.Runtime.csproj">
+      <Project>{DB108FF8-42A4-4787-92C2-2D5A4DAAB85E}</Project>
+      <Name>CK.StObj.Runtime</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="AutoImplementor\DynamicKeyPair.snk" />
+    <None Include="packages.config" />
+    <None Include="StObj\ExternalView.cd" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

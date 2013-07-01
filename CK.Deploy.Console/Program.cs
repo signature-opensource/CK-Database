@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using CK.Core;
-using CK.Setup;
-using CK.Setup.SqlServer;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
-using System.Diagnostics;
+using CK.Core;
+using CK.SqlServer.Setup;
 
 namespace CK.Deploy.Console
 {
@@ -32,6 +28,8 @@ namespace CK.Deploy.Console
             output.WriteLine( "<connectionString>\t\t Connection String" );
         }
 
+        static Semaphore _semaphore;
+
         static void Main(string[] args)
         {
             if( args.Contains( "/?" ) )
@@ -47,10 +45,12 @@ namespace CK.Deploy.Console
                 if( analyzer.IsV2 )
                 {
                     AppDomain app = PrepareAppDomain( analyzer.V2Args );
-                    Semaphore semaphore = new Semaphore( 0, 1, "MySemaphore" );
-                    app.SetData( "MainArgs", analyzer.V2Args );
-                    app.DoCallBack( new CrossAppDomainDelegate( RunV2 ) );
-                    semaphore.WaitOne();
+                    using( _semaphore = new Semaphore( 0, 1 ) )
+                    {
+                        app.SetData( "MainArgs", analyzer.V2Args );
+                        app.DoCallBack( new CrossAppDomainDelegate( RunV2 ) );
+                        _semaphore.WaitOne();
+                    }
                 }
                 else
                 {
@@ -99,24 +99,24 @@ namespace CK.Deploy.Console
         public static void RunV1( V1Args args )
         {
             var console = new ActivityLoggerConsoleSink();
-            var logger = DefaultActivityLogger.Create().Register( console );
+            IDefaultActivityLogger logger = new DefaultActivityLogger( true );
+            logger.Tap.Register( console );
 
             using( logger.OpenGroup( LogLevel.Info, "Begin dbSetup with:" ) )
             {
                 logger.Info( string.Format( "FilePath: {0}", args.FilePath ) );
                 logger.Info( "ConnectionString: " + args.ConnectionString );
             }
+            
+            var config = new SqlSetupCenterConfiguration();
+            config.DefaultDatabaseConnectionString = args.ConnectionString;
+            config.SetupConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
+            config.FilePackageDirectories.Add( args.FilePath );
+            config.SqlFileDirectories.Add( args.FilePath );
 
-            using( var context = new SqlSetupContext( args.ConnectionString, logger ) )
+            using( SqlSetupCenter c = new SqlSetupCenter( logger, config ) )
             {
-                //if( !context.DefaultSqlDatabase.IsOpen() ) context.DefaultSqlDatabase.Open( context.DefaultSqlDatabase.Server );
-                using( context.Logger.OpenGroup( LogLevel.Trace, "First setup" ) )
-                {
-                    SqlSetupCenter c = new SqlSetupCenter( context );
-                    c.DiscoverFilePackages( args.FilePath );
-                    c.DiscoverSqlFiles( args.FilePath );
-                    c.Run();
-                }
+                c.Run();
             }
         }
 
@@ -127,8 +127,8 @@ namespace CK.Deploy.Console
                 V2Args args = (V2Args)AppDomain.CurrentDomain.GetData( "MainArgs" );
 
                 var console = new ActivityLoggerConsoleSink();
-                var logger = DefaultActivityLogger.Create().Register( console );
-
+                IDefaultActivityLogger logger = new DefaultActivityLogger( true );
+                logger.Tap.Register( console );
 
                 using( logger.OpenGroup( LogLevel.Info, "Begin dbSetup with:" ) )
                 {
@@ -139,25 +139,21 @@ namespace CK.Deploy.Console
                     logger.Info( "ConnectionString: " + args.ConnectionString );
                 }
 
-                using( var context = new SqlSetupContext( args.ConnectionString, logger ) )
+                var config = new SqlSetupCenterConfiguration();
+                config.DefaultDatabaseConnectionString = args.ConnectionString;
+                config.SetupConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
+                var rootedPaths = args.RelativeFilePaths.Select( p => Path.Combine( args.AbsoluteRootPath, p ) );
+                config.FilePackageDirectories.AddRange( rootedPaths );
+                config.SqlFileDirectories.AddRange( rootedPaths );
+                config.SetupConfiguration.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.AddRange( args.AssemblyNames );
+                using( SqlSetupCenter c = new SqlSetupCenter( logger, config ) )
                 {
-                    //if( !context.DefaultSqlDatabase.IsOpen() ) context.DefaultSqlDatabase.Open( context.DefaultSqlDatabase.Server );
-                    using( context.Logger.OpenGroup( LogLevel.Trace, "First setup" ) )
-                    {
-                        SqlSetupCenter c = new SqlSetupCenter( context );
-                        foreach( var item in args.RelativeFilePaths )
-                        {
-                            c.DiscoverFilePackages( Path.Combine( args.AbsoluteRootPath, item ) );
-                            c.DiscoverSqlFiles( Path.Combine( args.AbsoluteRootPath, item ) );
-                        }
-                        context.AssemblyRegistererConfiguration.DiscoverAssemblyNames.AddRange( args.AssemblyNames );
-                        c.Run();
-                    }
+                    c.Run();
                 }
             }
             finally
             {
-                Semaphore.OpenExisting( "MySemaphore" ).Release();
+                _semaphore.Release();
             }
         }
     }

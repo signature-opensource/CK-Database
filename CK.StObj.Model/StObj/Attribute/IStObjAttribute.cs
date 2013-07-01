@@ -1,0 +1,56 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace CK.Setup
+{
+    /// <summary>
+    /// Basic support for declarative dependency structure between types.
+    /// </summary>
+    public interface IStObjAttribute
+    {
+        /// <summary>
+        /// Gets the container of the object.
+        /// This property is inherited from base classes that are not Ambient Contracts.
+        /// </summary>
+        Type Container { get; }
+
+        /// <summary>
+        /// Gets the kind of object (simple item, group or container).
+        /// This property is inherited from base classes that are not Ambient Contracts.
+        /// </summary>
+        DependentItemKindSpec ItemKind { get; }
+
+        /// <summary>
+        /// Gets how Ambient Properties that reference the object must be tracked.
+        /// This property is inherited from base classes that are not Ambient Contracts.
+        /// </summary>
+        TrackAmbientPropertiesMode TrackAmbientProperties { get; }
+
+        /// <summary>
+        /// Gets an array of direct dependencies.
+        /// This property is not inherited, it applies only to the decorated type.
+        /// </summary>
+        Type[] Requires { get; }
+
+        /// <summary>
+        /// Gets an array of types that depends on the object.
+        /// This property is not inherited, it applies only to the decorated type.
+        /// </summary>
+        Type[] RequiredBy { get; }
+
+        /// <summary>
+        /// Gets an array of types that must be Children of this item.
+        /// <see cref="ItemKind"/> must be <see cref="DependentItemKind.Group"/> or <see cref="DependentItemKind.Container"/>.
+        /// This property is not inherited, it applies only to the decorated type.
+        /// </summary>
+        Type[] Children { get; }
+
+        /// <summary>
+        /// Gets an array of types that must be considered as groups for this item.
+        /// This property is not inherited, it applies only to the decorated type.
+        /// </summary>
+        Type[] Groups { get; }
+    }
+}

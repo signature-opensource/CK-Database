@@ -10,12 +10,14 @@ namespace CK.SqlServer.Tests
     {
         static IDefaultActivityLogger _logger;
         static ActivityLoggerConsoleSink _console;
+        static string _projectFolder;
         static string _scriptFolder;
 
         static TestHelper()
         {
             _console = new ActivityLoggerConsoleSink();
-            _logger = DefaultActivityLogger.Create().Register( _console );
+            _logger = new DefaultActivityLogger( true );
+            _logger.Tap.Register( _console );
         }
 
         public static IActivityLogger Logger
@@ -25,11 +27,11 @@ namespace CK.SqlServer.Tests
 
         public static bool LogsToConsole
         {
-            get { return _logger.RegisteredSinks.Contains( _console ); }
+            get { return _logger.Tap.RegisteredSinks.Contains( _console ); }
             set
             {
-                if( value ) _logger.Register( _console );
-                else _logger.Unregister( _console );
+                if( value ) _logger.Tap.Register( _console );
+                else _logger.Tap.Unregister( _console );
             }
         }
 
@@ -42,7 +44,21 @@ namespace CK.SqlServer.Tests
         {
             return Path.Combine( FolderScript, testName );
         }
-        
+
+        public static string GetFolder( params string[] subNames )
+        {
+            if( _projectFolder == null ) InitalizePaths();
+            var a = new string[ subNames.Length + 1 ];
+            a[0] = _projectFolder;
+            Array.Copy( subNames, 0, a, 1, subNames.Length );
+            return Path.Combine( a );
+        }
+
+        public static string LoadTextFromParsingScripts( string fileName )
+        {
+            return File.ReadAllText( TestHelper.GetFolder( "Parsing", "Scripts", fileName ) );
+        }
+
         private static void InitalizePaths()
         {
             string p = System.Reflection.Assembly.GetExecutingAssembly().CodeBase;
@@ -59,8 +75,10 @@ namespace CK.SqlServer.Tests
             p = Path.GetDirectoryName( p );
             // => CK-Database/
             p = Path.GetDirectoryName( p );
+            // ==> Tests/CK.SqlServer.Tests
+            _projectFolder = Path.Combine( p, "Tests", "CK.SqlServer.Tests" );
             // ==> Tests/CK.SqlServer.Tests/Scripts
-            _scriptFolder = Path.Combine( p, "Tests", "CK.SqlServer.Tests", "Scripts" );
+            _scriptFolder = Path.Combine( _projectFolder, "Scripts" );
         }
 
     }

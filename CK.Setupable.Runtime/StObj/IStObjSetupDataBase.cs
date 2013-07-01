@@ -1,0 +1,33 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using CK.Core;
+
+namespace CK.Setup
+{
+    public interface IStObjSetupDataBase
+    {
+        /// <summary>
+        /// Gets the parent setup data if it exists (this is to manage attribute properties "inheritance"). 
+        /// Null if this object corresponds to the first (root) <see cref="IAmbientContract"/> of the inheritance chain.
+        /// </summary>
+        IStObjSetupData Generalization { get; }
+
+        /// <summary>
+        /// Gets the associated <see cref="IStObjRuntime"/>.
+        /// Never null.
+        /// </summary>
+        IStObjRuntime StObj { get; }
+
+        /// <summary>
+        /// Gets the [contextualized] full name of the object.
+        /// </summary>
+        string FullName { get; }
+
+        /// <summary>
+        /// Gets whether the <see cref="FullName"/> is the default one (default full name is the <see cref="IStObjRuntime.ObjectType">StObj.ObjectType</see>.<see cref="Type.FullName">FullName</see>).
+        /// </summary>
+        bool IsDefaultFullNameWithoutContext { get; }
+    }
+}

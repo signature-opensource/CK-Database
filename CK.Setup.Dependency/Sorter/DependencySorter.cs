@@ -363,7 +363,7 @@ namespace CK.Setup
                 {
                     var req = HeadIfGroupOrContainer != null ? HeadIfGroupOrContainer.Requires : Requires;
                     return req == null 
-                        ? ReadOnlyListEmpty<ISortedItem>.Empty 
+                        ? CKReadOnlyListEmpty<ISortedItem>.Empty 
                         : req.Where( d => !d.Optional )
                                 // We can not blindly use (ISortedItem)_entries[r.FullName] because if DependencySorterResult.HasRequiredMissing is true
                                 // and the resulting graph is nevertheless used (for Tracing by example) there will be no associated ISortedItem.
@@ -389,7 +389,7 @@ namespace CK.Setup
                 {
                     // Groups is only on the Group (not on its head).
                     var holder = GroupIfHead ?? this;
-                    return holder.Groups != null ? (IEnumerable<ISortedItem>)holder.Groups : ReadOnlyListEmpty<ISortedItem>.Empty;
+                    return holder.Groups != null ? (IEnumerable<ISortedItem>)holder.Groups : CKReadOnlyListEmpty<ISortedItem>.Empty;
                 }
             }
 
@@ -434,6 +434,7 @@ namespace CK.Setup
                         if( items != null ) r.Register( items );
                     }
                 }
+                r.FinalizeRegister();
                 Debug.Assert( _entries.Values.All( o => o is Entry ), "No more start values in dictionary once registered done." );
             }
 
@@ -462,6 +463,10 @@ namespace CK.Setup
                     {
                         RegisterEntry( e, null, null );
                     }
+                }
+
+                public void FinalizeRegister()
+                {
                     foreach( Entry nc in _namedContainersToBind )
                     {
                         Debug.Assert( nc.Item.Container != null && !(nc.Item.Container is IDependentItemContainer) );
@@ -550,9 +555,8 @@ namespace CK.Setup
                 {
                     Debug.Assert( group != null && group.ItemKind != DependentItemKind.Item );
                     Debug.Assert( child != null );
-                    // child.Container can be null for 2 reasons: the item declares no container (null), 
-                    // or the item declares a name and the entry has been added to namedContainersToBind.
-                    Debug.Assert( child.Container != null || (child.Item.Container == null || (!(child.Item.Container is IDependentItemContainer) && _namedContainersToBind.Contains( child ))) );
+                    // The item declares no container (null), a valid container, or the item declares a name and the entry has been added to namedContainersToBind.
+                    Debug.Assert( child.Item.Container == null || child.Item.Container is IDependentItemContainer || _namedContainersToBind.Contains( child ) );
                     
                     // Is it already bound to a Container?
                     if( child.Container != null )
@@ -573,7 +577,10 @@ namespace CK.Setup
                     else
                     {
                         // We set the container or add the child to the group.
-                        if( group.ItemKind == DependentItemKind.Container ) group.AddToContainer( child );
+                        if( group.ItemKind == DependentItemKind.Container )
+                        {
+                            group.AddToContainer( child );
+                        }
                         else group.AddToGroup( child );
                     }
                 }
@@ -674,7 +681,7 @@ namespace CK.Setup
                         {
                             if( alreadyRegisteredGroup != null ) 
                             {
-                                // We are coming from the registration of our Children (code below).
+                                // We are coming from the registration of our Container or Group (code below).
                                 AddChildToGroupOrContainer( alreadyRegisteredGroup, entry );
                                 //if( alreadyRegisteredGroup.ItemKind == DependentItemType.Container )
                                 //{
@@ -874,8 +881,18 @@ namespace CK.Setup
                             }
                             else
                             {
-                                cnt.AddToContainer( entry );
-                                Debug.Assert( entry.Container == cnt );
+                                if( entry.Container != null )
+                                {
+                                    if( entry.Container != cnt )
+                                    {
+                                        _computer.SetStructureError( entry, DependentItemStructureError.MultipleContainer ).AddExtraneousContainers( cnt.FullName );
+                                    }
+                                }
+                                else
+                                {
+                                    cnt.AddToContainer( entry );
+                                    Debug.Assert( entry.Container == cnt );
+                                }
                             }
                         }
                         else _namedContainersToBind.Add( entry );

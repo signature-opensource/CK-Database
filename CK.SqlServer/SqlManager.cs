@@ -23,6 +23,8 @@ namespace CK.SqlServer
         IActivityLogger         _logger;
         bool					_checkTranCount;
         bool                    _ckCoreInstalled;
+        bool                    _missingDependencyIsError;
+        bool                    _ignoreMissingDependencyIsError;
 
         /// <summary>
         /// Main database properties.
@@ -211,6 +213,30 @@ namespace CK.SqlServer
         {
             get { return _checkTranCount; }
             set { _checkTranCount = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets whether whenever a creation script is executed, the informational message
+        /// 'The module 'X' depends on the missing object 'Y'. The module will still be created; however, it cannot run successfully until the object exists.' 
+        /// must be logged as a <see cref="LogLevel.Error"/>. When false, this is a <see cref="LogLevel.Info"/>.
+        /// Defaults to false.
+        /// Note that if <see cref="IgnoreMissingDependencyIsError"/> is true, this property has no effect and a missing dependency will remain informational.
+        /// </summary>
+        public bool MissingDependencyIsError
+        {
+            get { return _missingDependencyIsError; }
+            set { _missingDependencyIsError = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets whether <see cref="MissingDependencyIsError"/> must be ignored.
+        /// When true, MissingDependencyIsError is always considered to be false.
+        /// Defaults to true (MissingDependencyIsError is honored).
+        /// </summary>
+        public bool IgnoreMissingDependencyIsError
+        {
+            get { return _ignoreMissingDependencyIsError; }
+            set { _ignoreMissingDependencyIsError = value; }
         }
 
         /// <summary>
@@ -622,14 +648,16 @@ namespace CK.SqlServer
                 {
                     FailCount = FailCount + 1;
                     if( _logger == null ) throw;
-                    if( _logger.Filter > LogLevelFilter.Trace )
+                    // If the logger is tracing, the text has already been logged.
+                    if( _logger.Filter <= LogLevelFilter.Trace ) _logger.Error( e );
+                    else 
                     {
+                        // If the text is not already logged, then we unconditionnaly log it below the error.
                         using( _logger.OpenGroup( LogLevel.Error, e ) )
                         {
-                            _logger.UnfilteredLog( LogLevel.Info, script );
+                            _logger.UnfilteredLog( ActivityLogger.RegisteredTags.EmptyTrait, LogLevel.Info, script, DateTime.UtcNow );
                         }
                     }
-                    else _logger.Error( e );
                 }
                 return LastSucceed;
             }
@@ -642,21 +670,35 @@ namespace CK.SqlServer
                 {
                     try
                     {
-                        if( _databaseName != null && _databaseName != _manager.DatabaseName )
-                        {
-                            if( _logger != null ) _logger.Info( "Current database automatically restored from {0} to {1}.", _manager.DatabaseName, _databaseName );
-                            _command.Connection.ChangeDatabase( _databaseName );
-                        }
                         if( _tranCount >= 0 )
                         {
                             int tranCountAfter = (int)_manager.Connection.ExecuteScalar( "select @@TranCount" );
                             if( _tranCount != tranCountAfter )
                             {
                                 string msg = String.Format( "Transaction count differ: {0} before, {1} after.", _tranCount, tranCountAfter );
+                                int nbRollbak = tranCountAfter - _tranCount;
+                                if( _tranCount == 0 && nbRollbak > 0 )
+                                {
+                                    msg += " Attempting rollbak: ";
+                                    try
+                                    {
+                                        _manager.Connection.ExecuteNonQuery( "rollback" );
+                                        msg += "Succeed.";
+                                    }
+                                    catch( Exception ex )
+                                    {
+                                        msg += "Failed -> " + ex.Message;
+                                    }
+                                }
                                 if( _logger != null ) _logger.Error( msg );
                                 else if( LastSucceed ) throw new Exception( msg );
                             }
                         }                       
+                        if( _databaseName != null && _databaseName != _manager.DatabaseName )
+                        {
+                            if( _logger != null ) _logger.Info( "Current database automatically restored from {0} to {1}.", _manager.DatabaseName, _databaseName );
+                            _command.Connection.ChangeDatabase( _databaseName );
+                        }
                     }
                     catch( Exception ex )
                     {
@@ -733,22 +775,29 @@ namespace CK.SqlServer
             {
                 if( err.Class <= 10 )
                 {
-                    _logger.Error( "{0} ({1}): {2}.", err.Procedure, err.LineNumber, err.Message );
+                    if( _missingDependencyIsError && err.Number == 2007 )
+                    {
+                        _logger.Error( "Missing Dependency (MissingDependencyIsError configuration is true for this object).\r\n"
+                                      + "You can set MissingDependencyIsError to false for this object, or set IgnoreMissingDependencyIsError configuration to true to globally ignore this error (but it is better to correctly manage Requirements).\r\n"
+                                      + "{0} ({1}): {2}", err.Procedure, err.LineNumber, err.Message );
+                    }
+                    else _logger.Info( "{0} ({1}): {2}", err.Procedure, err.LineNumber, err.Message );
                 }
                 else if( err.Class <= 16 )
                 {
-                    _logger.Warn( "{0} ({1}): {2}.", err.Procedure, err.LineNumber, err.Message );
+                    _logger.Warn( "{0} ({1}): {2}", err.Procedure, err.LineNumber, err.Message );
                 }
                 else
                 {
-                    _logger.Warn( "Error at {0}", err.Source );
-                    _logger.Warn( "Number: {0}", err.Number );
-                    _logger.Warn( "State: {0}", err.State );
-                    _logger.Warn( "Class: {0}", err.Class );
-                    _logger.Warn( "Server: {0}", err.Server );
-                    _logger.Warn( "Procedure: {0}", err.Procedure );
-                    _logger.Warn( "LineNumber: {0}", err.LineNumber );
-                    _logger.Warn( "Message: {0}", err.Message );
+                    _logger.Error( "Sql Server error at '{0}'\r\nClass='{1}'\r\nMessage: '{2}'\r\nProcedure: '{6}'\r\nLineNumber: '{7}'\r\nNumber: '{3}'\r\nState: '{4}'\r\nServer: '{5}'", 
+                                        err.Source, 
+                                        err.Class, 
+                                        err.Message, 
+                                        err.Number, 
+                                        err.State, 
+                                        err.Server, 
+                                        err.Procedure, 
+                                        err.LineNumber );
                 }
             }
         }

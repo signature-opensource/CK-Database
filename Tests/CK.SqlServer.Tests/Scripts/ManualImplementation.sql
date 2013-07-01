@@ -13,7 +13,7 @@ create procedure CK.sStupidTest
 	@z int
 as
 begin
-	set @s = 'x=' + @x +' z=' + @z;
+	set @s = 'x=' + cast( @x as nvarchar ) +' z=' + cast( @z as nvarchar );
 	set @y = @x + @z;
 	set @d = getutcdate();  
 	return 0;
