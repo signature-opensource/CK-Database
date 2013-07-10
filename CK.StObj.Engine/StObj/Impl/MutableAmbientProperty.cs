@@ -37,6 +37,8 @@ namespace CK.Setup
             _maxSpecializationDepthSet = Int32.MaxValue;
         }
 
+        IStObjMutableItem IStObjAmbientProperty.Owner { get { return Owner; } }
+
         public override string Name { get { return _info.Name; } }
 
         internal override string KindName { get { return "AmbientProperty"; } }

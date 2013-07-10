@@ -14,6 +14,19 @@ namespace CK.Setup
     public interface IStObjAmbientProperty : IStObjReference
     {
         /// <summary>
+        /// Gets the item that owns this ambient property: the Owner is the ultimate (leaf) Specialization.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// For Ambient Properties the exposed Owner is the specialization, because a property has de facto more than one Owner when masking 
+        /// is used: spotting one of them requires to choose among them - The more abstract one? The less abstract one? - and this would be 
+        /// both ambiguate and quite useless since in practice, the "best Owner" must be based on the actual property type to 
+        /// take Property Covariance into account.
+        /// </para>
+        /// </remarks>
+        new IStObjMutableItem Owner { get; }
+
+        /// <summary>
         /// Gets the name of the ambient property.
         /// </summary>
         string Name { get; }

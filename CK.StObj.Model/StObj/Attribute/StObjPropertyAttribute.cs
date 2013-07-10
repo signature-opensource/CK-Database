@@ -6,7 +6,9 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
-    /// Defines a StObj property.
+    /// Defines a StObj property. Can be set on a property or on a class.
+    /// When defined on a class, there can be no real .Net property with the <see cref="PropertyName"/> on the
+    /// object.
     /// </summary>
     [AttributeUsage( AttributeTargets.Property|AttributeTargets.Class, AllowMultiple=true, Inherited=true )]
     public class StObjPropertyAttribute : Attribute

@@ -39,7 +39,8 @@ namespace CK.Setup
             }
         }
 
-        IStObjMutableItem IStObjReference.Owner { get { return Owner; } }
+        IStObj IStObjReference.Owner { get { return Owner; } }
+        IStObjMutableItem IStObjMutableReference.Owner { get { return Owner; } }
 
         public StObjMutableReferenceKind Kind { get { return _kind; } }
 

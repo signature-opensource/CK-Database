@@ -55,7 +55,7 @@ namespace CK.SqlServer.Setup
             Match mHeader = _rHeader.Match( header );
             if( !mHeader.Success )
             {
-                logger.Error( "Invalid header: -- Version=X.Y.Z (with Major.Minor.Build) or Version=* must appear first in header. Header='{0}...'", text.Substring( 0, Math.Max( text.Length, 80 ) ) );
+                logger.Error( "Invalid header: -- Version=X.Y.Z (with Major.Minor.Build) or Version=* must appear first in header.\r\n{0}", text );
                 return null;
             }
             string packageName = null;

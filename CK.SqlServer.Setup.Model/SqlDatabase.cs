@@ -10,7 +10,7 @@ namespace CK.SqlServer.Setup
     public class SqlDatabase
     {
         /// <summary>
-        /// Default database name is "db". 
+        /// Default database name is "db": this is the name of the <see cref="SqlDefaultDatabase"/> type.
         /// </summary>
         public const string DefaultDatabaseName = "db";
 
@@ -19,34 +19,33 @@ namespace CK.SqlServer.Setup
         /// </summary>
         public const string DefaultSchemaName = "CK";
 
-        string _name;
-        Dictionary<string,string> _schemas;
+        readonly string _name;
+        readonly Dictionary<string,string> _schemas;
         bool _installCore;
 
-        public SqlDatabase()
+        public SqlDatabase( string name )
         {
-            _name = DefaultDatabaseName;
+            if( String.IsNullOrWhiteSpace( name ) ) throw new ArgumentException( "Must be not null, empty, nor whitespace.", "name" );
+            _name = name;
             _schemas = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
         }
 
         /// <summary>
-        /// Gets or sets the logical name of the database. Must not be null nor empty.
-        /// Defaults to <see cref="DefaultDatabaseName"/>.
+        /// Gets the logical name of the database. 
+        /// This name, which is strongly associated to this SqlDatabase object and can not be changed (set only in the constructor), 
+        /// defines the location of objects that are bound to it and drives the actual connection string to use.
         /// </summary>
         public string Name
         {
             get { return _name; }
-            protected set
-            {
-                if( String.IsNullOrWhiteSpace( value ) ) throw new ArgumentNullException( "value" );
-                _name = value;
-            }
         }
 
         /// <summary>
-        /// Gets or sets the connection string.
+        /// Gets (or sets for inherited classes) the connection string.
+        /// This can be automatically configured during setup (if the specialized class implements a Construct method with a connectionString parameter
+        /// and sets this property).
         /// </summary>
-        public string ConnectionString { get; protected set; }
+        public string ConnectionString { get; set; }
 
         /// <summary>
         /// Finds or creates the given schema. 

@@ -1,15 +1,20 @@
 ﻿using System;
+using CK.Core;
 
 namespace CK.Setup
 {
     /// <summary>
     /// Describes a certain <see cref="Kind"/> of reference originating from a <see cref="Owner"/>, targeting a <see cref="Type"/> in a <see cref="Context"/> that can 
     /// have some <see cref="StObjRequirementBehavior">requirements</see>.
+    /// This interface describes an immutable object. Specialized interfaces like <see cref="IStObjMutableReference"/> mask its properties with setter and/or gives access
+    /// to other mutable objects (like <see cref="IStObjMutableReference.Owner"/> that is a <see cref="IStObjMutableItem"/>).
     /// </summary>
     public interface IStObjReference
     {
         /// <summary>
-        /// Gets the item that owns this reference. See remarks.
+        /// Gets the StObj that owns this reference.
+        /// Sepecialized interfaces maks this with a more precise type depending of the current step of the build process.
+        /// See remarks.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -22,7 +27,7 @@ namespace CK.Setup
         /// the "best Owner" must be based on the actual property type to take Property Covariance into account.
         /// </para>
         /// </remarks>
-        IStObjMutableItem Owner { get; }
+        IStObj Owner { get; }
 
         /// <summary>
         /// Gets the kind of reference (Container, Requires, RequiredBy, Group, Child, ConstructParameter, AmbientProperty or AmbientContract).

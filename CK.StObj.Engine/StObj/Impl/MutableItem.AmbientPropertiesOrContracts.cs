@@ -128,6 +128,19 @@ namespace CK.Setup
             }
         }
 
+        /// <summary>
+        /// Works on leaf only. 
+        /// Registers all the DirectProperties values by calling RootGeneralization.AddPreConstructProperty: they will be set right before the call to Construct of the root of the inheritance chain.
+        /// Registers all the AmbientContracts (resolves the MutableItem) by calling AddPostBuildProperty on the most specialized leaf: these properties will be set after the whole graph
+        /// will be created.
+        /// For AmbientProperties, it is slightly more complicated: depending of the property, we will be able to set it before Construct (like DirectProperties) or only after the whole graph
+        /// is created.
+        /// - When the AmbientProperty is a mere value (not a StObj), we can call RootGeneralization.AddPreConstructProperty.
+        /// - When the AmbientProperty is a StObj, depending on the resolved StObj's TrackAmbientPropertyMode, we call RootGeneralization.AddPreConstructProperty only if 
+        /// we can be sure that the target StObj (not necessarily its specialization) will be constructed before this object.
+        /// This is where the TrackedAmbientPropertyInfo is added to the target and where covariance is handled. 
+        /// (This is also where, each time I look at this code, I ask myself "wtf...???" :-).)
+        /// </summary>
         internal void ResolvePreConstructAndPostBuildProperties( IActivityLogger logger, StObjCollectorResult result, StObjCollectorContextualResult contextResult, IStObjValueResolver valueResolver )
         {
             Debug.Assert( Specialization == null && _leafData.LeafSpecialization == this, "We are on the  ultimate (leaf) Specialization." );
@@ -151,7 +164,7 @@ namespace CK.Setup
             // correspond to the ones of this object (without the cached ones that may appear at the end of the list).
             foreach( var a in _ambientPropertiesEx )
             {
-                EnsureCachedAmbientProperty( logger, result, valueResolver, a.Type, a.Name, a );
+                EnsureCachedAmbientProperty( logger, result, a.Type, a.Name, a );
                 if( a.Value == Type.Missing )
                 {
                     if( valueResolver != null ) valueResolver.ResolveExternalPropertyValue( logger, a );
@@ -168,6 +181,8 @@ namespace CK.Setup
                     // If the property value is a StObj, extracts its actual value.
                     if( resolved != null )
                     {
+                        #region AmbientProperty is a StObj.
+
                         MutableItem highestSetSource = null;
                         MutableItem highestSetResolved = null; 
 
@@ -186,7 +201,8 @@ namespace CK.Setup
                         }
                         if( resolved._trackedAmbientProperties != null )
                         {
-                            if( resolved._trackAmbientPropertiesMode == TrackAmbientPropertiesMode.AddPropertyHolderAsChildren || resolved._trackAmbientPropertiesMode == TrackAmbientPropertiesMode.PropertyHolderRequiresThis )
+                            if( resolved._trackAmbientPropertiesMode == TrackAmbientPropertiesMode.AddPropertyHolderAsChildren 
+                                || resolved._trackAmbientPropertiesMode == TrackAmbientPropertiesMode.PropertyHolderRequiresThis )
                             {
                                 highestSetSource = source;
                                 highestSetResolved = resolved;
@@ -221,7 +237,8 @@ namespace CK.Setup
                             }
                             if( resolved._trackedAmbientProperties != null )
                             {
-                                if( resolved._trackAmbientPropertiesMode == TrackAmbientPropertiesMode.AddPropertyHolderAsChildren || resolved._trackAmbientPropertiesMode == TrackAmbientPropertiesMode.PropertyHolderRequiresThis )
+                                if( resolved._trackAmbientPropertiesMode == TrackAmbientPropertiesMode.AddPropertyHolderAsChildren 
+                                    || resolved._trackAmbientPropertiesMode == TrackAmbientPropertiesMode.PropertyHolderRequiresThis )
                                 {
                                     highestSetSource = source;
                                     highestSetResolved = resolved;
@@ -237,6 +254,7 @@ namespace CK.Setup
                         {
                             AddPostBuildProperty( a.AmbientPropertyInfo.SettablePropertyInfo, resolved, result.BuildValueCollector );
                         }
+                        #endregion 
                     }
                     else
                     {
@@ -246,7 +264,7 @@ namespace CK.Setup
             }
         }
 
-        MutableAmbientProperty EnsureCachedAmbientProperty( IActivityLogger logger, StObjCollectorResult result, IStObjValueResolver dependencyResolver, Type propertyType, string name, MutableAmbientProperty alreadySolved = null )
+        MutableAmbientProperty EnsureCachedAmbientProperty( IActivityLogger logger, StObjCollectorResult result, Type propertyType, string name, MutableAmbientProperty alreadySolved = null )
         {
             Debug.Assert( Specialization == null );
             Debug.Assert( _prepareState == PrepareState.PreparedDone || _prepareState == PrepareState.CachingAmbientProperty );
@@ -280,7 +298,7 @@ namespace CK.Setup
                     MutableItem currentLevel = this;
                     do
                     {
-                        if( currentLevel.IsOwnContainer ) a = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( logger, result, dependencyResolver, propertyType, name );
+                        if( currentLevel.IsOwnContainer ) a = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( logger, result, propertyType, name );
                         currentLevel = currentLevel.Generalization;
                     }
                     while( (a == null || a.Value == Type.Missing) && currentLevel != null );
@@ -307,7 +325,7 @@ namespace CK.Setup
                         MutableItem currentLevel = _leafData.RootGeneralization;
                         do
                         {
-                            if( currentLevel.IsOwnContainer ) foundFromOther = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( logger, result, dependencyResolver, propertyType, name );
+                            if( currentLevel.IsOwnContainer ) foundFromOther = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( logger, result, propertyType, name );
                             currentLevel = currentLevel.Specialization;
                         }
                         while( (foundFromOther == null || foundFromOther.Value == Type.Missing) && currentLevel != null );
@@ -317,7 +335,7 @@ namespace CK.Setup
                         MutableItem currentLevel = this;
                         do
                         {
-                            if( currentLevel.IsOwnContainer ) foundFromOther = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( logger, result, dependencyResolver, propertyType, name );
+                            if( currentLevel.IsOwnContainer ) foundFromOther = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( logger, result, propertyType, name );
                             currentLevel = currentLevel.Generalization;
                         }
                         while( (foundFromOther == null || foundFromOther.Value == Type.Missing) && currentLevel != null );
@@ -331,7 +349,7 @@ namespace CK.Setup
                     MutableItem currentLevel = this;
                     do
                     {
-                        if( currentLevel.IsOwnContainer ) foundFromOther = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( logger, result, dependencyResolver, propertyType, name );
+                        if( currentLevel.IsOwnContainer ) foundFromOther = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( logger, result, propertyType, name );
                         currentLevel = currentLevel.Generalization;
                     }
                     while( (foundFromOther == null || foundFromOther.Value == Type.Missing) && currentLevel != null && currentLevel.AmbientTypeInfo.SpecializationDepth > a.MaxSpecializationDepthSet );

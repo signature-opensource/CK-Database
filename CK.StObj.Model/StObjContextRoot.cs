@@ -156,21 +156,32 @@ namespace CK.Core
             if( logger == null ) logger = new ActivityLogger();
 
             StObjBuildResult r = null;
-            if( config.AppDomainConfiguration.UseIndependentAppDomain )
+            if( config.AppDomainConfiguration.UseIndependentAppDomain && !config.AppDomainConfiguration.Assemblies.IsEmptyConfiguration )
             {
-                r = BuildOrGetVersionStampInIndependentAppDomain( config, logger, forceBuild ? AppDomainMode.ForceBuild : AppDomainMode.BuildIfRequired );
+                using( logger.OpenGroup( LogLevel.Info, "Build process. Creating an independant AppDomain." ) )
+                {
+                    r = BuildOrGetVersionStampInIndependentAppDomain( config, logger, forceBuild ? AppDomainMode.ForceBuild : AppDomainMode.BuildIfRequired );
+                }
             }
             else
             {
                 if( !forceBuild && config.FinalAssemblyConfiguration.ExternalVersionStamp != null )
                 {
-                    // Extracts the Version stamp of the existing dll (if any) in an independent AppDomain to
-                    // avoid cluttering the ReflectionOnly context of the current AppDomain.
-                    r = BuildOrGetVersionStampInIndependentAppDomain( config, logger, AppDomainMode.GetVersionStamp );
-                    if( !r.Success || r.ExternalVersionStamp != config.FinalAssemblyConfiguration.ExternalVersionStamp )
+                    using( logger.OpenGroup( LogLevel.Info, "Checking potentially existing generated dll ExternalVersionStamp in an independant AppDomain." ) )
                     {
-                        r.Dispose();
-                        r = null;
+                        // Extracts the Version stamp of the existing dll (if any) in an independent AppDomain to
+                        // avoid cluttering the ReflectionOnly context of the current AppDomain.
+                        r = BuildOrGetVersionStampInIndependentAppDomain( config, logger, AppDomainMode.GetVersionStamp );
+                        if( !r.Success || r.ExternalVersionStamp != config.FinalAssemblyConfiguration.ExternalVersionStamp )
+                        {
+                            logger.Info( "Build is required." );
+                            r.Dispose();
+                            r = null;
+                        }
+                        else
+                        {
+                            logger.Info( "Generated dll exist with the exact Version stamp. Building it again is useless." );
+                        }
                     }
                 }
                 if( r == null ) r = new StObjBuildResult( LaunchRun( logger, config ), config.FinalAssemblyConfiguration.ExternalVersionStamp, false, null, null );
@@ -180,7 +191,7 @@ namespace CK.Core
 
         private static bool LaunchRun( IActivityLogger logger, IStObjEngineConfiguration config )
         {
-            logger.Info( "AppDomain.CurrentDomain.FriendlyName: {0}", AppDomain.CurrentDomain.FriendlyName );
+            logger.Info( "Current AppDomain.CurrentDomain.FriendlyName = '{0}'.", AppDomain.CurrentDomain.FriendlyName );
             IStObjBuilder runner = (IStObjBuilder)Activator.CreateInstance( SimpleTypeFinder.WeakDefault.ResolveType( config.BuilderAssemblyQualifiedName, true ), logger, config );
             return runner.Run();
         }
@@ -262,7 +273,11 @@ namespace CK.Core
                             }
                             else if( appDomainComm.Mode == AppDomainMode.GetVersionStamp )
                             {
-                                if( existingVersionStamp != null ) appDomainComm.Mode = AppDomainMode.ResultFoundExisting;
+                                if( existingVersionStamp != null )
+                                {
+                                    logger.Info( "File '{0}' already exists. Its Version stamp has been extracted ('{1}').", p, existingVersionStamp );
+                                    appDomainComm.Mode = AppDomainMode.ResultFoundExisting;
+                                }
                             }
                             appDomainComm.VersionStampRead = existingVersionStamp;
                         }

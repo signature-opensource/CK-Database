@@ -6,7 +6,7 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
-    public class SqlSetupCenter : ISqlManagerProvider, IDisposable
+    public class SqlSetupCenter : ISqlManagerProvider, IDisposable, IStObjBuilder
     {
         readonly SqlSetupCenterConfiguration _config;
         readonly SetupCenter _center;
@@ -25,6 +25,19 @@ namespace CK.SqlServer.Setup
                 _center = sqlCenter;
             }
 
+            public override void ResolveParameterValue( IActivityLogger logger, IStObjFinalParameter parameter )
+            {
+                base.ResolveParameterValue( logger, parameter );
+                if( parameter.Name == "connectionString" )
+                {
+                    SqlDatabase db = parameter.Owner.Object as SqlDatabase;
+                    if( db != null )
+                    {
+                        parameter.SetParameterValue( _center._config.FindConnectionStringByName( db.Name ) );
+                    }
+                }
+            } 
+
             public override SetupDriver CreateDriver( Type driverType, SetupDriver.BuildInfo info )
             {
                 SetupDriver d = base.CreateDriver( driverType, info );
@@ -41,7 +54,19 @@ namespace CK.SqlServer.Setup
             }
         }
 
-        public SqlSetupCenter( IActivityLogger logger, SqlSetupCenterConfiguration config, SqlManager defaultDatabase = null )
+        /// <summary>
+        /// Initializes a new <see cref="SqlSetupCenter"/> with a <see cref="DefaultSqlDatabase"/> that uses the configuration (<see cref="SqlSetupCenterConfiguration.DefaultDatabaseConnectionString"/>)
+        /// for its connection string.
+        /// This constructor is the one used when calling <see cref="StObjContextRoot.Build"/> method with a <see cref="SqlSetupCenterConfiguration"/> configuration object.
+        /// </summary>
+        /// <param name="logger">Logger to use.</param>
+        /// <param name="config">Configuration object.</param>
+        public SqlSetupCenter( IActivityLogger logger, SqlSetupCenterConfiguration config )
+            : this( logger, config, null )
+        {
+        }
+
+        public SqlSetupCenter( IActivityLogger logger, SqlSetupCenterConfiguration config, SqlManager defaultDatabase )
         {
             if( logger == null ) throw new ArgumentNullException( "logger" );
             if( config == null ) throw new ArgumentNullException( "config" );
@@ -161,9 +186,18 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Executes the setup.
         /// </summary>
+        /// <returns>True if no error occured. False otherwise.</returns>
+        public bool Run()
+        {
+            return _center.Run();
+        }
+
+        /// <summary>
+        /// Executes the setup with explicit objects injected in the process.
+        /// </summary>
         /// <param name="items">Objects that can be <see cref="IDependentItem"/>and/or <see cref="IDependentItemDiscoverer"/> and/or <see cref="IEnumerable"/> of such objects (recursively).</param>
         /// <returns>True if no error occured. False otherwise.</returns>
-        public bool Run( params object[] items )
+        public bool RunWithExplicitDependentItems( params object[] items )
         {
             return _center.Run( items );
         }

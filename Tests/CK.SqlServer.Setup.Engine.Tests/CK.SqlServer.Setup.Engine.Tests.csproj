@@ -58,7 +58,7 @@
     </Compile>
     <Compile Include="FileBasedDBSetup.cs" />
     <Compile Include="FileBasedDiscoveringAndParsing.cs" />
-    <Compile Include="PackageAndSqlObjects\PackageAndSqlObjects.cs" />
+    <Compile Include="IntoTheWild\IntoTheWildTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ActorPackage\DatabaseSetup.cs" />
     <Compile Include="ShallowParserTests.cs" />
@@ -154,7 +154,6 @@
     <Content Include="Scripts\FileBased\FromOpenTo\Test.Install.1.0.2.to.1.0.3.sql" />
     <Content Include="Scripts\FileBased\FromOpenTo\Test.Install.1.0.4.sql" />
     <Content Include="Scripts\FileBased\FromOpenTo\Test.Install.1.0.4.to.1.0.5.sql" />
-    <Content Include="PackageAndSqlObjects\Res\sFirstProc.sql" />
     <Content Include="Scripts\InstallFromScratchWithSPDependsOnVersion\dbo.sStoredProcedureWithSPDependsOnVersion.sql" />
     <Content Include="Scripts\InstallFromScratchWithSPDependsOnVersion\Model.WithSPDependsOnVersion.Install.1.0.0.sql" />
     <Content Include="Scripts\InstallFromScratchWithSPDependsOnVersion\Model.WithSPDependsOnVersion.Install.1.0.0.to.1.0.1.sql" />

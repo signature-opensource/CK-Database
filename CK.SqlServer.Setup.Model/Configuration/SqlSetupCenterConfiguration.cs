@@ -69,6 +69,19 @@ namespace CK.SqlServer.Setup
         }
 
         /// <summary>
+        /// Finds a configured connection string by its name.
+        /// It may be the <see cref="DefaultDatabaseConnectionString"/> (default database name is 'db') or one of the registered <see cref="Databases"/>.
+        /// </summary>
+        /// <param name="name">Logical name of the connection string to find.</param>
+        /// <returns>Configured connection string or null if not found.</returns>
+        public string FindConnectionStringByName( string name )
+        {
+            if( name == SqlDatabase.DefaultDatabaseName ) return DefaultDatabaseConnectionString;
+            foreach( var desc in Databases ) if( desc.DatabaseName == name ) return desc.ConnectionString;
+            return null;
+        }
+
+        /// <summary>
         /// Gets the list of root directories (lookup is recursive) into which file packages (*.ck xml files) must be registered.
         /// </summary>
         public List<string> FilePackageDirectories

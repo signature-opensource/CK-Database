@@ -37,9 +37,10 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             var config = new SqlSetupCenterConfiguration();
             config.SetupConfiguration.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.Add( "SqlActorPackage" );
             config.SetupConfiguration.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.Add( "SqlZonePackage" );
-            config.SetupConfiguration.AppDomainConfiguration.UseIndependentAppDomain = true;
             config.SetupConfiguration.TypeFilter = typeFilter;
             config.SetupConfiguration.FinalAssemblyConfiguration.AssemblyName = dllName;
+            config.SetupConfiguration.AppDomainConfiguration.UseIndependentAppDomain = true;
+            config.SetupConfiguration.AppDomainConfiguration.ProbePaths.Add( TestHelper.TestBinFolder );
 
             using( var db = SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.Logger ) )
             {
@@ -48,34 +49,64 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
                     db.SchemaDropAllObjects( "CK", true );
                     db.SchemaDropAllObjects( "CKCore", false );
                 }
-                using( var c = new SqlSetupCenter( TestHelper.Logger, config, db ) )
-                {
-                    //c.StObjDependencySorterHookInput = TestHelper.Trace;
-                    //c.StObjDependencySorterHookOutput = sortedItems => TestHelper.Trace( sortedItems, false );
-                    //c.SetupDependencySorterHookInput = TestHelper.Trace;
-                    //c.SetupDependencySorterHookOutput = sortedItems => TestHelper.Trace( sortedItems, false );
-                    Assert.That( c.Run( typeFilter ) );
-                    IStObjMap m = StObjContextRoot.Load( dllName, TestHelper.Logger );
-                    if( typeFilter == null ) CheckBasicAndZone( db, m );
-                    else CheckBasicOnly( db, m );
-                }
-
+                config.DefaultDatabaseConnectionString = db.CurrentConnectionString;
+            }
+            //
+            //using( var db = SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.Logger ) )
+            //using( var c = new SqlSetupCenter( TestHelper.Logger, config, db ) )
+            //{
+            //    //c.StObjDependencySorterHookInput = TestHelper.Trace;
+            //    //c.StObjDependencySorterHookOutput = sortedItems => TestHelper.Trace( sortedItems, false );
+            //    //c.SetupDependencySorterHookInput = TestHelper.Trace;
+            //    //c.SetupDependencySorterHookOutput = sortedItems => TestHelper.Trace( sortedItems, false );
+            //    Assert.That( c.Run() );
+            //    IStObjMap m = StObjContextRoot.Load( dllName, TestHelper.Logger );
+            //    if( typeFilter == null ) CheckBasicAndZone( db, m );
+            //    else CheckBasicOnly( db, m );
+            //}
+            // 
+            // The code above explicitely creates a SqlSetupCenter and Run() it.
+            // This executes the build process directly, in the current domain.
+            // To honor SetupConfiguration.AppDomainConfiguration.UseIndependentAppDomain, 
+            // the static StObjContext.Build with the configuration must be used as below:
+            // 
+            // StObjContextRoot.Build result must be disposed: this actually unloads 
+            // the independant AppDomain from memory.
+            //
+            using( var result = StObjContextRoot.Build( config, TestHelper.Logger ) )
+            {
+                Assert.That( result.Success );
+                Assert.That( result.IndependentAppDomain != null );
+            }
+            using( var db = SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.Logger ) )
+            {
+                IStObjMap m = StObjContextRoot.Load( dllName, TestHelper.Logger );
+                if( typeFilter == null ) CheckBasicAndZone( db, m );
+                else CheckBasicOnly( db, m );
+            }
+            using( var db = SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.Logger ) )
+            {
                 Assert.That( db.Connection.ExecuteScalar( "select count(*) from sys.tables where name in ('tActor','tItemVersion')" ), Is.EqualTo( 2 ) );
                 db.SchemaDropAllObjects( "CK", true );
                 db.SchemaDropAllObjects( "CKCore", false );
                 Assert.That( db.Connection.ExecuteScalar( "select count(*) from sys.tables where name in ('tSystem','tItemVersion')" ), Is.EqualTo( 0 ) );
-
-                using( TestHelper.Logger.OpenGroup( LogLevel.Trace, "Second setup (reverse order)" ) )
+            }
+             
+            config.SetupConfiguration.RevertOrderingNames = true;
+            using( TestHelper.Logger.OpenGroup( LogLevel.Trace, "Second setup (reverse order)" ) )
+            {
+                using( var result = StObjContextRoot.Build( config, TestHelper.Logger ) )
                 {
-                    config.SetupConfiguration.RevertOrderingNames = true;
-                    using( var c = new SqlSetupCenter( TestHelper.Logger, config, db ) )
-                    {
-                        Assert.That( c.Run() );
-                        IStObjMap m = StObjContextRoot.Load( dllName, TestHelper.Logger );
-                        if( typeFilter == null ) CheckBasicAndZone( db, m );
-                        else CheckBasicOnly( db, m );
-                    }
+                    Assert.That( result.Success );
+                    Assert.That( result.IndependentAppDomain != null );
                 }
+            }
+
+            using( var db = SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.Logger ) )
+            {
+                IStObjMap m = StObjContextRoot.Load( dllName, TestHelper.Logger );
+                if( typeFilter == null ) CheckBasicAndZone( db, m );
+                else CheckBasicOnly( db, m );
             }
         }
 

@@ -8,13 +8,6 @@ namespace CK.SqlServer.Setup
     {
         internal readonly SqlDatabaseConnectionItem ConnectionItem;
         
-        public SqlDatabaseItem()
-        {
-            Object = new SqlDatabase();
-            ConnectionItem = new SqlDatabaseConnectionItem( this );
-            Requires.Add( ConnectionItem );
-        }
-
         public SqlDatabaseItem( IActivityLogger logger, IStObjSetupData data )
         {
             Object = (SqlDatabase)data.StObj.Object;

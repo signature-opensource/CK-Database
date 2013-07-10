@@ -8,6 +8,7 @@ namespace CK.Setup
 {
     /// <summary>
     /// Template class that concentrates the different hooks called during a setup phasis.
+    /// Methods are defined here in the order where they are called.
     /// </summary>
     public class SetupableConfigurator : IAmbientContractDispatcher, IStObjStructuralConfigurator, IStObjValueResolver, IStObjSetupConfigurator, IStObjSetupItemFactory, IStObjSetupDynamicInitializer, ISetupDriverFactory
     {
@@ -37,6 +38,7 @@ namespace CK.Setup
         }
 
         /// <summary>
+        /// Step n°1 - Called during Assembly/Types discovering: allows a Type not marked with <see cref="IAmbientContract"/> to be considered as an Ambiant Contract.
         /// Empty implementation of <see cref="IAmbientContractDispatcher.IsAmbientContractClass"/>.
         /// Returns the result of the <see cref="Previous"/> if it exist, oterwise returns always false: only classes that are explicitely marked with <see cref="IAmbientContract"/>
         /// or types that inherit from a <see cref="IAmbientContractDefiner"/> are considered as Ambient Contracts.
@@ -49,6 +51,7 @@ namespace CK.Setup
         }
 
         /// <summary>
+        /// Step n°2 - Once Ambient Contracts have been discovered, this allows types to be removed/added to different contexts.
         /// Empty implementation of <see cref="IAmbientContractDispatcher.Dispatch"/> (calls <see cref="Previous"/> if it is not null).
         /// </summary>
         /// <param name="t">The type to map.</param>
@@ -59,6 +62,8 @@ namespace CK.Setup
         }
 
         /// <summary>
+        /// Step n°3 - Once most specialized objects are created, the configuration for each "slice" (StObj) from top to bottom of the inheritance chain 
+        /// can be altered: properties can be set, dependencies like Container, Requires, Children, etc. but also parameters' value of the Construct method can be changed.
         /// Empty implementation of <see cref="IStObjStructuralConfigurator.Configure"/> (calls <see cref="Previous"/> if it is not null).
         /// </summary>
         /// <param name="o">The item to configure.</param>
@@ -68,16 +73,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Empty implementation of <see cref="IStObjValueResolver.ResolveParameterValue"/> (calls <see cref="Previous"/> if it is not null).
-        /// </summary>
-        /// <param name="_logger">The _logger to use.</param>
-        /// <param name="parameter">Parameter of a Construct method.</param>
-        public virtual void ResolveParameterValue( IActivityLogger logger, IStObjFinalParameter parameter )
-        {
-            if( _previous != null ) _previous.ResolveParameterValue( logger, parameter );
-        }
-
-        /// <summary>
+        /// Step n°4 - Last step before ordering. Ambient properties that had not been resolved can be set to a value here.
         /// Empty implementation of <see cref="IStObjValueResolver.ResolveExternalPropertyValue"/> (calls <see cref="Previous"/> if it is not null).
         /// </summary>
         /// <param name="_logger">The _logger to use.</param>
@@ -88,6 +84,21 @@ namespace CK.Setup
         }
 
         /// <summary>
+        /// Step n°5 - StObj dependency graph has been ordered, properties that was settable before initialization have been set, the Construct method
+        /// is called and for each of their parameters, this enable the parameter value to be set or changed.
+        /// This is the last step of the pure StObj level work: after this one, object graph dependencies have been resolved, objects are configured.
+        /// Empty implementation of <see cref="IStObjValueResolver.ResolveParameterValue"/> (calls <see cref="Previous"/> if it is not null).
+        /// </summary>
+        /// <param name="_logger">The _logger to use.</param>
+        /// <param name="parameter">Parameter of a Construct method.</param>
+        public virtual void ResolveParameterValue( IActivityLogger logger, IStObjFinalParameter parameter )
+        {
+            if( _previous != null ) _previous.ResolveParameterValue( logger, parameter );
+        }
+
+        /// <summary>
+        /// Step n°6 - Entering the Setupable level: StObjSetupData are created for each StObj and this method allows to configure their setup item and 
+        /// driver type to use, versions, requirements and other properties related to the three-steps setup phasis.
         /// Empty implementation of <see cref="IStObjSetupConfigurator.ConfigureDependentItem"/> (calls <see cref="Previous"/> if it is not null).
         /// </summary>
         /// <param name="_logger">Logger to use.</param>
@@ -98,6 +109,8 @@ namespace CK.Setup
         }
 
         /// <summary>
+        /// Step n°7 - Creation of the actual SetupItem to use for a StObj may be decided here. Like the others, this step is optional: by default
+        /// a generic <see cref="StObjDynamicPackageItem"/> does the job.
         /// Empty implementation of <see cref="IStObjSetupItemFactory.CreateDependentItem"/> (calls <see cref="Previous"/> if it is not null, otherwise returns null).
         /// </summary>
         /// <param name="_logger">Logger to use.</param>
@@ -109,6 +122,8 @@ namespace CK.Setup
         }
 
         /// <summary>
+        /// Step n°8 - This is where new <see cref="IDependentItem"/>s can be created and registered (typically as children of the item). For Sql, this is the step
+        /// where setup items of stored procedures are instanciated and attached to their declaring tables or package.
         /// Empty implementation of <see cref="IStObjSetupDynamicInitializer.DynamicItemInitialize"/> (calls <see cref="Previous"/> if it is not null).
         /// </summary>
         /// <param name="state">Context for dynamic initialization.</param>
@@ -120,6 +135,8 @@ namespace CK.Setup
         }
 
         /// <summary>
+        /// Step n°9 - This is the last step: the dependency graph of the setup items has been resolved, we now create the Setup Drivers for each of them that 
+        /// will support the three-steps setup phasis.
         /// Creates a (potentially configured) instance of <see cref="SetupDriver"/> of a given <paramref name="driverType"/>.
         /// This empty implementation calls <see cref="Previous"/> if it is not null, otherwise it always returns null.
         /// </summary>

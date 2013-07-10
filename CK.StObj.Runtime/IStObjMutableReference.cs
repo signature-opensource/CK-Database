@@ -8,6 +8,11 @@ namespace CK.Setup
     public interface IStObjMutableReference : IStObjReference
     {
         /// <summary>
+        /// Gets the item that owns this reference.
+        /// </summary>
+        new IStObjMutableItem Owner { get; }
+
+        /// <summary>
         /// Gets or sets the context associated to the <see cref="P:Type"/> of this reference.
         /// When not null, the type is searched in this context only. 
         /// When null, the type is first searched in the same context as this <see cref="Owner"/>.

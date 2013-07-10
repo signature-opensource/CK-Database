@@ -7,6 +7,14 @@ namespace CK.Setup
     public interface IStObjMutableItem
     {
         /// <summary>
+        /// Gets the associated object instance (the final, most specialized, structured object).
+        /// The final object is exposed by this interface to allow (exceptional) direct accesses to "intrinsic" properties (fields or methods) 
+        /// of the object (like readonly properties initalized by constructor) but care should be taken when accessing
+        /// the final object since, depending of the current step in the process, it has not necessarily been constructed/initialized correctly yet.
+        /// </summary>
+        object Object { get; }
+
+        /// <summary>
         /// Gets the type of the structure object.
         /// </summary>
         Type ObjectType { get; }
@@ -62,8 +70,8 @@ namespace CK.Setup
         IStObjMutableReferenceList RequiredBy { get; }
 
         /// <summary>
-        /// Reverse dependencies: types that depend on the object.
-        /// Initialized by <see cref="StObjAttribute.RequiredBy"/>.
+        /// Groups for this object.
+        /// Initialized by <see cref="StObjAttribute.Groups"/>.
         /// </summary>
         IStObjMutableReferenceList Groups { get; }
 

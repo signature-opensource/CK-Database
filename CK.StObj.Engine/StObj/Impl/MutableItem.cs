@@ -38,7 +38,7 @@ namespace CK.Setup
             /// Like Ambient Properties above, Ambient Contracts are shared by the inheritance chain (it is
             /// not null only at the specialization level), but can use here an array instead of a dynamic list
             /// since there is no caching needed. Each MutableAmbientContract here is bound to its AmbientContractInfo
-            /// in the StObjTypeinfo.AmbientContracts.
+            /// in the StObjTypeInfo.AmbientContracts.
             /// </summary>
             public readonly MutableAmbientContract[] AllAmbientContracts;
 
@@ -380,7 +380,7 @@ namespace CK.Setup
 
         #endregion
 
-        internal bool PrepareDependentItem( IActivityLogger logger, IStObjValueResolver dependencyResolver, StObjCollectorResult collector, StObjCollectorContextualResult cachedCollector )
+        internal bool PrepareDependentItem( IActivityLogger logger, StObjCollectorResult collector, StObjCollectorContextualResult cachedCollector )
         {
             if( _prepareState == PrepareState.PreparedDone ) return true;
             using( logger.OpenGroup( LogLevel.Trace, "Preparing '{0}'.", ToString() ) )
@@ -398,11 +398,11 @@ namespace CK.Setup
                         _prepareState = PrepareState.RecursePreparing;
                         
                         ResolveDirectReferences( logger, collector, cachedCollector );
-                        if( _dContainer != null ) result &= _dContainer.PrepareDependentItem( logger, dependencyResolver, collector, cachedCollector );
+                        if( _dContainer != null ) result &= _dContainer.PrepareDependentItem( logger, collector, cachedCollector );
                         // Prepares Generalization and inherits from it as needed.
                         if( Generalization != null )
                         {
-                            result &= Generalization.PrepareDependentItem( logger, dependencyResolver, collector, cachedCollector );
+                            result &= Generalization.PrepareDependentItem( logger, collector, cachedCollector );
                             if( _dContainer == null ) _dContainer = Generalization._dContainer;
                             if( _itemKind == DependentItemKind.Unknown ) _itemKind = Generalization._itemKind;
                             if( _trackAmbientPropertiesMode == TrackAmbientPropertiesMode.Unknown ) _trackAmbientPropertiesMode = Generalization._trackAmbientPropertiesMode;

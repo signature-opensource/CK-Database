@@ -40,7 +40,7 @@ namespace CK.Core
 
         /// <summary>
         /// Gets the independent Application Domain that has been used to get the version stamp and/or build the assembly.
-        /// It is null if this <see cref="StObjBuildResult"/> has not been disposed or if no independent domain was needed.
+        /// It is null if this <see cref="StObjBuildResult"/> has been disposed or if no independent domain was needed.
         /// </summary>
         public AppDomain IndependentAppDomain { get; private set; }
 
@@ -54,6 +54,7 @@ namespace CK.Core
                 try
                 {
                     AppDomain.Unload( IndependentAppDomain );
+                    _logger.Info( "Independent AppDomain successfuly unloaded." );
                 }
                 catch( Exception ex )
                 {

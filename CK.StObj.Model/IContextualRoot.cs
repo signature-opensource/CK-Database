@@ -19,7 +19,7 @@ namespace CK.Core
         IReadOnlyCollection<T> Contexts { get; }
 
         /// <summary>
-        /// Gets the <see cref="IContextualStObjMap"/> or null if context is unknown.
+        /// Gets the contextualStObj map or null if context is unknown.
         /// </summary>
         /// <param name="context">Context name.</param>
         /// <returns>Contextual mapping or null if no such context exists.</returns>

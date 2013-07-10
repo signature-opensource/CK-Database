@@ -34,6 +34,15 @@ namespace CK.Core
         }
 
         /// <summary>
+        /// Gets whether this configuration has absolutely no chance to load any assembly: <see cref="AutomaticAssemblyDiscovering"/> is false
+        /// and <see cref="DiscoverAssemblyNames"/> and <see cref="DiscoverRecurseAssemblyNames"/> are both empty.
+        /// </summary>
+        public bool IsEmptyConfiguration
+        {
+            get { return AutomaticAssemblyDiscovering == false && _whiteList.Count == 0 && _whiteListNoRecurse.Count == 0; }
+        }
+
+        /// <summary>
         /// Gets or sets whether assemblies loaded in the <see cref="AppDomain.CurrentDomain"/> and all their 
         /// dependencies (even if they are not already loaded) must be discovered.
         /// Defaults to false.

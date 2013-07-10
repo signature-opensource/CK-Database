@@ -11,6 +11,12 @@ namespace CK.Setup
     public interface IStObjFinalParameter : IStObjReference
     {
         /// <summary>
+        /// Gets the StObj that owns this reference as a <see cref="IStObjRuntime"/> (since the dependency graph is resolved).
+        /// This owner corresponds to the exact type of the object that has the Construct method for parameters.
+        /// </summary>
+        new IStObjRuntime Owner { get; }
+        
+        /// <summary>
         /// Gets the name of the construct parameter.
         /// </summary>
         string Name { get; }

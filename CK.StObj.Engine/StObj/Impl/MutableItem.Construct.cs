@@ -61,19 +61,19 @@ namespace CK.Setup
                             Debug.Assert( resolved.Object != Type.Missing );
                             t.SetParameterValue( resolved.Object );
                         }
-                        else if( !t.IsRealParameterOptional )
-                        {
-                            if( !t.IsOptional )
-                            {
-                                // By throwing an exception here, we stop the process and avoid the construction 
-                                // of an invalid object graph...
-                                // This behavior (FailFastOnFailureToResolve) may be an option once. For the moment: log the error.
-                                logger.Fatal( "{0}: Unable to resolve non optional. Attempting to use a default value to continue the setup process in order to detect other errors.", t.ToString() );
-                            }
-                            t.SetParameterValue( t.Type.IsValueType ? Activator.CreateInstance( t.Type ) : null );
-                        }
                     }
                     if( valueResolver != null ) valueResolver.ResolveParameterValue( logger, t );
+                    if( t.Value == Type.Missing && !t.IsRealParameterOptional )
+                    {
+                        if( !t.IsOptional )
+                        {
+                            // By throwing an exception here, we stop the process and avoid the construction 
+                            // of an invalid object graph...
+                            // This behavior (FailFastOnFailureToResolve) may be an option once. For the moment: log the error.
+                            logger.Fatal( "{0}: Unable to resolve non optional. Attempting to use a default value to continue the setup process in order to detect other errors.", t.ToString() );
+                        }
+                        t.SetParameterValue( t.Type.IsValueType ? Activator.CreateInstance( t.Type ) : null );
+                    }
                     if( resolved != null && t.Value == resolved.Object )
                     {
                         t.BuilderValueIndex = -(resolved.IndexOrdered + 1);

@@ -56,6 +56,10 @@ namespace CK.Setup
         {
             Value = value;
         }
-      
+
+        IStObjRuntime IStObjFinalParameter.Owner
+        {
+            get { return Owner; }
+        }
     }
 }

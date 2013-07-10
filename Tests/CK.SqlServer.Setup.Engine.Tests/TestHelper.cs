@@ -12,6 +12,8 @@ namespace CK.SqlServer.Setup.Engine.Tests
     {
         static IDefaultActivityLogger _logger;
         static ActivityLoggerConsoleSink _console;
+        static string _testBinFolder;
+        static string _solutionFolder;
         static string _scriptFolder;
 
         static TestHelper()
@@ -111,6 +113,16 @@ namespace CK.SqlServer.Setup.Engine.Tests
         #endregion
 
 
+        public static string TestBinFolder
+        {
+            get { if( _testBinFolder == null ) InitalizePaths(); return _testBinFolder; }
+        }
+
+        public static string SolutionDirectory
+        {
+            get { if( _solutionFolder == null ) InitalizePaths(); return _solutionFolder; }
+        }
+
         public static string FolderScript
         {
             get { if( _scriptFolder == null ) InitalizePaths(); return _scriptFolder; }
@@ -131,12 +143,14 @@ namespace CK.SqlServer.Setup.Engine.Tests
 
             // => Debug/
             p = Path.GetDirectoryName( p );
+            _testBinFolder = p;
             // => Tests/
             p = Path.GetDirectoryName( p );
             // => Output/
             p = Path.GetDirectoryName( p );
             // => CK-Database/
             p = Path.GetDirectoryName( p );
+            _solutionFolder = p;
             // ==> Tests/CK.SqlServer.Setup.Engine.Tests/Scripts
             _scriptFolder = Path.Combine( p, "Tests", "CK.SqlServer.Setup.Engine.Tests", "Scripts" );
         }
