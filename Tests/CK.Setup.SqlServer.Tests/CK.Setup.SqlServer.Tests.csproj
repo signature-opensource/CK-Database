@@ -119,6 +119,9 @@
     <Content Include="Scripts\InstallFromScratchWithSPDependsOnVersion\Model.WithSPDependsOnVersion.Install.1.0.0.to.1.0.1.sql" />
     <Content Include="Scripts\InstallFromScratchWithView\dbo.vTestView.sql" />
     <Content Include="Scripts\InstallFromScratchWithView\Model.WithView.Install.1.0.0.sql" />
+    <Content Include="Scripts\InstallFromScratch\Test.udtMyTestType.sql">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Scripts\InstallFromScratch\Test.sStoredProcedureRequires.sql" />
     <Content Include="Scripts\InstallFromScratch\Test.sOneStoredProcedureA.sql" />
     <Content Include="Scripts\InstallFromScratch\Model.Test.DependentPackage.Install.1.0.0.sql" />
