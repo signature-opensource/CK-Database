@@ -47,11 +47,13 @@ namespace CK.SqlServer.Tests
         private static void InitalizePaths()
         {
             string p = System.Reflection.Assembly.GetExecutingAssembly().CodeBase;
-            // Code base is like "file:///C:/Users/Spi/Documents/Dev4/CK-Database/Output/Tests/Debug/CK.Setup.SqlServer.Tests.DLL"
+            // Code base is like "file:///C:/Users/Spi/Documents/Dev4/CK-Database/Output/Tests/Debug/net45/CK.Setup.SqlServer.Tests.DLL"
             StringAssert.StartsWith( "file:///", p, "Code base must start with file:/// protocol." );
 
             p = p.Substring( 8 ).Replace( '/', System.IO.Path.DirectorySeparatorChar );
 
+            // => net45/
+            p = Path.GetDirectoryName( p );
             // => Debug/
             p = Path.GetDirectoryName( p );
             // => Tests/
