@@ -13,6 +13,7 @@ namespace CK.Setup.SqlServer
         static public readonly string TypeView = "View";
         static public readonly string TypeProcedure = "Procedure";
         static public readonly string TypeFunction = "Function";
+        static public readonly string TypeUserType = "Type";
 
         ContextLocNameStructImpl _fullName;
 
@@ -107,6 +108,10 @@ namespace CK.Setup.SqlServer
             else if( ItemType == SqlObjectProtoItem.TypeFunction )
             {
                 result = new SqlFunctionItem( this );
+            }
+            else if( ItemType == SqlObjectProtoItem.TypeUserType )
+            {
+                result = new SqlUserTypeItem( this );
             }
             else
             {

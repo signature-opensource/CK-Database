@@ -64,6 +64,7 @@
     <Compile Include="ObjectSupport\SqlDatabase\SqlDatabaseItem.cs" />
     <Compile Include="ObjectSupport\SqlDatabase\SqlDefaultDatabase.cs" />
     <Compile Include="ObjectSupport\SqlObjectItemAttribute.cs" />
+    <Compile Include="ObjectSupport\SqlObject\SqlUserTypeItem.cs" />
     <Compile Include="ObjectSupport\SqlPackageBase\SqlPackageBaseSetupDriver.cs" />
     <Compile Include="ObjectSupport\SqlPackageBase\SqlPackageAttributeBase.cs" />
     <Compile Include="ObjectSupport\SqlPackageBase\SqlPackageBase.cs" />
