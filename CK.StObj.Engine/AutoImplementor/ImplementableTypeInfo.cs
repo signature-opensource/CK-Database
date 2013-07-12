@@ -224,6 +224,7 @@ namespace CK.Core
             TypeAttributes tA = TypeAttributes.Class | TypeAttributes.Public;
             if( finalImplementation ) tA |= TypeAttributes.Sealed;
             TypeBuilder b = assembly.ModuleBuilder.DefineType( current.Name + assembly.NextUniqueNumber(), tA, current );
+            // Relayed constructors replicates all their potential attributes (included attributes on parameters).
             CK.Reflection.TypeBuilderExtension.DefinePassThroughConstructors( b );
             foreach( var am in MethodsToImplement )
             {

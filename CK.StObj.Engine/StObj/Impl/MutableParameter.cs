@@ -57,7 +57,7 @@ namespace CK.Setup
             Value = value;
         }
 
-        IStObjRuntime IStObjFinalParameter.Owner
+        IStObjResult IStObjFinalParameter.Owner
         {
             get { return Owner; }
         }

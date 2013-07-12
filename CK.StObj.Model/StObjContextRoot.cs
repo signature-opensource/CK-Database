@@ -11,7 +11,7 @@ using System.Diagnostics;
 
 namespace CK.Core
 {
-    public abstract class StObjContextRoot : IStObjMap
+    public abstract partial class StObjContextRoot : IStObjMap
     {
         /// <summary>
         /// Holds the name of the root class.
@@ -24,20 +24,22 @@ namespace CK.Core
         /// Loads a previously generated assembly by its assembly name.
         /// </summary>
         /// <param name="a">Assembly name that will be loaded in the current AppDomain.</param>
+        /// <param name="runtimeBuilder">Runtime builder to use. When null, <see cref="DefaultStObjRuntimeBuilder"/> is used.</param>
         /// <param name="logger">Optional logger for loading operation.</param>
         /// <returns>A <see cref="IStObjMap"/> that provides access to the objects graph.</returns>
-        public static IStObjMap Load( string assemblyName, IActivityLogger logger = null )
+        public static IStObjMap Load( string assemblyName, IStObjRuntimeBuilder runtimeBuilder = null, IActivityLogger logger = null )
         {
-            return Load( Assembly.Load( assemblyName ), logger );
+            return Load( Assembly.Load( assemblyName ), runtimeBuilder, logger );
         }
 
         /// <summary>
         /// Loads a previously generated assembly.
         /// </summary>
         /// <param name="a">Assembly (loaded in the current AppDomain).</param>
+        /// <param name="runtimeBuilder">Runtime builder to use. When null, <see cref="DefaultStObjRuntimeBuilder"/> is used.</param>
         /// <param name="logger">Optional logger for loading operation.</param>
         /// <returns>A <see cref="IStObjMap"/> that provides access to the objects graph.</returns>
-        public static IStObjMap Load( Assembly a, IActivityLogger logger = null )
+        public static IStObjMap Load( Assembly a, IStObjRuntimeBuilder runtimeBuilder = null, IActivityLogger logger = null )
         {
             if( logger == null ) logger = DefaultActivityLogger.Empty;
             bool loaded;
@@ -50,7 +52,7 @@ namespace CK.Core
             {
                 if( a == null ) throw new ArgumentNullException( "a" );
                 Type t = a.GetType( RootContextTypeName, true );
-                return (StObjContextRoot)Activator.CreateInstance( t, new object[] { logger } );
+                return (StObjContextRoot)Activator.CreateInstance( t, new object[] { logger, runtimeBuilder ?? DefaultStObjRuntimeBuilder } );
             }
         }
 
@@ -305,97 +307,6 @@ namespace CK.Core
                 logger.Fatal( ex );
                 appDomainComm.SetResult( false );
             }
-        }
-
-        readonly StObjContext _defaultContext;
-        readonly StObjContext[] _contexts;
-        readonly IReadOnlyCollection<StObjContext> _contextsEx;
-
-        internal readonly StructuredObjectCache SingletonCache;
-        internal readonly IActivityLogger Logger;
-        internal readonly object[] BuilderValues;
-        internal readonly StObj[] StObjs;
-        internal readonly int SpecializationCount;
-
-        protected StObjContextRoot( IActivityLogger logger, Type[] allTypes )
-        {
-            if( logger == null ) throw new ArgumentNullException( "logger" );
-            if( allTypes == null ) throw new ArgumentNullException( "allTypes" );
-            Logger = logger;
-            StObjs = new StObj[allTypes.Length];
-            for( int i = 0; i < allTypes.Length; ++i )
-            {
-                StObjs[i] = new StObj( this, allTypes[i] );
-            }
-            using( Stream s = GetType().Assembly.GetManifestResourceStream( RootContextTypeName + ".Data" ) )
-            {
-                BinaryReader reader = new BinaryReader( s );
-
-                _contexts = new StObjContext[reader.ReadInt32()];
-                _contextsEx = new CKReadOnlyListOnIList<StObjContext>( _contexts );
-                _defaultContext = ReadContexts( reader );
-
-                BinaryFormatter formatter = new BinaryFormatter();
-                BuilderValues = (object[])formatter.Deserialize( s );
-                
-                SpecializationCount = reader.ReadInt32();
-                SingletonCache = new StructuredObjectCache( SpecializationCount );
-                foreach( var o in StObjs )
-                {
-                    o.Initialize( reader );
-                }
-                // Singleton creation.
-                foreach( var o in StObjs )
-                {
-                    object instance = SingletonCache.Get(o.CacheIndex);
-                    if( instance == null ) SingletonCache.Set( o.CacheIndex, instance = Activator.CreateInstance( o.LeafSpecialization.ObjectType, true ) );
-                    o.CallConstruct( logger, idx => SingletonCache.Get( StObjs[idx].CacheIndex ), instance );
-                    if( o.Specialization == null ) o.SetPostBuilProperties( idx => SingletonCache.Get( StObjs[idx].CacheIndex ), instance );
-                }
-            }
-        }
-
-        private StObjContext ReadContexts( BinaryReader reader )
-        {
-            StObjContext def = null;
-            for( int i = 0; i < _contexts.Length; ++i )
-            {
-                string name = reader.ReadString();
-
-                int typeMappingCount = reader.ReadInt32();
-                Dictionary<Type,int> mappings = new Dictionary<Type, int>( typeMappingCount );
-                while( --typeMappingCount >= 0 )
-                {
-                    mappings.Add( SimpleTypeFinder.Default.ResolveType( reader.ReadString(), true ), reader.ReadInt32() );
-                }
-                _contexts[i] = new StObjContext( this, name, mappings );
-                if( name.Length == 0 ) def = _contexts[i];
-            }
-            return def;
-        }
-
-        internal StObjContext DoFindContext( string context )
-        {
-            foreach( var c in _contexts )
-            {
-                if( c.Context == context ) return c;
-            }
-            return null;
-        }
-
-        public IContextualStObjMap Default
-        {
-            get { return _defaultContext; }
-        }
-
-        public IReadOnlyCollection<IContextualStObjMap> Contexts
-        {
-            get { return _contextsEx; }
-        }
-
-        public IContextualStObjMap FindContext( string context )
-        {
-            return DoFindContext( context );
         }
 
     }

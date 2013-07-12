@@ -29,7 +29,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets or sets the full name of the container.
-        /// If the container is already defined at the <see cref="IStObjRuntime"/> level, names must match otherwise an error occurs.
+        /// If the container is already defined at the <see cref="IStObjResult"/> level, names must match otherwise an error occurs.
         /// This allow name binding to an existing container or package that is not a Structure Object: it should be rarely used and most often let to null.
         /// </summary>
         /// <remarks>

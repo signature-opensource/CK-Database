@@ -23,18 +23,21 @@ namespace CK.Setup
         readonly IStObjValueResolver _valueResolver;
         readonly IActivityLogger _logger;
         readonly DynamicAssembly _tempAssembly;
+        readonly IStObjRuntimeBuilder _runtimeBuilder;
         int _registerFatalOrErrorCount;
 
         /// <summary>
         /// Initializes a new <see cref="StObjCollector"/>.
         /// </summary>
         /// <param name="logger">Logger to use. Can not be null.</param>
+        /// <param name="runtimeBuilder">Runtime builder to use. <see cref="StObjContext.DefaultStObjRuntimeBuilder"/> can be used.</param>
         /// <param name="dispatcher"></param>
         /// <param name="configurator"></param>
         /// <param name="valueResolver"></param>
-        public StObjCollector( IActivityLogger logger, IAmbientContractDispatcher dispatcher = null, IStObjStructuralConfigurator configurator = null, IStObjValueResolver dependencyResolver = null )
+        public StObjCollector( IActivityLogger logger, IStObjRuntimeBuilder runtimeBuilder = null, IAmbientContractDispatcher dispatcher = null, IStObjStructuralConfigurator configurator = null, IStObjValueResolver dependencyResolver = null )
         {
             if( logger == null ) throw new ArgumentNullException( "logger" );
+            _runtimeBuilder = runtimeBuilder ?? StObjContextRoot.DefaultStObjRuntimeBuilder;
             _logger = logger;
             _tempAssembly = new DynamicAssembly();
             _cc = new AmbientContractCollector<StObjContextualMapper,StObjTypeInfo, MutableItem>( _logger, l => new StObjMapper(), ( l, p, t ) => new StObjTypeInfo( l, p, t ), _tempAssembly, dispatcher );
@@ -238,7 +241,6 @@ namespace CK.Setup
             }
         }
 
-
         /// <summary>
         /// Creates one or more StObjMutableItem for each ambient Type, each of them bound 
         /// to an instance created through its default constructor.
@@ -256,7 +258,7 @@ namespace CK.Setup
 
                 MutableItem specialization = r._specializations[i] = pathTypes[pathTypes.Count - 1];
 
-                object theObject = specialization.CreateStructuredObject( _logger );
+                object theObject = specialization.CreateStructuredObject( _logger, _runtimeBuilder );
                 // If we failed to create an instance, we ensure that an error is logged and
                 // continue the process.
                 if( theObject == null )

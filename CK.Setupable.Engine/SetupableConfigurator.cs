@@ -7,7 +7,7 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// Template class that concentrates the different hooks called during a setup phasis.
+    /// Template class that concentrates the different hooks called during a setup phasis (except the <see cref="IStObjRuntimeBuilder"/> methods).
     /// Methods are defined here in the order where they are called.
     /// </summary>
     public class SetupableConfigurator : IAmbientContractDispatcher, IStObjStructuralConfigurator, IStObjValueResolver, IStObjSetupConfigurator, IStObjSetupItemFactory, IStObjSetupDynamicInitializer, ISetupDriverFactory
@@ -129,7 +129,7 @@ namespace CK.Setup
         /// <param name="state">Context for dynamic initialization.</param>
         /// <param name="item">The setup item for the object slice.</param>
         /// <param name="stObj">The StObj (the object slice).</param>
-        public virtual void DynamicItemInitialize( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjRuntime stObj )
+        public virtual void DynamicItemInitialize( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjResult stObj )
         {
             if( _previous != null ) _previous.DynamicItemInitialize( state, item, stObj );
         }

@@ -52,7 +52,7 @@ namespace CK.SqlServer.Setup
             _attr = a;
         }
 
-        void IStObjSetupDynamicInitializer.DynamicItemInitialize( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjRuntime stObj )
+        void IStObjSetupDynamicInitializer.DynamicItemInitialize( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjResult stObj )
         {
             // 2 - Finds the most specific responsible of this resource.
             //      - first, gets the name of the external object.
@@ -83,7 +83,7 @@ namespace CK.SqlServer.Setup
             return theBest;
         }
 
-        void DynamicItemInitializeAfterFollowing( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjRuntime stObj )
+        void DynamicItemInitializeAfterFollowing( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjResult stObj )
         {
             SqlPackageBaseItem packageItem = (SqlPackageBaseItem)item;
             // If we are the best, our resource wins.

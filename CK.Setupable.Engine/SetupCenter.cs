@@ -21,7 +21,12 @@ namespace CK.Setup
         readonly EventHandler<SetupEventArgs> _relaySetupEvent;
         readonly EventHandler<DriverEventArgs> _relayDriverEvent;
 
-        public SetupCenter( IActivityLogger logger, SetupCenterConfiguration config, IVersionedItemRepository versionRepository, ISetupSessionMemoryProvider memory, SetupableConfigurator configurator = null )
+        public SetupCenter( IActivityLogger logger, 
+                            SetupCenterConfiguration config, 
+                            IVersionedItemRepository versionRepository, 
+                            ISetupSessionMemoryProvider memory, 
+                            IStObjRuntimeBuilder runtimeBuilder = null, 
+                            SetupableConfigurator configurator = null )
         {
             if( logger == null ) throw new ArgumentNullException( "_logger" );
             if( config == null ) throw new ArgumentNullException( "config" );
@@ -40,7 +45,7 @@ namespace CK.Setup
             _relaySetupEvent = OnEngineSetupEvent;
             _relayDriverEvent = OnEngineDriverEvent;
 
-            new StObjSetupHook( this, _config, _configurator );
+            new StObjSetupHook( this, runtimeBuilder, _config, _configurator );
         }
 
         /// <summary>

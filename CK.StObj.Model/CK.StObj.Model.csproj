@@ -67,6 +67,8 @@
     <Compile Include="Configuration\IStObjEngineConfiguration.cs" />
     <Compile Include="Configuration\BuilderAppDomainConfiguration.cs" />
     <Compile Include="Configuration\BuilderFinalAssemblyConfiguration.cs" />
+    <Compile Include="StObjContextRoot.InstanceBase.cs" />
+    <Compile Include="IRuntimeBuilder.cs" />
     <Compile Include="IStObjBuilder.cs" />
     <Compile Include="IStObjMap.cs" />
     <Compile Include="IContextualTypeMap.cs" />
@@ -74,6 +76,7 @@
     <Compile Include="IContextualRoot.cs" />
     <Compile Include="IStObj.cs" />
     <Compile Include="StObjBuildResult.cs" />
+    <Compile Include="StObjContextRoot.DefaultStObjRuntimeBuilder.cs" />
     <Compile Include="StObjModelExtension.cs" />
     <Compile Include="StObj\Impl\StObj.cs" />
     <Compile Include="StObjContextRoot.cs" />

@@ -9,9 +9,9 @@ namespace CK.Setup
     public interface IStObjTrackedAmbientPropertyInfo
     {
         /// <summary>
-        /// Gets the <see cref="IStObjRuntime"/> that holds the property.
+        /// Gets the <see cref="IStObjResult"/> that holds the property.
         /// </summary>
-        IStObjRuntime Owner { get; }
+        IStObjResult Owner { get; }
 
         /// <summary>
         /// Gets the property information.

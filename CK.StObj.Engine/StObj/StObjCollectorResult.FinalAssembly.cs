@@ -62,7 +62,7 @@ namespace CK.Setup
 
                 DynamicAssembly a = new DynamicAssembly( directory, assemblyName, externalVersionStamp, signKeyPair );
 
-                TypeBuilder root = a.ModuleBuilder.DefineType( StObjContextRoot.RootContextTypeName, TypeAttributes.Class | TypeAttributes.Sealed, typeof( StObjContextRoot ), Type.EmptyTypes );
+                TypeBuilder root = a.ModuleBuilder.DefineType( StObjContextRoot.RootContextTypeName, TypeAttributes.Class | TypeAttributes.Sealed, typeof( StObjContextRoot ) );
                 
                 if( !FinalizeTypesCreationAndCreateCtor( logger, a, root ) ) return false;
                 root.CreateType();
@@ -130,7 +130,7 @@ namespace CK.Setup
             int typeErrorCount = 0;
             using( logger.OpenGroup( LogLevel.Info, "Generating dynamic types." ) )
             {
-                var ctor = root.DefineConstructor( MethodAttributes.Public, CallingConventions.Standard, new Type[] { typeof( IActivityLogger ) } );
+                var ctor = root.DefineConstructor( MethodAttributes.Public, CallingConventions.Standard, new Type[] { typeof( IActivityLogger ), typeof( IStObjRuntimeBuilder ) } );
                 var g = ctor.GetILGenerator();
 
                 LocalBuilder locLogger = g.DeclareLocal( typeof( IActivityLogger ) );
@@ -166,9 +166,11 @@ namespace CK.Setup
                         g.Emit( OpCodes.Stelem_Ref );
                     }
                 }
-                var baseCtor = root.BaseType.GetConstructor( BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof( IActivityLogger ), typeof( Type[] ) }, null );
+                var baseCtor = root.BaseType.GetConstructor( BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof( IActivityLogger ), typeof( IStObjRuntimeBuilder ), typeof( Type[] ) }, null );
+                Debug.Assert( baseCtor != null, "StObjContextRoot ctor signature is: ( IActivityLogger logger, IStObjRuntimeBuilder runtimeBuilder, Type[] allTypes )" );
                 g.LdArg( 0 );
                 g.LdArg( 1 );
+                g.LdArg( 2 );
                 g.LdLoc( allTypes );
                 g.Emit( OpCodes.Call, baseCtor );
 

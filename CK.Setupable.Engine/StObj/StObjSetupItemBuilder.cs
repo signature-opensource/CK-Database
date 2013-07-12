@@ -25,22 +25,22 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Initializes a set of <see cref="ISetupItem"/> given a dependency-ordered list of <see cref="IStObjRuntime"/> objects.
+        /// Initializes a set of <see cref="ISetupItem"/> given a dependency-ordered list of <see cref="IStObjResult"/> objects.
         /// </summary>
-        /// <param name="rootObjects">Root <see cref="IStObjRuntime"/> objects.</param>
+        /// <param name="rootObjects">Root <see cref="IStObjResult"/> objects.</param>
         /// <returns>A set of setup items.</returns>
-        public IEnumerable<ISetupItem> Build( IReadOnlyList<IStObjRuntime> orderedObjects )
+        public IEnumerable<ISetupItem> Build( IReadOnlyList<IStObjResult> orderedObjects )
         {
             if( orderedObjects == null ) throw new ArgumentNullException( "rootObjects" );
 
-            var setupableItems = new Dictionary<IStObjRuntime, StObjSetupData>();
+            var setupableItems = new Dictionary<IStObjResult, StObjSetupData>();
             BuildSetupItems( orderedObjects, setupableItems );
             BindDependencies( setupableItems );
             if( !CallDynamicInitializer( orderedObjects, setupableItems ) ) return null;
             return setupableItems.Values.Select( data => data.SetupItem );
         }
 
-        void BuildSetupItems( IReadOnlyList<IStObjRuntime> orderedObjects, Dictionary<IStObjRuntime, StObjSetupData> setupableItems )
+        void BuildSetupItems( IReadOnlyList<IStObjResult> orderedObjects, Dictionary<IStObjResult, StObjSetupData> setupableItems )
         {
             using( _logger.OpenGroup( LogLevel.Info, "Building setupable items from {0} Structure Objects (calling IStObjSetupConfigurator.ConfigureDependentItem and IStObjSetupItemFactory.CreateDependentItem for each of them).", orderedObjects.Count ) )
             {
@@ -115,19 +115,19 @@ namespace CK.Setup
             }
         }
 
-        void BindDependencies( Dictionary<IStObjRuntime, StObjSetupData> setupableItems )
+        void BindDependencies( Dictionary<IStObjResult, StObjSetupData> setupableItems )
         {
             using( _logger.OpenGroup( LogLevel.Info, "Binding dependencies between Setupable items." ) )
             {
                 foreach( StObjSetupData data in setupableItems.Values )
                 {
                     BindContainer( setupableItems, data );
-                    foreach( IStObjRuntime req in data.StObj.Requires )
+                    foreach( IStObjResult req in data.StObj.Requires )
                     {
                         StObjSetupData reqD = setupableItems[req];
                         data.SetupItem.Requires.Add( reqD.SetupItem.GetReference() );
                     }
-                    foreach( IStObjRuntime group in data.StObj.Groups )
+                    foreach( IStObjResult group in data.StObj.Groups )
                     {
                         StObjSetupData gData = setupableItems[group];
                         IMutableSetupItemGroup g = gData.SetupItem as IMutableSetupItemGroup;
@@ -150,7 +150,7 @@ namespace CK.Setup
                         }
                         else
                         {
-                            foreach( IStObjRuntime child in data.StObj.Children )
+                            foreach( IStObjResult child in data.StObj.Children )
                             {
                                 StObjSetupData c = setupableItems[child];
                                 g.Children.Add( c.SetupItem.GetReference() );
@@ -161,9 +161,9 @@ namespace CK.Setup
             }
         }
 
-        void BindContainer( Dictionary<IStObjRuntime, StObjSetupData> setupableItems, StObjSetupData data )
+        void BindContainer( Dictionary<IStObjResult, StObjSetupData> setupableItems, StObjSetupData data )
         {
-            IStObjRuntime existingStObjContainer = data.StObj.ConfiguredContainer;
+            IStObjResult existingStObjContainer = data.StObj.ConfiguredContainer;
             StObjSetupData existing = existingStObjContainer != null ? setupableItems[existingStObjContainer] : null;
             if( existing != null )
             {
@@ -212,7 +212,7 @@ namespace CK.Setup
 
             class PushedAction
             {
-                public PushedAction( IMutableSetupItem item, IStObjRuntime stObj, Action<IStObjSetupDynamicInitializerState, IMutableSetupItem, IStObjRuntime> action )
+                public PushedAction( IMutableSetupItem item, IStObjResult stObj, Action<IStObjSetupDynamicInitializerState, IMutableSetupItem, IStObjResult> action )
                 {
                     Item = item;
                     StObj = stObj;
@@ -220,8 +220,8 @@ namespace CK.Setup
                 }
 
                 public readonly IMutableSetupItem Item;
-                public readonly IStObjRuntime StObj;
-                public readonly Action<IStObjSetupDynamicInitializerState, IMutableSetupItem, IStObjRuntime> Action;
+                public readonly IStObjResult StObj;
+                public readonly Action<IStObjSetupDynamicInitializerState, IMutableSetupItem, IStObjResult> Action;
             }
 
             internal DynamicInitializerState( StObjSetupItemBuilder builder )
@@ -238,9 +238,9 @@ namespace CK.Setup
             public int PushedActionsCount { get { return _actions.Count; } }
             
             public IMutableSetupItem CurrentItem;
-            public IStObjRuntime CurrentStObj;
+            public IStObjResult CurrentStObj;
 
-            public void PushAction( Action<IStObjSetupDynamicInitializerState, IMutableSetupItem, IStObjRuntime> a )
+            public void PushAction( Action<IStObjSetupDynamicInitializerState, IMutableSetupItem, IStObjResult> a )
             {
                 _actions.Add( new PushedAction( CurrentItem, CurrentStObj, a ) );
             }
@@ -269,7 +269,7 @@ namespace CK.Setup
             }
         }
 
-        bool CallDynamicInitializer( IReadOnlyList<IStObjRuntime> orderedObjects, Dictionary<IStObjRuntime, StObjSetupData> setupableItems )
+        bool CallDynamicInitializer( IReadOnlyList<IStObjResult> orderedObjects, Dictionary<IStObjResult, StObjSetupData> setupableItems )
         {
             using( _logger.OpenGroup( LogLevel.Info, "Dynamic initialization of Setup items (calling IStObjSetupDynamicInitializer.DynamicItemInitialize for each of them)." ) )
             {

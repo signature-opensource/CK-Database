@@ -48,7 +48,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
 
                 Assert.That( defaultDB.Connection.ExecuteScalar( "select ResName from CK.tRes where ResId=1" ), Is.EqualTo( "System" ) );
 
-                var map = StObjContextRoot.Load( "IntoTheWild.Auto", TestHelper.Logger );
+                var map = StObjContextRoot.Load( "IntoTheWild.Auto", StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Logger );
                 Assert.That( map.Default.Obtain<SqlDefaultDatabase>().ConnectionString, Is.EqualTo( defaultDBConnectionString ) );
                 Assert.That( map.FindContext("dbHisto").Obtain<SqlHistoDatabase>().ConnectionString, Is.EqualTo( defaultDBConnectionString ) );
             }

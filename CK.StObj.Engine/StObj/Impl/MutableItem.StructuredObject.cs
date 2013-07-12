@@ -29,14 +29,14 @@ namespace CK.Setup
         }
 
 
-        public object CreateStructuredObject( IActivityLogger logger )
+        public object CreateStructuredObject( IActivityLogger logger, IStObjRuntimeBuilder runtimeBuilder )
         {
             Debug.Assert( Specialization == null );
             Debug.Assert( _leafData.StructuredObject == null, "Called once and only once." );
             try
             {
                 Type toInstanciate = _leafData.ImplementableTypeInfo != null ? _leafData.ImplementableTypeInfo.LastGeneratedType : Type;
-                return _leafData.StructuredObject = Activator.CreateInstance( toInstanciate, true );
+                return _leafData.StructuredObject = runtimeBuilder.CreateInstance( toInstanciate );
             }
             catch( Exception ex )
             {

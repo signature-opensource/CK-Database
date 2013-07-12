@@ -8,9 +8,9 @@ namespace CK.Setup
 {
     public interface IContextualStObjMapRuntime : IContextualStObjMap
     {
-        new IStObjRuntime ToLeaf( Type t );
+        new IStObjResult ToLeaf( Type t );
 
-        IStObjRuntime ToStObj( Type t );
+        IStObjResult ToStObj( Type t );
     }
 
 }

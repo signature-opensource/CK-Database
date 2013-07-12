@@ -12,7 +12,7 @@ namespace CK.Setup
     /// This interface is available after the dependency graph ordering (this is the Owner exposed by <see cref="IStObjFinalParameter"/> for construct parameters for instance).
     /// It is the final interface that is exposed for each StObj at the end of the <see cref="StObjCollector.GetResults"/> work.
     /// </summary>
-    public interface IStObjRuntime : IStObj
+    public interface IStObjResult : IStObj
     {
         /// <summary>
         /// Gets the associated object instance (the final, most specialized, structured object).
@@ -36,54 +36,54 @@ namespace CK.Setup
         DependentItemKindSpec ItemKind { get; }
 
         /// <summary>
-        /// Gets the parent <see cref="IStObjRuntime"/> in the inheritance chain (the one associated to the base class of this <see cref="ObjectType"/>).
+        /// Gets the parent <see cref="IStObjResult"/> in the inheritance chain (the one associated to the base class of this <see cref="ObjectType"/>).
         /// May be null.
         /// </summary>
-        new IStObjRuntime Generalization { get; }
+        new IStObjResult Generalization { get; }
 
         /// <summary>
-        /// Gets the child <see cref="IStObjRuntime"/> in the inheritance chain.
+        /// Gets the child <see cref="IStObjResult"/> in the inheritance chain.
         /// May be null.
         /// </summary>
-        new IStObjRuntime Specialization { get; }
+        new IStObjResult Specialization { get; }
 
         /// <summary>
-        /// Gets the ultimate generalization <see cref="IStObjRuntime"/> in the inheritance chain. Never null (can be this object itself).
+        /// Gets the ultimate generalization <see cref="IStObjResult"/> in the inheritance chain. Never null (can be this object itself).
         /// </summary>
-        IStObjRuntime RootGeneralization { get; }
+        IStObjResult RootGeneralization { get; }
 
         /// <summary>
-        /// Gets the ultimate specialization <see cref="IStObjRuntime"/> in the inheritance chain. Never null (can be this object itself).
+        /// Gets the ultimate specialization <see cref="IStObjResult"/> in the inheritance chain. Never null (can be this object itself).
         /// </summary>
-        IStObjRuntime LeafSpecialization { get; }
+        IStObjResult LeafSpecialization { get; }
 
         /// <summary>
         /// Gets the configured container for this object. If this <see cref="Container"/> has been inherited 
         /// from its <see cref="Generalization"/>, this ConfiguredContainer is null.
         /// </summary>
-        IStObjRuntime ConfiguredContainer { get; }
+        IStObjResult ConfiguredContainer { get; }
 
         /// <summary>
         /// Gets the container of this object. If no container has been explicitely associated for the object, this is the
         /// container of its <see cref="Generalization"/> (if it exists). May be null.
         /// </summary>
-        IStObjRuntime Container { get; }
+        IStObjResult Container { get; }
 
         /// <summary>
         /// Gets a list of required objects. This list combines the requirements of this items (explicitely required types, 
         /// construct parameters, etc.) and any RequiredBy from other objects.
         /// </summary>
-        IReadOnlyList<IStObjRuntime> Requires { get; }
+        IReadOnlyList<IStObjResult> Requires { get; }
 
         /// <summary>
         /// Gets a list of Group objects to which this object belongs.
         /// </summary>
-        IReadOnlyList<IStObjRuntime> Groups { get; }
+        IReadOnlyList<IStObjResult> Groups { get; }
 
         /// <summary>
         /// Gets a list of children objects when this <see cref="ItemKind"/> is either a <see cref="DependentItemKind.Group"/> or a <see cref="DependentItemKind.Container"/>.
         /// </summary>
-        IReadOnlyList<IStObjRuntime> Children { get; }
+        IReadOnlyList<IStObjResult> Children { get; }
 
         /// <summary>
         /// Gets the list of Ambient Properties that reference this object.

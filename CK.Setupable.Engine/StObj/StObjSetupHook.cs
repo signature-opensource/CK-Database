@@ -10,14 +10,16 @@ namespace CK.Setup
     class StObjSetupHook 
     {
         readonly SetupCenter _center;
+        readonly IStObjRuntimeBuilder _runtimeBuilder;
         readonly SetupCenterConfiguration _config;
         readonly SetupableConfigurator _configurator;
 
         StObjCollectorResult _resultToGenerate;
 
-        public StObjSetupHook( SetupCenter center, SetupCenterConfiguration config, SetupableConfigurator internalRelay )
+        public StObjSetupHook( SetupCenter center, IStObjRuntimeBuilder runtimeBuilder, SetupCenterConfiguration config, SetupableConfigurator internalRelay )
         {
             _center = center;
+            _runtimeBuilder = runtimeBuilder;
             _config = config;
             _configurator = internalRelay;
             _center.RegisterSetupEvent += new EventHandler<RegisterSetupEventArgs>( OnRegisterSetupEvent );
@@ -34,7 +36,7 @@ namespace CK.Setup
                 AssemblyRegisterer typeReg = new AssemblyRegisterer( logger );
                 typeReg.TypeFilter = _config.TypeFilter;
                 typeReg.Discover( _config.AppDomainConfiguration.Assemblies );
-                StObjCollector stObjC = new StObjCollector( logger, _configurator, _configurator, _configurator );
+                StObjCollector stObjC = new StObjCollector( logger, _runtimeBuilder, _configurator, _configurator, _configurator );
                 stObjC.RegisterTypes( typeReg );
                 foreach( var t in _config.ExplicitRegisteredClasses ) stObjC.RegisterClass( t );
                 stObjC.DependencySorterHookInput = _center.StObjDependencySorterHookInput;

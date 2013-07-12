@@ -44,10 +44,10 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets all the <see cref="IStObjRuntime"/> ordered by their dependencies.
+        /// Gets all the <see cref="IStObjResult"/> ordered by their dependencies.
         /// Empty if <see cref="HasFatalError"/> is true.
         /// </summary>
-        public IReadOnlyList<IStObjRuntime> OrderedStObjs
+        public IReadOnlyList<IStObjResult> OrderedStObjs
         {
             get { return _orderedStObjs; }
         }

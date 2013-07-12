@@ -11,10 +11,10 @@ namespace CK.Setup
     public interface IStObjFinalParameter : IStObjReference
     {
         /// <summary>
-        /// Gets the StObj that owns this reference as a <see cref="IStObjRuntime"/> (since the dependency graph is resolved).
+        /// Gets the StObj that owns this reference as a <see cref="IStObjResult"/> (since the dependency graph is resolved).
         /// This owner corresponds to the exact type of the object that has the Construct method for parameters.
         /// </summary>
-        new IStObjRuntime Owner { get; }
+        new IStObjResult Owner { get; }
         
         /// <summary>
         /// Gets the name of the construct parameter.
@@ -41,7 +41,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets the current value that will be used. 
-        /// If it has not been resolved to a <see cref="IStObjRuntime.Object"/> instance or "structurally" set by one <see cref="IStObjStructuralConfigurator"/>, it is <see cref="Type.Missing"/>. 
+        /// If it has not been resolved to a <see cref="IStObjResult.Object"/> instance or "structurally" set by one <see cref="IStObjStructuralConfigurator"/>, it is <see cref="Type.Missing"/>. 
         /// Use <see cref="SetParameterValue"/> to set it.
         /// </summary>
         object Value { get; }

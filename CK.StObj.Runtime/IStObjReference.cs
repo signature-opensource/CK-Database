@@ -57,7 +57,7 @@ namespace CK.Setup
         Type Type { get; }
 
         /// <summary>
-        /// Gets whether this reference must be satisfied with an available <see cref="IStObjRuntime"/> if the <see cref="P:Type"/> is not null.
+        /// Gets whether this reference must be satisfied with an available <see cref="IStObjResult"/> if the <see cref="P:Type"/> is not null.
         /// <para>
         /// Defaults to <see cref="StObjRequirementBehavior.ErrorIfNotStObj"/> for <see cref="IStObjMutableItem.Requires"/> and <see cref="IStObjMutableItem.Container"/> 
         /// (a described dependency is required unless explicitely declared as optional by <see cref="IStObjStructuralConfigurator"/>).

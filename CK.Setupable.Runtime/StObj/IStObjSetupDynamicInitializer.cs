@@ -25,7 +25,7 @@ namespace CK.Setup
         /// When implemented by the structured object itself, it may be called multiple times: once for each StObj slice in 
         /// its hierarchy.
         /// </remarks>
-        void DynamicItemInitialize( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjRuntime stObj );
+        void DynamicItemInitialize( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjResult stObj );
     }
 
 

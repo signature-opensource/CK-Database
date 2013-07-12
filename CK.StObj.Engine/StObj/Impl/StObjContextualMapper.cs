@@ -25,20 +25,20 @@ namespace CK.Setup
         }
 
 
-        IStObjRuntime IContextualStObjMapRuntime.ToLeaf( Type t )
+        IStObjResult IContextualStObjMapRuntime.ToLeaf( Type t )
         {
-            return (IStObjRuntime)base.ToLeaf( t );
+            return (IStObjResult)base.ToLeaf( t );
         }
 
         public object Obtain( Type t )
         {
-            IStObjRuntime m = ToLeaf( t );
+            IStObjResult m = ToLeaf( t );
             return m != null ? m.Object : null;
         }
         
-        IStObjRuntime IContextualStObjMapRuntime.ToStObj( Type t )
+        IStObjResult IContextualStObjMapRuntime.ToStObj( Type t )
         {
-            return (IStObjRuntime)base.ToHighestImpl( t );
+            return (IStObjResult)base.ToHighestImpl( t );
         }
 
     }

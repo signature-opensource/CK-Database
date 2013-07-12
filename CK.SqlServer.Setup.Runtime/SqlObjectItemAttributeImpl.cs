@@ -20,7 +20,7 @@ namespace CK.SqlServer.Setup
             Attribute = a;
         }
 
-        void IStObjSetupDynamicInitializer.DynamicItemInitialize( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjRuntime stObj )
+        void IStObjSetupDynamicInitializer.DynamicItemInitialize( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjResult stObj )
         {
             if( !(stObj.Object is SqlPackageBase) )
             {

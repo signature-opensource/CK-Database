@@ -161,7 +161,7 @@ namespace CK.StObj.Engine.Tests
             Check( @this, @this.StObjMap.ToStObj( typeof(T) ).Children, childrenTypeNames );
         }
 
-        public static void Check( this StObjCollectorContextualResult @this, IEnumerable<IStObjRuntime> items, string typeNames )
+        public static void Check( this StObjCollectorContextualResult @this, IEnumerable<IStObjResult> items, string typeNames )
         {
             var s1 = items.Select( i => i.ObjectType.Name ).OrderBy( Util.FuncIdentity );
             var s2 = typeNames.Split( ',' ).OrderBy( Util.FuncIdentity );

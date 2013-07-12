@@ -10,7 +10,7 @@ using System.Collections;
 namespace CK.Setup
 {
 
-    partial class MutableItem : StObjContextTypeInfo, IStObjRuntime, IStObjMutableItem, IDependentItemContainerTyped, IDependentItemContainerRef
+    partial class MutableItem : StObjContextTypeInfo, IStObjResult, IStObjMutableItem, IDependentItemContainerTyped, IDependentItemContainerRef
     {
         class LeafData
         {
@@ -747,53 +747,53 @@ namespace CK.Setup
             get { return Specialization; }
         }
 
-        IStObjRuntime IStObjRuntime.Generalization
+        IStObjResult IStObjResult.Generalization
         {
             get { return Generalization; }
         }
 
-        IStObjRuntime IStObjRuntime.Specialization
+        IStObjResult IStObjResult.Specialization
         {
             get { return Specialization; }
         }
 
-        IStObjRuntime IStObjRuntime.RootGeneralization
+        IStObjResult IStObjResult.RootGeneralization
         {
             get { return _leafData.RootGeneralization; }
         }
 
-        IStObjRuntime IStObjRuntime.LeafSpecialization
+        IStObjResult IStObjResult.LeafSpecialization
         {
             get { return _leafData.LeafSpecialization; }
         }
 
-        IStObjRuntime IStObjRuntime.ConfiguredContainer 
+        IStObjResult IStObjResult.ConfiguredContainer 
         {
             get { return IsOwnContainer ? _dContainer : null; } 
         }
 
-        IStObjRuntime IStObjRuntime.Container 
+        IStObjResult IStObjResult.Container 
         { 
             get { return _dContainer; } 
         }
 
-        IReadOnlyList<IStObjRuntime> IStObjRuntime.Requires 
+        IReadOnlyList<IStObjResult> IStObjResult.Requires 
         {
             get { return _dRequires; } 
         }
 
-        IReadOnlyList<IStObjRuntime> IStObjRuntime.Children
+        IReadOnlyList<IStObjResult> IStObjResult.Children
         {
             get { return _dChildren; }
         }
 
-        IReadOnlyList<IStObjRuntime> IStObjRuntime.Groups
+        IReadOnlyList<IStObjResult> IStObjResult.Groups
         {
             get { return _dGroups; }
         }
 
 
-        IReadOnlyList<IStObjTrackedAmbientPropertyInfo> IStObjRuntime.TrackedAmbientProperties
+        IReadOnlyList<IStObjTrackedAmbientPropertyInfo> IStObjResult.TrackedAmbientProperties
         {
             get 
             { 
@@ -802,7 +802,7 @@ namespace CK.Setup
             }
         }
 
-        object IStObjRuntime.GetStObjProperty( string propertyName )
+        object IStObjResult.GetStObjProperty( string propertyName )
         {
             StObjProperty p = GetStObjProperty( propertyName );
             return p != null ? p.Value : Type.Missing;

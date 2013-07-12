@@ -53,7 +53,7 @@
     <Compile Include="IAmbientContractDispatcher.cs" />
     <Compile Include="ICustomAttributeProvider.cs" />
     <Compile Include="ICustomAttributeMultiProvider.cs" />
-    <Compile Include="IStObjRuntime.cs" />
+    <Compile Include="IStObjResult.cs" />
     <Compile Include="IStObjAmbientProperty.cs" />
     <Compile Include="IStObjFinalAmbientProperty.cs" />
     <Compile Include="IStObjFinalParameter.cs" />

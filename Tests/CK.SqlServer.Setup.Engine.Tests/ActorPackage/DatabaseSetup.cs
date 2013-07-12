@@ -80,7 +80,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             }
             using( var db = SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.Logger ) )
             {
-                IStObjMap m = StObjContextRoot.Load( dllName, TestHelper.Logger );
+                IStObjMap m = StObjContextRoot.Load( dllName, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Logger );
                 if( typeFilter == null ) CheckBasicAndZone( db, m );
                 else CheckBasicOnly( db, m );
             }
@@ -104,7 +104,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
             using( var db = SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.Logger ) )
             {
-                IStObjMap m = StObjContextRoot.Load( dllName, TestHelper.Logger );
+                IStObjMap m = StObjContextRoot.Load( dllName, null, TestHelper.Logger );
                 if( typeFilter == null ) CheckBasicAndZone( db, m );
                 else CheckBasicOnly( db, m );
             }

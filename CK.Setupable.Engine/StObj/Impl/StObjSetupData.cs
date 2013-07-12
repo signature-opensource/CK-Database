@@ -9,7 +9,7 @@ namespace CK.Setup
 {
     internal class StObjSetupData : StObjSetupDataBase, IStObjSetupData, IMutableStObjSetupData
     {
-        readonly IStObjRuntime _stObj;
+        readonly IStObjResult _stObj;
 
         string _fullNameWithoutContext;
         string _versions;
@@ -18,7 +18,7 @@ namespace CK.Setup
         IReadOnlyList<IDependentItemRef> _childrenEx;
         IReadOnlyList<IDependentItemGroupRef> _groupsEx;
 
-        internal StObjSetupData( IActivityLogger logger, IStObjRuntime o, StObjSetupDataBase parent )
+        internal StObjSetupData( IActivityLogger logger, IStObjResult o, StObjSetupDataBase parent )
             : base( logger, o.ObjectType, parent )
         {
             _stObj = o;
@@ -31,7 +31,7 @@ namespace CK.Setup
             _groupsEx = new CKReadOnlyListOnIList<IDependentItemGroupRef>( Groups );
         }
 
-        public IStObjRuntime StObj
+        public IStObjResult StObj
         {
             get { return _stObj; }
         }
