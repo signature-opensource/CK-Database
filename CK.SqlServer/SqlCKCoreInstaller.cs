@@ -8,7 +8,7 @@ namespace CK.SqlServer
 {
     internal class SqlCKCoreInstaller
     {
-        public readonly static Int16 CurrentVersion = 6;
+        public readonly static Int16 CurrentVersion = 7;
 
         /// <summary>
         /// Installs the kernel.
@@ -99,13 +99,10 @@ begin
 	fetch from @C into @tName, @cName
 	while @@FETCH_STATUS = 0
 	begin
-		if not exists( select * from sys.fn_listextendedproperty('CKLock', 'user', @SchemaName, 'TABLE', @tName, NULL, NULL) )
-		begin
-			declare @cmd nvarchar(800);
-			set @cmd = N'alter table ['+@SchemaName+'].['+@tName+N'] drop constraint '+@cName;
-			exec sp_executesql @cmd;
-		end 
-		fetch next from @C into @tName, @cName;
+		declare @cmd nvarchar(800);
+		set @cmd = N'alter table ['+@SchemaName+'].['+@tName+N'] drop constraint '+@cName;
+		exec sp_executesql @cmd;
+        fetch next from @C into @tName, @cName;
 	end 
 end
 GO
@@ -131,8 +128,7 @@ begin
 					and ROUTINE_NAME not like 'sys[_]%'
 					and ROUTINE_NAME not like 'dt[_]%'
 					and ROUTINE_NAME <> 'sSchemaDropAllConstraints'
-					and ROUTINE_NAME <> 'sSchemaDropAllObjects'
-                    and not exists( select * from sys.fn_listextendedproperty('CKLock', 'user', @SchemaName, ROUTINE_TYPE, ROUTINE_NAME, NULL, NULL) );
+					and ROUTINE_NAME <> 'sSchemaDropAllObjects';
 		declare @rType nvarchar(20);
 		declare @rName sysname;
 		open @C2;
@@ -151,8 +147,7 @@ begin
 			select TABLE_NAME 
 			from INFORMATION_SCHEMA.VIEWS 
 			where TABLE_SCHEMA = @SchemaName 
-                    and TABLE_NAME not like 'sys%'
-                    and not exists( select * from sys.fn_listextendedproperty('CKLock', 'user', @SchemaName, 'VIEW', TABLE_NAME, NULL, NULL) );
+                    and TABLE_NAME not like 'sys%';
 		declare @vName sysname;
 		open @C;
 		fetch from @C into @vName;
@@ -165,9 +160,21 @@ begin
 	end
     if @ObjectType is null or @ObjectType = 'TABLE'
 	begin
-		exec CKCore.sSchemaDropAllConstraints @SchemaName;
-		set @cmd = 'declare @n sysname set @n = PARSENAME( ''?'', 1 ) if PARSENAME( ''?'', 2 ) = '''+@SchemaName+''' and not exists( select * from sys.fn_listextendedproperty(''CKLock'', ''user'', '''+@SchemaName+''', ''TABLE'', @n, NULL, NULL) ) drop table ?';
-		exec sp_MSforeachtable @command1 = @cmd;
+		declare @C3 cursor;
+		set @C3 = cursor local read_only for 
+			select TABLE_NAME 
+			from INFORMATION_SCHEMA.TABLES 
+			where TABLE_SCHEMA = @SchemaName 
+                    and TABLE_NAME not like 'sys%';
+		declare @tName sysname;
+		open @C3;
+		fetch from @C3 into @tName;
+		while @@FETCH_STATUS = 0
+		begin
+			set @cmd = N'drop table ['+@SchemaName+'].['+@tName+N']';
+			exec sp_executesql @cmd;
+			fetch next from @C3 into @tName;
+		end
 	end
 end
 GO

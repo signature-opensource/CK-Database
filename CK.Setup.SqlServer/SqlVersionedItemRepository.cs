@@ -11,7 +11,7 @@ namespace CK.Setup.SqlServer
 {
     public class SqlVersionedItemRepository : IVersionedItemRepository, IDisposable
     {
-        public readonly static Version CurrentVersion = new Version( 4, 1, 6, 1142 );
+        public readonly static Version CurrentVersion = new Version( 4, 1, 6, 1756 );
 
         readonly SqlManager _manager;
         SqlCommand _get;
@@ -283,17 +283,6 @@ begin
 	set @ItemType = Upper(@ItemType);
 	select @ItemVersion = t.ItemVersion from CKCore.tItemVersion t where t.FullName = @FullName;
 		
-	-- Temporary: lookup version on extended properties for default context and database.
-	if @@ROWCOUNT = 0 
-		and (@ItemType = 'TABLE' or @ItemType = 'PROCEDURE' or @ItemType = 'FUNCTION'  or @ItemType = 'VIEW')
-		and SUBSTRING(@FullName,1,5)='[]db^'  
-	begin
-		declare @oldFName varchar(128) = SUBSTRING(@FullName,6,128);
-		select @ItemVersion = cast(value as varchar(32))
-			from sys.fn_listextendedproperty( 'CKVersion', 'schema', PARSENAME(@oldFName,2), @ItemType, PARSENAME(@oldFName,1), NULL, NULL);
-	end
-	-- /Temporary
-
 	if @ItemVersion is not null
 		and
 		(@ItemType = 'TABLE' or @ItemType = 'PROCEDURE' or @ItemType = 'FUNCTION'  or @ItemType = 'VIEW')
