@@ -114,7 +114,7 @@ namespace CK.SqlServer
         }
 
         /// <summary>
-        /// Gets or sets wether the main connection will be reused as much as possible.
+        /// Gets or sets whether the main connection will be reused as much as possible.
         /// Defaults to true.
         /// </summary>
         public bool KeepOpened
@@ -129,7 +129,7 @@ namespace CK.SqlServer
         /// <param name="cmd">The string to execute.</param>
         /// <param name="timeoutSecond">
         /// The maximum number of seconds to wait for the result. 
-        /// -1 to use the default value, Caution: 0 waits indefinitly (see <see cref="SqlCommand.CommandTimeout"/>).
+        /// -1 to use the default value, Caution: 0 waits indefinitely (see <see cref="SqlCommand.CommandTimeout"/>).
         /// </param>
         /// <returns>An array of objects or null if nothing has been returned from database.</returns>
         /// <remarks>
@@ -211,7 +211,7 @@ namespace CK.SqlServer
         /// <param name="cmd">The string to execute.</param>
         /// <param name="timeoutSecond">
         /// The maximum number of seconds to wait for the result. 
-        /// -1 to use the default value, Caution: 0 waits indefinitly (see <see cref="SqlCommand.CommandTimeout"/>).
+        /// -1 to use the default value, Caution: 0 waits indefinitely (see <see cref="SqlCommand.CommandTimeout"/>).
         /// </param>
         /// <returns>The number of rows affected.</returns>
         /// <remarks>
@@ -264,8 +264,8 @@ namespace CK.SqlServer
         /// </summary>
         /// <param name="cmd">The select command to execute.</param>
         /// <param name="timeoutSecond">The maximum number of seconds to wait for the result. 
-        /// -1 to use the default value, Caution: 0 waits indefinitly (see <see cref="SqlCommand.CommandTimeout"/>).</param>
-        /// <returns>The first column of the first row in the resultset.</returns>
+        /// -1 to use the default value, Caution: 0 waits indefinitely (see <see cref="SqlCommand.CommandTimeout"/>).</param>
+        /// <returns>The first column of the first row in the result set.</returns>
         /// <remarks>
         /// Exceptions are not caught by this method: acquired resources will be 
         /// correctly released but exceptions will be propagated to caller.
@@ -284,7 +284,7 @@ namespace CK.SqlServer
         /// main connection is in use, acquires a new connection.
         /// </summary>
         /// <param name="cmd">The <see cref="SqlCommand"/> to execute.</param>
-        /// <returns>The first column of the first row in the resultset.</returns>
+        /// <returns>The first column of the first row in the result set.</returns>
         /// <remarks>
         /// Exceptions are not caught by this method: acquired resources will be 
         /// correctly released but exceptions will be propagated to caller.
@@ -433,7 +433,7 @@ namespace CK.SqlServer
         }
 
         /// <summary>
-        /// Releases a conccetion previously aquired by a call to <see cref="AcquireConnection"/>.
+        /// Releases a connection previously acquired by a call to <see cref="AcquireConnection"/>.
         /// </summary>
         /// <param name="cmd">The command.</param>
         /// <param name="mustClose">Value obtained by <see cref="AcquireConnection"/>.<see cref="ReleaseConnection"/>.

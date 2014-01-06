@@ -9,7 +9,7 @@ namespace CK.SqlServer.Setup
 {
     public class SqlVersionedItemRepository : IVersionedItemRepository, IDisposable
     {
-        public readonly static Version CurrentVersion = new Version( 2, 11, 26, 1300 );
+        public readonly static Version CurrentVersion = new Version( 4, 1, 6, 1142 );
 
         readonly SqlManager _manager;
         SqlCommand _get;
@@ -37,7 +37,7 @@ namespace CK.SqlServer.Setup
             _get.Parameters[0].Value = t;
 
             VersionedName n = DoGetVersion( i.FullName );
-            // Temporary: Looks up for unprefixed FullName when not found and cleans up the db.
+            // Temporary: Looks up for non-prefixed FullName when not found and cleans up the db.
             if( n == null && i.FullName.StartsWith( "[]db^", StringComparison.Ordinal ) )
             {
                 n = DoGetVersion( i.FullName.Substring( 5 ) );
@@ -285,7 +285,7 @@ begin
 	begin
 		declare @oldFName varchar(128) = SUBSTRING(@FullName,6,128);
 		select @ItemVersion = cast(value as varchar(32))
-			from ::fn_listextendedproperty( 'CKVersion', 'schema', PARSENAME(@oldFName,2), @ItemType, PARSENAME(@oldFName,1), NULL, NULL);
+			from sys.fn_listextendedproperty( 'CKVersion', 'schema', PARSENAME(@oldFName,2), @ItemType, PARSENAME(@oldFName,1), NULL, NULL);
 	end
 	-- /Temporary
 

@@ -63,11 +63,15 @@ begin
     if object_id('CKCore.tSetupMemoryItem') is not null drop table CKCore.tSetupMemoryItem;
 	create table CKCore.tSetupMemory
 	(
+		-- This table is used as a heap: the primary key is not used
+		-- and is here only to be azure compliant.
+        SurrogateId int not null identity(0,1),
 		CreationDate datetime not null,
 		LastStartDate datetime not null,
 		TotalStartCount int not null,
 		StartCount int not null,
-		LastError nvarchar(max)
+		LastError nvarchar(max),
+		constraint PK_CKCore_tSetupMemory primary key(SurrogateId)
 	);
     insert into CKCore.tSetupMemory(CreationDate,LastStartDate,TotalStartCount,StartCount,LastError) values( getutcdate(), 0, 0, 0, null );
 end
@@ -77,7 +81,7 @@ begin
 	(
 		ItemKey nvarchar(256) not null,
 		ItemValue nvarchar(max) not null,
-		constraint PK_tSetupMemoryItem primary key(ItemKey)
+		constraint PK_CKCore_tSetupMemoryItem primary key(ItemKey)
 	);
 end
 select LastStartDate, StartCount, LastError from CKCore.tSetupMemory;
@@ -97,7 +101,7 @@ select LastStartDate, StartCount, LastError from CKCore.tSetupMemory;
 
         /// <summary>
         /// On success, the whole memory of the setup process must be cleared. 
-        /// On ok (when <paramref name="ok"/> is not null), the memory must be persisted.
+        /// On failure (when <paramref name="error"/> is not null), the memory must be persisted.
         /// <see cref="IsStarted"/> must be true otherwise an <see cref="InvalidOperationException"/> is thrown.
         /// </summary>
         /// <param name="error">
