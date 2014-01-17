@@ -9,8 +9,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTrademark( "" )]
 [assembly: CLSCompliant( true )]
 
-[assembly: AssemblyVersion( "1.3.1" )]
-[assembly: AssemblyFileVersion( "1.3.1" )]
+[assembly: AssemblyVersion( "1.3.2" )]
+[assembly: AssemblyFileVersion( "1.3.2" )]
 
 #if DEBUG
     [assembly: AssemblyConfiguration( "Debug" )]
