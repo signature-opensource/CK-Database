@@ -156,7 +156,7 @@ namespace CK.SqlServer
         /// <param name="logger">
         /// Logger to use, when null an exception is thrown on error. 
         /// Otherwise any exceptions are routed to it and it is associated as the <see cref="SqlManager.Logger"/>.</param>
-        /// <returns>A new <see cref="SqlManager"/> or null if an error occured and no <paramref name="logger"/> is provided.</returns>
+        /// <returns>A new <see cref="SqlManager"/> or null if an error occurred and no <paramref name="logger"/> is provided.</returns>
         public static SqlManager OpenOrCreate( string server, string database, IActivityLogger logger = null )
         {
             SqlManager m = new SqlManager();

@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyCompany( "Invenietis" )]
 [assembly: AssemblyProduct( "CK-Database" )]
-[assembly: AssemblyCopyright( "Copyright © Invenietis 2012" )]
+[assembly: AssemblyCopyright( "Copyright © Invenietis 2012-2013" )]
 [assembly: AssemblyTrademark( "" )]
 [assembly: CLSCompliant( true )]
 
