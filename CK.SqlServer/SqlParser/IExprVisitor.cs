@@ -7,7 +7,7 @@ namespace CK.SqlServer
     {
         T VisitExpr( SqlItem e );
 
-        T Visit( SqlExprUnmodeledTokens e );
+        T Visit( SqlExprUnmodeledItems e );
         T Visit( SqlExprRawItemList e );
         T Visit( SqlExprKoCall e );
         T Visit( SqlExprStIf e );
@@ -23,6 +23,7 @@ namespace CK.SqlServer
         T Visit( SqlExprStEmpty e );
         T Visit( SqlExprStView e );
         T Visit( SqlExprColumnList e );
+        T Visit( SqlNoExprExecuteAs e );
 
         T Visit( SqlExprIdentifier e );
         T Visit( SqlExprMultiIdentifier e );

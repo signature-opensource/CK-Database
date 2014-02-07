@@ -19,14 +19,11 @@ namespace CK.SqlServer
         {
             if( declVar == null ) throw new ArgumentNullException( "declVar" );
             if( !declVar.Identifier.IsVariable ) throw new ArgumentException( "Must be a @VariableName", "variable" );
-            if( outputClause != null
-                && String.Compare( outputClause.Name, "out", StringComparison.OrdinalIgnoreCase ) != 0
-                && String.Compare( outputClause.Name, "output", StringComparison.OrdinalIgnoreCase ) != 0 )
+            if( outputClause != null && outputClause.TokenType != SqlTokenType.Output )
             {
                 throw new ArgumentException( "Must be out or output.", "outputClause" );
             }
-            if( readonlyClause != null
-                && String.Compare( outputClause.Name, "readonly", StringComparison.OrdinalIgnoreCase ) != 0 )
+            if( readonlyClause != null && readonlyClause.TokenType != SqlTokenType.Readonly )
             {
                 throw new ArgumentException( "Must be readonly.", "readonlyClause" );
             }
@@ -116,7 +113,7 @@ namespace CK.SqlServer
         
         public bool IsReadOnly { get { return ReadOnlyToken != null; } }
 
-        public SqlTokenIdentifier ReadOnlyToken { get { var t = LastTokenClause; return t != null && t.NameEquals( "readonly" ) ? t : null; } }
+        public SqlTokenIdentifier ReadOnlyToken { get { var t = LastTokenClause; return t != null && t.TokenType == SqlTokenType.Readonly ? t : null; } }
 
         public SqlTokenIdentifier OutputToken 
         { 
@@ -124,10 +121,10 @@ namespace CK.SqlServer
             {
                 var t = LastTokenClause;
                 if( t == null ) return null;
-                if( !t.NameEquals( "output" ) )
+                if( t.TokenType != SqlTokenType.Output )
                 {
                     t = AnteLastTokenClause;
-                    Debug.Assert( t == null || t.NameEquals( "output" ) );
+                    Debug.Assert( t == null || t.TokenType == SqlTokenType.Output );
                 }
                 return t;
             } 

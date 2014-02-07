@@ -39,7 +39,7 @@ namespace CK.SqlServer
             if( openPar.TokenType != SqlTokenType.OpenPar ) throw new ArgumentException( "Must be '('.", "openPar" );
             if( size == null ) throw new ArgumentNullException( "size" );
             if( !(size is SqlTokenLiteralInteger && ((SqlTokenLiteralInteger)size).Value > 0) 
-                && !(size is SqlTokenIdentifier && ((SqlTokenIdentifier)size).NameEquals("max")) ) throw new ArgumentException( "Size must be an integer greater than 0 or max.", "size" );
+                && !(size is SqlTokenIdentifier && ((SqlTokenIdentifier)size).TokenType == SqlTokenType.Max) ) throw new ArgumentException( "Size must be an integer greater than 0 or max.", "size" );
             if( closePar == null ) throw new ArgumentNullException( "closePar" );
             if( closePar.TokenType != SqlTokenType.ClosePar ) throw new ArgumentException( "Must be ')'.", "closePar" );
             _tokens = CreateArray( id, openPar, size, closePar );
@@ -63,7 +63,7 @@ namespace CK.SqlServer
             Debug.Assert( openPar.TokenType == SqlTokenType.OpenPar && closePar.TokenType == SqlTokenType.ClosePar );
             Debug.Assert( dbType == SqlKeyword.FromSqlTokenTypeToSqlDbType( id.TokenType ).Value );
             Debug.Assert( dbType == SqlDbType.Char || dbType != SqlDbType.VarChar || dbType != SqlDbType.NChar || dbType != SqlDbType.NVarChar || dbType != SqlDbType.Binary || dbType != SqlDbType.VarBinary );
-            Debug.Assert( (size is SqlTokenLiteralInteger && ((SqlTokenLiteralInteger)size).Value > 0) || (size is SqlTokenIdentifier && ((SqlTokenIdentifier)size).NameEquals( "max" )) );
+            Debug.Assert( (size is SqlTokenLiteralInteger && ((SqlTokenLiteralInteger)size).Value > 0) || (size is SqlTokenIdentifier && ((SqlTokenIdentifier)size).TokenType == SqlTokenType.Max) );
             _tokens = CreateArray( id, openPar, size, closePar );
             DbType = dbType;
             SyntaxSize = size is SqlTokenLiteralInteger ? ((SqlTokenLiteralInteger)size).Value : -1;

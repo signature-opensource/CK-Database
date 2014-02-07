@@ -50,7 +50,7 @@ namespace CK.SqlServer
             return modified;
         }
 
-        public virtual SqlItem Visit( SqlExprUnmodeledTokens e )
+        public virtual SqlItem Visit( SqlExprUnmodeledItems e )
         {
             return e;
         }
@@ -146,6 +146,13 @@ namespace CK.SqlServer
             List<ISqlItem> modified = VisitExprComponents( e.Components );
             if( modified == null ) return e;
             return new SqlExprColumnList( modified.ToArray() );
+        }
+
+        public virtual SqlItem Visit( SqlNoExprExecuteAs e )
+        {
+            List<ISqlItem> modified = VisitExprComponents( e.Components );
+            if( modified == null ) return e;
+            return new SqlNoExprExecuteAs( modified.ToArray() );
         }
 
         public virtual SqlItem Visit( SqlExprCommaList e )

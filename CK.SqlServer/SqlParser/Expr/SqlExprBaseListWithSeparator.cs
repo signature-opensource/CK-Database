@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using CK.Core;
 
 namespace CK.SqlServer
@@ -12,7 +14,7 @@ namespace CK.SqlServer
     {
         /// <summary>
         /// Initializes a new <see cref="SqlExprBaseListWithSeparator{T}"/> of <typeparamref name="T"/> enclosed in a <see cref="SqlTokenOpenPar"/> and a <see cref="SqlTokenClosePar"/> 
-        /// and with <paramref name="validSeparator"/> that is to <see cref="IsCommaSeparator"/> by default.
+        /// and with <paramref name="validSeparator"/> that is set to <see cref="IsCommaSeparator"/> by default.
         /// </summary>
         /// <param name="openPar">Opening parenthesis.</param>
         /// <param name="exprOrCommaTokens">List of tokens or expressions.</param>

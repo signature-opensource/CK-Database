@@ -58,7 +58,7 @@ namespace CK.Core
         /// <summary>
         /// Uses <see paramref="directory"/> if it is not null nor empty, otherwise tries to use the path of CK.StObj.Model assembly.
         /// </summary>
-        /// <returns>The directory into wich the final assembly must be saved.</returns>
+        /// <returns>The directory into which the final assembly must be saved.</returns>
         static public string GetFinalDirectory( string directory )
         {
             return String.IsNullOrEmpty( directory ) ? Path.GetDirectoryName( new Uri( typeof( StObjContextRoot ).Assembly.CodeBase ).LocalPath ) : directory;

@@ -9,7 +9,7 @@ namespace CK.Core
 {
     public static class AssemblyExtension
     {
-        static ConcurrentDictionary<Assembly,IReadOnlyList<string>> _cache = new ConcurrentDictionary<Assembly, IReadOnlyList<string>>();
+        static readonly ConcurrentDictionary<Assembly,IReadOnlyList<string>> _cache = new ConcurrentDictionary<Assembly, IReadOnlyList<string>>();
 
         /// <summary>
         /// Gets all resource names contained in the assembly (calls <see cref="Assembly.GetManifestResourceNames"/>)

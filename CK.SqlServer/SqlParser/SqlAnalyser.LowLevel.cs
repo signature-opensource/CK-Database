@@ -60,11 +60,6 @@ namespace CK.SqlServer
                 R.IsToken( out term, SqlTokenType.SemiColon, false );
                 return term;
             }
-
-
-
         }
-
-    
 }
 

@@ -21,7 +21,6 @@ namespace CK.SqlServer
             "precision",
             "exit",
             "primary",
-            "external",
             "file",
             "fillfactor",
             "public",
@@ -131,7 +130,7 @@ namespace CK.SqlServer
             // "order",
             // "for",
 
-            // These keywords are explicitely associated to a SqlTokenType (IdentifierReserved | YY).
+            // These keywords are explicitely associated to a SqlTokenType (IdentifierStandard | YY).
             // "case",
             // "null",
             // "when",
@@ -164,16 +163,13 @@ namespace CK.SqlServer
             // "group",
             // "option",
             // "add",
-
-            // These are NOT reserved keywords...
+            // "max",
             // "output",
             // "readonly",
-            // "max",
-            // "throw",
         };
 
         /// <summary>
-        /// Mapped to SqlTokenType.IdentifierReservedStart.
+        /// Mapped to SqlTokenType.IdentifierStandardStatement.
         /// </summary>
         static string[] _keyWordStartStatement = new string[] 
         {
@@ -194,9 +190,10 @@ namespace CK.SqlServer
             // "close",
             // "fetch",
             // "open",
+            // "return",
+            // "throw",
 
             "raiserror",
-            "return",
             "waitfor",
             "use",
             "truncate",
@@ -212,8 +209,6 @@ namespace CK.SqlServer
             "set",
             "readtext",
             "writetext",
-            "exec",
-            "execute",
             "dbcc",
 
         };
@@ -334,6 +329,11 @@ namespace CK.SqlServer
             _keywords.Add( "catch", SqlTokenType.Catch );
             _keywords.Add( "dialog", SqlTokenType.Dialog );
             _keywords.Add( "conversation", SqlTokenType.Conversation );
+            _keywords.Add( "returns", SqlTokenType.Returns );
+            _keywords.Add( "max", SqlTokenType.Max );
+            _keywords.Add( "readonly", SqlTokenType.Readonly );
+            _keywords.Add( "out", SqlTokenType.Output );
+            _keywords.Add( "output", SqlTokenType.Output );
 
             // LogicalOperator (they are reserved keywords).
             _keywords.Add( "or", SqlTokenType.Or );
@@ -367,7 +367,6 @@ namespace CK.SqlServer
             _keywords.Add( "function", SqlTokenType.Function );
             _keywords.Add( "view", SqlTokenType.View );
             _keywords.Add( "table", SqlTokenType.Table );
-            _keywords.Add( "database", SqlTokenType.Database );
             _keywords.Add( "trigger", SqlTokenType.Trigger );
             _keywords.Add( "as", SqlTokenType.As );
             _keywords.Add( "asc", SqlTokenType.Asc );
@@ -384,6 +383,8 @@ namespace CK.SqlServer
             _keywords.Add( "group", SqlTokenType.Group );
             _keywords.Add( "option", SqlTokenType.Option );
             _keywords.Add( "add", SqlTokenType.Add );
+            _keywords.Add( "database", SqlTokenType.Database );
+            _keywords.Add( "external", SqlTokenType.External );
 
 
             // SqlTokenType.IdentifierReservedStart values.
@@ -403,6 +404,9 @@ namespace CK.SqlServer
             _keywords.Add( "close", SqlTokenType.Close );
             _keywords.Add( "fetch", SqlTokenType.Fetch );
             _keywords.Add( "open", SqlTokenType.Open );
+            _keywords.Add( "return", SqlTokenType.Return );
+            _keywords.Add( "exec", SqlTokenType.Execute );
+            _keywords.Add( "execute", SqlTokenType.Execute );
 
             // Reserved keywords.
             foreach( string s in _sqlServerReserved )

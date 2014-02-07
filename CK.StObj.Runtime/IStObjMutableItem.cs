@@ -82,21 +82,21 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets a list of Ambient properties defined at this level (and above) but potentially specialized.
-        /// This guarantees that properties are accessed by their most precise overriden/masked version.
-        /// To explicitely set a value for an ambient property or alter its configuration, use <see cref="SetAmbiantPropertyValue"/>
+        /// This guarantees that properties are accessed by their most precise overridden/masked version.
+        /// To explicitly set a value for an ambient property or alter its configuration, use <see cref="SetAmbiantPropertyValue"/>
         /// or <see cref="SetAmbiantPropertyConfiguration"/>.
         /// </summary>
         IReadOnlyList<IStObjAmbientProperty> SpecializedAmbientProperties { get; }
 
         /// <summary>
         /// Gets a list of mutable <see cref="IStObjMutableAmbientContract"/> defined at this level (and above) but potentially specialized.
-        /// This guarantees that properties are accessed by their most precise overriden/masked version.
+        /// This guarantees that properties are accessed by their most precise overridden/masked version.
         /// </summary>
         IReadOnlyList<IStObjMutableAmbientContract> SpecializedAmbientContracts { get; }
 
         /// <summary>
         /// Sets a direct property (it must not be an Ambient Property, Contract nor a StObj property) on the Structured Object. 
-        /// The property must exist, be writeable and the type of the <paramref name="value"/> must be compatible with the property type otherwise an error is logged.
+        /// The property must exist, be writable and the type of the <paramref name="value"/> must be compatible with the property type otherwise an error is logged.
         /// </summary>
         /// <param name="logger">The logger to use to describe any error.</param>
         /// <param name="propertyName">Name of the property to set.</param>
@@ -121,7 +121,7 @@ namespace CK.Setup
         bool SetStObjPropertyValue( IActivityLogger logger, string propertyName, object value, string sourceDescription = null );
 
         /// <summary>
-        /// Sets an ambient property on the Structured Object (the property must exist, be writeable, and marked with <see cref="AmbientPropertyAttribute"/>). The
+        /// Sets an ambient property on the Structured Object (the property must exist, be writable, and marked with <see cref="AmbientPropertyAttribute"/>). The
         /// type of the <paramref name="value"/> must be compatible with the property type otherwise an error is logged.
         /// </summary>
         /// <param name="logger">The logger to use to describe any error.</param>

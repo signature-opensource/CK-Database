@@ -57,23 +57,25 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Find the common ancestor of all the directory in the list. All the path list MUST be rooted.
-        /// Return null if non.
+        /// Finds the common ancestor of all the directory in the list. All the path list MUST be rooted.
+        /// Returns null if no common ancestor exits.
         /// </summary>
         /// <param name="dirlist">List of directory to analyze</param>
         /// <returns>The common full path</returns>
-        public static string FindCommonAncestor( IList<string> dirlist )
+        public static string FindCommonAncestor( IReadOnlyList<string> dirlist )
         {
             int maxLen;
-            if( dirlist == null || dirlist.Count == 0 || (maxLen = dirlist[0].Length) == 0 ) return null;
-            if( dirlist.Count == 1 ) return dirlist[0];
-            Char cU1 = Char.ToUpperInvariant( dirlist[0][0] );
+            string current;
+            if( dirlist == null || dirlist.Count == 0 || (current = dirlist[0]) == null || (maxLen = current.Length) == 0 ) return null;
+            if( dirlist.Count == 1 ) return current;
+            Char cU1 = Char.ToLowerInvariant( current[0] );
             for( int i = 1; i < dirlist.Count; ++i )
             {
-                int l = dirlist[i].Length;
-                if( l == 0 ) return null;
+                current = dirlist[i];
+                int l;
+                if( current == null || (l = current.Length) == 0 ) return null;
                 if( maxLen > l ) maxLen = l;
-                if( Char.ToUpperInvariant( dirlist[i][0] ) != cU1 ) return null;
+                if( Char.ToLowerInvariant( current[0] ) != cU1 ) return null;
             }
             // To be continued with an external loop from 1 to maxLen (to catch chars) and an internal one from 0 to dirlist.Count (for each strings).
 
@@ -110,7 +112,7 @@ namespace CK.Core
 
             public AppDomainCommunication( IActivityLogger logger, IStObjEngineConfiguration config, AppDomainMode m )
             {
-                if( !config.GetType().IsSerializable ) throw new InvalidOperationException( "IStObjEngineConfiguration must be serializable." );
+                if( !config.GetType().IsSerializable ) throw new InvalidOperationException( "IStObjEngineConfiguration implementation must be serializable." );
                 _locker = new object();
                 LoggerBridge = logger.Output.ExternalInput;
                 Config = config;
@@ -160,7 +162,7 @@ namespace CK.Core
             StObjBuildResult r = null;
             if( config.AppDomainConfiguration.UseIndependentAppDomain && !config.AppDomainConfiguration.Assemblies.IsEmptyConfiguration )
             {
-                using( logger.OpenGroup( LogLevel.Info, "Build process. Creating an independant AppDomain." ) )
+                using( logger.OpenGroup( LogLevel.Info, "Build process. Creating an independent AppDomain." ) )
                 {
                     r = BuildOrGetVersionStampInIndependentAppDomain( config, logger, forceBuild ? AppDomainMode.ForceBuild : AppDomainMode.BuildIfRequired );
                 }
@@ -169,7 +171,7 @@ namespace CK.Core
             {
                 if( !forceBuild && config.FinalAssemblyConfiguration.ExternalVersionStamp != null )
                 {
-                    using( logger.OpenGroup( LogLevel.Info, "Checking potentially existing generated dll ExternalVersionStamp in an independant AppDomain." ) )
+                    using( logger.OpenGroup( LogLevel.Info, "Checking potentially existing generated dll ExternalVersionStamp in an independent AppDomain." ) )
                     {
                         // Extracts the Version stamp of the existing dll (if any) in an independent AppDomain to
                         // avoid cluttering the ReflectionOnly context of the current AppDomain.

@@ -9,7 +9,7 @@ namespace CK.SqlServer
 {
     public class SqlExprStView : SqlExprBaseSt
     {
-        public SqlExprStView( SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type, SqlExprMultiIdentifier name, SqlExprColumnList columns, SqlExprUnmodeledTokens options, SqlTokenIdentifier asToken, SqlItem select, SqlTokenTerminal term )
+        public SqlExprStView( SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type, SqlExprMultiIdentifier name, SqlExprColumnList columns, SqlExprUnmodeledItems options, SqlTokenIdentifier asToken, SqlItem select, SqlTokenTerminal term )
             : base( Build( alterOrCreate, type, name, columns, options, asToken, select ), term )
         {
         }
@@ -19,7 +19,7 @@ namespace CK.SqlServer
         {
         }
 
-        static ISqlItem[] Build( SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type, SqlExprMultiIdentifier name, SqlExprColumnList columns, SqlExprUnmodeledTokens options, SqlTokenIdentifier asToken, SqlItem select )
+        static ISqlItem[] Build( SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type, SqlExprMultiIdentifier name, SqlExprColumnList columns, SqlExprUnmodeledItems options, SqlTokenIdentifier asToken, SqlItem select )
         {
             if( columns == null ) 
             {
@@ -51,7 +51,7 @@ namespace CK.SqlServer
 
         public SqlExprMultiIdentifier Name { get { return (SqlExprMultiIdentifier)Slots[2]; } }
 
-        public bool HasOptions { get { return Slots.Length == 6 || (Slots.Length > 4 && Slots[3] is SqlExprUnmodeledTokens); } }
+        public bool HasOptions { get { return Slots.Length == 6 || (Slots.Length > 4 && Slots[3] is SqlExprUnmodeledItems); } }
 
         public bool HasColumns { get { return Slots.Length == 6 || (Slots.Length > 4 && Slots[3] is SqlExprColumnList); } }
 
@@ -60,13 +60,13 @@ namespace CK.SqlServer
             get { return Slots.Length != 4 ? Slots[3] as SqlExprColumnList : null; } 
         }
 
-        public SqlExprUnmodeledTokens Options 
+        public SqlExprUnmodeledItems Options 
         { 
             get 
             { 
                 if( Slots.Length == 4 ) return null;
-                if( Slots.Length == 6 ) return (SqlExprUnmodeledTokens)Slots[4];
-                return Slots[3] as SqlExprUnmodeledTokens; 
+                if( Slots.Length == 6 ) return (SqlExprUnmodeledItems)Slots[4];
+                return Slots[3] as SqlExprUnmodeledItems; 
             } 
         }
 

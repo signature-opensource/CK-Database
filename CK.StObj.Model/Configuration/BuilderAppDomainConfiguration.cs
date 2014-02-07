@@ -20,7 +20,7 @@ namespace CK.Core
         /// <summary>
         /// Probe paths to use to discover assemblies. Used only if <see cref="UseIndependentAppDomain"/> is set to true.
         /// </summary>
-        public IList<string> ProbePaths { get; private set; }
+        public List<string> ProbePaths { get; private set; }
 
         /// <summary>
         /// Gets the <see cref="AssemblyRegistererConfiguration"/> that describes assemblies that must participate (or not) to setup.

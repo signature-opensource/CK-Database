@@ -171,7 +171,7 @@ namespace CK.SqlServer
                 SqlTokenIdentifier ties = null;
 
                 R.IsUnquotedIdentifier( out allOrDistinct, "all", "distinct", false );
-                if( R.IsUnquotedIdentifier( out top, "top", false ) )
+                if( R.IsToken( out top, SqlTokenType.Top, false ) )
                 {
                     SqlTokenLiteralInteger intVal;
                     if( R.IsToken( out intVal, false ) )
@@ -182,7 +182,7 @@ namespace CK.SqlServer
                     else if( !IsOneExpression( out topExpression, true ) ) return false;
                     if( R.IsUnquotedIdentifier( out percent, "percent", false ) )
                     {
-                        if( R.IsUnquotedIdentifier( out with, "with", false ) ) R.IsUnquotedIdentifier( out ties, "ties", true );
+                        if( R.IsToken( out with, SqlTokenType.With, false ) ) R.IsUnquotedIdentifier( out ties, "ties", true );
                     }
                 }
                 e = new SelectHeader( select, allOrDistinct, top, topExpression, percent, with, ties );

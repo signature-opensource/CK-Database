@@ -4,7 +4,7 @@ namespace CK.Core
 {
     /// <summary>
     /// Main interface that offers access to multi contextual type mapping and 
-    /// Ambiant Contract instanciation.
+    /// Ambient Contract instantiation.
     /// </summary>
     public interface IStObjMap : IContextualRoot<IContextualStObjMap>
     {

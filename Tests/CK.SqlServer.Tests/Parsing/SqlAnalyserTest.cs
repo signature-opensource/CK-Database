@@ -330,6 +330,19 @@ SELECT SalesOrderID, ProductID, OrderQty,
         }
 
         [Test]
+        public void ParseStoredProcedureWithOptions()
+        {
+            var sp = ReadStatement<SqlExprStStoredProc>( "sWithOptions.sql" );
+
+            Assert.That( sp.Name.ToString(), Is.EqualTo( "sWithOptions\r\n" ) );
+            Assert.That( sp.Parameters.Count, Is.EqualTo( 0 ) );
+            Assert.That( sp.Options.Components.Count(), Is.EqualTo( 4 ), "[with] [recompile] [,] [execute as owner]" );
+            Assert.That( sp.Options.Tokens.ToStringWithoutTrivias( "|" ), Is.EqualTo( "with|recompile|,|execute as owner" ) );
+
+            Assert.That( sp.BodyStatements.Statements.Count, Is.EqualTo( 2 ) );
+        }
+
+        [Test]
         public void ParseStrangeStoredProcedure()
         {
             var sp = ReadStatement<SqlExprStStoredProc>( "sStrange.sql" );

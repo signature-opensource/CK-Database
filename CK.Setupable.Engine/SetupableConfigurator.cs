@@ -40,7 +40,7 @@ namespace CK.Setup
         /// <summary>
         /// Step n°1 - Called during Assembly/Types discovering: allows a Type not marked with <see cref="IAmbientContract"/> to be considered as an Ambiant Contract.
         /// Empty implementation of <see cref="IAmbientContractDispatcher.IsAmbientContractClass"/>.
-        /// Returns the result of the <see cref="Previous"/> if it exist, oterwise returns always false: only classes that are explicitely marked with <see cref="IAmbientContract"/>
+        /// Returns the result of the <see cref="Previous"/> if it exist, otherwise returns always false: only classes that are explicitely marked with <see cref="IAmbientContract"/>
         /// or types that inherit from a <see cref="IAmbientContractDefiner"/> are considered as Ambient Contracts.
         /// </summary>
         /// <param name="t">A type that is not, structurally through the interfaces it supports, an Ambient Contract.</param>

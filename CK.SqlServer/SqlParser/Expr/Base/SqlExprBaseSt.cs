@@ -38,6 +38,11 @@ namespace CK.SqlServer
             if( _stmtTerminator != null && _stmtTerminator.TokenType != SqlTokenType.SemiColon ) _stmtTerminator = null;
         }
 
+        protected int SlotsLengthWithoutTerminator
+        {
+            get { return _stmtTerminator != null ? Slots.Length - 1 : Slots.Length; }
+        }
+
         public SqlTokenTerminal StatementTerminator { get { return _stmtTerminator; } }
 
         public IEnumerable<ISqlItem> ComponentsWithoutTerminator

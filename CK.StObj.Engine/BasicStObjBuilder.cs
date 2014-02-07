@@ -10,7 +10,7 @@ namespace CK.Setup
     /// <summary>
     /// Basic builder works with mere <see cref="IStObjEngineConfiguration"/>.
     /// There is no configuration involved here since this would require (at the Model layer) interfaces defined in Runtime layer, this is
-    /// mainly a demonstrator of the minimal code required to analyse dependencies and build a StObj final assembly.
+    /// mainly a demonstrator of the minimal code required to analyze dependencies and build a StObj final assembly.
     /// </summary>
     public class BasicStObjBuilder : IStObjBuilder
     {
@@ -23,7 +23,7 @@ namespace CK.Setup
         /// for minimal build (simple objects and no dynamic configuration).
         /// </summary>
         /// <param name="logger">Logger that must be used.</param>
-        /// <param name="config">Configuration that descrives the key aspects of the build.</param>
+        /// <param name="config">Configuration that describes the key aspects of the build.</param>
         public BasicStObjBuilder( IActivityLogger logger, IStObjEngineConfiguration config )
         {
             _logger = logger;
@@ -33,10 +33,10 @@ namespace CK.Setup
         /// <summary>
         /// Builds the object graph.
         /// </summary>
-        /// <returns>True on success, false if an error occured.</returns>
+        /// <returns>True on success, false if an error occurred.</returns>
         public bool Run()
         {
-            // Step 1: Dicovering assemblies from AssemblyRegisterConfiguration.
+            // Step 1: Discovering assemblies from AssemblyRegisterConfiguration.
             AssemblyRegisterer typeReg = new AssemblyRegisterer( _logger );
             typeReg.Discover( _config.AppDomainConfiguration.Assemblies );
 

@@ -64,7 +64,7 @@ namespace CK.SqlServer.Setup
                 {
                     m = GenerateCreateSqlCommand( tB, FullName, SchemaName, _storedProc.Parameters );
                     dynamicAssembly.Memory[methodKey] = m;
-                    logger.Trace( "Low level SqlCommand creation method for: '{0}'.", _storedProc.ToStringSignature( true ) );
+                    logger.Trace( "Low level SqlCommand create method for: '{0}'.", _storedProc.ToStringSignature( true ) );
                 }
                 catch( Exception ex )
                 {
@@ -82,10 +82,6 @@ namespace CK.SqlServer.Setup
 
         private static MethodBuilder GenerateCreateSqlCommand( TypeBuilder tB, string methodName, string spSchemaName, SqlExprParameterList sqlParameters )
         {
-            Type tSqlCommand = typeof( SqlCommand );
-            Type tParameterCollection = typeof( SqlParameterCollection );
-            Type tSqlParameter = typeof( SqlParameter );
-
             MethodBuilder mB = tB.DefineMethod( methodName, MethodAttributes.Assembly | MethodAttributes.Static, TypeCommand, Type.EmptyTypes );
             ILGenerator g = mB.GetILGenerator();
 
@@ -94,7 +90,7 @@ namespace CK.SqlServer.Setup
             LocalBuilder locOneParam = g.DeclareLocal( TypeParameter );
 
             g.Emit( OpCodes.Ldstr, spSchemaName );
-            g.Emit( OpCodes.Newobj, tSqlCommand.GetConstructor( new Type[] { typeof( string ) } ) );
+            g.Emit( OpCodes.Newobj, TypeCommand.GetConstructor( new Type[] { typeof( string ) } ) );
             g.StLoc( locCmd );
             g.LdLoc( locCmd );
             g.LdInt32( (int)CommandType.StoredProcedure );

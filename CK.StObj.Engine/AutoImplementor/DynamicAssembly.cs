@@ -12,6 +12,7 @@ namespace CK.Core
 {
     /// <summary>
     /// Manages dynamic assembly creation with one <see cref="ModuleBuilder"/>.
+    /// Resulting assembly can be only in memory an
     /// </summary>
     public class DynamicAssembly : IDynamicAssembly
     {
@@ -29,7 +30,7 @@ namespace CK.Core
         /// [assembly: InternalsVisibleTo( "CK.StObj.AutoAssembly, PublicKey=..." )] 
         /// [assembly: InternalsVisibleTo( "CK.StObj.AutoAssembly.Memory, PublicKey=..." )] 
         /// </code>
-        /// These 2 attibutes allows the dynamic assembly to reference and make use of internal types.
+        /// These 2 attributes allows the dynamic assembly to reference and make use of internal types.
         /// </summary>
         /// <remarks>
         /// Its value is: "00240000048000009400000006020000002400005253413100040000010001009fbf2868f04bdf33df4c8c0517bb4c3d743b5b27fcd94009d42d6607446c1887a837e66545221788ecfff8786e85564c839ff56267fe1a3225cd9d8d9caa5aae3ba5d8f67f86ff9dbc5d66f16ba95bacde6d0e02f452fae20022edaea26d31e52870358d0dda69e592ea5cef609a054dac4dbbaa02edc32fb7652df9c0e8e9cd"
@@ -64,7 +65,7 @@ namespace CK.Core
         /// Initializes a new <see cref="DynamicAssembly"/> with the given name and access.
         /// </summary>
         /// <param name="directory">Directory where the assembly must be saved. Must not be null if the assembly must be saved.</param>
-        /// <param name="assemblyName">Name to use. If acces has <see cref="AssemblyBuilderAccess.Save"/> bit set, the name of the dll will be with ".dll" suffix.</param>
+        /// <param name="assemblyName">Name to use. If access has <see cref="AssemblyBuilderAccess.Save"/> bit set, the name of the dll will be with ".dll" suffix.</param>
         /// <param name="externalVersionStamp">Embedded stamp. Used to detect the need to rebuild the assembly.</param>
         /// <param name="signature">Key pair to use to sign the dll.</param>
         /// <param name="access">Typical accesses are Run and RunAndSave (the default).</param>

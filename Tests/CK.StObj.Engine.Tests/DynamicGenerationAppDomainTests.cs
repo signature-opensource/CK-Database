@@ -241,7 +241,7 @@ namespace CK.StObj.Engine.Tests
                 using( StObjBuildResult result = StObjContextRoot.Build( config, TestHelper.Logger, forceBuild: false ) )
                 {
                     Assert.That( result.Success, Is.True, "Build succeed..." );
-                    Assert.That( result.IndependentAppDomain, Is.Not.Null.And.Not.EqualTo( AppDomain.CurrentDomain ), "...in an independant AppDomain." );
+                    Assert.That( result.IndependentAppDomain, Is.Not.Null.And.Not.EqualTo( AppDomain.CurrentDomain ), "...in an independent AppDomain." );
                     Assert.That( result.IndependentAppDomain.BaseDirectory, Is.EqualTo( Directory.GetParent( TestHelper.TempFolder ).FullName ) );
                     Assert.That( result.AssemblyAlreadyExists, Is.False );
 
@@ -257,7 +257,7 @@ namespace CK.StObj.Engine.Tests
                 using( StObjBuildResult result = StObjContextRoot.Build( config, TestHelper.Logger, forceBuild: false ) )
                 {
                     Assert.That( result.Success, Is.True, "Succeed: found the previous one." );
-                    Assert.That( result.IndependentAppDomain, Is.Not.Null.And.Not.EqualTo( AppDomain.CurrentDomain ), "...we looked for the version stamp in an independant AppDomain." );
+                    Assert.That( result.IndependentAppDomain, Is.Not.Null.And.Not.EqualTo( AppDomain.CurrentDomain ), "...we looked for the version stamp in an independent AppDomain." );
                     Assert.That( result.AssemblyAlreadyExists, Is.True );
                     Assert.That( File.GetLastWriteTimeUtc( fileName ), Is.EqualTo( buildTime1 ) );
                 }
@@ -394,12 +394,12 @@ namespace CK.StObj.Engine.Tests
 
             public BuilderFinalAssemblyConfiguration FinalAssemblyConfiguration { get; private set; }
 
-            public Action<IActivityLogger,BasicStObjBuilder> RunHook { get; set; }
+            //public Action<IActivityLogger,BasicStObjBuilder> RunHook { get; set; }
 
-            public void BuildRunHook( IActivityLogger logger, BasicStObjBuilder config )
-            {
-                AppDomain.CurrentDomain.Load( "AutoGenTestObjBuilder, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" );
-            }
+            //public void BuildRunHook( IActivityLogger logger, BasicStObjBuilder config )
+            //{
+            //    AppDomain.CurrentDomain.Load( "AutoGenTestObjBuilder, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" );
+            //}
         }
     }
 }

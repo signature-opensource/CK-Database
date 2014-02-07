@@ -448,6 +448,10 @@ namespace CK.SqlServer
         Catch           = IdentifierStandard | 2,
         Dialog          = IdentifierStandard | 3,
         Conversation    = IdentifierStandard | 4,
+        Returns         = IdentifierStandard | 5,
+        Max             = IdentifierStandard | 6,
+        Readonly        = IdentifierStandard | 7,
+        Output          = IdentifierStandard | 8,
         #endregion
 
         #region IdentifierSpecial values
@@ -549,6 +553,7 @@ namespace CK.SqlServer
         Option      = IdentifierReservedFirstNonOperator + 27,
         Add         = IdentifierReservedFirstNonOperator + 28,
         Database    = IdentifierReservedFirstNonOperator + 29,
+        External    = IdentifierReservedFirstNonOperator + 30,
         #endregion
 
         #region IdentifierReservedStatement values
@@ -568,6 +573,8 @@ namespace CK.SqlServer
         Close       = IdentifierReservedStatement | 14,
         Open        = IdentifierReservedStatement | 15,
         Fetch       = IdentifierReservedStatement | 16,
+        Return      = IdentifierReservedStatement | 17,
+        Execute     = IdentifierReservedStatement | 18,
         #endregion
 
         #region IdentifierDbType values

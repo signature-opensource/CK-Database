@@ -9,12 +9,12 @@ namespace CK.SqlServer
 {
     public class SqlExprStStoredProc : SqlExprBaseSt
     {
-        public SqlExprStStoredProc( SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type, SqlExprMultiIdentifier name, SqlExprParameterList parameters, SqlExprUnmodeledTokens options, SqlTokenIdentifier asToken, SqlExprStatementList bodyStatements, SqlTokenTerminal term )
+        public SqlExprStStoredProc( SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type, SqlExprMultiIdentifier name, SqlExprParameterList parameters, SqlExprUnmodeledItems options, SqlTokenIdentifier asToken, SqlExprStatementList bodyStatements, SqlTokenTerminal term )
             : base( Build( alterOrCreate, type, name, parameters, options, asToken, null, bodyStatements, null ), term )
         {
         }
 
-        public SqlExprStStoredProc( SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type, SqlExprMultiIdentifier name, SqlExprParameterList parameters, SqlExprUnmodeledTokens options, SqlTokenIdentifier asToken, SqlTokenIdentifier begin, SqlExprStatementList bodyStatements, SqlTokenIdentifier end, SqlTokenTerminal term )
+        public SqlExprStStoredProc( SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type, SqlExprMultiIdentifier name, SqlExprParameterList parameters, SqlExprUnmodeledItems options, SqlTokenIdentifier asToken, SqlTokenIdentifier begin, SqlExprStatementList bodyStatements, SqlTokenIdentifier end, SqlTokenTerminal term )
             : base( Build( alterOrCreate, type, name, parameters, options, asToken, begin, bodyStatements, end ), term )
         {
         }
@@ -24,7 +24,7 @@ namespace CK.SqlServer
         {
         }
 
-        static ISqlItem[] Build( SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type, SqlExprMultiIdentifier name, SqlExprParameterList parameters, SqlExprUnmodeledTokens options, SqlTokenIdentifier asToken, SqlTokenIdentifier begin, SqlExprStatementList bodyStatements, SqlTokenIdentifier end )
+        static ISqlItem[] Build( SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type, SqlExprMultiIdentifier name, SqlExprParameterList parameters, SqlExprUnmodeledItems options, SqlTokenIdentifier asToken, SqlTokenIdentifier begin, SqlExprStatementList bodyStatements, SqlTokenIdentifier end )
         {
             if( options != null )
             {
@@ -65,7 +65,7 @@ namespace CK.SqlServer
 
         public bool HasOptions { get { return Slots.Length == 9 || Slots.Length == 7; } }
 
-        public SqlExprUnmodeledTokens Options { get { return HasOptions ? (SqlExprUnmodeledTokens)Slots[4] : null; } }
+        public SqlExprUnmodeledItems Options { get { return HasOptions ? (SqlExprUnmodeledItems)Slots[4] : null; } }
 
         public SqlTokenIdentifier AsToken { get { return (SqlTokenIdentifier)Slots[HasOptions ? 5 : 4]; } }
 

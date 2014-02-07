@@ -8,7 +8,7 @@ namespace CK.Core
 {
     /// <summary>
     /// Provides minimal configuration required to produce a final (compiled) assembly.
-    /// Thanks to this abstraction, <see cref="StObjContextRoot"/> is able to handle build/setup phasis 
+    /// Thanks to this abstraction, <see cref="StObjContextRoot"/> is able to handle build/setup phases 
     /// that involve any higher level APIs than StObj itself.
     /// Objects that supports this interface must be serializable.
     /// </summary>

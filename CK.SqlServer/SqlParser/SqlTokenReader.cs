@@ -318,24 +318,44 @@ namespace CK.SqlServer
         /// an error is encountered (in such case, stopper is set to null).
         /// </summary>
         /// <typeparam name="T">Type of tokens.</typeparam>
-        /// <param name="tokens">List of tokens or null if no tokens have been collected.</param>
+        /// <param name="items">List of tokens or null if no tokens have been collected.</param>
         /// <param name="stopper">The stopper. Null if an error occured or the end of the input was reached.</param>
         /// <param name="stopperDefinition">Lambda that defines what the stopper should be.</param>
         /// <param name="atLeastOne">True if at least one item should appear in the list.</param>
+        /// <param name="matchers">
+        /// Optional functions that can transform the <see cref="Current"/> token (and its followers) to any item. 
+        /// Matchers are called up to the first one that returns an item different than the Current token.
+        /// When a matcher returns null, the current token is ignored.
+        /// </param>
         /// <returns>True if no error occured.</returns>
-        public bool IsTokenList<T>( out List<SqlToken> tokens, out T stopper, Predicate<T> stopperDefinition, bool atLeastOne ) where T : SqlToken
+        internal bool IsItemList<T>( out List<ISqlItem> items, out T stopper, Predicate<T> stopperDefinition, bool atLeastOne, params Func<ISqlItem>[] matchers ) where T : SqlToken
         {
             Debug.Assert( stopperDefinition != null );
-            tokens = null;
+            items = null;
             stopper = null;
             while( !IsErrorOrEndOfInput && !IsToken( out stopper, stopperDefinition, false ) )
             {
-                if( tokens == null ) tokens = new List<SqlToken>();
-                tokens.Add( Current );
-                MoveNext();
+                if( items == null ) items = new List<ISqlItem>();
+                if( matchers == null || matchers.Length == 0 )
+                {
+                    items.Add( Current );
+                    MoveNext();
+                }
+                else
+                {
+                    ISqlItem item = Current;
+                    foreach( var m in matchers )
+                    {
+                        item = m();
+                        if( IsError ) return false;
+                        if( item != Current ) break;
+                        MoveNext();
+                    }
+                    if( item != null ) items.Add( item );
+                }
             }
             if( IsError ) return false;
-            if( tokens == null && atLeastOne ) return SetCurrentError( "Expected at least one {0} token.", typeof(T).Name.Replace( "SqlToken", String.Empty ) );
+            if( (items == null || items.Count == 0) && atLeastOne ) return SetCurrentError( "Expected at least one token." );
             return true;
         }
 

@@ -280,11 +280,11 @@ namespace CK.SqlServer
                 SqlExprColumnList columns;
                 IsColumnList( out columns );
 
-                SqlExprUnmodeledTokens options;
+                SqlExprUnmodeledItems options;
                 SqlTokenIdentifier asToken;
                 if( !IsUnmodeledUntil( out options, out asToken, t => t.TokenType == SqlTokenType.As ) ) return false;
 
-                SqlExprUnmodeledTokens body;
+                SqlExprUnmodeledItems body;
                 SqlTokenTerminal term;
                 if( !IsUnmodeledUntil( out body, out asToken, t => t.TokenType == SqlTokenType.SemiColon ) ) return false;
                 term = GetOptionalTerminator();
@@ -316,13 +316,30 @@ namespace CK.SqlServer
                 SqlExprParameterList parameters;
                 if( !IsParameterList( out parameters, requiresParenthesis: false ) ) return false;
 
-                SqlExprUnmodeledTokens options;
+                SqlExprUnmodeledItems options;
                 SqlTokenIdentifier asToken;
-                if( !IsUnmodeledUntil( out options, out asToken, t => t.TokenType == SqlTokenType.As ) ) return false;
+                if( !IsUnmodeledUntil( out options, out asToken, t => t.TokenType == SqlTokenType.As, EatExecuteAs ) ) return false;
 
+                SqlTokenIdentifier begin;
                 SqlExprStatementList bodyStatements;
-                SqlTokenIdentifier begin, end = null;
-                SqlTokenTerminal term = null;
+                SqlTokenIdentifier end;
+                SqlTokenTerminal term;
+                if( !IsBodyStatementListSafe( out bodyStatements, out begin, out end, out term ) ) return false;
+                if( begin == null )
+                {
+                    sp = new SqlExprStStoredProc( alterOrCreate, type, name, parameters, options, asToken, bodyStatements, term );
+                }
+                else
+                {
+                    sp = new SqlExprStStoredProc( alterOrCreate, type, name, parameters, options, asToken, begin, bodyStatements, end, term );
+                }
+                return true;
+            }
+
+            bool IsBodyStatementListSafe( out SqlExprStatementList bodyStatements, out SqlTokenIdentifier begin, out SqlTokenIdentifier end, out SqlTokenTerminal term )
+            {
+                end = null;
+                term = null;
                 using( var collector = R.OpenCollector() )
                 {
                     R.IsToken( out begin, SqlTokenType.Begin, false );
@@ -331,7 +348,7 @@ namespace CK.SqlServer
                     if( IsStatementList( out bodyStatements, true ) )
                     {
                         if( begin != null && !R.IsToken( out end, SqlTokenType.End, true ) ) return false;
-                        term = GetOptionalTerminator();
+                            term = GetOptionalTerminator();
                     }
                     else
                     {
@@ -346,18 +363,9 @@ namespace CK.SqlServer
                             }
                             else begin = null;
                         }
-                        var t = new SqlExprStUnmodeled( new SqlExprUnmodeledTokens( begin != null ? collector.Skip(1).Take( collector.Count-2 ) : collector ) );
+                        var t = new SqlExprStUnmodeled( new SqlExprUnmodeledItems( begin != null ? collector.Skip( 1 ).Take( collector.Count - 2 ) : collector ) );
                         bodyStatements = new SqlExprStatementList( new[] { t } );
                     }
-                }
-                
-                if( begin == null )
-                {
-                    sp = new SqlExprStStoredProc( alterOrCreate, type, name, parameters, options, asToken, bodyStatements, term );
-                }
-                else
-                {
-                    sp = new SqlExprStStoredProc( alterOrCreate, type, name, parameters, options, asToken, begin, bodyStatements, end, term );
                 }
                 return true;
             }
@@ -400,10 +408,10 @@ namespace CK.SqlServer
                     }
                 }
                 SqlTokenIdentifier outputClause;
-                R.IsUnquotedIdentifier( out outputClause, "out" , "output", false );
+                R.IsToken( out outputClause, SqlTokenType.Output, false );
 
                 SqlTokenIdentifier readonlyClause;
-                R.IsUnquotedIdentifier( out readonlyClause, "readonly", false );
+                R.IsToken( out readonlyClause, SqlTokenType.Readonly, false );
 
                 parameter = new SqlExprParameter( declVar, defValue, outputClause, readonlyClause );
                 return true;
@@ -506,7 +514,7 @@ namespace CK.SqlServer
                                 {
                                     SqlTokenIdentifier sizeMax;
                                     SqlTokenLiteralInteger size = null;
-                                    if( !R.IsUnquotedIdentifier( out sizeMax, "max", false ) && !R.IsToken( out size, true ) ) return false;
+                                    if( !R.IsToken( out sizeMax, SqlTokenType.Max, false ) && !R.IsToken( out size, true ) ) return false;
                                     if( size != null && size.Value == 0 )
                                     {
                                         R.SetCurrentError( "Size can not be 0." );
@@ -552,6 +560,29 @@ namespace CK.SqlServer
                 if( !IsMultipleIdentifierArray( out multi, expected ) ) return false;
                 udt = new SqlExprTypeDeclUserDefined( multi );
                 return true;
+            }
+
+            bool IsExecuteAs( out SqlNoExprExecuteAs execAs, bool expected = false )
+            {
+                execAs = null;
+                SqlTokenIdentifier execToken;
+                if( !R.IsToken( out execToken, SqlTokenType.Execute, expected ) ) return false;
+
+                SqlTokenIdentifier asToken;
+                if( !R.IsToken( out asToken, SqlTokenType.As, true ) ) return false;
+
+                SqlToken right;
+                if( !R.IsToken( out right, true ) ) return false;
+
+                execAs = new SqlNoExprExecuteAs( execToken, asToken, right );
+                return true;
+            }
+
+            ISqlItem EatExecuteAs()
+            {
+                SqlNoExprExecuteAs execAs;
+                if( IsExecuteAs( out execAs, false ) ) return execAs;
+                return R.Current;
             }
 
             bool IsMultiIdentifier( out SqlExprMultiIdentifier id, bool expected, SqlTokenIdentifier firstForLookup = null )
@@ -637,22 +668,27 @@ namespace CK.SqlServer
             }
 
             /// <summary>
-            /// Collects tokens in an <see cref="SqlExprUnmodeledTokens"/> until a given token is found.
+            /// Collects tokens in an <see cref="SqlExprUnmodeledItems"/> until a given token is found.
             /// </summary>
             /// <typeparam name="T">Type of the stopper token.</typeparam>
-            /// <param name="tokens">An unmodeled list of tokens. Null if the stopper occurs immediately or an error occured on the first token.</param>
+            /// <param name="items">An unmodeled list of tokens. Null if the stopper occurs immediately or an error occured on the first token.</param>
             /// <param name="stopper">Stopper eventually found. Null if the end of input or an error has been encountered.</param>
             /// <param name="stopperDefinition">Predicate that defines the stop.</param>
+            /// <param name="matchers">
+            /// Optional functions that can transform the current token (and its followers) to any item. 
+            /// Matchers are called up to the first one that returns an item different than the Current token.
+            /// When a matcher returns null, the current token is ignored.
+            /// </param>
             /// <returns>True if no error occured. The stopper is null if the end of input has been encountered.</returns>
-            bool IsUnmodeledUntil<T>( out SqlExprUnmodeledTokens tokens, out T stopper, Predicate<T> stopperDefinition ) where T : SqlToken
+            bool IsUnmodeledUntil<T>( out SqlExprUnmodeledItems items, out T stopper, Predicate<T> stopperDefinition, params Func<ISqlItem>[] matchers ) where T : SqlToken
             {
                 Debug.Assert( stopperDefinition != null );
-                tokens = null;
+                items = null;
                
-                List<SqlToken> all;
-                if( !R.IsTokenList( out all, out stopper, stopperDefinition, false ) ) return false;
+                List<ISqlItem> all;
+                if( !R.IsItemList( out all, out stopper, stopperDefinition, false, matchers ) ) return false;
 
-                if( all != null && all.Count > 0 ) tokens = new SqlExprUnmodeledTokens( all );
+                if( all != null && all.Count > 0 ) items = new SqlExprUnmodeledItems( all );
                 return true;
             }
 
