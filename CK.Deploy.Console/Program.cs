@@ -98,14 +98,13 @@ namespace CK.Deploy.Console
 
         public static void RunV1( V1Args args )
         {
-            var console = new ActivityLoggerConsoleSink();
-            IDefaultActivityLogger logger = new DefaultActivityLogger( true );
-            logger.Tap.Register( console );
+            var monitor = new ActivityMonitor();
+            monitor.Output.RegisterClient( new ActivityMonitorConsoleClient() );
 
-            using( logger.OpenGroup( LogLevel.Info, "Begin dbSetup with:" ) )
+            using( monitor.OpenInfo().Send( "Begin dbSetup with:" ) )
             {
-                logger.Info( string.Format( "FilePath: {0}", args.FilePath ) );
-                logger.Info( "ConnectionString: " + args.ConnectionString );
+                monitor.Info().Send( string.Format( "FilePath: {0}", args.FilePath ) );
+                monitor.Info().Send( "ConnectionString: " + args.ConnectionString );
             }
             
             var config = new SqlSetupCenterConfiguration();
@@ -114,7 +113,7 @@ namespace CK.Deploy.Console
             config.FilePackageDirectories.Add( args.FilePath );
             config.SqlFileDirectories.Add( args.FilePath );
 
-            using( SqlSetupCenter c = new SqlSetupCenter( logger, config ) )
+            using( SqlSetupCenter c = new SqlSetupCenter( monitor, config ) )
             {
                 c.Run();
             }
@@ -126,17 +125,16 @@ namespace CK.Deploy.Console
             {
                 V2Args args = (V2Args)AppDomain.CurrentDomain.GetData( "MainArgs" );
 
-                var console = new ActivityLoggerConsoleSink();
-                IDefaultActivityLogger logger = new DefaultActivityLogger( true );
-                logger.Tap.Register( console );
+                var monitor = new ActivityMonitor();
+                monitor.Output.RegisterClient( new ActivityMonitorConsoleClient() );
 
-                using( logger.OpenGroup( LogLevel.Info, "Begin dbSetup with:" ) )
+                using( monitor.OpenInfo().Send( "Begin dbSetup with:" ) )
                 {
-                    logger.Info( string.Format( "RootPath: {0}", args.AbsoluteRootPath ) );
-                    logger.Info( string.Format( "FilePaths: {0}", string.Join( ", ", args.RelativeFilePaths ) ) );
-                    logger.Info( string.Format( "DllPaths: {0}", string.Join( ", ", args.RelativeDllPaths ) ) );
-                    logger.Info( string.Format( "Assembly: {0}", string.Join( ", ", args.AssemblyNames ) ) );
-                    logger.Info( "ConnectionString: " + args.ConnectionString );
+                    monitor.Info().Send( string.Format( "RootPath: {0}", args.AbsoluteRootPath ) );
+                    monitor.Info().Send( string.Format( "FilePaths: {0}", string.Join( ", ", args.RelativeFilePaths ) ) );
+                    monitor.Info().Send( string.Format( "DllPaths: {0}", string.Join( ", ", args.RelativeDllPaths ) ) );
+                    monitor.Info().Send( string.Format( "Assembly: {0}", string.Join( ", ", args.AssemblyNames ) ) );
+                    monitor.Info().Send( "ConnectionString: " + args.ConnectionString );
                 }
 
                 var config = new SqlSetupCenterConfiguration();
@@ -146,7 +144,7 @@ namespace CK.Deploy.Console
                 config.FilePackageDirectories.AddRange( rootedPaths );
                 config.SqlFileDirectories.AddRange( rootedPaths );
                 config.SetupConfiguration.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.AddRange( args.AssemblyNames );
-                using( SqlSetupCenter c = new SqlSetupCenter( logger, config ) )
+                using( SqlSetupCenter c = new SqlSetupCenter( monitor, config ) )
                 {
                     c.Run();
                 }

@@ -98,12 +98,12 @@ namespace CK.Setup
         /// Sets a direct property (it must not be an Ambient Property, Contract nor a StObj property) on the Structured Object. 
         /// The property must exist, be writable and the type of the <paramref name="value"/> must be compatible with the property type otherwise an error is logged.
         /// </summary>
-        /// <param name="logger">The logger to use to describe any error.</param>
+        /// <param name="monitor">The monitor to use to describe any error.</param>
         /// <param name="propertyName">Name of the property to set.</param>
         /// <param name="value">Value to set.</param>
         /// <param name="sourceDescription">Optional description of the origin of the value to help troubleshooting.</param>
         /// <returns>True on success, false if any error occurs.</returns>
-        bool SetDirectPropertyValue( IActivityLogger logger, string propertyName, object value, string sourceDescription = null );
+        bool SetDirectPropertyValue( IActivityMonitor monitor, string propertyName, object value, string sourceDescription = null );
 
         /// <summary>
         /// Sets a property on the StObj. The property must not be an ambient property, but it is not required to be 
@@ -113,35 +113,35 @@ namespace CK.Setup
         /// A StObj property can be dynamically defined on any StObj. The StObjPropertyAttribute enables definition and Type restriction 
         /// of StObj properties by the holding type itself, but is not required.
         /// </remarks>
-        /// <param name="logger">The logger to use to describe any error.</param>
+        /// <param name="monitor">The monitor to use to describe any error.</param>
         /// <param name="propertyName">Name of the property.</param>
         /// <param name="value">Value to set.</param>
         /// <param name="sourceDescription">Optional description of the origin of the value to help troubleshooting.</param>
         /// <returns>True on success, false if any error occurs.</returns>
-        bool SetStObjPropertyValue( IActivityLogger logger, string propertyName, object value, string sourceDescription = null );
+        bool SetStObjPropertyValue( IActivityMonitor monitor, string propertyName, object value, string sourceDescription = null );
 
         /// <summary>
         /// Sets an ambient property on the Structured Object (the property must exist, be writable, and marked with <see cref="AmbientPropertyAttribute"/>). The
         /// type of the <paramref name="value"/> must be compatible with the property type otherwise an error is logged.
         /// </summary>
-        /// <param name="logger">The logger to use to describe any error.</param>
+        /// <param name="monitor">The monitor to use to describe any error.</param>
         /// <param name="propertyName">Name of the property to set.</param>
         /// <param name="value">Value to set.</param>
         /// <param name="sourceDescription">Optional description of the origin of the value to help troubleshooting.</param>
         /// <returns>True on success, false if any error occurs.</returns>
-        bool SetAmbiantPropertyValue( IActivityLogger logger, string propertyName, object value, string sourceDescription = null );
+        bool SetAmbiantPropertyValue( IActivityMonitor monitor, string propertyName, object value, string sourceDescription = null );
 
         /// <summary>
         /// Sets how an ambient property on the Structured Object must be resolved (the property must exist, be writeable, and marked with <see cref="AmbientPropertyAttribute"/>).
         /// </summary>
-        /// <param name="logger">The logger to use to describe any error.</param>
+        /// <param name="monitor">The monitor to use to describe any error.</param>
         /// <param name="propertyName">Name of the property to configure.</param>
         /// <param name="context">See <see cref="IStObjMutableReference.Context"/>.</param>
         /// <param name="type">See <see cref="IStObjMutableReference.Type"/>.</param>
         /// <param name="behavior">See <see cref="IStObjMutableReference.StObjRequirementBehavior"/>.</param>
         /// <param name="sourceDescription">Optional description of the origin of the call to help troubleshooting.</param>
         /// <returns>True on success, false if any error occurs.</returns>
-        bool SetAmbiantPropertyConfiguration( IActivityLogger logger, string propertyName, string context, Type type, StObjRequirementBehavior behavior, string sourceDescription = null );
+        bool SetAmbiantPropertyConfiguration( IActivityMonitor monitor, string propertyName, string context, Type type, StObjRequirementBehavior behavior, string sourceDescription = null );
 
     }
 }

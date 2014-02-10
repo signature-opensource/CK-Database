@@ -33,41 +33,41 @@ namespace CK.Setup
         /// <summary>
         /// Registers a <see cref="ISetupScript"/>: finds or creates a unique <see cref="ScriptSet"/> for each <see cref="ISetupScript.Name"/>.
         /// The first name becomes the case-insensitive key: names with different case will
-        /// be detected, a warning will be emitted into the _logger and null will be returned.
+        /// be detected, a warning will be emitted into the _monitor and null will be returned.
         /// </summary>
         /// <param name="script">A setup script. Must be not null.</param>
-        /// <param name="_logger">The _logger to use.</param>
+        /// <param name="_monitor">The _monitor to use.</param>
         /// <returns>A script set or null if casing differ or if the script already exists in the <see cref="ScriptSet"/>.</returns>
-        public ScriptSet Add( ISetupScript script, IActivityLogger logger )
+        public ScriptSet Add( ISetupScript script, IActivityMonitor monitor )
         {
             if( script == null ) throw new ArgumentException( "script" );
-            if( logger == null ) throw new ArgumentNullException( "_logger" );
+            if( monitor == null ) throw new ArgumentNullException( "_monitor" );
 
             ScriptSet s = _scripts.GetOrSet( script.Name.FullName, n => new ScriptSet( n ) );
             if( s.FullName != script.Name.FullName )
             {
-                logger.Warn( "Script '{0}' can not be associated to '{1}' (names are case-sensitive). It is ignored.", script.Name.FileName, s.FullName );
+                monitor.Warn().Send( "Script '{0}' can not be associated to '{1}' (names are case-sensitive). It is ignored.", script.Name.FileName, s.FullName );
                 return null;
             }
             ScriptSource source = _typeManager.FindSourceByName( script.ScriptSource );
             if( source == null )
             {
-                logger.Warn( "Script source '{2}' is not registered. Script '{0}' for '{1}' will be ignored.", script.Name.FileName, s.FullName, script.ScriptSource );
+                monitor.Warn().Send( "Script source '{2}' is not registered. Script '{0}' for '{1}' will be ignored.", script.Name.FileName, s.FullName, script.ScriptSource );
                 return null;
             }
-            return s.Add( logger, source, script, _typeManager ) ? s : null;
+            return s.Add( monitor, source, script, _typeManager ) ? s : null;
         }
 
-        bool IScriptCollector.Add( ISetupScript script, IActivityLogger logger )
+        bool IScriptCollector.Add( ISetupScript script, IActivityMonitor monitor )
         {
-            return Add( script, logger ) != null;
+            return Add( script, monitor ) != null;
         }
 
         /// <summary>
         /// Registers a set of resources (multiple <see cref="ResSetupScript"/>) from a <see cref="ResourceLocator"/>, a full name prefix and a script source
         /// (the script source must be registered in the associated <see cref="ScriptTypeManager"/>).
         /// </summary>
-        /// <param name="_logger">Logger to use.</param>
+        /// <param name="_monitor">Monitor to use.</param>
         /// <param name="scriptSource">The script source under which registering the <see cref="ISetupScript"/>.</param>
         /// <param name="resLoc">Resource locator.</param>
         /// <param name="context">Context identifier.</param>
@@ -75,9 +75,9 @@ namespace CK.Setup
         /// <param name="name">Name of the object. This is used as a prefix for the resource names.</param>
         /// <param name="fileSuffix">Keeps only resources that ends with this suffix.</param>
         /// <returns>The number of scripts that have been added.</returns>
-        public int AddFromResources( IActivityLogger logger, string scriptSource, ResourceLocator resLoc, string context, string location, string name, string fileSuffix )
+        public int AddFromResources( IActivityMonitor monitor, string scriptSource, ResourceLocator resLoc, string context, string location, string name, string fileSuffix )
         {
-            if( logger == null ) throw new ArgumentNullException( "_logger" );
+            if( monitor == null ) throw new ArgumentNullException( "_monitor" );
             if( scriptSource == null ) throw new ArgumentNullException( "scriptSource" );
             if( resLoc == null ) throw new ArgumentNullException( "scriptSource" );
             if( name == null ) throw new ArgumentNullException( "name" );
@@ -89,7 +89,7 @@ namespace CK.Setup
                 ParsedFileName rName;
                 if( ParsedFileName.TryParse( context, location, s, resLoc, true, out rName ) )
                 {
-                    Add( new ResSetupScript( rName, scriptSource ), logger );
+                    Add( new ResSetupScript( rName, scriptSource ), monitor );
                     ++count;
                 }
             }

@@ -105,7 +105,7 @@ namespace CK.Core
             return setters;
         }
 
-        internal void CallConstruct( IActivityLogger logger, Func<int, object> itemResolver, object instance )
+        internal void CallConstruct( IActivityMonitor monitor, Func<int, object> itemResolver, object instance )
         {
             if( _preConstruct != null )
             {
@@ -119,7 +119,7 @@ namespace CK.Core
             for( int i = 0; i < _constructParametersIndex.Length; ++i )
             {
                 int idx = _constructParametersIndex[i];
-                if( idx == Int32.MaxValue ) parameters[i] = logger;
+                if( idx == Int32.MaxValue ) parameters[i] = monitor;
                 else parameters[i] = GetValueFromIndex( itemResolver, idx );
             }
             _construct.Invoke( instance, parameters );

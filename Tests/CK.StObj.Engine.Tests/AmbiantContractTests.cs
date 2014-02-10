@@ -64,7 +64,7 @@ namespace CK.Setup.Tests
 
     public class AmbientRoot : AmbientTypeMap<ContextForTypes>
     {
-        protected override IContextualTypeMap CreateContext<T,TC>( IActivityLogger logger, string context )
+        protected override IContextualTypeMap CreateContext<T,TC>( IActivityMonitor monitor, string context )
         {
             return new ContextForTypes( this, context );
         }
@@ -101,8 +101,8 @@ namespace CK.Setup.Tests
 
     public class DefaultAmbientContractCollector : AmbientContractCollector<ContextForTypes,TypeInfo,TypeInsideContext>
     {
-        public DefaultAmbientContractCollector( IActivityLogger logger = null, IAmbientContractDispatcher contextDispatcher = null )
-            : base( logger ?? DefaultActivityLogger.Empty, l => new AmbientRoot(), ( l, p, t ) => new TypeInfo( p, t ), null, contextDispatcher )
+        public DefaultAmbientContractCollector( IActivityMonitor monitor = null, IAmbientContractDispatcher contextDispatcher = null )
+            : base( monitor ?? new ActivityMonitor(), l => new AmbientRoot(), ( l, p, t ) => new TypeInfo( p, t ), null, contextDispatcher )
         {
         }
     }
@@ -212,7 +212,7 @@ namespace CK.Setup.Tests
             Action<DefaultAmbientContractCollector> check = c =>
             {
                 var rAll = c.GetResult();
-                rAll.LogErrorAndWarnings( TestHelper.Logger );
+                rAll.LogErrorAndWarnings( TestHelper.ConsoleMonitor );
                 {
                     var r = rAll.Default;
                     Assert.That( r.AbstractTails.Count, Is.EqualTo( 1 ) );

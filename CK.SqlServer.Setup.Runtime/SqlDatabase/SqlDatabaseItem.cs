@@ -8,7 +8,7 @@ namespace CK.SqlServer.Setup
     {
         internal readonly SqlDatabaseConnectionItem ConnectionItem;
         
-        public SqlDatabaseItem( IActivityLogger logger, IStObjSetupData data )
+        public SqlDatabaseItem( IActivityMonitor monitor, IStObjSetupData data )
         {
             Object = (SqlDatabase)data.StObj.Object;
             Context = data.StObj.Context.Context;

@@ -20,16 +20,16 @@ namespace CK.SqlServer.Setup
 
         protected override bool Init()
         {
-            _connection = FindManager( _sqlProvider, Engine.Logger, Item.SqlDatabase );
+            _connection = FindManager( _sqlProvider, Engine.Monitor, Item.SqlDatabase );
             if( _connection == null ) return false;
             foreach( var name in Item.SqlDatabase.Schemas )
             {
-                _connection.ExecuteOneScript( String.Format( "if not exists(select 1 from sys.schemas where name = '{0}') begin exec( 'create schema {0}' ); end", name ), Engine.Logger );
+                _connection.ExecuteOneScript( String.Format( "if not exists(select 1 from sys.schemas where name = '{0}') begin exec( 'create schema {0}' ); end", name ), Engine.Monitor );
             }
             return base.Init();
         }
 
-        static SqlManager FindManager( ISqlManagerProvider sql, IActivityLogger logger, SqlDatabase db )
+        static SqlManager FindManager( ISqlManagerProvider sql, IActivityMonitor monitor, SqlDatabase db )
         {
             SqlManager c = null;
             if( !String.IsNullOrWhiteSpace( db.ConnectionString ) )
@@ -42,11 +42,11 @@ namespace CK.SqlServer.Setup
             }
             if( c == null )
             {
-                logger.Error( "Database '{0}' not available.", db.Name );
+                monitor.Error().Send( "Database '{0}' not available.", db.Name );
             }
             else if( !db.IsDefaultDatabase && db.InstallCore )
             {
-                c.EnsureCKCoreIsInstalled( logger );
+                c.EnsureCKCoreIsInstalled( monitor );
             }
             return c;
         }

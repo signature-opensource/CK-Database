@@ -31,9 +31,9 @@ namespace CK.Setup
         /// <summary>
         /// Configures the given <see cref="IMutableStObjSetupData"/> before it participates in setup.
         /// </summary>
-        /// <param name="logger">Logger to use.</param>
+        /// <param name="monitor">Monitor to use.</param>
         /// <param name="data">Mutable data (typically initialized by attributes and other direct code-first approaches).</param>
-        void ConfigureDependentItem( IActivityLogger logger, IMutableStObjSetupData data );
+        void ConfigureDependentItem( IActivityMonitor monitor, IMutableStObjSetupData data );
     }
 
 }

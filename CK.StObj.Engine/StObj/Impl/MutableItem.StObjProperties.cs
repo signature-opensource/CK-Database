@@ -70,7 +70,7 @@ namespace CK.Setup
             }
         }
 
-        void CheckStObjProperties( IActivityLogger logger, BuildValueCollector valueCollector )
+        void CheckStObjProperties( IActivityMonitor monitor, BuildValueCollector valueCollector )
         {
             if( _stObjProperties == null ) return;
             foreach( StObjProperty p in _stObjProperties )
@@ -78,14 +78,14 @@ namespace CK.Setup
                 if( p.InfoOnType == null || p.InfoOnType.ResolutionSource == PropertyResolutionSource.FromContainerAndThenGeneralization )
                 {
                     // Check the Type constraint that could potentially hurt one day.
-                    bool containerHasSetOrMerged = IsOwnContainer && HandleStObjPropertySource( logger, p, _dContainer, "Container", true );
-                    if( Generalization != null ) HandleStObjPropertySource( logger, p, Generalization, "Generalization", !containerHasSetOrMerged );
+                    bool containerHasSetOrMerged = IsOwnContainer && HandleStObjPropertySource( monitor, p, _dContainer, "Container", true );
+                    if( Generalization != null ) HandleStObjPropertySource( monitor, p, Generalization, "Generalization", !containerHasSetOrMerged );
                 }
                 else if( p.InfoOnType.ResolutionSource == PropertyResolutionSource.FromGeneralizationAndThenContainer )
                 {
                     // Check the Type constraint that could potentially hurt one day.
-                    bool generalizationHasSetOrMerged = Generalization != null && HandleStObjPropertySource( logger, p, Generalization, "Generalization", true );
-                    if( IsOwnContainer ) HandleStObjPropertySource( logger, p, _dContainer, "Container", !generalizationHasSetOrMerged );
+                    bool generalizationHasSetOrMerged = Generalization != null && HandleStObjPropertySource( monitor, p, Generalization, "Generalization", true );
+                    if( IsOwnContainer ) HandleStObjPropertySource( monitor, p, _dContainer, "Container", !generalizationHasSetOrMerged );
                 }
                 // If the value is missing (it has never been set or has been explicitely "removed"), we have nothing to do.
                 // If the type is not constrained, we have nothing to do.
@@ -99,7 +99,7 @@ namespace CK.Setup
                         {
                             if( p.Type.IsValueType && !(p.Type.IsGenericType && p.Type.GetGenericTypeDefinition() == typeof( Nullable<> )) )
                             {
-                                logger.Error( "StObjProperty '{0}.{1}' has been set to null but its type '{2}' is not nullable.", ToString(), p.Name, p.Type.Name );
+                                monitor.Error().Send( "StObjProperty '{0}.{1}' has been set to null but its type '{2}' is not nullable.", ToString(), p.Name, p.Type.Name );
                                 setIt = false;
                             }
                         }
@@ -107,7 +107,7 @@ namespace CK.Setup
                         {
                             if( !p.Type.IsAssignableFrom( v.GetType() ) )
                             {
-                                logger.Error( "StObjProperty '{0}.{1}' is of type '{2}', but a value of type '{3}' has been set.", ToString(), p.Name, p.Type.Name, v.GetType() );
+                                monitor.Error().Send( "StObjProperty '{0}.{1}' is of type '{2}', but a value of type '{3}' has been set.", ToString(), p.Name, p.Type.Name, v.GetType() );
                                 setIt = false;
                             }
                         }
@@ -120,7 +120,7 @@ namespace CK.Setup
             }
         }
 
-        private bool HandleStObjPropertySource( IActivityLogger logger, StObjProperty p, MutableItem source, string sourceName, bool doSetOrMerge )
+        private bool HandleStObjPropertySource( IActivityMonitor monitor, StObjProperty p, MutableItem source, string sourceName, bool doSetOrMerge )
         {
             StObjProperty c = source.GetStObjProperty( p.Name );
             // Source property is defined somewhere in the source.
@@ -131,7 +131,7 @@ namespace CK.Setup
                 if( c.InfoOnType != null && !p.Type.IsAssignableFrom( c.Type ) )
                 {
                     // It is a warning because if actual values work, everything is okay... but one day, it should fail.
-                    logger.Warn( "StObjProperty '{0}.{1}' of type '{2}' is not compatible with the one of its {6} ('{3}.{4}' of type '{5}'). Type should be compatible since {6}'s property value will be propagated if no explicit value is set for '{7}.{1}' or if '{3}.{4}' is set with an incompatible value.",
+                    monitor.Warn().Send( "StObjProperty '{0}.{1}' of type '{2}' is not compatible with the one of its {6} ('{3}.{4}' of type '{5}'). Type should be compatible since {6}'s property value will be propagated if no explicit value is set for '{7}.{1}' or if '{3}.{4}' is set with an incompatible value.",
                         ToString(), p.Name, p.Type.Name,
                         _dContainer.Type.Name, c.Name, c.Type.Name,
                         sourceName,
@@ -146,9 +146,9 @@ namespace CK.Setup
                         if( !p.ValueHasBeenSet ) p.Value = c.Value;
                         else if( p.Value is IMergeable )
                         {
-                            if( !((IMergeable)p.Value).Merge( c.Value, new SimpleServiceContainer().Add( logger ) ) )
+                            if( !((IMergeable)p.Value).Merge( c.Value, new SimpleServiceContainer().Add( monitor ) ) )
                             {
-                                logger.Error( "Unable to merge StObjProperty '{0}.{1}' with value from {2}.", ToString(), p.Value, sourceName );
+                                monitor.Error().Send( "Unable to merge StObjProperty '{0}.{1}' with value from {2}.", ToString(), p.Value, sourceName );
                             }
                         }
                         return true;

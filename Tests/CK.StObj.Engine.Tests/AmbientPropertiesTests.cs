@@ -15,9 +15,9 @@ namespace CK.StObj.Engine.Tests
 
             public object PropertyValue { get; set; }
 
-            public void Configure( IActivityLogger logger, IStObjMutableItem o )
+            public void Configure( IActivityMonitor monitor, IStObjMutableItem o )
             {
-                o.SetAmbiantPropertyValue( logger, PropertyName, PropertyValue, "AmbientPropertySetAttribute" );
+                o.SetAmbiantPropertyValue( monitor, PropertyName, PropertyValue, "AmbientPropertySetAttribute" );
             }
         }
 
@@ -27,9 +27,9 @@ namespace CK.StObj.Engine.Tests
 
             public object PropertyValue { get; set; }
 
-            public void Configure( IActivityLogger logger, IStObjMutableItem o )
+            public void Configure( IActivityMonitor monitor, IStObjMutableItem o )
             {
-                o.SetDirectPropertyValue( logger, PropertyName, PropertyValue, "DirectPropertySetAttribute" );
+                o.SetDirectPropertyValue( monitor, PropertyName, PropertyValue, "DirectPropertySetAttribute" );
             }
         }
 
@@ -50,15 +50,15 @@ namespace CK.StObj.Engine.Tests
 
         class ConfiguratorOneIntValueSetTo42 : IStObjStructuralConfigurator
         {
-            public void Configure( IActivityLogger logger, IStObjMutableItem o )
+            public void Configure( IActivityMonitor monitor, IStObjMutableItem o )
             {
                 if( o.ObjectType == typeof( SimpleObjectDirect ) )
                 {
-                    o.SetDirectPropertyValue( logger, "OneIntValue", 42, "ConfiguratorOneIntValueSetTo42" );
+                    o.SetDirectPropertyValue( monitor, "OneIntValue", 42, "ConfiguratorOneIntValueSetTo42" );
                 }
                 if( o.ObjectType == typeof( SimpleObjectAmbient ) )
                 {
-                    o.SetAmbiantPropertyValue( logger, "OneIntValue", 42, "ConfiguratorOneIntValueSetTo42" );
+                    o.SetAmbiantPropertyValue( monitor, "OneIntValue", 42, "ConfiguratorOneIntValueSetTo42" );
                 }
             }
         }
@@ -70,7 +70,7 @@ namespace CK.StObj.Engine.Tests
         public void OneObjectDirectProperty()
         {
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Logger );
+                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor );
                 collector.RegisterClass( typeof( SimpleObjectDirect ) );
                 StObjCollectorResult result = collector.GetResult();
                 Assert.That( result.OrderedStObjs.FirstOrDefault(), Is.Not.Null, "We registered SimpleObjectDirect." );
@@ -78,7 +78,7 @@ namespace CK.StObj.Engine.Tests
                 Assert.That( ((SimpleObjectDirect)result.OrderedStObjs.First().Object).OneIntValue, Is.EqualTo( 3712 ), "Direct properties can be set by Attribute." );
             }
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Logger, null, null, new ConfiguratorOneIntValueSetTo42() );
+                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor, null, null, new ConfiguratorOneIntValueSetTo42() );
                 collector.RegisterClass( typeof( SimpleObjectDirect ) );
                 StObjCollectorResult result = collector.GetResult();
                 Assert.That( ((SimpleObjectDirect)result.OrderedStObjs.First().Object).OneIntValue, Is.EqualTo( 42 ), "Direct properties can be set by any IStObjStructuralConfigurator participant (here the global one)." );
@@ -89,7 +89,7 @@ namespace CK.StObj.Engine.Tests
         public void OneObjectAmbiantProperty()
         {
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Logger );
+                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor );
                 collector.RegisterClass( typeof( SimpleObjectAmbient ) );
                 StObjCollectorResult result = collector.GetResult();
                 Assert.That( result.OrderedStObjs.FirstOrDefault(), Is.Not.Null, "We registered SimpleObjectAmbient." );
@@ -97,7 +97,7 @@ namespace CK.StObj.Engine.Tests
                 Assert.That( ((SimpleObjectAmbient)result.OrderedStObjs.First().Object).OneIntValue, Is.EqualTo( 3712 ), "Same as Direct properties (above) regarding direct setting. The difference between Ambient and non-ambient lies in value propagation." );
             }
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Logger, null, null, new ConfiguratorOneIntValueSetTo42() );
+                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor, null, null, new ConfiguratorOneIntValueSetTo42() );
                 collector.RegisterClass( typeof( SimpleObjectAmbient ) );
                 StObjCollectorResult result = collector.GetResult();
                 Assert.That( ((SimpleObjectAmbient)result.OrderedStObjs.First().Object).OneIntValue, Is.EqualTo( 42 ), "Same as Direct properties (above) regarding direct setting. The difference between Ambient and non-ambient lies in value propagation." );
@@ -122,14 +122,14 @@ namespace CK.StObj.Engine.Tests
         public void AmbiantOrDirectPropertyDeclaredInBaseClassCanBeSet()
         {
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Logger );
+                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor );
                 collector.RegisterClass( typeof( SpecializedObjectDirect ) );
                 StObjCollectorResult result = collector.GetResult();
                 Assert.That( result.OrderedStObjs.Count, Is.EqualTo( 2 ), "SpecializedObjectDirect and SimpleObjectDirect." );
                 Assert.That( result.Default.StObjMap.Obtain<SpecializedObjectDirect>().OneIntValue, Is.EqualTo( 999 ), "Direct properties can be set by Attribute (or any IStObjStructuralConfigurator)." );
             }
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Logger );
+                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor );
                 collector.RegisterClass( typeof( SpecializedObjectAmbient ) );
                 StObjCollectorResult result = collector.GetResult();
                 Assert.That( result.OrderedStObjs.Count, Is.EqualTo( 2 ), "SpecializedObjectAmbient and SimpleObjectAmbient." );
@@ -156,7 +156,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void PropagationFromDirectPropertyDoesNotWork()
         {
-            StObjCollector collector = new StObjCollector( TestHelper.Logger, null, null, new ConfiguratorOneIntValueSetTo42() );
+            StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor, null, null, new ConfiguratorOneIntValueSetTo42() );
             collector.RegisterClass( typeof( SimpleObjectDirect ) );
             collector.RegisterClass( typeof( SimpleObjectInsideDirect ) );
             StObjCollectorResult result = collector.GetResult();
@@ -167,7 +167,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void PropagationFromAmbientProperty()
         {
-            StObjCollector collector = new StObjCollector( TestHelper.Logger, null, null, new ConfiguratorOneIntValueSetTo42() );
+            StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor, null, null, new ConfiguratorOneIntValueSetTo42() );
             collector.RegisterClass( typeof( SimpleObjectAmbient ) );
             collector.RegisterClass( typeof( SimpleObjectInsideAmbiant ) );
             StObjCollectorResult result = collector.GetResult();
@@ -213,9 +213,9 @@ namespace CK.StObj.Engine.Tests
 
         class AmbientResolutionTypeSetter : IStObjStructuralConfigurator
         {
-            public void Configure( IActivityLogger logger, IStObjMutableItem o )
+            public void Configure( IActivityMonitor monitor, IStObjMutableItem o )
             {
-                if( o.ObjectType == typeof( C1 ) ) o.SetAmbiantPropertyConfiguration( logger, "Ambient", null, typeof(TypeToMap), StObjRequirementBehavior.ErrorIfNotStObj );
+                if( o.ObjectType == typeof( C1 ) ) o.SetAmbiantPropertyConfiguration( monitor, "Ambient", null, typeof(TypeToMap), StObjRequirementBehavior.ErrorIfNotStObj );
             }
         }
 
@@ -223,7 +223,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void TypeResolution()
         {
-            StObjCollector collector = new StObjCollector( TestHelper.Logger, null, null, new AmbientResolutionTypeSetter() );
+            StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor, null, null, new AmbientResolutionTypeSetter() );
             collector.RegisterClass( typeof( O2InC2 ) );
             collector.RegisterClass( typeof( C2 ) );
             collector.RegisterClass( typeof( TypeToMap ) );

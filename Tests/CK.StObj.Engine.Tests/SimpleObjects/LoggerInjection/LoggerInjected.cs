@@ -9,11 +9,11 @@ namespace CK.StObj.Engine.Tests.SimpleObjects.LoggerInjection
 {
     public class LoggerInjected : IAmbientContract
     {
-        void Construct( IActivityLogger logger, IActivityLogger anotherLogger = null )
+        void Construct( IActivityMonitor monitor, IActivityMonitor anotherLogger = null )
         {
-            Assert.That( logger, Is.Not.Null, "This is the Setup logger. Parameter must be exactly 'IActivityLogger logger'." );
-            Assert.That( anotherLogger, Is.Null, "This is NOT the Setup logger. Since it is optional, it works." );
-            logger.Trace( "Setup logger can be used by Construct method." );
+            Assert.That( monitor, Is.Not.Null, "This is the Setup monitor. Parameter must be exactly 'IActivityMonitor monitor'." );
+            Assert.That( anotherLogger, Is.Null, "This is NOT the Setup monitor. Since it is optional, it works." );
+            monitor.Trace().Send( "Setup monitor can be used by Construct method." );
         }
     }
 }

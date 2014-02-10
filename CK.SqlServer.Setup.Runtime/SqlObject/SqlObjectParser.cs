@@ -23,17 +23,17 @@ namespace CK.SqlServer.Setup
                 | RegexOptions.IgnoreCase
                 | RegexOptions.ExplicitCapture );
 
-        IDependentProtoItem ISqlObjectParser.Create( IActivityLogger logger, IContextLocNaming externalName, string text )
+        IDependentProtoItem ISqlObjectParser.Create( IActivityMonitor monitor, IContextLocNaming externalName, string text )
         {
-            return SqlObjectParser.Create( logger, externalName, text, null );
+            return SqlObjectParser.Create( monitor, externalName, text, null );
         }
 
-        static public SqlObjectProtoItem Create( IActivityLogger logger, IContextLocNaming externalName, string text, string expectedType = null )
+        static public SqlObjectProtoItem Create( IActivityMonitor monitor, IContextLocNaming externalName, string text, string expectedType = null )
         {
             Match mSqlObject = _rSqlObject.Match( text );
             if( !mSqlObject.Success )
             {
-                logger.Error( "Unable to detect create or alter statement for view, procedure or function (the object name must be Schema.Name)." );
+                monitor.Error().Send( "Unable to detect create or alter statement for view, procedure or function (the object name must be Schema.Name)." );
                 return null;
             }
             string type;
@@ -45,7 +45,7 @@ namespace CK.SqlServer.Setup
             }
             if( expectedType != null && expectedType != type )
             {
-                logger.Error( "Expected Sql object of type '{0}' but found a {1}.", expectedType, type );
+                monitor.Error().Send( "Expected Sql object of type '{0}' but found a {1}.", expectedType, type );
                 return null;
             }
 
@@ -55,7 +55,7 @@ namespace CK.SqlServer.Setup
             Match mHeader = _rHeader.Match( header );
             if( !mHeader.Success )
             {
-                logger.Error( "Invalid header: -- Version=X.Y.Z (with Major.Minor.Build) or Version=* must appear first in header.\r\n{0}", text );
+                monitor.Error().Send( "Invalid header: -- Version=X.Y.Z (with Major.Minor.Build) or Version=* must appear first in header.\r\n{0}", text );
                 return null;
             }
             string packageName = null;
@@ -78,7 +78,7 @@ namespace CK.SqlServer.Setup
             if( mHeader.Groups[1].Length == 1 ) version = null;
             else if( !Version.TryParse( mHeader.Groups[1].Value, out version ) || version.Revision != -1 || version.Build == -1 )
             {
-                logger.Error( "-- Version=X.Y.Z (with Major.Minor.Build) or Version=* must appear first in header." );
+                monitor.Error().Send( "-- Version=X.Y.Z (with Major.Minor.Build) or Version=* must appear first in header." );
                 return null;
             }
             bool? missingDep = null;
@@ -88,7 +88,7 @@ namespace CK.SqlServer.Setup
                 bool m;
                 if( !bool.TryParse( missDep.Groups[1].Value, out m ) )
                 {
-                    logger.Error( "Invalid syntax: it should be MissingDependencyIsError = true or MissingDependencyIsError = false." );
+                    monitor.Error().Send( "Invalid syntax: it should be MissingDependencyIsError = true or MissingDependencyIsError = false." );
                     return null;
                 }
                 missingDep = m;

@@ -42,7 +42,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             config.SetupConfiguration.AppDomainConfiguration.UseIndependentAppDomain = true;
             config.SetupConfiguration.AppDomainConfiguration.ProbePaths.Add( TestHelper.TestBinFolder );
 
-            using( var db = SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.Logger ) )
+            using( var db = SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.ConsoleMonitor ) )
             {
                 if( resetFirst )
                 {
@@ -52,39 +52,39 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
                 config.DefaultDatabaseConnectionString = db.CurrentConnectionString;
             }
             //
-            //using( var db = SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.Logger ) )
-            //using( var c = new SqlSetupCenter( TestHelper.Logger, config, db ) )
+            //using( var db = SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.Monitor ) )
+            //using( var c = new SqlSetupCenter( TestHelper.Monitor, config, db ) )
             //{
             //    //c.StObjDependencySorterHookInput = TestHelper.Trace;
             //    //c.StObjDependencySorterHookOutput = sortedItems => TestHelper.Trace( sortedItems, false );
             //    //c.SetupDependencySorterHookInput = TestHelper.Trace;
             //    //c.SetupDependencySorterHookOutput = sortedItems => TestHelper.Trace( sortedItems, false );
             //    Assert.That( c.Run() );
-            //    IStObjMap m = StObjContextRoot.Load( dllName, TestHelper.Logger );
+            //    IStObjMap m = StObjContextRoot.Load( dllName, TestHelper.Monitor );
             //    if( typeFilter == null ) CheckBasicAndZone( db, m );
             //    else CheckBasicOnly( db, m );
             //}
             // 
-            // The code above explicitely creates a SqlSetupCenter and Run() it.
+            // The code above explicitly creates a SqlSetupCenter and Run() it.
             // This executes the build process directly, in the current domain.
             // To honor SetupConfiguration.AppDomainConfiguration.UseIndependentAppDomain, 
             // the static StObjContext.Build with the configuration must be used as below:
             // 
             // StObjContextRoot.Build result must be disposed: this actually unloads 
-            // the independant AppDomain from memory.
+            // the independent AppDomain from memory.
             //
-            using( var result = StObjContextRoot.Build( config, TestHelper.Logger ) )
+            using( var result = StObjContextRoot.Build( config, TestHelper.ConsoleMonitor ) )
             {
                 Assert.That( result.Success );
                 Assert.That( result.IndependentAppDomain != null );
             }
-            using( var db = SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.Logger ) )
+            using( var db = SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.ConsoleMonitor ) )
             {
-                IStObjMap m = StObjContextRoot.Load( dllName, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Logger );
+                IStObjMap m = StObjContextRoot.Load( dllName, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.ConsoleMonitor );
                 if( typeFilter == null ) CheckBasicAndZone( db, m );
                 else CheckBasicOnly( db, m );
             }
-            using( var db = SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.Logger ) )
+            using( var db = SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.ConsoleMonitor ) )
             {
                 Assert.That( db.Connection.ExecuteScalar( "select count(*) from sys.tables where name in ('tActor','tItemVersion')" ), Is.EqualTo( 2 ) );
                 db.SchemaDropAllObjects( "CK", true );
@@ -93,18 +93,18 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             }
              
             config.SetupConfiguration.RevertOrderingNames = true;
-            using( TestHelper.Logger.OpenGroup( LogLevel.Trace, "Second setup (reverse order)" ) )
+            using( TestHelper.ConsoleMonitor.OpenTrace().Send( "Second setup (reverse order)" ) )
             {
-                using( var result = StObjContextRoot.Build( config, TestHelper.Logger ) )
+                using( var result = StObjContextRoot.Build( config, TestHelper.ConsoleMonitor ) )
                 {
                     Assert.That( result.Success );
                     Assert.That( result.IndependentAppDomain != null );
                 }
             }
 
-            using( var db = SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.Logger ) )
+            using( var db = SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.ConsoleMonitor ) )
             {
-                IStObjMap m = StObjContextRoot.Load( dllName, null, TestHelper.Logger );
+                IStObjMap m = StObjContextRoot.Load( dllName, null, TestHelper.ConsoleMonitor );
                 if( typeFilter == null ) CheckBasicAndZone( db, m );
                 else CheckBasicOnly( db, m );
             }
@@ -112,7 +112,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
         private static void CheckBasicOnly( SqlManager c, IStObjMap map )
         {
-            using( TestHelper.Logger.OpenGroup( LogLevel.Trace, "CheckBasicOnly" ) )
+            using( TestHelper.ConsoleMonitor.OpenTrace().Send( "CheckBasicOnly" ) )
             {
                 Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tActor where ActorId <= 1" ), Is.EqualTo( 2 ) );
                 Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tGroup where GroupName = 'Public'" ), Is.EqualTo( 1 ) );
@@ -135,7 +135,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
         private static void CheckBasicAndZone( SqlManager c, IStObjMap map )
         {
-            using( TestHelper.Logger.OpenGroup( LogLevel.Trace, "CheckBasicAndZone" ) )
+            using( TestHelper.ConsoleMonitor.OpenTrace().Send( "CheckBasicAndZone" ) )
             {
                 Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tActor where ActorId <= 1" ), Is.EqualTo( 2 ) );
                 Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tSecurityZone where SecurityZoneId <= 1" ), Is.EqualTo( 2 ) );
@@ -266,7 +266,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             int groupId;
             groupHome.CmdDemoCreate( ref cmd, 1, groupName );
             c.Connection.ExecuteNonQuery( cmd );
-            // The SqlParameter still exists in the command, even if it is not explicitely declared.
+            // The SqlParameter still exists in the command, even if it is not explicitly declared.
             groupId = (int)cmd.Parameters["@GroupIdResult"].Value;
             Assert.That( groupId, Is.GreaterThan( 1 ) );
 
@@ -274,7 +274,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             int groupId2;
             groupHome.CmdDemoCreate( ref cmd, 1, groupName+"2" );
             c.Connection.ExecuteNonQuery( cmd );
-            // The SqlParameter still exists in the command, even if it is not explicitely declared.
+            // The SqlParameter still exists in the command, even if it is not explicitly declared.
             groupId2 = (int)cmd.Parameters["@GroupIdResult"].Value;
             Assert.That( groupId2, Is.GreaterThan( groupId ) );
 

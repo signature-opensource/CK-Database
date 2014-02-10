@@ -16,7 +16,7 @@ namespace CK.SqlServer.Setup
     {
 
 
-        private bool GenerateCreateSqlCommand( bool createOrSetValues, IActivityLogger logger, MethodInfo createCommand, SqlExprMultiIdentifier sqlName, SqlExprParameterList sqlParameters, MethodInfo m, ParameterInfo[] mParameters, TypeBuilder tB, bool isVirtual )
+        private bool GenerateCreateSqlCommand( bool createOrSetValues, IActivityMonitor monitor, MethodInfo createCommand, SqlExprMultiIdentifier sqlName, SqlExprParameterList sqlParameters, MethodInfo m, ParameterInfo[] mParameters, TypeBuilder tB, bool isVirtual )
         {
             MethodAttributes mA = m.Attributes & ~(MethodAttributes.Abstract | MethodAttributes.VtableLayoutMask);
             if( isVirtual ) mA |= MethodAttributes.Virtual;
@@ -72,14 +72,14 @@ namespace CK.SqlServer.Setup
                 int iSFound = IndexOf( sqlParameters, iS, '@' + mP.Name );
                 if( iSFound < 0 )
                 {
-                    logger.Error( "Parameter '{0}' not found in procedure parameters. Defined parameters must respect the actual procedure order.", mP.Name );
+                    monitor.Error().Send( "Parameter '{0}' not found in procedure parameters. Defined parameters must respect the actual procedure order.", mP.Name );
                     ++nbError;
                 }
                 else
                 {
                     SqlExprParameter p = sqlParameters[ iSFound ];
                     notFound[iSFound] = null;
-                    if( !CheckParameter( mP, p, logger ) ) ++nbError;
+                    if( !CheckParameter( mP, p, monitor ) ) ++nbError;
                     // Configures the SqlParameter.Value with the parameter value. 
                     if( p.IsInput )
                     {
@@ -105,16 +105,16 @@ namespace CK.SqlServer.Setup
                     {
                         if( !p.IsInput )
                         {
-                            logger.Info( "Method '{0}' does not declare the Sql Parameter '{1}'. Since it is an output parameter, it will be ignored.", m.Name, p.ToStringClean() );
+                            monitor.Info().Send( "Method '{0}' does not declare the Sql Parameter '{1}'. Since it is an output parameter, it will be ignored.", m.Name, p.ToStringClean() );
                         }
                         else if( p.DefaultValue == null )
                         {
-                            logger.Error( "Sql parameter '{0}' in procedure parameters has no default value. The method '{1}' must declare it.", p.Variable.Identifier.Name, m.Name );
+                            monitor.Error().Send( "Sql parameter '{0}' in procedure parameters has no default value. The method '{1}' must declare it.", p.Variable.Identifier.Name, m.Name );
                             ++nbError;
                         }
                         else
                         {
-                            logger.Trace( "Method '{0}' will use the default value for the Sql Parameter '{1}'.", m.Name, p.Variable.Identifier.Name, p.ToStringClean() );
+                            monitor.Trace().Send( "Method '{0}' will use the default value for the Sql Parameter '{1}'.", m.Name, p.Variable.Identifier.Name, p.ToStringClean() );
                             // Removing the optional parameter.
                             g.LdLoc( locParams );
                             g.LdInt32( iN );
@@ -152,8 +152,10 @@ namespace CK.SqlServer.Setup
                 b.Append( "Procedure '" );
                 sqlName.Tokens.WriteTokensWithoutTrivias( String.Empty, b );
                 b.Append( "': " ).Append( sqlParameters.ToStringClean() );
-                logger.Filter = LogLevelFilter.Info;
-                logger.Info( b.ToString() );
+                using( monitor.SetFilter( new LogFilter( LogLevelFilter.None, LogLevelFilter.Info ) ) )
+                {
+                    monitor.Info().Send( b.ToString() );
+                }
             }
             // Entering the SetValues part.
             if( createOrSetValues ) g.MarkLabel( setValues );
@@ -195,14 +197,14 @@ namespace CK.SqlServer.Setup
             return -1;
         }
 
-        bool CheckParameter( ParameterInfo mP, SqlExprParameter p, IActivityLogger logger )
+        bool CheckParameter( ParameterInfo mP, SqlExprParameter p, IActivityMonitor monitor )
         {
-            int nbError = CheckParameterDirection( mP, p, logger );
+            int nbError = CheckParameterDirection( mP, p, monitor );
             //TODO: Check .Net type against: p.Variable.TypeDecl.ActualType.DbType 
             return nbError == 0;
         }
 
-        private static int CheckParameterDirection( ParameterInfo mP, SqlExprParameter p, IActivityLogger logger )
+        private static int CheckParameterDirection( ParameterInfo mP, SqlExprParameter p, IActivityMonitor monitor )
         {
             int nbError = 0;
             bool sqlIsInputOutput = p.IsInputOutput;
@@ -215,13 +217,13 @@ namespace CK.SqlServer.Setup
                 {
                     if( sqlIsInputOutput )
                     {
-                        logger.Error( "Sql parameter '{0}' is an /*input*/output parameter. The method '{1}' must use 'ref' for it (not 'out').", p.Variable.Identifier.Name, mP.Member.Name );
+                        monitor.Error().Send( "Sql parameter '{0}' is an /*input*/output parameter. The method '{1}' must use 'ref' for it (not 'out').", p.Variable.Identifier.Name, mP.Member.Name );
                         ++nbError;
                     }
                     else if( sqlIsInput )
                     {
                         Debug.Assert( !sqlIsOutput );
-                        logger.Error( "Sql parameter '{0}' is an input parameter. The method '{1}' can not use 'out' for it (and 'ref' modifier will be useless).", p.Variable.Identifier.Name, mP.Member.Name );
+                        monitor.Error().Send( "Sql parameter '{0}' is an input parameter. The method '{1}' can not use 'out' for it (and 'ref' modifier will be useless).", p.Variable.Identifier.Name, mP.Member.Name );
                         ++nbError;
                     }
                 }
@@ -229,7 +231,7 @@ namespace CK.SqlServer.Setup
                 {
                     if( !sqlIsOutput )
                     {
-                        logger.Warn( "Sql parameter '{0}' is not an output parameter. The method '{1}' uses 'ref' for it that is useless.", p.Variable.Identifier.Name, mP.Member.Name );
+                        monitor.Warn().Send( "Sql parameter '{0}' is not an output parameter. The method '{1}' uses 'ref' for it that is useless.", p.Variable.Identifier.Name, mP.Member.Name );
                     }
                 }
             }
@@ -237,11 +239,11 @@ namespace CK.SqlServer.Setup
             {
                 if( sqlIsInputOutput )
                 {
-                    logger.Warn( "Sql parameter '{0}' is an /*input*/output parameter. The method '{1}' should use 'ref' to retreive the new value after the call.", p.Variable.Identifier.Name, mP.Member.Name );
+                    monitor.Warn().Send( "Sql parameter '{0}' is an /*input*/output parameter. The method '{1}' should use 'ref' to retreive the new value after the call.", p.Variable.Identifier.Name, mP.Member.Name );
                 }
                 else if( sqlIsOutput )
                 {
-                    logger.Error( "Sql parameter '{0}' is an output parameter. The method '{1}' must use 'out' for the parameter (you can also simply remove the method's parameter the output value can be ignored).", p.Variable.Identifier.Name, mP.Member.Name );
+                    monitor.Error().Send( "Sql parameter '{0}' is an output parameter. The method '{1}' must use 'out' for the parameter (you can also simply remove the method's parameter the output value can be ignored).", p.Variable.Identifier.Name, mP.Member.Name );
                     ++nbError;
                 }
             }

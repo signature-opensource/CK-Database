@@ -38,12 +38,12 @@ namespace CK.Setup
             } 
         }
 
-        internal override MutableItem ResolveToStObj( IActivityLogger logger, StObjCollectorResult collector, StObjCollectorContextualResult cachedCollector )
+        internal override MutableItem ResolveToStObj( IActivityMonitor monitor, StObjCollectorResult collector, StObjCollectorContextualResult cachedCollector )
         {
             if( _resolved != UnresolvedMarker ) return _resolved;
             if( Type == null && !IsOptional )
             {
-                Error( logger, String.Format( "Type can not be null since the {0} is not optional", KindName ) );
+                Error( monitor, String.Format( "Type can not be null since the {0} is not optional", KindName ) );
                 return _resolved = null;
             }
             Debug.Assert( Type != null || IsOptional );
@@ -51,11 +51,11 @@ namespace CK.Setup
             {
                 if( !UnderlyingType.IsAssignableFrom( Type ) )
                 {
-                    Error( logger, String.Format( "Type '{0}' is not compatible with the {1} type ('{2}')", Type.FullName, KindName, UnderlyingType.FullName ) );
+                    Error( monitor, String.Format( "Type '{0}' is not compatible with the {1} type ('{2}')", Type.FullName, KindName, UnderlyingType.FullName ) );
                     return _resolved = null;
                 }
             }
-            return _resolved = base.ResolveToStObj( logger, collector, cachedCollector );
+            return _resolved = base.ResolveToStObj( monitor, collector, cachedCollector );
         }
     }
 }

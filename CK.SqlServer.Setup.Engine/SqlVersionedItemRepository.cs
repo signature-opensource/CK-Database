@@ -128,47 +128,44 @@ namespace CK.SqlServer.Setup
 
         void AutoInitialize()
         {
-            var logger = _manager.Logger;
-            using( logger.OpenGroup( LogLevel.Trace, "Installing SqlVersionedItemRepository." ) )
+            var monitor = _manager.Monitor;
+            using( monitor.OpenTrace().Send( "Installing SqlVersionedItemRepository." ) )
             {
-                if( !_manager.EnsureCKCoreIsInstalled( _manager.Logger ) ) throw new Exception( "Unable to initialize CKCore." );
+                if( !_manager.EnsureCKCoreIsInstalled( _manager.Monitor ) ) throw new Exception( "Unable to initialize CKCore." );
                 Version v = GetVersion();
                 if( v == CurrentVersion )
                 {
-                    logger.CloseGroup( String.Format( "Already installed in version {0}.", CurrentVersion ) );
+                    monitor.CloseGroup( String.Format( "Already installed in version {0}.", CurrentVersion ) );
                 }
                 else 
                 {
                     if( v == Util.EmptyVersion )
                     {
-                        logger.Info( "Installing current version {0}.", CurrentVersion );
+                        monitor.Info().Send( "Installing current version {0}.", CurrentVersion );
                     }
                     else
                     {
-                        logger.Info( "Updgrading from {0} to {1}.", v, CurrentVersion );
+                        monitor.Info().Send( "Upgrading from {0} to {1}.", v, CurrentVersion );
                     }
-                    using( logger.Filter( LogLevelFilter.Error ) )
+                    if( v == Util.EmptyVersion )
                     {
-                        if( v == Util.EmptyVersion )
-                        {
-                            ExecScript( logger, _scriptCreate );
-                        }
-                        else if( v.Major == 2 && v.Minor == 6 )
-                        {
-                            ExecScript( logger, _scriptFrom2_6_27 );
-                        }
-                        ExecScript( logger, _scriptAlways.Replace( "$Ver$", CurrentVersion.ToString() ) );
+                        ExecScript( monitor, _scriptCreate );
                     }
+                    else if( v.Major == 2 && v.Minor == 6 )
+                    {
+                        ExecScript( monitor, _scriptFrom2_6_27 );
+                    }
+                    ExecScript( monitor, _scriptAlways.Replace( "$Ver$", CurrentVersion.ToString() ) );
                 }
                 _initialized = true;
             }
         }
 
-        private void ExecScript( IActivityLogger logger, string s )
+        private void ExecScript( IActivityMonitor monitor, string s )
         {
             var p = new SimpleScriptTagHandler( s );
-            if( !p.Expand( logger, false ) ) throw new Exception( "Script error." );
-            if( !_manager.ExecuteScripts( p.SplitScript().Select( script => script.Body ), _manager.Logger ) )
+            if( !p.Expand( monitor, false ) ) throw new Exception( "Script error." );
+            if( !_manager.ExecuteScripts( p.SplitScript().Select( script => script.Body ), _manager.Monitor ) )
             {
                 throw new Exception( "Unable to initialize SqlVersionedItemRepository." );
             }

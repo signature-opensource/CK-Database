@@ -73,20 +73,20 @@ namespace CK.Core
         readonly List<T> _roots;
         readonly IAmbientContractDispatcher _contextDispatcher;
 
-        readonly Func<IActivityLogger, AmbientTypeMap<CT>> _mapFactory;
-        readonly Func<IActivityLogger,T,Type,T> _typeInfoFactory;
+        readonly Func<IActivityMonitor, AmbientTypeMap<CT>> _mapFactory;
+        readonly Func<IActivityMonitor,T,Type,T> _typeInfoFactory;
         
-        readonly IActivityLogger _logger;
+        readonly IActivityMonitor _monitor;
         readonly DynamicAssembly _tempAssembly;
 
         public AmbientContractCollector( 
-            IActivityLogger logger,
-            Func<IActivityLogger, AmbientTypeMap<CT>> mapFactory,
-            Func<IActivityLogger, T, Type, T> typeInfoFactory,
+            IActivityMonitor monitor,
+            Func<IActivityMonitor, AmbientTypeMap<CT>> mapFactory,
+            Func<IActivityMonitor, T, Type, T> typeInfoFactory,
             DynamicAssembly tempAssembly = null, 
             IAmbientContractDispatcher contextDispatcher = null )
         {
-            _logger = logger;
+            _monitor = monitor;
             _contextDispatcher = contextDispatcher;
             _tempAssembly = tempAssembly;
             _collector = new Dictionary<Type, T>();
@@ -160,7 +160,7 @@ namespace CK.Core
 
         T CreateTypeInfo( Type t, T parent )
         {
-            T result = _typeInfoFactory( _logger, parent, t );
+            T result = _typeInfoFactory( _monitor, parent, t );
             if( parent == null ) _roots.Add( result );
             _collector.Add( t, result );
             if( _contextDispatcher != null ) _contextDispatcher.Dispatch( t, result.MutableFinalContexts );
@@ -170,7 +170,7 @@ namespace CK.Core
         class PreResult
         {
             public readonly CT Context;
-            readonly IActivityLogger _logger;
+            readonly IActivityMonitor _monitor;
             readonly DynamicAssembly _assembly;
 
             Dictionary<object,TC> _mappings;
@@ -179,11 +179,11 @@ namespace CK.Core
             List<Type> _abstractTails;
             int _registeredCount;
 
-            public PreResult( IActivityLogger logger, CT c, DynamicAssembly assembly )
+            public PreResult( IActivityMonitor monitor, CT c, DynamicAssembly assembly )
             {
                 Debug.Assert( c != null );
                 Context = c;
-                _logger = logger;
+                _monitor = monitor;
                 _assembly = assembly;
                 _mappings = c.RawMappings;
                 _concreteClasses = new List<List<TC>>();
@@ -196,7 +196,7 @@ namespace CK.Core
                 if( newOne.Generalization == null )
                 {
                     var deepestConcretes = new List<Tuple<TC,object>>();
-                    newOne.CollectDeepestConcrete<T, TC>( _logger, Context, null, _assembly, deepestConcretes, _abstractTails );
+                    newOne.CollectDeepestConcrete<T, TC>( _monitor, Context, null, _assembly, deepestConcretes, _abstractTails );
                     if( deepestConcretes.Count == 1 )
                     {
                         var last = deepestConcretes[0].Item1;
@@ -269,9 +269,9 @@ namespace CK.Core
 
         public AmbientContractCollectorResult<CT,T,TC> GetResult()
         {
-            var mappings = _mapFactory( _logger );
+            var mappings = _mapFactory( _monitor );
             var byContext = new Dictionary<string, PreResult>();
-            byContext.Add( String.Empty, new PreResult( _logger, mappings.CreateAndAddContext<T,TC>( _logger, String.Empty ), _tempAssembly ) );
+            byContext.Add( String.Empty, new PreResult( _monitor, mappings.CreateAndAddContext<T,TC>( _monitor, String.Empty ), _tempAssembly ) );
             foreach( AmbientTypeInfo m in _roots )
             {
                 HandleContexts( m, byContext, mappings.CreateAndAddContext<T,TC> );
@@ -290,7 +290,7 @@ namespace CK.Core
             return t != typeof( IAmbientContract ) && typeof( IAmbientContract ).IsAssignableFrom( t );
         }
 
-        void HandleContexts( AmbientTypeInfo m, Dictionary<string, PreResult> contexts, Func<IActivityLogger,string,CT> contextCreator )
+        void HandleContexts( AmbientTypeInfo m, Dictionary<string, PreResult> contexts, Func<IActivityMonitor,string,CT> contextCreator )
         {
             foreach( AmbientTypeInfo child in m.SpecializationsByContext( null ) )
             {
@@ -299,7 +299,7 @@ namespace CK.Core
             }
             foreach( string context in m.MutableFinalContexts )
             {
-                contexts.GetOrSet( context, c => new PreResult( _logger, contextCreator( _logger, c ), _tempAssembly ) ).Add( m );
+                contexts.GetOrSet( context, c => new PreResult( _monitor, contextCreator( _monitor, c ), _tempAssembly ) ).Add( m );
             }
         }
 

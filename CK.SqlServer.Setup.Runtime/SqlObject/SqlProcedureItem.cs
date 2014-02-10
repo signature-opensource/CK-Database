@@ -32,19 +32,19 @@ namespace CK.SqlServer.Setup
 
         /// <summary>
         /// Gets the original parsed stored procedure. 
-        /// Can be null if an error occured during parsing.
+        /// Can be null if an error occurred during parsing.
         /// </summary>
         public SqlExprStStoredProc OriginalStatement { get { return _storedProc; } }
 
         /// <summary>
         /// Gets or generates the method that creates the <see cref="SqlCommand"/> for this <see cref="SqlProcedureItem."/>
         /// </summary>
-        /// <param name="logger">Logger to use.</param>
+        /// <param name="monitor">Monitor to use.</param>
         /// <param name="dynamicAssembly">Use the memory associated to the dynamic to share the static class that implements the creation methods
         /// and the PushFinalAction to actually create it.</param>
         /// <param name="module">A module builder.</param>
-        /// <returns>The method info. Null if <see cref="IsValid"/> is false or if an error occured while generating it.</returns>
-        internal MethodInfo AssumeCommandBuilder( IActivityLogger logger, IDynamicAssembly dynamicAssembly, ModuleBuilder module )
+        /// <returns>The method info. Null if <see cref="IsValid"/> is false or if an error occurred while generating it.</returns>
+        internal MethodInfo AssumeCommandBuilder( IActivityMonitor monitor, IDynamicAssembly dynamicAssembly, ModuleBuilder module )
         {
             if( _storedProc == null ) return null;
             TypeBuilder tB = (TypeBuilder)dynamicAssembly.Memory[_builderTypeName];
@@ -64,11 +64,11 @@ namespace CK.SqlServer.Setup
                 {
                     m = GenerateCreateSqlCommand( tB, FullName, SchemaName, _storedProc.Parameters );
                     dynamicAssembly.Memory[methodKey] = m;
-                    logger.Trace( "Low level SqlCommand create method for: '{0}'.", _storedProc.ToStringSignature( true ) );
+                    monitor.Trace().Send( "Low level SqlCommand create method for: '{0}'.", _storedProc.ToStringSignature( true ) );
                 }
                 catch( Exception ex )
                 {
-                    logger.Error( ex, "While generating low level SqlCommand method creation for: '{0}'.", _storedProc.ToStringSignature( true ) );
+                    monitor.Error().Send( ex, "While generating low level SqlCommand method creation for: '{0}'.", _storedProc.ToStringSignature( true ) );
                 }
             }
             return m;

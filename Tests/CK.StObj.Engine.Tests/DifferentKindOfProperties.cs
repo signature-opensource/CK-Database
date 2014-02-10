@@ -36,19 +36,19 @@ namespace CK.StObj.Engine.Tests
         public void StObjAndAmbientPropertiesAreIncompatible()
         {
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Logger );
+                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor );
                 collector.RegisterClass( typeof( ObjB ) );
                 collector.RegisterClass( typeof( ObjA ) );
                 Assert.That( collector.RegisteringFatalOrErrorCount == 1 );
             }
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Logger );
+                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor );
                 collector.RegisterClass( typeof( ObjA ) );
                 collector.RegisterClass( typeof( ObjSpecA ) );
                 Assert.That( collector.RegisteringFatalOrErrorCount == 1 );
             }
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Logger );
+                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor );
                 collector.RegisterClass( typeof( ObjA ) );
                 collector.RegisterClass( typeof( ObjSpecA2 ) );
                 Assert.That( collector.RegisteringFatalOrErrorCount == 1 );
@@ -77,17 +77,17 @@ namespace CK.StObj.Engine.Tests
         public void InvalidStObjProperties()
         {
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Logger );
+                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor );
                 collector.RegisterClass( typeof( MissingStObjPropertyType ) );
                 Assert.That( collector.RegisteringFatalOrErrorCount == 1 );
             }
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Logger );
+                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor );
                 collector.RegisterClass( typeof( MissingStObjPropertyName ) );
                 Assert.That( collector.RegisteringFatalOrErrorCount == 1 );
             }
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Logger );
+                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor );
                 collector.RegisterClass( typeof( DuplicateStObjProperty ) );
                 Assert.That( collector.RegisteringFatalOrErrorCount == 1 );
             }
@@ -104,7 +104,7 @@ namespace CK.StObj.Engine.Tests
         public void AmbientContractsMustBeAmbientContracts()
         {
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Logger );
+                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor );
                 collector.RegisterClass( typeof( InvalidAmbientContractProperty ) );
                 var r = collector.GetResult();
                 Assert.That( r.HasFatalError );
@@ -154,7 +154,7 @@ namespace CK.StObj.Engine.Tests
         public void CovariantPropertiesSupport()
         {
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Logger );
+                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor );
                 collector.RegisterClass( typeof( CB3 ) );
                 collector.RegisterClass( typeof( CA3 ) );
                 var r = collector.GetResult();
@@ -175,7 +175,7 @@ namespace CK.StObj.Engine.Tests
         public void SetterMustExistOnTopDefiner()
         {
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Logger );
+                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor );
                 collector.RegisterClass( typeof( CMissingSetterOnTopDefiner ) );
                 collector.RegisterClass( typeof( CA2 ) );
                 Assert.That( collector.RegisteringFatalOrErrorCount, Is.EqualTo( 1 ) );
@@ -192,7 +192,7 @@ namespace CK.StObj.Engine.Tests
         public void PrivateSetterWorks()
         {
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Logger );
+                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor );
                 collector.RegisterClass( typeof( CPrivateSetter ) );
                 collector.RegisterClass( typeof( CA2 ) );
                 var r = collector.GetResult();

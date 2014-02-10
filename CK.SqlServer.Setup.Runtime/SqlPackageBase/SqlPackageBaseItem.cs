@@ -22,10 +22,10 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Initializes a new <see cref="SqlPackageBaseItem"/> bound to a StObj.
         /// </summary>
-        /// <param name="logger">Logger to use.</param>
+        /// <param name="monitor">Monitor to use.</param>
         /// <param name="data">Structured Object data that contains the <see cref="Object"/>.</param>
-        public SqlPackageBaseItem( IActivityLogger logger, IStObjSetupData data )
-            : base( logger, data )
+        public SqlPackageBaseItem( IActivityMonitor monitor, IStObjSetupData data )
+            : base( monitor, data )
         {
             Context = data.StObj.Context.Context;
             if( Object.Database != null ) Location = Object.Database.Name;

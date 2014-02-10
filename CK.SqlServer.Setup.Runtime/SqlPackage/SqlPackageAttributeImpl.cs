@@ -13,16 +13,16 @@ namespace CK.SqlServer.Setup
 
         protected new SqlPackageAttribute Attribute { get { return (SqlPackageAttribute)base.Attribute; } }
 
-        protected override void ConfigureMutableItem( IActivityLogger logger, IStObjMutableItem o )
+        protected override void ConfigureMutableItem( IActivityMonitor monitor, IStObjMutableItem o )
         {
-            o.SetDirectPropertyValue( logger, "HasModel", Attribute.HasModel );
+            o.SetDirectPropertyValue( monitor, "HasModel", Attribute.HasModel );
         }
 
-        void IStObjSetupConfigurator.ConfigureDependentItem( IActivityLogger logger, IMutableStObjSetupData data )
+        void IStObjSetupConfigurator.ConfigureDependentItem( IActivityMonitor monitor, IMutableStObjSetupData data )
         {
             if( data.IsDefaultFullNameWithoutContext )
             {
-                logger.Info( "SqlPackage class '{0}' uses its own full name as its SetupName.", data.FullNameWithoutContext );
+                monitor.Info().Send( "SqlPackage class '{0}' uses its own full name as its SetupName.", data.FullNameWithoutContext );
             }
             data.ItemType = typeof( SqlPackageItem );
             data.DriverType = typeof( SqlPackageSetupDriver );

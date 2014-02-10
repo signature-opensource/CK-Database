@@ -12,7 +12,7 @@ namespace CK.Core
     /// </summary>
     public class AssemblyRegisterer
     {
-        readonly IActivityLogger	    _logger;
+        readonly IActivityMonitor	    _monitor;
         Predicate<Assembly>             _assemblyFilter;
         Predicate<Type>                 _typeFilter;
         bool                            _publicTypesOnly;
@@ -41,11 +41,11 @@ namespace CK.Core
         /// <summary>
         /// Initializes a new <see cref="AssemblyRegisterer"/>.
         /// </summary>
-        /// <param name="logger">Logger to use. Can not be null.</param>
-        public AssemblyRegisterer( IActivityLogger logger )
+        /// <param name="monitor">Logger to use. Can not be null.</param>
+        public AssemblyRegisterer( IActivityMonitor monitor )
         {
-            if( logger == null ) throw new ArgumentNullException( "logger" );
-            _logger = logger;
+            if( monitor == null ) throw new ArgumentNullException( "monitor" );
+            _monitor = monitor;
             _index = new Dictionary<Assembly, DiscoveredInfo>();
             _list = new List<DiscoveredInfo>();
             _listEx = new CKReadOnlyListOnIList<DiscoveredInfo>( _list );
@@ -61,7 +61,7 @@ namespace CK.Core
         public void Discover( AssemblyRegistererConfiguration config )
         {
             if( config == null ) throw new ArgumentNullException( "config" );
-            using( _logger.OpenGroup( LogLevel.Info, "Discovering assemblies & types from configuration." ) )
+            using( _monitor.OpenInfo().Send( "Discovering assemblies & types from configuration." ) )
             {
                 var prevFilter = _assemblyFilter;
                 if( prevFilter != null )
@@ -233,7 +233,7 @@ namespace CK.Core
                 var disco = new DiscoveredInfo( assembly );
                 _index.Add( assembly, disco );
 
-                using( _logger.OpenGroup( LogLevel.Trace, "Discovering assembly '{0}'.", assembly.FullName ) )
+                using( _monitor.OpenTrace().Send( "Discovering assembly '{0}'.", assembly.FullName ) )
                 {
                     try
                     {
@@ -251,23 +251,13 @@ namespace CK.Core
                             if( _typeFilter != null ) types = types.Where( t => _typeFilter( t ) );
                             disco.Init( types.ToReadOnlyList(), _list.Count );
                             _list.Add( disco );
-                            _logger.CloseGroup( String.Format( "{0} types discovered.", disco.Types.Count ) );
+                            _monitor.CloseGroup( String.Format( "{0} types discovered.", disco.Types.Count ) );
                         }
-                        else _logger.CloseGroup( "Skipped by filter." );
+                        else _monitor.CloseGroup( "Skipped by filter." );
                     }
                     catch( Exception ex )
                     {
-                        using( _logger.OpenGroup( LogLevel.Error, ex ) )
-                        {
-                            ReflectionTypeLoadException exr = ex as ReflectionTypeLoadException;
-                            if( exr != null )
-                            {
-                                foreach( Exception exLoad in exr.LoaderExceptions )
-                                {
-                                    _logger.Error( exLoad.Message );
-                                }
-                            }
-                        }
+                        _monitor.OpenError().Send( ex );
                     }
                 }
             }

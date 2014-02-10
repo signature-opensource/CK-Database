@@ -20,20 +20,20 @@ namespace CK.Setup
         public const string DefaultSourceName = "file-sql";
 
         ISqlObjectParser _sqlObjectParser;
-        IActivityLogger _logger;
+        IActivityMonitor _monitor;
         List<DynamicPackageItem> _packages;
         IReadOnlyList<DynamicPackageItem> _packagesEx;
 
         int _packageDiscoverErrorCount;
         int _sqlFileDiscoverErrorCount;
 
-        public SqlFileDiscoverer( ISqlObjectParser sqlObjectParser, IActivityLogger logger )
+        public SqlFileDiscoverer( ISqlObjectParser sqlObjectParser, IActivityMonitor monitor )
         {
             if( sqlObjectParser == null ) throw new ArgumentNullException( "sqlObjectBuilder" );
-            if( logger == null ) throw new ArgumentNullException( "_logger" );
+            if( monitor == null ) throw new ArgumentNullException( "_monitor" );
  
             _sqlObjectParser = sqlObjectParser;
-            _logger = logger;
+            _monitor = monitor;
 
             _packages = new List<DynamicPackageItem>();
             _packagesEx = new CKReadOnlyListOnIList<DynamicPackageItem>( _packages );
@@ -60,10 +60,10 @@ namespace CK.Setup
         /// <param name="curContext">Current context identifier. It will be used as the default. Null if no current context exist.</param>
         /// <param name="curLoc">Current location identifier. It will be used as the default location. Null if no current location exist.</param>
         /// <param name="directoryPath">Root path to start.</param>
-        /// <returns>True on success. Any warn or error are logged in the <see cref="IActivityLogger"/> that has been provided to the constructor.</returns>
+        /// <returns>True on success. Any warn or error are logged in the <see cref="IActivityMonitor"/> that has been provided to the constructor.</returns>
         public bool DiscoverPackages( string curContext, string curLoc, string directoryPath )
         {
-            using( _logger.OpenGroup( LogLevel.Info, "Discovering *.ck package files in '{0}'.", directoryPath ) )
+            using( _monitor.OpenInfo().Send( "Discovering *.ck package files in '{0}'.", directoryPath ) )
             {
                 CheckDirectoryPath( directoryPath );
                 return DoDiscoverPackages( new DirectoryInfo( directoryPath ), curContext, curLoc );
@@ -97,25 +97,25 @@ namespace CK.Setup
 
         bool DoRegisterPackage( FileInfo file, string curContext, string curLoc )
         {
-            using( _logger.OpenGroup( LogLevel.Trace, "Registering '{0}'.", file.Name ) )
+            using( _monitor.OpenTrace().Send( "Registering '{0}'.", file.Name ) )
             {
                 XDocument doc = XDocument.Load( file.FullName );
                 XElement e = doc.Root;
                 if( e.Name != "SetupPackage" )
                 {
-                    _logger.Warn( "The root element must be 'SetupPackage'." );
+                    _monitor.Warn( "The root element must be 'SetupPackage'." );
                     return false;
                 }
                 try
                 {
                     DynamicPackageItem p = ReadPackageFileFormat( e, curContext, curLoc );
                     _packages.Add( p );
-                    _logger.CloseGroup( String.Format( "SetupPackage '{0}' found.", p.FullName ) );
+                    _monitor.CloseGroup( String.Format( "SetupPackage '{0}' found.", p.FullName ) );
                     return true;
                 }
                 catch( Exception ex )
                 {
-                    _logger.Error( ex );
+                    _monitor.Error().Send( ex );
                 }
                 return false;
             }
@@ -171,10 +171,10 @@ namespace CK.Setup
         /// <param name="sqlFileScriptSource">The <see cref="ScriptSource.Name"/> for the <paramref name="collector"/>.
         /// It must have been registered as a source in a <see cref="ScriptTypeHandler"/>, itself registered in the <see cref="ScriptTypeManager"/> associated to the collector.
         /// </param>
-        /// <returns>True on success. Any warn or error are logged in the <see cref="IActivityLogger"/> that has been provided to the constructor.</returns>
+        /// <returns>True on success. Any warn or error are logged in the <see cref="IActivityMonitor"/> that has been provided to the constructor.</returns>
         public bool DiscoverSqlFiles( string curContext, string curLoc, string directoryPath, DependentProtoItemCollector itemCollector, IScriptCollector collector = null, string sqlFileScriptSource = DefaultSourceName )
         {
-            using( _logger.OpenGroup( LogLevel.Info, "Discovering Sql files in '{0}' for source '{1}'.", directoryPath, sqlFileScriptSource ) )
+            using( _monitor.OpenInfo().Send( "Discovering Sql files in '{0}' for source '{1}'.", directoryPath, sqlFileScriptSource ) )
             {
                 CheckDirectoryPath( directoryPath );
                 if( String.IsNullOrWhiteSpace( sqlFileScriptSource ) ) throw new ArgumentException( "Must not be null, empty or white space.", "sqlFileScriptSource" );
@@ -214,19 +214,19 @@ namespace CK.Setup
             {
                 // It is a script related to a package: if a collector exists, register a SetupScript.
                 if( collector == null ) return true;
-                if( collector.Add( createSetupScript(), _logger ) )
+                if( collector.Add( createSetupScript(), _monitor ) )
                 {
-                    _logger.Trace( "File '{0}' discovered.", f.FileName );
+                    _monitor.Trace().Send( "File '{0}' discovered.", f.FileName );
                     return true;
                 }
                 return false;
             }
-            using( _logger.OpenGroup( LogLevel.Trace, "Discovering '{0}'.", f.FileName ) )
+            using( _monitor.OpenTrace().Send( "Discovering '{0}'.", f.FileName ) )
             {
                 try
                 {
                     // There is no SetupStep suffix: it should be a SqlObject.
-                    var item = _sqlObjectParser.Create( _logger, f, readContent() );
+                    var item = _sqlObjectParser.Create( _monitor, f, readContent() );
                     if( item != null )
                     {
                         // Checking FullName is not perfect here: if the object content defines a Context or a Location, its FullName may
@@ -234,21 +234,21 @@ namespace CK.Setup
                         // It is best to compare only Name part of the two names.
                         if( item.FullName != f.FullName )
                         {
-                            _logger.Error( "File '{0}' in '{1}': content indicates '{2}'. Names must match.", f.FileName, f.ExtraPath, item.FullName );
+                            _monitor.Error().Send( "File '{0}' in '{1}': content indicates '{2}'. Names must match.", f.FileName, f.ExtraPath, item.FullName );
                             return false;
                         }
                         if( !itemCollector.Add( item ) )
                         {
-                            _logger.Error( "File '{0}' in '{1}': object '{2}' is already defined.", f.FileName, f.ExtraPath, item.FullName );
+                            _monitor.Error().Send( "File '{0}' in '{1}': object '{2}' is already defined.", f.FileName, f.ExtraPath, item.FullName );
                             return false;
                         }
-                        _logger.CloseGroup( item.FullName );
+                        _monitor.CloseGroup( item.FullName );
                         return true;
                     }
                 }
                 catch( Exception ex )
                 {
-                    _logger.Error( ex );
+                    _monitor.Error().Send( ex );
                 }
             }
             return false;

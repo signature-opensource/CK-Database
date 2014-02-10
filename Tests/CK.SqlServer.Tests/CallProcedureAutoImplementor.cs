@@ -13,7 +13,7 @@ namespace CK.SqlServer.Tests
 
     public interface ISqlCallContext
     {
-        IActivityLogger Logger { get; }
+        IActivityMonitor Logger { get; }
 
         SqlConnectionProvider Connection { get; }
 
@@ -29,9 +29,9 @@ namespace CK.SqlServer.Tests
             _m = m;
         }
 
-        public IActivityLogger Logger
+        public IActivityMonitor Logger
         {
-            get { return TestHelper.Logger; }
+            get { return TestHelper.ConsoleMonitor; }
         }
 
         public SqlConnectionProvider Connection
@@ -129,7 +129,7 @@ namespace CK.SqlServer.Tests
             {
                 Assert.That( m.OpenOrCreate( ".", "CKSqlServerTests" ), "Unable to open or create CKSqlServerTests database on local server." );
                 var install = SqlHelper.SplitGoSeparator( File.ReadAllText( TestHelper.GetScriptsFolder( "ManualImplementation.sql" ) ) );
-                m.ExecuteScripts( install, TestHelper.Logger );
+                m.ExecuteScripts( install, TestHelper.ConsoleMonitor );
 
                 SqlCallContext c = new SqlCallContext( m );
                 ManualCall manual = new ManualCall();

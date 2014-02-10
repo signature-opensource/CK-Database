@@ -2,36 +2,39 @@
 using NUnit.Framework;
 using CK.Core;
 using System;
+using System.Linq;
 using System.Diagnostics;
 
 namespace CK.SqlServer.Tests
 {
     static class TestHelper
     {
-        static IDefaultActivityLogger _logger;
-        static ActivityLoggerConsoleSink _console;
         static string _projectFolder;
         static string _scriptFolder;
 
+        static IActivityMonitor _monitor;
+        static ActivityMonitorConsoleClient _console;
+
         static TestHelper()
         {
-            _console = new ActivityLoggerConsoleSink();
-            _logger = new DefaultActivityLogger( true );
-            _logger.Tap.Register( _console );
+            _monitor = new ActivityMonitor();
+            _monitor.Output.BridgeTarget.HonorMonitorFilter = false;
+            _console = new ActivityMonitorConsoleClient();
+            _monitor.Output.RegisterClients( _console );
         }
 
-        public static IActivityLogger Logger
+        public static IActivityMonitor ConsoleMonitor
         {
-            get { return _logger; }
+            get { return _monitor; }
         }
 
         public static bool LogsToConsole
         {
-            get { return _logger.Tap.RegisteredSinks.Contains( _console ); }
+            get { return _monitor.Output.Clients.Contains( _console ); }
             set
             {
-                if( value ) _logger.Tap.Register( _console );
-                else _logger.Tap.Unregister( _console );
+                if( value ) _monitor.Output.RegisterUniqueClient( c => c == _console, () => _console );
+                else _monitor.Output.UnregisterClient( _console );
             }
         }
 
@@ -61,23 +64,14 @@ namespace CK.SqlServer.Tests
 
         private static void InitalizePaths()
         {
-            string p = System.Reflection.Assembly.GetExecutingAssembly().CodeBase;
-            // Code base is like "file:///C:/Users/Spi/Documents/Dev4/CK-Database/Output/Tests/Debug/CK.Setup.SqlServer.Tests.DLL"
-            StringAssert.StartsWith( "file:///", p, "Code base must start with file:/// protocol." );
-
-            p = p.Substring( 8 ).Replace( '/', System.IO.Path.DirectorySeparatorChar );
-
-            // => Debug/
+            string p = new Uri( System.Reflection.Assembly.GetExecutingAssembly().CodeBase ).LocalPath;
+            // => CK.XXX.Tests/bin/Debug/
             p = Path.GetDirectoryName( p );
-            // => Tests/
+            // => CK.XXX.Tests/bin/
             p = Path.GetDirectoryName( p );
-            // => Output/
+            // => CK.XXX.Tests/
             p = Path.GetDirectoryName( p );
-            // => CK-Database/
-            p = Path.GetDirectoryName( p );
-            // ==> Tests/CK.SqlServer.Tests
-            _projectFolder = Path.Combine( p, "Tests", "CK.SqlServer.Tests" );
-            // ==> Tests/CK.SqlServer.Tests/Scripts
+            _projectFolder = p;
             _scriptFolder = Path.Combine( _projectFolder, "Scripts" );
         }
 

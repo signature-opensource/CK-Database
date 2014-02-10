@@ -48,7 +48,7 @@ namespace CK.Setup
                 // At initialization step, we create the ScriptSetupHandler for each registered scripts.
                 if( e.Step == SetupStep.Init )
                 {
-                    var allHandlers = _scriptManager.GetSortedHandlers( _engine.Logger );
+                    var allHandlers = _scriptManager.GetSortedHandlers( _engine.Monitor );
                     if( allHandlers == null )
                     {
                         // GetSortedHandlers logged the detailed reason.
@@ -98,7 +98,7 @@ namespace CK.Setup
                 SetupDriver driver = (SetupDriver)e.Driver;
                 if( !driver.LoadScripts( _scriptCollector ) )
                 {
-                    _engine.Logger.Fatal( "Driver '{0}' failed to load scripts.", e.Driver.FullName );
+                    _engine.Monitor.Fatal().Send( "Driver '{0}' failed to load scripts.", e.Driver.FullName );
                     e.CancelSetup = true;
                 }
            }

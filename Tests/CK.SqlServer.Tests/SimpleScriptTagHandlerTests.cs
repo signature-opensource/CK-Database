@@ -28,7 +28,7 @@ This appears too.
 --[endscript]
 We must have this line as a the third script.
 " );
-            Assert.That( p.Expand( TestHelper.Logger, true ) );
+            Assert.That( p.Expand( TestHelper.ConsoleMonitor, true ) );
             Assert.That( p.ScriptCount, Is.EqualTo( 1 ), "Only one script detected." );
             var s = p.SplitScript();
             Assert.That( s.Count, Is.EqualTo( 3 ) );
@@ -52,7 +52,7 @@ We must have this line as a the third script.
         {
             {
                 var p = new SimpleScriptTagHandler( "--[beginscript]" );
-                Assert.That( p.Expand( TestHelper.Logger, true ), Is.False );
+                Assert.That( p.Expand( TestHelper.ConsoleMonitor, true ), Is.False );
             }            
             {
                 var p = new SimpleScriptTagHandler(
@@ -61,7 +61,7 @@ We must have this line as a the third script.
 --[beginscript]
 --[endscript]
 " );
-                Assert.That( p.Expand( TestHelper.Logger, true ), Is.False );
+                Assert.That( p.Expand( TestHelper.ConsoleMonitor, true ), Is.False );
             }
             {
                 var p = new SimpleScriptTagHandler(
@@ -70,7 +70,7 @@ We must have this line as a the third script.
 --[endscript]
 --[endscript]
 " );
-                Assert.That( p.Expand( TestHelper.Logger, true ), Is.False );
+                Assert.That( p.Expand( TestHelper.ConsoleMonitor, true ), Is.False );
             }
 
         }
@@ -84,7 +84,7 @@ We must have this line as a the third script.
 --[beginscript]
 --[endscript]
 " );
-                Assert.That( p.Expand( TestHelper.Logger, false ), Is.False, "There should be no scripts." );
+                Assert.That( p.Expand( TestHelper.ConsoleMonitor, false ), Is.False, "There should be no scripts." );
             }
             {
                 var p = new SimpleScriptTagHandler(
@@ -94,7 +94,7 @@ We must have this line as a the third script.
 --[beginscript]
 --[endscript]
 " );
-                Assert.That( p.Expand( TestHelper.Logger, true ), Is.True, "Multilple scripts are okay." );
+                Assert.That( p.Expand( TestHelper.ConsoleMonitor, true ), Is.True, "Multilple scripts are okay." );
                 Assert.That( p.ScriptCount, Is.EqualTo( 2 ), "One can reject them if wanted." );
             }
         }
@@ -114,7 +114,7 @@ go  n°3
 ";
             {
                 var p = new SimpleScriptTagHandler( script1 );
-                Assert.That( p.Expand( TestHelper.Logger, scriptAllowed: true, goInsideScriptAllowed: true ) );
+                Assert.That( p.Expand( TestHelper.ConsoleMonitor, scriptAllowed: true, goInsideScriptAllowed: true ) );
                 Assert.That( p.ScriptCount, Is.EqualTo( 1 ), "Only one script detected." );
                 var s = p.SplitScript();
                 Assert.That( s.Count, Is.EqualTo( 5 ) );
@@ -131,7 +131,7 @@ go  n°3
             }
             {
                 var p = new SimpleScriptTagHandler( script1 );
-                Assert.That( p.Expand( TestHelper.Logger, scriptAllowed: true, goInsideScriptAllowed: false ), Is.False );
+                Assert.That( p.Expand( TestHelper.ConsoleMonitor, scriptAllowed: true, goInsideScriptAllowed: false ), Is.False );
             }
 
             string script2 = @"
@@ -151,7 +151,7 @@ go
 ";
             {
                 var p = new SimpleScriptTagHandler( script2 );
-                Assert.That( p.Expand( TestHelper.Logger, scriptAllowed: true, goInsideScriptAllowed: true ) );
+                Assert.That( p.Expand( TestHelper.ConsoleMonitor, scriptAllowed: true, goInsideScriptAllowed: true ) );
                 Assert.That( p.ScriptCount, Is.EqualTo( 1 ), "Only one script detected." );
                 var s = p.SplitScript();
                 Assert.That( s.Count, Is.EqualTo( 5 ) );
@@ -165,7 +165,7 @@ go
             }
             {
                 var p = new SimpleScriptTagHandler( script2 );
-                Assert.That( p.Expand( TestHelper.Logger, scriptAllowed: true, goInsideScriptAllowed: false ), Is.False );
+                Assert.That( p.Expand( TestHelper.ConsoleMonitor, scriptAllowed: true, goInsideScriptAllowed: false ), Is.False );
             }
         }
 
@@ -174,13 +174,13 @@ go
         {
             {
                 var p = new SimpleScriptTagHandler( @"" );
-                Assert.That( p.Expand( TestHelper.Logger, true ) );
+                Assert.That( p.Expand( TestHelper.ConsoleMonitor, true ) );
                 var s = p.SplitScript();
                 Assert.That( s.Count, Is.EqualTo( 0 ) );
             }
             {
                 var p = new SimpleScriptTagHandler( @"    " );
-                Assert.That( p.Expand( TestHelper.Logger, true ) );
+                Assert.That( p.Expand( TestHelper.ConsoleMonitor, true ) );
                 var s = p.SplitScript();
                 Assert.That( s.Count, Is.EqualTo( 0 ) );
             }
@@ -189,7 +189,7 @@ go
 @"  
 
 go" );
-                Assert.That( p.Expand( TestHelper.Logger, true ) );
+                Assert.That( p.Expand( TestHelper.ConsoleMonitor, true ) );
                 var s = p.SplitScript();
                 Assert.That( s.Count, Is.EqualTo( 0 ) );
             }
@@ -203,7 +203,7 @@ go
 go
 
 " );
-                Assert.That( p.Expand( TestHelper.Logger, true ) );
+                Assert.That( p.Expand( TestHelper.ConsoleMonitor, true ) );
                 var s = p.SplitScript();
                 Assert.That( s.Count, Is.EqualTo( 0 ) );
             }
@@ -214,7 +214,7 @@ go
         {
             Action<SimpleScriptTagHandler> tester = p =>
             {
-                Assert.That( p.Expand( TestHelper.Logger, true ) );
+                Assert.That( p.Expand( TestHelper.ConsoleMonitor, true ) );
                 Assert.That( p.ScriptCount, Is.EqualTo( 4 ), "4 script tags detected." );
                 var s = p.SplitScript();
                 Assert.That( s.Count, Is.EqualTo( 5 ), "Five scripts to execute." );
@@ -269,7 +269,7 @@ n°5
 n°1
 --[endscript s2]
 " );
-                Assert.That( p.Expand( TestHelper.Logger, true ), Is.False );
+                Assert.That( p.Expand( TestHelper.ConsoleMonitor, true ), Is.False );
             }
             {
                 var p = new SimpleScriptTagHandler( @"
@@ -281,7 +281,7 @@ inner nested.
 it should work.
 --[endscript s1]
 " );
-                Assert.That( p.Expand( TestHelper.Logger, true ), Is.True );
+                Assert.That( p.Expand( TestHelper.ConsoleMonitor, true ), Is.True );
                 var s = p.SplitScript();
                 Assert.That( p.ScriptCount, Is.EqualTo( 1 ) );
                 Assert.That( s[0].Body, Is.StringContaining( @"
@@ -301,22 +301,22 @@ n°1
 n°1
 --[endscript s1]
 " );
-                Assert.That( p.Expand( TestHelper.Logger, true ), Is.False );
+                Assert.That( p.Expand( TestHelper.ConsoleMonitor, true ), Is.False );
             }
         }
 
         private static void DumpScripts( string testName, SimpleScriptTagHandler p, List<SimpleScriptTagHandler.Script> s )
         {
-            using( TestHelper.Logger.OpenGroup( LogLevel.Trace, testName ) )
+            using( TestHelper.ConsoleMonitor.OpenTrace().Send( testName ) )
             {
-                TestHelper.Logger.Trace( p.OriginalScript );
-                using( TestHelper.Logger.OpenGroup( LogLevel.Trace, "Result" ) )
+                TestHelper.ConsoleMonitor.Trace( p.OriginalScript );
+                using( TestHelper.ConsoleMonitor.OpenTrace().Send( "Result" ) )
                 {
                     foreach( var one in s )
                     {
-                        using( TestHelper.Logger.OpenGroup( LogLevel.Trace, "Script Label: {0}", one.Label ) )
+                        using( TestHelper.ConsoleMonitor.OpenTrace().Send( "Script Label: {0}", one.Label ) )
                         {
-                            TestHelper.Logger.Trace( one.Body );
+                            TestHelper.ConsoleMonitor.Trace( one.Body );
                         }
                     }
                 }

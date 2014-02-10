@@ -25,9 +25,9 @@ namespace CK.SqlServer.Setup
                 _center = sqlCenter;
             }
 
-            public override void ResolveParameterValue( IActivityLogger logger, IStObjFinalParameter parameter )
+            public override void ResolveParameterValue( IActivityMonitor monitor, IStObjFinalParameter parameter )
             {
-                base.ResolveParameterValue( logger, parameter );
+                base.ResolveParameterValue( monitor, parameter );
                 if( parameter.Name == "connectionString" )
                 {
                     SqlDatabase db = parameter.Owner.Object as SqlDatabase;
@@ -59,20 +59,20 @@ namespace CK.SqlServer.Setup
         /// for its connection string.
         /// This constructor is the one used when calling <see cref="StObjContextRoot.Build"/> method with a <see cref="SqlSetupCenterConfiguration"/> configuration object.
         /// </summary>
-        /// <param name="logger">Logger to use.</param>
+        /// <param name="monitor">Monitor to use.</param>
         /// <param name="config">Configuration object.</param>
-        public SqlSetupCenter( IActivityLogger logger, SqlSetupCenterConfiguration config )
-            : this( logger, config, null )
+        public SqlSetupCenter( IActivityMonitor monitor, SqlSetupCenterConfiguration config )
+            : this( monitor, config, null )
         {
         }
 
-        public SqlSetupCenter( IActivityLogger logger, SqlSetupCenterConfiguration config, SqlManager defaultDatabase )
+        public SqlSetupCenter( IActivityMonitor monitor, SqlSetupCenterConfiguration config, SqlManager defaultDatabase )
         {
-            if( logger == null ) throw new ArgumentNullException( "logger" );
+            if( monitor == null ) throw new ArgumentNullException( "monitor" );
             if( config == null ) throw new ArgumentNullException( "config" );
             _config = config;
 
-            _databases = new SqlManagerProvider( logger, m => m.IgnoreMissingDependencyIsError = _config.IgnoreMissingDependencyIsError );
+            _databases = new SqlManagerProvider( monitor, m => m.IgnoreMissingDependencyIsError = _config.IgnoreMissingDependencyIsError );
             if( defaultDatabase == null )
             {
                 _databases.Add( SqlDatabase.DefaultDatabaseName, _config.DefaultDatabaseConnectionString );
@@ -92,9 +92,9 @@ namespace CK.SqlServer.Setup
             
             var versionRepo = new SqlVersionedItemRepository( _defaultDatabase );
             var memory = new SqlSetupSessionMemoryProvider( _defaultDatabase );
-            _center = new SetupCenter( logger, _config.SetupConfiguration, versionRepo, memory );
+            _center = new SetupCenter( monitor, _config.SetupConfiguration, versionRepo, memory );
             _sqlFiles = new DependentProtoItemCollector();
-            _sqlFileDiscoverer = new SqlFileDiscoverer( new SqlObjectParser(), logger );
+            _sqlFileDiscoverer = new SqlFileDiscoverer( new SqlObjectParser(), monitor );
             _center.SetupableConfigurator = new ConfiguratorHook( this );
 
             var sqlHandler = new SqlScriptTypeHandler( this );
@@ -204,14 +204,14 @@ namespace CK.SqlServer.Setup
 
         void OnRegisterSetup( object sender, RegisterSetupEventArgs e )
         {
-            var logger = _center.Logger;
+            var monitor = _center.Logger;
 
             bool hasError = false;
-            using( logger.CatchCounter( a => hasError = true ) )
+            using( monitor.CatchCounter( a => hasError = true ) )
             {
                 if( _config.FilePackageDirectories.Count > 0 )
                 {
-                    using( logger.OpenGroup( LogLevel.Info, "Discovering *.ck packages files from {0} directories.", _config.FilePackageDirectories.Count ) )
+                    using( monitor.OpenInfo().Send( "Discovering *.ck packages files from {0} directories.", _config.FilePackageDirectories.Count ) )
                     {
                         foreach( string d in _config.FilePackageDirectories )
                         {
@@ -222,7 +222,7 @@ namespace CK.SqlServer.Setup
                 }
                 if( _config.SqlFileDirectories.Count > 0 )
                 {
-                    using( logger.OpenGroup( LogLevel.Info, "Discovering Sql files from {0} directories.", _config.SqlFileDirectories.Count ) )
+                    using( monitor.OpenInfo().Send( "Discovering Sql files from {0} directories.", _config.SqlFileDirectories.Count ) )
                     {
                         foreach( string d in _config.SqlFileDirectories )
                         {
@@ -232,16 +232,16 @@ namespace CK.SqlServer.Setup
                 }
                 if( !hasError )
                 {
-                    using( logger.OpenGroup( LogLevel.Info, "Creating Sql Objects from {0} sql files.", _sqlFiles.Count ) )
+                    using( monitor.OpenInfo().Send( "Creating Sql Objects from {0} sql files.", _sqlFiles.Count ) )
                     {
                         List<IDependentItem> items = new List<IDependentItem>();
                         foreach( var proto in _sqlFiles.OfType<SqlObjectProtoItem>() )
                         {
-                            var item = proto.CreateItem( logger );
+                            var item = proto.CreateItem( monitor );
                             if( item == null ) hasError = true;
                             else items.Add( item );
                         }
-                        if( hasError ) logger.Info( "At least one Sql Object creation failed." );
+                        if( hasError ) monitor.Info().Send( "At least one Sql Object creation failed." );
                         else e.Register( items );
                     }
                 }
@@ -257,7 +257,7 @@ namespace CK.SqlServer.Setup
             if( dbName == null ) throw new ArgumentNullException( "dbName" );
             if( dbName == SqlDatabase.DefaultDatabaseName ) return _defaultDatabase;
             SqlManager m = ObtainManager( dbName );
-            if( m == null ) _center.Logger.Warn( "Database named '{0}' is not mapped.", dbName );
+            if( m == null ) _center.Logger.Warn().Send( "Database named '{0}' is not mapped.", dbName );
             return m;
         }
 
@@ -266,7 +266,7 @@ namespace CK.SqlServer.Setup
             if( conString == null ) throw new ArgumentNullException( "conString" );
             if( conString == _defaultDatabase.Connection.ConnectionString ) return _defaultDatabase;
             SqlManager m = ObtainManagerByConnectionString( conString );
-            if( m == null ) _center.Logger.Warn( "Database connection to '{0}' is not mapped.", conString );
+            if( m == null ) _center.Logger.Warn().Send( "Database connection to '{0}' is not mapped.", conString );
             return m;
         }
 

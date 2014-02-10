@@ -107,9 +107,9 @@ namespace CK.Setup
         /// Gets the list of handlers sorted according to the Requires/RequiredBy constraints.
         /// Null if the list can not be obtained.
         /// </summary>
-        /// <param name="_logger">Logger to use. Any error will be logged.</param>
+        /// <param name="_monitor">Monitor to use. Any error will be logged.</param>
         /// <returns>Null on error or the sorted list.</returns>
-        internal IReadOnlyList<ScriptTypeHandler> GetSortedHandlers( IActivityLogger logger )
+        internal IReadOnlyList<ScriptTypeHandler> GetSortedHandlers( IActivityMonitor monitor )
         {
             if( _sortedHandlers == null )
             {
@@ -123,13 +123,13 @@ namespace CK.Setup
                     _sortedHandlers = null;
                     if( r.CycleDetected != null )
                     {
-                        logger.Fatal( "Dependency cycle between Script type handlers: " + r.CycleExplainedString );
+                        monitor.Fatal().Send( "Dependency cycle between Script type handlers: " + r.CycleExplainedString );
                     }
                     else
                     {
                         string explain = r.RequiredMissingDependenciesExplained;
                         Debug.Assert( explain.Length > 0, "It can be only a missing dependency since no container and no homonyms exist." );
-                        logger.Fatal( "Script type handler(s) required: " + explain );
+                        monitor.Fatal().Send( "Script type handler(s) required: " + explain );
                     }
                 }
             }

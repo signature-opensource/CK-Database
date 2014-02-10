@@ -21,10 +21,10 @@ namespace CK.SqlServer.Setup
             var r = Item.ResourceLocation;
             if( r != null )
             {
-                IActivityLogger logger = Engine.Logger;
+                IActivityMonitor monitor = Engine.Monitor;
                 if( r.Type == null )
                 {
-                    logger.Error( "ResourceLocator for '{0}' has no Type defined. A ResourceType must be set in order to load resources.", FullName );
+                    monitor.Error().Send( "ResourceLocator for '{0}' has no Type defined. A ResourceType must be set in order to load resources.", FullName );
                     return false;
                 }
                 else
@@ -32,21 +32,21 @@ namespace CK.SqlServer.Setup
                     string context, location, name;
                     if( !DefaultContextLocNaming.TryParse( FullName, out context, out location, out name ) )
                     {
-                        logger.Error( "Unable to parse '{0}' to extract context and location.", FullName );
+                        monitor.Error().Send( "Unable to parse '{0}' to extract context and location.", FullName );
                         return false;
                     }
                     else
                     {
-                        int nbScripts = scripts.AddFromResources( logger, "res-sql", r, context, location, name, ".sql" );
-                        if( Item.Model != null ) nbScripts += scripts.AddFromResources( logger, "res-sql", r, context, location, "Model." + name, ".sql" );
+                        int nbScripts = scripts.AddFromResources( monitor, "res-sql", r, context, location, name, ".sql" );
+                        if( Item.Model != null ) nbScripts += scripts.AddFromResources( monitor, "res-sql", r, context, location, "Model." + name, ".sql" );
 
                         if( Item.Model == null )
                         {
-                            logger.Trace( "{1} sql scripts in resource found for '{0}' in '{2}.", name, nbScripts, r );
+                            monitor.Trace().Send( "{1} sql scripts in resource found for '{0}' in '{2}.", name, nbScripts, r );
                         }
                         else
                         {
-                            logger.Trace( "{1} sql scripts in resource found for '{0}' and 'Model.{0}' in '{2}'.", name, nbScripts, r );
+                            monitor.Trace().Send( "{1} sql scripts in resource found for '{0}' and 'Model.{0}' in '{2}'.", name, nbScripts, r );
                         }
                     }
                 }

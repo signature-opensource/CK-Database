@@ -15,9 +15,9 @@ namespace CK.StObj.Engine.Tests
 
             public object PropertyValue { get; set; }
 
-            public void Configure( IActivityLogger logger, IStObjMutableItem o )
+            public void Configure( IActivityMonitor monitor, IStObjMutableItem o )
             {
-                o.SetAmbiantPropertyValue( logger, PropertyName, PropertyValue, "AmbientPropertySetAttribute" );
+                o.SetAmbiantPropertyValue( monitor, PropertyName, PropertyValue, "AmbientPropertySetAttribute" );
             }
         }
 
@@ -124,7 +124,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void LayeredArchitecture()
         {
-            StObjCollector collector = new StObjCollector( TestHelper.Logger );
+            StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor );
             collector.RegisterClass( typeof( BasicPackage ) );
             collector.RegisterClass( typeof( BasicActor ) );
             collector.RegisterClass( typeof( BasicUser ) );
@@ -136,8 +136,8 @@ namespace CK.StObj.Engine.Tests
             collector.RegisterClass( typeof( AuthenticationUser ) );
             collector.RegisterClass( typeof( AuthenticationDetail ) );
             collector.RegisterClass( typeof( SqlDatabaseDefault ) );
-            collector.DependencySorterHookInput = items => TestHelper.Logger.TraceDependentItem( items );
-            collector.DependencySorterHookOutput = sortedItems => TestHelper.Logger.TraceSortedItem( sortedItems, false );
+            collector.DependencySorterHookInput = items => TestHelper.ConsoleMonitor.TraceDependentItem( items );
+            collector.DependencySorterHookOutput = sortedItems => TestHelper.ConsoleMonitor.TraceSortedItem( sortedItems, false );
 
 
             var r = collector.GetResult();

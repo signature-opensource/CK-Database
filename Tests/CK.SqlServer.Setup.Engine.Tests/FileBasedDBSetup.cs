@@ -20,20 +20,20 @@ namespace CK.SqlServer.Setup.Engine.Tests
             config.SqlFileDirectories.Add( TestHelper.GetScriptsFolder( "InstallFromScratch" ) );
             config.SetupConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
 
-            using( var defaultDB = SqlManager.OpenOrCreate( ".", "Test", TestHelper.Logger ) )
+            using( var defaultDB = SqlManager.OpenOrCreate( ".", "Test", TestHelper.ConsoleMonitor ) )
             {
                 defaultDB.SchemaDropAllObjects( "Test", true );
                 defaultDB.SchemaDropAllObjects( "CKCore", false );
 
                 config.DefaultDatabaseConnectionString = defaultDB.CurrentConnectionString;
 
-                using( TestHelper.Logger.OpenGroup( LogLevel.Trace, "First setup (will fail due to a MissingDependencyIsError configuration)." ) )
+                using( TestHelper.ConsoleMonitor.OpenTrace().Send( "First setup (will fail due to a MissingDependencyIsError configuration)." ) )
                 {
-                    using( var r = StObjContextRoot.Build( config, TestHelper.Logger ) )
+                    using( var r = StObjContextRoot.Build( config, TestHelper.ConsoleMonitor ) )
                     {
                         Assert.That( r.Success, Is.False );
                     }
-                    //using( SqlSetupCenter c = new SqlSetupCenter( TestHelper.Logger, config, defaultDB ) )
+                    //using( SqlSetupCenter c = new SqlSetupCenter( TestHelper.Monitor, config, defaultDB ) )
                     //{
                     //    c.SetupDependencySorterHookInput = TestHelper.Trace;
                     //    c.SetupDependencySorterHookOutput = all => TestHelper.Trace( all, true );
@@ -41,13 +41,13 @@ namespace CK.SqlServer.Setup.Engine.Tests
                     //}
                 }
                 config.IgnoreMissingDependencyIsError = true;
-                using( TestHelper.Logger.OpenGroup( LogLevel.Trace, "Second setup (will succeed since SqlSetupCenterConfiguration.IgnoreMissingDependencyIsError is true)." ) )
+                using( TestHelper.ConsoleMonitor.OpenTrace().Send( "Second setup (will succeed since SqlSetupCenterConfiguration.IgnoreMissingDependencyIsError is true)." ) )
                 {
-                    using( var r = StObjContextRoot.Build( config, TestHelper.Logger ) )
+                    using( var r = StObjContextRoot.Build( config, TestHelper.ConsoleMonitor ) )
                     {
                         Assert.That( r.Success );
                     }
-                    //using( SqlSetupCenter c = new SqlSetupCenter( TestHelper.Logger, config, defaultDB ) )
+                    //using( SqlSetupCenter c = new SqlSetupCenter( TestHelper.Monitor, config, defaultDB ) )
                     //{
                     //    Assert.That( c.Run() );
                     //}
@@ -56,13 +56,13 @@ namespace CK.SqlServer.Setup.Engine.Tests
                 defaultDB.ExecuteOneScript( "drop procedure Test.sOneStoredProcedure;" );
                 defaultDB.ExecuteOneScript( "drop function Test.fTest;" );
 
-                using( TestHelper.Logger.OpenGroup( LogLevel.Trace, "Third setup." ) )
+                using( TestHelper.ConsoleMonitor.OpenTrace().Send( "Third setup." ) )
                 {
-                    using( var r = StObjContextRoot.Build( config, TestHelper.Logger ) )
+                    using( var r = StObjContextRoot.Build( config, TestHelper.ConsoleMonitor ) )
                     {
                         Assert.That( r.Success );
                     }
-                    //using( SqlSetupCenter c = new SqlSetupCenter( TestHelper.Logger, config, defaultDB ) )
+                    //using( SqlSetupCenter c = new SqlSetupCenter( TestHelper.Monitor, config, defaultDB ) )
                     //{
                     //    Assert.That( c.Run() );
                     //}
@@ -80,17 +80,17 @@ namespace CK.SqlServer.Setup.Engine.Tests
             config.IgnoreMissingDependencyIsError = true;
 
             // Ensures that the database is created and gets the connection string.
-            using( var defaultDB = SqlManager.OpenOrCreate( ".", "TestWithView", TestHelper.Logger ) )
+            using( var defaultDB = SqlManager.OpenOrCreate( ".", "TestWithView", TestHelper.ConsoleMonitor ) )
             {
                 config.DefaultDatabaseConnectionString = defaultDB.CurrentConnectionString;
             }
 
-            using( var r = StObjContextRoot.Build( config, TestHelper.Logger ) )
+            using( var r = StObjContextRoot.Build( config, TestHelper.ConsoleMonitor ) )
             {
                 Assert.That( r.Success );
             }
 
-            using( var defaultDB = SqlManager.OpenOrCreate( ".", "TestWithView", TestHelper.Logger ) )
+            using( var defaultDB = SqlManager.OpenOrCreate( ".", "TestWithView", TestHelper.ConsoleMonitor ) )
             {
                 Assert.That( defaultDB.Connection.ExecuteScalar( "select Id from dbo.vTestView" ), Is.EqualTo( 3712 ) );
                 defaultDB.Connection.ExecuteNonQuery( "drop view dbo.vTestView" );
@@ -99,12 +99,12 @@ namespace CK.SqlServer.Setup.Engine.Tests
             }
             // From scratch now: the database is empty.
 
-            using( var r = StObjContextRoot.Build( config, TestHelper.Logger ) )
+            using( var r = StObjContextRoot.Build( config, TestHelper.ConsoleMonitor ) )
             {
                 Assert.That( r.Success );
             }
 
-            using( var defaultDB = SqlManager.OpenOrCreate( ".", "TestWithView", TestHelper.Logger ) )
+            using( var defaultDB = SqlManager.OpenOrCreate( ".", "TestWithView", TestHelper.ConsoleMonitor ) )
             {
                 Assert.That( defaultDB.Connection.ExecuteScalar( "select Id from dbo.vTestView" ), Is.EqualTo( 3712 ) );
             }
@@ -118,7 +118,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
             config.SqlFileDirectories.Add( TestHelper.GetScriptsFolder( "InstallFromScratchWithSPDependsOnVersion" ) );
             config.SetupConfiguration.FinalAssemblyConfiguration.AssemblyName = "InstallPackageWithSPDependsOnVersion";
 
-            using( var defaultDB = SqlManager.OpenOrCreate( ".", "Test", TestHelper.Logger ) )
+            using( var defaultDB = SqlManager.OpenOrCreate( ".", "Test", TestHelper.ConsoleMonitor ) )
             {
                 defaultDB.Connection.ExecuteNonQuery( @"if object_id(N'[CKCore].[tSetupMemoryItem]') is not null delete from [CKCore].[tSetupMemoryItem] where ItemKey like '%WithSPDependsOnVersion%';" );
                 defaultDB.Connection.ExecuteNonQuery( @"if object_id(N'[CKCore].[tItemVersion]') is not null delete from [CKCore].[tItemVersion] where FullName like '%WithSPDependsOnVersion%';" );
@@ -126,7 +126,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
                 defaultDB.Connection.ExecuteNonQuery( @"if object_id(N'[dbo].[tTestVSP]') is not null drop table dbo.tTestVSP;" ); // Reset
                 defaultDB.Connection.ExecuteNonQuery( @"if object_id(N'[dbo].[sStoredProcedureWithSPDependsOnVersion]') is not null drop procedure [dbo].[sStoredProcedureWithSPDependsOnVersion];" );
 
-                using( SqlSetupCenter c = new SqlSetupCenter( TestHelper.Logger, config, defaultDB ) )
+                using( SqlSetupCenter c = new SqlSetupCenter( TestHelper.ConsoleMonitor, config, defaultDB ) )
                 {
                     Assert.That( c.Run() );
                 }

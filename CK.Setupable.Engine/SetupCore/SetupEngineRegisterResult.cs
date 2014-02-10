@@ -53,17 +53,17 @@ namespace CK.Setup
         /// Logs any error: <see cref="UnexpectedError"/> and any <see cref="DependencySorterResult"/> errors. 
         /// Does nothing if <see cref="IsValid"/> is true.
         /// </summary>
-        /// <param name="_logger">The _logger to use.</param>
-        public void LogError( IActivityLogger logger )
+        /// <param name="_monitor">The _monitor to use.</param>
+        public void LogError( IActivityMonitor monitor )
         {
             Debug.Assert( SortResult != null || (UnexpectedError != null || CancelReason != null), "(SortResult == null) ==> (UnexpectedError != null || CancelReason != null)" );
-            if( logger == null ) throw new ArgumentNullException( "_logger" );
+            if( monitor == null ) throw new ArgumentNullException( "_monitor" );
             if( !IsValid )
             {
-                if( UnexpectedError != null ) logger.Fatal( UnexpectedError );
-                if( CanceledRegistrationCulprit != null ) logger.Fatal( "Canceled during '{0}' registration.", CanceledRegistrationCulprit.FullName );
-                if( CancelReason != null ) logger.Fatal( CancelReason );
-                if( SortResult != null ) SortResult.LogError( logger );
+                if( UnexpectedError != null ) monitor.Fatal().Send( UnexpectedError );
+                if( CanceledRegistrationCulprit != null ) monitor.Fatal().Send( "Canceled during '{0}' registration.", CanceledRegistrationCulprit.FullName );
+                if( CancelReason != null ) monitor.Fatal().Send( CancelReason );
+                if( SortResult != null ) SortResult.LogError( monitor );
             }
         }
 

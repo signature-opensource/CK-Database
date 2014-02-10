@@ -19,7 +19,7 @@ namespace CK.Setup
         /// </summary>
         /// <param name="itemType">
         /// Type of item (must not be longer than 16 characters). 
-        /// It is "StObjItem" or "StObjPackage" when initialized by the <see cref="StObjDynamicPackageItem(IActivityLogger,IStObjSetupData)">other constructor</see>.
+        /// It is "StObjItem" or "StObjPackage" when initialized by the <see cref="StObjDynamicPackageItem(IActivityMonitor,IStObjSetupData)">other constructor</see>.
         /// </param>
         /// <param name="driverType">Type of the associated driver or its assembly qualified name.</param>
         /// <param name="obj">The final <see cref="Object"/>.</param>
@@ -33,9 +33,9 @@ namespace CK.Setup
         /// <summary>
         /// Initializes a new <see cref="StObjDynamicPackageItem"/> initialized by a <see cref="IStObjSetupData"/>.
         /// </summary>
-        /// <param name="logger">Logger to use.</param>
+        /// <param name="monitor">Monitor to use.</param>
         /// <param name="data">Descriptive data that is used to configure this item.</param>
-        public StObjDynamicPackageItem( IActivityLogger logger, IStObjSetupData data )
+        public StObjDynamicPackageItem( IActivityMonitor monitor, IStObjSetupData data )
             : base( data.StObj.ItemKind == DependentItemKindSpec.Item ? "StObjItem" : "StObjPackage", (object)data.DriverType ?? data.DriverTypeName )
         {
             Debug.Assert( Model == null, "Initially, a DynamicPackageItem has no model." );

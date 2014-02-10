@@ -24,14 +24,14 @@ namespace CK.Setup
             _leafData.PostBuildProperties.Add( new PropertySetter( p, o, valueCollector ) );
         }
 
-        internal void CallConstruct( IActivityLogger logger, BuildValueCollector valueCollector, IStObjValueResolver valueResolver )
+        internal void CallConstruct( IActivityMonitor monitor, BuildValueCollector valueCollector, IStObjValueResolver valueResolver )
         {
             Debug.Assert( _constructParameterEx != null, "Always allocated." );
             if( _preConstruct != null )
             {
                 foreach( var p in _preConstruct )
                 {
-                    SetPropertyValue( logger, p );
+                    SetPropertyValue( monitor, p );
                 }
             }
 
@@ -41,11 +41,11 @@ namespace CK.Setup
             int i = 0;
             foreach( MutableParameter t in _constructParameterEx )
             {
-                // We inject our "setup logger" only if it is exactly the formal parameter: ... , IActivityLogger logger, ...
-                // This enforces code homogeneity and let room for any other IActivityLogger injection.
+                // We inject our "setup monitor" only if it is exactly the formal parameter: ... , IActivityMonitor monitor, ...
+                // This enforces code homogeneity and let room for any other IActivityMonitor injection.
                 if( t.IsSetupLogger )
                 {
-                    t.SetParameterValue( logger );
+                    t.SetParameterValue( monitor );
                     t.BuilderValueIndex = Int32.MaxValue;
                 }
                 else
@@ -62,7 +62,7 @@ namespace CK.Setup
                             t.SetParameterValue( resolved.Object );
                         }
                     }
-                    if( valueResolver != null ) valueResolver.ResolveParameterValue( logger, t );
+                    if( valueResolver != null ) valueResolver.ResolveParameterValue( monitor, t );
                     if( t.Value == Type.Missing && !t.IsRealParameterOptional )
                     {
                         if( !t.IsOptional )
@@ -70,7 +70,7 @@ namespace CK.Setup
                             // By throwing an exception here, we stop the process and avoid the construction 
                             // of an invalid object graph...
                             // This behavior (FailFastOnFailureToResolve) may be an option once. For the moment: log the error.
-                            logger.Fatal( "{0}: Unable to resolve non optional. Attempting to use a default value to continue the setup process in order to detect other errors.", t.ToString() );
+                            monitor.Fatal().Send( "{0}: Unable to resolve non optional. Attempting to use a default value to continue the setup process in order to detect other errors.", t.ToString() );
                         }
                         t.SetParameterValue( t.Type.IsValueType ? Activator.CreateInstance( t.Type ) : null );
                     }
@@ -88,14 +88,14 @@ namespace CK.Setup
             AmbientTypeInfo.Construct.Invoke( _leafData.StructuredObject, parameters );
         }
 
-        internal void SetPostBuildProperties( IActivityLogger logger, StObjCollectorResult collector, StObjCollectorContextualResult cachedContext )
+        internal void SetPostBuildProperties( IActivityMonitor monitor, StObjCollectorResult collector, StObjCollectorContextualResult cachedContext )
         {
             Debug.Assert( Specialization == null, "Called on leaves only." );
             if( _leafData.PostBuildProperties != null )
             {
                 foreach( var p in _leafData.PostBuildProperties )
                 {
-                    SetPropertyValue( logger, p );
+                    SetPropertyValue( monitor, p );
                 }
             }
         }
@@ -118,7 +118,7 @@ namespace CK.Setup
             }
         }
 
-        void SetPropertyValue( IActivityLogger logger, PropertySetter p )
+        void SetPropertyValue( IActivityMonitor monitor, PropertySetter p )
         {
             object o = p.Value;
             MutableItem m = o as MutableItem;
@@ -129,7 +129,7 @@ namespace CK.Setup
             }
             catch( Exception ex )
             {
-                logger.Error( ex, "While setting '{1}.{0}'.", p.Property.Name, p.Property.DeclaringType.FullName );
+                monitor.Error().Send( ex, "While setting '{1}.{0}'.", p.Property.Name, p.Property.DeclaringType.FullName );
             }
         }
 

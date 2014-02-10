@@ -37,16 +37,16 @@ namespace CK.SqlServer
                 /// <summary>
                 /// Logs the error message if <see cref="IsError"/> is true, otherwise does nothing.
                 /// </summary>
-                /// <param name="logLevel">Log level to use.</param>
-                /// <param name="logger">Logger to log into.</param>
-                public void LogOnError( LogLevel logLevel, IActivityLogger logger )
+                /// <param name="monitor">Monitor to log into.</param>
+                /// <param name="asWarning">True to log a warning instead of an error.</param>
+                public void LogOnError( IActivityMonitor monitor, bool asWarning = false )
                 {
-                    if( logger == null ) throw new ArgumentNullException( "logger" );
+                    if( monitor == null ) throw new ArgumentNullException( "monitor" );
                     if( IsError )
                     {
-                        using( logger.OpenGroup( logLevel, ErrorMessage ) )
+                        using( asWarning ? monitor.OpenWarn().Send( ErrorMessage ) : monitor.OpenError().Send( ErrorMessage ) )
                         {
-                            logger.Info( HeadSource );
+                            monitor.Info().Send( HeadSource );
                         }
                     }
                 }

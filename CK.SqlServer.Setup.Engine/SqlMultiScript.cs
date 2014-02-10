@@ -13,8 +13,8 @@ namespace CK.SqlServer.Setup
         ISqlScriptExecutor _executor;
         SqlManager _manager;
 
-        public SqlMultiScript( IActivityLogger logger, ISetupScript script, SqlManager manager, ISetupSessionMemory memory )
-            : base( logger, script )
+        public SqlMultiScript( IActivityMonitor monitor, ISetupScript script, SqlManager manager, ISetupSessionMemory memory )
+            : base( monitor, script )
         {
             if( memory == null ) throw new ArgumentNullException( "memory" );
             if( manager == null ) throw new ArgumentNullException( "manager" );
@@ -25,7 +25,7 @@ namespace CK.SqlServer.Setup
         public override bool ExecuteScript()
         {
             if( _memory.IsItemRegistered( Script.GetScriptKey() ) ) return true;
-            using( _executor = _manager.CreateExecutor( Logger ) )
+            using( _executor = _manager.CreateExecutor( Monitor ) )
             {
                 return base.ExecuteScript();
             }
@@ -34,7 +34,7 @@ namespace CK.SqlServer.Setup
         protected override IReadOnlyList<string> SplitScripts( string scriptBody )
         {
             var s = new SimpleScriptTagHandler( scriptBody );
-            if( !s.Expand( Logger, true ) ) return null;
+            if( !s.Expand( Monitor, true ) ) return null;
             _scripts = s.SplitScript();
             return _scripts.Select( script => script.Body ).ToReadOnlyList();
         }

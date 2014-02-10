@@ -22,20 +22,20 @@ namespace CK.Setup
             TypedScriptVector v = _scripts.GetScriptVector( step, Driver.ExternalVersion != null ? Driver.ExternalVersion.Version : null, Driver.ItemVersion );
             if( v == null || v.Scripts.Count == 0 ) return true;
 
-            var logger = Driver.Engine.Logger;
-            IScriptExecutor e = _scripts.Handler.CreateExecutor( logger, Driver );
+            var monitor = Driver.Engine.Monitor;
+            IScriptExecutor e = _scripts.Handler.CreateExecutor( monitor, Driver );
             if( e == null )
             {
-                logger.Error( "Unable to obtain a Script Executor for '{0}'.", _scripts.Handler.HandlerName );
+                monitor.Error().Send( "Unable to obtain a Script Executor for '{0}'.", _scripts.Handler.HandlerName );
                 return false;
             }
             try
             {
-                using( v.Scripts.Count > 1 ? logger.OpenGroup( LogLevel.Info, "Executing {1} '{0}' scripts.", _scripts.Handler.HandlerName, _scripts.Count ) : null )
+                using( v.Scripts.Count > 1 ? monitor.OpenInfo().Send( "Executing {1} '{0}' scripts.", _scripts.Handler.HandlerName, _scripts.Count ) : null )
                 {
                     foreach( CoveringScript script in v.Scripts )
                     {
-                        if( !e.ExecuteScript( logger, Driver, script.Script ) )
+                        if( !e.ExecuteScript( monitor, Driver, script.Script ) )
                         {
                             return false;
                         }
@@ -44,12 +44,12 @@ namespace CK.Setup
             }
             catch( Exception ex )
             {
-                logger.Error( ex );
+                monitor.Error().Send( ex );
                 return false;
             }
             finally
             {
-                _scripts.Handler.ReleaseExecutor( logger, e );
+                _scripts.Handler.ReleaseExecutor( monitor, e );
             }
             return true;
         }

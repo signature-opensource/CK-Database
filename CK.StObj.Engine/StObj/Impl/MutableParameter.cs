@@ -36,7 +36,7 @@ namespace CK.Setup
 
         internal bool IsSetupLogger
         {
-            get { return _param.ParameterType == typeof( IActivityLogger ) && _param.Name == "logger"; }
+            get { return _param.ParameterType == typeof( IActivityMonitor ) && _param.Name == "monitor"; }
         }
 
         /// <summary>

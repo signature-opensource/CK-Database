@@ -62,21 +62,21 @@ namespace CK.Setup
         /// <summary>
         /// Creates the object that will be in charge of script execution.
         /// </summary>
-        /// <param name="_logger">Logger to use.</param>
+        /// <param name="_monitor">Monitor to use.</param>
         /// <param name="driver">
         /// The item driver for which an executor must be created. 
         /// It can be ignored by an implementation that may choose, for instance, to use the same object regardless of the specific object
         /// to setup but based on some other properties.
         /// </param>
         /// <returns>A <see cref="IScriptExecutor"/> object that should be <see cref="ReleaseExecutor">released</see> once useless.</returns>
-        protected internal abstract IScriptExecutor CreateExecutor( IActivityLogger logger, SetupDriver driver );
+        protected internal abstract IScriptExecutor CreateExecutor( IActivityMonitor monitor, SetupDriver driver );
 
         /// <summary>
         /// Called by the framework to indicate that a <see cref="IScriptExecutor"/> is no longer needed.
         /// </summary>
-        /// <param name="_logger">Logger to use.</param>
+        /// <param name="_monitor">Monitor to use.</param>
         /// <param name="executor">The useless executor.</param>
-        protected internal abstract void ReleaseExecutor( IActivityLogger logger, IScriptExecutor executor );
+        protected internal abstract void ReleaseExecutor( IActivityMonitor monitor, IScriptExecutor executor );
 
         /// <summary>
         /// Gets script type names that must be executed before this one. 

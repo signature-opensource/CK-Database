@@ -21,7 +21,7 @@ namespace CK.Setup
         readonly AmbientContractCollector<StObjContextualMapper,StObjTypeInfo,MutableItem> _cc;
         readonly IStObjStructuralConfigurator _configurator;
         readonly IStObjValueResolver _valueResolver;
-        readonly IActivityLogger _logger;
+        readonly IActivityMonitor _monitor;
         readonly DynamicAssembly _tempAssembly;
         readonly IStObjRuntimeBuilder _runtimeBuilder;
         int _registerFatalOrErrorCount;
@@ -29,18 +29,18 @@ namespace CK.Setup
         /// <summary>
         /// Initializes a new <see cref="StObjCollector"/>.
         /// </summary>
-        /// <param name="logger">Logger to use. Can not be null.</param>
+        /// <param name="monitor">Logger to use. Can not be null.</param>
         /// <param name="runtimeBuilder">Runtime builder to use. <see cref="StObjContext.DefaultStObjRuntimeBuilder"/> can be used.</param>
         /// <param name="dispatcher"></param>
         /// <param name="configurator"></param>
         /// <param name="valueResolver"></param>
-        public StObjCollector( IActivityLogger logger, IStObjRuntimeBuilder runtimeBuilder = null, IAmbientContractDispatcher dispatcher = null, IStObjStructuralConfigurator configurator = null, IStObjValueResolver dependencyResolver = null )
+        public StObjCollector( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder = null, IAmbientContractDispatcher dispatcher = null, IStObjStructuralConfigurator configurator = null, IStObjValueResolver dependencyResolver = null )
         {
-            if( logger == null ) throw new ArgumentNullException( "logger" );
+            if( monitor == null ) throw new ArgumentNullException( "monitor" );
             _runtimeBuilder = runtimeBuilder ?? StObjContextRoot.DefaultStObjRuntimeBuilder;
-            _logger = logger;
+            _monitor = monitor;
             _tempAssembly = new DynamicAssembly();
-            _cc = new AmbientContractCollector<StObjContextualMapper,StObjTypeInfo, MutableItem>( _logger, l => new StObjMapper(), ( l, p, t ) => new StObjTypeInfo( l, p, t ), _tempAssembly, dispatcher );
+            _cc = new AmbientContractCollector<StObjContextualMapper,StObjTypeInfo, MutableItem>( _monitor, l => new StObjMapper(), ( l, p, t ) => new StObjTypeInfo( l, p, t ), _tempAssembly, dispatcher );
             _configurator = configurator;
             _valueResolver = dependencyResolver;
         }
@@ -76,17 +76,17 @@ namespace CK.Setup
         {
             if( registerer == null ) throw new ArgumentNullException( "registerer" );
             int totalRegistered = 0;
-            using( _logger.CatchCounter( count => _registerFatalOrErrorCount += count ) )
-            using( _logger.OpenGroup( LogLevel.Trace, "Registering {0} assemblies.", registerer.Assemblies.Count ) )
+            using( _monitor.CatchCounter( count => _registerFatalOrErrorCount += count ) )
+            using( _monitor.OpenTrace().Send( "Registering {0} assemblies.", registerer.Assemblies.Count ) )
             {
                 foreach( var one in registerer.Assemblies )
                 {
-                    using( _logger.OpenGroup( LogLevel.Trace, "Registering assembly '{0}'.", one.Assembly.FullName ) )
+                    using( _monitor.OpenTrace().Send( "Registering assembly '{0}'.", one.Assembly.FullName ) )
                     {
                         int nbAlready = _cc.RegisteredTypeCount;
                         _cc.Register( one.Types );
                         int delta = _cc.RegisteredTypeCount - nbAlready;
-                        _logger.CloseGroup( String.Format( "{0} types(s) registered.", delta ) );
+                        _monitor.CloseGroup( String.Format( "{0} types(s) registered.", delta ) );
                         totalRegistered += delta;
                     }
                 }
@@ -101,7 +101,7 @@ namespace CK.Setup
         /// <returns>True if it is a new class for this collector, false if it has already been registered.</returns>
         public bool RegisterClass( Type c )
         {
-            using( _logger.CatchCounter( count => _registerFatalOrErrorCount += count ) )
+            using( _monitor.CatchCounter( count => _registerFatalOrErrorCount += count ) )
             {
                 return _cc.RegisterClass( c );
             }
@@ -129,48 +129,48 @@ namespace CK.Setup
             {
                 throw new CKException( "There are {0} registration errors. ClearRegisteringErrors must be called before calling this GetResult method to ignore registration errors.", _registerFatalOrErrorCount );
             }
-            using( _logger.OpenGroup( LogLevel.Info, "Collecting all StObj information." ) )
+            using( _monitor.OpenInfo().Send( "Collecting all StObj information." ) )
             {
                 AmbientContractCollectorResult<StObjContextualMapper,StObjTypeInfo,MutableItem> contracts;
-                using( _logger.OpenGroup( LogLevel.Info, "Collecting Ambient Contracts and Type structure." ) )
+                using( _monitor.OpenInfo().Send( "Collecting Ambient Contracts and Type structure." ) )
                 {
                     contracts = _cc.GetResult();
-                    contracts.LogErrorAndWarnings( _logger );
+                    contracts.LogErrorAndWarnings( _monitor );
                 }
                 var stObjMapper = new StObjMapper();
                 var result = new StObjCollectorResult( stObjMapper, contracts );
                 if( result.HasFatalError ) return result;
 
-                using( _logger.OpenGroup( LogLevel.Info, "Creating Structure Objects." ) )
+                using( _monitor.OpenInfo().Send( "Creating Structure Objects." ) )
                 {
                     int objectCount = 0;
                     foreach( StObjCollectorContextualResult r in result.Contexts )
                     {
-                        using( _logger.Catch( e => r.SetFatal() ) )
-                        using( _logger.OpenGroup( LogLevel.Info, "Working on Context [{0}].", r.Context ) )
+                        using( _monitor.Catch( e => r.SetFatal() ) )
+                        using( _monitor.OpenInfo().Send( "Working on Context [{0}].", r.Context ) )
                         {
                             int nbItems = CreateMutableItems( r );
-                            _logger.CloseGroup( String.Format( " {0} items created for {1} types.", nbItems, r.AmbientContractResult.ConcreteClasses.Count ) );
+                            _monitor.CloseGroup( String.Format( " {0} items created for {1} types.", nbItems, r.AmbientContractResult.ConcreteClasses.Count ) );
                             objectCount += nbItems;
                         }
                     }
                     if( result.HasFatalError ) return result;
-                    _logger.CloseGroup( String.Format( "{0} items created.", objectCount ) );
+                    _monitor.CloseGroup( String.Format( "{0} items created.", objectCount ) );
                 }
 
                 DependencySorterResult sortResult = null;
-                using( _logger.OpenGroup( LogLevel.Info, "Handling dependencies." ) )
+                using( _monitor.OpenInfo().Send( "Handling dependencies." ) )
                 {
                     bool noCycleDetected;
                     if( !PrepareDependentItems( result, out noCycleDetected ) )
                     {
-                        _logger.CloseGroup( "Prepare failed." );
+                        _monitor.CloseGroup( "Prepare failed." );
                         Debug.Assert( result.HasFatalError );
                         return result;
                     }
                     if( !ResolvePreConstructAndPostBuildProperties( result ) )
                     {
-                        _logger.CloseGroup( "Resolving Ambient Properties failed." );
+                        _monitor.CloseGroup( "Resolving Ambient Properties failed." );
                         Debug.Assert( result.HasFatalError );
                         return result;
                     }
@@ -186,8 +186,8 @@ namespace CK.Setup
                     Debug.Assert( noCycleDetected || (sortResult.CycleDetected != null), "Cycle detected during item preparation => Cycle detected by the DependencySorter." );
                     if( !sortResult.IsComplete )
                     {
-                        sortResult.LogError( _logger );
-                        _logger.CloseGroup( "Ordering failed." );
+                        sortResult.LogError( _monitor );
+                        _monitor.CloseGroup( "Ordering failed." );
                         result.SetFatal();
                         return result;
                     }
@@ -199,8 +199,8 @@ namespace CK.Setup
                 // Their instance has been set during the first step (CreateMutableItems).
                 // We can now call the Construct methods and returns an ordered list of IStObj.
                 //
-                using( _logger.Catch( e => result.SetFatal() ) )
-                using( _logger.OpenGroup( LogLevel.Info, "Initializing object graph." ) )
+                using( _monitor.Catch( e => result.SetFatal() ) )
+                using( _monitor.OpenInfo().Send( "Initializing object graph." ) )
                 {
                     int idxSpecialization = 0;
                     List<MutableItem> ordered = new List<MutableItem>();
@@ -211,15 +211,15 @@ namespace CK.Setup
                         if( m.ItemKind == DependentItemKindSpec.Item || sorted.IsGroupHead )
                         {
                             m.SetSorterData( ordered.Count, ref idxSpecialization, sorted.Requires, sorted.Children, sorted.Groups );
-                            using( _logger.OpenGroup( LogLevel.Trace, "Constructing '{0}'.", m.ToString() ) )
+                            using( _monitor.OpenTrace().Send( "Constructing '{0}'.", m.ToString() ) )
                             {
                                 try
                                 {
-                                    m.CallConstruct( _logger, result.BuildValueCollector, _valueResolver );
+                                    m.CallConstruct( _monitor, result.BuildValueCollector, _valueResolver );
                                 }
                                 catch( Exception ex )
                                 {
-                                    _logger.Error( ex );
+                                    _monitor.Error().Send( ex );
                                 }
                             }
                             ordered.Add( m );
@@ -231,7 +231,7 @@ namespace CK.Setup
                             // But... is it a good thing for a package object to know its content detail?
                         }
                     }
-                    using( _logger.OpenGroup( LogLevel.Info, "Setting Ambient Contracts." ) )
+                    using( _monitor.OpenInfo().Send( "Setting Ambient Contracts." ) )
                     {
                         SetPostBuildProperties( result );
                     }
@@ -258,12 +258,12 @@ namespace CK.Setup
 
                 MutableItem specialization = r._specializations[i] = pathTypes[pathTypes.Count - 1];
 
-                object theObject = specialization.CreateStructuredObject( _logger, _runtimeBuilder );
+                object theObject = specialization.CreateStructuredObject( _monitor, _runtimeBuilder );
                 // If we failed to create an instance, we ensure that an error is logged and
                 // continue the process.
                 if( theObject == null )
                 {
-                    _logger.Error( "Unable to create an instance of '{0}'.", pathTypes[pathTypes.Count - 1].AmbientTypeInfo.Type.FullName );
+                    _monitor.Error().Send( "Unable to create an instance of '{0}'.", pathTypes[pathTypes.Count - 1].AmbientTypeInfo.Type.FullName );
                     continue;
                 }
                 // Finalize configuration by sollicitating IStObjStructuralConfigurator.
@@ -278,8 +278,8 @@ namespace CK.Setup
                 MutableItem m = generalization;
                 do
                 {
-                    m.ConfigureTopDown( _logger, generalization );
-                    if( _configurator != null ) _configurator.Configure( _logger, m );
+                    m.ConfigureTopDown( _monitor, generalization );
+                    if( _configurator != null ) _configurator.Configure( _monitor, m );
                 }
                 while( (m = m.Specialization) != null );
             }
@@ -295,12 +295,12 @@ namespace CK.Setup
             noCycleDetected = true;
             foreach( StObjCollectorContextualResult contextResult in collector.Contexts )
             {
-                using( _logger.Catch( e => contextResult.SetFatal() ) )
-                using( _logger.OpenGroup( LogLevel.Info, "Working on Context [{0}].", contextResult.Context ) )
+                using( _monitor.Catch( e => contextResult.SetFatal() ) )
+                using( _monitor.OpenInfo().Send( "Working on Context [{0}].", contextResult.Context ) )
                 {
                     foreach( MutableItem item in contextResult._specializations )
                     {
-                        noCycleDetected &= item.PrepareDependentItem( _logger, collector, contextResult );
+                        noCycleDetected &= item.PrepareDependentItem( _monitor, collector, contextResult );
                     }
                 }
             }
@@ -319,12 +319,12 @@ namespace CK.Setup
         {
             foreach( StObjCollectorContextualResult contextResult in collector.Contexts )
             {
-                using( _logger.Catch( e => contextResult.SetFatal() ) )
-                using( _logger.OpenGroup( LogLevel.Info, "Working on Context [{0}].", contextResult.Context ) )
+                using( _monitor.Catch( e => contextResult.SetFatal() ) )
+                using( _monitor.OpenInfo().Send( "Working on Context [{0}].", contextResult.Context ) )
                 {
                     foreach( MutableItem item in contextResult._specializations )
                     {
-                        item.ResolvePreConstructAndPostBuildProperties( _logger, collector, contextResult, _valueResolver );
+                        item.ResolvePreConstructAndPostBuildProperties( _monitor, collector, contextResult, _valueResolver );
                     }
                 }
             }
@@ -338,12 +338,12 @@ namespace CK.Setup
         {
             foreach( StObjCollectorContextualResult contextResult in collector.Contexts )
             {
-                using( _logger.Catch( e => contextResult.SetFatal() ) )
-                using( _logger.OpenGroup( LogLevel.Info, "Working on Context [{0}].", contextResult.Context ) )
+                using( _monitor.Catch( e => contextResult.SetFatal() ) )
+                using( _monitor.OpenInfo().Send( "Working on Context [{0}].", contextResult.Context ) )
                 {
                     foreach( MutableItem item in contextResult._specializations )
                     {
-                        item.SetPostBuildProperties( _logger, collector, contextResult );
+                        item.SetPostBuildProperties( _monitor, collector, contextResult );
                     }
                 }
             }

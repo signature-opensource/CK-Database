@@ -12,18 +12,18 @@ namespace CK.Setup
         /// Retrieves a <see cref="IStObjAttribute"/> from (potentially multiple) attributes on a type.
         /// If multiple attributes are defined, <see cref="IStObjAttribute.Requires"/>, <see cref="IStObjAttribute.Children"/>, and <see cref="IStObjAttribute.RequiredBy"/>
         /// are merged, but if their <see cref="IStObjAttribute.Container"/> are not null or if <see cref="ItemKind"/> is not <see cref="DependentItemKind.Unknown"/> and differ, the 
-        /// first one is kept and a log is emitted in the <paramref name="logger"/>.
+        /// first one is kept and a log is emitted in the <paramref name="monitor"/>.
         /// </summary>
         /// <param name="objectType">The type for which the attribute must be found.</param>
-        /// <param name="logger">Logger that will receive the warning.</param>
+        /// <param name="monitor">Logger that will receive the warning.</param>
         /// <param name="multipleContainerLogLevel"><see cref="LogLevel"/> when different containers are detected. By default a warning is emitted.</param>
         /// <returns>
         /// Null if no <see cref="IStObjAttribute"/> is set.
         /// </returns>
-        static internal IStObjAttribute GetStObjAttributeForExactType( Type objectType, IActivityLogger logger, LogLevel multipleContainerLogLevel = LogLevel.Warn )
+        static internal IStObjAttribute GetStObjAttributeForExactType( Type objectType, IActivityMonitor monitor, LogLevel multipleContainerLogLevel = LogLevel.Warn )
         {
             if( objectType == null ) throw new ArgumentNullException( "objectType" );
-            if( logger == null ) throw new ArgumentNullException( "logger" );
+            if( monitor == null ) throw new ArgumentNullException( "monitor" );
 
             var a = (IStObjAttribute[])objectType.GetCustomAttributes( typeof( IStObjAttribute ), false );
             if( a.Length == 0 ) return null;
@@ -46,17 +46,17 @@ namespace CK.Setup
                     }
                     else
                     {
-                        if( (int)multipleContainerLogLevel >= (int)logger.Filter )
+                        if( monitor.ShouldLogLine( multipleContainerLogLevel ) )
                         {
                             string msg = String.Format( "Attribute {0} for type {1} specifies Container type '{2}' but attribute {3} specifies Container type '{4}'. Container is '{4}'.",
                                                                         attr.GetType().Name, objectType.FullName, containerDefiner.GetType().Name, attr.Container.FullName );
-                            logger.UnfilteredLog( ActivityLogger.RegisteredTags.EmptyTrait, multipleContainerLogLevel, msg, DateTime.UtcNow );
+                            monitor.UnfilteredLog( ActivityMonitor.Tags.Empty, multipleContainerLogLevel, msg, monitor.NextLogTime(), null );
                         }
                     }
                 }
                 if( attr.ItemKind != DependentItemKindSpec.Unknown )
                 {
-                    if( itemKind != DependentItemKindSpec.Unknown ) logger.Warn( "ItemKind is already set to '{0}'. Value '{1}' set by {2} is ignored.", itemKind, attr.ItemKind, attr.GetType().Name );
+                    if( itemKind != DependentItemKindSpec.Unknown ) monitor.Warn().Send( "ItemKind is already set to '{0}'. Value '{1}' set by {2} is ignored.", itemKind, attr.ItemKind, attr.GetType().Name );
                     else itemKind = attr.ItemKind;
                 }
                 CombineTypes( ref requires, attr.Requires );

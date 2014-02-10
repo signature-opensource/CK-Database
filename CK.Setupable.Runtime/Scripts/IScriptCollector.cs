@@ -14,18 +14,18 @@ namespace CK.Setup
         /// <summary>
         /// Registers a <see cref="ISetupScript"/>: finds or creates a unique set of scripts for each <see cref="ISetupScript.Name"/>.
         /// The first added name becomes the case-insensitive key: names with different case will
-        /// be detected, a warning will be emitted into the logger and false will be returned.
+        /// be detected, a warning will be emitted into the monitor and false will be returned.
         /// </summary>
         /// <param name="script">A setup script. Must be not null.</param>
-        /// <param name="logger">The logger to use.</param>
+        /// <param name="monitor">The monitor to use.</param>
         /// <returns>False if casing differ or if the script already exists in the set of scripts for <see cref="ISetupScript.Name"/>.</returns>
-        bool Add( ISetupScript script, IActivityLogger logger );
+        bool Add( ISetupScript script, IActivityMonitor monitor );
 
 
         /// <summary>
         /// Registers a set of resources (multiple <see cref="ResSetupScript"/>) from a <see cref="ResourceLocator"/>, a full name prefix and a script source.
         /// </summary>
-        /// <param name="logger">Logger to use.</param>
+        /// <param name="monitor">Monitor to use.</param>
         /// <param name="scriptSource">The script source under which registering the <see cref="ISetupScript"/>.</param>
         /// <param name="resLoc">Resource locator.</param>
         /// <param name="context">Context identifier.</param>
@@ -33,7 +33,7 @@ namespace CK.Setup
         /// <param name="name">Name of the object. This is used as a prefix for the resource names.</param>
         /// <param name="fileSuffix">Keeps only resources that ends with this suffix.</param>
         /// <returns>The number of scripts that have been added.</returns>
-        int AddFromResources( IActivityLogger logger, string scriptSource, ResourceLocator resLoc, string context, string location, string name, string fileSuffix );
+        int AddFromResources( IActivityMonitor monitor, string scriptSource, ResourceLocator resLoc, string context, string location, string name, string fileSuffix );
 
     }
 }

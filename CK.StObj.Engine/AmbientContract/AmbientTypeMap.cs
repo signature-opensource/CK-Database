@@ -76,17 +76,17 @@ namespace CK.Core
             return (CT)_contextMappers[context ?? String.Empty];
         }
 
-        internal CT CreateAndAddContext<T,TC>( IActivityLogger logger, string context )
+        internal CT CreateAndAddContext<T,TC>( IActivityMonitor monitor, string context )
             where T : AmbientTypeInfo
             where TC : AmbientContextualTypeInfo<T, TC>
         {
             Debug.Assert( context != null );
-            var c = CreateContext<T,TC>( logger, context );
+            var c = CreateContext<T,TC>( monitor, context );
             _contextMappers.Add( c.Context, c );
             return (CT)c;
         }
 
-        protected virtual IContextualTypeMap CreateContext<T, TC>( IActivityLogger logger, string context )
+        protected virtual IContextualTypeMap CreateContext<T, TC>( IActivityMonitor monitor, string context )
             where T : AmbientTypeInfo
             where TC : AmbientContextualTypeInfo<T, TC>
         {

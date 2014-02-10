@@ -28,15 +28,15 @@ namespace CK.Setup
 
         void OnRegisterSetupEvent( object sender, RegisterSetupEventArgs e )
         {
-            var logger = _center.Logger;
+            var monitor = _center.Logger;
             
             StObjCollectorResult result;
-            using( logger.OpenGroup( LogLevel.Info, "Collecting objects." ) )
+            using( monitor.OpenInfo().Send( "Collecting objects." ) )
             {
-                AssemblyRegisterer typeReg = new AssemblyRegisterer( logger );
+                AssemblyRegisterer typeReg = new AssemblyRegisterer( monitor );
                 typeReg.TypeFilter = _config.TypeFilter;
                 typeReg.Discover( _config.AppDomainConfiguration.Assemblies );
-                StObjCollector stObjC = new StObjCollector( logger, _runtimeBuilder, _configurator, _configurator, _configurator );
+                StObjCollector stObjC = new StObjCollector( monitor, _runtimeBuilder, _configurator, _configurator, _configurator );
                 stObjC.RegisterTypes( typeReg );
                 foreach( var t in _config.ExplicitRegisteredClasses ) stObjC.RegisterClass( t );
                 stObjC.DependencySorterHookInput = _center.StObjDependencySorterHookInput;
@@ -54,16 +54,16 @@ namespace CK.Setup
                 }
             }
             bool hasError = false;
-            using( logger.CatchCounter( a => hasError = true ) )
+            using( monitor.CatchCounter( a => hasError = true ) )
             {
-                using( logger.OpenGroup( LogLevel.Info, "Creating Setup Items from Structured Objects." ) )
+                using( monitor.OpenInfo().Send( "Creating Setup Items from Structured Objects." ) )
                 {
-                    var itemBuilder = new StObjSetupItemBuilder( logger, _configurator, _configurator, _configurator );
+                    var itemBuilder = new StObjSetupItemBuilder( monitor, _configurator, _configurator, _configurator );
                     var setupItems = itemBuilder.Build( result.OrderedStObjs );
                     if( setupItems == null )
                     {
                         Debug.Assert( hasError );
-                        logger.CloseGroup( "Unable to create Setup items for StObjs." );
+                        monitor.CloseGroup( "Unable to create Setup items for StObjs." );
                     }
                     else e.Register( setupItems );
                 }

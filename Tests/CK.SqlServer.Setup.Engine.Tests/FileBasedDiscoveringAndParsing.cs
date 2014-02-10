@@ -54,7 +54,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
 
         class SqlObjectParserStub : ISqlObjectParser
         {
-            public IDependentProtoItem Create( IActivityLogger logger, IContextLocNaming externalName, string text )
+            public IDependentProtoItem Create( IActivityMonitor monitor, IContextLocNaming externalName, string text )
             {
                 throw new NotImplementedException();
             }
@@ -67,12 +67,12 @@ namespace CK.SqlServer.Setup.Engine.Tests
                 RegisterSource( "file-sql" );
             }
 
-            protected override IScriptExecutor CreateExecutor( IActivityLogger logger, SetupDriver driver )
+            protected override IScriptExecutor CreateExecutor( IActivityMonitor monitor, SetupDriver driver )
             {
                 throw new NotImplementedException();
             }
 
-            protected override void ReleaseExecutor( IActivityLogger logger, IScriptExecutor executor )
+            protected override void ReleaseExecutor( IActivityMonitor monitor, IScriptExecutor executor )
             {
                 throw new NotImplementedException();
             }
@@ -84,7 +84,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
             ScriptTypeManager typeManager = new ScriptTypeManager();
             typeManager.Register( new SqlScriptTypeHandler() );
             ScriptCollector collector = new ScriptCollector( typeManager );
-            SqlFileDiscoverer discoverer = new SqlFileDiscoverer( new SqlObjectParserStub(), TestHelper.Logger );
+            SqlFileDiscoverer discoverer = new SqlFileDiscoverer( new SqlObjectParserStub(), TestHelper.ConsoleMonitor );
             Assert.That( discoverer.DiscoverSqlFiles( null, null, TestHelper.GetScriptsFolder( "FileBased/FromOpenTo" ), new DependentProtoItemCollector(), collector ), Is.True );
 
             bool caseDiffer;
@@ -134,7 +134,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
             typeManager.Register( new SqlScriptTypeHandler() );
             ScriptCollector collector = new ScriptCollector( typeManager );
             
-            SqlFileDiscoverer discoverer = new SqlFileDiscoverer( new SqlObjectParserStub(), TestHelper.Logger );
+            SqlFileDiscoverer discoverer = new SqlFileDiscoverer( new SqlObjectParserStub(), TestHelper.ConsoleMonitor );
 
             Assert.That( discoverer.DiscoverSqlFiles( null, null, TestHelper.GetScriptsFolder( "FileBased/AllSteps" ), new DependentProtoItemCollector(), collector ), Is.True );
 

@@ -10,7 +10,7 @@ namespace CK.Setup
 
     partial class MutableItem
     {
-        protected internal override bool AbstractTypeCanBeInstanciated( IActivityLogger logger, DynamicAssembly assembly, out object abstractTypeInfo )
+        protected internal override bool AbstractTypeCanBeInstanciated( IActivityMonitor monitor, DynamicAssembly assembly, out object abstractTypeInfo )
         {
             Debug.Assert( Specialization == null && Type.IsAbstract );
 
@@ -18,8 +18,8 @@ namespace CK.Setup
             var p = this;
             do { combined.Add( p ); p = p.Generalization; } while( p != null );
 
-            ImplementableTypeInfo autoImpl = ImplementableTypeInfo.CreateImplementableTypeInfo( logger, Type, new CustomAttributeProviderComposite( combined ) );
-            if( autoImpl != null && autoImpl.CreateTypeFromCurrent( logger, assembly ) != null )
+            ImplementableTypeInfo autoImpl = ImplementableTypeInfo.CreateImplementableTypeInfo( monitor, Type, new CustomAttributeProviderComposite( combined ) );
+            if( autoImpl != null && autoImpl.CreateTypeFromCurrent( monitor, assembly ) != null )
             {
                 abstractTypeInfo = autoImpl;
                 return true;
@@ -29,7 +29,7 @@ namespace CK.Setup
         }
 
 
-        public object CreateStructuredObject( IActivityLogger logger, IStObjRuntimeBuilder runtimeBuilder )
+        public object CreateStructuredObject( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder )
         {
             Debug.Assert( Specialization == null );
             Debug.Assert( _leafData.StructuredObject == null, "Called once and only once." );
@@ -40,15 +40,15 @@ namespace CK.Setup
             }
             catch( Exception ex )
             {
-                logger.Error( ex );
+                monitor.Error().Send( ex );
                 return null;
             }
         }
 
-        public Type CreateFinalType( IActivityLogger logger, DynamicAssembly a )
+        public Type CreateFinalType( IActivityMonitor monitor, DynamicAssembly a )
         {
             Debug.Assert( Specialization == null );
-            return _leafData.ImplementableTypeInfo == null ? Type : _leafData.ImplementableTypeInfo.CreateFinalType( logger, a, storeAsLastGeneratedType: false );
+            return _leafData.ImplementableTypeInfo == null ? Type : _leafData.ImplementableTypeInfo.CreateFinalType( monitor, a, storeAsLastGeneratedType: false );
         }
     }
 }

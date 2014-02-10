@@ -45,7 +45,7 @@ namespace CK.SqlServer.Setup
 
         void Initialize()
         {
-            _manager.EnsureCKCoreIsInstalled( _manager.Logger );
+            _manager.EnsureCKCoreIsInstalled( _manager.Monitor );
             using( var cRead = new SqlCommand( _initScript ) )
             {
                 var existing = _manager.Connection.ReadFirstRow( cRead );

@@ -11,15 +11,15 @@ namespace CK.Core
     /// </summary>
     public class StObjBuildResult : IDisposable
     {
-        readonly IActivityLogger _logger;
+        readonly IActivityMonitor _monitor;
 
-        internal StObjBuildResult( bool success, string externalVersionStamp, bool assemblyAlreadyExists, AppDomain d, IActivityLogger loggerForAppDomainUnloadError )
+        internal StObjBuildResult( bool success, string externalVersionStamp, bool assemblyAlreadyExists, AppDomain d, IActivityMonitor loggerForAppDomainUnloadError )
         {
             Success = success;
             ExternalVersionStamp = externalVersionStamp;
             AssemblyAlreadyExists = assemblyAlreadyExists;
             IndependentAppDomain = d;
-            _logger = loggerForAppDomainUnloadError;
+            _monitor = loggerForAppDomainUnloadError;
         }
 
         /// <summary>
@@ -54,11 +54,11 @@ namespace CK.Core
                 try
                 {
                     AppDomain.Unload( IndependentAppDomain );
-                    _logger.Info( "Independent AppDomain successfuly unloaded." );
+                    _monitor.Info().Send( "Independent AppDomain successfuly unloaded." );
                 }
                 catch( Exception ex )
                 {
-                    _logger.Error( ex, "While unloading independent AppDomain." );
+                    _monitor.Error().Send( ex, "While unloading independent AppDomain." );
                 }
                 IndependentAppDomain = null;
             }

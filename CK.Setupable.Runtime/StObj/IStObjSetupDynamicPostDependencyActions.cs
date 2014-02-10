@@ -16,9 +16,9 @@ namespace CK.Setup
     public interface IStObjSetupDynamicInitializerState
     {
         /// <summary>
-        /// Gets the activity logger to use.
+        /// Gets the activity monitor to use.
         /// </summary>
-        IActivityLogger Logger { get; }
+        IActivityMonitor Monitor { get; }
 
         /// <summary>
         /// Gets an associative dictionary that memorizes states between actions.

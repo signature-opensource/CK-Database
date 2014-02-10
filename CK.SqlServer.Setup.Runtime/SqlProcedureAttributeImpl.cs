@@ -64,7 +64,7 @@ namespace CK.SqlServer.Setup
             string[] names = SqlObjectItemAttributeImpl.BuildNames( packageItem.Object, _attr.ProcedureName );
             if( names == null )
             {
-                state.Logger.Error( "Invalid object name '{0}' in attribute of '{1}' for '{2}'.", _attr.ProcedureName, _method.Name, item.FullName );
+                state.Monitor.Error().Send( "Invalid object name '{0}' in attribute of '{1}' for '{2}'.", _attr.ProcedureName, _method.Name, item.FullName );
                 return;
             }
             _theBest = AssumeBestInitializer( state, names, this );
@@ -91,10 +91,10 @@ namespace CK.SqlServer.Setup
             {
                 Debug.Assert( _theBest.Item == null, "We are the only winner." );
                 // 2 - Attempts to load the resource.
-                SqlObjectProtoItem proto = SqlObjectItemAttributeImpl.LoadProtoItemFromResource( state.Logger, packageItem, _theBest.Names, SqlObjectProtoItem.TypeProcedure );
+                SqlObjectProtoItem proto = SqlObjectItemAttributeImpl.LoadProtoItemFromResource( state.Monitor, packageItem, _theBest.Names, SqlObjectProtoItem.TypeProcedure );
                 if( proto == null ) return;
                 // On success, creates the SqlProcedureItem bound to the MethodInfo that must call it.
-                _theBest.Item = proto.CreateProcedureItem( state.Logger );
+                _theBest.Item = proto.CreateProcedureItem( state.Monitor );
                 if( _theBest.Item != null )
                 {
                     if( !_theBest.Item.MissingDependencyIsError.HasValue ) _theBest.Item.MissingDependencyIsError = _attr.MissingDependencyIsError;
@@ -103,7 +103,7 @@ namespace CK.SqlServer.Setup
             }
         }
 
-        bool IAutoImplementorMethod.Implement( IActivityLogger logger, MethodInfo m, IDynamicAssembly dynamicAssembly, TypeBuilder tB, bool isVirtual )
+        bool IAutoImplementorMethod.Implement( IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, TypeBuilder tB, bool isVirtual )
         {
             // 1 - Not ready to implement anything (no body yet): 
             //     - memorizes the MethodInfo.
@@ -114,13 +114,13 @@ namespace CK.SqlServer.Setup
                 return false;
             }
             // 3 - Ready to implement the method (_theBest.Item has been initialized by DynamicItemInitialize above).
-            using( logger.OpenGroup( LogLevel.Info, "Generating method '{0}.{1}'.", m.DeclaringType.FullName, m.Name ) )
+            using( monitor.OpenInfo().Send( "Generating method '{0}.{1}'.", m.DeclaringType.FullName, m.Name ) )
             {
                 SqlProcedureItem item = _theBest.Item as SqlProcedureItem;
-                MethodInfo mCreateCommand = item != null ? item.AssumeCommandBuilder( logger, dynamicAssembly, (ModuleBuilder)tB.Module ) : null;
+                MethodInfo mCreateCommand = item != null ? item.AssumeCommandBuilder( monitor, dynamicAssembly, (ModuleBuilder)tB.Module ) : null;
                 if( mCreateCommand == null )
                 {
-                    logger.Error( "Invalid low level creation method for '{0}'.", item.FullName );
+                    monitor.Error().Send( "Invalid low level creation method for '{0}'.", item.FullName );
                     return false;
                 }
 
@@ -132,16 +132,16 @@ namespace CK.SqlServer.Setup
                         && mParameters[0].ParameterType.GetElementType() == SqlObjectItem.TypeCommand;
                 if( !createOrSetValues && m.ReturnType != SqlObjectItem.TypeCommand )
                 {
-                    logger.Error( "Method '{0}.{1}' must return a SqlCommand or accepts a SqlCommand by reference as its first argument.", m.DeclaringType.FullName, m.Name );
+                    monitor.Error().Send( "Method '{0}.{1}' must return a SqlCommand or accepts a SqlCommand by reference as its first argument.", m.DeclaringType.FullName, m.Name );
                     return false;
                 }
                 SqlExprParameterList sqlParameters = item.OriginalStatement.Parameters;
                 if( (createOrSetValues ? mParameters.Length - 1 : mParameters.Length) > sqlParameters.Count )
                 {
-                    logger.Error( "Method '{0}.{1}' has more parameters than '{2}'.", m.DeclaringType.FullName, m.Name, item.FullName );
+                    monitor.Error().Send( "Method '{0}.{1}' has more parameters than '{2}'.", m.DeclaringType.FullName, m.Name, item.FullName );
                     return false;
                 }
-                return GenerateCreateSqlCommand( createOrSetValues, logger, mCreateCommand, item.OriginalStatement.Name, sqlParameters, m, mParameters, tB, isVirtual );
+                return GenerateCreateSqlCommand( createOrSetValues, monitor, mCreateCommand, item.OriginalStatement.Name, sqlParameters, m, mParameters, tB, isVirtual );
             }
         }
 

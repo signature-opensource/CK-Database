@@ -10,15 +10,15 @@ namespace CK.Setup
 {
     public class StObjSetupItemBuilder
     {
-        readonly IActivityLogger _logger;
+        readonly IActivityMonitor _monitor;
         readonly IStObjSetupConfigurator _configurator;
         readonly IStObjSetupItemFactory _setupItemFactory;
         readonly IStObjSetupDynamicInitializer _dynamicInitializer;
 
-        public StObjSetupItemBuilder( IActivityLogger logger, IStObjSetupConfigurator configurator = null, IStObjSetupItemFactory setupItemFactory = null, IStObjSetupDynamicInitializer dynamicInitializer = null )
+        public StObjSetupItemBuilder( IActivityMonitor monitor, IStObjSetupConfigurator configurator = null, IStObjSetupItemFactory setupItemFactory = null, IStObjSetupDynamicInitializer dynamicInitializer = null )
         {
-            if( logger == null ) throw new ArgumentNullException( "_logger" );
-            _logger = logger;
+            if( monitor == null ) throw new ArgumentNullException( "_monitor" );
+            _monitor = monitor;
             _configurator = configurator;
             _setupItemFactory = setupItemFactory;
             _dynamicInitializer = dynamicInitializer;
@@ -42,42 +42,42 @@ namespace CK.Setup
 
         void BuildSetupItems( IReadOnlyList<IStObjResult> orderedObjects, Dictionary<IStObjResult, StObjSetupData> setupableItems )
         {
-            using( _logger.OpenGroup( LogLevel.Info, "Building setupable items from {0} Structure Objects (calling IStObjSetupConfigurator.ConfigureDependentItem and IStObjSetupItemFactory.CreateDependentItem for each of them).", orderedObjects.Count ) )
+            using( _monitor.OpenInfo().Send( "Building setupable items from {0} Structure Objects (calling IStObjSetupConfigurator.ConfigureDependentItem and IStObjSetupItemFactory.CreateDependentItem for each of them).", orderedObjects.Count ) )
             {
                 foreach( var r in orderedObjects )
                 {
                     // Gets the StObjSetupDataBase that applies: the one of its base class or the one built from
-                    // the attibutes above if it is the root Ambient Contract.
+                    // the attributes above if it is the root Ambient Contract.
                     Debug.Assert( r.Generalization == null || setupableItems.ContainsKey( r.Generalization ), "Generalizations are required: they are processed first." );
 
                     StObjSetupData generalizationData = null;
                     StObjSetupDataBase fromAbove;
                     if( r.Generalization != null ) fromAbove = generalizationData = setupableItems[r.Generalization];
-                    else fromAbove = StObjSetupDataBase.CreateRootData( _logger, r.ObjectType.BaseType );
+                    else fromAbove = StObjSetupDataBase.CreateRootData( _monitor, r.ObjectType.BaseType );
 
                     // Builds the StObjSetupData from the different attributes.
-                    var data = new StObjSetupData( _logger, r, fromAbove );
+                    var data = new StObjSetupData( _monitor, r, fromAbove );
                     // Calls any attributes that is a IStObjSetupConfigurator with the StObjSetupData.
                     // ApplyAttributesConfigurator
                     {
                         var all = data.StObj.Attributes.GetAllCustomAttributes<IStObjSetupConfigurator>();
                         foreach( IStObjSetupConfigurator c in all )
                         {
-                            c.ConfigureDependentItem( _logger, data );
+                            c.ConfigureDependentItem( _monitor, data );
                         }
                     }
                     // If the object itself is a IStObjSetupConfigurator, calls it.
                     IStObjSetupConfigurator objectItself = r.Object as IStObjSetupConfigurator;
-                    if( objectItself != null ) objectItself.ConfigureDependentItem( _logger, data );
+                    if( objectItself != null ) objectItself.ConfigureDependentItem( _monitor, data );
 
                     // Calls external configuration.
-                    if( _configurator != null ) _configurator.ConfigureDependentItem( _logger, data );
+                    if( _configurator != null ) _configurator.ConfigureDependentItem( _monitor, data );
 
                     // Creates the IMutableDependentItem (or StObjDynamicPackageItem) configured with the StObjSetupData.
                     try
                     {
-                        data.ResolveItemAndDriverTypes( _logger );
-                        if( _setupItemFactory != null ) data.SetupItem = _setupItemFactory.CreateDependentItem( _logger, data );
+                        data.ResolveItemAndDriverTypes( _monitor );
+                        if( _setupItemFactory != null ) data.SetupItem = _setupItemFactory.CreateDependentItem( _monitor, data );
                         if( data.SetupItem != null )
                         {
                             // An item has been created by the factory. 
@@ -93,10 +93,10 @@ namespace CK.Setup
                         else
                         {
                             Type itemType = data.ItemType;
-                            if( itemType == null ) data.SetupItem = new StObjDynamicPackageItem( _logger, data );
+                            if( itemType == null ) data.SetupItem = new StObjDynamicPackageItem( _monitor, data );
                             else
                             {
-                                data.SetupItem = (IMutableSetupItem)Activator.CreateInstance( itemType, _logger, data );
+                                data.SetupItem = (IMutableSetupItem)Activator.CreateInstance( itemType, _monitor, data );
                             }
                         }
                         // Configures Generalization since we got it above.
@@ -109,7 +109,7 @@ namespace CK.Setup
                     }
                     catch( Exception ex )
                     {
-                        _logger.Error( ex, "While initializing Setup item for StObj '{0}'.", data.FullName );
+                        _monitor.Error().Send( ex, "While initializing Setup item for StObj '{0}'.", data.FullName );
                     }
                 }
             }
@@ -117,7 +117,7 @@ namespace CK.Setup
 
         void BindDependencies( Dictionary<IStObjResult, StObjSetupData> setupableItems )
         {
-            using( _logger.OpenGroup( LogLevel.Info, "Binding dependencies between Setupable items." ) )
+            using( _monitor.OpenInfo().Send( "Binding dependencies between Setupable items." ) )
             {
                 foreach( StObjSetupData data in setupableItems.Values )
                 {
@@ -133,7 +133,7 @@ namespace CK.Setup
                         IMutableSetupItemGroup g = gData.SetupItem as IMutableSetupItemGroup;
                         if( g == null )
                         {
-                            _logger.Error( "Structure Item '{0}' declares '{1}' as a Group, but the latter is not a IMutableSetupItemGroup (only a IMutableSetupItem).", data.FullName, gData.FullName );
+                            _monitor.Error().Send( "Structure Item '{0}' declares '{1}' as a Group, but the latter is not a IMutableSetupItemGroup (only a IMutableSetupItem).", data.FullName, gData.FullName );
                         }
                         else
                         {
@@ -146,7 +146,7 @@ namespace CK.Setup
                         IMutableSetupItemGroup g = data.SetupItem as IMutableSetupItemGroup;
                         if( g == null )
                         {
-                            _logger.Error( "Structure Item '{0}' has associated children but it is not a IMutableSetupItemGroup (only a IMutableSetupItem).", data.FullName );
+                            _monitor.Error().Send( "Structure Item '{0}' has associated children but it is not a IMutableSetupItemGroup (only a IMutableSetupItem).", data.FullName );
                         }
                         else
                         {
@@ -171,7 +171,7 @@ namespace CK.Setup
                 {
                     if( existing.FullNameWithoutContext != data.ContainerFullName )
                     {
-                        _logger.Error( "Structure Item '{0}' is bound to Container named '{1}' but the PackageAttribute states that it must be in '{2}'.", data.FullName, existing.FullNameWithoutContext, data.ContainerFullName );
+                        _monitor.Error().Send( "Structure Item '{0}' is bound to Container named '{1}' but the PackageAttribute states that it must be in '{2}'.", data.FullName, existing.FullNameWithoutContext, data.ContainerFullName );
                     }
                     // Even when a mismatch exists, we continue and bind the container configred at the StObj level (trying to raise more errors).
                 }
@@ -180,11 +180,11 @@ namespace CK.Setup
                 {
                     if( existing.SetupItem != null )
                     {
-                        _logger.Error( "Structure Item '{0}' is bound to a Container named '{1}' but the corresponding IDependentItem is not a IDependentItemContainer (its type is '{2}').", data.FullName, existing.FullNameWithoutContext, existing.SetupItem.GetType().FullName );
+                        _monitor.Error().Send( "Structure Item '{0}' is bound to a Container named '{1}' but the corresponding IDependentItem is not a IDependentItemContainer (its type is '{2}').", data.FullName, existing.FullNameWithoutContext, existing.SetupItem.GetType().FullName );
                     }
                     else
                     {
-                        _logger.Error( "Structure Item '{0}' is bound to a Container named '{1}' but the corresponding IDependentItem has not been successfully created.", data.FullName, existing.FullNameWithoutContext );
+                        _monitor.Error().Send( "Structure Item '{0}' is bound to a Container named '{1}' but the corresponding IDependentItem has not been successfully created.", data.FullName, existing.FullNameWithoutContext );
                     }
                 }
                 else
@@ -231,7 +231,7 @@ namespace CK.Setup
                 _actions = new List<PushedAction>();
             }
 
-            public IActivityLogger Logger { get { return _builder._logger; } }
+            public IActivityMonitor Monitor { get { return _builder._monitor; } }
 
             public IDictionary Memory { get { return _memory; } }
 
@@ -260,7 +260,7 @@ namespace CK.Setup
                     }
                     catch( Exception ex )
                     {
-                        Logger.Error( ex, "While calling a pushed action on '{0}'.", CurrentItem.FullName );
+                        Monitor.Error().Send( ex, "While calling a pushed action on '{0}'.", CurrentItem.FullName );
                         success = false;
                     }
                     ++i;
@@ -271,7 +271,7 @@ namespace CK.Setup
 
         bool CallDynamicInitializer( IReadOnlyList<IStObjResult> orderedObjects, Dictionary<IStObjResult, StObjSetupData> setupableItems )
         {
-            using( _logger.OpenGroup( LogLevel.Info, "Dynamic initialization of Setup items (calling IStObjSetupDynamicInitializer.DynamicItemInitialize for each of them)." ) )
+            using( _monitor.OpenInfo().Send( "Dynamic initialization of Setup items (calling IStObjSetupDynamicInitializer.DynamicItemInitialize for each of them)." ) )
             {
                 var state = new DynamicInitializerState( this );
                 bool success = true;
@@ -301,14 +301,14 @@ namespace CK.Setup
                     }
                     catch( Exception ex )
                     {
-                        _logger.Error( ex, "While Dynamic item initialization (from {2}) of '{0}' for object '{1}'.", item.FullName, o.ObjectType.Name, initSource );
+                        _monitor.Error().Send( ex, "While Dynamic item initialization (from {2}) of '{0}' for object '{1}'.", item.FullName, o.ObjectType.Name, initSource );
                         success = false;
                     }
                 }
                 // On success, we execute the pushed actions.
                 if( success && state.PushedActionsCount > 0 )
                 {
-                    using( _logger.OpenGroup( LogLevel.Info, "Executing {0} deferred actions.", state.PushedActionsCount ) )
+                    using( _monitor.OpenInfo().Send( "Executing {0} deferred actions.", state.PushedActionsCount ) )
                     {
                         success = state.ExecuteActions();
                     }

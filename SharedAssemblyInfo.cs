@@ -5,12 +5,13 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyCompany( "Invenietis" )]
 [assembly: AssemblyProduct( "CK-Database" )]
-[assembly: AssemblyCopyright( "Copyright © Invenietis 2012-2013" )]
+[assembly: AssemblyCopyright( "Copyright © Invenietis 2012-2014" )]
 [assembly: AssemblyTrademark( "" )]
 [assembly: CLSCompliant( true )]
 
 [assembly: AssemblyVersion( "2.0.0" )]
 [assembly: AssemblyFileVersion( "2.0.0" )]
+[assembly: AssemblyInformationalVersion( "2.0.0-develop" )]
 
 #if DEBUG
     [assembly: AssemblyConfiguration( "Debug" )]

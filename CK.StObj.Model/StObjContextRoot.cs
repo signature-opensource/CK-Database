@@ -25,11 +25,11 @@ namespace CK.Core
         /// </summary>
         /// <param name="a">Assembly name that will be loaded in the current AppDomain.</param>
         /// <param name="runtimeBuilder">Runtime builder to use. When null, <see cref="DefaultStObjRuntimeBuilder"/> is used.</param>
-        /// <param name="logger">Optional logger for loading operation.</param>
+        /// <param name="monitor">Optional monitor for loading operation.</param>
         /// <returns>A <see cref="IStObjMap"/> that provides access to the objects graph.</returns>
-        public static IStObjMap Load( string assemblyName, IStObjRuntimeBuilder runtimeBuilder = null, IActivityLogger logger = null )
+        public static IStObjMap Load( string assemblyName, IStObjRuntimeBuilder runtimeBuilder = null, IActivityMonitor monitor = null )
         {
-            return Load( Assembly.Load( assemblyName ), runtimeBuilder, logger );
+            return Load( Assembly.Load( assemblyName ), runtimeBuilder, monitor );
         }
 
         /// <summary>
@@ -37,22 +37,22 @@ namespace CK.Core
         /// </summary>
         /// <param name="a">Assembly (loaded in the current AppDomain).</param>
         /// <param name="runtimeBuilder">Runtime builder to use. When null, <see cref="DefaultStObjRuntimeBuilder"/> is used.</param>
-        /// <param name="logger">Optional logger for loading operation.</param>
+        /// <param name="monitor">Optional monitor for loading operation.</param>
         /// <returns>A <see cref="IStObjMap"/> that provides access to the objects graph.</returns>
-        public static IStObjMap Load( Assembly a, IStObjRuntimeBuilder runtimeBuilder = null, IActivityLogger logger = null )
+        public static IStObjMap Load( Assembly a, IStObjRuntimeBuilder runtimeBuilder = null, IActivityMonitor monitor = null )
         {
-            if( logger == null ) logger = DefaultActivityLogger.Empty;
+            if( monitor == null ) monitor = new ActivityMonitor();
             bool loaded;
             lock( _alreadyLoaded ) 
             {
                 loaded = _alreadyLoaded.Contains( a );
                 if( !loaded ) _alreadyLoaded.Add( a );
             }
-            using( loaded ? null : logger.OpenGroup( LogLevel.Info, "Loading dynamic '{0}'", a.FullName ) )
+            using( loaded ? null : monitor.OpenInfo().Send( "Loading dynamic '{0}'", a.FullName ) )
             {
                 if( a == null ) throw new ArgumentNullException( "a" );
                 Type t = a.GetType( RootContextTypeName, true );
-                return (StObjContextRoot)Activator.CreateInstance( t, new object[] { logger, runtimeBuilder ?? DefaultStObjRuntimeBuilder } );
+                return (StObjContextRoot)Activator.CreateInstance( t, new object[] { monitor, runtimeBuilder ?? DefaultStObjRuntimeBuilder } );
             }
         }
 
@@ -110,11 +110,11 @@ namespace CK.Core
             bool _done;
             bool _success;
 
-            public AppDomainCommunication( IActivityLogger logger, IStObjEngineConfiguration config, AppDomainMode m )
+            public AppDomainCommunication( IActivityMonitor monitor, IStObjEngineConfiguration config, AppDomainMode m )
             {
                 if( !config.GetType().IsSerializable ) throw new InvalidOperationException( "IStObjEngineConfiguration implementation must be serializable." );
                 _locker = new object();
-                LoggerBridge = logger.Output.ExternalInput;
+                LoggerBridge = monitor.Output.BridgeTarget;
                 Config = config;
                 if( m != AppDomainMode.GetVersionStamp ) VersionStampRead = config.FinalAssemblyConfiguration.ExternalVersionStamp;
                 Mode = m;
@@ -124,7 +124,7 @@ namespace CK.Core
 
             public AppDomainMode Mode { get; set; }
 
-            public ActivityLoggerBridgeTarget LoggerBridge { get; private set; }
+            public ActivityMonitorBridgeTarget LoggerBridge { get; private set; }
 
             public IStObjEngineConfiguration Config { get; private set; }
 
@@ -152,55 +152,55 @@ namespace CK.Core
         /// The returned <see cref="StObjBuildResult"/> must be disposed once done with it.
         /// </summary>
         /// <param name="config">Configuration object. It must be serializable.</param>
-        /// <param name="logger">Optional logger.</param>
+        /// <param name="monitor">Optional monitor.</param>
         /// <returns>A disposable result.</returns>
-        public static StObjBuildResult Build( IStObjEngineConfiguration config, IActivityLogger logger = null, bool forceBuild = false )
+        public static StObjBuildResult Build( IStObjEngineConfiguration config, IActivityMonitor monitor = null, bool forceBuild = false )
         {
             if( config == null ) throw new ArgumentNullException( "config" );
-            if( logger == null ) logger = new ActivityLogger();
+            if( monitor == null ) monitor = new ActivityMonitor( "CK.Core.StObjContextRoot.Build" );
 
             StObjBuildResult r = null;
             if( config.AppDomainConfiguration.UseIndependentAppDomain && !config.AppDomainConfiguration.Assemblies.IsEmptyConfiguration )
             {
-                using( logger.OpenGroup( LogLevel.Info, "Build process. Creating an independent AppDomain." ) )
+                using( monitor.OpenInfo().Send( "Build process. Creating an independent AppDomain." ) )
                 {
-                    r = BuildOrGetVersionStampInIndependentAppDomain( config, logger, forceBuild ? AppDomainMode.ForceBuild : AppDomainMode.BuildIfRequired );
+                    r = BuildOrGetVersionStampInIndependentAppDomain( config, monitor, forceBuild ? AppDomainMode.ForceBuild : AppDomainMode.BuildIfRequired );
                 }
             }
             else
             {
                 if( !forceBuild && config.FinalAssemblyConfiguration.ExternalVersionStamp != null )
                 {
-                    using( logger.OpenGroup( LogLevel.Info, "Checking potentially existing generated dll ExternalVersionStamp in an independent AppDomain." ) )
+                    using( monitor.OpenInfo().Send( "Checking potentially existing generated dll ExternalVersionStamp in an independent AppDomain." ) )
                     {
                         // Extracts the Version stamp of the existing dll (if any) in an independent AppDomain to
                         // avoid cluttering the ReflectionOnly context of the current AppDomain.
-                        r = BuildOrGetVersionStampInIndependentAppDomain( config, logger, AppDomainMode.GetVersionStamp );
+                        r = BuildOrGetVersionStampInIndependentAppDomain( config, monitor, AppDomainMode.GetVersionStamp );
                         if( !r.Success || r.ExternalVersionStamp != config.FinalAssemblyConfiguration.ExternalVersionStamp )
                         {
-                            logger.Info( "Build is required." );
+                            monitor.Info().Send( "Build is required." );
                             r.Dispose();
                             r = null;
                         }
                         else
                         {
-                            logger.Info( "Generated dll exist with the exact Version stamp. Building it again is useless." );
+                            monitor.Info().Send( "Generated dll exist with the exact Version stamp. Building it again is useless." );
                         }
                     }
                 }
-                if( r == null ) r = new StObjBuildResult( LaunchRun( logger, config ), config.FinalAssemblyConfiguration.ExternalVersionStamp, false, null, null );
+                if( r == null ) r = new StObjBuildResult( LaunchRun( monitor, config ), config.FinalAssemblyConfiguration.ExternalVersionStamp, false, null, null );
             }
             return r;
         }
 
-        private static bool LaunchRun( IActivityLogger logger, IStObjEngineConfiguration config )
+        private static bool LaunchRun( IActivityMonitor monitor, IStObjEngineConfiguration config )
         {
-            logger.Info( "Current AppDomain.CurrentDomain.FriendlyName = '{0}'.", AppDomain.CurrentDomain.FriendlyName );
-            IStObjBuilder runner = (IStObjBuilder)Activator.CreateInstance( SimpleTypeFinder.WeakDefault.ResolveType( config.BuilderAssemblyQualifiedName, true ), logger, config );
+            monitor.Info().Send( "Current AppDomain.CurrentDomain.FriendlyName = '{0}'.", AppDomain.CurrentDomain.FriendlyName );
+            IStObjBuilder runner = (IStObjBuilder)Activator.CreateInstance( SimpleTypeFinder.WeakDefault.ResolveType( config.BuilderAssemblyQualifiedName, true ), monitor, config );
             return runner.Run();
         }
 
-        private static StObjBuildResult BuildOrGetVersionStampInIndependentAppDomain( IStObjEngineConfiguration config, IActivityLogger logger, AppDomainMode m )
+        private static StObjBuildResult BuildOrGetVersionStampInIndependentAppDomain( IStObjEngineConfiguration config, IActivityMonitor monitor, AppDomainMode m )
         {
             AppDomainSetup thisSetup = AppDomain.CurrentDomain.SetupInformation;
             AppDomainSetup setup = new AppDomainSetup();
@@ -226,20 +226,20 @@ namespace CK.Core
                 setup.PrivateBinPath = string.Join( ";", config.AppDomainConfiguration.ProbePaths );
             }
             var appDomain = AppDomain.CreateDomain( "StObjContextRoot.Build.IndependentAppDomain", null, setup );
-            AppDomainCommunication appDomainComm = new AppDomainCommunication( logger, config, m );
+            AppDomainCommunication appDomainComm = new AppDomainCommunication( monitor, config, m );
             appDomain.SetData( "CK-AppDomainComm", appDomainComm );
             appDomain.DoCallBack( new CrossAppDomainDelegate( LaunchRunCrossDomain ) );
-            return new StObjBuildResult( appDomainComm.WaitForResult(), appDomainComm.VersionStampRead, appDomainComm.Mode == AppDomainMode.ResultFoundExisting, appDomain, logger );
+            return new StObjBuildResult( appDomainComm.WaitForResult(), appDomainComm.VersionStampRead, appDomainComm.Mode == AppDomainMode.ResultFoundExisting, appDomain, monitor );
         }
 
         private static void LaunchRunCrossDomain()
         {
             AppDomainCommunication appDomainComm = (AppDomainCommunication)AppDomain.CurrentDomain.GetData( "CK-AppDomainComm" );
             var config = appDomainComm.Config;
-            IActivityLogger logger = new ActivityLogger();
+            IActivityMonitor monitor = new ActivityMonitor( false );
+            using( monitor.Output.CreateStrongBridgeTo( appDomainComm.LoggerBridge ) )
             try
             {
-                logger.Output.RegisterClient( new ActivityLoggerBridge( appDomainComm.LoggerBridge ) );
                 string existingVersionStamp = null;
                 if( appDomainComm.Mode == AppDomainMode.GetVersionStamp
                     || (appDomainComm.Mode == AppDomainMode.BuildIfRequired && config.FinalAssemblyConfiguration.ExternalVersionStamp != null) )
@@ -270,26 +270,26 @@ namespace CK.Core
                             {
                                 if( existingVersionStamp == config.FinalAssemblyConfiguration.ExternalVersionStamp )
                                 {
-                                    logger.Info( "File '{0}' already exists with the expected Version stamp. Building it again is useless.", p );
+                                    monitor.Info().Send( "File '{0}' already exists with the expected Version stamp. Building it again is useless.", p );
                                     appDomainComm.Mode = AppDomainMode.ResultFoundExisting;
                                 }
-                                else logger.Trace( "File '{0}' already exists but Version stamp differs. Building is required.", p );
+                                else monitor.Trace().Send( "File '{0}' already exists but Version stamp differs. Building is required.", p );
                             }
                             else if( appDomainComm.Mode == AppDomainMode.GetVersionStamp )
                             {
                                 if( existingVersionStamp != null )
                                 {
-                                    logger.Info( "File '{0}' already exists. Its Version stamp has been extracted ('{1}').", p, existingVersionStamp );
+                                    monitor.Info().Send( "File '{0}' already exists. Its Version stamp has been extracted ('{1}').", p, existingVersionStamp );
                                     appDomainComm.Mode = AppDomainMode.ResultFoundExisting;
                                 }
                             }
                             appDomainComm.VersionStampRead = existingVersionStamp;
                         }
-                        else logger.Trace( "File '{0}' does not exist.", p );
+                        else monitor.Trace().Send( "File '{0}' does not exist.", p );
                     }
                     catch( Exception ex )
                     {
-                        logger.Error( ex, "While trying to read version stamp from '{0}'.", p );
+                        monitor.Error().Send( ex, "While trying to read version stamp from '{0}'.", p );
                     }
                 }
                 // Conclusion: if a build is required, run it, otherwise if a version has been read, it is a success.
@@ -301,12 +301,12 @@ namespace CK.Core
                 {
                     // Updates the VersionStampRead on the output.
                     appDomainComm.VersionStampRead = config.FinalAssemblyConfiguration.ExternalVersionStamp;
-                    appDomainComm.SetResult( LaunchRun( logger, config ) );
+                    appDomainComm.SetResult( LaunchRun( monitor, config ) );
                 }
             }
             catch( Exception ex )
             {
-                logger.Fatal( ex );
+                monitor.Fatal().Send( ex );
                 appDomainComm.SetResult( false );
             }
         }

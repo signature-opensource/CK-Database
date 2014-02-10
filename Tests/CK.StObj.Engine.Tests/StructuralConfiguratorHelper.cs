@@ -13,7 +13,7 @@ namespace CK.StObj.Engine.Tests
             _conf = conf;
         }
 
-        public void Configure( IActivityLogger logger, IStObjMutableItem o )
+        public void Configure( IActivityMonitor monitor, IStObjMutableItem o )
         {
             _conf( o );
         }

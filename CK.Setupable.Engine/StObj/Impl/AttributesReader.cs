@@ -9,9 +9,9 @@ namespace CK.Setup
 {
     internal class AttributesReader
     {
-        static internal DependentItemGroupList GetGroups( IActivityLogger logger, Type t )
+        static internal DependentItemGroupList GetGroups( IActivityMonitor monitor, Type t )
         {
-            Debug.Assert( logger != null );
+            Debug.Assert( monitor != null );
             Debug.Assert( t != null );
             DependentItemGroupList result = new DependentItemGroupList();
             var all = (GroupsAttribute[])t.GetCustomAttributes( typeof( GroupsAttribute ), false );
@@ -22,9 +22,9 @@ namespace CK.Setup
             return result;
         }
 
-        static internal DependentItemList GetRequirements( IActivityLogger logger, Type t, Type attrType )
+        static internal DependentItemList GetRequirements( IActivityMonitor monitor, Type t, Type attrType )
         {
-            Debug.Assert( logger != null );
+            Debug.Assert( monitor != null );
             Debug.Assert( t != null );
             Debug.Assert( attrType != null && typeof( RequiresAttribute ).IsAssignableFrom( attrType ) );
             DependentItemList result = new DependentItemList();
@@ -41,23 +41,23 @@ namespace CK.Setup
             return (SetupAttribute)t.GetCustomAttributes( typeof( SetupAttribute ), false ).SingleOrDefault();
         }
 
-        static internal string GetFullName( IActivityLogger logger, bool warnWhenDefaultToTypeFullName, Type t, string alreadyNamed = null )
+        static internal string GetFullName( IActivityMonitor monitor, bool warnWhenDefaultToTypeFullName, Type t, string alreadyNamed = null )
         {
-            Debug.Assert( logger != null );
+            Debug.Assert( monitor != null );
             Debug.Assert( t != null );
             var all = (IAttributeSetupName[])t.GetCustomAttributes( typeof( IAttributeSetupName ), false );
             string name = alreadyNamed;
             foreach( var n in all )
             {
                 if( name == null ) name = n.FullName;
-                else if( n.FullName != null && String.CompareOrdinal( name, n.FullName ) != 0 ) logger.Warn( "FullName '{0}' is already associated to type '{1}'. Extraneous name '{2}' is ignored.", name, t.FullName, n.FullName );
+                else if( n.FullName != null && String.CompareOrdinal( name, n.FullName ) != 0 ) monitor.Warn().Send( "FullName '{0}' is already associated to type '{1}'. Extraneous name '{2}' is ignored.", name, t.FullName, n.FullName );
             }
             if( name == null )
             {
                 name = t.FullName;
                 if( warnWhenDefaultToTypeFullName )
                 {
-                    logger.Warn( "Type '{0}' has no explicit associated Setup Name. Using the Type's full name.", t.FullName );
+                    monitor.Warn().Send( "Type '{0}' has no explicit associated Setup Name. Using the Type's full name.", t.FullName );
                 }
             }
             return name;

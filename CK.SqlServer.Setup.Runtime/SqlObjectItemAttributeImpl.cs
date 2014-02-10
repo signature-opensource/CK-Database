@@ -42,14 +42,14 @@ namespace CK.SqlServer.Setup
                         string[] names = BuildNames( packageItem.Object, nTrimmed );
                         if( names == null )
                         {
-                            state.Logger.Error( "Invalid object name '{0}' in SqlObjectItem attribute of '{1}'.", nTrimmed, item.FullName );
+                            state.Monitor.Error().Send( "Invalid object name '{0}' in SqlObjectItem attribute of '{1}'.", nTrimmed, item.FullName );
                         }
                         else
                         {
-                            var protoObject = LoadProtoItemFromResource( state.Logger, packageItem, names );
+                            var protoObject = LoadProtoItemFromResource( state.Monitor, packageItem, names );
                             if( protoObject != null )
                             {
-                                SqlObjectItem subItem = protoObject.CreateItem( state.Logger );
+                                SqlObjectItem subItem = protoObject.CreateItem( state.Monitor );
                                 if( subItem != null )
                                 {
                                     if( !subItem.MissingDependencyIsError.HasValue ) subItem.MissingDependencyIsError = Attribute.MissingDependencyIsError;
@@ -58,7 +58,7 @@ namespace CK.SqlServer.Setup
                             }
                         }
                     }
-                    else state.Logger.Warn( "Duplicate name '{0}' in SqlObjectItem attribute of '{1}'.", nTrimmed, item.FullName );
+                    else state.Monitor.Warn().Send( "Duplicate name '{0}' in SqlObjectItem attribute of '{1}'.", nTrimmed, item.FullName );
                 }
             }
         }
@@ -91,7 +91,7 @@ namespace CK.SqlServer.Setup
             }
         }
 
-        static internal SqlObjectProtoItem LoadProtoItemFromResource( IActivityLogger logger, SqlPackageBaseItem packageItem, string[] names, string expectedItemType = null )
+        static internal SqlObjectProtoItem LoadProtoItemFromResource( IActivityMonitor monitor, SqlPackageBaseItem packageItem, string[] names, string expectedItemType = null )
         {
             string fileName = names[0] + ".sql";
             string text = packageItem.ResourceLocation.GetString( fileName, false );
@@ -102,29 +102,29 @@ namespace CK.SqlServer.Setup
             }
             if( text == null )
             {
-                logger.Error( "Resource '{0}' of '{1}' not found (tried '{2}' and '{3}').", names[0], packageItem.FullName , names[0] + ".sql", fileName );
+                monitor.Error().Send( "Resource '{0}' of '{1}' not found (tried '{2}' and '{3}').", names[0], packageItem.FullName , names[0] + ".sql", fileName );
                 return null;
             }
 
-            SqlObjectProtoItem protoObject = SqlObjectParser.Create( logger, packageItem, text );
+            SqlObjectProtoItem protoObject = SqlObjectParser.Create( monitor, packageItem, text );
             if( protoObject != null )
             {
                 if( expectedItemType != null  && protoObject.ItemType != expectedItemType )
                 {
-                    logger.Error( "Resource '{0}' of '{1}' is a '{2}' whereas a '{3}' is expected.", fileName, packageItem.FullName, protoObject.ItemType, expectedItemType );
+                    monitor.Error().Send( "Resource '{0}' of '{1}' is a '{2}' whereas a '{3}' is expected.", fileName, packageItem.FullName, protoObject.ItemType, expectedItemType );
                     protoObject = null;
                 }
                 else if( protoObject.ObjectName != names[2] )
                 {
-                    logger.Error( "Resource '{0}' of '{2}' contains the definition of '{1}'. Names must match.", fileName, protoObject.Name, packageItem.FullName );
+                    monitor.Error().Send( "Resource '{0}' of '{2}' contains the definition of '{1}'. Names must match.", fileName, protoObject.Name, packageItem.FullName );
                     protoObject = null;
                 }
                 else if( protoObject.Schema.Length > 0 && protoObject.Schema != names[1] )
                 {
-                    logger.Error( "Resource '{0}' of '{4}' defines the {1} in the schema '{2}' instead of '{3}'.", fileName, protoObject.ItemType, protoObject.Schema, names[1], packageItem.FullName );
+                    monitor.Error().Send( "Resource '{0}' of '{4}' defines the {1} in the schema '{2}' instead of '{3}'.", fileName, protoObject.ItemType, protoObject.Schema, names[1], packageItem.FullName );
                     protoObject = null;
                 }
-                else logger.Trace( "Loaded {0} '{1}' of '{2}'.", protoObject.ItemType, protoObject.Name, packageItem.FullName );
+                else monitor.Trace().Send( "Loaded {0} '{1}' of '{2}'.", protoObject.ItemType, protoObject.Name, packageItem.FullName );
             }
             return protoObject;
         }

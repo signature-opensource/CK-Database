@@ -21,13 +21,13 @@ namespace CK.SqlServer.Setup.Engine.Tests
             config.SetupConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
             config.SetupConfiguration.AppDomainConfiguration.ProbePaths.Add( TestHelper.TestBinFolder );
 
-            using( var defaultDB = SqlManager.OpenOrCreate( ".", "IntoTheWild", TestHelper.Logger ) )
+            using( var defaultDB = SqlManager.OpenOrCreate( ".", "IntoTheWild", TestHelper.ConsoleMonitor ) )
             {
                 string defaultDBConnectionString = defaultDB.Connection.ConnectionString;
                 config.DefaultDatabaseConnectionString = defaultDBConnectionString;
                 config.Databases.Add( new SqlDatabaseDescriptor( "dbHisto", defaultDBConnectionString ) );
 
-                StObjContextRoot.Build( config, TestHelper.Logger ).Dispose();
+                StObjContextRoot.Build( config, TestHelper.ConsoleMonitor ).Dispose();
                 
                 Assert.That( defaultDB.Connection.ExecuteScalar( "select ResName from CK.tRes where ResId=1" ), Is.EqualTo( "System" ) );
                 // Drop CK and CKCore schema.
@@ -44,11 +44,11 @@ namespace CK.SqlServer.Setup.Engine.Tests
                 config.SetupConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = false;
                 config.SetupConfiguration.AppDomainConfiguration.UseIndependentAppDomain = true;
 
-                StObjContextRoot.Build( config, TestHelper.Logger ).Dispose();
+                StObjContextRoot.Build( config, TestHelper.ConsoleMonitor ).Dispose();
 
                 Assert.That( defaultDB.Connection.ExecuteScalar( "select ResName from CK.tRes where ResId=1" ), Is.EqualTo( "System" ) );
 
-                var map = StObjContextRoot.Load( "IntoTheWild.Auto", StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Logger );
+                var map = StObjContextRoot.Load( "IntoTheWild.Auto", StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.ConsoleMonitor );
                 Assert.That( map.Default.Obtain<SqlDefaultDatabase>().ConnectionString, Is.EqualTo( defaultDBConnectionString ) );
                 Assert.That( map.FindContext("dbHisto").Obtain<SqlHistoDatabase>().ConnectionString, Is.EqualTo( defaultDBConnectionString ) );
             }

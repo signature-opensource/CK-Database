@@ -6,26 +6,26 @@ namespace CK.Setup
 {
     public abstract class MultiScriptBase
     {
-        protected readonly IActivityLogger Logger;
+        protected readonly IActivityMonitor Monitor;
         protected readonly ISetupScript Script;
 
         /// <summary>
         /// Initializes a new instance of <see cref="MultiScriptBase"/>.
         /// </summary>
-        /// <param name="_logger">The _logger to use.</param>
+        /// <param name="_monitor">The _monitor to use.</param>
         /// <param name="script">Script to execute.</param>
-        public MultiScriptBase( IActivityLogger logger, ISetupScript script )
+        public MultiScriptBase( IActivityMonitor monitor, ISetupScript script )
         {
-            if( logger == null ) throw new ArgumentNullException( "_logger" );
+            if( monitor == null ) throw new ArgumentNullException( "_monitor" );
             if( script == null ) throw new ArgumentNullException( "script" );
 
-            Logger = logger;
+            Monitor = monitor;
             Script = script;
         }
 
         /// <summary>
         /// Executes the script: calls <see cref="SplitScripts"/>, <see cref="PreExecuteOneScript"/> and <see cref="ExecuteOneScript"/>
-        /// and manages log structure. Can be overriden (for instance to skip execution if possible).
+        /// and manages log structure. Can be overridden (for instance to skip execution if possible).
         /// </summary>
         /// <returns>True on success, false to stop the setup process (when false an error or a fatal error SHOULD be logged).</returns>
         public virtual bool ExecuteScript()
@@ -38,14 +38,14 @@ namespace CK.Setup
             if( scripts == null ) return false;
             if( scripts.Count == 0 ) return true;
 
-            using( scripts.Count > 1 ? Logger.OpenGroup( LogLevel.Info, "Script '{0}' splitted in {1} scripts.", scriptName, scripts.Count ) : null )
+            using( scripts.Count > 1 ? Monitor.OpenInfo().Send( "Script '{0}' split in {1} scripts.", scriptName, scripts.Count ) : null )
             {
                 int numScript = 0;
                 foreach( var oneScript in scripts )
                 {
                     using( scripts.Count > 1
-                            ? Logger.OpenGroup( LogLevel.Trace, "Executing script n°{0}/{1}.", numScript + 1, scripts.Count )
-                            : Logger.OpenGroup( LogLevel.Trace, "Executing '{0}'.", scriptName ) )
+                            ? Monitor.OpenTrace().Send( "Executing script n°{0}/{1}.", numScript + 1, scripts.Count )
+                            : Monitor.OpenTrace().Send( "Executing '{0}'.", scriptName ) )
                     {
                         bool ok;
                         string finalScript = null;
@@ -58,7 +58,7 @@ namespace CK.Setup
                         }
                         catch( Exception ex )
                         {
-                            Logger.Error( ex );
+                            Monitor.Error().Send( ex );
                             ok = false;
                         }
                         if( !ok )

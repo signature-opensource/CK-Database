@@ -35,9 +35,9 @@ namespace CK.Setup
         ISetupSessionMemory Memory { get; } 
 
         /// <summary>
-        /// Logger that will be used during setup.
+        /// Monitor that will be used during setup.
         /// </summary>
-        IActivityLogger Logger { get; }
+        IActivityMonitor Monitor { get; }
 
         /// <summary>
         /// Gives access to the ordered list of all the <see cref="DriverBase"/> that participate to Setup.

@@ -90,23 +90,23 @@ namespace CK.Core
         /// <summary>
         /// Logs detailed information about discovered ambient contracts.
         /// </summary>
-        /// <param name="logger">Logger (must not be null).</param>
-        public void LogErrorAndWarnings( IActivityLogger logger )
+        /// <param name="monitor">Logger (must not be null).</param>
+        public void LogErrorAndWarnings( IActivityMonitor monitor )
         {
-            if( logger == null ) throw new ArgumentNullException( "logger" );
-            using( logger.OpenGroup( LogLevel.Trace, "Ambient Contract for context '{1}': {0} mappings for {2} concrete paths.", _mappings.MappedTypeCount, Context, _concreteClassesPath.Count ) )
+            if( monitor == null ) throw new ArgumentNullException( "monitor" );
+            using( monitor.OpenTrace().Send( "Ambient Contract for context '{1}': {0} mappings for {2} concrete paths.", _mappings.MappedTypeCount, Context, _concreteClassesPath.Count ) )
             {
                 foreach( var a in _classAmbiguities )
                 {
-                    logger.Error( "Base class '{0}' has more than one concrete specialization: '{1}'.", a[0].FullName, String.Join( "', '", a.Skip(1).Select( t => t.FullName ) ) );
+                    monitor.Error().Send( "Base class '{0}' has more than one concrete specialization: '{1}'.", a[0].FullName, String.Join( "', '", a.Skip(1).Select( t => t.FullName ) ) );
                 }
                 foreach( var a in _interfaceAmbiguities )
                 {
-                    logger.Error( "Interface '{0}' is implemented by more than one concrete classes: {1}.", a[0].FullName, String.Join( "', '", a.Skip( 1 ).Select( t => t.FullName ) ) );
+                    monitor.Error().Send( "Interface '{0}' is implemented by more than one concrete classes: {1}.", a[0].FullName, String.Join( "', '", a.Skip( 1 ).Select( t => t.FullName ) ) );
                 }
                 if( _abstractTails.Count > 0 )
                 {
-                    logger.Warn( "Abstract classes without specialization are ignored: {0}.", String.Join( ", ", _abstractTails.Select( t => t.FullName ) ) );
+                    monitor.Warn().Send( "Abstract classes without specialization are ignored: {0}.", String.Join( ", ", _abstractTails.Select( t => t.FullName ) ) );
                 }
 
             }

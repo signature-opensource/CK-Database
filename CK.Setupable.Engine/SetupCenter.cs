@@ -13,7 +13,7 @@ namespace CK.Setup
         readonly ISetupSessionMemoryProvider _memory;
         readonly SetupCenterConfiguration _config;
         readonly SetupableConfigurator _configurator;
-        readonly IActivityLogger _logger;
+        readonly IActivityMonitor _monitor;
 
         readonly ScriptCollector _scripts;
         readonly ScriptTypeManager _scriptTypeManager;
@@ -21,19 +21,19 @@ namespace CK.Setup
         readonly EventHandler<SetupEventArgs> _relaySetupEvent;
         readonly EventHandler<DriverEventArgs> _relayDriverEvent;
 
-        public SetupCenter( IActivityLogger logger, 
+        public SetupCenter( IActivityMonitor monitor, 
                             SetupCenterConfiguration config, 
                             IVersionedItemRepository versionRepository, 
                             ISetupSessionMemoryProvider memory, 
                             IStObjRuntimeBuilder runtimeBuilder = null, 
                             SetupableConfigurator configurator = null )
         {
-            if( logger == null ) throw new ArgumentNullException( "_logger" );
+            if( monitor == null ) throw new ArgumentNullException( "_monitor" );
             if( config == null ) throw new ArgumentNullException( "config" );
             if( versionRepository == null ) throw new ArgumentNullException( "versionRepository" );
             if( memory == null ) throw new ArgumentNullException( "memory" );
 
-            _logger = logger;
+            _monitor = monitor;
             _versionRepository = versionRepository;
             _memory = memory;
             _config = config;
@@ -66,11 +66,11 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the _logger that should be used for the whole setup process.
+        /// Gets the _monitor that should be used for the whole setup process.
         /// </summary>
-        public IActivityLogger Logger
+        public IActivityMonitor Logger
         {
-            get { return _logger; }
+            get { return _monitor; }
         }
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace CK.Setup
         public event EventHandler<SetupEventArgs> SetupEvent;
 
         /// <summary>
-        /// Triggered for each <see cref="DriverBase"/> setup phasis.
+        /// Triggered for each <see cref="DriverBase"/> setup phases.
         /// </summary>
         public event EventHandler<DriverEventArgs> DriverEvent;       
 
@@ -135,8 +135,7 @@ namespace CK.Setup
         /// <returns>A <see cref="SetupEngineRegisterResult"/> that captures detailed information about the registration result.</returns>
         public bool Run( params object[] items )
         {
-            ActivityLoggerPathCatcher path = new ActivityLoggerPathCatcher();
-            _logger.Output.RegisterClient( path );
+            var path = _monitor.Output.RegisterClient( new ActivityMonitorPathCatcher() );
             ISetupSessionMemory m = null;
             try
             {
@@ -149,11 +148,11 @@ namespace CK.Setup
             }
             catch( Exception ex )
             {
-                _logger.Fatal( ex );
+                _monitor.Fatal().Send( ex );
             }
             finally
             {
-                _logger.Output.UnregisterClient( path );
+                _monitor.Output.UnregisterClient( path );
             }
             if( m != null ) _memory.StopSetup( path.LastErrorPath.ToStringPath() );
             return false;
@@ -162,10 +161,10 @@ namespace CK.Setup
         private bool DoRun( object[] items, ISetupSessionMemory m )
         {
             bool hasError = false;
-            using( _logger.CatchCounter( nbError => hasError = true ) )
+            using( _monitor.CatchCounter( nbError => hasError = true ) )
             using( SetupEngine engine = CreateEngine( m ) )
             {
-                using( _logger.OpenGroup( LogLevel.Info, "Register step." ) )
+                using( _monitor.OpenInfo().Send( "Register step." ) )
                 {
                     DependencySorter.Options sorterOptions = new DependencySorter.Options() 
                     { 
@@ -176,20 +175,20 @@ namespace CK.Setup
                     SetupEngineRegisterResult r = engine.Register( OfTypeRecurse<IDependentItem>( items ), items.OfType<IDependentItemDiscoverer>(), sorterOptions );
                     if( !r.IsValid )
                     {
-                        r.LogError( _logger );
+                        r.LogError( _monitor );
                         return false;
                     }
-                    _logger.CloseGroup( String.Format( "{0} Setup items registered.", r.SortResult.SortedItems.Count ) );
+                    _monitor.CloseGroup( String.Format( "{0} Setup items registered.", r.SortResult.SortedItems.Count ) );
                 }
-                using( _logger.OpenGroup( LogLevel.Info, "Init step." ) )
+                using( _monitor.OpenInfo().Send( "Init step." ) )
                 {
                     if( !engine.RunInit() ) return false;
                 }
-                using( _logger.OpenGroup( LogLevel.Info, "Install step." ) )
+                using( _monitor.OpenInfo().Send( "Install step." ) )
                 {
                     if( !engine.RunInstall() ) return false;
                 }
-                using( _logger.OpenGroup( LogLevel.Info, "Settle step." ) )
+                using( _monitor.OpenInfo().Send( "Settle step." ) )
                 {
                     if( !engine.RunSettle() ) return false;
                 }
@@ -235,14 +234,14 @@ namespace CK.Setup
         private SetupEngine CreateEngine( ISetupSessionMemory m )
         {
             SetupEngine engine = null;
-            using( _logger.OpenGroup( LogLevel.Info, "Setup engine initialization." ) )
+            using( _monitor.OpenInfo().Send( "Setup engine initialization." ) )
             {
-                if( _memory.StartCount == 0 ) _logger.Info( "Starting a new setup." );
+                if( _memory.StartCount == 0 ) _monitor.Info().Send( "Starting a new setup." );
                 else
                 {
-                    _logger.Info( "{0} previous Setup attempt(s). Last on {2}, error was: '{1}'.", _memory.StartCount, _memory.LastError, _memory.LastStartDate );
+                    _monitor.Info().Send( "{0} previous Setup attempt(s). Last on {2}, error was: '{1}'.", _memory.StartCount, _memory.LastError, _memory.LastStartDate );
                 }
-                engine = new SetupEngine( _versionRepository, m, _logger, _configurator );
+                engine = new SetupEngine( _versionRepository, m, _monitor, _configurator );
                 ScriptSetupHandlerBuilder scriptBuilder = new ScriptSetupHandlerBuilder( engine, _scripts, _scriptTypeManager );
                 engine.RegisterSetupEvent += _relayRegisterSetupEvent;
                 engine.SetupEvent += _relaySetupEvent;

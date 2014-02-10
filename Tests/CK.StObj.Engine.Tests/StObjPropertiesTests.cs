@@ -15,9 +15,9 @@ namespace CK.StObj.Engine.Tests
 
             public object PropertyValue { get; set; }
 
-            public void Configure( IActivityLogger logger, IStObjMutableItem o )
+            public void Configure( IActivityMonitor monitor, IStObjMutableItem o )
             {
-                o.SetStObjPropertyValue( logger, PropertyName, PropertyValue );
+                o.SetStObjPropertyValue( monitor, PropertyName, PropertyValue );
             }
         }
 
@@ -31,7 +31,7 @@ namespace CK.StObj.Engine.Tests
         public void OneObject()
         {
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Logger );
+                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor );
                 collector.RegisterClass( typeof( SimpleContainer ) );
                 StObjCollectorResult result = collector.GetResult();
                 Assert.That( result.OrderedStObjs.First().GetStObjProperty( "OneIntValue" ), Is.EqualTo( 3712 ) );
@@ -62,20 +62,20 @@ namespace CK.StObj.Engine.Tests
 
         class SchmurtzConfigurator : IStObjStructuralConfigurator
         {
-            public void Configure( IActivityLogger logger, IStObjMutableItem o )
+            public void Configure( IActivityMonitor monitor, IStObjMutableItem o )
             {
-                if( o.ObjectType == typeof( SimpleContainer ) ) o.SetStObjPropertyValue( logger, "SchmurtzProp", new SchmurtzProperty( "Root" ) );
-                if( o.ObjectType == typeof( SpecializedContainer ) ) o.SetStObjPropertyValue( logger, "SchmurtzProp", new SchmurtzProperty( "SpecializedContainer specializes Root" ) );
-                if( o.ObjectType == typeof( BaseObject ) ) o.SetStObjPropertyValue( logger, "SchmurtzProp", new SchmurtzProperty( "BaseObject belongs to SpecializedContainer" ) );
-                if( o.ObjectType == typeof( SpecializedObject ) ) o.SetStObjPropertyValue( logger, "SchmurtzProp", new SchmurtzProperty( "Finally: SpecializedObject inherits from BaseObject" ) );
-                if( o.ObjectType == typeof( SpecializedObjectWithExplicitContainer ) ) o.SetStObjPropertyValue( logger, "SchmurtzProp", new SchmurtzProperty( "SpecializedObjectWithExplicitContainer inherits from BaseObject BUT is directly associated to SpecializedContainer" ) );
+                if( o.ObjectType == typeof( SimpleContainer ) ) o.SetStObjPropertyValue( monitor, "SchmurtzProp", new SchmurtzProperty( "Root" ) );
+                if( o.ObjectType == typeof( SpecializedContainer ) ) o.SetStObjPropertyValue( monitor, "SchmurtzProp", new SchmurtzProperty( "SpecializedContainer specializes Root" ) );
+                if( o.ObjectType == typeof( BaseObject ) ) o.SetStObjPropertyValue( monitor, "SchmurtzProp", new SchmurtzProperty( "BaseObject belongs to SpecializedContainer" ) );
+                if( o.ObjectType == typeof( SpecializedObject ) ) o.SetStObjPropertyValue( monitor, "SchmurtzProp", new SchmurtzProperty( "Finally: SpecializedObject inherits from BaseObject" ) );
+                if( o.ObjectType == typeof( SpecializedObjectWithExplicitContainer ) ) o.SetStObjPropertyValue( monitor, "SchmurtzProp", new SchmurtzProperty( "SpecializedObjectWithExplicitContainer inherits from BaseObject BUT is directly associated to SpecializedContainer" ) );
             }
         }
 
         [Test]
         public void SchmurtzPropagation()
         {
-            StObjCollector collector = new StObjCollector( TestHelper.Logger, null, null, new SchmurtzConfigurator() );
+            StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor, null, null, new SchmurtzConfigurator() );
             collector.RegisterClass( typeof( SimpleContainer ) );
             collector.RegisterClass( typeof( SpecializedContainer ) );
             collector.RegisterClass( typeof( BaseObject ) );

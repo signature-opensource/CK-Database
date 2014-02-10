@@ -21,7 +21,7 @@ namespace CK.StObj.Engine.Tests
 
             class AutoImplementedAttribute : Attribute, IAutoImplementorMethod
             {
-                public bool Implement( IActivityLogger logger, System.Reflection.MethodInfo m, IDynamicAssembly dynamicAssembly, System.Reflection.Emit.TypeBuilder b, bool isVirtual )
+                public bool Implement( IActivityMonitor monitor, System.Reflection.MethodInfo m, IDynamicAssembly dynamicAssembly, System.Reflection.Emit.TypeBuilder b, bool isVirtual )
                 {
                     CK.Reflection.EmitHelper.ImplementEmptyStubMethod( b, m, isVirtual );
                     return true;
@@ -57,17 +57,17 @@ namespace CK.StObj.Engine.Tests
 
             public void DoTest()
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Logger );
+                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor );
                 collector.RegisterClass( typeof( B ) );
                 collector.RegisterClass( typeof( D ) );
-                collector.DependencySorterHookInput = items => TestHelper.Logger.TraceDependentItem( items );
-                collector.DependencySorterHookOutput = sortedItems => TestHelper.Logger.TraceSortedItem( sortedItems, false );
+                collector.DependencySorterHookInput = items => TestHelper.ConsoleMonitor.TraceDependentItem( items );
+                collector.DependencySorterHookOutput = sortedItems => TestHelper.ConsoleMonitor.TraceSortedItem( sortedItems, false );
                 var r = collector.GetResult();
                 Assert.That( r.HasFatalError, Is.False );
                 // Null as directory => use CK.StObj.Model folder.
-                r.GenerateFinalAssembly( TestHelper.Logger, null, "TEST_SimpleEmit" );
+                r.GenerateFinalAssembly( TestHelper.ConsoleMonitor, null, "TEST_SimpleEmit" );
 
-                IStObjMap c = StObjContextRoot.Load( "TEST_SimpleEmit", null, TestHelper.Logger );
+                IStObjMap c = StObjContextRoot.Load( "TEST_SimpleEmit", null, TestHelper.ConsoleMonitor );
                 Assert.That( typeof( B ).IsAssignableFrom( c.Default.ToLeafType( typeof( A ) ) ) );
                 Assert.That( c.Default.ToLeafType( typeof( IC ) ), Is.SameAs( typeof( D ) ) );
                 Assert.That( c.Default.Obtain<B>().Auto(3), Is.EqualTo( 0 ) );
@@ -88,9 +88,9 @@ namespace CK.StObj.Engine.Tests
                 [StObjProperty]
                 public string StObjPower { get; set; }
 
-                void Construct( IActivityLogger logger )
+                void Construct( IActivityMonitor monitor )
                 {
-                    logger.Trace( "At A level: StObjPower = '{0}'.", StObjPower );
+                    monitor.Trace().Send( "At A level: StObjPower = '{0}'.", StObjPower );
                 }
             }
 
@@ -103,9 +103,9 @@ namespace CK.StObj.Engine.Tests
                 [StObjProperty]
                 new public string StObjPower { get; set; }
 
-                void Construct( IActivityLogger logger, B b )
+                void Construct( IActivityMonitor monitor, B b )
                 {
-                    logger.Trace( "At ASpec level: StObjPower = '{0}'.", StObjPower );
+                    monitor.Trace().Send( "At ASpec level: StObjPower = '{0}'.", StObjPower );
                     TheB = b;
                 }
 
@@ -124,20 +124,20 @@ namespace CK.StObj.Engine.Tests
 
             class StObjPropertyConfigurator : IStObjStructuralConfigurator
             {
-                public void Configure( IActivityLogger logger, IStObjMutableItem o )
+                public void Configure( IActivityMonitor monitor, IStObjMutableItem o )
                 {
-                    if( o.ObjectType == typeof( A ) ) o.SetStObjPropertyValue( logger, "StObjPower", "This is the A property." );
-                    if( o.ObjectType == typeof( ASpec ) ) o.SetStObjPropertyValue( logger, "StObjPower", "ASpec level property." );
+                    if( o.ObjectType == typeof( A ) ) o.SetStObjPropertyValue( monitor, "StObjPower", "This is the A property." );
+                    if( o.ObjectType == typeof( ASpec ) ) o.SetStObjPropertyValue( monitor, "StObjPower", "ASpec level property." );
                 }
             }
 
             public void DoTest()
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Logger, null, null, new StObjPropertyConfigurator() );
+                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor, null, null, new StObjPropertyConfigurator() );
                 collector.RegisterClass( typeof( B ) );
                 collector.RegisterClass( typeof( ASpec ) );
-                collector.DependencySorterHookInput = items => TestHelper.Logger.TraceDependentItem( items );
-                collector.DependencySorterHookOutput = sortedItems => TestHelper.Logger.TraceSortedItem( sortedItems, false );
+                collector.DependencySorterHookInput = items => TestHelper.ConsoleMonitor.TraceDependentItem( items );
+                collector.DependencySorterHookOutput = sortedItems => TestHelper.ConsoleMonitor.TraceSortedItem( sortedItems, false );
                 var r = collector.GetResult();
                 {
                     Assert.That( r.HasFatalError, Is.False );
@@ -152,9 +152,9 @@ namespace CK.StObj.Engine.Tests
                     Assert.That( typeof( A ).GetProperty( "StObjPower" ).GetValue( theA, null ), Is.EqualTo( "This is the A property." ) );
                 }
                 
-                r.GenerateFinalAssembly( TestHelper.Logger, TestHelper.BinFolder, "TEST_ConstructCalled" );
+                r.GenerateFinalAssembly( TestHelper.ConsoleMonitor, TestHelper.BinFolder, "TEST_ConstructCalled" );
 
-                IStObjMap c = StObjContextRoot.Load( "TEST_ConstructCalled", StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Logger );
+                IStObjMap c = StObjContextRoot.Load( "TEST_ConstructCalled", StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.ConsoleMonitor );
                 {
                     Assert.That( c.Default.Obtain<B>().TheA, Is.SameAs( c.Default.Obtain<A>() ).And.SameAs( c.Default.Obtain<ASpec>() ) );
                     Assert.That( c.Default.Obtain<ASpec>().TheB, Is.SameAs( c.Default.Obtain<B>() ) );

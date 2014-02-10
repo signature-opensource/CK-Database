@@ -20,7 +20,7 @@ namespace CK.SqlServer
         List<string>			_protectedDatabaseNames;
         string 					_fromConnectionString;
         DatabaseInfo			_curDbInfo;
-        IActivityLogger         _logger;
+        IActivityMonitor         _monitor;
         bool					_checkTranCount;
         bool                    _ckCoreInstalled;
         bool                    _missingDependencyIsError;
@@ -155,14 +155,14 @@ namespace CK.SqlServer
         /// </summary>
         /// <param name="server">Server name.</param>
         /// <param name="database">Database name.</param>
-        /// <param name="logger">
-        /// Logger to use, when null an exception is thrown on error. 
-        /// Otherwise any exceptions are routed to it and it is associated as the <see cref="SqlManager.Logger"/>.</param>
-        /// <returns>A new <see cref="SqlManager"/> or null if an error occured and no <paramref name="logger"/> is provided.</returns>
-        public static SqlManager OpenOrCreate( string server, string database, IActivityLogger logger = null )
+        /// <param name="monitor">
+        /// Monitor to use, when null an exception is thrown on error. 
+        /// Otherwise any exceptions are routed to it and it is associated as the <see cref="SqlManager.Monitor"/>.</param>
+        /// <returns>A new <see cref="SqlManager"/> or null if an error occured and no <paramref name="monitor"/> is provided.</returns>
+        public static SqlManager OpenOrCreate( string server, string database, IActivityMonitor monitor = null )
         {
             SqlManager m = new SqlManager();
-            if( logger != null ) m.Logger = logger;
+            if( monitor != null ) m.Monitor = monitor;
             return m.OpenOrCreate( server, database ) ? m : null;
         }
 
@@ -197,7 +197,7 @@ namespace CK.SqlServer
         /// </summary>
         public void Dispose()
         {
-            Logger = null;
+            Monitor = null;
             if( _oCon != null )
             {
                 _oCon.Dispose();
@@ -251,16 +251,16 @@ namespace CK.SqlServer
 
         /// <summary>
         /// Opens a database from a connection string.
-        /// If a <see cref="Logger"/> is set, exceptions will be routed to it.
+        /// If a <see cref="Monitor"/> is set, exceptions will be routed to it.
         /// </summary>
         /// <param name="connectionString">The connection string to the database.</param>
         /// <returns>
-        /// If a <see cref="Logger"/> is set, this method will return true or false 
+        /// If a <see cref="Monitor"/> is set, this method will return true or false 
         /// to indicate success.
         /// </returns>
         public bool OpenFromConnectionString( string connectionString )
         {
-            if( _logger != null ) _logger.OpenGroup( LogLevel.Info,  "Connection" );
+            if( _monitor != null ) _monitor.OpenInfo().Send(  "Connection" );
             try
             {
                 _oCon.ConnectionString = connectionString;
@@ -271,16 +271,16 @@ namespace CK.SqlServer
             catch( Exception ex )
             {
                 _oCon.Close();
-                if( _logger != null )
+                if( _monitor != null )
                 {
-                    _logger.Error( ex );
+                    _monitor.Error().Send( ex );
                     return false;
                 }
                 throw;
             }
             finally
             {
-                if( _logger != null ) _logger.CloseGroup( null );
+                if( _monitor != null ) _monitor.CloseGroup( null );
             }
         }
 
@@ -309,28 +309,28 @@ namespace CK.SqlServer
         }
 
         /// <summary>
-        /// Gets or sets a <see cref="IActivityLogger"/>. When a logger is set,
+        /// Gets or sets a <see cref="IActivityMonitor"/>. When a monitor is set,
         /// exceptions are redirected to it and this <see cref="SqlManager"/> does not throw 
         /// exceptions any more.
         /// </summary>
-        public IActivityLogger Logger
+        public IActivityMonitor Monitor
         {
-            get { return _logger; }
+            get { return _monitor; }
             set
             {
-                if( _logger != value )
+                if( _monitor != value )
                 {
-                    if( _logger == null && value != null )
+                    if( _monitor == null && value != null )
                     {
                         _oCon.InternalConnection.StateChange += new StateChangeEventHandler( OnConnStateChange );
                         _oCon.InternalConnection.InfoMessage += new SqlInfoMessageEventHandler( OnConnInfo );
                     }
-                    else if( _logger != null && value == null )
+                    else if( _monitor != null && value == null )
                     {
                         _oCon.InternalConnection.StateChange -= new StateChangeEventHandler( OnConnStateChange );
                         _oCon.InternalConnection.InfoMessage -= new SqlInfoMessageEventHandler( OnConnInfo );
                     }
-                    _logger = value;
+                    _monitor = value;
                 }
             }
         }
@@ -347,13 +347,13 @@ namespace CK.SqlServer
 
         /// <summary>
         /// Opens a database (do not try to create it if it does not exist).
-        /// If a <see cref="IActivityLogger"/> is set, exceptions will be routed to it.
+        /// If a <see cref="IActivityMonitor"/> is set, exceptions will be routed to it.
         /// </summary>
         /// <param name="server">Server name. May be null or empty, in this case '(local)' is assumed.</param>
         /// <param name="database">The database name to open.</param>
         /// <returns>
-        /// Always true if no <see cref="Logger"/> is set (otherwise an exception
-        /// will be thrown in case of failure). If a <see cref="Logger"/> is set,
+        /// Always true if no <see cref="Monitor"/> is set (otherwise an exception
+        /// will be thrown in case of failure). If a <see cref="Monitor"/> is set,
         /// this method will return true or false to indicate success.
         /// </returns>
         public bool Open( string server, string database )
@@ -364,13 +364,13 @@ namespace CK.SqlServer
 
         /// <summary>
         /// Opens an existing database or creates it if it does not exist.
-        /// If a <see cref="IActivityLogger"/> is set, exceptions will be routed to it.
+        /// If a <see cref="IActivityMonitor"/> is set, exceptions will be routed to it.
         /// </summary>
         /// <param name="server">Server name. May be null or empty, in this case '(local)' is assumed.</param>
         /// <param name="database">The database name to open or create.</param>
         /// <returns>
-        /// Always true if no <see cref="Logger"/> is set (otherwise an exception
-        /// will be thrown in case of failure). If a <see cref="Logger"/> is set,
+        /// Always true if no <see cref="Monitor"/> is set (otherwise an exception
+        /// will be thrown in case of failure). If a <see cref="Monitor"/> is set,
         /// this method will return true or false to indicate success.
         /// </returns>
         public bool OpenOrCreate( string server, string database )
@@ -387,8 +387,8 @@ namespace CK.SqlServer
         /// <param name="autoCreate">True to create the database if it does not exist.</param>
         /// <param name="hasBeenCreated">An output parameter that is set to true if the database has been created.</param>
         /// <returns>
-        /// Always true if no <see cref="Logger"/> is set (otherwise an exception
-        /// will be thrown in case of failure). If a <see cref="Logger"/> is set,
+        /// Always true if no <see cref="Monitor"/> is set (otherwise an exception
+        /// will be thrown in case of failure). If a <see cref="Monitor"/> is set,
         /// this method will return true or false to indicate success.
         /// </returns>
         /// <remarks>
@@ -407,7 +407,7 @@ namespace CK.SqlServer
             else server = server.Trim();
             if( server.Length == 0 ) server = "(local)";
 
-            if( _logger != null ) _logger.OpenGroup( LogLevel.Info, "Connection to {0}/{1}", server, database );
+            if( _monitor != null ) _monitor.OpenInfo().Send( "Connection to {0}/{1}", server, database );
             try
             {
                 if( _oCon.InternalConnection.State == System.Data.ConnectionState.Closed || Server != server )
@@ -437,13 +437,13 @@ namespace CK.SqlServer
             }
             catch( Exception e )
             {
-                if( _logger == null ) throw new Exception( String.Format( "Unable to open {0}/{1}", server, database ), e );
-                _logger.Error( e );
+                if( _monitor == null ) throw new Exception( String.Format( "Unable to open {0}/{1}", server, database ), e );
+                _monitor.Error().Send( e );
                 return false;
             }
             finally
             {
-                if( _logger != null ) _logger.CloseGroup( null );
+                if( _monitor != null ) _monitor.CloseGroup( null );
             }
         }
 
@@ -465,8 +465,8 @@ namespace CK.SqlServer
         /// The name of the database to create. 
         /// Must not belong to <see cref="ProtectedDatabaseNames"/> list.
         /// </param>
-        /// <returns>Always true if no <see cref="Logger"/> is set (an exception
-        /// will be thrown in case of failure). If a <see cref="Logger"/> is set,
+        /// <returns>Always true if no <see cref="Monitor"/> is set (an exception
+        /// will be thrown in case of failure). If a <see cref="Monitor"/> is set,
         /// this method will return true or false to indicate success.</returns>
         public bool CreateDatabase( string databaseName )
         {
@@ -485,9 +485,9 @@ namespace CK.SqlServer
             }
             catch( Exception e )
             {
-                if( _logger != null )
+                if( _monitor != null )
                 {
-                    _logger.Error( e );
+                    _monitor.Error().Send( e );
                     return false;
                 }
                 throw;
@@ -501,14 +501,14 @@ namespace CK.SqlServer
         /// <summary>
         /// Ensures that the CKCore kernel is installed.
         /// </summary>
-        /// <param name="logger">The logger to use. Can not be null.</param>
+        /// <param name="monitor">The monitor to use. Can not be null.</param>
         /// <returns>True on success.</returns>
-        public bool EnsureCKCoreIsInstalled( IActivityLogger logger )
+        public bool EnsureCKCoreIsInstalled( IActivityMonitor monitor )
         {
-            if( logger == null ) throw new ArgumentNullException( "logger" );
+            if( monitor == null ) throw new ArgumentNullException( "monitor" );
             if( !_ckCoreInstalled )
             {
-                _ckCoreInstalled = SqlCKCoreInstaller.Install( this, logger );
+                _ckCoreInstalled = SqlCKCoreInstaller.Install( this, monitor );
             }
             return _ckCoreInstalled;
         }
@@ -517,8 +517,8 @@ namespace CK.SqlServer
         /// Tries to remove all objects from a given schema.
         /// </summary>
         /// <param name="schemaName">Name of the schema. Must not be null nor empty.</param>
-        /// <returns>Always true if no <see cref="Logger"/> is set (an exception
-        /// will be thrown in case of failure). If a <see cref="Logger"/> is set,
+        /// <returns>Always true if no <see cref="Monitor"/> is set (an exception
+        /// will be thrown in case of failure). If a <see cref="Monitor"/> is set,
         /// this method will return true or false to indicate success.</returns>
         public bool SchemaDropAllObjects( string schemaName, bool dropSchema )
         {
@@ -543,9 +543,9 @@ namespace CK.SqlServer
             }
             catch( Exception ex )
             {
-                if( _logger != null )
+                if( _monitor != null )
                 {
-                    _logger.Error( ex );
+                    _monitor.Error().Send( ex );
                     return false;
                 }
                 throw;
@@ -592,7 +592,7 @@ namespace CK.SqlServer
         {
             readonly SqlManager _manager;
             readonly SqlCommand _command;
-            readonly IActivityLogger _logger;
+            readonly IActivityMonitor _monitor;
             readonly int _tranCount;
             readonly string _databaseName;
             readonly bool _mustClose;
@@ -607,10 +607,10 @@ namespace CK.SqlServer
             /// </summary>
             public bool LastSucceed { get; private set; }
 
-            internal SqlExecutor( SqlManager m, IActivityLogger logger, bool checkTransactionCount, bool autoRestoreDatabase )
+            internal SqlExecutor( SqlManager m, IActivityMonitor monitor, bool checkTransactionCount, bool autoRestoreDatabase )
             {
                 _manager = m;
-                _logger = logger;
+                _monitor = monitor;
                 _command = new SqlCommand();
                 // 8 minutes timeout... should be enough!
                 _command.CommandTimeout = 8 * 60;
@@ -635,10 +635,10 @@ namespace CK.SqlServer
                     if( script.Length > 0 )
                     {
                         _command.CommandText = script;
-                        if( _logger != null )
+                        if( _monitor != null )
                         {
-                            _logger.Trace( script );
-                            _logger.Trace( "GO" );
+                            _monitor.Trace().Send( script );
+                            _monitor.Trace().Send( "GO" );
                         }
                         _command.ExecuteNonQuery();
                     }
@@ -647,15 +647,15 @@ namespace CK.SqlServer
                 catch( Exception e )
                 {
                     FailCount = FailCount + 1;
-                    if( _logger == null ) throw;
-                    // If the logger is tracing, the text has already been logged.
-                    if( _logger.Filter <= LogLevelFilter.Trace ) _logger.Error( e );
+                    if( _monitor == null ) throw;
+                    // If the monitor is tracing, the text has already been logged.
+                    if( _monitor.ActualFilter.Line == LogLevelFilter.Trace ) _monitor.Error().Send( e );
                     else 
                     {
-                        // If the text is not already logged, then we unconditionnaly log it below the error.
-                        using( _logger.OpenGroup( LogLevel.Error, e ) )
+                        // If the text is not already logged, then we unconditionally log it below the error.
+                        using( _monitor.OpenError().Send( e ) )
                         {
-                            _logger.UnfilteredLog( ActivityLogger.RegisteredTags.EmptyTrait, LogLevel.Info, script, DateTime.UtcNow );
+                            _monitor.Info().Send( script );
                         }
                     }
                 }
@@ -690,23 +690,23 @@ namespace CK.SqlServer
                                         msg += "Failed -> " + ex.Message;
                                     }
                                 }
-                                if( _logger != null ) _logger.Error( msg );
+                                if( _monitor != null ) _monitor.Error().Send( msg );
                                 else if( LastSucceed ) throw new Exception( msg );
                             }
                         }                       
                         if( _databaseName != null && _databaseName != _manager.DatabaseName )
                         {
-                            if( _logger != null ) _logger.Info( "Current database automatically restored from {0} to {1}.", _manager.DatabaseName, _databaseName );
+                            if( _monitor != null ) _monitor.Info().Send( "Current database automatically restored from {0} to {1}.", _manager.DatabaseName, _databaseName );
                             _command.Connection.ChangeDatabase( _databaseName );
                         }
                     }
                     catch( Exception ex )
                     {
-                        if( _logger != null ) _logger.OpenGroup( LogLevel.Warn, ex );
+                        if( _monitor != null ) _monitor.OpenWarn().Send( ex );
                         else
                         {
                             if( LastSucceed ) throw;
-                            // When an error already occured, we do not rethrow the internal exception.
+                            // When an error already occurred, we do not rethrow the internal exception.
                         }
                     }
                 }
@@ -716,17 +716,17 @@ namespace CK.SqlServer
         }
 
         /// <summary>
-        /// The script is <see cref="IActivityLogger.Trace"/>d (if <see cref="logger"/> is not null).
+        /// The script is <see cref="IActivityMonitor.Trace"/>d (if <see cref="monitor"/> is not null).
         /// </summary>
-        /// <param name="logger">The logger to use. Null to not log anything (and throw exception on error).</param>
-        public ISqlScriptExecutor CreateExecutor( IActivityLogger logger, bool checkTransactionCount = true, bool autoRestoreDatabase = true )
+        /// <param name="monitor">The monitor to use. Null to not log anything (and throw exception on error).</param>
+        public ISqlScriptExecutor CreateExecutor( IActivityMonitor monitor, bool checkTransactionCount = true, bool autoRestoreDatabase = true )
         {
-            return new SqlExecutor( this, logger, checkTransactionCount, autoRestoreDatabase );
+            return new SqlExecutor( this, monitor, checkTransactionCount, autoRestoreDatabase );
         }
 
-        public bool ExecuteScripts( IEnumerable<string> scripts, IActivityLogger logger )
+        public bool ExecuteScripts( IEnumerable<string> scripts, IActivityMonitor monitor )
         {
-            using( var e = CreateExecutor( logger ) )
+            using( var e = CreateExecutor( monitor ) )
             {
                 return e.Execute( scripts ) == 0;
             }
@@ -734,14 +734,14 @@ namespace CK.SqlServer
 
         /// <summary>
         /// Executes one script (no GO separator must exist inside). 
-        /// The script is <see cref="IActivityLogger.Trace"/>d (if <see cref="logger"/> is not null).
+        /// The script is <see cref="IActivityMonitor.Trace"/>d (if <see cref="monitor"/> is not null).
         /// </summary>
-        /// <param name="logger">The logger to use. Null to not log anything (and throw exception on error).</param>
+        /// <param name="monitor">The monitor to use. Null to not log anything (and throw exception on error).</param>
         /// <param name="script">The script to execute.</param>
         /// <returns>
-        /// Always true if <paramref name="logger"/> is null since otherwise an exception
+        /// Always true if <paramref name="monitor"/> is null since otherwise an exception
         /// will be thrown in case of failure. 
-        /// If a logger is set, this method will return true or false to indicate success.
+        /// If a monitor is set, this method will return true or false to indicate success.
         /// </returns>
         /// <remarks>
         /// At the end of the execution, the current database is checked and if it has changed,
@@ -750,9 +750,9 @@ namespace CK.SqlServer
         /// any script and guaranty that, at the beginning of a script, we always are on the 
         /// same configured database.
         /// </remarks>
-        public bool ExecuteOneScript( string script, IActivityLogger logger = null )
+        public bool ExecuteOneScript( string script, IActivityMonitor monitor = null )
         {
-            using( var e = CreateExecutor( logger ) )
+            using( var e = CreateExecutor( monitor ) )
             {
                 return e.Execute( script );
             }
@@ -762,34 +762,34 @@ namespace CK.SqlServer
 
         private void OnConnStateChange( object sender, StateChangeEventArgs args )
         {
-            Debug.Assert( _logger != null );
+            Debug.Assert( _monitor != null );
             if( args.CurrentState == ConnectionState.Open )
-                _logger.Info( "Connected to {0}.", ServerDatabaseName );
-            else _logger.Info( "Disconnected from {0}.", ServerDatabaseName );
+                _monitor.Info().Send( "Connected to {0}.", ServerDatabaseName );
+            else _monitor.Info().Send( "Disconnected from {0}.", ServerDatabaseName );
         }
 
         private void OnConnInfo( object sender, SqlInfoMessageEventArgs args )
         {
-            Debug.Assert( _logger != null );
+            Debug.Assert( _monitor != null );
             foreach( SqlError err in args.Errors )
             {
                 if( err.Class <= 10 )
                 {
                     if( _missingDependencyIsError && err.Number == 2007 )
                     {
-                        _logger.Error( "Missing Dependency (MissingDependencyIsError configuration is true for this object).\r\n"
+                        _monitor.Error().Send( "Missing Dependency (MissingDependencyIsError configuration is true for this object).\r\n"
                                       + "You can set MissingDependencyIsError to false for this object, or set IgnoreMissingDependencyIsError configuration to true to globally ignore this error (but it is better to correctly manage Requirements).\r\n"
                                       + "{0} ({1}): {2}", err.Procedure, err.LineNumber, err.Message );
                     }
-                    else _logger.Info( "{0} ({1}): {2}", err.Procedure, err.LineNumber, err.Message );
+                    else _monitor.Info().Send( "{0} ({1}): {2}", err.Procedure, err.LineNumber, err.Message );
                 }
                 else if( err.Class <= 16 )
                 {
-                    _logger.Warn( "{0} ({1}): {2}", err.Procedure, err.LineNumber, err.Message );
+                    _monitor.Warn().Send( "{0} ({1}): {2}", err.Procedure, err.LineNumber, err.Message );
                 }
                 else
                 {
-                    _logger.Error( "Sql Server error at '{0}'\r\nClass='{1}'\r\nMessage: '{2}'\r\nProcedure: '{6}'\r\nLineNumber: '{7}'\r\nNumber: '{3}'\r\nState: '{4}'\r\nServer: '{5}'", 
+                    _monitor.Error().Send( "Sql Server error at '{0}'\r\nClass='{1}'\r\nMessage: '{2}'\r\nProcedure: '{6}'\r\nLineNumber: '{7}'\r\nNumber: '{3}'\r\nState: '{4}'\r\nServer: '{5}'", 
                                         err.Source, 
                                         err.Class, 
                                         err.Message, 

@@ -13,15 +13,15 @@ namespace CK.SqlServer.Setup
 
         protected new SqlTableAttribute Attribute { get { return (SqlTableAttribute)base.Attribute; } }
 
-        protected override void ConfigureMutableItem( IActivityLogger logger, IStObjMutableItem o )
+        protected override void ConfigureMutableItem( IActivityMonitor monitor, IStObjMutableItem o )
         {
-            if( Attribute.TableName != null ) o.SetDirectPropertyValue( logger, "TableName", Attribute.TableName );
-            if( Attribute.Schema != null ) o.SetAmbiantPropertyValue( logger, "Schema", Attribute.Schema );
+            if( Attribute.TableName != null ) o.SetDirectPropertyValue( monitor, "TableName", Attribute.TableName );
+            if( Attribute.Schema != null ) o.SetAmbiantPropertyValue( monitor, "Schema", Attribute.Schema );
         }
 
-        void IStObjSetupConfigurator.ConfigureDependentItem( IActivityLogger logger, IMutableStObjSetupData data )
+        void IStObjSetupConfigurator.ConfigureDependentItem( IActivityMonitor monitor, IMutableStObjSetupData data )
         {
-            SetAutomaticSetupFullNamewithoutContext( logger, data, "SqlTable" );
+            SetAutomaticSetupFullNamewithoutContext( monitor, data, "SqlTable" );
             data.ItemType = typeof( SqlTableItem );
             data.DriverType = typeof( SqlTableSetupDriver );
         }

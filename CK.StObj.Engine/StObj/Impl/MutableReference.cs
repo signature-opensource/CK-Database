@@ -63,7 +63,7 @@ namespace CK.Setup
         /// </summary>
         public Type Type { get; set; }
 
-        internal virtual MutableItem ResolveToStObj( IActivityLogger logger, StObjCollectorResult collector, StObjCollectorContextualResult cachedCollector )
+        internal virtual MutableItem ResolveToStObj( IActivityMonitor monitor, StObjCollectorResult collector, StObjCollectorContextualResult cachedCollector )
         {           
             MutableItem result = null;
             if( Type == null || StObjRequirementBehavior == Setup.StObjRequirementBehavior.ExternalReference ) return result;
@@ -76,13 +76,13 @@ namespace CK.Setup
                 StObjCollectorContextualResult ctxResult = cachedCollector == null || cachedCollector.Context != _context ? collector.FindContext( _context ) : cachedCollector;
                 if( ctxResult == null ) 
                 {
-                    Error( logger, String.Format( "Undefined Typed context '{0}'", _context ) );
+                    Error( monitor, String.Format( "Undefined Typed context '{0}'", _context ) );
                     return null;
                 }
                 result = ctxResult.InternalMapper.ToHighestImpl( Type );
                 if( result == null )
                 {
-                    WarnOrErrorIfStObjRequired( logger, String.Format( "{0} not found", AmbientContractCollector.FormatContextualFullName( _context, Type ) ) );
+                    WarnOrErrorIfStObjRequired( monitor, String.Format( "{0} not found", AmbientContractCollector.FormatContextualFullName( _context, Type ) ) );
                     return null;
                 }
             }
@@ -100,17 +100,17 @@ namespace CK.Setup
                         // Do not use WarnOrErrorIfStObjRequired since we want to handle optional value type or string not found without any warning.
                         if( StObjRequirementBehavior == Setup.StObjRequirementBehavior.ErrorIfNotStObj )
                         {
-                            Error( logger, String.Format( "Type '{0}' not found in any context", Type.FullName ) );
+                            Error( monitor, String.Format( "Type '{0}' not found in any context", Type.FullName ) );
                         }
                         else if( StObjRequirementBehavior == Setup.StObjRequirementBehavior.WarnIfNotStObj )
                         {
-                            if( !Type.IsValueType && Type != typeof(string) ) Warn( logger, String.Format( "Type '{0}' not found in any context", Type.FullName ) );
+                            if( !Type.IsValueType && Type != typeof(string) ) Warn( monitor, String.Format( "Type '{0}' not found in any context", Type.FullName ) );
                         }
                         return null;
                     }
                     if( all.Count > 1 )
                     {
-                        Error( logger, String.Format( "Type '{0}' exists in more than one context: '{1}'. A context for this relation must be specified", 
+                        Error( monitor, String.Format( "Type '{0}' exists in more than one context: '{1}'. A context for this relation must be specified", 
                                                         Type.FullName, 
                                                         String.Join( "', '", all.Select( m => m.Context ) ) ) );
                         return null;
@@ -121,26 +121,26 @@ namespace CK.Setup
             return result;
         }
 
-        private void WarnOrErrorIfStObjRequired( IActivityLogger logger, string text )
+        private void WarnOrErrorIfStObjRequired( IActivityMonitor monitor, string text )
         {
             if( StObjRequirementBehavior == Setup.StObjRequirementBehavior.ErrorIfNotStObj )
             {
-                Error( logger, text );
+                Error( monitor, text );
             }
             else if( StObjRequirementBehavior == Setup.StObjRequirementBehavior.WarnIfNotStObj )
             {
-                Warn( logger, text );
+                Warn( monitor, text );
             }
         }
 
-        protected void Warn( IActivityLogger logger, string text )
+        protected void Warn( IActivityMonitor monitor, string text )
         {
-            logger.Warn( "{0}: {1}.", ToString(), text );
+            monitor.Warn().Send( "{0}: {1}.", ToString(), text );
         }
 
-        protected void Error( IActivityLogger logger, string text )
+        protected void Error( IActivityMonitor monitor, string text )
         {
-            logger.Error( "{0}: {1}.", ToString(), text );
+            monitor.Error().Send( "{0}: {1}.", ToString(), text );
         }
 
         public override string ToString()

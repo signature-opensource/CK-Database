@@ -34,7 +34,7 @@ namespace CK.Setup
                 _scripts = new Dictionary<ISetupScript, ISetupScript>( _cmp );
             }
 
-            internal bool Add( IActivityLogger logger, ScriptSource source, ISetupScript script, ScriptTypeManager manager )
+            internal bool Add( IActivityMonitor monitor, ScriptSource source, ISetupScript script, ScriptTypeManager manager )
             {
                 Debug.Assert( source.Handler == Handler );
                 ISetupScript existing;
@@ -44,16 +44,16 @@ namespace CK.Setup
                     if( source.Index > existingIndex )
                     {
                         _scripts[script] = script;
-                        logger.Info( "Script '{0}' in '{1}' from source '{2}' has been overriden by source '{3}'.", script.Name.FileName, script.Name.ExtraPath, existing.ScriptSource, source.Name );
+                        monitor.Info().Send( "Script '{0}' in '{1}' from source '{2}' has been overriden by source '{3}'.", script.Name.FileName, script.Name.ExtraPath, existing.ScriptSource, source.Name );
                     }
                     else if( source.Index < existingIndex )
                     {
                         // Always Info() as if the operation was done in the other sense: the user is always informed of the override.
-                        logger.Info( "Script '{0}' in '{1}' from source '{2}' has been overriden by source '{3}'.", script.Name.FileName, script.Name.ExtraPath, source.Name, existing.ScriptSource );
+                        monitor.Info().Send( "Script '{0}' in '{1}' from source '{2}' has been overriden by source '{3}'.", script.Name.FileName, script.Name.ExtraPath, source.Name, existing.ScriptSource );
                     }
                     else
                     {
-                        logger.Warn( "Script '{0}' in '{1}' from source '{2}' is already registered. It is ignored.", script.Name.FileName, script.Name.ExtraPath, source.Name );
+                        monitor.Warn().Send( "Script '{0}' in '{1}' from source '{2}' is already registered. It is ignored.", script.Name.FileName, script.Name.ExtraPath, source.Name );
                     }
                     return false;
                 }
@@ -173,7 +173,7 @@ namespace CK.Setup
         /// </summary>
         public string FullName { get { return _fullName; } }      
 
-        internal bool Add( IActivityLogger logger, ScriptSource source, ISetupScript script, ScriptTypeManager manager )
+        internal bool Add( IActivityMonitor monitor, ScriptSource source, ISetupScript script, ScriptTypeManager manager )
         {
             Debug.Assert( FullName == script.Name.FullName, String.Format( "Script '{0}' can not be associated to '{1}' (names are case-sensitive).", script.Name.FullName, FullName ) );
             var handler = _handlers.FirstOrDefault( h => h.Handler == source.Handler );
@@ -182,7 +182,7 @@ namespace CK.Setup
                 handler = new ForHandler( source.Handler );
                 _handlers.Add( handler );
             }
-            return handler.Add( logger, source, script, manager );
+            return handler.Add( monitor, source, script, manager );
         }
 
         /// <summary>

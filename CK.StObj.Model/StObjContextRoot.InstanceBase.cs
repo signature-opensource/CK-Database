@@ -19,17 +19,17 @@ namespace CK.Core
         readonly IStObjRuntimeBuilder _runtimeBuilder;
 
         internal readonly StructuredObjectCache SingletonCache;
-        internal readonly IActivityLogger Logger;
+        internal readonly IActivityMonitor Logger;
         internal readonly object[] BuilderValues;
         internal readonly StObj[] StObjs;
         internal readonly int SpecializationCount;
 
-        protected StObjContextRoot( IActivityLogger logger, IStObjRuntimeBuilder runtimeBuilder, Type[] allTypes )
+        protected StObjContextRoot( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, Type[] allTypes )
         {
-            if( logger == null ) throw new ArgumentNullException( "logger" );
+            if( monitor == null ) throw new ArgumentNullException( "monitor" );
             if( runtimeBuilder == null ) throw new ArgumentNullException( "runtimeBuilder" );
             if( allTypes == null ) throw new ArgumentNullException( "allTypes" );
-            Logger = logger;
+            Logger = monitor;
             _runtimeBuilder = runtimeBuilder;
             StObjs = new StObj[allTypes.Length];
             for( int i = 0; i < allTypes.Length; ++i )
@@ -58,7 +58,7 @@ namespace CK.Core
                 {
                     object instance = SingletonCache.Get(o.CacheIndex);
                     if( instance == null ) SingletonCache.Set( o.CacheIndex, instance = _runtimeBuilder.CreateInstance( o.LeafSpecialization.ObjectType ) );
-                    o.CallConstruct( logger, idx => SingletonCache.Get( StObjs[idx].CacheIndex ), instance );
+                    o.CallConstruct( monitor, idx => SingletonCache.Get( StObjs[idx].CacheIndex ), instance );
                     if( o.Specialization == null ) o.SetPostBuilProperties( idx => SingletonCache.Get( StObjs[idx].CacheIndex ), instance );
                 }
             }

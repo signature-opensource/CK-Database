@@ -22,9 +22,9 @@ namespace CK.SqlServer.Tests
             Assert.That( m.OpenOrCreate( ".", "CKSqlServerTests" ), "Unable to open or create CKSqlServerTests database on local server." );
             if( !_installedDone )
             {
-                m.EnsureCKCoreIsInstalled( TestHelper.Logger );
+                m.EnsureCKCoreIsInstalled( TestHelper.ConsoleMonitor );
                 var install = SqlHelper.SplitGoSeparator( File.ReadAllText( TestHelper.GetScriptsFolder( "ErrorHandling.Install.sql" ) ) );
-                m.ExecuteScripts( install, TestHelper.Logger );
+                m.ExecuteScripts( install, TestHelper.ConsoleMonitor );
                 _installedDone = true;
             }
             return m;
@@ -41,10 +41,10 @@ namespace CK.SqlServer.Tests
                     bool errorExpected = s.Contains( "EXCEPTION" );
                     if( errorExpected )
                     {
-                        // Checks that an exception is raised since there is no logger.
+                        // Checks that an exception is raised since there is no monitor.
                         Assert.Throws<SqlException>( () => m.ExecuteOneScript( s, null ), s );
                         // Dump to console.
-                        Assert.That( m.ExecuteOneScript( s, TestHelper.Logger ), Is.False, s );
+                        Assert.That( m.ExecuteOneScript( s, TestHelper.ConsoleMonitor ), Is.False, s );
                     }
                     else
                     {

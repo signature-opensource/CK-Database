@@ -31,16 +31,16 @@ namespace CK.Setup
 
         public bool IsOptional { get { return _isOptional; } private set { _isOptional = value; } }
 
-        protected override void SetGeneralizationInfo( IActivityLogger logger, CovariantPropertyInfo g )
+        protected override void SetGeneralizationInfo( IActivityMonitor monitor, CovariantPropertyInfo g )
         {
-            base.SetGeneralizationInfo( logger, g );
+            base.SetGeneralizationInfo( monitor, g );
             AmbientPropertyOrContractInfo gen = (AmbientPropertyOrContractInfo)g;
             // A required property can not become optional.
             if( IsOptional && !gen.IsOptional )
             {
                 if( _isOptionalDefined )
                 {
-                    logger.Error( "Ambient property '{0}.{1}' states that it is optional but base property '{2}.{1}' is required.", DeclaringType.FullName, Name, gen.DeclaringType.FullName );
+                    monitor.Error().Send( "Ambient property '{0}.{1}' states that it is optional but base property '{2}.{1}' is required.", DeclaringType.FullName, Name, gen.DeclaringType.FullName );
                 }
                 _isOptional = false;
             }
@@ -58,7 +58,7 @@ namespace CK.Setup
         /// they must be settable only to enable the framework (and no one else) to actually set their values.
         /// </summary>
         static public void CreateAmbientPropertyListForExactType( 
-            IActivityLogger logger, 
+            IActivityMonitor monitor, 
             Type t, 
             int definerSpecializationDepth, 
             List<StObjPropertyInfo> stObjProperties, 
@@ -79,7 +79,7 @@ namespace CK.Setup
                     Type tP = stObjAttr.PropertyType == null ? p.PropertyType : stObjAttr.PropertyType;
                     if( stObjProperties.Find( sp => sp.Name == nP ) != null )
                     {
-                        logger.Error( "StObj property named '{0}' for '{1}' is defined more than once. It should be declared only once.", p.Name, p.DeclaringType.FullName );
+                        monitor.Error().Send( "StObj property named '{0}' for '{1}' is defined more than once. It should be declared only once.", p.Name, p.DeclaringType.FullName );
                         continue;
                     }
                     stObjProperties.Add( new StObjPropertyInfo( t, stObjAttr.ResolutionSource, nP, tP, p ) );
@@ -91,7 +91,7 @@ namespace CK.Setup
                 {
                     if( stObjAttr != null || (ac != null && ap != null) )
                     {
-                        logger.Error( "Property named '{0}' for '{1}' can not be both an Ambient Contract, an Ambient Property or a StObj property.", p.Name, p.DeclaringType.FullName );
+                        monitor.Error().Send( "Property named '{0}' for '{1}' can not be both an Ambient Contract, an Ambient Property or a StObj property.", p.Name, p.DeclaringType.FullName );
                         continue;
                     }
                     IAmbientPropertyOrContractAttribute attr = ac ?? ap;
@@ -100,7 +100,7 @@ namespace CK.Setup
                     var mGet = p.GetGetMethod( true );
                     if( mGet == null || mGet.IsPrivate )
                     {
-                        logger.Error( "Property '{0}' of '{1}' can not be marked as {2}. Did you forget to make it protected or public?", p.Name, p.DeclaringType.FullName, kindName );
+                        monitor.Error().Send( "Property '{0}' of '{1}' can not be marked as {2}. Did you forget to make it protected or public?", p.Name, p.DeclaringType.FullName, kindName );
                         continue;
                     }
                     if( attr.IsAmbientProperty )

@@ -12,8 +12,8 @@ namespace CK.SqlServer.Setup
         {
         }
 
-        public SqlPackageItem( IActivityLogger logger, IStObjSetupData data )
-            : base( logger, data )
+        public SqlPackageItem( IActivityMonitor monitor, IStObjSetupData data )
+            : base( monitor, data )
         {
             Debug.Assert( typeof( SqlPackageSetupDriver ).IsAssignableFrom( data.DriverType ) );
             Name = data.FullNameWithoutContext;

@@ -18,41 +18,41 @@ namespace CK.Setup
         /// <summary>
         /// Generates final assembly (or not depending on <see cref="BuilderFinalAssemblyConfiguration.DoNotGenerateFinalAssembly"/>.
         /// </summary>
-        /// <param name="logger">Logger to use.</param>
+        /// <param name="monitor">Logger to use.</param>
         /// <param name="config">The <see cref="BuilderFinalAssemblyConfiguration"/> to use.</param>
-        /// <returns>True on success, false if any error occured (logged into <paramref name="logger"/>).</returns>
-        public bool GenerateFinalAssembly( IActivityLogger logger, BuilderFinalAssemblyConfiguration config )
+        /// <returns>True on success, false if any error occured (logged into <paramref name="monitor"/>).</returns>
+        public bool GenerateFinalAssembly( IActivityMonitor monitor, BuilderFinalAssemblyConfiguration config )
         {
             if( config == null ) throw new ArgumentNullException( "config" );
             if( config.DoNotGenerateFinalAssembly ) return true;
-            return GenerateFinalAssembly( logger, config.Directory, config.AssemblyName, config.ExternalVersionStamp, config.SignAssembly, config.SignKeyPair );
+            return GenerateFinalAssembly( monitor, config.Directory, config.AssemblyName, config.ExternalVersionStamp, config.SignAssembly, config.SignKeyPair );
         }
 
         /// <summary>
         /// Generates final assembly.
         /// </summary>
-        /// <param name="logger">Logger to use.</param>
+        /// <param name="monitor">Logger to use.</param>
         /// <param name="directory">See <see cref="BuilderFinalAssemblyConfiguration.Directory"/>.</param>
         /// <param name="assemblyName">See <see cref="BuilderFinalAssemblyConfiguration.AssemblyName"/>.</param>
         /// <param name="externalVersionStamp">See <see cref="BuilderFinalAssemblyConfiguration.ExternalVersionStamp"/>.</param>
         /// <param name="signAssembly">See <see cref="BuilderFinalAssemblyConfiguration.SignAssembly"/>.</param>
         /// <param name="signKeyPair">See <see cref="BuilderFinalAssemblyConfiguration.SignKeyPair"/>.</param>
-        /// <returns>True on success, false if any error occured (logged into <paramref name="logger"/>).</returns>
-        public bool GenerateFinalAssembly( IActivityLogger logger, string directory = null, string assemblyName = null, string externalVersionStamp = null, bool signAssembly = false, StrongNameKeyPair signKeyPair = null )
+        /// <returns>True on success, false if any error occured (logged into <paramref name="monitor"/>).</returns>
+        public bool GenerateFinalAssembly( IActivityMonitor monitor, string directory = null, string assemblyName = null, string externalVersionStamp = null, bool signAssembly = false, StrongNameKeyPair signKeyPair = null )
         {
-            if( logger == null ) throw new ArgumentNullException( "logger" );
+            if( monitor == null ) throw new ArgumentNullException( "monitor" );
             if( HasFatalError ) throw new InvalidOperationException();
             try
             {
                 if( String.IsNullOrEmpty( directory ) )
                 {
                     directory = BuilderFinalAssemblyConfiguration.GetFinalDirectory( directory );
-                    logger.Info( "No directory has been specified for final assembly. Trying to use the path of CK.StObj.Model assembly: {0}", directory );
+                    monitor.Info().Send( "No directory has been specified for final assembly. Trying to use the path of CK.StObj.Model assembly: {0}", directory );
                 }
                 if( String.IsNullOrEmpty( assemblyName ) )
                 {
                     assemblyName = BuilderFinalAssemblyConfiguration.GetFinalAssemblyName( assemblyName );
-                    logger.Info( "No assembly name has been specified for final assembly. Using default: {0}", assemblyName );
+                    monitor.Info().Send( "No assembly name has been specified for final assembly. Using default: {0}", assemblyName );
                 }
                 if( signAssembly )
                 {
@@ -64,9 +64,9 @@ namespace CK.Setup
 
                 TypeBuilder root = a.ModuleBuilder.DefineType( StObjContextRoot.RootContextTypeName, TypeAttributes.Class | TypeAttributes.Sealed, typeof( StObjContextRoot ) );
                 
-                if( !FinalizeTypesCreationAndCreateCtor( logger, a, root ) ) return false;
+                if( !FinalizeTypesCreationAndCreateCtor( monitor, a, root ) ) return false;
                 root.CreateType();
-                using( logger.OpenGroup( LogLevel.Trace, "Generating resource informations." ) )
+                using( monitor.OpenTrace().Send( "Generating resource informations." ) )
                 {
                     RawOutStream outS = new RawOutStream();
                     outS.Writer.Write( Contexts.Count );
@@ -119,21 +119,21 @@ namespace CK.Setup
             }
             catch( Exception ex )
             {
-                logger.Error( ex, "While generating final assembly '{0}'.", assemblyName );
+                monitor.Error().Send( ex, "While generating final assembly '{0}'.", assemblyName );
                 return false;
             }
         }
 
-        private bool FinalizeTypesCreationAndCreateCtor( IActivityLogger logger, DynamicAssembly a, TypeBuilder root )
+        private bool FinalizeTypesCreationAndCreateCtor( IActivityMonitor monitor, DynamicAssembly a, TypeBuilder root )
         {
             int typeCreatedCount = 0;
             int typeErrorCount = 0;
-            using( logger.OpenGroup( LogLevel.Info, "Generating dynamic types." ) )
+            using( monitor.OpenInfo().Send( "Generating dynamic types." ) )
             {
-                var ctor = root.DefineConstructor( MethodAttributes.Public, CallingConventions.Standard, new Type[] { typeof( IActivityLogger ), typeof( IStObjRuntimeBuilder ) } );
+                var ctor = root.DefineConstructor( MethodAttributes.Public, CallingConventions.Standard, new Type[] { typeof( IActivityMonitor ), typeof( IStObjRuntimeBuilder ) } );
                 var g = ctor.GetILGenerator();
 
-                LocalBuilder locLogger = g.DeclareLocal( typeof( IActivityLogger ) );
+                LocalBuilder locLogger = g.DeclareLocal( typeof( IActivityMonitor ) );
                 g.LdArg( 1 );
                 g.StLoc( locLogger );
 
@@ -149,7 +149,7 @@ namespace CK.Setup
                     Type t = null;
                     if( m.Specialization == null )
                     {
-                        t = m.CreateFinalType( logger, a );
+                        t = m.CreateFinalType( monitor, a );
                         if( t == null ) ++typeErrorCount;
                         ++typeCreatedCount;
                     }
@@ -166,8 +166,8 @@ namespace CK.Setup
                         g.Emit( OpCodes.Stelem_Ref );
                     }
                 }
-                var baseCtor = root.BaseType.GetConstructor( BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof( IActivityLogger ), typeof( IStObjRuntimeBuilder ), typeof( Type[] ) }, null );
-                Debug.Assert( baseCtor != null, "StObjContextRoot ctor signature is: ( IActivityLogger logger, IStObjRuntimeBuilder runtimeBuilder, Type[] allTypes )" );
+                var baseCtor = root.BaseType.GetConstructor( BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof( IActivityMonitor ), typeof( IStObjRuntimeBuilder ), typeof( Type[] ) }, null );
+                Debug.Assert( baseCtor != null, "StObjContextRoot ctor signature is: ( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, Type[] allTypes )" );
                 g.LdArg( 0 );
                 g.LdArg( 1 );
                 g.LdArg( 2 );
@@ -176,8 +176,8 @@ namespace CK.Setup
 
                 g.Emit( OpCodes.Ret );
 
-                if( typeErrorCount > 0 ) logger.CloseGroup( String.Format( "Failed to generate {0} types out of {1}.", typeErrorCount, typeCreatedCount ) );
-                else logger.CloseGroup( String.Format( "{0} types generated.", typeCreatedCount ) );
+                if( typeErrorCount > 0 ) monitor.CloseGroup( String.Format( "Failed to generate {0} types out of {1}.", typeErrorCount, typeCreatedCount ) );
+                else monitor.CloseGroup( String.Format( "{0} types generated.", typeCreatedCount ) );
             }
             return typeErrorCount == 0;
         }

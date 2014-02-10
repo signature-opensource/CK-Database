@@ -16,7 +16,7 @@ namespace CK.Core
     {
         /// <summary>
         /// Gets the Assembly Qualified Name of a <see cref="Type"/> that supports <see cref="IStObjBuilder"/>.
-        /// It must have a public constructor that accepts an <see cref="IActivityLogger"/> and an instance of 
+        /// It must have a public constructor that accepts an <see cref="IActivityMonitor"/> and an instance of 
         /// this <see cref="IStObjEngineConfiguration"/>.
         /// </summary>
         string BuilderAssemblyQualifiedName { get; }

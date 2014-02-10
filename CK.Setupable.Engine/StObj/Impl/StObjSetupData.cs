@@ -18,12 +18,12 @@ namespace CK.Setup
         IReadOnlyList<IDependentItemRef> _childrenEx;
         IReadOnlyList<IDependentItemGroupRef> _groupsEx;
 
-        internal StObjSetupData( IActivityLogger logger, IStObjResult o, StObjSetupDataBase parent )
-            : base( logger, o.ObjectType, parent )
+        internal StObjSetupData( IActivityMonitor monitor, IStObjResult o, StObjSetupDataBase parent )
+            : base( monitor, o.ObjectType, parent )
         {
             _stObj = o;
 
-            _fullNameWithoutContext = AttributesReader.GetFullName( logger, false, o.ObjectType );
+            _fullNameWithoutContext = AttributesReader.GetFullName( monitor, false, o.ObjectType );
             _versions = AttributesReader.GetVersionsString( o.ObjectType );
             _requiresEx = new CKReadOnlyListOnIList<IDependentItemRef>( Requires );
             _requiredByEx = new CKReadOnlyListOnIList<IDependentItemRef>( RequiredBy );
@@ -69,7 +69,7 @@ namespace CK.Setup
             set { _versions = value; }
         }
 
-        internal void ResolveItemAndDriverTypes( IActivityLogger logger )
+        internal void ResolveItemAndDriverTypes( IActivityMonitor monitor )
         {
             if( ItemType == null && ItemTypeName != null ) ItemType = SimpleTypeFinder.WeakDefault.ResolveType( ItemTypeName, true );
             if( DriverType == null && DriverTypeName != null ) DriverType = SimpleTypeFinder.WeakDefault.ResolveType( DriverTypeName, true );

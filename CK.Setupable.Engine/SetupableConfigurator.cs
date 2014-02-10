@@ -67,20 +67,20 @@ namespace CK.Setup
         /// Empty implementation of <see cref="IStObjStructuralConfigurator.Configure"/> (calls <see cref="Previous"/> if it is not null).
         /// </summary>
         /// <param name="o">The item to configure.</param>
-        public virtual void Configure( IActivityLogger logger, IStObjMutableItem o )
+        public virtual void Configure( IActivityMonitor monitor, IStObjMutableItem o )
         {
-            if( _previous != null ) _previous.Configure( logger, o );
+            if( _previous != null ) _previous.Configure( monitor, o );
         }
 
         /// <summary>
         /// Step n°4 - Last step before ordering. Ambient properties that had not been resolved can be set to a value here.
         /// Empty implementation of <see cref="IStObjValueResolver.ResolveExternalPropertyValue"/> (calls <see cref="Previous"/> if it is not null).
         /// </summary>
-        /// <param name="_logger">The _logger to use.</param>
+        /// <param name="_monitor">The _monitor to use.</param>
         /// <param name="ambientProperty">Property for which a value should be set.</param>
-        public virtual void ResolveExternalPropertyValue( IActivityLogger logger, IStObjFinalAmbientProperty ambientProperty )
+        public virtual void ResolveExternalPropertyValue( IActivityMonitor monitor, IStObjFinalAmbientProperty ambientProperty )
         {
-            if( _previous != null ) _previous.ResolveExternalPropertyValue( logger, ambientProperty );
+            if( _previous != null ) _previous.ResolveExternalPropertyValue( monitor, ambientProperty );
         }
 
         /// <summary>
@@ -89,11 +89,11 @@ namespace CK.Setup
         /// This is the last step of the pure StObj level work: after this one, object graph dependencies have been resolved, objects are configured.
         /// Empty implementation of <see cref="IStObjValueResolver.ResolveParameterValue"/> (calls <see cref="Previous"/> if it is not null).
         /// </summary>
-        /// <param name="_logger">The _logger to use.</param>
+        /// <param name="_monitor">The _monitor to use.</param>
         /// <param name="parameter">Parameter of a Construct method.</param>
-        public virtual void ResolveParameterValue( IActivityLogger logger, IStObjFinalParameter parameter )
+        public virtual void ResolveParameterValue( IActivityMonitor monitor, IStObjFinalParameter parameter )
         {
-            if( _previous != null ) _previous.ResolveParameterValue( logger, parameter );
+            if( _previous != null ) _previous.ResolveParameterValue( monitor, parameter );
         }
 
         /// <summary>
@@ -101,11 +101,11 @@ namespace CK.Setup
         /// driver type to use, versions, requirements and other properties related to the three-steps setup phasis.
         /// Empty implementation of <see cref="IStObjSetupConfigurator.ConfigureDependentItem"/> (calls <see cref="Previous"/> if it is not null).
         /// </summary>
-        /// <param name="_logger">Logger to use.</param>
+        /// <param name="_monitor">Monitor to use.</param>
         /// <param name="data">Mutable data (typically initialized by attributes and other direct code-first approaches).</param>
-        public virtual void ConfigureDependentItem( IActivityLogger logger, IMutableStObjSetupData data )
+        public virtual void ConfigureDependentItem( IActivityMonitor monitor, IMutableStObjSetupData data )
         {
-            if( _previous != null ) _previous.ConfigureDependentItem( logger, data );
+            if( _previous != null ) _previous.ConfigureDependentItem( monitor, data );
         }
 
         /// <summary>
@@ -113,12 +113,12 @@ namespace CK.Setup
         /// a generic <see cref="StObjDynamicPackageItem"/> does the job.
         /// Empty implementation of <see cref="IStObjSetupItemFactory.CreateDependentItem"/> (calls <see cref="Previous"/> if it is not null, otherwise returns null).
         /// </summary>
-        /// <param name="_logger">Logger to use.</param>
+        /// <param name="_monitor">Monitor to use.</param>
         /// <param name="data">Descriptive data (initialized by attributes and other direct code-first approaches and configured by any <see cref="IStObjSetupConfigurator"/>).</param>
         /// <returns>A <see cref="IMutableSetupItem"/> implementation that must be correctly initialized by the given data, or null to use the default <see cref="StObjDynamicPackageItem"/>.</returns>
-        public virtual IMutableSetupItem CreateDependentItem( IActivityLogger logger, IStObjSetupData data )
+        public virtual IMutableSetupItem CreateDependentItem( IActivityMonitor monitor, IStObjSetupData data )
         {
-            return _previous != null ? _previous.CreateDependentItem( logger, data ) : null;
+            return _previous != null ? _previous.CreateDependentItem( monitor, data ) : null;
         }
 
         /// <summary>

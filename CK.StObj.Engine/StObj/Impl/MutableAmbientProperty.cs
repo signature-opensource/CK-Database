@@ -68,12 +68,12 @@ namespace CK.Setup
             get { return _maxSpecializationDepthSet == Int32.MaxValue; }
         }
 
-        internal bool SetValue( int setterSpecializationDepth, IActivityLogger logger, object value )
+        internal bool SetValue( int setterSpecializationDepth, IActivityMonitor monitor, object value )
         {
             Debug.Assert( _maxSpecializationDepthSet != Int32.MaxValue );
             if( setterSpecializationDepth < _maxSpecializationDepthSet )
             {
-                logger.Error( "'{0}' has already been set or configured through a more specialized object.", ToString() );
+                monitor.Error().Send( "'{0}' has already been set or configured through a more specialized object.", ToString() );
                 return false;
             }
             _maxSpecializationDepthSet = setterSpecializationDepth;
@@ -82,12 +82,12 @@ namespace CK.Setup
             return true;
         }
 
-        internal bool SetConfiguration( int setterSpecializationDepth, IActivityLogger logger, string context, Type type, StObjRequirementBehavior behavior )
+        internal bool SetConfiguration( int setterSpecializationDepth, IActivityMonitor monitor, string context, Type type, StObjRequirementBehavior behavior )
         {
             Debug.Assert( _maxSpecializationDepthSet != Int32.MaxValue );
             if( setterSpecializationDepth < _maxSpecializationDepthSet )
             {
-                logger.Error( "'{0}' has already been set or configured through a more specialized object.", ToString() );
+                monitor.Error().Send( "'{0}' has already been set or configured through a more specialized object.", ToString() );
                 return false;
             }
             _maxSpecializationDepthSet = setterSpecializationDepth;

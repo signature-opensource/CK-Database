@@ -14,14 +14,14 @@ namespace CK.SqlServer.Setup
             _managerProvider = provider;
         }
 
-        protected override IScriptExecutor CreateExecutor( IActivityLogger logger, SetupDriver driver )
+        protected override IScriptExecutor CreateExecutor( IActivityMonitor monitor, SetupDriver driver )
         {
             if( driver == null ) throw new ArgumentNullException( "driver" );
-            SqlManager m = SqlObjectSetupDriver.FindManagerFromLocation( logger, _managerProvider, driver.FullName );
+            SqlManager m = SqlObjectSetupDriver.FindManagerFromLocation( monitor, _managerProvider, driver.FullName );
             return m != null ? new SqlScriptExecutor( m, driver.Engine.Memory ) : null;
         }
 
-        protected override void ReleaseExecutor( IActivityLogger logger, IScriptExecutor executor )
+        protected override void ReleaseExecutor( IActivityMonitor monitor, IScriptExecutor executor )
         {           
         }
 

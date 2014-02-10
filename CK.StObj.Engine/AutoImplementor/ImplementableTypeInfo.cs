@@ -12,13 +12,13 @@ namespace CK.Core
     {
         public class StubImplementor : IAutoImplementorMethod, IAutoImplementorProperty
         {
-            public bool Implement( IActivityLogger logger, MethodInfo m, IDynamicAssembly dynamicAssembly, TypeBuilder b, bool isVirtual )
+            public bool Implement( IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, TypeBuilder b, bool isVirtual )
             {
                 CK.Reflection.EmitHelper.ImplementEmptyStubMethod( b, m, isVirtual );
                 return true;
             }
 
-            public bool Implement( IActivityLogger logger, PropertyInfo p, IDynamicAssembly dynamicAssembly, TypeBuilder b, bool isVirtual )
+            public bool Implement( IActivityMonitor monitor, PropertyInfo p, IDynamicAssembly dynamicAssembly, TypeBuilder b, bool isVirtual )
             {
                 CK.Reflection.EmitHelper.ImplementStubProperty( b, p, isVirtual );
                 return true;
@@ -111,13 +111,13 @@ namespace CK.Core
         /// of its abstract methods (or properties) misses <see cref="IAttributeAutoImplemented"/> or <see cref="IAutoImplementorMethod"/> (<see cref="IAutoImplementorProperty"/>
         /// for properties), null is returned.
         /// </summary>
-        /// <param name="logger">The logger to use.</param>
+        /// <param name="monitor">The monitor to use.</param>
         /// <param name="abstractType">Abstract type to automatically implement if possible.</param>
         /// <param name="attributeProvider">Attributes provider that will be used.</param>
         /// <returns>An instance of <see cref="ImplementableTypeInfo"/> or null if the type is not automatically implementable.</returns>
-        static public ImplementableTypeInfo CreateImplementableTypeInfo( IActivityLogger logger, Type abstractType, ICustomAttributeProvider attributeProvider )
+        static public ImplementableTypeInfo CreateImplementableTypeInfo( IActivityMonitor monitor, Type abstractType, ICustomAttributeProvider attributeProvider )
         {
-            if( logger == null ) throw new ArgumentNullException( "logger" );
+            if( monitor == null ) throw new ArgumentNullException( "monitor" );
             if( abstractType == null ) throw new ArgumentNullException( "abstractType" );
             if( !abstractType.IsAbstract ) throw new ArgumentException( "Type must be abstract.", "abstractType" );
             if( attributeProvider == null ) throw new ArgumentNullException( "attributeProvider" );
@@ -151,7 +151,7 @@ namespace CK.Core
                     ++nbUncovered;
                     if( mGet == null || mSet == null || !mGet.IsAbstract || !mSet.IsAbstract )
                     {
-                        logger.Error( "Property {0}.{1} is not a valid abstract property (both getter and setter must exist and be abstract).", p.DeclaringType.FullName, p.Name );
+                        monitor.Error().Send( "Property {0}.{1} is not a valid abstract property (both getter and setter must exist and be abstract).", p.DeclaringType.FullName, p.Name );
                     }
                     else
                     {
@@ -173,11 +173,11 @@ namespace CK.Core
         /// Implements a new Type in a dynamic assembly that specializes <see cref="CurrentBaseType"/> and returns it.
         /// On success, resulting type becomes the <see cref="LastGeneratedType"/>. Of course, implemented methods and properties are let virtual.
         /// </summary>
-        /// <param name="logger">Logger to use.</param>
+        /// <param name="monitor">Logger to use.</param>
         /// <returns>The newly created type in the dynamic assembly. Null if an error occured.</returns>
-        public Type CreateTypeFromCurrent( IActivityLogger logger, IDynamicAssembly assembly )
+        public Type CreateTypeFromCurrent( IActivityMonitor monitor, IDynamicAssembly assembly )
         {
-            Type t = DoCreateType( logger, assembly, CurrentBaseType, false );
+            Type t = DoCreateType( monitor, assembly, CurrentBaseType, false );
             if( t != null )
             {
                 _lastGeneratedType = t;
@@ -207,19 +207,19 @@ namespace CK.Core
         /// All current or last <see cref="IAutoImplementorMethod"/> and <see cref="IAutoImplementorProperty"/> are used.
         /// Implemented method and properties are not virtual and the resulting type is sealed.
         /// </summary>
-        /// <param name="logger">Logger to use.</param>
+        /// <param name="monitor">Logger to use.</param>
         /// <param name="assembly">Dynamic assembly into which the type must be created.</param>
         /// <param name="storeAsLastGeneratedType">True to update <see cref="LastGeneratedType"/> with the created type.</param>
         /// <returns>The newly created type in the dynamic assembly. Null if an error occured.</returns>
-        public Type CreateFinalType( IActivityLogger logger, IDynamicAssembly assembly, bool storeAsLastGeneratedType = false )
+        public Type CreateFinalType( IActivityMonitor monitor, IDynamicAssembly assembly, bool storeAsLastGeneratedType = false )
         {
-            Type t = DoCreateType( logger, assembly, AbstractType, true );
+            Type t = DoCreateType( monitor, assembly, AbstractType, true );
             if( t != null && storeAsLastGeneratedType ) _lastGeneratedType = t;
             return t;
         }
 
 
-        private Type DoCreateType( IActivityLogger logger, IDynamicAssembly assembly, Type current, bool finalImplementation )
+        private Type DoCreateType( IActivityMonitor monitor, IDynamicAssembly assembly, Type current, bool finalImplementation )
         {
             TypeAttributes tA = TypeAttributes.Class | TypeAttributes.Public;
             if( finalImplementation ) tA |= TypeAttributes.Sealed;
@@ -234,24 +234,24 @@ namespace CK.Core
                     if( m == null && finalImplementation ) m = am.LastImplementor;
                     if( m == null || (m == EmptyImplementor && finalImplementation) )
                     {
-                        logger.Fatal( "Method '{0}.{1}' has no valid associated IAutoImplementorMethod.", AbstractType.FullName, am.Method.Name );
+                        monitor.Fatal().Send( "Method '{0}.{1}' has no valid associated IAutoImplementorMethod.", AbstractType.FullName, am.Method.Name );
                     }
                     else
                     {
                         try
                         {
-                            if( !m.Implement( logger, am.Method, assembly, b, !finalImplementation ) )
+                            if( !m.Implement( monitor, am.Method, assembly, b, !finalImplementation ) )
                             {
                                 if( finalImplementation )
                                 {
-                                    logger.Fatal( "Method '{0}.{1}' can not be implemented by its IAutoImplementorMethod.", AbstractType.FullName, am.Method.Name );
+                                    monitor.Fatal().Send( "Method '{0}.{1}' can not be implemented by its IAutoImplementorMethod.", AbstractType.FullName, am.Method.Name );
                                 }
-                                else EmptyImplementor.Implement( logger, am.Method, assembly, b, true );
+                                else EmptyImplementor.Implement( monitor, am.Method, assembly, b, true );
                             }
                         }
                         catch( Exception ex )
                         {
-                            logger.Fatal( ex, "While implementing method '{0}.{1}'.", AbstractType.FullName, am.Method.Name );
+                            monitor.Fatal().Send( ex, "While implementing method '{0}.{1}'.", AbstractType.FullName, am.Method.Name );
                             return null;
                         }
                     }
@@ -265,24 +265,24 @@ namespace CK.Core
                     if( p == null && finalImplementation ) p = ap.LastImplementor;
                     if( p == null || (p == EmptyImplementor && finalImplementation) )
                     {
-                        logger.Fatal( "Property '{0}.{1}' has no valid associated IAutoImplementorProperty.", AbstractType.FullName, ap.Property.Name );
+                        monitor.Fatal().Send( "Property '{0}.{1}' has no valid associated IAutoImplementorProperty.", AbstractType.FullName, ap.Property.Name );
                     }
                     else
                     {
                         try
                         {
-                            if( !p.Implement( logger, ap.Property, assembly, b, !finalImplementation ) )
+                            if( !p.Implement( monitor, ap.Property, assembly, b, !finalImplementation ) )
                             {
                                 if( finalImplementation )
                                 {
-                                    logger.Fatal( "Property '{0}.{1}' can not be implemented by its IAutoImplementorProperty.", AbstractType.FullName, ap.Property.Name );
+                                    monitor.Fatal().Send( "Property '{0}.{1}' can not be implemented by its IAutoImplementorProperty.", AbstractType.FullName, ap.Property.Name );
                                 }
-                                else EmptyImplementor.Implement( logger, ap.Property, assembly, b, true );
+                                else EmptyImplementor.Implement( monitor, ap.Property, assembly, b, true );
                             }
                         }
                         catch( Exception ex )
                         {
-                            logger.Fatal( ex, "While implementing property '{0}.{1}'.", AbstractType.FullName, ap.Property.Name );
+                            monitor.Fatal().Send( ex, "While implementing property '{0}.{1}'.", AbstractType.FullName, ap.Property.Name );
                             return null;
                         }
                     }
@@ -294,7 +294,7 @@ namespace CK.Core
             }
             catch( Exception ex )
             {
-                logger.Fatal( ex, "While implementing Type '{0}'.", AbstractType.FullName );
+                monitor.Fatal().Send( ex, "While implementing Type '{0}'.", AbstractType.FullName );
                 return null;
             }
         }

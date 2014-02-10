@@ -76,10 +76,10 @@ namespace CK.Core
         /// An abstract class may be considered as concrete if there is a way to concretize an instance. 
         /// This is called only for abstract types and if <paramref name="assembly"/> is not null.
         /// </summary>
-        /// <param name="logger">The logger to use.</param>
+        /// <param name="monitor">The monitor to use.</param>
         /// <param name="assembly">The dynamic assembly to use for generated types if necessary.</param>
         /// <param name="abstractTypeInfo">Optional object that could be associated to concretize an abstract type.</param>
-        internal protected virtual bool AbstractTypeCanBeInstanciated( IActivityLogger logger, DynamicAssembly assembly, out object abstractTypeInfo )
+        internal protected virtual bool AbstractTypeCanBeInstanciated( IActivityMonitor monitor, DynamicAssembly assembly, out object abstractTypeInfo )
         {
             Debug.Assert( AmbientTypeInfo.Type.IsAbstract && assembly != null );
             abstractTypeInfo = null;

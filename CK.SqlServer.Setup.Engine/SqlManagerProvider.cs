@@ -8,7 +8,7 @@ namespace CK.SqlServer.Setup
 
     public class SqlManagerProvider : ISqlManagerProvider, IDisposable
     {
-        readonly IActivityLogger _logger;
+        readonly IActivityMonitor _monitor;
         readonly Dictionary<string, Item> _items;
         readonly Action<SqlManager> _dbConfigurator;
 
@@ -19,10 +19,10 @@ namespace CK.SqlServer.Setup
             public bool DoNotDispose;
         }
 
-        public SqlManagerProvider( IActivityLogger logger, Action<SqlManager> dbConfigurator = null )
+        public SqlManagerProvider( IActivityMonitor monitor, Action<SqlManager> dbConfigurator = null )
         {
-            if( logger == null ) throw new ArgumentNullException( "_logger" );
-            _logger = logger;
+            if( monitor == null ) throw new ArgumentNullException( "_monitor" );
+            _monitor = monitor;
             _items = new Dictionary<string, Item>();
             _dbConfigurator = dbConfigurator ?? Util.ActionVoid;
         }
@@ -59,7 +59,7 @@ namespace CK.SqlServer.Setup
         void CreateManager( Item i )
         {
             SqlManager m = new SqlManager();
-            m.Logger = _logger;
+            m.Monitor = _monitor;
             m.OpenFromConnectionString( i.ConnectionString );
             _dbConfigurator( m );
             i.Manager = m;

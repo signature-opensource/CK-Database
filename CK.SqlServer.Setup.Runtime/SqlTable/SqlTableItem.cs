@@ -10,8 +10,8 @@ namespace CK.SqlServer.Setup
         {
         }
 
-        public SqlTableItem( IActivityLogger logger, IStObjSetupData data )
-            : base( logger, data )
+        public SqlTableItem( IActivityMonitor monitor, IStObjSetupData data )
+            : base( monitor, data )
         {
             Name = data.FullNameWithoutContext;
         }

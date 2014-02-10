@@ -10,62 +10,64 @@ namespace CK.StObj.Engine.Tests
 {
     static class TestHelper
     {
-        static IDefaultActivityLogger _logger;
-        static ActivityLoggerConsoleSink _console;
         static string _scriptFolder;
         static string _binFolder;
         static string _tempFolder;
 
+        static IActivityMonitor _monitor;
+        static ActivityMonitorConsoleClient _console;
+
         static TestHelper()
         {
-            _console = new ActivityLoggerConsoleSink();
-            _logger = new DefaultActivityLogger( true );
-            _logger.Tap.Register( _console );
+            _monitor = new ActivityMonitor();
+            _monitor.Output.BridgeTarget.HonorMonitorFilter = false;
+            _console = new ActivityMonitorConsoleClient();
+            _monitor.Output.RegisterClients( _console );
         }
 
-        public static IActivityLogger Logger
+        public static IActivityMonitor ConsoleMonitor
         {
-            get { return _logger; }
+            get { return _monitor; }
         }
 
         public static bool LogsToConsole
         {
-            get { return _logger.Tap.RegisteredSinks.Contains( _console ); }
+            get { return _monitor.Output.Clients.Contains( _console ); }
             set
             {
-                if( value ) _logger.Tap.Register( _console );
-                else _logger.Tap.Unregister( _console );
+                if( value ) _monitor.Output.RegisterUniqueClient( c => c == _console, () => _console );
+                else _monitor.Output.UnregisterClient( _console );
             }
         }
 
         #region Trace for IDependentItem
 
-        public static void TraceDependentItem( this IActivityLogger @this, IEnumerable<IDependentItem> e )
+        public static void TraceDependentItem( this IActivityMonitor @this, IEnumerable<IDependentItem> e )
         {
-            using( @this.OpenGroup( LogLevel.Trace, "Dependent items" ) )
+            using( @this.OpenTrace().Send( "Dependent items" ) )
             {
                 foreach( var i in e ) TraceDependentItem( @this, i );
             }
         }
 
-        public static void TraceDependentItem( this IActivityLogger @this, IDependentItem i )
+        public static void TraceDependentItem( this IActivityMonitor @this, IDependentItem i )
         {
-            using( _logger.OpenGroup( LogLevel.Trace, "FullName = {0}", i.FullName ) )
+            using( _monitor.OpenTrace().Send( "FullName = {0}", i.FullName ) )
             {
-                _logger.Trace( "Container = {0}", OneName( i.Container ) );
-                _logger.Trace( "Generalization = {0}", OneName( i.Generalization ) );
-                _logger.Trace( "Requires = {0}", Names( i.Requires ) );
-                _logger.Trace( "RequiredBy = {0}", Names( i.RequiredBy ) );
-                _logger.Trace( "Groups = {0}", Names( i.Groups ) );
+                _monitor.Trace().Send( "Container = {0}", OneName( i.Container ) );
+                _monitor.Trace().Send( "Generalization = {0}", OneName( i.Generalization ) );
+                _monitor.Trace().Send( "Requires = {0}", Names( i.Requires ) );
+                _monitor.Trace().Send( "RequiredBy = {0}", Names( i.RequiredBy ) );
+                _monitor.Trace().Send( "Groups = {0}", Names( i.Groups ) );
                 IDependentItemGroup g = i as IDependentItemGroup;
                 if( g != null )
                 {
                     IDependentItemContainerTyped c = i as IDependentItemContainerTyped;
                     if( c != null )
                     {
-                        _logger.Trace( "[{0}]Children = {1}", c.ItemKind.ToString()[0], Names( g.Children ) );
+                        _monitor.Trace().Send( "[{0}]Children = {1}", c.ItemKind.ToString()[0], Names( g.Children ) );
                     }
-                    else _logger.Trace( "[G]Children = {0}", Names( g.Children ) );
+                    else _monitor.Trace().Send( "[G]Children = {0}", Names( g.Children ) );
                 }
             }
         }
@@ -84,9 +86,9 @@ namespace CK.StObj.Engine.Tests
 
         #region Trace for ISortedItem
 
-        public static void TraceSortedItem( this IActivityLogger @this, IEnumerable<ISortedItem> e, bool skipGroupTail )
+        public static void TraceSortedItem( this IActivityMonitor @this, IEnumerable<ISortedItem> e, bool skipGroupTail )
         {
-            using( _logger.OpenGroup( LogLevel.Trace, "Sorted items" ) )
+            using( _monitor.OpenTrace().Send( "Sorted items" ) )
             {
                 foreach( var i in e )
                     if( i.HeadForGroup == null || skipGroupTail )
@@ -94,15 +96,15 @@ namespace CK.StObj.Engine.Tests
             }
         }
 
-        public static void TraceSortedItem( this IActivityLogger @this, ISortedItem i )
+        public static void TraceSortedItem( this IActivityMonitor @this, ISortedItem i )
         {
-            using( _logger.OpenGroup( LogLevel.Trace, "[{1}]FullName = {0}", i.FullName, i.ItemKind.ToString()[0] ) )
+            using( _monitor.OpenTrace().Send( "[{1}]FullName = {0}", i.FullName, i.ItemKind.ToString()[0] ) )
             {
-                _logger.Trace( "Container = {0}", i.Container != null ? i.Container.FullName : "(null)" );
-                _logger.Trace( "Generalization = {0}", i.Generalization != null ? i.Generalization.FullName : "(null)" );
-                _logger.Trace( "Requires = {0}", Names( i.Requires ) );
-                _logger.Trace( "Groups = {0}", Names( i.Groups ) );
-                _logger.Trace( "Children = {0}", Names( i.Children ) );
+                _monitor.Trace().Send( "Container = {0}", i.Container != null ? i.Container.FullName : "(null)" );
+                _monitor.Trace().Send( "Generalization = {0}", i.Generalization != null ? i.Generalization.FullName : "(null)" );
+                _monitor.Trace().Send( "Requires = {0}", Names( i.Requires ) );
+                _monitor.Trace().Send( "Groups = {0}", Names( i.Groups ) );
+                _monitor.Trace().Send( "Children = {0}", Names( i.Children ) );
             }
         }
 

@@ -14,30 +14,28 @@ namespace CK.SqlServer
         /// Installs the kernel.
         /// </summary>
         /// <param name="manager">The manager that will be used.</param>
-        /// <param name="logger">The logger to use.</param>
+        /// <param name="monitor">The monitor to use.</param>
         /// <param name="forceInstall">True to force the installation even if Ver column of CKCore.tSystem where Id = 1 is the same as <see cref="CurrentVersion"/>.</param>
         /// <returns>True on success.</returns>
-        public static bool Install( SqlManager manager, IActivityLogger logger, bool forceInstall = false )
+        public static bool Install( SqlManager manager, IActivityMonitor monitor, bool forceInstall = false )
         {
-            if( logger == null ) throw new ArgumentNullException( "logger" );
+            if( monitor == null ) throw new ArgumentNullException( "monitor" );
 
-            using( logger.OpenGroup( LogLevel.Trace, "Installing CKCore kernel." ) )
+            using( monitor.OpenTrace().Send( "Installing CKCore kernel." ) )
             {
                 Int16 ver = 0;
                 if( !forceInstall && (ver = (Int16)manager.Connection.ExecuteScalar( "if object_id('CKCore.tSystem') is not null select Ver from CKCore.tSystem where Id=1 else select cast(0 as smallint);" )) == CurrentVersion )
                 {
-                    logger.CloseGroup( String.Format( "Already installed in version {0}.", CurrentVersion ) );
+                    monitor.CloseGroup( String.Format( "Already installed in version {0}.", CurrentVersion ) );
                 }
                 else
                 {
-                    using( logger.Filter( LogLevelFilter.Error ) )
-                    {
-                        SimpleScriptTagHandler s = new SimpleScriptTagHandler( _script.Replace( "$Ver$", CurrentVersion.ToString() ) );
-                        if( !s.Expand( logger, false ) ) return false;
-                        if( !manager.ExecuteScripts( s.SplitScript().Select( one => one.Body ), logger ) ) return false;
-                    }
-                    if( ver == 0 ) logger.CloseGroup( String.Format( "Installed in version {0}.", CurrentVersion ) );
-                    else logger.CloseGroup( String.Format( "Installed in version {0} (was {1}).", CurrentVersion, ver ) );
+                    monitor.MinimalFilter = LogFilter.Terse;
+                    SimpleScriptTagHandler s = new SimpleScriptTagHandler( _script.Replace( "$Ver$", CurrentVersion.ToString() ) );
+                    if( !s.Expand( monitor, false ) ) return false;
+                    if( !manager.ExecuteScripts( s.SplitScript().Select( one => one.Body ), monitor ) ) return false;
+                    if( ver == 0 ) monitor.CloseGroup( String.Format( "Installed in version {0}.", CurrentVersion ) );
+                    else monitor.CloseGroup( String.Format( "Installed in version {0} (was {1}).", CurrentVersion, ver ) );
                 }
             }
             return true;

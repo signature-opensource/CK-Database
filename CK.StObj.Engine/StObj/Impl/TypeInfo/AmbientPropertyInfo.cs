@@ -26,9 +26,9 @@ namespace CK.Setup
 
         public PropertyResolutionSource ResolutionSource { get; private set; }
 
-        protected override void SetGeneralizationInfo( IActivityLogger logger, CovariantPropertyInfo g )
+        protected override void SetGeneralizationInfo( IActivityMonitor monitor, CovariantPropertyInfo g )
         {
-            base.SetGeneralizationInfo( logger, g );
+            base.SetGeneralizationInfo( monitor, g );
 
             AmbientPropertyInfo gen = (AmbientPropertyInfo)g;
             if( !_isSourceDefined ) ResolutionSource = gen.ResolutionSource;

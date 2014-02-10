@@ -89,13 +89,13 @@ namespace CK.Core
         /// <summary>
         /// Logs detailed information about discovered ambient contracts for all discovered contexts.
         /// </summary>
-        /// <param name="logger">Logger (must not be null).</param>
-        public void LogErrorAndWarnings( IActivityLogger logger )
+        /// <param name="monitor">Logger (must not be null).</param>
+        public void LogErrorAndWarnings( IActivityMonitor monitor )
         {
-            if( logger == null ) throw new ArgumentNullException( "logger" );
-            using( logger.OpenGroup( LogLevel.Trace, "Ambient Contract discovering: {0} context(s).", Contexts.Count ) )
+            if( monitor == null ) throw new ArgumentNullException( "monitor" );
+            using( monitor.OpenTrace().Send( "Ambient Contract discovering: {0} context(s).", Contexts.Count ) )
             {
-                Foreach( r => r.LogErrorAndWarnings( logger ) );
+                Foreach( r => r.LogErrorAndWarnings( monitor ) );
             }
         }
 

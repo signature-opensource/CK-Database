@@ -117,7 +117,7 @@ namespace CK.Setup
         /// <summary>
         /// True only if no cycle has been detected, and no structure error (<see cref="HasStructureError"/>) 
         /// exist: <see cref="SortedItems"/> can be exploited.
-        /// When IsComplete is false, <see cref="LogError"/> can be used to have a dump of the errors in a <see cref="IActivityLogger"/>.
+        /// When IsComplete is false, <see cref="LogError"/> can be used to have a dump of the errors in a <see cref="IActivityMonitor"/>.
         /// </summary>
         public bool IsComplete
         {
@@ -148,20 +148,20 @@ namespace CK.Setup
         /// <summary>
         /// Logs <see cref="CycleExplainedString"/> and any structure errors. Does nothing if <see cref="IsComplete"/> is true.
         /// </summary>
-        /// <param name="logger">The logger to use.</param>
-        public void LogError( IActivityLogger logger )
+        /// <param name="monitor">The monitor to use.</param>
+        public void LogError( IActivityMonitor monitor )
         {
-            if( logger == null ) throw new ArgumentNullException( "logger" );
+            if( monitor == null ) throw new ArgumentNullException( "monitor" );
             if( HasStructureError )
             {
                 foreach( var bug in ItemIssues.Where( d => d.StructureError != DependentItemStructureError.None ) )
                 {
-                    bug.LogError( logger );
+                    bug.LogError( monitor );
                 }
             }
             if( CycleDetected != null )
             {
-                logger.Error( "Cycle detected: {0}.", CycleExplainedString );
+                monitor.Error().Send( "Cycle detected: {0}.", CycleExplainedString );
             }
         }
 

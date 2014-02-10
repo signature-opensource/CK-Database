@@ -18,7 +18,7 @@ namespace CK.Setup
         readonly IVersionedItemRepository _versionRepository;
         readonly DriverList _drivers;
         readonly ISetupDriverFactory _driverFactory;
-        readonly IActivityLogger _logger;
+        readonly IActivityMonitor _monitor;
         readonly ISetupSessionMemory _memory;
         SetupEngineState _state;
 
@@ -110,17 +110,17 @@ namespace CK.Setup
         /// </summary>
         /// <param name="versionRepository">Provides version information about items already installed.</param>
         /// <param name="memory">Provides persistent memory to setup participants.</param>
-        /// <param name="_logger">Logger to use.</param>
+        /// <param name="_monitor">Monitor to use.</param>
         /// <param name="driverFactory">Factory for setup drivers.</param>
-        public SetupEngine( IVersionedItemRepository versionRepository, ISetupSessionMemory memory, IActivityLogger logger, ISetupDriverFactory driverFactory )
+        public SetupEngine( IVersionedItemRepository versionRepository, ISetupSessionMemory memory, IActivityMonitor monitor, ISetupDriverFactory driverFactory )
         {
             if( versionRepository == null ) throw new ArgumentNullException( "versionRepository" );
-            if( logger == null ) throw new ArgumentNullException( "logger" );
+            if( monitor == null ) throw new ArgumentNullException( "monitor" );
             if( memory == null ) throw new ArgumentNullException( "memory" );
             _versionRepository = versionRepository;
             _memory = memory;
             _driverFactory = driverFactory ?? DefaultDriverfactory.Default;
-            _logger = logger;
+            _monitor = monitor;
             _drivers = new DriverList( this );
         }
 
@@ -146,9 +146,9 @@ namespace CK.Setup
             get { return _memory; }
         }
 
-        public IActivityLogger Logger
+        public IActivityMonitor Monitor
         {
-            get { return _logger; }
+            get { return _monitor; }
         }
 
         /// <summary>
@@ -292,18 +292,18 @@ namespace CK.Setup
         private bool SafeFireSetupEvent( SetupStep step, bool errorOccured = false )
         {
             if( SetupEvent == null ) return true;
-            using( _logger.OpenGroup( LogLevel.Trace, errorOccured ? "Raising error event during {0}." : "Raising {0} setup event.", step ) )
+            using( _monitor.OpenTrace().Send( errorOccured ? "Raising error event during {0}." : "Raising {0} setup event.", step ) )
             {
                 var e = new SetupEventArgs( step, errorOccured );
                 try
                 {
                     SetupEvent( this, e );
                     if( e.CancelReason == null ) return true;
-                    _logger.Fatal( e.CancelReason );
+                    _monitor.Fatal().Send( e.CancelReason );
                 }
                 catch( Exception ex )
                 {
-                    _logger.Fatal( ex );
+                    _monitor.Fatal().Send( ex );
                 }
             }
             return false;
@@ -319,7 +319,7 @@ namespace CK.Setup
                 var reusableEvent = new DriverEventArgs( SetupStep.Init );
                 foreach( var d in _drivers )
                 {
-                    using( _logger.OpenGroup( LogLevel.Info, "Initializing {0}", d.FullName ) )
+                    using( _monitor.OpenInfo().Send( "Initializing {0}", d.FullName ) )
                     {
                         if( !d.ExecuteInit() ) return false;
                         var hE = DriverEvent;
@@ -334,7 +334,7 @@ namespace CK.Setup
             }
             catch( Exception ex )
             {
-                _logger.Fatal( ex );
+                _monitor.Fatal().Send( ex );
                 SafeFireSetupEvent( SetupStep.Init, true );
                 return false;
             }
@@ -352,7 +352,7 @@ namespace CK.Setup
                 var reusableEvent = new DriverEventArgs( SetupStep.Install );
                 foreach( var d in _drivers )
                 {
-                    using( _logger.OpenGroup( LogLevel.Info, "Installing {0} ({1})", d.FullName, VersionTransitionString( d ) ) )
+                    using( _monitor.OpenInfo().Send( "Installing {0} ({1})", d.FullName, VersionTransitionString( d ) ) )
                     {
                         if( !d.ExecuteInstall() ) return false;
                         var hE = DriverEvent;
@@ -367,7 +367,7 @@ namespace CK.Setup
             }
             catch( Exception ex )
             {
-                _logger.Fatal( ex );
+                _monitor.Fatal().Send( ex );
                 SafeFireSetupEvent( SetupStep.Install, true );
                 return false;
             }
@@ -421,7 +421,7 @@ namespace CK.Setup
                 var reusableEvent = new DriverEventArgs( SetupStep.Settle );
                 foreach( var d in _drivers )
                 {
-                    using( _logger.OpenGroup( LogLevel.Info, "Settling {0}", d.FullName ) )
+                    using( _monitor.OpenInfo().Send( "Settling {0}", d.FullName ) )
                     {
                         if( !d.ExecuteSettle() ) return false;
                         var hE = DriverEvent;
@@ -438,7 +438,7 @@ namespace CK.Setup
             }
             catch( Exception ex )
             {
-                _logger.Fatal( ex );
+                _monitor.Fatal().Send( ex );
                 SafeFireSetupEvent( SetupStep.Settle, true );
                 return false;
             }
@@ -451,7 +451,7 @@ namespace CK.Setup
         {
             if( (_state & SetupEngineState.Disposed) == 0 )
             {
-                using( Logger.OpenGroup( LogLevel.Info, "Disposing {0} drivers.", _drivers.Count ) )
+                using( Monitor.OpenInfo().Send( "Disposing {0} drivers.", _drivers.Count ) )
                 {
                     foreach( var d in _drivers )
                     {
@@ -464,7 +464,7 @@ namespace CK.Setup
                             }
                             catch( Exception ex )
                             {
-                                Logger.Error( ex, "Disposing {0} of type '{1}'.", d.FullName, d.GetType() );
+                                Monitor.Error().Send( ex, "Disposing {0} of type '{1}'.", d.FullName, d.GetType() );
                             }
                         }
                     }

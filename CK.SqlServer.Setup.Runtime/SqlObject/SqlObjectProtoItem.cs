@@ -107,35 +107,34 @@ namespace CK.SqlServer.Setup
             MissingDependencyIsError = missingDependencyIsError;
         }
 
-        public SqlProcedureItem CreateProcedureItem( IActivityLogger logger )
+        public SqlProcedureItem CreateProcedureItem( IActivityMonitor monitor )
         {
-            if( logger == null ) throw new ArgumentNullException( "logger" );
+            if( monitor == null ) throw new ArgumentNullException( "monitor" );
             if( ItemType != SqlObjectProtoItem.TypeProcedure ) throw new InvalidOperationException( "Not a procedure." );
             try
             {
                 SqlExprStStoredProc sp;
                 var error = SqlAnalyser.ParseStatement( out sp, FullOriginalText );
-                error.LogOnError( LogLevel.Error, logger );
+                error.LogOnError( monitor );
                 return new SqlProcedureItem( this, sp );
             }
             catch( Exception ex )
             {
-                using( logger.OpenGroup( LogLevel.Error, ex, "While parsing {0}.", FullName ) )
+                using( monitor.OpenError().Send( ex, "While parsing {0}.", FullName ) )
                 {
-                    logger.Filter = LogLevelFilter.Info;
-                    logger.Info( FullOriginalText );
+                    monitor.Info().Send( FullOriginalText );
                 }
                 return null;
             }
         }
 
-        public SqlObjectItem CreateItem( IActivityLogger logger )
+        public SqlObjectItem CreateItem( IActivityMonitor monitor )
         {
-            if( logger == null ) throw new ArgumentNullException( "logger" );
+            if( monitor == null ) throw new ArgumentNullException( "monitor" );
             SqlObjectItem result = null;
             if( ItemType == SqlObjectProtoItem.TypeProcedure )
             {
-                result = CreateProcedureItem( logger );
+                result = CreateProcedureItem( monitor );
             }
             else if( ItemType == SqlObjectProtoItem.TypeView )
             {
@@ -147,7 +146,7 @@ namespace CK.SqlServer.Setup
             }
             else
             {
-                logger.Error( "Unable to create item for '{0}', type '{1}' is unknown.", FullName, ItemType ); 
+                monitor.Error().Send( "Unable to create item for '{0}', type '{1}' is unknown.", FullName, ItemType ); 
             }
             return result;
         }

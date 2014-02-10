@@ -28,7 +28,7 @@ namespace CK.Setup
             static object _lock = new object();
             static Dictionary<Type,TypeInfoForBaseClasses> _cache;
 
-            static public IStObjTypeInfoFromParent GetFor( IActivityLogger logger, Type t )
+            static public IStObjTypeInfoFromParent GetFor( IActivityMonitor monitor, Type t )
             {
                 TypeInfoForBaseClasses result = null;
                 // Poor lock: we don't care here. Really.
@@ -51,7 +51,7 @@ namespace CK.Setup
                             result.SpecializationDepth = 1;
                             // For ItemKind & TrackAmbientProperties, walks up the inheritance chain and combines the StObjAttribute.
                             // We compute the SpecializationDepth: once we know it, we can inject it the Ambient Properties discovery.
-                            var a = AttributesReader.GetStObjAttributeForExactType( t, logger );
+                            var a = AttributesReader.GetStObjAttributeForExactType( t, monitor );
                             if( a != null )
                             {
                                 result.Container = a.Container;
@@ -64,7 +64,7 @@ namespace CK.Setup
                                 result.SpecializationDepth = result.SpecializationDepth + 1;
                                 if( !result.IsFullyDefined )
                                 {
-                                    var aAbove = AttributesReader.GetStObjAttributeForExactType( tAbove, logger );
+                                    var aAbove = AttributesReader.GetStObjAttributeForExactType( tAbove, monitor );
                                     if( aAbove != null )
                                     {
                                         if( result.Container == null ) result.Container = aAbove.Container;
@@ -78,7 +78,7 @@ namespace CK.Setup
                             List<StObjPropertyInfo> stObjProperties = new List<StObjPropertyInfo>();
                             IReadOnlyList<AmbientPropertyInfo> apList;
                             IReadOnlyList<AmbientContractInfo> acList;
-                            CreateAllAmbientPropertyList( logger, t, result.SpecializationDepth, stObjProperties, out apList, out acList );
+                            CreateAllAmbientPropertyList( monitor, t, result.SpecializationDepth, stObjProperties, out apList, out acList );
                             Debug.Assert( apList != null && acList != null );
                             result.AmbientProperties = apList;
                             result.AmbientContracts = acList;
@@ -94,7 +94,7 @@ namespace CK.Setup
             /// Recursive function to collect/merge Ambient Properties, Contracts and StObj Properties on base (non IAmbientContract) types.
             /// </summary>
             static void CreateAllAmbientPropertyList(
-                IActivityLogger logger,
+                IActivityMonitor monitor,
                 Type type,
                 int specializationLevel,
                 List<StObjPropertyInfo> stObjProperties,
@@ -110,22 +110,22 @@ namespace CK.Setup
                 {
                     IList<AmbientPropertyInfo> apCollector;
                     IList<AmbientContractInfo> acCollector;
-                    AmbientPropertyOrContractInfo.CreateAmbientPropertyListForExactType( logger, type, specializationLevel, stObjProperties, out apCollector, out acCollector );
+                    AmbientPropertyOrContractInfo.CreateAmbientPropertyListForExactType( monitor, type, specializationLevel, stObjProperties, out apCollector, out acCollector );
 
-                    CreateAllAmbientPropertyList( logger, type.BaseType, specializationLevel - 1, stObjProperties, out apListResult, out acListResult );
+                    CreateAllAmbientPropertyList( monitor, type.BaseType, specializationLevel - 1, stObjProperties, out apListResult, out acListResult );
 
-                    apListResult = AmbientPropertyOrContractInfo.MergeWithAboveProperties( logger, apListResult, apCollector );
-                    acListResult = AmbientPropertyOrContractInfo.MergeWithAboveProperties( logger, acListResult, acCollector );
+                    apListResult = AmbientPropertyOrContractInfo.MergeWithAboveProperties( monitor, apListResult, apCollector );
+                    acListResult = AmbientPropertyOrContractInfo.MergeWithAboveProperties( monitor, acListResult, acCollector );
                 }
             }
         }
 
         internal static readonly StObjTypeInfo Empty = new StObjTypeInfo();
 
-        internal StObjTypeInfo( IActivityLogger logger, AmbientTypeInfo parent, Type t )
+        internal StObjTypeInfo( IActivityMonitor monitor, AmbientTypeInfo parent, Type t )
             : base( parent, t )
         {
-            IStObjTypeInfoFromParent infoFromParent = Generalization ?? TypeInfoForBaseClasses.GetFor( logger, t.BaseType );
+            IStObjTypeInfoFromParent infoFromParent = Generalization ?? TypeInfoForBaseClasses.GetFor( monitor, t.BaseType );
             SpecializationDepth = infoFromParent.SpecializationDepth + 1;
 
             // StObj properties are initialized with inherited (non Ambient Contract ones).
@@ -136,15 +136,15 @@ namespace CK.Setup
             {
                 if( String.IsNullOrWhiteSpace( p.PropertyName ) )
                 {
-                    logger.Error( "Unamed or whitespace StObj property on '{0}'. Attribute must be configured with a valid PropertyName.", t.FullName );
+                    monitor.Error().Send( "Unamed or whitespace StObj property on '{0}'. Attribute must be configured with a valid PropertyName.", t.FullName );
                 }
                 else if( p.PropertyType == null )
                 {
-                    logger.Error( "StObj property named '{0}' for '{1}' has no PropertyType defined. It should be typeof(object) to explicitely express that any type is accepted.", p.PropertyName, t.FullName );
+                    monitor.Error().Send( "StObj property named '{0}' for '{1}' has no PropertyType defined. It should be typeof(object) to explicitely express that any type is accepted.", p.PropertyName, t.FullName );
                 }
                 else if( stObjProperties.Find( sP => sP.Name == p.PropertyName ) != null )
                 {
-                    logger.Error( "StObj property named '{0}' for '{1}' is defined more than once. It should be declared only once.", p.PropertyName, t.FullName );
+                    monitor.Error().Send( "StObj property named '{0}' for '{1}' is defined more than once. It should be declared only once.", p.PropertyName, t.FullName );
                 }
                 else
                 {
@@ -155,11 +155,11 @@ namespace CK.Setup
             // In the same time, StObjPropertyAttribute that are associated to actual properties are collected into stObjProperties.
             IList<AmbientPropertyInfo> apCollector;
             IList<AmbientContractInfo> acCollector;
-            AmbientPropertyInfo.CreateAmbientPropertyListForExactType( logger, Type, SpecializationDepth, stObjProperties, out apCollector, out acCollector );
+            AmbientPropertyInfo.CreateAmbientPropertyListForExactType( monitor, Type, SpecializationDepth, stObjProperties, out apCollector, out acCollector );
             // For type that have no Generalization: we must handle [AmbientProperty], [AmbientContract] and [StObjProperty] on base classes (we may not have AmbientTypeInfo object 
             // since they are not necessarily IAmbientContract, we use infoFromParent abstraction).
-            AmbientProperties = AmbientPropertyInfo.MergeWithAboveProperties( logger, infoFromParent.AmbientProperties, apCollector );
-            AmbientContracts = AmbientPropertyInfo.MergeWithAboveProperties( logger, infoFromParent.AmbientContracts, acCollector );
+            AmbientProperties = AmbientPropertyInfo.MergeWithAboveProperties( monitor, infoFromParent.AmbientProperties, apCollector );
+            AmbientContracts = AmbientPropertyInfo.MergeWithAboveProperties( monitor, infoFromParent.AmbientContracts, acCollector );
             StObjProperties = stObjProperties.ToReadOnlyList();
             Debug.Assert( AmbientContracts != null && AmbientProperties != null && StObjProperties != null );
 
@@ -174,7 +174,7 @@ namespace CK.Setup
                     INamedPropertyInfo exists;
                     if( names.TryGetValue( newP.Name, out exists ) )
                     {
-                        logger.Error( "{0} property '{1}.{2}' is declared as a '{3}' property by '{4}'. Property names must be distinct.", newP.Kind, newP.DeclaringType.FullName, newP.Name, exists.Kind, exists.DeclaringType.FullName );
+                        monitor.Error().Send( "{0} property '{1}.{2}' is declared as a '{3}' property by '{4}'. Property names must be distinct.", newP.Kind, newP.DeclaringType.FullName, newP.Name, exists.Kind, exists.DeclaringType.FullName );
                     }
                     else names.Add( newP.Name, newP );
                 }
@@ -182,7 +182,7 @@ namespace CK.Setup
 
             #region IStObjAttribute (ItemKind, Container & Type requirements).
             // There is no Container inheritance at this level.
-            var a = AttributesReader.GetStObjAttributeForExactType( t, logger );
+            var a = AttributesReader.GetStObjAttributeForExactType( t, monitor );
             if( a != null )
             {
                 Container = a.Container;
@@ -214,7 +214,7 @@ namespace CK.Setup
             {
                 if( Construct.IsVirtual )
                 {
-                    logger.Error( "Method '{0}.Construct' must NOT be virtual.", t.FullName );
+                    monitor.Error().Send( "Method '{0}.Construct' must NOT be virtual.", t.FullName );
                 }
                 else
                 {
@@ -238,19 +238,19 @@ namespace CK.Setup
                         {
                             if( ContainerConstructParameterIndex >= 0 )
                             {
-                                logger.Error( "Construct method of class '{0}' has more than one parameter marked with [Container] attribute.", t.FullName );
+                                monitor.Error().Send( "Construct method of class '{0}' has more than one parameter marked with [Container] attribute.", t.FullName );
                             }
                             else
                             {
                                 // The Parameter is the Container.
                                 if( Container != null && Container != p.ParameterType )
                                 {
-                                    logger.Error( "Construct parameter '{0}' for class '{1}' defines the Container as '{2}' but an attribute on the class declares the Container as '{3}'.",
+                                    monitor.Error().Send( "Construct parameter '{0}' for class '{1}' defines the Container as '{2}' but an attribute on the class declares the Container as '{3}'.",
                                                                     p.Name, t.FullName, p.ParameterType.FullName, Container.FullName );
                                 }
                                 else if( ContainerContext != null && ContainerContext != parameterContext )
                                 {
-                                    logger.Error( "Construct parameter '{0}' for class '{1}' targets the Container in '{2}' but an attribute on the class declares the Container context as '{3}'.",
+                                    monitor.Error().Send( "Construct parameter '{0}' for class '{1}' targets the Container in '{2}' but an attribute on the class declares the Container context as '{3}'.",
                                                                     p.Name, t.FullName, parameterContext, ContainerContext );
                                 }
                                 ContainerConstructParameterIndex = i;

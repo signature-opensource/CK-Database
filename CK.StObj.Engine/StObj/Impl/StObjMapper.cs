@@ -14,7 +14,7 @@ namespace CK.Setup
         {
         }
 
-        protected override IContextualTypeMap CreateContext<T, TC>( IActivityLogger logger, string context )
+        protected override IContextualTypeMap CreateContext<T, TC>( IActivityMonitor monitor, string context )
         {
             return new StObjContextualMapper( this, context );
         }

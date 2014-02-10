@@ -14,7 +14,7 @@ namespace CK.Setup
     /// </summary>
     public class BasicStObjBuilder : IStObjBuilder
     {
-        readonly IActivityLogger _logger;
+        readonly IActivityMonitor _monitor;
         readonly IStObjEngineConfiguration _config;
 
         /// <summary>
@@ -22,11 +22,11 @@ namespace CK.Setup
         /// Its assembly qualified name ("CK.Setup.BasicStObjBuilder, CK.StObj.Engine") can be set as the <see cref="IStObjEngineConfiguration.BuilderAssemblyQualifiedName"/>
         /// for minimal build (simple objects and no dynamic configuration).
         /// </summary>
-        /// <param name="logger">Logger that must be used.</param>
+        /// <param name="monitor">Logger that must be used.</param>
         /// <param name="config">Configuration that describes the key aspects of the build.</param>
-        public BasicStObjBuilder( IActivityLogger logger, IStObjEngineConfiguration config )
+        public BasicStObjBuilder( IActivityMonitor monitor, IStObjEngineConfiguration config )
         {
-            _logger = logger;
+            _monitor = monitor;
             _config = config;
         }
 
@@ -37,11 +37,11 @@ namespace CK.Setup
         public bool Run()
         {
             // Step 1: Discovering assemblies from AssemblyRegisterConfiguration.
-            AssemblyRegisterer typeReg = new AssemblyRegisterer( _logger );
+            AssemblyRegisterer typeReg = new AssemblyRegisterer( _monitor );
             typeReg.Discover( _config.AppDomainConfiguration.Assemblies );
 
             // Step 2: Collecting StObj (AmbientContracts) from assemblies.
-            StObjCollector collector = new StObjCollector( _logger );
+            StObjCollector collector = new StObjCollector( _monitor );
             collector.RegisterTypes( typeReg );
             if( collector.RegisteringFatalOrErrorCount > 0 ) return false;
 
@@ -50,7 +50,7 @@ namespace CK.Setup
             if( r.HasFatalError ) return false;
 
             // Step 4: Generating final assembly.
-            return r.GenerateFinalAssembly( _logger, _config.FinalAssemblyConfiguration );
+            return r.GenerateFinalAssembly( _monitor, _config.FinalAssemblyConfiguration );
         }
     }
 }

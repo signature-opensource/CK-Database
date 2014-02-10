@@ -13,6 +13,6 @@ namespace CK.Setup
     /// </summary>
     public interface ISqlObjectParser
     {
-        IDependentProtoItem Create( IActivityLogger logger, IContextLocNaming externalName, string text );
+        IDependentProtoItem Create( IActivityMonitor monitor, IContextLocNaming externalName, string text );
     }
 }

@@ -109,22 +109,22 @@ namespace CK.SqlServer
 
         /// <summary>
         /// Processes the script: <see cref="SplitScript"/> must be called to retrieve the script parts.
-        /// Returns false on error: detailed error(s) information are logged in <paramref name="logger"/>.
+        /// Returns false on error: detailed error(s) information are logged in <paramref name="monitor"/>.
         /// </summary>
-        /// <param name="logger">Required logger.</param>
+        /// <param name="monitor">Required monitor.</param>
         /// <param name="scriptAllowed">True to allow --[beginscript] / --[endscript] tags.</param>
         /// <param name="goInsideScriptAllowed">True to allow GO separator inside scripts.</param>
         /// <returns>True on success, false on error(s).</returns>
-        public bool Expand( IActivityLogger logger, bool scriptAllowed, bool goInsideScriptAllowed = false )
+        public bool Expand( IActivityMonitor monitor, bool scriptAllowed, bool goInsideScriptAllowed = false )
         {
-            if( logger == null ) throw new ArgumentNullException( "logger" );
+            if( monitor == null ) throw new ArgumentNullException( "monitor" );
             if( _sb != null ) throw new InvalidOperationException();
 
-            if( !ParseTokens( logger ) ) return false;
-            if( !HandleExpanded( logger ) ) return false;
-            if( !CheckNested( logger, TokenType.IsScript, scriptAllowed, goInsideScriptAllowed ) ) return false;
-            if( !CheckNested( logger, TokenType.IsSP, true, false ) ) return false;
-            return (_expandSuccess = _tokens.Count > 0 ? DoExpand( logger ) : true);
+            if( !ParseTokens( monitor ) ) return false;
+            if( !HandleExpanded( monitor ) ) return false;
+            if( !CheckNested( monitor, TokenType.IsScript, scriptAllowed, goInsideScriptAllowed ) ) return false;
+            if( !CheckNested( monitor, TokenType.IsSP, true, false ) ) return false;
+            return (_expandSuccess = _tokens.Count > 0 ? DoExpand( monitor ) : true);
         }
 
         /// <summary>
@@ -183,7 +183,7 @@ namespace CK.SqlServer
             return result;
         }
 
-        bool HandleExpanded( IActivityLogger logger )
+        bool HandleExpanded( IActivityMonitor monitor )
         {
             Token currentStart = null;
             for( int i = 0; i < _tokens.Count; ++i )
@@ -193,12 +193,12 @@ namespace CK.SqlServer
                 {
                     if( currentStart == null )
                     {
-                        logger.Error( "Unexpected {0}: missing expanded start marker.", _text.Substring( t.Index, t.Length ) );
+                        monitor.Error().Send( "Unexpected {0}: missing expanded start marker.", _text.Substring( t.Index, t.Length ) );
                         return false;
                     }
                     if( (currentStart.Type & ~TokenType.StartExpanded) != (t.Type & ~TokenType.StopExpanded) )
                     {
-                        logger.Error( "Expanded markers mismatch: {0} / {1}.", _text.Substring( currentStart.Index, currentStart.Length ), _text.Substring( t.Index, t.Length ) );
+                        monitor.Error().Send( "Expanded markers mismatch: {0} / {1}.", _text.Substring( currentStart.Index, currentStart.Length ), _text.Substring( t.Index, t.Length ) );
                         return false;
                     }
                     currentStart.MergeExpanded( t );
@@ -209,26 +209,26 @@ namespace CK.SqlServer
                 {
                     if( currentStart != null )
                     {
-                        logger.Error( "Unexpected {0}: duplicate expanded start marker.", _text.Substring( t.Index, t.Length ) );
+                        monitor.Error().Send( "Unexpected {0}: duplicate expanded start marker.", _text.Substring( t.Index, t.Length ) );
                         return false;
                     }
                     currentStart = t;
                 }
                 else if( currentStart != null )
                 {
-                    logger.Error( "Expected {0} stop marker instead of {1}.", _text.Substring( currentStart.Index, currentStart.Length ), _text.Substring( t.Index, t.Length ) );
+                    monitor.Error().Send( "Expected {0} stop marker instead of {1}.", _text.Substring( currentStart.Index, currentStart.Length ), _text.Substring( t.Index, t.Length ) );
                     return false;
                 }
             }
             if( currentStart != null )
             {
-                logger.Error( "Expected {0} stop marker.", _text.Substring( currentStart.Index, currentStart.Length ) );
+                monitor.Error().Send( "Expected {0} stop marker.", _text.Substring( currentStart.Index, currentStart.Length ) );
                 return false;
             }
             return true;
         }
 
-        bool CheckNested( IActivityLogger logger, TokenType type, bool allowed, bool allowInnerGo )
+        bool CheckNested( IActivityMonitor monitor, TokenType type, bool allowed, bool allowInnerGo )
         {
             int scriptLevel = 0;
             List<string> labels = new List<string>();
@@ -237,14 +237,14 @@ namespace CK.SqlServer
                 Token t = _tokens[i];
                 if( !allowInnerGo && t.IsGo && scriptLevel > 0 )
                 {
-                    logger.Error( "Invalid GO batch separator inside --[begin{0}] ... --[end{0}].", TokenTypeDisplayName( type ) );
+                    monitor.Error().Send( "Invalid GO batch separator inside --[begin{0}] ... --[end{0}].", TokenTypeDisplayName( type ) );
                     return false;
                 }
                 if( (t.Type & type) != 0 )
                 {
                     if( !allowed )
                     {
-                        logger.Error( "Invalid {0} in this context.", _text.Substring( t.Index, t.Length ).Trim() );
+                        monitor.Error().Send( "Invalid {0} in this context.", _text.Substring( t.Index, t.Length ).Trim() );
                         return false;
                     }
                     bool ignored = false;
@@ -263,7 +263,7 @@ namespace CK.SqlServer
                             {
                                 if( labels.Contains( t.Label ) )
                                 {
-                                    logger.Error( "Label '{0}' is already used: labels must be unique.", t.Label );
+                                    monitor.Error().Send( "Label '{0}' is already used: labels must be unique.", t.Label );
                                     return false;
                                 }
                                 labels.Add( t.Label );
@@ -275,7 +275,7 @@ namespace CK.SqlServer
                         Debug.Assert( t.IsEnd );
                         if( scriptLevel == 0 )
                         {
-                            logger.Error( "Unexpected {0} found.", _text.Substring( t.Index, t.Length ).Trim() );
+                            monitor.Error().Send( "Unexpected {0} found.", _text.Substring( t.Index, t.Length ).Trim() );
                             return false;
                         }
                         if( scriptLevel-- > 1 )
@@ -289,12 +289,12 @@ namespace CK.SqlServer
                             {
                                 if( current == null )
                                 {
-                                    logger.Error( "Unknown label: label '{0}' has never be defined.", t.Label );
+                                    monitor.Error().Send( "Unknown label: label '{0}' has never be defined.", t.Label );
                                     return false;
                                 }
                                 if( current != t.Label )
                                 {
-                                    logger.Error( "Label mismatch: label '{0}' does not match current one '{1}'.", t.Label, current );
+                                    monitor.Error().Send( "Label mismatch: label '{0}' does not match current one '{1}'.", t.Label, current );
                                     return false;
                                 }
                                 labels.Add( t.Label );
@@ -304,20 +304,20 @@ namespace CK.SqlServer
                     }
                     if( ignored )
                     {
-                        logger.Warn( "Nested {0} found. It is ignored.", _text.Substring( t.Index, t.Length ).Trim() );
+                        monitor.Warn().Send( "Nested {0} found. It is ignored.", _text.Substring( t.Index, t.Length ).Trim() );
                         _tokens.RemoveAt( i-- );
                     }
                 }
             }
             if( scriptLevel > 0 )
             {
-                logger.Error( "Unbalanced --[begin{0}] ... --[end{0}] found.", TokenTypeDisplayName( type ) );
+                monitor.Error().Send( "Unbalanced --[begin{0}] ... --[end{0}] found.", TokenTypeDisplayName( type ) );
                 return false;
             }
             return true;
         }
 
-        bool ParseTokens( IActivityLogger logger )
+        bool ParseTokens( IActivityMonitor monitor )
         {
             _nbScripts = 0;
             _tokens = new List<Token>();
@@ -382,7 +382,7 @@ namespace CK.SqlServer
                     }
                     else
                     {
-                        logger.Warn( "Unregognized sql mark '{0}'. It is ignored.", m.Value.Trim() );
+                        monitor.Warn().Send( "Unregognized sql mark '{0}'. It is ignored.", m.Value.Trim() );
                     }
                 }
                 m = m.NextMatch();
@@ -423,7 +423,7 @@ endsp: if @SPCallTC = 0 commit; return 0;
 ";
         #endregion
 
-        bool DoExpand( IActivityLogger logger )
+        bool DoExpand( IActivityMonitor monitor )
         {
             Debug.Assert( _sb == null );
             Debug.Assert( _tokens[0].Index == 0 && _tokens[_tokens.Count - 1].Index + _tokens[_tokens.Count - 1].Length == _text.Length );

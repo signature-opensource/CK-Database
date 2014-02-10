@@ -143,7 +143,7 @@ namespace CK.StObj.Engine.Tests
                 config.FinalAssemblyConfiguration.ExternalVersionStamp = extVersionStamp;
 
                 DateTime buildTime1;
-                using( StObjBuildResult result = StObjContextRoot.Build( config, TestHelper.Logger, forceBuild: true ) )
+                using( StObjBuildResult result = StObjContextRoot.Build( config, TestHelper.ConsoleMonitor, forceBuild: true ) )
                 {
                     Assert.That( result.Success, Is.True, "Build succeed..." );
                     Assert.That( result.IndependentAppDomain, Is.Null, "...in this app domain." );
@@ -152,7 +152,7 @@ namespace CK.StObj.Engine.Tests
                     Assert.That( File.Exists( fileName ), Is.True, "Build generated the dll." );
                     buildTime1 = File.GetLastWriteTimeUtc( fileName );
                 }
-                using( StObjBuildResult result = StObjContextRoot.Build( config, TestHelper.Logger, forceBuild: false ) )
+                using( StObjBuildResult result = StObjContextRoot.Build( config, TestHelper.ConsoleMonitor, forceBuild: false ) )
                 {
                     Assert.That( result.Success, Is.True, "Build succeed..." );
                     Assert.That( result.IndependentAppDomain, Is.Not.Null, "...used to read the version stamp." );
@@ -161,7 +161,7 @@ namespace CK.StObj.Engine.Tests
                     Assert.That( File.GetLastWriteTimeUtc( fileName ), Is.EqualTo( buildTime1 ) );
                 }
                 Thread.Sleep( 200 );
-                using( StObjBuildResult result = StObjContextRoot.Build( config, TestHelper.Logger, forceBuild: true ) )
+                using( StObjBuildResult result = StObjContextRoot.Build( config, TestHelper.ConsoleMonitor, forceBuild: true ) )
                 {
                     Assert.That( result.Success, Is.True, "Build succeed..." );
                     Assert.That( result.IndependentAppDomain, Is.Null, "...no read of the version stamp." );
@@ -238,7 +238,7 @@ namespace CK.StObj.Engine.Tests
                 config.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.Add( "AutoGenTestObjBuilder, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" );
 
                 DateTime buildTime1;
-                using( StObjBuildResult result = StObjContextRoot.Build( config, TestHelper.Logger, forceBuild: false ) )
+                using( StObjBuildResult result = StObjContextRoot.Build( config, TestHelper.ConsoleMonitor, forceBuild: false ) )
                 {
                     Assert.That( result.Success, Is.True, "Build succeed..." );
                     Assert.That( result.IndependentAppDomain, Is.Not.Null.And.Not.EqualTo( AppDomain.CurrentDomain ), "...in an independent AppDomain." );
@@ -254,7 +254,7 @@ namespace CK.StObj.Engine.Tests
                     Assert.That( AppDomain.CurrentDomain.GetAssemblies().Any( x => x.FullName.Contains( "AutoGenTestObjBuilder" ) ), Is.False, "AutoGenTestObjBuilder has not been loaded in this application domain." );
                 }
                 Thread.Sleep( 200 );
-                using( StObjBuildResult result = StObjContextRoot.Build( config, TestHelper.Logger, forceBuild: false ) )
+                using( StObjBuildResult result = StObjContextRoot.Build( config, TestHelper.ConsoleMonitor, forceBuild: false ) )
                 {
                     Assert.That( result.Success, Is.True, "Succeed: found the previous one." );
                     Assert.That( result.IndependentAppDomain, Is.Not.Null.And.Not.EqualTo( AppDomain.CurrentDomain ), "...we looked for the version stamp in an independent AppDomain." );
@@ -271,7 +271,7 @@ namespace CK.StObj.Engine.Tests
                 }
                 catch( Exception ex )
                 {
-                    TestHelper.Logger.Error( ex, "While deleting temporary folder." );
+                    TestHelper.ConsoleMonitor.Error().Send( ex, "While deleting temporary folder." );
                 }
             }
         }
@@ -314,7 +314,7 @@ namespace CK.StObj.Engine.Tests
                         {
                             class AutoImplementedAttribute : Attribute, IAutoImplementorMethod
                             {
-                                public bool Implement( IActivityLogger logger, System.Reflection.MethodInfo m, IDynamicAssembly a, System.Reflection.Emit.TypeBuilder b, bool isVirtual )
+                                public bool Implement( IActivityMonitor monitor, System.Reflection.MethodInfo m, IDynamicAssembly a, System.Reflection.Emit.TypeBuilder b, bool isVirtual )
                                 {
                                     CK.Reflection.EmitHelper.ImplementEmptyStubMethod( b, m, isVirtual );
                                     return true;
@@ -394,9 +394,9 @@ namespace CK.StObj.Engine.Tests
 
             public BuilderFinalAssemblyConfiguration FinalAssemblyConfiguration { get; private set; }
 
-            //public Action<IActivityLogger,BasicStObjBuilder> RunHook { get; set; }
+            //public Action<IActivityMonitor,BasicStObjBuilder> RunHook { get; set; }
 
-            //public void BuildRunHook( IActivityLogger logger, BasicStObjBuilder config )
+            //public void BuildRunHook( IActivityMonitor monitor, BasicStObjBuilder config )
             //{
             //    AppDomain.CurrentDomain.Load( "AutoGenTestObjBuilder, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" );
             //}

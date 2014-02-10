@@ -21,15 +21,15 @@ namespace CK.Setup
         DependentItemList _children;
         DependentItemGroupList _groups;
 
-        internal StObjSetupDataBase( IActivityLogger logger, Type t, StObjSetupDataBase parent = null )
+        internal StObjSetupDataBase( IActivityMonitor monitor, Type t, StObjSetupDataBase parent = null )
         {
             _parent = parent as IStObjSetupData;
             bool isInRoot = _parent == null;
 
-            _requires = AttributesReader.GetRequirements( logger, t, typeof( RequiresAttribute ) );
-            _requiredBy = AttributesReader.GetRequirements( logger, t, typeof( RequiredByAttribute ) );
-            _children = AttributesReader.GetRequirements( logger, t, typeof( ChildrenAttribute ) );
-            _groups = AttributesReader.GetGroups( logger, t );
+            _requires = AttributesReader.GetRequirements( monitor, t, typeof( RequiresAttribute ) );
+            _requiredBy = AttributesReader.GetRequirements( monitor, t, typeof( RequiredByAttribute ) );
+            _children = AttributesReader.GetRequirements( monitor, t, typeof( ChildrenAttribute ) );
+            _groups = AttributesReader.GetGroups( monitor, t );
             SetupAttribute setupAttr = AttributesReader.GetSetupAttribute( t );
             if( setupAttr != null )
             {
@@ -115,11 +115,11 @@ namespace CK.Setup
             set { _driverTypeName = value; }
         }
 
-        internal static StObjSetupDataBase CreateRootData( IActivityLogger logger, Type t )
+        internal static StObjSetupDataBase CreateRootData( IActivityMonitor monitor, Type t )
         {
             if( t == typeof( object ) ) return null;
-            StObjSetupDataBase b = CreateRootData( logger, t.BaseType );
-            return new StObjSetupDataBase( logger, t, b ); 
+            StObjSetupDataBase b = CreateRootData( monitor, t.BaseType );
+            return new StObjSetupDataBase( monitor, t, b ); 
         }
     }
 }
