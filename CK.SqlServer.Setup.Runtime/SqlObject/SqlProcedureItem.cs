@@ -92,9 +92,9 @@ namespace CK.SqlServer.Setup
             g.Emit( OpCodes.Ldstr, spSchemaName );
             g.Emit( OpCodes.Newobj, TypeCommand.GetConstructor( new Type[] { typeof( string ) } ) );
             g.StLoc( locCmd );
+
             g.LdLoc( locCmd );
             g.LdInt32( (int)CommandType.StoredProcedure );
-
             g.Emit( OpCodes.Callvirt, MCommandSetCommandType );
             g.LdLoc( locCmd );
             g.Emit( OpCodes.Callvirt, MCommandGetParameters );

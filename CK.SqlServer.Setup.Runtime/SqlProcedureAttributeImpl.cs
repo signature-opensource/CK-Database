@@ -4,6 +4,7 @@ using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Linq;
 using CK.Core;
 using CK.Setup;
 
@@ -56,7 +57,7 @@ namespace CK.SqlServer.Setup
         {
             // 2 - Finds the most specific responsible of this resource.
             //      - first, gets the name of the external object.
-            //      - Based on the name, registers this initializer as beeing the most precise one: this can be overridden (and will be) 
+            //      - Based on the name, registers this initializer as being the most precise one: this can be overridden (and will be) 
             //        by followers that are bound to the same external name.
             //      - Pushes an action that will be executed after followers have been executed.
             //
@@ -125,23 +126,30 @@ namespace CK.SqlServer.Setup
                 }
 
                 ParameterInfo[] mParameters = m.GetParameters();
-                bool createOrSetValues = m.ReturnType == typeof( void )
+                GenerationType gType;
+                if( m.ReturnType == typeof( void )
                         && mParameters.Length >= 1
                         && mParameters[0].ParameterType.IsByRef
                         && !mParameters[0].IsOut
-                        && mParameters[0].ParameterType.GetElementType() == SqlObjectItem.TypeCommand;
-                if( !createOrSetValues && m.ReturnType != SqlObjectItem.TypeCommand )
+                        && mParameters[0].ParameterType.GetElementType() == SqlObjectItem.TypeCommand )
                 {
-                    monitor.Error().Send( "Method '{0}.{1}' must return a SqlCommand or accepts a SqlCommand by reference as its first argument.", m.DeclaringType.FullName, m.Name );
-                    return false;
+                    gType = GenerationType.ByRefSqlCommand;
+                }
+                else
+                {
+                    if( m.ReturnType == SqlObjectItem.TypeCommand ) gType = GenerationType.ReturnSqlCommand;
+                    else
+                    {
+                        if( !m.ReturnType.GetConstructors().Any( ctor => ctor.GetParameters().Any( p => p.ParameterType == SqlObjectItem.TypeCommand && !p.ParameterType.IsByRef && !p.HasDefaultValue ) ) )
+                        {
+                            monitor.Error().Send( "Ctor '{0}.{1}' must return a SqlCommand -OR- a type that has at least one constructor with a non optional SqlCommand (among other parameters) -OR- accepts a SqlCommand by reference as its first argument.", m.DeclaringType.FullName, m.Name );
+                            return false;
+                        }
+                        gType = GenerationType.ReturnWrapper;
+                    }
                 }
                 SqlExprParameterList sqlParameters = item.OriginalStatement.Parameters;
-                if( (createOrSetValues ? mParameters.Length - 1 : mParameters.Length) > sqlParameters.Count )
-                {
-                    monitor.Error().Send( "Method '{0}.{1}' has more parameters than '{2}'.", m.DeclaringType.FullName, m.Name, item.FullName );
-                    return false;
-                }
-                return GenerateCreateSqlCommand( createOrSetValues, monitor, mCreateCommand, item.OriginalStatement.Name, sqlParameters, m, mParameters, tB, isVirtual );
+                return GenerateCreateSqlCommand( gType, monitor, mCreateCommand, item.OriginalStatement.Name, sqlParameters, m, mParameters, tB, isVirtual );
             }
         }
 

@@ -12,7 +12,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 {
     [TestFixture]
     [Category( "DBSetup" )]
-    public class DatabaseSetup
+    public partial class DatabaseSetup
     {
         [Test]
         public void InstallActorBasicFromScracth()
@@ -130,6 +130,9 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
                 Guid? inAndOut = Guid.NewGuid();
                 Assert.That( CallGuidRefTest( c, map, null, ref inAndOut, manualImplementation:false ), Is.EqualTo( "@InOnly is null, @InAndOut is not null." ) );
                 Assert.That( inAndOut, Is.Null );
+
+                CheckCommandWrapper( c, map );
+                //CheckCommandParamInjection( c, map );
             }
         }
 

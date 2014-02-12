@@ -12,10 +12,17 @@ namespace CK.SqlServer.Setup
     public class SqlObjectItem : IVersionedItem, IDependentItemRef
     {
         internal readonly static Type TypeCommand = typeof( SqlCommand );
+        internal readonly static Type TypeConnection = typeof( SqlConnection );
+        internal readonly static Type TypeTransaction = typeof( SqlTransaction );
         internal readonly static Type TypeParameterCollection = typeof( SqlParameterCollection );
         internal readonly static Type TypeParameter = typeof( SqlParameter );
         internal readonly static ConstructorInfo SqlParameterCtor2 = TypeParameter.GetConstructor( new Type[] { typeof( string ), typeof( SqlDbType ) } );
         internal readonly static ConstructorInfo SqlParameterCtor3 = TypeParameter.GetConstructor( new Type[] { typeof( string ), typeof( SqlDbType ), typeof( Int32 ) } );
+
+        internal readonly static MethodInfo MTransactionGetConnection = TypeTransaction.GetProperty( "Connection", SqlObjectItem.TypeConnection ).GetGetMethod();
+
+        internal readonly static MethodInfo MCommandSetConnection = TypeCommand.GetProperty( "Connection", SqlObjectItem.TypeConnection ).GetSetMethod();
+        internal readonly static MethodInfo MCommandSetTransaction = TypeCommand.GetProperty( "Transaction", SqlObjectItem.TypeTransaction ).GetSetMethod();
 
         internal readonly static MethodInfo MCommandSetCommandType = TypeCommand.GetProperty( "CommandType" ).GetSetMethod();
         internal readonly static MethodInfo MCommandGetParameters = TypeCommand.GetProperty( "Parameters", SqlObjectItem.TypeParameterCollection ).GetGetMethod();

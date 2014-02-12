@@ -41,7 +41,7 @@ namespace CK.SqlServer.Setup
         }
 
         /// <summary>
-        /// Gets (or sets for inherited classes) the connection string.
+        /// Gets or sets the connection string.
         /// This can be automatically configured during setup (if the specialized class implements a Construct method with a connectionString parameter
         /// and sets this property).
         /// </summary>
