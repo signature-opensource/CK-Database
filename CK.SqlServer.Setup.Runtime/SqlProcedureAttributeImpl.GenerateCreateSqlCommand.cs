@@ -21,6 +21,71 @@ namespace CK.SqlServer.Setup
             ReturnWrapper
         }
 
+        class SqlCallContextInfo
+        {
+            readonly List<Property> _props;
+
+            public class Property
+            {
+                public readonly ParameterInfo Parameter;
+                public readonly PropertyInfo Prop;
+
+                public Property( ParameterInfo param, PropertyInfo prop )
+                {
+                    Parameter = param;
+                    Prop = prop;
+                }
+
+                internal bool Match( SqlExprParameter sqlP, IActivityMonitor monitor )
+                {
+                    if( StringComparer.OrdinalIgnoreCase.Equals( '@' + Prop.Name, sqlP.Variable.Identifier.Name ) )
+                    {
+                        if( CheckParameterType( Prop.PropertyType, sqlP, monitor ) )
+                        {
+                            monitor.Info().Send( "Sql Parameter '{0}' will take its value from the SqlCallContext parameter '{1}' property '{2}'.", sqlP.ToStringClean(), Parameter.Name, Prop.Name );
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            }
+            
+            public SqlCallContextInfo()
+            {
+                _props = new List<Property>();
+            }
+
+            public bool Add( ParameterInfo param, IActivityMonitor monitor )
+            {
+                if( !param.ParameterType.IsClass )
+                {
+                    monitor.Error().Send( "SqlCallContext parameter '{1}'is of type '{0}' that is not a class.", param.ParameterType.Name, param.Name );
+                    return false;
+                }
+                _props.AddRange( param.ParameterType.GetProperties().Select( p => new Property( param, p ) ) );
+                return true;
+            }
+
+            public bool FindMatchingProperty( SqlParametersSetter.Setter setter, IActivityMonitor monitor )
+            {
+                foreach( var p in _props )
+                {
+                    if( p.Match( setter.SqlExprParam, monitor ) )
+                    {
+                        setter.SetParameterMapping( p );
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            static public bool IsSqlCallContext( ParameterInfo mP )
+            {
+                Type t = mP.ParameterType;
+                return typeof( ISqlCallContext ).IsAssignableFrom( t ) || Attribute.IsDefined( t, typeof( SqlCallContextAttribute ), true );
+            }
+        }
+
         private bool GenerateCreateSqlCommand( GenerationType gType, IActivityMonitor monitor, MethodInfo createCommand, SqlExprMultiIdentifier sqlName, SqlExprParameterList sqlParameters, MethodInfo m, ParameterInfo[] mParameters, TypeBuilder tB, bool isVirtual )
         {
             MethodAttributes mA = m.Attributes & ~(MethodAttributes.Abstract | MethodAttributes.VtableLayoutMask);
@@ -45,24 +110,7 @@ namespace CK.SqlServer.Setup
             Label setValues = g.DefineLabel();
             if( gType == GenerationType.ByRefSqlCommand )
             {
-                // When ByRef, generates code that checks for null arguments:
-                // we must create the SqlCommand in this case.
-                Label doCreate = g.DefineLabel();
-                g.LdArg( 1 );
-                g.Emit( OpCodes.Ldind_Ref );
-                g.Emit( OpCodes.Dup );
-                g.StLoc( locCmd );
-                g.Emit( OpCodes.Ldnull );
-                g.Emit( OpCodes.Beq_S, doCreate );
-                
-                // Generates the code that retrieves the get_Parameters() method from
-                // the already created SqlCommand and jumps to setValues section.
-                g.LdLoc( locCmd );
-                g.Emit( OpCodes.Call, SqlObjectItem.MCommandGetParameters );
-                g.StLoc( locParams );
-
-                g.Emit( OpCodes.Br, setValues );
-                g.MarkLabel( doCreate );
+                GenerateByRefInitialization( g, locCmd, locParams, setValues );
             }
             // The SqlCommand must be created: we call the low-level createCommand method.
             g.Emit( OpCodes.Call, createCommand );
@@ -74,29 +122,25 @@ namespace CK.SqlServer.Setup
             // We are in the Create command part.
             // Analyses parameters and generate removing of optional parameters if C# does not use them.
             int nbError = 0;
-            
-            // The notFoundSql initially contains all sqlParameters. 
-            // When they are associated (by name) the a method parameter, the slot is set to null.
-            var notFoundSql = sqlParameters.ToArray();
+
+            SqlParametersSetter setters = new SqlParametersSetter( sqlParameters );
 
             // We directly manage the first occurrence of a SqlConnection and a SqlTransaction parameters by setting
             // them on the SqlCommand (whatever the generation type is).
             // - For mere SqlCommand (be it the returned object or the ByRef parameter) we must not have more extra 
             //   parameters (C# parameters that can not be found by name in stored procedure).
             // - When we create a wrapper, extra parameters are injected into the wrapper constructor (as long as we can map them).
+            // - Method parameters that are SqlCallContext objects are registered in order to consider their properties as method parameters. 
             ParameterInfo firstSqlConnectionParameter = null;
             ParameterInfo firstSqlTransactionParameter = null;
             List<ParameterInfo> extraMethodParameters = gType == GenerationType.ReturnWrapper ? new List<ParameterInfo>() : null;
-
-            // This 2 lists are used to sets SqlParameter initial value to the actual method parameter value (for input and /*input*/output sql parameters).
-            List<ParameterInfo> valuesToSetParam = null;
-            List<int> valuesToSetSqlIndex = null;
+            SqlCallContextInfo sqlCallContexts = null;
             
             int iS = 0;
             for( int iM = mParameterFirstIndex; iM < mParameters.Length; ++iM )
             {
                 ParameterInfo mP = mParameters[iM];
-                int iSFound = IndexOf( sqlParameters, iS, '@' + mP.Name );
+                int iSFound = setters.IndexOf( iS, mP );
                 if( iSFound < 0 )
                 {
                     Debug.Assert( SqlObjectItem.TypeConnection.IsSealed && SqlObjectItem.TypeTransaction.IsSealed );
@@ -111,13 +155,21 @@ namespace CK.SqlServer.Setup
                     }
                     else
                     {
-                        // Then handle any other extra parameters for wrappers.
+                        // When we return a wrapper, we keep any extra parameters for wrappers.
                         if( gType == GenerationType.ReturnWrapper )
                         {
                             extraMethodParameters.Add( mP );
                         }
-                        else
+                        // If the parameter is a SqlCallContext, we register it
+                        // in order to consider its properties as method parameters.
+                        if( SqlCallContextInfo.IsSqlCallContext( mP ) )
                         {
+                            if( sqlCallContexts == null ) sqlCallContexts = new SqlCallContextInfo();
+                            if( !sqlCallContexts.Add( mP, monitor ) ) ++nbError;
+                        }
+                        else if( gType != GenerationType.ReturnWrapper )
+                        {
+                            // When direct parameters can not be mapped to Sql parameters, this is an error.
                             Debug.Assert( extraMethodParameters == null );
                             monitor.Error().Send( "Parameter '{0}' not found in procedure parameters. Defined C# parameters must respect the actual stored procedure order.", mP.Name );
                             ++nbError;
@@ -126,55 +178,38 @@ namespace CK.SqlServer.Setup
                 }
                 else
                 {
-                    SqlExprParameter p = sqlParameters[ iSFound ];
-                    notFoundSql[iSFound] = null;
-                    if( !CheckParameter( mP, p, monitor ) ) ++nbError;
-                    // Configures the SqlParameter.Value with the parameter value. 
-                    if( p.IsInput )
-                    {
-                        if( valuesToSetParam == null ) 
-                        {
-                            valuesToSetParam = new List<ParameterInfo>(); 
-                            valuesToSetSqlIndex = new List<int>(); 
-                        }
-                        valuesToSetParam.Add( mP );
-                        valuesToSetSqlIndex.Add( iSFound );
-                    }
+                    var set = setters.Setters[iSFound];
+                    if( !set.SetParameterMapping( mP, monitor ) ) ++nbError;
                     iS = iSFound + 1;
                 }
             }
             if( nbError == 0 )
             {
-                // If there are sql parameters not covered, then they MUST
-                // have a default value or be purely output.
-                for( int iN = 0; iN < notFoundSql.Length; ++iN )
+                // If there are sql parameters not covered, then they MUST:
+                // - be purely output
+                // - OR be found as a property of one SqlCallContext object,
+                // - OR have a default value.
+                foreach( var setter in setters.Setters )
                 {
-                    SqlExprParameter p = notFoundSql[iN];
-                    if( p != null )
+                    if( !setter.IsMapped )
                     {
-                        if( !p.IsInput )
+                        var sqlP = setter.SqlExprParam;
+                        if( !sqlP.IsInput )
                         {
-                            monitor.Info().Send( "Ctor '{0}' does not declare the Sql Parameter '{1}'. Since it is an output parameter, it will be ignored.", m.Name, p.ToStringClean() );
+                            monitor.Info().Send( "Method '{0}' does not declare the Sql Parameter '{1}'. Since it is an output parameter, it will be ignored.", m.Name, sqlP.ToStringClean() );
+                            setter.SetMappingToIgnoredOutput();
                         }
-                        else if( p.DefaultValue == null )
+                        else if( sqlCallContexts == null || !sqlCallContexts.FindMatchingProperty( setter, monitor ) )
                         {
-                            monitor.Error().Send( "Sql parameter '{0}' in procedure parameters has no default value. The method '{1}' must declare it.", p.Variable.Identifier.Name, m.Name );
-                            ++nbError;
-                        }
-                        else
-                        {
-                            monitor.Trace().Send( "Ctor '{0}' will use the default value for the Sql Parameter '{1}'.", m.Name, p.Variable.Identifier.Name, p.ToStringClean() );
-                            // Removing the optional parameter.
-                            g.LdLoc( locParams );
-                            g.LdInt32( iN );
-                            g.Emit( OpCodes.Callvirt, SqlObjectItem.MParameterCollectionRemoveAtParameter );
-                            // Adjust captured position in the parameter list.
-                            if( valuesToSetSqlIndex != null )
+                            if( sqlP.DefaultValue == null )
                             {
-                                for( int i = 0; i < valuesToSetSqlIndex.Count; ++i )
-                                {
-                                    if( valuesToSetSqlIndex[i] > iN ) --valuesToSetSqlIndex[i];
-                                }
+                                monitor.Error().Send( "Sql parameter '{0}' in procedure parameters has no default value. The method '{1}' must declare it.", sqlP.Variable.Identifier.Name, m.Name );
+                                ++nbError;
+                            }
+                            else
+                            {
+                                monitor.Trace().Send( "Method '{0}' will use the default value for the Sql Parameter '{1}'.", m.Name, sqlP.Variable.Identifier.Name, sqlP.ToStringClean() );
+                                setter.RemoveParameterForOptionalDefaultValue( g, locParams );
                             }
                         }
                     }
@@ -189,22 +224,9 @@ namespace CK.SqlServer.Setup
                 {
                     SetConnectionAndTransactionProperties( g, locCmd, firstSqlConnectionParameter, firstSqlTransactionParameter );
                 }
-                if( valuesToSetParam != null )
+                foreach( var setter in setters.Setters )
                 {
-                    for( int i = 0; i < valuesToSetParam.Count; ++i )
-                    {
-                        g.LdLoc( locParams );
-                        g.LdInt32( valuesToSetSqlIndex[i] );
-                        g.Emit( OpCodes.Call, SqlObjectItem.MParameterCollectionGetParameter );
-                        Label notNull = g.DefineLabel();
-                        g.LdArgBox( valuesToSetParam[i] );
-                        g.Emit( OpCodes.Dup );
-                        g.Emit( OpCodes.Brtrue_S, notNull );
-                        g.Emit( OpCodes.Pop );
-                        g.Emit( OpCodes.Ldsfld, SqlObjectItem.FieldDBNullValue );
-                        g.MarkLabel( notNull );
-                        g.Emit( OpCodes.Call, SqlObjectItem.MParameterSetValue );
-                    }
+                    setter.EmitSetParameter( g, locParams );
                 }
             }
             if( gType == GenerationType.ByRefSqlCommand )
@@ -220,7 +242,7 @@ namespace CK.SqlServer.Setup
             else
             {
                 var availableCtors = m.ReturnType.GetConstructors()
-                                                    .Select( ctor => new CtorMatcher( ctor, extraMethodParameters, m.DeclaringType ) )
+                                                    .Select( ctor => new WrapperCtorMatcher( ctor, extraMethodParameters, m.DeclaringType ) )
                                                     .Where( matcher => matcher.HasSqlCommand && matcher.Parameters.Count >= 1 + extraMethodParameters.Count )
                                                     .OrderByDescending( matcher => matcher.Parameters.Count )
                                                     .ToList();
@@ -231,7 +253,7 @@ namespace CK.SqlServer.Setup
                 }
                 else
                 {
-                    CtorMatcher matcher = availableCtors.FirstOrDefault( c => c.IsCallable() );
+                    WrapperCtorMatcher matcher = availableCtors.FirstOrDefault( c => c.IsCallable() );
                     if( matcher == null )
                     {
                         using( monitor.OpenError().Send( "Unable to find a constructor for the returned type '{0}': the {1} extra parameters of the method cannot be mapped.", m.ReturnType.Name, extraMethodParameters.Count ) )
@@ -257,216 +279,26 @@ namespace CK.SqlServer.Setup
             return nbError == 0;
         }
 
-        class CtorMatcher
+        private static void GenerateByRefInitialization( ILGenerator g, LocalBuilder locCmd, LocalBuilder locParams, Label setValues )
         {
-            public readonly ConstructorInfo Ctor;
-            public readonly IReadOnlyList<ParameterInfo> Parameters;
-            // Contains either:
-            // - ParameterInfo from _methodParameters or
-            // - ParameterInfo from our Parameters if the default value exists and must be used or
-            // - The _declaringTypeMarker.
-            readonly ParameterInfo[] _mappedParameters;
-            readonly MethodParameter[] _methodParameters;
-            readonly int _idxSqlCommand;
-            readonly Type _declaringType;
-            readonly static ParameterInfo _declaringTypeMarker = typeof( CtorMatcher ).GetConstructors()[0].GetParameters()[2];
-            readonly StringBuilder _warnings;
+            // For ByRef SqlCommand, generates code that checks for null arguments:
+            // we must create the SqlCommand in this case.
+            Label doCreate = g.DefineLabel();
+            g.LdArg( 1 );
+            g.Emit( OpCodes.Ldind_Ref );
+            g.Emit( OpCodes.Dup );
+            g.StLoc( locCmd );
+            g.Emit( OpCodes.Ldnull );
+            g.Emit( OpCodes.Beq_S, doCreate );
 
-            public CtorMatcher( ConstructorInfo m, IReadOnlyList<ParameterInfo> methodParameters, Type declaringType )
-            {
-                Ctor = m;
-                Parameters = m.GetParameters();
-                _declaringType = declaringType;
-                _mappedParameters = new ParameterInfo[Parameters.Count];
-                _methodParameters = methodParameters.Select( p => new MethodParameter( p ) ).ToArray();
-                _idxSqlCommand = Parameters.IndexOf( p => p.ParameterType == SqlObjectItem.TypeCommand && !p.ParameterType.IsByRef && !p.HasDefaultValue );
-                _warnings = new StringBuilder();
-            }
+            // Generates the code that retrieves the get_Parameters() method from
+            // the already created SqlCommand and jumps to setValues section.
+            g.LdLoc( locCmd );
+            g.Emit( OpCodes.Call, SqlObjectItem.MCommandGetParameters );
+            g.StLoc( locParams );
 
-            class MethodParameter
-            {
-                public readonly ParameterInfo Parameter;
-                public int IdxTarget;
-
-                public MethodParameter( ParameterInfo p )
-                {
-                    Parameter = p;
-                    IdxTarget = -1;
-                }
-            }
-
-            public bool HasSqlCommand
-            {
-                get { return _idxSqlCommand >= 0; }
-            }
-
-            internal bool IsCallable()
-            {
-                Debug.Assert( _idxSqlCommand >= 0 );
-                Debug.Assert( _methodParameters.All( p => p.IdxTarget == -1 ) );
-                Debug.Assert( _mappedParameters.All( p => p == null ) );
-
-                for( int i = 0; i < Parameters.Count; ++i )
-                {
-                    if( i == _idxSqlCommand ) continue;
-                    
-                    ParameterInfo toMatch = Parameters[i];
-                    Debug.Assert( toMatch.Position == i );
- 
-                    var exactCandidates = _methodParameters.Where( p => p.IdxTarget == -1 
-                                                                    && toMatch.ParameterType.Equals( p.Parameter.ParameterType ) 
-                                                                    && toMatch.IsOut == p.Parameter.IsOut ).ToList();
-                    if( TrySetCandidate( toMatch, exactCandidates ) ) continue;
-                    var candidates = _methodParameters.Where( p => p.IdxTarget == -1
-                                                                && !toMatch.ParameterType.IsByRef
-                                                                && !p.Parameter.ParameterType.IsByRef
-                                                                && !toMatch.ParameterType.Equals( p.Parameter.ParameterType )
-                                                                && toMatch.ParameterType.IsAssignableFrom( p.Parameter.ParameterType ) ).ToList();
-                    if( TrySetCandidate( toMatch, candidates ) ) continue;
-                    // No method parameter found. Try the declaring type itself, or the default value.
-                    if( !toMatch.ParameterType.IsByRef )
-                    {
-                        if( toMatch.ParameterType.IsAssignableFrom( _declaringType ) )
-                        {
-                            _mappedParameters[i] = _declaringTypeMarker;
-                        }
-                        else if( IsValidDefaultValue( toMatch ) ) _mappedParameters[i] = toMatch;
-                    }
-                }
-                return _methodParameters.All( p => p.IdxTarget >= 0 ) && !_mappedParameters.Where( ( p, idx ) => idx != _idxSqlCommand && p == null ).Any();
-            }
-
-            internal void ExplainFailure( IActivityMonitor monitor )
-            {
-                using( monitor.OpenInfo().Send( "Considering constructor: {0}.", DumpParameters( _methodParameters.Select( p => p.Parameter ) ) ) )
-                {
-                    foreach( var bothP in _mappedParameters.Select( ( p, idx ) => idx != _idxSqlCommand && p != _declaringTypeMarker && p.Member != Ctor
-                                                                                ? new { CtorP = Parameters[idx], MethodP = p }
-                                                                                : null )
-                                                        .Where( p => p != null ) )
-                    {
-                        monitor.Trace().Send( "Constructor parameter {0} is bound to method parameter {1}.", DumpParameter( bothP.CtorP ), bothP.MethodP );
-                    }
-                    foreach( var cP in _mappedParameters.Select( ( p, idx ) => idx != _idxSqlCommand && p.Member == Ctor ? Parameters[idx] : null )
-                                                        .Where( p => p != null ) )
-                    {
-                        monitor.Trace().Send( "Constructor parameter {0} uses its default value.", DumpParameter( cP ) );
-                    }
-                    foreach( var cP in _mappedParameters.Where( ( p, idx ) => p == _declaringTypeMarker ) )
-                    {
-                        monitor.Trace().Send( "Constructor parameter {0} is bound to the Type that defines the method ({1}).", DumpParameter( cP ), _declaringType.FullName );
-                    }
-                    foreach( var cP in _mappedParameters.Select( ( p, idx ) => p == null && idx != _idxSqlCommand ? Parameters[idx] : null )
-                                                        .Where( p => p != null ) )
-                    {
-                        if( cP.HasDefaultValue ) monitor.Error().Send( "Unable to use default value for constructor parameter {0}.", DumpParameter( cP ) );
-                        else monitor.Error().Send( "Unable to map constructor parameter {0}.", DumpParameter( cP ) );
-                    }
-                    foreach( var mP in _methodParameters.Where( p => p.IdxTarget == -1 ) )
-                    {
-                        monitor.Error().Send( "Unable to map extra method parameter {0}.", DumpParameter( mP.Parameter ) );
-                    }
-                }
-            }
-
-            internal void LogWarnings( IActivityMonitor monitor )
-            {
-                if( _warnings.Length > 0 ) monitor.Warn().Send( _warnings.ToString() );
-            }
-
-            internal void LdParameters( ModuleBuilder mB, ILGenerator g, LocalBuilder locCmd )
-            {
-                int i = 0;
-                foreach( var mP in _mappedParameters )
-                {
-                    if( i == _idxSqlCommand )
-                    {
-                        g.LdLoc( locCmd );
-                    }
-                    else if( mP == _declaringTypeMarker )
-                    {
-                        g.LdArg( 0 );
-                        g.Emit( OpCodes.Castclass, Parameters[i].ParameterType );
-                    }
-                    else if( mP.Member == Ctor )
-                    {
-                        Debug.Assert( IsValidDefaultValue( mP ) );
-                        Debug.Assert( mP.Position == i, "This is the PrameterInfo of the constructor." );
-
-                        object d =  mP.DefaultValue;
-                        if( d == null )
-                        {
-                            g.Emit( OpCodes.Ldnull );
-                        }
-                        else
-                        {
-                            Type dT = d.GetType();
-                            if( dT.Equals( typeof( Int32 ) ) || dT.Equals( typeof( Int16 ) ) || dT.Equals( typeof( sbyte ) ) )
-                            {
-                                g.LdInt32( (int)d );
-                            }
-                            else if( dT.Equals( typeof( string ) ) )
-                            {
-                                g.Emit( OpCodes.Ldstr, (string)d );
-                            }
-                            else if( dT.Equals( typeof( double ) ) )
-                            {
-                                g.Emit( OpCodes.Ldc_R8, (double)d );
-                            }
-                            else if( dT.Equals( typeof( float ) ) )
-                            {
-                                g.Emit( OpCodes.Ldc_R4, (float)d );
-                            }
-                        }
-                    }
-                    else
-                    {
-                        g.LdArg( mP.Position + 1 );
-                    }
-                    ++i;
-                }
-            }
-
-            static bool IsValidDefaultValue( ParameterInfo p )
-            {
-                if( !p.HasDefaultValue ) return false;
-                object d =  p.DefaultValue;
-                if( d == null ) return true;
-                Type dT = d.GetType();
-                if( dT.Equals( typeof( int )  )|| dT.Equals( typeof( Int16 ) ) || dT.Equals( typeof( sbyte ) ) ) return true;
-                if( dT.Equals( typeof( string ) ) ) return true;
-                if( dT.Equals( typeof( double ) ) ) return true;
-                if( dT.Equals( typeof( float ) ) ) return true;
-                return false;
-            }
-
-            bool TrySetCandidate( ParameterInfo toMatch, IEnumerable<MethodParameter> candidates )
-            {
-                var c = candidates.ToList();
-                if( c.Count == 1 )
-                {
-                    var only = c[0];
-                    SetMatch( toMatch.Position, only );
-                    if( only.Parameter.Name != toMatch.Name )
-                    {
-                        if( _warnings.Length > 0 ) _warnings.AppendLine();
-                        _warnings.AppendFormat( "Parameter {0} has been mapped to method parameter {1} because it was the only candidate in terms of Type. Both parameters SHOULD use the same name.", toMatch.Name, only.Parameter.Name );
-                    }
-                }
-                else
-                {
-                    var byName = c.FirstOrDefault( mp => mp.Parameter.Name == toMatch.Name );
-                    if( byName != null ) SetMatch( toMatch.Position, byName );
-                    else return false;
-                }
-                return true;
-            }
-
-            void SetMatch( int iParameter, MethodParameter methodParam )
-            {
-                _mappedParameters[iParameter] = methodParam.Parameter;
-                methodParam.IdxTarget = iParameter;
-            }
+            g.Emit( OpCodes.Br, setValues );
+            g.MarkLabel( doCreate );
         }
 
         static void SetConnectionAndTransactionProperties( ILGenerator g, LocalBuilder locCmd, ParameterInfo firstSqlConnectionParameter, ParameterInfo firstSqlTransactionParameter )
@@ -588,57 +420,10 @@ namespace CK.SqlServer.Setup
             return -1;
         }
 
-        bool CheckParameter( ParameterInfo mP, SqlExprParameter p, IActivityMonitor monitor )
+        static bool CheckParameterType( Type t, SqlExprParameter p, IActivityMonitor monitor )
         {
-            int nbError = CheckParameterDirection( mP, p, monitor );
             //TODO: Check .Net type against: p.Variable.TypeDecl.ActualType.DbType 
-            return nbError == 0;
-        }
-
-        private static int CheckParameterDirection( ParameterInfo mP, SqlExprParameter p, IActivityMonitor monitor )
-        {
-            int nbError = 0;
-            bool sqlIsInputOutput = p.IsInputOutput;
-            bool sqlIsOutput = sqlIsInputOutput || p.IsOutput;
-            bool sqlIsInput = sqlIsInputOutput || p.IsInput;
-            Debug.Assert( sqlIsInput || sqlIsOutput );
-            if( mP.ParameterType.IsByRef )
-            {
-                if( mP.IsOut )
-                {
-                    if( sqlIsInputOutput )
-                    {
-                        monitor.Error().Send( "Sql parameter '{0}' is an /*input*/output parameter. The method '{1}' must use 'ref' for it (not 'out').", p.Variable.Identifier.Name, mP.Member.Name );
-                        ++nbError;
-                    }
-                    else if( sqlIsInput )
-                    {
-                        Debug.Assert( !sqlIsOutput );
-                        monitor.Error().Send( "Sql parameter '{0}' is an input parameter. The method '{1}' can not use 'out' for it (and 'ref' modifier will be useless).", p.Variable.Identifier.Name, mP.Member.Name );
-                        ++nbError;
-                    }
-                }
-                else
-                {
-                    if( !sqlIsOutput )
-                    {
-                        monitor.Warn().Send( "Sql parameter '{0}' is not an output parameter. The method '{1}' uses 'ref' for it that is useless.", p.Variable.Identifier.Name, mP.Member.Name );
-                    }
-                }
-            }
-            else
-            {
-                if( sqlIsInputOutput )
-                {
-                    monitor.Warn().Send( "Sql parameter '{0}' is an /*input*/output parameter. The method '{1}' should use 'ref' to retreive the new value after the call.", p.Variable.Identifier.Name, mP.Member.Name );
-                }
-                else if( sqlIsOutput )
-                {
-                    monitor.Error().Send( "Sql parameter '{0}' is an output parameter. The method '{1}' must use 'out' for the parameter (you can also simply remove the method's parameter the output value can be ignored).", p.Variable.Identifier.Name, mP.Member.Name );
-                    ++nbError;
-                }
-            }
-            return nbError;
+            return true;
         }
 
     }

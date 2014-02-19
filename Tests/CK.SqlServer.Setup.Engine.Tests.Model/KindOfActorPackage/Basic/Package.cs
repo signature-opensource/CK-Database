@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data.SqlClient;
+using System.Linq;
 using CK.Setup;
 using CK.SqlServer.Setup;
 
@@ -15,38 +16,37 @@ namespace SqlActorPackage.Basic
         [AmbientContract]
         public GroupHome GroupHome { get; protected set; }
 
-        //[SqlProcedure( "sBasicSimpleProcedure" )]
-        //public abstract SqlCommand SimpleProcedureNaked( int index, string name, out string result );
+        [SqlProcedure( "sBasicSimpleProcedure" )]
+        public abstract SqlCommand SimpleProcedureNaked( int index, string name, out string result );
 
-        //#region Command injection (Connection & transaction)
+        #region Command injection (Connection & transaction)
 
-        ///// <summary>
-        ///// When a SqlConnection appears, it is set onto the SqlCommand.
-        ///// Only the first SqlConnection is considered: if two connection parameters exist, this will raise an error since we return a
-        ///// simple SqlCommand object.
-        ///// </summary>
-        //[SqlProcedure( "sBasicSimpleProcedure" )]
-        //public abstract SqlCommand SimpleProcedureWithConnection( SqlConnection c, int index, string name, out string result );
+        /// <summary>
+        /// When a SqlConnection appears, it is set onto the SqlCommand.
+        /// Only the first SqlConnection is considered: if two connection parameters exist, this will raise an error since we return a
+        /// simple SqlCommand object.
+        /// </summary>
+        [SqlProcedure( "sBasicSimpleProcedure" )]
+        public abstract SqlCommand SimpleProcedureWithConnection( SqlConnection c, int index, string name, out string result );
 
-        ///// <summary>
-        ///// When a SqlTransaction appears, it is set onto the SqlCommand, and its Connection is also automatically sets onto the SqlCommand.
-        ///// Only the first SqlTransaction is considered: if two transaction parameters exist, this will raise an error since we return a
-        ///// simple SqlCommand object.
-        ///// </summary>
-        //[SqlProcedure( "sBasicSimpleProcedure" )]
-        //public abstract SqlCommand SimpleProcedureWithTransaction( SqlTransaction t, int index, string name, out string result );
+        /// <summary>
+        /// When a SqlTransaction appears, it is set onto the SqlCommand, and its Connection is also automatically sets onto the SqlCommand.
+        /// Only the first SqlTransaction is considered: if two transaction parameters exist, this will raise an error since we return a
+        /// simple SqlCommand object.
+        /// </summary>
+        [SqlProcedure( "sBasicSimpleProcedure" )]
+        public abstract SqlCommand SimpleProcedureWithTransaction( SqlTransaction t, int index, string name, out string result );
 
-        ///// <summary>
-        ///// The transaction and/or connection can appear anywhere: only the first of them are set onto the SqlCommand.
-        ///// When the connection parameter is null, the one of the transaction is automatically used.
-        ///// If both are null, the SqlCommand.Connection and Transaction properties are let to null (and set to null if the SqlCommand 
-        ///// is the first parameter by reference).
-        ///// </summary>
-        //[SqlProcedure( "sBasicSimpleProcedure" )]
-        //public abstract SqlCommand SimpleProcedureWithConnectionAndTransaction( int index, SqlTransaction t, string name, out string result, SqlConnection c );
+        /// <summary>
+        /// The transaction and/or connection can appear anywhere: only the first of them are set onto the SqlCommand.
+        /// When the connection parameter is null, the one of the transaction is automatically used.
+        /// If both are null, the SqlCommand.Connection and Transaction properties are let to null (and set to null if the SqlCommand 
+        /// is the first parameter by reference).
+        /// </summary>
+        [SqlProcedure( "sBasicSimpleProcedure" )]
+        public abstract SqlCommand SimpleProcedureWithConnectionAndTransaction( int index, SqlTransaction t, string name, out string result, SqlConnection c );
 
-        //#endregion
-
+        #endregion
 
         string IKnowTheConnectionString.GetConnectionString()
         {
@@ -216,6 +216,53 @@ namespace SqlActorPackage.Basic
         /// </summary>
         [SqlProcedure( "sBasicSimpleScalar" )]
         public abstract ScalarCmdWithAccessToInterfaceOnHome<string> SimplestScalarWithLogParams( string logMsg1, int index, string name, int msTimeout, string logMsg2 );
+
+
+        #endregion
+
+        #region SqlCallContext
+
+        [SqlCallContext]
+        public class BasicAuthContext
+        {
+            public int ActorId { get; set; }
+        }
+
+        public class OutputCmd<T> : IDisposable
+        {
+            readonly SqlCommand _cmd;
+            readonly SqlPackageBase _p;
+
+            public OutputCmd( SqlCommand cmd, SqlPackageBase p )
+            {
+                _cmd = cmd;
+                _p = p;
+            }
+
+            public T Call()
+            {
+                using( var c = new SqlConnection( _p.Database.ConnectionString ) )
+                {
+                    c.Open();
+                    _cmd.Connection = c;
+                    _cmd.ExecuteNonQuery();
+                    var outP = _cmd.Parameters.Cast<SqlParameter>().Single( p => p.Direction == System.Data.ParameterDirection.Output );
+                    return (T)outP.Value;
+                }
+            }
+
+            public void Dispose()
+            {
+                _cmd.Dispose();
+            }
+        }
+
+
+        [SqlProcedure( "sBasicProcedureWithAuth" )]
+        public abstract OutputCmd<string> CallWithAuth( BasicAuthContext c, int index, string name, out string result );
+
+        [SqlProcedure( "sBasicProcedureWithAuth" )]
+        public abstract OutputCmd<string> CallWithAuth( BasicAuthContext c, int index, string name );
 
 
         #endregion

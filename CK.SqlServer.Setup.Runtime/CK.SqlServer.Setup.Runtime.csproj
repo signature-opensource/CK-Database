@@ -76,6 +76,8 @@
     <Compile Include="SqlPackage\SqlPackageItem.cs" />
     <Compile Include="SqlPackage\SqlPackageSetupDriver.cs" />
     <Compile Include="SqlProcedureAttributeImpl.cs" />
+    <Compile Include="SqlProcedureAttributeImpl.SqlParametersSetter.cs" />
+    <Compile Include="SqlProcedureAttributeImpl.WrapperCtorMatcher.cs" />
     <Compile Include="SqlTable\SqlTableAttributeImpl.cs" />
     <Compile Include="SqlTable\SqlTableItem.cs" />
     <Compile Include="SqlTable\SqlTableSetupDriver.cs" />

@@ -131,8 +131,9 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
                 Assert.That( CallGuidRefTest( c, map, null, ref inAndOut, manualImplementation:false ), Is.EqualTo( "@InOnly is null, @InAndOut is not null." ) );
                 Assert.That( inAndOut, Is.Null );
 
+                CheckSqlCallContext( c, map );
                 CheckCommandWrapper( c, map );
-                //CheckCommandParamInjection( c, map );
+                CheckCommandParamInjection( c, map );
             }
         }
 
