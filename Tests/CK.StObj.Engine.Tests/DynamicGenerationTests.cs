@@ -34,6 +34,18 @@ namespace CK.StObj.Engine.Tests
 
             public abstract class B : A
             {
+                readonly string _str;
+
+                protected B( string injectableCtor )
+                {
+                    _str = injectableCtor;
+                }
+
+                public string InjectedString 
+                { 
+                    get { return _str; } 
+                }
+
                 [AutoImplemented]
                 public abstract int Auto( int i );
             }
@@ -54,10 +66,23 @@ namespace CK.StObj.Engine.Tests
                 [AmbientProperty( IsOptional = true )]
                 public string AnOptionalString { get; private set; }
             }
+            
+            const string ctorParam = "Protected Ctor is called by public's finalType's constructor.";
+
+            class StObjRuntimeBuilder : IStObjRuntimeBuilder
+            {
+                public object CreateInstance( Type finalType )
+                {
+                    if( typeof( B ).IsAssignableFrom( finalType ) ) return Activator.CreateInstance( finalType, ctorParam );
+                    else return Activator.CreateInstance( finalType, false );
+                }
+            }
 
             public void DoTest()
             {
-                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor );
+                var runtimeBuilder = new StObjRuntimeBuilder();
+
+                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor, runtimeBuilder );
                 collector.RegisterClass( typeof( B ) );
                 collector.RegisterClass( typeof( D ) );
                 collector.DependencySorterHookInput = items => TestHelper.ConsoleMonitor.TraceDependentItem( items );
@@ -67,10 +92,11 @@ namespace CK.StObj.Engine.Tests
                 // Null as directory => use CK.StObj.Model folder.
                 r.GenerateFinalAssembly( TestHelper.ConsoleMonitor, null, "TEST_SimpleEmit" );
 
-                IStObjMap c = StObjContextRoot.Load( "TEST_SimpleEmit", null, TestHelper.ConsoleMonitor );
+                IStObjMap c = StObjContextRoot.Load( "TEST_SimpleEmit", runtimeBuilder, TestHelper.ConsoleMonitor );
                 Assert.That( typeof( B ).IsAssignableFrom( c.Default.ToLeafType( typeof( A ) ) ) );
                 Assert.That( c.Default.ToLeafType( typeof( IC ) ), Is.SameAs( typeof( D ) ) );
                 Assert.That( c.Default.Obtain<B>().Auto(3), Is.EqualTo( 0 ) );
+                Assert.That( c.Default.Obtain<B>().InjectedString, Is.EqualTo( ctorParam ) );
             }
 
         }
@@ -96,10 +122,6 @@ namespace CK.StObj.Engine.Tests
 
             public class ASpec : A
             {
-                private ASpec()
-                {
-                }
-
                 [StObjProperty]
                 new public string StObjPower { get; set; }
 

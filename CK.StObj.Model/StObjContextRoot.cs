@@ -23,7 +23,7 @@ namespace CK.Core
         /// <summary>
         /// Loads a previously generated assembly by its assembly name.
         /// </summary>
-        /// <param name="a">Assembly name that will be loaded in the current AppDomain.</param>
+        /// <param name="assemblyName">Assembly name that will be loaded in the current AppDomain.</param>
         /// <param name="runtimeBuilder">Runtime builder to use. When null, <see cref="DefaultStObjRuntimeBuilder"/> is used.</param>
         /// <param name="monitor">Optional monitor for loading operation.</param>
         /// <returns>A <see cref="IStObjMap"/> that provides access to the objects graph.</returns>
@@ -41,7 +41,7 @@ namespace CK.Core
         /// <returns>A <see cref="IStObjMap"/> that provides access to the objects graph.</returns>
         public static IStObjMap Load( Assembly a, IStObjRuntimeBuilder runtimeBuilder = null, IActivityMonitor monitor = null )
         {
-            if( monitor == null ) monitor = new ActivityMonitor();
+            if( monitor == null ) monitor = new ActivityMonitor( "CK.Core.StObjContextRoot.Load" );
             bool loaded;
             lock( _alreadyLoaded ) 
             {

@@ -5,6 +5,7 @@ using System.Text;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Collections;
+using CK.Reflection;
 
 namespace CK.Core
 {
@@ -174,7 +175,7 @@ namespace CK.Core
         /// On success, resulting type becomes the <see cref="LastGeneratedType"/>. Of course, implemented methods and properties are let virtual.
         /// </summary>
         /// <param name="monitor">Logger to use.</param>
-        /// <returns>The newly created type in the dynamic assembly. Null if an error occured.</returns>
+        /// <returns>The newly created type in the dynamic assembly. Null if an error occurred.</returns>
         public Type CreateTypeFromCurrent( IActivityMonitor monitor, IDynamicAssembly assembly )
         {
             Type t = DoCreateType( monitor, assembly, CurrentBaseType, false );
@@ -210,7 +211,7 @@ namespace CK.Core
         /// <param name="monitor">Logger to use.</param>
         /// <param name="assembly">Dynamic assembly into which the type must be created.</param>
         /// <param name="storeAsLastGeneratedType">True to update <see cref="LastGeneratedType"/> with the created type.</param>
-        /// <returns>The newly created type in the dynamic assembly. Null if an error occured.</returns>
+        /// <returns>The newly created type in the dynamic assembly. Null if an error occurred.</returns>
         public Type CreateFinalType( IActivityMonitor monitor, IDynamicAssembly assembly, bool storeAsLastGeneratedType = false )
         {
             Type t = DoCreateType( monitor, assembly, AbstractType, true );
@@ -225,7 +226,7 @@ namespace CK.Core
             if( finalImplementation ) tA |= TypeAttributes.Sealed;
             TypeBuilder b = assembly.ModuleBuilder.DefineType( current.Name + assembly.NextUniqueNumber(), tA, current );
             // Relayed constructors replicates all their potential attributes (included attributes on parameters).
-            CK.Reflection.TypeBuilderExtension.DefinePassThroughConstructors( b );
+            b.DefinePassThroughConstructors( c => c.Attributes|MethodAttributes.Public );
             foreach( var am in MethodsToImplement )
             {
                 if( finalImplementation || am.ExpectImplementation )

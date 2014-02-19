@@ -46,7 +46,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the count of error or fatal that occured during <see cref="RegisterTypes"/> or <see cref="RegisterClass"/> calls.
+        /// Gets the count of error or fatal that occurred during <see cref="RegisterTypes"/> or <see cref="RegisterClass"/> calls.
         /// </summary>
         public int RegisteringFatalOrErrorCount
         {
@@ -118,7 +118,7 @@ namespace CK.Setup
         public Action<IEnumerable<ISortedItem>> DependencySorterHookOutput { get; set; }
 
         /// <summary>
-        /// Builds and returns a <see cref="StObjCollectorResult"/> if no error occured during type registration.
+        /// Builds and returns a <see cref="StObjCollectorResult"/> if no error occurred during type registration.
         /// If <see cref="RegisteringFatalOrErrorCount"/> is not equal to 0, this throws a <see cref="CKException"/>.
         /// To ignore registering errors, calls <see cref="ClearRegisteringErrors"/> before calling this method.
         /// </summary>
@@ -266,7 +266,7 @@ namespace CK.Setup
                     _monitor.Error().Send( "Unable to create an instance of '{0}'.", pathTypes[pathTypes.Count - 1].AmbientTypeInfo.Type.FullName );
                     continue;
                 }
-                // Finalize configuration by sollicitating IStObjStructuralConfigurator.
+                // Finalize configuration by soliciting IStObjStructuralConfigurator.
                 // It is important here to go top-down since specialized configuration 
                 // should override more general ones.
                 // Note that this works because we do NOT offer any access to Specialization 

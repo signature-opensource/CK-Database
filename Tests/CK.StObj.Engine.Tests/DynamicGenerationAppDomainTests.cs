@@ -393,13 +393,6 @@ namespace CK.StObj.Engine.Tests
             public BuilderAppDomainConfiguration AppDomainConfiguration { get; private set; }
 
             public BuilderFinalAssemblyConfiguration FinalAssemblyConfiguration { get; private set; }
-
-            //public Action<IActivityMonitor,BasicStObjBuilder> RunHook { get; set; }
-
-            //public void BuildRunHook( IActivityMonitor monitor, BasicStObjBuilder config )
-            //{
-            //    AppDomain.CurrentDomain.Load( "AutoGenTestObjBuilder, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" );
-            //}
         }
     }
 }
