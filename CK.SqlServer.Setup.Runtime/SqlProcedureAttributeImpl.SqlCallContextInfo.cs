@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using CK.Core;
+using CK.Reflection;
 
 namespace CK.SqlServer.Setup
 {
@@ -46,7 +47,11 @@ namespace CK.SqlServer.Setup
 
             public bool Add( ParameterInfo param, IActivityMonitor monitor )
             {
-                _props.AddRange( param.ParameterType.GetProperties().Select( p => new Property( param, p ) ) );
+                if( param.ParameterType.IsInterface )
+                {
+                    _props.AddRange( ReflectionHelper.GetFlattenProperties( param.ParameterType ).Select( p => new Property( param, p ) ) );
+                }
+                else _props.AddRange( param.ParameterType.GetProperties().Select( p => new Property( param, p ) ) );
                 return true;
             }
 

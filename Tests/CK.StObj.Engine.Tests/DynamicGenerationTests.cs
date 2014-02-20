@@ -107,6 +107,7 @@ namespace CK.StObj.Engine.Tests
             new CSimpleEmit().DoTest();
         }
 
+
         public class CConstructCalledAndStObjProperties
         {
             public class A : IAmbientContract

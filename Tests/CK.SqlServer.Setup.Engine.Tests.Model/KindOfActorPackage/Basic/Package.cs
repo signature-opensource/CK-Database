@@ -222,10 +222,26 @@ namespace SqlActorPackage.Basic
 
         #region SqlCallContext
 
-        [SqlCallContext]
-        public class BasicAuthContext
+        public interface IAmHereToTestPropertyMasking
+        {
+            int ActorId { get; set; }
+        }
+
+        public interface IBasicAuthContext : IAmHereToTestPropertyMasking, ISqlCallContext
+        {
+            new int ActorId { get; set; }
+        }
+
+        public interface IAuthContext : IBasicAuthContext
+        {
+            int SecurityZoneId { get; set; }
+        }
+
+        public class BasicAuthContext : IAuthContext
         {
             public int ActorId { get; set; }
+            
+            public int SecurityZoneId { get; set; }
         }
 
         public class OutputCmd<T> : IDisposable
@@ -259,10 +275,10 @@ namespace SqlActorPackage.Basic
 
 
         [SqlProcedure( "sBasicProcedureWithAuth" )]
-        public abstract OutputCmd<string> CallWithAuth( BasicAuthContext c, int index, string name, out string result );
+        public abstract OutputCmd<string> CallWithAuth( IAuthContext c, int index, string name, out string result );
 
         [SqlProcedure( "sBasicProcedureWithAuth" )]
-        public abstract OutputCmd<string> CallWithAuth( BasicAuthContext c, int index, string name );
+        public abstract OutputCmd<string> CallWithAuth( IBasicAuthContext c, int index, string name );
 
 
         #endregion
