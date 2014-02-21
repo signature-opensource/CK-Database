@@ -11,7 +11,7 @@ namespace CK.SqlServer
     /// Offers methods such as ExecuteNonQuery and ExecuteScalar that safely reuse 
     /// one connection instead of creating new ones.
     /// </summary>
-    public class SqlConnectionProvider : IDisposable
+    public partial class SqlConnectionProvider : IDisposable
     {
         /// <summary>
         /// The connection string must be kept as is because <see cref="SqlConnection.ConnectionString"/>
@@ -156,25 +156,22 @@ namespace CK.SqlServer
         /// </remarks>
         public object[] ReadFirstRow( SqlCommand cmd )
         {
-            SqlDataReader r = null;
-            try
+            using( AcquireConnection( cmd ) )
             {
-                bool mustClose;
-                AcquireConnection( cmd, out mustClose );
-                CommandBehavior options = mustClose ? (CommandBehavior.SingleRow | CommandBehavior.CloseConnection) : CommandBehavior.SingleRow;
-                r = cmd.ExecuteReader( options );
-                if( !r.Read() ) return null;
-                object[] res = new object[r.FieldCount];
-                r.GetValues( res );
-                return res;
-            }
-            catch( SqlException ex )
-            {
-                throw SqlDetailedException.Create( cmd, ex );
-            }
-            finally
-            {
-                ReleaseReader( r, cmd );
+                using( SqlDataReader r = cmd.ExecuteReader( CommandBehavior.SingleRow ) )
+                {
+                    try
+                    {
+                        if( !r.Read() ) return null;
+                        object[] res = new object[r.FieldCount];
+                        r.GetValues( res );
+                        return res;
+                    }
+                    catch( SqlException ex )
+                    {
+                        throw SqlDetailedException.Create( cmd, ex );
+                    }
+                }
             }
         }
 
@@ -242,19 +239,16 @@ namespace CK.SqlServer
         /// </remarks>
         public int ExecuteNonQuery( SqlCommand cmd )
         {
-            bool mustClose;
-            AcquireConnection( cmd, out mustClose );
-            try
+            using( AcquireConnection( cmd ) )
             {
-                return cmd.ExecuteNonQuery();
-            }
-            catch( SqlException ex )
-            {
-                throw SqlDetailedException.Create( cmd, ex );
-            }
-            finally
-            {
-                ReleaseConnection( cmd, mustClose );
+                try
+                {
+                    return cmd.ExecuteNonQuery();
+                }
+                catch( SqlException ex )
+                {
+                    throw SqlDetailedException.Create( cmd, ex );
+                }
             }
         }
 
@@ -291,19 +285,16 @@ namespace CK.SqlServer
         /// </remarks>
         public object ExecuteScalar( SqlCommand cmd )
         {
-            bool mustClose;
-            AcquireConnection( cmd, out mustClose );
-            try
+            using( AcquireConnection( cmd ) )
             {
-                return cmd.ExecuteScalar();
-            }
-            catch( SqlException ex )
-            {
-                throw SqlDetailedException.Create( cmd, ex );
-            }
-            finally
-            {
-                ReleaseConnection( cmd, mustClose );
+                try
+                {
+                    return cmd.ExecuteScalar();
+                }
+                catch( SqlException ex )
+                {
+                    throw SqlDetailedException.Create( cmd, ex );
+                }
             }
         }
 
@@ -319,136 +310,55 @@ namespace CK.SqlServer
         /// </remarks>
         public void ExecuteXmlReader( SqlCommand cmd, Action<XmlReader> processor )
         {
-            bool mustClose;
-            AcquireConnection( cmd, out mustClose );
-            XmlReader r = null;
-            try
+            using( AcquireConnection( cmd ) )
             {
-                r = cmd.ExecuteXmlReader();
-                processor( r );
-            }
-            catch( SqlException ex )
-            {
-                throw SqlDetailedException.Create( cmd, ex );
-            }
-            finally
-            {
-                if( r != null ) r.Close();
-                ReleaseConnection( cmd, mustClose );
+                XmlReader r = null;
+                try
+                {
+                    r = cmd.ExecuteXmlReader();
+                    processor( r );
+                }
+                catch( SqlException ex )
+                {
+                    throw SqlDetailedException.Create( cmd, ex );
+                }
+                finally
+                {
+                    if( r != null ) r.Close();
+                }
             }
         }
 
         /// <summary>
         /// Executes the <see cref="SqlCommand.ExecuteReader(CommandBehavior)"/> if possible on the shared 
-        /// connection. In any case <see cref="ReleaseReader"/> must be called.
+        /// connection.
         /// If possible, use the methods that encapsulates handles management (methods named ExecuteXXX or ReadXXX) 
         /// rather that AcquireXXX methods like this one.
         /// </summary>
         /// <param name="cmd">The <see cref="SqlCommand"/> to execute.</param>
-        /// <returns>A <see cref="SqlDataReader"/> object.</returns>
-        /// <remarks>
-        /// Use this method with this call pattern (suppose that a 
-        /// <see cref="SqlConnectionProvider"/> named <c>_sqlProvider</c> and a <see cref="SqlCommand"/>
-        /// named <c>cmd</c> exist):
-        /// <code>
-        /// IDataReader r = _sqlProvider.AcquireReader( cmd );
-        /// try
-        /// {
-        ///		while( r.Read() )
-        ///		{
-        ///			// Process the returned data
-        ///		}
-        ///	}
-        ///	finally
-        ///	{
-        ///		_sqlProvider.ReleaseReader( r, cmd );
-        ///	}
-        /// </code>
-        /// </remarks>
-        public IDataReader AcquireReader( SqlCommand cmd )
+        /// <returns>A <see cref="CKDataReader"/> object.</returns>
+        public CKDataReader AcquireReader( SqlCommand cmd )
         {
-            bool mustClose;
-            AcquireConnection( cmd, out mustClose );
-            return mustClose ? cmd.ExecuteReader( CommandBehavior.CloseConnection ) : cmd.ExecuteReader();
+            IDisposable connection = AcquireConnection( cmd );
+            return new CKDataReader( cmd.ExecuteReader(), connection );
         }
 
         /// <summary>
-        /// Calls <see cref="AcquireReader(SqlCommand)"/> with the <see cref="ISqlCommandHolder.Command"/> property.
-        /// If possible, use the methods that encapsulates handles management (methods named ExecuteXXX or ReadXXX) 
-        /// rather that AcquireXXX methods like this one.
-        /// </summary>
-        /// <param name="cmd">The <see cref="ISqlCommandHolder"/> which <b>Command</b> must be executed.</param>
-        /// <param name="mustClose">
-        /// Output parameters returned by <see cref="AcquireConnection( SqlCommand, bool)"/> which states 
-        /// whether the connection must be closed when the reader is released.
-        /// </param>
-        /// <returns>A <see cref="XmlReader"/> which holds read xml data.</returns>
-        public XmlReader AcquireXmlReader( SqlCommand cmd, out bool mustClose )
-        {
-            AcquireConnection( cmd, out mustClose );
-            return cmd.ExecuteXmlReader();
-        }
-
-        /// <summary>
-        /// Releases a <see cref="IDataReader"/> previously obtained with <see cref="AcquireReader"/>.
-        /// </summary>
-        /// <param name="r">The reader to release: it will be closed if not null.</param>
-        /// <param name="cmd">The <see cref="SqlCommand"/> to release (will not be disposed). </param>
-        public void ReleaseReader( IDataReader r, SqlCommand cmd )
-        {
-            if( r != null ) r.Close();
-            ReleaseConnection( cmd, false );
-        }
-
-        /// <summary>
-        /// Releases a <see cref="XmlReader"/> previously obtained with <see cref="AcquireXmlReader"/>.
-        /// </summary>
-        /// <param name="r">The xmlReader to release: it will be closed if not null.</param>
-        /// <param name="cmd">The <see cref="SqlCommand"/> to release (will not be disposed). </param>
-        /// <param name="mustClose">Defines whether the connection must be closed or not.</param>
-        public void ReleaseXmlReader( XmlReader r, SqlCommand cmd, bool mustClose )
-        {
-            if( r != null ) r.Close();
-            ReleaseConnection( cmd, mustClose );
-        }
-
-        /// <summary>
-        /// Acquires a connection. <see cref="ReleaseConnection"/> MUST be called when done.
+        /// Acquires a connection.
         /// If possible, use the methods that encapsulates handles management (methods named ExecuteXXX or ReadXXX) 
         /// rather that AcquireXXX methods like this one.
         /// </summary>
         /// <param name="cmd">The command to execute.</param>
-        /// <param name="mustClose">
-        /// States whether the connection used to execute the command must be closed or not.
-        /// Pass it as-is to <see cref="ReleaseConnection"/>.
-        /// </param>
-        public void AcquireConnection( SqlCommand cmd, out bool mustClose )
+        public IDisposable AcquireConnection( SqlCommand cmd )
         {
+            bool mustClose;
             if( cmd == null ) throw new ArgumentNullException( "cmd" );
             if( cmd.Connection == null )
             {
                 cmd.Connection = AcquireConn( out mustClose );
             }
             else mustClose = false;
-        }
-
-        /// <summary>
-        /// Releases a connection previously acquired by a call to <see cref="AcquireConnection"/>.
-        /// </summary>
-        /// <param name="cmd">The command.</param>
-        /// <param name="mustClose">Value obtained by <see cref="AcquireConnection"/>.<see cref="ReleaseConnection"/>.
-        /// </param>
-        public void ReleaseConnection( SqlCommand cmd, bool mustClose )
-        {
-            if( mustClose ) cmd.Connection.Close();
-            
-            if( cmd.Connection == _oCon )
-            {
-                _oConIsWorking = false;
-                cmd.Connection = null;
-            }
-            
-            if( mustClose ) cmd.Connection = null;
+            return new SqlConnectionProviderDisposable( cmd, mustClose, this );
         }
 
         SqlConnection AcquireConn( out bool mustClose )
@@ -468,6 +378,33 @@ namespace CK.SqlServer
             else mustClose = false;
             _oConIsWorking = true;
             return _oCon;
+        }
+
+        internal class SqlConnectionProviderDisposable : IDisposable
+        {
+            SqlCommand _cmd;
+            bool _mustClose;
+            SqlConnectionProvider _p;
+
+            public SqlConnectionProviderDisposable( SqlCommand cmd, bool mustClose, SqlConnectionProvider p )
+            {
+                _cmd = cmd;
+                _mustClose = mustClose;
+                _p = p;
+            }
+
+            public void Dispose()
+            {
+                if( _mustClose ) _cmd.Connection.Close();
+
+                if( _cmd.Connection == _p._oCon )
+                {
+                    _p._oConIsWorking = false;
+                    _cmd.Connection = null;
+                }
+
+                if( _mustClose ) _cmd.Connection = null;
+            }
         }
 
     }

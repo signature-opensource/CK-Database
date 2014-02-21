@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using CK.Core;
 using NUnit.Framework;
 
 namespace CK.SqlServer.Setup.Engine.Tests
 {
-
     [TestFixture]
     public class ShallowParserTests
     {

@@ -452,7 +452,7 @@ namespace CK.SqlServer.Setup
             readonly IActivityMonitor _monitor;
             readonly int _tranCount;
             readonly string _databaseName;
-            readonly bool _mustClose;
+            readonly IDisposable _connectionCloser;
 
             /// <summary>
             /// Gets or sets the number of <see cref="Execute"/> that failed.
@@ -479,7 +479,7 @@ namespace CK.SqlServer.Setup
                     _tranCount = (int)_command.ExecuteScalar();
                 }
                 else _tranCount = -1;
-                _manager.Connection.AcquireConnection( _command, out _mustClose );
+                _connectionCloser = _manager.Connection.AcquireConnection( _command );
             }
 
             public bool Execute( string script )
@@ -521,7 +521,7 @@ namespace CK.SqlServer.Setup
 
             public void Dispose()
             {
-                _manager.Connection.ReleaseConnection( _command, _mustClose );
+                _connectionCloser.Dispose();
                 _command.Dispose();
                 if( _manager.IsOpen() )
                 {
@@ -536,7 +536,7 @@ namespace CK.SqlServer.Setup
                                 int nbRollbak = tranCountAfter - _tranCount;
                                 if( _tranCount == 0 && nbRollbak > 0 )
                                 {
-                                    msg += " Attempting rollbak: ";
+                                    msg += " Attempting rollback: ";
                                     try
                                     {
                                         _manager.Connection.ExecuteNonQuery( "rollback" );

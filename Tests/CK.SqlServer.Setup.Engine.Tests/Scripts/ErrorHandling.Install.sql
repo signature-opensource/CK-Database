@@ -81,7 +81,7 @@ begin
 			end
 			else if @BugType = 'soft' 
 			begin
-				-- This concersion attempts triggers a non 'Batch Aborting' error.
+				-- This conversion attempts triggers a non 'Batch Aborting' error.
 				declare @BatchContinues datetime = convert(datetime, '20081311');
 				-- Just as a constraint violation.
 				-- insert into CKCore.tSystem default values;
@@ -98,7 +98,7 @@ begin
 	begin catch
 		--
 		-- This code was one of the possibility to offer --[onError](?) handling (It was actually my first idea.)
-		-- It is deprecated in favor of the code beeing AFTER the rollback (see below).
+		-- It is deprecated in favor of the code being AFTER the rollback (see below).
 		-- (This changed the beginsp: label position.)
 		--
 		--	-- This is to show a 'retry' possibility.
@@ -124,8 +124,8 @@ begin
 		--
 		-- As of may 18, 2012, the best name seems to be: --[onRecoverableError] 
 		--
-		-- This is the 'OnRecoverableError', we are outside the inner transaction: it seems, after thougths, that
-		-- this is much more simpler to understand for the developper since beeing "out of" the inner transaction scope
+		-- This is the 'OnRecoverableError', we are outside the inner transaction: it seems, after thoughts, that
+		-- this is much more simpler to understand for the developer since being "out of" the inner transaction scope
 		-- the code here is does not have to deal with reverting what has been done in the body (the rollback just did it).
 		-- Note: This is not possible in doomed transaction since any logged operation fails.
 		if XACT_STATE() <> -1

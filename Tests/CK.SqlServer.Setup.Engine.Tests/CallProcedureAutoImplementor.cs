@@ -16,8 +16,6 @@ namespace CK.SqlServer.Setup.Engine.Tests
         IActivityMonitor Logger { get; }
 
         SqlConnectionProvider Connection { get; }
-
-        bool SetAmbientValue( SqlParameter p );
     }
 
     public class SqlCallContext : ISqlCallContext
@@ -39,10 +37,6 @@ namespace CK.SqlServer.Setup.Engine.Tests
             get { return _m.Connection; }
         }
 
-        public bool SetAmbientValue( SqlParameter p )
-        {
-            return false;
-        }
     }
 
     [TestFixture]
