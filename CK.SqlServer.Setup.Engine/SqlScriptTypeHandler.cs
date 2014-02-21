@@ -17,7 +17,7 @@ namespace CK.SqlServer.Setup
         protected override IScriptExecutor CreateExecutor( IActivityMonitor monitor, SetupDriver driver )
         {
             if( driver == null ) throw new ArgumentNullException( "driver" );
-            SqlManager m = SqlObjectSetupDriver.FindManagerFromLocation( monitor, _managerProvider, driver.FullName );
+            ISqlManager m = SqlObjectSetupDriver.FindManagerFromLocation( monitor, _managerProvider, driver.FullName );
             return m != null ? new SqlScriptExecutor( m, driver.Engine.Memory ) : null;
         }
 

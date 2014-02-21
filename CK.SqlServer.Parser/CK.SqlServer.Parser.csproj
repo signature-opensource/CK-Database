@@ -1,0 +1,159 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{C569DC3C-AED5-449D-9C7D-CADC46423687}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>CK.SqlServer.Parser</RootNamespace>
+    <AssemblyName>CK.SqlServer.Parser</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="CK.Core">
+      <HintPath>..\packages\CK.Core.3.0.13-develop\lib\net45\CK.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="ISqlItem.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Parser\Expr\Base\SqlExpr.cs" />
+    <Compile Include="Parser\Expr\Base\SqlExprBaseSt.cs" />
+    <Compile Include="Parser\Expr\Base\SqlItem.cs" />
+    <Compile Include="Parser\Expr\Base\SqlNoExpr.cs" />
+    <Compile Include="Parser\Expr\ISelectSpecification.cs" />
+    <Compile Include="Parser\Expr\ISqlExprList.cs" />
+    <Compile Include="Parser\Expr\ISqlExprUnifiedTypeDecl.cs" />
+    <Compile Include="Parser\Expr\ISqlIdentifier.cs" />
+    <Compile Include="Parser\Expr\Select\SelectColumn.cs" />
+    <Compile Include="Parser\Expr\Select\SelectColumnList.cs" />
+    <Compile Include="Parser\Expr\Select\SelectCombineOperator.cs" />
+    <Compile Include="Parser\Expr\Select\SelectFor.cs" />
+    <Compile Include="Parser\Expr\Select\SelectFrom.cs" />
+    <Compile Include="Parser\Expr\Select\SelectGroupBy.cs" />
+    <Compile Include="Parser\Expr\Select\SelectHeader.cs" />
+    <Compile Include="Parser\Expr\Select\SelectInto.cs" />
+    <Compile Include="Parser\Expr\Select\SelectOption.cs" />
+    <Compile Include="Parser\Expr\Select\SelectOrderBy.cs" />
+    <Compile Include="Parser\Expr\Select\SelectQuery.cs" />
+    <Compile Include="Parser\Expr\Select\SelectSpecification.cs" />
+    <Compile Include="Parser\Expr\Select\SelectWhere.cs" />
+    <Compile Include="Parser\Expr\SqlExprAssign.cs" />
+    <Compile Include="Parser\Expr\SqlExprBaseBinary.cs" />
+    <Compile Include="Parser\Expr\SqlExprBaseExprList.cs" />
+    <Compile Include="Parser\Expr\SqlExprBaseListWithSeparator.cs" />
+    <Compile Include="Parser\Expr\SqlExprBaseListWithSeparatorList.cs" />
+    <Compile Include="Parser\Expr\SqlExprBaseMonoToken.cs" />
+    <Compile Include="Parser\Expr\SqlExprBetween.cs" />
+    <Compile Include="Parser\Expr\SqlExprBinaryOperator.cs" />
+    <Compile Include="Parser\Expr\SqlExprCase.cs" />
+    <Compile Include="Parser\Expr\SqlExprCaseWhenSelector.cs" />
+    <Compile Include="Parser\Expr\SqlExprColumnList.cs" />
+    <Compile Include="Parser\Expr\SqlExprCommaList.cs" />
+    <Compile Include="Parser\Expr\SqlExprIdentifier.cs" />
+    <Compile Include="Parser\Expr\SqlExprIn.cs" />
+    <Compile Include="Parser\Expr\SqlExprIsNull.cs" />
+    <Compile Include="Parser\Expr\SqlExprKoCall.cs" />
+    <Compile Include="Parser\Expr\SqlExprLike.cs" />
+    <Compile Include="Parser\Expr\SqlExprLiteral.cs" />
+    <Compile Include="Parser\Expr\SqlExprMultiIdentifier.cs" />
+    <Compile Include="Parser\Expr\SqlExprNull.cs" />
+    <Compile Include="Parser\Expr\SqlExprParameter.cs" />
+    <Compile Include="Parser\Expr\SqlExprParameterDefaultValue.cs" />
+    <Compile Include="Parser\Expr\SqlExprParameterList.cs" />
+    <Compile Include="Parser\Expr\SqlExprRawList.cs" />
+    <Compile Include="Parser\Expr\SqlExprStatementList.cs" />
+    <Compile Include="Parser\Expr\SqlExprStBeginTran.cs" />
+    <Compile Include="Parser\Expr\SqlExprStBlock.cs" />
+    <Compile Include="Parser\Expr\SqlExprStEmpty.cs" />
+    <Compile Include="Parser\Expr\SqlExprStIf.cs" />
+    <Compile Include="Parser\Expr\SqlExprStLabelDef.cs" />
+    <Compile Include="Parser\Expr\SqlExprStMonoStatement.cs" />
+    <Compile Include="Parser\Expr\SqlExprStStoredProc.cs" />
+    <Compile Include="Parser\Expr\SqlExprStTryCatch.cs" />
+    <Compile Include="Parser\Expr\SqlExprStUnmodeled.cs" />
+    <Compile Include="Parser\Expr\SqlExprStView.cs" />
+    <Compile Include="Parser\Expr\SqlExprTerminal.cs" />
+    <Compile Include="Parser\Expr\SqlExprTypeDecl.cs" />
+    <Compile Include="Parser\Expr\SqlExprTypeDeclDateAndTime.cs" />
+    <Compile Include="Parser\Expr\SqlExprTypeDeclDecimal.cs" />
+    <Compile Include="Parser\Expr\SqlExprTypeDeclSimple.cs" />
+    <Compile Include="Parser\Expr\SqlExprTypeDeclUserDefined.cs" />
+    <Compile Include="Parser\Expr\SqlExprTypeDeclWithSize.cs" />
+    <Compile Include="Parser\Expr\SqlExprTypedIdentifier.cs" />
+    <Compile Include="Parser\Expr\SqlExprUnaryOperator.cs" />
+    <Compile Include="Parser\Expr\SqlExprUnmodeledItems.cs" />
+    <Compile Include="Parser\Expr\SqlNoExprExecuteAs.cs" />
+    <Compile Include="Parser\IExprVisitor.cs" />
+    <Compile Include="Parser\SqlAnalyser.cs" />
+    <Compile Include="Parser\SqlAnalyser.Expression.cs" />
+    <Compile Include="Parser\SqlAnalyser.Expression.Select.cs" />
+    <Compile Include="Parser\SqlAnalyser.LowLevel.cs" />
+    <Compile Include="Parser\SqlExprVisitor.cs" />
+    <Compile Include="Parser\SqlTokenReader.cs" />
+    <Compile Include="Tokenizer\SqlTokenExtension.cs" />
+    <Compile Include="Tokenizer\SqlExprMultiToken.cs" />
+    <Compile Include="Tokenizer\SqlKeyword.cs" />
+    <Compile Include="Tokenizer\SqlToken.cs" />
+    <Compile Include="Tokenizer\SqlTokenizer.cs" />
+    <Compile Include="Tokenizer\SqlTokenType.cs" />
+    <Compile Include="Tokenizer\SqlTokenTypeError.cs" />
+    <Compile Include="Tokenizer\SqlTrivia.cs" />
+    <Compile Include="Tokenizer\Token\SqlTokenBaseLiteral.cs" />
+    <Compile Include="Tokenizer\Token\SqlTokenClosePar.cs" />
+    <Compile Include="Tokenizer\Token\SqlTokenError.cs" />
+    <Compile Include="Tokenizer\Token\SqlTokenIdentifier.cs" />
+    <Compile Include="Tokenizer\Token\SqlTokenLiteralBinary.cs" />
+    <Compile Include="Tokenizer\Token\SqlTokenLiteralDecimal.cs" />
+    <Compile Include="Tokenizer\Token\SqlTokenLiteralFloat.cs" />
+    <Compile Include="Tokenizer\Token\SqlTokenLiteralInteger.cs" />
+    <Compile Include="Tokenizer\Token\SqlTokenLiteralMoney.cs" />
+    <Compile Include="Tokenizer\Token\SqlTokenLiteralString.cs" />
+    <Compile Include="Tokenizer\Token\SqlTokenOpenPar.cs" />
+    <Compile Include="Tokenizer\Token\SqlTokenTerminal.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CK.SqlServer.Core\CK.SqlServer.Core.csproj">
+      <Project>{f2977613-731a-4efa-9703-cd6b92f00558}</Project>
+      <Name>CK.SqlServer.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

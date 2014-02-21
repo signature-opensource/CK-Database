@@ -11,12 +11,12 @@ namespace CK.SqlServer.Setup
     {
         public readonly static Version CurrentVersion = new Version( 4, 1, 6, 1756 );
 
-        readonly SqlManager _manager;
+        readonly ISqlManager _manager;
         SqlCommand _get;
         SqlCommand _set;
         bool _initialized;
 
-        public SqlVersionedItemRepository( SqlManager manager )
+        public SqlVersionedItemRepository( ISqlManager manager )
         {
             if( manager == null ) throw new ArgumentNullException( "manager" );
             _manager = manager;

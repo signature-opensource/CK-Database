@@ -12,10 +12,10 @@ namespace CK.SqlServer.Setup
     /// </summary>
     public class SqlSetupSessionMemoryProvider : ISetupSessionMemoryProvider, ISetupSessionMemory
     {
-        SqlManager _manager;
+        readonly ISqlManager _manager;
         bool _initialized;
 
-        public SqlSetupSessionMemoryProvider( SqlManager manager )
+        public SqlSetupSessionMemoryProvider( ISqlManager manager )
         {
             if( manager == null ) throw new ArgumentNullException( "manager" );
             _manager = manager;

@@ -59,6 +59,10 @@
     <Compile Include="ActorPackage\DatabaseSetup.SqlCallContext.cs" />
     <Compile Include="ActorPackage\DatabaseSetup.CommandWrapper.cs" />
     <Compile Include="ActorPackage\DatabaseSetup.CommandParamInjection.cs" />
+    <Compile Include="CallProcedureAutoImplementor.cs" />
+    <Compile Include="Core\ErrorHandlingTests.cs" />
+    <Compile Include="Core\MultiScriptTests.cs" />
+    <Compile Include="Core\SimpleScriptTagHandlerTests.cs" />
     <Compile Include="FileBasedDBSetup.cs" />
     <Compile Include="FileBasedDiscoveringAndParsing.cs" />
     <Compile Include="IntoTheWild\IntoTheWildTests.cs" />
@@ -80,6 +84,10 @@
       <Project>{A5380F73-7050-4090-8E75-4CFC7AFA5B7B}</Project>
       <Name>CK.Setupable.Runtime</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\CK.SqlServer.Core\CK.SqlServer.Core.csproj">
+      <Project>{f2977613-731a-4efa-9703-cd6b92f00558}</Project>
+      <Name>CK.SqlServer.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj">
       <Project>{B64D3D2A-FD2B-4731-8559-8A52C3A45351}</Project>
       <Name>CK.SqlServer.Setup.Model</Name>
@@ -91,10 +99,6 @@
     <ProjectReference Include="..\..\CK.StObj.Engine\CK.StObj.Engine.csproj">
       <Project>{DF7A0B05-4B48-44C2-B6C8-6FCFD66DF8F8}</Project>
       <Name>CK.StObj.Engine</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\CK.SqlServer\CK.SqlServer.csproj">
-      <Project>{95912A3B-758E-474B-AF34-BE24C4E3BF56}</Project>
-      <Name>CK.SqlServer</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\CK.SqlServer.Setup.Engine\CK.SqlServer.Setup.Engine.csproj">
       <Project>{9A0BCE15-00EF-411B-8283-68AED047FCE5}</Project>
@@ -131,6 +135,8 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <Content Include="Scripts\ErrorHandling.Install.sql" />
+    <Content Include="Scripts\ErrorHandling.MicroTests.sql" />
     <Content Include="Scripts\FileBased\AllSteps\Test.Init.1.1.9.sql" />
     <Content Include="Scripts\FileBased\AllSteps\Test.Init.sql" />
     <Content Include="Scripts\FileBased\AllSteps\Test.InitContent.1.2.3.sql" />
@@ -167,6 +173,7 @@
     <Content Include="Scripts\InstallFromScratch\Model.Test.DependentPackage.Install.1.0.0.sql" />
     <Content Include="Scripts\InstallFromScratch\Model.Test.WithModel.Install.1.0.0.sql" />
     <Content Include="Scripts\InstallFromScratch\Test.fTest.sql" />
+    <Content Include="Scripts\CallProcedureAutoImplementor.sql" />
     <None Include="packages.config" />
     <None Include="Scripts\InstallFromScratchWithSPDependsOnVersion\WithSPDependsOnVersion.ck">
       <SubType>Designer</SubType>

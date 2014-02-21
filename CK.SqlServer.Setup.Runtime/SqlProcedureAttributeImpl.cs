@@ -7,6 +7,7 @@ using System.Reflection.Emit;
 using System.Linq;
 using CK.Core;
 using CK.Setup;
+using CK.SqlServer.Parser;
 
 namespace CK.SqlServer.Setup
 {

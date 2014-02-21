@@ -10,16 +10,16 @@ namespace CK.SqlServer.Setup
     {
         readonly IActivityMonitor _monitor;
         readonly Dictionary<string, Item> _items;
-        readonly Action<SqlManager> _dbConfigurator;
+        readonly Action<ISqlManager> _dbConfigurator;
 
         class Item
         {
             public string ConnectionString;
-            public SqlManager Manager;
+            public ISqlManager Manager;
             public bool DoNotDispose;
         }
 
-        public SqlManagerProvider( IActivityMonitor monitor, Action<SqlManager> dbConfigurator = null )
+        public SqlManagerProvider( IActivityMonitor monitor, Action<ISqlManager> dbConfigurator = null )
         {
             if( monitor == null ) throw new ArgumentNullException( "_monitor" );
             _monitor = monitor;
@@ -27,7 +27,7 @@ namespace CK.SqlServer.Setup
             _dbConfigurator = dbConfigurator ?? Util.ActionVoid;
         }
 
-        internal void AddConfiguredDefaultDatabase( SqlManager m )
+        internal void AddConfiguredDefaultDatabase( ISqlManager m )
         {
             Debug.Assert( m.IsOpen() );
             Item i = new Item() { ConnectionString = m.CurrentConnectionString, Manager = m, DoNotDispose = true };
@@ -42,7 +42,7 @@ namespace CK.SqlServer.Setup
             _items[connectionString] =  i;
         }
 
-        public SqlManager FindManagerByName( string name )
+        public ISqlManager FindManagerByName( string name )
         {
             if( !String.IsNullOrWhiteSpace( name ) )
             {
@@ -65,7 +65,7 @@ namespace CK.SqlServer.Setup
             i.Manager = m;
         }
 
-        public SqlManager FindManagerByConnectionString( string connectionString )
+        public ISqlManager FindManagerByConnectionString( string connectionString )
         {
             if( !String.IsNullOrWhiteSpace( connectionString ) )
             {

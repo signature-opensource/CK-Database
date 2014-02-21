@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using NUnit.Framework;
-using CK.Core;
-using CK.SqlServer;
-using System.Data.SqlClient;
 using System.Data;
+using System.Data.SqlClient;
+using CK.Core;
+using NUnit.Framework;
 
 namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 {

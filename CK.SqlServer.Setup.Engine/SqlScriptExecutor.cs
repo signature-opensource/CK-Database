@@ -6,10 +6,10 @@ namespace CK.SqlServer.Setup
 {
     class SqlScriptExecutor : MultiScriptExecutorBase
     {
-        SqlManager _manager;
+        ISqlManager _manager;
         ISetupSessionMemory _memory;
 
-        public SqlScriptExecutor( SqlManager m, ISetupSessionMemory memory )
+        public SqlScriptExecutor( ISqlManager m, ISetupSessionMemory memory )
         {
             Debug.Assert( m != null );
             _manager = m;

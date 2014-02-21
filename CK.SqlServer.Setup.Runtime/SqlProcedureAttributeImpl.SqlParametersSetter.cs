@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CK.Core;
 using CK.Reflection;
+using CK.SqlServer.Parser;
 
 namespace CK.SqlServer.Setup
 {

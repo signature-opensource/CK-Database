@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Reflection;
 using CK.Core;
 using CK.Setup;
+using CK.SqlServer.Parser;
 
 namespace CK.SqlServer.Setup
 {

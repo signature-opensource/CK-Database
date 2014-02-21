@@ -10,7 +10,7 @@ namespace CK.SqlServer.Setup
     {
         readonly SqlSetupCenterConfiguration _config;
         readonly SetupCenter _center;
-        readonly SqlManager _defaultDatabase;
+        readonly ISqlManager _defaultDatabase;
         readonly SqlManagerProvider _databases;
         readonly SqlFileDiscoverer _sqlFileDiscoverer;
         readonly DependentProtoItemCollector _sqlFiles;
@@ -66,7 +66,7 @@ namespace CK.SqlServer.Setup
         {
         }
 
-        public SqlSetupCenter( IActivityMonitor monitor, SqlSetupCenterConfiguration config, SqlManager defaultDatabase )
+        public SqlSetupCenter( IActivityMonitor monitor, SqlSetupCenterConfiguration config, ISqlManager defaultDatabase )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
             if( config == null ) throw new ArgumentNullException( "config" );
@@ -139,7 +139,7 @@ namespace CK.SqlServer.Setup
         }
 
         /// <summary>
-        /// Gets or sets a function that will be called when StObjs have been successfuly sorted by 
+        /// Gets or sets a function that will be called when StObjs have been successfully sorted by 
         /// the <see cref="DependencySorter"/> used by the <see cref="StObjCollector"/>.
         /// </summary>
         public Action<IEnumerable<ISortedItem>> StObjDependencySorterHookOutput
@@ -158,7 +158,7 @@ namespace CK.SqlServer.Setup
         }
 
         /// <summary>
-        /// Gets or sets a function that will be called when items have been successfuly sorted.
+        /// Gets or sets a function that will be called when items have been successfully sorted.
         /// </summary>
         public Action<IEnumerable<ISortedItem>> SetupDependencySorterHookOutput
         {
@@ -169,7 +169,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Gets the default database as a <see cref="SqlManager"/> object.
         /// </summary>
-        public SqlManager DefaultSqlDatabase
+        public ISqlManager DefaultSqlDatabase
         {
             get { return _defaultDatabase; }
         }
@@ -186,7 +186,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Executes the setup.
         /// </summary>
-        /// <returns>True if no error occured. False otherwise.</returns>
+        /// <returns>True if no error occurred. False otherwise.</returns>
         public bool Run()
         {
             return _center.Run();
@@ -196,7 +196,7 @@ namespace CK.SqlServer.Setup
         /// Executes the setup with explicit objects injected in the process.
         /// </summary>
         /// <param name="items">Objects that can be <see cref="IDependentItem"/>and/or <see cref="IDependentItemDiscoverer"/> and/or <see cref="IEnumerable"/> of such objects (recursively).</param>
-        /// <returns>True if no error occured. False otherwise.</returns>
+        /// <returns>True if no error occurred. False otherwise.</returns>
         public bool RunWithExplicitDependentItems( params object[] items )
         {
             return _center.Run( items );
@@ -252,30 +252,30 @@ namespace CK.SqlServer.Setup
             }
         }
 
-        SqlManager ISqlManagerProvider.FindManagerByName( string dbName )
+        ISqlManager ISqlManagerProvider.FindManagerByName( string dbName )
         {
             if( dbName == null ) throw new ArgumentNullException( "dbName" );
             if( dbName == SqlDatabase.DefaultDatabaseName ) return _defaultDatabase;
-            SqlManager m = ObtainManager( dbName );
+            ISqlManager m = ObtainManager( dbName );
             if( m == null ) _center.Logger.Warn().Send( "Database named '{0}' is not mapped.", dbName );
             return m;
         }
 
-        SqlManager ISqlManagerProvider.FindManagerByConnectionString( string conString )
+        ISqlManager ISqlManagerProvider.FindManagerByConnectionString( string conString )
         {
             if( conString == null ) throw new ArgumentNullException( "conString" );
             if( conString == _defaultDatabase.Connection.ConnectionString ) return _defaultDatabase;
-            SqlManager m = ObtainManagerByConnectionString( conString );
+            ISqlManager m = ObtainManagerByConnectionString( conString );
             if( m == null ) _center.Logger.Warn().Send( "Database connection to '{0}' is not mapped.", conString );
             return m;
         }
 
-        protected virtual SqlManager ObtainManager( string dbName )
+        protected virtual ISqlManager ObtainManager( string dbName )
         {
             return _databases.FindManagerByName( dbName );
         }
 
-        protected virtual SqlManager ObtainManagerByConnectionString( string conString )
+        protected virtual ISqlManager ObtainManagerByConnectionString( string conString )
         {
             return _databases.FindManagerByConnectionString( conString );
         }

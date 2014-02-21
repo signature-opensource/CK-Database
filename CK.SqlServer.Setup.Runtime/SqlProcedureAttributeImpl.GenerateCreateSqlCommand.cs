@@ -9,6 +9,7 @@ using CK.Core;
 using CK.Reflection;
 using System.Linq;
 using System.Text;
+using CK.SqlServer.Parser;
 
 namespace CK.SqlServer.Setup
 {

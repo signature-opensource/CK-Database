@@ -11,9 +11,9 @@ namespace CK.SqlServer.Setup
         ISetupSessionMemory _memory;
         List<SimpleScriptTagHandler.Script> _scripts;
         ISqlScriptExecutor _executor;
-        SqlManager _manager;
+        ISqlManager _manager;
 
-        public SqlMultiScript( IActivityMonitor monitor, ISetupScript script, SqlManager manager, ISetupSessionMemory memory )
+        public SqlMultiScript( IActivityMonitor monitor, ISetupScript script, ISqlManager manager, ISetupSessionMemory memory )
             : base( monitor, script )
         {
             if( memory == null ) throw new ArgumentNullException( "memory" );
