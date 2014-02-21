@@ -28,9 +28,7 @@ namespace CK.Deploy.Console
             output.WriteLine( "<connectionString>\t\t Connection String" );
         }
 
-        static Semaphore _semaphore;
-
-        static void Main(string[] args)
+        static void Main( string[] args )
         {
             if( args.Contains( "/?" ) )
             {
@@ -45,12 +43,8 @@ namespace CK.Deploy.Console
                 if( analyzer.IsV2 )
                 {
                     AppDomain app = PrepareAppDomain( analyzer.V2Args );
-                    using( _semaphore = new Semaphore( 0, 1 ) )
-                    {
-                        app.SetData( "MainArgs", analyzer.V2Args );
-                        app.DoCallBack( new CrossAppDomainDelegate( RunV2 ) );
-                        _semaphore.WaitOne();
-                    }
+                    app.SetData( "MainArgs", analyzer.V2Args );
+                    app.DoCallBack( new CrossAppDomainDelegate( RunV2 ) );
                 }
                 else
                 {
@@ -79,7 +73,7 @@ namespace CK.Deploy.Console
 
             Ancestor.FinderResult result = Ancestor.FindCommonAncestor( codeBaseDir, projectRootDir );
             if( result == null )
-                throw new ApplicationException( string.Format( "Code base must has common ancestor with AbsoluteRootPath. No ancestor can be found from {0} and {1}", codeBaseDir.FullName, projectRootDir.FullName) );
+                throw new ApplicationException( string.Format( "Code base must has common ancestor with AbsoluteRootPath. No ancestor can be found from {0} and {1}", codeBaseDir.FullName, projectRootDir.FullName ) );
 
             var dllProb = args.RelativeDllPaths.Select( x => Path.Combine( result.ProjectRootRelativePath, x ) ).ToList();
             dllProb.Add( result.CodeBaseRelativePath ); // inject path for this program in the new appdomain
@@ -106,7 +100,7 @@ namespace CK.Deploy.Console
                 monitor.Info().Send( string.Format( "FilePath: {0}", args.FilePath ) );
                 monitor.Info().Send( "ConnectionString: " + args.ConnectionString );
             }
-            
+
             var config = new SqlSetupCenterConfiguration();
             config.DefaultDatabaseConnectionString = args.ConnectionString;
             config.SetupConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
@@ -121,38 +115,34 @@ namespace CK.Deploy.Console
 
         public static void RunV2()
         {
-            try
+            var monitor = new ActivityMonitor();
+
+            V2Args args = (V2Args)AppDomain.CurrentDomain.GetData( "MainArgs" );
+
+            monitor.Output.RegisterClient( new ActivityMonitorConsoleClient() );
+
+            using( monitor.OpenInfo().Send( "Begin dbSetup with:" ) )
             {
-                V2Args args = (V2Args)AppDomain.CurrentDomain.GetData( "MainArgs" );
-
-                var monitor = new ActivityMonitor();
-                monitor.Output.RegisterClient( new ActivityMonitorConsoleClient() );
-
-                using( monitor.OpenInfo().Send( "Begin dbSetup with:" ) )
-                {
-                    monitor.Info().Send( string.Format( "RootPath: {0}", args.AbsoluteRootPath ) );
-                    monitor.Info().Send( string.Format( "FilePaths: {0}", string.Join( ", ", args.RelativeFilePaths ) ) );
-                    monitor.Info().Send( string.Format( "DllPaths: {0}", string.Join( ", ", args.RelativeDllPaths ) ) );
-                    monitor.Info().Send( string.Format( "Assembly: {0}", string.Join( ", ", args.AssemblyNames ) ) );
-                    monitor.Info().Send( "ConnectionString: " + args.ConnectionString );
-                }
-
-                var config = new SqlSetupCenterConfiguration();
-                config.DefaultDatabaseConnectionString = args.ConnectionString;
-                config.SetupConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
-                var rootedPaths = args.RelativeFilePaths.Select( p => Path.Combine( args.AbsoluteRootPath, p ) );
-                config.FilePackageDirectories.AddRange( rootedPaths );
-                config.SqlFileDirectories.AddRange( rootedPaths );
-                config.SetupConfiguration.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.AddRange( args.AssemblyNames );
-                using( SqlSetupCenter c = new SqlSetupCenter( monitor, config ) )
-                {
-                    c.Run();
-                }
+                monitor.Info().Send( string.Format( "RootPath: {0}", args.AbsoluteRootPath ) );
+                monitor.Info().Send( string.Format( "FilePaths: {0}", string.Join( ", ", args.RelativeFilePaths ) ) );
+                monitor.Info().Send( string.Format( "DllPaths: {0}", string.Join( ", ", args.RelativeDllPaths ) ) );
+                monitor.Info().Send( string.Format( "Assembly: {0}", string.Join( ", ", args.AssemblyNames ) ) );
+                monitor.Info().Send( "ConnectionString: " + args.ConnectionString );
             }
-            finally
+
+            var config = new SqlSetupCenterConfiguration();
+            config.DefaultDatabaseConnectionString = args.ConnectionString;
+            config.SetupConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
+            var rootedPaths = args.RelativeFilePaths.Select( p => Path.Combine( args.AbsoluteRootPath, p ) );
+            config.FilePackageDirectories.AddRange( rootedPaths );
+            config.SqlFileDirectories.AddRange( rootedPaths );
+            config.SetupConfiguration.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.AddRange( args.AssemblyNames );
+            using( SqlSetupCenter c = new SqlSetupCenter( monitor, config ) )
             {
-                _semaphore.Release();
+                c.Run();
+                monitor.Info().Send( "DBSetup Done." );
             }
+
         }
     }
 }
