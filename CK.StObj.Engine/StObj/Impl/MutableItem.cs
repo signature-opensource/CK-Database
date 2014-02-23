@@ -95,14 +95,20 @@ namespace CK.Setup
         IReadOnlyList<MutableItem> _dRequiredBy;
         IReadOnlyList<MutableItem> _dChildren;
         IReadOnlyList<MutableItem> _dGroups;
-        // Our container comes from the configuration of this item or is inherited (from generalization). 
+
+        /// <summary>
+        /// Our container comes from the configuration of this item or is inherited (from generalization). 
+        /// </summary>
         bool IsOwnContainer { get { return _dContainer != null && _dContainer.ObjectType == _container.Type; } }
 
-        // The tracking mode for ambient properties is inherited and nothing prevents it to 
-        // change between levels (a Generalization can set AddPropertyHolderAsChildren and a Specialization 
-        // define PropertyHolderRequiredByThis, even if that seems pretty strange and that I can not imagine any
-        // clever use of such beast...). Anyway, technically speaking, it has to work this way.
+        /// <summary>
+        /// The tracking mode for ambient properties is inherited and nothing prevents it to 
+        /// change between levels (a Generalization can set AddPropertyHolderAsChildren and a Specialization 
+        /// define PropertyHolderRequiredByThis, even if that seems pretty strange and that I can not imagine any
+        /// clever use of such beast...). Anyway, technically speaking, it has to work this way.
+        /// </summary>
         TrackAmbientPropertiesMode _trackAmbientPropertiesMode;
+
         // Ambient properties are per StObj.
         List<TrackedAmbientPropertyInfo> _trackedAmbientProperties;
         IReadOnlyList<TrackedAmbientPropertyInfo> _trackedAmbientPropertiesEx;

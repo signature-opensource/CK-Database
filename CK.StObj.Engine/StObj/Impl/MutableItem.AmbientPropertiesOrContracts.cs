@@ -342,7 +342,8 @@ namespace CK.Setup
                     }
                 }
                 // A Value exists: the property has been explicitly set or configured for resolution at a given level.
-                // If we are in "FromContainerAndThenGeneralization" mode, before accepting the value or resolving it, we apply container's inheritance up to this level if it is not the most specialized one.
+                // If we are in "FromContainerAndThenGeneralization" mode, before accepting the value or resolving it, we apply container's inheritance up to 
+                // this level if it is not the most specialized one.
                 // If not ("None" or "FromGeneralizationAndThenContainer") we have nothing to do.
                 if( a.AmbientPropertyInfo.ResolutionSource == PropertyResolutionSource.FromContainerAndThenGeneralization && a.MaxSpecializationDepthSet < AmbientTypeInfo.SpecializationDepth )
                 {

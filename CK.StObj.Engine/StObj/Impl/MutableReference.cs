@@ -71,7 +71,7 @@ namespace CK.Setup
             if( _context != null )
             {
                 // Context is not null: search inside this exact context.
-                // Even if the context for this reference is the one of our Owner's context, since it is explicitely set,
+                // Even if the context for this reference is the one of our Owner's context, since it is explicitly set,
                 // we expect the type to actually be in this context.
                 StObjCollectorContextualResult ctxResult = cachedCollector == null || cachedCollector.Context != _context ? collector.FindContext( _context ) : cachedCollector;
                 if( ctxResult == null ) 
@@ -90,7 +90,7 @@ namespace CK.Setup
             {
                 if( cachedCollector == null || cachedCollector.Context != Owner.Context.Context ) cachedCollector = collector.FindContext( Owner.Context.Context );
                 // Context is not set: first look for the type in the Owners's context.
-                // If it is not foud, look for a single type across the different contexts.
+                // If it is not found, look for a single type across the different contexts.
                 result = cachedCollector.InternalMapper.ToHighestImpl( Type );
                 if( result == null )
                 {
