@@ -56,10 +56,18 @@ namespace CK.Core
                 // Singleton creation.
                 foreach( var o in StObjs )
                 {
-                    object instance = SingletonCache.Get(o.CacheIndex);
+                    object instance = SingletonCache.Get( o.CacheIndex );
                     if( instance == null ) SingletonCache.Set( o.CacheIndex, instance = _runtimeBuilder.CreateInstance( o.LeafSpecialization.ObjectType ) );
                     o.CallConstruct( monitor, idx => SingletonCache.Get( StObjs[idx].CacheIndex ), instance );
-                    if( o.Specialization == null ) o.SetPostBuilProperties( idx => SingletonCache.Get( StObjs[idx].CacheIndex ), instance );
+                }
+                // Setting post build properties.
+                foreach( var o in StObjs )
+                {
+                    if( o.Specialization == null )
+                    {
+                        object instance = SingletonCache.Get( o.CacheIndex );
+                        o.SetPostBuilProperties( idx => SingletonCache.Get( StObjs[idx].CacheIndex ), instance );
+                    }
                 }
             }
         }
