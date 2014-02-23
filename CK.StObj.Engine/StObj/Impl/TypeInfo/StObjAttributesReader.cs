@@ -6,7 +6,7 @@ using CK.Core;
 
 namespace CK.Setup
 {
-    internal class AttributesReader
+    internal class StObjAttributesReader
     {
         /// <summary>
         /// Retrieves a <see cref="IStObjAttribute"/> from (potentially multiple) attributes on a type.

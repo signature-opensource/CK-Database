@@ -52,7 +52,7 @@ namespace CK.Setup
             get { return KindName; }
         }
 
-        void CheckTopDefiner( IActivityMonitor monitor )
+        void SetTopDefinerSettablePropertyInfo( IActivityMonitor monitor )
         {
             var mSet = _p.GetSetMethod( true );
             if( mSet == null )
@@ -105,7 +105,7 @@ namespace CK.Setup
             }
             for( int i = nbFromAbove; i < collector.Count; ++i )
             {
-                collector[i].CheckTopDefiner( monitor );
+                collector[i].SetTopDefinerSettablePropertyInfo( monitor );
             }
             return collector.ToReadOnlyList();
         }

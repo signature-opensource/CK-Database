@@ -309,14 +309,14 @@ n°1
         {
             using( TestHelper.ConsoleMonitor.OpenTrace().Send( testName ) )
             {
-                TestHelper.ConsoleMonitor.Trace( p.OriginalScript );
+                TestHelper.ConsoleMonitor.Trace().Send( p.OriginalScript );
                 using( TestHelper.ConsoleMonitor.OpenTrace().Send( "Result" ) )
                 {
                     foreach( var one in s )
                     {
                         using( TestHelper.ConsoleMonitor.OpenTrace().Send( "Script Label: {0}", one.Label ) )
                         {
-                            TestHelper.ConsoleMonitor.Trace( one.Body );
+                            TestHelper.ConsoleMonitor.Trace().Send( one.Body );
                         }
                     }
                 }

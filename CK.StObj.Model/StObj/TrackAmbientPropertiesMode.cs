@@ -35,7 +35,8 @@ namespace CK.Setup
         PropertyHolderRequiresThis = 4,
 
         /// <summary>
-        /// Consider Ambient Properties holder object to be required by this item.
+        /// Consider Ambient Properties holder object to be required by this item: this item requires
+        /// all objects that reference it.
         /// </summary>
         PropertyHolderRequiredByThis = 5,
     }

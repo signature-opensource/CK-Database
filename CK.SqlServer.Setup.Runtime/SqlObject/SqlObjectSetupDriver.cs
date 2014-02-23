@@ -38,7 +38,7 @@ namespace CK.SqlServer.Setup
             {
                 if( m.IgnoreMissingDependencyIsError )
                 {
-                    if( itemMissingDependencyIsError ) Engine.Monitor.Trace( "SqlManager is configured to ignore MissingDependencyIsError." );
+                    if( itemMissingDependencyIsError ) Engine.Monitor.Trace().Send( "SqlManager is configured to ignore MissingDependencyIsError." );
                 }
                 else
                 {

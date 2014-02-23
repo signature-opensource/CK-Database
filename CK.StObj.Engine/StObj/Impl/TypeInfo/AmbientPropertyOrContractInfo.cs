@@ -24,7 +24,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// This is settable in order for base class property's context to be used if it is not explicitely defined
+        /// This is settable in order for base class property's context to be used if it is not explicitly defined
         /// by the specialized property.
         /// </summary>
         public string Context { get; private set; }

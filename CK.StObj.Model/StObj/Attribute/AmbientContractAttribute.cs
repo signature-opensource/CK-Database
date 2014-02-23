@@ -16,8 +16,8 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets or sets whether finding the corresponding typed <see cref="IAmbientContract"/> is required or not.
-        /// Defaults to false (unless expcitely stated, the type must be resolved) but when 
-        /// is not explicitely set to true or false on a specialized property its value is given by property 
+        /// Defaults to false (unless explicitly stated, the type must be resolved) but when 
+        /// is not explicitly set to true or false on a specialized property its value is given by property 
         /// definition of the base class. 
         /// </summary>
         public bool IsOptional

@@ -106,7 +106,9 @@ namespace CK.Setup
         // Ambient properties are per StObj.
         List<TrackedAmbientPropertyInfo> _trackedAmbientProperties;
         IReadOnlyList<TrackedAmbientPropertyInfo> _trackedAmbientPropertiesEx;
-        // True if this or any Generalization has _trackAmbientPropertiesMode != None.
+        /// <summary>
+        /// True if this or any Generalization has _trackAmbientPropertiesMode != None.
+        /// </summary>
         bool _needsTrackedAmbientProperties;
 
         enum PrepareState : byte
@@ -301,13 +303,13 @@ namespace CK.Setup
         bool IStObjMutableItem.SetDirectPropertyValue( IActivityMonitor monitor, string propertyName, object value, string sourceDescription )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor", "Source:" + sourceDescription );
-            if( String.IsNullOrEmpty( propertyName ) ) throw new ArgumentException( "Can not ne null nor empty. Source:" + sourceDescription, "propertyName" );
+            if( String.IsNullOrEmpty( propertyName ) ) throw new ArgumentException( "Can not be null nor empty. Source:" + sourceDescription, "propertyName" );
             if( value == Type.Missing ) throw new ArgumentException( "Setting property to Type.Missing is not allowed. Source:" + sourceDescription, "value" );
 
             // Is it an Ambient property?
             // If yes, it is an error... 
             // We may consider that it is an error if the property is defined at this type level (or above), 
-            // and a simple warning if the property is defined by a specialization (the developper may not be aware of it).
+            // and a simple warning if the property is defined by a specialization (the developer may not be aware of it).
             // Note: since we check properties' type homogeneity in StObjTypeInfo, an Ambient/StObj/Direct property is always 
             // of the same "kind" regardless of its owner specialization depth.
             MutableAmbientProperty mp = _leafData.AllAmbientProperties.FirstOrDefault( a => a.Name == propertyName );
@@ -322,7 +324,7 @@ namespace CK.Setup
             PropertyInfo p = _leafData.LeafSpecialization.Type.GetProperty( propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
             if( p == null || !p.CanWrite )
             {
-                monitor.Error().Send( "Unable to set direct property '{1}.{0}' structural value. It must exist and be writeable (on type '{2}'). (Source:{3})", propertyName, Type.FullName, _leafData.LeafSpecialization.Type.FullName, sourceDescription );
+                monitor.Error().Send( "Unable to set direct property '{1}.{0}' structural value. It must exist and be writable (on type '{2}'). (Source:{3})", propertyName, Type.FullName, _leafData.LeafSpecialization.Type.FullName, sourceDescription );
                 return false;
             }
             if( _leafData.DirectPropertiesToSet == null ) _leafData.DirectPropertiesToSet = new Dictionary<PropertyInfo, object>();
@@ -333,7 +335,7 @@ namespace CK.Setup
         bool IStObjMutableItem.SetAmbiantPropertyValue( IActivityMonitor monitor, string propertyName, object value, string sourceDescription )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor", "Source:" + sourceDescription );
-            if( String.IsNullOrEmpty( propertyName ) ) throw new ArgumentException( "Can not ne null nor empty. Source:" + sourceDescription, "propertyName" );
+            if( String.IsNullOrEmpty( propertyName ) ) throw new ArgumentException( "Can not be null nor empty. Source:" + sourceDescription, "propertyName" );
             if( value == Type.Missing ) throw new ArgumentException( "Setting property to Type.Missing is not allowed. Source:" + sourceDescription, "value" );
 
             // Is it an Ambient property?
@@ -343,28 +345,28 @@ namespace CK.Setup
             {
                 return mp.SetValue( AmbientTypeInfo.SpecializationDepth, monitor, value );
             }
-            monitor.Error().Send( "Unable to set unexisting Ambient property '{1}.{0}'. It must exist, be writeable and marked with AmbientPropertyAttribute. (Source:{2})", propertyName, Type.FullName, sourceDescription );
+            monitor.Error().Send( "Unable to set unexisting Ambient property '{1}.{0}'. It must exist, be writable and marked with AmbientPropertyAttribute. (Source:{2})", propertyName, Type.FullName, sourceDescription );
             return false;
         }
 
         bool IStObjMutableItem.SetAmbiantPropertyConfiguration( IActivityMonitor monitor, string propertyName, string context, Type type, StObjRequirementBehavior behavior, string sourceDescription )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor", "Source:" + sourceDescription );
-            if( String.IsNullOrEmpty( propertyName ) ) throw new ArgumentException( "Can not ne null nor empty. Source:" + sourceDescription, "propertyName" );
+            if( String.IsNullOrEmpty( propertyName ) ) throw new ArgumentException( "Can not be null nor empty. Source:" + sourceDescription, "propertyName" );
 
             MutableAmbientProperty mp = _leafData.AllAmbientProperties.FirstOrDefault( a => a.Name == propertyName );
             if( mp != null )
             {
                 return mp.SetConfiguration( AmbientTypeInfo.SpecializationDepth, monitor, context, type, behavior );
             }
-            monitor.Error().Send( "Unable to configure unexisting Ambient property '{1}.{0}'. It must exist, be writeable and marked with AmbientPropertyAttribute. (Source:{2})", propertyName, Type.FullName, sourceDescription );
+            monitor.Error().Send( "Unable to configure unexisting Ambient property '{1}.{0}'. It must exist, be writable and marked with AmbientPropertyAttribute. (Source:{2})", propertyName, Type.FullName, sourceDescription );
             return false;        
         }
 
         bool IStObjMutableItem.SetStObjPropertyValue( IActivityMonitor monitor, string propertyName, object value, string sourceDescription )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor", "Source:" + sourceDescription );
-            if( String.IsNullOrEmpty( propertyName ) ) throw new ArgumentException( "Can not ne null nor empty. Source:" + sourceDescription, "propertyName" );
+            if( String.IsNullOrEmpty( propertyName ) ) throw new ArgumentException( "Can not be null nor empty. Source:" + sourceDescription, "propertyName" );
             if( value == Type.Missing ) throw new ArgumentException( "Setting property to Type.Missing is not allowed. Source:" + sourceDescription, "value" );
 
             MutableAmbientProperty mp = _leafData.AllAmbientProperties.FirstOrDefault( a => a.Name == propertyName );
@@ -449,7 +451,7 @@ namespace CK.Setup
             bool result = true;
             _dFullName = AmbientContractCollector.FormatContextualFullName( Context.Context, Type );
             _dContainer = _container.ResolveToStObj( monitor, collector, cachedCollector );
-            // Requirement intialization.
+            // Requirement initialization.
             HashSet<MutableItem> req = new HashSet<MutableItem>();
             {
                 // Requires are... Required (when not configured as optional by IStObjStructuralConfigurator).
@@ -511,7 +513,7 @@ namespace CK.Setup
         //    List<MutableItem> allContainers = null;
         //    ComputeFullNameAndResolveContainer( monitor, result, contextResult, ref allContainers );
 
-        //    // Requirement intialization.
+        //    // Requirement initialization.
         //    HashSet<MutableItem> req = new HashSet<MutableItem>();
         //    {
         //        // Requires are... Required (when not configured as optional by IStObjStructuralConfigurator).
@@ -610,7 +612,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// This is the index to use to reference a IStObj in a setup phasis (cross context).
+        /// This is the index to use to reference a IStObj in a setup phase (cross context).
         /// To reference a StructuredObject, use the <see cref="SpecializationIndexOrdered"/>.
         /// </summary>
         public int IndexOrdered { get; private set; }

@@ -51,7 +51,7 @@ namespace CK.Setup
                             result.SpecializationDepth = 1;
                             // For ItemKind & TrackAmbientProperties, walks up the inheritance chain and combines the StObjAttribute.
                             // We compute the SpecializationDepth: once we know it, we can inject it the Ambient Properties discovery.
-                            var a = AttributesReader.GetStObjAttributeForExactType( t, monitor );
+                            var a = StObjAttributesReader.GetStObjAttributeForExactType( t, monitor );
                             if( a != null )
                             {
                                 result.Container = a.Container;
@@ -64,7 +64,7 @@ namespace CK.Setup
                                 result.SpecializationDepth = result.SpecializationDepth + 1;
                                 if( !result.IsFullyDefined )
                                 {
-                                    var aAbove = AttributesReader.GetStObjAttributeForExactType( tAbove, monitor );
+                                    var aAbove = StObjAttributesReader.GetStObjAttributeForExactType( tAbove, monitor );
                                     if( aAbove != null )
                                     {
                                         if( result.Container == null ) result.Container = aAbove.Container;
@@ -136,11 +136,11 @@ namespace CK.Setup
             {
                 if( String.IsNullOrWhiteSpace( p.PropertyName ) )
                 {
-                    monitor.Error().Send( "Unamed or whitespace StObj property on '{0}'. Attribute must be configured with a valid PropertyName.", t.FullName );
+                    monitor.Error().Send( "Unnamed or whitespace StObj property on '{0}'. Attribute must be configured with a valid PropertyName.", t.FullName );
                 }
                 else if( p.PropertyType == null )
                 {
-                    monitor.Error().Send( "StObj property named '{0}' for '{1}' has no PropertyType defined. It should be typeof(object) to explicitely express that any type is accepted.", p.PropertyName, t.FullName );
+                    monitor.Error().Send( "StObj property named '{0}' for '{1}' has no PropertyType defined. It should be typeof(object) to explicitly express that any type is accepted.", p.PropertyName, t.FullName );
                 }
                 else if( stObjProperties.Find( sP => sP.Name == p.PropertyName ) != null )
                 {
@@ -163,9 +163,9 @@ namespace CK.Setup
             StObjProperties = stObjProperties.ToReadOnlyList();
             Debug.Assert( AmbientContracts != null && AmbientProperties != null && StObjProperties != null );
 
-            // Simple detection of name clashing: I prefer to keep it simple and check property kind conherency here instead of injecting 
+            // Simple detection of name clashing: I prefer to keep it simple and check property kind coherency here instead of injecting 
             // the detection inside CreateAmbientPropertyListForExactType and MergeWithAboveProperties with a multi-type property collector. 
-            // Code is complicated enough and it should be not reaally less efficient to use the dictionary below once all properties
+            // Code is complicated enough and it should be not really less efficient to use the dictionary below once all properties
             // have been resolved...
             {
                 var names = new Dictionary<string, INamedPropertyInfo>();
@@ -182,7 +182,7 @@ namespace CK.Setup
 
             #region IStObjAttribute (ItemKind, Container & Type requirements).
             // There is no Container inheritance at this level.
-            var a = AttributesReader.GetStObjAttributeForExactType( t, monitor );
+            var a = StObjAttributesReader.GetStObjAttributeForExactType( t, monitor );
             if( a != null )
             {
                 Container = a.Container;
@@ -196,7 +196,7 @@ namespace CK.Setup
             // We inherit only from non Ambient Contract base classes, not from Generalization if it exists.
             // This is to let the inheritance of these 3 properties take dynamic configuration (IStObjStructuralConfigurator) 
             // changes into account: inheritance will take place after configuration so that a change on a base class
-            // will be inherited if not explicitely defined at the class level.
+            // will be inherited if not explicitly defined at the class level.
             if( Generalization == null )
             {
                 if( Container == null ) Container = infoFromParent.Container;

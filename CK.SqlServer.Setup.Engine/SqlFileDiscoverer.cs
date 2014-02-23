@@ -103,7 +103,7 @@ namespace CK.Setup
                 XElement e = doc.Root;
                 if( e.Name != "SetupPackage" )
                 {
-                    _monitor.Warn( "The root element must be 'SetupPackage'." );
+                    _monitor.Warn().Send( "The root element must be 'SetupPackage'." );
                     return false;
                 }
                 try
