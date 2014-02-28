@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CK.SqlServer.Parser.Tests
 {
-    public class ExplainWriter : SqlExprVisitor
+    public class ExplainWriter : SqlItemVisitor
     {
         readonly StringBuilder Out;
 
@@ -329,10 +329,53 @@ namespace CK.SqlServer.Parser.Tests
             Out.Append( "OrderBy(" );
             VisitExpr( e.SelectExpr );
             Out.Append( "," );
-            VisitExpr( e.OrderByExpression );
+            VisitExpr( e.OrderByColumns );
+            if( e.OffsetClause != null )
+            {
+                Out.Append( "," );
+                VisitExpr( e.OffsetClause );
+            }
             Out.Append( ")" );
             return e;
         }
+
+        public override SqlItem Visit( SelectOrderByColumnList e )
+        {
+            Out.Append( "(" );
+            bool atLeastOne = false;
+            foreach( SelectOrderByColumn c in e )
+            {
+                if( atLeastOne ) Out.Append( "," );
+                else atLeastOne = true;
+                VisitExpr( c );
+            }
+            Out.Append( ")" );
+            return e;
+        }
+
+        public override SqlItem Visit( SelectOrderByColumn e )
+        {
+            VisitExpr( e.Definition );
+            if( e.AscOrDescToken != null )
+            {
+                Out.Append( "-" );
+                Out.Append( e.AscOrDescToken.Name );
+            }
+            return e;
+        }
+
+        public override SqlItem Visit( SelectOrderByOffset e )
+        {
+            Out.Append( "offset:" );
+            VisitExpr( e.OffsetExpression );
+            if( e.HasFetchClause )
+            {
+                Out.Append( ",fetch:" );
+                VisitExpr( e.FetchExpression );
+            }
+            return e;
+        }
+
 
         public override SqlItem Visit( SelectFor e )
         {

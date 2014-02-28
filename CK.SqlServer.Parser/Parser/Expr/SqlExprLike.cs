@@ -69,7 +69,7 @@ namespace CK.SqlServer.Parser
         public SqlTokenLiteralString EscapeChar { get { return HasEscape ? (SqlTokenLiteralString)Slots[IsNotLike ? 6 : 5] : null; } }
 
         [DebuggerStepThrough]
-        internal protected override T Accept<T>( IExprVisitor<T> visitor )
+        internal protected override T Accept<T>( ISqlItemVisitor<T> visitor )
         {
             return visitor.Visit( this );
         }

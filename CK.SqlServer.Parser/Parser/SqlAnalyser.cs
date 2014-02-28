@@ -393,7 +393,8 @@ namespace CK.SqlServer.Parser
                     if( R.IsToken( out assign, SqlTokenType.Assign, false ) )
                     {
                         SqlTokenIdentifier variable;
-                        if( R.IsToken( out variable, SqlTokenType.IdentifierVariable, false ) )
+                        if( R.IsToken( out variable, SqlTokenType.Null, false ) 
+                            || R.IsToken( out variable, SqlTokenType.IdentifierVariable, false ) )
                         {
                             defValue = new SqlExprParameterDefaultValue( assign, variable );
                         }
@@ -671,7 +672,7 @@ namespace CK.SqlServer.Parser
             /// Collects tokens in an <see cref="SqlExprUnmodeledItems"/> until a given token is found.
             /// </summary>
             /// <typeparam name="T">Type of the stopper token.</typeparam>
-            /// <param name="items">An unmodeled list of tokens. Null if the stopper occurs immediately or an error occured on the first token.</param>
+            /// <param name="items">An unmodeled list of tokens. Null if the stopper occurs immediately or an error occurred on the first token.</param>
             /// <param name="stopper">Stopper eventually found. Null if the end of input or an error has been encountered.</param>
             /// <param name="stopperDefinition">Predicate that defines the stop.</param>
             /// <param name="matchers">
@@ -679,7 +680,7 @@ namespace CK.SqlServer.Parser
             /// Matchers are called up to the first one that returns an item different than the Current token.
             /// When a matcher returns null, the current token is ignored.
             /// </param>
-            /// <returns>True if no error occured. The stopper is null if the end of input has been encountered.</returns>
+            /// <returns>True if no error occurred. The stopper is null if the end of input has been encountered.</returns>
             bool IsUnmodeledUntil<T>( out SqlExprUnmodeledItems items, out T stopper, Predicate<T> stopperDefinition, params Func<ISqlItem>[] matchers ) where T : SqlToken
             {
                 Debug.Assert( stopperDefinition != null );

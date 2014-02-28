@@ -13,7 +13,7 @@ namespace CK.SqlServer.Parser
             delegate bool IsExprFunc<T>( out T e, bool expected );
 
             /// <summary>
-            /// Matches a list of comma separated expressions optionnally enclosed in parenthesis.
+            /// Matches a list of comma separated expressions optionally enclosed in parenthesis.
             /// </summary>
             /// <typeparam name="T">Type of the expressions to match.</typeparam>
             /// <param name="openPar">Optional opening parenthesis.</param>
@@ -53,6 +53,22 @@ namespace CK.SqlServer.Parser
                 return !R.IsError;
             }
 
+            /// <summary>
+            /// Matches a list of comma separated expressions not enclosed in parenthesis.
+            /// </summary>
+            /// <typeparam name="T">Type of the expressions to match.</typeparam>
+            /// <param name="items">List of items: contains expressions and comma tokens. Can be empty if no expression have been matched.</param>
+            /// <param name="match">Function that knows how to match an expression. If this function returns true and a null item, null is not collected into the items.</param>
+            /// <returns>True on success. Can be false only when <paramref name="expectAtLeastOne"/> is true.</returns>
+            bool IsCommaListNonEnclosed<T>( out List<ISqlItem> items, IsExprFunc<T> match, bool expectAtLeastOne ) where T : SqlItem
+            {
+                SqlTokenOpenPar openPar;
+                SqlTokenClosePar closePar;
+                if( !IsCommaList<T>( out openPar, out items, out closePar, false, match ) ) return false;
+                if( openPar != null ) return R.SetCurrentError( "Unexpected parenthesis." );
+                if( expectAtLeastOne && items.Count == 0 ) return R.SetCurrentError( "Expected a '{0}' definition.", typeof( T ).Name.Replace( "SqlExpr", String.Empty ).Replace( "SqlNoExpr", String.Empty ) );
+                return !R.IsError;
+            }
 
             SqlTokenTerminal GetOptionalTerminator()
             {

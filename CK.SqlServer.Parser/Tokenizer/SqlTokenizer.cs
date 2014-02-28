@@ -69,7 +69,7 @@ namespace CK.SqlServer.Parser
             if( (_curC0 = ReadInput()) != -1 ) _curC1 = ReadInput();
             _tokenType = 0;
             ClearBuffer();
-            NextToken2();
+            NextToken();
             return _tokenType >= 0;
         }
 
@@ -114,7 +114,7 @@ namespace CK.SqlServer.Parser
         /// or an error occurred.</returns>
         public bool Forward()
         {
-            return NextToken2() >= 0;
+            return NextToken() >= 0;
         }
 
         /// <summary>
@@ -368,7 +368,7 @@ namespace CK.SqlServer.Parser
 
         #endregion
 
-        int NextToken2()
+        int NextToken()
         {
             if( _tokenType >= 0 )
             {

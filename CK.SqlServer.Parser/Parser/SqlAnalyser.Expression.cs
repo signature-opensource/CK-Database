@@ -191,10 +191,20 @@ namespace CK.SqlServer.Parser
                     if( op.TokenType == SqlTokenType.Order )
                     {
                         SqlTokenIdentifier by;
-                        SqlExpr content;
+                        SelectOrderByColumnList columns;
                         if( !R.IsToken( out by, SqlTokenType.By, true ) ) return false;
-                        if( !IsExpressionOrRawList( out content, SelectPartStopper, false, true ) ) return false;
-                        left = new SelectOrderBy( lSelect, op, by, content );
+                        if( !IsSelectOrderByColumnList( out columns ) ) return false;
+                        
+                        SelectOrderByOffset offsetClause;
+                        if( IsSelectOrderByOffset( out offsetClause ) )
+                        {
+                            left = new SelectOrderBy( lSelect, op, by, columns, offsetClause );
+                        }
+                        else
+                        {
+                            if( R.IsError ) return false;
+                            left = new SelectOrderBy( lSelect, op, by, columns );
+                        }
                         return true;
                     }
                     if( op.TokenType == SqlTokenType.For )
@@ -351,7 +361,7 @@ namespace CK.SqlServer.Parser
             /// <param name="closer">Predicate that detects the stopper (will NOT be added to the expression).</param>
             /// <param name="blindlyAcceptCurrentToken">True to accept the current token whatever it is.</param>
             /// <param name="expectAtLeastOne">True to set an error if the expression is empty (no expressions in it).</param>
-            /// <returns>True if an expression has sucessfully been found (it may be a <see cref="SqlExprRawItemList"/>).</returns>
+            /// <returns>True if an expression has successfully been found (it may be a <see cref="SqlExprRawItemList"/>).</returns>
             bool IsExpressionOrRawList( out SqlExpr e, Predicate<SqlToken> stopper, bool blindlyAcceptCurrentToken, bool expectAtLeastOne )
             {
                 if( stopper == null ) throw new ArgumentNullException( "stopper" );
@@ -365,7 +375,7 @@ namespace CK.SqlServer.Parser
             /// <param name="e">Read expression.</param>
             /// <param name="openPar">Opening parenthesis (will be the very first token).</param>
             /// <param name="expectAtLeastOne">True to set an error if the block is empty (no expressions in it).</param>
-            /// <returns>True if an expression has sucessfully been found.</returns>
+            /// <returns>True if an expression has successfully been found.</returns>
             bool IsExpressionOrRawList( out SqlExpr e, SqlTokenOpenPar openPar, bool expectAtLeastOne )
             {
                 if( openPar == null ) throw new ArgumentNullException( "opener" );
@@ -390,7 +400,7 @@ namespace CK.SqlServer.Parser
                 }
                 // If we expect something and nothing was found and no error was previously set, we set an error.
                 if( setErrorIfEmpty && exprs.Count == 0 && !R.IsError ) return R.SetCurrentError( "Expected expression." );
-                // If no error occured, the block is built:
+                // If no error occurred, the block is built:
                 // - if the opener is not null, with the the given opener and the found closer.
                 // - if the opener is null, without any opener/closer and the closer is not consumed.
                 if( !R.IsError )
@@ -410,7 +420,7 @@ namespace CK.SqlServer.Parser
                         e = new SqlExprRawItemList( openPar, exprs, closePar );
                         return true;
                     }
-                    // When no opener/closer exist and the block is empty, we do not instanciate it.
+                    // When no opener/closer exist and the block is empty, we do not instantiate it.
                     if( exprs.Count > 0 )
                     {
                         if( exprs.Count == 1 ) e = lastExpr;
@@ -418,7 +428,7 @@ namespace CK.SqlServer.Parser
                     }
                     return true;
                 }
-                // An error occured: closer was not found.
+                // An error occurred: closer was not found.
                 // We let the block null... (we may here build a block with exprs and a kind of SqlExprSyntaxError at the end).
                 return false;
             }

@@ -116,7 +116,7 @@ namespace CK.SqlServer.Parser
             "pivot",
             "plan",
 
-            // These keywords are explicitely associated to a SqlTokenType (OpLevelXX | IdentifierReserved | YY).
+            // These keywords are explicitly associated to a SqlTokenType (OpLevelXX | IdentifierReserved | YY).
             // "or",
             // "and",
             // "not",
@@ -130,7 +130,7 @@ namespace CK.SqlServer.Parser
             // "order",
             // "for",
 
-            // These keywords are explicitely associated to a SqlTokenType (IdentifierStandard | YY).
+            // These keywords are explicitly associated to a SqlTokenType (IdentifierStandard | YY).
             // "case",
             // "null",
             // "when",
@@ -173,7 +173,7 @@ namespace CK.SqlServer.Parser
         /// </summary>
         static string[] _keyWordStartStatement = new string[] 
         {
-            // Explicitely mapped.
+            // Explicitly mapped.
             // "select",
             // "begin",
             // "end",
@@ -334,6 +334,12 @@ namespace CK.SqlServer.Parser
             _keywords.Add( "readonly", SqlTokenType.Readonly );
             _keywords.Add( "out", SqlTokenType.Output );
             _keywords.Add( "output", SqlTokenType.Output );
+            _keywords.Add( "row", SqlTokenType.Rows );
+            _keywords.Add( "rows", SqlTokenType.Rows );
+            _keywords.Add( "offset", SqlTokenType.Offset );
+            _keywords.Add( "first", SqlTokenType.First );
+            _keywords.Add( "next", SqlTokenType.Next );
+            _keywords.Add( "only", SqlTokenType.Only );
 
             // LogicalOperator (they are reserved keywords).
             _keywords.Add( "or", SqlTokenType.Or );

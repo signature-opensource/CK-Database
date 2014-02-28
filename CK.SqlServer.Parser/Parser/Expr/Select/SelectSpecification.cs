@@ -6,6 +6,9 @@ using System.Text;
 
 namespace CK.SqlServer.Parser
 {
+    /// <summary>
+    /// Captures 'into', 'from', 'where' and 'group by' clauses.
+    /// </summary>
     public class SelectSpecification : SqlExpr, ISelectSpecification
     {
         readonly SelectInto _into;
@@ -61,7 +64,7 @@ namespace CK.SqlServer.Parser
         public SelectGroupBy GroupByClause { get { return _groupBy; } }
 
         [DebuggerStepThrough]
-        internal protected override T Accept<T>( IExprVisitor<T> visitor )
+        internal protected override T Accept<T>( ISqlItemVisitor<T> visitor )
         {
             return visitor.Visit( this );
         }

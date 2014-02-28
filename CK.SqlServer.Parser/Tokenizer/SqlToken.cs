@@ -255,6 +255,17 @@ namespace CK.SqlServer.Parser
             return t == SqlTokenType.IdentifierVariable || (t > 0 && (t & SqlTokenType.LitteralMask) != 0);
         }
 
+        /// <summary>
+        /// True if the token is a @variable (or @@SystemFunction like @@RowCount) or a 
+        /// literal value ('string' or 0x5454 number for instance) or null.
+        /// </summary>
+        /// <param name="t">Token to test.</param>
+        /// <returns>True for a variable, a literal or null.</returns>
+        static public bool IsVariableNameOrLiteralOrNull( SqlTokenType t )
+        {
+            return t == SqlTokenType.IdentifierVariable || t == SqlTokenType.Null || (t > 0 && (t & SqlTokenType.LitteralMask) != 0);
+        }
+
         internal static bool IsIdentifierStartChar( int c )
         {
             return c == '@' || c == '#' || c == '$' || c == '_' || Char.IsLetter( (char)c );

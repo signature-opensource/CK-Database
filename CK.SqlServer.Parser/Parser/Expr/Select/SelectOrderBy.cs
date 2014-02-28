@@ -13,8 +13,13 @@ namespace CK.SqlServer.Parser
     /// </summary>
     public class SelectOrderBy : SqlExpr, ISelectSpecification
     {
-        public SelectOrderBy( ISelectSpecification select, SqlTokenIdentifier orderToken, SqlTokenIdentifier byToken, SqlExpr content )
-            : this( CreateArray( SqlToken.EmptyOpenPar, select, orderToken, byToken, content, SqlToken.EmptyClosePar ) )
+        public SelectOrderBy( ISelectSpecification select, SqlTokenIdentifier orderToken, SqlTokenIdentifier byToken, SelectOrderByColumnList columns )
+            : this( CreateArray( SqlToken.EmptyOpenPar, select, orderToken, byToken, columns, SqlToken.EmptyClosePar ) )
+        {
+        }
+
+        public SelectOrderBy( ISelectSpecification select, SqlTokenIdentifier orderToken, SqlTokenIdentifier byToken, SelectOrderByColumnList columns, SelectOrderByOffset offset )
+            : this( CreateArray( SqlToken.EmptyOpenPar, select, orderToken, byToken, columns, offset, SqlToken.EmptyClosePar ) )
         {
         }
 
@@ -27,10 +32,16 @@ namespace CK.SqlServer.Parser
 
         public SqlExpr SelectExpr { get { return (SqlExpr)Slots[1]; } }
 
-        public SqlExpr OrderByExpression { get { return (SqlExpr)Slots[4]; } }
+        public SqlTokenIdentifier OrderToken { get { return (SqlTokenIdentifier)Slots[2]; } }
+        
+        public SqlTokenIdentifier ByToken { get { return (SqlTokenIdentifier)Slots[3]; } }
+
+        public SelectOrderByColumnList OrderByColumns { get { return (SelectOrderByColumnList)Slots[4]; } }
+
+        public SelectOrderByOffset OffsetClause { get { return Slots.Length > 6 ? (SelectOrderByOffset)Slots[5] : null; } }
 
         [DebuggerStepThrough]
-        internal protected override T Accept<T>( IExprVisitor<T> visitor )
+        internal protected override T Accept<T>( ISqlItemVisitor<T> visitor )
         {
             return visitor.Visit( this );
         }
@@ -44,7 +55,6 @@ namespace CK.SqlServer.Parser
         {
             get { return Select.Columns; }
         }
-
     }
 
 

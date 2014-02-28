@@ -22,7 +22,7 @@ namespace CK.SqlServer.Parser
         public SqlItem Content { get { return (SqlItem)Slots[0]; } }
 
         [DebuggerStepThrough]
-        internal protected override T Accept<T>( IExprVisitor<T> visitor )
+        internal protected override T Accept<T>( ISqlItemVisitor<T> visitor )
         {
             return visitor.Visit( this );
         }

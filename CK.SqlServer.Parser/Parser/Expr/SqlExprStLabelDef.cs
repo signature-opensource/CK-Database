@@ -33,7 +33,7 @@ namespace CK.SqlServer.Parser
         public SqlTokenIdentifier Identifier { get { return (SqlTokenIdentifier)Slots[0]; } }
 
         [DebuggerStepThrough]
-        internal protected override T Accept<T>( IExprVisitor<T> visitor )
+        internal protected override T Accept<T>( ISqlItemVisitor<T> visitor )
         {
             return visitor.Visit( this );
         }

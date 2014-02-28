@@ -16,10 +16,10 @@ namespace CK.SqlServer.Parser
         readonly SqlToken _asOrEqual;
         readonly SqlExpr _definition;
 
-        static readonly SqlTokenIdentifier _autoAsToken = new SqlTokenIdentifier( SqlTokenType.IdentifierStandard, "as", SqlTrivia.OneSpace, SqlTrivia.OneSpace );
-        static readonly SqlTokenIdentifier _autoAsTokenNoLeft = new SqlTokenIdentifier( SqlTokenType.IdentifierStandard, "as", null, SqlTrivia.OneSpace );
-        static readonly SqlTokenIdentifier _autoAsTokenNoRight = new SqlTokenIdentifier( SqlTokenType.IdentifierStandard, "as", SqlTrivia.OneSpace, null );
-        static readonly SqlTokenIdentifier _autoAsTokenNoSpace = new SqlTokenIdentifier( SqlTokenType.IdentifierStandard, "as", null, null );
+        static readonly SqlTokenIdentifier _autoAsToken = new SqlTokenIdentifier( SqlTokenType.As, "as", SqlTrivia.OneSpace, SqlTrivia.OneSpace );
+        static readonly SqlTokenIdentifier _autoAsTokenNoLeft = new SqlTokenIdentifier( SqlTokenType.As, "as", null, SqlTrivia.OneSpace );
+        static readonly SqlTokenIdentifier _autoAsTokenNoRight = new SqlTokenIdentifier( SqlTokenType.As, "as", SqlTrivia.OneSpace, null );
+        static readonly SqlTokenIdentifier _autoAsTokenNoSpace = new SqlTokenIdentifier( SqlTokenType.As, "as", null, null );
 
         public SelectColumn( ISqlIdentifier colName, SqlTokenTerminal assignToken, SqlExpr definition )
             : this( Build( colName, assignToken, definition ) )
@@ -65,7 +65,7 @@ namespace CK.SqlServer.Parser
                     else asToken = _autoAsTokenNoSpace;
                 }
             }
-            else if( !asToken.NameEquals( "as" ) ) throw new ArgumentException( "As token expected.", "asToken" );
+            else if( asToken.TokenType != SqlTokenType.As ) throw new ArgumentException( "As token expected.", "asToken" );
             return CreateArray( definition, asToken, colName );
         }
 
@@ -107,7 +107,7 @@ namespace CK.SqlServer.Parser
         public SqlExpr Definition { get { return _definition; } }
 
         [DebuggerStepThrough]
-        internal protected override T Accept<T>( IExprVisitor<T> visitor )
+        internal protected override T Accept<T>( ISqlItemVisitor<T> visitor )
         {
             return visitor.Visit( this );
         }

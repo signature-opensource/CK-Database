@@ -34,28 +34,30 @@ namespace CK.SqlServer.Parser.Tests
         [Test]
         public void SelectFromWhere()
         {
-            Check( "select from dbo.fC( (5 * 2) ) where x = 4", "[select-()-from[call:dbo.fC([5*2])]-where[[x=4]]]" );
-            Check( "select X from a where x = 4 order by z", "OrderBy([select-(X)-from[a]-where[[x=4]]],z)" );
-            Check( "select from t group by a, b with rollup", "[select-()-from[t]-groupBy[¤{a-,-b-with-rollup}¤]]" );
-            Check( "select from t group by rollup(a,b)", "[select-()-from[t]-groupBy[call:rollup(a,b)]]" );
+            //Check( "select from dbo.fC( (5 * 2) ) where x = 4", "[select-()-from[call:dbo.fC([5*2])]-where[[x=4]]]" );
+            //Check( "select X from a where x = 4 order by z", "OrderBy([select-(X)-from[a]-where[[x=4]]],(z))" );
+            //Check( "select from t group by a, b with rollup", "[select-()-from[t]-groupBy[¤{a-,-b-with-rollup}¤]]" );
+            //Check( "select from t group by rollup(a,b)", "[select-()-from[t]-groupBy[call:rollup(a,b)]]" );
             
-            Check( "select from t inner join z on z.id = [group].gid group by rollup(a,b)",
-                    "[select-()-from[¤{t-inner-join-z-on-[z.id=[group].gid]}¤]-groupBy[call:rollup(a,b)]]" );
+            //Check( "select from t inner join z on z.id = [group].gid group by rollup(a,b)",
+            //        "[select-()-from[¤{t-inner-join-z-on-[z.id=[group].gid]}¤]-groupBy[call:rollup(a,b)]]" );
 
-            Check( "select * from a order by z asc, r desc", "OrderBy([select-(*)-from[a]],¤{z-asc-,-r-desc}¤)" );
+            //Check( "select * from a order by z asc, r desc", "OrderBy([select-(*)-from[a]],(z-asc,r-desc))" );
             Check( @"SELECT top (3) DepartmentID, Name, GroupName
                         FROM HumanResources.Department
-                        order by DepartmentID ASC 
+                        order by DepartmentID ASC, Shmurtz 
                             OFFSET @StartingRowNumber - 1 ROWS 
                             FETCH NEXT @EndingRowNumber - @StartingRowNumber + 1 ROWS ONLY",
                     @"OrderBy( [SELECT-top-(-3-)-(DepartmentID,Name,GroupName)-from[HumanResources.Department]],
-                               ¤{DepartmentID-ASC-OFFSET-[@StartingRowNumber-1]-ROWS-FETCH-NEXT-[[@EndingRowNumber-@StartingRowNumber]+1]-ROWS-ONLY}¤
+                               (DepartmentID-ASC, Shmurtz), offset: [@StartingRowNumber-1], fetch: [[@EndingRowNumber-@StartingRowNumber]+1]
                              )" );
 
             Check( "select from t group by rollup(a,b), nimp * [order\"by] order by s, k offset (@i+8) rows fetch next 45 - 8 rows only",
                     @"OrderBy( 
                                 [select-()-from[t]-groupBy[¤{call:rollup(a,b)-,-[nimp*[order""by]]}¤]],
-                                ¤{s-,-k-call:offset([@i+8])-rows-fetch-next-[45-8]-rows-only}¤
+                                (s,k),
+                                offset: [@i+8], 
+                                fetch: [45-8]
                               )" );
         }
         
@@ -69,7 +71,7 @@ SELECT SalesOrderID, ProductID, OrderQty,
         FROM Sales.SalesOrderDetail 
         WHERE SalesOrderID IN(43659,43664);
 ";
-            Check( s, "" );
+            Check( s, "[SELECT-(SalesOrderID,ProductID,OrderQty,OVER-as-call:SUM(OrderQty)" );
 
         }
 
@@ -144,12 +146,12 @@ SELECT SalesOrderID, ProductID, OrderQty,
         {
             {
                 var sc1 = "(((((select name from sys.tables where X))))) order by name";
-                Check( sc1, "OrderBy([select-(name)-from[sys.tables]-where[X]],name)" );
+                Check( sc1, "OrderBy([select-(name)-from[sys.tables]-where[X]],(name))" );
             }
             {
                 // This is not syntaxically valid.
                 var sc1 = "((select name from sys.tables where X) order by name) for xml auto";
-                Check( sc1, "For(OrderBy([select-(name)-from[sys.tables]-where[X]],name),¤{xml-auto}¤)" );
+                Check( sc1, "For(OrderBy([select-(name)-from[sys.tables]-where[X]],(name)),¤{xml-auto}¤)" );
             }
             {
                 var sc1 = @"((((
@@ -170,7 +172,7 @@ SELECT SalesOrderID, ProductID, OrderQty,
                                                 [select-(name)-from[sys.tables]-where[Like(name,'%a%')]]
                                              union
                                                 [select-(['u'+name])-from[sys.tables]-where[Like(name,'%a%')]]
-                                        ], ¤{name-desc}¤
+                                        ], (name-desc)
                                      ), ¤{xml-auto}¤
                               )";
 
@@ -337,7 +339,7 @@ SELECT SalesOrderID, ProductID, OrderQty,
             Assert.That( sp.Name.ToString(), Is.EqualTo( "sWithOptions\r\n" ) );
             Assert.That( sp.Parameters.Count, Is.EqualTo( 0 ) );
             Assert.That( sp.Options.Components.Count(), Is.EqualTo( 4 ), "[with] [recompile] [,] [execute as owner]" );
-            Assert.That( sp.Options.Tokens.ToStringWithoutTrivias( "|" ), Is.EqualTo( "with|recompile|,|execute as owner" ) );
+            Assert.That( sp.Options.Tokens.ToStringWithoutTrivias( "|" ), Is.EqualTo( "with|recompile|,|execute|as|owner" ) );
 
             Assert.That( sp.BodyStatements.Statements.Count, Is.EqualTo( 2 ) );
         }
@@ -451,6 +453,12 @@ SELECT SalesOrderID, ProductID, OrderQty,
             Assert.That( sp.Parameters[7].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.SmallDateTime ) );
             Assert.That( sp.Parameters[7].Variable.TypeDecl.ActualType.SyntaxSize, Is.EqualTo( -2 ), "Size does not apply." );
 
+            Assert.That( sp.Parameters[8].IsOutput, Is.False );
+            Assert.That( sp.Parameters[8].IsInputOutput, Is.False );
+            Assert.That( sp.Parameters[8].IsReadOnly, Is.False );
+            Assert.That( sp.Parameters[8].DefaultValue.IsVariable, Is.False );
+            Assert.That( sp.Parameters[8].DefaultValue.IsNull, Is.True );
+            Assert.That( sp.Parameters[8].DefaultValue.IsLiteral, Is.False );
         }
 
         [DebuggerStepThrough]

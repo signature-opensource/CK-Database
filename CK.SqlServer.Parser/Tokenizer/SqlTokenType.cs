@@ -452,6 +452,14 @@ namespace CK.SqlServer.Parser
         Max             = IdentifierStandard | 6,
         Readonly        = IdentifierStandard | 7,
         Output          = IdentifierStandard | 8,
+        /// <summary>
+        /// Rows is the official ISO identifier. Sql Server also accepts Row.
+        /// </summary>
+        Rows            = IdentifierStandard | 9,
+        Offset          = IdentifierStandard | 10,
+        First           = IdentifierStandard | 11,
+        Next            = IdentifierStandard | 12,
+        Only            = IdentifierStandard | 13,
         #endregion
 
         #region IdentifierSpecial values

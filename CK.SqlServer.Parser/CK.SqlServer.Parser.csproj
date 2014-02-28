@@ -44,6 +44,10 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="ISqlItem.cs" />
+    <Compile Include="Parser\Expr\Select\SelectOrderByOffset.cs" />
+    <Compile Include="Parser\Expr\Select\SelectOrderByColumnList.cs" />
+    <Compile Include="Parser\Expr\SqlNoExprList.cs" />
+    <Compile Include="Parser\Expr\Select\SelectOrderByColumn.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Parser\Expr\Base\SqlExpr.cs" />
     <Compile Include="Parser\Expr\Base\SqlExprBaseSt.cs" />
@@ -112,12 +116,12 @@
     <Compile Include="Parser\Expr\SqlExprUnaryOperator.cs" />
     <Compile Include="Parser\Expr\SqlExprUnmodeledItems.cs" />
     <Compile Include="Parser\Expr\SqlNoExprExecuteAs.cs" />
-    <Compile Include="Parser\IExprVisitor.cs" />
+    <Compile Include="Parser\ISqlItemVisitor.cs" />
     <Compile Include="Parser\SqlAnalyser.cs" />
     <Compile Include="Parser\SqlAnalyser.Expression.cs" />
     <Compile Include="Parser\SqlAnalyser.Expression.Select.cs" />
     <Compile Include="Parser\SqlAnalyser.LowLevel.cs" />
-    <Compile Include="Parser\SqlExprVisitor.cs" />
+    <Compile Include="Parser\SqlItemVisitor.cs" />
     <Compile Include="Parser\SqlTokenReader.cs" />
     <Compile Include="Tokenizer\SqlTokenExtension.cs" />
     <Compile Include="Tokenizer\SqlExprMultiToken.cs" />

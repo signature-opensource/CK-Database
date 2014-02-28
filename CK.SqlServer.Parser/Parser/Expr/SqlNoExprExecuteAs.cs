@@ -35,7 +35,7 @@ namespace CK.SqlServer.Parser
         public SqlToken Right { get { return (SqlToken)Slots[2]; } }
 
         [DebuggerStepThrough]
-        internal protected override T Accept<T>( IExprVisitor<T> visitor )
+        internal protected override T Accept<T>( ISqlItemVisitor<T> visitor )
         {
             return visitor.Visit( this );
         }

@@ -9,16 +9,16 @@ using CK.Core;
 namespace CK.SqlServer.Parser
 {
     /// <summary>
-    /// List of comma separated <see cref="SelectColumn"/>
+    /// List of comma separated <see cref="SelectOrderByColumn"/>
     /// </summary>
-    public class SelectColumnList : SqlNoExprList<SelectColumn>
+    public class SelectOrderByColumnList : SqlNoExprList<SelectOrderByColumn>
     {
-        public SelectColumnList( IList<ISqlItem> components )
+        public SelectOrderByColumnList( IList<ISqlItem> components )
             : base( components )
         {
         }
 
-        internal SelectColumnList( ISqlItem[] items )
+        internal SelectOrderByColumnList( ISqlItem[] items )
             : base( items )
         {
         }

@@ -8,7 +8,8 @@ using CK.Core;
 namespace CK.SqlServer.Parser
 {
     /// <summary>
-    /// 
+    /// Captures a select specification (a <see cref="ISelectSpecification"/> object) followed by optional <see cref="SelectOrderBy"/>, 
+    /// <see cref="SelectFor"/> and <see cref="SelectOption"/> clauses.
     /// </summary>
     public class SelectQuery : SqlExpr
     {
@@ -47,7 +48,7 @@ namespace CK.SqlServer.Parser
         public SelectOrderBy Orderby { get { return _orderBy; } }
 
         [DebuggerStepThrough]
-        internal protected override T Accept<T>( IExprVisitor<T> visitor )
+        internal protected override T Accept<T>( ISqlItemVisitor<T> visitor )
         {
             return visitor.Visit( this );
         }

@@ -83,7 +83,7 @@ namespace CK.SqlServer.Parser
         public int SyntaxSecondScale { get; private set; }
 
         [DebuggerStepThrough]
-        internal protected override T Accept<T>( IExprVisitor<T> visitor )
+        internal protected override T Accept<T>( ISqlItemVisitor<T> visitor )
         {
             return visitor.Visit( this );
         }

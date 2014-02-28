@@ -38,7 +38,7 @@ namespace CK.SqlServer.Parser
         public virtual IEnumerable<SqlToken> Tokens  { get { return Flatten( Components ); } }
 
         /// <summary>
-        /// Overriden to generate the representation of an expression as the result of the <see cref="Write"/> method.
+        /// Overridden to generate the representation of an expression as the result of the <see cref="Write"/> method.
         /// This includes the trivias.
         /// </summary>
         /// <returns>String representation.</returns>
@@ -60,7 +60,7 @@ namespace CK.SqlServer.Parser
         }
 
 
-        internal protected abstract T Accept<T>( IExprVisitor<T> visitor );
+        internal protected abstract T Accept<T>( ISqlItemVisitor<T> visitor );
 
         static internal ISqlItem[] CreateArray( params ISqlItem[] e )
         {

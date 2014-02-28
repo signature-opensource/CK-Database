@@ -3,7 +3,7 @@ using CK.Core;
 
 namespace CK.SqlServer.Parser
 {
-    public interface IExprVisitor<T>
+    public interface ISqlItemVisitor<T>
     {
         T VisitExpr( SqlItem e );
 
@@ -55,6 +55,7 @@ namespace CK.SqlServer.Parser
 
         T Visit( SqlExprCommaList e );
 
+        T Visit( SelectQuery e );
         T Visit( SelectSpecification e );
         T Visit( SelectHeader e );
         T Visit( SelectColumnList e );
@@ -65,10 +66,13 @@ namespace CK.SqlServer.Parser
         T Visit( SelectGroupBy e );
         T Visit( SelectCombineOperator e );
         T Visit( SelectOrderBy e );
+        T Visit( SelectOrderByColumnList e );
+        T Visit( SelectOrderByColumn e );
+        T Visit( SelectOrderByOffset e );
+        
         T Visit( SelectFor e );
         T Visit( SelectOption e );
         
 
-        T Visit( SelectQuery e );
     }
 }

@@ -31,6 +31,10 @@ namespace CK.SqlServer.Parser
 
         public bool IsVariable { get { return _tokens.Length == 2 && _tokens[1].TokenType == SqlTokenType.IdentifierVariable; } }
 
+        public bool IsNull { get { return _tokens.Length == 2 && _tokens[1].TokenType == SqlTokenType.Null; } }
+        
+        public bool IsLiteral { get { return _tokens.Length == 3 || (_tokens[1].TokenType & SqlTokenType.LitteralMask) != 0; } }
+
         public sealed override IEnumerable<ISqlItem> Components { get { return _tokens; } }
 
         public override SqlToken FirstOrEmptyToken { get { return _tokens[0]; } }
@@ -38,7 +42,7 @@ namespace CK.SqlServer.Parser
         public override SqlToken LastOrEmptyToken { get { return _tokens[_tokens.Length - 1]; } }
 
         [DebuggerStepThrough]
-        internal protected override T Accept<T>( IExprVisitor<T> visitor )
+        internal protected override T Accept<T>( ISqlItemVisitor<T> visitor )
         {
             return visitor.Visit( this );
         }

@@ -7,6 +7,9 @@ using CK.Core;
 namespace CK.SqlServer.Parser
 {
 
+    /// <summary>
+    /// Unifies <see cref="SqlExprIdentifier"/> and <see cref="SqlExprMultiIdentifier"/>.
+    /// </summary>
     public interface ISqlIdentifier : ISqlItem
     {
         /// <summary>

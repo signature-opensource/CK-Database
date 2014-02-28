@@ -44,7 +44,7 @@ namespace CK.SqlServer.Parser
         public override SqlToken LastOrEmptyToken { get { return _tokens[_tokens.Length - 1]; } }
 
         [DebuggerStepThrough]
-        internal protected override T Accept<T>( IExprVisitor<T> visitor )
+        internal protected override T Accept<T>( ISqlItemVisitor<T> visitor )
         {
             return visitor.Visit( this );
         }
