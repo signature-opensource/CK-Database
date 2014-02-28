@@ -49,6 +49,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Attributes\SqlMethodForObjectItemAttributeBase.cs" />
     <Compile Include="Attributes\SqlCallContextAttribute.cs" />
     <Compile Include="Attributes\SqlObjectItemAttribute.cs" />
     <Compile Include="Configuration\SqlDatabaseDescriptor.cs" />

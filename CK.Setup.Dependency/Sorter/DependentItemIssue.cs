@@ -156,7 +156,6 @@ namespace CK.Setup
                     {
                         monitor.Error().Send( "Item '{0}' declares required Groups that are not registered: '{1}'. ", Item.FullName, String.Join( "', '", _missingGroups ) );
                     }
-
                     if( _homonyms != null )
                     {
                         monitor.Error().Send( "Homonyms: {0} objects with the same full name.", _homonyms.Length );

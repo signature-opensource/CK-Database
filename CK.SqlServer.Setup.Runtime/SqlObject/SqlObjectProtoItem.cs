@@ -28,20 +28,23 @@ namespace CK.SqlServer.Setup
         public string FullName { get { return _fullName.FullName; } }
 
         /// <summary>
-        /// Can be empty but not null.
+        /// Gets the schema. Can be empty but not null.
         /// </summary>
         public string Schema { get; private set; }
 
         /// <summary>
-        /// Can be empty but not null.
+        /// Gets whether missing dependency must be considered an error.
         /// </summary>
         public bool? MissingDependencyIsError { get; private set; }
 
         /// <summary>
-        /// Can be empty but not null.
+        /// Gets the object name. Can be empty but not null.
         /// </summary>
         public string ObjectName { get; private set; }
 
+        /// <summary>
+        /// Gets the header (text before the object declaration).
+        /// </summary>
         public string Header { get; private set; }
 
         /// <summary>
@@ -89,7 +92,7 @@ namespace CK.SqlServer.Setup
             Debug.Assert( externalName != null );
             
             // The fact that external.Name must be equal to this Name (based on the content) is checked
-            // by the caller (it can then give more information suh as the resource location).
+            // by the caller (it can then give more information such as the resource location).
             _fullName = new ContextLocNameStructImpl( externalName.Context, externalName.Location, schema.Length > 0 ? (schema + '.' + name) : name );
             Schema = schema;
             ObjectName = name;

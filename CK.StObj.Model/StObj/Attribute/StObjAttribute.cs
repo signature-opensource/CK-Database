@@ -8,7 +8,7 @@ namespace CK.Setup
 {
     /// <summary>
     /// Default implementation of <see cref="IStObjAttribute"/> that offers a static <see cref="GetStObjAttributeForExactType"/> that knows how to merge
-    /// mutiple attributes information.
+    /// multiple attributes information.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = false, Inherited = false )]
     public class StObjAttribute : Attribute, IStObjAttribute
