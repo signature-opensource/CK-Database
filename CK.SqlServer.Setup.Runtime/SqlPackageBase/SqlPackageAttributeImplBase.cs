@@ -53,25 +53,13 @@ namespace CK.SqlServer.Setup
         }
 
         protected abstract void ConfigureMutableItem( IActivityMonitor monitor, IStObjMutableItem o );
-    }
 
-
-    public abstract class SqlPackageAttributeImplBase : SqlSetupableAttributeImplBase
-    {
-        protected SqlPackageAttributeImplBase( SqlSetupableAttributeBase a )
-            : base( a )
-        {
-        }
-
-        protected override void ConfigureMutableItem( IActivityMonitor monitor, IStObjMutableItem o )
-        {
-        }
 
         protected bool SetAutomaticSetupFullNamewithoutContext( IActivityMonitor monitor, IMutableStObjSetupData data, string loggedObjectTypeName )
         {
             if( data.IsDefaultFullNameWithoutContext )
             {
-                var p = (SqlPackageBase)data.StObj.Object;
+                var p = (SqlSetupableBase)data.StObj.Object;
                 var autoName = p.Schema + '.' + data.StObj.ObjectType.Name;
                 if( data.IsFullNameWithoutContextAvailable( autoName ) )
                 {
@@ -114,6 +102,21 @@ namespace CK.SqlServer.Setup
             return data.StObj.ObjectType.FullName;
         }
 
+
+    }
+
+    public abstract class SqlPackageAttributeImplBase : SqlSetupableAttributeImplBase
+    {
+
+
+        protected SqlPackageAttributeImplBase( SqlSetupableAttributeBase a )
+            : base( a )
+        {
+        }
+
+        protected override void ConfigureMutableItem( IActivityMonitor monitor, IStObjMutableItem o )
+        {
+        }
 
     }
 }

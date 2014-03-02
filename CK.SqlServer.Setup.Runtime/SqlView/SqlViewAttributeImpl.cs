@@ -25,10 +25,8 @@ namespace CK.SqlServer.Setup
 
         void IStObjSetupConfigurator.ConfigureDependentItem( IActivityMonitor monitor, IMutableStObjSetupData data )
         {
-            var p = (SqlView)data.StObj.Object;
+            SetAutomaticSetupFullNamewithoutContext( monitor, data, "SqlView" );
 
-            data.FullNameWithoutContext = p.Schema + "." + data.StObj.ObjectType.Name + "-" + p.ViewName;
-            monitor.Info().Send( "{0} '{1}' uses '{2}' as its SetupName.", "SqlView", data.StObj.ObjectType.FullName, data.FullNameWithoutContext  );
             data.ItemType = typeof( SqlViewItem );
             data.DriverType = typeof( SqlViewSetupDriver );
         }
