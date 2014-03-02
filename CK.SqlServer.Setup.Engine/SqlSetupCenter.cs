@@ -49,6 +49,7 @@ namespace CK.SqlServer.Setup
                     else if( driverType == typeof( SqlDatabaseConnectionSetupDriver ) ) d = new SqlDatabaseConnectionSetupDriver( info, _center );
                     else if( driverType == typeof( SqlPackageSetupDriver ) ) d = new SqlPackageSetupDriver( info );
                     else if( driverType == typeof( SqlTableSetupDriver ) ) d = new SqlTableSetupDriver( info );
+                    else if( driverType == typeof( SqlViewSetupDriver ) ) d = new SqlViewSetupDriver( info, _center );
                 }
                 return d;
             }

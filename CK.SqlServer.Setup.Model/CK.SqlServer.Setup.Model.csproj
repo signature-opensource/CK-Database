@@ -52,6 +52,7 @@
     <Compile Include="Attributes\SqlMethodForObjectItemAttributeBase.cs" />
     <Compile Include="Attributes\SqlCallContextAttribute.cs" />
     <Compile Include="Attributes\SqlObjectItemAttribute.cs" />
+    <Compile Include="Attributes\SqlViewAttribute.cs" />
     <Compile Include="Configuration\SqlDatabaseDescriptor.cs" />
     <Compile Include="Configuration\SqlSetupCenterConfiguration.cs" />
     <Compile Include="ISqlCallContext.cs" />
@@ -65,6 +66,7 @@
     <Compile Include="Attributes\SqlProcedureAttribute.cs" />
     <Compile Include="SqlTable.cs" />
     <Compile Include="Attributes\SqlTableAttribute.cs" />
+    <Compile Include="SqlView.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.Setupable.Model\CK.Setupable.Model.csproj">

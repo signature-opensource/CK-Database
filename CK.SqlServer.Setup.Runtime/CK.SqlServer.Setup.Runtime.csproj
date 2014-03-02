@@ -86,6 +86,9 @@
     <Compile Include="SqlTable\SqlTableAttributeImpl.cs" />
     <Compile Include="SqlTable\SqlTableItem.cs" />
     <Compile Include="SqlTable\SqlTableSetupDriver.cs" />
+    <Compile Include="SqlView\SqlViewAttributeImpl.cs" />
+    <Compile Include="SqlView\SqlViewItem.cs" />
+    <Compile Include="SqlView\SqlViewSetupDriver.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">

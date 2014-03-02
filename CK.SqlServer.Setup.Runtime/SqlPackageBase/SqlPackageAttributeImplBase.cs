@@ -4,20 +4,20 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
-    public abstract class SqlPackageAttributeImplBase : IStObjStructuralConfigurator
+    public abstract class SqlSetupableAttributeImplBase : IStObjStructuralConfigurator
     {
-        readonly SqlPackageAttributeBase _attr;
+        readonly SqlSetupableAttributeBase _attr;
 
-        protected SqlPackageAttributeImplBase( SqlPackageAttributeBase a )
+        protected SqlSetupableAttributeImplBase( SqlSetupableAttributeBase a )
         {
             _attr = a;
         }
 
-        protected SqlPackageAttributeBase Attribute { get { return _attr; } }
+        protected SqlSetupableAttributeBase Attribute { get { return _attr; } }
 
         void IStObjStructuralConfigurator.Configure( IActivityMonitor monitor, IStObjMutableItem o )
         {
-            if( !typeof( SqlPackageBase ).IsAssignableFrom( o.ObjectType.BaseType ) )
+            if( !typeof( SqlSetupableBase ).IsAssignableFrom( o.ObjectType.BaseType ) )
             {
                 monitor.Error().Send( "{0}: Attribute {1} must be set only on class that specialize SqlPackageBase.", o.ToString(), GetType().Name );
             }
@@ -43,7 +43,7 @@ namespace CK.SqlServer.Setup
             if( Attribute.ResourceType != null || Attribute.ResourcePath != null )
             {
                 // ResourceLocation is a StObjProperty.
-                o.SetStObjPropertyValue( monitor, "ResourceLocation", new ResourceLocator( Attribute.ResourceType, Attribute.ResourcePath ) ); 
+                o.SetStObjPropertyValue( monitor, "ResourceLocation", new ResourceLocator( Attribute.ResourceType, Attribute.ResourcePath ) );
             }
             if( Attribute.Schema != null )
             {
@@ -52,7 +52,18 @@ namespace CK.SqlServer.Setup
             ConfigureMutableItem( monitor, o );
         }
 
-        protected virtual void ConfigureMutableItem( IActivityMonitor monitor, IStObjMutableItem o )
+        protected abstract void ConfigureMutableItem( IActivityMonitor monitor, IStObjMutableItem o );
+    }
+
+
+    public abstract class SqlPackageAttributeImplBase : SqlSetupableAttributeImplBase
+    {
+        protected SqlPackageAttributeImplBase( SqlSetupableAttributeBase a )
+            : base( a )
+        {
+        }
+
+        protected override void ConfigureMutableItem( IActivityMonitor monitor, IStObjMutableItem o )
         {
         }
 

@@ -2,12 +2,12 @@
 
 namespace CK.SqlServer.Setup
 {
-    public class SqlViewItem : SqlObjectItem
-    {
-        internal SqlViewItem( SqlObjectProtoItem p )
-            : base( p )
-        {
-            Debug.Assert( p.ItemType == SqlObjectProtoItem.TypeView );
-        }
-    }
+    //public class SqlViewItem : SqlObjectItem
+    //{
+    //    internal SqlViewItem( SqlObjectProtoItem p )
+    //        : base( p )
+    //    {
+    //        Debug.Assert( p.ItemType == SqlObjectProtoItem.TypeView );
+    //    }
+    //}
 }

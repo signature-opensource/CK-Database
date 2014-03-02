@@ -6,22 +6,12 @@ using CK.Core;
 
 namespace CK.SqlServer.Setup
 {
-    public abstract class SqlPackageAttributeBase : AmbientContextBoundDelegationAttribute
+    public abstract class SqlSetupableAttributeBase : AmbientContextBoundDelegationAttribute
     {
-        protected SqlPackageAttributeBase( string actualAttributeTypeAssemblyQualifiedName )
+        protected SqlSetupableAttributeBase( string actualAttributeTypeAssemblyQualifiedName )
             : base( actualAttributeTypeAssemblyQualifiedName )
         {
         }
-
-        /// <summary>
-        /// Gets or sets the <see cref="SqlDatabase"/> type targeted by the package. Let it to null to use the ambient one.
-        /// The <see cref="SqlPackage.Database"/> property is automatically set (see remarks).
-        /// </summary>
-        /// <remarks>
-        /// The type must be a specialization of <see cref="SqlDatabase"/>. 
-        /// If it supports <see cref="IAmbientContract"/>, the property is bound to the corresponding ambient contract instance. 
-        /// </remarks>
-        public Type Database { get; set; }
 
         /// <summary>
         /// Gets or sets the package to which this package belongs.
@@ -44,6 +34,24 @@ namespace CK.SqlServer.Setup
         /// must be in its assembly.
         /// </summary>
         public Type ResourceType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="SqlDatabase"/> type targeted by the package. Let it to null to use the ambient one.
+        /// The <see cref="SqlPackage.Database"/> property is automatically set (see remarks).
+        /// </summary>
+        /// <remarks>
+        /// The type must be a specialization of <see cref="SqlDatabase"/>. 
+        /// If it supports <see cref="IAmbientContract"/>, the property is bound to the corresponding ambient contract instance. 
+        /// </remarks>
+        public Type Database { get; set; }
+    }
+
+    public abstract class SqlPackageAttributeBase : SqlSetupableAttributeBase
+    {
+        protected SqlPackageAttributeBase( string actualAttributeTypeAssemblyQualifiedName )
+            : base( actualAttributeTypeAssemblyQualifiedName )
+        {
+        }
 
     }
 }
