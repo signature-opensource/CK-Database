@@ -4,16 +4,16 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
-    public abstract class SqlSetupableAttributeImplBase : IStObjStructuralConfigurator
+    public abstract class SqlPackageAttributeImplBase : IStObjStructuralConfigurator
     {
-        readonly SqlSetupableAttributeBase _attr;
+        readonly SqlPackageAttributeBase _attr;
 
-        protected SqlSetupableAttributeImplBase( SqlSetupableAttributeBase a )
+        protected SqlPackageAttributeImplBase( SqlPackageAttributeBase a )
         {
             _attr = a;
         }
 
-        protected SqlSetupableAttributeBase Attribute { get { return _attr; } }
+        protected SqlPackageAttributeBase Attribute { get { return _attr; } }
 
         void IStObjStructuralConfigurator.Configure( IActivityMonitor monitor, IStObjMutableItem o )
         {
@@ -102,21 +102,6 @@ namespace CK.SqlServer.Setup
             return data.StObj.ObjectType.FullName;
         }
 
-
-    }
-
-    public abstract class SqlPackageAttributeImplBase : SqlSetupableAttributeImplBase
-    {
-
-
-        protected SqlPackageAttributeImplBase( SqlSetupableAttributeBase a )
-            : base( a )
-        {
-        }
-
-        protected override void ConfigureMutableItem( IActivityMonitor monitor, IStObjMutableItem o )
-        {
-        }
 
     }
 }

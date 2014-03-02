@@ -6,9 +6,9 @@ using CK.Core;
 
 namespace CK.SqlServer.Setup
 {
-    public abstract class SqlSetupableAttributeBase : AmbientContextBoundDelegationAttribute
+    public abstract class SqlPackageAttributeBase : AmbientContextBoundDelegationAttribute
     {
-        protected SqlSetupableAttributeBase( string actualAttributeTypeAssemblyQualifiedName )
+        protected SqlPackageAttributeBase( string actualAttributeTypeAssemblyQualifiedName )
             : base( actualAttributeTypeAssemblyQualifiedName )
         {
         }
@@ -44,14 +44,5 @@ namespace CK.SqlServer.Setup
         /// If it supports <see cref="IAmbientContract"/>, the property is bound to the corresponding ambient contract instance. 
         /// </remarks>
         public Type Database { get; set; }
-    }
-
-    public abstract class SqlPackageAttributeBase : SqlSetupableAttributeBase
-    {
-        protected SqlPackageAttributeBase( string actualAttributeTypeAssemblyQualifiedName )
-            : base( actualAttributeTypeAssemblyQualifiedName )
-        {
-        }
-
     }
 }

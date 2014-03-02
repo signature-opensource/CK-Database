@@ -8,7 +8,7 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
-    public class SqlViewAttributeImpl : SqlSetupableAttributeImplBase, IStObjSetupConfigurator
+    public class SqlViewAttributeImpl : SqlPackageAttributeImplBase, IStObjSetupConfigurator
     {
         public SqlViewAttributeImpl( SqlViewAttribute attribute )
             : base( attribute )
