@@ -7,8 +7,9 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
+    [StObj( ItemKind = DependentItemKindSpec.Container )]
     [StObjProperty( PropertyName = "ResourceLocation", PropertyType = typeof( ResourceLocator ) )]
-    public class SqlSetupableBase
+    public class SqlPackageBase
     {
         /// <summary>
         /// Gets or sets the database to which this package belongs.
@@ -23,11 +24,7 @@ namespace CK.SqlServer.Setup
         /// </summary>
         [AmbientProperty]
         public string Schema { get; set; }
-    }
 
-    [StObj( ItemKind = DependentItemKindSpec.Container )]
-    public class SqlPackageBase : SqlSetupableBase
-    {
         /// <summary>
         /// Gets or sets whether this package is associated to a Model.
         /// Defaults to false.

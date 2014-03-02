@@ -8,8 +8,7 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
-    [StObj( ItemKind = DependentItemKindSpec.Item )]
-    public abstract class SqlView : SqlSetupableBase, IAmbientContractDefiner
+    public abstract class SqlView : SqlPackageBase, IAmbientContractDefiner
     {
         public SqlView()
         {
