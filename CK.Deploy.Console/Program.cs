@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using CK.Core;
+using CK.Monitoring;
 using CK.SqlServer.Setup;
 
 namespace CK.Deploy.Console
@@ -115,6 +116,8 @@ namespace CK.Deploy.Console
 
         public static void RunV2()
         {
+            GrandOutput.EnsureActiveDefaultWithDefaultSettings();
+
             var monitor = new ActivityMonitor();
 
             V2Args args = (V2Args)AppDomain.CurrentDomain.GetData( "MainArgs" );
