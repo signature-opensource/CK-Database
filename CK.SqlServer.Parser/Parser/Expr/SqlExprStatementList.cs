@@ -34,7 +34,7 @@ namespace CK.SqlServer.Parser
             get { return this; }
         }
 
-        public override sealed IEnumerable<ISqlItem> Components
+        public override sealed IEnumerable<ISqlItem> Items
         {
             get { return _statements; }
         }

@@ -46,7 +46,7 @@ namespace CK.SqlServer.Parser
         /// Gets the items of this expression: it is a mix of <see cref="SqlToken"/> and <see cref="SqlItem"/>.
         /// Never null nor empty since an expression has at least an opener and a closer (even if they are empty).
         /// </summary>
-        public sealed override IEnumerable<ISqlItem> Components { get { return Slots; } }
+        public sealed override IEnumerable<ISqlItem> Items { get { return Slots; } }
 
         /// <summary>
         /// Gets the sql items without the enclosing parenthesis if they exist.
@@ -57,6 +57,17 @@ namespace CK.SqlServer.Parser
         /// Gets the tokens without the enclosing parenthesis if they exist.
         /// </summary>
         public IEnumerable<SqlToken> TokensWithoutParenthesis { get { return Flatten( ItemsWithoutParenthesis ); } }
+
+        /// <summary>
+        /// Gets whether this expression is an only token of the given type (by default without any enclosing parenthesis).
+        /// </summary>
+        /// <param name="type">The token type.</param>
+        /// <param name="allowEnclosingParenthesis">True to allow enclosing parenthesis.</param>
+        /// <returns>True if this is single token of the given type.</returns>
+        public bool IsToken( SqlTokenType type, bool allowEnclosingParenthesis = false )
+        {
+            return Slots.Length == 3 && Slots[1].IsToken( type ) && (allowEnclosingParenthesis || Opener.Count == 0);
+        }
 
         internal SqlExpr MutableEnclose( SqlTokenOpenPar openPar, SqlTokenClosePar closePar )
         {

@@ -7,7 +7,7 @@ namespace CK.SqlServer.Parser
 {
     public class SqlItemVisitor : ISqlItemVisitor<SqlItem>
     {
-        public virtual SqlItem VisitExpr( SqlItem e )
+        public virtual SqlItem VisitItem( SqlItem e )
         {
             return e.Accept( this );
         }
@@ -21,7 +21,7 @@ namespace CK.SqlServer.Parser
                 var ce = a as SqlItem;
                 if( ce != null )
                 {
-                    SqlItem ve = VisitExpr( ce );
+                    SqlItem ve = VisitItem( ce );
                     if( !ReferenceEquals( ce, ve ) )
                     {
                         if( modified == null )
@@ -64,57 +64,64 @@ namespace CK.SqlServer.Parser
 
         public virtual SqlItem Visit( SqlExprKoCall e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SqlExprKoCall( modified.ToArray() );
         }
 
+        public virtual SqlItem Visit( SqlNoExprOverClause e )
+        {
+            List<ISqlItem> modified = VisitItems( e.Items );
+            if( modified == null ) return e;
+            return new SqlNoExprOverClause( modified.ToArray() );
+        }
+
         public virtual SqlItem Visit( SqlExprStIf e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SqlExprStIf( modified.ToArray() );
         }
 
         public virtual SqlItem Visit( SqlExprStBeginTran e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SqlExprStBeginTran( modified.ToArray() );
         }
 
         public virtual SqlItem Visit( SqlExprStatementList e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SqlExprStatementList( (SqlExprBaseSt[])modified.ToArray() );
         }
 
         public virtual SqlItem Visit( SqlExprStBlock e )
         {
-            SqlExprStatementList vB = (SqlExprStatementList)VisitExpr( e.Body );
+            SqlExprStatementList vB = (SqlExprStatementList)VisitItem( e.Body );
             if( ReferenceEquals( vB, e.Body ) ) return e;
             return new SqlExprStBlock( e.Begin, vB, e.End, e.StatementTerminator );
         }
 
         public virtual SqlItem Visit( SqlExprStTryCatch e )
         {
-            SqlExprStatementList vB = (SqlExprStatementList)VisitExpr( e.Body );
-            SqlExprStatementList vC = (SqlExprStatementList)VisitExpr( e.BodyCatch );
+            SqlExprStatementList vB = (SqlExprStatementList)VisitItem( e.Body );
+            SqlExprStatementList vC = (SqlExprStatementList)VisitItem( e.BodyCatch );
             if( ReferenceEquals( vB, e.Body ) && ReferenceEquals( vC, e.BodyCatch) ) return e;
             return new SqlExprStTryCatch( e.BeginTry, vB, e.EndTryBeginCatch, vC, e.EndCatch, e.StatementTerminator );
         }
 
         public virtual SqlItem Visit( SqlExprStUnmodeled e )
         {
-            SqlExpr vC = (SqlExpr)VisitExpr( e.Content );
+            SqlExpr vC = (SqlExpr)VisitItem( e.Content );
             if( ReferenceEquals( vC, e.Content ) ) return e;
             return new SqlExprStUnmodeled( vC, e.StatementTerminator );
         }
 
         public virtual SqlItem Visit( SqlExprStStoredProc e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SqlExprStStoredProc( modified.ToArray() );
         }
@@ -136,28 +143,35 @@ namespace CK.SqlServer.Parser
 
         public virtual SqlItem Visit( SqlExprStView e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SqlExprStView( modified.ToArray() );
         }
 
         public virtual SqlItem Visit( SqlExprColumnList e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SqlExprColumnList( modified.ToArray() );
         }
 
         public virtual SqlItem Visit( SqlNoExprExecuteAs e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SqlNoExprExecuteAs( modified.ToArray() );
         }
 
+        public virtual SqlItem Visit( SqlExprCast e )
+        {
+            List<ISqlItem> modified = VisitItems( e.Items );
+            if( modified == null ) return e;
+            return new SqlExprCast( modified.ToArray() );
+        }
+
         public virtual SqlItem Visit( SqlExprCommaList e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SqlExprCommaList( modified.ToArray() );
         }
@@ -189,7 +203,7 @@ namespace CK.SqlServer.Parser
 
         public virtual SqlItem Visit( SqlExprUnaryOperator e )
         {
-            SqlExpr vE = (SqlExpr)VisitExpr( e.Expression );
+            SqlExpr vE = (SqlExpr)VisitItem( e.Expression );
             if( ReferenceEquals( vE, e.Expression ) ) return e;
             if( vE == null ) return null;
             return new SqlExprUnaryOperator( e.Operator, vE );
@@ -197,7 +211,7 @@ namespace CK.SqlServer.Parser
 
         public virtual SqlItem Visit( SqlExprTypeDecl e )
         {
-            SqlItem vE = VisitExpr( (SqlItem)e.ActualType );
+            SqlItem vE = VisitItem( (SqlItem)e.ActualType );
             if( ReferenceEquals( vE, e.ActualType ) ) return e;
             return new SqlExprTypeDecl( (ISqlExprUnifiedTypeDecl)vE );
         }
@@ -234,7 +248,7 @@ namespace CK.SqlServer.Parser
 
         public virtual SqlItem Visit( SqlExprParameter e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SqlExprParameter( modified.ToArray() );
         }
@@ -246,63 +260,63 @@ namespace CK.SqlServer.Parser
 
         public virtual SqlItem Visit( SqlExprParameterList e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SqlExprParameterList( modified.ToArray() );
         }
 
         public virtual SqlItem Visit( SqlExprAssign e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SqlExprAssign( modified.ToArray() );
         }
 
         public virtual SqlItem Visit( SqlExprBinaryOperator e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SqlExprBinaryOperator( modified.ToArray() );
         }
 
         public virtual SqlItem Visit( SqlExprIsNull e )
         {
-            SqlExpr vE = (SqlExpr)VisitExpr( e.Left );
+            SqlExpr vE = (SqlExpr)VisitItem( e.Left );
             if( ReferenceEquals( vE, e ) ) return e;
-            return new SqlExprIsNull( vE, e.IsToken, e.NotToken, e.NullToken );
+            return new SqlExprIsNull( vE, e.IsTok, e.NotTok, e.NullTok );
         }
 
         public virtual SqlItem Visit( SqlExprLike e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SqlExprLike( modified.ToArray() );
         }
 
         public virtual SqlItem Visit( SqlExprBetween e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SqlExprBetween( modified.ToArray() );
         }
 
         public virtual SqlItem Visit( SqlExprIn e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SqlExprIn( modified.ToArray() );
         }
 
         public virtual SqlItem Visit( SqlExprCase e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SqlExprCase( modified.ToArray() );
         }
 
         public virtual SqlItem Visit( SqlExprCaseWhenSelector e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SqlExprCaseWhenSelector( modified.ToArray() );
         }
@@ -312,71 +326,71 @@ namespace CK.SqlServer.Parser
 
         public virtual SqlItem Visit( SelectQuery e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SelectQuery( modified.ToArray() );
         }
         
         public virtual SqlItem Visit( SelectSpecification e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SelectSpecification( modified.ToArray() );
         }
 
         public virtual SqlItem Visit( SelectColumn e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SelectColumn( modified.ToArray() );
         }
 
         public virtual SqlItem Visit( SelectColumnList e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SelectColumnList( modified.ToArray() );
         }
 
         public virtual SqlItem Visit( SelectHeader e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SelectHeader( modified.ToArray() );
         }
 
         public virtual SqlItem Visit( SelectInto e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SelectInto( modified.ToArray() );
         }
 
         public virtual SqlItem Visit( SelectFrom e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SelectFrom( modified.ToArray() );
         }
 
         public virtual SqlItem Visit( SelectWhere e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SelectWhere( modified.ToArray() );
         }
 
         public virtual SqlItem Visit( SelectGroupBy e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SelectGroupBy( modified.ToArray() );
         }
 
         public virtual SqlItem Visit( SelectCombineOperator e )
         {
-            ISelectSpecification lE = (ISelectSpecification)VisitExpr( e.Left );
-            ISelectSpecification rE = (ISelectSpecification)VisitExpr( e.Right );
+            ISelectSpecification lE = (ISelectSpecification)VisitItem( e.Left );
+            ISelectSpecification rE = (ISelectSpecification)VisitItem( e.Right );
             if( ReferenceEquals( lE, e.Left ) && ReferenceEquals( rE, e.Right ) ) return e;
             if( lE == null ) return (SqlItem)lE;
             if( rE == null ) return (SqlItem)rE;
@@ -385,21 +399,21 @@ namespace CK.SqlServer.Parser
 
         public virtual SqlItem Visit( SelectOrderBy e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SelectOrderBy( modified.ToArray() );
         }
 
         public virtual SqlItem Visit( SelectOrderByColumnList e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SelectOrderByColumnList( modified.ToArray() );
         }
 
         public virtual SqlItem Visit( SelectOrderByColumn e )
         {
-            SqlExpr modified = (SqlExpr)VisitExpr( e.Definition );
+            SqlExpr modified = (SqlExpr)VisitItem( e.Definition );
             if( modified == null ) return e;
             if( modified != e.Definition ) return new SelectOrderByColumn( modified, e.AscOrDescToken );
             return e;
@@ -407,21 +421,21 @@ namespace CK.SqlServer.Parser
 
         public virtual SqlItem Visit( SelectOrderByOffset e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SelectOrderByOffset( modified.ToArray() );
         }
 
         public virtual SqlItem Visit( SelectFor e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SelectFor( modified.ToArray() );
         }
 
         public virtual SqlItem Visit( SelectOption e )
         {
-            List<ISqlItem> modified = VisitItems( e.Components );
+            List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SelectOption( modified.ToArray() );
         }

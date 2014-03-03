@@ -9,18 +9,18 @@ namespace CK.SqlServer.Parser
 {
     public class SqlExprAssign : SqlExpr
     {
-        public SqlExprAssign( ISqlIdentifier identifier, SqlTokenTerminal assignToken, SqlExpr right )
-            : this( Build( identifier, assignToken, right ) )
+        public SqlExprAssign( ISqlIdentifier identifier, SqlTokenTerminal assignTok, SqlExpr right )
+            : this( Build( identifier, assignTok, right ) )
         {
         }
 
-        static ISqlItem[] Build( ISqlIdentifier identifier, SqlTokenTerminal assignToken, SqlExpr right )
+        static ISqlItem[] Build( ISqlIdentifier identifier, SqlTokenTerminal assignTok, SqlExpr right )
         {
             if( identifier == null ) throw new ArgumentNullException( "identifier" );
-            if( assignToken == null ) throw new ArgumentNullException( "assignToken" );
+            if( assignTok == null ) throw new ArgumentNullException( "assignTok" );
             if( right == null ) throw new ArgumentNullException( "right" );
-            if( (assignToken.TokenType & SqlTokenType.IsAssignOperator) == 0 ) throw new ArgumentException( "Invalid assign token.", "assignToken" );
-            return CreateArray( SqlToken.EmptyOpenPar, identifier, assignToken, right, SqlToken.EmptyClosePar );
+            if( (assignTok.TokenType & SqlTokenType.IsAssignOperator) == 0 ) throw new ArgumentException( "Invalid assign token.", "assignTok" );
+            return CreateArray( SqlToken.EmptyOpenPar, identifier, assignTok, right, SqlToken.EmptyClosePar );
         }
 
         internal SqlExprAssign( ISqlItem[] newComponents )
@@ -30,7 +30,7 @@ namespace CK.SqlServer.Parser
 
         public ISqlIdentifier Identifier { get { return (ISqlIdentifier)Slots[1]; } }
 
-        public SqlTokenTerminal AssignToken { get { return (SqlTokenTerminal)Slots[2]; } }
+        public SqlTokenTerminal AssignTok { get { return (SqlTokenTerminal)Slots[2]; } }
 
         public SqlExpr Right { get { return (SqlExpr)Slots[3]; } }
 

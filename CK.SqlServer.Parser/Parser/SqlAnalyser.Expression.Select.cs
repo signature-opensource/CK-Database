@@ -60,9 +60,9 @@ namespace CK.SqlServer.Parser
                     SqlExpr content;
                     SqlTokenIdentifier having;
                     SqlExpr havingClause = null;
-                    if( !R.IsUnquotedIdentifier( out by, "by", true ) ) return false;
+                    if( !R.IsToken( out by, SqlTokenType.By, true ) ) return false;
                     if( !IsExpressionOrRawList( out content, SelectPartStopper, false, true ) ) return false;
-                    if( R.IsUnquotedIdentifier( out having, "having", false ) )
+                    if( R.IsToken( out having, SqlTokenType.Having, false ) )
                     {
                         if( !IsOneExpression( out havingClause, false ) ) return false;
                     }
@@ -96,17 +96,17 @@ namespace CK.SqlServer.Parser
                 SqlExpr e;
                 if( !IsOneExpression( out e, parenthesisRequired: false ) ) return false;
                 SqlExprAssign eA = e as SqlExprAssign;
-                if( eA != null ) column = new SelectColumn( eA.Identifier, eA.AssignToken, eA.Right );
+                if( eA != null ) column = new SelectColumn( eA.Identifier, eA.AssignTok, eA.Right );
                 else
                 {
                     SqlTokenIdentifier asToken;
                     SqlExprIdentifier colName = null;
-                    if( R.IsUnquotedIdentifier( out asToken, "as", false ) )
+                    if( R.IsToken( out asToken, SqlTokenType.As, false ) )
                     {
                         if( !IsMonoIdentifier( out colName, true ) ) return false;
                         column = new SelectColumn( e, asToken, colName );
                     }
-                    if( IsPossibleColumnDefinition( R.Current ) && IsMonoIdentifier( out colName, false ) )
+                    else if( IsPossibleColumnDefinition( R.Current ) && IsMonoIdentifier( out colName, false ) )
                     {
                         column = new SelectColumn( e, colName );
                     }
@@ -117,6 +117,22 @@ namespace CK.SqlServer.Parser
                 }
             }
             return true;
+        }
+
+        private bool IsOverClause( out SqlNoExprOverClause over )
+        {
+            over = null;
+            SqlTokenIdentifier overToken;
+            if( !R.IsToken( out overToken, SqlTokenType.Over, false ) ) return false;
+            using( R.SetAssignmentContext( false ) )
+            {
+                SqlTokenOpenPar openPar;
+                SqlExpr overClause;
+                if( !R.IsToken( out openPar, true ) ) return false;
+                if( !IsExpressionOrRawList( out overClause, openPar, true ) ) return false;
+                over = new SqlNoExprOverClause( overToken, overClause );
+                return true;
+            }
         }
 
         bool SelectPartStopper( SqlToken t )
@@ -166,7 +182,7 @@ namespace CK.SqlServer.Parser
             SqlTokenIdentifier with = null;
             SqlTokenIdentifier ties = null;
 
-            R.IsUnquotedIdentifier( out allOrDistinct, "all", "distinct", false );
+            if( !R.IsToken( out allOrDistinct, SqlTokenType.All, false ) ) R.IsToken( out allOrDistinct, SqlTokenType.Distinct, false );
             if( R.IsToken( out top, SqlTokenType.Top, false ) )
             {
                 SqlTokenLiteralInteger intVal;
@@ -176,7 +192,7 @@ namespace CK.SqlServer.Parser
                     topExpression.MutableEnclose( SqlTokenOpenPar.OpenPar, SqlTokenOpenPar.ClosePar );
                 }
                 else if( !IsOneExpression( out topExpression, true ) ) return false;
-                if( R.IsUnquotedIdentifier( out percent, "percent", false ) )
+                if( R.IsToken( out percent, SqlTokenType.Percent, false ) )
                 {
                     if( R.IsToken( out with, SqlTokenType.With, false ) ) R.IsUnquotedIdentifier( out ties, "ties", true );
                 }

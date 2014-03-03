@@ -56,7 +56,7 @@ namespace CK.SqlServer.Parser
             Debug.Assert( Slots[1] is ISelectSpecification && Slots[3] is ISelectSpecification );
             Debug.Assert( Slots.Length != 6 || (Slots[4] is SelectOrderBy || Slots[4] is SelectFor) );
             Debug.Assert( Slots.Length < 7 || (Slots[4] is SelectOrderBy && Slots[5] is SelectFor) );
-            Debug.Assert( IsValidOperator( OperatorToken.TokenType ) 
+            Debug.Assert( IsValidOperator( OperatorTok.TokenType ) 
                                 && (UnionAll == null
                                     || (UnionAll != null
                                         && UnionAll[0].TokenType == SqlTokenType.Union
@@ -77,22 +77,22 @@ namespace CK.SqlServer.Parser
 
         SqlExprMultiToken<SqlToken> UnionAll { get { return Slots[2] as SqlExprMultiToken<SqlToken>; } }
 
-        SqlTokenIdentifier OperatorToken { get { return Slots[2] is SqlTokenIdentifier ? (SqlTokenIdentifier)Slots[2] : ((SqlExprMultiToken<SqlTokenIdentifier>)Slots[2])[0]; } }
+        SqlTokenIdentifier OperatorTok { get { return Slots[2] is SqlTokenIdentifier ? (SqlTokenIdentifier)Slots[2] : ((SqlExprMultiToken<SqlTokenIdentifier>)Slots[2])[0]; } }
 
         /// <summary>
         /// Gets the operator token type: it can be: <see cref="SqlTokenType.Union"/>, <see cref="SqlTokenType.Except"/>, <see cref="SqlTokenType.Intersect"/>.
         /// </summary>
-        public SqlTokenType CombinationKind { get { return OperatorToken.TokenType; } }
+        public SqlTokenType CombinationKind { get { return OperatorTok.TokenType; } }
 
         public ISqlItem Operator { get { return Slots[2]; } }
 
-        public bool IsUnionDistinct { get { return UnionAll == null && OperatorToken.TokenType == SqlTokenType.Union; } }
+        public bool IsUnionDistinct { get { return UnionAll == null && OperatorTok.TokenType == SqlTokenType.Union; } }
 
         public bool IsUnionAll { get { return UnionAll != null; } }
 
-        public bool IsExcept { get { return OperatorToken.TokenType == SqlTokenType.Except; } }
+        public bool IsExcept { get { return OperatorTok.TokenType == SqlTokenType.Except; } }
 
-        public bool IsIntersect { get { return OperatorToken.TokenType == SqlTokenType.Intersect; } }
+        public bool IsIntersect { get { return OperatorTok.TokenType == SqlTokenType.Intersect; } }
 
         public SqlExpr Right { get { return (SqlExpr)Slots[3]; } }
 

@@ -123,6 +123,7 @@ namespace CK.SqlServer.Parser
         /// </summary>
         static public readonly SqlExprMultiToken<SqlTokenClosePar> EmptyClosePar = SqlExprMultiToken<SqlTokenClosePar>.Empty;
 
+
         /// <summary>
         /// True if the <see cref="ISqlItem"/> is an unquoted identifier with a given name.
         /// </summary>

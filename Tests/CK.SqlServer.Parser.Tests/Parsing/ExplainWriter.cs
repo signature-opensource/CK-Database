@@ -17,7 +17,7 @@ namespace CK.SqlServer.Parser.Tests
         public static string Write( SqlItem e )
         {
             ExplainWriter w = new ExplainWriter();
-            w.VisitExpr( e );
+            w.VisitItem( e );
             return w.Out.ToString();
         }
 
@@ -25,8 +25,8 @@ namespace CK.SqlServer.Parser.Tests
         {
             Out.Append( '[' );
             WriteIdentifier( e.Identifier );
-            Out.Append( e.AssignToken.ToString() );
-            VisitExpr( e.Right );           
+            Out.Append( e.AssignTok.ToString() );
+            VisitItem( e.Right );           
             Out.Append( ']' );
             return e;
         }
@@ -34,9 +34,9 @@ namespace CK.SqlServer.Parser.Tests
         public override SqlItem Visit( SqlExprBinaryOperator e )
         {
             Out.Append( '[' );
-            VisitExpr( e.Left );
+            VisitItem( e.Left );
             Out.Append( e.Middle.ToString().ToLowerInvariant() );
-            VisitExpr( e.Right );
+            VisitItem( e.Right );
             Out.Append( ']' );
             return e;
         }
@@ -62,14 +62,14 @@ namespace CK.SqlServer.Parser.Tests
         public override SqlItem Visit( SqlExprStIf e )
         {
             Out.Append( "if[" );
-            VisitExpr( e.Condition );
+            VisitItem( e.Condition );
             Out.Append( "]then[" );
-            VisitExpr( e.ThenStatement );
+            VisitItem( e.ThenStatement );
             Out.Append( ']' );
             if( e.HasElse )
             {
                 Out.Append( "else[" );
-                VisitExpr( e.ElseStatement );
+                VisitItem( e.ElseStatement );
                 Out.Append( ']' );
             }
             return e;
@@ -78,7 +78,7 @@ namespace CK.SqlServer.Parser.Tests
         public override SqlItem Visit( SqlExprStUnmodeled e )
         {
             Out.Append( '<' );
-            VisitExpr( e.Content );
+            VisitItem( e.Content );
             Out.Append( '>' );
             return e;
         }
@@ -110,7 +110,7 @@ namespace CK.SqlServer.Parser.Tests
         public override SqlItem Visit( SqlExprUnaryOperator e )
         {
             Out.Append( e.Operator.ToString().ToLowerInvariant() ).Append( '[' );
-            VisitExpr( e.Expression );
+            VisitItem( e.Expression );
             Out.Append( ']' );
             return e;
         }
@@ -123,14 +123,31 @@ namespace CK.SqlServer.Parser.Tests
             {
                 if( one ) Out.Append( '-' );
                 one = true;
-                SqlExpr iE = item as SqlExpr;
+                SqlItem iE = item as SqlItem;
                 if( iE != null )
                 {
-                    VisitExpr( iE );
+                    VisitItem( iE );
                 }
                 else item.Tokens.WriteTokensWithoutTrivias( "-", Out );
             }
             Out.Append( "}¤" );
+            return e;
+        }
+
+        public override SqlItem Visit( SqlExprTypeDecl e )
+        {
+            e.Tokens.WriteTokensWithoutTrivias( "-", Out );
+            return e;
+        }
+
+        public override SqlItem Visit( SqlExprCast e )
+        {
+            Out.Append( '(' );
+            Visit( e.Type );
+            Out.Append( ')' );
+            Out.Append( '[' );
+            VisitItem( e.Expression );
+            Out.Append( ']' );
             return e;
         }
 
@@ -142,7 +159,7 @@ namespace CK.SqlServer.Parser.Tests
             {
                 if( one ) Out.Append( ',' );
                 one = true;
-                VisitExpr( item );
+                VisitItem( item );
             }
             Out.Append( '}' );
             return e;
@@ -151,7 +168,7 @@ namespace CK.SqlServer.Parser.Tests
         public override SqlItem Visit( SqlExprIsNull e )
         {
             Out.Append( e.IsNotNull ? "IsNotNull(" : "IsNull(" );
-            VisitExpr( e.Left );
+            VisitItem( e.Left );
             Out.Append( ')' );
             return e;
         }
@@ -159,11 +176,11 @@ namespace CK.SqlServer.Parser.Tests
         public override SqlItem Visit( SqlExprBetween e )
         {
             Out.Append( e.IsNotBetween ? "NotBetween(" : "Between(" );
-            VisitExpr( e.Left );
+            VisitItem( e.Left );
             Out.Append( ',' );
-            VisitExpr( e.Start );
+            VisitItem( e.Start );
             Out.Append( ',' );
-            VisitExpr( e.Stop );
+            VisitItem( e.Stop );
             Out.Append( ')' );
             return e;
         }
@@ -174,14 +191,14 @@ namespace CK.SqlServer.Parser.Tests
             if( e.IsSimpleCase )
             {
                 Out.Append( '(' );
-                VisitExpr( e.Expression );
+                VisitItem( e.Expression );
                 Out.Append( ')' );
             }
-            VisitExpr( e.WhenSelector );
+            VisitItem( e.WhenSelector );
             if( e.HasElse )
             {
                 Out.Append( ':' );
-                VisitExpr( e.ElseExpression );
+                VisitItem( e.ElseExpression );
             }
             return e;
         }
@@ -191,9 +208,9 @@ namespace CK.SqlServer.Parser.Tests
             for( int i = 0; i < e.Count; ++i )
             {
                 Out.Append( ':' );
-                VisitExpr( e.ExpressionAt( i ) );
+                VisitItem( e.ExpressionAt( i ) );
                 Out.Append( "=>" );
-                VisitExpr( e.ExpressionValueAt( i ) );
+                VisitItem( e.ExpressionValueAt( i ) );
             }
             return e;
         }
@@ -201,9 +218,9 @@ namespace CK.SqlServer.Parser.Tests
         public override SqlItem Visit( SqlExprLike e )
         {
             Out.Append( e.IsNotLike ? "NotLike(" : "Like(" );
-            VisitExpr( e.Left );
+            VisitItem( e.Left );
             Out.Append( ',' );
-            VisitExpr( e.Pattern );
+            VisitItem( e.Pattern );
             if( e.HasEscape )
             {
                 Out.Append( ',' );
@@ -216,9 +233,9 @@ namespace CK.SqlServer.Parser.Tests
         public override SqlItem Visit( SqlExprIn e )
         {
             Out.Append( e.IsNotIn ? "NotIn(" : "In(" );
-            VisitExpr( e.Left );
+            VisitItem( e.Left );
             Out.Append( '∈' );
-            VisitExpr( e.Values );
+            VisitItem( e.Values );
             Out.Append( ')' );
             return e;
         }
@@ -226,29 +243,38 @@ namespace CK.SqlServer.Parser.Tests
         public override SqlItem Visit( SqlExprKoCall e )
         {
             Out.Append( "call:" );
-            VisitExpr( e.FunName );
+            VisitItem( e.FunName );
             Out.Append( '(' );
             bool already = false;
             foreach( SqlExpr b in e.Parameters )
             {
                 if( already ) Out.Append( ',' );
-                VisitExpr( b );
+                VisitItem( b );
                 already = true;
             }
             Out.Append( ')' );
+            if( e.OverClause != null ) Visit( e.OverClause );
             return e;
         }
 
+        public override SqlItem Visit( SqlNoExprOverClause e )
+        {
+            Out.Append( "OVER[" );
+            VisitItem( e.OverExpression );
+            Out.Append( ']' );
+            return e;
+        }
+        
         public override SqlItem Visit( SelectSpecification e )
         {
             Out.Append( '[' );
-            VisitExpr( e.Header );
+            VisitItem( e.Header );
             Out.Append( "-" );
-            VisitExpr( e.Columns );
-            if( e.IntoClause != null ) VisitExpr( e.IntoClause );
-            if( e.FromClause != null ) VisitExpr( e.FromClause );
-            if( e.WhereClause != null ) VisitExpr( e.WhereClause );
-            if( e.GroupByClause != null ) VisitExpr( e.GroupByClause );
+            VisitItem( e.Columns );
+            if( e.IntoClause != null ) VisitItem( e.IntoClause );
+            if( e.FromClause != null ) VisitItem( e.FromClause );
+            if( e.WhereClause != null ) VisitItem( e.WhereClause );
+            if( e.GroupByClause != null ) VisitItem( e.GroupByClause );
             Out.Append( ']' );
             return e;
         }
@@ -267,7 +293,7 @@ namespace CK.SqlServer.Parser.Tests
             {
                 if( atLeastOne ) Out.Append( "," );
                 else atLeastOne = true;
-                VisitExpr( c );
+                VisitItem( c );
             }
             Out.Append( ")" );
             return e;
@@ -279,10 +305,10 @@ namespace CK.SqlServer.Parser.Tests
             {
                 WriteIdentifier( e.ColumnName );
                 Out.Append( '-' );
-                e.AsOrEqual.WriteWithoutTrivias( Out );
+                e.AsOrEqualTok.WriteWithoutTrivias( Out );
                 Out.Append( '-' );
             }
-            VisitExpr( e.Definition );
+            VisitItem( e.Definition );
             return e;
         }
 
@@ -297,7 +323,7 @@ namespace CK.SqlServer.Parser.Tests
         public override SqlItem Visit( SelectFrom e )
         {
             Out.Append( "-from[" );
-            VisitExpr( e.Content );
+            VisitItem( e.Content );
             Out.Append( "]" );
             return e;
         }
@@ -305,7 +331,7 @@ namespace CK.SqlServer.Parser.Tests
         public override SqlItem Visit( SelectWhere e )
         {
             Out.Append( "-where[" );
-            VisitExpr( e.Expression );
+            VisitItem( e.Expression );
             Out.Append( "]" );
             return e;
         }
@@ -313,12 +339,12 @@ namespace CK.SqlServer.Parser.Tests
         public override SqlItem Visit( SelectGroupBy e )
         {
             Out.Append( "-groupBy[" );
-            VisitExpr( e.GroupExpression );
+            VisitItem( e.GroupExpression );
             Out.Append( "]" );
             if( e.HavingExpression != null )
             {
                 Out.Append( "-having[" );
-                VisitExpr( e.HavingExpression );
+                VisitItem( e.HavingExpression );
                 Out.Append( "]" );
             }
             return e;
@@ -327,13 +353,13 @@ namespace CK.SqlServer.Parser.Tests
         public override SqlItem Visit( SelectOrderBy e )
         {
             Out.Append( "OrderBy(" );
-            VisitExpr( e.SelectExpr );
+            VisitItem( e.SelectExpr );
             Out.Append( "," );
-            VisitExpr( e.OrderByColumns );
+            VisitItem( e.OrderByColumns );
             if( e.OffsetClause != null )
             {
                 Out.Append( "," );
-                VisitExpr( e.OffsetClause );
+                VisitItem( e.OffsetClause );
             }
             Out.Append( ")" );
             return e;
@@ -347,7 +373,7 @@ namespace CK.SqlServer.Parser.Tests
             {
                 if( atLeastOne ) Out.Append( "," );
                 else atLeastOne = true;
-                VisitExpr( c );
+                VisitItem( c );
             }
             Out.Append( ")" );
             return e;
@@ -355,7 +381,7 @@ namespace CK.SqlServer.Parser.Tests
 
         public override SqlItem Visit( SelectOrderByColumn e )
         {
-            VisitExpr( e.Definition );
+            VisitItem( e.Definition );
             if( e.AscOrDescToken != null )
             {
                 Out.Append( "-" );
@@ -367,11 +393,11 @@ namespace CK.SqlServer.Parser.Tests
         public override SqlItem Visit( SelectOrderByOffset e )
         {
             Out.Append( "offset:" );
-            VisitExpr( e.OffsetExpression );
+            VisitItem( e.OffsetExpression );
             if( e.HasFetchClause )
             {
                 Out.Append( ",fetch:" );
-                VisitExpr( e.FetchExpression );
+                VisitItem( e.FetchExpression );
             }
             return e;
         }
@@ -380,9 +406,9 @@ namespace CK.SqlServer.Parser.Tests
         public override SqlItem Visit( SelectFor e )
         {
             Out.Append( "For(" );
-            VisitExpr( e.SelectExpr );
+            VisitItem( e.SelectExpr );
             Out.Append( "," );
-            VisitExpr( e.ForExpression );
+            VisitItem( e.ForExpression );
             Out.Append( ")" );
             return e;
         }
@@ -390,9 +416,9 @@ namespace CK.SqlServer.Parser.Tests
         public override SqlItem Visit( SelectCombineOperator e )
         {
             Out.Append( '[' );
-            VisitExpr( e.Left );
+            VisitItem( e.Left );
             e.Operator.Tokens.WriteTokensWithoutTrivias( "-", Out );
-            VisitExpr( e.Right );
+            VisitItem( e.Right );
             Out.Append( ']' );
             return e;
         }
@@ -400,7 +426,7 @@ namespace CK.SqlServer.Parser.Tests
         public override SqlItem Visit( SelectOption e )
         {
             Out.Append( "-option[" );
-            VisitExpr( e.Content );
+            VisitItem( e.Content );
             Out.Append( "]" );
             return e;
         }

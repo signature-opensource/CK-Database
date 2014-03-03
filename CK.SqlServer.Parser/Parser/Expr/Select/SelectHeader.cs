@@ -27,11 +27,11 @@ namespace CK.SqlServer.Parser
         internal SelectHeader( ISqlItem[] items )
             : base( items )
         {
-            _allOrDistinct = (SqlTokenIdentifier)Slots.FirstOrDefault( t => SqlToken.IsUnquotedIdentifier( t, "all", "distinct" ) );
-            _top = (SqlTokenIdentifier)Slots.FirstOrDefault( t => SqlToken.IsUnquotedIdentifier( t, "top" ) );
+            _allOrDistinct = (SqlTokenIdentifier)Slots.FirstOrDefault( t => t.IsToken( SqlTokenType.All ) || t.IsToken( SqlTokenType.Distinct ) );
+            _top = (SqlTokenIdentifier)Slots.FirstOrDefault( t => t.IsToken( SqlTokenType.Top ) );
             _topExpression = (SqlExpr)Slots.FirstOrDefault( t => t is SqlExpr );
-            _percent = (SqlTokenIdentifier)Slots.FirstOrDefault( t => SqlToken.IsUnquotedIdentifier( t, "percent" ) );
-            _withTies = Slots.Any( t => SqlToken.IsUnquotedIdentifier( t, "with" ) );
+            _percent = (SqlTokenIdentifier)Slots.FirstOrDefault( t => t.IsToken( SqlTokenType.Percent ) );
+            _withTies = Slots.Any( t => t.IsToken( SqlTokenType.With ) );
         }
 
         static ISqlItem[] Build( SqlTokenIdentifier select, SqlTokenIdentifier allOrDistinct, SqlTokenIdentifier top, SqlExpr topExpression, SqlTokenIdentifier percent, SqlTokenIdentifier with, SqlTokenIdentifier ties )
@@ -56,11 +56,11 @@ namespace CK.SqlServer.Parser
             return exprs.ToArray();
         }
 
-        public SqlTokenIdentifier Select { get { return (SqlTokenIdentifier)Slots[0]; } }
-        public SqlTokenIdentifier AllOrDistinct { get { return _allOrDistinct; } }
-        public SqlTokenIdentifier Top { get { return _top; } }
+        public SqlTokenIdentifier SelectTok { get { return (SqlTokenIdentifier)Slots[0]; } }
+        public SqlTokenIdentifier AllOrDistinctTok { get { return _allOrDistinct; } }
+        public SqlTokenIdentifier TopTok { get { return _top; } }
         public SqlExpr TopExpression { get { return _topExpression; } }
-        public SqlTokenIdentifier Percent { get { return _percent; } }
+        public SqlTokenIdentifier PercentTok { get { return _percent; } }
         public bool WithTies { get { return _withTies; } }
 
         [DebuggerStepThrough]

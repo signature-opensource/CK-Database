@@ -14,19 +14,19 @@ namespace CK.SqlServer.Parser
     /// </summary>
     public class SelectGroupBy : SqlNoExpr
     {
-        public SelectGroupBy( SqlTokenIdentifier groupToken, SqlTokenIdentifier byToken, SqlExpr groupContent, SqlTokenIdentifier havingToken = null, SqlExpr havingExpression = null )
-            : this( Build( groupToken, byToken, groupContent, havingToken, havingExpression ) )
+        public SelectGroupBy( SqlTokenIdentifier groupToken, SqlTokenIdentifier byTok, SqlExpr groupContent, SqlTokenIdentifier havingTok = null, SqlExpr havingExpression = null )
+            : this( Build( groupToken, byTok, groupContent, havingTok, havingExpression ) )
         {
         }
 
-        static ISqlItem[] Build( SqlTokenIdentifier groupToken, SqlTokenIdentifier byToken, SqlExpr groupContent, SqlTokenIdentifier havingToken = null, SqlExpr havingExpression = null )
+        static ISqlItem[] Build( SqlTokenIdentifier groupToken, SqlTokenIdentifier byTok, SqlExpr groupContent, SqlTokenIdentifier havingTok = null, SqlExpr havingExpression = null )
         {
-            if( havingToken != null )
+            if( havingTok != null )
             {
                 if( havingExpression == null ) throw new ArgumentNullException( "havingExpression" );
-                return CreateArray( groupToken, byToken, groupContent, havingToken, havingExpression );
+                return CreateArray( groupToken, byTok, groupContent, havingTok, havingExpression );
             }
-            return CreateArray( groupToken, byToken, groupContent );
+            return CreateArray( groupToken, byTok, groupContent );
         }
 
         internal SelectGroupBy( ISqlItem[] items )

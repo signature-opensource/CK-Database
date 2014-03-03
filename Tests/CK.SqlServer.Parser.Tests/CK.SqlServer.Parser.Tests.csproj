@@ -52,12 +52,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\CK.SqlServer.Parser\Parser\SqlTokenReader.cs">
+      <Link>Parsing\SqlTokenReader.cs</Link>
+    </Compile>
     <Compile Include="..\..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Parsing\ExplainWriter.cs" />
     <Compile Include="Parsing\SqlAnalyserTest.cs" />
     <Compile Include="Parsing\SqlTokenizerTest.cs" />
+    <Compile Include="Parsing\SqlTokenReaderTests.cs" />
     <Compile Include="TestHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -69,7 +69,7 @@ namespace CK.SqlServer.Parser
             SyntaxSize = size is SqlTokenLiteralInteger ? ((SqlTokenLiteralInteger)size).Value : -1;
         }
 
-        public override IEnumerable<ISqlItem> Components { get { return _tokens; } }
+        public override IEnumerable<ISqlItem> Items { get { return _tokens; } }
 
         public override IEnumerable<SqlToken> Tokens { get { return _tokens; } }
 

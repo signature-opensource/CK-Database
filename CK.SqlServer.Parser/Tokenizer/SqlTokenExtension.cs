@@ -38,5 +38,17 @@ namespace CK.SqlServer.Parser
             @this.WriteTokensWithoutTrivias( separator, b );
             return b.ToString();
         }
+
+        /// <summary>
+        /// Gets whether the <see cref="ISqlItem"/> is actually a <see cref="SqlToken"/> of a given type.
+        /// </summary>
+        /// <param name="this">Sql item.</param>
+        /// <param name="type">The type of the token.</param>
+        /// <returns>True on success.</returns>
+        static public bool IsToken( this ISqlItem @this, SqlTokenType type )
+        {
+            SqlToken id = @this as SqlToken;
+            return id != null && id.TokenType == type;
+        }
     }
 }

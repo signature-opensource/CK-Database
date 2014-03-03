@@ -10,7 +10,7 @@ namespace CK.SqlServer.Parser
     /// <summary>
     /// An <see cref="IEnumerator{T}"/> of <see cref="SqlToken"/> decorator that acts as a reading head
     /// on a raw tokens stream. It adds useful behavior such as one token lookup and = (Assign vs. Compare) operator
-    /// adaptation based on a togglable <see cref="ComparisonContext"/> flag.
+    /// adaptation based on a toggle <see cref="ComparisonContext"/> flag.
     /// </summary>
     internal class SqlTokenReader : IEnumerator<SqlToken> 
     {
@@ -184,7 +184,7 @@ namespace CK.SqlServer.Parser
         }
 
         /// <summary>
-        /// Sets the <see cref="Current"/> token as beeing a <see cref="SqlTokenError"/>.
+        /// Sets the <see cref="Current"/> token as being a <see cref="SqlTokenError"/>.
         /// </summary>
         /// <param name="error">The error message format.</param>
         /// <param name="parameters">Optional parameters to be inserted in the placeholders of the <paramref name="error"/> string format.</param>
@@ -195,7 +195,7 @@ namespace CK.SqlServer.Parser
         }
 
         /// <summary>
-        /// Sets the <see cref="Current"/> token as beeing a <see cref="SqlTokenError"/>.
+        /// Sets the <see cref="Current"/> token as being a <see cref="SqlTokenError"/>.
         /// </summary>
         /// <param name="error">The error message.</param>
         /// <returns>Always false in order to easily write return SetCurrentError("..."); that returns false.</returns>
@@ -301,25 +301,13 @@ namespace CK.SqlServer.Parser
             return false;
         }
 
-        public bool IsUnquotedIdentifier( out SqlTokenIdentifier identifier, string name, string altName, bool expected )
-        {
-            if( SqlToken.IsUnquotedIdentifier( Current, name, altName ) )
-            {
-                identifier = Read<SqlTokenIdentifier>();
-                return true;
-            }
-            if( expected ) SetCurrentError( "Expected '{0}' or '{1}' identifier.", name, altName );
-            identifier = null;
-            return false;
-        }
-
         /// <summary>
         /// Reads a list of tokens until a <paramref name="stopper"/> or the end of input or 
         /// an error is encountered (in such case, stopper is set to null).
         /// </summary>
         /// <typeparam name="T">Type of tokens.</typeparam>
         /// <param name="items">List of tokens or null if no tokens have been collected.</param>
-        /// <param name="stopper">The stopper. Null if an error occured or the end of the input was reached.</param>
+        /// <param name="stopper">The stopper. Null if an error occurred or the end of the input was reached.</param>
         /// <param name="stopperDefinition">Lambda that defines what the stopper should be.</param>
         /// <param name="atLeastOne">True if at least one item should appear in the list.</param>
         /// <param name="matchers">
@@ -327,7 +315,7 @@ namespace CK.SqlServer.Parser
         /// Matchers are called up to the first one that returns an item different than the Current token.
         /// When a matcher returns null, the current token is ignored.
         /// </param>
-        /// <returns>True if no error occured.</returns>
+        /// <returns>True if no error occurred.</returns>
         internal bool IsItemList<T>( out List<ISqlItem> items, out T stopper, Predicate<T> stopperDefinition, bool atLeastOne, params Func<ISqlItem>[] matchers ) where T : SqlToken
         {
             Debug.Assert( stopperDefinition != null );

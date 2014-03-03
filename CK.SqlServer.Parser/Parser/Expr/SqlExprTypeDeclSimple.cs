@@ -33,7 +33,7 @@ namespace CK.SqlServer.Parser
 
         public SqlDbType DbType { get; private set; }
 
-        public override IEnumerable<ISqlItem> Components { get { return _tokens; } }
+        public override IEnumerable<ISqlItem> Items { get { return _tokens; } }
 
         public override IEnumerable<SqlToken> Tokens { get { return _tokens; } }
 
