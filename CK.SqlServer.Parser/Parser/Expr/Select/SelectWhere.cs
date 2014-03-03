@@ -13,8 +13,8 @@ namespace CK.SqlServer.Parser
     /// </summary>
     public class SelectWhere : SqlNoExpr
     {
-        public SelectWhere( SqlTokenIdentifier whereToken, SqlExpr expression )
-            : this( CreateArray( whereToken, expression ) )
+        public SelectWhere( SqlTokenIdentifier whereT, SqlExpr expression )
+            : this( CreateArray( whereT, expression ) )
         {
         }
 
@@ -23,7 +23,7 @@ namespace CK.SqlServer.Parser
         {
         }
 
-        public SqlTokenIdentifier WhereToken { get { return (SqlTokenIdentifier)Slots[0]; } }
+        public SqlTokenIdentifier WhereT { get { return (SqlTokenIdentifier)Slots[0]; } }
         
         public SqlExpr Expression { get { return (SqlExpr)Slots[1]; } }
 

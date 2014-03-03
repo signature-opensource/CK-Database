@@ -96,7 +96,10 @@ namespace CK.SqlServer.Parser
                 SqlExpr e;
                 if( !IsOneExpression( out e, parenthesisRequired: false ) ) return false;
                 SqlExprAssign eA = e as SqlExprAssign;
-                if( eA != null ) column = new SelectColumn( eA.Identifier, eA.AssignTok, eA.Right );
+                if( eA != null )
+                {
+                    column = new SelectColumn( eA.Identifier, eA.AssignT, eA.Right );
+                }
                 else
                 {
                     SqlTokenIdentifier asToken;
@@ -106,13 +109,16 @@ namespace CK.SqlServer.Parser
                         if( !IsMonoIdentifier( out colName, true ) ) return false;
                         column = new SelectColumn( e, asToken, colName );
                     }
-                    else if( IsPossibleColumnDefinition( R.Current ) && IsMonoIdentifier( out colName, false ) )
-                    {
-                        column = new SelectColumn( e, colName );
-                    }
                     else
                     {
-                        column = new SelectColumn( e );
+                        if( IsPossibleColumnDefinition( R.Current ) && IsMonoIdentifier( out colName, false ) )
+                        {
+                            column = new SelectColumn( e, colName );
+                        }
+                        else
+                        {
+                            column = new SelectColumn( e );
+                        }
                     }
                 }
             }
@@ -217,7 +223,7 @@ namespace CK.SqlServer.Parser
             if( !IsOneExpression( out definition, parenthesisRequired: false ) ) return false;
             SqlTokenIdentifier ascOrDesc;
             if( !R.IsToken( out ascOrDesc, SqlTokenType.Asc, false ) ) R.IsToken( out ascOrDesc, SqlTokenType.Desc, false );
-            column = ascOrDesc != null ? new SelectOrderByColumn( definition, ascOrDesc ) : new SelectOrderByColumn( definition );
+            column = new SelectOrderByColumn( definition, ascOrDesc );
             return true;
         }
 

@@ -37,9 +37,9 @@ namespace CK.SqlServer.Parser
 
         public sealed override IEnumerable<ISqlItem> Items { get { return _tokens; } }
 
-        public override SqlToken FirstOrEmptyToken { get { return _tokens[0]; } }
+        public override SqlToken FirstOrEmptyT { get { return _tokens[0]; } }
 
-        public override SqlToken LastOrEmptyToken { get { return _tokens[_tokens.Length - 1]; } }
+        public override SqlToken LastOrEmptyT { get { return _tokens[_tokens.Length - 1]; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( ISqlItemVisitor<T> visitor )

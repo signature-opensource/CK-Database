@@ -92,12 +92,12 @@ namespace CK.SqlServer.Parser
         /// <summary>
         /// Gets whether the parameter is a pure input parameter or an output one with a /*input*/ tag.
         /// </summary>
-        public bool IsInput { get { return OutputToken == null || IsInputOutput; } }
+        public bool IsInput { get { return OutputT == null || IsInputOutput; } }
         
         /// <summary>
         /// Gets whether the parameter is output. It can be /*input*/output (see <see cref="IsInputOutput"/>).
         /// </summary>
-        public bool IsOutput { get { return OutputToken != null; } }
+        public bool IsOutput { get { return OutputT != null; } }
 
         /// <summary>
         /// Gets whether the parameter is input and output (by ref). <see cref="IsOutput"/> is true: the parameter uses the '/*input*/output' syntax.
@@ -106,16 +106,16 @@ namespace CK.SqlServer.Parser
         { 
             get 
             {
-                if( OutputToken == null ) return false;
+                if( OutputT == null ) return false;
                 return Tokens.SelectMany( t => t.LeadingTrivia.Concat( t.TrailingTrivia ).Where( trivia => trivia.TokenType != SqlTokenType.None ) ).Any( trivia => trivia.Text.Contains( "input" ) );
             } 
         }
         
-        public bool IsReadOnly { get { return ReadOnlyToken != null; } }
+        public bool IsReadOnly { get { return ReadOnlyT != null; } }
 
-        public SqlTokenIdentifier ReadOnlyToken { get { var t = LastTokenClause; return t != null && t.TokenType == SqlTokenType.Readonly ? t : null; } }
+        public SqlTokenIdentifier ReadOnlyT { get { var t = LastTokenClause; return t != null && t.TokenType == SqlTokenType.Readonly ? t : null; } }
 
-        public SqlTokenIdentifier OutputToken 
+        public SqlTokenIdentifier OutputT 
         { 
             get 
             {

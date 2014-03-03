@@ -33,11 +33,11 @@ namespace CK.SqlServer.Parser
             return elseToken != null ? CreateArray( ifToken, condition, thenStatement, elseToken, elseStatement ) : CreateArray( ifToken, condition, thenStatement );
         }
 
-        public SqlTokenIdentifier IfToken { get { return (SqlTokenIdentifier)Slots[0]; } }
+        public SqlTokenIdentifier IfT { get { return (SqlTokenIdentifier)Slots[0]; } }
         public SqlExpr Condition { get { return (SqlExpr)Slots[1]; } }
         public SqlExprBaseSt ThenStatement { get { return (SqlExprBaseSt)Slots[2]; } }
         public bool HasElse { get { return Slots.Length > 3; } }
-        public SqlTokenIdentifier ElseToken { get { return HasElse ? (SqlTokenIdentifier)Slots[3] : null; } }
+        public SqlTokenIdentifier ElseT { get { return HasElse ? (SqlTokenIdentifier)Slots[3] : null; } }
         public SqlExprBaseSt ElseStatement { get { return HasElse ? (SqlExprBaseSt)Slots[4] : null; } }
 
         [DebuggerStepThrough]

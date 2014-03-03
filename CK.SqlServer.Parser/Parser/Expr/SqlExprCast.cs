@@ -9,20 +9,20 @@ namespace CK.SqlServer.Parser
 {
     public class SqlExprCast : SqlExpr
     {
-        public SqlExprCast( SqlTokenIdentifier castTok, SqlTokenOpenPar openPar, SqlExpr e, SqlTokenIdentifier asTok, SqlExprTypeDecl type, SqlTokenClosePar closePar )
-            : this( Build( castTok, openPar, e, asTok, type, closePar ) )
+        public SqlExprCast( SqlTokenIdentifier castT, SqlTokenOpenPar openPar, SqlExpr e, SqlTokenIdentifier asT, SqlExprTypeDecl type, SqlTokenClosePar closePar )
+            : this( Build( castT, openPar, e, asT, type, closePar ) )
         {
         }
 
-        static ISqlItem[] Build( SqlTokenIdentifier castTok, SqlTokenOpenPar openPar, SqlExpr e, SqlTokenIdentifier asTok, SqlExprTypeDecl type, SqlTokenClosePar closePar )
+        static ISqlItem[] Build( SqlTokenIdentifier castT, SqlTokenOpenPar openPar, SqlExpr e, SqlTokenIdentifier asT, SqlExprTypeDecl type, SqlTokenClosePar closePar )
         {
-            if( castTok == null ) throw new ArgumentNullException( "castTok" );
+            if( castT == null ) throw new ArgumentNullException( "castTok" );
             if( openPar == null ) throw new ArgumentNullException( "openPar" );
             if( e == null ) throw new ArgumentNullException( "e" );
-            if( asTok == null ) throw new ArgumentNullException( "asTok" );
+            if( asT == null ) throw new ArgumentNullException( "asTok" );
             if( type == null ) throw new ArgumentNullException( "type" );
             if( closePar == null ) throw new ArgumentNullException( "closePar" );
-            return CreateArray( SqlToken.EmptyOpenPar, castTok, openPar, e, asTok, type, closePar, SqlToken.EmptyClosePar );
+            return CreateArray( SqlToken.EmptyOpenPar, castT, openPar, e, asT, type, closePar, SqlToken.EmptyClosePar );
         }
 
         internal SqlExprCast( ISqlItem[] newComponents )
@@ -30,13 +30,13 @@ namespace CK.SqlServer.Parser
         {
         }
 
-        public SqlTokenIdentifier CastTok { get { return (SqlTokenIdentifier)Slots[1]; } }
+        public SqlTokenIdentifier CastT { get { return (SqlTokenIdentifier)Slots[1]; } }
 
         public SqlTokenOpenPar OpenPar { get { return (SqlTokenOpenPar)Slots[2]; } }
 
         public SqlExpr Expression { get { return (SqlExpr)Slots[3]; } }
 
-        public SqlTokenIdentifier AsTok { get { return (SqlTokenIdentifier)Slots[4]; } }
+        public SqlTokenIdentifier AsT { get { return (SqlTokenIdentifier)Slots[4]; } }
 
         public SqlExprTypeDecl Type { get { return (SqlExprTypeDecl)Slots[5]; } }
 

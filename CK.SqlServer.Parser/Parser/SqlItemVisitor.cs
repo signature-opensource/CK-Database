@@ -76,6 +76,11 @@ namespace CK.SqlServer.Parser
             return new SqlNoExprOverClause( modified.ToArray() );
         }
 
+        public virtual SqlItem Visit( SqlExprCollate e )
+        {
+            return e;
+        }
+
         public virtual SqlItem Visit( SqlExprStIf e )
         {
             List<ISqlItem> modified = VisitItems( e.Items );
@@ -101,7 +106,7 @@ namespace CK.SqlServer.Parser
         {
             SqlExprStatementList vB = (SqlExprStatementList)VisitItem( e.Body );
             if( ReferenceEquals( vB, e.Body ) ) return e;
-            return new SqlExprStBlock( e.Begin, vB, e.End, e.StatementTerminator );
+            return new SqlExprStBlock( e.BeginT, vB, e.EndT, e.StatementTerminator );
         }
 
         public virtual SqlItem Visit( SqlExprStTryCatch e )
@@ -206,7 +211,7 @@ namespace CK.SqlServer.Parser
             SqlExpr vE = (SqlExpr)VisitItem( e.Expression );
             if( ReferenceEquals( vE, e.Expression ) ) return e;
             if( vE == null ) return null;
-            return new SqlExprUnaryOperator( e.Operator, vE );
+            return new SqlExprUnaryOperator( e.OperatorT, vE );
         }
 
         public virtual SqlItem Visit( SqlExprTypeDecl e )
@@ -283,7 +288,7 @@ namespace CK.SqlServer.Parser
         {
             SqlExpr vE = (SqlExpr)VisitItem( e.Left );
             if( ReferenceEquals( vE, e ) ) return e;
-            return new SqlExprIsNull( vE, e.IsTok, e.NotTok, e.NullTok );
+            return new SqlExprIsNull( vE, e.IsT, e.NotT, e.NullT );
         }
 
         public virtual SqlItem Visit( SqlExprLike e )
@@ -415,7 +420,7 @@ namespace CK.SqlServer.Parser
         {
             SqlExpr modified = (SqlExpr)VisitItem( e.Definition );
             if( modified == null ) return e;
-            if( modified != e.Definition ) return new SelectOrderByColumn( modified, e.AscOrDescToken );
+            if( modified != e.Definition ) return new SelectOrderByColumn( modified, e.AscOrDescT );
             return e;
         }
 

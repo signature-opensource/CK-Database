@@ -56,11 +56,11 @@ namespace CK.SqlServer.Parser
             return exprs.ToArray();
         }
 
-        public SqlTokenIdentifier SelectTok { get { return (SqlTokenIdentifier)Slots[0]; } }
-        public SqlTokenIdentifier AllOrDistinctTok { get { return _allOrDistinct; } }
-        public SqlTokenIdentifier TopTok { get { return _top; } }
+        public SqlTokenIdentifier SelectT { get { return (SqlTokenIdentifier)Slots[0]; } }
+        public SqlTokenIdentifier AllOrDistinctT { get { return _allOrDistinct; } }
+        public SqlTokenIdentifier TopT { get { return _top; } }
         public SqlExpr TopExpression { get { return _topExpression; } }
-        public SqlTokenIdentifier PercentTok { get { return _percent; } }
+        public SqlTokenIdentifier PercentT { get { return _percent; } }
         public bool WithTies { get { return _withTies; } }
 
         [DebuggerStepThrough]

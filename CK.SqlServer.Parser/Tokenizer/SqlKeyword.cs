@@ -97,7 +97,6 @@ namespace CK.SqlServer.Parser
             "distributed",
             "coalesce",
             "rule",
-            "collate",
             "identitycol",
             "rowguidcol",
             "contains",
@@ -403,6 +402,8 @@ namespace CK.SqlServer.Parser
             _keywords.Add( "distinct", SqlTokenType.Distinct );
             _keywords.Add( "pivot", SqlTokenType.Pivot );
             _keywords.Add( "having", SqlTokenType.Having );
+            _keywords.Add( "collate", SqlTokenType.Collate );
+                        
 
             // SqlTokenType.IdentifierReservedStart values.
             _keywords.Add( "select", SqlTokenType.Select );

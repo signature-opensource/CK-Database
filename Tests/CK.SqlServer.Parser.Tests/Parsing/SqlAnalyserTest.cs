@@ -88,6 +88,85 @@ namespace CK.SqlServer.Parser.Tests
         }
 
         [Test]
+        public void CollationTests()
+        {
+            string s = @"
+     Select id as ID,
+            GreekCol COLLATE latin1_general_ci_as as T11,
+            LatinCol COLLATE greek_ci_as as [collate]
+            from TestTab11
+    UNION
+	 Select id as ID,
+			T11 = GreekCol COLLATE latin1_general_ci_as,
+			LatinCol
+			from TestTab12
+	UNION
+     Select id as ID,
+            GreekCol COLLATE latin1_general_ci_as + LatinCol,
+            LatinCol + GreekCol COLLATE greek_ci_as
+            from TestTab12
+	UNION
+     Select id as ID,
+            GreekCol + LatinCol COLLATE latin1_general_ci_as,
+            LatinCol COLLATE greek_ci_as + GreekCol COLLATE greek_ci_as
+            from TestTab12
+	UNION
+     Select id as ID,
+            GreekCol + LatinCol COLLATE latin1_general_ci_as,
+            ( (((('U' COLLATE greek_ci_as)))) + (((( ((LatinCol)) COLLATE greek_ci_as)))) ) + GreekCol  + 'P'
+            from TestTab12";
+
+            Check( s, @"[
+                            [
+                                [
+                                    [
+                                        [Select-(
+                                                  ID-as-id,
+                                                  T11-as-GreekCol-COLLATE-latin1_general_ci_as,
+                                                  [collate]-as-LatinCol-COLLATE-greek_ci_as
+                                                )
+                                               -from[TestTab11]
+                                        ]
+                                        UNION
+                                        [Select-(
+                                                    ID-as-id,
+                                                    T11-=-GreekCol-COLLATE-latin1_general_ci_as,
+                                                    LatinCol
+                                                )
+                                               -from[TestTab12]
+                                        ]
+                                    ]
+                                    UNION
+                                    [Select-(
+                                                ID-as-id,
+                                                [GreekCol-COLLATE-latin1_general_ci_as+LatinCol],
+                                                [LatinCol+GreekCol-COLLATE-greek_ci_as]
+                                            )
+                                           -from[TestTab12]
+                                    ]
+                                ]
+                                UNION
+                                [Select-(
+                                            ID-as-id,
+                                            [GreekCol+LatinCol-COLLATE-latin1_general_ci_as],
+                                            [LatinCol-COLLATE-greek_ci_as+GreekCol-COLLATE-greek_ci_as]
+                                        )
+                                       -from[TestTab12]
+                                ]
+                            ]
+                            UNION
+                            [Select-(
+                                        ID-as-id,
+                                        [GreekCol+LatinCol-COLLATE-latin1_general_ci_as],
+                                        [[[(-(-(-(-'U'-COLLATE-greek_ci_as-)-)-)-)+(-(-(-(-(-(-LatinCol-)-)-COLLATE-greek_ci_as-)-)-)-)]+GreekCol]+'P']
+                                    )
+                                   -from[TestTab12]
+                            ]
+                        ]" );
+
+        }
+
+        [Test]
         public void SelectUnionIntersect()
         {
             // -- intersect > union
@@ -325,7 +404,7 @@ namespace CK.SqlServer.Parser.Tests
             var r = SqlAnalyser.ParseExpression( out e, text );
             Assert.That( r.IsError, Is.False, r.ToString() );
             Assert.That( ExplainWriter.Write( e ), Is.EqualTo( Regex.Replace( explained, @"\s*", String.Empty ) ) );
-            Assert.That( textAutoCorrected ?? text, Is.EqualTo( e.ToString() ) );
+            Assert.That( e.ToString(), Is.EqualTo( textAutoCorrected ?? text ) );
         }
 
         [Test]

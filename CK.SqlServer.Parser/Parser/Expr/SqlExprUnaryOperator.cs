@@ -26,7 +26,7 @@ namespace CK.SqlServer.Parser
         {
         }
 
-        public SqlToken Operator { get { return (SqlToken)Slots[1]; } }
+        public SqlToken OperatorT { get { return (SqlToken)Slots[1]; } }
 
         public SqlExpr Expression { get { return (SqlExpr)Slots[2]; } }
 

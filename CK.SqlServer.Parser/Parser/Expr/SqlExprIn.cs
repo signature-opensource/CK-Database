@@ -14,16 +14,16 @@ namespace CK.SqlServer.Parser
     /// </summary>
     public class SqlExprIn : SqlExpr
     {
-        public SqlExprIn( SqlExpr left, SqlTokenIdentifier notTok, SqlTokenIdentifier inTok, SqlExprCommaList values )
-            : this( Build( left, notTok, inTok, values ) )
+        public SqlExprIn( SqlExpr left, SqlTokenIdentifier notT, SqlTokenIdentifier inT, SqlExprCommaList values )
+            : this( Build( left, notT, inT, values ) )
         {
         }
 
-        static ISqlItem[] Build( SqlExpr left, SqlTokenIdentifier notTok, SqlTokenIdentifier inTok, SqlExprCommaList values )
+        static ISqlItem[] Build( SqlExpr left, SqlTokenIdentifier notT, SqlTokenIdentifier inT, SqlExprCommaList values )
         {
-            return notTok != null
-                            ? CreateArray( SqlToken.EmptyOpenPar, left, notTok, inTok, values, SqlToken.EmptyClosePar )
-                            : CreateArray( SqlToken.EmptyOpenPar, left, inTok, values, SqlToken.EmptyClosePar );
+            return notT != null
+                            ? CreateArray( SqlToken.EmptyOpenPar, left, notT, inT, values, SqlToken.EmptyClosePar )
+                            : CreateArray( SqlToken.EmptyOpenPar, left, inT, values, SqlToken.EmptyClosePar );
         }
 
         internal SqlExprIn( ISqlItem[] newComponents )
@@ -35,9 +35,9 @@ namespace CK.SqlServer.Parser
 
         public bool IsNotIn { get { return Slots.Length == 6; } }
 
-        public SqlTokenIdentifier NotTok { get { return IsNotIn ? (SqlTokenIdentifier)Slots[2] : null; } }
+        public SqlTokenIdentifier NotT { get { return IsNotIn ? (SqlTokenIdentifier)Slots[2] : null; } }
 
-        public SqlTokenIdentifier InTok { get { return (SqlTokenIdentifier)Slots[IsNotIn ? 3 : 2]; } }
+        public SqlTokenIdentifier InT { get { return (SqlTokenIdentifier)Slots[IsNotIn ? 3 : 2]; } }
 
         public SqlExprCommaList Values { get { return (SqlExprCommaList)Slots[IsNotIn ? 4 : 3]; } }
 

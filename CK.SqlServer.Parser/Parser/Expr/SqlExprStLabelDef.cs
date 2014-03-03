@@ -30,7 +30,7 @@ namespace CK.SqlServer.Parser
             return CreateArray( id );
         }
 
-        public SqlTokenIdentifier Identifier { get { return (SqlTokenIdentifier)Slots[0]; } }
+        public SqlTokenIdentifier IdentifierT { get { return (SqlTokenIdentifier)Slots[0]; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( ISqlItemVisitor<T> visitor )

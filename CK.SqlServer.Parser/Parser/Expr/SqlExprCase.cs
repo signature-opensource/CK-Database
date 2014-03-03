@@ -60,7 +60,7 @@ namespace CK.SqlServer.Parser
         /// <summary>
         /// Gets the first case token.
         /// </summary>
-        public SqlTokenIdentifier CaseToken { get { return (SqlTokenIdentifier)Slots[1]; } }
+        public SqlTokenIdentifier CaseT { get { return (SqlTokenIdentifier)Slots[1]; } }
         
         /// <summary>
         /// Gets the simple case expression. Null if <see cref="IsSearchCase"/> is true.
@@ -80,7 +80,7 @@ namespace CK.SqlServer.Parser
         /// <summary>
         /// Gets the else token if it exists.
         /// </summary>
-        public SqlTokenIdentifier ElseToken { get { return HasElse ? (SqlTokenIdentifier)Slots[Slots.Length - 4] : null; } }
+        public SqlTokenIdentifier ElseT { get { return HasElse ? (SqlTokenIdentifier)Slots[Slots.Length - 4] : null; } }
 
         /// <summary>
         /// Gets the else expression if it exists.
@@ -90,7 +90,7 @@ namespace CK.SqlServer.Parser
         /// <summary>
         /// Gets the end token.
         /// </summary>
-        public SqlTokenIdentifier EndToken { get { return (SqlTokenIdentifier)Slots[Slots.Length - 2]; } }
+        public SqlTokenIdentifier EndT { get { return (SqlTokenIdentifier)Slots[Slots.Length - 2]; } }
 
 
         [DebuggerStepThrough]

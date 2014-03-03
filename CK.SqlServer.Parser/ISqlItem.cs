@@ -20,13 +20,13 @@ namespace CK.SqlServer.Parser
         /// Gets the last token of the expression or, in worst case when this is either <see cref="SqlToken.EmptyOpenPar"/> or <see cref="SqlToken.EmptyClosePar"/>, gets <see cref="SqlToken.Empty"/>.
         /// This is mainly to ease trivias manipulation around expressions.
         /// </summary>
-        SqlToken LastOrEmptyToken { get; }
+        SqlToken LastOrEmptyT { get; }
 
         /// <summary>
         /// Gets the first token of the expression or, in worst case when this is either <see cref="SqlToken.EmptyOpenPar"/> or <see cref="SqlToken.EmptyClosePar"/>, gets <see cref="SqlToken.Empty"/>.
         /// This is mainly to ease trivias manipulation around expressions.
         /// </summary>
-        SqlToken FirstOrEmptyToken { get; }
+        SqlToken FirstOrEmptyT { get; }
 
     }
 }

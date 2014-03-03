@@ -18,16 +18,16 @@ namespace CK.SqlServer.Parser
             if( !IsValidOperator( exceptUnionOrIntercept.TokenType ) ) throw new ArgumentException();
         }
 
-        public SelectCombineOperator( ISelectSpecification left, SqlTokenIdentifier union, SqlTokenIdentifier all, ISelectSpecification right, SelectOrderBy orderBy = null, SelectFor forPart = null )
-            : this( Build( left, union, all, right, orderBy, forPart ) )
+        public SelectCombineOperator( ISelectSpecification left, SqlTokenIdentifier unionT, SqlTokenIdentifier allT, ISelectSpecification right, SelectOrderBy orderBy = null, SelectFor forPart = null )
+            : this( Build( left, unionT, allT, right, orderBy, forPart ) )
         {
-            if( union.TokenType == SqlTokenType.Union && all != null && !all.NameEquals( "all" ) ) throw new ArgumentException();
+            if( unionT.TokenType == SqlTokenType.Union && allT != null && !allT.NameEquals( "all" ) ) throw new ArgumentException();
         }
 
-        static ISqlItem[] Build( ISelectSpecification left, SqlTokenIdentifier op, SqlTokenIdentifier all, ISelectSpecification right, SelectOrderBy orderBy, SelectFor forPart )
+        static ISqlItem[] Build( ISelectSpecification left, SqlTokenIdentifier opT, SqlTokenIdentifier allT, ISelectSpecification right, SelectOrderBy orderBy, SelectFor forPart )
         {
-            Debug.Assert( left != null && op != null && right != null );
-            ISqlItem o = all != null ? (ISqlItem)new SqlExprMultiToken<SqlTokenIdentifier>( op, all ) : op;
+            Debug.Assert( left != null && opT != null && right != null );
+            ISqlItem o = allT != null ? (ISqlItem)new SqlExprMultiToken<SqlTokenIdentifier>( opT, allT ) : opT;
             return Build( SqlToken.EmptyOpenPar, left, o, right, orderBy, forPart, SqlToken.EmptyClosePar );
         }
 
@@ -56,7 +56,7 @@ namespace CK.SqlServer.Parser
             Debug.Assert( Slots[1] is ISelectSpecification && Slots[3] is ISelectSpecification );
             Debug.Assert( Slots.Length != 6 || (Slots[4] is SelectOrderBy || Slots[4] is SelectFor) );
             Debug.Assert( Slots.Length < 7 || (Slots[4] is SelectOrderBy && Slots[5] is SelectFor) );
-            Debug.Assert( IsValidOperator( OperatorTok.TokenType ) 
+            Debug.Assert( IsValidOperator( OperatorT.TokenType ) 
                                 && (UnionAll == null
                                     || (UnionAll != null
                                         && UnionAll[0].TokenType == SqlTokenType.Union
@@ -77,22 +77,22 @@ namespace CK.SqlServer.Parser
 
         SqlExprMultiToken<SqlToken> UnionAll { get { return Slots[2] as SqlExprMultiToken<SqlToken>; } }
 
-        SqlTokenIdentifier OperatorTok { get { return Slots[2] is SqlTokenIdentifier ? (SqlTokenIdentifier)Slots[2] : ((SqlExprMultiToken<SqlTokenIdentifier>)Slots[2])[0]; } }
+        SqlTokenIdentifier OperatorT { get { return Slots[2] is SqlTokenIdentifier ? (SqlTokenIdentifier)Slots[2] : ((SqlExprMultiToken<SqlTokenIdentifier>)Slots[2])[0]; } }
 
         /// <summary>
         /// Gets the operator token type: it can be: <see cref="SqlTokenType.Union"/>, <see cref="SqlTokenType.Except"/>, <see cref="SqlTokenType.Intersect"/>.
         /// </summary>
-        public SqlTokenType CombinationKind { get { return OperatorTok.TokenType; } }
+        public SqlTokenType CombinationKind { get { return OperatorT.TokenType; } }
 
         public ISqlItem Operator { get { return Slots[2]; } }
 
-        public bool IsUnionDistinct { get { return UnionAll == null && OperatorTok.TokenType == SqlTokenType.Union; } }
+        public bool IsUnionDistinct { get { return UnionAll == null && OperatorT.TokenType == SqlTokenType.Union; } }
 
         public bool IsUnionAll { get { return UnionAll != null; } }
 
-        public bool IsExcept { get { return OperatorTok.TokenType == SqlTokenType.Except; } }
+        public bool IsExcept { get { return OperatorT.TokenType == SqlTokenType.Except; } }
 
-        public bool IsIntersect { get { return OperatorTok.TokenType == SqlTokenType.Intersect; } }
+        public bool IsIntersect { get { return OperatorT.TokenType == SqlTokenType.Intersect; } }
 
         public SqlExpr Right { get { return (SqlExpr)Slots[3]; } }
 

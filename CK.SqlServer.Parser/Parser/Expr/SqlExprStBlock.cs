@@ -18,11 +18,11 @@ namespace CK.SqlServer.Parser
         {
         }
 
-        public SqlTokenIdentifier Begin { get { return (SqlTokenIdentifier)Slots[0]; } }
+        public SqlTokenIdentifier BeginT { get { return (SqlTokenIdentifier)Slots[0]; } }
 
         public SqlExprStatementList Body { get { return (SqlExprStatementList)Slots[1]; } }
 
-        public SqlTokenIdentifier End { get { return (SqlTokenIdentifier)Slots[2]; } }
+        public SqlTokenIdentifier EndT { get { return (SqlTokenIdentifier)Slots[2]; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( ISqlItemVisitor<T> visitor )

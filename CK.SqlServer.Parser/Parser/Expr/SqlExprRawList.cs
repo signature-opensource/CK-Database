@@ -29,7 +29,7 @@ namespace CK.SqlServer.Parser
         /// <param name="items">
         /// List of <see cref="ISqlItem"/> that compose this block. 
         /// This MUST not contain the <see cref="Opener"/> and/or the <see cref="Closer"/>.</param>
-        /// <param name="closePar">Closing parentehsis.</param>
+        /// <param name="closePar">Closing parenthesis.</param>
         public SqlExprRawItemList( SqlTokenOpenPar openPar, IList<ISqlItem> items, SqlTokenClosePar closePar )
             : this( CreateArray( openPar, items.AsReadOnlyList(), items.Count, closePar ) )
         {

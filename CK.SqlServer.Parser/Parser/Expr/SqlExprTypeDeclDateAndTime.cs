@@ -72,11 +72,11 @@ namespace CK.SqlServer.Parser
 
         public override IEnumerable<SqlToken> Tokens { get { return _tokens; } }
 
-        public override SqlToken FirstOrEmptyToken { get { return _tokens[0]; } }
+        public override SqlToken FirstOrEmptyT { get { return _tokens[0]; } }
 
-        public override SqlToken LastOrEmptyToken { get { return _tokens[_tokens.Length - 1]; } }
+        public override SqlToken LastOrEmptyT { get { return _tokens[_tokens.Length - 1]; } }
 
-        public SqlTokenIdentifier TypeIdentifier { get { return (SqlTokenIdentifier)_tokens[0]; } }
+        public SqlTokenIdentifier TypeIdentifierT { get { return (SqlTokenIdentifier)_tokens[0]; } }
 
         public SqlDbType DbType { get; private set; }
 

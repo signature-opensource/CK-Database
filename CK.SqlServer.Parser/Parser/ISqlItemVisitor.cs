@@ -11,6 +11,7 @@ namespace CK.SqlServer.Parser
         T Visit( SqlExprRawItemList e );
         T Visit( SqlExprKoCall e );
         T Visit( SqlNoExprOverClause e );
+        T Visit( SqlExprCollate e );
         T Visit( SqlExprStIf e );
 
         T Visit( SqlExprStBeginTran e );

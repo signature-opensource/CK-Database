@@ -25,10 +25,16 @@ namespace CK.SqlServer.Parser.Tests
         {
             Out.Append( '[' );
             WriteIdentifier( e.Identifier );
-            Out.Append( e.AssignTok.ToString() );
+            Out.Append( e.AssignT.ToString() );
             VisitItem( e.Right );           
             Out.Append( ']' );
             return e;
+        }
+
+        public override SqlItem Visit( SqlExprCollate e)
+        {
+            e.Tokens.WriteTokensWithoutTrivias( "-", Out );
+ 	         return e;
         }
 
         public override SqlItem Visit( SqlExprBinaryOperator e )
@@ -109,7 +115,7 @@ namespace CK.SqlServer.Parser.Tests
 
         public override SqlItem Visit( SqlExprUnaryOperator e )
         {
-            Out.Append( e.Operator.ToString().ToLowerInvariant() ).Append( '[' );
+            Out.Append( e.OperatorT.ToString().ToLowerInvariant() ).Append( '[' );
             VisitItem( e.Expression );
             Out.Append( ']' );
             return e;
@@ -305,7 +311,7 @@ namespace CK.SqlServer.Parser.Tests
             {
                 WriteIdentifier( e.ColumnName );
                 Out.Append( '-' );
-                e.AsOrEqualTok.WriteWithoutTrivias( Out );
+                e.AsOrEqualT.WriteWithoutTrivias( Out );
                 Out.Append( '-' );
             }
             VisitItem( e.Definition );
@@ -382,10 +388,10 @@ namespace CK.SqlServer.Parser.Tests
         public override SqlItem Visit( SelectOrderByColumn e )
         {
             VisitItem( e.Definition );
-            if( e.AscOrDescToken != null )
+            if( e.AscOrDescT != null )
             {
                 Out.Append( "-" );
-                Out.Append( e.AscOrDescToken.Name );
+                Out.Append( e.AscOrDescT.Name );
             }
             return e;
         }

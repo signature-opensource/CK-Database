@@ -27,9 +27,9 @@ namespace CK.SqlServer.Parser
 
         public override IEnumerable<SqlToken> Tokens { get { return _type[0].Tokens; } }
 
-        public override SqlToken FirstOrEmptyToken { get { return _type[0].FirstOrEmptyToken; } }
+        public override SqlToken FirstOrEmptyT { get { return _type[0].FirstOrEmptyT; } }
 
-        public override SqlToken LastOrEmptyToken { get { return _type[0].LastOrEmptyToken; } }
+        public override SqlToken LastOrEmptyT { get { return _type[0].LastOrEmptyT; } }
 
         /// <summary>
         /// Gets a unified type for different kind of type declaration.

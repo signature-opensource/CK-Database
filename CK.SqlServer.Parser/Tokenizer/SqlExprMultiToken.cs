@@ -87,9 +87,9 @@ namespace CK.SqlServer.Parser
 
         IEnumerable<SqlToken> ISqlItem.Tokens  { get { return _tokens; } }
 
-        public SqlToken LastOrEmptyToken { get { return _tokens == _empty ? SqlToken.Empty : _tokens[_tokens.Length-1]; } }
+        public SqlToken LastOrEmptyT { get { return _tokens == _empty ? SqlToken.Empty : _tokens[_tokens.Length-1]; } }
 
-        public SqlToken FirstOrEmptyToken { get { return _tokens == _empty ? SqlToken.Empty : _tokens[0]; ; } }
+        public SqlToken FirstOrEmptyT { get { return _tokens == _empty ? SqlToken.Empty : _tokens[0]; ; } }
 
         public T this[int index]
         {

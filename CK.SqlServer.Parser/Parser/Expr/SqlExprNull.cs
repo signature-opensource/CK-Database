@@ -9,10 +9,14 @@ namespace CK.SqlServer.Parser
 {
     public class SqlExprNull : SqlExprBaseMonoToken<SqlTokenIdentifier>
     {
-        public SqlExprNull( SqlTokenIdentifier tokenIdentifier )
-            : base( tokenIdentifier )
+        public SqlExprNull( SqlTokenIdentifier nullT )
+            : base( nullT )
         {
-            if( String.Compare( tokenIdentifier.Name, "null", StringComparison.OrdinalIgnoreCase ) != 0 ) throw new ArgumentException( "Invalid null token.", "tokenIdentifier" );
+            if( nullT.TokenType != SqlTokenType.Null
+                || String.Compare( nullT.Name, "null", StringComparison.OrdinalIgnoreCase ) != 0 )
+            {
+                throw new ArgumentException( "Invalid null token.", "nullT" );
+            }
         }
 
         [DebuggerStepThrough]

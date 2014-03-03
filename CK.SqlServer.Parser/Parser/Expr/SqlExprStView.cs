@@ -45,9 +45,9 @@ namespace CK.SqlServer.Parser
             }
         }
 
-        public SqlTokenIdentifier AlterOrCreate { get { return (SqlTokenIdentifier)Slots[0]; } }
+        public SqlTokenIdentifier AlterOrCreateT { get { return (SqlTokenIdentifier)Slots[0]; } }
 
-        public SqlTokenIdentifier ObjectType { get { return (SqlTokenIdentifier)Slots[1]; } }
+        public SqlTokenIdentifier ObjectTypeT { get { return (SqlTokenIdentifier)Slots[1]; } }
 
         public SqlExprMultiIdentifier Name { get { return (SqlExprMultiIdentifier)Slots[2]; } }
 
@@ -70,7 +70,7 @@ namespace CK.SqlServer.Parser
             } 
         }
 
-        public SqlTokenIdentifier AsToken { get { return  (SqlTokenIdentifier)Slots[Slots.Length-2]; } }
+        public SqlTokenIdentifier AsT { get { return  (SqlTokenIdentifier)Slots[Slots.Length-2]; } }
 
         public SqlItem Select { get { return (SqlItem)Slots[Slots.Length - 1]; } }
 

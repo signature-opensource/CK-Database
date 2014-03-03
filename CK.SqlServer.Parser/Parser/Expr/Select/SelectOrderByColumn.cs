@@ -24,10 +24,10 @@ namespace CK.SqlServer.Parser
         /// <summary>
         /// Gets the 'asc' or 'desc' token. Null if not specified.
         /// </summary>
-        public SqlTokenIdentifier AscOrDescToken { get { return Slots.Length == 2 ? (SqlTokenIdentifier)Slots[1] : null; } }
+        public SqlTokenIdentifier AscOrDescT { get { return Slots.Length == 2 ? (SqlTokenIdentifier)Slots[1] : null; } }
 
         /// <summary>
-        /// True if the <see cref="AscOrDescToken"/> is not specified or if it is 'asc'.
+        /// True if the <see cref="AscOrDescT"/> is not specified or if it is 'asc'.
         /// </summary>
         public bool IsAsc { get { return Slots.Length == 1 || ((SqlTokenIdentifier)Slots[1]).TokenType == SqlTokenType.Asc; } }
         

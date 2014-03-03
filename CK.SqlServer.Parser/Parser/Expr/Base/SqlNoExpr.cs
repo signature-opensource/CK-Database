@@ -32,12 +32,12 @@ namespace CK.SqlServer.Parser
         /// <summary>
         /// Gets the first token of the expression.
         /// </summary>
-        public sealed override SqlToken FirstOrEmptyToken { get { return Slots.Length > 0 ? Slots[0].FirstOrEmptyToken : SqlToken.Empty; } }
+        public sealed override SqlToken FirstOrEmptyT { get { return Slots.Length > 0 ? Slots[0].FirstOrEmptyT : SqlToken.Empty; } }
 
         /// <summary>
         /// Gets the last token of the expression.
         /// </summary>
-        public sealed override SqlToken LastOrEmptyToken { get { return Slots.Length > 0 ? Slots[Slots.Length - 1].LastOrEmptyToken : SqlToken.Empty; } }
+        public sealed override SqlToken LastOrEmptyT { get { return Slots.Length > 0 ? Slots[Slots.Length - 1].LastOrEmptyT : SqlToken.Empty; } }
 
     }
 

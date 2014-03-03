@@ -14,8 +14,8 @@ namespace CK.SqlServer.Parser
     /// </summary>
     public class SqlExprBetween : SqlExpr
     {
-        public SqlExprBetween( SqlExpr left, SqlTokenIdentifier notTok, SqlTokenIdentifier betweenTok, SqlExpr start, SqlTokenIdentifier andTok, SqlItem stop )
-            : this( Build( left, notTok, betweenTok, start, andTok, stop ) )
+        public SqlExprBetween( SqlExpr left, SqlTokenIdentifier notT, SqlTokenIdentifier betweenT, SqlExpr start, SqlTokenIdentifier andT, SqlItem stop )
+            : this( Build( left, notT, betweenT, start, andT, stop ) )
         {
         }
 
@@ -24,24 +24,24 @@ namespace CK.SqlServer.Parser
         {
         }
 
-        static ISqlItem[] Build( SqlExpr left, SqlTokenIdentifier notTok, SqlTokenIdentifier betweenTok, SqlExpr start, SqlTokenIdentifier andTok, SqlItem stop )
+        static ISqlItem[] Build( SqlExpr left, SqlTokenIdentifier notT, SqlTokenIdentifier betweenT, SqlExpr start, SqlTokenIdentifier andT, SqlItem stop )
         {
-            return notTok != null
-                            ? CreateArray( SqlToken.EmptyOpenPar, left, notTok, betweenTok, start, andTok, stop, SqlToken.EmptyClosePar )
-                            : CreateArray( SqlToken.EmptyOpenPar, left, betweenTok, start, andTok, stop, SqlToken.EmptyClosePar );
+            return notT != null
+                            ? CreateArray( SqlToken.EmptyOpenPar, left, notT, betweenT, start, andT, stop, SqlToken.EmptyClosePar )
+                            : CreateArray( SqlToken.EmptyOpenPar, left, betweenT, start, andT, stop, SqlToken.EmptyClosePar );
         }
 
         public SqlExpr Left { get { return (SqlExpr)Slots[1]; } }
 
         public bool IsNotBetween { get { return Slots.Length == 8; } }
 
-        public SqlTokenIdentifier NotTok { get { return IsNotBetween ? (SqlTokenIdentifier)Slots[2] : null; } }
+        public SqlTokenIdentifier NotT { get { return IsNotBetween ? (SqlTokenIdentifier)Slots[2] : null; } }
 
-        public SqlTokenIdentifier BetweenTok { get { return (SqlTokenIdentifier)Slots[IsNotBetween ? 3 : 2]; } }
+        public SqlTokenIdentifier BetweenT { get { return (SqlTokenIdentifier)Slots[IsNotBetween ? 3 : 2]; } }
 
         public SqlExpr Start { get { return (SqlExpr)Slots[IsNotBetween ? 4 : 3]; } }
 
-        public SqlTokenIdentifier AndTok { get { return (SqlTokenIdentifier)Slots[IsNotBetween ? 5 : 4]; } }
+        public SqlTokenIdentifier AndT { get { return (SqlTokenIdentifier)Slots[IsNotBetween ? 5 : 4]; } }
 
         public SqlExpr Stop { get { return (SqlExpr)Slots[IsNotBetween ? 6 : 5]; } }
 

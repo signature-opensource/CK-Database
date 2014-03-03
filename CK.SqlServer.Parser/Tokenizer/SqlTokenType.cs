@@ -510,6 +510,11 @@ namespace CK.SqlServer.Parser
         /// For (xml, browse...) is considered as an operator.
         /// </summary>
         For = OpLevel02 | IdentifierReserved | 8,
+        /// <summary>
+        /// Collate is an operator that has a high precedence (the same as bitwise ~).
+        /// </summary>
+        Collate = OpLevel14 | IdentifierReserved | 9,
+
         #endregion
 
         #region Between, Like, In, Is (act as comparison operators).

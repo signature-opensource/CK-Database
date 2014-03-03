@@ -52,9 +52,9 @@ namespace CK.SqlServer.Parser
             }
         }
 
-        public SqlTokenIdentifier AlterOrCreate { get { return (SqlTokenIdentifier)Slots[0]; } }
+        public SqlTokenIdentifier AlterOrCreateT { get { return (SqlTokenIdentifier)Slots[0]; } }
 
-        public SqlTokenIdentifier ObjectType { get { return (SqlTokenIdentifier)Slots[1]; } }
+        public SqlTokenIdentifier ObjectTypeT { get { return (SqlTokenIdentifier)Slots[1]; } }
 
         /// <summary>
         /// Gets the name of the procedure (may start with the Schema).
@@ -67,15 +67,15 @@ namespace CK.SqlServer.Parser
 
         public SqlExprUnmodeledItems Options { get { return HasOptions ? (SqlExprUnmodeledItems)Slots[4] : null; } }
 
-        public SqlTokenIdentifier AsToken { get { return (SqlTokenIdentifier)Slots[HasOptions ? 5 : 4]; } }
+        public SqlTokenIdentifier AsT { get { return (SqlTokenIdentifier)Slots[HasOptions ? 5 : 4]; } }
 
         public bool HasBeginEnd { get { return Slots.Length == 8 || Slots.Length == 6; } }
 
-        public SqlTokenIdentifier Begin { get { return HasBeginEnd ? (SqlTokenIdentifier)Slots[Slots.Length - 3] : null; } }
+        public SqlTokenIdentifier BeginT { get { return HasBeginEnd ? (SqlTokenIdentifier)Slots[Slots.Length - 3] : null; } }
 
         public SqlExprStatementList BodyStatements { get { return (SqlExprStatementList)Slots[ HasBeginEnd ? Slots.Length - 2 : Slots.Length - 1 ]; } }
 
-        public SqlTokenIdentifier End { get { return HasBeginEnd ? (SqlTokenIdentifier)Slots[ Slots.Length - 1 ] : null; } }
+        public SqlTokenIdentifier EndT { get { return HasBeginEnd ? (SqlTokenIdentifier)Slots[ Slots.Length - 1 ] : null; } }
 
         public string ToStringSignature( bool withOptions )
         {

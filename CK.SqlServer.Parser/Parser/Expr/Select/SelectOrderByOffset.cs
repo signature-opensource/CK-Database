@@ -25,23 +25,23 @@ namespace CK.SqlServer.Parser
         {
         }
 
-        public SqlTokenIdentifier OffsetToken { get { return (SqlTokenIdentifier)Slots[0]; } }
+        public SqlTokenIdentifier OffsetT { get { return (SqlTokenIdentifier)Slots[0]; } }
 
         public SqlExpr OffsetExpression { get { return (SqlExpr)Slots[1]; } }
 
-        public SqlTokenIdentifier RowsToken { get { return (SqlTokenIdentifier)Slots[2]; } }
+        public SqlTokenIdentifier RowsT { get { return (SqlTokenIdentifier)Slots[2]; } }
     
         public bool HasFetchClause { get { return Slots.Length > 3; } }
 
-        public SqlTokenIdentifier FetchToken { get { return HasFetchClause ? (SqlTokenIdentifier)Slots[3] : null; } }
+        public SqlTokenIdentifier FetchT { get { return HasFetchClause ? (SqlTokenIdentifier)Slots[3] : null; } }
 
-        public SqlTokenIdentifier FetchFirstOrNextToken { get { return HasFetchClause ? (SqlTokenIdentifier)Slots[4] : null; } }
+        public SqlTokenIdentifier FetchFirstOrNextT { get { return HasFetchClause ? (SqlTokenIdentifier)Slots[4] : null; } }
 
         public SqlExpr FetchExpression { get { return HasFetchClause ? (SqlExpr)Slots[5] : null; } }
 
-        public SqlTokenIdentifier FetchRowsToken { get { return HasFetchClause ? (SqlTokenIdentifier)Slots[6] : null; } }
+        public SqlTokenIdentifier FetchRowsT { get { return HasFetchClause ? (SqlTokenIdentifier)Slots[6] : null; } }
 
-        public SqlTokenIdentifier FetchOnlyToken { get { return HasFetchClause ? (SqlTokenIdentifier)Slots[7] : null; } }
+        public SqlTokenIdentifier FetchOnlyT { get { return HasFetchClause ? (SqlTokenIdentifier)Slots[7] : null; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( ISqlItemVisitor<T> visitor )

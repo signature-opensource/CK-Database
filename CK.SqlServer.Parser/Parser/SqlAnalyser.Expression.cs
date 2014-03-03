@@ -129,7 +129,7 @@ namespace CK.SqlServer.Parser
                             || !R.IsToken( out asToken, SqlTokenType.As, true ) 
                             || !IsTypeDecl( out type, true )
                             || !R.IsToken( out closePar, true ) ) return false;
-                        left = new SqlExprCast( (SqlTokenIdentifier)left.FirstOrEmptyToken, openPar, e, asToken, type, closePar );
+                        left = new SqlExprCast( (SqlTokenIdentifier)left.FirstOrEmptyT, openPar, e, asToken, type, closePar );
                         return true;
                     }
                     SqlExprCommaList parenthesis;
@@ -137,6 +137,14 @@ namespace CK.SqlServer.Parser
                     SqlNoExprOverClause over;
                     if( !IsOverClause( out over ) && R.IsError ) return false;
                     left = new SqlExprKoCall( left, parenthesis, over );
+                    return true;
+                }
+                if( R.Current.TokenType == SqlTokenType.Collate )
+                {
+                    SqlTokenIdentifier collate = R.Read<SqlTokenIdentifier>();
+                    SqlTokenIdentifier name;
+                    if( !R.IsToken( out name, true ) ) return false;
+                    left = new SqlExprCollate( left, collate, name );
                     return true;
                 }
                 if( R.Current.TokenType == SqlTokenType.Comma )

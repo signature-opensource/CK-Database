@@ -16,18 +16,18 @@ namespace CK.SqlServer.Parser
         readonly SqlToken _asOrEqual;
         readonly SqlExpr _definition;
 
-        static readonly SqlTokenIdentifier _autoAsTok = new SqlTokenIdentifier( SqlTokenType.As, "as", SqlTrivia.OneSpace, SqlTrivia.OneSpace );
-        static readonly SqlTokenIdentifier _autoAsTokNoLeft = new SqlTokenIdentifier( SqlTokenType.As, "as", null, SqlTrivia.OneSpace );
-        static readonly SqlTokenIdentifier _autoAsTokNoRight = new SqlTokenIdentifier( SqlTokenType.As, "as", SqlTrivia.OneSpace, null );
-        static readonly SqlTokenIdentifier _autoAsTokNoSpace = new SqlTokenIdentifier( SqlTokenType.As, "as", null, null );
+        static readonly SqlTokenIdentifier _autoAsT = new SqlTokenIdentifier( SqlTokenType.As, "as", SqlTrivia.OneSpace, SqlTrivia.OneSpace );
+        static readonly SqlTokenIdentifier _autoAsTNoLeft = new SqlTokenIdentifier( SqlTokenType.As, "as", null, SqlTrivia.OneSpace );
+        static readonly SqlTokenIdentifier _autoAsTNoRight = new SqlTokenIdentifier( SqlTokenType.As, "as", SqlTrivia.OneSpace, null );
+        static readonly SqlTokenIdentifier _autoAsTNoSpace = new SqlTokenIdentifier( SqlTokenType.As, "as", null, null );
 
-        public SelectColumn( ISqlIdentifier colName, SqlTokenTerminal assignTok, SqlExpr definition )
-            : this( Build( colName, assignTok, definition ) )
+        public SelectColumn( ISqlIdentifier colName, SqlTokenTerminal assignT, SqlExpr definition )
+            : this( Build( colName, assignT, definition ) )
         {
         }
 
-        public SelectColumn( SqlExpr definition, SqlTokenIdentifier asTok, ISqlIdentifier colName )
-            : this( Build( definition, asTok, colName ) )
+        public SelectColumn( SqlExpr definition, SqlTokenIdentifier asT, ISqlIdentifier colName )
+            : this( Build( definition, asT, colName ) )
         {
         }
 
@@ -36,37 +36,37 @@ namespace CK.SqlServer.Parser
         {
         }
 
-        static ISqlItem[] Build( ISqlIdentifier colName, SqlTokenTerminal assignTok, SqlExpr definition )
+        static ISqlItem[] Build( ISqlIdentifier colName, SqlTokenTerminal assignT, SqlExpr definition )
         {
             if( colName == null ) throw new ArgumentNullException( "colName" );
-            if( assignTok == null ) throw new ArgumentNullException( "assignTok" );
-            if( assignTok.TokenType != SqlTokenType.Assign ) throw new ArgumentException( "Assign token expected.", "assignTok" );
+            if( assignT == null ) throw new ArgumentNullException( "assignT" );
+            if( assignT.TokenType != SqlTokenType.Assign ) throw new ArgumentException( "Assign token expected.", "assignT" );
             if( definition == null ) throw new ArgumentNullException( "definition" );
-            return CreateArray( colName, assignTok, definition );
+            return CreateArray( colName, assignT, definition );
         }
 
-        static ISqlItem[] Build( SqlExpr definition, SqlTokenIdentifier asTok, ISqlIdentifier colName )
+        static ISqlItem[] Build( SqlExpr definition, SqlTokenIdentifier asT, ISqlIdentifier colName )
         {
             if( definition == null ) throw new ArgumentNullException( "definition" );
             if( colName == null ) throw new ArgumentNullException( "colName" );
-            if( asTok == null )
+            if( asT == null )
             {
-                var leftTrivia = definition.LastOrEmptyToken.TrailingTrivia;
-                var rightTrivia = colName.FirstOrEmptyToken.LeadingTrivia;
+                var leftTrivia = definition.LastOrEmptyT.TrailingTrivia;
+                var rightTrivia = colName.FirstOrEmptyT.LeadingTrivia;
                 if( leftTrivia.Count == 0 )
                 {
-                    if( rightTrivia.Count == 0 ) asTok = _autoAsTok;
-                    else asTok = _autoAsTokNoRight;
+                    if( rightTrivia.Count == 0 ) asT = _autoAsT;
+                    else asT = _autoAsTNoRight;
                 }
                 else
                 {
                     if( rightTrivia.Count == 0 )
-                        asTok = _autoAsTokNoLeft;
-                    else asTok = _autoAsTokNoSpace;
+                        asT = _autoAsTNoLeft;
+                    else asT = _autoAsTNoSpace;
                 }
             }
-            else if( asTok.TokenType != SqlTokenType.As ) throw new ArgumentException( "As token expected.", "asTok" );
-            return CreateArray( definition, asTok, colName );
+            else if( asT.TokenType != SqlTokenType.As ) throw new ArgumentException( "As token expected.", "asT" );
+            return CreateArray( definition, asT, colName );
         }
 
         static ISqlItem[] Build( SqlExpr definition, ISqlIdentifier colName )
@@ -102,7 +102,7 @@ namespace CK.SqlServer.Parser
 
         public bool IsAsSyntax { get { return _asOrEqual is SqlTokenIdentifier; } }
 
-        public SqlToken AsOrEqualTok { get { return _asOrEqual; } }
+        public SqlToken AsOrEqualT { get { return _asOrEqual; } }
         
         public SqlExpr Definition { get { return _definition; } }
 

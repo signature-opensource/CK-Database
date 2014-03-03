@@ -12,8 +12,8 @@ namespace CK.SqlServer.Parser
     /// </summary>
     public class SqlNoExprOverClause : SqlNoExpr
     {
-        public SqlNoExprOverClause( SqlTokenIdentifier overToken, SqlExpr overExpression )
-            : this( CreateArray( overToken, overExpression ) )
+        public SqlNoExprOverClause( SqlTokenIdentifier overT, SqlExpr overExpression )
+            : this( CreateArray( overT, overExpression ) )
         {
         }
 
@@ -22,7 +22,7 @@ namespace CK.SqlServer.Parser
         {
         }
 
-        public SqlTokenIdentifier OverToken { get { return (SqlTokenIdentifier)Slots[0]; } }
+        public SqlTokenIdentifier OverT { get { return (SqlTokenIdentifier)Slots[0]; } }
 
         public SqlExpr OverExpression { get { return (SqlExpr)Slots[1]; } }
 

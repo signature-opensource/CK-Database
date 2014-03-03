@@ -34,7 +34,7 @@ namespace CK.SqlServer.Parser
         protected SqlExprBaseSt( ISqlItem[] items )
             : base( items )
         {
-            _stmtTerminator = LastOrEmptyToken as SqlTokenTerminal;
+            _stmtTerminator = LastOrEmptyT as SqlTokenTerminal;
             if( _stmtTerminator != null && _stmtTerminator.TokenType != SqlTokenType.SemiColon ) _stmtTerminator = null;
         }
 

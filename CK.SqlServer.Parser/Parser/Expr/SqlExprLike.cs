@@ -56,15 +56,15 @@ namespace CK.SqlServer.Parser
 
         public bool IsNotLike { get { return Slots.Length == 6 || Slots.Length == 8; } }
 
-        public SqlTokenIdentifier NotToken { get { return IsNotLike ? (SqlTokenIdentifier)Slots[2] : null; } }
+        public SqlTokenIdentifier NotT { get { return IsNotLike ? (SqlTokenIdentifier)Slots[2] : null; } }
 
-        public SqlTokenIdentifier LikeToken { get { return (SqlTokenIdentifier)Slots[IsNotLike ? 3 : 2]; } }
+        public SqlTokenIdentifier LikeT { get { return (SqlTokenIdentifier)Slots[IsNotLike ? 3 : 2]; } }
 
         public SqlExpr Pattern { get { return (SqlExpr)Slots[IsNotLike ? 4 : 3]; } }
 
         public bool HasEscape { get { return Slots.Length > 6; } }
 
-        public SqlTokenIdentifier EscapeToken { get { return HasEscape ? (SqlTokenIdentifier)Slots[IsNotLike ? 5 : 4] : null; } }
+        public SqlTokenIdentifier EscapeT { get { return HasEscape ? (SqlTokenIdentifier)Slots[IsNotLike ? 5 : 4] : null; } }
 
         public SqlTokenLiteralString EscapeChar { get { return HasEscape ? (SqlTokenLiteralString)Slots[IsNotLike ? 6 : 5] : null; } }
 

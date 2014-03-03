@@ -109,9 +109,9 @@ namespace CK.SqlServer.Parser
             get { return new CKReadOnlyListMono<SqlToken>( this ); }
         }
 
-        SqlToken ISqlItem.LastOrEmptyToken { get { return this; } }
+        SqlToken ISqlItem.LastOrEmptyT { get { return this; } }
 
-        SqlToken ISqlItem.FirstOrEmptyToken { get { return this; } }
+        SqlToken ISqlItem.FirstOrEmptyT { get { return this; } }
 
         /// <summary>
         /// Empty parenthesis opener.

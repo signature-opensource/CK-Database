@@ -25,12 +25,12 @@ namespace CK.SqlServer.Parser
         /// <summary>
         /// Gets the last token of the expression.
         /// </summary>
-        public abstract SqlToken LastOrEmptyToken { get; }
+        public abstract SqlToken LastOrEmptyT { get; }
 
         /// <summary>
         /// Gets the first token of the expression.
         /// </summary>
-        public abstract SqlToken FirstOrEmptyToken { get; }
+        public abstract SqlToken FirstOrEmptyT { get; }
 
         /// <summary>
         /// Gets the tokens that compose this expression.

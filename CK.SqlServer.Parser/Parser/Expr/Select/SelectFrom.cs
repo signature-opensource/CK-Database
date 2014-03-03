@@ -13,8 +13,8 @@ namespace CK.SqlServer.Parser
     /// </summary>
     public class SelectFrom : SqlNoExpr
     {
-        public SelectFrom( SqlTokenIdentifier fromTok, SqlExpr content )
-            : this( CreateArray( fromTok, content ) )
+        public SelectFrom( SqlTokenIdentifier fromT, SqlExpr content )
+            : this( CreateArray( fromT, content ) )
         {
         }
 
@@ -23,7 +23,7 @@ namespace CK.SqlServer.Parser
         {
         }
 
-        public SqlTokenIdentifier FromTok { get { return (SqlTokenIdentifier)Slots[0]; } }
+        public SqlTokenIdentifier FromT { get { return (SqlTokenIdentifier)Slots[0]; } }
         
         public SqlExpr Content { get { return (SqlExpr)Slots[1]; } }
 

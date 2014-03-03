@@ -39,9 +39,9 @@ namespace CK.SqlServer.Parser
             get { return _statements; }
         }
 
-        public override SqlToken FirstOrEmptyToken { get { return _statements[0].FirstOrEmptyToken; } }
+        public override SqlToken FirstOrEmptyT { get { return _statements[0].FirstOrEmptyT; } }
 
-        public override SqlToken LastOrEmptyToken { get { return _statements[_statements.Length-1].LastOrEmptyToken; } }
+        public override SqlToken LastOrEmptyT { get { return _statements[_statements.Length-1].LastOrEmptyT; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( ISqlItemVisitor<T> visitor )

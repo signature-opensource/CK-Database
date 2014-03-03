@@ -298,9 +298,7 @@ namespace CK.SqlServer.Parser
                 SqlTokenOpenPar openPar;
                 SqlTokenClosePar closePar;
                 List<ISqlItem> items;
-
                 if( R.Current.TokenType != SqlTokenType.OpenPar ) return false;
-
                 if( !IsCommaList<SqlExprIdentifier>( out openPar, out items, out closePar, true, IsMonoIdentifier ) ) return false;
                 columns = new SqlExprColumnList( openPar, items, closePar );
                 return true;

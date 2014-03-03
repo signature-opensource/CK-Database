@@ -44,6 +44,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="ISqlItem.cs" />
+    <Compile Include="Parser\Expr\SqlExprCollate.cs" />
     <Compile Include="Parser\Expr\SqlExprCast.cs" />
     <Compile Include="Parser\Expr\SqlNoExprOverClause.cs" />
     <Compile Include="Parser\Expr\Select\SelectOrderByOffset.cs" />

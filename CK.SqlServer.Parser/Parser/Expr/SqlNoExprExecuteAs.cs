@@ -15,12 +15,12 @@ namespace CK.SqlServer.Parser
         {
         }
 
-        static ISqlItem[] Build( SqlTokenIdentifier execToken, SqlTokenIdentifier asToken, SqlToken right )
+        static ISqlItem[] Build( SqlTokenIdentifier execT, SqlTokenIdentifier asT, SqlToken rightT )
         {
-            if( execToken == null || execToken.TokenType != SqlTokenType.Execute ) throw new ArgumentException( "execToken" );
-            if( asToken == null || asToken.TokenType != SqlTokenType.As ) throw new ArgumentException( "asToken" );
-            if( right == null ) throw new ArgumentNullException( "right" );
-            return new ISqlItem[]{ execToken, asToken, right };
+            if( execT == null || execT.TokenType != SqlTokenType.Execute ) throw new ArgumentException( "execT" );
+            if( asT == null || asT.TokenType != SqlTokenType.As ) throw new ArgumentException( "asT" );
+            if( rightT == null ) throw new ArgumentNullException( "rightT" );
+            return new ISqlItem[]{ execT, asT, rightT };
         }
 
         internal SqlNoExprExecuteAs( ISqlItem[] newItems )
@@ -28,11 +28,11 @@ namespace CK.SqlServer.Parser
         {
         }
 
-        public SqlTokenIdentifier ExecToken { get { return (SqlTokenIdentifier)Slots[0]; } }
+        public SqlTokenIdentifier ExecT { get { return (SqlTokenIdentifier)Slots[0]; } }
 
-        protected SqlTokenIdentifier AsToken { get { return (SqlTokenIdentifier)Slots[1]; } }
+        protected SqlTokenIdentifier AsT { get { return (SqlTokenIdentifier)Slots[1]; } }
 
-        public SqlToken Right { get { return (SqlToken)Slots[2]; } }
+        public SqlToken RightT { get { return (SqlToken)Slots[2]; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( ISqlItemVisitor<T> visitor )
