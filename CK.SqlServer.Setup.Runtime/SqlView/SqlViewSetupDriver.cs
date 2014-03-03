@@ -39,7 +39,7 @@ namespace CK.SqlServer.Setup
             }
             if( text == null )
             {
-                Engine.Monitor.Error().Send( "Resource '{0}' not found (tried '{1}' and '{2}').", Item.Name, Item.Name + ".sql", Item.Object.ViewName + ".sql" );
+                Engine.Monitor.Error().Send( "Resource '{0}' not found (tried '{1}' and '{2}').", Item.Name, Item.Name + ".sql", Item.Object.SchemaName + ".sql", Item.Object.ViewName + ".sql" );
                 return false;
             }
 
@@ -57,22 +57,6 @@ namespace CK.SqlServer.Setup
             string s;
             StringWriter w = new StringWriter();
 
-            //IDisposable configRestorer = null;
-            //bool itemMissingDependencyIsError = Item.MissingDependencyIsError.HasValue ? Item.MissingDependencyIsError.Value : true;
-            //if( m.MissingDependencyIsError != itemMissingDependencyIsError )
-            //{
-            //    if( m.IgnoreMissingDependencyIsError )
-            //    {
-            //        if( itemMissingDependencyIsError ) Engine.Monitor.Trace().Send( "SqlManager is configured to ignore MissingDependencyIsError." );
-            //    }
-            //    else
-            //    {
-            //        m.MissingDependencyIsError = itemMissingDependencyIsError;
-            //        configRestorer = Util.CreateDisposableAction( () => m.MissingDependencyIsError = !m.MissingDependencyIsError );
-            //    }
-            //}
-            //using( configRestorer )
-            //{
             Item.WriteDrop( w );
             s = w.GetStringBuilder().ToString();
             if( !m.ExecuteOneScript( s, Engine.Monitor ) ) return false;
@@ -85,7 +69,7 @@ namespace CK.SqlServer.Setup
             if( !tagHandler.Expand( Engine.Monitor, true ) ) return false;
             var scripts = tagHandler.SplitScript();
             if( !m.ExecuteScripts( scripts.Select( c => c.Body ), Engine.Monitor ) ) return false;
-            //}
+
             return true;
         }
 

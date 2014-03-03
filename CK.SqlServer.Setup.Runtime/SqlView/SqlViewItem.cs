@@ -11,6 +11,8 @@ namespace CK.SqlServer.Setup
 {
     public class SqlViewItem : StObjDynamicPackageItem
     {
+        SqlObjectProtoItem _protoItem;
+
         public SqlViewItem( SqlView view )
             : base( "ObjView", typeof( SqlViewSetupDriver ), view )
         {
@@ -39,7 +41,22 @@ namespace CK.SqlServer.Setup
         /// </summary>
         public ResourceLocator ResourceLocation { get; set; }
 
-        public SqlObjectProtoItem ProtoItem { get; set; }
+        /// <summary>
+        /// Gets or sets a <see cref="SqlObjectProtoItem"/>
+        /// </summary>
+        public SqlObjectProtoItem ProtoItem 
+        {
+            get { return _protoItem; }
+            set
+            {
+                _protoItem = value;
+                if( _protoItem != null )
+                {
+                    this.Requires.Add( _protoItem.Requires );
+                    this.RequiredBy.Add( _protoItem.RequiredBy );
+                }
+            }
+        }
 
         /// <summary>
         /// Writes the drop instruction.

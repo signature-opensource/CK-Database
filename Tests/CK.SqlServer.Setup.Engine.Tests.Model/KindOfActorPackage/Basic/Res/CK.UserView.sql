@@ -1,4 +1,4 @@
-﻿-- Version = 2.12.2
+﻿-- Version = 2.12.2, Requires = { CK.fUserIsInGroup }
 create view CK.vUser
 as	
 	select 
