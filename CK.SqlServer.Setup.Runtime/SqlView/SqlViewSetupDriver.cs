@@ -39,7 +39,9 @@ namespace CK.SqlServer.Setup
             }
             if( text == null )
             {
-                Engine.Monitor.Error().Send( "Resource '{0}' not found (tried '{1}' and '{2}').", Item.Name, Item.Name + ".sql", Item.Object.SchemaName + ".sql", Item.Object.ViewName + ".sql" );
+                Engine.Monitor.Error().Send( 
+                    "Resource '{0}' not found (tried '{1}' and '{2}' and '{3}').", 
+                    Item.Name, Item.Name + ".sql", Item.Object.SchemaName + ".sql", Item.Object.ViewName + ".sql" );
                 return false;
             }
 

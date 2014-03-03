@@ -72,7 +72,7 @@
     <Compile Include="SqlObject\SqlObjectProtoItem.cs" />
     <Compile Include="SqlObject\SqlObjectSetupDriver.cs" />
     <Compile Include="SqlObject\SqlProcedureItem.cs" />
-    <Compile Include="SqlObject\SqlViewItem.cs" />
+    <Compile Include="SqlObject\SqlViewObjectItem.cs" />
     <Compile Include="SqlPackageBase\SqlPackageAttributeImplBase.cs" />
     <Compile Include="SqlPackageBase\SqlPackageBaseItem.cs" />
     <Compile Include="SqlPackageBase\SqlPackageBaseSetupDriver.cs" />

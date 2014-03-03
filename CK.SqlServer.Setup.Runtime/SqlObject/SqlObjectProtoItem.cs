@@ -140,10 +140,10 @@ namespace CK.SqlServer.Setup
             {
                 result = CreateProcedureItem( monitor );
             }
-            //else if( ItemType == SqlObjectProtoItem.TypeView )
-            //{
-            //    result = new SqlViewItem( this );
-            //}
+            else if( ItemType == SqlObjectProtoItem.TypeView )
+            {
+                result = new SqlViewObjectItem( this );
+            }
             else if( ItemType == SqlObjectProtoItem.TypeFunction )
             {
                 result = new SqlFunctionItem( this );
