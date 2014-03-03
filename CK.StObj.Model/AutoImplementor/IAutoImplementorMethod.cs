@@ -11,7 +11,7 @@ namespace CK.Core
     {
         /// <summary>
         /// Implements the given method on the given <see cref="TypeBuilder"/>.
-        /// Implementations can rely on the <paramref name="dynamicAssemblyMemory"/> to store shared information if needed.
+        /// Implementations can rely on the <paramref name="dynamicAssembly"/> to store shared information if needed.
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
         /// <param name="m">The method to implement.</param>

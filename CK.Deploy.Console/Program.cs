@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using CK.Core;
+using CK.Monitoring;
 using CK.SqlServer.Setup;
 
 namespace CK.Deploy.Console
@@ -115,10 +116,12 @@ namespace CK.Deploy.Console
 
         public static void RunV2()
         {
-            var monitor = new ActivityMonitor();
-
             V2Args args = (V2Args)AppDomain.CurrentDomain.GetData( "MainArgs" );
 
+            SystemActivityMonitor.RootLogPath = args.LogPath;
+            GrandOutput.EnsureActiveDefaultWithDefaultSettings();
+            
+            var monitor = new ActivityMonitor();
             monitor.Output.RegisterClient( new ActivityMonitorConsoleClient() );
 
             using( monitor.OpenInfo().Send( "Begin dbSetup with:" ) )
@@ -132,7 +135,8 @@ namespace CK.Deploy.Console
 
             var config = new SqlSetupCenterConfiguration();
             config.DefaultDatabaseConnectionString = args.ConnectionString;
-            config.SetupConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
+            config.SetupConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = false;
+            
             var rootedPaths = args.RelativeFilePaths.Select( p => Path.Combine( args.AbsoluteRootPath, p ) );
             config.FilePackageDirectories.AddRange( rootedPaths );
             config.SqlFileDirectories.AddRange( rootedPaths );

@@ -9,6 +9,8 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
+
+
     public class SqlObjectItem : IVersionedItem, IDependentItemRef
     {
         internal readonly static Type TypeCommand = typeof( SqlCommand );

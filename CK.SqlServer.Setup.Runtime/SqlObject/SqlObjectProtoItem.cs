@@ -142,7 +142,7 @@ namespace CK.SqlServer.Setup
             }
             else if( ItemType == SqlObjectProtoItem.TypeView )
             {
-                result = new SqlViewItem( this );
+                result = new SqlViewObjectItem( this );
             }
             else if( ItemType == SqlObjectProtoItem.TypeFunction )
             {

@@ -8,8 +8,8 @@ using CK.Setup;
 namespace CK.SqlServer.Setup
 {
     [StObj( ItemKind = DependentItemKindSpec.Container )]
-    [StObjProperty( PropertyName = "ResourceLocation", PropertyType = typeof(ResourceLocator) ) ]
-    public class SqlPackageBase 
+    [StObjProperty( PropertyName = "ResourceLocation", PropertyType = typeof( ResourceLocator ) )]
+    public class SqlPackageBase
     {
         /// <summary>
         /// Gets or sets the database to which this package belongs.
@@ -30,6 +30,5 @@ namespace CK.SqlServer.Setup
         /// Defaults to false.
         /// </summary>
         public bool HasModel { get; set; }
-
     }
 }

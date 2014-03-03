@@ -43,7 +43,7 @@ namespace CK.SqlServer.Setup
             if( Attribute.ResourceType != null || Attribute.ResourcePath != null )
             {
                 // ResourceLocation is a StObjProperty.
-                o.SetStObjPropertyValue( monitor, "ResourceLocation", new ResourceLocator( Attribute.ResourceType, Attribute.ResourcePath ) ); 
+                o.SetStObjPropertyValue( monitor, "ResourceLocation", new ResourceLocator( Attribute.ResourceType, Attribute.ResourcePath ) );
             }
             if( Attribute.Schema != null )
             {
@@ -52,9 +52,8 @@ namespace CK.SqlServer.Setup
             ConfigureMutableItem( monitor, o );
         }
 
-        protected virtual void ConfigureMutableItem( IActivityMonitor monitor, IStObjMutableItem o )
-        {
-        }
+        protected abstract void ConfigureMutableItem( IActivityMonitor monitor, IStObjMutableItem o );
+
 
         protected bool SetAutomaticSetupFullNamewithoutContext( IActivityMonitor monitor, IMutableStObjSetupData data, string loggedObjectTypeName )
         {
