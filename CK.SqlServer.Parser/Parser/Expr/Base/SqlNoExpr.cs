@@ -27,7 +27,7 @@ namespace CK.SqlServer.Parser
         /// Gets the components of this expression: it is a mix of <see cref="SqlToken"/> and <see cref="SqlExpr"/>.
         /// Never null but can be empty.
         /// </summary>
-        public override IEnumerable<ISqlItem> Components { get { return Slots; } }
+        public override IEnumerable<ISqlItem> Items { get { return Slots; } }
 
         /// <summary>
         /// Gets the first token of the expression.

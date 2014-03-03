@@ -77,7 +77,7 @@ namespace CK.SqlServer.Parser
             SyntaxScale = (byte)scale.Value;
         }
 
-        public override IEnumerable<ISqlItem> Components { get { return _tokens; } }
+        public override IEnumerable<ISqlItem> Items { get { return _tokens; } }
 
         public override IEnumerable<SqlToken> Tokens { get { return _tokens; } }
 

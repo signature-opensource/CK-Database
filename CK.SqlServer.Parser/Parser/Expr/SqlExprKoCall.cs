@@ -9,16 +9,18 @@ namespace CK.SqlServer.Parser
 {
     public class SqlExprKoCall : SqlExpr
     {
-        public SqlExprKoCall( SqlItem funName, SqlExprCommaList parameters )
-            : this( Build( funName, parameters ) )
+        public SqlExprKoCall( SqlItem funName, SqlExprCommaList parameters, SqlNoExprOverClause over )
+            : this( Build( funName, parameters, over ) )
         {
         }
 
-        static ISqlItem[] Build( SqlItem funName, SqlExprCommaList parameters )
+        static ISqlItem[] Build( SqlItem funName, SqlExprCommaList parameters, SqlNoExprOverClause over )
         {
             if( funName == null ) throw new ArgumentNullException( "targetName" );
             if( parameters == null ) throw new ArgumentNullException( "parameters" );
-            return CreateArray( SqlToken.EmptyOpenPar, funName, parameters, SqlToken.EmptyClosePar );
+            return  over != null 
+                    ? CreateArray( SqlToken.EmptyOpenPar, funName, parameters, over, SqlToken.EmptyClosePar )
+                    : CreateArray( SqlToken.EmptyOpenPar, funName, parameters, SqlToken.EmptyClosePar );
         }
 
         internal SqlExprKoCall( ISqlItem[] newComponents )
@@ -29,6 +31,8 @@ namespace CK.SqlServer.Parser
         public SqlItem FunName { get { return (SqlItem)Slots[1]; } }
 
         public SqlExprCommaList Parameters { get { return (SqlExprCommaList)Slots[2]; } }
+
+        public SqlNoExprOverClause OverClause { get { return Slots.Length == 5 ? (SqlNoExprOverClause)Slots[3] : null; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( ISqlItemVisitor<T> visitor )

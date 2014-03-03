@@ -20,7 +20,7 @@ namespace CK.SqlServer.Parser
         /// Gets the components of this expression: it is a mix of <see cref="SqlToken"/> and <see cref="SqlExpr"/>.
         /// Never null but can be empty.
         /// </summary>
-        public abstract IEnumerable<ISqlItem> Components { get; }
+        public abstract IEnumerable<ISqlItem> Items { get; }
 
         /// <summary>
         /// Gets the last token of the expression.
@@ -35,7 +35,7 @@ namespace CK.SqlServer.Parser
         /// <summary>
         /// Gets the tokens that compose this expression.
         /// </summary>
-        public virtual IEnumerable<SqlToken> Tokens  { get { return Flatten( Components ); } }
+        public virtual IEnumerable<SqlToken> Tokens  { get { return Flatten( Items ); } }
 
         /// <summary>
         /// Overridden to generate the representation of an expression as the result of the <see cref="Write"/> method.

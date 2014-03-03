@@ -5,11 +5,12 @@ namespace CK.SqlServer.Parser
 {
     public interface ISqlItemVisitor<T>
     {
-        T VisitExpr( SqlItem e );
+        T VisitItem( SqlItem e );
 
         T Visit( SqlExprUnmodeledItems e );
         T Visit( SqlExprRawItemList e );
         T Visit( SqlExprKoCall e );
+        T Visit( SqlNoExprOverClause e );
         T Visit( SqlExprStIf e );
 
         T Visit( SqlExprStBeginTran e );
@@ -25,6 +26,7 @@ namespace CK.SqlServer.Parser
         T Visit( SqlExprColumnList e );
         T Visit( SqlNoExprExecuteAs e );
 
+        T Visit( SqlExprCast e );
         T Visit( SqlExprIdentifier e );
         T Visit( SqlExprMultiIdentifier e );
         T Visit( SqlExprTerminal e );

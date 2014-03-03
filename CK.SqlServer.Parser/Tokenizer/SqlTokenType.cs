@@ -36,12 +36,12 @@ namespace CK.SqlServer.Parser
     /// 7        = += -= *= /= %= &amp;= |= ^=                              Assignments (IsAssignOperator).
     ///        
     /// 5       Intersect                                                   Intersect, union and except have the same level as comma in msdn (it is not true: intersect &gt; except &gt; union [all]).                     
-    /// 4       Except                                                      They act as binary operators beween "Select Specification".                  
+    /// 4       Except                                                      They act as binary operators between "Select Specification".                  
     /// 3       Union                                                                        
     /// 2       Order, For                                                  Consider them as operators (where left side is ISelectSpecification).
     /// 1        ,                                                          List separator (comma)
     /// 
-    /// (1) For '=' token, disambiguisation between Comparison and Assignment requires a context hint: we need to know if we are in a "assignment context" or not.
+    /// (1) For '=' token, disambiguation between Comparison and Assignment requires a context hint: we need to know if we are in a "assignment context" or not.
     ///     This must be done at a higher level than in <see cref="SqlTokenizer"/>.
     /// 
     /// </remarks>
@@ -105,7 +105,7 @@ namespace CK.SqlServer.Parser
         AllOperatorMask = IsAssignOperator | IsBasicOperator | IsCompareOperator,
 
         /// <summary>
-        /// Mask that covers operators, punctuations and brakets: the token is fully defined by 
+        /// Mask that covers operators, punctuations and brackets: the token is fully defined by 
         /// the <see cref="SqlTokenType"/> itself (no associated value is necessary).
         /// </summary>
         TerminalMask = AllOperatorMask | IsBracket | IsPunctuation,
@@ -460,6 +460,7 @@ namespace CK.SqlServer.Parser
         First           = IdentifierStandard | 11,
         Next            = IdentifierStandard | 12,
         Only            = IdentifierStandard | 13,
+        Cast            = IdentifierStandard | 14,
         #endregion
 
         #region IdentifierSpecial values
@@ -562,6 +563,17 @@ namespace CK.SqlServer.Parser
         Add         = IdentifierReservedFirstNonOperator + 28,
         Database    = IdentifierReservedFirstNonOperator + 29,
         External    = IdentifierReservedFirstNonOperator + 30,
+        Over        = IdentifierReservedFirstNonOperator + 31,
+
+        Cross       = IdentifierReservedFirstNonOperator + 32,
+        Foreign     = IdentifierReservedFirstNonOperator + 33,
+        Clustered   = IdentifierReservedFirstNonOperator + 34,
+        Left        = IdentifierReservedFirstNonOperator + 35,
+        Percent     = IdentifierReservedFirstNonOperator + 36,
+        Values      = IdentifierReservedFirstNonOperator + 37,
+        Distinct    = IdentifierReservedFirstNonOperator + 38,
+        Pivot       = IdentifierReservedFirstNonOperator + 39,
+        Having      = IdentifierReservedFirstNonOperator + 40,
         #endregion
 
         #region IdentifierReservedStatement values

@@ -117,9 +117,26 @@ namespace CK.SqlServer.Parser
                     // This prevents (select a)(select b) multiple statements
                     // to be considered as a call.
                     if( left is ISelectSpecification ) return false;
+                    if( left.IsToken( SqlTokenType.Cast ) )
+                    {
+                        SqlTokenOpenPar openPar;
+                        SqlExpr e;
+                        SqlTokenIdentifier asToken;
+                        SqlExprTypeDecl type;
+                        SqlTokenClosePar closePar;
+                        if( !R.IsToken( out openPar, true ) 
+                            || !IsOneExpression( out e, false ) 
+                            || !R.IsToken( out asToken, SqlTokenType.As, true ) 
+                            || !IsTypeDecl( out type, true )
+                            || !R.IsToken( out closePar, true ) ) return false;
+                        left = new SqlExprCast( (SqlTokenIdentifier)left.FirstOrEmptyToken, openPar, e, asToken, type, closePar );
+                        return true;
+                    }
                     SqlExprCommaList parenthesis;
                     if( !IsCommaList( out parenthesis, true ) ) return false;
-                    left = new SqlExprKoCall( left, parenthesis );
+                    SqlNoExprOverClause over;
+                    if( !IsOverClause( out over ) && R.IsError ) return false;
+                    left = new SqlExprKoCall( left, parenthesis, over );
                     return true;
                 }
                 if( R.Current.TokenType == SqlTokenType.Comma )
@@ -141,7 +158,7 @@ namespace CK.SqlServer.Parser
                 }
                 if( (R.Current.TokenType & SqlTokenType.IsAssignOperator) != 0 )
                 {
-                    if( !(left is ISqlIdentifier) ) return R.SetCurrentError( "Unexpected '='. Assignement must follow an identifier." );
+                    if( !(left is ISqlIdentifier) ) return R.SetCurrentError( "Unexpected '='. Assignment must follow an identifier." );
                     else
                     {
                         SqlTokenTerminal assign = R.Read<SqlTokenTerminal>();

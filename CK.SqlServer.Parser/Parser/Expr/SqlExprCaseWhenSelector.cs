@@ -32,7 +32,7 @@ namespace CK.SqlServer.Parser
                 if( item == null ) throw new ArgumentException( String.Format( "Null item at {0}.", i ) );
                 if( i % 4 == 0 )
                 {
-                    if( !SqlToken.IsUnquotedIdentifier( item, "when" ) ) throw new ArgumentException( String.Format( "Expected 'when' token at {0} but got {1}.", i, item ) );
+                    if( !item.IsToken( SqlTokenType.When ) ) throw new ArgumentException( String.Format( "Expected 'when' token at {0} but got {1}.", i, item ) );
                 }
                 else if( i % 4 == 1 )
                 {
@@ -40,7 +40,7 @@ namespace CK.SqlServer.Parser
                 }
                 else if( i % 4 == 2 )
                 {
-                    if( !SqlToken.IsUnquotedIdentifier( item, "then" ) ) throw new ArgumentException( String.Format( "Expected 'then' token at {0} but got {1}.", i, item ) );
+                    if( !item.IsToken( SqlTokenType.Then ) ) throw new ArgumentException( String.Format( "Expected 'then' token at {0} but got {1}.", i, item ) );
                 }
                 else 
                 {

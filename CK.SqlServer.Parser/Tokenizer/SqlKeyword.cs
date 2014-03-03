@@ -16,18 +16,6 @@ namespace CK.SqlServer.Parser
         /// </summary>
         static string[] _sqlServerReserved = new string[] 
         {
-            "any",
-            "some",
-            "precision",
-            "exit",
-            "primary",
-            "file",
-            "fillfactor",
-            "public",
-            "authorization",
-            "foreign",
-            "read",
-            "backup",
             "freetext",
             "freetexttable",
             "reconfigure",
@@ -37,12 +25,6 @@ namespace CK.SqlServer.Parser
             "browse",
             "restore",
             "bulk",
-            "restrict",
-            "grant",
-            "cascade",
-            "revert",
-            "having",
-            "revoke",
             "check",
             "holdlock",
             "right",
@@ -50,12 +32,6 @@ namespace CK.SqlServer.Parser
             "identity",
             "identity_insert",
             "rowcount",
-            "clustered",
-            "identitycol",
-            "rowguidcol",
-            "coalesce",
-            "rule",
-            "collate",
             "save",
             "column",
             "index",
@@ -65,16 +41,12 @@ namespace CK.SqlServer.Parser
             "compute",
             "constraint",
             "session_user",
-            "contains",
-            "containstable",
             "setuser",
             "join",
             "shutdown",
             "convert",
             "key",
             "statistics",
-            "cross",
-            "left",
             "system_user",
             "current",
             "current_date",
@@ -87,8 +59,6 @@ namespace CK.SqlServer.Parser
             "current_user",
             "national",
             "cursor",
-            "nocheck",
-            "nonclustered",
             "nullif",
             "default",
             "tsequal",
@@ -98,23 +68,44 @@ namespace CK.SqlServer.Parser
             "unique",
             "unpivot",
             "disk",
-            "distinct",
             "opendatasource",
-            "distributed",
-            "openquery",
-            "double",
             "openrowset",
             "user",
             "openxml",
-            "values",
             "dump",
             "varying",
             "errlvl",
-            "outer",
-            "over",
-            "percent",
-            "pivot",
+
+            "restrict",
+            "grant",
+            "cascade",
+            "revert",
+            "revoke",
+            "read",
+            "backup",
+            "any",
+            "some",
+            "precision",
+            "exit",
+            "primary",
             "plan",
+            "file",
+            "fillfactor",
+            "public",
+            "authorization",
+            "openquery",
+            "distributed",
+            "coalesce",
+            "rule",
+            "collate",
+            "identitycol",
+            "rowguidcol",
+            "contains",
+            "containstable",
+            "nocheck",
+            "nonclustered",
+            "double",
+            "outer",
 
             // These keywords are explicitly associated to a SqlTokenType (OpLevelXX | IdentifierReserved | YY).
             // "or",
@@ -129,10 +120,10 @@ namespace CK.SqlServer.Parser
             // "except",
             // "order",
             // "for",
+            // "over",
 
             // These keywords are explicitly associated to a SqlTokenType (IdentifierStandard | YY).
             // "case",
-            // "null",
             // "when",
             // "null",
             // "when",
@@ -166,6 +157,16 @@ namespace CK.SqlServer.Parser
             // "max",
             // "output",
             // "readonly",
+            // "cross",
+            // "foreign",
+            // "clustered",
+            // "left",
+            // "percent",
+            // "values",
+            // "distinct",
+            // "pivot",
+
+
         };
 
         /// <summary>
@@ -340,6 +341,7 @@ namespace CK.SqlServer.Parser
             _keywords.Add( "first", SqlTokenType.First );
             _keywords.Add( "next", SqlTokenType.Next );
             _keywords.Add( "only", SqlTokenType.Only );
+            _keywords.Add( "cast", SqlTokenType.Cast );
 
             // LogicalOperator (they are reserved keywords).
             _keywords.Add( "or", SqlTokenType.Or );
@@ -391,7 +393,16 @@ namespace CK.SqlServer.Parser
             _keywords.Add( "add", SqlTokenType.Add );
             _keywords.Add( "database", SqlTokenType.Database );
             _keywords.Add( "external", SqlTokenType.External );
-
+            _keywords.Add( "over", SqlTokenType.Over );
+            _keywords.Add( "cross", SqlTokenType.Cross );
+            _keywords.Add( "foreign", SqlTokenType.Foreign );
+            _keywords.Add( "clustered", SqlTokenType.Clustered );
+            _keywords.Add( "left", SqlTokenType.Left );
+            _keywords.Add( "percent", SqlTokenType.Percent );
+            _keywords.Add( "values", SqlTokenType.Values );
+            _keywords.Add( "distinct", SqlTokenType.Distinct );
+            _keywords.Add( "pivot", SqlTokenType.Pivot );
+            _keywords.Add( "having", SqlTokenType.Having );
 
             // SqlTokenType.IdentifierReservedStart values.
             _keywords.Add( "select", SqlTokenType.Select );

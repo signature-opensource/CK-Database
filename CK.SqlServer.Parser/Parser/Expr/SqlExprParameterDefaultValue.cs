@@ -35,7 +35,7 @@ namespace CK.SqlServer.Parser
         
         public bool IsLiteral { get { return _tokens.Length == 3 || (_tokens[1].TokenType & SqlTokenType.LitteralMask) != 0; } }
 
-        public sealed override IEnumerable<ISqlItem> Components { get { return _tokens; } }
+        public sealed override IEnumerable<ISqlItem> Items { get { return _tokens; } }
 
         public override SqlToken FirstOrEmptyToken { get { return _tokens[0]; } }
 

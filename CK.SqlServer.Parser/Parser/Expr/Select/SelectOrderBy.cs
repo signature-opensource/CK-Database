@@ -13,13 +13,13 @@ namespace CK.SqlServer.Parser
     /// </summary>
     public class SelectOrderBy : SqlExpr, ISelectSpecification
     {
-        public SelectOrderBy( ISelectSpecification select, SqlTokenIdentifier orderToken, SqlTokenIdentifier byToken, SelectOrderByColumnList columns )
-            : this( CreateArray( SqlToken.EmptyOpenPar, select, orderToken, byToken, columns, SqlToken.EmptyClosePar ) )
+        public SelectOrderBy( ISelectSpecification select, SqlTokenIdentifier orderTok, SqlTokenIdentifier byTok, SelectOrderByColumnList columns )
+            : this( CreateArray( SqlToken.EmptyOpenPar, select, orderTok, byTok, columns, SqlToken.EmptyClosePar ) )
         {
         }
 
-        public SelectOrderBy( ISelectSpecification select, SqlTokenIdentifier orderToken, SqlTokenIdentifier byToken, SelectOrderByColumnList columns, SelectOrderByOffset offset )
-            : this( CreateArray( SqlToken.EmptyOpenPar, select, orderToken, byToken, columns, offset, SqlToken.EmptyClosePar ) )
+        public SelectOrderBy( ISelectSpecification select, SqlTokenIdentifier orderTok, SqlTokenIdentifier byTok, SelectOrderByColumnList columns, SelectOrderByOffset offset )
+            : this( CreateArray( SqlToken.EmptyOpenPar, select, orderTok, byTok, columns, offset, SqlToken.EmptyClosePar ) )
         {
         }
 
@@ -32,9 +32,9 @@ namespace CK.SqlServer.Parser
 
         public SqlExpr SelectExpr { get { return (SqlExpr)Slots[1]; } }
 
-        public SqlTokenIdentifier OrderToken { get { return (SqlTokenIdentifier)Slots[2]; } }
+        public SqlTokenIdentifier OrderTok { get { return (SqlTokenIdentifier)Slots[2]; } }
         
-        public SqlTokenIdentifier ByToken { get { return (SqlTokenIdentifier)Slots[3]; } }
+        public SqlTokenIdentifier ByTok { get { return (SqlTokenIdentifier)Slots[3]; } }
 
         public SelectOrderByColumnList OrderByColumns { get { return (SelectOrderByColumnList)Slots[4]; } }
 

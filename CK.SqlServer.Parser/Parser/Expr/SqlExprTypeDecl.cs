@@ -23,7 +23,7 @@ namespace CK.SqlServer.Parser
             _type = new []{ actualType };
         }
 
-        public override IEnumerable<ISqlItem> Components { get { return _type; } }
+        public override IEnumerable<ISqlItem> Items { get { return _type; } }
 
         public override IEnumerable<SqlToken> Tokens { get { return _type[0].Tokens; } }
 

@@ -14,16 +14,16 @@ namespace CK.SqlServer.Parser
     /// </summary>
     public class SqlExprIsNull : SqlExpr
     {
-        public SqlExprIsNull( SqlItem left, SqlTokenIdentifier isToken, SqlTokenIdentifier notToken, SqlTokenIdentifier nullToken )
-            : this( Build( left, isToken, notToken, nullToken ) )
+        public SqlExprIsNull( SqlItem left, SqlTokenIdentifier isTok, SqlTokenIdentifier notTok, SqlTokenIdentifier nullTok )
+            : this( Build( left, isTok, notTok, nullTok ) )
         {
         }
 
-        static ISqlItem[] Build( SqlItem left, SqlTokenIdentifier isToken, SqlTokenIdentifier notToken, SqlTokenIdentifier nullToken )
+        static ISqlItem[] Build( SqlItem left, SqlTokenIdentifier isTok, SqlTokenIdentifier notTok, SqlTokenIdentifier nullTok )
         {
-            return notToken != null 
-                        ? CreateArray( SqlExprMultiToken<SqlTokenOpenPar>.Empty, left, isToken, notToken, nullToken, SqlExprMultiToken<SqlTokenClosePar>.Empty )
-                        : CreateArray( SqlExprMultiToken<SqlTokenOpenPar>.Empty, left, isToken, nullToken, SqlExprMultiToken<SqlTokenClosePar>.Empty );
+            return notTok != null 
+                        ? CreateArray( SqlExprMultiToken<SqlTokenOpenPar>.Empty, left, isTok, notTok, nullTok, SqlExprMultiToken<SqlTokenClosePar>.Empty )
+                        : CreateArray( SqlExprMultiToken<SqlTokenOpenPar>.Empty, left, isTok, nullTok, SqlExprMultiToken<SqlTokenClosePar>.Empty );
         }
 
         internal SqlExprIsNull( ISqlItem[] newComponents )
@@ -33,13 +33,13 @@ namespace CK.SqlServer.Parser
 
         public SqlItem Left { get { return (SqlItem)Slots[1]; } }
 
-        public SqlTokenIdentifier IsToken { get { return (SqlTokenIdentifier)Slots[2]; } }
+        public SqlTokenIdentifier IsTok { get { return (SqlTokenIdentifier)Slots[2]; } }
 
         public bool IsNotNull { get { return Slots.Length == 6; } }
 
-        public SqlTokenIdentifier NotToken { get { return IsNotNull ? (SqlTokenIdentifier)Slots[3] : null; } }
+        public SqlTokenIdentifier NotTok { get { return IsNotNull ? (SqlTokenIdentifier)Slots[3] : null; } }
 
-        public SqlTokenIdentifier NullToken { get { return (SqlTokenIdentifier)Slots[IsNotNull ? 4 : 3]; } }
+        public SqlTokenIdentifier NullTok { get { return (SqlTokenIdentifier)Slots[IsNotNull ? 4 : 3]; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( ISqlItemVisitor<T> visitor )
