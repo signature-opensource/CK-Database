@@ -96,7 +96,7 @@ namespace CK.StObj.Engine.Tests
 
         class InvalidAmbientContractProperty : IAmbientContract
         {
-            [AmbientContract]
+            [InjectContract]
             public DifferentKindOfProperties NotAnIAmbientContractProperty { get; protected set; }
         }
 
@@ -127,19 +127,19 @@ namespace CK.StObj.Engine.Tests
 
         class CB : IAmbientContract
         {
-            [AmbientContract]
+            [InjectContract]
             public CA A { get; set; }
         }
 
         class CB2 : CB
         {
-            [AmbientContract]
+            [InjectContract]
             public new CA2 A { get { return (CA2)base.A; } }
         }
 
         class CB3 : CB2
         {
-            [AmbientContract]
+            [InjectContract]
             public new CA3 A 
             {
                 get { return (CA3)base.A; }
@@ -167,7 +167,7 @@ namespace CK.StObj.Engine.Tests
 
         class CMissingSetterOnTopDefiner : IAmbientContract
         {
-            [AmbientContract]
+            [InjectContract]
             public CA2 A { get { return null; } }
         }
 
@@ -184,7 +184,7 @@ namespace CK.StObj.Engine.Tests
 
         class CPrivateSetter : IAmbientContract
         {
-            [AmbientContract]
+            [InjectContract]
             public CA2 A { get; private set; }
         }
 

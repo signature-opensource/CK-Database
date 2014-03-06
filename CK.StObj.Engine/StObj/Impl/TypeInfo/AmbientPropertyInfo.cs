@@ -7,7 +7,7 @@ using CK.Core;
 
 namespace CK.Setup
 {
-    internal class AmbientPropertyInfo : AmbientPropertyOrContractInfo
+    internal class AmbientPropertyInfo : AmbientPropertyOrInjectContractInfo
     {
         public new readonly static string KindName = "[AmbientProperty]";
         readonly bool _isSourceDefined;

@@ -14,7 +14,7 @@ namespace CK.Setup
     {
         class LeafData
         {
-            public LeafData( MutableItem leaf, List<MutableAmbientProperty> ap, MutableAmbientContract[] ac )
+            public LeafData( MutableItem leaf, List<MutableAmbientProperty> ap, MutableInjectContract[] ac )
             {
                 LeafSpecialization = leaf;
                 AllAmbientProperties = ap;
@@ -40,7 +40,7 @@ namespace CK.Setup
             /// since there is no caching needed. Each MutableAmbientContract here is bound to its AmbientContractInfo
             /// in the StObjTypeInfo.AmbientContracts.
             /// </summary>
-            public readonly MutableAmbientContract[] AllAmbientContracts;
+            public readonly MutableInjectContract[] AllAmbientContracts;
 
             // Direct properties are collected at leaf level and are allocated only if needed (by SetDirectPropertyValue).
             public Dictionary<PropertyInfo,object> DirectPropertiesToSet;
@@ -76,7 +76,7 @@ namespace CK.Setup
         // properties that are available at the level appear in the list.
         // (This is the same for AmbientContracts.)
         readonly IReadOnlyList<MutableAmbientProperty> _ambientPropertiesEx;
-        readonly IReadOnlyList<MutableAmbientContract> _ambientContractsEx;
+        readonly IReadOnlyList<MutableInjectContract> _ambientContractsEx;
 
         MutableReference _container;
         MutableReferenceList _requires;
@@ -142,7 +142,7 @@ namespace CK.Setup
             Debug.Assert( context != null );
             // These 2 lists can be initialized here (even if they can not work until InitializeBottomUp is called).
             _ambientPropertiesEx = new ListAmbientProperty( this );
-            _ambientContractsEx = new ListAmbientContract( this );
+            _ambientContractsEx = new ListInjectContract( this );
         }
 
         internal override void InitializeBottomUp( MutableItem specialization, object abstractTypeInfo )
@@ -156,10 +156,10 @@ namespace CK.Setup
             else
             {
                 var ap = AmbientTypeInfo.AmbientProperties.Select( p => new MutableAmbientProperty( this, p ) ).ToList();
-                var ac = new MutableAmbientContract[AmbientTypeInfo.AmbientContracts.Count];
+                var ac = new MutableInjectContract[AmbientTypeInfo.AmbientContracts.Count];
                 for( int i = ac.Length - 1; i >= 0; --i )
                 {
-                    ac[i] = new MutableAmbientContract( this, AmbientTypeInfo.AmbientContracts[i] );
+                    ac[i] = new MutableInjectContract( this, AmbientTypeInfo.AmbientContracts[i] );
                 }
                 _leafData = new LeafData( this, ap, ac );
                 _leafData.ImplementableTypeInfo = (ImplementableTypeInfo)abstractTypeInfo;
@@ -304,7 +304,7 @@ namespace CK.Setup
 
         IReadOnlyList<IStObjAmbientProperty> IStObjMutableItem.SpecializedAmbientProperties { get { return _ambientPropertiesEx; } }
 
-        IReadOnlyList<IStObjMutableAmbientContract> IStObjMutableItem.SpecializedAmbientContracts { get { return _ambientContractsEx; } }
+        IReadOnlyList<IStObjMutableInjectAmbientContract> IStObjMutableItem.SpecializedAmbientContracts { get { return _ambientContractsEx; } }
 
         bool IStObjMutableItem.SetDirectPropertyValue( IActivityMonitor monitor, string propertyName, object value, string sourceDescription )
         {

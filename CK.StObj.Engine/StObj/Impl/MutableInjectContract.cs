@@ -11,11 +11,11 @@ namespace CK.Setup
     /// <summary>
     /// Describes an Ambient Contract property.
     /// </summary>
-    internal class MutableAmbientContract : MutableReferenceOptional, IStObjMutableAmbientContract
+    internal class MutableInjectContract : MutableReferenceOptional, IStObjMutableInjectAmbientContract
     {
-        internal readonly AmbientContractInfo AmbientContractInfo;
+        internal readonly InjectContractInfo AmbientContractInfo;
 
-        internal MutableAmbientContract( MutableItem owner, AmbientContractInfo info )
+        internal MutableInjectContract( MutableItem owner, InjectContractInfo info )
             : base( owner, StObjMutableReferenceKind.AmbientContract )
         {
             AmbientContractInfo = info;

@@ -74,12 +74,12 @@ namespace CK.Setup
         /// they have only in common MutableReferenceOptional), and routing calls to _specialization._allAmbientContracts or _specialization._allAmbientProperties...
         /// I prefer duplicating code here.
         /// </summary>
-        class ListAmbientContract : IReadOnlyList<MutableAmbientContract>
+        class ListInjectContract : IReadOnlyList<MutableInjectContract>
         {
             readonly MutableItem _item;
             readonly int _count;
 
-            public ListAmbientContract( MutableItem item )
+            public ListInjectContract( MutableItem item )
             {
                 _item = item;
                 _count = _item.AmbientTypeInfo.AmbientContracts.Count;
@@ -88,7 +88,7 @@ namespace CK.Setup
             public int IndexOf( object item )
             {
                 int idx = -1;
-                MutableAmbientContract c = item as MutableAmbientContract;
+                MutableInjectContract c = item as MutableInjectContract;
                 if( c != null
                     && c.Owner == _item._leafData.LeafSpecialization
                     && c.AmbientContractInfo.Index < _count )
@@ -98,7 +98,7 @@ namespace CK.Setup
                 return idx;
             }
 
-            public MutableAmbientContract this[int index]
+            public MutableInjectContract this[int index]
             {
                 get
                 {
@@ -117,7 +117,7 @@ namespace CK.Setup
                 get { return _count; }
             }
 
-            public IEnumerator<MutableAmbientContract> GetEnumerator()
+            public IEnumerator<MutableInjectContract> GetEnumerator()
             {
                 return _item._leafData.AllAmbientContracts.Take( _count ).GetEnumerator();
             }

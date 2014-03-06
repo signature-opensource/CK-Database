@@ -6,9 +6,9 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
-    /// Unifies <see cref="AmbientPropertyAttribute"/> and <see cref="AmbientContractAttribute"/>.
+    /// Unifies <see cref="AmbientPropertyAttribute"/> and <see cref="InjectContractAttribute"/>.
     /// </summary>
-    public interface IAmbientPropertyOrContractAttribute
+    public interface IAmbientPropertyOrInjectContractAttribute
     {
         /// <summary>
         /// Gets whether resolving this property is required or not.
@@ -21,7 +21,7 @@ namespace CK.Setup
         bool IsOptionalDefined { get; }
 
         /// <summary>
-        /// Gets whether the property is an ambient property. Otherwise it is an ambient contract.
+        /// Gets whether the property is an ambient property. Otherwise it is an injected contract.
         /// </summary>
         bool IsAmbientProperty { get; }
     }

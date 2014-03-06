@@ -57,7 +57,7 @@
     <Compile Include="IStObjAmbientProperty.cs" />
     <Compile Include="IStObjFinalAmbientProperty.cs" />
     <Compile Include="IStObjFinalParameter.cs" />
-    <Compile Include="IStObjMutableAmbientContract.cs" />
+    <Compile Include="IStObjMutableInjectAmbientContract.cs" />
     <Compile Include="IStObjMutableItem.cs" />
     <Compile Include="IStObjMutableParameter.cs" />
     <Compile Include="IStObjMutableReference.cs" />

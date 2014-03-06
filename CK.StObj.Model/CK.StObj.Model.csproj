@@ -78,6 +78,7 @@
     <Compile Include="StObjBuildResult.cs" />
     <Compile Include="StObjContextRoot.DefaultStObjRuntimeBuilder.cs" />
     <Compile Include="StObjModelExtension.cs" />
+    <Compile Include="StObj\Attribute\InjectContractAttribute.cs" />
     <Compile Include="StObj\Impl\StObj.cs" />
     <Compile Include="StObjContextRoot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -85,7 +86,7 @@
     <Compile Include="StObj\Attribute\AmbientPropertyAttribute.cs" />
     <Compile Include="StObj\Attribute\ContainerAttribute.cs" />
     <Compile Include="StObj\Attribute\ContextAttribute.cs" />
-    <Compile Include="StObj\Attribute\IAmbientPropertyOrContractAttribute.cs" />
+    <Compile Include="StObj\Attribute\IAmbientPropertyOrInjectContractAttribute.cs" />
     <Compile Include="StObj\Attribute\IStObjAttribute.cs" />
     <Compile Include="StObj\Attribute\StObjAttribute.cs" />
     <Compile Include="StObj\Attribute\StObjPropertyAttribute.cs" />

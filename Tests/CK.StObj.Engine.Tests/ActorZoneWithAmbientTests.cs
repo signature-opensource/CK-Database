@@ -43,10 +43,10 @@ namespace CK.StObj.Engine.Tests
         [AmbientPropertySet( PropertyName = "Schema", PropertyValue = "CK" )]
         class BasicPackage : BaseDatabaseObject
         {
-            [AmbientContract]
+            [InjectContract]
             public BasicUser UserHome { get; protected set; }
             
-            [AmbientContract]
+            [InjectContract]
             public BasicGroup GroupHome { get; protected set; }
         }
 
@@ -75,7 +75,7 @@ namespace CK.StObj.Engine.Tests
         // ZonePackage specializes BasicPackage. Its Schema is the same as BasicPackage (CK).
         class ZonePackage : BasicPackage
         {
-            [AmbientContract]
+            [InjectContract]
             public new ZoneGroup GroupHome { get { return (ZoneGroup)base.GroupHome; } }
         }
 

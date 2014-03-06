@@ -9,12 +9,12 @@ using CK.Core;
 namespace CK.Setup
 {
 
-    internal abstract class AmbientPropertyOrContractInfo : CovariantPropertyInfo
+    internal abstract class AmbientPropertyOrInjectContractInfo : CovariantPropertyInfo
     {
         readonly bool _isOptionalDefined;
         bool _isOptional;
 
-        internal AmbientPropertyOrContractInfo( PropertyInfo p, bool isOptionalDefined, bool isOptional, int definerSpecializationDepth, int index )
+        internal AmbientPropertyOrInjectContractInfo( PropertyInfo p, bool isOptionalDefined, bool isOptional, int definerSpecializationDepth, int index )
             : base( p, definerSpecializationDepth, index )
         {
             _isOptionalDefined = isOptionalDefined;
@@ -34,7 +34,7 @@ namespace CK.Setup
         protected override void SetGeneralizationInfo( IActivityMonitor monitor, CovariantPropertyInfo g )
         {
             base.SetGeneralizationInfo( monitor, g );
-            AmbientPropertyOrContractInfo gen = (AmbientPropertyOrContractInfo)g;
+            AmbientPropertyOrInjectContractInfo gen = (AmbientPropertyOrInjectContractInfo)g;
             // A required property can not become optional.
             if( IsOptional && !gen.IsOptional )
             {
@@ -63,7 +63,7 @@ namespace CK.Setup
             int definerSpecializationDepth, 
             List<StObjPropertyInfo> stObjProperties, 
             out IList<AmbientPropertyInfo> apListResult,
-            out IList<AmbientContractInfo> acListResult )
+            out IList<InjectContractInfo> acListResult )
         {
             Debug.Assert( stObjProperties != null );
             
@@ -86,7 +86,7 @@ namespace CK.Setup
                     // Continue to detect Ambient properties. Properties that are both Ambient and StObj must be detected.
                 }
                 AmbientPropertyAttribute ap = (AmbientPropertyAttribute)Attribute.GetCustomAttribute( p, typeof( AmbientPropertyAttribute ), false );
-                IAmbientPropertyOrContractAttribute ac = (AmbientContractAttribute)Attribute.GetCustomAttribute( p, typeof( AmbientContractAttribute ), false );
+                IAmbientPropertyOrInjectContractAttribute ac = (InjectContractAttribute)Attribute.GetCustomAttribute( p, typeof( InjectContractAttribute ), false );
                 if( ac != null || ap != null )
                 {
                     if( stObjAttr != null || (ac != null && ap != null) )
@@ -94,8 +94,8 @@ namespace CK.Setup
                         monitor.Error().Send( "Property named '{0}' for '{1}' can not be both an Ambient Contract, an Ambient Property or a StObj property.", p.Name, p.DeclaringType.FullName );
                         continue;
                     }
-                    IAmbientPropertyOrContractAttribute attr = ac ?? ap;
-                    string kindName = attr.IsAmbientProperty ? AmbientPropertyInfo.KindName : AmbientContractInfo.KindName;
+                    IAmbientPropertyOrInjectContractAttribute attr = ac ?? ap;
+                    string kindName = attr.IsAmbientProperty ? AmbientPropertyInfo.KindName : InjectContractInfo.KindName;
 
                     var mGet = p.GetGetMethod( true );
                     if( mGet == null || mGet.IsPrivate )
@@ -111,8 +111,8 @@ namespace CK.Setup
                     }
                     else
                     {
-                        if( acListResult == null ) acListResult = new List<AmbientContractInfo>();
-                        var amb = new AmbientContractInfo( p, attr.IsOptionalDefined, attr.IsOptional, definerSpecializationDepth, acListResult.Count );
+                        if( acListResult == null ) acListResult = new List<InjectContractInfo>();
+                        var amb = new InjectContractInfo( p, attr.IsOptionalDefined, attr.IsOptional, definerSpecializationDepth, acListResult.Count );
                         acListResult.Add( amb );
                     }
                 }

@@ -10,10 +10,10 @@ namespace SqlActorPackage.Basic
     [SqlPackage( Schema = "CK", Database = typeof( SqlDefaultDatabase ), ResourceType = typeof( Package ), ResourcePath = "Res" ), Versions( "2.11.25" )]
     public abstract class Package : SqlPackage, IKnowTheConnectionString
     {
-        [AmbientContract]
+        [InjectContract]
         public UserHome UserHome { get; protected set; }
         
-        [AmbientContract]
+        [InjectContract]
         public GroupHome GroupHome { get; protected set; }
 
         [SqlProcedure( "sBasicSimpleProcedure" )]

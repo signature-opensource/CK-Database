@@ -6,12 +6,11 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
-    /// Defines an ambient contract property: properties tagged with this attribute must 
+    /// Defines that an ambient contract must be injected: properties tagged with this attribute must 
     /// be <see cref="IAmbientContract"/> objects and are automatically injected.
     /// </summary>
     [AttributeUsage( AttributeTargets.Property, AllowMultiple = false, Inherited = true )]
-    [Obsolete( "Use [InjectContract] instead.", true )]
-    public class AmbientContractAttribute : Attribute, IAmbientPropertyOrInjectContractAttribute
+    public class InjectContractAttribute : Attribute, IAmbientPropertyOrInjectContractAttribute
     {
         bool? _isOptional;
 
