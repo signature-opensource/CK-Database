@@ -51,7 +51,7 @@
     <Compile Include="SecurityZoneHome.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Res\CK.GroupHome-Zone.Init.2.11.25.sql" />
+    <EmbeddedResource Include="Res\Group\CK.GroupHome-Zone.Init.2.11.25.sql" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Res\CK.SecurityZoneHome.Init.2.11.25.sql" />
@@ -81,7 +81,7 @@
     <EmbeddedResource Include="Res\CKCore.sSecurityZoneSPInCKCoreSchema.sql" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Res\sGroupCreate.sql" />
+    <EmbeddedResource Include="Res\Group\sGroupCreate.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

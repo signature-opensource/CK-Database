@@ -278,10 +278,11 @@ namespace CK.Core
         /// <summary>
         /// Merges information from another locator: whenever this <see cref="P:Type"/> or <see cref="Path"/>
         /// are null, they are set.
+        /// When this Path starts with a dot, it is appended to the path of the merged object.
         /// </summary>
         /// <param name="source">ResourceLocator to combine with this one.</param>
         /// <param name="services">Optional services (not used by this implementation).</param>
-        /// <returns>True on success, false oterwise.</returns>
+        /// <returns>True on success, false otherwise.</returns>
         public bool Merge( object source, IServiceProvider services = null )
         {
             ResourceLocator r = source as ResourceLocator;
@@ -289,6 +290,10 @@ namespace CK.Core
             {
                 if( _type == null ) _type = r._type;
                 if( _path == null ) _path = r._path;
+                else if( r._path != null && _path.Length > 0 && _path[0] == '.' )
+                {
+                    _path = r._path + _path;
+                }
                 return true;
             }
             return false;

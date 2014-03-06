@@ -87,7 +87,7 @@ namespace CK.Setup
                     bool generalizationHasSetOrMerged = Generalization != null && HandleStObjPropertySource( monitor, p, Generalization, "Generalization", true );
                     if( IsOwnContainer ) HandleStObjPropertySource( monitor, p, _dContainer, "Container", !generalizationHasSetOrMerged );
                 }
-                // If the value is missing (it has never been set or has been explicitely "removed"), we have nothing to do.
+                // If the value is missing (it has never been set or has been explicitly "removed"), we have nothing to do.
                 // If the type is not constrained, we have nothing to do.
                 object v = p.Value;
                 if( v != Type.Missing )
@@ -126,7 +126,7 @@ namespace CK.Setup
             // Source property is defined somewhere in the source.
             if( c != null )
             {
-                // If the property is explicitely defined (Info != null) and its type is not 
+                // If the property is explicitly defined (Info != null) and its type is not 
                 // compatible with our, there is a problem.
                 if( c.InfoOnType != null && !p.Type.IsAssignableFrom( c.Type ) )
                 {
@@ -139,16 +139,20 @@ namespace CK.Setup
                 }
                 if( doSetOrMerge )
                 {
-                    // The source value must have been set and not explicitely "removed" with a Type.Missing value.
+                    // The source value must have been set and not explicitly "removed" with a Type.Missing value.
                     if( c.Value != Type.Missing )
                     {
                         // We "Set" the value from this source.
                         if( !p.ValueHasBeenSet ) p.Value = c.Value;
                         else if( p.Value is IMergeable )
                         {
-                            if( !((IMergeable)p.Value).Merge( c.Value, new SimpleServiceContainer().Add( monitor ) ) )
+                            using( var services = new SimpleServiceContainer() )
                             {
-                                monitor.Error().Send( "Unable to merge StObjProperty '{0}.{1}' with value from {2}.", ToString(), p.Value, sourceName );
+                                services.Add( monitor );
+                                if( !((IMergeable)p.Value).Merge( c.Value, services ) )
+                                {
+                                    monitor.Error().Send( "Unable to merge StObjProperty '{0}.{1}' with value from {2}.", ToString(), p.Value, sourceName );
+                                }
                             }
                         }
                         return true;
