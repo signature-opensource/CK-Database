@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace CK.Deploy.Console
@@ -25,6 +27,7 @@ namespace CK.Deploy.Console
         public List<string> RelativeDllPaths { get; set; }
         public List<string> AssemblyNames { get; set; }
         public string ConnectionString { get; set; }
+        public string LogPath { get; set; }
     }
 
     public class ArgsAnalyzer
@@ -57,7 +60,7 @@ namespace CK.Deploy.Console
 
             if( IsV2 )
             {
-                if( _originalArgs.Length == 6 )
+                if( _originalArgs.Length >= 6 )
                 {
                     var args = new V2Args()
                     {
@@ -68,6 +71,12 @@ namespace CK.Deploy.Console
                     args.RelativeDllPaths.AddRange( ParsePath( _originalArgs[3].Replace( "dllPath=", "" ), true ) );
                     args.AssemblyNames.AddRange( ParsePath( _originalArgs[4], false ) );
 
+                    if( _originalArgs.Length == 7 )
+                        args.LogPath = _originalArgs[6].Trim( '"' ).Replace( '/', System.IO.Path.DirectorySeparatorChar );
+                    else
+                    {
+                        args.LogPath = Path.Combine( Environment.CurrentDirectory, "Logs" );
+                    }
                     if( !string.IsNullOrEmpty( args.AbsoluteRootPath ) &&
                         !string.IsNullOrEmpty( args.ConnectionString ) &&
                         (args.RelativeFilePaths.Count > 0 || (args.AssemblyNames.Count > 0 && args.RelativeDllPaths.Count > 0)) )
