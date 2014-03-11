@@ -93,7 +93,12 @@ namespace CK.Setup
                         else
                         {
                             Type itemType = data.ItemType;
-                            if( itemType == null ) data.SetupItem = new StObjDynamicPackageItem( _monitor, data );
+                            if( itemType == null )
+                            {
+                                StObjDynamicPackageItem stobjDynamicPackageItem = new StObjDynamicPackageItem( _monitor, data );
+                                stobjDynamicPackageItem.FullName = data.FullName;
+                                data.SetupItem = stobjDynamicPackageItem;
+                            }
                             else
                             {
                                 data.SetupItem = (IMutableSetupItem)Activator.CreateInstance( itemType, _monitor, data );
