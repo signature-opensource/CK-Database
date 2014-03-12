@@ -24,8 +24,8 @@ namespace CK.SqlServer.Setup
             {
                 monitor.Info().Send( "SqlPackage class '{0}' uses its own full name as its SetupName.", data.FullNameWithoutContext );
             }
-            data.ItemType = typeof( SqlPackageItem );
-            data.DriverType = typeof( SqlPackageSetupDriver );
+            data.ItemType = typeof( SqlPackageBaseItem );
+            data.DriverType = typeof( SqlPackageBaseSetupDriver );
         }
     
     }
