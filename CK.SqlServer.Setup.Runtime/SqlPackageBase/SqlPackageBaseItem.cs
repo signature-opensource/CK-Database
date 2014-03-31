@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using CK.Core;
 using CK.Setup;
@@ -7,6 +8,11 @@ namespace CK.SqlServer.Setup
 {
     public class SqlPackageBaseItem : StObjDynamicPackageItem
     {
+        public SqlPackageBaseItem( SqlPackageBase package )
+            : this( "ObjPackage", typeof( SqlPackageBaseSetupDriver ), package )
+        {
+        }
+
         /// <summary>
         /// Initializes a new <see cref="SqlPackageBaseItem"/> for a dynamic object.
         /// </summary>
@@ -31,6 +37,9 @@ namespace CK.SqlServer.Setup
             if( Object.Database != null ) Location = Object.Database.Name;
             ResourceLocation = (ResourceLocator)data.StObj.GetStObjProperty( "ResourceLocation" );
             if( Object.HasModel ) EnsureModel();
+            
+            Debug.Assert( typeof( SqlPackageBaseSetupDriver ).IsAssignableFrom( data.DriverType ) );
+            Name = data.FullNameWithoutContext;
         }
 
         /// <summary>

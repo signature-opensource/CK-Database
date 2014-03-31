@@ -131,7 +131,9 @@ namespace CK.SqlServer.Setup
                     // Adjusts indexes.
                     for( int i = _index + 1; i < _holder._params.Count; ++i )
                     {
-                        --_holder._params[i]._index;
+                        var param = _holder._params[i];
+                        // Only adjust index to parameters that have not been yet adjusted.
+                        if( param._index > -1 ) --param._index;
                     }
                     _index = -1;
                 }
@@ -144,7 +146,7 @@ namespace CK.SqlServer.Setup
                 /// </summary>
                 bool SkipEmitSetValue
                 {
-                    get { return  _index == -1 || _isIgnoredOutputParameter || (_methodParam != null && _methodParam.IsOut); }
+                    get { return _index == -1 || _isIgnoredOutputParameter || (_methodParam != null && _methodParam.IsOut); }
                 }
 
                 internal void EmitSetParameter( ILGenerator g, LocalBuilder locParams )
