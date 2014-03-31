@@ -13,7 +13,7 @@ using CK.SqlServer.Parser;
 
 namespace CK.SqlServer.Setup
 {
-    public partial class SqlProcedureAttributeImpl 
+    public partial class SqlProcedureAttributeImpl
     {
         enum GenerationType
         {
@@ -24,9 +24,30 @@ namespace CK.SqlServer.Setup
 
         private bool GenerateCreateSqlCommand( GenerationType gType, IActivityMonitor monitor, MethodInfo createCommand, SqlExprMultiIdentifier sqlName, SqlExprParameterList sqlParameters, MethodInfo m, ParameterInfo[] mParameters, TypeBuilder tB, bool isVirtual )
         {
-            MethodAttributes mA = m.Attributes & ~(MethodAttributes.Abstract | MethodAttributes.VtableLayoutMask);
+            MethodAttributes mA = m.Attributes & ~(MethodAttributes.Abstract | MethodAttributes.VtableLayoutMask );
             if( isVirtual ) mA |= MethodAttributes.Virtual;
-            MethodBuilder mB = tB.DefineMethod( m.Name, mA, m.ReturnType, ReflectionHelper.CreateParametersType( mParameters ) );
+            MethodBuilder mB = tB.DefineMethod( m.Name, mA );
+            if( m.ContainsGenericParameters )
+            {
+                int i = 0;
+
+                Type[] genericArguments = m.GetGenericArguments();
+                string[] names = genericArguments.Select( t => String.Format( "T{0}", i++ ) ).ToArray();
+
+                var genericParameters = mB.DefineGenericParameters( names );
+                for( i = 0; i<names.Length; ++i)
+                {
+                    Type genericTypeArgument = genericArguments[i];
+                    GenericTypeParameterBuilder genericTypeBuilder = genericParameters[i];
+
+
+                    genericTypeBuilder.SetGenericParameterAttributes( genericTypeArgument.GenericParameterAttributes );
+                    genericTypeBuilder.SetInterfaceConstraints( genericTypeArgument.GetGenericParameterConstraints() );
+                }
+            }
+            mB.SetReturnType( m.ReturnType );
+            mB.SetParameters( ReflectionHelper.CreateParametersType( mParameters ) );
+
             ILGenerator g = mB.GetILGenerator();
 
             // First actual method parameter index (skips the ByRefSqlCommand if any).
@@ -306,7 +327,7 @@ namespace CK.SqlServer.Setup
 
         static string DumpParameters( IEnumerable<ParameterInfo> parameters )
         {
-            StringBuilder b = new StringBuilder(); 
+            StringBuilder b = new StringBuilder();
             DumpParameters( b, parameters );
             return b.ToString();
         }

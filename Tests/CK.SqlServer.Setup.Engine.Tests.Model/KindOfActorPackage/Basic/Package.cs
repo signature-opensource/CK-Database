@@ -19,6 +19,7 @@ namespace SqlActorPackage.Basic
         [SqlProcedure( "sBasicSimpleProcedure" )]
         public abstract SqlCommand SimpleProcedureNaked( int index, string name, out string result );
 
+       
         #region Command injection (Connection & transaction)
 
         /// <summary>
@@ -280,6 +281,8 @@ namespace SqlActorPackage.Basic
         [SqlProcedure( "sBasicProcedureWithAuth" )]
         public abstract OutputCmd<string> CallWithAuth( IBasicAuthContext c, int index, string name );
 
+        [SqlProcedure( "sBasicProcedureWithAuth" )]
+        public abstract OutputCmd<T> CallWithAuth<T>( IAuthContext c, int index, string name, out string result );
 
         #endregion
     }

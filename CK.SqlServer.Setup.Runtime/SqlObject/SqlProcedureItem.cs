@@ -80,6 +80,7 @@ namespace CK.SqlServer.Setup
         private static MethodBuilder GenerateCreateSqlCommand( TypeBuilder tB, string methodName, string spSchemaName, SqlExprParameterList sqlParameters )
         {
             MethodBuilder mB = tB.DefineMethod( methodName, MethodAttributes.Assembly | MethodAttributes.Static, TypeCommand, Type.EmptyTypes );
+
             ILGenerator g = mB.GetILGenerator();
 
             LocalBuilder locCmd = g.DeclareLocal( TypeCommand );
