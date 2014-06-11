@@ -8,16 +8,28 @@ namespace CK.Setup
 {
     /// <summary>
     /// A StObj "slices" a Structured Object (that is an <see cref="IAmbientContract"/>) by types in its inheritance chain.
-    /// The <see cref="Object">Structured Object</see> itself is built based on already built dependencies from top to bottom thanks to its "Construct" methods. 
+    /// The <see cref="InitialObject">Structured Object</see> itself is built based on already built dependencies from top to bottom thanks to its "Construct" methods. 
     /// This interface is available after the dependency graph ordering (this is the Owner exposed by <see cref="IStObjFinalParameter"/> for construct parameters for instance).
-    /// It is the final interface that is exposed for each StObj at the end of the <see cref="StObjCollector.GetResults"/> work.
+    /// It is the final interface that is exposed for each StObj at the end of the StObjCollector.GetResults work.
     /// </summary>
     public interface IStObjResult : IStObj
     {
         /// <summary>
         /// Gets the associated object instance (the final, most specialized, structured object).
+        /// This instance is built at the beginning of the process and remains the same: it is not necessarily a "real" object since its auto-implemented methods
+        /// are not generated (only stupid default stub implementation are created to be able to instantiate it).
+        /// Once the dynamic assembly has been generated (and if StObjCollector.InjectFinalObjectAccessor has been called), the <see cref="ObjectAccessor"/>
+        /// is updated to obtain a "real" object from the <see cref="StObjContextRoot"/>.
         /// </summary>
-        object Object { get; }
+        object InitialObject { get; }
+
+        /// <summary>
+        /// Gets a function that returns the associated object instance (the final, most specialized, structured object).
+        /// The <see cref="InitialObject"/> instance is built at the beginning of the process and remains the same until the dynamic assembly has been 
+        /// generated and StObjCollector.InjectFinalObjectAccessor has been called: at this point, the object obtained by this accessor will be a "real" object
+        /// from the dynamic assembly with all its auto-implemented methods available.
+        /// </summary>
+        Func<object> ObjectAccessor { get; }
 
         /// <summary>
         /// Gets the provider for attributes. Attributes that are marked with <see cref="IAttributeAmbientContextBound"/> are cached

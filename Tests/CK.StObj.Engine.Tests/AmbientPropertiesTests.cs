@@ -74,14 +74,14 @@ namespace CK.StObj.Engine.Tests
                 collector.RegisterClass( typeof( SimpleObjectDirect ) );
                 StObjCollectorResult result = collector.GetResult();
                 Assert.That( result.OrderedStObjs.FirstOrDefault(), Is.Not.Null, "We registered SimpleObjectDirect." );
-                Assert.That( result.OrderedStObjs.First().Object, Is.InstanceOf<SimpleObjectDirect>() );
-                Assert.That( ((SimpleObjectDirect)result.OrderedStObjs.First().Object).OneIntValue, Is.EqualTo( 3712 ), "Direct properties can be set by Attribute." );
+                Assert.That( result.OrderedStObjs.First().InitialObject, Is.InstanceOf<SimpleObjectDirect>() );
+                Assert.That( ((SimpleObjectDirect)result.OrderedStObjs.First().InitialObject).OneIntValue, Is.EqualTo( 3712 ), "Direct properties can be set by Attribute." );
             }
             {
                 StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor, null, null, new ConfiguratorOneIntValueSetTo42() );
                 collector.RegisterClass( typeof( SimpleObjectDirect ) );
                 StObjCollectorResult result = collector.GetResult();
-                Assert.That( ((SimpleObjectDirect)result.OrderedStObjs.First().Object).OneIntValue, Is.EqualTo( 42 ), "Direct properties can be set by any IStObjStructuralConfigurator participant (here the global one)." );
+                Assert.That( ((SimpleObjectDirect)result.OrderedStObjs.First().InitialObject).OneIntValue, Is.EqualTo( 42 ), "Direct properties can be set by any IStObjStructuralConfigurator participant (here the global one)." );
             }
         }
 
@@ -93,14 +93,14 @@ namespace CK.StObj.Engine.Tests
                 collector.RegisterClass( typeof( SimpleObjectAmbient ) );
                 StObjCollectorResult result = collector.GetResult();
                 Assert.That( result.OrderedStObjs.FirstOrDefault(), Is.Not.Null, "We registered SimpleObjectAmbient." );
-                Assert.That( result.OrderedStObjs.First().Object, Is.InstanceOf<SimpleObjectAmbient>() );
-                Assert.That( ((SimpleObjectAmbient)result.OrderedStObjs.First().Object).OneIntValue, Is.EqualTo( 3712 ), "Same as Direct properties (above) regarding direct setting. The difference between Ambient and non-ambient lies in value propagation." );
+                Assert.That( result.OrderedStObjs.First().InitialObject, Is.InstanceOf<SimpleObjectAmbient>() );
+                Assert.That( ((SimpleObjectAmbient)result.OrderedStObjs.First().InitialObject).OneIntValue, Is.EqualTo( 3712 ), "Same as Direct properties (above) regarding direct setting. The difference between Ambient and non-ambient lies in value propagation." );
             }
             {
                 StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor, null, null, new ConfiguratorOneIntValueSetTo42() );
                 collector.RegisterClass( typeof( SimpleObjectAmbient ) );
                 StObjCollectorResult result = collector.GetResult();
-                Assert.That( ((SimpleObjectAmbient)result.OrderedStObjs.First().Object).OneIntValue, Is.EqualTo( 42 ), "Same as Direct properties (above) regarding direct setting. The difference between Ambient and non-ambient lies in value propagation." );
+                Assert.That( ((SimpleObjectAmbient)result.OrderedStObjs.First().InitialObject).OneIntValue, Is.EqualTo( 42 ), "Same as Direct properties (above) regarding direct setting. The difference between Ambient and non-ambient lies in value propagation." );
             }
         }
 

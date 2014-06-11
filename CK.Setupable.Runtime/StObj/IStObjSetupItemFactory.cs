@@ -12,7 +12,7 @@ namespace CK.Setup
     public interface IStObjSetupItemFactory
     {
         /// <summary>
-        /// Creates an <see cref="IMutableSetupItemContainer"/> from a <see cref="IStObjSetupData"/>.
+        /// Creates an <see cref="IMutableSetupItem"/> from a <see cref="IStObjSetupData"/>.
         /// Returning null here triggers an attempt to instantiate an object of the type <see cref="IStObjSetupData.ItemType"/>
         /// with the same parameters as this method (the monitor and the data). If no <see cref="IStObjSetupData.ItemType"/> is set,
         /// a <see cref="StObjDynamicPackageItem"/> is instanciated.

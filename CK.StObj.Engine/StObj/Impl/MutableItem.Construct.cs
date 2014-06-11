@@ -58,8 +58,8 @@ namespace CK.Setup
                         resolved = t.CachedResolvedStObj;
                         if( resolved != null )
                         {
-                            Debug.Assert( resolved.Object != Type.Missing );
-                            t.SetParameterValue( resolved.Object );
+                            Debug.Assert( resolved.InitialObject != Type.Missing );
+                            t.SetParameterValue( resolved.InitialObject );
                         }
                     }
                     if( valueResolver != null ) valueResolver.ResolveParameterValue( monitor, t );
@@ -74,7 +74,7 @@ namespace CK.Setup
                         }
                         t.SetParameterValue( t.Type.IsValueType ? Activator.CreateInstance( t.Type ) : null );
                     }
-                    if( resolved != null && t.Value == resolved.Object )
+                    if( resolved != null && t.Value == resolved.InitialObject )
                     {
                         t.BuilderValueIndex = -(resolved.IndexOrdered + 1);
                     }
@@ -122,7 +122,7 @@ namespace CK.Setup
         {
             object o = p.Value;
             MutableItem m = o as MutableItem;
-            if( m != null ) o = m.Object;
+            if( m != null ) o = m.InitialObject;
             try
             {
                 p.Property.SetValue( _leafData.StructuredObject, o, null );

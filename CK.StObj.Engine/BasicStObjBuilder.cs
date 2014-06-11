@@ -50,7 +50,7 @@ namespace CK.Setup
             if( r.HasFatalError ) return false;
 
             // Step 4: Generating final assembly.
-            return r.GenerateFinalAssembly( _monitor, _config.FinalAssemblyConfiguration );
+            return r.GenerateFinalAssembly( _monitor, StObjContextRoot.DefaultStObjRuntimeBuilder, _config.FinalAssemblyConfiguration ) != null;
         }
     }
 }

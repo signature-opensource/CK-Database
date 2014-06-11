@@ -51,6 +51,13 @@ namespace CK.Setup
             public object StructuredObject;
 
             /// <summary>
+            /// Available only at the leaf level.
+            /// This function returns the StructureObject until InjectFinalObjectFunc has been called.
+            /// Storing it herr avoids creating multiple function delegates.
+            /// </summary>
+            public Func<object> StructuredObjectFunc;
+
+            /// <summary>
             /// Concerns the specialization.
             /// </summary>
             public ImplementableTypeInfo ImplementableTypeInfo;
@@ -67,6 +74,14 @@ namespace CK.Setup
             public int SpecializationIndexOrdered;
 
             public List<PropertySetter> PostBuildProperties;
+
+            internal object CreateStructuredObject( IStObjRuntimeBuilder runtimeBuilder, Type typeIfNotImplementable )
+            {
+                Type toInstanciate = ImplementableTypeInfo != null ? ImplementableTypeInfo.LastGeneratedType : typeIfNotImplementable;
+                StructuredObject = runtimeBuilder.CreateInstance( toInstanciate );
+                StructuredObjectFunc = () => StructuredObject;
+                return StructuredObject;
+            }
         }
 
         LeafData _leafData;
@@ -732,9 +747,14 @@ namespace CK.Setup
 
         #region IStObj Members
 
-        public object Object
+        public object InitialObject
         {
             get { return _leafData.StructuredObject; }
+        }
+
+        public Func<object> ObjectAccessor
+        {
+            get { return _leafData.StructuredObjectFunc; }
         }
 
         /// <summary>

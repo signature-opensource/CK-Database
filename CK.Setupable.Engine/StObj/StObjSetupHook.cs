@@ -14,8 +14,6 @@ namespace CK.Setup
         readonly SetupCenterConfiguration _config;
         readonly SetupableConfigurator _configurator;
 
-        StObjCollectorResult _resultToGenerate;
-
         public StObjSetupHook( SetupCenter center, IStObjRuntimeBuilder runtimeBuilder, SetupCenterConfiguration config, SetupableConfigurator internalRelay )
         {
             _center = center;
@@ -23,7 +21,6 @@ namespace CK.Setup
             _config = config;
             _configurator = internalRelay;
             _center.RegisterSetupEvent += new EventHandler<RegisterSetupEventArgs>( OnRegisterSetupEvent );
-            _center.SetupEvent += new EventHandler<SetupEventArgs>( OnSetupEvent );
         }
 
         void OnRegisterSetupEvent( object sender, RegisterSetupEventArgs e )
@@ -31,26 +28,50 @@ namespace CK.Setup
             var monitor = _center.Logger;
             
             StObjCollectorResult result;
-            using( monitor.OpenInfo().Send( "Collecting objects." ) )
+            using( monitor.OpenInfo().Send( "Handling StObj objects." ) )
             {
                 AssemblyRegisterer typeReg = new AssemblyRegisterer( monitor );
                 typeReg.TypeFilter = _config.TypeFilter;
                 typeReg.Discover( _config.AppDomainConfiguration.Assemblies );
                 StObjCollector stObjC = new StObjCollector( monitor, _runtimeBuilder, _configurator, _configurator, _configurator );
-                stObjC.RegisterTypes( typeReg );
-                foreach( var t in _config.ExplicitRegisteredClasses ) stObjC.RegisterClass( t );
-                stObjC.DependencySorterHookInput = _center.StObjDependencySorterHookInput;
-                stObjC.DependencySorterHookOutput = _center.StObjDependencySorterHookOutput;
-                if( stObjC.RegisteringFatalOrErrorCount != 0 )
+                using( monitor.OpenInfo().Send( "Registering StObj types." ) )
                 {
-                    e.CancelSetup( "Error while registering StObj." );
-                    return;
+                    stObjC.RegisterTypes( typeReg );
+                    foreach( var t in _config.ExplicitRegisteredClasses ) stObjC.RegisterClass( t );
+                    stObjC.DependencySorterHookInput = _center.StObjDependencySorterHookInput;
+                    stObjC.DependencySorterHookOutput = _center.StObjDependencySorterHookOutput;
+                    if( stObjC.RegisteringFatalOrErrorCount != 0 )
+                    {
+                        e.CancelSetup( "Error while registering StObj." );
+                        return;
+                    }
                 }
-                result = stObjC.GetResult();
-                if( result.HasFatalError )
+                using( monitor.OpenInfo().Send( "Resolving StObj dependency graph." ) )
                 {
-                    e.CancelSetup( "Error during StObj processing." );
-                    return;
+                    result = stObjC.GetResult();
+                    if( result.HasFatalError )
+                    {
+                        e.CancelSetup( "Error during StObj processing." );
+                        return;
+                    }
+                }
+                StObjContextRoot finalObjects;
+                using( monitor.OpenInfo().Send( "Generating StObj dynamic assembly." ) )
+                {
+                    finalObjects = result.GenerateFinalAssembly( monitor, _runtimeBuilder, _config.FinalAssemblyConfiguration );
+                    if( finalObjects == null )
+                    {
+                        e.CancelSetup( "Error during Final Assembly generation." );
+                        return;
+                    }
+                }
+                using( monitor.OpenInfo().Send( "Injecting final objects mapper." ) )
+                {
+                    if( !result.InjectFinalObjectAccessor( monitor, finalObjects ) )
+                    {
+                        e.CancelSetup( "Error while injecting final objects mapper." );
+                        return;
+                    }
                 }
             }
             bool hasError = false;
@@ -70,17 +91,8 @@ namespace CK.Setup
             }
             if( hasError )
             {
-                e.CancelSetup( "Error Setup Items creation." );
+                e.CancelSetup( "Error during Setup Items creation." );
                 return;
-            }
-            _resultToGenerate = result;
-        }
-
-        void OnSetupEvent( object sender, SetupEventArgs e )
-        {
-            if( e.Step == SetupStep.Success )
-            {
-                _resultToGenerate.GenerateFinalAssembly( _center.Logger, _config.FinalAssemblyConfiguration );
             }
         }
 

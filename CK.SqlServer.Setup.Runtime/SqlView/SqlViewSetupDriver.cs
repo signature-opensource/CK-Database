@@ -27,21 +27,22 @@ namespace CK.SqlServer.Setup
         {
             string fileName = Item.Name + ".sql";
             string text = Item.ResourceLocation.GetString( fileName, false );
+            SqlView v = Item.GetObject();
             if( text == null )
             {
-                fileName = Item.Object.SchemaName + ".sql";
+                fileName = v.SchemaName + ".sql";
                 text = Item.ResourceLocation.GetString( fileName, false );
             }
             if( text == null )
             {
-                fileName = Item.Object.ViewName + ".sql";
+                fileName = v.ViewName + ".sql";
                 text = Item.ResourceLocation.GetString( fileName, false );
             }
             if( text == null )
             {
                 Engine.Monitor.Error().Send( 
                     "Resource '{0}' not found (tried '{1}' and '{2}' and '{3}').", 
-                    Item.Name, Item.Name + ".sql", Item.Object.SchemaName + ".sql", Item.Object.ViewName + ".sql" );
+                    Item.Name, Item.Name + ".sql", v.SchemaName + ".sql", v.ViewName + ".sql" );
                 return false;
             }
 

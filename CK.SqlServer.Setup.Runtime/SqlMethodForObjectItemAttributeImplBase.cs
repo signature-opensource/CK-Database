@@ -71,7 +71,7 @@ namespace CK.SqlServer.Setup
             //      - Pushes an action that will be executed after followers have been executed.
             //
             SqlPackageBaseItem packageItem = (SqlPackageBaseItem)item;
-            string[] names = SqlObjectItemAttributeImpl.BuildNames( packageItem.Object, _attr.ObjectName );
+            string[] names = SqlObjectItemAttributeImpl.BuildNames( packageItem.GetObject(), _attr.ObjectName );
             if( names == null )
             {
                 state.Monitor.Error().Send( "Invalid object name '{0}' in attribute of '{1}' for '{2}'.", _attr.ObjectName, _method.Name, item.FullName );

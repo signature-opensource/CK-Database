@@ -24,7 +24,7 @@ namespace CK.Core
         internal readonly StObj[] StObjs;
         internal readonly int SpecializationCount;
 
-        protected StObjContextRoot( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, Type[] allTypes )
+        protected StObjContextRoot( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, Type[] allTypes, Stream resources )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
             if( runtimeBuilder == null ) throw new ArgumentNullException( "runtimeBuilder" );
@@ -36,7 +36,7 @@ namespace CK.Core
             {
                 StObjs[i] = new StObj( this, allTypes[i] );
             }
-            using( Stream s = GetType().Assembly.GetManifestResourceStream( RootContextTypeName + ".Data" ) )
+            using( Stream s = resources ?? GetType().Assembly.GetManifestResourceStream( RootContextTypeName + ".Data" ) )
             {
                 BinaryReader reader = new BinaryReader( s );
 

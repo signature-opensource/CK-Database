@@ -35,8 +35,7 @@ namespace CK.Setup
             Debug.Assert( _leafData.StructuredObject == null, "Called once and only once." );
             try
             {
-                Type toInstanciate = _leafData.ImplementableTypeInfo != null ? _leafData.ImplementableTypeInfo.LastGeneratedType : Type;
-                return _leafData.StructuredObject = runtimeBuilder.CreateInstance( toInstanciate );
+                return _leafData.CreateStructuredObject( runtimeBuilder, Type );
             }
             catch( Exception ex )
             {
@@ -49,6 +48,13 @@ namespace CK.Setup
         {
             Debug.Assert( Specialization == null );
             return _leafData.ImplementableTypeInfo == null ? Type : _leafData.ImplementableTypeInfo.CreateFinalType( monitor, a, storeAsLastGeneratedType: false );
+        }
+
+        public void InjectFinalObjectAccessor( StObjContextRoot finalMapper )
+        {
+            Debug.Assert( Specialization == null );
+            var ctx = finalMapper.FindContext( Context.Context );
+            _leafData.StructuredObjectFunc = () => ctx.Obtain( Type );
         }
     }
 }

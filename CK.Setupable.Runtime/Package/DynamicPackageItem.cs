@@ -12,7 +12,7 @@ namespace CK.Setup
     /// and  configurable type for the associated <see cref="SetupDriver"/>.
     /// </summary>
     /// <remarks>
-    /// The <see cref="DynamicContainerItem"/> can be used a pure mutable Container is needed (no versions nor associated model).
+    /// The <see cref="DynamicContainerItem"/> can be used if a pure mutable Container is needed (no versions nor associated model).
     /// </remarks>
     public class DynamicPackageItem : PackageItemBase, IDependentItemContainerTyped, IDependentItemDiscoverer
     {

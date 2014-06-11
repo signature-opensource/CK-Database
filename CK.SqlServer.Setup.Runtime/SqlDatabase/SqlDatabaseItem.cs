@@ -10,7 +10,7 @@ namespace CK.SqlServer.Setup
         
         public SqlDatabaseItem( IActivityMonitor monitor, IStObjSetupData data )
         {
-            Object = (SqlDatabase)data.StObj.Object;
+            Object = (SqlDatabase)data.StObj.InitialObject;
             Context = data.StObj.Context.Context;
             Location = Object.Name;
             ItemKind = (DependentItemKind)data.StObj.ItemKind;

@@ -5,7 +5,9 @@ using CK.Core;
 
 namespace CK.Setup
 {
-
+    /// <summary>
+    /// Wraps a <see cref="IStObjResult"/> StObj with information related to the setup phasis.
+    /// </summary>
     public interface IStObjSetupData : IStObjSetupDataBase
     {
         /// <summary>
@@ -20,7 +22,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets the full name of the container.
-        /// If the container is already defined by the <see cref="P:StObj"/>, names must match otherwise an error occurs.
+        /// If the container is already defined by the <see cref="P:IStObjSetupDataBase.StObj"/>, names must match otherwise an error occurs.
         /// This allow name binding to an existing container or package that is not a Structure Object: it should be rarely used.
         /// </summary>
         string ContainerFullName { get; }

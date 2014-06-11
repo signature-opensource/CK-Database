@@ -30,7 +30,7 @@ namespace CK.SqlServer.Setup
                 base.ResolveParameterValue( monitor, parameter );
                 if( parameter.Name == "connectionString" )
                 {
-                    SqlDatabase db = parameter.Owner.Object as SqlDatabase;
+                    SqlDatabase db = parameter.Owner.InitialObject as SqlDatabase;
                     if( db != null )
                     {
                         parameter.SetParameterValue( _center._config.FindConnectionStringByName( db.Name ) );
@@ -62,12 +62,12 @@ namespace CK.SqlServer.Setup
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="config">Configuration object.</param>
-        public SqlSetupCenter( IActivityMonitor monitor, SqlSetupCenterConfiguration config )
-            : this( monitor, config, null )
+        public SqlSetupCenter( IActivityMonitor monitor, SqlSetupCenterConfiguration config, IStObjRuntimeBuilder runtimeBuilder = null )
+            : this( monitor, config, runtimeBuilder, null )
         {
         }
 
-        public SqlSetupCenter( IActivityMonitor monitor, SqlSetupCenterConfiguration config, ISqlManager defaultDatabase )
+        public SqlSetupCenter( IActivityMonitor monitor, SqlSetupCenterConfiguration config, IStObjRuntimeBuilder runtimeBuilder, ISqlManager defaultDatabase )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
             if( config == null ) throw new ArgumentNullException( "config" );
@@ -93,7 +93,7 @@ namespace CK.SqlServer.Setup
             
             var versionRepo = new SqlVersionedItemRepository( _defaultDatabase );
             var memory = new SqlSetupSessionMemoryProvider( _defaultDatabase );
-            _center = new SetupCenter( monitor, _config.SetupConfiguration, versionRepo, memory );
+            _center = new SetupCenter( monitor, _config.SetupConfiguration, versionRepo, memory, runtimeBuilder );
             _sqlFiles = new DependentProtoItemCollector();
             _sqlFileDiscoverer = new SqlFileDiscoverer( new SqlObjectParser(), monitor );
             _center.SetupableConfigurator = new ConfiguratorHook( this );
@@ -107,6 +107,17 @@ namespace CK.SqlServer.Setup
             _center.ScriptTypeManager.Register( sqlHandler );
 
             _center.RegisterSetupEvent += OnRegisterSetup;
+        }
+
+        /// <summary>
+        /// Gets or sets a <see cref="SetupableConfigurator"/> that will be used.
+        /// This can be changed at any moment during setup: the current configurator will always be used.
+        /// When setting it, care should be taken to not break the chain by setting the current configurator as the <see cref="SetupableConfigurator.Previous"/>.
+        /// </summary>
+        public SetupableConfigurator SetupableConfigurator
+        {
+            get { return _center.SetupableConfigurator; }
+            set { _center.SetupableConfigurator = value; }
         }
 
         /// <summary>

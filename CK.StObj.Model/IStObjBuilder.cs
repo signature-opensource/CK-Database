@@ -16,7 +16,7 @@ namespace CK.Core
         /// <summary>
         /// Runs the full build of the system.
         /// </summary>
-        /// <returns>True on success, false otherwise.</returns>
+        /// <returns>True on success, null if an error occurred.</returns>
         bool Run();
     }
 }

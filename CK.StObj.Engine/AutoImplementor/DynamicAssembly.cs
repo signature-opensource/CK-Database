@@ -12,7 +12,7 @@ namespace CK.Core
 {
     /// <summary>
     /// Manages dynamic assembly creation with one <see cref="ModuleBuilder"/>.
-    /// Resulting assembly can be only in memory an
+    /// Resulting assembly can have a strong name and can be in memory and/or saved to disk.
     /// </summary>
     public class DynamicAssembly : IDynamicAssembly
     {

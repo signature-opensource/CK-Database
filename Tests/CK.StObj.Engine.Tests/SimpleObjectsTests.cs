@@ -166,7 +166,7 @@ namespace CK.StObj.Engine.Tests
 
                 IStObjResult theObject = result.Default.StObjMap.ToLeaf( typeof(CK.StObj.Engine.Tests.SimpleObjects.LoggerInjection.LoggerInjected) );
                 Assert.That( theObject, Is.Not.Null );
-                Assert.That( theObject.Object, Is.Not.Null.And.InstanceOf<CK.StObj.Engine.Tests.SimpleObjects.LoggerInjection.LoggerInjected>() );
+                Assert.That( theObject.InitialObject, Is.Not.Null.And.InstanceOf<CK.StObj.Engine.Tests.SimpleObjects.LoggerInjection.LoggerInjected>() );
             }
         }
 

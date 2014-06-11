@@ -126,7 +126,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
                 defaultDB.Connection.ExecuteNonQuery( @"if object_id(N'[dbo].[tTestVSP]') is not null drop table dbo.tTestVSP;" ); // Reset
                 defaultDB.Connection.ExecuteNonQuery( @"if object_id(N'[dbo].[sStoredProcedureWithSPDependsOnVersion]') is not null drop procedure [dbo].[sStoredProcedureWithSPDependsOnVersion];" );
 
-                using( SqlSetupCenter c = new SqlSetupCenter( TestHelper.ConsoleMonitor, config, defaultDB ) )
+                using( SqlSetupCenter c = new SqlSetupCenter( TestHelper.ConsoleMonitor, config, StObjContextRoot.DefaultStObjRuntimeBuilder, defaultDB ) )
                 {
                     Assert.That( c.Run() );
                 }

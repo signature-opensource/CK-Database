@@ -346,7 +346,7 @@ namespace CK.StObj.Engine.Tests
 
                             public class C : IC
                             {
-                                [AmbientContract]
+                                [InjectContract]
                                 public A TheA { get; private set; }
                             }
 

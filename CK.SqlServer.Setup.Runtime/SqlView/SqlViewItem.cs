@@ -13,7 +13,7 @@ namespace CK.SqlServer.Setup
     {
         SqlObjectProtoItem _protoItem;
 
-        public SqlViewItem( SqlView view )
+        public SqlViewItem( Func<SqlView> view )
             : base( "ObjView", typeof( SqlViewSetupDriver ), view )
         {
         }
@@ -23,21 +23,22 @@ namespace CK.SqlServer.Setup
         {
             Name = data.FullNameWithoutContext;
             Context = data.StObj.Context.Context;
-            if( Object.Database != null ) Location = Object.Database.Name;
+            SqlView v = GetObject();
+            if( v.Database != null ) Location = v.Database.Name;
             ResourceLocation = (ResourceLocator)data.StObj.GetStObjProperty( "ResourceLocation" );
         }
 
         /// <summary>
         /// Masked to formally be associated to <see cref="SqlView"/>.
         /// </summary>
-        public new SqlView Object
+        public new SqlView GetObject()
         {
-            get { return (SqlView)base.Object; } 
+            return (SqlView)base.GetObject(); 
         }
 
         /// <summary>
         /// Gets or sets a <see cref="ResourceLocation"/> that locates the resources associated 
-        /// to this package.
+        /// to this view.
         /// </summary>
         public ResourceLocator ResourceLocation { get; set; }
 
@@ -65,11 +66,11 @@ namespace CK.SqlServer.Setup
         public void WriteDrop( TextWriter b )
         {
             b.Write( "if OBJECT_ID('" );
-            b.Write( this.Object.SchemaName );
+            b.Write( GetObject().SchemaName );
             b.Write( "') is not null drop " );
             b.Write( "View" );
             b.Write( ' ' );
-            b.Write( this.Object.SchemaName );
+            b.Write( GetObject().SchemaName );
             b.WriteLine( ';' );
         }
 
@@ -83,7 +84,7 @@ namespace CK.SqlServer.Setup
             b.Write( "create " );
             b.Write( "View" );
             b.Write( ' ' );
-            b.Write( this.Object.SchemaName );
+            b.Write( GetObject().SchemaName );
             if( ProtoItem != null ) b.WriteLine( ProtoItem.TextAfterName );
         }
 

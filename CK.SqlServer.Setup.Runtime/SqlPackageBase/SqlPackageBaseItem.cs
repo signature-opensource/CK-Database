@@ -8,7 +8,7 @@ namespace CK.SqlServer.Setup
 {
     public class SqlPackageBaseItem : StObjDynamicPackageItem
     {
-        public SqlPackageBaseItem( SqlPackageBase package )
+        public SqlPackageBaseItem( Func<SqlPackageBase> package )
             : this( "ObjPackage", typeof( SqlPackageBaseSetupDriver ), package )
         {
         }
@@ -18,11 +18,11 @@ namespace CK.SqlServer.Setup
         /// </summary>
         /// <param name="itemType">Type of item (must not be longer than 16 characters).</param>
         /// <param name="driverType">Type of the associated driver or its assembly qualified name.</param>
-        /// <param name="obj">The final <see cref="Object"/>.</param>
-        protected SqlPackageBaseItem( string itemType, object driverType, object obj )
-            : base( itemType, driverType, obj )
+        /// <param name="resolver">A function that knows how to obtain the final, most specialized, structured object.</param>
+        protected SqlPackageBaseItem( string itemType, object driverType, Func<SqlPackageBase> resolver )
+            : base( itemType, driverType, resolver )
         {
-            if( Object.HasModel ) EnsureModel();
+            if( GetObject().HasModel ) EnsureModel();
         }
 
         /// <summary>
@@ -34,9 +34,10 @@ namespace CK.SqlServer.Setup
             : base( monitor, data )
         {
             Context = data.StObj.Context.Context;
-            if( Object.Database != null ) Location = Object.Database.Name;
+            SqlPackageBase p = GetObject();
+            if( p.Database != null ) Location = p.Database.Name;
             ResourceLocation = (ResourceLocator)data.StObj.GetStObjProperty( "ResourceLocation" );
-            if( Object.HasModel ) EnsureModel();
+            if( p.HasModel ) EnsureModel();
             
             Debug.Assert( typeof( SqlPackageBaseSetupDriver ).IsAssignableFrom( data.DriverType ) );
             Name = data.FullNameWithoutContext;
@@ -45,9 +46,9 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Masked to formally be associated to <see cref="SqlPackageBase"/>.
         /// </summary>
-        public new SqlPackageBase Object
+        public new SqlPackageBase GetObject()
         { 
-            get { return (SqlPackageBase)base.Object; } 
+            return (SqlPackageBase)base.GetObject(); 
         }
 
         /// <summary>

@@ -59,7 +59,7 @@ namespace CK.SqlServer.Setup
         {
             if( data.IsDefaultFullNameWithoutContext )
             {
-                var p = (SqlPackageBase)data.StObj.Object;
+                var p = (SqlPackageBase)data.StObj.InitialObject;
                 var autoName = p.Schema + '.' + data.StObj.ObjectType.Name;
                 if( data.IsFullNameWithoutContextAvailable( autoName ) )
                 {

@@ -22,7 +22,7 @@ namespace CK.SqlServer.Setup
 
         void IStObjSetupDynamicInitializer.DynamicItemInitialize( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjResult stObj )
         {
-            if( !(stObj.Object is SqlPackageBase) )
+            if( !(stObj.InitialObject is SqlPackageBase) )
             {
                 throw new NotSupportedException( "SqlObjectItemAttribute must be set only on class that inherits SqlPackageBase." );
             }
@@ -39,7 +39,7 @@ namespace CK.SqlServer.Setup
                 {
                     if( already.Add( nTrimmed ) )
                     {
-                        string[] names = BuildNames( packageItem.Object, nTrimmed );
+                        string[] names = BuildNames( packageItem.GetObject(), nTrimmed );
                         if( names == null )
                         {
                             state.Monitor.Error().Send( "Invalid object name '{0}' in SqlObjectItem attribute of '{1}'.", nTrimmed, item.FullName );

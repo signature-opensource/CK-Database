@@ -17,7 +17,7 @@ namespace CK.Setup
 
         public StObjSetupItemBuilder( IActivityMonitor monitor, IStObjSetupConfigurator configurator = null, IStObjSetupItemFactory setupItemFactory = null, IStObjSetupDynamicInitializer dynamicInitializer = null )
         {
-            if( monitor == null ) throw new ArgumentNullException( "_monitor" );
+            if( monitor == null ) throw new ArgumentNullException( "monitor" );
             _monitor = monitor;
             _configurator = configurator;
             _setupItemFactory = setupItemFactory;
@@ -39,6 +39,8 @@ namespace CK.Setup
             if( !CallDynamicInitializer( orderedObjects, setupableItems ) ) return null;
             return setupableItems.Values.Select( data => data.SetupItem );
         }
+
+        #region Build phasis: BuildSetupItems, BindDependencies and CallDynamicInitializer
 
         void BuildSetupItems( IReadOnlyList<IStObjResult> orderedObjects, Dictionary<IStObjResult, StObjSetupData> setupableItems )
         {
@@ -67,7 +69,7 @@ namespace CK.Setup
                         }
                     }
                     // If the object itself is a IStObjSetupConfigurator, calls it.
-                    IStObjSetupConfigurator objectItself = r.Object as IStObjSetupConfigurator;
+                    IStObjSetupConfigurator objectItself = r.InitialObject as IStObjSetupConfigurator;
                     if( objectItself != null ) objectItself.ConfigureDependentItem( _monitor, data );
 
                     // Calls external configuration.
@@ -208,7 +210,6 @@ namespace CK.Setup
             }
         }
 
-
         class DynamicInitializerState : IStObjSetupDynamicInitializerState
         {
             readonly StObjSetupItemBuilder _builder;
@@ -280,7 +281,7 @@ namespace CK.Setup
             {
                 var state = new DynamicInitializerState( this );
                 bool success = true;
-                foreach( var o in orderedObjects )
+                foreach( IStObjResult o in orderedObjects )
                 {
                     IMutableSetupItem item = setupableItems[o].SetupItem;
                     state.CurrentItem = item;
@@ -298,7 +299,8 @@ namespace CK.Setup
                             }
                         }
                         initSource = "Structured Item itself";
-                        if( o.Object is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)o.Object).DynamicItemInitialize( state, item, o );
+                        IStObjSetupDynamicInitializer objectItself = o.ObjectAccessor() as IStObjSetupDynamicInitializer;
+                        if( o.InitialObject is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)o.InitialObject).DynamicItemInitialize( state, item, o );
                         initSource = "Setup Item itself";
                         if( item is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)item).DynamicItemInitialize( state, item, o );
                         initSource = "global StObjSetupBuilder initializer";
@@ -321,6 +323,8 @@ namespace CK.Setup
                 return success;
             }
         }
+        
+        #endregion
 
     }
 }

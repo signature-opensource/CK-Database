@@ -33,7 +33,7 @@ namespace CK.Setup
         public object Obtain( Type t )
         {
             IStObjResult m = ToLeaf( t );
-            return m != null ? m.Object : null;
+            return m != null ? m.ObjectAccessor() : null;
         }
         
         IStObjResult IContextualStObjMapRuntime.ToStObj( Type t )

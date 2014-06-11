@@ -1,11 +1,12 @@
-﻿using CK.Core;
+﻿using System;
+using CK.Core;
 using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
     public class SqlTableItem : SqlPackageBaseItem
     {
-        public SqlTableItem( SqlTable package )
+        public SqlTableItem( Func<SqlTable> package )
             : base( "ObjTable", typeof( SqlTableSetupDriver ), package )
         {
         }
@@ -19,9 +20,9 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Masked to formally be associated to <see cref="SqlTable"/>.
         /// </summary>
-        public new SqlTable Object
+        public new SqlTable GetObject()
         { 
-            get { return (SqlTable)base.Object; } 
+            return (SqlTable)base.GetObject(); 
         }
 
     }

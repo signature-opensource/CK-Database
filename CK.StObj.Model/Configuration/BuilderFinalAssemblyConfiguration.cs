@@ -19,7 +19,9 @@ namespace CK.Core
         public const string DefaultAssemblyName = "CK.StObj.AutoAssembly";
 
         /// <summary>
-        /// Flags that prevents final assembly generation.
+        /// Flags that prevents final assembly generation: the final asembly is always
+        /// created to be able to interact with eventually implemented StObj, this flag only 
+        /// prevents the assembly to be saved on disk.
         /// </summary>
         public bool DoNotGenerateFinalAssembly { get; set; }
 
