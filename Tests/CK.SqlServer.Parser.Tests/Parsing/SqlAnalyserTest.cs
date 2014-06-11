@@ -471,6 +471,15 @@ namespace CK.SqlServer.Parser.Tests
         }
 
         [Test]
+        public void ParseStoredProcedure03()
+        {
+            var sp = ReadStatement<SqlExprStStoredProc>( "sStoredProcedure03.sql" );
+
+            Assert.That( sp.Name.ToString(), Is.EqualTo( "InvBack.sOfferCreate\r\n" ) );
+            Assert.That( sp.Parameters.Count, Is.EqualTo( 7 ) );
+        }
+
+        [Test]
         public void ParseStoredProcedureInputOutput()
         {
             var sp = ReadStatement<SqlExprStStoredProc>( "sStoredProcedureInputOutput.sql" );
