@@ -29,7 +29,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
 
                 using( TestHelper.ConsoleMonitor.OpenTrace().Send( "First setup (will fail due to a MissingDependencyIsError configuration)." ) )
                 {
-                    using( var r = StObjContextRoot.Build( config, TestHelper.ConsoleMonitor ) )
+                    using( var r = StObjContextRoot.Build( config, null, TestHelper.ConsoleMonitor ) )
                     {
                         Assert.That( r.Success, Is.False );
                     }
@@ -43,7 +43,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
                 config.IgnoreMissingDependencyIsError = true;
                 using( TestHelper.ConsoleMonitor.OpenTrace().Send( "Second setup (will succeed since SqlSetupCenterConfiguration.IgnoreMissingDependencyIsError is true)." ) )
                 {
-                    using( var r = StObjContextRoot.Build( config, TestHelper.ConsoleMonitor ) )
+                    using( var r = StObjContextRoot.Build( config, null, TestHelper.ConsoleMonitor ) )
                     {
                         Assert.That( r.Success );
                     }
@@ -58,7 +58,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
 
                 using( TestHelper.ConsoleMonitor.OpenTrace().Send( "Third setup." ) )
                 {
-                    using( var r = StObjContextRoot.Build( config, TestHelper.ConsoleMonitor ) )
+                    using( var r = StObjContextRoot.Build( config, null, TestHelper.ConsoleMonitor ) )
                     {
                         Assert.That( r.Success );
                     }
@@ -85,7 +85,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
                 config.DefaultDatabaseConnectionString = defaultDB.CurrentConnectionString;
             }
 
-            using( var r = StObjContextRoot.Build( config, TestHelper.ConsoleMonitor ) )
+            using( var r = StObjContextRoot.Build( config, null, TestHelper.ConsoleMonitor ) )
             {
                 Assert.That( r.Success );
             }
@@ -99,7 +99,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
             }
             // From scratch now: the database is empty.
 
-            using( var r = StObjContextRoot.Build( config, TestHelper.ConsoleMonitor ) )
+            using( var r = StObjContextRoot.Build( config, null, TestHelper.ConsoleMonitor ) )
             {
                 Assert.That( r.Success );
             }

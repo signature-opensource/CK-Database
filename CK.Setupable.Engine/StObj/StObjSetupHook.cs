@@ -26,10 +26,12 @@ namespace CK.Setup
         void OnRegisterSetupEvent( object sender, RegisterSetupEventArgs e )
         {
             var monitor = _center.Logger;
-            
-            StObjCollectorResult result;
+
+            bool hasError = false;
+            using( monitor.CatchCounter( a => hasError = true ) )
             using( monitor.OpenInfo().Send( "Handling StObj objects." ) )
             {
+                StObjCollectorResult result;
                 AssemblyRegisterer typeReg = new AssemblyRegisterer( monitor );
                 typeReg.TypeFilter = _config.TypeFilter;
                 typeReg.Discover( _config.AppDomainConfiguration.Assemblies );
@@ -40,59 +42,52 @@ namespace CK.Setup
                     foreach( var t in _config.ExplicitRegisteredClasses ) stObjC.RegisterClass( t );
                     stObjC.DependencySorterHookInput = _center.StObjDependencySorterHookInput;
                     stObjC.DependencySorterHookOutput = _center.StObjDependencySorterHookOutput;
-                    if( stObjC.RegisteringFatalOrErrorCount != 0 )
-                    {
-                        e.CancelSetup( "Error while registering StObj." );
-                        return;
-                    }
+                    Debug.Assert( stObjC.RegisteringFatalOrErrorCount == 0 || hasError, "stObjC.RegisteringFatalOrErrorCount > 0 ==> An error has been logged." );
                 }
-                using( monitor.OpenInfo().Send( "Resolving StObj dependency graph." ) )
+                if( stObjC.RegisteringFatalOrErrorCount == 0 )
                 {
-                    result = stObjC.GetResult();
-                    if( result.HasFatalError )
+                    using( monitor.OpenInfo().Send( "Resolving StObj dependency graph." ) )
                     {
-                        e.CancelSetup( "Error during StObj processing." );
-                        return;
+                        result = stObjC.GetResult();
+                        Debug.Assert( !result.HasFatalError || hasError, "result.HasFatalError ==> An error has been logged." );
                     }
-                }
-                StObjContextRoot finalObjects;
-                using( monitor.OpenInfo().Send( "Generating StObj dynamic assembly." ) )
-                {
-                    finalObjects = result.GenerateFinalAssembly( monitor, _runtimeBuilder, _config.FinalAssemblyConfiguration );
-                    if( finalObjects == null )
+                    if( !result.HasFatalError )
                     {
-                        e.CancelSetup( "Error during Final Assembly generation." );
-                        return;
+                        IEnumerable<ISetupItem> setupItems;
+                        using( monitor.OpenInfo().Send( "Creating Setup Items from Structured Objects." ) )
+                        {
+                            var itemBuilder = new StObjSetupItemBuilder( monitor, _configurator, _configurator, _configurator );
+                            setupItems = itemBuilder.Build( result.OrderedStObjs );
+                            Debug.Assert( setupItems != null || hasError, "setupItems == null ==> An error has been logged." );
+                        }
+                        if( setupItems != null )
+                        {
+                            StObjContextRoot finalObjects;
+                            using( monitor.OpenInfo().Send( "Generating StObj dynamic assembly." ) )
+                            {
+                                finalObjects = result.GenerateFinalAssembly( monitor, _runtimeBuilder, _config.FinalAssemblyConfiguration );
+                                Debug.Assert( finalObjects != null || hasError, "finalObjects == null ==> An error has been logged." );
+                            }
+                            if( finalObjects != null )
+                            {
+                                bool injectDone;
+                                using( monitor.OpenInfo().Send( "Injecting final objects mapper." ) )
+                                {
+                                    injectDone = result.InjectFinalObjectAccessor( monitor, finalObjects );
+                                    Debug.Assert( injectDone || hasError, "inject failed ==> An error has been logged." );
+                                }
+                                if( injectDone )
+                                {
+                                    e.Register( setupItems );
+                                }
+                            }
+                        }
                     }
-                }
-                using( monitor.OpenInfo().Send( "Injecting final objects mapper." ) )
-                {
-                    if( !result.InjectFinalObjectAccessor( monitor, finalObjects ) )
-                    {
-                        e.CancelSetup( "Error while injecting final objects mapper." );
-                        return;
-                    }
-                }
-            }
-            bool hasError = false;
-            using( monitor.CatchCounter( a => hasError = true ) )
-            {
-                using( monitor.OpenInfo().Send( "Creating Setup Items from Structured Objects." ) )
-                {
-                    var itemBuilder = new StObjSetupItemBuilder( monitor, _configurator, _configurator, _configurator );
-                    var setupItems = itemBuilder.Build( result.OrderedStObjs );
-                    if( setupItems == null )
-                    {
-                        Debug.Assert( hasError );
-                        monitor.CloseGroup( "Unable to create Setup items for StObjs." );
-                    }
-                    else e.Register( setupItems );
                 }
             }
             if( hasError )
             {
                 e.CancelSetup( "Error during Setup Items creation." );
-                return;
             }
         }
 

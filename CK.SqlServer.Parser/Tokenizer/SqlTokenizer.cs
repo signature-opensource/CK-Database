@@ -388,7 +388,7 @@ namespace CK.SqlServer.Parser
                 {
                     Debug.Assert( (_tokenType & (int)SqlTokenType.IsComment) == 0, "Comments are considered as Trivias." );
                     // Captures buffer (if not already done) before reading trailing trivias.
-                    if( _bufferString == null ) _bufferString = _buffer.ToString();
+                    var bufferString = _bufferString ?? _buffer.ToString();
                     CollectTrailingTrivias();
                     var lead = _leadingTrivias.ToReadOnlyList();
                     var tail = _trailingTrivias.ToReadOnlyList();
@@ -398,17 +398,17 @@ namespace CK.SqlServer.Parser
                     }
                     else if( (_tokenType & (int)SqlTokenType.IsString) != 0 )
                     {
-                        _token = new SqlTokenLiteralString( (SqlTokenType)_tokenType, _bufferString, lead, tail );
+                        _token = new SqlTokenLiteralString( (SqlTokenType)_tokenType, bufferString, lead, tail );
                     }
                     else if( (_tokenType & (int)SqlTokenType.IsNumber) != 0 )
                     {
                         switch( (SqlTokenType)_tokenType )
                         {
                             case SqlTokenType.Integer: _token = new SqlTokenLiteralInteger( SqlTokenType.Integer, _integerValue, lead, tail ); break;
-                            case SqlTokenType.Float: _token = new SqlTokenLiteralFloat( SqlTokenType.Float, _bufferString, _doubleValue, lead, tail ); break;
-                            case SqlTokenType.Binary: _token = new SqlTokenLiteralBinary( SqlTokenType.Binary, _bufferString, lead, tail ); break;
-                            case SqlTokenType.Decimal: _token = new SqlTokenLiteralDecimal( SqlTokenType.Decimal, _bufferString, lead, tail ); break;
-                            case SqlTokenType.Money: _token = new SqlTokenLiteralMoney( SqlTokenType.Money, _bufferString, lead, tail ); break;
+                            case SqlTokenType.Float: _token = new SqlTokenLiteralFloat( SqlTokenType.Float, bufferString, _doubleValue, lead, tail ); break;
+                            case SqlTokenType.Binary: _token = new SqlTokenLiteralBinary( SqlTokenType.Binary, bufferString, lead, tail ); break;
+                            case SqlTokenType.Decimal: _token = new SqlTokenLiteralDecimal( SqlTokenType.Decimal, bufferString, lead, tail ); break;
+                            case SqlTokenType.Money: _token = new SqlTokenLiteralMoney( SqlTokenType.Money, bufferString, lead, tail ); break;
                         }
                     }
                     else
@@ -576,7 +576,7 @@ namespace CK.SqlServer.Parser
             while( (ic = Read()) != -1 )
             {
                 // Eats the end of line.
-                // This is by design: LineComment contains the end-of-line (Line Separator \u2028 and Paragraph Separator \u2029).
+                // This is by design: LineComment eats the end-of-line (Line Separator \u2028 and Paragraph Separator \u2029).
                 if( ic == '\r' || ic == '\n' || ic == '\u2028' || ic == '\u2029' )
                 {
                     if( ic == '\r' ) Read( '\n' );

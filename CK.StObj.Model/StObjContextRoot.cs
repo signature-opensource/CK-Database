@@ -110,13 +110,15 @@ namespace CK.Core
             bool _done;
             bool _success;
 
-            public AppDomainCommunication( IActivityMonitor monitor, IStObjEngineConfiguration config, AppDomainMode m )
+            public AppDomainCommunication( IActivityMonitor monitor, IStObjEngineConfiguration config, AppDomainMode m, string stObjRuntimeBuilderFactoryTypeName, string stObjRuntimeBuilderFactoryMethodName )
             {
                 if( !config.GetType().IsSerializable ) throw new InvalidOperationException( "IStObjEngineConfiguration implementation must be serializable." );
                 _locker = new object();
                 LoggerBridge = monitor.Output.BridgeTarget;
                 Config = config;
                 if( m != AppDomainMode.GetVersionStamp ) VersionStampRead = config.FinalAssemblyConfiguration.ExternalVersionStamp;
+                StObjRuntimeBuilderFactoryTypeName = stObjRuntimeBuilderFactoryTypeName;
+                StObjRuntimeBuilderFactoryMethodName = stObjRuntimeBuilderFactoryMethodName;
                 Mode = m;
             }
 
@@ -127,6 +129,10 @@ namespace CK.Core
             public ActivityMonitorBridgeTarget LoggerBridge { get; private set; }
 
             public IStObjEngineConfiguration Config { get; private set; }
+
+            public string StObjRuntimeBuilderFactoryTypeName { get; private set; }
+
+            public string StObjRuntimeBuilderFactoryMethodName { get; private set; }
 
             public bool WaitForResult()
             {
@@ -147,14 +153,68 @@ namespace CK.Core
             }
         }
 
+
         /// <summary>
         /// Runs a build based on the given serializable <paramref name="config"/> object. 
         /// The returned <see cref="StObjBuildResult"/> must be disposed once done with it.
         /// </summary>
         /// <param name="config">Configuration object. It must be serializable.</param>
+        /// <param name="stObjRuntimeBuilderFactoryTypeName">
+        /// Assembly qualified name of a public type that exposes a factory method of the <see cref="IStObjRuntimeBuilder"/> that must be used.
+        /// The method must be public and static.
+        /// When null, the <see cref="StObjContextRoot.DefaultStObjRuntimeBuilder"/> is used.
+        /// </param>
+        /// <param name="stObjRuntimeBuilderFactoryMethodName">Name of the method to call (defaults to "CreateStObjRuntimeBuilder").</param>
+        /// <param name="builderFactoryStaticMethod">
+        /// Must be a static method that returns a <see cref="IStObjRuntimeBuilder"/> or null to use the <see cref="StObjContextRoot.DefaultStObjRuntimeBuilder"/>.
+        /// </param>
         /// <param name="monitor">Optional monitor.</param>
         /// <returns>A disposable result.</returns>
-        public static StObjBuildResult Build( IStObjEngineConfiguration config, IActivityMonitor monitor = null, bool forceBuild = false )
+        public static StObjBuildResult Build( IStObjEngineConfiguration config, Func<IStObjRuntimeBuilder> builderFactoryStaticMethod = null, IActivityMonitor monitor = null, bool forceBuild = false )
+        {
+            string typeName = null;
+            string methodName = null;
+            if( builderFactoryStaticMethod != null )
+            {
+                if( !builderFactoryStaticMethod.Method.IsStatic || !builderFactoryStaticMethod.Method.DeclaringType.IsPublic || !builderFactoryStaticMethod.Method.IsPublic )
+                {
+                    throw new ArgumentException( "Must be a public static method of a public class.", "builderFactoryStaticMethod" );
+                }
+                typeName = builderFactoryStaticMethod.Method.DeclaringType.AssemblyQualifiedName;
+                methodName = builderFactoryStaticMethod.Method.Name;
+            }
+            return DoBuild( config, builderFactoryStaticMethod, typeName, methodName, monitor, forceBuild );
+        }
+
+        /// <summary>
+        /// Runs a build based on the given serializable <paramref name="config"/> object. 
+        /// The returned <see cref="StObjBuildResult"/> must be disposed once done with it.
+        /// </summary>
+        /// <param name="config">Configuration object. It must be serializable.</param>
+        /// <param name="stObjRuntimeBuilderFactoryTypeName">
+        /// Assembly qualified name of a type that exposes a static parmeterless method that retunrs a <see cref="IStObjRuntimeBuilder"/>.
+        /// When null, the <see cref="StObjContextRoot.DefaultStObjRuntimeBuilder"/> is used.
+        /// </param>
+        /// <param name="stObjRuntimeBuilderFactoryMethodName">Name of the method to call (defaults to "CreateStObjRuntimeBuilder").</param>
+        /// <param name="monitor">Optional monitor.</param>
+        /// <returns>A disposable result.</returns>
+        public static StObjBuildResult Build(
+            IStObjEngineConfiguration config,
+            string stObjRuntimeBuilderFactoryTypeName = null,
+            string stObjRuntimeBuilderFactoryMethodName = "CreateStObjRuntimeBuilder",
+            IActivityMonitor monitor = null,
+            bool forceBuild = false )
+        {
+            return DoBuild( config, null, stObjRuntimeBuilderFactoryTypeName, stObjRuntimeBuilderFactoryMethodName, monitor, forceBuild );
+        }
+
+        static StObjBuildResult DoBuild( 
+            IStObjEngineConfiguration config,
+            Func<IStObjRuntimeBuilder> builderMethod,
+            string stObjRuntimeBuilderFactoryTypeName, 
+            string stObjRuntimeBuilderFactoryMethodName, 
+            IActivityMonitor monitor, 
+            bool forceBuild )
         {
             if( config == null ) throw new ArgumentNullException( "config" );
             if( monitor == null ) monitor = new ActivityMonitor( "CK.Core.StObjContextRoot.Build" );
@@ -164,7 +224,12 @@ namespace CK.Core
             {
                 using( monitor.OpenInfo().Send( "Build process. Creating an independent AppDomain." ) )
                 {
-                    r = BuildOrGetVersionStampInIndependentAppDomain( config, monitor, forceBuild ? AppDomainMode.ForceBuild : AppDomainMode.BuildIfRequired );
+                    r = BuildOrGetVersionStampInIndependentAppDomain( 
+                                config, 
+                                stObjRuntimeBuilderFactoryTypeName, 
+                                stObjRuntimeBuilderFactoryMethodName, 
+                                monitor, 
+                                forceBuild ? AppDomainMode.ForceBuild : AppDomainMode.BuildIfRequired );
                 }
             }
             else
@@ -175,7 +240,12 @@ namespace CK.Core
                     {
                         // Extracts the Version stamp of the existing dll (if any) in an independent AppDomain to
                         // avoid cluttering the ReflectionOnly context of the current AppDomain.
-                        r = BuildOrGetVersionStampInIndependentAppDomain( config, monitor, AppDomainMode.GetVersionStamp );
+                        r = BuildOrGetVersionStampInIndependentAppDomain( 
+                                    config,
+                                    stObjRuntimeBuilderFactoryTypeName,
+                                    stObjRuntimeBuilderFactoryMethodName,
+                                    monitor, 
+                                    AppDomainMode.GetVersionStamp );
                         if( !r.Success || r.ExternalVersionStamp != config.FinalAssemblyConfiguration.ExternalVersionStamp )
                         {
                             monitor.Info().Send( "Build is required." );
@@ -188,19 +258,48 @@ namespace CK.Core
                         }
                     }
                 }
-                if( r == null ) r = new StObjBuildResult( LaunchRun( monitor, config ), config.FinalAssemblyConfiguration.ExternalVersionStamp, false, null, null );
+                if( r == null )
+                {
+                    IStObjRuntimeBuilder runtimeBuilder = ResolveRuntimeBuilder( builderMethod, stObjRuntimeBuilderFactoryTypeName, stObjRuntimeBuilderFactoryMethodName, monitor );
+                    r = new StObjBuildResult( LaunchRun( monitor, config, runtimeBuilder ), config.FinalAssemblyConfiguration.ExternalVersionStamp, false, null, null );
+                }
             }
             return r;
         }
 
-        private static bool LaunchRun( IActivityMonitor monitor, IStObjEngineConfiguration config )
+        private static IStObjRuntimeBuilder ResolveRuntimeBuilder( Func<IStObjRuntimeBuilder> builderMethod, string stObjRuntimeBuilderFactoryTypeName, string stObjRuntimeBuilderFactoryMethodName, IActivityMonitor monitor )
+        {
+            IStObjRuntimeBuilder runtimeBuilder;
+            using( monitor.OpenInfo().Send( "Obtention of the IStObjRuntimeBuilder." ) )
+            {
+                runtimeBuilder = DefaultStObjRuntimeBuilder;
+                if( stObjRuntimeBuilderFactoryTypeName != null )
+                {
+                    if( builderMethod != null ) runtimeBuilder = builderMethod();
+                    else
+                    {
+                        Type t = SimpleTypeFinder.WeakDefault.ResolveType( stObjRuntimeBuilderFactoryTypeName, true );
+                        MethodInfo m = t.GetMethod( stObjRuntimeBuilderFactoryMethodName );
+                        runtimeBuilder = (IStObjRuntimeBuilder)m.Invoke( null, Util.EmptyArray<object>.Empty );
+                    }
+                }
+            }
+            return runtimeBuilder;
+        }
+
+        private static bool LaunchRun( IActivityMonitor monitor, IStObjEngineConfiguration config, IStObjRuntimeBuilder runtimeBuilder )
         {
             monitor.Info().Send( "Current AppDomain.CurrentDomain.FriendlyName = '{0}'.", AppDomain.CurrentDomain.FriendlyName );
-            IStObjBuilder runner = (IStObjBuilder)Activator.CreateInstance( SimpleTypeFinder.WeakDefault.ResolveType( config.BuilderAssemblyQualifiedName, true ), monitor, config );
+            IStObjBuilder runner = (IStObjBuilder)Activator.CreateInstance( SimpleTypeFinder.WeakDefault.ResolveType( config.BuilderAssemblyQualifiedName, true ), monitor, config, runtimeBuilder );
             return runner.Run();
         }
 
-        private static StObjBuildResult BuildOrGetVersionStampInIndependentAppDomain( IStObjEngineConfiguration config, IActivityMonitor monitor, AppDomainMode m )
+        private static StObjBuildResult BuildOrGetVersionStampInIndependentAppDomain( 
+            IStObjEngineConfiguration config,
+            string stObjRuntimeBuilderFactoryTypeName,
+            string stObjRuntimeBuilderFactoryMethodName,
+            IActivityMonitor monitor, 
+            AppDomainMode m )
         {
             AppDomainSetup thisSetup = AppDomain.CurrentDomain.SetupInformation;
             AppDomainSetup setup = new AppDomainSetup();
@@ -226,7 +325,7 @@ namespace CK.Core
                 setup.PrivateBinPath = string.Join( ";", config.AppDomainConfiguration.ProbePaths );
             }
             var appDomain = AppDomain.CreateDomain( "StObjContextRoot.Build.IndependentAppDomain", null, setup );
-            AppDomainCommunication appDomainComm = new AppDomainCommunication( monitor, config, m );
+            AppDomainCommunication appDomainComm = new AppDomainCommunication( monitor, config, m, stObjRuntimeBuilderFactoryTypeName, stObjRuntimeBuilderFactoryMethodName );
             appDomain.SetData( "CK-AppDomainComm", appDomainComm );
             appDomain.DoCallBack( new CrossAppDomainDelegate( LaunchRunCrossDomain ) );
             return new StObjBuildResult( appDomainComm.WaitForResult(), appDomainComm.VersionStampRead, appDomainComm.Mode == AppDomainMode.ResultFoundExisting, appDomain, monitor );
@@ -299,9 +398,10 @@ namespace CK.Core
                 }
                 else
                 {
+                    IStObjRuntimeBuilder runtimeBuilder = ResolveRuntimeBuilder( null, appDomainComm.StObjRuntimeBuilderFactoryTypeName, appDomainComm.StObjRuntimeBuilderFactoryMethodName, monitor );
                     // Updates the VersionStampRead on the output.
                     appDomainComm.VersionStampRead = config.FinalAssemblyConfiguration.ExternalVersionStamp;
-                    appDomainComm.SetResult( LaunchRun( monitor, config ) );
+                    appDomainComm.SetResult( LaunchRun( monitor, config, runtimeBuilder ) );
                 }
             }
             catch( Exception ex )

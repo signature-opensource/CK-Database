@@ -16,6 +16,7 @@ namespace CK.Setup
     {
         readonly IActivityMonitor _monitor;
         readonly IStObjEngineConfiguration _config;
+        readonly IStObjRuntimeBuilder _runtimeBuilder;
 
         /// <summary>
         /// Initializes a new <see cref="BasicStObjBuilder"/>.
@@ -24,10 +25,12 @@ namespace CK.Setup
         /// </summary>
         /// <param name="monitor">Logger that must be used.</param>
         /// <param name="config">Configuration that describes the key aspects of the build.</param>
-        public BasicStObjBuilder( IActivityMonitor monitor, IStObjEngineConfiguration config )
+        /// <param name="runtimeBuilder">The object in charge of actual objects instanciation. When null, <see cref="StObjContextRoot.DefaultStObjRuntimeBuilder"/> is used.</param>
+        public BasicStObjBuilder( IActivityMonitor monitor, IStObjEngineConfiguration config, IStObjRuntimeBuilder runtimeBuilder = null )
         {
             _monitor = monitor;
             _config = config;
+            _runtimeBuilder = runtimeBuilder ?? StObjContextRoot.DefaultStObjRuntimeBuilder;
         }
 
         /// <summary>
@@ -50,7 +53,7 @@ namespace CK.Setup
             if( r.HasFatalError ) return false;
 
             // Step 4: Generating final assembly.
-            return r.GenerateFinalAssembly( _monitor, StObjContextRoot.DefaultStObjRuntimeBuilder, _config.FinalAssemblyConfiguration ) != null;
+            return r.GenerateFinalAssembly( _monitor, _runtimeBuilder, _config.FinalAssemblyConfiguration ) != null;
         }
     }
 }

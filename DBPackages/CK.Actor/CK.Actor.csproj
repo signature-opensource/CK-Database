@@ -57,9 +57,9 @@
     <Content Include="Sql\Model.CK.Actor.Install.1.0.0.sql" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="CK.Core, Version=3.0.22.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+    <Reference Include="CK.Core, Version=3.0.25.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\CK.Core.3.0.22\lib\net45\CK.Core.dll</HintPath>
+      <HintPath>..\..\packages\CK.Core.3.0.25\lib\net45\CK.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

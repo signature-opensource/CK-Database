@@ -34,7 +34,7 @@ namespace CK.Setup
                         o.InjectFinalObjectAccessor( finalObjects );
                     }
                 }
-                return false;
+                return true;
             }
             catch( Exception ex )
             {
@@ -165,19 +165,18 @@ namespace CK.Setup
                     long graphDescSize = outS.Memory.Length - valuesSize - typeMappingSize;
                     monitor.Trace().Send( "Graph description requires {0} bytes in resource.", graphDescSize );
                     
+                }
+                if( !doNotGenerateFinalAssembly )
+                {
                     // Generates the Resource BLOB now.
                     outS.Memory.Position = 0;
                     a.ModuleBuilder.DefineManifestResource( StObjContextRoot.RootContextTypeName + ".Data", outS.Memory, ResourceAttributes.Private );
-                }
-                // GetManifestResourceStream raises "The invoked member is not supported in a dynamic assembly." exception when called
-                // on a dynamic assembly.
-                if( !doNotGenerateFinalAssembly )
-                {
                     a.Save();
                 }
 
                 // Time to instanciate the final mapper.
-                // Injects the resource stream explicitely.
+                // Injects the resource stream explicitely: GetManifestResourceStream raises "The invoked member is not supported in a dynamic assembly." exception 
+                // when called on a dynamic assembly.
                 outS.Memory.Position = 0;
                 return (StObjContextRoot)Activator.CreateInstance( stobjContectRootType, new object[] { monitor, runtimeBuilder ?? StObjContextRoot.DefaultStObjRuntimeBuilder, outS.Memory } );
             }

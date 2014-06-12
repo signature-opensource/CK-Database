@@ -53,7 +53,7 @@ namespace CK.Setup
             /// <summary>
             /// Available only at the leaf level.
             /// This function returns the StructureObject until InjectFinalObjectFunc has been called.
-            /// Storing it herr avoids creating multiple function delegates.
+            /// Storing it here avoids creating multiple function delegates.
             /// </summary>
             public Func<object> StructuredObjectFunc;
 

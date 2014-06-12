@@ -69,7 +69,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             // StObjContextRoot.Build result must be disposed: this actually unloads 
             // the independent AppDomain from memory.
             //
-            using( var result = StObjContextRoot.Build( config, TestHelper.ConsoleMonitor ) )
+            using( var result = StObjContextRoot.Build( config, null, TestHelper.ConsoleMonitor ) )
             {
                 Assert.That( result.Success );
                 Assert.That( result.IndependentAppDomain != null );
@@ -91,7 +91,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             config.SetupConfiguration.RevertOrderingNames = true;
             using( TestHelper.ConsoleMonitor.OpenTrace().Send( "Second setup (reverse order)" ) )
             {
-                using( var result = StObjContextRoot.Build( config, TestHelper.ConsoleMonitor ) )
+                using( var result = StObjContextRoot.Build( config, null, TestHelper.ConsoleMonitor ) )
                 {
                     Assert.That( result.Success );
                     Assert.That( result.IndependentAppDomain != null );

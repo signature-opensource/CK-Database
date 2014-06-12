@@ -332,5 +332,42 @@ end";
             string r = b.ToString();
             Assert.That( r, Is.EqualTo( rewritten ) );
         }
+
+        [Test]
+        public void CommentsAreTrivias()
+        {
+            string s = @"'' -- CancelDate";
+            SqlTokenizer p = new SqlTokenizer();
+            var tokens = p.Parse( s ).ToArray();
+            Assert.That( tokens.Length == 2 );
+            Assert.That( tokens[0].TokenType == SqlTokenType.String );
+            Assert.That( tokens[0].TrailingTrivia.Count == 2 );
+            Assert.That( tokens[0].TrailingTrivia[0].TokenType == SqlTokenType.None );
+            Assert.That( tokens[0].TrailingTrivia[0].Text == " " );
+            Assert.That( tokens[0].TrailingTrivia[1].TokenType == SqlTokenType.LineComment );
+            Assert.That( tokens[0].TrailingTrivia[1].Text == " CancelDate" );
+            Assert.That( tokens[1].TokenType == SqlTokenType.EndOfInput );
+        }
+        
+        [Test]
+        public void LineCommentsEatsItsPrefixAndLineTermination()
+        {
+            string s = @"'' -- CancelDate
+TOKEN";
+            SqlTokenizer p = new SqlTokenizer();
+            var tokens = p.Parse( s ).ToArray();
+            Assert.That( tokens.Length == 3 );
+            Assert.That( tokens[0].TokenType == SqlTokenType.String );
+            Assert.That( tokens[0].TrailingTrivia.Count == 2 );
+            Assert.That( tokens[0].TrailingTrivia[0].TokenType == SqlTokenType.None );
+            Assert.That( tokens[0].TrailingTrivia[0].Text == " " );
+            Assert.That( tokens[0].TrailingTrivia[1].TokenType == SqlTokenType.LineComment );
+            Assert.That( tokens[0].TrailingTrivia[1].Text == " CancelDate", "No line endings into it." );
+            Assert.That( tokens[1].TokenType == SqlTokenType.IdentifierStandard );
+            Assert.That( tokens[1].LeadingTrivia.Count == 0 );
+            Assert.That( tokens[1].TrailingTrivia.Count == 0 );
+            Assert.That( tokens[2].TokenType == SqlTokenType.EndOfInput );
+        }
     }
+
 }

@@ -27,7 +27,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
                 config.DefaultDatabaseConnectionString = defaultDBConnectionString;
                 config.Databases.Add( new SqlDatabaseDescriptor( "dbHisto", defaultDBConnectionString ) );
 
-                StObjContextRoot.Build( config, TestHelper.ConsoleMonitor ).Dispose();
+                StObjContextRoot.Build( config, null, TestHelper.ConsoleMonitor ).Dispose();
                 
                 Assert.That( defaultDB.Connection.ExecuteScalar( "select ResName from CK.tRes where ResId=1" ), Is.EqualTo( "System" ) );
                 // Drop CK and CKCore schema.
@@ -44,7 +44,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
                 config.SetupConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = false;
                 config.SetupConfiguration.AppDomainConfiguration.UseIndependentAppDomain = true;
 
-                StObjContextRoot.Build( config, TestHelper.ConsoleMonitor ).Dispose();
+                StObjContextRoot.Build( config, null, TestHelper.ConsoleMonitor ).Dispose();
 
                 Assert.That( defaultDB.Connection.ExecuteScalar( "select ResName from CK.tRes where ResId=1" ), Is.EqualTo( "System" ) );
 
