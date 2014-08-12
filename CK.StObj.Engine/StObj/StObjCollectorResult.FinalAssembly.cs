@@ -189,61 +189,91 @@ namespace CK.Setup
 
         private bool FinalizeTypesCreationAndCreateCtor( IActivityMonitor monitor, DynamicAssembly a, TypeBuilder root )
         {
-            int typeCreatedCount = 0;
-            int typeErrorCount = 0;
+            int typeCreatedCount, typeErrorCount;
             using( monitor.OpenInfo().Send( "Generating dynamic types." ) )
             {
-                var ctor = root.DefineConstructor( MethodAttributes.Public, CallingConventions.Standard, new Type[] { typeof( IActivityMonitor ), typeof( IStObjRuntimeBuilder ), typeof( Stream ) } );
-                var g = ctor.GetILGenerator();
+                FieldBuilder types = DefineTypeInitializer( monitor, a, root, out typeCreatedCount, out typeErrorCount );
 
-                LocalBuilder locLogger = g.DeclareLocal( typeof( IActivityMonitor ) );
-                g.LdArg( 1 );
-                g.StLoc( locLogger );
-
-                LocalBuilder allTypes = g.DeclareLocal( typeof( Type[] ) );
-                g.LdInt32( _orderedStObjs.Count );
-                g.Emit( OpCodes.Newarr, typeof( Type ) );
-                g.StLoc( allTypes );
-
-                MethodInfo typeFromToken = typeof( Type ).GetMethod( "GetTypeFromHandle", BindingFlags.Static | BindingFlags.Public );
-
-                foreach( var m in _orderedStObjs )
-                {
-                    Type t = null;
-                    if( m.Specialization == null )
-                    {
-                        t = m.CreateFinalType( monitor, a );
-                        if( t == null ) ++typeErrorCount;
-                        ++typeCreatedCount;
-                    }
-                    else
-                    {
-                        t = m.AmbientTypeInfo.Type;
-                    }
-                    if( t != null )
-                    {
-                        g.LdLoc( allTypes );
-                        g.LdInt32( m.IndexOrdered );
-                        g.Emit( OpCodes.Ldtoken, t );
-                        g.Emit( OpCodes.Call, typeFromToken );
-                        g.Emit( OpCodes.Stelem_Ref );
-                    }
-                }
                 var baseCtor = root.BaseType.GetConstructor( BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof( IActivityMonitor ), typeof( IStObjRuntimeBuilder ), typeof( Type[] ), typeof( Stream ) }, null );
                 Debug.Assert( baseCtor != null, "StObjContextRoot ctor signature is: ( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, Type[] allTypes, Stream resources = null )" );
-                g.LdArg( 0 );
-                g.LdArg( 1 );
-                g.LdArg( 2 );
-                g.LdLoc( allTypes );
-                g.LdArg( 3 );
-                g.Emit( OpCodes.Call, baseCtor );
 
-                g.Emit( OpCodes.Ret );
+                DefineConstructorWithStreamArgument( root, types, baseCtor );
+                DefineConstructorWithoutStreamArgument( root, types, baseCtor );
 
                 if( typeErrorCount > 0 ) monitor.CloseGroup( String.Format( "Failed to generate {0} types out of {1}.", typeErrorCount, typeCreatedCount ) );
                 else monitor.CloseGroup( String.Format( "{0} types generated.", typeCreatedCount ) );
             }
             return typeErrorCount == 0;
+        }
+
+        FieldBuilder DefineTypeInitializer( IActivityMonitor monitor, DynamicAssembly a, TypeBuilder root, out int typeCreatedCount, out int typeErrorCount )
+        {
+            var types = root.DefineField( "_types", typeof( Type[] ), FieldAttributes.Private | FieldAttributes.Static | FieldAttributes.InitOnly );
+            var typeCtor = root.DefineTypeInitializer();
+            var g = typeCtor.GetILGenerator();
+
+            LocalBuilder allTypes = g.DeclareLocal( typeof( Type[] ) );
+            g.LdInt32( _orderedStObjs.Count );
+            g.Emit( OpCodes.Newarr, typeof( Type ) );
+            g.StLoc( allTypes );
+
+            MethodInfo typeFromToken = typeof( Type ).GetMethod( "GetTypeFromHandle", BindingFlags.Static | BindingFlags.Public );
+
+            typeCreatedCount = typeErrorCount = 0;
+            foreach( var m in _orderedStObjs )
+            {
+                Type t = null;
+                if( m.Specialization == null )
+                {
+                    t = m.CreateFinalType( monitor, a );
+                    if( t == null ) ++typeErrorCount;
+                    ++typeCreatedCount;
+                }
+                else
+                {
+                    t = m.AmbientTypeInfo.Type;
+                }
+                if( t != null )
+                {
+                    g.LdLoc( allTypes );
+                    g.LdInt32( m.IndexOrdered );
+                    g.Emit( OpCodes.Ldtoken, t );
+                    g.Emit( OpCodes.Call, typeFromToken );
+                    g.Emit( OpCodes.Stelem_Ref );
+                }
+            }
+            g.LdLoc( allTypes );
+            g.Emit( OpCodes.Stsfld, types );
+            g.Emit( OpCodes.Ret );
+            return types;
+        }
+
+        static void DefineConstructorWithStreamArgument( TypeBuilder root, FieldBuilder types, ConstructorInfo baseCtor )
+        {
+            var ctor = root.DefineConstructor( MethodAttributes.Public, CallingConventions.Standard, new Type[] { typeof( IActivityMonitor ), typeof( IStObjRuntimeBuilder ), typeof( Stream ) } );
+            var g = ctor.GetILGenerator();
+            g.LdArg( 0 );
+            g.LdArg( 1 );
+            g.LdArg( 2 );
+            g.Emit( OpCodes.Ldsfld, types );
+            g.LdArg( 3 );
+            g.Emit( OpCodes.Call, baseCtor );
+
+            g.Emit( OpCodes.Ret );
+        }
+
+        static void DefineConstructorWithoutStreamArgument( TypeBuilder root, FieldBuilder types, ConstructorInfo baseCtor )
+        {
+            var ctor = root.DefineConstructor( MethodAttributes.Public, CallingConventions.Standard, new Type[] { typeof( IActivityMonitor ), typeof( IStObjRuntimeBuilder ) } );
+            var g = ctor.GetILGenerator();
+            g.LdArg( 0 );
+            g.LdArg( 1 );
+            g.LdArg( 2 );
+            g.Emit( OpCodes.Ldfld, types );
+            g.Emit( OpCodes.Ldnull );
+            g.Emit( OpCodes.Call, baseCtor );
+
+            g.Emit( OpCodes.Ret );
         }
     }
 }
