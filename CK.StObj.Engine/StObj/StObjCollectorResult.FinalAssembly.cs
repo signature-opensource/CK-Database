@@ -269,7 +269,7 @@ namespace CK.Setup
             g.LdArg( 0 );
             g.LdArg( 1 );
             g.LdArg( 2 );
-            g.Emit( OpCodes.Ldfld, types );
+            g.Emit( OpCodes.Ldsfld, types );
             g.Emit( OpCodes.Ldnull );
             g.Emit( OpCodes.Call, baseCtor );
 
