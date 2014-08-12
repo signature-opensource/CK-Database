@@ -194,11 +194,8 @@ namespace CK.Setup
             {
                 FieldBuilder types = DefineTypeInitializer( monitor, a, root, out typeCreatedCount, out typeErrorCount );
 
-                var baseCtor = root.BaseType.GetConstructor( BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof( IActivityMonitor ), typeof( IStObjRuntimeBuilder ), typeof( Type[] ), typeof( Stream ) }, null );
-                Debug.Assert( baseCtor != null, "StObjContextRoot ctor signature is: ( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, Type[] allTypes, Stream resources = null )" );
-
-                DefineConstructorWithStreamArgument( root, types, baseCtor );
-                DefineConstructorWithoutStreamArgument( root, types, baseCtor );
+                DefineConstructorWithStreamArgument( root, types );
+                DefineConstructorWithoutStreamArgument( root, types );
 
                 if( typeErrorCount > 0 ) monitor.CloseGroup( String.Format( "Failed to generate {0} types out of {1}.", typeErrorCount, typeCreatedCount ) );
                 else monitor.CloseGroup( String.Format( "{0} types generated.", typeCreatedCount ) );
@@ -248,8 +245,11 @@ namespace CK.Setup
             return types;
         }
 
-        static void DefineConstructorWithStreamArgument( TypeBuilder root, FieldBuilder types, ConstructorInfo baseCtor )
+        static void DefineConstructorWithStreamArgument( TypeBuilder root, FieldBuilder types )
         {
+            var baseCtor = root.BaseType.GetConstructor( BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof( IActivityMonitor ), typeof( IStObjRuntimeBuilder ), typeof( Type[] ), typeof( Stream ) }, null );
+            Debug.Assert( baseCtor != null, "StObjContextRoot ctor signature is: ( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, Type[] allTypes, Stream resources )" );
+
             var ctor = root.DefineConstructor( MethodAttributes.Public, CallingConventions.Standard, new Type[] { typeof( IActivityMonitor ), typeof( IStObjRuntimeBuilder ), typeof( Stream ) } );
             var g = ctor.GetILGenerator();
             g.LdArg( 0 );
@@ -262,15 +262,17 @@ namespace CK.Setup
             g.Emit( OpCodes.Ret );
         }
 
-        static void DefineConstructorWithoutStreamArgument( TypeBuilder root, FieldBuilder types, ConstructorInfo baseCtor )
+        static void DefineConstructorWithoutStreamArgument( TypeBuilder root, FieldBuilder types )
         {
+            var baseCtor = root.BaseType.GetConstructor( BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof( IActivityMonitor ), typeof( IStObjRuntimeBuilder ), typeof( Type[] ) }, null );
+            Debug.Assert( baseCtor != null, "StObjContextRoot ctor signature is: ( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, Type[] allTypes )" );
+
             var ctor = root.DefineConstructor( MethodAttributes.Public, CallingConventions.Standard, new Type[] { typeof( IActivityMonitor ), typeof( IStObjRuntimeBuilder ) } );
             var g = ctor.GetILGenerator();
             g.LdArg( 0 );
             g.LdArg( 1 );
             g.LdArg( 2 );
             g.Emit( OpCodes.Ldsfld, types );
-            g.Emit( OpCodes.Ldnull );
             g.Emit( OpCodes.Call, baseCtor );
 
             g.Emit( OpCodes.Ret );

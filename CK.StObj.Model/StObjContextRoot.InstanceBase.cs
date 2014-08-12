@@ -24,6 +24,11 @@ namespace CK.Core
         internal readonly StObj[] StObjs;
         internal readonly int SpecializationCount;
 
+        protected StObjContextRoot( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, Type[] allTypes )
+            : this( monitor, runtimeBuilder, allTypes, null )
+        {
+        }
+
         protected StObjContextRoot( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, Type[] allTypes, Stream resources )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );

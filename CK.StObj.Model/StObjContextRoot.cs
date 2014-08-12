@@ -52,7 +52,7 @@ namespace CK.Core
             {
                 if( a == null ) throw new ArgumentNullException( "a" );
                 Type t = a.GetType( RootContextTypeName, true );
-                return (StObjContextRoot)Activator.CreateInstance( t, new object[] { monitor, runtimeBuilder ?? DefaultStObjRuntimeBuilder, null } );
+                return (StObjContextRoot)Activator.CreateInstance( t, new object[] { monitor, runtimeBuilder ?? DefaultStObjRuntimeBuilder } );
             }
         }
 
