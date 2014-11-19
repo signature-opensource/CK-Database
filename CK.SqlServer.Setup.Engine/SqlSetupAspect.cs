@@ -6,9 +6,9 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
-    public class SqlSetupCenter : ISqlManagerProvider, IDisposable, IStObjBuilder
+    public class SqlSetupAspect : ISqlManagerProvider, IDisposable, IStObjBuilder
     {
-        readonly SqlSetupCenterConfiguration _config;
+        readonly SqlSetupAspectConfiguration _config;
         readonly SetupCenter _center;
         readonly ISqlManager _defaultDatabase;
         readonly SqlManagerProvider _databases;
@@ -17,9 +17,9 @@ namespace CK.SqlServer.Setup
 
         class ConfiguratorHook : SetupableConfigurator
         {
-            readonly SqlSetupCenter _center;
+            readonly SqlSetupAspect _center;
 
-            public ConfiguratorHook( SqlSetupCenter sqlCenter )
+            public ConfiguratorHook( SqlSetupAspect sqlCenter )
                 : base( sqlCenter._center.SetupableConfigurator )
             {
                 _center = sqlCenter;
@@ -56,18 +56,23 @@ namespace CK.SqlServer.Setup
         }
 
         /// <summary>
-        /// Initializes a new <see cref="SqlSetupCenter"/> with a <see cref="DefaultSqlDatabase"/> that uses the configuration (<see cref="SqlSetupCenterConfiguration.DefaultDatabaseConnectionString"/>)
+        /// Initializes a new <see cref="SqlSetupAspect"/> with a <see cref="DefaultSqlDatabase"/> that uses the configuration (<see cref="SqlSetupAspectConfiguration.DefaultDatabaseConnectionString"/>)
         /// for its connection string.
-        /// This constructor is the one used when calling <see cref="StObjContextRoot.Build"/> method with a <see cref="SqlSetupCenterConfiguration"/> configuration object.
+        /// This constructor is the one used when calling <see cref="StObjContextRoot.Build"/> method with a <see cref="SqlSetupAspectConfiguration"/> configuration object.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="config">Configuration object.</param>
-        public SqlSetupCenter( IActivityMonitor monitor, SqlSetupCenterConfiguration config, IStObjRuntimeBuilder runtimeBuilder = null )
+        public SqlSetupAspect( IActivityMonitor monitor, SqlSetupAspectConfiguration config, IStObjRuntimeBuilder runtimeBuilder = null )
             : this( monitor, config, runtimeBuilder, null )
         {
         }
 
-        public SqlSetupCenter( IActivityMonitor monitor, SqlSetupCenterConfiguration config, IStObjRuntimeBuilder runtimeBuilder, ISqlManager defaultDatabase )
+        bool IStObjBuilder.Run()
+        {
+            return _center.Run();
+        }
+
+        public SqlSetupAspect( IActivityMonitor monitor, SqlSetupAspectConfiguration config, IStObjRuntimeBuilder runtimeBuilder, ISqlManager defaultDatabase )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
             if( config == null ) throw new ArgumentNullException( "config" );
@@ -107,6 +112,14 @@ namespace CK.SqlServer.Setup
             _center.ScriptTypeManager.Register( sqlHandler );
 
             _center.RegisterSetupEvent += OnRegisterSetup;
+        }
+
+        /// <summary>
+        /// Gets the setup center.
+        /// </summary>
+        public SetupCenter Center
+        {
+            get { return _center; }
         }
 
         /// <summary>
@@ -188,30 +201,11 @@ namespace CK.SqlServer.Setup
 
         /// <summary>
         /// Gets the available databases (including the <see cref="DefaultSqlDatabase"/>).
-        /// It is initialized with <see cref="SqlSetupCenterConfiguration.Databases"/> content but can be changed.
+        /// It is initialized with <see cref="SqlSetupAspectConfiguration.Databases"/> content but can be changed.
         /// </summary>
         public SqlManagerProvider SqlDatabases
         {
             get { return _databases; }
-        }
-
-        /// <summary>
-        /// Executes the setup.
-        /// </summary>
-        /// <returns>True if no error occurred. False otherwise.</returns>
-        public bool Run()
-        {
-            return _center.Run();
-        }
-
-        /// <summary>
-        /// Executes the setup with explicit objects injected in the process.
-        /// </summary>
-        /// <param name="items">Objects that can be <see cref="IDependentItem"/>and/or <see cref="IDependentItemDiscoverer"/> and/or <see cref="IEnumerable"/> of such objects (recursively).</param>
-        /// <returns>True if no error occurred. False otherwise.</returns>
-        public bool RunWithExplicitDependentItems( params object[] items )
-        {
-            return _center.Run( items );
         }
 
         void OnRegisterSetup( object sender, RegisterSetupEventArgs e )

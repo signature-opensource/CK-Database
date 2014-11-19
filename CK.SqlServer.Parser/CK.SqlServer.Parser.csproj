@@ -162,6 +162,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="Parser\Expr\ExpressionsAndStatements.cd" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="FodyWeavers.xml" />

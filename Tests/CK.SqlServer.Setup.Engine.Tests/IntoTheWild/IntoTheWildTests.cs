@@ -16,7 +16,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
         [Test]
         public void IntoTheWild0()
         {
-            var config = new SqlSetupCenterConfiguration();
+            var config = new SqlSetupAspectConfiguration();
             config.SetupConfiguration.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.Add( "IntoTheWild0" );
             config.SetupConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
             config.SetupConfiguration.AppDomainConfiguration.ProbePaths.Add( TestHelper.TestBinFolder );

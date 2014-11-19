@@ -61,7 +61,7 @@
     <Compile Include="Attributes\SqlObjectItemAttribute.cs" />
     <Compile Include="Attributes\SqlViewAttribute.cs" />
     <Compile Include="Configuration\SqlDatabaseDescriptor.cs" />
-    <Compile Include="Configuration\SqlSetupCenterConfiguration.cs" />
+    <Compile Include="Configuration\SqlSetupAspectConfiguration.cs" />
     <Compile Include="ISqlCallContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlDatabase.cs" />

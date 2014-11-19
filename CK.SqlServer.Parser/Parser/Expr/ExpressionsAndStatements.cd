@@ -1,0 +1,542 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="CK.SqlServer.Parser.SqlItem" Collapsed="true">
+    <Position X="60" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIACAAAAAAAACAAEAAAAAhAAQAAAAAAAAAAIAAEBAAA=</HashCode>
+      <FileName>Parser\Expr\Base\SqlItem.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExpr" Collapsed="true">
+    <Position X="32" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgAAAAAAAACAAAAAAAEgAAEAAAAAAACAAIQACABAE=</HashCode>
+      <FileName>Parser\Expr\Base\SqlExpr.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlNoExpr" Collapsed="true">
+    <Position X="63.25" Y="5.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAACAAAAAAAEgAAAAAAAAAAAAAIAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\Base\SqlNoExpr.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprParameterDefaultValue" Collapsed="true">
+    <Position X="101.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAABACAAAAAAAAoAAAAQAAAAIAAAIAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprParameterDefaultValue.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprStatementList" Collapsed="true">
+    <Position X="104" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AKAAAAAAAACACAQAAAAABgAAAAAABAAAAAAIAAAAAAQ=</HashCode>
+      <FileName>Parser\Expr\SqlExprStatementList.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprTypeDecl" Collapsed="true">
+    <Position X="106.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAACAQAAAAAAgAAAAAABAAAAAAIAAABAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprTypeDecl.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprTypeDeclDateAndTime" Collapsed="true">
+    <Position X="108.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAACAAAAAAAAgAAAAYAACAAAAAIAQABIgA=</HashCode>
+      <FileName>Parser\Expr\SqlExprTypeDeclDateAndTime.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprTypeDeclDecimal" Collapsed="true">
+    <Position X="110.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAABAACAQAAAAAAgAAAAQAACAAIAAIAQABIAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprTypeDeclDecimal.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprTypeDeclSimple" Collapsed="true">
+    <Position X="113" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAACAQAAAAAAgAAAAYAACAAAAAIAQABIAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprTypeDeclSimple.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprTypeDeclWithSize" Collapsed="true">
+    <Position X="115.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAACAQAAAAAAgAAAAYAACAAAAAIAQABAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprTypeDeclWithSize.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SelectCombineOperator" Collapsed="true">
+    <Position X="5" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BIAAAAAAAAAAEgAAAABIAIAAAAAAggAACYCAAAkkIAA=</HashCode>
+      <FileName>Parser\Expr\Select\SelectCombineOperator.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SelectFor" Collapsed="true">
+    <Position X="7.25" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAIAIAAAAAAAAABAAAAAAAAAAAAAAAAAQAgAAAA=</HashCode>
+      <FileName>Parser\Expr\Select\SelectFor.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SelectOrderBy" Collapsed="true">
+    <Position X="9.5" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIEAAAAAIAAAIBAAAABAAAAAAAAAAAAAAAAAQAgAAAA=</HashCode>
+      <FileName>Parser\Expr\Select\SelectOrderBy.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SelectQuery" Collapsed="true">
+    <Position X="11.75" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAFAAAAAAAAAAAgAAgAAAAAAAAAgAAAA=</HashCode>
+      <FileName>Parser\Expr\Select\SelectQuery.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SelectSpecification" Collapsed="true">
+    <Position X="14" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BIAAAAoAAIAAAAAAAIFAAAAAAAAAgAAAAAAAACgAAAg=</HashCode>
+      <FileName>Parser\Expr\Select\SelectSpecification.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprAssign" Collapsed="true">
+    <Position X="16.25" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AMAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAACAQAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprAssign.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprBaseBinary" Collapsed="true">
+    <Position X="18.5" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAACACQAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprBaseBinary.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprBaseListWithSeparator&lt;T&gt;" Collapsed="true">
+    <Position X="23" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIAAEAAAAAgIBQAAQABABAAAgAAAAAAAAAAAAgA=</HashCode>
+      <FileName>Parser\Expr\SqlExprBaseListWithSeparator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprBaseMonoToken&lt;T&gt;" Collapsed="true">
+    <Position X="30.75" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprBaseMonoToken.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprBetween" Collapsed="true">
+    <Position X="36.5" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAACAAAAAAACAAAAAAAAAAgAACKAACAAAAAEA=</HashCode>
+      <FileName>Parser\Expr\SqlExprBetween.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprCase" Collapsed="true">
+    <Position X="38.75" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gIBIAAAAIAEAAAAAAAAgAAAAAAAAgAAQAACAAQAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprCase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprCast" Collapsed="true">
+    <Position X="41" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAQAQAAAAAAAAAAAAAAAAAAAwAIQAQAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprCast.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprCollate" Collapsed="true">
+    <Position X="43.25" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprCollate.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprIn" Collapsed="true">
+    <Position X="45.5" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAAAgAAACAIiAAAAACA=</HashCode>
+      <FileName>Parser\Expr\SqlExprIn.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprIsNull" Collapsed="true">
+    <Position X="47.75" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAABAgAAAKAACEAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprIsNull.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprKoCall" Collapsed="true">
+    <Position X="50" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAACAAgAAAAIgAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprKoCall.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprLike" Collapsed="true">
+    <Position X="52.25" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAEAAAAAAAAAAAAAAAAAAQQAAAgBgACACCAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprLike.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprMultiIdentifier" Collapsed="true">
+    <Position X="54.5" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAEAIAAAAABACAQAAAAAAIgAAAAAAAAAIAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprMultiIdentifier.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprRawItemList" Collapsed="true">
+    <Position X="56.75" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprRawList.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprUnaryOperator" Collapsed="true">
+    <Position X="59" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAAAgAAQAAAAAAAAIAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprUnaryOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlNoExprOverClause" Collapsed="true">
+    <Position X="81" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IIACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlNoExprOverClause.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprBaseExprList&lt;T&gt;" Collapsed="true">
+    <Position X="23" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprBaseExprList.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprBaseListWithSeparatorList&lt;T&gt;" Collapsed="true">
+    <Position X="23" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AGAAAAAAAAAAABAACAAAAAQAAAAAAAAAAAAAAAAQAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprBaseListWithSeparatorList.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprBinaryOperator" Collapsed="true">
+    <Position X="18.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAQAAAAIAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprBinaryOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprCaseWhenSelector" Collapsed="true">
+    <Position X="83.25" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAABAAAAAAAAAAQAAAAAgADAAAAAIAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprCaseWhenSelector.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprColumnList" Collapsed="true">
+    <Position X="20.75" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprColumnList.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprCommaList" Collapsed="true">
+    <Position X="23" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprCommaList.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprIdentifier" Collapsed="true">
+    <Position X="29.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAgAAgAAAgAAAAAAAAAAIQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprIdentifier.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprLiteral" Collapsed="true">
+    <Position X="32" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprLiteral.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprNull" Collapsed="true">
+    <Position X="34.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprNull.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprParameter" Collapsed="true">
+    <Position X="59.75" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAQAQAAQAAAAIAAgAABAiAAAAAQIAIAAEAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprParameter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprParameterList" Collapsed="true">
+    <Position X="25.25" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprParameterList.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprStBeginTran" Collapsed="true">
+    <Position X="117.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprStBeginTran.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprStBlock" Collapsed="true">
+    <Position X="119.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAIAAAAAAAAAABAAAAAAAAEAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprStBlock.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprStEmpty" Collapsed="true">
+    <Position X="121.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprStEmpty.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprStIf" Collapsed="true">
+    <Position X="123" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIBAACAAAACAEAAAAAAgAAAABAAAgAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprStIf.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprStLabelDef" Collapsed="true">
+    <Position X="117.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAQAAAAAAAgAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprStLabelDef.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprStMonoStatement" Collapsed="true">
+    <Position X="119.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprStMonoStatement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprStStoredProc" Collapsed="true">
+    <Position X="121.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAgAAAMAAAAAAAAAAAAAQACAAA0AAAAIgAAARAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprStStoredProc.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprStTryCatch" Collapsed="true">
+    <Position X="123" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EIAAAACAAAAAAAAAAABBAAAAAAAAAAAAAAAAAAAQAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprStTryCatch.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprStUnmodeled" Collapsed="true">
+    <Position X="117.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprStUnmodeled.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprStView" Collapsed="true">
+    <Position X="119.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAhAAAEAAAAAAAAAAAAAQAAAAAwAAAAAgAQAhAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprStView.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprTerminal" Collapsed="true">
+    <Position X="27.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprTerminal.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprTypeDeclUserDefined" Collapsed="true">
+    <Position X="62" Y="6.75" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AKAAAAAAEAAAABQADACAAAQAAAIAACAAAAAAAQAAIAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprTypeDeclUserDefined.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Orientation="Right" Position="0.1" />
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprTypedIdentifier" Collapsed="true">
+    <Position X="48" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAIAAAAAAAAAAAAiAAAAAAAQAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprTypedIdentifier.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprUnmodeledItems" Collapsed="true">
+    <Position X="52.5" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlExprUnmodeledItems.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlNoExprExecuteAs" Collapsed="true">
+    <Position X="67.5" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAAAwAEAAACAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlNoExprExecuteAs.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlNoExprList&lt;T&gt;" Collapsed="true">
+    <Position X="72" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAAAAAAEAAAABAADAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\SqlNoExprList.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SelectColumn" Collapsed="true">
+    <Position X="43.5" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAABAgAAQCAAAAABAACQBAAAAkAJAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\Select\SelectColumn.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SelectColumnList" Collapsed="true">
+    <Position X="69.75" Y="19.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\Select\SelectColumnList.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SelectFrom" Collapsed="true">
+    <Position X="65.25" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAgAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\Select\SelectFrom.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SelectGroupBy" Collapsed="true">
+    <Position X="76.5" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAAAgAAQAAAABAAAAAA=</HashCode>
+      <FileName>Parser\Expr\Select\SelectGroupBy.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SelectHeader" Collapsed="true">
+    <Position X="45.75" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIABAAAAQAACBAACBAAAAACiAAABgAAAAAAAAAAAgAA=</HashCode>
+      <FileName>Parser\Expr\Select\SelectHeader.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SelectInto" Collapsed="true">
+    <Position X="50.25" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAA=</HashCode>
+      <FileName>Parser\Expr\Select\SelectInto.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SelectOption" Collapsed="true">
+    <Position X="69.75" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\Select\SelectOption.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SelectOrderByColumn" Collapsed="true">
+    <Position X="78.75" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AKAAAAAAAAEACAAAAAAAAAAAAEAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\Select\SelectOrderByColumn.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SelectOrderByColumnList" Collapsed="true">
+    <Position X="72" Y="19.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\Select\SelectOrderByColumnList.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SelectOrderByOffset" Collapsed="true">
+    <Position X="57" Y="6.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAEAAAQAAAFACAAAAAAAAAAEACgAAQAAAAA=</HashCode>
+      <FileName>Parser\Expr\Select\SelectOrderByOffset.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SelectWhere" Collapsed="true">
+    <Position X="74.25" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAEAAAAQAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\Select\SelectWhere.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CK.SqlServer.Parser.SqlExprBaseSt" Collapsed="true">
+    <Position X="54.75" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAGAAAAAAAEAAAAAAAAAAAAAABAAgAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\Base\SqlExprBaseSt.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="System.Object" Collapsed="true">
+    <Position X="63" Y="1.25" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Interface Name="CK.SqlServer.Parser.ISelectSpecification" Collapsed="true">
+    <Position X="117.75" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAABAAAAAEAAAAAAAAAAAAAiAAAA=</HashCode>
+      <FileName>Parser\Expr\ISelectSpecification.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="CK.SqlServer.Parser.ISqlExprList&lt;T&gt;" Collapsed="true">
+    <Position X="119.5" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAEAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Parser\Expr\ISqlExprList.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="CK.SqlServer.Parser.ISqlExprUnifiedTypeDecl" Collapsed="true">
+    <Position X="121.25" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAABAAAAAAAAAAAAAAAAAAACAAIAAAAAABAgA=</HashCode>
+      <FileName>Parser\Expr\ISqlExprUnifiedTypeDecl.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="CK.SqlServer.Parser.ISqlIdentifier" Collapsed="true">
+    <Position X="123" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAIAAAAAAAAAAIAAAAAAAAAAAAAAAAIAAAE=</HashCode>
+      <FileName>Parser\Expr\ISqlIdentifier.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

@@ -30,7 +30,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
         private static void InstallDropAndReverseInstall( bool resetFirst, Predicate<Type> typeFilter, string dllName )
         {
-            var config = new SqlSetupCenterConfiguration();
+            var config = new SqlSetupAspectConfiguration();
             config.SetupConfiguration.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.Add( "SqlActorPackage" );
             config.SetupConfiguration.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.Add( "SqlZonePackage" );
             config.SetupConfiguration.TypeFilter = typeFilter;

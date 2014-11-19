@@ -102,15 +102,15 @@ namespace CK.Deploy.Console
                 monitor.Info().Send( "ConnectionString: " + args.ConnectionString );
             }
 
-            var config = new SqlSetupCenterConfiguration();
+            var config = new SqlSetupAspectConfiguration();
             config.DefaultDatabaseConnectionString = args.ConnectionString;
             config.SetupConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
             config.FilePackageDirectories.Add( args.FilePath );
             config.SqlFileDirectories.Add( args.FilePath );
 
-            using( SqlSetupCenter c = new SqlSetupCenter( monitor, config ) )
+            using( SqlSetupAspect c = new SqlSetupAspect( monitor, config ) )
             {
-                c.Run();
+                c.Center.Run();
             }
         }
 
@@ -133,7 +133,7 @@ namespace CK.Deploy.Console
                 monitor.Info().Send( "ConnectionString: " + args.ConnectionString );
             }
 
-            var config = new SqlSetupCenterConfiguration();
+            var config = new SqlSetupAspectConfiguration();
             config.DefaultDatabaseConnectionString = args.ConnectionString;
             config.SetupConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = false;
             
@@ -141,9 +141,9 @@ namespace CK.Deploy.Console
             config.FilePackageDirectories.AddRange( rootedPaths );
             config.SqlFileDirectories.AddRange( rootedPaths );
             config.SetupConfiguration.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.AddRange( args.AssemblyNames );
-            using( SqlSetupCenter c = new SqlSetupCenter( monitor, config ) )
+            using( SqlSetupAspect c = new SqlSetupAspect( monitor, config ) )
             {
-                c.Run();
+                c.Center.Run();
                 monitor.Info().Send( "DBSetup Done." );
             }
 
