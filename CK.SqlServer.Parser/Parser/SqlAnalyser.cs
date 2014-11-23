@@ -177,7 +177,7 @@ namespace CK.SqlServer.Parser
                     if( !IsStatementList( out bodyCatch, true ) ) return false;
                     SqlTokenIdentifier endCatch, endCatchToken;
                     if( !R.IsToken( out endCatch, SqlTokenType.End, true ) || !R.IsToken( out endCatchToken, SqlTokenType.Catch, true ) ) return false;
-                    statement = new SqlExprStTryCatch( new SqlExprMultiToken<SqlTokenIdentifier>( id, tranOrTry), 
+                    statement = new SqlExprStTryCatch( new SqlExprMultiToken<SqlTokenIdentifier>( id, tranOrTry ), 
                                                        body, 
                                                        new SqlExprMultiToken<SqlTokenIdentifier>( end, endTry, begCatch, begCatchToken), 
                                                        bodyCatch, 

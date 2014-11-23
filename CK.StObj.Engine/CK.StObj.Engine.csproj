@@ -128,7 +128,6 @@
   <ItemGroup>
     <EmbeddedResource Include="AutoImplementor\DynamicKeyPair.snk" />
     <None Include="packages.config" />
-    <None Include="StObj\ExternalView.cd" />
     <None Include="StObj\Impl\TypeInfo\TypeInfo.cd" />
   </ItemGroup>
   <ItemGroup>
