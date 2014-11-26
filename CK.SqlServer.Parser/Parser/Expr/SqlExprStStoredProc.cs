@@ -9,12 +9,30 @@ namespace CK.SqlServer.Parser
 {
     public class SqlExprStStoredProc : SqlExprBaseSt
     {
-        public SqlExprStStoredProc( SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type, SqlExprMultiIdentifier name, SqlExprParameterList parameters, SqlExprUnmodeledItems options, SqlTokenIdentifier asToken, SqlExprStatementList bodyStatements, SqlTokenTerminal term )
+        public SqlExprStStoredProc( 
+            SqlTokenIdentifier alterOrCreate, 
+            SqlTokenIdentifier type, 
+            SqlExprMultiIdentifier name, 
+            SqlExprParameterList parameters, 
+            SqlExprUnmodeledItems options, 
+            SqlTokenIdentifier asToken, 
+            SqlExprStatementList bodyStatements, 
+            SqlTokenTerminal term )
             : base( Build( alterOrCreate, type, name, parameters, options, asToken, null, bodyStatements, null ), term )
         {
         }
 
-        public SqlExprStStoredProc( SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type, SqlExprMultiIdentifier name, SqlExprParameterList parameters, SqlExprUnmodeledItems options, SqlTokenIdentifier asToken, SqlTokenIdentifier begin, SqlExprStatementList bodyStatements, SqlTokenIdentifier end, SqlTokenTerminal term )
+        public SqlExprStStoredProc( 
+            SqlTokenIdentifier alterOrCreate, 
+            SqlTokenIdentifier type, 
+            SqlExprMultiIdentifier name, 
+            SqlExprParameterList parameters, 
+            SqlExprUnmodeledItems options, 
+            SqlTokenIdentifier asToken, 
+            SqlTokenIdentifier begin, 
+            SqlExprStatementList bodyStatements, 
+            SqlTokenIdentifier end, 
+            SqlTokenTerminal term )
             : base( Build( alterOrCreate, type, name, parameters, options, asToken, begin, bodyStatements, end ), term )
         {
         }

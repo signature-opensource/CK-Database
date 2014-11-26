@@ -20,6 +20,8 @@ namespace CK.SqlServer.Parser
         T Visit( SqlExprStTryCatch e );       
         T Visit( SqlExprStUnmodeled e );
         T Visit( SqlExprStStoredProc e );
+        T Visit( SqlExprStFunctionScalar e );
+        T Visit( SqlExprStReturn e );
         T Visit( SqlExprStMonoStatement e );
         T Visit( SqlExprStLabelDef e );
         T Visit( SqlExprStEmpty e );

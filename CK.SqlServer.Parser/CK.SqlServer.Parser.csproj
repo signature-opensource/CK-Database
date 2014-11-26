@@ -53,6 +53,9 @@
     <Compile Include="ISqlItem.cs" />
     <Compile Include="Parser\Expr\SqlExprCollate.cs" />
     <Compile Include="Parser\Expr\SqlExprCast.cs" />
+    <Compile Include="Parser\Expr\SqlExprStFunctionScalar.cs" />
+    <Compile Include="Parser\Expr\SqlExprStFunction.cs" />
+    <Compile Include="Parser\Expr\SqlExprStReturn.cs" />
     <Compile Include="Parser\Expr\SqlNoExprOverClause.cs" />
     <Compile Include="Parser\Expr\Select\SelectOrderByOffset.cs" />
     <Compile Include="Parser\Expr\Select\SelectOrderByColumnList.cs" />

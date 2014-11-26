@@ -131,6 +131,20 @@ namespace CK.SqlServer.Parser
             return new SqlExprStStoredProc( modified.ToArray() );
         }
 
+        public virtual SqlItem Visit( SqlExprStFunctionScalar e )
+        {
+            List<ISqlItem> modified = VisitItems( e.Items );
+            if( modified == null ) return e;
+            return new SqlExprStFunctionScalar( modified.ToArray() );
+        }
+
+        public virtual SqlItem Visit( SqlExprStReturn e )
+        {
+            var v = (SqlExpr)VisitItem( e.Value );
+            if( ReferenceEquals( v, e.Value ) ) return e;
+            return new SqlExprStReturn( e.ReturnT, v, e.StatementTerminator );
+        }
+
         public virtual SqlItem Visit( SqlExprStMonoStatement e )
         {
             return e;
