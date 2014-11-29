@@ -81,7 +81,7 @@ namespace CK.SqlServer.Setup
             _databases = new SqlManagerProvider( monitor, m => m.IgnoreMissingDependencyIsError = _config.IgnoreMissingDependencyIsError );
             if( defaultDatabase == null )
             {
-                _databases.Add( SqlDatabase.DefaultDatabaseName, _config.DefaultDatabaseConnectionString );
+                _databases.Add( SqlDatabase.DefaultDatabaseName, _config.DefaultDatabaseConnectionString, autoCreate:true );
                 _defaultDatabase = _databases.FindManagerByName( SqlDatabase.DefaultDatabaseName );
             }
             else
@@ -93,7 +93,7 @@ namespace CK.SqlServer.Setup
             }
             foreach( var db in _config.Databases )
             {
-                _databases.Add( db.DatabaseName, db.ConnectionString );
+                _databases.Add( db.DatabaseName, db.ConnectionString, db.AutoCreate );
             }
             
             var versionRepo = new SqlVersionedItemRepository( _defaultDatabase );

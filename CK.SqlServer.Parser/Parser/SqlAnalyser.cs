@@ -341,9 +341,9 @@ namespace CK.SqlServer.Parser
                 SqlTokenIdentifier returns;
                 if( !R.IsToken( out returns, SqlTokenType.Returns, true ) ) return false;
 
-                SqlTokenIdentifier tableToken;
+                SqlTokenIdentifier table;
                 SqlTokenIdentifier tableVariableNameToken;
-                if( R.IsToken( out tableToken, SqlTokenType.Table, false ) )
+                if( R.IsToken( out table, SqlTokenType.Table, false ) )
                 {
                     // Inline Table-Valued Function Syntax
                     // CREATE FUNCTION [ schema_name. ] function_name 

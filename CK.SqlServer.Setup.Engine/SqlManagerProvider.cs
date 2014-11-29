@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using CK.Core;
 using System.Diagnostics;
+using System.Data.SqlClient;
 
 namespace CK.SqlServer.Setup
 {
@@ -17,6 +18,7 @@ namespace CK.SqlServer.Setup
             public string ConnectionString;
             public ISqlManager Manager;
             public bool DoNotDispose;
+            public bool AutoCreate;
         }
 
         public SqlManagerProvider( IActivityMonitor monitor, Action<ISqlManager> dbConfigurator = null )
@@ -35,9 +37,9 @@ namespace CK.SqlServer.Setup
             _items.Add( i.ConnectionString, i );
         }
         
-        public void Add( string name, string connectionString )
+        public void Add( string name, string connectionString, bool autoCreate )
         {
-            Item i = new Item() { ConnectionString = connectionString };
+            Item i = new Item() { ConnectionString = connectionString, AutoCreate = autoCreate };
             _items.Add( name, i );
             _items[connectionString] =  i;
         }
@@ -60,7 +62,18 @@ namespace CK.SqlServer.Setup
         {
             SqlManager m = new SqlManager();
             m.Monitor = _monitor;
-            m.OpenFromConnectionString( i.ConnectionString );
+            if( !m.OpenFromConnectionString( i.ConnectionString ) )
+            {
+                if( i.AutoCreate )
+                {
+                    SqlConnectionStringBuilder sb = new SqlConnectionStringBuilder( i.ConnectionString );
+                    if( m.OpenOrCreate( sb.DataSource, sb.InitialCatalog ) )
+                    {
+                        m.Connection.Close();
+                        m.OpenFromConnectionString( i.ConnectionString );
+                    }
+                }
+            }
             _dbConfigurator( m );
             i.Manager = m;
         }

@@ -124,8 +124,8 @@ namespace CK.SqlServer.Setup
         }
 
         /// <summary>
-        /// If we are in <see cref="IsAutoConnectMode"/>, the current connection string is:<br/>
-        /// "Server=<see cref="Server"/>;Database=<see cref="DatabaseName"/>;Integrated Security=SSPI"<br/>
+        /// If we are in <see cref="IsAutoConnectMode"/>, the current connection string is:
+        /// "Server=<see cref="Server"/>;Database=<see cref="DatabaseName"/>;Integrated Security=SSPI"
         /// else it is the original connection string given to <see cref="OpenFromConnectionString"/> method.
         /// </summary>
         public string CurrentConnectionString

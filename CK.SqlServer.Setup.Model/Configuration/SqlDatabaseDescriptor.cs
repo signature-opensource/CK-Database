@@ -16,10 +16,12 @@ namespace CK.SqlServer.Setup
         /// </summary>
         /// <param name="name">Logical database name.</param>
         /// <param name="connectionString">Connection string to the database.</param>
-        public SqlDatabaseDescriptor( string name, string connectionString )
+        /// <param name="autoCreate">Whether the database should be created if opening the connection fails.</param>
+        public SqlDatabaseDescriptor( string name, string connectionString, bool autoCreate = true )
         {
             DatabaseName = name;
             ConnectionString = connectionString;
+            AutoCreate = autoCreate;
         }
 
         /// <summary>
@@ -32,5 +34,11 @@ namespace CK.SqlServer.Setup
         /// Gets or sets the connection string.
         /// </summary>
         public string ConnectionString { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the database should be created
+        /// if opening the connection fails.
+        /// </summary>
+        public bool AutoCreate { get; set; }
     }
 }
