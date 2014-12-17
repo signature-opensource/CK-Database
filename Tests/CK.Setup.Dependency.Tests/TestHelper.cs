@@ -1,3 +1,10 @@
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (Tests\CK.Setup.Dependency.Tests\TestHelper.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
 using System.IO;
 using NUnit.Framework;
 using CK.Core;

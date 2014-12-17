@@ -1,4 +1,11 @@
-﻿using CK.Setup;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (Tests\CK.StObj.Engine.Tests\SimpleObjects\WithLevel3\Cycles\ObjectBLevel3_InPackageForAB.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using CK.Setup;
 using NUnit.Framework;
 
 

@@ -1,4 +1,11 @@
-﻿using CK.Core;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (CK.Setupable.Engine\Scripts\MultiScriptBase.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using CK.Core;
 using System.Collections.Generic;
 using System;
 

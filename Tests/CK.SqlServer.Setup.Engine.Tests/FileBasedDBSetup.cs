@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (Tests\CK.SqlServer.Setup.Engine.Tests\FileBasedDBSetup.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -33,12 +40,6 @@ namespace CK.SqlServer.Setup.Engine.Tests
                     {
                         Assert.That( r.Success, Is.False );
                     }
-                    //using( SqlSetupCenter c = new SqlSetupCenter( TestHelper.Monitor, config, defaultDB ) )
-                    //{
-                    //    c.SetupDependencySorterHookInput = TestHelper.Trace;
-                    //    c.SetupDependencySorterHookOutput = all => TestHelper.Trace( all, true );
-                    //    Assert.That( c.Run(), Is.False );
-                    //}
                 }
                 config.IgnoreMissingDependencyIsError = true;
                 using( TestHelper.ConsoleMonitor.OpenTrace().Send( "Second setup (will succeed since SqlSetupCenterConfiguration.IgnoreMissingDependencyIsError is true)." ) )
@@ -47,10 +48,6 @@ namespace CK.SqlServer.Setup.Engine.Tests
                     {
                         Assert.That( r.Success );
                     }
-                    //using( SqlSetupCenter c = new SqlSetupCenter( TestHelper.Monitor, config, defaultDB ) )
-                    //{
-                    //    Assert.That( c.Run() );
-                    //}
                 }
 
                 defaultDB.ExecuteOneScript( "drop procedure Test.sOneStoredProcedure;" );
@@ -62,10 +59,6 @@ namespace CK.SqlServer.Setup.Engine.Tests
                     {
                         Assert.That( r.Success );
                     }
-                    //using( SqlSetupCenter c = new SqlSetupCenter( TestHelper.Monitor, config, defaultDB ) )
-                    //{
-                    //    Assert.That( c.Run() );
-                    //}
                 }
             }
         }
