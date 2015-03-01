@@ -12,11 +12,11 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyCompany( "Invenietis" )]
 [assembly: AssemblyProduct( "CK-Database" )]
-[assembly: AssemblyCopyright( "Copyright © Invenietis 2012-2014" )]
+[assembly: AssemblyCopyright( "Copyright © Invenietis 2012-2015" )]
 [assembly: AssemblyTrademark( "" )]
 [assembly: CLSCompliant( true )]
 
-[assembly: AssemblyVersion( "3.0.0" )]
+[assembly: AssemblyVersion( "3.0.1" )]
 
 
 #if DEBUG

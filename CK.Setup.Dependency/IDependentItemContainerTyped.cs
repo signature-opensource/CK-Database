@@ -27,6 +27,9 @@ namespace CK.Setup
     /// </remarks>
     public interface IDependentItemContainerTyped : IDependentItemContainer
     {
+        /// <summary>
+        /// Gets the kind of this item (can be <see cref="DependentItemKind.Item"/>, <see cref="DependentItemKind.Group"/> or <see cref="DependentItemKind.Container"/>).
+        /// </summary>
         DependentItemKind ItemKind { get; }
     }
 }

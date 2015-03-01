@@ -58,6 +58,9 @@ namespace CK.Setup
             get { return _fullName; }
         }
 
+        /// <summary>
+        /// Gets whether this is an optional reference.
+        /// </summary>
         public bool Optional
         {
             get { return _optional; }
@@ -98,11 +101,21 @@ namespace CK.Setup
             return new NamedDependentItemRef( fullName, _optional );
         }
 
+        /// <summary>
+        /// Implicit conversion from a string.
+        /// </summary>
+        /// <param name="fullName">The full name of the item.</param>
+        /// <returns>A reference to the named item.</returns>
         public static implicit operator NamedDependentItemRef( string fullName )
         {
             return new NamedDependentItemRef( fullName );
         }
 
+        /// <summary>
+        /// Overridden to support value semantics.
+        /// </summary>
+        /// <param name="obj">The object to test.</param>
+        /// <returns>True if the object is a <see cref="IDependentItemRef"/> with the same name and optionality.</returns>
         public override bool Equals( object obj )
         {
             if( obj is IDependentItemRef )
@@ -113,6 +126,10 @@ namespace CK.Setup
             return false;
         }
 
+        /// <summary>
+        /// Overridden to support value semantics.
+        /// </summary>
+        /// <returns>Hash is based on <see cref="Optional"/> and <see cref="FullName"/>.</returns>
         public override int GetHashCode()
         {
             int h = _fullName.GetHashCode();
@@ -120,6 +137,10 @@ namespace CK.Setup
             return h;
         }
 
+        /// <summary>
+        /// Overridden to return the <see cref="FullName"/>.
+        /// </summary>
+        /// <returns>This <see cref="FullName"/>.</returns>
         public override string ToString()
         {
             return FullName;

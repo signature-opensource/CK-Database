@@ -18,7 +18,7 @@ namespace CK.Setup
     /// can reference it.
     /// </summary>
     /// <remarks>
-    /// Provided that other items are submitted to the <see cref="DependencySorter.OrderItems"/> method the <see cref="IDependentItemGroup.Children"/> collection 
+    /// Provided that other items are submitted to the <see cref="G:DependencySorter.OrderItems"/> methods the <see cref="IDependentItemGroup.Children"/> collection 
     /// can be null or empty since any submitted items that has its <see cref="IDependentItem.Container"/> references this container will be automatically "added"
     /// to the container.
     /// </remarks>

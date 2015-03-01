@@ -15,7 +15,7 @@ using System.Diagnostics;
 namespace CK.Setup
 {
     /// <summary>
-    /// Encapsulates the result of the <see cref="DependencySorter.OrderItems"/> method.
+    /// Encapsulates the result of the <see cref="G:DependencySorter.OrderItems"/> methods.
     /// </summary>
     public sealed class DependencySorterResult
     {

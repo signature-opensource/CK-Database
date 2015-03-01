@@ -19,7 +19,7 @@ namespace CK.Setup
     public class NamedDependentItemGroupRef : NamedDependentItemRef, IDependentItemGroupRef
     {
         /// <summary>
-        /// Initializes a new <see cref="NamedDependentItemGroupRef"/> with a <see cref="FullName"/>
+        /// Initializes a new <see cref="NamedDependentItemGroupRef"/> with a <see cref="NamedDependentItemRef.FullName">FullName</see>
         /// optionaly starting with '?'.
         /// </summary>
         public NamedDependentItemGroupRef( string fullName )
@@ -28,7 +28,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Initializes a potentially optional new <see cref="NamedDependentItemGroupRef"/> with a <see cref="FullName"/>.
+        /// Initializes a potentially optional new <see cref="NamedDependentItemGroupRef"/> with a <see cref="NamedDependentItemRef.FullName">FullName</see>.
         /// </summary>
         public NamedDependentItemGroupRef( string fullName, bool optional )
             : base( fullName, optional )
@@ -38,7 +38,7 @@ namespace CK.Setup
         /// <summary>
         /// Returns this instance or creates a new <see cref="NamedDependentItemGroupRef"/> (or a more specialized type) with the given full name if needed.
         /// </summary>
-        /// <param name="defaultContextName">New full name.</param>
+        /// <param name="fullName">New full name.</param>
         /// <returns>This instance or a new one.</returns>
         public new NamedDependentItemGroupRef SetFullName( string fullName )
         {
@@ -56,6 +56,11 @@ namespace CK.Setup
             return new NamedDependentItemGroupRef( fullName, optional );
         }
 
+        /// <summary>
+        /// Implicit conversion from a string.
+        /// </summary>
+        /// <param name="fullName">The full name of the group.</param>
+        /// <returns>A reference to the named group.</returns>
         public static implicit operator NamedDependentItemGroupRef( string fullName )
         {
             return new NamedDependentItemGroupRef( fullName );

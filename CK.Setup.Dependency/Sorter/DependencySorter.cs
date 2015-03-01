@@ -16,12 +16,12 @@ namespace CK.Setup
 {
 
     /// <summary>
-    /// Static class that offers <see cref="IDependentItem"/> ordering functionnality thanks to <see cref="OrderItems"/>;
+    /// Static class that offers <see cref="IDependentItem"/> ordering functionnality thanks to <see cref="G:OrderItems"/> methods;
     /// </summary>
     public static class DependencySorter
     {
         /// <summary>
-        /// Parametrizes the way <see cref="DependencySorter.OrderItems"/> works.
+        /// Parametrizes the way <see cref="G:DependencySorter.OrderItems"/> works.
         /// </summary>
         public class Options
         {
