@@ -1,20 +1,29 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (SharedAssemblyInfo.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyCompany( "Invenietis" )]
 [assembly: AssemblyProduct( "CK-Database" )]
-[assembly: AssemblyCopyright( "Copyright © Invenietis 2012-2014" )]
+[assembly: AssemblyCopyright( "Copyright © Invenietis 2012-2015" )]
 [assembly: AssemblyTrademark( "" )]
 [assembly: CLSCompliant( true )]
 
-[assembly: AssemblyVersion( "2.0.13" )]
-[assembly: AssemblyFileVersion( "2.0.13" )]
-[assembly: AssemblyInformationalVersion( "2.0.13-develop" )]
+[assembly: AssemblyVersion( "3.0.1" )]
+
 
 #if DEBUG
     [assembly: AssemblyConfiguration( "Debug" )]
 #else
     [assembly: AssemblyConfiguration( "Release" )]
 #endif
+
+// Added by CKReleaser.
+[assembly: AssemblyInformationalVersion( "%ck-standard%" )]

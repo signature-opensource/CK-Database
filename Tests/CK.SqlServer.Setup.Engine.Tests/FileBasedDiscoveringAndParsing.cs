@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (Tests\CK.SqlServer.Setup.Engine.Tests\FileBasedDiscoveringAndParsing.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Linq;
 using System.Xml.Linq;
 using CK.Core;

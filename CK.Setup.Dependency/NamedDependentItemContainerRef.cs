@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (CK.Setup.Dependency\NamedDependentItemContainerRef.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,7 +20,7 @@ namespace CK.Setup
     public class NamedDependentItemContainerRef : NamedDependentItemGroupRef, IDependentItemContainerRef
     {
         /// <summary>
-        /// Initializes a new <see cref="NamedDependentItemContainerRef"/> with a <see cref="FullName"/>
+        /// Initializes a new <see cref="NamedDependentItemContainerRef"/> with a <see cref="NamedDependentItemRef.FullName">FullName</see>
         /// optionaly starting with '?'.
         /// </summary>
         public NamedDependentItemContainerRef( string fullName )
@@ -22,7 +29,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Initializes a potentially optional new <see cref="NamedDependentItemContainerRef"/> with a <see cref="FullName"/>.
+        /// Initializes a potentially optional new <see cref="NamedDependentItemContainerRef"/> with a <see cref="NamedDependentItemRef.FullName">FullName</see>.
         /// </summary>
         public NamedDependentItemContainerRef( string fullName, bool optional )
             : base( fullName, optional )
@@ -49,7 +56,12 @@ namespace CK.Setup
         {
             return new NamedDependentItemContainerRef( fullName, optional );
         }
-
+        
+        /// <summary>
+        /// Implicit conversion from a string.
+        /// </summary>
+        /// <param name="fullName">The full name of the container.</param>
+        /// <returns>A reference to the named container.</returns>
         public static implicit operator NamedDependentItemContainerRef( string fullName )
         {
             return new NamedDependentItemContainerRef( fullName );

@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (CK.Setup.Dependency\ISortedItem.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 
 namespace CK.Setup
@@ -42,7 +49,7 @@ namespace CK.Setup
         object StartValue { get; }
 
         /// <summary>
-        /// Gets the container to which this item belongs thanks to its own configuration (<see cref="IDependentItem.Container)"/>.
+        /// Gets the container to which this item belongs thanks to its own configuration (<see cref="IDependentItem.Container"/>.
         /// If the actual <see cref="Container"/> is inherited through <see cref="Generalization"/>, this ConfiguredContainer is null.
         /// </summary>
         ISortedItem ConfiguredContainer { get; }

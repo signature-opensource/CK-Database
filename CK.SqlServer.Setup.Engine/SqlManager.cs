@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (CK.SqlServer.Setup.Engine\SqlManager.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
@@ -124,8 +131,8 @@ namespace CK.SqlServer.Setup
         }
 
         /// <summary>
-        /// If we are in <see cref="IsAutoConnectMode"/>, the current connection string is:<br/>
-        /// "Server=<see cref="Server"/>;Database=<see cref="DatabaseName"/>;Integrated Security=SSPI"<br/>
+        /// If we are in <see cref="IsAutoConnectMode"/>, the current connection string is:
+        /// "Server=<see cref="Server"/>;Database=<see cref="DatabaseName"/>;Integrated Security=SSPI"
         /// else it is the original connection string given to <see cref="OpenFromConnectionString"/> method.
         /// </summary>
         public string CurrentConnectionString

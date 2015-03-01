@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (Tests\CK.SqlServer.Setup.Engine.Tests\FileBasedDBSetup.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,7 +22,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
         [Test]
         public void InstallFromScratch()
         {
-            SqlSetupCenterConfiguration config = new SqlSetupCenterConfiguration();
+            SqlSetupAspectConfiguration config = new SqlSetupAspectConfiguration();
             config.FilePackageDirectories.Add( TestHelper.GetScriptsFolder( "InstallFromScratch" ) );
             config.SqlFileDirectories.Add( TestHelper.GetScriptsFolder( "InstallFromScratch" ) );
             config.SetupConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
@@ -33,12 +40,6 @@ namespace CK.SqlServer.Setup.Engine.Tests
                     {
                         Assert.That( r.Success, Is.False );
                     }
-                    //using( SqlSetupCenter c = new SqlSetupCenter( TestHelper.Monitor, config, defaultDB ) )
-                    //{
-                    //    c.SetupDependencySorterHookInput = TestHelper.Trace;
-                    //    c.SetupDependencySorterHookOutput = all => TestHelper.Trace( all, true );
-                    //    Assert.That( c.Run(), Is.False );
-                    //}
                 }
                 config.IgnoreMissingDependencyIsError = true;
                 using( TestHelper.ConsoleMonitor.OpenTrace().Send( "Second setup (will succeed since SqlSetupCenterConfiguration.IgnoreMissingDependencyIsError is true)." ) )
@@ -47,10 +48,6 @@ namespace CK.SqlServer.Setup.Engine.Tests
                     {
                         Assert.That( r.Success );
                     }
-                    //using( SqlSetupCenter c = new SqlSetupCenter( TestHelper.Monitor, config, defaultDB ) )
-                    //{
-                    //    Assert.That( c.Run() );
-                    //}
                 }
 
                 defaultDB.ExecuteOneScript( "drop procedure Test.sOneStoredProcedure;" );
@@ -62,10 +59,6 @@ namespace CK.SqlServer.Setup.Engine.Tests
                     {
                         Assert.That( r.Success );
                     }
-                    //using( SqlSetupCenter c = new SqlSetupCenter( TestHelper.Monitor, config, defaultDB ) )
-                    //{
-                    //    Assert.That( c.Run() );
-                    //}
                 }
             }
         }
@@ -73,7 +66,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
         [Test]
         public void InstallPackageWithView()
         {
-            SqlSetupCenterConfiguration config = new SqlSetupCenterConfiguration();
+            SqlSetupAspectConfiguration config = new SqlSetupAspectConfiguration();
             config.FilePackageDirectories.Add( TestHelper.GetScriptsFolder( "InstallFromScratchWithView" ) );
             config.SqlFileDirectories.Add( TestHelper.GetScriptsFolder( "InstallFromScratchWithView" ) );
             config.SetupConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
@@ -113,7 +106,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
         [Test]
         public void InstallPackageWithSPDependsOnVersion()
         {
-            SqlSetupCenterConfiguration config = new SqlSetupCenterConfiguration();
+            SqlSetupAspectConfiguration config = new SqlSetupAspectConfiguration();
             config.FilePackageDirectories.Add( TestHelper.GetScriptsFolder( "InstallFromScratchWithSPDependsOnVersion" ) );
             config.SqlFileDirectories.Add( TestHelper.GetScriptsFolder( "InstallFromScratchWithSPDependsOnVersion" ) );
             config.SetupConfiguration.FinalAssemblyConfiguration.AssemblyName = "InstallPackageWithSPDependsOnVersion";
@@ -126,9 +119,9 @@ namespace CK.SqlServer.Setup.Engine.Tests
                 defaultDB.Connection.ExecuteNonQuery( @"if object_id(N'[dbo].[tTestVSP]') is not null drop table dbo.tTestVSP;" ); // Reset
                 defaultDB.Connection.ExecuteNonQuery( @"if object_id(N'[dbo].[sStoredProcedureWithSPDependsOnVersion]') is not null drop procedure [dbo].[sStoredProcedureWithSPDependsOnVersion];" );
 
-                using( SqlSetupCenter c = new SqlSetupCenter( TestHelper.ConsoleMonitor, config, StObjContextRoot.DefaultStObjRuntimeBuilder, defaultDB ) )
+                using( SqlSetupAspect c = new SqlSetupAspect( TestHelper.ConsoleMonitor, config, StObjContextRoot.DefaultStObjRuntimeBuilder, defaultDB ) )
                 {
-                    Assert.That( c.Run() );
+                    Assert.That( c.Center.Run() );
                 }
                 Assert.That( defaultDB.Connection.ExecuteScalar( "select Id2 from dbo.tTestVSP where Id = 0" ), Is.EqualTo( 3713 ) );
             }

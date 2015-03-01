@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (CK.SqlServer.Setup.Model\Configuration\SqlSetupAspectConfiguration.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using CK.Core;
 using CK.Setup;
@@ -6,7 +13,7 @@ using CK.Setup;
 namespace CK.SqlServer.Setup
 {
     [Serializable]
-    public class SqlSetupCenterConfiguration : IStObjEngineConfiguration
+    public class SqlSetupAspectConfiguration : IStObjEngineConfiguration
     {
         readonly SetupCenterConfiguration _config;
         readonly List<SqlDatabaseDescriptor> _databases;
@@ -16,22 +23,32 @@ namespace CK.SqlServer.Setup
         bool _ignoreMissingDependencyIsError;
 
         /// <summary>
-        /// Initializes a new <see cref="SqlSetupCenterConfiguration"/> with a new, uninitialized <see cref="SetupConfiguration"/>.
+        /// Initializes a new <see cref="SqlSetupAspectConfiguration"/> with a new, uninitialized <see cref="SetupConfiguration"/>.
+        /// By default, <see cref="SetupCenterConfiguration.AppDomainConfiguration"/>.<see cref="BuilderAppDomainConfiguration.UseIndependentAppDomain">UseIndependentAppDomain</see>
+        /// is set to true.
         /// </summary>
-        public SqlSetupCenterConfiguration()
+        public SqlSetupAspectConfiguration()
+            : this( new SetupCenterConfiguration() )
         {
-            _config = new SetupCenterConfiguration();
-            _config.ExplicitRegisteredClasses.Add( typeof( SqlDefaultDatabase ) );
-            _databases = new List<SqlDatabaseDescriptor>();
-            _ckPackageDirectories = new List<string>();
-            _sqlFileDirectories = new List<string>();
             _config.AppDomainConfiguration.UseIndependentAppDomain = true;
         }
 
         /// <summary>
+        /// Initializes a new <see cref="SqlSetupAspectConfiguration"/> with a new, uninitialized <see cref="SetupConfiguration"/>.
+        /// </summary>
+        /// <param name="setupConfiguration">Existing setup configuration.</param>
+        public SqlSetupAspectConfiguration( SetupCenterConfiguration setupConfiguration )
+        {
+            if( setupConfiguration == null ) throw new ArgumentNullException( "centerConfiguration" );
+            _config = setupConfiguration;
+            _config.ExplicitRegisteredClasses.Add( typeof( SqlDefaultDatabase ) );
+            _databases = new List<SqlDatabaseDescriptor>();
+            _ckPackageDirectories = new List<string>();
+            _sqlFileDirectories = new List<string>();
+        }
+
+        /// <summary>
         /// Configuration for <see cref="SetupCenter"/>.
-        /// Note that, by default, <see cref="SetupCenterConfiguration.AppDomainConfiguration"/>.<see cref="BuilderAppDomainConfiguration.UseIndependentAppDomain">UseIndependentAppDomain</see>
-        /// is set to true.
         /// </summary>
         public SetupCenterConfiguration SetupConfiguration
         {
@@ -102,7 +119,7 @@ namespace CK.SqlServer.Setup
 
         string IStObjEngineConfiguration.BuilderAssemblyQualifiedName
         {
-            get { return "CK.SqlServer.Setup.SqlSetupCenter, CK.SqlServer.Setup.Engine"; }
+            get { return "CK.SqlServer.Setup.SqlSetupAspect, CK.SqlServer.Setup.Engine"; }
         }
 
         BuilderFinalAssemblyConfiguration IStObjEngineConfiguration.FinalAssemblyConfiguration

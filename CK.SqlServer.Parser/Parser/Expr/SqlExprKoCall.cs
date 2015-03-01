@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (CK.SqlServer.Parser\Parser\Expr\SqlExprKoCall.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -16,7 +23,7 @@ namespace CK.SqlServer.Parser
 
         static ISqlItem[] Build( SqlItem funName, SqlExprCommaList parameters, SqlNoExprOverClause over )
         {
-            if( funName == null ) throw new ArgumentNullException( "targetName" );
+            if( funName == null ) throw new ArgumentNullException( "funName" );
             if( parameters == null ) throw new ArgumentNullException( "parameters" );
             return  over != null 
                     ? CreateArray( SqlToken.EmptyOpenPar, funName, parameters, over, SqlToken.EmptyClosePar )

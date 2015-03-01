@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (CK.Setup.Dependency\Sorter\DependentItemIssue.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +15,9 @@ using System.IO;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Describes an error in the structure for an <see cref="Item"/> like missing dependencies, homonyms, etc. 
+    /// </summary>
     public sealed class DependentItemIssue
     {
         string[] _missingDep;
@@ -104,6 +114,9 @@ namespace CK.Setup
             }
         }
 
+        /// <summary>
+        /// Gets the total count of missing items (required dependencies and generalization if any).
+        /// </summary>
         public int RequiredMissingCount
         {
             get 
@@ -114,6 +127,9 @@ namespace CK.Setup
             }
         }
 
+        /// <summary>
+        /// The item for which this issue exists.
+        /// </summary>
         public readonly IDependentItem Item;
 
         /// <summary>
@@ -121,6 +137,10 @@ namespace CK.Setup
         /// </summary>
         public DependentItemStructureError StructureError { get; internal set; }
 
+        /// <summary>
+        /// Dumps this issue to the monitor.
+        /// </summary>
+        /// <param name="monitor">Monitor to use. Must not be null.</param>
         public void LogError( IActivityMonitor monitor )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
@@ -224,12 +244,16 @@ namespace CK.Setup
             get { return _nbRequiredMissingDep > 0 ? _missingDep.Where( s => s[0] != '?' ) : null; }
         }
 
+        /// <summary>
+        /// Overridden to use <see cref="LogError"/>.
+        /// </summary>
+        /// <returns>The text of the dump.</returns>
         public override string ToString()
         {
             if( StructureError != DependentItemStructureError.None )
             {
                 TextWriter writer = new StringWriter();
-                var m = new ActivityMonitor();
+                var m = new ActivityMonitor( false );
                 m.Output.RegisterClient( new ActivityMonitorErrorCounter( generateConclusion: true ) );
                 m.Output.RegisterClient( new ActivityMonitorTextWriterClient( writer.Write ) );
                 LogError( m );

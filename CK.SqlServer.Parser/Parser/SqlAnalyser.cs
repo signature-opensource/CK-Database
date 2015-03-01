@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (CK.SqlServer.Parser\Parser\SqlAnalyser.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
@@ -177,7 +184,7 @@ namespace CK.SqlServer.Parser
                     if( !IsStatementList( out bodyCatch, true ) ) return false;
                     SqlTokenIdentifier endCatch, endCatchToken;
                     if( !R.IsToken( out endCatch, SqlTokenType.End, true ) || !R.IsToken( out endCatchToken, SqlTokenType.Catch, true ) ) return false;
-                    statement = new SqlExprStTryCatch( new SqlExprMultiToken<SqlTokenIdentifier>( id, tranOrTry), 
+                    statement = new SqlExprStTryCatch( new SqlExprMultiToken<SqlTokenIdentifier>( id, tranOrTry ), 
                                                        body, 
                                                        new SqlExprMultiToken<SqlTokenIdentifier>( end, endTry, begCatch, begCatchToken), 
                                                        bodyCatch, 
@@ -204,6 +211,13 @@ namespace CK.SqlServer.Parser
                         statement = view;
                         return true;
                     }
+                    if( type.TokenType == SqlTokenType.Function )
+                    {
+                        SqlExprStFunction func;
+                        if( !IsFunction( out func, id, type ) ) return false;
+                        statement = func;
+                        return true;
+                    }
                 }
                 if( id.TokenType == SqlTokenType.Break || id.TokenType == SqlTokenType.Continue )
                 {
@@ -225,6 +239,14 @@ namespace CK.SqlServer.Parser
                         if( !IsStatement( out elseSt, true ) ) return false;
                     }
                     statement = new SqlExprStIf( id, expr, thenSt, elseToken, elseSt, GetOptionalTerminator() );
+                    return true;
+                }
+                if( id.TokenType == SqlTokenType.Return )
+                {
+                    R.MoveNext();
+                    SqlExpr expr;
+                    IsExpression( out expr, 0, false );
+                    statement = new SqlExprStReturn( id, expr, GetOptionalTerminator() );
                     return true;
                 }
                 bool canBeAStatement = id.IsStartStatement || id.TokenType == SqlTokenType.With;
@@ -304,6 +326,120 @@ namespace CK.SqlServer.Parser
                 return true;
             }
 
+            bool IsFunction( out SqlExprStFunction func, SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type )
+            {
+                func = null;
+
+                /*
+                CREATE FUNCTION [ schema_name. ] function_name 
+                    ( [ { @parameter_name [ AS ][ type_schema_name. ] parameter_data_type 
+                        [ = default ] [ READONLY ] } 
+                        [ ,...n ]
+                        ]
+                    )
+                RETURNS 
+                 */
+                SqlExprMultiIdentifier name;
+                if( !IsMultiIdentifier( out name, true ) ) return false;
+
+                SqlExprParameterList parameters;
+                if( !IsParameterList( out parameters, requiresParenthesis: true ) ) return false;
+                
+                SqlTokenIdentifier returns;
+                if( !R.IsToken( out returns, SqlTokenType.Returns, true ) ) return false;
+
+                SqlTokenIdentifier table;
+                SqlTokenIdentifier tableVariableNameToken;
+                if( R.IsToken( out table, SqlTokenType.Table, false ) )
+                {
+                    // Inline Table-Valued Function Syntax
+                    // CREATE FUNCTION [ schema_name. ] function_name 
+                    //    ( [ { @parameter_name [ AS ] [ type_schema_name. ] parameter_data_type 
+                    //        [ = default ] [ READONLY ] } 
+                    //        [ ,...n ]
+                    //      ]
+                    //    )
+                    // RETURNS TABLE
+                    //    [ WITH <function_option> [ ,...n ] ]
+                    //    [ AS ]
+                    //    RETURN [ ( ] select_stmt [ ) ]
+                    // [ ; ]
+                    throw new NotSupportedException( "Table-Valued Function Syntax" );
+                }
+                else if( R.IsToken( out tableVariableNameToken, t => t.IsVariable, false ) )
+                {
+                    // Multistatement Table-valued Function Syntax
+                    // CREATE FUNCTION [ schema_name. ] function_name 
+                    //   ( [ { @parameter_name [ AS ] [ type_schema_name. ] parameter_data_type 
+                    //         [ = default ] [READONLY] } 
+                    //       [ ,...n ]
+                    //     ]
+                    //   )
+                    // RETURNS @return_variable TABLE <table_type_definition>
+                    //    [ WITH <function_option> [ ,...n ] ]
+                    //    [ AS ]
+                    //    BEGIN 
+                    //        function_body 
+                    //        RETURN
+                    //    END
+                    // [ ; ]
+                    throw new NotSupportedException( "Multistatement Table-valued Function Syntax" );
+                }
+                else 
+                {
+                     // Scalar Function Syntax
+                     // CREATE FUNCTION [ schema_name. ] function_name 
+                     //   ( [ { @parameter_name [ AS ][ type_schema_name. ] parameter_data_type 
+                     //       [ = default ] [ READONLY ] } 
+                     //       [ ,...n ]
+                     //     ]
+                     //   )
+                     //   RETURNS return_data_type
+                     //       [ WITH <function_option> [ ,...n ] ]
+                     //       [ AS ]
+                     //       BEGIN 
+                     //           function_body 
+                     //           RETURN scalar_expression
+                     //       END
+                     //  [ ; ]
+                    SqlExprTypeDecl returrnScalarType;
+                    if( !IsTypeDecl( out returrnScalarType ) ) return false;
+                    // Scalar Function Syntax
+                    SqlExprUnmodeledItems options;
+                    SqlTokenIdentifier endOptionToken;
+                    if( !IsUnmodeledUntil( out options, out endOptionToken, t => t.TokenType == SqlTokenType.As || t.TokenType == SqlTokenType.Begin ) ) return false;
+                    SqlTokenIdentifier asToken = null;
+                    SqlTokenIdentifier begin = null;
+                    if( endOptionToken.TokenType == SqlTokenType.As )
+                    {
+                        asToken = endOptionToken;
+                        if( !R.IsToken( out begin, SqlTokenType.Begin, true ) ) return false;
+                    }
+                    else
+                    {
+                        begin = endOptionToken;
+                    }
+                    SqlExprStatementList bodyStatements;
+                    SqlTokenIdentifier end;
+                    SqlTokenTerminal term;
+                    if( !IsBodyStatementListSafe( out bodyStatements, ref begin, out end, out term ) ) return false;
+                    func = new SqlExprStFunctionScalar(
+                                    alterOrCreate, 
+                                    type, 
+                                    name, 
+                                    parameters,
+                                    returns,
+                                    returrnScalarType,
+                                    options,
+                                    asToken,
+                                    begin,
+                                    bodyStatements, 
+                                    end, 
+                                    term );
+                }
+                return true;
+            }
+
             bool IsStoredProcedure( out SqlExprStStoredProc sp, SqlTokenIdentifier alterOrCreate, SqlTokenIdentifier type )
             {
                 sp = null;
@@ -318,11 +454,11 @@ namespace CK.SqlServer.Parser
                 SqlTokenIdentifier asToken;
                 if( !IsUnmodeledUntil( out options, out asToken, t => t.TokenType == SqlTokenType.As, EatExecuteAs ) ) return false;
 
-                SqlTokenIdentifier begin;
+                SqlTokenIdentifier begin = null;
                 SqlExprStatementList bodyStatements;
                 SqlTokenIdentifier end;
                 SqlTokenTerminal term;
-                if( !IsBodyStatementListSafe( out bodyStatements, out begin, out end, out term ) ) return false;
+                if( !IsBodyStatementListSafe( out bodyStatements, ref begin, out end, out term ) ) return false;
                 if( begin == null )
                 {
                     sp = new SqlExprStStoredProc( alterOrCreate, type, name, parameters, options, asToken, bodyStatements, term );
@@ -334,19 +470,19 @@ namespace CK.SqlServer.Parser
                 return true;
             }
 
-            bool IsBodyStatementListSafe( out SqlExprStatementList bodyStatements, out SqlTokenIdentifier begin, out SqlTokenIdentifier end, out SqlTokenTerminal term )
+            bool IsBodyStatementListSafe( out SqlExprStatementList bodyStatements, ref SqlTokenIdentifier begin, out SqlTokenIdentifier end, out SqlTokenTerminal term )
             {
                 end = null;
                 term = null;
                 using( var collector = R.OpenCollector() )
                 {
-                    R.IsToken( out begin, SqlTokenType.Begin, false );
+                    if( begin == null ) R.IsToken( out begin, SqlTokenType.Begin, false );
 
                     // Attempts to read a statement list. If it fails, reads the whole stream as an unmodeled list of tokens.
                     if( IsStatementList( out bodyStatements, true ) )
                     {
                         if( begin != null && !R.IsToken( out end, SqlTokenType.End, true ) ) return false;
-                            term = GetOptionalTerminator();
+                        term = GetOptionalTerminator();
                     }
                     else
                     {
@@ -359,7 +495,10 @@ namespace CK.SqlServer.Parser
                             {
                                 end = (SqlTokenIdentifier)collector[collector.Count - 1];
                             }
-                            else begin = null;
+                            else
+                            {
+                                return R.SetCurrentError( "Missing END." );
+                            }
                         }
                         var t = new SqlExprStUnmodeled( new SqlExprUnmodeledItems( begin != null ? collector.Skip( 1 ).Take( collector.Count - 2 ) : collector ) );
                         bodyStatements = new SqlExprStatementList( new[] { t } );
@@ -422,13 +561,20 @@ namespace CK.SqlServer.Parser
                 SqlTokenIdentifier identifier;
                 if( !R.IsToken( out identifier, idFilter, expected ) ) return false;
 
+                SqlToken asToken;
+                R.IsToken( out asToken, SqlTokenType.As, false );
+
                 SqlExprTypeDecl typeDecl;
                 if( !IsTypeDecl( out typeDecl, true ) ) return false;
 
-                declVar = new SqlExprTypedIdentifier( identifier, typeDecl );
+                declVar = new SqlExprTypedIdentifier( identifier, asToken, typeDecl );
                 return true;
             }
 
+            /// <summary>
+            /// Is a SqlExprTypeDecl: either a SqlDbType (int, sql_variant) or multiple identifiers that is a user defined type.
+            /// </summary>
+            /// <returns></returns>
             bool IsTypeDecl( out SqlExprTypeDecl typeDecl, bool expected = true )
             {
                 typeDecl = null;
@@ -552,6 +698,9 @@ namespace CK.SqlServer.Parser
                 return true;
             }
 
+            /// <summary>
+            /// A Userd defined type is simply multiple identifiers.
+            /// </summary>
             bool IsTypeDeclUserDefined( out SqlExprTypeDeclUserDefined udt, bool expected = true )
             {
                 udt = null;

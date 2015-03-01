@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (CK.Setup.Dependency\Sorter\DependentItemStructureError.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,7 +25,7 @@ namespace CK.Setup
         None,
         /// <summary>
         /// A <see cref="IDependentItem.Container"/> is a <see cref="IDependentItemContainerRef"/> and 
-        /// its <see cref="IDependentItemContainerRef.FullName">FullName</see> does not exist.
+        /// its <see cref="IDependentItemRef.FullName">FullName</see> does not exist.
         /// </summary>
         MissingNamedContainer = 1,
         /// <summary>
@@ -32,14 +39,14 @@ namespace CK.Setup
         /// </summary>
         ExistingContainerAskedToNotBeAContainer = 4,
         /// <summary>
-        /// The item has more than one container: more than one container declare it in their <see cref="IDependentItemContainer.Children"/>
+        /// The item has more than one container: more than one container declare it in their <see cref="IDependentItemGroup.Children"/>
         /// or the <see cref="IDependentItem.Container"/> declared by the item itself (if not null) is another container or another container appears
         /// in the <see cref="IDependentItem.Groups"/> list.
         /// </summary>
         MultipleContainer = 8,
         /// <summary>
-        /// A <see cref="IDependentItemContainer.Children"/> contains a <see cref="IDependentItemContainerRef"/> and 
-        /// its <see cref="IDependentItemContainerRef.FullName">FullName</see> has not been registered.
+        /// A <see cref="IDependentItemGroup.Children"/> contains a non optional named <see cref="IDependentItemRef"/> for which
+        /// <see cref="IDependentItemRef.FullName">FullName</see> can not be found (has not been registered).
         /// </summary>
         MissingNamedChild = 16,
         /// <summary>
@@ -56,7 +63,7 @@ namespace CK.Setup
         Homonym = 128,
         /// <summary>
         /// A <see cref="IDependentItemContainerTyped"/> that declares to not be a group (<see cref="IDependentItemContainerTyped.ItemKind"/> is <see cref="DependentItemKind.Item"/>)
-        /// has items in its <see cref="IDependentItemContainer.Children"/> collection.
+        /// has items in its <see cref="IDependentItemGroup.Children"/> collection.
         /// </summary>
         ContainerAskedToNotBeAGroupButContainsChildren = 256,
         /// <summary>

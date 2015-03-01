@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (CK.SqlServer.Setup.Runtime\SqlView\SqlViewSetupDriver.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -54,7 +61,7 @@ namespace CK.SqlServer.Setup
         {
             if( ExternalVersion != null && ExternalVersion.Version == ((IVersionedItem)Item).Version ) return true;
 
-            ISqlManager m = FindManagerFromLocation( Engine.Monitor, _provider, FullName );
+            ISqlManager m = SqlObjectSetupDriver.FindManagerFromLocation( Engine.Monitor, _provider, FullName );
             if( m == null ) return false;
 
             string s;
@@ -74,25 +81,6 @@ namespace CK.SqlServer.Setup
             if( !m.ExecuteScripts( scripts.Select( c => c.Body ), Engine.Monitor ) ) return false;
 
             return true;
-        }
-
-
-        public static ISqlManager FindManagerFromLocation( IActivityMonitor monitor, ISqlManagerProvider provider, string fullName )
-        {
-            if( monitor == null ) throw new ArgumentNullException( "monitor" );
-            if( provider == null ) throw new ArgumentNullException( "provider" );
-            if( fullName == null ) throw new ArgumentNullException( "fullName" );
-            ISqlManager m = null;
-            string context, location, name;
-            if( !DefaultContextLocNaming.TryParse( fullName, out context, out location, out name ) || String.IsNullOrEmpty( location ) )
-            {
-                monitor.Error().Send( "Unable to extract a location from FullName '{0}' in order to find a Sql connection.", fullName );
-            }
-            else if( (m = provider.FindManagerByName( location )) == null )
-            {
-                monitor.Error().Send( "Location '{0}' from FullName '{1}' can not be mapped to an existing Sql Connection.", location, fullName );
-            }
-            return m;
         }
     }
 }

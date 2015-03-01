@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (CK.SqlServer.Parser\Parser\SqlItemVisitor.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CK.Core;
@@ -129,6 +136,20 @@ namespace CK.SqlServer.Parser
             List<ISqlItem> modified = VisitItems( e.Items );
             if( modified == null ) return e;
             return new SqlExprStStoredProc( modified.ToArray() );
+        }
+
+        public virtual SqlItem Visit( SqlExprStFunctionScalar e )
+        {
+            List<ISqlItem> modified = VisitItems( e.Items );
+            if( modified == null ) return e;
+            return new SqlExprStFunctionScalar( modified.ToArray() );
+        }
+
+        public virtual SqlItem Visit( SqlExprStReturn e )
+        {
+            var v = (SqlExpr)VisitItem( e.Value );
+            if( ReferenceEquals( v, e.Value ) ) return e;
+            return new SqlExprStReturn( e.ReturnT, v, e.StatementTerminator );
         }
 
         public virtual SqlItem Visit( SqlExprStMonoStatement e )

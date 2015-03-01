@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (CK.Setupable.Engine\SetupCenter.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -128,12 +135,22 @@ namespace CK.Setup
         public event EventHandler<DriverEventArgs> DriverEvent;       
 
         /// <summary>
+        /// Executes the whole setup process (<see cref="SetupEngine.Register"/>, <see cref="SetupEngine.RunInit"/>, <see cref="SetupEngine.RunInstall"/>, <see cref="SetupEngine.RunSettle"/>).
+        /// </summary>
+        /// <param name="items">Objects that can be <see cref="IDependentItem"/>, <see cref="IDependentItemDiscoverer"/> or both.</param>
+        /// <returns>True on success, false if an error occured.</returns>
+        public bool Run()
+        {
+            return RunWithExplicitDependentItems();
+        }
+
+        /// <summary>
         /// Registers any number of <see cref="IDependentItem"/> and/or <see cref="IDependentItemDiscoverer"/> and/or <see cref="IEnumerable"/> of such objects (recursively) and executes
         /// the whole setup process (<see cref="SetupEngine.Register"/>, <see cref="SetupEngine.RunInit"/>, <see cref="SetupEngine.RunInstall"/>, <see cref="SetupEngine.RunSettle"/>).
         /// </summary>
-        /// <param name="items">Objects that can be <see cref="IDependentItem"/>, <see cref="IDependentItemDiscoverer"/> or both.</param>
-        /// <returns>A <see cref="SetupEngineRegisterResult"/> that captures detailed information about the registration result.</returns>
-        public bool Run( params object[] items )
+        /// <param name="items">Objects that can be <see cref="IDependentItem"/>, <see cref="IDependentItemDiscoverer"/> or both and/or <see cref="IEnumerable"/> of such objects (recursively).</param>
+        /// <returns>True on success, false if an error occured.</returns>
+        public bool RunWithExplicitDependentItems( params object[] items )
         {
             var path = _monitor.Output.RegisterClient( new ActivityMonitorPathCatcher() );
             ISetupSessionMemory m = null;

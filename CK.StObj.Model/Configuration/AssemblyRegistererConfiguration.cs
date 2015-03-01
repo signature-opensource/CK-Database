@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (CK.StObj.Model\Configuration\AssemblyRegistererConfiguration.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,11 +24,12 @@ namespace CK.Core
 
         readonly static string[] _defaultIgnored = new string[]
             {
-                "System", "System.Core", "System.Data", "System.Data.DataSetExtensions", "System.Data.Xml", "System.Data.Xml.Linq",
-                "CK.Core", "CK.Setup.Dependency", 
+                "mscorlib", "System", "System.Core", "System.Data", "System.Xml", "System.Data.DataSetExtensions", "System.Data.Xml", "System.Data.Xml.Linq",
+                "CK.Core", "CK.Monitoring", "CK.Reflection", 
+                "CK.Setup.Dependency", 
                 "CK.StObj.Model", "CK.StObj.Runtime", "CK.StObj.Engine", 
                 "CK.Setupable.Model", "CK.Setupable.Runtime", "CK.Setupable.Engine", 
-                "CK.SqlServer", "CK.Database.Setup", 
+                "CK.SqlServer.Core", "CK.SqlServer.Parser", 
                 "CK.SqlServer.Setup.Model", "CK.SqlServer.Setup.Runtime", "CK.SqlServer.Setup.Engine", 
                 "Microsoft.CSharp", "Microsoft.Practices.ServiceLocation", "Microsoft.Practices.Unity", "Microsoft.Practices.Unity.Configuration"
             };

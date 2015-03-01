@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (Tests\CK.SqlServer.Parser.Tests\Parsing\SqlAnalyserTest.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
@@ -421,6 +428,34 @@ namespace CK.SqlServer.Parser.Tests
             Assert.That( sp.Parameters[0].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.Int ) );
             Assert.That( sp.BodyStatements.Statements.Count, Is.EqualTo( 1 ) );
         }
+
+        [Test]
+        public void ParseFunctionAclGrantLevel()
+        {
+            var f = ReadStatement<SqlExprStFunctionScalar>( "fAclGrantLevel.sql" );
+
+            Assert.That( f.Name.ToString(), Is.EqualTo( "CK.fAclGrantLevel\r\n" ) );
+            Assert.That( f.Parameters[0].IsOutput, Is.False );
+            Assert.That( f.Parameters[0].IsReadOnly, Is.False );
+            Assert.That( f.Parameters[0].DefaultValue, Is.Null );
+            Assert.That( f.Parameters[0].Variable.Identifier.IsVariable, Is.True );
+            Assert.That( f.Parameters[0].Variable.Identifier.Name, Is.EqualTo( "@ActorId" ) );
+            Assert.That( f.Parameters[0].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.Int ) );
+            Assert.That( f.Parameters.Count, Is.EqualTo( 2 ) );
+            Assert.That( f.Parameters[1].Variable.Identifier.Name, Is.EqualTo( "@AclId" ) );
+            Assert.That( f.Parameters[1].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.Int ) );
+            Assert.That( f.ReturnsT, Is.Not.Null );
+            Assert.That( f.ReturnedType.ActualType.DbType, Is.EqualTo( SqlDbType.TinyInt ) );
+            Assert.That( f.BodyStatements.Statements.Count, Is.EqualTo( 1 ) );
+            Assert.That( f.BodyStatements.Statements[0], Is.InstanceOf<SqlExprStReturn>() );
+            SqlExprStReturn r = (SqlExprStReturn)f.BodyStatements.Statements[0];
+            SqlExprKoCall isNull = (SqlExprKoCall)r.Value;
+            SqlExprKoCall isNull2 = (SqlExprKoCall)isNull.Parameters[1];
+            SqlExprLiteral zero = (SqlExprLiteral)isNull2.Parameters[1];
+
+            Assert.That( zero.Token.LiteralValue, Is.EqualTo( "0" ) );
+        }
+
 
         [Test]
         public void ParseStoredProcedureWithOptions()

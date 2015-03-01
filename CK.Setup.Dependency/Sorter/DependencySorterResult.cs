@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (CK.Setup.Dependency\Sorter\DependencySorterResult.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +15,7 @@ using System.Diagnostics;
 namespace CK.Setup
 {
     /// <summary>
-    /// Encapsulates the result of the <see cref="DependencySorter.OrderItems"/> method.
+    /// Encapsulates the result of the <see cref="G:DependencySorter.OrderItems"/> methods.
     /// </summary>
     public sealed class DependencySorterResult
     {

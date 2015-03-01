@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (CK.SqlServer.Parser\Parser\Expr\SqlExprTypedIdentifier.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -13,16 +20,16 @@ namespace CK.SqlServer.Parser
     /// </summary>
     public class SqlExprTypedIdentifier : SqlNoExpr
     {
-        public SqlExprTypedIdentifier( SqlTokenIdentifier identifier, SqlExprTypeDecl type )
-            : base( Build( identifier, type ) )
+        public SqlExprTypedIdentifier( SqlTokenIdentifier identifier, SqlToken optAsToken,  SqlExprTypeDecl type )
+            : base( Build( identifier, optAsToken, type ) )
         {
         }
 
-        private static ISqlItem[] Build( SqlTokenIdentifier identifier, SqlExprTypeDecl type )
+        private static ISqlItem[] Build( SqlTokenIdentifier identifier, SqlToken optAsToken, SqlExprTypeDecl type )
         {
             if( identifier == null ) throw new ArgumentNullException( "identifier" );
             if( type == null ) throw new ArgumentNullException( "type" );
-            return CreateArray( identifier, type );
+            return optAsToken != null ? CreateArray( identifier, optAsToken, type ) : CreateArray( identifier, type );
         }
 
         internal SqlExprTypedIdentifier( ISqlItem[] items )
@@ -32,7 +39,13 @@ namespace CK.SqlServer.Parser
 
         public SqlTokenIdentifier Identifier { get { return (SqlTokenIdentifier)Slots[0]; } }
 
-        public SqlExprTypeDecl TypeDecl { get { return (SqlExprTypeDecl)Slots[1]; } }
+        /// <summary>
+        /// Gets the optional AS token that may appear in function parameters between the parameter name
+        /// and the type.
+        /// </summary>
+        public SqlToken AsToken { get { return Slots.Length == 2 ? null : (SqlToken)Slots[1]; } }
+
+        public SqlExprTypeDecl TypeDecl { get { return (SqlExprTypeDecl)Slots[Slots.Length-1]; } }
 
         public string ToStringClean()
         {

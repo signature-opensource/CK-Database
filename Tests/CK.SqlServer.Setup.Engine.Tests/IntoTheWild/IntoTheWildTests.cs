@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (Tests\CK.SqlServer.Setup.Engine.Tests\IntoTheWild\IntoTheWildTests.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,9 +21,42 @@ namespace CK.SqlServer.Setup.Engine.Tests
     public class IntoTheWildTests
     {
         [Test]
+        public void IntoTheWildAutoCreated()
+        {
+            using( var removal = new SqlManager() )
+            {
+                removal.Open( "." );
+                Assert.That( removal.Connection.ExecuteScalar(
+                                        @"if db_id('IntoTheWildAutoCreated') is not null drop database IntoTheWildAutoCreated; 
+                                          if db_id('IntoTheWildAutoCreated_Histo') is not null drop database IntoTheWildAutoCreated_Histo;
+                                          select 'Done';" ), Is.EqualTo( "Done" ) );
+            }
+
+            var config = new SqlSetupAspectConfiguration();
+            config.SetupConfiguration.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.Add( "IntoTheWild0" );
+            config.SetupConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
+            config.SetupConfiguration.AppDomainConfiguration.ProbePaths.Add( TestHelper.TestBinFolder );
+            config.DefaultDatabaseConnectionString = "Server=.;Database=IntoTheWildAutoCreated;Integrated Security=SSPI";
+            config.Databases.Add( new SqlDatabaseDescriptor( "dbHisto", "Server=.;Database=IntoTheWildAutoCreated_Histo;Integrated Security=SSPI" ) );
+
+            StObjContextRoot.Build( config, null, TestHelper.ConsoleMonitor ).Dispose();
+
+            using( var defaultDB = new SqlManager() )
+            {
+                defaultDB.Open( ".", "IntoTheWildAutoCreated" );
+                Assert.That( defaultDB.Connection.ExecuteScalar( "select ResName from CK.tRes where ResId=1" ), Is.EqualTo( "System" ) );
+            }
+            using( var histoDB = new SqlManager() )
+            {
+                histoDB.Open( ".", "IntoTheWildAutoCreated_Histo" );
+                Assert.That( histoDB.Connection.ExecuteScalar( "select ResName from CK.tRes where ResId=1" ), Is.EqualTo( "System" ) );
+            }
+        }
+
+        [Test]
         public void IntoTheWild0()
         {
-            var config = new SqlSetupCenterConfiguration();
+            var config = new SqlSetupAspectConfiguration();
             config.SetupConfiguration.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.Add( "IntoTheWild0" );
             config.SetupConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
             config.SetupConfiguration.AppDomainConfiguration.ProbePaths.Add( TestHelper.TestBinFolder );

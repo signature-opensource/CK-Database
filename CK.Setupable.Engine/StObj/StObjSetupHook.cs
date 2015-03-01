@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (CK.Setupable.Engine\StObj\StObjSetupHook.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -35,6 +42,7 @@ namespace CK.Setup
                 AssemblyRegisterer typeReg = new AssemblyRegisterer( monitor );
                 typeReg.TypeFilter = _config.TypeFilter;
                 typeReg.Discover( _config.AppDomainConfiguration.Assemblies );
+                //_config.FinalAssemblyConfiguration.ExternalVersionStamp;
                 StObjCollector stObjC = new StObjCollector( monitor, _runtimeBuilder, _configurator, _configurator, _configurator );
                 using( monitor.OpenInfo().Send( "Registering StObj types." ) )
                 {
