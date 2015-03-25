@@ -178,7 +178,7 @@ namespace CK.Setup
         private bool DoRun( object[] items, ISetupSessionMemory m )
         {
             bool hasError = false;
-            using( _monitor.CatchCounter( nbError => hasError = true ) )
+            using( _monitor.OnError( () => hasError = true ) )
             using( SetupEngine engine = CreateEngine( m ) )
             {
                 using( _monitor.OpenInfo().Send( "Register step." ) )

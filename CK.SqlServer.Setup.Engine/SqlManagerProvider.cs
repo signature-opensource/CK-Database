@@ -79,6 +79,7 @@ namespace CK.SqlServer.Setup
                         m.Connection.Close();
                         m.OpenFromConnectionString( i.ConnectionString );
                     }
+                    else throw new CKException( "Unable to create database named '{0}' on server '{1}.", sb.InitialCatalog, sb.DataSource );
                 }
             }
             _dbConfigurator( m );

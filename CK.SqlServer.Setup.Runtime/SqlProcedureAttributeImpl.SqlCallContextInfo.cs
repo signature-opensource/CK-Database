@@ -79,7 +79,7 @@ namespace CK.SqlServer.Setup
             static public bool IsSqlCallContext( ParameterInfo mP )
             {
                 Type t = mP.ParameterType;
-                return typeof( ISqlCallContext ).IsAssignableFrom( t ) || Attribute.IsDefined( t, typeof( SqlCallContextAttribute ), true );
+                return typeof( ISqlCallContext ).IsAssignableFrom( t );
             }
         }
 

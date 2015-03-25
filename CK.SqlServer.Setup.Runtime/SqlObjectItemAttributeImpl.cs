@@ -21,6 +21,7 @@ namespace CK.SqlServer.Setup
     public class SqlObjectItemAttributeImpl : IStObjSetupDynamicInitializer
     {
         readonly SqlObjectItemAttribute Attribute;
+        static readonly string[] _allowedResourcePrefixes = new string[] { "[Replace]", "[Override]" };
 
         public SqlObjectItemAttributeImpl( SqlObjectItemAttribute a )
         {
@@ -101,11 +102,11 @@ namespace CK.SqlServer.Setup
         static internal SqlObjectProtoItem LoadProtoItemFromResource( IActivityMonitor monitor, SqlPackageBaseItem packageItem, string[] names, string expectedItemType = null )
         {
             string fileName = names[0] + ".sql";
-            string text = packageItem.ResourceLocation.GetString( fileName, false );
+            string text = packageItem.ResourceLocation.GetString( fileName, false, _allowedResourcePrefixes );
             if( text == null )
             {
                 fileName = names[2] + ".sql";
-                text = packageItem.ResourceLocation.GetString( fileName, false );
+                text = packageItem.ResourceLocation.GetString( fileName, false, _allowedResourcePrefixes );
             }
             if( text == null )
             {

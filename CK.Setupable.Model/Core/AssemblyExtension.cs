@@ -22,17 +22,17 @@ namespace CK.Core
         /// Gets all resource names contained in the assembly (calls <see cref="Assembly.GetManifestResourceNames"/>)
         /// as a sorted ascending (thanks to <see cref="StringComparer.Ordinal"/>) cached list of strings.
         /// </summary>
-        /// <param name="assembly">Assembly </param>
-        /// <returns></returns>
-        static public IReadOnlyList<string> GetSortedResourceNames( this Assembly assembly )
+        /// <param name="this">Assembly </param>
+        /// <returns>An ordered list of the resource names.</returns>
+        static public IReadOnlyList<string> GetSortedResourceNames( this Assembly @this )
         {
-            if( assembly == null ) throw new ArgumentNullException( "assembly" );
+            if( @this == null ) throw new ArgumentNullException( "assembly" );
             // We don't care about duplicate computation and set. "Out of lock" Add in GetOrAdd is okay.
-            return _cache.GetOrAdd( assembly, a =>
+            return _cache.GetOrAdd( @this, a =>
             {
                 var l = a.GetManifestResourceNames();
                 Array.Sort( l, StringComparer.Ordinal );
-                return new CKReadOnlyListOnIList<string>( l ); 
+                return l; 
             } );
 
         }

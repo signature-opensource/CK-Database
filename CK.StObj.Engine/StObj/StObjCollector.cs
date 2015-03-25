@@ -83,7 +83,7 @@ namespace CK.Setup
         {
             if( registerer == null ) throw new ArgumentNullException( "registerer" );
             int totalRegistered = 0;
-            using( _monitor.CatchCounter( count => _registerFatalOrErrorCount += count ) )
+            using( _monitor.OnError( () => ++_registerFatalOrErrorCount ) )
             using( _monitor.OpenTrace().Send( "Registering {0} assemblies.", registerer.Assemblies.Count ) )
             {
                 foreach( var one in registerer.Assemblies )
@@ -108,7 +108,7 @@ namespace CK.Setup
         /// <returns>True if it is a new class for this collector, false if it has already been registered.</returns>
         public bool RegisterClass( Type c )
         {
-            using( _monitor.CatchCounter( count => _registerFatalOrErrorCount += count ) )
+            using( _monitor.OnError( () => ++_registerFatalOrErrorCount ) )
             {
                 return _cc.RegisterClass( c );
             }
@@ -153,7 +153,7 @@ namespace CK.Setup
                     int objectCount = 0;
                     foreach( StObjCollectorContextualResult r in result.Contexts )
                     {
-                        using( _monitor.Catch( e => r.SetFatal() ) )
+                        using( _monitor.OnError( () => r.SetFatal() ) )
                         using( _monitor.OpenInfo().Send( "Working on Context [{0}].", r.Context ) )
                         {
                             int nbItems = CreateMutableItems( r );
@@ -206,7 +206,7 @@ namespace CK.Setup
                 // Their instance has been set during the first step (CreateMutableItems).
                 // We can now call the Construct methods and returns an ordered list of IStObj.
                 //
-                using( _monitor.Catch( e => result.SetFatal() ) )
+                using( _monitor.OnError( () => result.SetFatal() ) )
                 using( _monitor.OpenInfo().Send( "Initializing object graph." ) )
                 {
                     int idxSpecialization = 0;
@@ -302,7 +302,7 @@ namespace CK.Setup
             noCycleDetected = true;
             foreach( StObjCollectorContextualResult contextResult in collector.Contexts )
             {
-                using( _monitor.Catch( e => contextResult.SetFatal() ) )
+                using( _monitor.OnError( () => contextResult.SetFatal() ) )
                 using( _monitor.OpenInfo().Send( "Working on Context [{0}].", contextResult.Context ) )
                 {
                     foreach( MutableItem item in contextResult._specializations )
@@ -326,7 +326,7 @@ namespace CK.Setup
         {
             foreach( StObjCollectorContextualResult contextResult in collector.Contexts )
             {
-                using( _monitor.Catch( e => contextResult.SetFatal() ) )
+                using( _monitor.OnError( () => contextResult.SetFatal() ) )
                 using( _monitor.OpenInfo().Send( "Working on Context [{0}].", contextResult.Context ) )
                 {
                     foreach( MutableItem item in contextResult._specializations )
@@ -345,7 +345,7 @@ namespace CK.Setup
         {
             foreach( StObjCollectorContextualResult contextResult in collector.Contexts )
             {
-                using( _monitor.Catch( e => contextResult.SetFatal() ) )
+                using( _monitor.OnError( () => contextResult.SetFatal() ) )
                 using( _monitor.OpenInfo().Send( "Working on Context [{0}].", contextResult.Context ) )
                 {
                     foreach( MutableItem item in contextResult._specializations )

@@ -15,6 +15,9 @@ using System.Reflection;
 
 namespace CK.SqlServer.Setup
 {
+    /// <summary>
+    /// Base class for <see cref="SqlProcedureAttribute"/>.
+    /// </summary>
     [AttributeUsage( AttributeTargets.Method, AllowMultiple = false, Inherited = false )]
     public abstract class SqlMethodForObjectItemAttributeBase : AmbientContextBoundDelegationAttribute
     {
@@ -27,7 +30,6 @@ namespace CK.SqlServer.Setup
             : base( actualAttributeTypeAssemblyQualifiedName )
         {
             ObjectName = objectName;
-            MissingDependencyIsError = true;
         }
 
         /// <summary>
@@ -38,7 +40,8 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Gets or sets whether when installing, the informational message 'The module 'X' depends 
         /// on the missing object 'Y'. The module will still be created; however, it cannot run successfully until the object exists.' 
-        /// must be logged as a <see cref="LogLevel.Error"/>. When false (that is the default), this is a <see cref="LogLevel.Info"/>.
+        /// must be logged as a <see cref="LogLevel.Error"/>.
+        /// When false (that is the default), this is a <see cref="LogLevel.Info"/>.
         /// </summary>
         public bool MissingDependencyIsError { get; set; }
 

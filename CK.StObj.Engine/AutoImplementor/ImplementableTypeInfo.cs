@@ -234,6 +234,7 @@ namespace CK.Core
             TypeBuilder b = assembly.ModuleBuilder.DefineType( current.Name + assembly.NextUniqueNumber(), tA, current );
             // Relayed constructors replicates all their potential attributes (included attributes on parameters).
             b.DefinePassThroughConstructors( c => c.Attributes|MethodAttributes.Public );
+            bool hasFatal = false;
             foreach( var am in MethodsToImplement )
             {
                 if( finalImplementation || am.ExpectImplementation )
@@ -253,6 +254,7 @@ namespace CK.Core
                                 if( finalImplementation )
                                 {
                                     monitor.Fatal().Send( "Method '{0}.{1}' can not be implemented by its IAutoImplementorMethod.", AbstractType.FullName, am.Method.Name );
+                                    hasFatal = true;
                                 }
                                 else EmptyImplementor.Implement( monitor, am.Method, assembly, b, true );
                             }
@@ -260,7 +262,7 @@ namespace CK.Core
                         catch( Exception ex )
                         {
                             monitor.Fatal().Send( ex, "While implementing method '{0}.{1}'.", AbstractType.FullName, am.Method.Name );
-                            return null;
+                            hasFatal = true;
                         }
                     }
                 }
@@ -274,6 +276,7 @@ namespace CK.Core
                     if( p == null || (p == EmptyImplementor && finalImplementation) )
                     {
                         monitor.Fatal().Send( "Property '{0}.{1}' has no valid associated IAutoImplementorProperty.", AbstractType.FullName, ap.Property.Name );
+                        hasFatal = true;
                     }
                     else
                     {
@@ -284,6 +287,7 @@ namespace CK.Core
                                 if( finalImplementation )
                                 {
                                     monitor.Fatal().Send( "Property '{0}.{1}' can not be implemented by its IAutoImplementorProperty.", AbstractType.FullName, ap.Property.Name );
+                                    hasFatal = true;
                                 }
                                 else EmptyImplementor.Implement( monitor, ap.Property, assembly, b, true );
                             }
@@ -291,11 +295,12 @@ namespace CK.Core
                         catch( Exception ex )
                         {
                             monitor.Fatal().Send( ex, "While implementing property '{0}.{1}'.", AbstractType.FullName, ap.Property.Name );
-                            return null;
+                            hasFatal = true;
                         }
                     }
                 }
             }
+            if( hasFatal ) return null;
             try
             {
                 return b.CreateType();

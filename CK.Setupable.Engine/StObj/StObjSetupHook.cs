@@ -35,7 +35,7 @@ namespace CK.Setup
             var monitor = _center.Logger;
 
             bool hasError = false;
-            using( monitor.CatchCounter( a => hasError = true ) )
+            using( monitor.OnError( () => hasError = true ) )
             using( monitor.OpenInfo().Send( "Handling StObj objects." ) )
             {
                 StObjCollectorResult result;

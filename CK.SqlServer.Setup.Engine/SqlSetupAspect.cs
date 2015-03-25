@@ -220,7 +220,7 @@ namespace CK.SqlServer.Setup
             var monitor = _center.Logger;
 
             bool hasError = false;
-            using( monitor.CatchCounter( a => hasError = true ) )
+            using( monitor.OnError( () => hasError = true ) )
             {
                 if( _config.FilePackageDirectories.Count > 0 )
                 {

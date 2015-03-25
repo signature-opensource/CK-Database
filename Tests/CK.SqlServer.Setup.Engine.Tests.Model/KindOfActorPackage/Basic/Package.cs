@@ -9,6 +9,7 @@ using System;
 using System.Data.SqlClient;
 using System.Linq;
 using CK.Setup;
+using CK.SqlServer;
 using CK.SqlServer.Setup;
 
 namespace SqlActorPackage.Basic

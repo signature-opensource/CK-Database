@@ -63,6 +63,7 @@
     <Compile Include="Core\ErrorHandlingTests.cs" />
     <Compile Include="Core\MultiScriptTests.cs" />
     <Compile Include="Core\SimpleScriptTagHandlerTests.cs" />
+    <Compile Include="Core\SqlManagerTests.cs" />
     <Compile Include="FileBasedDBSetup.cs" />
     <Compile Include="FileBasedDiscoveringAndParsing.cs" />
     <Compile Include="IntoTheWild\IntoTheWildTests.cs" />

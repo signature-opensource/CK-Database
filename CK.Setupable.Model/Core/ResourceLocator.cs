@@ -120,18 +120,62 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Obtains the content of a resource as a string
+        /// Obtains the content of a resource as a string.
         /// </summary>
         /// <param name="name">
         /// Name of the resource (can be null or empty). Usually a file name ('sProc.sql') or a type ('Model.User.1.0.0.sql') but can be any suffix.
-        /// When not null nor empty a '.' will automatically be inserted between <paramref name="path"/> and name.
         /// </param>
-        /// <param name="throwError">Set to false, no exception will be thrown if the resource 
-        /// does not exist.</param>
-        /// <returns>A string (possibly empty) if the resource is found.<br/>
-        /// Null if the resource is not found and <paramref name="throwError"/> is false.</returns>
-        public string GetString( string name, bool throwError )
+        /// <param name="throwError">
+        /// Set to false, no exception will be thrown if the resource does not exist.
+        /// </param>
+        /// <param name="allowedNamePrefix">
+        /// Allowed prefixes like "[Replace]" or "[Override]".
+        /// </param>
+        /// <returns>
+        /// A string (possibly empty) if the resource is found.
+        /// Null if the resource is not found and <paramref name="throwError"/> is false.
+        /// </returns>
+        public string GetString( string name, bool throwError, params string[] allowedNamePrefix )
         {
+            foreach( var p in allowedNamePrefix )
+            {
+                string s = LoadString( _type, _path, p + name, false );
+                if( s != null ) return s;
+            }
+            return LoadString( _type, _path, name, throwError );
+        }
+
+        /// <summary>
+        /// Obtains the content of a resource as a string.
+        /// </summary>
+        /// <param name="name">
+        /// Name of the resource (can be null or empty). Usually a file name ('sProc.sql') or a type ('Model.User.1.0.0.sql') but can be any suffix.
+        /// </param>
+        /// <param name="throwError">
+        /// Set to false, no exception will be thrown if the resource does not exist.
+        /// </param>
+        /// <param name="namePrefix">
+        /// The prefix found (prefix are looked up first). String.Empty if there were no match with prefix.
+        /// </param>
+        /// <param name="allowedNamePrefix">
+        /// Allowed prefixes like "[Replace]" or "[Override]".
+        /// </param>
+        /// <returns>
+        /// A string (possibly empty) if the resource is found.
+        /// Null if the resource is not found and <paramref name="throwError"/> is false.
+        /// </returns>
+        public string GetString( string name, bool throwError, out string namePrefix, params string[] allowedNamePrefix )
+        {
+            foreach( var p in allowedNamePrefix )
+            {
+                string s = LoadString( _type, _path, p + name, false );
+                if( s != null )
+                {
+                    namePrefix = p;
+                    return s;
+                }
+            }
+            namePrefix = String.Empty;
             return LoadString( _type, _path, name, throwError );
         }
 
@@ -145,7 +189,7 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Compute the resource full name from the namespace of the <paramref name="resourceHolder"/> 
+        /// Computes the resource full name from the namespace of the <paramref name="resourceHolder"/> 
         /// and the <paramref name="path"/> (that can be null or empty).
         /// </summary>
         /// <param name="resourceHolder">
@@ -198,6 +242,7 @@ namespace CK.Core
         /// <param name="resourceHolder">
         /// The assembly of this type must hold the resources and its <see cref="Type.Namespace"/>
         /// is the path prefix of the resources.
+        /// </param>
         /// <param name="path">
         /// A sub path from the namespace of the type to the resource 
         /// itself. Can be null or <see cref="String.Empty"/> if the resources are 

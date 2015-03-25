@@ -70,6 +70,7 @@
     <Compile Include="AutoImplementor\IAutoImplementorProperty.cs" />
     <Compile Include="AutoImplementor\IDynamicAssembly.cs" />
     <Compile Include="AutoImplementor\PreventAutoImplementationAttribute.cs" />
+    <Compile Include="CKCORENEXTVERSION.cs" />
     <Compile Include="Configuration\AssemblyRegistererConfiguration.cs" />
     <Compile Include="Configuration\IStObjEngineConfiguration.cs" />
     <Compile Include="Configuration\BuilderAppDomainConfiguration.cs" />

@@ -67,10 +67,6 @@
       <Project>{96DEDEEE-DE7D-4B14-8FDE-BC4D8D9CCB78}</Project>
       <Name>CK.StObj.Model</Name>
     </ProjectReference>
-    <ProjectReference Include="..\IntoTheWild0\IntoTheWild0.csproj">
-      <Project>{94F93F54-E70F-45B4-BB7B-4ADB82059257}</Project>
-      <Name>IntoTheWild0</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Basic\Res\CK.UserHome.Init.2.12.10.sql" />

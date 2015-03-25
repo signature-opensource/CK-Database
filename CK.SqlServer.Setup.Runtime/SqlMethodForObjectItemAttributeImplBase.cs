@@ -127,6 +127,10 @@ namespace CK.SqlServer.Setup
             //     - returns false to implement a stub.
             if( _theBest == null || _theBest.Item == null )
             {
+                if( _method != null )
+                {
+                    monitor.Warn().Send( "DynamicItemInitialize has not been called: no resource should have been found for method {0}.", _method.Name );
+                }
                 _method = m;
                 return false;
             }
