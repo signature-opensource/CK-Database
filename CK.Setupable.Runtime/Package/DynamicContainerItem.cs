@@ -21,7 +21,7 @@ namespace CK.Setup
     /// as a Container by other items.
     /// </summary>
     /// <remarks>
-    /// The <see cref="DynamicPackageItem"/> must be used for container that have multiple versions and an optional associated model.
+    /// The <see cref="DynamicPackageItem"/> must be used for container that have multiple versions and optional associated "Model" and "Objects".
     /// </remarks>
     public abstract class DynamicContainerItem : IMutableSetupItemContainer, IDependentItemContainerRef
     {

@@ -48,7 +48,8 @@ namespace CK.Setup
         public StObjDynamicPackageItem( IActivityMonitor monitor, IStObjSetupData data )
             : base( data.StObj.ItemKind == DependentItemKindSpec.Item ? "StObjItem" : "StObjPackage", (object)data.DriverType ?? data.DriverTypeName )
         {
-            Debug.Assert( Model == null, "Initially, a DynamicPackageItem has no model." );
+            Debug.Assert( Model == null, "Initially, a DynamicPackageItem has no Model." );
+            Debug.Assert( ObjectsPackage == null, "Initially, a DynamicPackageItem has no ObjectsPackage." );
             Debug.Assert( data.ItemType == null || typeof( StObjDynamicPackageItem ).IsAssignableFrom( data.ItemType ), "If we are using a StObjDynamicPackageItem, this is because no explicit ItemType (nor ItemTypeName) have been set, or it is a type that specializes this." );
             ItemKind = (DependentItemKind)data.StObj.ItemKind;
             SetVersionsString( data.Versions );

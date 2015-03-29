@@ -344,7 +344,6 @@ namespace CK.Setup.Dependency.Tests
             ResultChecker.SimpleCheck( r );
         }
 
-
         [Test]
         public void RelatedItems()
         {
@@ -375,5 +374,6 @@ namespace CK.Setup.Dependency.Tests
             }
 
         }
+
     }
 }

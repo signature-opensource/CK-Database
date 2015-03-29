@@ -70,6 +70,10 @@ namespace CK.SqlServer.Setup
             {
                 Model.Groups.AddRange( Groups.OfType<SqlDatabaseItem>() );
             }
+            if( ObjectsPackage != null )
+            {
+                ObjectsPackage.Groups.AddRange( Groups.OfType<SqlDatabaseItem>() );
+            }
             return base.StartDependencySort();
         }
     }

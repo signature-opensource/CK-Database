@@ -14,37 +14,54 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// A PackageModel is a <see cref="IPackageItem"/> associated to a <see cref="IPackageItem"/>.
-    /// A Model <see cref="FullName"/> is the "Model." prefix followed by the FullName of the <see cref="Package"/>.
+    /// An AutoDependentPackageItem is a <see cref="IPackageItem"/> associated to a <see cref="IPackageItem"/> that owns it (in 
+    /// terms of lifecyle, not in terms of containment) that is projected before or after its owner and reproduces the set of its
+    /// owner dependencies on its own dependencies.
+    /// Its <see cref="FullName"/> uses a "XXX." prefix followed by the FullName of the associated Package. This <see cref="Prefix"/>
+    /// is also used to "type" this package for <see cref=""/>
     /// </summary>
     /// <remarks>
-    /// Since there can be at most one Model per Package, a PackageModel should only be built or removed by its owner Package itself 
+    /// An AutoDependentPackageItem should only be built or removed by its owner Package itself 
     /// thanks to specific methods that control the existence of the model. The <see cref="DynamicPackageItem"/> use this pattern with its <see cref="DynamicPackageItem.EnsureModel()"/> 
-    /// and <see cref="DynamicPackageItem.SupressModel()"/> methods.
+    /// and <see cref="DynamicPackageItem.SupressModel()"/> methods for instance.
     /// </remarks>
-    public class PackageModelItem : IPackageItem, IDependentItemDiscoverer, IDependentItemContainerRef
+    public class AutoDependentPackageItem : IPackageItem, IDependentItemDiscoverer, IDependentItemContainerRef
     {
-        IPackageItem _package;
+        readonly IPackageItem _package;
+        readonly string _prefix;
+        readonly string _prefixWithDot;
         IDependentItemContainerRef _container;
         DependentItemList _requires;
         DependentItemList _requiredBy;
         DependentItemGroupList _groups;
         IDependentItemList _children;
+        bool _frontPackage;
         bool _automaticModelRequirement;
 
         /// <summary>
-        /// Initializes a new <see cref="PackageModelItem"/>.
+        /// Initializes a new <see cref="AutoDependentPackageItem"/> with a specific prefix.
         /// </summary>
-        /// <param name="package">The associated package.</param>
-        public PackageModelItem( IPackageItem package )
+        /// <param name="owner">The associated package.</param>
+        /// <param name="frontPackage">True to make this package required by its owner, false to make it require its owner.</param>
+        /// <param name="prefix">Prefix that must not be null or whitespace ("Objects").</param>
+        /// <param name="prefixWithDot">Prefix with additional dot ("Objects.").</param>
+        public AutoDependentPackageItem( IPackageItem owner, bool frontPackage, string prefix, string prefixWithDot )
         {
-            if( package == null ) throw new ArgumentNullException( "package" );
-            _package = package;
+            if( owner == null ) throw new ArgumentNullException( "package" );
+            if( String.IsNullOrWhiteSpace( prefix ) ) throw new ArgumentException( "prefix" );
+            if( String.IsNullOrWhiteSpace( prefixWithDot )
+                || prefixWithDot.Length != prefix.Length + 1
+                || prefixWithDot[prefixWithDot.Length-1] != '.'
+                || String.CompareOrdinal( prefix, 0, prefixWithDot, 0, prefix.Length ) != 0 ) throw new ArgumentException( "prefixWithDot" );
+            _frontPackage = frontPackage;
+            _package = owner;
+            _prefix = prefix;
+            _prefixWithDot = prefixWithDot;
             _automaticModelRequirement = true;
         }
 
         /// <summary>
-        /// Gets the package for which this one is the Model.
+        /// Gets the "owner" package.
         /// </summary>
         public IPackageItem Package
         {
@@ -52,20 +69,28 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets or sets whether any <see cref="Package"/> requirements (that is not itself a Model) is automatically projected as a requirement to its Model on 
-        /// this Model (the package name is prefixed with "?Model.").
+        /// Gets the prefix.
+        /// </summary>
+        public string Prefix
+        {
+            get { return _prefix; }
+        }
+
+        /// <summary>
+        /// Gets or sets whether any <see cref="Package"/> requirements (that is not itself a AutoDependentPackageItem) is automatically projected as a requirement to its AutoDependentPackageItem 
+        /// with the same prefix on this one (the package name is prefixed with "?<see cref="Prefix"/>.").
         /// Defaults to true and applies to Requires and RequiredBy relations.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// States whether the Models of the packages that our <see cref="Package"/> requires are automatically required by this Model
-        /// and whether Models of the packages that states to be required by our package automatically require this Model.
+        /// States whether the AutoDependentPackageItem with the same Prefix of the packages that our <see cref="Package"/> requires are automatically required by this AutoDependentPackageItem
+        /// and whether AutoDependentPackageItem with the same prefix of the packages that states to be required by our package automatically require this AutoDependentPackageItem.
         /// </para>
         /// <para>
         /// Said differently: 
-        /// "If I require a package "A", then my own Model requires "Model.A" (if A has a model).".
+        /// "If I require a package "A", then my own "XXX" requires "XXX.A" (if A has an AutoDependentPackageItem with prefix "XXX").".
         /// Or, for the "required by": 
-        /// "If I want to be required by "B" (ie. I must be before "B"), then if "B" has a model, my Model must also be before "Model.B".".
+        /// "If I want to be required by "B" (ie. I must be before "B"), then if "B" has a "XXX", my "XXX" must also be before "XXX.B".".
         /// </para>
         /// </remarks>
         public bool AutomaticModelRequirement
@@ -91,11 +116,11 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the name of this model: it is the <see cref="P:Package"/>'s name prefixed by "Model.".
+        /// Gets the name of this <see cref="AutoDependentPackageItem"/>: it is the <see cref="P:Package"/>'s name prefixed by "<see cref="Prefix"/>.".
         /// </summary>
         public string Name
         {
-            get { return "Model." + _package.Name; }
+            get { return _prefixWithDot + _package.Name; }
         }
 
         /// <summary>
@@ -118,7 +143,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets a mutable list of items that this Model requires.
+        /// Gets a mutable list of items that this AutoDependentPackageItem requires.
         /// </summary>
         public IDependentItemList Requires
         {
@@ -126,7 +151,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets a mutable list of items that are required by this Model.
+        /// Gets a mutable list of items that are required by this AutoDependentPackageItem.
         /// </summary>
         public IDependentItemList RequiredBy
         {
@@ -134,7 +159,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets a mutable list of groups to which this Model belongs.
+        /// Gets a mutable list of groups to which this AutoDependentPackageItem belongs.
         /// </summary>
         public IDependentItemGroupList Groups
         {
@@ -156,7 +181,7 @@ namespace CK.Setup
 
         IDependentItemRef IDependentItem.Generalization
         {
-            get { return _package.Generalization != null ? new NamedDependentItemRef( DefaultContextLocNaming.AddNamePrefix( _package.Generalization.FullName, "Model." ), true ) : null; }
+            get { return _package.Generalization != null ? new NamedDependentItemRef( DefaultContextLocNaming.AddNamePrefix( _package.Generalization.FullName, _prefixWithDot ), true ) : null; }
         }
 
         object IDependentItem.StartDependencySort()
@@ -179,12 +204,13 @@ namespace CK.Setup
                     var req = _package.Requires;
                     if( req != null )
                     {
-                        var fromPackage = req.Where( r => !DefaultContextLocNaming.NameStartsWith( r.FullName, "Model." ) )
-                                             .Select( r => new NamedDependentItemRef( DefaultContextLocNaming.AddNamePrefix( r.FullName, "Model." ), true ) );
-                        return thisRequires != null ? thisRequires.Concat( fromPackage ) : fromPackage;
+                        var fromPackage = req.Where( r => !DefaultContextLocNaming.NameStartsWith( r.FullName, _prefixWithDot ) )
+                                             .Select( r => new NamedDependentItemRef( DefaultContextLocNaming.AddNamePrefix( r.FullName, _prefixWithDot ), true ) );
+                        thisRequires = thisRequires != null ? thisRequires.Concat( fromPackage ) : fromPackage;
                     }
                 }
-                return thisRequires; 
+                if( _frontPackage ) return thisRequires;
+                return thisRequires != null ? thisRequires.Append( _package.GetReference() ) : new CKReadOnlyListMono<IDependentItemRef>( _package.GetReference() );
             }
         }
 
@@ -198,16 +224,17 @@ namespace CK.Setup
                     var reqBy = _package.RequiredBy;
                     if( reqBy != null )
                     {
-                        var fromPackage = reqBy.Where( r => !DefaultContextLocNaming.NameStartsWith( r.FullName, "Model." ) )
-                                                .Select( r => new NamedDependentItemRef( DefaultContextLocNaming.AddNamePrefix( r.FullName, "Model." ), true ) );
-                        return thisRequiredBy != null ? thisRequiredBy.Concat( fromPackage ) : fromPackage;
+                        var fromPackage = reqBy.Where( r => !DefaultContextLocNaming.NameStartsWith( r.FullName, _prefixWithDot ) )
+                                                .Select( r => new NamedDependentItemRef( DefaultContextLocNaming.AddNamePrefix( r.FullName, _prefixWithDot ), true ) );
+                        thisRequiredBy = thisRequiredBy != null ? thisRequiredBy.Concat( fromPackage ) : fromPackage;
                     }
                 }
-                return thisRequiredBy;
+                if( !_frontPackage ) return thisRequiredBy;
+                return thisRequiredBy != null ? thisRequiredBy.Append( _package.GetReference() ) : new CKReadOnlyListMono<IDependentItemRef>( _package.GetReference() );
             }
         }
 
-        //TODO: CHECK that Group relationships supports optionality and projects them into potential "Model." groups. 
+        //TODO: CHECK that Group relationships supports optionality and projects them into potential "Prefix." groups. 
         IEnumerable<IDependentItemGroupRef> IDependentItem.Groups
         {
             get { return _groups.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _package.Context, _package.Location ) ); }
@@ -222,19 +249,19 @@ namespace CK.Setup
                 {
                     var f = pp.First();
                     var name = f.FullName;
-                    var newName = DefaultContextLocNaming.AddNamePrefix( name, "Model." );
+                    var newName = DefaultContextLocNaming.AddNamePrefix( name, _prefixWithDot );
                     var f2 = new VersionedName( newName, f.Version );
                 }
-                return _package.PreviousNames.Select( p => new VersionedName( DefaultContextLocNaming.AddNamePrefix( p.FullName, "Model." ), p.Version ) ); 
+                return _package.PreviousNames.Select( p => new VersionedName( DefaultContextLocNaming.AddNamePrefix( p.FullName, _prefixWithDot ), p.Version ) ); 
             }
         }
 
         string IVersionedItem.ItemType
         {
-            get { return "Model"; }
+            get { return _prefix; }
         }
 
-        //TODO: CHECK that Children relationships supports optionality and projects them into potential "Model." children. ?? Not sure it is a good idea for container/Children... 
+        //TODO: CHECK that Children relationships supports optionality and projects them into potential "Prefix." children. ?? Not sure it is a good idea for container/Children... 
         IEnumerable<IDependentItemRef> IDependentItemGroup.Children
         {
             get { return _children.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _package.Context, _package.Location ) ); }

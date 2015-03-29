@@ -15,15 +15,16 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// Fully mutable <see cref="IDependentItemContainer"/> and <see cref="IVersionedItem"/> with a an optional associated <see cref="Model"/> package
-    /// and  configurable type for the associated <see cref="SetupDriver"/>.
+    /// Fully mutable <see cref="IDependentItemContainer"/> and <see cref="IVersionedItem"/> with optional associated <see cref="Model"/> 
+    /// and <see cref="ObjectsPackage"/> packages (that are <see cref="AutoDependentPackageItem"/>) and  configurable type for the associated <see cref="SetupDriver"/>.
     /// </summary>
     /// <remarks>
-    /// The <see cref="DynamicContainerItem"/> can be used if a pure mutable Container is needed (no versions nor associated model).
+    /// The <see cref="DynamicContainerItem"/> can be used if a pure mutable Container is needed (no versions nor associated AutoDependentPackageItem).
     /// </remarks>
     public class DynamicPackageItem : PackageItemBase, IDependentItemContainerTyped, IDependentItemDiscoverer
     {
-        PackageModelItem _model;
+        AutoDependentPackageItem _model;
+        AutoDependentPackageItem _objects;
         object _driverType;
 
         /// <summary>
@@ -42,11 +43,11 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the optional <see cref="PackageModelItem"/> for this <see cref="DynamicPackageItem"/>.
+        /// Gets the optional <see cref="AutoDependentPackageItem"/> "Model" for this <see cref="DynamicPackageItem"/>.
         /// It is null (the default) if this package has no Model: use <see cref="EnsureModel"/> to
         /// create the Model if needed.
         /// </summary>
-        public PackageModelItem Model
+        public AutoDependentPackageItem Model
         {
             get { return _model; }
         }
@@ -55,9 +56,9 @@ namespace CK.Setup
         /// Creates the associated <see cref="Model"/> package if it does not exist yet.
         /// </summary>
         /// <returns></returns>
-        public PackageModelItem EnsureModel()
+        public AutoDependentPackageItem EnsureModel()
         {
-            return _model ?? (_model = new PackageModelItem( this ));
+            return _model ?? (_model = new AutoDependentPackageItem( this, true, "Model", "Model." ));
         }
 
         /// <summary>
@@ -66,6 +67,33 @@ namespace CK.Setup
         public void SupressModel()
         {
             _model = null;
+        }
+
+        /// <summary>
+        /// Gets the optional <see cref="AutoDependentPackageItem"/> "Objects" for this <see cref="DynamicPackageItem"/>.
+        /// It is null (the default) if this package has no associated "Objects" package: use <see cref="EnsureModel"/> to
+        /// create the Model if needed.
+        /// </summary>
+        public AutoDependentPackageItem ObjectsPackage
+        {
+            get { return _objects; }
+        }
+
+        /// <summary>
+        /// Creates the associated <see cref="ObjectsPackage"/> package if it does not exist yet.
+        /// </summary>
+        /// <returns></returns>
+        public AutoDependentPackageItem EnsureObjectsPackage()
+        {
+            return _objects ?? (_objects = new AutoDependentPackageItem( this, false, "Objects", "Objects." ));
+        }
+
+        /// <summary>
+        /// Removes the <see cref="ObjectsPackage"/> (sets it to null).
+        /// </summary>
+        public void SupressObjectsPackage()
+        {
+            _objects = null;
         }
 
         /// <summary>
@@ -84,7 +112,18 @@ namespace CK.Setup
 
         IEnumerable<IDependentItem> IDependentItemDiscoverer.GetOtherItemsToRegister()
         {
-            return _model != null ? new CKReadOnlyListMono<IDependentItem>( _model ) : null;
+            if( _objects == null )
+            {
+                return _model != null ? new CKReadOnlyListMono<IDependentItem>( _model ) : null;
+            }
+            else if( _model == null )
+            {
+                return new CKReadOnlyListMono<IDependentItem>( _objects );
+            }
+            else 
+            {
+                return new []{ _model, _objects };
+            }
         }
 
     }

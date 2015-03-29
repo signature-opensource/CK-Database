@@ -29,6 +29,11 @@ namespace CK.SqlServer.Setup.Engine.Tests
                 Model finally requires: ?[X]LOC^Model.AnOtherPackage and [C]db^Model.YetAnotherOne
         -->
     </Model>
+    <Objects>
+        <!-- 
+                ObjectsPackage finally requires: ?[X]LOC^Objects.AnOtherPackage and [C]db^Objects.YetAnotherOne
+        -->
+    </Objects>
     <Content>
         <Add FullName=""ContainedItem"" />
         <Add FullName=""AnotherContainedItem"" />
@@ -43,9 +48,12 @@ namespace CK.SqlServer.Setup.Engine.Tests
             Assert.That( p.Requires[0].FullName, Is.EqualTo( "[X]AnOtherPackage" ), "Direct relation storage is not impacted by Context-Localization context." );
             Assert.That( p.Requires[1].FullName, Is.EqualTo( "db^YetAnotherOne" ) );
             Assert.That( p.Model.Requires.Count, Is.EqualTo( 0 ), "Model does not require anythnig by itself." );
+            Assert.That( p.ObjectsPackage.Requires.Count, Is.EqualTo( 0 ), "ObjectsPackage does not require anythnig by itself." );
 
             Assert.That( p.Model.Name, Is.EqualTo( "Model.TheFirstPackageEver" ) );
             Assert.That( p.Model.FullName, Is.EqualTo( "[C]LOC^Model.TheFirstPackageEver" ) );
+            Assert.That( p.ObjectsPackage.Name, Is.EqualTo( "Objects.TheFirstPackageEver" ) );
+            Assert.That( p.ObjectsPackage.FullName, Is.EqualTo( "[C]LOC^Objects.TheFirstPackageEver" ) );
 
             // Consider the DynamicPackageItem and its model as IDependentItem.
             IDependentItemContainer pAsI = p as IDependentItemContainer;
@@ -56,7 +64,11 @@ namespace CK.SqlServer.Setup.Engine.Tests
             Assert.That( mAsI.Requires.ElementAt( 0 ).FullName, Is.EqualTo( "[X]LOC^Model.AnOtherPackage" ) );
             Assert.That( mAsI.Requires.ElementAt( 1 ).FullName, Is.EqualTo( "[C]db^Model.YetAnotherOne" ) );
 
-       }
+            IDependentItem oAsI = p.ObjectsPackage as IDependentItem;
+            Assert.That( oAsI.Requires.ElementAt( 0 ).FullName, Is.EqualTo( "[X]LOC^Objects.AnOtherPackage" ) );
+            Assert.That( oAsI.Requires.ElementAt( 1 ).FullName, Is.EqualTo( "[C]db^Objects.YetAnotherOne" ) );
+
+        }
 
 
         class SqlObjectParserStub : ISqlObjectParser

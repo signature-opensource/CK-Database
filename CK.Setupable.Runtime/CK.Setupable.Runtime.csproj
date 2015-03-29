@@ -103,7 +103,7 @@
     <Compile Include="Package\IMutableSetupItemGroup.cs" />
     <Compile Include="Package\IPackageItem.cs" />
     <Compile Include="Package\PackageItemBase.cs" />
-    <Compile Include="Package\PackageModelItem.cs" />
+    <Compile Include="Package\AutoDependentPackagelItem.cs" />
     <Compile Include="Scripts\ParsedFileName.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SetupCallGroupStep.cs" />

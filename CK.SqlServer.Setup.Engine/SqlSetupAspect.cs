@@ -250,7 +250,7 @@ namespace CK.SqlServer.Setup
                         List<IDependentItem> items = new List<IDependentItem>();
                         foreach( var proto in _sqlFiles.OfType<SqlObjectProtoItem>() )
                         {
-                            var item = proto.CreateItem( monitor );
+                            var item = proto.CreateItem( monitor, !_config.IgnoreMissingDependencyIsError, null );
                             if( item == null ) hasError = true;
                             else items.Add( item );
                         }

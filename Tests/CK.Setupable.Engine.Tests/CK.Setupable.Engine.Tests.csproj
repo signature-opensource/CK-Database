@@ -55,6 +55,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="DefaultContextLocNamingTests.cs" />
+    <Compile Include="DynamicPackageItemTests.cs" />
     <Compile Include="ItemAndItemRef.cs" />
     <Compile Include="ParsedFileNameTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

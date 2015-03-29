@@ -111,12 +111,7 @@ namespace CK.SqlServer.Setup
                 SqlObjectProtoItem proto = SqlObjectItemAttributeImpl.LoadProtoItemFromResource( state.Monitor, packageItem, _theBest.Names, _sqlObjectProtoItemType );
                 if( proto == null ) return;
                 // On success, creates the SqlObjectItem bound to the MethodInfo that must call it.
-                _theBest.Item = proto.CreateItem( state.Monitor );
-                if( _theBest.Item != null )
-                {
-                    if( !_theBest.Item.MissingDependencyIsError.HasValue ) _theBest.Item.MissingDependencyIsError = _attr.MissingDependencyIsError;
-                    packageItem.Children.Add( _theBest.Item );
-                }
+                _theBest.Item = proto.CreateItem( state.Monitor, _attr.MissingDependencyIsError, packageItem );
             }
         }
 

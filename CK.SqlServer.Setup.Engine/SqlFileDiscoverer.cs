@@ -132,16 +132,32 @@ namespace CK.Setup
         {
             DynamicPackageItem p;
             XElement model = e.Elements( "Model" ).SingleOrDefault();
+            XElement objects = e.Elements( "Objects" ).SingleOrDefault();
+            
             if( model != null )
             {
-                p = new DynamicPackageItem( "SetupPWithModel" );
-                
+                p = objects == null ? new DynamicPackageItem( "SetupPWithM" ) : new DynamicPackageItem( "SetupPWithMAndO" );
+            }
+            else if( objects != null )
+            {
+                p = new DynamicPackageItem( "SetupPWithO" );
+            }
+            else p = new DynamicPackageItem( "SetupP" );
+
+            if( model != null )
+            {
                 p.EnsureModel().Requires.Clear();
                 foreach( var a in model.Elements( "Requirements" ).Attributes( "Requires" ) ) p.Model.Requires.AddCommaSeparatedString( (string)a );
                 p.Model.RequiredBy.Clear();
                 foreach( var a in e.Elements( "Requirements" ).Attributes( "RequiredBy" ) ) p.Model.RequiredBy.AddCommaSeparatedString( (string)a );
             }
-            else p = new DynamicPackageItem( "SetupP" );
+            if( objects != null )
+            {
+                p.EnsureObjectsPackage().Requires.Clear();
+                foreach( var a in model.Elements( "Requirements" ).Attributes( "Requires" ) ) p.ObjectsPackage.Requires.AddCommaSeparatedString( (string)a );
+                p.ObjectsPackage.RequiredBy.Clear();
+                foreach( var a in e.Elements( "Requirements" ).Attributes( "RequiredBy" ) ) p.ObjectsPackage.RequiredBy.AddCommaSeparatedString( (string)a );
+            }
 
             p.FullName = DefaultContextLocNaming.Resolve( (string)e.AttributeRequired( "FullName" ), curContext, curLoc );
 

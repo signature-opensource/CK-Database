@@ -49,14 +49,23 @@ namespace CK.SqlServer.Setup
                     {
                         int nbScripts = scripts.AddFromResources( monitor, "res-sql", r, context, location, name, ".sql" );
                         if( Item.Model != null ) nbScripts += scripts.AddFromResources( monitor, "res-sql", r, context, location, "Model." + name, ".sql" );
+                        if( Item.ObjectsPackage != null ) nbScripts += scripts.AddFromResources( monitor, "res-sql", r, context, location, "Objects." + name, ".sql" );
 
-                        if( Item.Model == null )
+                        if( Item.Model != null )
                         {
-                            monitor.Trace().Send( "{1} sql scripts in resource found for '{0}' in '{2}.", name, nbScripts, r );
+                            if( Item.ObjectsPackage != null )
+                            {
+                                monitor.Trace().Send( "{1} sql scripts in resource found for '{0}' and 'Model.{0}' and 'Objects.{0}' in '{2}'.", name, nbScripts, r );
+                            }
+                            else monitor.Trace().Send( "{1} sql scripts in resource found for '{0}' and 'Model.{0}' in '{2}'.", name, nbScripts, r );
+                        }
+                        if( Item.ObjectsPackage != null )
+                        {
+                            monitor.Trace().Send( "{1} sql scripts in resource found for '{0}' and 'Objects.{0}' in '{2}'.", name, nbScripts, r );
                         }
                         else
                         {
-                            monitor.Trace().Send( "{1} sql scripts in resource found for '{0}' and 'Model.{0}' in '{2}'.", name, nbScripts, r );
+                            monitor.Trace().Send( "{1} sql scripts in resource found for '{0}' in '{2}.", name, nbScripts, r );
                         }
                     }
                 }

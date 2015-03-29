@@ -139,7 +139,7 @@ namespace CK.SqlServer.Setup
             }
         }
 
-        public SqlObjectItem CreateItem( IActivityMonitor monitor )
+        public SqlObjectItem CreateItem( IActivityMonitor monitor, bool defaultMissingDependencyIsError, SqlPackageBaseItem package = null )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
             SqlObjectItem result = null;
@@ -158,6 +158,11 @@ namespace CK.SqlServer.Setup
             else
             {
                 monitor.Error().Send( "Unable to create item for '{0}', type '{1}' is unknown.", FullName, ItemType ); 
+            }
+            if( result != null )
+            {
+                if( !result.MissingDependencyIsError.HasValue ) result.MissingDependencyIsError = defaultMissingDependencyIsError;
+                if( package != null ) package.EnsureObjectsPackage().Children.Add( result );
             }
             return result;
         }

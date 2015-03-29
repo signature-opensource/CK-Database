@@ -1094,19 +1094,21 @@ namespace CK.Setup
                 Entry eGen = e.Generalization;
                 if( eGen == Entry.GeneralizationMissingMarker ) eGen = null;
 
-                // Starts with reverse requirements (RequiredBy) since during the registeration phasis,
-                // the Requires HashSet has been populated only with RequiredBy from others.
+                // Handle requirements (RequiredBy, Generalization and direct ones): 
+                // this can be ignored for Groups since the Head handles them.
                 //
-                // Do this for Groups and Items (but not for Heads)
+                // Do this for Heads and Items (but not for Groups).
                 //
-                if( e.GroupIfHead == null )
+                if( e.HeadIfGroupOrContainer == null )
                 {
-                    // Reverse requirements (RequiredBy) can be ignored for Head since "Required By" 
-                    // for a Group must apply to each and every items contained in a Group.
-                    var requirements = e.Requires;
+                    IEnumerable<IDependentItemRef> requirements;
+
+                    // Starts with reverse requirements (RequiredBy) since during the registeration phasis,
+                    // the Requires HashSet has been populated only with RequiredBy from others.
+                    #region Reverse requirements (RequiredBy) handling.
+                    requirements = e.GroupIfHead == null ? e.Requires : e.GroupIfHead.Requires;
                     if( requirements != null )
                     {
-                        Debug.Assert( e.Requires.Count > 0 );
                         foreach( var dep in requirements )
                         {
                             Debug.Assert( _entries.ContainsKey( dep.FullName ) && ((Entry)_entries[dep.FullName]).Item != null, "Since the requirement has been added by an item, it exists." );
@@ -1124,28 +1126,25 @@ namespace CK.Setup
                             }
                         }
                     }
-                }
-
-                // Handle direct requirements: this can be ignored for Groups since the Head handles them.
-                //
-                // Do this for Heads and Items (but not for Groups).
-                //
-                if( e.HeadIfGroupOrContainer == null )
-                {
-                    // We first handle Generalization as a requirement.
+                    #endregion
+                    
+                    // We then handle Generalization as a requirement.
                     if( eGen != null )
                     {
                         if( HandleDependency( ref rank, e, CycleExplainedElement.GeneralizedBy, eGen ) ) return true;
                     }
-                    var requirements = e.Item.Requires;
+
+                    #region Handles direct requirements
+                    requirements = e.Item.Requires;
                     if( requirements != null )
                     {
-                        if( e.Requires == null ) e.Requires = new HashSet<IDependentItemRef>();
                         foreach( IDependentItemRef dep in requirements )
                         {
                             // Security: skips any null entry and Generalization if it exists.
                             if( dep == null || (eGen != null && (eGen == dep || eGen.FullName == dep.FullName)) ) continue;
 
+                            // Creates the HashSet only if needed.
+                            if( e.Requires == null ) e.Requires = new HashSet<IDependentItemRef>();
                             IDependentItemRef strong = dep.GetReference();
                             Debug.Assert( ReferenceEquals( dep, strong ) == !dep.Optional );
 
@@ -1198,6 +1197,7 @@ namespace CK.Setup
                             }
                         }
                     }
+                    #endregion
                 }
                 else
                 {

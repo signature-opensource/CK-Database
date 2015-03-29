@@ -57,12 +57,8 @@ namespace CK.SqlServer.Setup
                             var protoObject = LoadProtoItemFromResource( state.Monitor, packageItem, names );
                             if( protoObject != null )
                             {
-                                SqlObjectItem subItem = protoObject.CreateItem( state.Monitor );
-                                if( subItem != null )
-                                {
-                                    if( !subItem.MissingDependencyIsError.HasValue ) subItem.MissingDependencyIsError = Attribute.MissingDependencyIsError;
-                                    packageItem.Children.Add( subItem );
-                                }
+                                // Will be added in package.ObjectsPackage.
+                                SqlObjectItem subItem = protoObject.CreateItem( state.Monitor, Attribute.MissingDependencyIsError, packageItem );
                             }
                         }
                     }
