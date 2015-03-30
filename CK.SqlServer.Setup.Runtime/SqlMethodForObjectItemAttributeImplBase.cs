@@ -23,7 +23,7 @@ namespace CK.SqlServer.Setup
         readonly SqlMethodForObjectItemAttributeBase _attr;
         readonly string _sqlObjectProtoItemType;
         MethodInfo _method;
-        BestInitializer _theBest;
+        SqlObjectItemAttributeImpl.BestInitializer _theBest;
 
         /// <summary>
         /// Initializes a new <see cref="SqlMethodForObjectItemAttributeImplBase"/> bound to a <see cref="SqlMethodForObjectItemAttributeBase"/> 
@@ -35,38 +35,6 @@ namespace CK.SqlServer.Setup
         {
             _attr = a;
             _sqlObjectProtoItemType = sqlObjectProtoItemType;
-        }
-
-        /// <summary>
-        /// This is used both for the key and the value.
-        /// This secures the key in the memory dictionary: only a private BestInitializer can be equal to a BestInitializer.
-        /// </summary>
-        class BestInitializer
-        {
-            int _hash;
-
-            public BestInitializer( string[] names )
-            {
-                Names = names;
-                _hash = names[0].GetHashCode();
-            }
-
-            public override bool Equals( object obj )
-            {
-                BestInitializer x = obj as BestInitializer;
-                return x != null && x.Names[0] == Names[0];
-            }
-
-            public override int GetHashCode()
-            {
-                return _hash;
-            }
-
-            public readonly string[] Names;
-
-            public IStObjSetupDynamicInitializer Initializer;
-
-            public SqlObjectItem Item;
         }
 
         void IStObjSetupDynamicInitializer.DynamicItemInitialize( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjResult stObj )
@@ -84,20 +52,8 @@ namespace CK.SqlServer.Setup
                 state.Monitor.Error().Send( "Invalid object name '{0}' in attribute of '{1}' for '{2}'.", _attr.ObjectName, _method.Name, item.FullName );
                 return;
             }
-            _theBest = AssumeBestInitializer( state, names, this );
+            _theBest = SqlObjectItemAttributeImpl.AssumeBestInitializer( state, names, this );
             state.PushAction( DynamicItemInitializeAfterFollowing );
-        }
-
-        private static BestInitializer AssumeBestInitializer( IStObjSetupDynamicInitializerState state, string[] names, IStObjSetupDynamicInitializer initializer )
-        {
-            var meBest = new BestInitializer( names );
-            BestInitializer theBest = (BestInitializer)state.Memory[meBest];
-            if( theBest == null ) state.Memory[meBest] = theBest = meBest;
-            Debug.Assert( theBest.Names[0] == names[0] );
-            theBest.Initializer = initializer;
-            theBest.Names[1] = names[1];
-            theBest.Names[2] = names[2];
-            return theBest;
         }
 
         void DynamicItemInitializeAfterFollowing( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjResult stObj )
@@ -108,10 +64,8 @@ namespace CK.SqlServer.Setup
             {
                 Debug.Assert( _theBest.Item == null, "We are the only winner." );
                 // 2 - Attempts to load the resource.
-                SqlObjectProtoItem proto = SqlObjectItemAttributeImpl.LoadProtoItemFromResource( state.Monitor, packageItem, _theBest.Names, _sqlObjectProtoItemType );
-                if( proto == null ) return;
-                // On success, creates the SqlObjectItem bound to the MethodInfo that must call it.
-                _theBest.Item = proto.CreateItem( state.Monitor, _attr.MissingDependencyIsError, packageItem );
+                // The created SqlObjectItem ill be added in package.ObjectsPackage.
+                _theBest.Item = SqlObjectItemAttributeImpl.LoadItemFromResource( state.Monitor, packageItem, _attr.MissingDependencyIsError, _theBest.Names, _sqlObjectProtoItemType );
             }
         }
 
