@@ -30,6 +30,12 @@ namespace SqlActorPackage.Basic
 
         [SqlProcedure( "sUserExists2" )]
         public abstract void CmdExists2( ref SqlCommand cmdExists, int userPart1, int userPart2, out bool existsResult );
+
+        [SqlProcedure( "sUserToBeOverriden" )]
+        public abstract void CmdUserToBeOverriden( ref SqlCommand cmdExists, int param1, out bool done );
+
+        [SqlProcedure( "sUserToBeOverridenIndirect" )]
+        public abstract void CmdUserToBeOverridenIndirect( ref SqlCommand cmdExists, int param1, out bool done );
     }
 
     [SqlView( "vUser", Package = typeof( Package ) )]

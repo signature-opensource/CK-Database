@@ -79,7 +79,7 @@ namespace CK.SqlServer.Setup
                 {
                     Debug.Assert( best.Item == null, "We are the only winner." );
                     // The created SqlObjectItem ill be added in package.ObjectsPackage.
-                    LoadItemFromResource( state.Monitor, packageItem, Attribute.MissingDependencyIsError, best.Names );
+                    best.Item = LoadItemFromResource( state.Monitor, packageItem, Attribute.MissingDependencyIsError, best.Names );
                 }
             }
         }

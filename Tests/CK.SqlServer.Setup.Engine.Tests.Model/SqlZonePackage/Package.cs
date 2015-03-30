@@ -12,6 +12,7 @@ namespace SqlZonePackage.Zone
 {
 
     [SqlPackage( ResourceType = typeof( Package ), ResourcePath = "~SqlZonePackage.Res" ), Versions( "2.11.25" )]
+    [SqlObjectItem( "sUserToBeOverridenIndirect" )]
     public abstract class Package : SqlActorPackage.Basic.Package
     {
         [InjectContract]
