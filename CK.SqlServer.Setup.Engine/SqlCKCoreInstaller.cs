@@ -15,7 +15,7 @@ namespace CK.SqlServer.Setup
 {
     internal class SqlCKCoreInstaller
     {
-        public readonly static Int16 CurrentVersion = 7;
+        public readonly static Int16 CurrentVersion = 8;
 
         /// <summary>
         /// Installs the kernel.
@@ -183,6 +183,116 @@ begin
 	end
 end
 GO
+if object_id('CKCore.tInvariant') is null
+begin
+    create table CKCore.tInvariant
+    (
+	    InvariantKey varchar(96) collate LATIN1_GENERAL_BIN not null,
+	    Ignored bit not null,
+	    -- Must be 'select @Count = ... from ...'
+	    CountSelect nvarchar(2048) not null,
+	    MinValidCount int not null,
+	    MaxValidCount int not null,
+	    LastCount int null,
+	    LastError nvarchar(2048) null,
+	    LastRunDateUTC datetime2 null,
+	    RunStatus as case
+					    when LastRunDateUTC is null then 'Never runned' 
+					    when LastError is not null then 'Fatal Error'
+					    when LastCount >= MinValidCount and LastCount <= MaxValidCount then 'Success'
+					    else 'Failed'
+				     end
+	    constraint PK_CKCore_Invariant primary key( InvariantKey )
+    );
+end
+GO
+create procedure CKCore.sInvariantRegister
+(
+	@InvariantKey varchar(96),
+	@CountSelect nvarchar(2048),
+	@MinValidCount int = 0,
+	@MaxValidCount int = 0
+)
+as
+begin
+	set nocount on;
+	set @CountSelect = rtrim(ltrim(@CountSelect));
+	if Upper(left(@CountSelect,6)) <> 'SELECT' set @CountSelect = N'select @Count = count(*) ' + @CountSelect;
+	merge CKCore.tInvariant as target
+		using (select @InvariantKey) as source( InvariantKey )
+		on target.InvariantKey = source.InvariantKey
+		when matched then 
+			update set CountSelect = @CountSelect, 
+						MinValidCount = @MinValidCount,
+						MaxValidCount = @MaxValidCount,
+						LastCount = null,
+						LastRunDateUTC = null,
+						LastError = null
+		when not matched then
+			insert( InvariantKey, Ignored, CountSelect, MinValidCount, MaxValidCount )
+			values( @InvariantKey, 0, @CountSelect, @MinValidCount, @MaxValidCount );
+end
+GO
+create procedure CKCore.sInvariantRun
+( 
+	@InvariantKey varchar(96), 
+	@SkipIgnore bit = 0, 
+	@Success bit  = null output
+)
+as
+begin
+	set nocount on;
+	set @Success = null;
+	declare @Count int;
+	declare @sql nvarchar(2048);
+	select @sql = CountSelect 
+		from CKCore.tInvariant 
+		where InvariantKey = @InvariantKey and (@SkipIgnore = 1 or Ignored = 0);
+	if @sql is not null
+	begin
+		begin try
+			exec sp_executesql @sql, N'@Count int output', @Count = @Count output;
+			update CKCore.tInvariant 
+				set LastCount = @Count, LastRunDateUTC = SYSUTCDATETIME(), LastError = null
+				where InvariantKey = @InvariantKey;
+			set @Success = 1;
+		end try
+		begin catch
+			update CKCore.tInvariant 
+				set LastCount = null, LastRunDateUTC = SYSUTCDATETIME(), LastError = ERROR_MESSAGE()
+				where InvariantKey = @InvariantKey;
+			set @Success = 0;
+		end catch
+	 end
+	 return 0;
+end
+GO
+create procedure CKCore.sInvariantRunAll
+( 
+	@SkipIgnore bit = 0, 
+	@Success bit = null output 
+)
+as
+begin
+	set nocount on;
+	set @Success = null;
+	declare @InvariantKey varchar(96);
+	declare @CInv cursor;
+	set @CInv = cursor local fast_forward for 
+		select InvariantKey from CKCore.tInvariant where @SkipIgnore = 1 or Ignored = 0;
+	open @CInv;
+	fetch from @CInv into @InvariantKey;
+	while @@FETCH_STATUS = 0
+	begin
+		declare @oneSuccess bit;
+		exec CKCore.sInvariantRun @InvariantKey, @SkipIgnore, @oneSuccess output;
+		if @oneSuccess = 1 and @Success is null set @Success = 1;
+		if @oneSuccess = 0 set @Success = 0;
+		fetch next from @CInv into @InvariantKey;
+	end
+	deallocate @CInv;
+end
+GO
 if object_id('CKCore.tSystem') is null
 begin
 	create table CKCore.tSystem
@@ -196,12 +306,6 @@ begin
 end
 if not exists(select * from CKCore.tSystem where Id=1) insert into CKCore.tSystem(Id,CreationDate,Ver) values(1,GETUTCDATE(),$Ver$);
 else update CKCore.tSystem set Ver = $Ver$ where Id=1;
--- This should not be here!
--- This will be removed once Object support will be effective.
-if not exists(select 1 from sys.schemas where name = 'CK')
-begin
-    exec( 'create schema CK' );
-end
 ";
     }
 }
