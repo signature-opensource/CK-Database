@@ -11,7 +11,7 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
-    public class SqlDatabaseConnectionSetupDriver : SetupDriver
+    public class SqlDatabaseConnectionSetupDriver : DependentItemSetupDriver
     {
         readonly ISqlManagerProvider _sqlProvider;
         ISqlManager _connection;

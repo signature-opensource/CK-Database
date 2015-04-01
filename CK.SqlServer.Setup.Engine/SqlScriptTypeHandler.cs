@@ -21,7 +21,7 @@ namespace CK.SqlServer.Setup
             _managerProvider = provider;
         }
 
-        protected override IScriptExecutor CreateExecutor( IActivityMonitor monitor, SetupDriver driver )
+        protected override IScriptExecutor CreateExecutor( IActivityMonitor monitor, DependentItemSetupDriver driver )
         {
             if( driver == null ) throw new ArgumentNullException( "driver" );
             ISqlManager m = SqlObjectSetupDriver.FindManagerFromLocation( monitor, _managerProvider, driver.FullName );

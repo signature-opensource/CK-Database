@@ -16,13 +16,13 @@ namespace CK.Setup
     /// <summary>
     /// Generic driver for <see cref="IDependentItem"/> (also handles the composite <see cref="IDependentItemGroup"/>).
     /// </summary>
-    public class SetupDriver : DriverBase
+    public class DependentItemSetupDriver : DriverBase
     {
         List<ISetupHandler> _handlers;
         internal readonly DriverBase Head;
 
         /// <summary>
-        /// Encapsulates construction information for <see cref="SetupDriver"/> objects.
+        /// Encapsulates construction information for <see cref="DependentItemSetupDriver"/> objects.
         /// This is an opaque parameter that enables the abstract base SetupDriver to be correclty intialized.
         /// </summary>
         public class BuildInfo
@@ -50,10 +50,10 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Initializes a new <see cref="SetupDriver"/>.
+        /// Initializes a new <see cref="DependentItemSetupDriver"/>.
         /// </summary>
         /// <param name="info">Opaque parameter built by the framework.</param>
-        public SetupDriver( BuildInfo info )
+        public DependentItemSetupDriver( BuildInfo info )
             : base( info.Engine, info.SortedItem, info.ExternalVersion, info.Head != null ? info.Head.DirectDependencies : null )
         {
             Debug.Assert( info.Head == null || info.SortedItem.FullName + ".Head" == info.Head.FullName );
@@ -66,7 +66,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets whether this <see cref="SetupDriver"/> is associated to a group or a container.
+        /// Gets whether this <see cref="DependentItemSetupDriver"/> is associated to a group or a container.
         /// </summary>
         public bool IsGroup 
         { 
@@ -180,37 +180,37 @@ namespace CK.Setup
             _handlers.Add( handler );
         }
 
-        public void AddInitHandler( Func<SetupDriver, bool> handler )
+        public void AddInitHandler( Func<DependentItemSetupDriver, bool> handler )
         {
             if( handler == null ) throw new ArgumentNullException( "handler" );
             AddHandler( new SetupHandlerFuncAdapter( handler, SetupCallGroupStep.Init ) );
         }
 
-        public void AddInitContentHandler( Func<SetupDriver, bool> handler )
+        public void AddInitContentHandler( Func<DependentItemSetupDriver, bool> handler )
         {
             if( handler == null ) throw new ArgumentNullException( "handler" );
             AddHandler( new SetupHandlerFuncAdapter( handler, SetupCallGroupStep.InitContent ) );
         }
 
-        public void AddInstallHandler( Func<SetupDriver, bool> handler )
+        public void AddInstallHandler( Func<DependentItemSetupDriver, bool> handler )
         {
             if( handler == null ) throw new ArgumentNullException( "handler" );
             AddHandler( new SetupHandlerFuncAdapter( handler, SetupCallGroupStep.Install ) );
         }
 
-        public void AddInstallContentHandler( Func<SetupDriver, bool> handler )
+        public void AddInstallContentHandler( Func<DependentItemSetupDriver, bool> handler )
         {
             if( handler == null ) throw new ArgumentNullException( "handler" );
             AddHandler( new SetupHandlerFuncAdapter( handler, SetupCallGroupStep.InstallContent ) );
         }
 
-        public void AddSettleHandler( Func<SetupDriver, bool> handler )
+        public void AddSettleHandler( Func<DependentItemSetupDriver, bool> handler )
         {
             if( handler == null ) throw new ArgumentNullException( "handler" );
             AddHandler( new SetupHandlerFuncAdapter( handler, SetupCallGroupStep.Settle ) );
         }
 
-        public void AddSettleContentHandler( Func<SetupDriver, bool> handler )
+        public void AddSettleContentHandler( Func<DependentItemSetupDriver, bool> handler )
         {
             if( handler == null ) throw new ArgumentNullException( "handler" );
             AddHandler( new SetupHandlerFuncAdapter( handler, SetupCallGroupStep.SettleContent ) );

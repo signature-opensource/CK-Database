@@ -57,7 +57,13 @@ namespace CK.SqlServer.Setup
                         else
                         {
                             if( _theBest == null ) _theBest = new List<BestInitializer>();
-                            _theBest.Add( AssumeBestInitializer( state, names, this ) );
+                            var meBest = AssumeBestInitializer( state, names, this );
+                            if( meBest.FirstInitializer == this )
+                            {
+                                meBest.FirstItem = LoadItemFromResource( state.Monitor, packageItem, Attribute.MissingDependencyIsError, meBest.Names );
+                                meBest.LastPackagesSeen = packageItem;
+                            }
+                            _theBest.Add( meBest );
                         }
                     }
                     else state.Monitor.Warn().Send( "Duplicate name '{0}' in SqlObjectItem attribute of '{1}'.", nTrimmed, item.FullName );
@@ -77,9 +83,22 @@ namespace CK.SqlServer.Setup
                 // If we are the best, our resource wins.
                 if( best.Initializer == this )
                 {
-                    Debug.Assert( best.Item == null, "We are the only winner." );
-                    // The created SqlObjectItem ill be added in package.ObjectsPackage.
-                    best.Item = LoadItemFromResource( state.Monitor, packageItem, Attribute.MissingDependencyIsError, best.Names );
+                    Debug.Assert( best.Item == null, "We are the only winner (the last one)." );
+                    if( best.FirstInitializer == this )
+                    {
+                        best.Item = best.FirstItem;
+                    }
+                    else
+                    {
+                        // When multiples methods exist bound to the same object, this avoids 
+                        // to load the same resource multiple times: only the first occurence per package is considered.
+                        if( best.LastPackagesSeen != packageItem )
+                        {
+                            best.Item = LoadItemFromResource( state.Monitor, packageItem, Attribute.MissingDependencyIsError, best.Names );
+                            best.FirstItem.ReplacedBy = best.Item;
+                            best.LastPackagesSeen = packageItem;
+                        }
+                    }
                 }
             }
         }
@@ -143,13 +162,23 @@ namespace CK.SqlServer.Setup
             public IStObjSetupDynamicInitializer Initializer;
 
             public SqlObjectItem Item;
+
+            public IStObjSetupDynamicInitializer FirstInitializer;
+
+            public SqlObjectItem FirstItem;
+
+            public SqlPackageBaseItem LastPackagesSeen;
         }
 
         internal static BestInitializer AssumeBestInitializer( IStObjSetupDynamicInitializerState state, string[] names, IStObjSetupDynamicInitializer initializer )
         {
             var meBest = new BestInitializer( names );
             BestInitializer theBest = (BestInitializer)state.Memory[meBest];
-            if( theBest == null ) state.Memory[meBest] = theBest = meBest;
+            if( theBest == null )
+            {
+                state.Memory[meBest] = theBest = meBest;
+                meBest.FirstInitializer = initializer;
+            }
             Debug.Assert( theBest.Names[0] == names[0] );
             // Override any previous configurations: initializer is the best so far.
             theBest.Initializer = initializer;

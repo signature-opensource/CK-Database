@@ -14,16 +14,16 @@ namespace CK.Setup
 {
     public interface ISetupHandler
     {
-        bool Init( SetupDriver d );
+        bool Init( DependentItemSetupDriver d );
 
-        bool Install( SetupDriver d );
+        bool Install( DependentItemSetupDriver d );
 
-        bool Settle( SetupDriver d );
+        bool Settle( DependentItemSetupDriver d );
         
-        bool InitContent( SetupDriver d );
+        bool InitContent( DependentItemSetupDriver d );
 
-        bool InstallContent( SetupDriver d );
+        bool InstallContent( DependentItemSetupDriver d );
 
-        bool SettleContent( SetupDriver d );
+        bool SettleContent( DependentItemSetupDriver d );
     }
 }

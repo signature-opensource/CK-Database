@@ -106,9 +106,9 @@ namespace CK.Setup
         {
             public readonly static ISetupDriverFactory Default = new DefaultDriverfactory();
 
-            SetupDriver ISetupDriverFactory.CreateDriver( Type type, SetupDriver.BuildInfo info )
+            DependentItemSetupDriver ISetupDriverFactory.CreateDriver( Type type, DependentItemSetupDriver.BuildInfo info )
             {
-                return (SetupDriver)Activator.CreateInstance( type, info );
+                return (DependentItemSetupDriver)Activator.CreateInstance( type, info );
             }
         }
 
@@ -176,7 +176,16 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Registers any number of <see cref="IDependentItem"/> and/or <see cref="IDependentItemDiscoverer"/>.
+        /// This is the very first step: registers any number of <see cref="IDependentItem"/> and/or <see cref="IDependentItemDiscoverer"/>.
+        /// 1 - Raises the <see cref="RegisterSetupEvent"/> event so that external participants can registers other items.
+        ///     If cancellation occurs (via <see cref="SetupEventArgs.CancelSetup">RegisterSetupEventArgs.CancelSetup</see>), an error result is returned.
+        /// 2 - Raises the <see cref="SetupEvent"/> with its <see cref="SetupEventArgs.Step"/> sets to SetupStep.PreInit
+        ///     If cancellation occurs (via <see cref="SetupEventArgs.CancelSetup"/>), an error result is returned.
+        /// 3 - Orders all the items topologicaly according to their dependencies/relationships.
+        /// 4 - Creates their associated drivers (the type of the driver is given by the <see cref="IDependentItem.StartDependencySort"/> returned value).
+        ///     For each newly created drivers, <see cref="DriverEvent"/> is raised with its <see cref="DriverEventArgs.Step"/> sets to SetupStep.PreInit.
+        ///     To give the opportunity to external participants that may have prepared stuff if an error or a concellation occurs once a driver has been created,
+        ///     a second <see cref="SetupEvent"/> at PreInitStep indicating the error or cancelation is raised and an error result is returned.
         /// </summary>
         /// <param name="items">Set of <see cref="IDependentItem"/></param>
         /// <param name="discoverers">Set of <see cref="IDependentItemDiscoverer"/>.</param>
@@ -213,10 +222,9 @@ namespace CK.Setup
                     return new SetupEngineRegisterResult( null ) { UnexpectedError = ex };
                 }
             }
-
+            SetupEngineRegisterResult result = null;
             // There is no _state = SetupEngineState.RegistrationError since on error we clear the driver list and
             // the state remains set to SetupEngineState.None.
-            SetupEngineRegisterResult result = null;
             try
             {
                 result = new SetupEngineRegisterResult( DependencySorter.OrderItems( items, discoverers, options ) );
@@ -231,7 +239,7 @@ namespace CK.Setup
                         {
                             var head = (GroupHeadSetupDriver)_drivers[item.HeadForGroup.FullName];
                             typeToCreate = ResolveDriverType( item );
-                            SetupDriver c = CreateSetupDriver( typeToCreate, new SetupDriver.BuildInfo( head, item ) );
+                            DependentItemSetupDriver c = CreateSetupDriver( typeToCreate, new DependentItemSetupDriver.BuildInfo( head, item ) );
                             d = head.Group = c;
                         }
                         else
@@ -248,7 +256,7 @@ namespace CK.Setup
                             else
                             {
                                 typeToCreate = ResolveDriverType( item );
-                                d = CreateSetupDriver( typeToCreate, new SetupDriver.BuildInfo( this, item, externalVersion ) );
+                                d = CreateSetupDriver( typeToCreate, new DependentItemSetupDriver.BuildInfo( this, item, externalVersion ) );
                             }
                         }
                         Debug.Assert( d != null, "Otherwise an exception is thrown by CreateSetupDriver that will be caught as the result.UnexpectedError." );
@@ -284,7 +292,7 @@ namespace CK.Setup
             return result;
         }
 
-        private SetupDriver CreateSetupDriver( Type typeToCreate, SetupDriver.BuildInfo buildInfo )
+        DependentItemSetupDriver CreateSetupDriver( Type typeToCreate, DependentItemSetupDriver.BuildInfo buildInfo )
         {
             try
             {
@@ -296,15 +304,16 @@ namespace CK.Setup
             }
         }
 
-        private bool SafeFireSetupEvent( SetupStep step, bool errorOccured = false )
+        bool SafeFireSetupEvent( SetupStep step, bool errorOccured = false )
         {
-            if( SetupEvent == null ) return true;
+            var h = SetupEvent;
+            if( h == null ) return true;
             using( _monitor.OpenTrace().Send( errorOccured ? "Raising error event during {0}." : "Raising {0} setup event.", step ) )
             {
                 var e = new SetupEventArgs( step, errorOccured );
                 try
                 {
-                    SetupEvent( this, e );
+                    h( this, e );
                     if( e.CancelReason == null ) return true;
                     _monitor.Fatal().Send( e.CancelReason );
                 }
@@ -316,6 +325,14 @@ namespace CK.Setup
             return false;
         }
 
+        /// <summary>
+        /// This is the second step: called after a successful call to <see cref="Register"/>.
+        /// 1 - Raises the <see cref="SetupEvent"/> at step <see cref="SetupStep.Init"/>.
+        ///     If a cancellation occurs, returns false.
+        /// 2 - For each drivers:
+        ///     - Call <see cref="DriverBase.ExecuteInit"/>. It it
+        /// </summary>
+        /// <returns></returns>
         public bool RunInit()
         {
             CheckState( SetupEngineState.Registered );

@@ -53,7 +53,12 @@ namespace CK.SqlServer.Setup
                 return;
             }
             _theBest = SqlObjectItemAttributeImpl.AssumeBestInitializer( state, names, this );
-            state.PushAction( DynamicItemInitializeAfterFollowing );
+            if( _theBest.FirstInitializer == this )
+            {
+                _theBest.FirstItem = SqlObjectItemAttributeImpl.LoadItemFromResource( state.Monitor, packageItem, _attr.MissingDependencyIsError, _theBest.Names, _sqlObjectProtoItemType );
+                _theBest.LastPackagesSeen = packageItem;
+            }
+            else state.PushAction( DynamicItemInitializeAfterFollowing );
         }
 
         void DynamicItemInitializeAfterFollowing( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjResult stObj )
@@ -62,10 +67,17 @@ namespace CK.SqlServer.Setup
             // If we are the best, our resource wins.
             if( _theBest.Initializer == this )
             {
+                Debug.Assert( _theBest.FirstInitializer != this, "We did not push any action for the first." );
                 Debug.Assert( _theBest.Item == null, "We are the only winner." );
-                // 2 - Attempts to load the resource.
-                // The created SqlObjectItem ill be added in package.ObjectsPackage.
-                _theBest.Item = SqlObjectItemAttributeImpl.LoadItemFromResource( state.Monitor, packageItem, _attr.MissingDependencyIsError, _theBest.Names, _sqlObjectProtoItemType );
+                // When multiples methods exist bound to the same object, this avoids 
+                // to load the same resource multiple times: only the first occurence per package is considered.
+                if( _theBest.LastPackagesSeen != packageItem )
+                {
+                    // The created SqlObjectItem will be added in package.ObjectsPackage.
+                    _theBest.Item = SqlObjectItemAttributeImpl.LoadItemFromResource( state.Monitor, packageItem, _attr.MissingDependencyIsError, _theBest.Names, _sqlObjectProtoItemType );
+                    _theBest.FirstItem.ReplacedBy = _theBest.Item;
+                    _theBest.LastPackagesSeen = packageItem;
+                }
             }
         }
 
@@ -74,7 +86,7 @@ namespace CK.SqlServer.Setup
             // 1 - Not ready to implement anything (no body yet): 
             //     - memorizes the MethodInfo.
             //     - returns false to implement a stub.
-            if( _theBest == null || _theBest.Item == null )
+            if( _theBest == null || (_theBest.Item == null && _theBest.FirstItem == null) )
             {
                 if( _method != null )
                 {
@@ -86,7 +98,7 @@ namespace CK.SqlServer.Setup
             // 3 - Ready to implement the method (_theBest.Item has been initialized by DynamicItemInitialize above).
             using( monitor.OpenInfo().Send( "Generating method '{0}.{1}'.", m.DeclaringType.FullName, m.Name ) )
             {
-                return DoImplement( monitor, m, _theBest.Item, dynamicAssembly, tB, isVirtual );
+                return DoImplement( monitor, m, _theBest.Item ?? _theBest.FirstItem, dynamicAssembly, tB, isVirtual );
             }
         }
 

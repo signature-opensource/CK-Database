@@ -60,6 +60,7 @@
     <Compile Include="Configuration\SetupCenterConfiguration.cs" />
     <Compile Include="Core\AssemblyExtension.cs" />
     <Compile Include="Core\ResourceLocator.cs" />
+    <Compile Include="DynamicDriverAttribute.cs" />
     <Compile Include="GroupsAttribute.cs" />
     <Compile Include="IAttributeSetupName.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

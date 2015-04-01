@@ -16,7 +16,7 @@ namespace CK.Setup
 {
     /// <summary>
     /// Fully mutable <see cref="IDependentItemContainer"/> and <see cref="IVersionedItem"/> with optional associated <see cref="Model"/> 
-    /// and <see cref="ObjectsPackage"/> packages (that are <see cref="AutoDependentPackageItem"/>) and  configurable type for the associated <see cref="SetupDriver"/>.
+    /// and <see cref="ObjectsPackage"/> packages (that are <see cref="AutoDependentPackageItem"/>) and  configurable type for the associated <see cref="DependentItemSetupDriver"/>.
     /// </summary>
     /// <remarks>
     /// The <see cref="DynamicContainerItem"/> can be used if a pure mutable Container is needed (no versions nor associated AutoDependentPackageItem).
@@ -33,12 +33,12 @@ namespace CK.Setup
         /// <param name="itemType">The <see cref="IVersionedItem.ItemType"/> for this item.</param>
         /// <param name="driverType">
         /// Type of the driver to use. Can be the <see cref="Type"/> itself or the Assembly Qualified Name of the type.
-        /// When null, the type of <see cref="SetupDriver"/> is asumed.
+        /// When null, the type of <see cref="DependentItemSetupDriver"/> is asumed.
         /// </param>
         public DynamicPackageItem( string itemType, object driverType = null )
             : base( itemType )
         {
-            _driverType = driverType ?? typeof( SetupDriver );
+            _driverType = driverType ?? typeof( DependentItemSetupDriver );
             ItemKind = DependentItemKind.Container;
         }
 

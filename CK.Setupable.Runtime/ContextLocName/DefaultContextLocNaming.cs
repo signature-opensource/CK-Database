@@ -264,6 +264,14 @@ namespace CK.Core
 
         #region Resolve
 
+        /// <summary>
+        /// Updates the <paramref name="input"/> with the [curContext] and the ^curLocation if the input does not specify them.
+        /// </summary>
+        /// <param name="input">The input location to resolve.</param>
+        /// <param name="curContext">The current context: when null, the [context] (if any) is not changed.</param>
+        /// <param name="curLoc">The current location: when null, the ^location (if it exists) is not changed.</param>
+        /// <param name="throwError">True to throw error if any parts have a syntax error. Otherwise returns null.</param>
+        /// <returns>The updated input.</returns>
         public static string Resolve( string input, string curContext, string curLoc, bool throwError = true )
         {
             if( input == null ) throw new ArgumentNullException( "input" );

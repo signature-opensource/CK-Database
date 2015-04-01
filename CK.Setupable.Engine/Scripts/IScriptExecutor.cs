@@ -22,6 +22,6 @@ namespace CK.Setup
         /// <param name="driver">The item driver for which the script is executed.</param>
         /// <param name="script">The script to execute.</param>
         /// <returns>True on success, false to stop the setup process.</returns>
-        bool ExecuteScript( IActivityMonitor monitor, SetupDriver driver, ISetupScript script );
+        bool ExecuteScript( IActivityMonitor monitor, DependentItemSetupDriver driver, ISetupScript script );
     }
 }

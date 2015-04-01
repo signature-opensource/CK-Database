@@ -14,7 +14,14 @@ using System.Diagnostics;
 
 namespace CK.Setup
 {
-
+    /// <summary>
+    /// Companion object of the <see cref="SetupCenter"/> that is automatically registered and manages
+    /// the scripts: 
+    /// - at <see cref="SetupStep.PreInit"/> it enables the object to load scripts into the <see cref="ScriptCollector"/> by 
+    /// calling <see cref="DependentItemSetupDriver.LoadScripts"/> on each driver
+    /// - and at <see cref="SetupStep.Init"/> it associates a <see cref="ScriptSetupHandler"/> with the scripts that exist for each drivers.
+    /// The scripts can come from the resources (the ones loaded by DependentItemSetupDriver.LoadScripts) or from the file system.
+    /// </summary>
     public class ScriptSetupHandlerBuilder
     {
         readonly SetupEngine _engine;
@@ -65,8 +72,8 @@ namespace CK.Setup
                     {
                         foreach( var d in _engine.AllDrivers )
                         {
-                            Debug.Assert( (d is SetupDriver) == !d.IsGroupHead, "There is only 2 DriverBase specializations: SetupDriver and GroupHeadSetupDriver." );
-                            SetupDriver driver = d as SetupDriver;
+                            Debug.Assert( (d is DependentItemSetupDriver) == !d.IsGroupHead, "There is only 2 DriverBase specializations: DependentItemSetupDriver and GroupHeadSetupDriver." );
+                            DependentItemSetupDriver driver = d as DependentItemSetupDriver;
                             if( driver != null )
                             {
                                 bool casingDiffer;
@@ -101,8 +108,8 @@ namespace CK.Setup
             Debug.Assert( sender == _engine );
             if( e.Step == SetupStep.PreInit && !e.Driver.IsGroupHead )
             {
-                Debug.Assert( e.Driver is SetupDriver, "Since it is not the Head of a Group." );
-                SetupDriver driver = (SetupDriver)e.Driver;
+                Debug.Assert( e.Driver is DependentItemSetupDriver, "Since it is not the Head of a Group." );
+                DependentItemSetupDriver driver = (DependentItemSetupDriver)e.Driver;
                 if( !driver.LoadScripts( _scriptCollector ) )
                 {
                     _engine.Monitor.Fatal().Send( "Driver '{0}' failed to load scripts.", e.Driver.FullName );

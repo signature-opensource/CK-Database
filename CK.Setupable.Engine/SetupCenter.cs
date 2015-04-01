@@ -35,7 +35,7 @@ namespace CK.Setup
                             IStObjRuntimeBuilder runtimeBuilder = null, 
                             SetupableConfigurator configurator = null )
         {
-            if( monitor == null ) throw new ArgumentNullException( "_monitor" );
+            if( monitor == null ) throw new ArgumentNullException( "monitor" );
             if( config == null ) throw new ArgumentNullException( "config" );
             if( versionRepository == null ) throw new ArgumentNullException( "versionRepository" );
             if( memory == null ) throw new ArgumentNullException( "memory" );
@@ -73,7 +73,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the _monitor that should be used for the whole setup process.
+        /// Gets the monitor that should be used for the whole setup process.
         /// </summary>
         public IActivityMonitor Logger
         {

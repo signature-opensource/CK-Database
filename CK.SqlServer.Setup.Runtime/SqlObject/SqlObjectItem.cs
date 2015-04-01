@@ -58,6 +58,9 @@ namespace CK.SqlServer.Setup
         DependentItemGroupList _groups;
         IDependentItemContainerRef _container;
         bool? _missingDependencyIsError;
+        SqlObjectItem _replacedBy;
+        SqlObjectItem _replaces;
+        string _header;
 
         internal SqlObjectItem( SqlObjectProtoItem p )
         {
@@ -69,22 +72,40 @@ namespace CK.SqlServer.Setup
             // Keeps the physical database name if the proto item defines it.
             // It is currently unused.
             _physicalDB = p.PhysicalDatabaseName;
-            
+
+            _header = _protoItem.Header;
             _version = p.Version;
             if( p.Requires != null ) Requires.Add( p.Requires );
             if( p.RequiredBy != null ) RequiredBy.Add( p.RequiredBy );
             if( p.Groups != null ) Groups.Add( p.Groups );
+            // If the proto object indicates a container, references it: its name will be
+            // used by the dependency sorter.
+            // If it is not the same as the actual container to which this object
+            // is added later, an error will be raised during the ordering. 
             if( p.Container != null ) _container = new NamedDependentItemContainerRef( p.Container );
             _missingDependencyIsError = p.MissingDependencyIsError;
         }
 
         /// <summary>
-        /// Gets or sets the container of this object.
+        /// Gets or sets the object that replaces this object.
         /// </summary>
-        public IDependentItemContainerRef Container
+        internal SqlObjectItem ReplacedBy
         {
-            get { return _container; }
-            set { _container = value; }
+            get { return _replacedBy; }
+            set 
+            {
+                if( _replacedBy != null ) _replacedBy._replaces = null;
+                _replacedBy = value;
+                if( _replacedBy != null ) _replacedBy._replaces = this;
+            }
+        }
+
+        /// <summary>
+        /// Gets the object that is replaced by this one.
+        /// </summary>
+        internal SqlObjectItem Replaces
+        {
+            get { return _replaces; }
         }
 
         /// <summary>
@@ -162,6 +183,15 @@ namespace CK.SqlServer.Setup
             set { _missingDependencyIsError = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the header part of this object. Never null (normalized to String.Empty).
+        /// </summary>
+        public string Header
+        {
+            get { return _header; }
+            set { _header = value ?? String.Empty; }
+        }
+
         public IDependentItemList Requires
         {
             get { return _requires ?? (_requires = new DependentItemList()); }
@@ -193,7 +223,11 @@ namespace CK.SqlServer.Setup
         /// </summary>
         public string FullName
         {
-            get { return _fullName.FullName; }
+            get 
+            {
+                if( _replaces != null ) return _fullName.FullName + "#replace";
+                return _fullName.FullName; 
+            }
         }
 
         IDependentItemContainerRef IDependentItem.Container
@@ -226,7 +260,10 @@ namespace CK.SqlServer.Setup
             get { return _protoItem != null ? _protoItem.PreviousNames.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _fullName.Context, _fullName.Location ) ) : null; }
         }
 
-        string IVersionedItem.ItemType
+        /// <summary>
+        /// Gets the type of the object (<see cref="SqlObjectProtoItem.TypeProcedure"/> for instance). This implements the <see cref="IVersionedItem.Type"/>.
+        /// </summary>
+        public string ItemType
         {
             get { return _type; }
         }
@@ -250,7 +287,7 @@ namespace CK.SqlServer.Setup
             b.Write( "if OBJECT_ID('" );
             b.Write( SchemaName );
             b.Write( "') is not null drop " );
-            b.Write( _type );
+            b.Write( ItemType );
             b.Write( ' ' );
             b.Write( SchemaName );
             b.WriteLine( ';' );
@@ -262,11 +299,25 @@ namespace CK.SqlServer.Setup
         /// <param name="b">The target <see cref="TextWriter"/>.</param>
         public void WriteCreate( TextWriter b )
         {
-            if( _protoItem != null ) b.WriteLine( _protoItem.Header );
+            if( _protoItem != null ) b.WriteLine( _header );
             b.Write( "create " );
-            b.Write( _type );
+            b.Write( ItemType );
             b.Write( ' ' );
             b.Write( SchemaName );
+            if( _replacedBy != null )
+            {
+                b.WriteLine();
+                b.WriteLine( "-- This {0} is replaced.", ItemType );
+                // For fonctions we must consider the actual kind of function.
+                // I'll do this later.
+                if( ItemType == SqlObjectProtoItem.TypeProcedure )
+                {
+                    b.WriteLine( "as begin" );
+                    b.WriteLine( "  return 0;" );
+                    b.WriteLine( "end" );
+                    return;
+                }
+            }
             if( _protoItem != null ) b.WriteLine( _protoItem.TextAfterName );
         }
 

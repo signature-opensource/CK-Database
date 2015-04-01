@@ -40,15 +40,15 @@ namespace CK.Setup
         /// <summary>
         /// Registers a <see cref="ISetupScript"/>: finds or creates a unique <see cref="ScriptSet"/> for each <see cref="ISetupScript.Name"/>.
         /// The first name becomes the case-insensitive key: names with different case will
-        /// be detected, a warning will be emitted into the _monitor and null will be returned.
+        /// be detected, a warning will be emitted into the monitor and null will be returned.
         /// </summary>
         /// <param name="script">A setup script. Must be not null.</param>
-        /// <param name="_monitor">The _monitor to use.</param>
+        /// <param name="monitor">The _monitor to use.</param>
         /// <returns>A script set or null if casing differ or if the script already exists in the <see cref="ScriptSet"/>.</returns>
         public ScriptSet Add( ISetupScript script, IActivityMonitor monitor )
         {
             if( script == null ) throw new ArgumentException( "script" );
-            if( monitor == null ) throw new ArgumentNullException( "_monitor" );
+            if( monitor == null ) throw new ArgumentNullException( "monitor" );
 
             ScriptSet s = _scripts.GetOrSet( script.Name.FullName, n => new ScriptSet( n ) );
             if( s.FullName != script.Name.FullName )
@@ -74,7 +74,7 @@ namespace CK.Setup
         /// Registers a set of resources (multiple <see cref="ResSetupScript"/>) from a <see cref="ResourceLocator"/>, a full name prefix and a script source
         /// (the script source must be registered in the associated <see cref="ScriptTypeManager"/>).
         /// </summary>
-        /// <param name="_monitor">Monitor to use.</param>
+        /// <param name="monitor">Monitor to use.</param>
         /// <param name="scriptSource">The script source under which registering the <see cref="ISetupScript"/>.</param>
         /// <param name="resLoc">Resource locator.</param>
         /// <param name="context">Context identifier.</param>

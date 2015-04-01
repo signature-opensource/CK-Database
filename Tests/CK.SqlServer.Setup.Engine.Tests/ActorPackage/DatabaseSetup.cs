@@ -54,28 +54,6 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
                 }
                 config.DefaultDatabaseConnectionString = db.CurrentConnectionString;
             }
-            //
-            //using( var db = SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.Monitor ) )
-            //using( var c = new SqlSetupCenter( TestHelper.Monitor, config, db ) )
-            //{
-            //    //c.StObjDependencySorterHookInput = TestHelper.Trace;
-            //    //c.StObjDependencySorterHookOutput = sortedItems => TestHelper.Trace( sortedItems, false );
-            //    //c.SetupDependencySorterHookInput = TestHelper.Trace;
-            //    //c.SetupDependencySorterHookOutput = sortedItems => TestHelper.Trace( sortedItems, false );
-            //    Assert.That( c.Run() );
-            //    IStObjMap m = StObjContextRoot.Load( dllName, TestHelper.Monitor );
-            //    if( typeFilter == null ) CheckBasicAndZone( db, m );
-            //    else CheckBasicOnly( db, m );
-            //}
-            // 
-            // The code above explicitly creates a SqlSetupCenter and Run() it.
-            // This executes the build process directly, in the current domain.
-            // To honor SetupConfiguration.AppDomainConfiguration.UseIndependentAppDomain, 
-            // the static StObjContext.Build with the configuration must be used as below:
-            // 
-            // StObjContextRoot.Build result must be disposed: this actually unloads 
-            // the independent AppDomain from memory.
-            //
             using( var result = StObjContextRoot.Build( config, null, TestHelper.ConsoleMonitor ) )
             {
                 Assert.That( result.Success );

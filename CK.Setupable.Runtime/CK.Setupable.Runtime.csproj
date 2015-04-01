@@ -60,6 +60,7 @@
     <Compile Include="ContextLocName\ContextLocNameStructImpl.cs" />
     <Compile Include="ContextLocName\DefaultContextLocNaming.cs" />
     <Compile Include="ContextLocName\IContextLocNaming.cs" />
+    <Compile Include="DynamicDriverAttributeImpl.cs" />
     <Compile Include="ProtoItem\IDependentProtoItem.cs" />
     <Compile Include="ISetupItem.cs" />
     <Compile Include="ProtoItem\DependentProtoItemCollector.cs" />
@@ -75,7 +76,7 @@
     <Compile Include="Setup\ISetupEngine.cs" />
     <Compile Include="Setup\ISetupHandler.cs" />
     <Compile Include="Setup\ISetupSessionMemory.cs" />
-    <Compile Include="Setup\SetupDriver.cs" />
+    <Compile Include="Setup\DependentItemSetupDriver.cs" />
     <Compile Include="Setup\SetupEngineState.cs" />
     <Compile Include="Setup\SetupEventArgs.cs" />
     <Compile Include="Setup\SetupHandler.cs" />

@@ -14,51 +14,51 @@ namespace CK.Setup
 {
     public class SetupHandler : ISetupHandler
     {
-        protected SetupHandler( SetupDriver d )
+        protected SetupHandler( DependentItemSetupDriver d )
         {
             if( d == null ) throw new ArgumentNullException();
             Driver = d;
             Driver.AddHandler( this );
         }
 
-        protected SetupDriver Driver { get; private set; }
+        protected DependentItemSetupDriver Driver { get; private set; }
 
-        void CheckCall( SetupDriver d )
+        void CheckCall( DependentItemSetupDriver d )
         {
             if( d != Driver ) throw new ArgumentException( "Call mismatch: handler is bound to another driver." );
         }
 
-        bool ISetupHandler.Init( SetupDriver d )
+        bool ISetupHandler.Init( DependentItemSetupDriver d )
         {
             CheckCall( d );
             return Init();
         }
 
-        bool ISetupHandler.InitContent( SetupDriver d )
+        bool ISetupHandler.InitContent( DependentItemSetupDriver d )
         {
             CheckCall( d );
             return InitContent();
         }
 
-        bool ISetupHandler.Install( SetupDriver d )
+        bool ISetupHandler.Install( DependentItemSetupDriver d )
         {
             CheckCall( d );
             return Install();
         }
 
-        bool ISetupHandler.InstallContent( SetupDriver d )
+        bool ISetupHandler.InstallContent( DependentItemSetupDriver d )
         {
             CheckCall( d );
             return InstallContent();
         }
 
-        bool ISetupHandler.Settle( SetupDriver d )
+        bool ISetupHandler.Settle( DependentItemSetupDriver d )
         {
             CheckCall( d );
             return Settle();
         }
 
-        bool ISetupHandler.SettleContent( SetupDriver d )
+        bool ISetupHandler.SettleContent( DependentItemSetupDriver d )
         {
             CheckCall( d );
             return SettleContent();

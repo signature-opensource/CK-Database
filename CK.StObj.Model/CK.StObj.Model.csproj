@@ -57,14 +57,14 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AmbientContract\Attribute\AddContextAttribute.cs" />
-    <Compile Include="AmbientContract\Attribute\AmbientContextBoundDelegationAttribute.cs" />
+    <Compile Include="AmbientContextBoundDelegationAttribute.cs" />
     <Compile Include="AmbientContract\Attribute\IAddOrRemoveContextAttribute.cs" />
     <Compile Include="AmbientContract\Attribute\RemoveContextAttribute.cs" />
     <Compile Include="AmbientContract\Attribute\RemoveDefaultContext.cs" />
     <Compile Include="AmbientContract\IAmbientContract.cs" />
     <Compile Include="AmbientContract\IAmbientContractDefiner.cs" />
-    <Compile Include="AmbientContract\Attribute\IAttributeAmbientContextBound.cs" />
-    <Compile Include="AmbientContract\Attribute\IAttributeAmbientContextBoundWithMember.cs" />
+    <Compile Include="IAttributeAmbientContextBound.cs" />
+    <Compile Include="IAttributeAmbientContextBoundWithMember.cs" />
     <Compile Include="AutoImplementor\IAttributeAutoImplemented.cs" />
     <Compile Include="AutoImplementor\IAutoImplementorMethod.cs" />
     <Compile Include="AutoImplementor\IAutoImplementorProperty.cs" />

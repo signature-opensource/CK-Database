@@ -145,12 +145,12 @@ namespace CK.Setup
         /// and <see cref="Requires"/> if they are <see cref="IDependentItem"/> (and not strings).
         /// </summary>
         /// <returns>
-        /// Must return the <see cref="Type"/> of the setup driver (specialization of <see cref="SetupDriver"/>), or its assembly qualified name.
-        /// By default, returns the type of <see cref="SetupDriver"/>.
+        /// Must return the <see cref="Type"/> of the setup driver (specialization of <see cref="DependentItemSetupDriver"/>), or its assembly qualified name.
+        /// By default, returns the type of <see cref="DependentItemSetupDriver"/>.
         /// </returns>
         protected virtual object StartDependencySort()
         {
-            return typeof( SetupDriver );
+            return typeof( DependentItemSetupDriver );
         }
 
         object IDependentItem.StartDependencySort()

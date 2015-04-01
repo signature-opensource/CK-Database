@@ -1,4 +1,4 @@
-﻿-- Version = 2.12.2
+﻿-- Version = 2.12.2, Requires={ CK.sUserToBeOverriden }
 create procedure CK.sUserExists2
 (
 	@UserPart1 int,

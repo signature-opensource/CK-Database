@@ -77,24 +77,24 @@ namespace CK.Setup
         /// <summary>
         /// Gets or sets the setup driver type (when set this masks the <see cref="DriverTypeName"/> property).
         /// This is used ONLY if <see cref="ItemType"/> and <see cref="ItemTypeName"/> are not set.
-        /// This enables the use of a specialized <see cref="SetupDriver"/> bound to a default <see cref="StObjDynamicPackageItem"/>.
+        /// This enables the use of a specialized <see cref="DependentItemSetupDriver"/> bound to a default <see cref="StObjDynamicPackageItem"/>.
         /// This property is inherited.
         /// </summary>
         /// <remarks>
         /// When let to null (and no <see cref="DriverTypeName"/> is specified either), 
-        /// a standard <see cref="SetupDriver"/> is used.
+        /// a standard <see cref="DependentItemSetupDriver"/> is used.
         /// </remarks>
         Type DriverType { get; set; }
 
         /// <summary>
         /// Gets or sets the assembly qualified name of the setup driver type.
         /// This is used ONLY if <see cref="ItemType"/>, <see cref="ItemTypeName"/> and <see cref="DriverType"/> are not set.
-        /// This is the ultimate fallback in order to use anything else than the default <see cref="SetupDriver"/> (bound to a default <see cref="StObjDynamicPackageItem"/>).
+        /// This is the ultimate fallback in order to use anything else than the default <see cref="DependentItemSetupDriver"/> (bound to a default <see cref="StObjDynamicPackageItem"/>).
         /// This property is inherited and is ignored if <see cref="DriverType"/> is specified.
         /// </summary>
         /// <remarks>
         /// When let to null (and no <see cref="DriverType"/> is specified either), 
-        /// a standard <see cref="SetupDriver"/> is used.
+        /// a standard <see cref="DependentItemSetupDriver"/> is used.
         /// </remarks>
         string DriverTypeName { get; set; }
 

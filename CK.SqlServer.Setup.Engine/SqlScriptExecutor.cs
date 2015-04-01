@@ -23,7 +23,7 @@ namespace CK.SqlServer.Setup
             _memory = memory;
         }
 
-        protected override MultiScriptBase CreateMultiScript( IActivityMonitor monitor, SetupDriver driver, ISetupScript script )
+        protected override MultiScriptBase CreateMultiScript( IActivityMonitor monitor, DependentItemSetupDriver driver, ISetupScript script )
         {
             return new SqlMultiScript( monitor, script, _manager, _memory );
         }

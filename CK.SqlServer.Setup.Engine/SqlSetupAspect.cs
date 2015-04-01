@@ -45,13 +45,13 @@ namespace CK.SqlServer.Setup
                 }
             } 
 
-            public override SetupDriver CreateDriver( Type driverType, SetupDriver.BuildInfo info )
+            public override DependentItemSetupDriver CreateDriver( Type driverType, DependentItemSetupDriver.BuildInfo info )
             {
-                SetupDriver d = base.CreateDriver( driverType, info );
+                DependentItemSetupDriver d = base.CreateDriver( driverType, info );
                 if( d == null )
                 {
                     if( driverType == typeof( SqlObjectSetupDriver ) ) d = new SqlObjectSetupDriver( info, _center );
-                    else if( driverType == typeof( SetupDriver ) ) d = new SetupDriver( info );
+                    else if( driverType == typeof( DependentItemSetupDriver ) ) d = new DependentItemSetupDriver( info );
                     else if( driverType == typeof( SqlDatabaseSetupDriver ) ) d = new SqlDatabaseSetupDriver( info );
                     else if( driverType == typeof( SqlDatabaseConnectionSetupDriver ) ) d = new SqlDatabaseConnectionSetupDriver( info, _center );
                     else if( driverType == typeof( SqlPackageBaseSetupDriver ) ) d = new SqlPackageBaseSetupDriver( info );

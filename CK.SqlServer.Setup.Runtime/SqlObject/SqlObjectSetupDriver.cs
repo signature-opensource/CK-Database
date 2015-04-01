@@ -13,7 +13,7 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
-    public class SqlObjectSetupDriver : SetupDriver
+    public class SqlObjectSetupDriver : DependentItemSetupDriver
     {
         readonly ISqlManagerProvider _provider;
 
