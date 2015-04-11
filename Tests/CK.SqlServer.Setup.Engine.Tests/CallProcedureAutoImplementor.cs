@@ -49,6 +49,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
     [TestFixture]
     public class CallProcedureAutoImplementor
     {
+        const string ConnectionString = "Server=.;Database=CKSqlServerTests;Integrated Security=SSPI";
 
         class ManualCall
         {
@@ -126,9 +127,9 @@ namespace CK.SqlServer.Setup.Engine.Tests
         [Test]
         public void ManualImplementation()
         {
-            using( SqlManager m = new SqlManager() )
+            using( SqlManager m = new SqlManager( TestHelper.ConsoleMonitor ) )
             {
-                Assert.That( m.OpenOrCreate( ".", "CKSqlServerTests" ), "Unable to open or create CKSqlServerTests database on local server." );
+                Assert.That( m.OpenFromConnectionString( ConnectionString, true ), "Unable to open or create CKSqlServerTests database on local server." );
                 var install = SqlHelper.SplitGoSeparator( File.ReadAllText( TestHelper.GetScriptsFolder( "CallProcedureAutoImplementor.sql" ) ) );
                 m.ExecuteScripts( install, TestHelper.ConsoleMonitor );
 

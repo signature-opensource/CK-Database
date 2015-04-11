@@ -16,23 +16,23 @@ namespace CK.Setup
 {
     class StObjSetupHook 
     {
-        readonly SetupCenter _center;
+        readonly SetupEngine _engine;
         readonly IStObjRuntimeBuilder _runtimeBuilder;
-        readonly SetupCenterConfiguration _config;
-        readonly SetupableConfigurator _configurator;
+        readonly StObjEngineConfiguration _config;
+        readonly SetupEngineConfigurator _configurator;
 
-        public StObjSetupHook( SetupCenter center, IStObjRuntimeBuilder runtimeBuilder, SetupCenterConfiguration config, SetupableConfigurator internalRelay )
+        public StObjSetupHook( SetupEngine engine, IStObjRuntimeBuilder runtimeBuilder, StObjEngineConfiguration config, SetupEngineConfigurator internalRelay )
         {
-            _center = center;
+            _engine = engine;
             _runtimeBuilder = runtimeBuilder;
             _config = config;
             _configurator = internalRelay;
-            _center.RegisterSetupEvent += new EventHandler<RegisterSetupEventArgs>( OnRegisterSetupEvent );
+            _engine.RegisterSetupEvent += new EventHandler<RegisterSetupEventArgs>( OnRegisterSetupEvent );
         }
 
         void OnRegisterSetupEvent( object sender, RegisterSetupEventArgs e )
         {
-            var monitor = _center.Logger;
+            var monitor = _engine.Monitor;
 
             bool hasError = false;
             using( monitor.OnError( () => hasError = true ) )
@@ -40,16 +40,15 @@ namespace CK.Setup
             {
                 StObjCollectorResult result;
                 AssemblyRegisterer typeReg = new AssemblyRegisterer( monitor );
-                typeReg.TypeFilter = _config.TypeFilter;
-                typeReg.Discover( _config.AppDomainConfiguration.Assemblies );
-                //_config.FinalAssemblyConfiguration.ExternalVersionStamp;
-                StObjCollector stObjC = new StObjCollector( monitor, _runtimeBuilder, _configurator, _configurator, _configurator );
+                typeReg.Discover( _config.BuildAndRegisterConfiguration.Assemblies );
+                StObjCollector stObjC = new StObjCollector( monitor, _config.TraceDependencySorterInput, _config.TraceDependencySorterOutput, _runtimeBuilder, _configurator, _configurator, _configurator );
+                stObjC.DependencySorterHookInput += _engine.StartConfiguration.StObjDependencySorterHookInput;
+                stObjC.DependencySorterHookOutput += _engine.StartConfiguration.StObjDependencySorterHookOutput;
                 using( monitor.OpenInfo().Send( "Registering StObj types." ) )
                 {
                     stObjC.RegisterTypes( typeReg );
-                    foreach( var t in _config.ExplicitRegisteredClasses ) stObjC.RegisterClass( t );
-                    stObjC.DependencySorterHookInput = _center.StObjDependencySorterHookInput;
-                    stObjC.DependencySorterHookOutput = _center.StObjDependencySorterHookOutput;
+                    stObjC.RegisterClasses( _config.BuildAndRegisterConfiguration.ExplicitClasses );
+                    foreach( var t in _engine.StartConfiguration.ExplicitRegisteredClasses ) stObjC.RegisterClass( t );
                     Debug.Assert( stObjC.RegisteringFatalOrErrorCount == 0 || hasError, "stObjC.RegisteringFatalOrErrorCount > 0 ==> An error has been logged." );
                 }
                 if( stObjC.RegisteringFatalOrErrorCount == 0 )

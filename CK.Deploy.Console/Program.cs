@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Threading;
 using CK.Core;
 using CK.Monitoring;
+using CK.Setup;
 using CK.SqlServer.Setup;
 
 namespace CK.Deploy.Console
@@ -111,14 +112,13 @@ namespace CK.Deploy.Console
 
             var config = new SqlSetupAspectConfiguration();
             config.DefaultDatabaseConnectionString = args.ConnectionString;
-            config.SetupConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
             config.FilePackageDirectories.Add( args.FilePath );
             config.SqlFileDirectories.Add( args.FilePath );
+            var c = new SetupEngineConfiguration();
+            c.Aspects.Add( config );
+            c.StObjEngineConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
 
-            using( SqlSetupAspect c = new SqlSetupAspect( monitor, config ) )
-            {
-                c.Center.Run();
-            }
+            StObjContextRoot.Build( c, null, monitor ).Dispose();
         }
 
         public static void RunV2()
@@ -142,18 +142,15 @@ namespace CK.Deploy.Console
 
             var config = new SqlSetupAspectConfiguration();
             config.DefaultDatabaseConnectionString = args.ConnectionString;
-            config.SetupConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = false;
-            
             var rootedPaths = args.RelativeFilePaths.Select( p => Path.Combine( args.AbsoluteRootPath, p ) );
             config.FilePackageDirectories.AddRange( rootedPaths );
             config.SqlFileDirectories.AddRange( rootedPaths );
-            config.SetupConfiguration.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.AddRange( args.AssemblyNames );
-            using( SqlSetupAspect c = new SqlSetupAspect( monitor, config ) )
-            {
-                c.Center.Run();
-                monitor.Info().Send( "DBSetup Done." );
-            }
+            var c = new SetupEngineConfiguration();
+            c.Aspects.Add( config );
+            c.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.AddRange( args.AssemblyNames );
+            c.StObjEngineConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = false;
 
+            StObjContextRoot.Build( c, null, monitor ).Dispose();
         }
     }
 }

@@ -16,7 +16,7 @@ namespace CK.Setup
     /// <summary>
     /// Exposes extension methods on <see cref="IDependentItem"/> and <see cref="IDependentItemContainer"/>.
     /// </summary>
-    public static class DependentItemExtension
+    public static partial class DependentItemExtension
     {
         /// <summary>
         /// Returns a collection of <see cref="IDependentItemRef"/> with potentially different <see cref="IDependentItem.FullName"/>.

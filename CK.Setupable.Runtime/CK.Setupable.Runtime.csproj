@@ -121,10 +121,6 @@
       <Project>{64DA8104-2C71-4D52-8F44-D34738F6D564}</Project>
       <Name>CK.Setupable.Model</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CK.SqlServer.Parser\CK.SqlServer.Parser.csproj">
-      <Project>{c569dc3c-aed5-449d-9c7d-cadc46423687}</Project>
-      <Name>CK.SqlServer.Parser</Name>
-    </ProjectReference>
     <ProjectReference Include="..\CK.StObj.Model\CK.StObj.Model.csproj">
       <Project>{96DEDEEE-DE7D-4B14-8FDE-BC4D8D9CCB78}</Project>
       <Name>CK.StObj.Model</Name>

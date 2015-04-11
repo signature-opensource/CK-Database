@@ -14,9 +14,9 @@ using System.Diagnostics;
 
 namespace CK.Setup
 {
-    public class SetupEngineRegisterResult
+    class SetupCoreEngineRegisterResult
     {
-        internal SetupEngineRegisterResult( DependencySorterResult s )
+        internal SetupCoreEngineRegisterResult( DependencySorterResult s )
         {
             SortResult = s;
         }
@@ -28,7 +28,7 @@ namespace CK.Setup
         public DependencySorterResult SortResult { get; private set; }
 
         /// <summary>
-        /// Gets whether the <see cref="SetupEngine.Register"/> succeeded: <see cref="SortResult"/>.<see cref="DependencySorterResult.IsComplete">IsComplete</see>
+        /// Gets whether the <see cref="SetupCoreEngine.Register"/> succeeded: <see cref="SortResult"/>.<see cref="DependencySorterResult.IsComplete">IsComplete</see>
         /// must be true, no <see cref="UnexpectedError"/> occurred, no <see cref="CancelReason"/> exists and no <see cref="CanceledRegistrationCulprit"/> canceled the registration.
         /// </summary>
         public bool IsValid
@@ -51,7 +51,7 @@ namespace CK.Setup
         public string CancelReason { get; internal set; }
 
         /// <summary>
-        /// Not null if a cancellation occured during registration by any <see cref="SetupEngine.DriverEvent"/> listeners.
+        /// Not null if a cancellation occured during registration by any <see cref="SetupCoreEngine.DriverEvent"/> listeners.
         /// Detailed error information should exist in log.
         /// </summary>
         public ISortedItem CanceledRegistrationCulprit { get; internal set; }

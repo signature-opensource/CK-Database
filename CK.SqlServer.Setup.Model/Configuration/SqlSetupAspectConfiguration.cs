@@ -9,13 +9,13 @@ using System;
 using System.Collections.Generic;
 using CK.Core;
 using CK.Setup;
+using CK.SqlServer.Setup;
 
-namespace CK.SqlServer.Setup
+namespace CK.Setup
 {
     [Serializable]
-    public class SqlSetupAspectConfiguration : IStObjEngineConfiguration
+    public class SqlSetupAspectConfiguration : ISetupEngineAspectConfiguration
     {
-        readonly SetupCenterConfiguration _config;
         readonly List<SqlDatabaseDescriptor> _databases;
         readonly List<string> _ckPackageDirectories;
         readonly List<string> _sqlFileDirectories;
@@ -23,36 +23,13 @@ namespace CK.SqlServer.Setup
         bool _ignoreMissingDependencyIsError;
 
         /// <summary>
-        /// Initializes a new <see cref="SqlSetupAspectConfiguration"/> with a new, uninitialized <see cref="SetupConfiguration"/>.
-        /// By default, <see cref="SetupCenterConfiguration.AppDomainConfiguration"/>.<see cref="BuilderAppDomainConfiguration.UseIndependentAppDomain">UseIndependentAppDomain</see>
-        /// is set to true.
+        /// Initializes a new <see cref="SqlSetupAspectConfiguration"/>.
         /// </summary>
         public SqlSetupAspectConfiguration()
-            : this( new SetupCenterConfiguration() )
         {
-            _config.AppDomainConfiguration.UseIndependentAppDomain = true;
-        }
-
-        /// <summary>
-        /// Initializes a new <see cref="SqlSetupAspectConfiguration"/> with a new, uninitialized <see cref="SetupConfiguration"/>.
-        /// </summary>
-        /// <param name="setupConfiguration">Existing setup configuration.</param>
-        public SqlSetupAspectConfiguration( SetupCenterConfiguration setupConfiguration )
-        {
-            if( setupConfiguration == null ) throw new ArgumentNullException( "centerConfiguration" );
-            _config = setupConfiguration;
-            _config.ExplicitRegisteredClasses.Add( typeof( SqlDefaultDatabase ) );
             _databases = new List<SqlDatabaseDescriptor>();
             _ckPackageDirectories = new List<string>();
             _sqlFileDirectories = new List<string>();
-        }
-
-        /// <summary>
-        /// Configuration for <see cref="SetupCenter"/>.
-        /// </summary>
-        public SetupCenterConfiguration SetupConfiguration
-        {
-            get { return _config; }
         }
 
         /// <summary>
@@ -114,24 +91,9 @@ namespace CK.SqlServer.Setup
             get { return _sqlFileDirectories; }
         }
 
-
-        #region IStObjEngineConfiguration members
-
-        string IStObjEngineConfiguration.BuilderAssemblyQualifiedName
+        string ISetupEngineAspectConfiguration.AspectType
         {
             get { return "CK.SqlServer.Setup.SqlSetupAspect, CK.SqlServer.Setup.Engine"; }
         }
-
-        BuilderFinalAssemblyConfiguration IStObjEngineConfiguration.FinalAssemblyConfiguration
-        {
-            get { return _config.FinalAssemblyConfiguration ; }
-        }
-
-        BuilderAppDomainConfiguration IStObjEngineConfiguration.AppDomainConfiguration
-        {
-            get { return _config.AppDomainConfiguration; }
-        }
-
-        #endregion
     }
 }

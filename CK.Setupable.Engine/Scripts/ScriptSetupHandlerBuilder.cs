@@ -15,20 +15,20 @@ using System.Diagnostics;
 namespace CK.Setup
 {
     /// <summary>
-    /// Companion object of the <see cref="SetupCenter"/> that is automatically registered and manages
+    /// Companion object of the <see cref="SetupEngine"/> that is automatically registered and manages
     /// the scripts: 
     /// - at <see cref="SetupStep.PreInit"/> it enables the object to load scripts into the <see cref="ScriptCollector"/> by 
     /// calling <see cref="DependentItemSetupDriver.LoadScripts"/> on each driver
     /// - and at <see cref="SetupStep.Init"/> it associates a <see cref="ScriptSetupHandler"/> with the scripts that exist for each drivers.
     /// The scripts can come from the resources (the ones loaded by DependentItemSetupDriver.LoadScripts) or from the file system.
     /// </summary>
-    public class ScriptSetupHandlerBuilder
+    class ScriptSetupHandlerBuilder
     {
-        readonly SetupEngine _engine;
+        readonly SetupCoreEngine _engine;
         readonly ScriptCollector _scriptCollector;
         ScriptTypeManager _scriptManager;
 
-        public ScriptSetupHandlerBuilder( SetupEngine engine, ScriptCollector scripts, ScriptTypeManager scriptManager )
+        public ScriptSetupHandlerBuilder( SetupCoreEngine engine, ScriptCollector scripts, ScriptTypeManager scriptManager )
         {
             if( engine == null ) throw new ArgumentNullException( "center" );
             if( scripts == null ) throw new ArgumentNullException( "scripts" );

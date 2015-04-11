@@ -89,7 +89,7 @@ namespace CK.StObj.Engine.Tests
             {
                 var runtimeBuilder = new StObjRuntimeBuilder();
 
-                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor, runtimeBuilder );
+                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor, runtimeBuilder: runtimeBuilder );
                 collector.RegisterClass( typeof( B ) );
                 collector.RegisterClass( typeof( D ) );
                 collector.DependencySorterHookInput = items => TestHelper.ConsoleMonitor.TraceDependentItem( items );
@@ -163,7 +163,7 @@ namespace CK.StObj.Engine.Tests
 
             public void DoTest()
             {
-                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor, null, null, new StObjPropertyConfigurator() );
+                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor, configurator: new StObjPropertyConfigurator() );
                 collector.RegisterClass( typeof( B ) );
                 collector.RegisterClass( typeof( ASpec ) );
                 collector.DependencySorterHookInput = items => TestHelper.ConsoleMonitor.TraceDependentItem( items );

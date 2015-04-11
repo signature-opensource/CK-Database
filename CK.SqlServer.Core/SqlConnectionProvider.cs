@@ -65,22 +65,11 @@ namespace CK.SqlServer
         }
 
         /// <summary>
-        /// Gets or sets the connection string. If the main connection is currently opened
-        /// (and the connection string actually changed), it is automatically closed first (and 
-        /// remains closed until the first time it is needed).
+        /// Gets or sets the connection string.
         /// </summary>
         public string ConnectionString
         {
             get { return _strConn; }
-            set
-            {
-                if( _strConn != value )
-                {
-                    _oCon.Close();
-                    _oCon.ConnectionString = value;
-                    _strConn = value;
-                }
-            }
         }
 
         /// <summary>
@@ -96,10 +85,6 @@ namespace CK.SqlServer
         /// Closes the connection to the database if it were opened. Can be called safely 
         /// multiple times.
         /// </summary>
-        /// <remarks>
-        /// You can reuse this <see cref="SqlConnectionProvider"/> even if <b>Dispose</b> has been 
-        /// called.
-        /// </remarks>
         public void Dispose()
         {
             Close();
@@ -117,6 +102,7 @@ namespace CK.SqlServer
         /// </remarks>
         public void Open()
         {
+            if( _oCon.State == ConnectionState.Broken ) _oCon.Close();
             if( _oCon.State == ConnectionState.Closed ) _oCon.Open();
         }
 

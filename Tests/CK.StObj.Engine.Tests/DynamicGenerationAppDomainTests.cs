@@ -141,13 +141,13 @@ namespace CK.StObj.Engine.Tests
                 File.Delete( fileName );
 
                 var config = new StObjEngineConfigurationTest();
-                config.AppDomainConfiguration.UseIndependentAppDomain = false;
-                config.FinalAssemblyConfiguration.Directory = outputDir;
-                config.FinalAssemblyConfiguration.AssemblyName = "MyLittleAssembly";
-                config.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.Add( "AutoGenTestObjBuilder, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" );
+                config.StObjEngineConfiguration.BuildAndRegisterConfiguration.UseIndependentAppDomain = false;
+                config.StObjEngineConfiguration.FinalAssemblyConfiguration.Directory = outputDir;
+                config.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = "MyLittleAssembly";
+                config.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( "AutoGenTestObjBuilder, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" );
 
                 string extVersionStamp =  "The external Version Stamp is currently in InformationalVersionAttribute." + Guid.NewGuid().ToString();
-                config.FinalAssemblyConfiguration.ExternalVersionStamp = extVersionStamp;
+                config.StObjEngineConfiguration.FinalAssemblyConfiguration.ExternalVersionStamp = extVersionStamp;
 
                 DateTime buildTime1;
                 using( StObjBuildResult result = StObjContextRoot.Build( config, null, null, TestHelper.ConsoleMonitor, forceBuild: true ) )
@@ -198,16 +198,24 @@ namespace CK.StObj.Engine.Tests
                 setup.ApplicationBase = inputDir;
                 setup.PrivateBinPathProbe = "*";
                 setup.PrivateBinPath = inputDir;
-                var appdomain = AppDomain.CreateDomain( "StObjContextRoot.Build.IndependentAppDomain", null, setup );
+                AppDomain appDomain = null;
+                try
+                {
+                    appDomain = AppDomain.CreateDomain( "StObjContextRoot.Build.IndependentAppDomain", null, setup );
 
-                File.Copy( Path.Combine( binDir, "CK.StObj.Engine.Tests.dll" ), Path.Combine( inputDir, "CK.StObj.Engine.Tests.dll" ) );
+                    File.Copy( Path.Combine( binDir, "CK.StObj.Engine.Tests.dll" ), Path.Combine( inputDir, "CK.StObj.Engine.Tests.dll" ) );
 
-                var o = (AppDomainAnalyzer)Activator.CreateInstance( appdomain, typeof( AppDomainAnalyzer ).Assembly.FullName, typeof( AppDomainAnalyzer ).FullName ).Unwrap();
-                o.LoadAssembly( "AutoGenTestObjBuilder, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" );
-                var assembly = o.GetAllAssemblyNames();
+                    var o = (AppDomainAnalyzer)Activator.CreateInstance( appDomain, typeof( AppDomainAnalyzer ).Assembly.FullName, typeof( AppDomainAnalyzer ).FullName ).Unwrap();
+                    o.LoadAssembly( "AutoGenTestObjBuilder, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" );
+                    var assembly = o.GetAllAssemblyNames();
 
-                Assert.That( AppDomain.CurrentDomain.GetAssemblies().Where( x => x.FullName.Contains( "AutoGenTestObjBuilder" ) ).Count(), Is.EqualTo( 0 ) );
-                Assert.That( assembly.Where( x => x.Contains( "AutoGenTestObjBuilder" ) ).Count(), Is.EqualTo( 1 ) );
+                    Assert.That( AppDomain.CurrentDomain.GetAssemblies().Where( x => x.FullName.Contains( "AutoGenTestObjBuilder" ) ).Count(), Is.EqualTo( 0 ) );
+                    Assert.That( assembly.Where( x => x.Contains( "AutoGenTestObjBuilder" ) ).Count(), Is.EqualTo( 1 ) );
+                }
+                finally
+                {
+                    if( appDomain != null ) AppDomain.Unload( appDomain );
+                }
 
             }
             finally
@@ -235,14 +243,14 @@ namespace CK.StObj.Engine.Tests
                 File.Delete( Path.Combine( outputDir, "MyLittleAssembly.dll" ) );
 
                 var config = new StObjEngineConfigurationTest();
-                config.AppDomainConfiguration.UseIndependentAppDomain = true;
-                config.FinalAssemblyConfiguration.Directory = outputDir;
-                config.FinalAssemblyConfiguration.AssemblyName = "MyLittleAssembly";
-                config.FinalAssemblyConfiguration.ExternalVersionStamp = "VersionStamp!" + Guid.NewGuid();
+                config.StObjEngineConfiguration.BuildAndRegisterConfiguration.UseIndependentAppDomain = true;
+                config.StObjEngineConfiguration.FinalAssemblyConfiguration.Directory = outputDir;
+                config.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = "MyLittleAssembly";
+                config.StObjEngineConfiguration.FinalAssemblyConfiguration.ExternalVersionStamp = "VersionStamp!" + Guid.NewGuid();
 
-                config.AppDomainConfiguration.ProbePaths.Add( inputDir );
-                config.AppDomainConfiguration.ProbePaths.Add( TestHelper.BinFolder );
-                config.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.Add( "AutoGenTestObjBuilder, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" );
+                config.StObjEngineConfiguration.BuildAndRegisterConfiguration.ProbePaths.Add( inputDir );
+                config.StObjEngineConfiguration.BuildAndRegisterConfiguration.ProbePaths.Add( TestHelper.BinFolder );
+                config.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( "AutoGenTestObjBuilder, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" );
 
                 DateTime buildTime1;
                 using( StObjBuildResult result = StObjContextRoot.Build( config, null, null, TestHelper.ConsoleMonitor, forceBuild: false ) )
@@ -384,12 +392,11 @@ namespace CK.StObj.Engine.Tests
         }
 
         [Serializable]
-        public class StObjEngineConfigurationTest : IStObjEngineConfiguration
+        public class StObjEngineConfigurationTest : IStObjBuilderConfiguration
         {
             public StObjEngineConfigurationTest()
             {
-                AppDomainConfiguration = new BuilderAppDomainConfiguration();
-                FinalAssemblyConfiguration = new BuilderFinalAssemblyConfiguration();
+                StObjEngineConfiguration = new StObjEngineConfiguration();
             }
 
             public string BuilderAssemblyQualifiedName
@@ -397,9 +404,7 @@ namespace CK.StObj.Engine.Tests
                 get { return "CK.Setup.BasicStObjBuilder, CK.StObj.Engine"; }
             }
 
-            public BuilderAppDomainConfiguration AppDomainConfiguration { get; private set; }
-
-            public BuilderFinalAssemblyConfiguration FinalAssemblyConfiguration { get; private set; }
+            public StObjEngineConfiguration StObjEngineConfiguration { get; private set; }
         }
     }
 }

@@ -74,6 +74,11 @@ namespace CK.Setup
         string DriverTypeName { get; }
 
         /// <summary>
+        /// Gets the list of reverse requirements (can be <see cref="IDependentItem"/> instances or named references).
+        /// </summary>
+        IReadOnlyList<IDependentItemRef> Requires { get; }
+
+        /// <summary>
         /// Gets the list of requirements (can be <see cref="IDependentItem"/> instances or named references).
         /// </summary>
         IReadOnlyList<IDependentItemRef> RequiredBy { get; }
@@ -82,11 +87,6 @@ namespace CK.Setup
         /// Gets the list of groups (can be <see cref="IDependentItemGroup"/> instances or named references).
         /// </summary>
         IReadOnlyList<IDependentItemGroupRef> Groups { get; }
-
-        /// <summary>
-        /// Gets the list of reverse requirements (can be <see cref="IDependentItem"/> instances or named references).
-        /// </summary>
-        IReadOnlyList<IDependentItemRef> Requires { get; }
 
         /// <summary>
         /// Gets the list of children (can be <see cref="IDependentItem"/> instances or named references).

@@ -13,6 +13,9 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
+    /// <summary>
+    /// Driver for <see cref="SqlObjectItem"/>.
+    /// </summary>
     public class SqlObjectSetupDriver : DependentItemSetupDriver
     {
         readonly ISqlManagerProvider _provider;

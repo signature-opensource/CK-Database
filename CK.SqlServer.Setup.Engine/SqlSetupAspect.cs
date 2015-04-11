@@ -13,23 +13,23 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
-    public class SqlSetupAspect : ISqlManagerProvider, IDisposable, IStObjBuilder
+    public class SqlSetupAspect : ISetupEngineAspect, ISqlManagerProvider, IDisposable
     {
         readonly SqlSetupAspectConfiguration _config;
-        readonly SetupCenter _center;
-        readonly ISqlManager _defaultDatabase;
+        readonly SetupEngine _engine;
         readonly SqlManagerProvider _databases;
         readonly SqlFileDiscoverer _sqlFileDiscoverer;
         readonly DependentProtoItemCollector _sqlFiles;
+        ISqlManager _defaultDatabase;
 
-        class ConfiguratorHook : SetupableConfigurator
+        class ConfiguratorHook : SetupEngineConfigurator
         {
             readonly SqlSetupAspect _center;
 
-            public ConfiguratorHook( SqlSetupAspect sqlCenter )
-                : base( sqlCenter._center.SetupableConfigurator )
+            public ConfiguratorHook( SqlSetupAspect sqlAspect )
+                : base( sqlAspect._engine.SetupableConfigurator )
             {
-                _center = sqlCenter;
+                _center = sqlAspect;
             }
 
             public override void ResolveParameterValue( IActivityMonitor monitor, IStObjFinalParameter parameter )
@@ -63,82 +63,71 @@ namespace CK.SqlServer.Setup
         }
 
         /// <summary>
-        /// Initializes a new <see cref="SqlSetupAspect"/> with a <see cref="DefaultSqlDatabase"/> that uses the configuration (<see cref="SqlSetupAspectConfiguration.DefaultDatabaseConnectionString"/>)
-        /// for its connection string.
-        /// This constructor is the one used when calling <see cref="StObjContextRoot.Build"/> method with a <see cref="SqlSetupAspectConfiguration"/> configuration object.
+        /// Initializes a new <see cref="SqlSetupAspect"/>.
+        /// This constructor is called by the <see cref="SetupEngine"/> whenever a <see cref="SqlSetupAspectConfiguration"/> configuration object
+        /// appears in <see cref="SetupEngineConfiguration.Aspects"/> list.
         /// </summary>
-        /// <param name="monitor">Monitor to use.</param>
+        /// <param name="engine">Current engine.</param>
         /// <param name="config">Configuration object.</param>
-        public SqlSetupAspect( IActivityMonitor monitor, SqlSetupAspectConfiguration config, IStObjRuntimeBuilder runtimeBuilder = null )
-            : this( monitor, config, runtimeBuilder, null )
+        public SqlSetupAspect( SetupEngine engine, SqlSetupAspectConfiguration config )
         {
-        }
-
-        bool IStObjBuilder.Run()
-        {
-            return _center.Run();
-        }
-
-        public SqlSetupAspect( IActivityMonitor monitor, SqlSetupAspectConfiguration config, IStObjRuntimeBuilder runtimeBuilder, ISqlManager defaultDatabase )
-        {
-            if( monitor == null ) throw new ArgumentNullException( "monitor" );
+            if( engine == null ) throw new ArgumentNullException( "engine" );
             if( config == null ) throw new ArgumentNullException( "config" );
             _config = config;
-
-            _databases = new SqlManagerProvider( monitor, m => m.IgnoreMissingDependencyIsError = _config.IgnoreMissingDependencyIsError );
-            if( defaultDatabase == null )
-            {
-                _databases.Add( SqlDatabase.DefaultDatabaseName, _config.DefaultDatabaseConnectionString, autoCreate:true );
-                _defaultDatabase = _databases.FindManagerByName( SqlDatabase.DefaultDatabaseName );
-            }
-            else
-            {
-                if( !defaultDatabase.IsOpen() ) throw new ArgumentException( "Database manager must be opened.", "defaultDatabase" );
-                defaultDatabase.IgnoreMissingDependencyIsError = config.IgnoreMissingDependencyIsError;
-                _databases.AddConfiguredDefaultDatabase( defaultDatabase );
-                _defaultDatabase = defaultDatabase;
-            }
+            _engine = engine;
+            _databases = new SqlManagerProvider( _engine.Monitor, m => m.IgnoreMissingDependencyIsError = _config.IgnoreMissingDependencyIsError );
+            _databases.Add( SqlDatabase.DefaultDatabaseName, _config.DefaultDatabaseConnectionString, autoCreate:true );
             foreach( var db in _config.Databases )
             {
                 _databases.Add( db.DatabaseName, db.ConnectionString, db.AutoCreate );
             }
-            
-            var versionRepo = new SqlVersionedItemRepository( _defaultDatabase );
-            var memory = new SqlSetupSessionMemoryProvider( _defaultDatabase );
-            _center = new SetupCenter( monitor, _config.SetupConfiguration, versionRepo, memory, runtimeBuilder );
             _sqlFiles = new DependentProtoItemCollector();
-            _sqlFileDiscoverer = new SqlFileDiscoverer( new SqlObjectParser(), monitor );
-            _center.SetupableConfigurator = new ConfiguratorHook( this );
+            _sqlFileDiscoverer = new SqlFileDiscoverer( new SqlObjectParser(), _engine.Monitor );
+        }
 
+        bool ISetupEngineAspect.Configure()
+        {
+            _defaultDatabase = _databases.FindManagerByName( SqlDatabase.DefaultDatabaseName );
+            _engine.StartConfiguration.VersionRepository = new SqlVersionedItemRepository( _defaultDatabase );
+            _engine.StartConfiguration.SetupSessionMemoryProvider = new SqlSetupSessionMemoryProvider( _defaultDatabase );
+
+            _engine.SetupableConfigurator = new ConfiguratorHook( this );
             var sqlHandler = new SqlScriptTypeHandler( this );
             // Registers source "res-sql" first: resource scripts have low priority.
             sqlHandler.RegisterSource( "res-sql" );
             // Then registers "file-sql".
             sqlHandler.RegisterSource( SqlFileDiscoverer.DefaultSourceName );
 
-            _center.ScriptTypeManager.Register( sqlHandler );
+            _engine.StartConfiguration.ScriptTypeManager.Register( sqlHandler );
 
-            _center.RegisterSetupEvent += OnRegisterSetup;
+            _engine.StartConfiguration.AddExplicitRegisteredClass( typeof( SqlDefaultDatabase ) );
+
+            _engine.RegisterSetupEvent += OnRegisterSetup;
+            
+            return true;
         }
 
         /// <summary>
-        /// Gets the setup center.
+        /// Gets the engine to which this aspect is bound.
         /// </summary>
-        public SetupCenter Center
+        public SetupEngine SetupEngine
         {
-            get { return _center; }
+            get { return _engine; }
+        }
+
+        ISetupEngineAspectConfiguration ISetupEngineAspect.Configuration
+        {
+            get { return _config; }
         }
 
         /// <summary>
-        /// Gets or sets a <see cref="SetupableConfigurator"/> that will be used.
-        /// This can be changed at any moment during setup: the current configurator will always be used.
-        /// When setting it, care should be taken to not break the chain by setting the current configurator as the <see cref="SetupableConfigurator.Previous"/>.
+        /// Gets the configuration object.
         /// </summary>
-        public SetupableConfigurator SetupableConfigurator
+        public SqlSetupAspectConfiguration Configuration
         {
-            get { return _center.SetupableConfigurator; }
-            set { _center.SetupableConfigurator = value; }
+            get { return _config; }
         }
+
 
         /// <summary>
         /// Discovers file packages (*.ck xml files) in given directory and sub directories.
@@ -157,45 +146,7 @@ namespace CK.SqlServer.Setup
         /// <returns>True if no error occurred. Errors are logged.</returns>
         public bool DiscoverSqlFiles( string directoryPath )
         {
-            return _sqlFileDiscoverer.DiscoverSqlFiles( String.Empty, SqlDefaultDatabase.DefaultDatabaseName, directoryPath, _sqlFiles, _center.Scripts );
-        }
-
-        /// <summary>
-        /// Gets or sets a function that will be called with the list of StObjs once all of them are 
-        /// registered in the <see cref="DependencySorter"/> used by the <see cref="StObjCollector"/>.
-        /// </summary>
-        public Action<IEnumerable<IDependentItem>> StObjDependencySorterHookInput
-        {
-            get { return _center.StObjDependencySorterHookInput; }
-            set { _center.StObjDependencySorterHookInput = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets a function that will be called when StObjs have been successfully sorted by 
-        /// the <see cref="DependencySorter"/> used by the <see cref="StObjCollector"/>.
-        /// </summary>
-        public Action<IEnumerable<ISortedItem>> StObjDependencySorterHookOutput
-        {
-            get { return _center.StObjDependencySorterHookOutput; }
-            set { _center.StObjDependencySorterHookOutput = value; } 
-        }
-
-        /// <summary>
-        /// Gets or sets a function that will be called with the list of items once all of them are registered.
-        /// </summary>
-        public Action<IEnumerable<IDependentItem>> SetupDependencySorterHookInput 
-        {
-            get { return _center.DependencySorterHookInput; }
-            set { _center.DependencySorterHookInput = value; } 
-        }
-
-        /// <summary>
-        /// Gets or sets a function that will be called when items have been successfully sorted.
-        /// </summary>
-        public Action<IEnumerable<ISortedItem>> SetupDependencySorterHookOutput
-        {
-            get { return _center.DependencySorterHookOutput; }
-            set { _center.DependencySorterHookOutput = value; }
+            return _sqlFileDiscoverer.DiscoverSqlFiles( String.Empty, SqlDefaultDatabase.DefaultDatabaseName, directoryPath, _sqlFiles, _engine.Scripts );
         }
 
         /// <summary>
@@ -217,7 +168,7 @@ namespace CK.SqlServer.Setup
 
         void OnRegisterSetup( object sender, RegisterSetupEventArgs e )
         {
-            var monitor = _center.Logger;
+            var monitor = _engine.Monitor;
 
             bool hasError = false;
             using( monitor.OnError( () => hasError = true ) )
@@ -270,7 +221,7 @@ namespace CK.SqlServer.Setup
             if( dbName == null ) throw new ArgumentNullException( "dbName" );
             if( dbName == SqlDatabase.DefaultDatabaseName ) return _defaultDatabase;
             ISqlManager m = ObtainManager( dbName );
-            if( m == null ) _center.Logger.Warn().Send( "Database named '{0}' is not mapped.", dbName );
+            if( m == null ) _engine.Monitor.Warn().Send( "Database named '{0}' is not mapped.", dbName );
             return m;
         }
 
@@ -279,7 +230,7 @@ namespace CK.SqlServer.Setup
             if( conString == null ) throw new ArgumentNullException( "conString" );
             if( conString == _defaultDatabase.Connection.ConnectionString ) return _defaultDatabase;
             ISqlManager m = ObtainManagerByConnectionString( conString );
-            if( m == null ) _center.Logger.Warn().Send( "Database connection to '{0}' is not mapped.", conString );
+            if( m == null ) _engine.Monitor.Warn().Send( "Database connection to '{0}' is not mapped.", conString );
             return m;
         }
 

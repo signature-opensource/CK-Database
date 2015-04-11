@@ -13,11 +13,25 @@ using System.Text;
 namespace CK.Core
 {
     /// <summary>
-    /// Defines options related to Application Domain configuration used during setup phasis.
+    /// Defines options related to Application Domain configuration used during setup phasis, and which assemblies and types must be discovered.
     /// </summary>
     [Serializable]
-    public class BuilderAppDomainConfiguration
+    public class BuildAndRegisterConfiguration
     {
+        readonly List<string> _probePaths;
+        readonly AssemblyRegistererConfiguration _assemblyRegister;
+        readonly List<string> _explicitClasses;
+
+        /// <summary>
+        /// Initialize a new <see cref="BuildAndRegisterConfiguration"/>.
+        /// </summary>
+        public BuildAndRegisterConfiguration()
+        {
+            _probePaths = new List<string>();
+            _assemblyRegister = new AssemblyRegistererConfiguration();
+            _explicitClasses = new List<string>();
+        }
+
         /// <summary>
         /// Gets or sets whether the setup phasis must be executed in a new Application Domain.
         /// Defaults to false.
@@ -27,21 +41,17 @@ namespace CK.Core
         /// <summary>
         /// Probe paths to use to discover assemblies. Used only if <see cref="UseIndependentAppDomain"/> is set to true.
         /// </summary>
-        public List<string> ProbePaths { get; private set; }
+        public List<string> ProbePaths { get { return _probePaths; } }
 
         /// <summary>
         /// Gets the <see cref="AssemblyRegistererConfiguration"/> that describes assemblies that must participate (or not) to setup.
         /// </summary>
-        public AssemblyRegistererConfiguration Assemblies { get; private set; }
+        public AssemblyRegistererConfiguration Assemblies { get { return _assemblyRegister; } }
 
         /// <summary>
-        /// Initialize a new <see cref="BuilderAppDomainConfiguration"/>.
+        /// List of assembly qualified type names that must be explicitely registered regardless of <see cref="Assemblies"/>.
         /// </summary>
-        public BuilderAppDomainConfiguration()
-        {
-            ProbePaths = new List<string>();
-            Assemblies = new AssemblyRegistererConfiguration();
-        }
+        public List<string> ExplicitClasses { get { return _explicitClasses; } }
 
     }
 }

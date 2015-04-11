@@ -37,11 +37,20 @@ namespace CK.Setup
         /// Initializes a new <see cref="StObjCollector"/>.
         /// </summary>
         /// <param name="monitor">Logger to use. Can not be null.</param>
+        /// <param name="traceDepencySorterInput">True to trace in <paramref name="monitor"/> the input of dependency graph.</param>
+        /// <param name="traceDepencySorterOutput">True to trace in <paramref name="monitor"/> the sorted dependency graph.</param>
         /// <param name="runtimeBuilder">Runtime builder to use. <see cref="StObjContext.DefaultStObjRuntimeBuilder"/> can be used.</param>
-        /// <param name="dispatcher"></param>
-        /// <param name="configurator"></param>
-        /// <param name="valueResolver"></param>
-        public StObjCollector( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder = null, IAmbientContractDispatcher dispatcher = null, IStObjStructuralConfigurator configurator = null, IStObjValueResolver dependencyResolver = null )
+        /// <param name="dispatcher">Used to dispatch Types betwenn contexts or hide them. See <see cref="IAmbientContractDispatcher"/>.</param>
+        /// <param name="configurator">Used to configure items. See <see cref="IStObjStructuralConfigurator"/.></param>
+        /// <param name="valueResolver">Used to explicitely resolve or alter Construct parameters and object ambient properties. See <see cref="IStObjValueResolver"/>.</param>
+        public StObjCollector( 
+            IActivityMonitor monitor, 
+            bool traceDepencySorterInput = false, 
+            bool traceDepencySorterOutput = false, 
+            IStObjRuntimeBuilder runtimeBuilder = null, 
+            IAmbientContractDispatcher dispatcher = null, 
+            IStObjStructuralConfigurator configurator = null,
+            IStObjValueResolver valueResolver = null )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
             _runtimeBuilder = runtimeBuilder ?? StObjContextRoot.DefaultStObjRuntimeBuilder;
@@ -49,7 +58,9 @@ namespace CK.Setup
             _tempAssembly = new DynamicAssembly();
             _cc = new AmbientContractCollector<StObjContextualMapper,StObjTypeInfo, MutableItem>( _monitor, l => new StObjMapper(), ( l, p, t ) => new StObjTypeInfo( l, p, t ), _tempAssembly, dispatcher );
             _configurator = configurator;
-            _valueResolver = dependencyResolver;
+            _valueResolver = valueResolver;
+            if( traceDepencySorterInput ) DependencySorterHookInput = i => i.Trace( monitor );
+            if( traceDepencySorterOutput ) DependencySorterHookOutput = i => i.Trace( monitor );
         }
 
         /// <summary>
@@ -102,15 +113,45 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Registers a class.
+        /// Explicitely registers a class.
         /// </summary>
         /// <param name="c">Class to register.</param>
         /// <returns>True if it is a new class for this collector, false if it has already been registered.</returns>
         public bool RegisterClass( Type c )
         {
+            using( _monitor.OpenTrace().Send( "Explicitely registering Type '{0}'.", c.AssemblyQualifiedName ) )
             using( _monitor.OnError( () => ++_registerFatalOrErrorCount ) )
             {
-                return _cc.RegisterClass( c );
+                if( !_cc.RegisterClass( c ) )
+                {
+                    _monitor.CloseGroup( "Already registered." );
+                    return false;
+                }
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Explicitely registers a set of class by their assembly qualified names.
+        /// </summary>
+        /// <param name="classes">Assembly qualified names of the classes to register.</param>
+        public void RegisterClasses( IReadOnlyList<string> classes )
+        {
+            if( classes == null ) throw new ArgumentNullException();
+            using( _monitor.OpenTrace().Send( "Explicitely registering {0} class(es).", classes.Count ) )
+            {
+                foreach( var aqn in classes )
+                {
+                    try
+                    {
+                        RegisterClass( SimpleTypeFinder.WeakDefault.ResolveType( aqn, true ) );
+                    }
+                    catch( Exception ex )
+                    {
+                        ++_registerFatalOrErrorCount;
+                        _monitor.OpenError().Send( ex, "While resolving type '{0}'.", aqn );
+                    }
+                }
             }
         }
 

@@ -17,28 +17,28 @@ namespace CK.Setup
     /// Template class that concentrates the different hooks called during a setup phasis (except the <see cref="IStObjRuntimeBuilder"/> methods).
     /// Methods are defined here in the order where they are called.
     /// </summary>
-    public class SetupableConfigurator : IAmbientContractDispatcher, IStObjStructuralConfigurator, IStObjValueResolver, IStObjSetupConfigurator, IStObjSetupItemFactory, IStObjSetupDynamicInitializer, ISetupDriverFactory
+    public class SetupEngineConfigurator : IAmbientContractDispatcher, IStObjStructuralConfigurator, IStObjValueResolver, IStObjSetupConfigurator, IStObjSetupItemFactory, IStObjSetupDynamicInitializer, ISetupDriverFactory
     {
-        SetupableConfigurator _previous;
+        SetupEngineConfigurator _previous;
 
         /// <summary>
         /// Empty configurator.
         /// </summary>
-        public static readonly SetupableConfigurator Empty = new SetupableConfigurator( null );
+        public static readonly SetupEngineConfigurator Empty = new SetupEngineConfigurator( null );
 
         /// <summary>
-        /// Initializes a new <see cref="SetupableConfigurator"/> bound to an optional previous one. 
+        /// Initializes a new <see cref="SetupEngineConfigurator"/> bound to an optional previous one. 
         /// </summary>
         /// <param name="previous">Another configurator that should be called by all hooks in this configurator.</param>
-        public SetupableConfigurator( SetupableConfigurator previous = null )
+        public SetupEngineConfigurator( SetupEngineConfigurator previous = null )
         {
             _previous = previous;
         }
 
         /// <summary>
-        /// Gets or sets the previous <see cref="SetupableConfigurator"/> that will be called first by the different methods. Can be null.
+        /// Gets or sets the previous <see cref="SetupEngineConfigurator"/> that will be called first by the different methods. Can be null.
         /// </summary>
-        public SetupableConfigurator Previous 
+        public SetupEngineConfigurator Previous 
         {
             get { return _previous; }
             set { _previous = value; }

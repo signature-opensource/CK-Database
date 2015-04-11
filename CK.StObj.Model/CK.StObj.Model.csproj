@@ -63,6 +63,7 @@
     <Compile Include="AmbientContract\Attribute\RemoveDefaultContext.cs" />
     <Compile Include="AmbientContract\IAmbientContract.cs" />
     <Compile Include="AmbientContract\IAmbientContractDefiner.cs" />
+    <Compile Include="Configuration\StObjEngineConfiguration.cs" />
     <Compile Include="IAttributeAmbientContextBound.cs" />
     <Compile Include="IAttributeAmbientContextBoundWithMember.cs" />
     <Compile Include="AutoImplementor\IAttributeAutoImplemented.cs" />
@@ -70,10 +71,9 @@
     <Compile Include="AutoImplementor\IAutoImplementorProperty.cs" />
     <Compile Include="AutoImplementor\IDynamicAssembly.cs" />
     <Compile Include="AutoImplementor\PreventAutoImplementationAttribute.cs" />
-    <Compile Include="CKCORENEXTVERSION.cs" />
     <Compile Include="Configuration\AssemblyRegistererConfiguration.cs" />
-    <Compile Include="Configuration\IStObjEngineConfiguration.cs" />
-    <Compile Include="Configuration\BuilderAppDomainConfiguration.cs" />
+    <Compile Include="Configuration\IStObjBuilderConfiguration.cs" />
+    <Compile Include="Configuration\BuildAndRegisterConfiguration.cs" />
     <Compile Include="Configuration\BuilderFinalAssemblyConfiguration.cs" />
     <Compile Include="StObjContextRoot.InstanceBase.cs" />
     <Compile Include="IStObjRuntimeBuilder.cs" />

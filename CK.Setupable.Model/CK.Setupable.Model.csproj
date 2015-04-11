@@ -57,7 +57,8 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="ChildrenAttribute.cs" />
-    <Compile Include="Configuration\SetupCenterConfiguration.cs" />
+    <Compile Include="Configuration\ISetupEngineAspectConfiguration.cs" />
+    <Compile Include="Configuration\SetupEngineConfiguration.cs" />
     <Compile Include="Core\AssemblyExtension.cs" />
     <Compile Include="Core\ResourceLocator.cs" />
     <Compile Include="DynamicDriverAttribute.cs" />

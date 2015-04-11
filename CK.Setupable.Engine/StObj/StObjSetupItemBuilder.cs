@@ -60,9 +60,9 @@ namespace CK.Setup
                     Debug.Assert( r.Generalization == null || setupableItems.ContainsKey( r.Generalization ), "Generalizations are required: they are processed first." );
 
                     StObjSetupData generalizationData = null;
-                    StObjSetupDataBase fromAbove;
+                    StObjSetupDataRootClass fromAbove;
                     if( r.Generalization != null ) fromAbove = generalizationData = setupableItems[r.Generalization];
-                    else fromAbove = StObjSetupDataBase.CreateRootData( _monitor, r.ObjectType.BaseType );
+                    else fromAbove = StObjSetupDataRootClass.CreateRootData( _monitor, r.ObjectType.BaseType );
 
                     // Builds the StObjSetupData from the different attributes.
                     var data = new StObjSetupData( _monitor, r, fromAbove );
@@ -105,7 +105,6 @@ namespace CK.Setup
                             if( itemType == null )
                             {
                                 StObjDynamicPackageItem stobjDynamicPackageItem = new StObjDynamicPackageItem( _monitor, data );
-                                stobjDynamicPackageItem.FullName = data.FullName;
                                 data.SetupItem = stobjDynamicPackageItem;
                             }
                             else

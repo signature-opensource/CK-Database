@@ -6,64 +6,55 @@
 #endregion
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using CK.Core;
-using System.Collections;
 
 namespace CK.Setup
 {
-    public class SetupCenter
+    public sealed partial class SetupEngine : IStObjBuilder
     {
-        readonly IVersionedItemRepository _versionRepository; 
-        readonly ISetupSessionMemoryProvider _memory;
-        readonly SetupCenterConfiguration _config;
-        readonly SetupableConfigurator _configurator;
+        readonly SetupEngineConfiguration _config;
+        readonly SetupEngineConfigurator _configurator;
         readonly IActivityMonitor _monitor;
-
+        readonly SetupEngineStartConfiguration _startConfiguration;
         readonly ScriptCollector _scripts;
-        readonly ScriptTypeManager _scriptTypeManager;
         readonly EventHandler<RegisterSetupEventArgs> _relayRegisterSetupEvent;
         readonly EventHandler<SetupEventArgs> _relaySetupEvent;
         readonly EventHandler<DriverEventArgs> _relayDriverEvent;
+        bool _started;
 
-        public SetupCenter( IActivityMonitor monitor, 
-                            SetupCenterConfiguration config, 
-                            IVersionedItemRepository versionRepository, 
-                            ISetupSessionMemoryProvider memory, 
-                            IStObjRuntimeBuilder runtimeBuilder = null, 
-                            SetupableConfigurator configurator = null )
+        /// <summary>
+        /// Initializes a new <see cref="SetupEngine"/>. This constructor is the one used when calling <see cref="StObjContextRoot.Build"/> method 
+        /// with a <see cref="SetupEngineConfiguration"/> configuration object.
+        /// </summary>
+        /// <param name="monitor">Monitor to use.</param>
+        /// <param name="config">Configuration object.</param>
+        /// <param name="runtimeBuilder">Final builder of objects.</param>
+        public SetupEngine( IActivityMonitor monitor, SetupEngineConfiguration config, IStObjRuntimeBuilder runtimeBuilder )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
             if( config == null ) throw new ArgumentNullException( "config" );
-            if( versionRepository == null ) throw new ArgumentNullException( "versionRepository" );
-            if( memory == null ) throw new ArgumentNullException( "memory" );
-
             _monitor = monitor;
-            _versionRepository = versionRepository;
-            _memory = memory;
             _config = config;
-            _configurator = new SetupableConfigurator( configurator );
-
-            _scriptTypeManager = new ScriptTypeManager();
-            _scripts = new ScriptCollector( _scriptTypeManager );
+            _configurator = new SetupEngineConfigurator();
+            _startConfiguration = new SetupEngineStartConfiguration( this );
+            _scripts = new ScriptCollector( _startConfiguration.ScriptTypeManager );
             _relayRegisterSetupEvent = OnEngineRegisterSetupEvent;
             _relaySetupEvent = OnEngineSetupEvent;
             _relayDriverEvent = OnEngineDriverEvent;
-
-            new StObjSetupHook( this, runtimeBuilder, _config, _configurator );
+            new StObjSetupHook( this, runtimeBuilder, _config.StObjEngineConfiguration, _configurator );
         }
 
         /// <summary>
-        /// Gets the <see cref="ScriptTypeManager"/> into which <see cref="IScriptTypeHandler"/> must be registered
-        /// before <see cref="Run"/> in order for <see cref="ISetupScript"/> added to <see cref="Scripts"/> to be executed.
+        /// Gets whether this engine is running or has <see cref="Run"/> (it can run only once).
         /// </summary>
-        public ScriptTypeManager ScriptTypeManager
+        public bool Started
         {
-            get { return _scriptTypeManager; }
+            get { return _started; }
         }
-        
+
         /// <summary>
         /// Gets the <see cref="ScriptCollector"/>.
         /// </summary>
@@ -75,9 +66,17 @@ namespace CK.Setup
         /// <summary>
         /// Gets the monitor that should be used for the whole setup process.
         /// </summary>
-        public IActivityMonitor Logger
+        public IActivityMonitor Monitor
         {
             get { return _monitor; }
+        }
+
+        /// <summary>
+        /// Gets the configuration object of this engine.
+        /// </summary>
+        public SetupEngineConfiguration Configuration
+        {
+            get { return _config; }
         }
 
         /// <summary>
@@ -85,37 +84,19 @@ namespace CK.Setup
         /// This can be changed at any moment during setup: the current configurator will always be used.
         /// When setting it, care should be taken to not break the chain by setting the current configurator as the <see cref="SetupableConfigurator.Previous"/>.
         /// </summary>
-        public SetupableConfigurator SetupableConfigurator
+        public SetupEngineConfigurator SetupableConfigurator
         {
             get { return _configurator.Previous; }
             set { _configurator.Previous = value; }
         }
 
         /// <summary>
-        /// Gets or sets a function that will be called with the list of StObjs once all of them are 
-        /// registered in the <see cref="DependencySorter"/> used by the <see cref="StObjCollector"/>.
+        /// Gets the <see cref="SetupEngineStartConfiguration"/> object.
         /// </summary>
-        public Action<IEnumerable<IDependentItem>> StObjDependencySorterHookInput { get; set; }
-
-        /// <summary>
-        /// Gets or sets a function that will be called when StObjs have been successfuly sorted by 
-        /// the <see cref="DependencySorter"/> used by the <see cref="StObjCollector"/>.
-        /// </summary>
-        public Action<IEnumerable<ISortedItem>> StObjDependencySorterHookOutput { get; set; }
-
-        /// <summary>
-        /// Gets or sets a function that will be called with the list of items once all of them are registered.
-        /// This can be used to dump detailed information about items registration and ordering.
-        /// </summary>
-        public Action<IEnumerable<IDependentItem>> DependencySorterHookInput { get; set; }
-
-        /// <summary>
-        /// Gets or sets a function that will be called when items have been sorted.
-        /// The final <see cref="DependencySorterResult"/> may not be successful (ie. <see cref="DependencySorterResult.HasStructureError"/> may be true),
-        /// but if a cycle has been detected, this hook is not called.
-        /// This can be used to dump detailed information about items registration and ordering.
-        /// </summary>
-        public Action<IEnumerable<ISortedItem>> DependencySorterHookOutput { get; set; }
+        public SetupEngineStartConfiguration StartConfiguration
+        {
+            get { return _startConfiguration; }
+        }
 
         /// <summary>
         /// Triggered before registration (at the beginning of <see cref="SetupEgine.Register"/>).
@@ -135,61 +116,75 @@ namespace CK.Setup
         public event EventHandler<DriverEventArgs> DriverEvent;       
 
         /// <summary>
-        /// Executes the whole setup process (<see cref="SetupEngine.Register"/>, <see cref="SetupEngine.RunInit"/>, <see cref="SetupEngine.RunInstall"/>, <see cref="SetupEngine.RunSettle"/>).
+        /// Executes the whole setup process (<see cref="SetupCoreEngine.Register"/>, <see cref="SetupCoreEngine.RunInit"/>, <see cref="SetupCoreEngine.RunInstall"/>, <see cref="SetupCoreEngine.RunSettle"/>).
+        /// This is automatically called by  <see cref="StObjContextRoot.Build"/> after it has instanciating this object when using a <see cref="SetupEngineConfiguration"/>.
+        /// This can be called only once.
         /// </summary>
-        /// <param name="items">Objects that can be <see cref="IDependentItem"/>, <see cref="IDependentItemDiscoverer"/> or both.</param>
         /// <returns>True on success, false if an error occured.</returns>
         public bool Run()
         {
-            return RunWithExplicitDependentItems();
+            return ManualRun();
         }
 
         /// <summary>
         /// Registers any number of <see cref="IDependentItem"/> and/or <see cref="IDependentItemDiscoverer"/> and/or <see cref="IEnumerable"/> of such objects (recursively) and executes
-        /// the whole setup process (<see cref="SetupEngine.Register"/>, <see cref="SetupEngine.RunInit"/>, <see cref="SetupEngine.RunInstall"/>, <see cref="SetupEngine.RunSettle"/>).
+        /// the whole setup process (<see cref="SetupCoreEngine.Register"/>, <see cref="SetupCoreEngine.RunInit"/>, <see cref="SetupCoreEngine.RunInstall"/>, <see cref="SetupCoreEngine.RunSettle"/>).
+        /// This can be called only once.
         /// </summary>
         /// <param name="items">Objects that can be <see cref="IDependentItem"/>, <see cref="IDependentItemDiscoverer"/> or both and/or <see cref="IEnumerable"/> of such objects (recursively).</param>
         /// <returns>True on success, false if an error occured.</returns>
-        public bool RunWithExplicitDependentItems( params object[] items )
+        public bool ManualRun( params object[] items )
         {
-            var path = _monitor.Output.RegisterClient( new ActivityMonitorPathCatcher() );
-            ISetupSessionMemory m = null;
+            if( _started ) throw new InvalidOperationException( "Run or ManualRun can be called only once." );
+            _started = true;
             try
             {
-                m = _memory.StartSetup();
-                if( DoRun( items, m ) )
+                if( !CreateEngineAspectsFromConfiguration() ) return false;
+                if( _startConfiguration.VersionRepository == null ) throw new InvalidOperationException( "StartConfiguration.VersionRepository must be set before calling Run or ManualRun." );
+                if( _startConfiguration.SetupSessionMemoryProvider == null ) throw new InvalidOperationException( "StartConfiguration.SetupSessionMemoryProvider must be set before calling Run or ManualRun." );
+                var path = _monitor.Output.RegisterClient( new ActivityMonitorPathCatcher() );
+                ISetupSessionMemory m = null;
+                try
                 {
-                    _memory.StopSetup( null );
-                    return true;
+                    m = _startConfiguration.SetupSessionMemoryProvider.StartSetup();
+                    if( DoRun( items, m ) )
+                    {
+                        _startConfiguration.SetupSessionMemoryProvider.StopSetup( null );
+                        return true;
+                    }
                 }
-            }
-            catch( Exception ex )
-            {
-                _monitor.Fatal().Send( ex );
+                catch( Exception ex )
+                {
+                    _monitor.Fatal().Send( ex );
+                }
+                finally
+                {
+                    _monitor.Output.UnregisterClient( path );
+                }
+                if( m != null ) _startConfiguration.SetupSessionMemoryProvider.StopSetup( path.LastErrorPath.ToStringPath() );
+                return false;
             }
             finally
             {
-                _monitor.Output.UnregisterClient( path );
+                DisposeDisposableAspects();
             }
-            if( m != null ) _memory.StopSetup( path.LastErrorPath.ToStringPath() );
-            return false;
         }
+
 
         private bool DoRun( object[] items, ISetupSessionMemory m )
         {
             bool hasError = false;
             using( _monitor.OnError( () => hasError = true ) )
-            using( SetupEngine engine = CreateEngine( m ) )
+            using( SetupCoreEngine engine = CreateCoreEngine( m ) )
             {
                 using( _monitor.OpenInfo().Send( "Register step." ) )
                 {
-                    DependencySorter.Options sorterOptions = new DependencySorter.Options() 
-                    { 
-                        ReverseName = _config.RevertOrderingNames,
-                        HookInput = DependencySorterHookInput,
-                        HookOutput = DependencySorterHookOutput
-                    };
-                    SetupEngineRegisterResult r = engine.Register( OfTypeRecurse<IDependentItem>( items ), items.OfType<IDependentItemDiscoverer>(), sorterOptions );
+                    DependencySorter.Options sorterOptions = new DependencySorter.Options() { ReverseName = _config.RevertOrderingNames };
+                    if( _config.TraceDependencySorterInput ) sorterOptions.HookInput += i => i.Trace( _monitor );
+                    if( _config.TraceDependencySorterOutput ) sorterOptions.HookOutput += i => i.Trace( _monitor );
+                    sorterOptions.HookInput += _startConfiguration.DependencySorterHookInput;
+                    sorterOptions.HookOutput += _startConfiguration.DependencySorterHookOutput;
+                    SetupCoreEngineRegisterResult r = engine.Register( OfTypeRecurse<IDependentItem>( items ), items.OfType<IDependentItemDiscoverer>(), sorterOptions );
                     if( !r.IsValid )
                     {
                         r.LogError( _monitor );
@@ -248,18 +243,19 @@ namespace CK.Setup
             }
         }
 
-        private SetupEngine CreateEngine( ISetupSessionMemory m )
+        private SetupCoreEngine CreateCoreEngine( ISetupSessionMemory m )
         {
-            SetupEngine engine = null;
+            SetupCoreEngine engine = null;
             using( _monitor.OpenInfo().Send( "Setup engine initialization." ) )
             {
-                if( _memory.StartCount == 0 ) _monitor.Info().Send( "Starting a new setup." );
+                var memory = _startConfiguration.SetupSessionMemoryProvider;
+                if( memory.StartCount == 0 ) _monitor.Info().Send( "Starting a new setup." );
                 else
                 {
-                    _monitor.Info().Send( "{0} previous Setup attempt(s). Last on {2}, error was: '{1}'.", _memory.StartCount, _memory.LastError, _memory.LastStartDate );
+                    _monitor.Info().Send( "{0} previous Setup attempt(s). Last on {2}, error was: '{1}'.", memory.StartCount, memory.LastError, memory.LastStartDate );
                 }
-                engine = new SetupEngine( _versionRepository, m, _monitor, _configurator );
-                ScriptSetupHandlerBuilder scriptBuilder = new ScriptSetupHandlerBuilder( engine, _scripts, _scriptTypeManager );
+                engine = new SetupCoreEngine( _startConfiguration.VersionRepository, m, _monitor, _configurator );
+                ScriptSetupHandlerBuilder scriptBuilder = new ScriptSetupHandlerBuilder( engine, _scripts, _startConfiguration.ScriptTypeManager );
                 engine.RegisterSetupEvent += _relayRegisterSetupEvent;
                 engine.SetupEvent += _relaySetupEvent;
                 engine.DriverEvent += _relayDriverEvent;
@@ -279,7 +275,7 @@ namespace CK.Setup
             if( h != null ) h( this, e );
             if( e.Step == SetupStep.Disposed )
             {
-                var engine = (SetupEngine)sender;
+                var engine = (SetupCoreEngine)sender;
                 engine.RegisterSetupEvent -= _relayRegisterSetupEvent;
                 engine.SetupEvent -= _relaySetupEvent;
                 engine.DriverEvent -= _relayDriverEvent;

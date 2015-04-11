@@ -32,6 +32,8 @@ namespace CK.SqlServer.Setup.Engine.Tests
             _monitor.Output.RegisterClients( _console );
         }
 
+        public const string MasterConnection = "Server=.;Database=master;Integrated Security=SSPI";
+
         public static IActivityMonitor ConsoleMonitor
         {
             get { return _monitor; }
@@ -105,7 +107,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
 
         public static void Trace( ISortedItem i )
         {
-            using( _monitor.OpenTrace().Send( "[{1}]FullName = {0}", i.FullName, i.ItemKind.ToString()[0] ) )
+            using( _monitor.OpenTrace().Send( "[{1}]FullName = {0}", i.FullName, i.ItemKind.ToString() ) )
             {
                 _monitor.Trace().Send( "Container = {0}", i.Container != null ? i.Container.FullName : "(null)" );
                 _monitor.Trace().Send( "Generalization = {0}", i.Generalization != null ? i.Generalization.FullName : "(null)" );

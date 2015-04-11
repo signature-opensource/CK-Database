@@ -17,10 +17,10 @@ namespace CK.Setup
     /// <summary>
     /// Core setup object. Contains the execution context and all ambient services required to
     /// process a setup. It is in charge of item ordering, setup drivers management and Init/Install/Settle steps.
-    /// It does not contain anything related to script management: the <see cref="SetupCenter"/> wraps
-    /// this class and offers package script support (see <see cref="SetupCenter.ScriptTypeManager"/> and <see cref="SetupCenter.Scripts"/>).
+    /// It does not contain anything related to script management: the <see cref="SetupEngine"/> wraps
+    /// this class and offers package script support (see <see cref="SetupEngine.ScriptTypeManager"/> and <see cref="SetupEngine.Scripts"/>).
     /// </summary>
-    public sealed class SetupEngine : ISetupEngine, IDisposable
+    sealed class SetupCoreEngine : ISetupEngine, IDisposable
     {
         readonly IVersionedItemRepository _versionRepository;
         readonly DriverList _drivers;
@@ -33,9 +33,9 @@ namespace CK.Setup
         {
             Dictionary<object,DriverBase> _index;
             List<DriverBase> _drivers;
-            SetupEngine _center;
+            SetupCoreEngine _center;
 
-            public DriverList( SetupEngine center )
+            public DriverList( SetupCoreEngine center )
             {
                 _center = center;
                 _index = new Dictionary<object, DriverBase>();
@@ -119,7 +119,7 @@ namespace CK.Setup
         /// <param name="memory">Provides persistent memory to setup participants.</param>
         /// <param name="_monitor">Monitor to use.</param>
         /// <param name="driverFactory">Factory for setup drivers.</param>
-        public SetupEngine( IVersionedItemRepository versionRepository, ISetupSessionMemory memory, IActivityMonitor monitor, ISetupDriverFactory driverFactory )
+        public SetupCoreEngine( IVersionedItemRepository versionRepository, ISetupSessionMemory memory, IActivityMonitor monitor, ISetupDriverFactory driverFactory )
         {
             if( versionRepository == null ) throw new ArgumentNullException( "versionRepository" );
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
@@ -160,7 +160,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gives access to the ordered list of all the <see cref="DriverBase"/> that participate to Setup.
-        /// This list is filled after <see cref="RegisterSetupEvent"/> (and <see cref="SetupEvent"/> with <see cref="SetupStep.PreInit"/>) and before <see cref="SetupStep.Init"/>.
+        /// This list is filled after <see cref="RegisterSetupEvent"/> (and <see cref="SetupEvent"/> with <see cref="SetupStep.PreInit"/>) but before <see cref="SetupStep.Init"/>.
         /// </summary>
         public IDriverList AllDrivers
         {
@@ -190,8 +190,8 @@ namespace CK.Setup
         /// <param name="items">Set of <see cref="IDependentItem"/></param>
         /// <param name="discoverers">Set of <see cref="IDependentItemDiscoverer"/>.</param>
         /// <param name="options">Optional configuration for dependency graph computation (see <see cref="DependencySorter"/> for more information).</param>
-        /// <returns>A <see cref="SetupEngineRegisterResult"/> that captures detailed information about the registration result.</returns>
-        public SetupEngineRegisterResult Register( IEnumerable<IDependentItem> items, IEnumerable<IDependentItemDiscoverer> discoverers, DependencySorter.Options options = null )
+        /// <returns>A <see cref="SetupCoreEngineRegisterResult"/> that captures detailed information about the registration result.</returns>
+        public SetupCoreEngineRegisterResult Register( IEnumerable<IDependentItem> items, IEnumerable<IDependentItemDiscoverer> discoverers, DependencySorter.Options options = null )
         {
             CheckState( SetupEngineState.None );
 
@@ -214,20 +214,20 @@ namespace CK.Setup
                     if( hSetupEvent != null ) hSetupEvent( this, e );
                     if( e.CancelReason != null )
                     {
-                        return new SetupEngineRegisterResult( null ) { CancelReason = e.CancelReason };
+                        return new SetupCoreEngineRegisterResult( null ) { CancelReason = e.CancelReason };
                     }
                 }
                 catch( Exception ex )
                 {
-                    return new SetupEngineRegisterResult( null ) { UnexpectedError = ex };
+                    return new SetupCoreEngineRegisterResult( null ) { UnexpectedError = ex };
                 }
             }
-            SetupEngineRegisterResult result = null;
+            SetupCoreEngineRegisterResult result = null;
             // There is no _state = SetupEngineState.RegistrationError since on error we clear the driver list and
             // the state remains set to SetupEngineState.None.
             try
             {
-                result = new SetupEngineRegisterResult( DependencySorter.OrderItems( items, discoverers, options ) );
+                result = new SetupCoreEngineRegisterResult( DependencySorter.OrderItems( items, discoverers, options ) );
                 if( result.IsValid )
                 {
                     var reusableEvent = new DriverEventArgs( SetupStep.PreInit );
@@ -280,7 +280,7 @@ namespace CK.Setup
             {
                 // Exception is not logged at this level: it is carried by the SetupEngineRegisterResult
                 // and its LogError method must be used to log different kind of errors.
-                if( result == null ) result = new SetupEngineRegisterResult( null );
+                if( result == null ) result = new SetupCoreEngineRegisterResult( null );
                 result.UnexpectedError = ex;
                 _drivers.Clear();
             }

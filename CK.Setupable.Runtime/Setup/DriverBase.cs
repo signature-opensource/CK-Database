@@ -32,25 +32,14 @@ namespace CK.Setup
                 _drivers = drivers;
             }
 
-            public DriverBase this[string fullName]
+            public DriverBase this[ string fullName ]
             {
                 get { return _drivers.FirstOrDefault( d => d.Item.FullName == fullName ); }
             }
 
-            public DriverBase this[ IDependentItem item]
+            public DriverBase this[ IDependentItem item ]
             {
                 get { return _drivers.FirstOrDefault( d => d.Item == item ); }
-            }
-
-            public bool Contains( object item )
-            {
-                return IndexOf( item ) >= 0;
-            }
-
-            public int IndexOf( object item )
-            {
-                DriverBase d = item as DriverBase;
-                return d != null ? Array.IndexOf( _drivers, d ) : -1;
             }
 
             public DriverBase this[int index]

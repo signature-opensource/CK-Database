@@ -21,12 +21,14 @@ namespace CK.SqlServer.Setup.Engine.Tests
     [TestFixture]
     public class ErrorHandlingTests
     {
+        const string ConnectionString = "Server=.;Database=CKSqlServerTests;Integrated Security=SSPI";
+
         static bool _installedDone;
 
         static public SqlManager CreateInstallContext()
         {
-            SqlManager m = new SqlManager();
-            Assert.That( m.OpenOrCreate( ".", "CKSqlServerTests" ), "Unable to open or create CKSqlServerTests database on local server." );
+            SqlManager m = new SqlManager( TestHelper.ConsoleMonitor );
+            Assert.That( m.OpenFromConnectionString( ConnectionString, true ), "Unable to open or create CKSqlServerTests database on local server." );
             if( !_installedDone )
             {
                 m.EnsureCKCoreIsInstalled( TestHelper.ConsoleMonitor );

@@ -54,6 +54,11 @@ namespace CK.Setup
             ItemKind = (DependentItemKind)data.StObj.ItemKind;
             SetVersionsString( data.Versions );
             _objectAccessor = data.StObj.ObjectAccessor;
+            FullName = data.FullName;
+            Requires.AddRange( data.Requires );
+            RequiredBy.AddRange( data.RequiredBy );
+            Groups.AddRange( data.Groups );
+            Children.AddRange( data.Children );
         }
 
         /// <summary>

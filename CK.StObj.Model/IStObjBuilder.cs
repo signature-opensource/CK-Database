@@ -15,8 +15,8 @@ namespace CK.Core
     /// <summary>
     /// Defines an entry point that triggers the build of the system.
     /// This interface should be supported by an object with a public constructor that accepts
-    /// a <see cref="IActivityMonitor"/> and a <see cref="IStObjEngineConfiguration"/> (its assembly qualified name 
-    /// must be specified as the <see cref="IStObjEngineConfiguration.BuilderAssemblyQualifiedName"/> property).
+    /// a <see cref="IActivityMonitor"/> and a <see cref="IStObjBuilderConfiguration"/> (its assembly qualified name 
+    /// must be specified as the <see cref="IStObjBuilderConfiguration.BuilderAssemblyQualifiedName"/> property).
     /// </summary>
     public interface IStObjBuilder
     {

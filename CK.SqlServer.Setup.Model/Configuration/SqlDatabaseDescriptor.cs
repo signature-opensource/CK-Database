@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace CK.SqlServer.Setup
+namespace CK.Setup
 {
     /// <summary>
     /// Associates a name to a connection string.

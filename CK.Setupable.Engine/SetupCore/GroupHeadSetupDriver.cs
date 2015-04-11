@@ -12,7 +12,7 @@ using System.Text;
 
 namespace CK.Setup
 {
-    public sealed class GroupHeadSetupDriver : DriverBase
+    sealed class GroupHeadSetupDriver : DriverBase
     {
         DependentItemSetupDriver _group;
 

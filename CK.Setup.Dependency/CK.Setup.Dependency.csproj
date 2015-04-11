@@ -56,6 +56,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="CKCORENEXTVERSION.cs" />
     <Compile Include="IDependentItemNamedRef.cs" />
     <Compile Include="NamedDependentItemGroupRef.cs" />
     <Compile Include="IDependentItemGroupRef.cs" />
@@ -75,6 +76,7 @@
     <Compile Include="Sorter\CycleExplainedElement.cs" />
     <Compile Include="Sorter\DependencySorter.cs" />
     <Compile Include="Sorter\DependencySorterResult.cs" />
+    <Compile Include="DependentItemExtension.Trace.cs" />
     <Compile Include="Sorter\DependentItemIssue.cs" />
     <Compile Include="Sorter\DependentItemStructureError.cs" />
   </ItemGroup>

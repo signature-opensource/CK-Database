@@ -14,7 +14,7 @@ using System.Diagnostics;
 
 namespace CK.Setup
 {
-    internal class StObjSetupDataBase
+    internal class StObjSetupDataRootClass
     {
         readonly IStObjSetupData _parent;
 
@@ -28,7 +28,7 @@ namespace CK.Setup
         DependentItemList _children;
         DependentItemGroupList _groups;
 
-        internal StObjSetupDataBase( IActivityMonitor monitor, Type t, StObjSetupDataBase parent = null )
+        internal StObjSetupDataRootClass( IActivityMonitor monitor, Type t, StObjSetupDataRootClass parent = null )
         {
             _parent = parent as IStObjSetupData;
             bool isInRoot = _parent == null;
@@ -122,11 +122,11 @@ namespace CK.Setup
             set { _driverTypeName = value; }
         }
 
-        internal static StObjSetupDataBase CreateRootData( IActivityMonitor monitor, Type t )
+        internal static StObjSetupDataRootClass CreateRootData( IActivityMonitor monitor, Type t )
         {
             if( t == typeof( object ) ) return null;
-            StObjSetupDataBase b = CreateRootData( monitor, t.BaseType );
-            return new StObjSetupDataBase( monitor, t, b ); 
+            StObjSetupDataRootClass b = CreateRootData( monitor, t.BaseType );
+            return new StObjSetupDataRootClass( monitor, t, b ); 
         }
     }
 }

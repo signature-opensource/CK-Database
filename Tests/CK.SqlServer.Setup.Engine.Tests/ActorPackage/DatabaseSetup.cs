@@ -9,6 +9,7 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using CK.Core;
+using CK.Setup;
 using NUnit.Framework;
 
 namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
@@ -17,55 +18,61 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
     [Category( "DBSetup" )]
     public partial class DatabaseSetup
     {
+        const string ConnectionString = "Server=.;Database=ActorPackage;Integrated Security=SSPI";
+
+
         [Test]
         public void InstallActorBasicFromScracth()
         {
-            InstallDropAndReverseInstall( true, t => t.Namespace.StartsWith( "SqlActorPackage.Basic" ), "InstallDropAndReverseInstall" );
+            InstallDropAndReverseInstall( true, false, "InstallActorBasicFromScracth" );
         }
 
         [Test]
         public void InstallActorBasic()
         {
-            InstallDropAndReverseInstall( false, t => t.Namespace.StartsWith( "SqlActorPackage.Basic" ), "InstallDropAndReverseInstall" );
+            InstallDropAndReverseInstall( false, false, "InstallActorBasic" );
         }
 
         [Test]
         public void InstallActorWithZone()
         {
-            InstallDropAndReverseInstall( false, null, "InstallDropAndReverseInstall.WithZone" );
+            InstallDropAndReverseInstall( false, true, "InstallActorWithZone" );
         }
 
-        private static void InstallDropAndReverseInstall( bool resetFirst, Predicate<Type> typeFilter, string dllName )
+        private static void InstallDropAndReverseInstall( bool resetFirst, bool withZone, string dllName )
         {
+            var c = new SetupEngineConfiguration();
+            c.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( "SqlActorPackage" );
+            if( withZone ) c.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( "SqlZonePackage" );
+            c.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = dllName;
+            c.StObjEngineConfiguration.BuildAndRegisterConfiguration.UseIndependentAppDomain = true;
+            c.StObjEngineConfiguration.BuildAndRegisterConfiguration.ProbePaths.Add( TestHelper.TestBinFolder );
+            c.TraceDependencySorterInput = true;
+            c.TraceDependencySorterOutput = true;
             var config = new SqlSetupAspectConfiguration();
-            config.SetupConfiguration.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.Add( "SqlActorPackage" );
-            config.SetupConfiguration.AppDomainConfiguration.Assemblies.DiscoverAssemblyNames.Add( "SqlZonePackage" );
-            config.SetupConfiguration.TypeFilter = typeFilter;
-            config.SetupConfiguration.FinalAssemblyConfiguration.AssemblyName = dllName;
-            config.SetupConfiguration.AppDomainConfiguration.UseIndependentAppDomain = true;
-            config.SetupConfiguration.AppDomainConfiguration.ProbePaths.Add( TestHelper.TestBinFolder );
+            config.DefaultDatabaseConnectionString = ConnectionString;
+            c.Aspects.Add( config );
 
-            using( var db = SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.ConsoleMonitor ) )
+            using( var db = SqlManager.OpenOrCreate( ConnectionString, TestHelper.ConsoleMonitor ) )
             {
                 if( resetFirst )
                 {
                     db.SchemaDropAllObjects( "CK", true );
                     db.SchemaDropAllObjects( "CKCore", false );
                 }
-                config.DefaultDatabaseConnectionString = db.CurrentConnectionString;
             }
-            using( var result = StObjContextRoot.Build( config, null, TestHelper.ConsoleMonitor ) )
+            using( var result = StObjContextRoot.Build( c, null, TestHelper.ConsoleMonitor ) )
             {
                 Assert.That( result.Success );
                 Assert.That( result.IndependentAppDomain != null );
             }
-            using( var db = SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.ConsoleMonitor ) )
+            using( var db = SqlManager.OpenOrCreate( ConnectionString, TestHelper.ConsoleMonitor ) )
             {
                 IStObjMap m = StObjContextRoot.Load( dllName, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.ConsoleMonitor );
-                if( typeFilter == null ) CheckBasicAndZone( db, m );
+                if( withZone ) CheckBasicAndZone( db, m );
                 else CheckBasicOnly( db, m );
             }
-            using( var db = SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.ConsoleMonitor ) )
+            using( var db = SqlManager.OpenOrCreate( ConnectionString, TestHelper.ConsoleMonitor ) )
             {
                 Assert.That( db.Connection.ExecuteScalar( "select count(*) from sys.tables where name in ('tActor','tItemVersion')" ), Is.EqualTo( 2 ) );
                 db.SchemaDropAllObjects( "CK", true );
@@ -73,20 +80,21 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
                 Assert.That( db.Connection.ExecuteScalar( "select count(*) from sys.tables where name in ('tSystem','tItemVersion')" ), Is.EqualTo( 0 ) );
             }
              
-            config.SetupConfiguration.RevertOrderingNames = true;
+            c.RevertOrderingNames = true;
+            c.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = dllName + ".Reverted";
             using( TestHelper.ConsoleMonitor.OpenTrace().Send( "Second setup (reverse order)" ) )
             {
-                using( var result = StObjContextRoot.Build( config, null, TestHelper.ConsoleMonitor ) )
+                using( var result = StObjContextRoot.Build( c, null, TestHelper.ConsoleMonitor ) )
                 {
                     Assert.That( result.Success );
                     Assert.That( result.IndependentAppDomain != null );
                 }
             }
 
-            using( var db = SqlManager.OpenOrCreate( ".", "ActorPackage", TestHelper.ConsoleMonitor ) )
+            using( var db = SqlManager.OpenOrCreate( ConnectionString, TestHelper.ConsoleMonitor ) )
             {
                 IStObjMap m = StObjContextRoot.Load( dllName, null, TestHelper.ConsoleMonitor );
-                if( typeFilter == null ) CheckBasicAndZone( db, m );
+                if( withZone ) CheckBasicAndZone( db, m );
                 else CheckBasicOnly( db, m );
             }
         }

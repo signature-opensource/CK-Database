@@ -14,28 +14,20 @@ using System.Diagnostics;
 
 namespace CK.Setup
 {
-    internal class StObjSetupData : StObjSetupDataBase, IStObjSetupData, IMutableStObjSetupData
+    internal class StObjSetupData : StObjSetupDataRootClass, IStObjSetupData, IMutableStObjSetupData
     {
         readonly IStObjResult _stObj;
 
         string _fullNameWithoutContext;
         string _versions;
-        IReadOnlyList<IDependentItemRef> _requiresEx;
-        IReadOnlyList<IDependentItemRef> _requiredByEx;
-        IReadOnlyList<IDependentItemRef> _childrenEx;
-        IReadOnlyList<IDependentItemGroupRef> _groupsEx;
 
-        internal StObjSetupData( IActivityMonitor monitor, IStObjResult o, StObjSetupDataBase parent )
+        internal StObjSetupData( IActivityMonitor monitor, IStObjResult o, StObjSetupDataRootClass parent )
             : base( monitor, o.ObjectType, parent )
         {
             _stObj = o;
 
             _fullNameWithoutContext = AttributesReader.GetFullName( monitor, false, o.ObjectType );
             _versions = AttributesReader.GetVersionsString( o.ObjectType );
-            _requiresEx = new CKReadOnlyListOnIList<IDependentItemRef>( Requires );
-            _requiredByEx = new CKReadOnlyListOnIList<IDependentItemRef>( RequiredBy );
-            _childrenEx = new CKReadOnlyListOnIList<IDependentItemRef>( Children );
-            _groupsEx = new CKReadOnlyListOnIList<IDependentItemGroupRef>( Groups );
         }
 
         public IStObjResult StObj
@@ -86,22 +78,22 @@ namespace CK.Setup
 
         IReadOnlyList<IDependentItemRef> IStObjSetupData.RequiredBy
         {
-            get { return _requiresEx; }
+            get { return (IReadOnlyList<IDependentItemRef>)RequiredBy; }
         }
 
         IReadOnlyList<IDependentItemRef> IStObjSetupData.Requires
         {
-            get { return _requiredByEx; }
+            get { return (IReadOnlyList<IDependentItemRef>)Requires; }
         }
 
         IReadOnlyList<IDependentItemRef> IStObjSetupData.Children
         {
-            get { return _childrenEx; }
+            get { return (IReadOnlyList<IDependentItemRef>)Children; }
         }
 
         IReadOnlyList<IDependentItemGroupRef> IStObjSetupData.Groups
         {
-            get { return _groupsEx; }
+            get { return (IReadOnlyList<IDependentItemGroupRef>)Groups; }
         }
 
     }

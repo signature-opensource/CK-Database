@@ -19,24 +19,20 @@ namespace CK.Core
     /// that involve any higher level APIs than StObj itself.
     /// Objects that supports this interface must be serializable.
     /// </summary>
-    public interface IStObjEngineConfiguration
+    public interface IStObjBuilderConfiguration
     {
         /// <summary>
         /// Gets the Assembly Qualified Name of a <see cref="Type"/> that supports <see cref="IStObjBuilder"/>.
         /// It must have a public constructor that accepts an <see cref="IActivityMonitor"/>, an instance of 
-        /// this <see cref="IStObjEngineConfiguration"/> and a <see cref="IStObjRuntimeBuilder"/>.
+        /// this <see cref="IStObjBuilderConfiguration"/> and a <see cref="IStObjRuntimeBuilder"/>.
         /// </summary>
         string BuilderAssemblyQualifiedName { get; }
 
         /// <summary>
-        /// Gets the configuration that describes how Application Domain must be used during build.
+        /// Gets the configuration related to the StObj: whether the engine must run in an independent AppDomain or not, which assemblies and types 
+        /// must be discovered, and configuration related to the emitted dll.
         /// </summary>
-        BuilderAppDomainConfiguration AppDomainConfiguration { get; }
-
-        /// <summary>
-        /// Gets the configuration related to final assembly generation.
-        /// </summary>
-        BuilderFinalAssemblyConfiguration FinalAssemblyConfiguration { get; }
+        StObjEngineConfiguration StObjEngineConfiguration { get; }
 
     }
 }

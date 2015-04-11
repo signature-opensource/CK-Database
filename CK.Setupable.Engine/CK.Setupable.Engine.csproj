@@ -56,6 +56,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="ISetupEngineAspect.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -75,13 +76,15 @@
     <Compile Include="Scripts\TypedScriptVectorConstraint.cs" />
     <Compile Include="Scripts\ScriptSetupHandlerBuilder.cs" />
     <Compile Include="Scripts\ScriptTypeManager.cs" />
-    <Compile Include="SetupCenter.cs" />
-    <Compile Include="SetupCore\SetupEngineRegisterResult.cs" />
+    <Compile Include="SetupEngine.Aspect.cs" />
+    <Compile Include="SetupEngine.cs" />
+    <Compile Include="SetupCore\SetupCoreEngineRegisterResult.cs" />
     <Compile Include="SetupCore\ISetupDriverFactory.cs" />
-    <Compile Include="SetupCore\SetupEngine.cs" />
+    <Compile Include="SetupCore\SetupCoreEngine.cs" />
+    <Compile Include="SetupEngineStartConfiguration.cs" />
     <Compile Include="StObj\Impl\AttributesReader.cs" />
-    <Compile Include="SetupableConfigurator.cs" />
-    <Compile Include="StObj\Impl\StObjSetupDataBase.cs" />
+    <Compile Include="SetupEngineConfigurator.cs" />
+    <Compile Include="StObj\Impl\StObjSetupDataRootClass.cs" />
     <Compile Include="StObj\Impl\StObjSetupData.cs" />
     <Compile Include="StObj\StObjSetupHook.cs" />
     <Compile Include="StObj\StObjSetupItemBuilder.cs" />

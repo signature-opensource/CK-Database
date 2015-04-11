@@ -26,11 +26,16 @@ namespace CK.SqlServer.Setup
             public ISqlManager Manager;
             public bool DoNotDispose;
             public bool AutoCreate;
+
+            public override string ToString()
+            {
+                return String.Format( "{0} - {1}", Manager != null, ConnectionString );
+            }
         }
 
         public SqlManagerProvider( IActivityMonitor monitor, Action<ISqlManager> dbConfigurator = null )
         {
-            if( monitor == null ) throw new ArgumentNullException( "_monitor" );
+            if( monitor == null ) throw new ArgumentNullException( "monitor" );
             _monitor = monitor;
             _items = new Dictionary<string, Item>();
             _dbConfigurator = dbConfigurator ?? Util.ActionVoid;
@@ -39,7 +44,7 @@ namespace CK.SqlServer.Setup
         internal void AddConfiguredDefaultDatabase( ISqlManager m )
         {
             Debug.Assert( m.IsOpen() );
-            Item i = new Item() { ConnectionString = m.CurrentConnectionString, Manager = m, DoNotDispose = true };
+            Item i = new Item() { ConnectionString = m.Connection.ConnectionString, Manager = m, DoNotDispose = true };
             _items.Add( SqlDatabase.DefaultDatabaseName, i );
             _items.Add( i.ConnectionString, i );
         }
@@ -67,20 +72,10 @@ namespace CK.SqlServer.Setup
 
         void CreateManager( Item i )
         {
-            SqlManager m = new SqlManager();
-            m.Monitor = _monitor;
-            if( !m.OpenFromConnectionString( i.ConnectionString ) )
+            SqlManager m = new SqlManager( _monitor );
+            if( !m.OpenFromConnectionString( i.ConnectionString, i.AutoCreate ) )
             {
-                if( i.AutoCreate )
-                {
-                    SqlConnectionStringBuilder sb = new SqlConnectionStringBuilder( i.ConnectionString );
-                    if( m.OpenOrCreate( sb.DataSource, sb.InitialCatalog ) )
-                    {
-                        m.Connection.Close();
-                        m.OpenFromConnectionString( i.ConnectionString );
-                    }
-                    else throw new CKException( "Unable to create database named '{0}' on server '{1}.", sb.InitialCatalog, sb.DataSource );
-                }
+                throw new CKException( "Unable to {1} database for '{0}'.", i.ConnectionString, i.AutoCreate ? "create" : "open" );
             }
             _dbConfigurator( m );
             i.Manager = m;

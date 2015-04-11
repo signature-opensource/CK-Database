@@ -15,25 +15,25 @@ using CK.Setup;
 namespace CK.Setup
 {
     /// <summary>
-    /// Basic builder works with mere <see cref="IStObjEngineConfiguration"/>.
+    /// Basic builder works with mere <see cref="IStObjBuilderConfiguration"/>.
     /// There is no configuration involved here since this would require (at the Model layer) interfaces defined in Runtime layer, this is
     /// mainly a demonstrator of the minimal code required to analyze dependencies and build a StObj final assembly.
     /// </summary>
     public class BasicStObjBuilder : IStObjBuilder
     {
         readonly IActivityMonitor _monitor;
-        readonly IStObjEngineConfiguration _config;
+        readonly IStObjBuilderConfiguration _config;
         readonly IStObjRuntimeBuilder _runtimeBuilder;
 
         /// <summary>
         /// Initializes a new <see cref="BasicStObjBuilder"/>.
-        /// Its assembly qualified name ("CK.Setup.BasicStObjBuilder, CK.StObj.Engine") can be set as the <see cref="IStObjEngineConfiguration.BuilderAssemblyQualifiedName"/>
+        /// Its assembly qualified name ("CK.Setup.BasicStObjBuilder, CK.StObj.Engine") can be set as the <see cref="IStObjBuilderConfiguration.BuilderAssemblyQualifiedName"/>
         /// for minimal build (simple objects and no dynamic configuration).
         /// </summary>
         /// <param name="monitor">Logger that must be used.</param>
         /// <param name="config">Configuration that describes the key aspects of the build.</param>
         /// <param name="runtimeBuilder">The object in charge of actual objects instanciation. When null, <see cref="StObjContextRoot.DefaultStObjRuntimeBuilder"/> is used.</param>
-        public BasicStObjBuilder( IActivityMonitor monitor, IStObjEngineConfiguration config, IStObjRuntimeBuilder runtimeBuilder = null )
+        public BasicStObjBuilder( IActivityMonitor monitor, IStObjBuilderConfiguration config, IStObjRuntimeBuilder runtimeBuilder = null )
         {
             _monitor = monitor;
             _config = config;
@@ -46,13 +46,17 @@ namespace CK.Setup
         /// <returns>True on success, false if an error occurred.</returns>
         public bool Run()
         {
+            // Here, we are only interested in StObjEngineConfiguration.
+            var c = _config.StObjEngineConfiguration;
+
             // Step 1: Discovering assemblies from AssemblyRegisterConfiguration.
             AssemblyRegisterer typeReg = new AssemblyRegisterer( _monitor );
-            typeReg.Discover( _config.AppDomainConfiguration.Assemblies );
+            typeReg.Discover( c.BuildAndRegisterConfiguration.Assemblies );
 
-            // Step 2: Collecting StObj (AmbientContracts) from assemblies.
-            StObjCollector collector = new StObjCollector( _monitor );
+            // Step 2: Collecting StObj (AmbientContracts) from assemblies and explicit classes.
+            StObjCollector collector = new StObjCollector( _monitor, c.TraceDependencySorterInput, c.TraceDependencySorterOutput );
             collector.RegisterTypes( typeReg );
+            collector.RegisterClasses( c.BuildAndRegisterConfiguration.ExplicitClasses );
             if( collector.RegisteringFatalOrErrorCount > 0 ) return false;
 
             // Step 3: Resolving dependencies and building ordered graph.
@@ -60,7 +64,7 @@ namespace CK.Setup
             if( r.HasFatalError ) return false;
 
             // Step 4: Generating final assembly.
-            return r.GenerateFinalAssembly( _monitor, _runtimeBuilder, _config.FinalAssemblyConfiguration ) != null;
+            return r.GenerateFinalAssembly( _monitor, _runtimeBuilder, c.FinalAssemblyConfiguration ) != null;
         }
     }
 }
