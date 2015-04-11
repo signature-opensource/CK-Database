@@ -162,7 +162,7 @@ namespace CK.SqlServer.Setup
             if( result != null )
             {
                 if( !result.MissingDependencyIsError.HasValue ) result.MissingDependencyIsError = defaultMissingDependencyIsError;
-                if( package != null ) package.EnsureObjectsPackage().Children.Add( result );
+                if( package != null ) package./*EnsureObjectsPackage().*/Children.Add( result );
             }
             return result;
         }
