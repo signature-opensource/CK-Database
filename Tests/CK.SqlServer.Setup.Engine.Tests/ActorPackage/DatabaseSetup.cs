@@ -46,7 +46,6 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             if( withZone ) c.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( "SqlZonePackage" );
             c.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = dllName;
             c.StObjEngineConfiguration.BuildAndRegisterConfiguration.UseIndependentAppDomain = true;
-            c.StObjEngineConfiguration.BuildAndRegisterConfiguration.ProbePaths.Add( TestHelper.TestBinFolder );
             c.TraceDependencySorterInput = true;
             c.TraceDependencySorterOutput = true;
             var config = new SqlSetupAspectConfiguration();

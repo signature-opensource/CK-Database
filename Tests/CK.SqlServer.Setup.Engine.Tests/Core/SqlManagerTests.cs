@@ -31,7 +31,6 @@ namespace CK.SqlServer.Setup.Engine.Tests.Core
             var c = new SetupEngineConfiguration();
             c.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( "IntoTheWild0" );
             c.StObjEngineConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
-            c.StObjEngineConfiguration.BuildAndRegisterConfiguration.ProbePaths.Add( TestHelper.TestBinFolder );
             var config = new SqlSetupAspectConfiguration();
             c.Aspects.Add( config );
             config.DefaultDatabaseConnectionString = ConnectionString;

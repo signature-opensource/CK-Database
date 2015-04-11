@@ -85,13 +85,13 @@ namespace CK.Core
                 if( Char.ToLowerInvariant( current[0] ) != cU1 ) return null;
             }
             // To be continued with an external loop from 1 to maxLen (to catch chars) and an internal one from 0 to dirlist.Count (for each strings).
-
-            var orderedList = dirlist.OrderBy( x => x );
+            // The code below is far from perfect... :(
+            var orderedList = dirlist.OrderBy( x => x, StringComparer.InvariantCultureIgnoreCase );
             DirectoryInfo commonDirectory = orderedList.Select( x => new DirectoryInfo( x ) ).FirstOrDefault();
             string common = null;
             while( common == null && commonDirectory != null )
             {
-                if( orderedList.All( x => x.StartsWith( commonDirectory.FullName ) ) )
+                if( orderedList.All( x => x.StartsWith( commonDirectory.FullName, StringComparison.InvariantCultureIgnoreCase ) ) )
                 {
                     common = commonDirectory.FullName;
                 }
@@ -316,17 +316,45 @@ namespace CK.Core
             else
             {
                 var c = config.StObjEngineConfiguration.BuildAndRegisterConfiguration;
-                var result = FindCommonAncestor( c.ProbePaths );
-                if( result == null )
+                if( c.ProbePaths.Count > 0 )
                 {
-                    throw new CKException( "All the probe paths must have a common ancestor. No ancestor found for: '{0}'.", string.Join( "', '", c.ProbePaths ) );
+                    // Work on a copy.
+                    List<string> paths = new List<string>( c.ProbePaths.Select( p => FileUtil.NormalizePathSeparator( p, false ) ) );
+                    int rootedCount = paths.Count( p => Path.IsPathRooted( p ) );
+                    if( rootedCount == paths.Count )
+                    {
+                        monitor.Info().Send( "Considering Rooted ProbePath: the AppDomain will be located at the lowest common root path." );
+                        var result = FindCommonAncestor( c.ProbePaths );
+                        if( result == null )
+                        {
+                            throw new CKException( "All the probe paths must have a common ancestor. No ancestor found for: '{0}'.", string.Join( "', '", c.ProbePaths ) );
+                        }
+                        setup.ApplicationBase = result;
+                        // TODO: The code below seems to be stupid: PrivateBinPath MUST be relative to the ApplicationBase...
+                        // And if the ApplicationBase (that is the common ancestor) appears in the ProbePath, PrivateBinPathProbe must be set to null
+                        // and it must be removed from the ProbePaths (since it will be empty anyway).
+                        // Other ProbePaths must be truncated (the common prefix must be removed).
+                        // This has to be TESTED before to be developped.
+
+                        /// PrivateBinPathProbe (from msdn):
+                        /// Set this property to any non-null string value, including String.Empty (""), to exclude the application directory path — that is, 
+                        /// ApplicationBase — from the search path for the application, and to search for assemblies only in PrivateBinPath. 
+                        setup.PrivateBinPathProbe = String.Empty;
+                        setup.PrivateBinPath = string.Join( ";", c.ProbePaths );
+                    }
+                    else if( rootedCount == 0 )
+                    {
+                        throw new NotImplementedException( "Sub root paths support have yet to be developped." );
+                    }
+                    else
+                    {
+                        throw new CKException( "Either all ProbePaths are rooted path or all Probe paths must be sub directories." );
+                    }
                 }
-                setup.ApplicationBase = result;
-                /// PrivateBinPathProbe (from msdn):
-                /// Set this property to any non-null string value, including String.Empty (""), to exclude the application directory path — that is, 
-                /// ApplicationBase — from the search path for the application, and to search for assemblies only in PrivateBinPath. 
-                setup.PrivateBinPathProbe = String.Empty;
-                setup.PrivateBinPath = string.Join( ";", c.ProbePaths );
+                else
+                {
+                    setup.ApplicationBase = thisSetup.ApplicationBase;
+                }
             }
             var appDomain = AppDomain.CreateDomain( "StObjContextRoot.Build.IndependentAppDomain", null, setup );
             AppDomainCommunication appDomainComm = new AppDomainCommunication( monitor, config, m, stObjRuntimeBuilderFactoryTypeName, stObjRuntimeBuilderFactoryMethodName );
