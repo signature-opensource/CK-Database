@@ -14,8 +14,7 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// Default implementation of <see cref="IStObjAttribute"/> that offers a static <see cref="GetStObjAttributeForExactType"/> that knows how to merge
-    /// multiple attributes information.
+    /// Default implementation of <see cref="IStObjAttribute"/>.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = false, Inherited = false )]
     public class StObjAttribute : Attribute, IStObjAttribute
@@ -27,7 +26,10 @@ namespace CK.Setup
         public Type Container { get; set; }
 
         /// <summary>
-        /// Gets or sets the kind of object (simple item, group or container).
+        /// Gets or sets how this object must be considered regarding other items: it can be a <see cref="DependentItemKind.Item"/>, 
+        /// a <see cref="DependentItemKind.Group"/> or a <see cref="DependentItemKind.Container"/>.
+        /// When let to the default <see cref="DependentItemKind.Unknown"/>, this property is inherited (it is eventually 
+        /// considered as <see cref="DependentItemKind.Container"/> when not set).
         /// This property is inherited from base classes that are not Ambient Contracts.
         /// </summary>
         public DependentItemKindSpec ItemKind { get; set; }
