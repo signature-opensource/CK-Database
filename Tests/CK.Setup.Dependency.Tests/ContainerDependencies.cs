@@ -290,7 +290,7 @@ namespace CK.Setup.Dependency.Tests
             Assert.That( r.CycleDetected, Is.Not.Null );
             Assert.That( r.SortedItems, Is.Null );
             // The detected cycle depends on the algorithm. 
-            // This works here because since we register the Root, we the last registered child is Nuage: we know
+            // This works here because since we register the Root, the last registered child is Nuage: we know
             // that the cycle starts (and ends) with Nuage because children are in linked list (added at the head).
             // (This remarks is valid for the other CycleDetection below.)
             Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ Nuage ⇀ Pierre ⇀ Stratus ⊏ Nuage" ) );

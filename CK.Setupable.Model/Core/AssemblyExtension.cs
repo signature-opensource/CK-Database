@@ -14,6 +14,9 @@ using System.Reflection;
 
 namespace CK.Core
 {
+    /// <summary>
+    /// Defines extension methods on <see cref="Assembly"/> type.
+    /// </summary>
     public static class AssemblyExtension
     {
         static readonly ConcurrentDictionary<Assembly,IReadOnlyList<string>> _cache = new ConcurrentDictionary<Assembly, IReadOnlyList<string>>();

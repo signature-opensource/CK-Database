@@ -16,15 +16,14 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
-    public class SqlViewSetupDriver : DependentItemSetupDriver
+    public class SqlViewSetupDriver : GenericItemSetupDriver
     {
-        readonly ISqlManagerProvider _provider;
+        readonly ISqlManagerProvider _sqlProvider;
 
-        public SqlViewSetupDriver( BuildInfo info, ISqlManagerProvider sqlProvider )
+        public SqlViewSetupDriver( BuildInfo info )
             : base( info )
         {
-            if( sqlProvider == null ) throw new ArgumentNullException( "sqlProvider" );
-            _provider = sqlProvider;
+            _sqlProvider = info.Engine.Aspect<ISqlManagerProvider>();
         }
 
         public new SqlViewItem Item { get { return (SqlViewItem)base.Item; } }
@@ -57,11 +56,13 @@ namespace CK.SqlServer.Setup
             return true;
         }
 
-        protected override bool InstallContent()
+        protected override bool Install( bool beforeHandlers )
         {
-            if( ExternalVersion != null && ExternalVersion.Version == ((IVersionedItem)Item).Version ) return true;
+            if( beforeHandlers ) return true;
 
-            ISqlManager m = SqlObjectSetupDriver.FindManagerFromLocation( Engine.Monitor, _provider, FullName );
+            if( ExternalVersion != null && ExternalVersion.Version == Item.Version ) return true;
+
+            ISqlManager m = SqlObjectSetupDriver.FindManagerFromLocation( Engine.Monitor, _sqlProvider, FullName );
             if( m == null ) return false;
 
             string s;

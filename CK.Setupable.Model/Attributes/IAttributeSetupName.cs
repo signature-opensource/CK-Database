@@ -13,7 +13,7 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
-    /// Enables any attributes other than <see cref="SetupAttribute"/> and <see cref="SetupName"/> 
+    /// Enables any attributes other than <see cref="SetupAttribute"/> and <see cref="SetupNameAttribute"/> 
     /// to carry the full name of a setup object.
     /// </summary>
     public interface IAttributeSetupName

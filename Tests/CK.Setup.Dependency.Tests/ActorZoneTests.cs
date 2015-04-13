@@ -43,7 +43,7 @@ namespace CK.Setup.Dependency.Tests
 
             {
                 var r = DependencySorter.OrderItems(
-                    new DependencySorter.Options()
+                    new DependencySorterOptions()
                     {
                         HookInput = TestHelper.Trace,
                         HookOutput = sortedItems => TestHelper.Trace( sortedItems, false )

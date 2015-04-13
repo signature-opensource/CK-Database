@@ -13,7 +13,7 @@ using System.Text;
 namespace CK.Core
 {
     /// <summary>
-    /// Encapsulates the result of the <see cref="StObjContextRoot.Build"/> method.
+    /// Encapsulates the result of the <see cref="G:StObjContextRoot.Build"/> methods.
     /// Must be <see cref="Dispose"/>d once done.
     /// </summary>
     public class StObjBuildResult : IDisposable

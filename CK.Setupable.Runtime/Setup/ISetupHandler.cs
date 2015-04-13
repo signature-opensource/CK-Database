@@ -12,18 +12,21 @@ using System.Text;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public interface ISetupHandler
     {
-        bool Init( DependentItemSetupDriver d );
+        bool Init( GenericItemSetupDriver d );
 
-        bool Install( DependentItemSetupDriver d );
+        bool Install( GenericItemSetupDriver d );
 
-        bool Settle( DependentItemSetupDriver d );
+        bool Settle( GenericItemSetupDriver d );
         
-        bool InitContent( DependentItemSetupDriver d );
+        bool InitContent( GenericItemSetupDriver d );
 
-        bool InstallContent( DependentItemSetupDriver d );
+        bool InstallContent( GenericItemSetupDriver d );
 
-        bool SettleContent( DependentItemSetupDriver d );
+        bool SettleContent( GenericItemSetupDriver d );
     }
 }

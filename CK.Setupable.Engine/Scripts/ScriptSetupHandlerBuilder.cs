@@ -18,9 +18,9 @@ namespace CK.Setup
     /// Companion object of the <see cref="SetupEngine"/> that is automatically registered and manages
     /// the scripts: 
     /// - at <see cref="SetupStep.PreInit"/> it enables the object to load scripts into the <see cref="ScriptCollector"/> by 
-    /// calling <see cref="DependentItemSetupDriver.LoadScripts"/> on each driver
+    /// calling <see cref="GenericItemSetupDriver.LoadScripts"/> on each driver
     /// - and at <see cref="SetupStep.Init"/> it associates a <see cref="ScriptSetupHandler"/> with the scripts that exist for each drivers.
-    /// The scripts can come from the resources (the ones loaded by DependentItemSetupDriver.LoadScripts) or from the file system.
+    /// The scripts can come from the resources (the ones loaded by GenericItemSetupDriver.LoadScripts) or from the file system.
     /// </summary>
     class ScriptSetupHandlerBuilder
     {
@@ -72,8 +72,8 @@ namespace CK.Setup
                     {
                         foreach( var d in _engine.AllDrivers )
                         {
-                            Debug.Assert( (d is DependentItemSetupDriver) == !d.IsGroupHead, "There is only 2 DriverBase specializations: DependentItemSetupDriver and GroupHeadSetupDriver." );
-                            DependentItemSetupDriver driver = d as DependentItemSetupDriver;
+                            Debug.Assert( (d is GenericItemSetupDriver) == !d.IsGroupHead, "There is only 2 DriverBase specializations: GenericItemSetupDriver and GroupHeadSetupDriver." );
+                            GenericItemSetupDriver driver = d as GenericItemSetupDriver;
                             if( driver != null )
                             {
                                 bool casingDiffer;
@@ -108,8 +108,8 @@ namespace CK.Setup
             Debug.Assert( sender == _engine );
             if( e.Step == SetupStep.PreInit && !e.Driver.IsGroupHead )
             {
-                Debug.Assert( e.Driver is DependentItemSetupDriver, "Since it is not the Head of a Group." );
-                DependentItemSetupDriver driver = (DependentItemSetupDriver)e.Driver;
+                Debug.Assert( e.Driver is GenericItemSetupDriver, "Since it is not the Head of a Group." );
+                GenericItemSetupDriver driver = (GenericItemSetupDriver)e.Driver;
                 if( !driver.LoadScripts( _scriptCollector ) )
                 {
                     _engine.Monitor.Fatal().Send( "Driver '{0}' failed to load scripts.", e.Driver.FullName );

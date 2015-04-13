@@ -12,6 +12,10 @@ using CK.Setup;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Fundamental configuration objects. It holds the configuration related to StObj (<see cref="P:StObjEngineConfiguration"/>)
+    /// and configuration for the <see cref="Aspects"/> that are needed.
+    /// </summary>
     [Serializable]
     public class SetupEngineConfiguration : IStObjBuilderConfiguration
     {
@@ -28,10 +32,10 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets ors sets whether the ordering for setupable items that share the same rank in the pure dependency graph must be inverted.
-        /// Defaults to false. (See <see cref="DependencySorter"/> for more information.)
+        /// Gets ors sets the <see cref="SetupEngineRunningMode"/>.
+        /// Defaults to <see cref="SetupEngineRunningMode.Default"/>.
         /// </summary>
-        public bool RevertOrderingNames { get; set; }
+        public SetupEngineRunningMode RunningMode { get; set; }
 
         /// <summary>
         /// Gets or sets whether the dependency graph (the set of IDependentItem) must be send to the monitor before sorting.

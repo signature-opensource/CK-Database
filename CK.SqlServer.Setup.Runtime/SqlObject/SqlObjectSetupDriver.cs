@@ -16,15 +16,14 @@ namespace CK.SqlServer.Setup
     /// <summary>
     /// Driver for <see cref="SqlObjectItem"/>.
     /// </summary>
-    public class SqlObjectSetupDriver : DependentItemSetupDriver
+    public class SqlObjectSetupDriver : GenericItemSetupDriver
     {
         readonly ISqlManagerProvider _provider;
 
-        public SqlObjectSetupDriver( BuildInfo info, ISqlManagerProvider sqlProvider )
+        public SqlObjectSetupDriver( BuildInfo info )
             : base( info )
         {
-            if( sqlProvider == null ) throw new ArgumentNullException( "sqlProvider" );
-            _provider = sqlProvider;
+            _provider = info.Engine.Aspect<ISqlManagerProvider>();
         }
 
         public new SqlObjectItem Item
@@ -32,9 +31,11 @@ namespace CK.SqlServer.Setup
             get { return (SqlObjectItem)base.Item; }
         }
 
-        protected override bool InstallContent()
+        protected override bool Install( bool beforeHandlers )
         {
-            if( ExternalVersion != null && ExternalVersion.Version == ((IVersionedItem)Item).Version ) return true;
+            if( beforeHandlers ) return true;
+
+            if( ExternalVersion != null && ExternalVersion.Version == Item.Version ) return true;
 
             ISqlManager m = FindManagerFromLocation( Engine.Monitor, _provider, FullName );
             if( m == null ) return false;

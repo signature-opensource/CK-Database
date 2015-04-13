@@ -14,9 +14,9 @@ namespace CK.Setup
 {
     sealed class GroupHeadSetupDriver : DriverBase
     {
-        DependentItemSetupDriver _group;
+        GenericItemSetupDriver _group;
 
-        internal GroupHeadSetupDriver( ISetupEngine center, ISortedItem sortedItem, VersionedName externalVersion )
+        internal GroupHeadSetupDriver( ISetupEngine center, ISortedItem<ISetupItem> sortedItem, VersionedName externalVersion )
             : base( center, sortedItem, externalVersion, null )
         {
         }
@@ -26,7 +26,7 @@ namespace CK.Setup
             get { return true; }
         }
 
-        public DependentItemSetupDriver Group
+        public GenericItemSetupDriver Group
         {
             get { return _group; }
             internal set { _group = value; }

@@ -170,6 +170,7 @@ namespace CK.Core
         /// Must be a static method that returns a <see cref="IStObjRuntimeBuilder"/> or null to use the <see cref="StObjContextRoot.DefaultStObjRuntimeBuilder"/>.
         /// </param>
         /// <param name="monitor">Optional monitor.</param>
+        /// <param name="forceBuild">True to force the build regardless of the stamp.</param>
         /// <returns>A disposable result.</returns>
         public static StObjBuildResult Build( IStObjBuilderConfiguration config, Func<IStObjRuntimeBuilder> builderFactoryStaticMethod = null, IActivityMonitor monitor = null, bool forceBuild = false )
         {
@@ -198,6 +199,7 @@ namespace CK.Core
         /// </param>
         /// <param name="stObjRuntimeBuilderFactoryMethodName">Name of the method to call (defaults to "CreateStObjRuntimeBuilder").</param>
         /// <param name="monitor">Optional monitor.</param>
+        /// <param name="forceBuild">True to force the build regardless of the stamp.</param>
         /// <returns>A disposable result.</returns>
         public static StObjBuildResult Build(
             IStObjBuilderConfiguration config,
@@ -336,9 +338,9 @@ namespace CK.Core
                         // Other ProbePaths must be truncated (the common prefix must be removed).
                         // This has to be TESTED before to be developped.
 
-                        /// PrivateBinPathProbe (from msdn):
-                        /// Set this property to any non-null string value, including String.Empty (""), to exclude the application directory path — that is, 
-                        /// ApplicationBase — from the search path for the application, and to search for assemblies only in PrivateBinPath. 
+                        // PrivateBinPathProbe (from msdn):
+                        // Set this property to any non-null string value, including String.Empty (""), to exclude the application directory path — that is, 
+                        // ApplicationBase — from the search path for the application, and to search for assemblies only in PrivateBinPath. 
                         setup.PrivateBinPathProbe = String.Empty;
                         setup.PrivateBinPath = string.Join( ";", c.ProbePaths );
                     }

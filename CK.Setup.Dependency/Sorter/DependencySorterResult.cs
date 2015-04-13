@@ -17,13 +17,13 @@ namespace CK.Setup
     /// <summary>
     /// Encapsulates the result of the <see cref="G:DependencySorter.OrderItems"/> methods.
     /// </summary>
-    public sealed class DependencySorterResult
+    public sealed class DependencySorterResult<T> : IDependencySorterResult where T : class, IDependentItem
     {
         readonly ICKReadOnlyList<CycleExplainedElement> _cycle;
         int _itemIssueWithStructureErrorCount;
         bool _requiredMissingIsError;
 
-        internal DependencySorterResult( List<DependencySorter.Entry> result, List<CycleExplainedElement> cycle, List<DependentItemIssue> itemIssues )
+        internal DependencySorterResult( List<DependencySorter<T>.Entry> result, List<CycleExplainedElement> cycle, List<DependentItemIssue> itemIssues )
         {
             Debug.Assert( (result == null) != (cycle == null), "cycle ^ result" );
             if( result == null )
@@ -33,7 +33,7 @@ namespace CK.Setup
             }
             else
             {
-                SortedItems = new CKReadOnlyListOnIList<DependencySorter.Entry>( result );
+                SortedItems = new CKReadOnlyListOnIList<DependencySorter<T>.Entry>( result );
                 _cycle = null;
             }
             ItemIssues = itemIssues != null && itemIssues.Count > 0 ? new CKReadOnlyListOnIList<DependentItemIssue>( itemIssues ) : CKReadOnlyListEmpty<DependentItemIssue>.Empty;
@@ -47,14 +47,19 @@ namespace CK.Setup
         public IReadOnlyList<ICycleExplainedElement> CycleDetected { get { return _cycle; } }
         
         /// <summary>
-        /// Gets the list of <see cref="ISortedItem"/>: null if <see cref="CycleDetected"/> is not null.
+        /// Gets the list of <see cref="ISortedItem{T}"/>: null if <see cref="CycleDetected"/> is not null.
         /// </summary>
-        public readonly IReadOnlyList<ISortedItem> SortedItems;
+        public readonly IReadOnlyList<ISortedItem<T>> SortedItems;
+
+        IReadOnlyList<ISortedItem> IDependencySorterResult.SortedItems 
+        { 
+            get { return SortedItems; } 
+        }
 
         /// <summary>
         /// List of <see cref="DependentItemIssue"/>. Never null.
         /// </summary>
-        public readonly IReadOnlyList<DependentItemIssue> ItemIssues;
+        public IReadOnlyList<DependentItemIssue> ItemIssues { get; private set; }
 
         /// <summary>
         /// Gets or sets whether any non optional missing requirement or generalization is a structure error (<see cref="HasStructureError"/> 

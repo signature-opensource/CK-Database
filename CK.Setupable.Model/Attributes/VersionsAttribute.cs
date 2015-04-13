@@ -13,6 +13,9 @@ using CK.Core;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Defines versions of an object.
+    /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = false, Inherited = false )]
     public class VersionsAttribute : Attribute
     {

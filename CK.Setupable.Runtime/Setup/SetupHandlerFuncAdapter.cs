@@ -13,45 +13,45 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
-    /// Internal adapter used by <see cref="DependentItemSetupDriver"/>.
+    /// Internal adapter used by <see cref="GenericItemSetupDriver"/>.
     /// </summary>
     class SetupHandlerFuncAdapter : ISetupHandler
     {
-        readonly Func<DependentItemSetupDriver,bool> _func;
+        readonly Func<GenericItemSetupDriver,bool> _func;
         readonly SetupCallGroupStep _step;
 
-        public SetupHandlerFuncAdapter( Func<DependentItemSetupDriver, bool> handler, SetupCallGroupStep step )
+        public SetupHandlerFuncAdapter( Func<GenericItemSetupDriver, bool> handler, SetupCallGroupStep step )
         {
             _func = handler;
             _step = step;
         }
 
-        public bool Init( DependentItemSetupDriver d )
+        public bool Init( GenericItemSetupDriver d )
         {
             return _step == SetupCallGroupStep.Init ? _func( d ) : true;
         }
 
-        public bool InitContent( DependentItemSetupDriver d )
+        public bool InitContent( GenericItemSetupDriver d )
         {
             return _step == SetupCallGroupStep.InitContent ? _func( d ) : true;
         }
 
-        public bool Install( DependentItemSetupDriver d )
+        public bool Install( GenericItemSetupDriver d )
         {
             return _step == SetupCallGroupStep.Install ? _func( d ) : true;
         }
 
-        public bool InstallContent( DependentItemSetupDriver d )
+        public bool InstallContent( GenericItemSetupDriver d )
         {
             return _step == SetupCallGroupStep.InstallContent ? _func( d ) : true;
         }
 
-        public bool Settle( DependentItemSetupDriver d )
+        public bool Settle( GenericItemSetupDriver d )
         {
             return _step == SetupCallGroupStep.Settle ? _func( d ) : true;
         }
 
-        public bool SettleContent( DependentItemSetupDriver d )
+        public bool SettleContent( GenericItemSetupDriver d )
         {
             return _step == SetupCallGroupStep.SettleContent ? _func( d ) : true;
         }

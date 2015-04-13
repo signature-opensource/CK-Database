@@ -153,19 +153,34 @@ namespace CK.Setup
         /// and <see cref="Requires"/> if they are <see cref="IDependentItem"/> (and not strings).
         /// </summary>
         /// <returns>
-        /// Must return the <see cref="Type"/> of the setup driver (specialization of <see cref="DependentItemSetupDriver"/>), or its assembly qualified name.
-        /// By default, returns the type of <see cref="DependentItemSetupDriver"/>.
+        /// Must return the <see cref="Type"/> of the setup driver (specialization of <see cref="GenericItemSetupDriver"/>), or its assembly qualified name.
+        /// By default, returns the type of <see cref="GenericItemSetupDriver"/>.
         /// </returns>
         protected virtual object StartDependencySort()
         {
-            return typeof( DependentItemSetupDriver );
+            return typeof( GenericItemSetupDriver );
         }
 
         object IDependentItem.StartDependencySort()
         {
             return StartDependencySort();
         }
-        
+
+        /// <summary>
+        /// Called once the associated driver has been instanciated.
+        /// </summary>
+        /// <param name="driver">Driver for this item.</param>
+        /// <returns>True on success. Returning false cancels the setup process.</returns>
+        protected virtual bool OnDriverCreated( GenericItemSetupDriver driver )
+        {
+            return true;
+        }
+
+        bool ISetupItem.OnDriverCreated( GenericItemSetupDriver driver )
+        {
+            return OnDriverCreated( driver );
+        }
+
         bool IDependentItemRef.Optional
         {
             get { return false; }

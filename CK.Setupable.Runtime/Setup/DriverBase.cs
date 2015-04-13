@@ -19,9 +19,14 @@ namespace CK.Setup
     /// Only these direct dependencies should be used by a setup driver, even if by using the <see cref="Engine"/> property, the whole list
     /// of drivers is available.
     /// </summary>
+    /// <remarks>
+    /// This class is not intended to be specialized outside this CK.Setupable.Runtime assembly: it is used as a base 
+    /// class for the actual item driver (<see cref="GenericItemSetupDriver"/>) and by an internal class of the CK.Setupable.Engine assembly
+    /// for handling heads of groups or containers.
+    /// </remarks>
     public abstract class DriverBase
     {
-        readonly IDependentItem _item;
+        readonly ISetupItem _item;
 
         class DirectList : IDriverList
         {
@@ -64,7 +69,7 @@ namespace CK.Setup
 
         }
 
-        internal DriverBase( ISetupEngine engine, ISortedItem sortedItem, VersionedName externalVersion, IDriverList headDirectDependencies = null )
+        internal DriverBase( ISetupEngine engine, ISortedItem<ISetupItem> sortedItem, VersionedName externalVersion, IDriverList headDirectDependencies = null )
         {
             Engine = engine;
             _item = sortedItem.Item;
@@ -79,7 +84,7 @@ namespace CK.Setup
         /// Gets the item to setup.
         /// This property is often redefined (masked with the new keyword in C#) to expose a more precise associated type.
         /// </summary>
-        public IDependentItem Item
+        public ISetupItem Item
         {
             get { return _item; }
         }
@@ -135,7 +140,6 @@ namespace CK.Setup
         /// of the <see cref="Item"/>. A driver should interact only with these objects.
         /// </summary>
         public readonly IDriverList DirectDependencies;
-
 
         internal abstract bool ExecuteInit();
 

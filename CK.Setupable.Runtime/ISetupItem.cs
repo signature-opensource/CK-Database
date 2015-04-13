@@ -19,9 +19,16 @@ namespace CK.Setup
     public interface ISetupItem : IDependentItem, IContextLocNaming
     {
         /// <summary>
-        /// Resolves ambiguity between <see cref="IDependentItem.FullName"/> and <see cref="IContextLocNaming.FullName"/>:
+        /// This property is defined her to resolve ambiguity between <see cref="IDependentItem.FullName"/> and <see cref="IContextLocNaming.FullName"/>:
         /// they are actually the same.
         /// </summary>
         new string FullName { get; }
+
+        /// <summary>
+        /// Called by the Engine right after the driver has been created and a second time once all other drivers have been created.
+        /// </summary>
+        /// <param name="driver">The driver associated to this item.</param>
+        /// <returns>True on success. Returning false cancels the setup process.</returns>
+        bool OnDriverCreated( GenericItemSetupDriver driver );
     }
 }

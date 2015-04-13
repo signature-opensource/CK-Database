@@ -18,7 +18,7 @@ namespace CK.Setup
         /// Initializes a new <see cref="DynamicDriverAttribute"/> with (potentially) multiple type names
         /// that must be in the associated ".Runtime" assembly.
         /// </summary>
-        /// <param name="commaSeparatedObjectNames">Name or multiple comma separated names.</param>
+        /// <param name="commaSeparatedTypeNames">Name or multiple comma separated names.</param>
         public DynamicDriverAttribute( string commaSeparatedTypeNames )
             : base( "CK.Setup.DynamicDriverAttributeImpl, CK.Setupable.Runtime" )
         {

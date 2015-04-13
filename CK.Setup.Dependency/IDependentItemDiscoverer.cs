@@ -21,13 +21,20 @@ namespace CK.Setup
     /// an item can automatically register a set of items when it is itself registered
     /// by <see cref="G:DependencySorter.OrderItems"/>.
     /// </remarks>
-    public interface IDependentItemDiscoverer
+    public interface IDependentItemDiscoverer<out T> where T : IDependentItem
     {
         /// <summary>
-        /// Gets a list of <see cref="IDependentItem"/> that must participate to the 
+        /// Gets a list of <typeparamref name="T"/> that must participate to the 
         /// setup. Can be null if no such item exists.
         /// </summary>
-        IEnumerable<IDependentItem> GetOtherItemsToRegister();
+        IEnumerable<T> GetOtherItemsToRegister();
+    }
+
+    /// <summary>
+    /// Non generic version work with mere <see cref="IDependentItem"/> (for the non generic <see cref="DependencySorter"/>).
+    /// </summary>
+    public interface IDependentItemDiscoverer : IDependentItemDiscoverer<IDependentItem>
+    {
     }
 }
 

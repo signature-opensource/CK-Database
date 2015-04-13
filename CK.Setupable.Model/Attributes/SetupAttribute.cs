@@ -49,7 +49,7 @@ namespace CK.Setup
         public string FullName { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the <see cref="IDependentItem"/> to use instead of the default SetupItem. 
+        /// Gets or sets the type of the dependent item to use instead of the default SetupItem. 
         /// When set, this masks the <see cref="ItemTypeName"/> property,  otherwise ItemTypeName can be used to 
         /// designate a specific IDependentItem.
         /// This property is inherited.
@@ -57,7 +57,7 @@ namespace CK.Setup
         public Type ItemType { get; set; }
 
         /// <summary>
-        /// Gets or sets the assembly qualified type name of the <see cref="IDependentItem"/> to use instead of the default SetupItem. 
+        /// Gets or sets the assembly qualified type name of the dependent item to use instead of the default SetupItem. 
         /// This is used ONLY if <see cref="ItemType"/> is not set.
         /// This property is inherited.
         /// </summary>
@@ -69,7 +69,7 @@ namespace CK.Setup
         /// </summary>
         /// <remarks>
         /// When let to null (and no <see cref="DriverTypeName"/> is specified either), 
-        /// a standard <see cref="SetupDriver"/> is used.
+        /// a standard SetupDriver is used.
         /// </remarks>
         public Type DriverType  { get; set; }
 
@@ -79,7 +79,7 @@ namespace CK.Setup
         /// </summary>
         /// <remarks>
         /// When let to null (and no <see cref="DriverType"/> is specified either), 
-        /// the standard <see cref="SetupDriver"/> is used.
+        /// the standard SetupDriver is used.
         /// </remarks>
         public string DriverTypeName  { get; set; }
 

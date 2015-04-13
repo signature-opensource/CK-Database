@@ -1,6 +1,6 @@
 #region Proprietary License
 /*----------------------------------------------------------------------------
-* This file (CK.Setupable.Model\GroupsAttribute.cs) is part of CK-Database. 
+* This file (CK.Setupable.Model\RequiresAttribute.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
 *-----------------------------------------------------------------------------*/
 #endregion
@@ -14,24 +14,27 @@ using System.Diagnostics;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Simple attributes to define requirements of a class by names.
+    /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = false )]
-    public class GroupsAttribute : Attribute
+    public class RequiresAttribute : Attribute
     {
-        readonly string _groups;
+        readonly string _requires;
 
         /// <summary>
-        /// Defines groups by their names.
+        /// Defines requirements by their names.
         /// </summary>
-        /// <param name="groups">Comma separated list of group names.</param>
-        public GroupsAttribute( string groups )
+        /// <param name="requires">Comma separated list of requirement item names.</param>
+        public RequiresAttribute( string requires )
         {
-            _groups = groups;
+            _requires = requires;
         }
 
         /// <summary>
-        /// Gets a comma separated list of group names.
+        /// Gets a comma separated list of item names.
         /// </summary>
-        public string Groups { get { return _groups; } }
+        public string Requirements { get { return _requires; } }
 
     }
 }

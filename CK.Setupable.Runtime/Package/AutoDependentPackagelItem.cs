@@ -25,7 +25,7 @@ namespace CK.Setup
     /// thanks to specific methods that control the existence of the model. The <see cref="DynamicPackageItem"/> use this pattern with its <see cref="DynamicPackageItem.EnsureModel()"/> 
     /// and <see cref="DynamicPackageItem.SupressModel()"/> methods for instance.
     /// </remarks>
-    public class AutoDependentPackageItem : IPackageItem, IDependentItemDiscoverer, IDependentItemContainerRef
+    public class AutoDependentPackageItem : IPackageItem, IDependentItemDiscoverer<ISetupItem>, IDependentItemContainerRef
     {
         readonly IPackageItem _package;
         readonly string _prefix;
@@ -186,7 +186,12 @@ namespace CK.Setup
 
         object IDependentItem.StartDependencySort()
         {
-            return typeof( DependentItemSetupDriver );
+            return typeof( GenericItemSetupDriver );
+        }
+
+        bool ISetupItem.OnDriverCreated( GenericItemSetupDriver driver )
+        {
+            return true;
         }
 
         bool IDependentItemRef.Optional
@@ -268,9 +273,9 @@ namespace CK.Setup
         }
 
 
-        IEnumerable<IDependentItem> IDependentItemDiscoverer.GetOtherItemsToRegister()
+        IEnumerable<ISetupItem> IDependentItemDiscoverer<ISetupItem>.GetOtherItemsToRegister()
         {
-            return new CKReadOnlyListMono<IDependentItem>( _package );
+            return new CKReadOnlyListMono<ISetupItem>( _package );
         }
     }
 

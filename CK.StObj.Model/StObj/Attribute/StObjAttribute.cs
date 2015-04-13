@@ -26,10 +26,10 @@ namespace CK.Setup
         public Type Container { get; set; }
 
         /// <summary>
-        /// Gets or sets how this object must be considered regarding other items: it can be a <see cref="DependentItemKind.Item"/>, 
-        /// a <see cref="DependentItemKind.Group"/> or a <see cref="DependentItemKind.Container"/>.
-        /// When let to the default <see cref="DependentItemKind.Unknown"/>, this property is inherited (it is eventually 
-        /// considered as <see cref="DependentItemKind.Container"/> when not set).
+        /// Gets or sets how this object must be considered regarding other items: it can be a <see cref="DependentItemKindSpec.Item"/>, 
+        /// a <see cref="DependentItemKindSpec.Group"/> or a <see cref="DependentItemKindSpec.Container"/>.
+        /// When let to the default <see cref="DependentItemKindSpec.Unknown"/>, this property is inherited (it is eventually 
+        /// considered as <see cref="DependentItemKindSpec.Container"/> when not set).
         /// This property is inherited from base classes that are not Ambient Contracts.
         /// </summary>
         public DependentItemKindSpec ItemKind { get; set; }
@@ -54,7 +54,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets or sets an array of types that must be Children of this item.
-        /// <see cref="ItemKind"/> must be <see cref="DependentItemKind.Group"/> or <see cref="DependentItemKind.Container"/>.
+        /// <see cref="ItemKind"/> must be <see cref="DependentItemKindSpec.Group"/> or <see cref="DependentItemKindSpec.Container"/>.
         /// This property is not inherited, it applies only to the decorated type.
         /// </summary>
         public Type[] Children { get; set; }

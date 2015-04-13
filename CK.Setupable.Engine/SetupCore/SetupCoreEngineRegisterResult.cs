@@ -16,7 +16,7 @@ namespace CK.Setup
 {
     class SetupCoreEngineRegisterResult
     {
-        internal SetupCoreEngineRegisterResult( DependencySorterResult s )
+        internal SetupCoreEngineRegisterResult( DependencySorterResult<ISetupItem> s )
         {
             SortResult = s;
         }
@@ -25,7 +25,7 @@ namespace CK.Setup
         /// Gets the <see cref="DependencySorterResult"/>. Null if an <see cref="UnexpectedError"/> occurred
         /// during its initialization or if a <see cref="CancelReason"/> has been set.
         /// </summary>
-        public DependencySorterResult SortResult { get; private set; }
+        public DependencySorterResult<ISetupItem> SortResult { get; private set; }
 
         /// <summary>
         /// Gets whether the <see cref="SetupCoreEngine.Register"/> succeeded: <see cref="SortResult"/>.<see cref="DependencySorterResult.IsComplete">IsComplete</see>

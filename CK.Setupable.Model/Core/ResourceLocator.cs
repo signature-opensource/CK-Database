@@ -19,7 +19,7 @@ namespace CK.Core
     /// </summary>
     /// <remarks>
     /// The path may begin with a ~ and in such case, the resource path is "assembly based"
-    /// and the <see cref="Type"/> is used only for its <see cref="Type.Assembly"/>.
+    /// and the <see cref="Type"/> is used only for its assembly.
     /// </remarks>
     public class ResourceLocator : IMergeable
     {
@@ -37,7 +37,7 @@ namespace CK.Core
         /// Initializes a <see cref="ResourceLocator"/>.
         /// </summary>
         /// <param name="resourceHolder">
-        /// The assembly of this type must hold the resources. The <see cref="Type.Namespace"/>
+        /// The assembly of this type must hold the resources. The <see cref="T:Type.Namespace"/>
         /// is the path prefix of the resources. Can be null.
         /// </param>
         /// <param name="path">
@@ -52,7 +52,7 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Gets or sets the type that will be used to locate the resource: its <see cref="Type.Namespace"/> is the path prefix of the resources.
+        /// Gets or sets the type that will be used to locate the resource: its <see cref="T:Type.Namespace"/> is the path prefix of the resources.
         /// The resources must belong to its <see cref="System.Reflection.Assembly"/>.
         /// </summary>
         public Type Type
@@ -87,7 +87,10 @@ namespace CK.Core
         /// Gets an ordered list of resource names that starts with the <paramref name="namePrefix"/>.
         /// </summary>
         /// <param name="namePrefix">Prefix for any strings.</param>
-        /// <returns>Ordered lists of available resource names (with the <paramref name="namePrefix"/>). Resource content can then be obtained by <see cref="OpenStream"/> or <see cref="GetString"/>.</returns>
+        /// <returns>
+        /// Ordered lists of available resource names (with the <paramref name="namePrefix"/>). 
+        /// Resource content can then be obtained by <see cref="OpenStream"/> or <see cref="G:GetString"/>.
+        /// </returns>
         public IEnumerable<string> GetNames( string namePrefix )
         {
             if( _type == null ) return Util.EmptyStringArray;
@@ -193,7 +196,7 @@ namespace CK.Core
         /// and the <paramref name="path"/> (that can be null or empty).
         /// </summary>
         /// <param name="resourceHolder">
-        /// The assembly of this type must hold the resources and its <see cref="Type.Namespace"/>
+        /// The assembly of this type must hold the resources and its <see cref="T:Type.Namespace"/>
         /// is the path prefix of the resources. Can be null.
         /// </param>
         /// <param name="path">
@@ -240,7 +243,7 @@ namespace CK.Core
         /// </summary>
         /// <exception cref="ApplicationException">If <paramref name="throwError"/> is true and the resource can not be found.</exception>
         /// <param name="resourceHolder">
-        /// The assembly of this type must hold the resources and its <see cref="Type.Namespace"/>
+        /// The assembly of this type must hold the resources and its <see cref="T:Type.Namespace"/>
         /// is the path prefix of the resources.
         /// </param>
         /// <param name="path">
@@ -272,7 +275,7 @@ namespace CK.Core
         /// Obtains the content of a resource as a string from the <paramref name="resourceHolder"/>'s assembly.
         /// </summary>
         /// <param name="resourceHolder">
-        /// The assembly of this type must hold the resources its <see cref="Type.Namespace"/>
+        /// The assembly of this type must hold the resources its <see cref="T:Type.Namespace"/>
         /// is the path prefix of the resources.
         /// </param>
         /// <param name="path">

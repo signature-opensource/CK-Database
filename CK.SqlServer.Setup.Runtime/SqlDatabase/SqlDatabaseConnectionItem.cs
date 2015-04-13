@@ -10,7 +10,7 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
-    public class SqlDatabaseConnectionItem : IDependentItem, IDependentItemRef
+    public class SqlDatabaseConnectionItem : ISetupItem, IDependentItemRef
     {
         readonly SqlDatabaseItem _db;
 
@@ -59,6 +59,27 @@ namespace CK.SqlServer.Setup
         bool IDependentItemRef.Optional
         {
             get { return false; }
+        }
+
+
+        bool ISetupItem.OnDriverCreated( GenericItemSetupDriver driver )
+        {
+            return true;
+        }
+
+        public string Context
+        {
+            get { return _db.Context; }
+        }
+
+        public string Location
+        {
+            get { return _db.Location; }
+        }
+
+        public string Name
+        {
+            get { return _db.Name + ".Connection"; }
         }
     }
 }

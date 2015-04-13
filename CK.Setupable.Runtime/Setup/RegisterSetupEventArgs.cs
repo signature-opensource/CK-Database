@@ -18,8 +18,8 @@ namespace CK.Setup
     /// </summary>
     public class RegisterSetupEventArgs : SetupEventArgs
     {
-        internal List<IDependentItem> RegisteredItems;
-        internal List<IDependentItemDiscoverer> RegisteredDiscoverers;
+        internal List<ISetupItem> RegisteredItems;
+        internal List<IDependentItemDiscoverer<ISetupItem>> RegisteredDiscoverers;
 
         internal RegisterSetupEventArgs()
             : base( SetupStep.PreInit )
@@ -27,21 +27,21 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Registers an <see cref="IDependentItem"/> object.
+        /// Registers an <see cref="ISetupItem"/> object.
         /// </summary>
         /// <param name="item">Object to register.</param>
-        public void Register( IDependentItem item )
+        public void Register( ISetupItem item )
         {
             if( item == null ) throw new ArgumentNullException( "item" );
-            if( RegisteredItems == null ) RegisteredItems = new List<IDependentItem>();
+            if( RegisteredItems == null ) RegisteredItems = new List<ISetupItem>();
             RegisteredItems.Add( item );
         }
 
-        class Trick : IDependentItemDiscoverer
+        class Trick : IDependentItemDiscoverer<ISetupItem>
         {
-            public IEnumerable<IDependentItem> Registered;
+            public IEnumerable<ISetupItem> Registered;
   
-            public IEnumerable<IDependentItem> GetOtherItemsToRegister()
+            public IEnumerable<ISetupItem> GetOtherItemsToRegister()
             {
                 return Registered;
             }
@@ -51,7 +51,7 @@ namespace CK.Setup
         /// Registers multiple <see cref="IDependentItem"/> objects.
         /// </summary>
         /// <param name="items">Objects to register.</param>
-        public void Register( IEnumerable<IDependentItem> items )
+        public void Register( IEnumerable<ISetupItem> items )
         {
             if( items == null ) throw new ArgumentNullException( "items" );
             Register( new Trick() { Registered = items } );
@@ -61,10 +61,10 @@ namespace CK.Setup
         /// Registers an <see cref="IDependentItemDiscoverer"/> object.
         /// </summary>
         /// <param name="discoverer">Discoverer to register.</param>
-        public void Register( IDependentItemDiscoverer discoverer )
+        public void Register( IDependentItemDiscoverer<ISetupItem> discoverer )
         {
             if( discoverer == null ) throw new ArgumentNullException( "discoverer" );
-            if( RegisteredDiscoverers == null ) RegisteredDiscoverers = new List<IDependentItemDiscoverer>();
+            if( RegisteredDiscoverers == null ) RegisteredDiscoverers = new List<IDependentItemDiscoverer<ISetupItem>>();
             RegisteredDiscoverers.Add( discoverer );
         }
 

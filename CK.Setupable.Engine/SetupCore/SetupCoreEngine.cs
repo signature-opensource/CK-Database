@@ -27,6 +27,7 @@ namespace CK.Setup
         readonly ISetupDriverFactory _driverFactory;
         readonly IActivityMonitor _monitor;
         readonly ISetupSessionMemory _memory;
+        readonly IReadOnlyList<ISetupEngineAspect> _aspects;
         SetupEngineState _state;
 
         class DriverList : IDriverList
@@ -106,9 +107,9 @@ namespace CK.Setup
         {
             public readonly static ISetupDriverFactory Default = new DefaultDriverfactory();
 
-            DependentItemSetupDriver ISetupDriverFactory.CreateDriver( Type type, DependentItemSetupDriver.BuildInfo info )
+            GenericItemSetupDriver ISetupDriverFactory.CreateDriver( Type type, GenericItemSetupDriver.BuildInfo info )
             {
-                return (DependentItemSetupDriver)Activator.CreateInstance( type, info );
+                return (GenericItemSetupDriver)Activator.CreateInstance( type, info );
             }
         }
 
@@ -119,16 +120,39 @@ namespace CK.Setup
         /// <param name="memory">Provides persistent memory to setup participants.</param>
         /// <param name="_monitor">Monitor to use.</param>
         /// <param name="driverFactory">Factory for setup drivers.</param>
-        public SetupCoreEngine( IVersionedItemRepository versionRepository, ISetupSessionMemory memory, IActivityMonitor monitor, ISetupDriverFactory driverFactory )
+        public SetupCoreEngine( IVersionedItemRepository versionRepository, ISetupSessionMemory memory, IReadOnlyList<ISetupEngineAspect> aspects, IActivityMonitor monitor, ISetupDriverFactory driverFactory )
         {
-            if( versionRepository == null ) throw new ArgumentNullException( "versionRepository" );
-            if( monitor == null ) throw new ArgumentNullException( "monitor" );
-            if( memory == null ) throw new ArgumentNullException( "memory" );
+            Debug.Assert( versionRepository != null );
+            Debug.Assert( aspects != null );
+            Debug.Assert( monitor != null );
+            Debug.Assert( memory != null );
             _versionRepository = versionRepository;
             _memory = memory;
+            _aspects = aspects;
             _driverFactory = driverFactory ?? DefaultDriverfactory.Default;
             _monitor = monitor;
             _drivers = new DriverList( this );
+        }
+
+        /// <summary>
+        /// Gets the <see cref="ISetupEngineAspect"/> that participate to setup.
+        /// </summary>
+        public IReadOnlyList<ISetupEngineAspect> Aspects 
+        {
+            get { return _aspects; } 
+        }
+
+        /// <summary>
+        /// Gets the first typed aspect that is assignable to <typeparamref name="T"/>. 
+        /// If such aspect can not be found, a <see cref="CKException"/> is thrown.
+        /// </summary>
+        /// <typeparam name="T">Type of the aspect to obtain.</typeparam>
+        /// <returns>The first compatible aspect.</returns>
+        public T Aspect<T>()
+        {
+            T a = _aspects.OfType<T>().FirstOrDefault();
+            if( a == null ) throw new CKException( "Aspect '{0}' is required. Did you forget to ragister an aspect configuration in the SetupEngineConfiguration.Aspects list?", typeof(T).FullName );
+            return a;
         }
 
         /// <summary>
@@ -187,11 +211,11 @@ namespace CK.Setup
         ///     To give the opportunity to external participants that may have prepared stuff if an error or a concellation occurs once a driver has been created,
         ///     a second <see cref="SetupEvent"/> at PreInitStep indicating the error or cancelation is raised and an error result is returned.
         /// </summary>
-        /// <param name="items">Set of <see cref="IDependentItem"/></param>
+        /// <param name="items">Set of <see cref="IDependentItem"/>.</param>
         /// <param name="discoverers">Set of <see cref="IDependentItemDiscoverer"/>.</param>
         /// <param name="options">Optional configuration for dependency graph computation (see <see cref="DependencySorter"/> for more information).</param>
         /// <returns>A <see cref="SetupCoreEngineRegisterResult"/> that captures detailed information about the registration result.</returns>
-        public SetupCoreEngineRegisterResult Register( IEnumerable<IDependentItem> items, IEnumerable<IDependentItemDiscoverer> discoverers, DependencySorter.Options options = null )
+        public SetupCoreEngineRegisterResult Register( IEnumerable<ISetupItem> items, IEnumerable<IDependentItemDiscoverer<ISetupItem>> discoverers, DependencySorterOptions options = null )
         {
             CheckState( SetupEngineState.None );
 
@@ -227,20 +251,21 @@ namespace CK.Setup
             // the state remains set to SetupEngineState.None.
             try
             {
-                result = new SetupCoreEngineRegisterResult( DependencySorter.OrderItems( items, discoverers, options ) );
+                result = new SetupCoreEngineRegisterResult( DependencySorter<ISetupItem>.OrderItems( items, discoverers, options ) );
                 if( result.IsValid )
                 {
                     var reusableEvent = new DriverEventArgs( SetupStep.PreInit );
                     foreach( var item in result.SortResult.SortedItems )
                     {
+                        GenericItemSetupDriver setupItemDriver = null;
                         DriverBase d;
                         Type typeToCreate = null;
                         if( item.IsGroup )
                         {
                             var head = (GroupHeadSetupDriver)_drivers[item.HeadForGroup.FullName];
                             typeToCreate = ResolveDriverType( item );
-                            DependentItemSetupDriver c = CreateSetupDriver( typeToCreate, new DependentItemSetupDriver.BuildInfo( head, item ) );
-                            d = head.Group = c;
+                            setupItemDriver = CreateSetupDriver( typeToCreate, new GenericItemSetupDriver.BuildInfo( head, item ) );
+                            d = head.Group = setupItemDriver;
                         }
                         else
                         {
@@ -256,11 +281,19 @@ namespace CK.Setup
                             else
                             {
                                 typeToCreate = ResolveDriverType( item );
-                                d = CreateSetupDriver( typeToCreate, new DependentItemSetupDriver.BuildInfo( this, item, externalVersion ) );
+                                d = setupItemDriver = CreateSetupDriver( typeToCreate, new GenericItemSetupDriver.BuildInfo( this, item, externalVersion ) );
                             }
                         }
                         Debug.Assert( d != null, "Otherwise an exception is thrown by CreateSetupDriver that will be caught as the result.UnexpectedError." );
                         _drivers.Add( d );
+                        if( setupItemDriver != null )
+                        {
+                            if( !item.Item.OnDriverCreated( setupItemDriver ) )
+                            {
+                                string msg = String.Format( "Canceled by Item '{0}' on driver creation.", item.Item.FullName );
+                                return new SetupCoreEngineRegisterResult( null ) { CancelReason = msg };
+                            }
+                        }
                         var hE = DriverEvent;
                         if( hE != null )
                         {
@@ -292,7 +325,7 @@ namespace CK.Setup
             return result;
         }
 
-        DependentItemSetupDriver CreateSetupDriver( Type typeToCreate, DependentItemSetupDriver.BuildInfo buildInfo )
+        GenericItemSetupDriver CreateSetupDriver( Type typeToCreate, GenericItemSetupDriver.BuildInfo buildInfo )
         {
             try
             {

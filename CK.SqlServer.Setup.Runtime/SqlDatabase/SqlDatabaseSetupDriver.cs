@@ -9,7 +9,7 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
-    public class SqlDatabaseSetupDriver : DependentItemSetupDriver
+    public class SqlDatabaseSetupDriver : GenericItemSetupDriver
     {
         readonly SqlDatabaseConnectionSetupDriver _connection;
 

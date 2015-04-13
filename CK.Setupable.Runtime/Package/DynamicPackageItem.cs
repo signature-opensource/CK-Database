@@ -16,12 +16,12 @@ namespace CK.Setup
 {
     /// <summary>
     /// Fully mutable <see cref="IDependentItemContainer"/> and <see cref="IVersionedItem"/> with optional associated <see cref="Model"/> 
-    /// and <see cref="ObjectsPackage"/> packages (that are <see cref="AutoDependentPackageItem"/>) and  configurable type for the associated <see cref="DependentItemSetupDriver"/>.
+    /// and <see cref="ObjectsPackage"/> packages (that are <see cref="AutoDependentPackageItem"/>) and  configurable type for the associated <see cref="GenericItemSetupDriver"/>.
     /// </summary>
     /// <remarks>
     /// The <see cref="DynamicContainerItem"/> can be used if a pure mutable Container is needed (no versions nor associated AutoDependentPackageItem).
     /// </remarks>
-    public class DynamicPackageItem : PackageItemBase, IDependentItemContainerTyped, IDependentItemDiscoverer
+    public class DynamicPackageItem : PackageItemBase, IDependentItemContainerTyped, IDependentItemDiscoverer<ISetupItem>
     {
         AutoDependentPackageItem _model;
         AutoDependentPackageItem _objects;
@@ -33,12 +33,12 @@ namespace CK.Setup
         /// <param name="itemType">The <see cref="IVersionedItem.ItemType"/> for this item.</param>
         /// <param name="driverType">
         /// Type of the driver to use. Can be the <see cref="Type"/> itself or the Assembly Qualified Name of the type.
-        /// When null, the type of <see cref="DependentItemSetupDriver"/> is asumed.
+        /// When null, the type of <see cref="GenericItemSetupDriver"/> is asumed.
         /// </param>
         public DynamicPackageItem( string itemType, object driverType = null )
             : base( itemType )
         {
-            _driverType = driverType ?? typeof( DependentItemSetupDriver );
+            _driverType = driverType ?? typeof( GenericItemSetupDriver );
             ItemKind = DependentItemKind.Container;
         }
 
@@ -110,15 +110,15 @@ namespace CK.Setup
             return _driverType;
         }
 
-        IEnumerable<IDependentItem> IDependentItemDiscoverer.GetOtherItemsToRegister()
+        IEnumerable<ISetupItem> IDependentItemDiscoverer<ISetupItem>.GetOtherItemsToRegister()
         {
             if( _objects == null )
             {
-                return _model != null ? new CKReadOnlyListMono<IDependentItem>( _model ) : null;
+                return _model != null ? new CKReadOnlyListMono<ISetupItem>( _model ) : null;
             }
             else if( _model == null )
             {
-                return new CKReadOnlyListMono<IDependentItem>( _objects );
+                return new CKReadOnlyListMono<ISetupItem>( _objects );
             }
             else 
             {

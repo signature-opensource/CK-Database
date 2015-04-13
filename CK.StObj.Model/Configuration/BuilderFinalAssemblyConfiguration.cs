@@ -46,7 +46,7 @@ namespace CK.Core
 
         /// <summary>
         /// Gets or sets a string (that can have any value) that will be stored inside the final assembly.
-        /// The <see cref="StObjContextRoot.LoadOrBuild"/> method use this key to automatically trigger a build 
+        /// The <see cref="G:StObjContextRoot.Build"/> method use this key to automatically trigger a build 
         /// and a new generation of the final assembly if the string do not match.
         /// </summary>
         public string ExternalVersionStamp { get; set; }
@@ -74,7 +74,7 @@ namespace CK.Core
         }
         
         /// <summary>
-        /// Uses <paramref cref="assemblyName"/> if it is not null nor empty or <see cref="DefaultAssemblyName"/>.
+        /// Uses <paramref name="assemblyName"/> if it is not null nor empty or <see cref="DefaultAssemblyName"/>.
         /// </summary>
         /// <returns>Final assembly name.</returns>
         static public string GetFinalAssemblyName( string assemblyName )

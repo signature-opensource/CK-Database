@@ -18,7 +18,7 @@ namespace CK.SqlServer.Setup
 {
 
 
-    public class SqlObjectItem : IVersionedItem, IDependentItemRef
+    public class SqlObjectItem : ISetupItem, IVersionedItem, IDependentItemRef
     {
         internal readonly static Type TypeCommand = typeof( SqlCommand );
         internal readonly static Type TypeConnection = typeof( SqlConnection );
@@ -268,11 +268,6 @@ namespace CK.SqlServer.Setup
             get { return _type; }
         }
 
-        bool IDependentItemRef.Optional
-        {
-            get { return false; }
-        }
-
         object IDependentItem.StartDependencySort()
         { 
             return typeof(SqlObjectSetupDriver);
@@ -322,5 +317,33 @@ namespace CK.SqlServer.Setup
         }
 
 
+        bool ISetupItem.OnDriverCreated( GenericItemSetupDriver driver )
+        {
+            return true;
+        }
+
+        string IContextLocNaming.Context
+        {
+            get { return _fullName.Context; }
+        }
+
+        string IContextLocNaming.Location
+        {
+            get { return _fullName.Location; }
+        }
+
+        string IContextLocNaming.Name
+        {
+            get
+            {
+                if( _replaces != null ) return _fullName.Name + "#replace";
+                return _fullName.Name;
+            }
+        }
+
+        bool IDependentItemRef.Optional
+        {
+            get { return false; }
+        }
     }
 }

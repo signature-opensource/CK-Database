@@ -58,6 +58,7 @@
     </Compile>
     <Compile Include="CKCORENEXTVERSION.cs" />
     <Compile Include="IDependentItemNamedRef.cs" />
+    <Compile Include="ISortedItemT.cs" />
     <Compile Include="NamedDependentItemGroupRef.cs" />
     <Compile Include="IDependentItemGroupRef.cs" />
     <Compile Include="DependentItemKind.cs" />
@@ -75,10 +76,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sorter\CycleExplainedElement.cs" />
     <Compile Include="Sorter\DependencySorter.cs" />
+    <Compile Include="Sorter\DependencySorterT.cs" />
+    <Compile Include="Sorter\DependencySorterOptions.cs" />
     <Compile Include="Sorter\DependencySorterResult.cs" />
     <Compile Include="DependentItemExtension.Trace.cs" />
     <Compile Include="Sorter\DependentItemIssue.cs" />
     <Compile Include="Sorter\DependentItemStructureError.cs" />
+    <Compile Include="Sorter\IDependencySorterResult.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

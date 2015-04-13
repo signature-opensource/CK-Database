@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using CK.Core;
 
 namespace CK.Setup
 {
@@ -49,7 +50,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets an array of types that must be Children of this item.
-        /// <see cref="ItemKind"/> must be <see cref="DependentItemKind.Group"/> or <see cref="DependentItemKind.Container"/>.
+        /// <see cref="ItemKind"/> must be <see cref="DependentItemKindSpec.Group"/> or <see cref="DependentItemKindSpec.Container"/>.
         /// This property is not inherited, it applies only to the decorated type.
         /// </summary>
         Type[] Children { get; }

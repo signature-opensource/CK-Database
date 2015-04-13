@@ -123,7 +123,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
                 
                 // Retries with the configuration (in reverse order) and
                 // generates the assemly to test ConnectionString injection on SqlDatabase objects.
-                c.RevertOrderingNames = true;
+                c.RunningMode = SetupEngineRunningMode.DefaultWithRevertOrderingNames;
                 c.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = "IntoTheWild.Auto";
                 c.StObjEngineConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = false;
 

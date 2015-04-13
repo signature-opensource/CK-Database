@@ -15,7 +15,7 @@ using System.Collections;
 
 namespace CK.Setup
 {
-    public class StObjSetupItemBuilder
+    class StObjSetupItemBuilder
     {
         readonly IActivityMonitor _monitor;
         readonly IStObjSetupConfigurator _configurator;
@@ -47,7 +47,7 @@ namespace CK.Setup
             return setupableItems.Values.Select( data => data.SetupItem );
         }
 
-        #region Build phasis: BuildSetupItems, BindDependencies and CallDynamicInitializer
+        #region SafeBuildStObj phasis: BuildSetupItems, BindDependencies and CallDynamicInitializer
 
         void BuildSetupItems( IReadOnlyList<IStObjResult> orderedObjects, Dictionary<IStObjResult, StObjSetupData> setupableItems )
         {

@@ -148,6 +148,15 @@ namespace CK.Core
                 }
             }
         }
+
+        /// <summary>
+        /// Returns this <see cref="FullName"/>, mainly for debugging purposes.
+        /// </summary>
+        /// <returns>This FullName.</returns>
+        public override string ToString()
+        {
+            return _fullName;
+        }
     }
 
 }

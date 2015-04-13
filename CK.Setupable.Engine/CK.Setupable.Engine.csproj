@@ -56,7 +56,6 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="ISetupEngineAspect.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -86,7 +85,7 @@
     <Compile Include="SetupEngineConfigurator.cs" />
     <Compile Include="StObj\Impl\StObjSetupDataRootClass.cs" />
     <Compile Include="StObj\Impl\StObjSetupData.cs" />
-    <Compile Include="StObj\StObjSetupHook.cs" />
+    <Compile Include="StObj\StObjBuilder.cs" />
     <Compile Include="StObj\StObjSetupItemBuilder.cs" />
   </ItemGroup>
   <ItemGroup>

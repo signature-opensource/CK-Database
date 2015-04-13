@@ -11,29 +11,34 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
-    public class SqlDatabaseConnectionSetupDriver : DependentItemSetupDriver
+    public class SqlDatabaseConnectionSetupDriver : GenericItemSetupDriver
     {
         readonly ISqlManagerProvider _sqlProvider;
         ISqlManager _connection;
 
-        public SqlDatabaseConnectionSetupDriver( BuildInfo info, ISqlManagerProvider sqlProvider )
+        public SqlDatabaseConnectionSetupDriver( BuildInfo info )
             : base( info )
         {
-            if( sqlProvider == null ) throw new ArgumentNullException( "sqlProvider" );
-            _sqlProvider = sqlProvider;
+            _sqlProvider = info.Engine.Aspect<ISqlManagerProvider>();
         }
 
         public new SqlDatabaseConnectionItem Item { get { return (SqlDatabaseConnectionItem)base.Item; } }
 
-        protected override bool Init()
+        protected override bool Init( bool beforeHandlers )
         {
-            _connection = FindManager( _sqlProvider, Engine.Monitor, Item.SqlDatabase );
-            if( _connection == null ) return false;
-            foreach( var name in Item.SqlDatabase.Schemas )
+            if( beforeHandlers )
             {
-                _connection.ExecuteOneScript( String.Format( "if not exists(select 1 from sys.schemas where name = '{0}') begin exec( 'create schema {0}' ); end", name ), Engine.Monitor );
+                _connection = FindManager( _sqlProvider, Engine.Monitor, Item.SqlDatabase );
+                if( _connection == null ) return false;
             }
-            return base.Init();
+            else
+            {
+                foreach( var name in Item.SqlDatabase.Schemas )
+                {
+                    _connection.ExecuteOneScript( String.Format( "if not exists(select 1 from sys.schemas where name = '{0}') begin exec( 'create schema {0}' ); end", name ), Engine.Monitor );
+                }
+            }
+            return true;
         }
 
         static ISqlManager FindManager( ISqlManagerProvider sql, IActivityMonitor monitor, SqlDatabase db )

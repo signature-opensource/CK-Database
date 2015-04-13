@@ -25,7 +25,7 @@ namespace CK.Setup.Dependency.Tests
         [Test]
         public void NoItem()
         {
-            DependencySorterResult r = DependencySorter.OrderItems( CKReadOnlyListEmpty<TestableItem>.Empty, null );
+            IDependencySorterResult r = DependencySorter.OrderItems( CKReadOnlyListEmpty<TestableItem>.Empty, null );
             Assert.That( r.CycleDetected == null );
             Assert.That( r.ItemIssues, Is.Empty );
             Assert.That( r.SortedItems, Is.Empty );
@@ -36,7 +36,7 @@ namespace CK.Setup.Dependency.Tests
         public void OneItem()
         {
             var oneItem = new TestableItem( "Test" );
-            DependencySorterResult r = DependencySorter.OrderItems( new CKReadOnlyListMono<TestableItem>( oneItem ), null );
+            IDependencySorterResult r = DependencySorter.OrderItems( new CKReadOnlyListMono<TestableItem>( oneItem ), null );
             Assert.That( r.CycleDetected == null );
             Assert.That( r.ItemIssues, Is.Empty );
             Assert.That( r.SortedItems.Count, Is.EqualTo( 1 ) );
@@ -49,7 +49,7 @@ namespace CK.Setup.Dependency.Tests
         public void OneItemMissingDependency()
         {
             var oneItem = new TestableItem( "Test", "⇀MissingDep" );
-            DependencySorterResult r = DependencySorter.OrderItems( new CKReadOnlyListMono<TestableItem>( oneItem ), null );
+            IDependencySorterResult r = DependencySorter.OrderItems( new CKReadOnlyListMono<TestableItem>( oneItem ), null );
             Assert.That( r.CycleDetected == null );
             Assert.That( r.HasRequiredMissing );
             Assert.That( r.HasStructureError );
@@ -75,7 +75,7 @@ namespace CK.Setup.Dependency.Tests
         {
             var oneItem = new TestableItem( "Test" );
             oneItem.RequiredBy.Add( new TestableItem( "AutoDiscovered" ) );
-            DependencySorterResult r = DependencySorter.OrderItems( new CKReadOnlyListMono<TestableItem>( oneItem ), null );
+            IDependencySorterResult r = DependencySorter.OrderItems( new CKReadOnlyListMono<TestableItem>( oneItem ), null );
             Assert.That( r.CycleDetected == null );
             Assert.That( r.ItemIssues, Is.Empty );
             Assert.That( r.SortedItems.Count, Is.EqualTo( 2 ) );
@@ -91,7 +91,7 @@ namespace CK.Setup.Dependency.Tests
         {
             var oneItem = new TestableItem( "Test" );
             oneItem.Requires.Add( new TestableItem( "AutoDiscovered" ) );
-            DependencySorterResult r = DependencySorter.OrderItems( new CKReadOnlyListMono<TestableItem>( oneItem ), null );
+            IDependencySorterResult r = DependencySorter.OrderItems( new CKReadOnlyListMono<TestableItem>( oneItem ), null );
             Assert.That( r.CycleDetected == null );
             Assert.That( r.ItemIssues, Is.Empty );
             Assert.That( r.SortedItems.Count, Is.EqualTo( 2 ) );
@@ -108,7 +108,7 @@ namespace CK.Setup.Dependency.Tests
             var i1 = new TestableItem( "Base" );
             var i2 = new TestableItem( "User", "⇀Base" );
             {
-                DependencySorterResult r = DependencySorter.OrderItems( i1, i2 );
+                IDependencySorterResult r = DependencySorter.OrderItems( i1, i2 );
                 Assert.That( r.CycleDetected == null );
                 Assert.That( r.ItemIssues, Is.Empty );
                 Assert.That( r.SortedItems.Count, Is.EqualTo( 2 ) );
@@ -120,7 +120,7 @@ namespace CK.Setup.Dependency.Tests
             }
             {
                 // Allowing duplicates (and reversing initial order).
-                DependencySorterResult r = DependencySorter.OrderItems( i2, i1, i1, i2 );
+                IDependencySorterResult r = DependencySorter.OrderItems( i2, i1, i1, i2 );
                 Assert.That( r.CycleDetected == null );
                 Assert.That( r.ItemIssues, Is.Empty );
                 Assert.That( r.SortedItems.Count, Is.EqualTo( 2 ) );
@@ -137,7 +137,7 @@ namespace CK.Setup.Dependency.Tests
         {
             var i1 = new TestableItem( "Test" );
             var i2 = new TestableItem( "Test" );
-            DependencySorterResult r = DependencySorter.OrderItems( i1, i2 );
+            IDependencySorterResult r = DependencySorter.OrderItems( i1, i2 );
             Assert.That( r.HasStructureError );
            // Since we start with i1:
             Assert.That( r.ItemIssues[0].Item, Is.SameAs( i1 ) );

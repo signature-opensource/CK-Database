@@ -68,7 +68,6 @@ namespace CK.Setup
         /// <param name="type">Type to register.</param>
         public void AddExplicitRegisteredClass( Type type )
         {
-            
             if( type == null ) throw new ArgumentNullException();
             CheckNotRunning();
             if( _explicitRegisteredClasses == null ) _explicitRegisteredClasses = new List<Type>();

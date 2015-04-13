@@ -206,7 +206,7 @@ namespace CK.Setup
                     _monitor.CloseGroup( String.Format( "{0} items created.", objectCount ) );
                 }
 
-                DependencySorterResult sortResult = null;
+                IDependencySorterResult sortResult = null;
                 using( _monitor.OpenInfo().Send( "Handling dependencies." ) )
                 {
                     bool noCycleDetected;
@@ -222,7 +222,7 @@ namespace CK.Setup
                         Debug.Assert( result.HasFatalError );
                         return result;
                     }
-                    sortResult = DependencySorter.OrderItems( result.AllMutableItems, null, new DependencySorter.Options()
+                    sortResult = DependencySorter.OrderItems( result.AllMutableItems, null, new DependencySorterOptions()
                                                                                                     {
                                                                                                         SkipDependencyToContainer = true,
                                                                                                         HookInput = DependencySorterHookInput,

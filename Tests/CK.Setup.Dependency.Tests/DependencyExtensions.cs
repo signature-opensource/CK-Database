@@ -16,17 +16,17 @@ namespace CK.Setup.Dependency.Tests
 {
     static class DependencyExtensions
     {
-        public static IEnumerable<string> OrderedFullNames( this DependencySorterResult @this )
+        public static IEnumerable<string> OrderedFullNames( this IDependencySorterResult @this )
         {
             return @this.SortedItems.Select( o => o.FullName );
         }
 
-        public static bool IsOrdered( this DependencySorterResult @this, params string[] fullNames )
+        public static bool IsOrdered( this IDependencySorterResult @this, params string[] fullNames )
         {
             return OrderedFullNames( @this ).SequenceEqual( fullNames );
         }
 
-        public static void AssertOrdered( this DependencySorterResult @this, params string[] fullNames )
+        public static void AssertOrdered( this IDependencySorterResult @this, params string[] fullNames )
         {
             if( !OrderedFullNames( @this ).SequenceEqual( fullNames ) )
             {
@@ -34,12 +34,12 @@ namespace CK.Setup.Dependency.Tests
             }
         }
 
-        public static void CheckChildren( this DependencySorterResult @this, string fullName, string childrenFullNames )
+        public static void CheckChildren( this IDependencySorterResult @this, string fullName, string childrenFullNames )
         {
             Check( @this, Find( @this, fullName ).Children, childrenFullNames );
         }
 
-        public static void Check( this DependencySorterResult @this, IEnumerable<ISortedItem> items, string fullNames )
+        public static void Check( this IDependencySorterResult @this, IEnumerable<ISortedItem> items, string fullNames )
         {
             var s1 = items.Select( i => i.FullName ).OrderBy( Util.FuncIdentity );
             var s2 = fullNames.Split( ',' ).OrderBy( Util.FuncIdentity );
@@ -49,7 +49,7 @@ namespace CK.Setup.Dependency.Tests
             }
         }
         
-        public static ISortedItem Find( this DependencySorterResult @this, string fullName )
+        public static ISortedItem Find( this IDependencySorterResult @this, string fullName )
         {
             return @this.SortedItems.FirstOrDefault( i => i.FullName == fullName );
         }

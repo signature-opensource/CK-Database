@@ -129,7 +129,7 @@ namespace CK.Setup.Dependency.Tests
             get { return _relatedItems ?? (_relatedItems = new List<IDependentItem>()); }
         }
 
-        IEnumerable<IDependentItem> IDependentItemDiscoverer.GetOtherItemsToRegister()
+        IEnumerable<IDependentItem> IDependentItemDiscoverer<IDependentItem>.GetOtherItemsToRegister()
         {
             return _relatedItems;
         }

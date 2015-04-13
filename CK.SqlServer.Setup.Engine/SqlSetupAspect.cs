@@ -44,22 +44,6 @@ namespace CK.SqlServer.Setup
                     }
                 }
             } 
-
-            public override DependentItemSetupDriver CreateDriver( Type driverType, DependentItemSetupDriver.BuildInfo info )
-            {
-                DependentItemSetupDriver d = base.CreateDriver( driverType, info );
-                if( d == null )
-                {
-                    if( driverType == typeof( SqlObjectSetupDriver ) ) d = new SqlObjectSetupDriver( info, _center );
-                    else if( driverType == typeof( DependentItemSetupDriver ) ) d = new DependentItemSetupDriver( info );
-                    else if( driverType == typeof( SqlDatabaseSetupDriver ) ) d = new SqlDatabaseSetupDriver( info );
-                    else if( driverType == typeof( SqlDatabaseConnectionSetupDriver ) ) d = new SqlDatabaseConnectionSetupDriver( info, _center );
-                    else if( driverType == typeof( SqlPackageBaseSetupDriver ) ) d = new SqlPackageBaseSetupDriver( info );
-                    else if( driverType == typeof( SqlTableSetupDriver ) ) d = new SqlTableSetupDriver( info );
-                    else if( driverType == typeof( SqlViewSetupDriver ) ) d = new SqlViewSetupDriver( info, _center );
-                }
-                return d;
-            }
         }
 
         /// <summary>
@@ -198,7 +182,7 @@ namespace CK.SqlServer.Setup
                 {
                     using( monitor.OpenInfo().Send( "Creating Sql Objects from {0} sql files.", _sqlFiles.Count ) )
                     {
-                        List<IDependentItem> items = new List<IDependentItem>();
+                        var items = new List<ISetupItem>();
                         foreach( var proto in _sqlFiles.OfType<SqlObjectProtoItem>() )
                         {
                             var item = proto.CreateItem( monitor, !_config.IgnoreMissingDependencyIsError, null );

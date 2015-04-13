@@ -1,6 +1,6 @@
 #region Proprietary License
 /*----------------------------------------------------------------------------
-* This file (CK.Setupable.Model\RequiredByAttribute.cs) is part of CK-Database. 
+* This file (CK.Setupable.Model\ChildrenAttribute.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
 *-----------------------------------------------------------------------------*/
 #endregion
@@ -14,15 +14,18 @@ using System.Diagnostics;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Simple attributes to define children of a class by names.
+    /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = false )]
-    public class RequiredByAttribute : RequiresAttribute
+    public class ChildrenAttribute : RequiresAttribute
     {
         /// <summary>
-        /// Defines reverse requirements by their names.
+        /// Defines children by their names.
         /// </summary>
-        /// <param name="requires">Comma separated list of item names that require this object.</param>
-        public RequiredByAttribute( string requires )
-            : base( requires )
+        /// <param name="children">Comma separated list of children names.</param>
+        public ChildrenAttribute( string children )
+            : base( children )
         {            
         }
 

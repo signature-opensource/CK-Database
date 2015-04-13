@@ -14,51 +14,51 @@ namespace CK.Setup
 {
     public class SetupHandler : ISetupHandler
     {
-        protected SetupHandler( DependentItemSetupDriver d )
+        protected SetupHandler( GenericItemSetupDriver d )
         {
             if( d == null ) throw new ArgumentNullException();
             Driver = d;
             Driver.AddHandler( this );
         }
 
-        protected DependentItemSetupDriver Driver { get; private set; }
+        protected GenericItemSetupDriver Driver { get; private set; }
 
-        void CheckCall( DependentItemSetupDriver d )
+        void CheckCall( GenericItemSetupDriver d )
         {
             if( d != Driver ) throw new ArgumentException( "Call mismatch: handler is bound to another driver." );
         }
 
-        bool ISetupHandler.Init( DependentItemSetupDriver d )
+        bool ISetupHandler.Init( GenericItemSetupDriver d )
         {
             CheckCall( d );
             return Init();
         }
 
-        bool ISetupHandler.InitContent( DependentItemSetupDriver d )
+        bool ISetupHandler.InitContent( GenericItemSetupDriver d )
         {
             CheckCall( d );
             return InitContent();
         }
 
-        bool ISetupHandler.Install( DependentItemSetupDriver d )
+        bool ISetupHandler.Install( GenericItemSetupDriver d )
         {
             CheckCall( d );
             return Install();
         }
 
-        bool ISetupHandler.InstallContent( DependentItemSetupDriver d )
+        bool ISetupHandler.InstallContent( GenericItemSetupDriver d )
         {
             CheckCall( d );
             return InstallContent();
         }
 
-        bool ISetupHandler.Settle( DependentItemSetupDriver d )
+        bool ISetupHandler.Settle( GenericItemSetupDriver d )
         {
             CheckCall( d );
             return Settle();
         }
 
-        bool ISetupHandler.SettleContent( DependentItemSetupDriver d )
+        bool ISetupHandler.SettleContent( GenericItemSetupDriver d )
         {
             CheckCall( d );
             return SettleContent();

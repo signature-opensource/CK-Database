@@ -77,9 +77,9 @@ namespace CK.Setup
         public readonly static char GeneralizedBy           = '↟';  // Unicode: \u219F
 
         internal char Relation;
-        internal readonly DependencySorter.Entry Item;
+        internal readonly IDependentItem Item;
 
-        internal CycleExplainedElement( char r, DependencySorter.Entry i )
+        internal CycleExplainedElement( char r, IDependentItem i )
         {
             Relation = r;
             Item = i;
@@ -96,7 +96,7 @@ namespace CK.Setup
 
         char ICycleExplainedElement.Relation { get { return Relation; } }
 
-        IDependentItem ICycleExplainedElement.Item { get { return Item.Item; } }
+        IDependentItem ICycleExplainedElement.Item { get { return Item; } }
     }
 
 }

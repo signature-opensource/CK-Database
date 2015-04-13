@@ -14,20 +14,21 @@ using System.Diagnostics;
 namespace CK.Setup
 {
     /// <summary>
-    /// Generic driver for <see cref="IDependentItem"/> (also handles the composite <see cref="IDependentItemGroup"/>).
+    /// Generic driver for <see cref="IDependentItem"/> that also handles the composite <see cref="IDependentItemGroup"/>.
     /// </summary>
-    public class DependentItemSetupDriver : DriverBase
+    public class GenericItemSetupDriver : DriverBase
     {
         List<ISetupHandler> _handlers;
         internal readonly DriverBase Head;
 
         /// <summary>
-        /// Encapsulates construction information for <see cref="DependentItemSetupDriver"/> objects.
-        /// This is an opaque parameter that enables the abstract base SetupDriver to be correclty intialized.
+        /// Encapsulates construction information for <see cref="GenericItemSetupDriver"/> objects.
+        /// This is an opaque parameter (except the <see cref="Engine"/> property) that enables the abstract 
+        /// DriverBase to be correctly intialized.
         /// </summary>
-        public class BuildInfo
+        public sealed class BuildInfo
         {
-            internal BuildInfo( ISetupEngine engine, ISortedItem sortedItem, VersionedName externalVersion )
+            internal BuildInfo( ISetupEngine engine, ISortedItem<ISetupItem> sortedItem, VersionedName externalVersion )
             {               
                 Head = null;
                 Engine = engine;
@@ -35,7 +36,7 @@ namespace CK.Setup
                 ExternalVersion = externalVersion;
             }
 
-            internal BuildInfo( DriverBase head, ISortedItem sortedItem )
+            internal BuildInfo( DriverBase head, ISortedItem<ISetupItem> sortedItem )
             {
                 Head = head;
                 Engine = head.Engine;
@@ -43,17 +44,22 @@ namespace CK.Setup
                 SortedItem = sortedItem;
             }
 
-            internal readonly ISetupEngine Engine;
-            internal readonly ISortedItem SortedItem;
+            /// <summary>
+            /// Gets the <see cref="ISetupEngine"/>. <see cref="ISetupEngine.Aspects"/> (and <see cref="ISetupEngine.Aspect{T}"/>)
+            /// can be used by driver constructors to interact with their aspects.
+            /// </summary>
+            public ISetupEngine Engine { get; set; }
+
+            internal readonly ISortedItem<ISetupItem> SortedItem;
             internal readonly VersionedName ExternalVersion;
             internal readonly DriverBase Head;
         }
 
         /// <summary>
-        /// Initializes a new <see cref="DependentItemSetupDriver"/>.
+        /// Initializes a new <see cref="GenericItemSetupDriver"/>.
         /// </summary>
         /// <param name="info">Opaque parameter built by the framework.</param>
-        public DependentItemSetupDriver( BuildInfo info )
+        public GenericItemSetupDriver( BuildInfo info )
             : base( info.Engine, info.SortedItem, info.ExternalVersion, info.Head != null ? info.Head.DirectDependencies : null )
         {
             Debug.Assert( info.Head == null || info.SortedItem.FullName + ".Head" == info.Head.FullName );
@@ -66,7 +72,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets whether this <see cref="DependentItemSetupDriver"/> is associated to a group or a container.
+        /// Gets whether this <see cref="GenericItemSetupDriver"/> is associated to a group or a container.
         /// </summary>
         public bool IsGroup 
         { 
@@ -86,7 +92,7 @@ namespace CK.Setup
 
         internal bool ExecuteHeadInit()
         {
-            if( !Init() ) return false;
+            if( !Init( true ) ) return false;
             if( _handlers != null )
             {
                 for( int i = 0; i < _handlers.Count; ++i )
@@ -94,13 +100,14 @@ namespace CK.Setup
                     if( !_handlers[i].Init( this ) ) return false;
                 }
             }
-            return true;
+            return Init( false );
         }
 
         internal override bool ExecuteInit()
         {
-            if( !IsGroup && !ExecuteHeadInit() ) return false;
-            if( !InitContent() ) return false;
+            if( !IsGroup ) return ExecuteHeadInit();
+            // If the item is not a Group or a Container, InitContent is not called.
+            if( !InitContent( true ) ) return false;
             if( _handlers != null )
             {
                 for( int i = 0; i < _handlers.Count; ++i )
@@ -108,12 +115,12 @@ namespace CK.Setup
                     if( !_handlers[i].InitContent( this ) ) return false;
                 }
             }
-            return true;
+            return InitContent( false );
         }
 
         internal bool ExecuteHeadInstall()
         {
-            if( !Install() ) return false;
+            if( !Install( true ) ) return false;
             if( _handlers != null )
             {
                 for( int i = 0; i < _handlers.Count; ++i )
@@ -121,13 +128,14 @@ namespace CK.Setup
                     if( !_handlers[i].Install( this ) ) return false;
                 }
             }
-            return true;
+            return Install( false );
         }
 
         internal override bool ExecuteInstall()
         {
-            if( !IsGroup && !ExecuteHeadInstall() ) return false;
-            if( !InstallContent() ) return false;
+            if( !IsGroup ) return ExecuteHeadInstall();
+            // If the item is not a Group or a Container, InstallContent is not called.
+            if( !InstallContent( true ) ) return false;
             if( _handlers != null )
             {
                 for( int i = 0; i < _handlers.Count; ++i )
@@ -135,12 +143,12 @@ namespace CK.Setup
                     if( !_handlers[i].InstallContent( this ) ) return false;
                 }
             }
-            return true;
+            return InstallContent( false );
         }
 
         internal bool ExecuteHeadSettle()
         {
-            if( !Settle() ) return false;
+            if( !Settle( true ) ) return false;
             if( _handlers != null )
             {
                 for( int i = 0; i < _handlers.Count; ++i )
@@ -148,13 +156,14 @@ namespace CK.Setup
                     if( !_handlers[i].Settle( this ) ) return false;
                 }
             }
-            return true;
+            return Settle( false );
         }
 
         internal override bool ExecuteSettle()
         {
-            if( !IsGroup && !ExecuteHeadSettle() ) return false;
-            if( !SettleContent() ) return false;
+            if( !IsGroup ) return ExecuteHeadSettle();
+            // If the item is not a Group or a Container, SettleContent is not called.
+            if( !SettleContent( true ) ) return false;
             if( _handlers != null )
             {
                 for( int i = 0; i < _handlers.Count; ++i )
@@ -162,7 +171,7 @@ namespace CK.Setup
                     if( !_handlers[i].SettleContent( this ) ) return false;
                 }
             }
-            return true;
+            return SettleContent( false );
         }
 
         #region Handler management
@@ -180,37 +189,37 @@ namespace CK.Setup
             _handlers.Add( handler );
         }
 
-        public void AddInitHandler( Func<DependentItemSetupDriver, bool> handler )
+        public void AddInitHandler( Func<GenericItemSetupDriver, bool> handler )
         {
             if( handler == null ) throw new ArgumentNullException( "handler" );
             AddHandler( new SetupHandlerFuncAdapter( handler, SetupCallGroupStep.Init ) );
         }
 
-        public void AddInitContentHandler( Func<DependentItemSetupDriver, bool> handler )
+        public void AddInitContentHandler( Func<GenericItemSetupDriver, bool> handler )
         {
             if( handler == null ) throw new ArgumentNullException( "handler" );
             AddHandler( new SetupHandlerFuncAdapter( handler, SetupCallGroupStep.InitContent ) );
         }
 
-        public void AddInstallHandler( Func<DependentItemSetupDriver, bool> handler )
+        public void AddInstallHandler( Func<GenericItemSetupDriver, bool> handler )
         {
             if( handler == null ) throw new ArgumentNullException( "handler" );
             AddHandler( new SetupHandlerFuncAdapter( handler, SetupCallGroupStep.Install ) );
         }
 
-        public void AddInstallContentHandler( Func<DependentItemSetupDriver, bool> handler )
+        public void AddInstallContentHandler( Func<GenericItemSetupDriver, bool> handler )
         {
             if( handler == null ) throw new ArgumentNullException( "handler" );
             AddHandler( new SetupHandlerFuncAdapter( handler, SetupCallGroupStep.InstallContent ) );
         }
 
-        public void AddSettleHandler( Func<DependentItemSetupDriver, bool> handler )
+        public void AddSettleHandler( Func<GenericItemSetupDriver, bool> handler )
         {
             if( handler == null ) throw new ArgumentNullException( "handler" );
             AddHandler( new SetupHandlerFuncAdapter( handler, SetupCallGroupStep.Settle ) );
         }
 
-        public void AddSettleContentHandler( Func<DependentItemSetupDriver, bool> handler )
+        public void AddSettleContentHandler( Func<GenericItemSetupDriver, bool> handler )
         {
             if( handler == null ) throw new ArgumentNullException( "handler" );
             AddHandler( new SetupHandlerFuncAdapter( handler, SetupCallGroupStep.SettleContent ) );
@@ -221,8 +230,27 @@ namespace CK.Setup
         /// <summary>
         /// Does nothing (always returns true).
         /// </summary>
+        /// <param name="beforeHandlers">
+        /// True when handlers associated to this driver have not been called yet.
+        /// False when their <see cref="ISetupHandler.Init"/> method have been called.
+        /// </param>
         /// <returns>Always true.</returns>
-        internal protected virtual bool Init()
+        internal protected virtual bool Init( bool beforeHandlers )
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Called, only if <see cref="IsGroup"/> is true, after <see cref="Init"/> (and <see cref="InitContent"/> for groups 
+        /// or containers) have been called on all the contained items.
+        /// Does nothing (always returns true).
+        /// </summary>
+        /// <param name="beforeHandlers">
+        /// True when handlers associated to this driver have not been called yet.
+        /// False when their <see cref="ISetupHandler.InitContent"/> method have been called.
+        /// </param>
+        /// <returns>Always true.</returns>
+        protected virtual bool InitContent( bool beforeHandlers )
         {
             return true;
         }
@@ -230,8 +258,26 @@ namespace CK.Setup
         /// <summary>
         /// Does nothing (always returns true).
         /// </summary>
+        /// <param name="beforeHandlers">
+        /// True when handlers associated to this driver have not been called yet.
+        /// False when their <see cref="ISetupHandler.Install"/> method have been called.
+        /// </param>
         /// <returns>Always true.</returns>
-        protected virtual bool InitContent()
+        internal protected virtual bool Install( bool beforeHandlers )
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Called, only if <see cref="IsGroup"/> is true, after <see cref="Install"/> (and <see cref="InstallContent"/> for groups 
+        /// or containers) have been called on all the contained items.
+        /// Does nothing (always returns true).
+        /// </summary>
+        /// <param name="beforeHandlers">
+        /// True when handlers associated to this driver have not been called yet.
+        /// False when their <see cref="ISetupHandler.InstallContent"/> method have been called.
+        /// </param>
+        protected virtual bool InstallContent( bool beforeHandlers )
         {
             return true;
         }
@@ -239,35 +285,26 @@ namespace CK.Setup
         /// <summary>
         /// Does nothing (always returns true).
         /// </summary>
+        /// <param name="beforeHandlers">
+        /// True when handlers associated to this driver have not been called yet.
+        /// False when their <see cref="ISetupHandler.Settle"/> method have been called.
+        /// </param>
         /// <returns>Always true.</returns>
-        internal protected virtual bool Install()
+        internal protected virtual bool Settle( bool beforeHandlers )
         {
             return true;
         }
 
         /// <summary>
+        /// Called, only if <see cref="IsGroup"/> is true, after <see cref="Settle"/> (and <see cref="SettleContent"/> for groups 
+        /// or containers) have been called on all the contained items.
         /// Does nothing (always returns true).
         /// </summary>
-        /// <returns>Always true.</returns>
-        protected virtual bool InstallContent()
-        {
-            return true;
-        }
-
-        /// <summary>
-        /// Does nothing (always returns true).
-        /// </summary>
-        /// <returns>Always true.</returns>
-        internal protected virtual bool Settle()
-        {
-            return true;
-        }
-
-        /// <summary>
-        /// Does nothing (always returns true).
-        /// </summary>
-        /// <returns>Always true.</returns>
-        protected virtual bool SettleContent()
+        /// <param name="beforeHandlers">
+        /// True when handlers associated to this driver have not been called yet.
+        /// False when their <see cref="ISetupHandler.SettleContent"/> method have been called.
+        /// </param>
+        protected virtual bool SettleContent( bool beforeHandlers )
         {
             return true;
         }

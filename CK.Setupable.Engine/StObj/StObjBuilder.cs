@@ -14,41 +14,27 @@ using CK.Core;
 
 namespace CK.Setup
 {
-    class StObjSetupHook 
+    class StObjBuilder 
     {
-        readonly SetupEngine _engine;
-        readonly IStObjRuntimeBuilder _runtimeBuilder;
-        readonly StObjEngineConfiguration _config;
-        readonly SetupEngineConfigurator _configurator;
-
-        public StObjSetupHook( SetupEngine engine, IStObjRuntimeBuilder runtimeBuilder, StObjEngineConfiguration config, SetupEngineConfigurator internalRelay )
+        static public IEnumerable<ISetupItem> SafeBuildStObj( SetupEngine engine, IStObjRuntimeBuilder runtimeBuilder, SetupEngineConfigurator configurator )
         {
-            _engine = engine;
-            _runtimeBuilder = runtimeBuilder;
-            _config = config;
-            _configurator = internalRelay;
-            _engine.RegisterSetupEvent += new EventHandler<RegisterSetupEventArgs>( OnRegisterSetupEvent );
-        }
-
-        void OnRegisterSetupEvent( object sender, RegisterSetupEventArgs e )
-        {
-            var monitor = _engine.Monitor;
-
+            var monitor = engine.Monitor;
+            var config = engine.Configuration.StObjEngineConfiguration;
             bool hasError = false;
             using( monitor.OnError( () => hasError = true ) )
             using( monitor.OpenInfo().Send( "Handling StObj objects." ) )
             {
                 StObjCollectorResult result;
                 AssemblyRegisterer typeReg = new AssemblyRegisterer( monitor );
-                typeReg.Discover( _config.BuildAndRegisterConfiguration.Assemblies );
-                StObjCollector stObjC = new StObjCollector( monitor, _config.TraceDependencySorterInput, _config.TraceDependencySorterOutput, _runtimeBuilder, _configurator, _configurator, _configurator );
-                stObjC.DependencySorterHookInput += _engine.StartConfiguration.StObjDependencySorterHookInput;
-                stObjC.DependencySorterHookOutput += _engine.StartConfiguration.StObjDependencySorterHookOutput;
+                typeReg.Discover( config.BuildAndRegisterConfiguration.Assemblies );
+                StObjCollector stObjC = new StObjCollector( monitor, config.TraceDependencySorterInput, config.TraceDependencySorterOutput, runtimeBuilder, configurator, configurator, configurator );
+                stObjC.DependencySorterHookInput += engine.StartConfiguration.StObjDependencySorterHookInput;
+                stObjC.DependencySorterHookOutput += engine.StartConfiguration.StObjDependencySorterHookOutput;
                 using( monitor.OpenInfo().Send( "Registering StObj types." ) )
                 {
                     stObjC.RegisterTypes( typeReg );
-                    stObjC.RegisterClasses( _config.BuildAndRegisterConfiguration.ExplicitClasses );
-                    foreach( var t in _engine.StartConfiguration.ExplicitRegisteredClasses ) stObjC.RegisterClass( t );
+                    stObjC.RegisterClasses( config.BuildAndRegisterConfiguration.ExplicitClasses );
+                    foreach( var t in engine.StartConfiguration.ExplicitRegisteredClasses ) stObjC.RegisterClass( t );
                     Debug.Assert( stObjC.RegisteringFatalOrErrorCount == 0 || hasError, "stObjC.RegisteringFatalOrErrorCount > 0 ==> An error has been logged." );
                 }
                 if( stObjC.RegisteringFatalOrErrorCount == 0 )
@@ -60,10 +46,10 @@ namespace CK.Setup
                     }
                     if( !result.HasFatalError )
                     {
-                        IEnumerable<ISetupItem> setupItems;
+                        IEnumerable<ISetupItem> setupItems = null;
                         using( monitor.OpenInfo().Send( "Creating Setup Items from Structured Objects." ) )
                         {
-                            var itemBuilder = new StObjSetupItemBuilder( monitor, _configurator, _configurator, _configurator );
+                            var itemBuilder = new StObjSetupItemBuilder( monitor, configurator, configurator, configurator );
                             setupItems = itemBuilder.Build( result.OrderedStObjs );
                             Debug.Assert( setupItems != null || hasError, "setupItems == null ==> An error has been logged." );
                         }
@@ -72,7 +58,7 @@ namespace CK.Setup
                             StObjContextRoot finalObjects;
                             using( monitor.OpenInfo().Send( "Generating StObj dynamic assembly." ) )
                             {
-                                finalObjects = result.GenerateFinalAssembly( monitor, _runtimeBuilder, _config.FinalAssemblyConfiguration );
+                                finalObjects = result.GenerateFinalAssembly( monitor, runtimeBuilder, config.FinalAssemblyConfiguration );
                                 Debug.Assert( finalObjects != null || hasError, "finalObjects == null ==> An error has been logged." );
                             }
                             if( finalObjects != null )
@@ -85,18 +71,14 @@ namespace CK.Setup
                                 }
                                 if( injectDone )
                                 {
-                                    e.Register( setupItems );
+                                    return setupItems;
                                 }
                             }
                         }
                     }
                 }
             }
-            if( hasError )
-            {
-                e.CancelSetup( "Error during Setup Items creation." );
-            }
+            return null;
         }
-
     }
 }

@@ -20,13 +20,14 @@ namespace CK.Setup
         readonly IActivityMonitor _monitor;
         readonly SetupEngineStartConfiguration _startConfiguration;
         readonly ScriptCollector _scripts;
+        readonly IStObjRuntimeBuilder _runtimeBuilder;
         readonly EventHandler<RegisterSetupEventArgs> _relayRegisterSetupEvent;
         readonly EventHandler<SetupEventArgs> _relaySetupEvent;
         readonly EventHandler<DriverEventArgs> _relayDriverEvent;
         bool _started;
 
         /// <summary>
-        /// Initializes a new <see cref="SetupEngine"/>. This constructor is the one used when calling <see cref="StObjContextRoot.Build"/> method 
+        /// Initializes a new <see cref="SetupEngine"/>. This constructor is the one used when calling <see cref="StObjContextRoot.SafeBuildStObj"/> method 
         /// with a <see cref="SetupEngineConfiguration"/> configuration object.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
@@ -40,11 +41,11 @@ namespace CK.Setup
             _config = config;
             _configurator = new SetupEngineConfigurator();
             _startConfiguration = new SetupEngineStartConfiguration( this );
+            _runtimeBuilder = runtimeBuilder;
             _scripts = new ScriptCollector( _startConfiguration.ScriptTypeManager );
             _relayRegisterSetupEvent = OnEngineRegisterSetupEvent;
             _relaySetupEvent = OnEngineSetupEvent;
             _relayDriverEvent = OnEngineDriverEvent;
-            new StObjSetupHook( this, runtimeBuilder, _config.StObjEngineConfiguration, _configurator );
         }
 
         /// <summary>
@@ -117,7 +118,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Executes the whole setup process (<see cref="SetupCoreEngine.Register"/>, <see cref="SetupCoreEngine.RunInit"/>, <see cref="SetupCoreEngine.RunInstall"/>, <see cref="SetupCoreEngine.RunSettle"/>).
-        /// This is automatically called by  <see cref="StObjContextRoot.Build"/> after it has instanciating this object when using a <see cref="SetupEngineConfiguration"/>.
+        /// This is automatically called by  <see cref="StObjContextRoot.SafeBuildStObj"/> after it has instanciating this object when using a <see cref="SetupEngineConfiguration"/>.
         /// This can be called only once.
         /// </summary>
         /// <returns>True on success, false if an error occured.</returns>
@@ -127,8 +128,8 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Registers any number of <see cref="IDependentItem"/> and/or <see cref="IDependentItemDiscoverer"/> and/or <see cref="IEnumerable"/> of such objects (recursively) and executes
-        /// the whole setup process (<see cref="SetupCoreEngine.Register"/>, <see cref="SetupCoreEngine.RunInit"/>, <see cref="SetupCoreEngine.RunInstall"/>, <see cref="SetupCoreEngine.RunSettle"/>).
+        /// Creates the configured aspects, resolves and builds the StObj graph and registers any number of <see cref="IDependentItem"/> and/or <see cref="IDependentItemDiscoverer"/> 
+        /// and/or <see cref="IEnumerable"/> of such objects (recursively) and executes the whole setup process (<see cref="SetupCoreEngine.Register"/>, <see cref="SetupCoreEngine.RunInit"/>, <see cref="SetupCoreEngine.RunInstall"/>, <see cref="SetupCoreEngine.RunSettle"/>).
         /// This can be called only once.
         /// </summary>
         /// <param name="items">Objects that can be <see cref="IDependentItem"/>, <see cref="IDependentItemDiscoverer"/> or both and/or <see cref="IEnumerable"/> of such objects (recursively).</param>
@@ -142,12 +143,24 @@ namespace CK.Setup
                 if( !CreateEngineAspectsFromConfiguration() ) return false;
                 if( _startConfiguration.VersionRepository == null ) throw new InvalidOperationException( "StartConfiguration.VersionRepository must be set before calling Run or ManualRun." );
                 if( _startConfiguration.SetupSessionMemoryProvider == null ) throw new InvalidOperationException( "StartConfiguration.SetupSessionMemoryProvider must be set before calling Run or ManualRun." );
+                if( _config.RunningMode == SetupEngineRunningMode.InitializeAspectsOnly )
+                {
+                    _monitor.Info().Send( "RunningMode = InitializeAspectsOnly complete." );
+                    return true;
+                }
+                IEnumerable<ISetupItem> stObjItems = StObjBuilder.SafeBuildStObj( this, _runtimeBuilder, _configurator );
+                if( stObjItems == null ) return false;
+                if( _config.RunningMode == SetupEngineRunningMode.StObjLayerOnly )
+                {
+                    _monitor.Info().Send( "RunningMode = StObjLayerOnly complete." );
+                    return true;
+                }
                 var path = _monitor.Output.RegisterClient( new ActivityMonitorPathCatcher() );
                 ISetupSessionMemory m = null;
                 try
                 {
                     m = _startConfiguration.SetupSessionMemoryProvider.StartSetup();
-                    if( DoRun( items, m ) )
+                    if( DoRun( items, stObjItems, m ) )
                     {
                         _startConfiguration.SetupSessionMemoryProvider.StopSetup( null );
                         return true;
@@ -171,7 +184,7 @@ namespace CK.Setup
         }
 
 
-        private bool DoRun( object[] items, ISetupSessionMemory m )
+        private bool DoRun( object[] items, IEnumerable<ISetupItem> stObjItems, ISetupSessionMemory m )
         {
             bool hasError = false;
             using( _monitor.OnError( () => hasError = true ) )
@@ -179,18 +192,25 @@ namespace CK.Setup
             {
                 using( _monitor.OpenInfo().Send( "Register step." ) )
                 {
-                    DependencySorter.Options sorterOptions = new DependencySorter.Options() { ReverseName = _config.RevertOrderingNames };
+                    DependencySorterOptions sorterOptions = new DependencySorterOptions() { ReverseName = _config.RunningMode == SetupEngineRunningMode.DefaultWithRevertOrderingNames };
                     if( _config.TraceDependencySorterInput ) sorterOptions.HookInput += i => i.Trace( _monitor );
                     if( _config.TraceDependencySorterOutput ) sorterOptions.HookOutput += i => i.Trace( _monitor );
                     sorterOptions.HookInput += _startConfiguration.DependencySorterHookInput;
                     sorterOptions.HookOutput += _startConfiguration.DependencySorterHookOutput;
-                    SetupCoreEngineRegisterResult r = engine.Register( OfTypeRecurse<IDependentItem>( items ), items.OfType<IDependentItemDiscoverer>(), sorterOptions );
+
+                    var itemsToRegister = OfTypeRecurse<ISetupItem>( items ).Concat( stObjItems );
+                    SetupCoreEngineRegisterResult r = engine.Register( itemsToRegister, items.OfType<IDependentItemDiscoverer<ISetupItem>>(), sorterOptions );
                     if( !r.IsValid )
                     {
                         r.LogError( _monitor );
                         return false;
                     }
                     _monitor.CloseGroup( String.Format( "{0} Setup items registered.", r.SortResult.SortedItems.Count ) );
+                    if( _config.RunningMode == SetupEngineRunningMode.StObjLayerOnly )
+                    {
+                        _monitor.Info().Send( "RunningMode = StObjLayerOnly complete." );
+                        return true;
+                    }
                 }
                 using( _monitor.OpenInfo().Send( "Init step." ) )
                 {
@@ -254,7 +274,7 @@ namespace CK.Setup
                 {
                     _monitor.Info().Send( "{0} previous Setup attempt(s). Last on {2}, error was: '{1}'.", memory.StartCount, memory.LastError, memory.LastStartDate );
                 }
-                engine = new SetupCoreEngine( _startConfiguration.VersionRepository, m, _monitor, _configurator );
+                engine = new SetupCoreEngine( _startConfiguration.VersionRepository, m, _startConfiguration.Aspects, _monitor, _configurator );
                 ScriptSetupHandlerBuilder scriptBuilder = new ScriptSetupHandlerBuilder( engine, _scripts, _startConfiguration.ScriptTypeManager );
                 engine.RegisterSetupEvent += _relayRegisterSetupEvent;
                 engine.SetupEvent += _relaySetupEvent;

@@ -87,5 +87,10 @@ namespace CK.Core
             get { return _impl.FullName; }
             set { _impl.FullName = value; }
         }
+
+        public override string ToString()
+        {
+            return _impl.FullName;
+        }
     }
 }
