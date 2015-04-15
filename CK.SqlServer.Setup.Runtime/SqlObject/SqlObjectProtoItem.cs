@@ -15,7 +15,7 @@ using CK.SqlServer.Parser;
 
 namespace CK.SqlServer.Setup
 {
-    public class SqlObjectProtoItem : IDependentProtoItem
+    public class SqlObjectProtoItem : ISetupObjectProtoItem
     {
         static public readonly string TypeView = "View";
         static public readonly string TypeProcedure = "Procedure";

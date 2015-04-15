@@ -17,8 +17,7 @@ using CK.Setup;
 namespace CK.SqlServer.Setup
 {
 
-
-    public class SqlObjectItem : ISetupItem, IVersionedItem, IDependentItemRef
+    public class SqlObjectItem : SetupObjectItemV
     {
         internal readonly static Type TypeCommand = typeof( SqlCommand );
         internal readonly static Type TypeConnection = typeof( SqlConnection );
@@ -45,67 +44,41 @@ namespace CK.SqlServer.Setup
         internal readonly static FieldInfo FieldDBNullValue = typeof( DBNull ).GetField( "Value", BindingFlags.Public | BindingFlags.Static );
 
 
-        ContextLocNameStructImpl _fullName;
-        string _type;
         SqlObjectProtoItem _protoItem;
-
         string _physicalDB;
         string _schema;
         string _objectName;
-        Version _version;
-        DependentItemList _requires;
-        DependentItemList _requiredBy;
-        DependentItemGroupList _groups;
-        IDependentItemContainerRef _container;
         bool? _missingDependencyIsError;
-        SqlObjectItem _replacedBy;
-        SqlObjectItem _replaces;
         string _header;
 
         internal SqlObjectItem( SqlObjectProtoItem p )
+            : base( p )
         {
-            _fullName = new ContextLocNameStructImpl( p );
             _schema = p.Schema;
             _objectName = p.ObjectName;
             _protoItem = p;
-            _type = p.ItemType;
             // Keeps the physical database name if the proto item defines it.
             // It is currently unused.
             _physicalDB = p.PhysicalDatabaseName;
-
             _header = _protoItem.Header;
-            _version = p.Version;
-            if( p.Requires != null ) Requires.Add( p.Requires );
-            if( p.RequiredBy != null ) RequiredBy.Add( p.RequiredBy );
-            if( p.Groups != null ) Groups.Add( p.Groups );
-            // If the proto object indicates a container, references it: its name will be
-            // used by the dependency sorter.
-            // If it is not the same as the actual container to which this object
-            // is added later, an error will be raised during the ordering. 
-            if( p.Container != null ) _container = new NamedDependentItemContainerRef( p.Container );
             _missingDependencyIsError = p.MissingDependencyIsError;
         }
 
         /// <summary>
         /// Gets or sets the object that replaces this object.
         /// </summary>
-        internal SqlObjectItem ReplacedBy
+        public new SqlObjectItem ReplacedBy
         {
-            get { return _replacedBy; }
-            set 
-            {
-                if( _replacedBy != null ) _replacedBy._replaces = null;
-                _replacedBy = value;
-                if( _replacedBy != null ) _replacedBy._replaces = this;
-            }
+            get { return (SqlObjectItem)base.ReplacedBy; }
+            set { base.ReplacedBy = value; }
         }
 
         /// <summary>
         /// Gets the object that is replaced by this one.
         /// </summary>
-        internal SqlObjectItem Replaces
+        public new SqlObjectItem Replaces
         {
-            get { return _replaces; }
+            get { return (SqlObjectItem)base.Replaces; }
         }
 
         /// <summary>
@@ -113,7 +86,7 @@ namespace CK.SqlServer.Setup
         /// </summary>
         public string SchemaName
         {
-            get { return _fullName.Name; }
+            get { return ContextLocName.Name; }
         }
 
         /// <summary>
@@ -129,7 +102,7 @@ namespace CK.SqlServer.Setup
                 if( _schema != value )
                 {
                     _schema = value;
-                    _fullName.Name = _schema + '.' + _objectName;
+                    ContextLocName.Name = _schema + '.' + _objectName;
                 }
             }
         }
@@ -143,11 +116,11 @@ namespace CK.SqlServer.Setup
         /// </remarks>
         public string Database
         {
-            get { return _fullName.Location; }
+            get { return ContextLocName.Location; }
             set 
-            { 
-                _fullName.Location = String.IsNullOrWhiteSpace( value ) ? SqlDatabase.DefaultDatabaseName : value;
-                _fullName.Context = _fullName.Location != SqlDatabase.DefaultDatabaseName ? _fullName.Location : String.Empty;
+            {
+                ContextLocName.Location = String.IsNullOrWhiteSpace( value ) ? SqlDatabase.DefaultDatabaseName : value;
+                ContextLocName.Context = ContextLocName.Location != SqlDatabase.DefaultDatabaseName ? ContextLocName.Location : String.Empty;
             }
         }
 
@@ -164,7 +137,7 @@ namespace CK.SqlServer.Setup
                 if( _objectName != value )
                 {
                     _objectName = value;
-                    _fullName.Name = _schema + '.' + _objectName;
+                    ContextLocName.Name = _schema + '.' + _objectName;
                 }
 
             }
@@ -192,83 +165,7 @@ namespace CK.SqlServer.Setup
             set { _header = value ?? String.Empty; }
         }
 
-        public IDependentItemList Requires
-        {
-            get { return _requires ?? (_requires = new DependentItemList()); }
-        }
-
-        public IDependentItemList RequiredBy
-        {
-            get { return _requiredBy ?? (_requiredBy = new DependentItemList()); }
-        }
-
-        public IDependentItemGroupList Groups
-        {
-            get { return _groups ?? (_groups = new DependentItemGroupList()); }
-        }
-
-        /// <summary>
-        /// Gets or sets the version number. Can be null.
-        /// </summary>
-        /// <remarks>
-        /// When code builds the object, it may be safer to let the version be null and to rewrite the object.
-        /// </remarks>
-        public Version Version
-        {
-            get { return _version; }
-        }
-
-        /// <summary>
-        /// Gets the full name of this object.
-        /// </summary>
-        public string FullName
-        {
-            get 
-            {
-                if( _replaces != null ) return _fullName.FullName + "#replace";
-                return _fullName.FullName; 
-            }
-        }
-
-        IDependentItemContainerRef IDependentItem.Container
-        {
-            get { return _container.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _fullName.Context, _fullName.Location ) ); }
-        }
-
-        IDependentItemRef IDependentItem.Generalization
-        {
-            get { return null; }
-        }
-
-        IEnumerable<IDependentItemRef> IDependentItem.Requires
-        {
-            get { return _requires.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _fullName.Context, _fullName.Location ) ); }
-        }
-
-        IEnumerable<IDependentItemRef> IDependentItem.RequiredBy
-        {
-            get { return _requiredBy.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _fullName.Context, _fullName.Location ) ); }
-        }
-
-        IEnumerable<IDependentItemGroupRef> IDependentItem.Groups
-        {
-            get { return _groups.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _fullName.Context, _fullName.Location ) ); }
-        }
-
-        IEnumerable<VersionedName> IVersionedItem.PreviousNames
-        {
-            get { return _protoItem != null ? _protoItem.PreviousNames.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _fullName.Context, _fullName.Location ) ) : null; }
-        }
-
-        /// <summary>
-        /// Gets the type of the object (<see cref="SqlObjectProtoItem.TypeProcedure"/> for instance). This implements the <see cref="IVersionedItem.Type"/>.
-        /// </summary>
-        public string ItemType
-        {
-            get { return _type; }
-        }
-
-        object IDependentItem.StartDependencySort()
+        protected override object StartDependencySort()
         { 
             return typeof(SqlObjectSetupDriver);
         }
@@ -299,7 +196,7 @@ namespace CK.SqlServer.Setup
             b.Write( ItemType );
             b.Write( ' ' );
             b.Write( SchemaName );
-            if( _replacedBy != null )
+            if( ReplacedBy != null )
             {
                 b.WriteLine();
                 b.WriteLine( "-- This {0} is replaced.", ItemType );
@@ -316,34 +213,5 @@ namespace CK.SqlServer.Setup
             if( _protoItem != null ) b.WriteLine( _protoItem.TextAfterName );
         }
 
-
-        bool ISetupItem.OnDriverCreated( GenericItemSetupDriver driver )
-        {
-            return true;
-        }
-
-        string IContextLocNaming.Context
-        {
-            get { return _fullName.Context; }
-        }
-
-        string IContextLocNaming.Location
-        {
-            get { return _fullName.Location; }
-        }
-
-        string IContextLocNaming.Name
-        {
-            get
-            {
-                if( _replaces != null ) return _fullName.Name + "#replace";
-                return _fullName.Name;
-            }
-        }
-
-        bool IDependentItemRef.Optional
-        {
-            get { return false; }
-        }
     }
 }

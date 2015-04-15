@@ -19,7 +19,7 @@ namespace CK.SqlServer.Setup
         readonly SetupEngine _engine;
         readonly SqlManagerProvider _databases;
         readonly SqlFileDiscoverer _sqlFileDiscoverer;
-        readonly DependentProtoItemCollector _sqlFiles;
+        readonly SetupObjectItemCollector _sqlFiles;
         ISqlManager _defaultDatabase;
 
         class ConfiguratorHook : SetupEngineConfigurator
@@ -65,7 +65,7 @@ namespace CK.SqlServer.Setup
             {
                 _databases.Add( db.DatabaseName, db.ConnectionString, db.AutoCreate );
             }
-            _sqlFiles = new DependentProtoItemCollector();
+            _sqlFiles = new SetupObjectItemCollector();
             _sqlFileDiscoverer = new SqlFileDiscoverer( new SqlObjectParser(), _engine.Monitor );
         }
 

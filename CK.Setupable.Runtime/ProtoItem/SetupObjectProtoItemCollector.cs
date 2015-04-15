@@ -14,27 +14,27 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// Very simple collection of <see cref="IDependentProtoItem"/> indexed by their FullName: duplicate proto 
+    /// Very simple collection of <see cref="ISetupObjectProtoItem"/> indexed by their FullName: duplicate proto 
     /// item (based on their FullName) are not collected. FullName is not tracked: once added to this collector
     /// the FullName of the item must not be changed.
     /// </summary>
-    public class DependentProtoItemCollector : IReadOnlyCollection<IDependentProtoItem>
+    public class SetupObjectItemCollector : IReadOnlyCollection<ISetupObjectProtoItem>
     {
-        readonly Dictionary<string,IDependentProtoItem> _items;
+        readonly Dictionary<string,ISetupObjectProtoItem> _items;
 
-        public DependentProtoItemCollector()
+        public SetupObjectItemCollector()
         {
-            _items = new Dictionary<string, IDependentProtoItem>();
+            _items = new Dictionary<string, ISetupObjectProtoItem>();
         }
 
-        public bool Add( IDependentProtoItem item )
+        public bool Add( ISetupObjectProtoItem item )
         {
             if( _items.ContainsKey( item.FullName ) ) return false;
             _items.Add( item.FullName, item );
             return true;
         }
 
-        public IDependentProtoItem Find( string fullName )
+        public ISetupObjectProtoItem Find( string fullName )
         {
             return _items.GetValueWithDefault( fullName, null );
         }
@@ -43,7 +43,7 @@ namespace CK.Setup
         {
             string name = item as string;
             if( name != null ) return _items.ContainsKey( name );
-            IDependentProtoItem i = item as IDependentProtoItem;
+            ISetupObjectProtoItem i = item as ISetupObjectProtoItem;
             return i != null ? _items.ContainsKey( i.FullName ) : false;
         }
 
@@ -52,7 +52,7 @@ namespace CK.Setup
             get { return _items.Count; }
         }
 
-        public IEnumerator<IDependentProtoItem> GetEnumerator()
+        public IEnumerator<ISetupObjectProtoItem> GetEnumerator()
         {
             return _items.Values.GetEnumerator();
         }

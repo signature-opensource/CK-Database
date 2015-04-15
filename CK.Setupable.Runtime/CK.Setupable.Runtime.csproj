@@ -61,9 +61,13 @@
     <Compile Include="ContextLocName\DefaultContextLocNaming.cs" />
     <Compile Include="ContextLocName\IContextLocNaming.cs" />
     <Compile Include="DynamicHandlerAttributeImpl.cs" />
-    <Compile Include="ProtoItem\IDependentProtoItem.cs" />
+    <Compile Include="Package\SetupObjectItemCV.cs" />
+    <Compile Include="Package\SetupObjectItemC.cs" />
+    <Compile Include="Package\SetupObjectItemV.cs" />
+    <Compile Include="Package\SetupObjectItem.cs" />
+    <Compile Include="ProtoItem\ISetupObjectProtoItem.cs" />
     <Compile Include="ISetupItem.cs" />
-    <Compile Include="ProtoItem\DependentProtoItemCollector.cs" />
+    <Compile Include="ProtoItem\SetupObjectProtoItemCollector.cs" />
     <Compile Include="Scripts\FileSetupScript.cs" />
     <Compile Include="Scripts\IScriptCollector.cs" />
     <Compile Include="Scripts\ISetupScript.cs" />
@@ -104,7 +108,6 @@
     <Compile Include="Package\IMutableSetupItemContainer.cs" />
     <Compile Include="Package\IMutableSetupItemGroup.cs" />
     <Compile Include="Package\IPackageItem.cs" />
-    <Compile Include="Package\PackageItemBase.cs" />
     <Compile Include="Package\AutoDependentPackagelItem.cs" />
     <Compile Include="Scripts\ParsedFileName.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

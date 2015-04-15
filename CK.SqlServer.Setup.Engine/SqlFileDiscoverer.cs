@@ -184,7 +184,7 @@ namespace CK.Setup
         #region Sql Files
 		/// <summary>
         /// Discovers *.sql files recursively in a directory and, depending on their type, either registers them in the script <paramref name="collector"/>
-        /// or consider them as <see cref="IDependentProtoItem"/> and collects them in <paramref name="itemCollector"/>.
+        /// or consider them as <see cref="ISetupObjectProtoItem"/> and collects them in <paramref name="itemCollector"/>.
         /// </summary>
         /// <param name="curContext">Current context identifier. It will be used as the default. Null if no current context exist.</param>
         /// <param name="curLoc">Current location identifier. It will be used as the default location. Null if no current location exist.</param>
@@ -195,7 +195,7 @@ namespace CK.Setup
         /// It must have been registered as a source in a <see cref="ScriptTypeHandler"/>, itself registered in the <see cref="ScriptTypeManager"/> associated to the collector.
         /// </param>
         /// <returns>True on success. Any warn or error are logged in the <see cref="IActivityMonitor"/> that has been provided to the constructor.</returns>
-        public bool DiscoverSqlFiles( string curContext, string curLoc, string directoryPath, DependentProtoItemCollector itemCollector, IScriptCollector collector = null, string sqlFileScriptSource = DefaultSourceName )
+        public bool DiscoverSqlFiles( string curContext, string curLoc, string directoryPath, SetupObjectItemCollector itemCollector, IScriptCollector collector = null, string sqlFileScriptSource = DefaultSourceName )
         {
             using( _monitor.OpenInfo().Send( "Discovering Sql files in '{0}' for source '{1}'.", directoryPath, sqlFileScriptSource ) )
             {
@@ -205,7 +205,7 @@ namespace CK.Setup
             }
         }
 
-        bool DoDiscoverSqlFiles( DirectoryInfo d, string curContext, string curLoc, DependentProtoItemCollector itemCollector, IScriptCollector collector, string sqlFileScriptSource )
+        bool DoDiscoverSqlFiles( DirectoryInfo d, string curContext, string curLoc, SetupObjectItemCollector itemCollector, IScriptCollector collector, string sqlFileScriptSource )
         {
             string context, loc, name;
             if( DefaultContextLocNaming.TryParse( d.Name, out context, out loc, out name ) )
@@ -231,7 +231,7 @@ namespace CK.Setup
             return result;
         }
 
-        bool DoRegisterSql( ParsedFileName f, DependentProtoItemCollector itemCollector, IScriptCollector collector, Func<string> readContent, Func<ISetupScript> createSetupScript )
+        bool DoRegisterSql( ParsedFileName f, SetupObjectItemCollector itemCollector, IScriptCollector collector, Func<string> readContent, Func<ISetupScript> createSetupScript )
         {
             if( f.SetupStep != SetupStep.PreInit )
             {

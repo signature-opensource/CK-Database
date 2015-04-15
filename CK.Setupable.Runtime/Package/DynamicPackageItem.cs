@@ -21,8 +21,9 @@ namespace CK.Setup
     /// <remarks>
     /// The <see cref="DynamicContainerItem"/> can be used if a pure mutable Container is needed (no versions nor associated AutoDependentPackageItem).
     /// </remarks>
-    public class DynamicPackageItem : PackageItemBase, IDependentItemContainerTyped, IDependentItemDiscoverer<ISetupItem>
+    public class DynamicPackageItem : MultiVersionDependentItem, IMutableSetupItemContainer, IPackageItem, IDependentItemContainerRef, IDependentItemDiscoverer<ISetupItem>
     {
+        DependentItemList _children;
         AutoDependentPackageItem _model;
         AutoDependentPackageItem _objects;
         object _driverType;
@@ -40,6 +41,24 @@ namespace CK.Setup
         {
             _driverType = driverType ?? typeof( GenericItemSetupDriver );
             ItemKind = DependentItemKind.Container;
+        }
+
+        /// <summary>
+        /// Gets a mutable list of children for this package.
+        /// </summary>
+        public IDependentItemList Children
+        {
+            get { return _children ?? (_children = new DependentItemList()); }
+        }
+
+        bool IDependentItemRef.Optional
+        {
+            get { return false; }
+        }
+
+        IEnumerable<IDependentItemRef> IDependentItemGroup.Children
+        {
+            get { return _children.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, Context, Location ) ); }
         }
 
         /// <summary>

@@ -37,7 +37,6 @@ namespace CK.Setup
             _obj = obj;
         }
 
-
         /// <summary>
         /// Initializes a new <see cref="StObjDynamicContainerItem"/> initialized by a <see cref="IStObjSetupData"/>.
         /// </summary>

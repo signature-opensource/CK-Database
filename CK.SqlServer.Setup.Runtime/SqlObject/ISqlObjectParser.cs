@@ -20,6 +20,6 @@ namespace CK.Setup
     /// </summary>
     public interface ISqlObjectParser
     {
-        IDependentProtoItem Create( IActivityMonitor monitor, IContextLocNaming externalName, string text );
+        ISetupObjectProtoItem Create( IActivityMonitor monitor, IContextLocNaming externalName, string text );
     }
 }

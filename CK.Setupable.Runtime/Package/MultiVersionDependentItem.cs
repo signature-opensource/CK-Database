@@ -26,7 +26,7 @@ namespace CK.Setup
         DependentItemGroupList _groups;
         IDependentItemContainerRef _container;
         IDependentItemRef _generalization;
-        DependentItemKind _dynamicType;
+        DependentItemKind _itemKind;
 
         /// <summary>
         /// Initializes a new mutable item with a given <see cref="IVersionedItem.ItemType"/>.
@@ -37,7 +37,7 @@ namespace CK.Setup
             if( itemType == null ) throw new ArgumentNullException( "itemType" );
             _itemType = itemType;
             _name = new ContextLocNameStructImpl( String.Empty );
-            _dynamicType = DependentItemKind.Item;
+            _itemKind = DependentItemKind.Item;
         }
 
         /// <summary>
@@ -93,8 +93,8 @@ namespace CK.Setup
         /// </remarks>
         public DependentItemKind ItemKind
         {
-            get { return _dynamicType; }
-            protected set { _dynamicType = value; }
+            get { return _itemKind; }
+            protected set { _itemKind = value; }
         }
 
         /// <summary>

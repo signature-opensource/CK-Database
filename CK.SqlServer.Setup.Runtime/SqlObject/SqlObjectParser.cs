@@ -30,7 +30,7 @@ namespace CK.SqlServer.Setup
                 | RegexOptions.IgnoreCase
                 | RegexOptions.ExplicitCapture );
 
-        IDependentProtoItem ISqlObjectParser.Create( IActivityMonitor monitor, IContextLocNaming externalName, string text )
+        ISetupObjectProtoItem ISqlObjectParser.Create( IActivityMonitor monitor, IContextLocNaming externalName, string text )
         {
             return SqlObjectParser.Create( monitor, externalName, text, null );
         }

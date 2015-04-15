@@ -32,7 +32,7 @@ namespace CK.Setup
     /// This should not be an issue (one can use a special FullName marker like "*" or "?" to handle this case - String.Empty may perfectly do the job if it has no semantics in the system).
     /// </para>
     /// </remarks>
-    public interface IDependentProtoItem : IContextLocNaming
+    public interface ISetupObjectProtoItem : IContextLocNaming
     {
         /// <summary>
         /// Gets the container name. Can be null.
@@ -50,6 +50,8 @@ namespace CK.Setup
         /// in order to be able to handle specific storage for version without 
         /// relying on any <see cref="IContextLocNaming.FullName">FullName</see> conventions.
         /// Must be a non null, nor empty or whitespace identifier of at most 16 characters long.
+        /// Moreover this can be used by implementations to "type" objects based on their actual content: this "content-based" type can then be
+        /// checked later (like "the content is a function whereas a procedure is expected.").
         /// </summary>
         string ItemType { get; }
         

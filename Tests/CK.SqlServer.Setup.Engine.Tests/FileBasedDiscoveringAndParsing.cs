@@ -73,7 +73,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
 
         class SqlObjectParserStub : ISqlObjectParser
         {
-            public IDependentProtoItem Create( IActivityMonitor monitor, IContextLocNaming externalName, string text )
+            public ISetupObjectProtoItem Create( IActivityMonitor monitor, IContextLocNaming externalName, string text )
             {
                 throw new NotImplementedException();
             }
@@ -104,7 +104,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
             typeManager.Register( new SqlScriptTypeHandler() );
             ScriptCollector collector = new ScriptCollector( typeManager );
             SqlFileDiscoverer discoverer = new SqlFileDiscoverer( new SqlObjectParserStub(), TestHelper.ConsoleMonitor );
-            Assert.That( discoverer.DiscoverSqlFiles( null, null, TestHelper.GetScriptsFolder( "FileBased/FromOpenTo" ), new DependentProtoItemCollector(), collector ), Is.True );
+            Assert.That( discoverer.DiscoverSqlFiles( null, null, TestHelper.GetScriptsFolder( "FileBased/FromOpenTo" ), new SetupObjectItemCollector(), collector ), Is.True );
 
             bool caseDiffer;
             ScriptSet scripts = collector.Find( "Test", out caseDiffer );
@@ -155,7 +155,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
             
             SqlFileDiscoverer discoverer = new SqlFileDiscoverer( new SqlObjectParserStub(), TestHelper.ConsoleMonitor );
 
-            Assert.That( discoverer.DiscoverSqlFiles( null, null, TestHelper.GetScriptsFolder( "FileBased/AllSteps" ), new DependentProtoItemCollector(), collector ), Is.True );
+            Assert.That( discoverer.DiscoverSqlFiles( null, null, TestHelper.GetScriptsFolder( "FileBased/AllSteps" ), new SetupObjectItemCollector(), collector ), Is.True );
 
             bool caseDiffer;
             ScriptSet scripts = collector.Find( "test", out caseDiffer );

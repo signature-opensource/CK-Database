@@ -49,14 +49,6 @@ namespace CK.Setup
             ItemKind = DependentItemKind.Container;
         }
 
-
-        public DynamicContainerItem()
-        {
-            _driverType = typeof( GenericItemSetupDriver );
-            _name = new ContextLocNameStructImpl();
-            _itemKind = DependentItemKind.Container;
-        }
-
         /// <summary>
         /// Gets or sets the context identifier of this container. 
         /// Can be null (unknown context) or empty (the default context).

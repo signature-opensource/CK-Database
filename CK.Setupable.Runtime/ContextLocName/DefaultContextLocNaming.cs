@@ -278,6 +278,18 @@ namespace CK.Core
             return DoResolve( input, 0, input.Length, curContext, curLoc, throwError );
         }
 
+        /// <summary>
+        /// Updates the <paramref name="input"/> with the [curContext] and the ^curLocation of the current naming if the input does not specify them.
+        /// </summary>
+        /// <param name="input">The input location to resolve.</param>
+        /// <param name="current">The current naming.</param>
+        /// <param name="throwError">True to throw error if any parts have a syntax error. Otherwise returns null.</param>
+        /// <returns>The updated input.</returns>
+        public static string Resolve( string input, IContextLocNaming current, bool throwError = true )
+        {
+            return DoResolve( input, 0, input.Length, current.Context, current.Location, throwError );
+        }
+
         public static string Resolve( string input, int startIndex, string curContext, string curLoc, bool throwError = true )
         {
             if( input == null ) throw new ArgumentNullException( "input" );
