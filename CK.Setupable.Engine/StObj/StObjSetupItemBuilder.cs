@@ -309,7 +309,7 @@ namespace CK.Setup
                         if( o.InitialObject is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)o.InitialObject).DynamicItemInitialize( state, item, o );
                         initSource = "Setup Item itself";
                         if( item is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)item).DynamicItemInitialize( state, item, o );
-                        initSource = "global StObjSetupBuilder initializer";
+                        initSource = "Global StObjSetupBuilder initializer";
                         if( _dynamicInitializer != null ) _dynamicInitializer.DynamicItemInitialize( state, item, o );
                     }
                     catch( Exception ex )

@@ -39,7 +39,7 @@ namespace CK.Setup
         /// All attributes related to <see cref="ObjectType"/> (either on the type itself or on any of its members) should be retrieved 
         /// thanks to this method otherwise stateful attributes will not work correctly.
         /// </remarks>
-        ICustomAttributeMultiProvider Attributes { get; }
+        ICKCustomAttributeMultiProvider Attributes { get; }
 
         /// <summary>
         /// Gets the kind of object (simple item, group or container).

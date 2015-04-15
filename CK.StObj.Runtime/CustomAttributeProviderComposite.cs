@@ -14,17 +14,17 @@ using System.Text;
 namespace CK.Core
 {
     /// <summary>
-    /// Helper class that composes multiple <see cref="ICustomAttributeProvider"/> into one.
+    /// Helper class that composes multiple <see cref="ICKCustomAttributeProvider"/> into one.
     /// </summary>
-    public class CustomAttributeProviderComposite : ICustomAttributeProvider
+    public class CustomAttributeProviderComposite : ICKCustomAttributeProvider
     {
-        readonly IEnumerable<ICustomAttributeProvider> _providers;
+        readonly IEnumerable<ICKCustomAttributeProvider> _providers;
 
         /// <summary>
-        /// Initializes a new <see cref="CustomAttributeProviderComposite"/> bound to multiple <see cref="ICustomAttributeProvider"/>.
+        /// Initializes a new <see cref="CustomAttributeProviderComposite"/> bound to multiple <see cref="ICKCustomAttributeProvider"/>.
         /// </summary>
         /// <param name="providers">Multiple providers. Must not be null.</param>
-        public CustomAttributeProviderComposite( IEnumerable<ICustomAttributeProvider> providers )
+        public CustomAttributeProviderComposite( IEnumerable<ICKCustomAttributeProvider> providers )
         {
             if( providers == null ) throw new ArgumentNullException( "providers" ); 
             _providers = providers;

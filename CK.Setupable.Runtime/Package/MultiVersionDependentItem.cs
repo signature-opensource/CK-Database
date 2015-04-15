@@ -17,7 +17,7 @@ namespace CK.Setup
     /// Mutable item implementation: any property can be changed (version information is handled
     /// by the base <see cref="MultiVersionManager"/>).
     /// </summary>
-    public abstract class DynamicDependentItem : MultiVersionManager, IMutableSetupItem, IVersionedItem, IDependentItemRef
+    public abstract class MultiVersionDependentItem : MultiVersionManager, IMutableSetupItem, IVersionedItem, IDependentItemRef
     {
         ContextLocNameStructImpl _name;
         string _itemType;
@@ -32,7 +32,7 @@ namespace CK.Setup
         /// Initializes a new mutable item with a given <see cref="IVersionedItem.ItemType"/>.
         /// </summary>
         /// <param name="itemType">Type of the item.</param>
-        protected DynamicDependentItem( string itemType )
+        protected MultiVersionDependentItem( string itemType )
         {
             if( itemType == null ) throw new ArgumentNullException( "itemType" );
             _itemType = itemType;

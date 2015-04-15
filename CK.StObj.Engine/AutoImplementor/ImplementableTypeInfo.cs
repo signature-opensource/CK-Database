@@ -123,7 +123,7 @@ namespace CK.Core
         /// <param name="abstractType">Abstract type to automatically implement if possible.</param>
         /// <param name="attributeProvider">Attributes provider that will be used.</param>
         /// <returns>An instance of <see cref="ImplementableTypeInfo"/> or null if the type is not automatically implementable.</returns>
-        static public ImplementableTypeInfo CreateImplementableTypeInfo( IActivityMonitor monitor, Type abstractType, ICustomAttributeProvider attributeProvider )
+        static public ImplementableTypeInfo CreateImplementableTypeInfo( IActivityMonitor monitor, Type abstractType, ICKCustomAttributeProvider attributeProvider )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
             if( abstractType == null ) throw new ArgumentNullException( "abstractType" );

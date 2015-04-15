@@ -20,11 +20,18 @@ namespace CK.Core
     /// order to enable attributes to share state between different aspects (but inside the same process or context).
     /// </summary>
     /// <remarks>
+    /// <para>
     /// This interface does not say anything about the members that are requested. 
-    /// Specialization or implementation may restrict the accepted members: <see cref="ICustomAttributeMultiProvider"/> for instance
+    /// Specialization or implementation may restrict the accepted members: <see cref="ICKCustomAttributeMultiProvider"/> for instance
     /// is bound to a <see cref="Type"/> (FYI: a Type is a <see cref="MemberInfo"/>).
+    /// </para>
+    /// <para>
+    /// It is named ICKCustomAttributeProvider because System.Reflection.ICustomAttributeProvider is already defined by .Net but 
+    /// is much more restrictive since it accepts Type objects only. This interface extends the concept to support any MemberInfo 
+    /// objects.
+    /// </para>
     /// </remarks>
-    public interface ICustomAttributeProvider
+    public interface ICKCustomAttributeProvider
     {
         /// <summary>
         /// Gets whether an attribute that is assignable to the given <paramref name="attributeType"/> 

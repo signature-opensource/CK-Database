@@ -58,8 +58,6 @@
     </Compile>
     <Compile Include="CustomAttributeProviderComposite.cs" />
     <Compile Include="IAmbientContractDispatcher.cs" />
-    <Compile Include="ICustomAttributeProvider.cs" />
-    <Compile Include="ICustomAttributeMultiProvider.cs" />
     <Compile Include="IStObjResult.cs" />
     <Compile Include="IStObjAmbientProperty.cs" />
     <Compile Include="IStObjFinalAmbientProperty.cs" />

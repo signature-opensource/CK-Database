@@ -20,22 +20,18 @@ namespace CK.Setup
     /// nor <see cref="IStObjSetupData.ItemTypeName"/> are set).
     /// This class can (and should) be used as a base class for more specific item implementation.
     /// </summary>
-    public class StObjDynamicPackageItem : DynamicPackageItem, IMutableSetupItem
+    public class StObjDynamicContainerItem : DynamicContainerItem, IMutableSetupItem
     {
         readonly IStObjResult _stObj;
         object _obj;
 
         /// <summary>
-        /// Initializes a new <see cref="StObjDynamicPackageItem"/> that must be manually configured associated to an explicit object instance.
+        /// Initializes a new <see cref="StObjDynamicContainerItem"/> that must be manually configured associated to an explicit object instance.
         /// </summary>
-        /// <param name="itemType">
-        /// Type of item (must not be longer than 16 characters). 
-        /// It is "StObjItem" or "StObjPackage" when initialized by the <see cref="StObjDynamicPackageItem(IActivityMonitor,IStObjSetupData)">other constructor</see>.
-        /// </param>
         /// <param name="driverType">Type of the associated driver or its assembly qualified name.</param>
         /// <param name="obj">The associated object. Must not be null.</param>
-        protected StObjDynamicPackageItem( string itemType, object driverType, object obj )
-            : base( itemType, driverType )
+        protected StObjDynamicContainerItem( object driverType, object obj )
+            : base( driverType )
         {
             if( obj == null ) throw new ArgumentNullException( "obj" );
             _obj = obj;
@@ -43,18 +39,15 @@ namespace CK.Setup
 
 
         /// <summary>
-        /// Initializes a new <see cref="StObjDynamicPackageItem"/> initialized by a <see cref="IStObjSetupData"/>.
+        /// Initializes a new <see cref="StObjDynamicContainerItem"/> initialized by a <see cref="IStObjSetupData"/>.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="data">Descriptive data that is used to configure this item.</param>
-        public StObjDynamicPackageItem( IActivityMonitor monitor, IStObjSetupData data )
-            : base( data.StObj.ItemKind == DependentItemKindSpec.Item ? "StObjItem" : "StObjPackage", (object)data.DriverType ?? data.DriverTypeName )
+        public StObjDynamicContainerItem( IActivityMonitor monitor, IStObjSetupData data )
+            : base( (object)data.DriverType ?? data.DriverTypeName )
         {
-            Debug.Assert( Model == null, "Initially, a DynamicPackageItem has no Model." );
-            Debug.Assert( ObjectsPackage == null, "Initially, a DynamicPackageItem has no ObjectsPackage." );
-            Debug.Assert( data.ItemType == null || typeof( StObjDynamicPackageItem ).IsAssignableFrom( data.ItemType ), "If we are using a StObjDynamicPackageItem, this is because no explicit ItemType (nor ItemTypeName) have been set, or it is a type that specializes this." );
+            Debug.Assert( data.ItemType == null || typeof( StObjDynamicPackageItem ).IsAssignableFrom( data.ItemType ), "If we are using a StObjDynamicContainerItem, this is because no explicit ItemType (nor ItemTypeName) have been set, or it is a type that specializes this." );
             ItemKind = (DependentItemKind)data.StObj.ItemKind;
-            SetVersionsString( data.Versions );
             _stObj = data.StObj;
             FullName = data.FullName;
             Requires.AddRange( data.Requires );

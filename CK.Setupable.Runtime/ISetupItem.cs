@@ -25,7 +25,7 @@ namespace CK.Setup
         new string FullName { get; }
 
         /// <summary>
-        /// Called by the Engine right after the driver has been created and a second time once all other drivers have been created.
+        /// Called by the Engine right after the driver has been created.
         /// </summary>
         /// <param name="driver">The driver associated to this item.</param>
         /// <returns>True on success. Returning false cancels the setup process.</returns>

@@ -15,23 +15,6 @@ namespace CK.SqlServer.Setup
 {
     public class SqlPackageBaseItem : StObjDynamicPackageItem
     {
-        public SqlPackageBaseItem( Func<SqlPackageBase> package )
-            : this( "ObjPackage", typeof( SqlPackageBaseSetupDriver ), package )
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new <see cref="SqlPackageBaseItem"/> for a dynamic object.
-        /// </summary>
-        /// <param name="itemType">Type of item (must not be longer than 16 characters).</param>
-        /// <param name="driverType">Type of the associated driver or its assembly qualified name.</param>
-        /// <param name="resolver">A function that knows how to obtain the final, most specialized, structured object.</param>
-        protected SqlPackageBaseItem( string itemType, object driverType, Func<SqlPackageBase> resolver )
-            : base( itemType, driverType, resolver )
-        {
-            if( GetObject().HasModel ) EnsureModel();
-        }
-
         /// <summary>
         /// Initializes a new <see cref="SqlPackageBaseItem"/> bound to a StObj.
         /// </summary>

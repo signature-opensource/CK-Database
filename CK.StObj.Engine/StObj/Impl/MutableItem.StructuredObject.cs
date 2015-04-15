@@ -21,7 +21,7 @@ namespace CK.Setup
         {
             Debug.Assert( Specialization == null && Type.IsAbstract );
 
-            List<ICustomAttributeProvider> combined = new List<ICustomAttributeProvider>();
+            List<ICKCustomAttributeProvider> combined = new List<ICKCustomAttributeProvider>();
             var p = this;
             do { combined.Add( p ); p = p.Generalization; } while( p != null );
 

@@ -65,7 +65,7 @@
     <Compile Include="AmbientContract\IAmbientContractDefiner.cs" />
     <Compile Include="Configuration\StObjEngineConfiguration.cs" />
     <Compile Include="IAttributeAmbientContextBound.cs" />
-    <Compile Include="IAttributeAmbientContextBoundWithMember.cs" />
+    <Compile Include="IAttributeAmbientContextBoundInitializer.cs" />
     <Compile Include="AutoImplementor\IAttributeAutoImplemented.cs" />
     <Compile Include="AutoImplementor\IAutoImplementorMethod.cs" />
     <Compile Include="AutoImplementor\IAutoImplementorProperty.cs" />
@@ -75,6 +75,9 @@
     <Compile Include="Configuration\IStObjBuilderConfiguration.cs" />
     <Compile Include="Configuration\BuildAndRegisterConfiguration.cs" />
     <Compile Include="Configuration\BuilderFinalAssemblyConfiguration.cs" />
+    <Compile Include="ICKCustomAttributeMultiProvider.cs" />
+    <Compile Include="ICKCustomAttributeProvider.cs" />
+    <Compile Include="ICKCustomAttributeTypeMultiProvider.cs" />
     <Compile Include="StObjContextRoot.InstanceBase.cs" />
     <Compile Include="IStObjRuntimeBuilder.cs" />
     <Compile Include="IStObjBuilder.cs" />

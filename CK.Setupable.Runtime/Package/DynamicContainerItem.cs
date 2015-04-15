@@ -33,9 +33,26 @@ namespace CK.Setup
         IDependentItemContainerRef _container;
         IDependentItemRef _generalization;
         DependentItemKind _itemKind;
+        object _driverType;
+
+        /// <summary>
+        /// Initializes a new dynamic package with <see cref="ItemKind"/> set to <see cref="DependentItemKind.Container"/>.
+        /// </summary>
+        /// <param name="itemType">The <see cref="IVersionedItem.ItemType"/> for this item.</param>
+        /// <param name="driverType">
+        /// Type of the driver to use. Can be the <see cref="Type"/> itself or the Assembly Qualified Name of the type.
+        /// When null, the type of <see cref="GenericItemSetupDriver"/> is asumed.
+        /// </param>
+        public DynamicContainerItem( object driverType = null )
+        {
+            _driverType = driverType ?? typeof( GenericItemSetupDriver );
+            ItemKind = DependentItemKind.Container;
+        }
+
 
         public DynamicContainerItem()
         {
+            _driverType = typeof( GenericItemSetupDriver );
             _name = new ContextLocNameStructImpl();
             _itemKind = DependentItemKind.Container;
         }
@@ -158,7 +175,7 @@ namespace CK.Setup
         /// </returns>
         protected virtual object StartDependencySort()
         {
-            return typeof( GenericItemSetupDriver );
+            return _driverType;
         }
 
         object IDependentItem.StartDependencySort()

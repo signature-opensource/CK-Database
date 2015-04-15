@@ -9,18 +9,18 @@ namespace CK.Setup
 {
 
     /// <summary>
-    /// Declares a DynamicDriver associated to the object.
+    /// Declares a dynamic handler associated to the object.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = false )]
-    public class DynamicDriverAttribute : AmbientContextBoundDelegationAttribute
+    public class DynamicHandlerAttribute : AmbientContextBoundDelegationAttribute
     {
         /// <summary>
-        /// Initializes a new <see cref="DynamicDriverAttribute"/> with (potentially) multiple type names
+        /// Initializes a new <see cref="DynamicHandlerAttribute"/> with (potentially) multiple type names
         /// that must be in the associated ".Runtime" assembly.
         /// </summary>
         /// <param name="commaSeparatedTypeNames">Name or multiple comma separated names.</param>
-        public DynamicDriverAttribute( string commaSeparatedTypeNames )
-            : base( "CK.Setup.DynamicDriverAttributeImpl, CK.Setupable.Runtime" )
+        public DynamicHandlerAttribute( string commaSeparatedTypeNames )
+            : base( "CK.Setup.DynamicHandlerAttributeImpl, CK.Setupable.Runtime" )
         {
             CommaSeparatedTypeNames = commaSeparatedTypeNames;
         }

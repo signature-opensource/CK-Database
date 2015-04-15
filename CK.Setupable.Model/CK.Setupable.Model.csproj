@@ -62,7 +62,7 @@
     <Compile Include="Configuration\SetupEngineRunningMode.cs" />
     <Compile Include="Core\AssemblyExtension.cs" />
     <Compile Include="Core\ResourceLocator.cs" />
-    <Compile Include="DynamicDriverAttribute.cs" />
+    <Compile Include="DynamicHandlerAttribute.cs" />
     <Compile Include="Attributes\GroupsAttribute.cs" />
     <Compile Include="Attributes\IAttributeSetupName.cs" />
     <Compile Include="ISetupEngineAspect.cs" />

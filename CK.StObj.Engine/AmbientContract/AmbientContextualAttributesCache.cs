@@ -19,7 +19,7 @@ namespace CK.Core
     /// When used with another type or a member of another type from the one provided 
     /// in the constructor, an exception is thrown.
     /// </summary>
-    public class AmbientContextualAttributesCache : ICustomAttributeMultiProvider
+    public class AmbientContextualAttributesCache : ICKCustomAttributeTypeMultiProvider
     {
         struct Entry
         {
@@ -35,11 +35,7 @@ namespace CK.Core
         readonly Entry[] _all;
         readonly MemberInfo[] _typeMembers;
         readonly bool _includeBaseClasses;
-
-        /// <summary>
-        /// Exposes the Type that is managed by this object to specializations.
-        /// </summary>
-        protected readonly Type Type;
+        readonly Type _type;
 
         /// <summary>
         /// Initializes a new <see cref="AmbientContextualAttributesCache"/> that considers only members explicitely 
@@ -50,36 +46,59 @@ namespace CK.Core
         public AmbientContextualAttributesCache( Type type, bool includeBaseClasses )
         {
             if( type == null ) throw new ArgumentNullException( "t" );
-            Type = type;
+            _type = type;
             var all = new List<Entry>();
-            Register( all, type, includeBaseClasses );
+            int initializerCount = Register( all, type, includeBaseClasses );
             BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly;
             if( includeBaseClasses ) flags &= ~BindingFlags.DeclaredOnly;
             _typeMembers = type.GetMembers( flags );
-            foreach( var m in _typeMembers ) Register( all, m );
+            foreach( var m in _typeMembers ) initializerCount += Register( all, m );
             _all = all.ToArray();
             _includeBaseClasses = includeBaseClasses;
+            if( initializerCount > 0 )
+            {
+                foreach( Entry e in _all )
+                {
+                    IAttributeAmbientContextBoundInitializer aM = e.Attr as IAttributeAmbientContextBoundInitializer;
+                    if( aM != null )
+                    {
+                        aM.Initialize( this, e.M );
+                        if( --initializerCount == 0 ) break;
+                    }
+                }
+            }
         }
 
-        static void Register( List<Entry> all, MemberInfo m, bool inherit = false )
+        static int Register( List<Entry> all, MemberInfo m, bool inherit = false )
         {
+            int initializerCount = 0;
             var attr = (IAttributeAmbientContextBound[])m.GetCustomAttributes( typeof( IAttributeAmbientContextBound ), inherit );
             foreach( var a in attr )
             {
-                IAttributeAmbientContextBoundWithMember initRequired = a as IAttributeAmbientContextBoundWithMember;
-                if( initRequired != null ) initRequired.Initialize( m );
                 AmbientContextBoundDelegationAttribute delegated = a as AmbientContextBoundDelegationAttribute;
                 object finalAttributeToUse = a;
                 if( delegated != null )
                 {
                     Type dT = SimpleTypeFinder.WeakDefault.ResolveType( delegated.ActualAttributeTypeAssemblyQualifiedName, true );
                     finalAttributeToUse = Activator.CreateInstance( dT, new object[] { a } );
-                    initRequired = finalAttributeToUse as IAttributeAmbientContextBoundWithMember;
-                    if( initRequired != null ) initRequired.Initialize( m );
                 }
                 all.Add( new Entry( m, finalAttributeToUse ) );
+                if( a is IAttributeAmbientContextBoundInitializer ) ++initializerCount;
             }
+            return initializerCount;
         }
+
+        /// <summary>
+        /// Get the Type that is managed by this cache for specialized classes.
+        /// They can use another name than 'Type' to expose it if they will.
+        /// </summary>
+        protected Type Type { get { return _type; } }
+
+        /// <summary>
+        /// The Type property of the ICustomAttributeTypeMultiProvider is hidden here to enable specialized classes
+        /// to expose it with a different name.
+        /// </summary>
+        Type ICKCustomAttributeTypeMultiProvider.Type { get { return _type; } }
 
         /// <summary>
         /// Gets whether an attribute that is assignable to the given <paramref name="attributeType"/> 
@@ -165,12 +184,13 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Gets all <see cref="MemberInfo"/> that this <see cref="ICustomAttributeMultiProvider"/> handles.
+        /// Gets all <see cref="MemberInfo"/> that this <see cref="ICKCustomAttributeMultiProvider"/> handles.
+        /// The <see cref="Type"/> is appended to this list.
         /// </summary>
         /// <returns>Enumeration of members.</returns>
         public IEnumerable<MemberInfo> GetMembers()
         {
-            return _typeMembers.Concat( new CKReadOnlyListMono<MemberInfo>( Type ) );
+            return _typeMembers.Append( Type );
         }
 
     }

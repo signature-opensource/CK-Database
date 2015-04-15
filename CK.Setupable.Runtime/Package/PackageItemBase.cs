@@ -21,7 +21,7 @@ namespace CK.Setup
     /// <remarks>
     /// The <see cref="DynamicContainerItem"/> must be used for container that do not have versions.
     /// </remarks>
-    public abstract class PackageItemBase : DynamicDependentItem, IMutableSetupItemContainer, IPackageItem, IDependentItemContainerRef
+    public abstract class PackageItemBase : MultiVersionDependentItem, IMutableSetupItemContainer, IPackageItem, IDependentItemContainerRef
     {
         DependentItemList _children;
 
@@ -53,11 +53,6 @@ namespace CK.Setup
         bool IDependentItemRef.Optional
         {
             get { return false; }
-        }
-
-        object IDependentItem.StartDependencySort()
-        {
-            return StartDependencySort();
         }
 
         IEnumerable<IDependentItemRef> IDependentItemGroup.Children

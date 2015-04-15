@@ -20,11 +20,6 @@ namespace CK.SqlServer.Setup
     {
         SqlObjectProtoItem _protoItem;
 
-        public SqlViewItem( Func<SqlView> view )
-            : base( "ObjView", typeof( SqlViewSetupDriver ), view )
-        {
-        }
-
         public SqlViewItem( IActivityMonitor monitor, IStObjSetupData data )
             : base( monitor, data )
         {

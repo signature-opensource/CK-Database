@@ -60,7 +60,7 @@
     <Compile Include="ContextLocName\ContextLocNameStructImpl.cs" />
     <Compile Include="ContextLocName\DefaultContextLocNaming.cs" />
     <Compile Include="ContextLocName\IContextLocNaming.cs" />
-    <Compile Include="DynamicDriverAttributeImpl.cs" />
+    <Compile Include="DynamicHandlerAttributeImpl.cs" />
     <Compile Include="ProtoItem\IDependentProtoItem.cs" />
     <Compile Include="ISetupItem.cs" />
     <Compile Include="ProtoItem\DependentProtoItemCollector.cs" />
@@ -86,8 +86,9 @@
     <Compile Include="StObj\IStObjSetupData.cs" />
     <Compile Include="StObj\IStObjSetupDataBase.cs" />
     <Compile Include="StObj\IStObjSetupDynamicInitializer.cs" />
-    <Compile Include="StObj\IStObjSetupDynamicPostDependencyActions.cs" />
+    <Compile Include="StObj\IStObjSetupDynamicInitializerState.cs" />
     <Compile Include="StObj\IStObjSetupItemFactory.cs" />
+    <Compile Include="StObj\StObjDynamicContainerItem.cs" />
     <Compile Include="StObj\StObjDynamicPackageItem.cs" />
     <Compile Include="Version\IVersionedItem.cs" />
     <Compile Include="Version\IVersionedItemRepository.cs" />
@@ -95,7 +96,7 @@
     <Compile Include="Package\DependentItemGroupList.cs" />
     <Compile Include="Package\DependentItemList.cs" />
     <Compile Include="Package\DynamicContainerItem.cs" />
-    <Compile Include="Package\DynamicDependentItem.cs" />
+    <Compile Include="Package\MultiVersionDependentItem.cs" />
     <Compile Include="Package\DynamicPackageItem.cs" />
     <Compile Include="Package\IDependentItemGroupList.cs" />
     <Compile Include="Package\IDependentItemList.cs" />

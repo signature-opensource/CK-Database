@@ -14,11 +14,11 @@ using System.Reflection;
 namespace CK.Core
 {
     /// <summary>
-    /// Specialized <see cref="ICustomAttributeProvider"/> to handle multiple <see cref="MemberInfo"/> (typically bound to a <see cref="Type"/>
-    /// and all its members).
-    /// This interface actually applies to any set of attribute holders (it may be implemented for a whole assembly for instance).
+    /// Specialized <see cref="ICKCustomAttributeProvider"/> to handle multiple <see cref="MemberInfo"/>.
+    /// The specialized <see cref="ICKCustomAttributeTypeMultiProvider"/> is bound to a <see cref="Type"/>
+    /// and all its members but this interface actually applies to any set of attribute holders (it may be implemented for a whole assembly for instance).
     /// </summary>
-    public interface ICustomAttributeMultiProvider : ICustomAttributeProvider
+    public interface ICKCustomAttributeMultiProvider : ICKCustomAttributeProvider
     {
         /// <summary>
         /// Gets all attributes that are assignable to the given type, regardless of the <see cref="MemberInfo"/>
@@ -37,7 +37,7 @@ namespace CK.Core
         IEnumerable<object> GetAllCustomAttributes( Type attributeType );
 
         /// <summary>
-        /// Gets all <see cref="MemberInfo"/> that this <see cref="ICustomAttributeMultiProvider"/> handles.
+        /// Gets all <see cref="MemberInfo"/> that this <see cref="ICKCustomAttributeMultiProvider"/> handles.
         /// </summary>
         /// <returns>Enumeration of members.</returns>
         IEnumerable<MemberInfo> GetMembers();

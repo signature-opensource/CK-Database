@@ -13,11 +13,6 @@ namespace CK.SqlServer.Setup
 {
     public class SqlTableItem : SqlPackageBaseItem
     {
-        public SqlTableItem( Func<SqlTable> package )
-            : base( "ObjTable", typeof( SqlTableSetupDriver ), package )
-        {
-        }
-
         public SqlTableItem( IActivityMonitor monitor, IStObjSetupData data )
             : base( monitor, data )
         {
