@@ -14,24 +14,24 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// An ordered list of <see cref="DriverBase"/> indexed by the <see cref="IDependentItem.FullName"/> or 
+    /// An ordered list of <see cref="GenericItemSetupDriver"/> indexed by the <see cref="IDependentItem.FullName"/> or 
     /// by the <see cref="IDependentItem"/> object instance itself.
     /// </summary>
-    public interface IDriverList : IReadOnlyList<DriverBase>
+    public interface IDriverList : IReadOnlyList<GenericItemSetupDriver>
     {
         /// <summary>
-        /// Gets a <see cref="DriverBase"/> by its name.
+        /// Gets a <see cref="GenericItemSetupDriver"/> by its name.
         /// </summary>
         /// <param name="fullName">The item full name.</param>
         /// <returns>The associated driver or null if the driver does not exist.</returns>
-        DriverBase this[ string fullName ] { get; }
+        GenericItemSetupDriver this[string fullName] { get; }
 
         /// <summary>
-        /// Gets a <see cref="DriverBase"/> associated to a <see cref="IDependentItem"/>.
+        /// Gets a <see cref="GenericItemSetupDriver"/> associated to a <see cref="IDependentItem"/>.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>The associated driver or null if the driver does not exist.</returns>
-        DriverBase this[ IDependentItem item ] { get; }
+        GenericItemSetupDriver this[IDependentItem item] { get; }
 
     }
 }

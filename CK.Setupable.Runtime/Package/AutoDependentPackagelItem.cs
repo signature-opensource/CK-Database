@@ -189,11 +189,6 @@ namespace CK.Setup
             return typeof( GenericItemSetupDriver );
         }
 
-        bool ISetupItem.OnDriverCreated( GenericItemSetupDriver driver )
-        {
-            return true;
-        }
-
         bool IDependentItemRef.Optional
         {
             get { return false; }

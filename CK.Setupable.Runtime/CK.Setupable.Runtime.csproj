@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CK.Setupable.Runtime</RootNamespace>
     <AssemblyName>CK.Setupable.Runtime</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -60,7 +60,8 @@
     <Compile Include="ContextLocName\ContextLocNameStructImpl.cs" />
     <Compile Include="ContextLocName\DefaultContextLocNaming.cs" />
     <Compile Include="ContextLocName\IContextLocNaming.cs" />
-    <Compile Include="DynamicHandlerAttributeImpl.cs" />
+    <Compile Include="ContextLocName\ISetupNameManager.cs" />
+    <Compile Include="SetupItemSelectorBaseAttributeImpl.cs" />
     <Compile Include="Package\SetupObjectItemCV.cs" />
     <Compile Include="Package\SetupObjectItemC.cs" />
     <Compile Include="Package\SetupObjectItemV.cs" />
@@ -72,11 +73,15 @@
     <Compile Include="Scripts\IScriptCollector.cs" />
     <Compile Include="Scripts\ISetupScript.cs" />
     <Compile Include="Scripts\ResSetupScript.cs" />
+    <Compile Include="SetupObjectItemAttributeImplBase.cs" />
+    <Compile Include="SetupObjectItemMemberAttributeImplBase.cs" />
+    <Compile Include="Setup\IDriverList.cs" />
+    <Compile Include="Setup\ISetupItemDriverAware.cs" />
     <Compile Include="Setup\RegisterSetupEventArgs.cs" />
     <Compile Include="Setup\DriverBase.cs" />
     <Compile Include="Setup\DriverEventArgs.cs" />
     <Compile Include="Setup\DriverListExtension.cs" />
-    <Compile Include="Setup\IDriverList.cs" />
+    <Compile Include="Setup\IDriverBaseList.cs" />
     <Compile Include="Setup\ISetupEngine.cs" />
     <Compile Include="Setup\ISetupHandler.cs" />
     <Compile Include="Setup\ISetupSessionMemory.cs" />
@@ -91,6 +96,7 @@
     <Compile Include="StObj\IStObjSetupDataBase.cs" />
     <Compile Include="StObj\IStObjSetupDynamicInitializer.cs" />
     <Compile Include="StObj\IStObjSetupDynamicInitializerState.cs" />
+    <Compile Include="StObj\IStObjSetupItem.cs" />
     <Compile Include="StObj\IStObjSetupItemFactory.cs" />
     <Compile Include="StObj\StObjDynamicContainerItem.cs" />
     <Compile Include="StObj\StObjDynamicPackageItem.cs" />

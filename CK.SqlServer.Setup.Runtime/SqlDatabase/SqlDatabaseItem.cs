@@ -11,25 +11,22 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
-    public class SqlDatabaseItem : DynamicContainerItem
+    public class SqlDatabaseItem : StObjDynamicContainerItem
     {
         internal readonly SqlDatabaseConnectionItem ConnectionItem;
         
         public SqlDatabaseItem( IActivityMonitor monitor, IStObjSetupData data )
+            : base( monitor, data )
         {
-            Object = (SqlDatabase)data.StObj.InitialObject;
             Context = data.StObj.Context.Context;
-            Location = Object.Name;
-            ItemKind = (DependentItemKind)data.StObj.ItemKind;
+            Location = GetObject().Name;
             ConnectionItem = new SqlDatabaseConnectionItem( this );
             Requires.Add( ConnectionItem );
         }
 
-        public SqlDatabase Object { get; private set; }
-
-        protected override object StartDependencySort()
+        public new SqlDatabase GetObject()
         {
-            return typeof( SqlDatabaseSetupDriver );
+            return (SqlDatabase)base.GetObject();
         }
     }
 }

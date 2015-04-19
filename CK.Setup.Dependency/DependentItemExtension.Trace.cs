@@ -13,7 +13,7 @@ namespace CK.Setup
 
         public static void Trace( this IEnumerable<IDependentItem> @this, IActivityMonitor monitor )
         {
-            using( monitor.OpenTrace().Send( "Dependent items" ) )
+            using( monitor.OpenTrace().Send( "Dependent items (C - for container, G - for group and I - for item)" ) )
             {
                 foreach( var i in @this ) monitor.Trace().Send( i.ToStringDetails() );
             }
@@ -22,7 +22,6 @@ namespace CK.Setup
         public static string ToStringDetails( this IDependentItem @this )
         {
             StringBuilder b = new StringBuilder();
-            b.Append( '[' );
             DependentItemKind kind = DependentItemKind.Item;
             IDependentItemGroup g = @this as IDependentItemGroup;
             if( g != null )
@@ -34,7 +33,7 @@ namespace CK.Setup
                 }
                 else kind = DependentItemKind.Group;
             }
-            b.Append( kind.ToString()[0] ).Append( ']' );
+            b.Append( kind.ToString()[0] ).Append( " - " );
             b.Append( "FullName = " ).Append( @this.FullName ).Append( " (" ).Append( @this.GetType().Name ).AppendLine( ")" )
                 .Append( "| Container = " ).AppendOneName( @this.Container ).AppendLine()
                 .Append( "| Generalization = " ).AppendOneName( @this.Generalization ).AppendLine()
@@ -82,7 +81,7 @@ namespace CK.Setup
 
         public static void Trace( this IEnumerable<ISortedItem> @this, IActivityMonitor monitor  )
         {
-            using( monitor.OpenTrace().Send( "Sorted items" ) )
+            using( monitor.OpenTrace().Send( "Sorted items (C - for container, G - for group and I - for item)" ) )
             {
                 foreach( var i in @this )
                     if( i.HeadForGroup == null ) monitor.Trace().Send( i.ToStringDetails() );
@@ -92,7 +91,7 @@ namespace CK.Setup
         public static string ToStringDetails( this ISortedItem @this )
         {
             StringBuilder b = new StringBuilder();
-            b.Append( '[' ).Append( @this.ItemKind.ToString()[0] ).Append( ']' ).Append( @this.FullName ).Append( " (" ).Append( @this.Item.GetType().Name ).AppendLine( ")" )
+            b.Append( @this.ItemKind.ToString()[0] ).Append( " - " ).Append( @this.FullName ).Append( " (" ).Append( @this.Item.GetType().Name ).AppendLine( ")" )
                 .Append( "| Container = " ).Append( @this.Container != null ? @this.Container.FullName : "(null)" ).AppendLine()
                 .Append( "| Generalization = " ).Append( @this.Generalization != null ? @this.Generalization.FullName : "(null)" ).AppendLine()
                 .Append( "| Requires = " ).AppendStrings( @this.Requires.Select( o => o.FullName ) ).AppendLine()

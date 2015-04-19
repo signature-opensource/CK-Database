@@ -12,30 +12,24 @@ using System.Text;
 using CK.Core;
 using System.Reflection.Emit;
 using System.Reflection;
+using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
     /// <summary>
     /// Base class for <see cref="SqlProcedureAttribute"/>.
     /// </summary>
-    [AttributeUsage( AttributeTargets.Method, AllowMultiple = false, Inherited = false )]
-    public abstract class SqlMethodForObjectItemAttributeBase : AmbientContextBoundDelegationAttribute
+    public abstract class SqlObjectItemMemberAttributeBase : SetupObjectItemMemberAttributeBase
     {
         /// <summary>
         /// Initializes this attribute this a name (procedure name like "sUserCreate")
         /// </summary>
         /// <param name="objectName">Name of the object.</param>
         /// <param name="actualAttributeTypeAssemblyQualifiedName">Assembly Qualified Name of the object that will replace this attribute during setup.</param>
-        protected SqlMethodForObjectItemAttributeBase( string objectName, string actualAttributeTypeAssemblyQualifiedName )
-            : base( actualAttributeTypeAssemblyQualifiedName )
+        protected SqlObjectItemMemberAttributeBase( string objectName, string actualAttributeTypeAssemblyQualifiedName )
+            : base( objectName, actualAttributeTypeAssemblyQualifiedName )
         {
-            ObjectName = objectName;
         }
-
-        /// <summary>
-        /// Gets the object name (for instance "sUserCreate").
-        /// </summary>
-        public string ObjectName { get; private set; }
 
         /// <summary>
         /// Gets or sets whether when installing, the informational message 'The module 'X' depends 

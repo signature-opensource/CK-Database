@@ -59,16 +59,26 @@ namespace CK.Setup
         new IEnumerable<ISortedItem<T>> Requires { get; }
 
         /// <summary>
-        /// Gets the groups (as their <see cref="ISortedItem"/> wrapper) to which this item belongs.
+        /// Gets the groups (as their <see cref="ISortedItem{T}"/> wrapper) to which this item belongs.
         /// Defaults to an empty enumerable.
         /// </summary>
         new IEnumerable<ISortedItem<T>> Groups { get; }
 
         /// <summary>
-        /// Gets the items (as their <see cref="ISortedItem"/> wrapper) that are contained in 
+        /// Gets the items (as their <see cref="ISortedItem{T}"/> wrapper) that are contained in 
         /// the <see cref="Item"/> if it is a <see cref="IDependentItemGroup"/> (that can be a <see cref="IDependentItemContainer"/>).
         /// Empty otherwise.
         /// </summary>
         new IEnumerable<ISortedItem<T>> Children { get; }
+
+        /// <summary>
+        /// Gets all the items recursively (as their <see cref="ISortedItem{T}"/> wrapper) that are contained in 
+        /// the <see cref="Item"/> if it is a <see cref="IDependentItemGroup"/> (that can be a <see cref="IDependentItemContainer"/>).
+        /// Groups introduce the a complexity here (a group contains items that belong to a container or other groups): this enumeration 
+        /// removes duplicates and corretcly handles any cycles that may exist.
+        /// Empty otherwise.
+        /// </summary>
+        new IEnumerable<ISortedItem<T>> AllChildren { get; }
+
     }
 }

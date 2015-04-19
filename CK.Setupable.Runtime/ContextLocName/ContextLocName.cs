@@ -14,6 +14,7 @@ namespace CK.Core
 {
     /// <summary>
     /// Independent implementation of <see cref="IContextLocNaming"/> (wraps <see cref="ContextLocNameStructImpl"/> helper).
+    /// This can be overriden to manage other constraints or naming conventions or sub parts.
     /// </summary>
     public class ContextLocName : IContextLocNaming
     {
@@ -28,7 +29,7 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Initializes a new <see cref="ContextLocNameStructImpl"/> with a full name.
+        /// Initializes a new <see cref="ContextLocName"/> with a full name.
         /// </summary>
         /// <param name="fullName">Initial full name.</param>
         public ContextLocName( string fullName )
@@ -37,8 +38,12 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Initializes a new <see cref="ContextLocNameStructImpl"/> with context, location and name.
+        /// Initializes a new <see cref="ContextLocName"/> with context, location and name.
+        /// Name must be not null.
         /// </summary>
+        /// <param name="context">Can be null (unknown).</param>
+        /// <param name="location">Can be null (unknown).</param>
+        /// <param name="name">Can not be null.</param>
         public ContextLocName( string context, string location, string name )
         {
             _impl = new ContextLocNameStructImpl( context, location, name );
@@ -74,7 +79,21 @@ namespace CK.Core
         public string Name
         {
             get { return _impl.Name; }
-            set { _impl.Name = value; }
+            set 
+            { 
+                if( _impl.Name != value )
+                {
+                    _impl.Name = value;
+                    OnNameChanged();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called whenever the <see cref="Name"/> has changed.
+        /// </summary>
+        protected virtual void OnNameChanged()
+        {
         }
 
         /// <summary>
@@ -85,9 +104,18 @@ namespace CK.Core
         public string FullName
         {
             get { return _impl.FullName; }
-            set { _impl.FullName = value; }
+            set 
+            {
+                string oldName = _impl.Name;
+                _impl.FullName = value;
+                if( oldName != _impl.Name ) OnNameChanged();
+            }
         }
 
+        /// <summary>
+        /// Overriden to return the <see cref="FullName"/>.
+        /// </summary>
+        /// <returns>The FullName of this name.</returns>
         public override string ToString()
         {
             return _impl.FullName;

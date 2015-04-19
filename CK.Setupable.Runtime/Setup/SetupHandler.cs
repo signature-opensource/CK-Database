@@ -21,11 +21,25 @@ namespace CK.Setup
             Driver.AddHandler( this );
         }
 
+        /// <summary>
+        /// Gets the driver to which this handler is associated.
+        /// </summary>
         protected GenericItemSetupDriver Driver { get; private set; }
+
+        /// <summary>
+        /// Helper function for specialized handlers that throws an ArgumentException if the driver's item type is not the 
+        /// one expected.
+        /// </summary>
+        /// <typeparam name="T">Expected item type.</typeparam>
+        protected void CheckItemType<T>()
+        {
+            if( !(Driver.Item is T) ) throw new ArgumentException( "Driver '{0}' has an item of type '{1}'. this handler work with items of type '{2}'.", String.Format( "", Driver.FullName, Driver.Item.GetType().Name, typeof( T ).Name ) );
+        }
+
 
         void CheckCall( GenericItemSetupDriver d )
         {
-            if( d != Driver ) throw new ArgumentException( "Call mismatch: handler is bound to another driver." );
+            if( d != Driver ) throw new InvalidOperationException( String.Format( "Call mismatch: handler is bound to '{0}' but called from '{1}'.", Driver.FullName, d.FullName ) );
         }
 
         bool ISetupHandler.Init( GenericItemSetupDriver d )
@@ -64,31 +78,55 @@ namespace CK.Setup
             return SettleContent();
         }
 
+        /// <summary>
+        /// This default implementation does nothing and returns true.
+        /// </summary>
+        /// <returns>Always true.</returns>
         protected virtual bool Init()
         {
             return true;
         }
 
+        /// <summary>
+        /// This default implementation does nothing and returns true.
+        /// </summary>
+        /// <returns>Always true.</returns>
         protected virtual bool InitContent()
         {
             return true;
         }
 
+        /// <summary>
+        /// This default implementation does nothing and returns true.
+        /// </summary>
+        /// <returns>Always true.</returns>
         protected virtual bool Install()
         {
             return true;
         }
 
+        /// <summary>
+        /// This default implementation does nothing and returns true.
+        /// </summary>
+        /// <returns>Always true.</returns>
         protected virtual bool InstallContent()
         {
             return true;
         }
 
+        /// <summary>
+        /// This default implementation does nothing and returns true.
+        /// </summary>
+        /// <returns>Always true.</returns>
         protected virtual bool Settle()
         {
             return true;
         }
 
+        /// <summary>
+        /// This default implementation does nothing and returns true.
+        /// </summary>
+        /// <returns>Always true.</returns>
         protected virtual bool SettleContent()
         {
             return true;

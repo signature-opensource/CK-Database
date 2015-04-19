@@ -168,11 +168,6 @@ namespace CK.Setup
             return true;
         }
 
-        bool ISetupItem.OnDriverCreated( GenericItemSetupDriver driver )
-        {
-            return OnDriverCreated( driver );
-        }
-
         string IVersionedItem.ItemType
         {
             get { return _itemType; }

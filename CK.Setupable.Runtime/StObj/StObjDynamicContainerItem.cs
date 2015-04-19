@@ -20,7 +20,7 @@ namespace CK.Setup
     /// nor <see cref="IStObjSetupData.ItemTypeName"/> are set).
     /// This class can (and should) be used as a base class for more specific item implementation.
     /// </summary>
-    public class StObjDynamicContainerItem : DynamicContainerItem, IMutableSetupItem
+    public class StObjDynamicContainerItem : DynamicContainerItem, IStObjSetupItem
     {
         readonly IStObjResult _stObj;
         object _obj;
@@ -42,10 +42,11 @@ namespace CK.Setup
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="data">Descriptive data that is used to configure this item.</param>
-        public StObjDynamicContainerItem( IActivityMonitor monitor, IStObjSetupData data )
-            : base( (object)data.DriverType ?? data.DriverTypeName )
+        /// <param name="defaultDriverType">If <see cref="IStObjSetupData.DriverType"/> and <see cref="IStObjSetupData.DriverTypeName"/> is null, this driver is used.</param>
+        public StObjDynamicContainerItem( IActivityMonitor monitor, IStObjSetupData data, Type defaultDriverType = null )
+            : base( (object)data.DriverType ?? (object)data.DriverTypeName ?? defaultDriverType )
         {
-            Debug.Assert( data.ItemType == null || typeof( StObjDynamicPackageItem ).IsAssignableFrom( data.ItemType ), "If we are using a StObjDynamicContainerItem, this is because no explicit ItemType (nor ItemTypeName) have been set, or it is a type that specializes this." );
+            Debug.Assert( data.ItemType == null || typeof( StObjDynamicContainerItem ).IsAssignableFrom( data.ItemType ), "If we are using a StObjDynamicContainerItem, this is because no explicit ItemType (nor ItemTypeName) have been set, or it is a type that specializes this." );
             ItemKind = (DependentItemKind)data.StObj.ItemKind;
             _stObj = data.StObj;
             FullName = data.FullName;
@@ -56,7 +57,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the StObj.
+        /// Gets the StObj. Null if this item is directly bound to an object.
         /// </summary>
         public IStObjResult StObj
         {

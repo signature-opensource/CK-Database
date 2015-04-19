@@ -16,7 +16,7 @@ namespace CK.SqlServer.Setup
         public SqlDatabaseSetupDriver( BuildInfo info )
             : base( info )
         {
-            _connection = (SqlDatabaseConnectionSetupDriver)DirectDependencies[Item.ConnectionItem];
+            _connection = (SqlDatabaseConnectionSetupDriver)Engine.AllDrivers[Item.ConnectionItem];
         }
 
         /// <summary>

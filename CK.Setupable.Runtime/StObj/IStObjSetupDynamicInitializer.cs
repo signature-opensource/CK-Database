@@ -15,7 +15,7 @@ namespace CK.Setup
 {
     /// <summary>
     /// Dynamic initialization is the last step: the StObj have been initialized, ordered, and their corresponding <see cref="IMutableSetupItem"/> have been 
-    /// created and configured. This is where new <see cref="IDependentItem"/>s can be created and registered (typically as children of the item).
+    /// created and configured. This is where new <see cref="ISetupItem"/>s can be created and registered (typically as children of the item).
     /// This interface can be supported by attributes on the structured object, by the object itself or injected in <see cref="StObjSetupItemBuilder"/>.
     /// </summary>
     public interface IStObjSetupDynamicInitializer

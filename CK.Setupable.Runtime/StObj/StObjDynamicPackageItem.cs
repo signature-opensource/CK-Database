@@ -20,7 +20,7 @@ namespace CK.Setup
     /// nor <see cref="IStObjSetupData.ItemTypeName"/> are set).
     /// This class can (and should) be used as a base class for more specific item implementation.
     /// </summary>
-    public class StObjDynamicPackageItem : DynamicPackageItem, IMutableSetupItem
+    public class StObjDynamicPackageItem : DynamicPackageItem, IStObjSetupItem
     {
         readonly IStObjResult _stObj;
         object _obj;

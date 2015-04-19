@@ -334,19 +334,23 @@ namespace CK.Setup
 
             IEnumerable<ISortedItem> ISortedItem.Groups
             {
-                get { return ((ISortedItem<T>)this).Groups; }
+                get { return GetGroups(); }
             }
 
             IEnumerable<ISortedItem> ISortedItem.Requires
             {
-                get { return ((ISortedItem<T>)this).Requires; }
+                get { return GetRequires(); }
             }
 
             IEnumerable<ISortedItem> ISortedItem.Children
             {
-                get { return ((ISortedItem<T>)this).Children; }
+                get { return GetChildren(); }
             }
 
+            IEnumerable<ISortedItem> ISortedItem.AllChildren
+            {
+                get { return GetAllChildren( new HashSet<Entry>() ); }
+            }
 
             #endregion
 
@@ -385,41 +389,54 @@ namespace CK.Setup
 
             IEnumerable<ISortedItem<T>> ISortedItem<T>.Requires
             {
-                get
-                {
-                    var req = HeadIfGroupOrContainer != null ? HeadIfGroupOrContainer.Requires : Requires;
-                    return req == null 
-                        ? CKReadOnlyListEmpty<ISortedItem<T>>.Empty 
-                        : req.Where( d => !d.Optional )
-                                // We can not blindly use (ISortedItem)_entries[r.FullName] because if DependencySorterResult.HasRequiredMissing is true
-                                // and the resulting graph is nevertheless used (for Tracing by example) there will be no associated ISortedItem.
-                                // ==> We must TryGetValue and filter unexisting sorted items.
-                                .Select( r => (ISortedItem<T>)_entries.GetValueWithDefault( r.FullName, null ) )
-                                .Where( i => i != null );
-                }
+                get { return GetRequires(); }
             }
 
             IEnumerable<ISortedItem<T>> ISortedItem<T>.Groups
             {
-                get
-                {
-                    // Groups is only on the Group (not on its head).
-                    var holder = GroupIfHead ?? this;
-                    return holder.Groups != null ? (IEnumerable<ISortedItem<T>>)holder.Groups : CKReadOnlyListEmpty<ISortedItem<T>>.Empty;
-                }
+                get { return GetGroups(); }
             }
 
             IEnumerable<ISortedItem<T>> ISortedItem<T>.Children
             {
-                get
-                {
-                    // GroupChildren is only on the Group (not on its head).
-                    var holder = GroupIfHead ?? this;
-                    return holder.GroupChildren != null ? holder.GroupChildren : holder.GetContainerChildren();
-                }
+                get { return GetChildren(); }
             }
 
-            IEnumerable<ISortedItem<T>> GetContainerChildren()
+            IEnumerable<ISortedItem<T>> ISortedItem<T>.AllChildren
+            {
+                get { return GetAllChildren( new HashSet<Entry>() ); }
+            }
+
+            #endregion
+
+            IEnumerable<Entry> GetRequires()
+            {
+                var req = HeadIfGroupOrContainer != null ? HeadIfGroupOrContainer.Requires : Requires;
+                return req == null
+                    ? CKReadOnlyListEmpty<Entry>.Empty
+                    : req.Where( d => !d.Optional )
+                            // We can not blindly use (ISortedItem)_entries[r.FullName] because if DependencySorterResult.HasRequiredMissing is true
+                            // and the resulting graph is nevertheless used (for Tracing by example) there will be no associated ISortedItem.
+                            // ==> We must TryGetValue and filter unexisting sorted items.
+                            .Select( r => (Entry)_entries.GetValueWithDefault( r.FullName, null ) )
+                            .Where( i => i != null );
+            }
+
+            IEnumerable<Entry> GetGroups()
+            {
+                // Groups is only on the Group (not on its head).
+                var holder = GroupIfHead ?? this;
+                return holder.Groups != null ? holder.Groups : (IEnumerable<Entry>)CKReadOnlyListEmpty<Entry>.Empty;
+            }
+
+            IEnumerable<Entry> GetChildren()
+            {
+                // GroupChildren is only on the Group (not on its head).
+                var holder = GroupIfHead ?? this;
+                return holder.GroupChildren != null ? holder.GroupChildren : holder.GetContainerChildren();
+            }
+
+            IEnumerable<Entry> GetContainerChildren()
             {
                 var c = FirstChildIfContainer;
                 while( c != null )
@@ -428,7 +445,25 @@ namespace CK.Setup
                     c = c.NextChildInContainer;
                 }
             }
-            #endregion
+
+            IEnumerable<Entry> GetAllChildren( HashSet<Entry> dedup )
+            {
+                foreach( var i in GetChildren() )
+                {
+                    if( dedup.Add( i ) )
+                    {
+                        yield return i;
+                    }
+                    foreach( var ii in i.GetAllChildren( dedup ) )
+                    {
+                        if( dedup.Add( ii ) )
+                        {
+                            yield return ii;
+                        }
+                    }
+                }
+            }
+
 
         }
 

@@ -108,6 +108,15 @@ namespace CK.Setup
         /// Empty otherwise.
         /// </summary>
         IEnumerable<ISortedItem> Children { get; }
+
+        /// <summary>
+        /// Gets all the items recursively (as their <see cref="ISortedItem"/> wrapper) that are contained in 
+        /// the <see cref="Item"/> if it is a <see cref="IDependentItemGroup"/> (that can be a <see cref="IDependentItemContainer"/>).
+        /// Groups introduce the a complexity here (a group contains items that belong to a container or other groups): this enumeration 
+        /// removes duplicates and corretcly handles any cycles that may exist.
+        /// Empty otherwise.
+        /// </summary>
+        IEnumerable<ISortedItem> AllChildren { get; }
     }
 
 }

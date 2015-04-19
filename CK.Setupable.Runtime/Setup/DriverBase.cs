@@ -26,58 +26,14 @@ namespace CK.Setup
     /// </remarks>
     public abstract class DriverBase
     {
-        readonly ISetupItem _item;
+        readonly ISortedItem<ISetupItem> _sortedItem;
 
-        class DirectList : IDriverList
-        {
-            DriverBase[] _drivers;
-
-            public DirectList( DriverBase[] drivers )
-            {
-                _drivers = drivers;
-            }
-
-            public DriverBase this[ string fullName ]
-            {
-                get { return _drivers.FirstOrDefault( d => d.Item.FullName == fullName ); }
-            }
-
-            public DriverBase this[ IDependentItem item ]
-            {
-                get { return _drivers.FirstOrDefault( d => d.Item == item ); }
-            }
-
-            public DriverBase this[int index]
-            {
-                get { return _drivers[index]; }
-            }
-
-            public int Count
-            {
-                get { return _drivers.Length; }
-            }
-
-            public IEnumerator<DriverBase> GetEnumerator()
-            {
-                return  ((IEnumerable<DriverBase>)_drivers).GetEnumerator();
-            }
-
-            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-            {
-                return _drivers.GetEnumerator();
-            }
-
-        }
-
-        internal DriverBase( ISetupEngine engine, ISortedItem<ISetupItem> sortedItem, VersionedName externalVersion, IDriverList headDirectDependencies = null )
+        internal DriverBase( ISetupEngine engine, ISortedItem<ISetupItem> sortedItem, VersionedName externalVersion )
         {
             Engine = engine;
-            _item = sortedItem.Item;
-            Index = sortedItem.Index;
-            Rank = sortedItem.Rank;
-            FullName = sortedItem.FullName;
+            _sortedItem = sortedItem;
             ExternalVersion = externalVersion;
-            DirectDependencies = headDirectDependencies ?? new DirectList( sortedItem.Requires.Select( d => Engine.AllDrivers[d.FullName] ).OrderBy( d => d.Index ).ToArray() );
+            FullName = _sortedItem.FullName;
         }
 
         /// <summary>
@@ -86,7 +42,16 @@ namespace CK.Setup
         /// </summary>
         public ISetupItem Item
         {
-            get { return _item; }
+            get { return _sortedItem.Item; }
+        }
+
+
+        /// <summary>
+        /// Gets the <see cref="ISortedItem{T}"/> of the item.
+        /// </summary>
+        public ISortedItem<ISetupItem> SortedItem
+        {
+            get { return _sortedItem; }
         }
 
         /// <summary>
@@ -98,7 +63,7 @@ namespace CK.Setup
         {
             get 
             {
-                IVersionedItem v = _item as IVersionedItem;
+                IVersionedItem v = Item as IVersionedItem;
                 return v != null ? v.Version : null;
             }
         }
@@ -121,25 +86,9 @@ namespace CK.Setup
         public readonly VersionedName ExternalVersion;
 
         /// <summary>
-        /// The position of this driver inside the list of setup drivers.
-        /// </summary>
-        public readonly int Index;
-
-        /// <summary>
-        /// The rank of the <see cref="Item"/> in the dependency graph.
-        /// </summary>
-        public readonly int Rank;
-
-        /// <summary>
         /// The <see cref="ISetupEngine"/> to which this driver belongs.
         /// </summary>
         public readonly ISetupEngine Engine;
-
-        /// <summary>
-        /// Gets the list of drivers that are associated to the direct dependencies
-        /// of the <see cref="Item"/>. A driver should interact only with these objects.
-        /// </summary>
-        public readonly IDriverList DirectDependencies;
 
         internal abstract bool ExecuteInit();
 

@@ -19,7 +19,7 @@ using CK.SqlServer.Parser;
 namespace CK.SqlServer.Setup
 {
 
-    public partial class SqlProcedureAttributeImpl : SqlMethodForObjectItemAttributeImplBase
+    public partial class SqlProcedureAttributeImpl : SqlObjectItemMethodAttributeImplBase
     {
         public SqlProcedureAttributeImpl( SqlProcedureAttribute a )
             : base( a, SqlObjectProtoItem.TypeProcedure )

@@ -83,7 +83,7 @@ namespace CK.Core
                     finalAttributeToUse = Activator.CreateInstance( dT, new object[] { a } );
                 }
                 all.Add( new Entry( m, finalAttributeToUse ) );
-                if( a is IAttributeAmbientContextBoundInitializer ) ++initializerCount;
+                if( finalAttributeToUse is IAttributeAmbientContextBoundInitializer ) ++initializerCount;
             }
             return initializerCount;
         }
@@ -155,18 +155,30 @@ namespace CK.Core
             return fromCache;
         }
 
+        IEnumerable<object> ICKCustomAttributeMultiProvider.GetAllCustomAttributes( Type attributeType )
+        {
+            return GetAllCustomAttributes( attributeType );
+        }
+
         /// <summary>
         /// Gets all attributes that are assignable to the given <paramref name="attributeType"/>, regardless of the <see cref="MemberInfo"/>
         /// that carries it. 
         /// </summary>
         /// <param name="attributeType">Type of requested attributes.</param>
+        /// <param name="memberOnly">True to ignore attributes of the type itself.</param>
         /// <returns>Enumeration of attributes (possibly empty).</returns>
-        public IEnumerable<object> GetAllCustomAttributes( Type attributeType )
+        public IEnumerable<object> GetAllCustomAttributes( Type attributeType, bool memberOnly = false )
         {
-            var fromCache = _all.Where( e => attributeType.IsAssignableFrom( e.Attr.GetType() ) ).Select( e => e.Attr );
-            var fromType = Type.GetCustomAttributes( attributeType, _includeBaseClasses ).Where( a => !(a is IAttributeAmbientContextBound) );
+            var fromCache = _all.Where( e => (!memberOnly || e.M != Type) && attributeType.IsAssignableFrom( e.Attr.GetType() ) ).Select( e => e.Attr );
             var fromMembers = _typeMembers.SelectMany( m => m.GetCustomAttributes( attributeType, false ).Where( a => !(a is IAttributeAmbientContextBound) ) );
+            if( memberOnly ) return fromCache.Concat( fromMembers );
+            var fromType = Type.GetCustomAttributes( attributeType, _includeBaseClasses ).Where( a => !(a is IAttributeAmbientContextBound) );
             return fromCache.Concat( fromType ).Concat( fromMembers );
+        }
+
+        IEnumerable<T> ICKCustomAttributeMultiProvider.GetAllCustomAttributes<T>()
+        {
+            return GetAllCustomAttributes<T>();
         }
 
         /// <summary>
@@ -174,12 +186,16 @@ namespace CK.Core
         /// that carries it.
         /// </summary>
         /// <typeparam name="T">Type of the attributes.</typeparam>
+        /// <param name="memberOnly">True to ignore attributes of the type itself.</param>
         /// <returns>Enumeration of attributes (possibly empty).</returns>
-        public IEnumerable<T> GetAllCustomAttributes<T>()
+        public IEnumerable<T> GetAllCustomAttributes<T>( bool memberOnly = false )
         {
-            var fromCache = _all.Where( e => e.Attr is T ).Select( e => (T)e.Attr );
+            var fromCache = _all.Where( e => e.Attr is T && (!memberOnly || e.M != Type) ).Select( e => (T)e.Attr );
+            var fromMembers = _typeMembers.SelectMany( m => m.GetCustomAttributes( typeof( T ), false )
+                                            .Where( a => !(a is IAttributeAmbientContextBound) ) )
+                                            .Select( a => (T)a );
+            if( memberOnly ) return fromCache.Concat( fromMembers );
             var fromType = Type.GetCustomAttributes( typeof( T ), _includeBaseClasses ).Where( a => !(a is IAttributeAmbientContextBound) ).Select( a => (T)a );
-            var fromMembers = _typeMembers.SelectMany( m => m.GetCustomAttributes( typeof( T ), false ).Where( a => !(a is IAttributeAmbientContextBound) ) ).Select( a => (T)a );
             return fromCache.Concat( fromType ).Concat( fromMembers );
         }
 

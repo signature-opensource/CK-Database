@@ -60,7 +60,7 @@ namespace CK.Setup
         /// </summary>
         /// <param name="info">Opaque parameter built by the framework.</param>
         public GenericItemSetupDriver( BuildInfo info )
-            : base( info.Engine, info.SortedItem, info.ExternalVersion, info.Head != null ? info.Head.DirectDependencies : null )
+            : base( info.Engine, info.SortedItem, info.ExternalVersion )
         {
             Debug.Assert( info.Head == null || info.SortedItem.FullName + ".Head" == info.Head.FullName );
             Head = info.Head;

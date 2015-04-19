@@ -60,10 +60,20 @@ namespace CK.Setup
         IActivityMonitor Monitor { get; }
 
         /// <summary>
+        /// Gives access to the ordered list of the <see cref="GenericItemSetupDriver"/>.
+        /// </summary>
+        IDriverList Drivers { get; }
+
+        /// <summary>
         /// Gives access to the ordered list of all the <see cref="DriverBase"/> that participate to Setup.
         /// This list is filled after <see cref="RegisterSetupEvent"/> (and <see cref="SetupEvent"/> with <see cref="SetupStep.PreInit"/>) and before <see cref="SetupStep.Init"/>.
         /// </summary>
-        IDriverList AllDrivers { get; }
+        IDriverBaseList AllDrivers { get; }
+
+        /// <summary>
+        /// Gets all ordered setup items without heads: a group or a container appears after the setup items it contains.
+        /// </summary>
+        IEnumerable<ISetupItem> AllItems { get; }
 
         /// <summary>
         /// Gets the current state of the engine.

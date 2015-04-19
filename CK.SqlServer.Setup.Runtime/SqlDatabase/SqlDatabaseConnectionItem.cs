@@ -19,7 +19,7 @@ namespace CK.SqlServer.Setup
             _db = db;
         }
 
-        public SqlDatabase SqlDatabase { get { return _db.Object; } }
+        public SqlDatabase SqlDatabase { get { return _db.GetObject(); } }
 
         public string FullName
         {
@@ -59,12 +59,6 @@ namespace CK.SqlServer.Setup
         bool IDependentItemRef.Optional
         {
             get { return false; }
-        }
-
-
-        bool ISetupItem.OnDriverCreated( GenericItemSetupDriver driver )
-        {
-            return true;
         }
 
         public string Context

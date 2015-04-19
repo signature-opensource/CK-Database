@@ -15,7 +15,7 @@ namespace CK.Setup
 {
     public static class DriverListExtension
     {
-        public static T Find<T>( this IDriverList @this, string fullName, bool throwIfNotFound )
+        public static T Find<T>( this IDriverBaseList @this, string fullName, bool throwIfNotFound )
             where T : DriverBase
         {
             T result = @this[fullName] as T;

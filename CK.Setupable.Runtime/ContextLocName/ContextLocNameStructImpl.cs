@@ -80,6 +80,11 @@ namespace CK.Core
             }
         }
 
+        void CombineContext( string baseContext )
+        {
+
+        }
+
         /// <summary>
         /// Gets or sets the location. 
         /// Can be null (unknown location) or empty (the root location).

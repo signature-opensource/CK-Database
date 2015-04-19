@@ -16,7 +16,7 @@ using System.Reflection;
 namespace CK.SqlServer.Setup
 {
     [AttributeUsage( AttributeTargets.Method, AllowMultiple = false, Inherited = false )]
-    public class SqlProcedureAttribute : SqlMethodForObjectItemAttributeBase
+    public class SqlProcedureAttribute : SqlObjectItemMemberAttributeBase
     {
         public SqlProcedureAttribute( string procedureName )
             : base( procedureName, "CK.SqlServer.Setup.SqlProcedureAttributeImpl, CK.SqlServer.Setup.Runtime" )

@@ -74,7 +74,7 @@ namespace CK.Setup
             if( DriverType == null && DriverTypeName != null ) DriverType = SimpleTypeFinder.WeakDefault.ResolveType( DriverTypeName, true );
         }
 
-        internal IMutableSetupItem SetupItem { get; set; }
+        internal IStObjSetupItem SetupItem { get; set; }
 
         IReadOnlyList<IDependentItemRef> IStObjSetupData.RequiredBy
         {

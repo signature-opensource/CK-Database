@@ -23,7 +23,7 @@ namespace CK.Setup
     /// <remarks>
     /// The <see cref="DynamicPackageItem"/> must be used for container that have multiple versions and optional associated "Model" and "Objects".
     /// </remarks>
-    public abstract class DynamicContainerItem : IMutableSetupItemContainer, IDependentItemContainerRef
+    public abstract class DynamicContainerItem : IMutableSetupItemContainer, ISetupItem, IDependentItemContainerRef
     {
         ContextLocNameStructImpl _name;
         DependentItemList _requires;
@@ -173,21 +173,6 @@ namespace CK.Setup
         object IDependentItem.StartDependencySort()
         {
             return StartDependencySort();
-        }
-
-        /// <summary>
-        /// Called once the associated driver has been instanciated.
-        /// </summary>
-        /// <param name="driver">Driver for this item.</param>
-        /// <returns>True on success. Returning false cancels the setup process.</returns>
-        protected virtual bool OnDriverCreated( GenericItemSetupDriver driver )
-        {
-            return true;
-        }
-
-        bool ISetupItem.OnDriverCreated( GenericItemSetupDriver driver )
-        {
-            return OnDriverCreated( driver );
         }
 
         bool IDependentItemRef.Optional

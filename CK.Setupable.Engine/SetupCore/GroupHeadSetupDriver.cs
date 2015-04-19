@@ -17,7 +17,7 @@ namespace CK.Setup
         GenericItemSetupDriver _group;
 
         internal GroupHeadSetupDriver( ISetupEngine center, ISortedItem<ISetupItem> sortedItem, VersionedName externalVersion )
-            : base( center, sortedItem, externalVersion, null )
+            : base( center, sortedItem, externalVersion )
         {
         }
 

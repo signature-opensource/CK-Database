@@ -118,14 +118,14 @@ namespace CK.Setup
         /// <summary>
         /// Step n°7 - Creation of the actual SetupItem to use for a StObj may be decided here. Like the others, this step is optional: by default
         /// a generic <see cref="StObjDynamicPackageItem"/> does the job.
-        /// This empty implementation of <see cref="IStObjSetupItemFactory.CreateDependentItem"/> calls <see cref="Previous"/> if it is not null, otherwise returns null.
+        /// This empty implementation of <see cref="IStObjSetupItemFactory.CreateSetupItem"/> calls <see cref="Previous"/> if it is not null, otherwise returns null.
         /// </summary>
         /// <param name="_monitor">Monitor to use.</param>
         /// <param name="data">Descriptive data (initialized by attributes and other direct code-first approaches and configured by any <see cref="IStObjSetupConfigurator"/>).</param>
-        /// <returns>A <see cref="IMutableSetupItem"/> implementation that must be correctly initialized by the given data, or null to use the default <see cref="StObjDynamicPackageItem"/>.</returns>
-        public virtual IMutableSetupItem CreateDependentItem( IActivityMonitor monitor, IStObjSetupData data )
+        /// <returns>A <see cref="IStObjSetupItem"/> implementation that must be correctly initialized by the given data, or null to use the default <see cref="StObjDynamicPackageItem"/>.</returns>
+        public virtual IStObjSetupItem CreateSetupItem( IActivityMonitor monitor, IStObjSetupData data )
         {
-            return _previous != null ? _previous.CreateDependentItem( monitor, data ) : null;
+            return _previous != null ? _previous.CreateSetupItem( monitor, data ) : null;
         }
 
         /// <summary>

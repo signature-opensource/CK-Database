@@ -86,7 +86,7 @@ namespace CK.Setup
                     try
                     {
                         data.ResolveItemAndDriverTypes( _monitor );
-                        if( _setupItemFactory != null ) data.SetupItem = _setupItemFactory.CreateDependentItem( _monitor, data );
+                        if( _setupItemFactory != null ) data.SetupItem = _setupItemFactory.CreateSetupItem( _monitor, data );
                         if( data.SetupItem != null )
                         {
                             // An item has been created by the factory. 
@@ -109,7 +109,7 @@ namespace CK.Setup
                             }
                             else
                             {
-                                data.SetupItem = (IMutableSetupItem)Activator.CreateInstance( itemType, _monitor, data );
+                                data.SetupItem = (IStObjSetupItem)Activator.CreateInstance( itemType, _monitor, data );
                             }
                         }
                         // Configures Generalization since we got it above.
@@ -184,9 +184,9 @@ namespace CK.Setup
                 {
                     if( existing.FullNameWithoutContext != data.ContainerFullName )
                     {
-                        _monitor.Error().Send( "Structure Item '{0}' is bound to Container named '{1}' but the PackageAttribute states that it must be in '{2}'.", data.FullName, existing.FullNameWithoutContext, data.ContainerFullName );
+                        _monitor.Info().Send( "Container of '{0}' is '{1}'. (Original Container was: '{2}'.)", data.FullName, existing.FullNameWithoutContext, data.ContainerFullName );
                     }
-                    // Even when a mismatch exists, we continue and bind the container configred at the StObj level (trying to raise more errors).
+                    data.SetupItem.Container = new NamedDependentItemContainerRef( data.ContainerFullName );
                 }
                 IDependentItemContainer c = existing.SetupItem as IDependentItemContainer;
                 if( c == null )
@@ -296,7 +296,7 @@ namespace CK.Setup
                     try
                     {
                         initSource = "Attributes";
-                        // ApplyAttributesDynamicInitializer
+                        // ApplyAttributesDynamicInitializer on attributes (attributes of the type itself comes first).
                         {
                             var all = o.Attributes.GetAllCustomAttributes<IStObjSetupDynamicInitializer>();
                             foreach( IStObjSetupDynamicInitializer init in all )
@@ -306,7 +306,7 @@ namespace CK.Setup
                         }
                         initSource = "Structured Item itself";
                         IStObjSetupDynamicInitializer objectItself = o.ObjectAccessor() as IStObjSetupDynamicInitializer;
-                        if( o.InitialObject is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)o.InitialObject).DynamicItemInitialize( state, item, o );
+                        if( objectItself != null ) ((IStObjSetupDynamicInitializer)objectItself).DynamicItemInitialize( state, item, o );
                         initSource = "Setup Item itself";
                         if( item is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)item).DynamicItemInitialize( state, item, o );
                         initSource = "Global StObjSetupBuilder initializer";

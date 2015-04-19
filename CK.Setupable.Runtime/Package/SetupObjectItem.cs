@@ -121,11 +121,6 @@ namespace CK.Setup
             get { return _type; }
         }
 
-        bool ISetupItem.OnDriverCreated( GenericItemSetupDriver driver )
-        {
-            return true;
-        }
-
         string IContextLocNaming.Context
         {
             get { return ContextLocName.Context; }

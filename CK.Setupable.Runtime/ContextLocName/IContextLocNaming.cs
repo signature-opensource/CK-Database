@@ -31,7 +31,7 @@ namespace CK.Core
 
         /// <summary>
         /// Gets the name part (without <see cref="Context"/> nor <see cref="Location"/>).
-        /// Must not be null.
+        /// Must not be null:
         /// </summary>
         string Name { get; }
 

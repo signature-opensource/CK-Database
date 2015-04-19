@@ -24,11 +24,5 @@ namespace CK.Setup
         /// </summary>
         new string FullName { get; }
 
-        /// <summary>
-        /// Called by the Engine right after the driver has been created.
-        /// </summary>
-        /// <param name="driver">The driver associated to this item.</param>
-        /// <returns>True on success. Returning false cancels the setup process.</returns>
-        bool OnDriverCreated( GenericItemSetupDriver driver );
     }
 }

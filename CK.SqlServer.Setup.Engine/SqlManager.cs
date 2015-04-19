@@ -25,12 +25,12 @@ namespace CK.SqlServer.Setup
     {
         static List<string> _protectedDatabaseNames = new List<string>() { "master", "msdb", "tempdb", "model" };
 
-        SqlConnectionProvider	_oCon;
-        IActivityMonitor        _monitor;
-        bool					_checkTranCount;
-        bool                    _ckCoreInstalled;
-        bool                    _missingDependencyIsError;
-        bool                    _ignoreMissingDependencyIsError;
+        readonly IActivityMonitor   _monitor;
+        SqlConnectionProvider	    _oCon;
+        bool				    	_checkTranCount;
+        bool                        _ckCoreInstalled;
+        bool                        _missingDependencyIsError;
+        bool                        _ignoreMissingDependencyIsError;
 
         /// <summary>
         /// Initializes a new SqlManager.
@@ -133,13 +133,9 @@ namespace CK.SqlServer.Setup
 
         /// <summary>
         /// Opens a database from a connection string.
-        /// If a <see cref="Monitor"/> is set, exceptions will be routed to it.
         /// </summary>
         /// <param name="connectionString">The connection string to the database.</param>
-        /// <returns>
-        /// If a <see cref="Monitor"/> is set, this method will return true or false 
-        /// to indicate success.
-        /// </returns>
+        /// <returns>True on success.</returns>
         public bool OpenFromConnectionString( string connectionString, bool autoCreate = false )
         {
             using( _monitor.OpenInfo().Send( "Connection" ) )
@@ -190,6 +186,12 @@ namespace CK.SqlServer.Setup
         }
 
 
+        /// <summary>
+        /// Small helper that opens or crates a database and returns an opened <see cref="SqlManager"/>.
+        /// </summary>
+        /// <param name="connectionString">Connection string to use.</param>
+        /// <param name="monitor">Monitor that will be associated to the SqlManager. Can not be null.</param>
+        /// <returns>Opened SqlManager.</returns>
         static public SqlManager OpenOrCreate( string connectionString, IActivityMonitor monitor )
         {
             SqlManager m = new SqlManager( monitor );
@@ -235,47 +237,58 @@ namespace CK.SqlServer.Setup
         }
 
         /// <summary>
+        /// Returns the object text definition of <paramref name="schemaName"/> object.
+        /// </summary>
+        /// <param name="schemaname">Namme of the object.</param>
+        /// <returns>The object's text.</returns>
+        public string GetObjectDefinition( string schemaName )
+        {
+            CheckOpen();
+            using( var cmd = new SqlCommand( "select OBJECT_DEFINITION(OBJECT_ID(@0))" ) )
+            {
+                cmd.Parameters.AddWithValue( "@0", schemaName );
+                return (string)_oCon.ExecuteScalar( cmd );
+            }
+        }
+
+        /// <summary>
         /// Tries to remove all objects from a given schema.
         /// </summary>
-        /// <param name="schemaName">Name of the schema. Must not be null nor empty.</param>
+        /// <param name="schema">Name of the schema. Must not be null nor empty.</param>
         /// <returns>Always true if no <see cref="Monitor"/> is set (an exception
         /// will be thrown in case of failure). If a <see cref="Monitor"/> is set,
         /// this method will return true or false to indicate success.</returns>
-        public bool SchemaDropAllObjects( string schemaName, bool dropSchema )
+        public bool SchemaDropAllObjects( string schema, bool dropSchema )
         {
             CheckOpen();
-            if( String.IsNullOrEmpty( schemaName ) 
-                || schemaName.IndexOf( '\'' ) >= 0
-                || schemaName.IndexOf( ';' ) >= 0 ) throw new ArgumentException( "schemaName" );
+            if( String.IsNullOrEmpty( schema )
+                || schema.IndexOf( '\'' ) >= 0
+                || schema.IndexOf( ';' ) >= 0 ) throw new ArgumentException( "schemaName" );
             try
             {
                 using( var c = new SqlCommand( "CKCore.sSchemaDropAllObjects" ) )
                 {
                     c.CommandType = CommandType.StoredProcedure;
-                    c.Parameters.AddWithValue( "@SchemaName", schemaName );
+                    c.Parameters.AddWithValue( "@SchemaName", schema );
                     _oCon.ExecuteNonQuery( c );
                     if( dropSchema )
                     {
                         c.CommandType = CommandType.Text;
-                        c.CommandText = String.Format( "if exists(select 1 from sys.schemas where name = '{0}') drop schema {0};", schemaName );
+                        c.CommandText = String.Format( "if exists(select 1 from sys.schemas where name = '{0}') drop schema {0};", schema );
                         _oCon.ExecuteNonQuery( c );
                     }
                 }
-                if( schemaName == "CKCore" ) _ckCoreInstalled = false;
+                if( schema == "CKCore" ) _ckCoreInstalled = false;
+                return true;
             }
             catch( Exception ex )
             {
-                if( _monitor != null )
-                {
-                    _monitor.Error().Send( ex );
-                    return false;
-                }
-                throw;
+                _monitor.Error().Send( ex );
+                return false;
             }
-            return true;
         }
 
-        private void CheckAction( string action, string dbName )
+        void CheckAction( string action, string dbName )
         {
             if( dbName == null || dbName.Length == 0 || _protectedDatabaseNames.Contains( dbName ) )
             {
@@ -350,7 +363,7 @@ namespace CK.SqlServer.Setup
                     if( _monitor == null ) throw;
                     // If the monitor is tracing, the text has already been logged.
                     if( hasBeenTraced ) _monitor.Error().Send( e );
-                    else 
+                    else
                     {
                         // If the text is not already logged, then we unconditionally log it below the error.
                         using( _monitor.OpenError().Send( e ) )
@@ -393,7 +406,7 @@ namespace CK.SqlServer.Setup
                                 if( _monitor != null ) _monitor.Error().Send( msg );
                                 else if( LastSucceed ) throw new Exception( msg );
                             }
-                        }                       
+                        }
                         if( _databaseName != null && _databaseName != _manager.Connection.InternalConnection.Database )
                         {
                             if( _monitor != null ) _monitor.Info().Send( "Current database automatically restored from {0} to {1}.", _manager.Connection.InternalConnection.Database, _databaseName );
@@ -490,14 +503,14 @@ namespace CK.SqlServer.Setup
                 }
                 else
                 {
-                    _monitor.Error().Send( "Sql Server error at '{0}'\r\nClass='{1}'\r\nMessage: '{2}'\r\nProcedure: '{6}'\r\nLineNumber: '{7}'\r\nNumber: '{3}'\r\nState: '{4}'\r\nServer: '{5}'", 
-                                        err.Source, 
-                                        err.Class, 
-                                        err.Message, 
-                                        err.Number, 
-                                        err.State, 
-                                        err.Server, 
-                                        err.Procedure, 
+                    _monitor.Error().Send( "Sql Server error at '{0}'\r\nClass='{1}'\r\nMessage: '{2}'\r\nProcedure: '{6}'\r\nLineNumber: '{7}'\r\nNumber: '{3}'\r\nState: '{4}'\r\nServer: '{5}'",
+                                        err.Source,
+                                        err.Class,
+                                        err.Message,
+                                        err.Number,
+                                        err.State,
+                                        err.Server,
+                                        err.Procedure,
                                         err.LineNumber );
                 }
             }
