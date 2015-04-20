@@ -255,17 +255,17 @@ namespace CK.Setup
                         // Checking FullName is not perfect here: if the object content defines a Context or a Location, its FullName may
                         // differ from the external one of the ParsedFileName.
                         // It is best to compare only Name part of the two names.
-                        if( item.FullName != f.FullName )
+                        if( item.ContextLocName.FullName != f.FullName )
                         {
-                            _monitor.Error().Send( "File '{0}' in '{1}': content indicates '{2}'. Names must match.", f.FileName, f.ExtraPath, item.FullName );
+                            _monitor.Error().Send( "File '{0}' in '{1}': content indicates '{2}'. Names must match.", f.FileName, f.ExtraPath, item.ContextLocName.FullName );
                             return false;
                         }
                         if( !itemCollector.Add( item ) )
                         {
-                            _monitor.Error().Send( "File '{0}' in '{1}': object '{2}' is already defined.", f.FileName, f.ExtraPath, item.FullName );
+                            _monitor.Error().Send( "File '{0}' in '{1}': object '{2}' is already defined.", f.FileName, f.ExtraPath, item.ContextLocName.FullName );
                             return false;
                         }
-                        _monitor.CloseGroup( item.FullName );
+                        _monitor.CloseGroup( item.ContextLocName.FullName );
                         return true;
                     }
                 }

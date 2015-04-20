@@ -48,6 +48,7 @@ namespace CK.SqlServer.Setup
 
         /// <summary>
         /// Initializes a new <see cref="SqlContextLocName"/> with context, location schema and object name.
+        /// Schema can be null (unknown) or empty (no schema).
         /// </summary>
         public SqlContextLocName( string context, string location, string schema, string objectName )
             : base( context, location, String.Empty )
@@ -58,6 +59,7 @@ namespace CK.SqlServer.Setup
 
         /// <summary>
         /// Initializes a new <see cref="SqlContextLocName"/> from a context, a schema and object name.
+        /// Schema can be null (unknown) or empty (no schema).
         /// </summary>
         public SqlContextLocName( IContextLocNaming context, string schema, string objectName )
             : this( context.Context, context.Location, schema, objectName )

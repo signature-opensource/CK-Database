@@ -8,7 +8,8 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// A setup object item is initialized from a <see cref="ISetupObjectProtoItem"/>.
+    /// A setup object item is typically an item that originates from an attribute or a StObj member 
+    /// and initialized from a <see cref="ISetupObjectProtoItem"/>.
     /// </summary>
     public abstract class SetupObjectItem : ISetupItem, IDependentItemRef
     {
@@ -19,15 +20,15 @@ namespace CK.Setup
         IDependentItemContainerRef _container;
         SetupObjectItem _replacedBy;
         SetupObjectItem _replaces;
+        IContextLocNaming _contextLocName;
 
         /// <summary>
-        /// Spelcialized SetupObjectItem can alter the naming.
+        /// Initializes a new <see cref="SetupObjectItem"/> from a <see cref="ISetupObjectProtoItem"/>.
         /// </summary>
-        protected ContextLocNameStructImpl ContextLocName;
-
+        /// <param name="p"></param>
         protected SetupObjectItem( ISetupObjectProtoItem p )
         {
-            ContextLocName = new ContextLocNameStructImpl( p );
+            _contextLocName = p.ContextLocName;
             _type = p.ItemType;
             if( p.Requires != null ) Requires.Add( p.Requires );
             if( p.RequiredBy != null ) RequiredBy.Add( p.RequiredBy );
@@ -61,6 +62,11 @@ namespace CK.Setup
             get { return _replaces; }
         }
 
+        public IContextLocNaming ContextLocName
+        {
+            get { return _contextLocName; }
+        }
+
         public IDependentItemList Requires
         {
             get { return _requires ?? (_requires = new DependentItemList()); }
@@ -76,21 +82,9 @@ namespace CK.Setup
             get { return _groups ?? (_groups = new DependentItemGroupList()); }
         }
 
-        /// <summary>
-        /// Gets the full name of this object.
-        /// </summary>
-        public string FullName
-        {
-            get
-            {
-                if( _replaces != null ) return ContextLocName.FullName + "#replace";
-                return ContextLocName.FullName;
-            }
-        }
-
         IDependentItemContainerRef IDependentItem.Container
         {
-            get { return _container.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, ContextLocName.Context, ContextLocName.Location ) ); }
+            get { return _container.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _contextLocName.Context, _contextLocName.Location ) ); }
         }
 
         IDependentItemRef IDependentItem.Generalization
@@ -100,17 +94,17 @@ namespace CK.Setup
 
         IEnumerable<IDependentItemRef> IDependentItem.Requires
         {
-            get { return _requires.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, ContextLocName.Context, ContextLocName.Location ) ); }
+            get { return _requires.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _contextLocName.Context, _contextLocName.Location ) ); }
         }
 
         IEnumerable<IDependentItemRef> IDependentItem.RequiredBy
         {
-            get { return _requiredBy.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, ContextLocName.Context, ContextLocName.Location ) ); }
+            get { return _requiredBy.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _contextLocName.Context, _contextLocName.Location ) ); }
         }
 
         IEnumerable<IDependentItemGroupRef> IDependentItem.Groups
         {
-            get { return _groups.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, ContextLocName.Context, ContextLocName.Location ) ); }
+            get { return _groups.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _contextLocName.Context, _contextLocName.Location ) ); }
         }
 
         /// <summary>
@@ -123,20 +117,32 @@ namespace CK.Setup
 
         string IContextLocNaming.Context
         {
-            get { return ContextLocName.Context; }
+            get { return _contextLocName.Context; }
         }
 
         string IContextLocNaming.Location
         {
-            get { return ContextLocName.Location; }
+            get { return _contextLocName.Location; }
         }
 
         string IContextLocNaming.Name
         {
             get
             {
-                if( _replaces != null ) return ContextLocName.Name + "#replace";
-                return ContextLocName.Name;
+                if( _replaces != null ) return _contextLocName.Name + "#replace";
+                return _contextLocName.Name;
+            }
+        }
+
+        /// <summary>
+        /// Gets the full name of this object.
+        /// </summary>
+        public string FullName
+        {
+            get
+            {
+                if( _replaces != null ) return _contextLocName.FullName + "#replace";
+                return _contextLocName.FullName;
             }
         }
 

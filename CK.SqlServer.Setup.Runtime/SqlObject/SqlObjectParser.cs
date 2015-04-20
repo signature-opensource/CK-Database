@@ -109,6 +109,8 @@ namespace CK.SqlServer.Setup
                 schema = databaseOrSchema;
                 databaseOrSchema = tmp;
             }
+            // Let schema be unknwon if not specified instead of the known empty schema.
+            if( schema.Length == 0 ) schema = null;
             return new SqlObjectProtoItem( externalName, type, databaseOrSchema, schema, name, header, version, packageName, missingDep, requires, groups, requiredBy, previousNames, textAfterName, text );
         }
 

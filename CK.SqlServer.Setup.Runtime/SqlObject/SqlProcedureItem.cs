@@ -66,7 +66,7 @@ namespace CK.SqlServer.Setup
                 dynamicAssembly.Memory.Add( methodKey, MCommandGetParameters );
                 try
                 {
-                    m = GenerateCreateSqlCommand( tB, FullName, SchemaName, _storedProc.Parameters );
+                    m = GenerateCreateSqlCommand( tB, FullName, ContextLocName.Name, _storedProc.Parameters );
                     dynamicAssembly.Memory[methodKey] = m;
                     monitor.Trace().Send( "Low level SqlCommand create method for: '{0}'.", _storedProc.ToStringSignature( true ) );
                 }

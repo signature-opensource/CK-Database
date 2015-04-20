@@ -21,33 +21,20 @@ namespace CK.SqlServer.Setup
         static public readonly string TypeProcedure = "Procedure";
         static public readonly string TypeFunction = "Function";
 
-        ContextLocNameStructImpl _fullName;
-
-        public string Context { get { return _fullName.Context; } }
-
-        public string Location { get { return _fullName.Location; } }
-
         /// <summary>
-        /// Never null nor empty (otherwise this object would have not been created).
+        /// Exposes the <see cref="SqlContextLocName"/> of this proto item.
         /// </summary>
-        public string Name { get { return _fullName.Name; } }
+        public readonly SqlContextLocName ContextLocName;
 
-        public string FullName { get { return _fullName.FullName; } }
-
-        /// <summary>
-        /// Gets the schema. Can be empty but not null.
-        /// </summary>
-        public string Schema { get; private set; }
+        IContextLocNaming ISetupObjectProtoItem.ContextLocName
+        {
+            get { return ContextLocName; }
+        }
 
         /// <summary>
         /// Gets whether missing dependency must be considered an error.
         /// </summary>
         public bool? MissingDependencyIsError { get; private set; }
-
-        /// <summary>
-        /// Gets the object name. Can be empty but not null.
-        /// </summary>
-        public string ObjectName { get; private set; }
 
         /// <summary>
         /// Gets the header (text before the object declaration).
@@ -97,13 +84,11 @@ namespace CK.SqlServer.Setup
                     string fullOriginalText )
         {
             Debug.Assert( externalName != null );
+            Debug.Assert( schema == null || schema.Length > 0, "Schema exists or is unknown, not empty." );
             
             // The fact that external.Name must be equal to this Name (based on the content) is checked
             // by the caller (it can then give more information such as the resource location).
-            _fullName = new ContextLocNameStructImpl( externalName.Context, externalName.Location, schema.Length > 0 ? (schema + '.' + name) : name );
-            Schema = schema;
-            ObjectName = name;
-
+            ContextLocName = new SqlContextLocName( externalName, schema, name );
             ItemType = itemType;
             PhysicalDatabaseName = physicalDatabaseName;
             Header = header;
@@ -131,7 +116,7 @@ namespace CK.SqlServer.Setup
             }
             catch( Exception ex )
             {
-                using( monitor.OpenError().Send( ex, "While parsing {0}.", FullName ) )
+                using( monitor.OpenError().Send( ex, "While parsing {0}.", ContextLocName.FullName ) )
                 {
                     monitor.Info().Send( FullOriginalText );
                 }
@@ -157,7 +142,7 @@ namespace CK.SqlServer.Setup
             }
             else
             {
-                monitor.Error().Send( "Unable to create item for '{0}', type '{1}' is unknown.", FullName, ItemType ); 
+                monitor.Error().Send( "Unable to create item for '{0}', type '{1}' is unknown.", ContextLocName.FullName, ItemType ); 
             }
             if( result != null )
             {

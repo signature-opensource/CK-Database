@@ -62,10 +62,10 @@
     <Compile Include="ContextLocName\IContextLocNaming.cs" />
     <Compile Include="ContextLocName\ISetupNameManager.cs" />
     <Compile Include="SetupItemSelectorBaseAttributeImpl.cs" />
-    <Compile Include="Package\SetupObjectItemCV.cs" />
-    <Compile Include="Package\SetupObjectItemC.cs" />
-    <Compile Include="Package\SetupObjectItemV.cs" />
-    <Compile Include="Package\SetupObjectItem.cs" />
+    <Compile Include="SetupObjectItem\SetupObjectItemCV.cs" />
+    <Compile Include="SetupObjectItem\SetupObjectItemC.cs" />
+    <Compile Include="SetupObjectItem\SetupObjectItemV.cs" />
+    <Compile Include="SetupObjectItem\SetupObjectItem.cs" />
     <Compile Include="ProtoItem\ISetupObjectProtoItem.cs" />
     <Compile Include="ISetupItem.cs" />
     <Compile Include="ProtoItem\SetupObjectProtoItemCollector.cs" />

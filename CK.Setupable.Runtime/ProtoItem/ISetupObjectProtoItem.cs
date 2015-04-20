@@ -32,8 +32,13 @@ namespace CK.Setup
     /// This should not be an issue (one can use a special FullName marker like "*" or "?" to handle this case - String.Empty may perfectly do the job if it has no semantics in the system).
     /// </para>
     /// </remarks>
-    public interface ISetupObjectProtoItem : IContextLocNaming
+    public interface ISetupObjectProtoItem// : IContextLocNaming
     {
+        /// <summary>
+        /// Gets the contaxt-location-name triplet.
+        /// </summary>
+        IContextLocNaming ContextLocName { get; }
+
         /// <summary>
         /// Gets the container name. Can be null.
         /// </summary>

@@ -32,3 +32,4 @@ Runtime/Current/
 *.nupkg
 CK-Database.Tests.VisualState.xml
 *.nuspec
+Tests/Logs/

@@ -29,8 +29,8 @@ namespace CK.Setup
 
         public bool Add( ISetupObjectProtoItem item )
         {
-            if( _items.ContainsKey( item.FullName ) ) return false;
-            _items.Add( item.FullName, item );
+            if( _items.ContainsKey( item.ContextLocName.FullName ) ) return false;
+            _items.Add( item.ContextLocName.FullName, item );
             return true;
         }
 
@@ -44,7 +44,7 @@ namespace CK.Setup
             string name = item as string;
             if( name != null ) return _items.ContainsKey( name );
             ISetupObjectProtoItem i = item as ISetupObjectProtoItem;
-            return i != null ? _items.ContainsKey( i.FullName ) : false;
+            return i != null ? _items.ContainsKey( i.ContextLocName.FullName ) : false;
         }
 
         public int Count

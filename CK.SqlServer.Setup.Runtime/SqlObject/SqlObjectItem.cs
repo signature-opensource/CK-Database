@@ -46,16 +46,12 @@ namespace CK.SqlServer.Setup
 
         SqlObjectProtoItem _protoItem;
         string _physicalDB;
-        string _schema;
-        string _objectName;
         bool? _missingDependencyIsError;
         string _header;
 
         internal SqlObjectItem( SqlObjectProtoItem p )
             : base( p )
         {
-            _schema = p.Schema;
-            _objectName = p.ObjectName;
             _protoItem = p;
             // Keeps the physical database name if the proto item defines it.
             // It is currently unused.
@@ -81,67 +77,11 @@ namespace CK.SqlServer.Setup
             get { return (SqlObjectItem)base.Replaces; }
         }
 
-        /// <summary>
-        /// Gets the <see cref="Schema"/>.<see cref="Name"/> name of this object.
-        /// </summary>
-        public string SchemaName
+        public new SqlContextLocName ContextLocName
         {
-            get { return ContextLocName.Name; }
+            get { return (SqlContextLocName)base.ContextLocName; }
         }
 
-        /// <summary>
-        /// Gets or sets the schema name.
-        /// Defaults to <see cref="SqlDatabase.DefaultSchemaName"/> ("CK").
-        /// </summary>
-        public string Schema
-        {
-            get { return _schema; }
-            set 
-            {
-                if( String.IsNullOrWhiteSpace( value ) ) value = SqlDatabase.DefaultSchemaName;
-                if( _schema != value )
-                {
-                    _schema = value;
-                    ContextLocName.Name = _schema + '.' + _objectName;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the database logical name.
-        /// Defaults to <see cref="SqlDatabase.DefaultDatabaseName"/> ("db").
-        /// </summary>
-        /// <remarks>
-        /// This Database property is the logical name of a database, by no way should it be used as the actual, physical name of a database in any script.
-        /// </remarks>
-        public string Database
-        {
-            get { return ContextLocName.Location; }
-            set 
-            {
-                ContextLocName.Location = String.IsNullOrWhiteSpace( value ) ? SqlDatabase.DefaultDatabaseName : value;
-                ContextLocName.Context = ContextLocName.Location != SqlDatabase.DefaultDatabaseName ? ContextLocName.Location : String.Empty;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the object name without <see cref="Database"/> nor <see cref="Schema"/>.
-        /// Defaults to <see cref="String.Empty"/>.
-        /// </summary>
-        public string ObjectName
-        {
-            get { return _objectName; }
-            set 
-            {
-                if( value == null ) value = String.Empty;
-                if( _objectName != value )
-                {
-                    _objectName = value;
-                    ContextLocName.Name = _schema + '.' + _objectName;
-                }
-
-            }
-        }
 
         /// <summary>
         /// Gets or sets whether when installing, the informational message 'The module 'X' depends 
@@ -177,11 +117,11 @@ namespace CK.SqlServer.Setup
         public void WriteDrop( TextWriter b )
         {
             b.Write( "if OBJECT_ID('" );
-            b.Write( SchemaName );
+            b.Write( ContextLocName.Name );
             b.Write( "') is not null drop " );
             b.Write( ItemType );
             b.Write( ' ' );
-            b.Write( SchemaName );
+            b.Write( ContextLocName.Name );
             b.WriteLine( ';' );
         }
 
@@ -195,7 +135,7 @@ namespace CK.SqlServer.Setup
             b.Write( "create " );
             b.Write( ItemType );
             b.Write( ' ' );
-            b.Write( SchemaName );
+            b.Write( ContextLocName.Name );
             if( ReplacedBy != null )
             {
                 b.WriteLine();
