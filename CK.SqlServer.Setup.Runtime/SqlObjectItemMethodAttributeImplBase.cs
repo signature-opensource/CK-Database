@@ -62,7 +62,7 @@ namespace CK.SqlServer.Setup
             // 1 - Not ready to implement anything (no body yet): 
             //     - Checks that the MethodInfo is the Member (Debug only).
             //     - returns false to implement a stub.
-            if( BestSetupObjectItem == null )
+            if( SetupObjectItem == null )
             {
                 if( _implementHasBeenAlreadyBeenCalled )
                 {
@@ -78,7 +78,7 @@ namespace CK.SqlServer.Setup
             // 3 - Ready to implement the method (BestSetupObjectItem has been initialized by DynamicItemInitialize).
             using( monitor.OpenInfo().Send( "Generating method '{0}.{1}'.", m.DeclaringType.FullName, m.Name ) )
             {
-                return DoImplement( monitor, m, (SqlObjectItem)BestSetupObjectItem, dynamicAssembly, tB, isVirtual );
+                return DoImplement( monitor, m, (SqlObjectItem)SetupObjectItem, dynamicAssembly, tB, isVirtual );
             }
         }
 

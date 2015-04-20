@@ -19,6 +19,7 @@ namespace SqlActorPackage.Basic
     public abstract class ActorHome : SqlTable
     {
         [SqlProcedure( "sActorGuidRefTest" )]
+        [TestAutoHeaderSPMember( "--Injected From CmdGuidRefTest - TestAutoHeaderSPMember." )]
         public abstract void CmdGuidRefTest( ref SqlCommand cmd, Guid? inOnly, ref Guid? inAndOut, out string textResult );
 
         public void ManualCmdGuidRefTest( ref SqlCommand commandRef1, Guid? nullable1, ref Guid? nullableRef1, out string textRef1 )

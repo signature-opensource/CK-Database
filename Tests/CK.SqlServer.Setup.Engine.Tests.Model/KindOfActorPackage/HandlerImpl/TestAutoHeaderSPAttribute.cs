@@ -7,6 +7,7 @@ using CK.Setup;
 
 namespace SqlActorPackage
 {
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple=true, Inherited=false)]
     public class TestAutoHeaderSPAttribute : SetupItemSelectorBaseAttribute
     {
         public TestAutoHeaderSPAttribute( string sqlHeader, string commaSeparatedNames )

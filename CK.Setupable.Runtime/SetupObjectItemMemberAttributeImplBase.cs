@@ -9,27 +9,43 @@ using CK.Core;
 
 namespace CK.Setup
 {
-    public abstract class SetupObjectItemMemberAttributeImplBase : IStObjSetupDynamicInitializer, IAttributeAmbientContextBoundInitializer
+    public abstract class SetupObjectItemMemberAttributeImplBase : IStObjSetupDynamicInitializer, IAttributeAmbientContextBoundInitializer, ISetupObjectItemProvider
     {
-        readonly SetupObjectItemMemberAttributeBase _attribute;
+        readonly AmbientContextBoundDelegationAttribute _attribute;
         ICKCustomAttributeTypeMultiProvider _owner;
         MemberInfo _member;
         SetupObjectItemAttributeImplBase.BestInitializer _theBest;
+        
+        /// <summary>
+        /// Name of the object.
+        /// </summary>
+        protected readonly string ObjectName;
 
         /// <summary>
-        /// Initializes a new <see cref="SetupObjectItemMemberAttributeImplBase"/> bound to a <see cref="SetupObjectItemMemberAttributeBase"/> 
-        /// and a <see cref="SqlObjectProtoItem.Type"/>.
+        /// Initializes a new <see cref="SetupObjectItemMemberAttributeImplBase"/> bound to a <see cref="SetupObjectItemMemberAttributeBase"/>.
         /// </summary>
         /// <param name="a">The attribute.</param>
         protected SetupObjectItemMemberAttributeImplBase( SetupObjectItemMemberAttributeBase a )
         {
             _attribute = a;
+            ObjectName = a.ObjectName;
         }
 
         /// <summary>
-        /// Gets the attribute.
+        /// Initializes a new <see cref="SetupObjectItemMemberAttributeImplBase"/> bound to a name.
         /// </summary>
-        protected SetupObjectItemMemberAttributeBase Attribute
+        /// <param name="a">Attribute object.</param>
+        /// <param name="objectName">The object name.</param>
+        protected SetupObjectItemMemberAttributeImplBase( AmbientContextBoundDelegationAttribute a, string objectName )
+        {
+            _attribute = a;
+            ObjectName = objectName;
+        }
+
+        /// <summary>
+        /// Gets the original attribute.
+        /// </summary>
+        protected AmbientContextBoundDelegationAttribute Attribute
         {
             get { return _attribute; }
         }
@@ -58,10 +74,10 @@ namespace CK.Setup
 
         void IStObjSetupDynamicInitializer.DynamicItemInitialize( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjResult stObj )
         {
-            IContextLocNaming name = BuildFullName( item, stObj, Attribute.ObjectName );
+            IContextLocNaming name = BuildFullName( item, stObj, ObjectName );
             if( name == null )
             {
-                state.Monitor.Error().Send( "Invalid object name '{0}' in {3} attribute of '{1}' for '{2}'.", Attribute.ObjectName, Member.Name, item.FullName, Attribute.GetType().Name.Replace( "Attribute", "" ) );
+                state.Monitor.Error().Send( "Invalid object name '{0}' in {3} attribute of '{1}' for '{2}'.", ObjectName, Member.Name, item.FullName, Attribute.GetShortTypeName() );
                 return;
             }
             _theBest = SetupObjectItemAttributeImplBase.AssumeBestInitializer( state, name, this );
@@ -94,7 +110,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets the best <see cref="SetupObjectItem"/> found.
         /// </summary>
-        protected SetupObjectItem BestSetupObjectItem
+        public SetupObjectItem SetupObjectItem
         {
             get { return _theBest != null ? _theBest.Item ?? _theBest.FirstItem : null; }
         }

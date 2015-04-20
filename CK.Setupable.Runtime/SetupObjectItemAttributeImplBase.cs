@@ -81,7 +81,7 @@ namespace CK.Setup
                         IContextLocNaming name = BuildFullName( item, stObj, nTrimmed );
                         if( name == null )
                         {
-                            state.Monitor.Error().Send( "Invalid object name '{0}' in {2} attribute of '{1}'.", nTrimmed, item.FullName, Attribute.GetType().Name.Replace( "Attribute", "" ) );
+                            state.Monitor.Error().Send( "Invalid object name '{0}' in {2} attribute of '{1}'.", nTrimmed, item.FullName, Attribute.GetShortTypeName() );
                         }
                         else
                         {

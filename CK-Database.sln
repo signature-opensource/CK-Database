@@ -79,6 +79,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlActorPackage.Tests", "Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.UnitTestHelper", "Tests\CK.UnitTestHelper\CK.UnitTestHelper.csproj", "{A221B88D-D164-4099-9AB3-909F5781BAE1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlZonePackage.Tests", "Tests\SqlZonePackage.Tests\SqlZonePackage.Tests.csproj", "{8133B6AE-8D7F-42E9-B6F1-DA583707F177}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -371,6 +373,16 @@ Global
 		{A221B88D-D164-4099-9AB3-909F5781BAE1}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{A221B88D-D164-4099-9AB3-909F5781BAE1}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{A221B88D-D164-4099-9AB3-909F5781BAE1}.Release|x86.ActiveCfg = Release|Any CPU
+		{8133B6AE-8D7F-42E9-B6F1-DA583707F177}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8133B6AE-8D7F-42E9-B6F1-DA583707F177}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8133B6AE-8D7F-42E9-B6F1-DA583707F177}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{8133B6AE-8D7F-42E9-B6F1-DA583707F177}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{8133B6AE-8D7F-42E9-B6F1-DA583707F177}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8133B6AE-8D7F-42E9-B6F1-DA583707F177}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8133B6AE-8D7F-42E9-B6F1-DA583707F177}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8133B6AE-8D7F-42E9-B6F1-DA583707F177}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{8133B6AE-8D7F-42E9-B6F1-DA583707F177}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{8133B6AE-8D7F-42E9-B6F1-DA583707F177}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -392,6 +404,7 @@ Global
 		{E03B0333-1607-47C6-B6BF-D21E4489F659} = {BC5282AF-0E6A-41FF-B4C3-07D44A55E0BE}
 		{EA0228B9-75E2-48E4-9E74-1EE83D0ED4FF} = {6E913090-EA34-4A90-8DBB-1501F9981F53}
 		{A221B88D-D164-4099-9AB3-909F5781BAE1} = {6E913090-EA34-4A90-8DBB-1501F9981F53}
+		{8133B6AE-8D7F-42E9-B6F1-DA583707F177} = {6E913090-EA34-4A90-8DBB-1501F9981F53}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.0\lib\NET35;packages\Unity.2.1.505.2\lib\NET35

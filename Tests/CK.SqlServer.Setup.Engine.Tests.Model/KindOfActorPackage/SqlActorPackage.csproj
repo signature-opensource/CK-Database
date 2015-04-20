@@ -51,6 +51,7 @@
     <Compile Include="Basic\ActorHome.cs" />
     <Compile Include="Basic\IKnowTheConnectionString.cs" />
     <Compile Include="Basic\Package.cs" />
+    <Compile Include="HandlerImpl\TestAutoHeaderSPMemberAttribute.cs" />
     <Compile Include="HandlerImpl\TestAutoHeaderSPAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Basic\UserHome.cs" />

@@ -10,7 +10,6 @@ namespace CK.Setup
     /// <summary>
     /// Declares a dynamic handler associated to the object.
     /// </summary>
-    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = false )]
     public abstract class SetupItemSelectorBaseAttribute : AmbientContextBoundDelegationAttribute
     {
         /// <summary>

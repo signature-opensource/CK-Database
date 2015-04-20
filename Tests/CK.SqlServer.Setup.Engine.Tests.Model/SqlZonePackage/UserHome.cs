@@ -15,6 +15,7 @@ namespace SqlZonePackage.Zone
     public abstract class UserHome : SqlActorPackage.Basic.UserHome
     {
         [SqlProcedure( "sUserToBeOverriden" )]
+        [SqlActorPackage.TestAutoHeaderSPMember( "-- Injected from SqlZonePackage.Zone.UserHome.CmdUserToBeOverriden (n°2/2)." )]
         public abstract void CmdUserToBeOverriden( ref SqlCommand cmdExists, int param1, int paramFromZone, out bool done );
         
         /// <summary>

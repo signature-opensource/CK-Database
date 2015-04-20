@@ -60,6 +60,7 @@
     <Compile Include="Attributes\SetupItemSelectorScope.cs" />
     <Compile Include="Attributes\SetupObjectItemAttributeBase.cs" />
     <Compile Include="Attributes\SetupObjectItemMemberAttributeBase.cs" />
+    <Compile Include="Attributes\SetupObjectItemRefMemberAttributeBase.cs" />
     <Compile Include="Configuration\ISetupEngineAspectConfiguration.cs" />
     <Compile Include="Configuration\SetupEngineConfiguration.cs" />
     <Compile Include="Configuration\SetupEngineRunningMode.cs" />

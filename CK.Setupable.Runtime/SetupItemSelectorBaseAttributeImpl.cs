@@ -47,17 +47,17 @@ namespace CK.Setup
                             if( i.Item is T ) items.Add( i );
                             else 
                             {
-                                driver.Engine.Monitor.Error().Send( "Item '{0}' in {2} attribute of '{1}' must be a '{3}'.", i.FullName, driver.Item.FullName, _attribute.GetType().Name.Replace( "Attribute", "" ), typeof(T).Name );
+                                driver.Engine.Monitor.Error().Send( "Item '{0}' in {2} attribute of '{1}' must be a '{3}'.", i.FullName, driver.Item.FullName, _attribute.GetShortTypeName(), typeof(T).Name );
                                 result = false;
                             }
                         }
                         if( count == 0 )
                         {
-                            driver.Engine.Monitor.Error().Send( "Name '{0}' in {2} attribute of '{1}' not found.", nTrimmed, driver.Item.FullName, _attribute.GetType().Name.Replace( "Attribute", "" ) );
+                            driver.Engine.Monitor.Error().Send( "Name '{0}' in {2} attribute of '{1}' not found.", nTrimmed, driver.Item.FullName, _attribute.GetShortTypeName() );
                             result = false;
                         }
                     }
-                    else driver.Engine.Monitor.Warn().Send( "Duplicate name '{0}' in {2} attribute of '{1}'.", nTrimmed, driver.Item.FullName, _attribute.GetType().Name.Replace( "Attribute", "" ) );
+                    else driver.Engine.Monitor.Warn().Send( "Duplicate name '{0}' in {2} attribute of '{1}'.", nTrimmed, driver.Item.FullName, _attribute.GetShortTypeName() );
                 }
             }
             if( !result ) return false;

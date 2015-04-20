@@ -12,7 +12,6 @@ namespace CK.Setup
     /// Base class for attributes declared on a class that define dynamically created setup objects.
     /// Multiples object names like "sUserCreate, sUserDestroy, AnotherSchema.sUserUpgrade, CK.sUserRun" can be defined.
     /// </summary>
-    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = false )]
     public abstract class SetupObjectItemAttributeBase : AmbientContextBoundDelegationAttribute
     {
         /// <summary>
