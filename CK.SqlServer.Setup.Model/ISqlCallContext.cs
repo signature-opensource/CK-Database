@@ -18,5 +18,7 @@ namespace CK.SqlServer
     /// </summary>
     public interface ISqlCallContext
     {
+        //TODO: use duck typing
+        SqlConnectionProvider GetProvider( string connectionString );
     }
 }

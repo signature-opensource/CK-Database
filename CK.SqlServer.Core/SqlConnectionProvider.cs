@@ -180,7 +180,35 @@ namespace CK.SqlServer
         /// secure way of handling this case: the connection is autonomous and will be automatically
         /// closed when the <see cref="SqlDataReader"/> will be closed.
         /// </remarks>
+        [Obsolete( "Fixed spelling, use ExecuteIndependentReader", true )]
         public SqlDataReader ExecuteIndependantReader( SqlCommand cmd )
+        {
+            try
+            {
+                cmd.Connection = new SqlConnection( _strConn );
+                cmd.Connection.Open();
+                return cmd.ExecuteReader( CommandBehavior.CloseConnection );
+            }
+            catch( SqlException ex )
+            {
+                throw SqlDetailedException.Create( cmd, ex );
+            }
+        }
+
+
+        /// <summary>
+        /// Creates a new connection to the database and calls <see cref="SqlCommand.ExecuteReader(CommandBehavior)"/>
+        /// with <see cref="CommandBehavior.CloseConnection"/> option.
+        /// </summary>
+        /// <param name="cmd">The <see cref="SqlCommand"/> to execute.</param>
+        /// <returns>The newly created <see cref="SqlDataReader"/>.</returns>
+        /// <remarks>
+        /// Since the <see cref="SqlDataReader"/> is out of control once returned, this
+        /// method does not try to share the main connection. Instead, it implements the most 
+        /// secure way of handling this case: the connection is autonomous and will be automatically
+        /// closed when the <see cref="SqlDataReader"/> will be closed.
+        /// </remarks>
+        public SqlDataReader ExecuteIndependentReader( SqlCommand cmd )
         {
             try
             {

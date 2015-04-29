@@ -51,14 +51,32 @@ namespace CK.SqlServer.Setup
                 if( m.ReturnType == SqlObjectItem.TypeCommand ) gType = GenerationType.ReturnSqlCommand;
                 else
                 {
-                    if( !m.ReturnType.GetConstructors().Any( ctor => ctor.GetParameters().Any( p => p.ParameterType == SqlObjectItem.TypeCommand && !p.ParameterType.IsByRef && !p.HasDefaultValue ) ) )
+                    if( m.ReturnType.GetConstructors().Any( ctor => ctor.GetParameters().Any( p => p.ParameterType == SqlObjectItem.TypeCommand && !p.ParameterType.IsByRef && !p.HasDefaultValue ) ) )
                     {
-                        monitor.Error().Send( "Ctor '{0}.{1}' must return a SqlCommand -OR- a type that has at least one constructor with a non optional SqlCommand (among other parameters) -OR- accepts a SqlCommand by reference as its first argument.", m.DeclaringType.FullName, m.Name );
-                        return false;
+                        gType = GenerationType.ReturnWrapper;
                     }
-                    gType = GenerationType.ReturnWrapper;
+                    else
+                    {
+                        //if method use SqlCallContext without wrapper, it must have an ExecuteAs parameter on his attribute
+                        //and SqlCallContext must have GetProvider method
+                        if( m.GetCustomAttribute<SqlProcedureAttribute>().ExecuteAs != ExecutionType.Unknown )
+                        {
+                            //TODO: check if GetProvider exist on SqlCallContext
+                            if( mParameters.Any( p => typeof( ISqlCallContext ).IsAssignableFrom( p.ParameterType ) ) )
+                            {
+                                gType = GenerationType.ReturnExecutionValue;
+                            }
+                        }
+                        else
+                        {
+                            //TODO: change error message to match with new features (auto execute feature)
+                            monitor.Error().Send( "Ctor '{0}.{1}' must return a SqlCommand -OR- a type that has at least one constructor with a non optional SqlCommand (among other parameters) -OR- accepts a SqlCommand by reference as its first argument.", m.DeclaringType.FullName, m.Name );
+                            return false;
+                        }
+                    }
                 }
             }
+            gType = GenerationType.ReturnExecutionValue;
             SqlExprParameterList sqlParameters = item.OriginalStatement.Parameters;
             return GenerateCreateSqlCommand( gType, monitor, mCreateCommand, item.OriginalStatement.Name, sqlParameters, m, mParameters, tB, isVirtual );
         }

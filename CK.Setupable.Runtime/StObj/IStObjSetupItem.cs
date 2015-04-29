@@ -8,7 +8,7 @@ namespace CK.Setup
 {
     /// <summary>
     /// A setup item that is bound to an actual object that may be a StObj (in this case <see cref="StObj"/> is not null) 
-    /// or an independant object instance (typically an object subordinated to a StObj).
+    /// or an independent object instance (typically an object subordinated to a StObj).
     /// </summary>
     public interface IStObjSetupItem : IMutableSetupItem
     {

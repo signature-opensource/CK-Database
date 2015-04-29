@@ -22,5 +22,17 @@ namespace CK.SqlServer.Setup
             : base( procedureName, "CK.SqlServer.Setup.SqlProcedureAttributeImpl, CK.SqlServer.Setup.Runtime" )
         {
         }
+
+
+        public ExecutionType ExecuteAs { get; set; }
+    }
+
+    public enum ExecutionType
+    {
+        Unknown,
+        ExecuteNonQuery,
+        ExecuteScalar,
+        ExecuteIndependentReader,
+        ExecuteXmlReader
     }
 }

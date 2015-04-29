@@ -26,12 +26,13 @@ namespace CK.SqlServer.Setup
         {
             ReturnSqlCommand,
             ByRefSqlCommand,
-            ReturnWrapper
+            ReturnWrapper,
+            ReturnExecutionValue
         }
 
         private bool GenerateCreateSqlCommand( GenerationType gType, IActivityMonitor monitor, MethodInfo createCommand, SqlExprMultiIdentifier sqlName, SqlExprParameterList sqlParameters, MethodInfo m, ParameterInfo[] mParameters, TypeBuilder tB, bool isVirtual )
         {
-            MethodAttributes mA = m.Attributes & ~(MethodAttributes.Abstract | MethodAttributes.VtableLayoutMask );
+            MethodAttributes mA = m.Attributes & ~(MethodAttributes.Abstract | MethodAttributes.VtableLayoutMask);
             if( isVirtual ) mA |= MethodAttributes.Virtual;
             MethodBuilder mB = tB.DefineMethod( m.Name, mA );
             if( m.ContainsGenericParameters )
@@ -42,7 +43,7 @@ namespace CK.SqlServer.Setup
                 string[] names = genericArguments.Select( t => String.Format( "T{0}", i++ ) ).ToArray();
 
                 var genericParameters = mB.DefineGenericParameters( names );
-                for( i = 0; i<names.Length; ++i)
+                for( i = 0; i < names.Length; ++i )
                 {
                     Type genericTypeArgument = genericArguments[i];
                     GenericTypeParameterBuilder genericTypeBuilder = genericParameters[i];
@@ -59,7 +60,7 @@ namespace CK.SqlServer.Setup
 
             // First actual method parameter index (skips the ByRefSqlCommand if any).
             int mParameterFirstIndex = gType == GenerationType.ByRefSqlCommand ? 1 : 0;
-            
+
             // Starts by initializing out parameters to their Type's default value.
             for( int iM = mParameterFirstIndex; iM < mParameters.Length; ++iM )
             {
@@ -69,9 +70,20 @@ namespace CK.SqlServer.Setup
             LocalBuilder locCmd = g.DeclareLocal( SqlObjectItem.TypeCommand );
             LocalBuilder locParams = g.DeclareLocal( SqlObjectItem.TypeParameterCollection );
             LocalBuilder locOneParam = g.DeclareLocal( SqlObjectItem.TypeParameter );
-            LocalBuilder tempObjToSet = g.DeclareLocal( typeof(object) );
+            LocalBuilder tempObjToSet = g.DeclareLocal( typeof( object ) );
 
             Label setValues = g.DefineLabel();
+
+            //g.Emit( OpCodes.Ldc_I4, 42 );
+            //g.Emit( OpCodes.Stloc, locSCProviderParam );
+            //g.Emit( OpCodes.Ldloc, locSCProviderParam );
+            //g.Emit( OpCodes.Ldc_I4, 42 );
+            //g.Emit( OpCodes.Add );
+
+            //g.Emit( OpCodes.Call, SqlObjectItem.MCallContextGetProvider );
+            //g.Emit( OpCodes.Dup );
+            //g.StLoc( locSCProviderParam );
+
             if( gType == GenerationType.ByRefSqlCommand )
             {
                 GenerateByRefInitialization( g, locCmd, locParams, setValues );
@@ -97,9 +109,10 @@ namespace CK.SqlServer.Setup
             // - Method parameters that are SqlCallContext objects are registered in order to consider their properties as method parameters. 
             ParameterInfo firstSqlConnectionParameter = null;
             ParameterInfo firstSqlTransactionParameter = null;
+            ParameterInfo firstSqlCallContextParameter = null;
             List<ParameterInfo> extraMethodParameters = gType == GenerationType.ReturnWrapper ? new List<ParameterInfo>() : null;
             SqlCallContextInfo sqlCallContexts = null;
-            
+
             int iS = 0;
             for( int iM = mParameterFirstIndex; iM < mParameters.Length; ++iM )
             {
@@ -128,6 +141,7 @@ namespace CK.SqlServer.Setup
                         // in order to consider its properties as method parameters.
                         if( SqlCallContextInfo.IsSqlCallContext( mP ) )
                         {
+                            firstSqlCallContextParameter = mP;
                             if( sqlCallContexts == null ) sqlCallContexts = new SqlCallContextInfo();
                             if( !sqlCallContexts.Add( mP, monitor ) ) ++nbError;
                         }
@@ -147,6 +161,9 @@ namespace CK.SqlServer.Setup
                     iS = iSFound + 1;
                 }
             }
+
+            Debug.Assert( gType != GenerationType.ReturnExecutionValue || sqlCallContexts != null );
+
             if( nbError == 0 )
             {
                 // If there are sql parameters not covered, then they MUST:
@@ -203,6 +220,20 @@ namespace CK.SqlServer.Setup
             {
                 g.LdLoc( locCmd );
             }
+            else if( gType == GenerationType.ReturnExecutionValue )
+            {
+                LocalBuilder truc = g.DeclareLocal( typeof( object ) );
+                g.LdArg( 1 );
+                g.Emit( OpCodes.Ldarg_0 );
+                g.Emit( OpCodes.Call, SqlObjectItem.MGetDatabase );
+                g.Emit( OpCodes.Call, SqlObjectItem.MDatabaseGetConnectionString );
+                g.Emit( OpCodes.Call, SqlObjectItem.MCallContextGetProvider );
+                if( m.GetCustomAttribute<SqlProcedureAttribute>().ExecuteAs == ExecutionType.ExecuteNonQuery )
+                {
+                    g.LdLoc( locCmd );
+                    g.Emit( OpCodes.Call, SqlObjectItem.MCallExecuteNonQuery );
+                }
+            }
             else
             {
                 var availableCtors = m.ReturnType.GetConstructors()
@@ -233,7 +264,7 @@ namespace CK.SqlServer.Setup
                         g.Emit( OpCodes.Newobj, matcher.Ctor );
                     }
                 }
-                
+
             }
             if( nbError != 0 )
             {

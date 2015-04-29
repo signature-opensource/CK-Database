@@ -43,6 +43,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\..\SharedAssemblyInfo.cs">
@@ -59,6 +60,10 @@
     <ProjectReference Include="..\..\..\CK.Setupable.Model\CK.Setupable.Model.csproj">
       <Project>{64DA8104-2C71-4D52-8F44-D34738F6D564}</Project>
       <Name>CK.Setupable.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\CK.SqlServer.Core\CK.SqlServer.Core.csproj">
+      <Project>{f2977613-731a-4efa-9703-cd6b92f00558}</Project>
+      <Name>CK.SqlServer.Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj">
       <Project>{B64D3D2A-FD2B-4731-8559-8A52C3A45351}</Project>

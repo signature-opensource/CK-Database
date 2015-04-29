@@ -251,6 +251,15 @@ namespace SqlActorPackage.Basic
             public int ActorId { get; set; }
             
             public int SecurityZoneId { get; set; }
+
+            #region ISqlCallContext Members
+
+            public SqlConnectionProvider GetProvider( string connectionString )
+            {
+                throw new NotImplementedException();
+            }
+
+            #endregion
         }
 
         public class OutputCmd<T> : IDisposable

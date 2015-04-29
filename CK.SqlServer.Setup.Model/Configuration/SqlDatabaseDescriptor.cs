@@ -33,7 +33,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets or sets the logical name of the database.
-        /// It is independant of the actual database name.
+        /// It is independent of the actual database name.
         /// </summary>
         public string DatabaseName { get; set; }
 

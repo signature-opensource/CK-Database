@@ -157,7 +157,7 @@ namespace CK.SqlServer.Setup
                     else if( mP.Member == Ctor )
                     {
                         Debug.Assert( IsValidDefaultValue( mP ) );
-                        Debug.Assert( mP.Position == i, "This is the PrameterInfo of the constructor." );
+                        Debug.Assert( mP.Position == i, "This is the ParameterInfo of the constructor." );
 
                         object d =  mP.DefaultValue;
                         if( d == null )
