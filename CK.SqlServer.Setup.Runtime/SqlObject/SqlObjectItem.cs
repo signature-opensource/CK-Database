@@ -38,7 +38,8 @@ namespace CK.SqlServer.Setup
         internal readonly static MethodInfo MCallContextGetProvider = TypeSqlCallContext.GetMethod( "GetProvider", new Type[] { typeof( string ) } );
 
         internal readonly static MethodInfo MCallExecuteNonQuery = TypeSqlConnectionProvider.GetMethod( "ExecuteNonQuery", new Type[] { SqlObjectItem.TypeCommand } );
-
+        internal readonly static MethodInfo MCallExecuteScalar = TypeSqlConnectionProvider.GetMethod( "ExecuteScalar", new Type[] { SqlObjectItem.TypeCommand } );
+        internal readonly static MethodInfo MCallExecuteIndependentReader = TypeSqlConnectionProvider.GetMethod( "ExecuteIndependentReader", new Type[] { SqlObjectItem.TypeCommand } );
 
         internal readonly static MethodInfo MTransactionGetConnection = TypeTransaction.GetProperty( "Connection", SqlObjectItem.TypeConnection ).GetGetMethod();
 

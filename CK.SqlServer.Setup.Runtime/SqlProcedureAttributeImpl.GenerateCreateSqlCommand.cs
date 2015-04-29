@@ -74,16 +74,6 @@ namespace CK.SqlServer.Setup
 
             Label setValues = g.DefineLabel();
 
-            //g.Emit( OpCodes.Ldc_I4, 42 );
-            //g.Emit( OpCodes.Stloc, locSCProviderParam );
-            //g.Emit( OpCodes.Ldloc, locSCProviderParam );
-            //g.Emit( OpCodes.Ldc_I4, 42 );
-            //g.Emit( OpCodes.Add );
-
-            //g.Emit( OpCodes.Call, SqlObjectItem.MCallContextGetProvider );
-            //g.Emit( OpCodes.Dup );
-            //g.StLoc( locSCProviderParam );
-
             if( gType == GenerationType.ByRefSqlCommand )
             {
                 GenerateByRefInitialization( g, locCmd, locParams, setValues );
@@ -223,15 +213,33 @@ namespace CK.SqlServer.Setup
             else if( gType == GenerationType.ReturnExecutionValue )
             {
                 LocalBuilder truc = g.DeclareLocal( typeof( object ) );
-                g.LdArg( 1 );
+                g.LdArg( firstSqlCallContextParameter.Position + 1 );
                 g.Emit( OpCodes.Ldarg_0 );
                 g.Emit( OpCodes.Call, SqlObjectItem.MGetDatabase );
                 g.Emit( OpCodes.Call, SqlObjectItem.MDatabaseGetConnectionString );
                 g.Emit( OpCodes.Call, SqlObjectItem.MCallContextGetProvider );
-                if( m.GetCustomAttribute<SqlProcedureAttribute>().ExecuteAs == ExecutionType.ExecuteNonQuery )
+
+                var executeAs = m.GetCustomAttribute<SqlProcedureAttribute>().ExecuteAs;
+                if( executeAs == ExecutionType.ExecuteNonQuery )
                 {
                     g.LdLoc( locCmd );
                     g.Emit( OpCodes.Call, SqlObjectItem.MCallExecuteNonQuery );
+                }
+                else if( executeAs == ExecutionType.ExecuteScalar )
+                {
+                    g.LdLoc( locCmd );
+                    g.Emit( OpCodes.Call, SqlObjectItem.MCallExecuteScalar );
+                }
+                else if( executeAs == ExecutionType.ExecuteIndependentReader )
+                {
+                    g.LdLoc( locCmd );
+                    g.Emit( OpCodes.Call, SqlObjectItem.MCallExecMCallExecuteIndependentReaderuteScalar );
+                }
+                else if( executeAs == ExecutionType.ExecuteXmlReader )
+                {
+                    //TODO: change for better error message
+                    monitor.Error().Send( "Auto execute xml reader was insupported" );
+                    ++nbError;
                 }
             }
             else
