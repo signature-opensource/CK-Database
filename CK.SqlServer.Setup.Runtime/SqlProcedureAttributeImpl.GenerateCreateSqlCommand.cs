@@ -224,6 +224,10 @@ namespace CK.SqlServer.Setup
                 {
                     g.LdLoc( locCmd );
                     g.Emit( OpCodes.Call, SqlObjectItem.MCallExecuteNonQuery );
+                    if( m.ReturnType == typeof( void ) )
+                    {
+                        g.Emit( OpCodes.Pop );
+                    }
                 }
                 else if( executeAs == ExecutionType.ExecuteScalar )
                 {
