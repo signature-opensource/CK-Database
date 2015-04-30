@@ -59,13 +59,10 @@ namespace CK.SqlServer.Setup
                     {
                         //if method use SqlCallContext without wrapper, it must have an ExecuteAs parameter on his attribute
                         //and SqlCallContext must have GetProvider method
-                        if( m.GetCustomAttribute<SqlProcedureAttribute>().ExecuteAs != ExecutionType.Unknown )
+                        if( m.GetCustomAttribute<SqlProcedureAttribute>().ExecuteAs != ExecutionType.Unknown && mParameters.Any( p => typeof( ISqlCallContext ).IsAssignableFrom( p.ParameterType ) ) )
                         {
                             //TODO: check if GetProvider exist on SqlCallContext
-                            if( mParameters.Any( p => typeof( ISqlCallContext ).IsAssignableFrom( p.ParameterType ) ) )
-                            {
-                                gType = GenerationType.ReturnExecutionValue;
-                            }
+                            gType = GenerationType.ReturnExecutionValue;
                         }
                         else
                         {
@@ -76,7 +73,6 @@ namespace CK.SqlServer.Setup
                     }
                 }
             }
-            gType = GenerationType.ReturnExecutionValue;
             SqlExprParameterList sqlParameters = item.OriginalStatement.Parameters;
             return GenerateCreateSqlCommand( gType, monitor, mCreateCommand, item.OriginalStatement.Name, sqlParameters, m, mParameters, tB, isVirtual );
         }

@@ -233,7 +233,7 @@ namespace CK.SqlServer.Setup
                 else if( executeAs == ExecutionType.ExecuteIndependentReader )
                 {
                     g.LdLoc( locCmd );
-                    g.Emit( OpCodes.Call, SqlObjectItem.MCallExecMCallExecuteIndependentReaderuteScalar );
+                    g.Emit( OpCodes.Call, SqlObjectItem.MCallExecuteIndependentReader );
                 }
                 else if( executeAs == ExecutionType.ExecuteXmlReader )
                 {
