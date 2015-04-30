@@ -238,6 +238,9 @@ namespace SqlActorPackage.Basic
 
         public interface IBasicAuthContext : IAmHereToTestPropertyMasking, ISqlCallContext
         {
+            //TODO: use duck typing
+            SqlConnectionProvider GetProvider( string connectionString );
+
             new int ActorId { get; set; }
         }
 
@@ -256,7 +259,7 @@ namespace SqlActorPackage.Basic
 
             public SqlConnectionProvider GetProvider( string connectionString )
             {
-                throw new NotImplementedException();
+                return new SqlConnectionProvider( @"Server=.\SQLEXPRESS;Database=Sea;Integrated Security=SSPI;Enlist=True;Asynchronous Processing=True" );
             }
 
             #endregion
@@ -302,5 +305,27 @@ namespace SqlActorPackage.Basic
         public abstract OutputCmd<T> CallWithAuth<T>( IAuthContext c, int index, string name, out string result );
 
         #endregion
+
+
+        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteAs = ExecutionType.ExecuteIndependentReader )]
+        public abstract SqlDataReader CallAutoExecuteSqlDataReader( IAuthContext c, SqlConnection conn, int index, string name, out string result );
+
+        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteAs = ExecutionType.ExecuteNonQuery )]
+        public abstract int CallAutoExecuteInt( IBasicAuthContext c, int index, string name );
+
+        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteAs = ExecutionType.ExecuteNonQuery )]
+        public abstract void CallAutoExecuteVoid( IBasicAuthContext c, int index, string name );
+
+        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteAs = ExecutionType.ExecuteNonQuery )]
+        public abstract void CallAutoExecuteVoidRefSqlCommand( ref SqlCommand cmd, IBasicAuthContext c, int index, string name );
+
+        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteAs = ExecutionType.ExecuteNonQuery )]
+        public abstract SqlCommand CallAutoExecuteVoidRefSqlCommandAndReturnSqlCommand( ref SqlCommand cmd, IBasicAuthContext c, int index, string name );
+
+        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteAs = ExecutionType.ExecuteNonQuery )]
+        public abstract SqlCommand CallAutoExecuteVoidReturnSqlCommand( IBasicAuthContext c, int index, string name );
+
+        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteAs = ExecutionType.ExecuteScalar )]
+        public abstract object CallAutoExecuteObject( IAuthContext c, int index, string name );
     }
 }

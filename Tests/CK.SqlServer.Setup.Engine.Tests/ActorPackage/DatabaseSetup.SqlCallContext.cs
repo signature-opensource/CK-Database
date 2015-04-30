@@ -18,7 +18,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
     {
         static void CheckSqlCallContext( SqlManager c, IStObjMap map )
         {
-            using( TestHelper.ConsoleMonitor.OpenTrace().Send( "CheckCommandWrapper" ) )
+            using( TestHelper.ConsoleMonitor.OpenTrace().Send( "CheckSqlCallContext" ) )
             {
                 var package = map.Default.Obtain<Package>();
                 CallWithAuthContext( package );
@@ -45,5 +45,17 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             }
         }
 
+        static void CheckSqlCallContextAutoExecute( SqlManager c, IStObjMap map )
+        {
+            using( TestHelper.ConsoleMonitor.OpenTrace().Send( "CheckCommandWrapper" ) )
+            {
+                var package = map.Default.Obtain<Package>();
+                var ctx = new Package.BasicAuthContext() { ActorId = 21 };
+                package.CallAutoExecuteInt( ctx, 2, "Name2" );
+                package.CallAutoExecuteVoid( ctx, 2, "Name2" );
+                package.CallAutoExecuteObject( ctx, 2, "Name2" );
+                //package.CallAutoExecuteSqlDataReader( ctx, 2, "Name2" );
+            }
+        }
     }
 }

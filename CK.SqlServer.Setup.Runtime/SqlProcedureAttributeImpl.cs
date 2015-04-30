@@ -15,6 +15,7 @@ using System.Linq;
 using CK.Core;
 using CK.Setup;
 using CK.SqlServer.Parser;
+using CK.Reflection;
 
 namespace CK.SqlServer.Setup
 {
@@ -38,11 +39,24 @@ namespace CK.SqlServer.Setup
 
             ParameterInfo[] mParameters = m.GetParameters();
             GenerationType gType;
-            if( m.ReturnType == typeof( void )
-                    && mParameters.Length >= 1
-                    && mParameters[0].ParameterType.IsByRef
-                    && !mParameters[0].IsOut
-                    && mParameters[0].ParameterType.GetElementType() == SqlObjectItem.TypeCommand )
+            ExecutionType eType = m.GetCustomAttribute<SqlProcedureAttribute>().ExecuteAs;
+
+            //if method use SqlCallContext, it must have an ExecuteAs parameter on his attribute
+            bool doExecute = eType != ExecutionType.Unknown;
+            bool hasRefSqlCommand = mParameters.Length >= 1
+                                    && mParameters[0].ParameterType.IsByRef
+                                    && !mParameters[0].IsOut
+                                    && mParameters[0].ParameterType.GetElementType() == SqlObjectItem.TypeCommand;
+            //and SqlCallContext must have GetProvider method
+
+            //todo: if return type wasn't interface type
+            //todo support generic method
+            if( doExecute && !mParameters.Any( p => SqlObjectItem.TypeSqlCallContext.IsAssignableFrom( p.ParameterType ) && ReflectionHelper.GetFlattenMethods( p.ParameterType ).Any( mi => mi.Name == "GetProvider" ) ) )
+            {
+                monitor.Error().Send( "With ExecuteAs parameter on attribute, SqlCallContext must have a GetProvider method", m.DeclaringType.FullName, m.Name );
+                return false;
+            }
+            if( !doExecute && m.ReturnType == typeof( void ) && hasRefSqlCommand )
             {
                 gType = GenerationType.ByRefSqlCommand;
             }
@@ -55,26 +69,19 @@ namespace CK.SqlServer.Setup
                     {
                         gType = GenerationType.ReturnWrapper;
                     }
+                    else if( doExecute )
+                    {
+                        gType = GenerationType.ReturnExecutionValue;
+                    }
                     else
                     {
-                        //if method use SqlCallContext without wrapper, it must have an ExecuteAs parameter on his attribute
-                        //and SqlCallContext must have GetProvider method
-                        if( m.GetCustomAttribute<SqlProcedureAttribute>().ExecuteAs != ExecutionType.Unknown && mParameters.Any( p => typeof( ISqlCallContext ).IsAssignableFrom( p.ParameterType ) ) )
-                        {
-                            //TODO: check if GetProvider exist on SqlCallContext
-                            gType = GenerationType.ReturnExecutionValue;
-                        }
-                        else
-                        {
-                            //TODO: change error message to match with new features (auto execute feature)
-                            monitor.Error().Send( "Ctor '{0}.{1}' must return a SqlCommand -OR- a type that has at least one constructor with a non optional SqlCommand (among other parameters) -OR- accepts a SqlCommand by reference as its first argument.", m.DeclaringType.FullName, m.Name );
-                            return false;
-                        }
+                        monitor.Error().Send( "Ctor '{0}.{1}' must return a SqlCommand -OR- a type that has at least one constructor with a non optional SqlCommand (among other parameters) -OR- accepts a SqlCommand by reference as its first argument -OR- use auto execution and exploit the execute return (can be void).", m.DeclaringType.FullName, m.Name );
+                        return false;
                     }
                 }
             }
             SqlExprParameterList sqlParameters = item.OriginalStatement.Parameters;
-            return GenerateCreateSqlCommand( gType, monitor, mCreateCommand, item.OriginalStatement.Name, sqlParameters, m, mParameters, tB, isVirtual );
+            return GenerateCreateSqlCommand( gType, eType, monitor, mCreateCommand, item.OriginalStatement.Name, sqlParameters, m, mParameters, tB, isVirtual, doExecute, hasRefSqlCommand );
         }
 
     }

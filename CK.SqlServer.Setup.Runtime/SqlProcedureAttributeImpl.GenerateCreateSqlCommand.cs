@@ -30,7 +30,7 @@ namespace CK.SqlServer.Setup
             ReturnExecutionValue
         }
 
-        private bool GenerateCreateSqlCommand( GenerationType gType, IActivityMonitor monitor, MethodInfo createCommand, SqlExprMultiIdentifier sqlName, SqlExprParameterList sqlParameters, MethodInfo m, ParameterInfo[] mParameters, TypeBuilder tB, bool isVirtual )
+        private bool GenerateCreateSqlCommand( GenerationType gType, ExecutionType eType, IActivityMonitor monitor, MethodInfo createCommand, SqlExprMultiIdentifier sqlName, SqlExprParameterList sqlParameters, MethodInfo m, ParameterInfo[] mParameters, TypeBuilder tB, bool isVirtual, bool doExecute, bool hasRefSqlCommand )
         {
             MethodAttributes mA = m.Attributes & ~(MethodAttributes.Abstract | MethodAttributes.VtableLayoutMask);
             if( isVirtual ) mA |= MethodAttributes.Virtual;
@@ -59,7 +59,7 @@ namespace CK.SqlServer.Setup
             ILGenerator g = mB.GetILGenerator();
 
             // First actual method parameter index (skips the ByRefSqlCommand if any).
-            int mParameterFirstIndex = gType == GenerationType.ByRefSqlCommand ? 1 : 0;
+            int mParameterFirstIndex = hasRefSqlCommand ? 1 : 0;
 
             // Starts by initializing out parameters to their Type's default value.
             for( int iM = mParameterFirstIndex; iM < mParameters.Length; ++iM )
@@ -74,7 +74,7 @@ namespace CK.SqlServer.Setup
 
             Label setValues = g.DefineLabel();
 
-            if( gType == GenerationType.ByRefSqlCommand )
+            if( hasRefSqlCommand )
             {
                 GenerateByRefInitialization( g, locCmd, locParams, setValues );
             }
@@ -187,7 +187,7 @@ namespace CK.SqlServer.Setup
                 }
             }
             // Entering the SetValues part.
-            if( gType == GenerationType.ByRefSqlCommand ) g.MarkLabel( setValues );
+            if( hasRefSqlCommand ) g.MarkLabel( setValues );
             if( nbError == 0 )
             {
                 // Configures Connection and Transaction properties if such method parameters appear.
@@ -200,53 +200,65 @@ namespace CK.SqlServer.Setup
                     setter.EmitSetParameter( g, locParams );
                 }
             }
-            if( gType == GenerationType.ByRefSqlCommand )
+
+            MethodInfo getProviderMethodInfo = null;
+            if( doExecute )
+            {
+                if( eType == ExecutionType.ExecuteXmlReader )
+                {
+                    monitor.Error().Send( "Actually, auto ExecuteXmlReader call was unsupported. It's SqlProcedure with ExecuteAs set with ExecutionType.ExecuteXmlReader" );
+                    ++nbError;
+                }
+
+                //todo: if sqlCallContext wasn't interface type
+                getProviderMethodInfo = ReflectionHelper.GetFlattenMethods( firstSqlCallContextParameter.ParameterType ).First( mi => mi.Name == "GetProvider" );
+
+                Debug.Assert( getProviderMethodInfo != null );
+
+                g.LdArg( firstSqlCallContextParameter.Position + 1 );
+                g.Emit( OpCodes.Ldarg_0 );
+                g.Emit( OpCodes.Call, SqlObjectItem.MGetDatabase );
+                g.Emit( OpCodes.Call, SqlObjectItem.MDatabaseGetConnectionString );
+                g.Emit( OpCodes.Call, getProviderMethodInfo );
+
+                g.LdLoc( locCmd );
+                var execute = SelectExecuteMethod( gType, eType, getProviderMethodInfo.ReturnType, m.ReturnType );
+                if( execute != null )
+                {
+                    g.Emit( OpCodes.Call, execute );
+
+                    //todo set ref result
+                }
+                else
+                {
+                    monitor.Error().Send( "Cannot found {1} signature on SqlConnectionProvide, that return {0} and accept only one parameter SqlCommand type.", m.ReturnType, eType.ToString() );
+                    ++nbError;
+                }
+            }
+
+            if( hasRefSqlCommand )
             {
                 g.LdArg( 1 );
                 g.LdLoc( locCmd );
                 g.Emit( OpCodes.Stind_Ref );
             }
-            else if( gType == GenerationType.ReturnSqlCommand )
+
+            if( gType == GenerationType.ReturnSqlCommand )
             {
                 g.LdLoc( locCmd );
             }
             else if( gType == GenerationType.ReturnExecutionValue )
             {
-                LocalBuilder truc = g.DeclareLocal( typeof( object ) );
-                g.LdArg( firstSqlCallContextParameter.Position + 1 );
-                g.Emit( OpCodes.Ldarg_0 );
-                g.Emit( OpCodes.Call, SqlObjectItem.MGetDatabase );
-                g.Emit( OpCodes.Call, SqlObjectItem.MDatabaseGetConnectionString );
-                g.Emit( OpCodes.Call, SqlObjectItem.MCallContextGetProvider );
-
-                var executeAs = m.GetCustomAttribute<SqlProcedureAttribute>().ExecuteAs;
-                if( executeAs == ExecutionType.ExecuteNonQuery )
+                if( eType == ExecutionType.ExecuteNonQuery && m.ReturnType == typeof( void ) )
                 {
-                    g.LdLoc( locCmd );
-                    g.Emit( OpCodes.Call, SqlObjectItem.MCallExecuteNonQuery );
-                    if( m.ReturnType == typeof( void ) )
-                    {
-                        g.Emit( OpCodes.Pop );
-                    }
+                    g.Emit( OpCodes.Pop );
                 }
-                else if( executeAs == ExecutionType.ExecuteScalar )
+                else
                 {
-                    g.LdLoc( locCmd );
-                    g.Emit( OpCodes.Call, SqlObjectItem.MCallExecuteScalar );
-                }
-                else if( executeAs == ExecutionType.ExecuteIndependentReader )
-                {
-                    g.LdLoc( locCmd );
-                    g.Emit( OpCodes.Call, SqlObjectItem.MCallExecuteIndependentReader );
-                }
-                else if( executeAs == ExecutionType.ExecuteXmlReader )
-                {
-                    //TODO: change for better error message
-                    monitor.Error().Send( "Auto execute xml reader was insupported" );
-                    ++nbError;
+                    //todo if return wrapper, contruct wrapper with execute return value
                 }
             }
-            else
+            else if( gType == GenerationType.ReturnWrapper )
             {
                 var availableCtors = m.ReturnType.GetConstructors()
                                                     .Select( ctor => new WrapperCtorMatcher( ctor, extraMethodParameters, m.DeclaringType ) )
@@ -284,6 +296,42 @@ namespace CK.SqlServer.Setup
             }
             g.Emit( OpCodes.Ret );
             return nbError == 0;
+        }
+
+        private static MethodInfo SelectExecuteMethod( GenerationType gType, ExecutionType eType, Type providerReturnType, Type returnType )
+        {
+            Debug.Assert( eType != ExecutionType.Unknown );
+            Debug.Assert( gType != GenerationType.ByRefSqlCommand );
+
+            MethodInfo returnValue = null;
+
+            //todo: if return type wasn't interface type
+            //todo support generic method
+            //IEnumerable<MethodInfo> filtered = ReflectionHelper.GetFlattenMethods( providerReturnType )
+            IEnumerable<MethodInfo> filtered = providerReturnType.GetMethods()
+                                                           .Where( mi => mi.Name == eType.ToString()
+                                                               && mi.GetParameters().Count() == 1
+                                                               && mi.GetParameters().Any( pi => pi.ParameterType == SqlObjectItem.TypeCommand ) );
+            if( gType == GenerationType.ReturnExecutionValue )
+            {
+                if( eType == ExecutionType.ExecuteNonQuery )
+                {
+                    //todo support return wrapper with constructor match with execution return value
+                    filtered = filtered.Where( mi => (returnType == typeof( void ) || ReflectionHelper.CovariantMatch( mi.ReturnType, returnType )) );
+                }
+                else
+                {
+                    filtered = filtered.Where( mi => ReflectionHelper.CovariantMatch( mi.ReturnType, returnType ) );
+                }
+
+                returnValue = filtered.FirstOrDefault();
+            }
+            else
+            {
+                returnValue = filtered.FirstOrDefault();
+            }
+
+            return returnValue;
         }
 
         private static void GenerateByRefInitialization( ILGenerator g, LocalBuilder locCmd, LocalBuilder locParams, Label setValues )

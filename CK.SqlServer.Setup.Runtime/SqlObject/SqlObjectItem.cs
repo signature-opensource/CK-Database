@@ -24,7 +24,6 @@ namespace CK.SqlServer.Setup
         internal readonly static Type TypeTransaction = typeof( SqlTransaction );
         internal readonly static Type TypeParameterCollection = typeof( SqlParameterCollection );
         internal readonly static Type TypeParameter = typeof( SqlParameter );
-        internal readonly static Type TypeSqlConnectionProvider = typeof( SqlConnectionProvider );
         internal readonly static Type TypeSqlCallContext = typeof( ISqlCallContext );
         internal readonly static Type TypeSqlPackageBase = typeof( SqlPackageBase );
         internal readonly static Type TypeSqlDatabase = typeof( SqlDatabase );
@@ -34,12 +33,6 @@ namespace CK.SqlServer.Setup
 
         internal readonly static ConstructorInfo SqlParameterCtor2 = TypeParameter.GetConstructor( new Type[] { typeof( string ), typeof( SqlDbType ) } );
         internal readonly static ConstructorInfo SqlParameterCtor3 = TypeParameter.GetConstructor( new Type[] { typeof( string ), typeof( SqlDbType ), typeof( Int32 ) } );
-
-        internal readonly static MethodInfo MCallContextGetProvider = TypeSqlCallContext.GetMethod( "GetProvider", new Type[] { typeof( string ) } );
-
-        internal readonly static MethodInfo MCallExecuteNonQuery = TypeSqlConnectionProvider.GetMethod( "ExecuteNonQuery", new Type[] { SqlObjectItem.TypeCommand } );
-        internal readonly static MethodInfo MCallExecuteScalar = TypeSqlConnectionProvider.GetMethod( "ExecuteScalar", new Type[] { SqlObjectItem.TypeCommand } );
-        internal readonly static MethodInfo MCallExecuteIndependentReader = TypeSqlConnectionProvider.GetMethod( "ExecuteIndependentReader", new Type[] { SqlObjectItem.TypeCommand } );
 
         internal readonly static MethodInfo MTransactionGetConnection = TypeTransaction.GetProperty( "Connection", SqlObjectItem.TypeConnection ).GetGetMethod();
 
