@@ -227,7 +227,13 @@ namespace CK.SqlServer.Setup
                 {
                     g.Emit( OpCodes.Call, execute );
 
-                    //todo set ref result
+                    foreach(var setter in setters.Setters)
+                    {
+                        if( setter.SqlExprParam.IsOutput )
+                        {
+                            setter.EmitSetFromParameter( g, locParams );
+                        }
+                    }
                 }
                 else
                 {

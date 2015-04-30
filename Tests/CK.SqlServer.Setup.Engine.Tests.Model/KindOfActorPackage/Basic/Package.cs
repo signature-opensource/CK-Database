@@ -308,7 +308,7 @@ namespace SqlActorPackage.Basic
 
 
         [SqlProcedure( "sBasicProcedureWithAuth", ExecuteAs = ExecutionType.ExecuteIndependentReader )]
-        public abstract SqlDataReader CallAutoExecuteSqlDataReader( IAuthContext c, SqlConnection conn, int index, string name, out string result );
+        public abstract OutputCmd<string> CallAutoExecuteSqlDataReader( IAuthContext c, SqlConnection conn, int index, string name, out string result );
 
         [SqlProcedure( "sBasicProcedureWithAuth", ExecuteAs = ExecutionType.ExecuteNonQuery )]
         public abstract int CallAutoExecuteInt( IBasicAuthContext c, int index, string name );

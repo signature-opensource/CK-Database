@@ -181,6 +181,28 @@ namespace CK.SqlServer.Setup
                     g.MarkLabel( notNull );
                     g.Emit( OpCodes.Call, SqlObjectItem.MParameterSetValue );
                 }
+
+                internal void EmitSetFromParameter( ILGenerator g, LocalBuilder locParams )
+                {
+                    if( _index == -1 || _isIgnoredOutputParameter ) return;
+                    if( _methodParam != null ) g.LdArgBox( _methodParam );
+                    else
+                    {
+                        Debug.Assert( _ctxProp != null );
+                        g.LdArgBox( _ctxProp.Parameter );
+                        g.Emit( OpCodes.Callvirt, _ctxProp.Prop.GetGetMethod() );
+                        if( _ctxProp.Prop.PropertyType.IsGenericParameter || _ctxProp.Prop.PropertyType.IsValueType )
+                        {
+                            g.Emit( OpCodes.Box, _ctxProp.Prop.PropertyType );
+                        }
+                    }
+
+                    g.LdLoc( locParams );
+                    g.LdInt32( _index );
+                    g.Emit( OpCodes.Call, SqlObjectItem.MParameterCollectionGetParameter );
+                    g.Emit( OpCodes.Call, SqlObjectItem.MParameterGetValue );
+                    g.Emit( OpCodes.Stind_Ref );
+                }
             }
 
             public SqlParametersSetter( SqlExprParameterList parameters )
