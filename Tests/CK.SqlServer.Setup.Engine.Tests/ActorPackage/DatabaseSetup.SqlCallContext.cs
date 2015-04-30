@@ -54,7 +54,8 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
                 package.CallAutoExecuteInt( ctx, 2, "Name2" );
                 package.CallAutoExecuteVoid( ctx, 2, "Name2" );
                 package.CallAutoExecuteObject( ctx, 2, "Name2" );
-                //package.CallAutoExecuteSqlDataReader( ctx, 2, "Name2" );
+                int a = 0;
+                package.CallAutoExecuteSqlDataReader( ctx, c.Connection.InternalConnection, 2, "Name2", out a );
             }
         }
     }

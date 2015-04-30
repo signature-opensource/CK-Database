@@ -195,6 +195,7 @@ namespace CK.SqlServer.Setup
                 {
                     SetConnectionAndTransactionProperties( g, locCmd, firstSqlConnectionParameter, firstSqlTransactionParameter );
                 }
+
                 foreach( var setter in setters.Setters )
                 {
                     setter.EmitSetParameter( g, locParams );
@@ -227,7 +228,7 @@ namespace CK.SqlServer.Setup
                 {
                     g.Emit( OpCodes.Call, execute );
 
-                    foreach(var setter in setters.Setters)
+                    foreach( var setter in setters.Setters )
                     {
                         if( setter.SqlExprParam.IsOutput )
                         {
@@ -266,6 +267,7 @@ namespace CK.SqlServer.Setup
             }
             else if( gType == GenerationType.ReturnWrapper )
             {
+                if( doExecute ) g.Emit( OpCodes.Pop );
                 var availableCtors = m.ReturnType.GetConstructors()
                                                     .Select( ctor => new WrapperCtorMatcher( ctor, extraMethodParameters, m.DeclaringType ) )
                                                     .Where( matcher => matcher.HasSqlCommand && matcher.Parameters.Count >= 1 + extraMethodParameters.Count )

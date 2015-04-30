@@ -184,6 +184,7 @@ namespace CK.SqlServer.Setup
 
                 internal void EmitSetFromParameter( ILGenerator g, LocalBuilder locParams )
                 {
+                    //TODO: PLEASE CHECK
                     if( _index == -1 || _isIgnoredOutputParameter ) return;
                     if( _methodParam != null ) g.LdArgBox( _methodParam );
                     else
@@ -196,7 +197,6 @@ namespace CK.SqlServer.Setup
                             g.Emit( OpCodes.Box, _ctxProp.Prop.PropertyType );
                         }
                     }
-
                     g.LdLoc( locParams );
                     g.LdInt32( _index );
                     g.Emit( OpCodes.Call, SqlObjectItem.MParameterCollectionGetParameter );
