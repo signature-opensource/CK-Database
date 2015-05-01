@@ -28,17 +28,19 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
         private static void CallWithAuthContext( Package package )
         {
-            var ctx = new Package.BasicAuthContext() { ActorId = 2145 };
-            string signatureResult;
-            using( var c = package.CallWithAuth( ctx, 1, "Name", out signatureResult ) )
+            using( var ctx = new Package.BasicAuthContext() { ActorId = 2145 } )
             {
-                Assert.That( c.Call(), Is.EqualTo( "2145: Name - 1" ) );
+                string signatureResult;
+                using( var c = package.CallWithAuth( ctx, 1, "Name", out signatureResult ) )
+                {
+                    Assert.That( c.Call(), Is.EqualTo( "2145: Name - 1" ) );
+                }
             }
         }
 
         private static void CallWithAuthContextWithoutOutSignature( Package package )
         {
-            var ctx = new Package.BasicAuthContext() { ActorId = 21 };
+            using( var ctx = new Package.BasicAuthContext() { ActorId = 21 } )
             using( var c = package.CallWithAuth( ctx, 2, "Name2" ) )
             {
                 Assert.That( c.Call(), Is.EqualTo( "21: Name2 - 2" ) );
@@ -50,12 +52,14 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             using( TestHelper.ConsoleMonitor.OpenTrace().Send( "CheckCommandWrapper" ) )
             {
                 var package = map.Default.Obtain<Package>();
-                var ctx = new Package.BasicAuthContext() { ActorId = 21 };
-                package.CallAutoExecuteInt( ctx, 2, "Name2" );
-                package.CallAutoExecuteVoid( ctx, 2, "Name2" );
-                package.CallAutoExecuteObject( ctx, 2, "Name2" );
-                int a = 0;
-                package.CallAutoExecuteSqlDataReader( ctx, c.Connection.InternalConnection, 2, "Name2", out a );
+                using( var ctx = new Package.BasicAuthContext() { ActorId = 21 } )
+                {
+                    package.CallAutoExecuteInt( ctx, 2, "Name2" );
+                    package.CallAutoExecuteVoid( ctx, 2, "Name2" );
+                    package.CallAutoExecuteObject( ctx, 2, "Name2" );
+                    int a = 0;
+                    package.CallAutoExecuteSqlDataReader( ctx, c.Connection.InternalConnection, 2, "Name2", out a );
+                }
             }
         }
     }

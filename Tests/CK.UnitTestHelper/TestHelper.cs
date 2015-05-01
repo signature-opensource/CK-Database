@@ -19,6 +19,7 @@ namespace CK.Core
         static SetupEngineConfiguration _config;
         static IStObjMap _map;
         static string _binFolder;
+        static string _solutionFolder;
         static string _logFolder;
 
         static TestHelper()
@@ -59,7 +60,7 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Gets the path to the log folder.
+        /// Gets the path to the log folder. It is the 'Tests/Logs' folder of the solution. 
         /// </summary>
         public static string LogFolder
         {
@@ -83,6 +84,31 @@ namespace CK.Core
                     RunDBSetup();
                 }
                 return _map;
+            }
+        }
+
+        /// <summary>
+        /// Gets the solution folder. It must be a git working folder (a '.git' directory must exist) and
+        /// contain a 'Tests' folder.
+        /// </summary>
+        static public string SolutionFolder
+        {
+            get
+            {
+                if( _solutionFolder == null ) InitalizePaths();
+                return _solutionFolder;
+            }
+        }
+
+        /// <summary>
+        /// Gets the bin folder where the tests are beeing executed.
+        /// </summary>
+        static public string BinFolder
+        {
+            get
+            {
+                if( _binFolder == null ) InitalizePaths();
+                return _binFolder;
             }
         }
 
@@ -242,11 +268,21 @@ namespace CK.Core
             // Code base is like "...HumanSide\Tests\CK.ActorModel.Tests\Debug\bin\CK.ActorModel.Tests.dll"
             _binFolder = p = Path.GetDirectoryName( p );
 
-            // => Removing: \Debug\bin
-            p = Path.GetDirectoryName( Path.GetDirectoryName( p ) );
-            // => Removing: \CK.ActorModel.Tests and adding \Logs
-            _logFolder = Path.Combine( Path.GetDirectoryName( p ), "Logs" ); 
+            bool hasGit = false;
+            while( p.Length > 2 && !(hasGit = Directory.Exists( Path.Combine( p, ".git" ) )) )
+            {
+                p = Path.GetDirectoryName( p );
+            }
+            if( !hasGit ) throw new InvalidOperationException( "The project must be in a git repository." );
 
+            _solutionFolder = p;
+            p = Path.Combine( p, "Tests" );
+            if( !Directory.Exists( p ) )
+            {
+                throw new InvalidOperationException( "The solution must contain a 'Tests' folder." );
+            }
+
+            _logFolder = Path.Combine( p, "Logs" ); 
         }
     }
 }

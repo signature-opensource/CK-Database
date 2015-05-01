@@ -61,6 +61,21 @@ namespace CK.Core
         }
 
         /// <summary>
+        /// Executes the <paramref name="command"/>.
+        /// </summary>
+        /// <param name="this">This database.</param>
+        /// <param name="command">The command to execute.</param>
+        public static void ExecuteNonQuery( this SqlDatabase @this, SqlCommand command )
+        {
+            using( var c = new SqlConnection( @this.ConnectionString ))
+            {
+                c.Open();
+                command.Connection = c;
+                command.ExecuteNonQuery();
+            }
+        }
+
+        /// <summary>
         /// Checks that the <paramref name="selectClause"/> with its optional parameters @0, @1... returns no results.
         /// </summary>
         /// <param name="connectionString">The connection string.</param>
@@ -69,9 +84,9 @@ namespace CK.Core
         public static void AssertEmptyReader( string connectionString, string selectClause, params object[] parameters )
         {
             Execute( connectionString, selectClause, parameters, cmd =>
-                {
-                    Assert.That( cmd.ExecuteReader( System.Data.CommandBehavior.SingleRow ).Read(), Is.False );
-                } );
+            {
+                Assert.That( cmd.ExecuteReader( System.Data.CommandBehavior.SingleRow ).Read(), Is.False );
+            } );
         }
 
         /// <summary>

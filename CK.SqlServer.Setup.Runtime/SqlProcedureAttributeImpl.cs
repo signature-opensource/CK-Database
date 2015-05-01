@@ -41,7 +41,7 @@ namespace CK.SqlServer.Setup
             GenerationType gType;
             ExecutionType eType = m.GetCustomAttribute<SqlProcedureAttribute>().ExecuteAs;
 
-            //if method use SqlCallContext, it must have an ExecuteAs parameter on his attribute
+            // If method use SqlCallContext, it must have an ExecuteAs parameter on his attribute.
             bool doExecute = eType != ExecutionType.Unknown;
             bool hasRefSqlCommand = mParameters.Length >= 1
                                     && mParameters[0].ParameterType.IsByRef
@@ -51,9 +51,10 @@ namespace CK.SqlServer.Setup
 
             //todo: if return type wasn't interface type
             //todo support generic method
-            if( doExecute && !mParameters.Any( p => SqlObjectItem.TypeSqlCallContext.IsAssignableFrom( p.ParameterType ) && ReflectionHelper.GetFlattenMethods( p.ParameterType ).Any( mi => mi.Name == "GetProvider" ) ) )
+            if( doExecute && !mParameters.Any( p => SqlObjectItem.TypeSqlCallContext.IsAssignableFrom( p.ParameterType ) 
+                                                    && ReflectionHelper.GetFlattenMethods( p.ParameterType ).Any( mi => mi.Name == "GetProvider" ) ) )
             {
-                monitor.Error().Send( "With ExecuteAs parameter on attribute, SqlCallContext must have a GetProvider method", m.DeclaringType.FullName, m.Name );
+                monitor.Error().Send( "With ExecuteAs parameter on attribute, SqlCallContext must have a GetProvider method.", m.DeclaringType.FullName, m.Name );
                 return false;
             }
             if( !doExecute && m.ReturnType == typeof( void ) && hasRefSqlCommand )

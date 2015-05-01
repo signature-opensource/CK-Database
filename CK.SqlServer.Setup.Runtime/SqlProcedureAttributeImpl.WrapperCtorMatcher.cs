@@ -102,35 +102,36 @@ namespace CK.SqlServer.Setup
 
             internal void ExplainFailure( IActivityMonitor monitor )
             {
-                using( monitor.OpenInfo().Send( "Considering constructor: {0}.", DumpParameters( _methodParameters.Select( p => p.Parameter ) ) ) )
+                using( monitor.OpenInfo().Send( "Considering constructor: {0}.", DumpParameters( Parameters ) ) )
                 {
-                    foreach( var bothP in _mappedParameters.Select( ( p, idx ) => idx != _idxSqlCommand && p != _declaringTypeMarker && p.Member != Ctor
-                                                                                ? new { CtorP = Parameters[idx], MethodP = p }
-                                                                                : null )
-                                                        .Where( p => p != null ) )
+                    for( int idx = 0; idx < _mappedParameters.Length; ++idx )
                     {
-                        monitor.Trace().Send( "Constructor parameter {0} is bound to method parameter {1}.", DumpParameter( bothP.CtorP ), bothP.MethodP );
-                    }
-                    foreach( var cP in _mappedParameters.Select( ( p, idx ) => idx != _idxSqlCommand && p.Member == Ctor ? Parameters[idx] : null )
-                                                        .Where( p => p != null ) )
-                    {
-                        monitor.Trace().Send( "Constructor parameter {0} uses its default value.", DumpParameter( cP ) );
-                    }
-                    foreach( var cP in _mappedParameters.Where( ( p, idx ) => p == _declaringTypeMarker ) )
-                    {
-                        monitor.Trace().Send( "Constructor parameter {0} is bound to the Type that defines the method ({1}).", DumpParameter( cP ), _declaringType.FullName );
-                    }
-                    foreach( var cP in _mappedParameters.Select( ( p, idx ) => p == null && idx != _idxSqlCommand ? Parameters[idx] : null )
-                                                        .Where( p => p != null ) )
-                    {
-                        if( cP.HasDefaultValue ) monitor.Error().Send( "Unable to use default value for constructor parameter {0}.", DumpParameter( cP ) );
-                        else monitor.Error().Send( "Unable to map constructor parameter {0}.", DumpParameter( cP ) );
+                        if( idx == _idxSqlCommand ) continue;
+                        var cP = _mappedParameters[idx];
+                        if( cP == null )
+                        {
+                            cP = Parameters[idx];
+                            if( cP.HasDefaultValue ) monitor.Error().Send( "Parameter '{0}' is not bound (and using its default value is not possible).", DumpParameter( cP ) );
+                            else monitor.Error().Send( "Parameter '{0}' is not bound.", DumpParameter( cP ) );
+                        }
+                        else if( cP == _declaringTypeMarker )
+                        {
+                            monitor.Trace().Send( "Parameter '{0}' is bound to the Type that defines the method ({1}).", Parameters[idx], _declaringType.FullName );
+                        }
+                        else if( cP.Member == Ctor )
+                        {
+                            monitor.Trace().Send( "Parameter '{0}' uses its default value.", DumpParameter( cP ) );
+                        }
+                        else
+                        {
+                            monitor.Trace().Send( "Parameter '{0}' is bound to method parameter '{1}'.", Parameters[idx], DumpParameter( cP ) );
+                        }
                     }
                     foreach( var mP in _methodParameters.Where( p => p.IdxTarget == -1 ) )
                     {
                         if( SqlCallContextInfo.IsSqlCallContext( mP.Parameter ) )
-                            monitor.Trace().Send( "SqlCallContext method parameter {0} is ignored.", DumpParameter( mP.Parameter ) );
-                        else monitor.Error().Send( "Unable to map extra method parameter {0}.", DumpParameter( mP.Parameter ) );
+                            monitor.Trace().Send( "SqlCallContext method parameter '{0}' is ignored.", DumpParameter( mP.Parameter ) );
+                        else monitor.Error().Send( "Unable to map extra method parameter '{0}'.", DumpParameter( mP.Parameter ) );
                     }
                 }
             }

@@ -81,6 +81,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.UnitTestHelper", "Tests\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlZonePackage.Tests", "Tests\SqlZonePackage.Tests\SqlZonePackage.Tests.csproj", "{8133B6AE-8D7F-42E9-B6F1-DA583707F177}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SqlCallDemo", "SqlCallDemo", "{5EC943B9-9907-4B3B-A5CD-9155F23E2D6A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlCallDemo", "Tests\SqlCallDemo\SqlCallDemo\SqlCallDemo.csproj", "{10FC486C-4B3F-4ACE-8AF6-D2D7A937F2F9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlCallDemo.Tests", "Tests\SqlCallDemo\SqlCallDemo.Tests\SqlCallDemo.Tests.csproj", "{25F78C1F-96C1-41A5-9C15-CAB46136F83B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -383,6 +389,26 @@ Global
 		{8133B6AE-8D7F-42E9-B6F1-DA583707F177}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{8133B6AE-8D7F-42E9-B6F1-DA583707F177}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{8133B6AE-8D7F-42E9-B6F1-DA583707F177}.Release|x86.ActiveCfg = Release|Any CPU
+		{10FC486C-4B3F-4ACE-8AF6-D2D7A937F2F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10FC486C-4B3F-4ACE-8AF6-D2D7A937F2F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10FC486C-4B3F-4ACE-8AF6-D2D7A937F2F9}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{10FC486C-4B3F-4ACE-8AF6-D2D7A937F2F9}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{10FC486C-4B3F-4ACE-8AF6-D2D7A937F2F9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{10FC486C-4B3F-4ACE-8AF6-D2D7A937F2F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10FC486C-4B3F-4ACE-8AF6-D2D7A937F2F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10FC486C-4B3F-4ACE-8AF6-D2D7A937F2F9}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{10FC486C-4B3F-4ACE-8AF6-D2D7A937F2F9}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{10FC486C-4B3F-4ACE-8AF6-D2D7A937F2F9}.Release|x86.ActiveCfg = Release|Any CPU
+		{25F78C1F-96C1-41A5-9C15-CAB46136F83B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25F78C1F-96C1-41A5-9C15-CAB46136F83B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25F78C1F-96C1-41A5-9C15-CAB46136F83B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{25F78C1F-96C1-41A5-9C15-CAB46136F83B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{25F78C1F-96C1-41A5-9C15-CAB46136F83B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{25F78C1F-96C1-41A5-9C15-CAB46136F83B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25F78C1F-96C1-41A5-9C15-CAB46136F83B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25F78C1F-96C1-41A5-9C15-CAB46136F83B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{25F78C1F-96C1-41A5-9C15-CAB46136F83B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{25F78C1F-96C1-41A5-9C15-CAB46136F83B}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -405,6 +431,9 @@ Global
 		{EA0228B9-75E2-48E4-9E74-1EE83D0ED4FF} = {6E913090-EA34-4A90-8DBB-1501F9981F53}
 		{A221B88D-D164-4099-9AB3-909F5781BAE1} = {6E913090-EA34-4A90-8DBB-1501F9981F53}
 		{8133B6AE-8D7F-42E9-B6F1-DA583707F177} = {6E913090-EA34-4A90-8DBB-1501F9981F53}
+		{5EC943B9-9907-4B3B-A5CD-9155F23E2D6A} = {6E913090-EA34-4A90-8DBB-1501F9981F53}
+		{10FC486C-4B3F-4ACE-8AF6-D2D7A937F2F9} = {5EC943B9-9907-4B3B-A5CD-9155F23E2D6A}
+		{25F78C1F-96C1-41A5-9C15-CAB46136F83B} = {5EC943B9-9907-4B3B-A5CD-9155F23E2D6A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.0\lib\NET35;packages\Unity.2.1.505.2\lib\NET35
