@@ -11,7 +11,7 @@ using NUnit.Framework;
 namespace SqlCallDemo.Tests
 {
     [TestFixture]
-    public class CallGuidRefTest
+    public partial class CallGuidRefTest
     {
         static readonly Guid Guid1 = Guid.NewGuid();
         static readonly Guid Guid2 = Guid.NewGuid();

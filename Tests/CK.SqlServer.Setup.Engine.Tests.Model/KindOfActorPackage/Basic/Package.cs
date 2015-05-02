@@ -354,25 +354,25 @@ namespace SqlActorPackage.Basic
         #endregion
 
 
-        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteAs = ExecutionType.ExecuteIndependentReader )]
+        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteCall = ExecutionType.ExecuteIndependentReader )]
         public abstract OutputCmd<string> CallAutoExecuteSqlDataReader( IAuthContext c, SqlConnection conn, int index, string name, out int result );
 
-        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteAs = ExecutionType.ExecuteNonQuery )]
+        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteCall = ExecutionType.ExecuteNonQuery )]
         public abstract int CallAutoExecuteInt( IBasicAuthContext c, int index, string name );
 
-        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteAs = ExecutionType.ExecuteNonQuery )]
+        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteCall = ExecutionType.ExecuteNonQuery )]
         public abstract void CallAutoExecuteVoid( IBasicAuthContext c, int index, string name );
 
-        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteAs = ExecutionType.ExecuteNonQuery )]
+        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteCall = ExecutionType.ExecuteNonQuery )]
         public abstract void CallAutoExecuteVoidRefSqlCommand( ref SqlCommand cmd, IBasicAuthContext c, int index, string name );
 
-        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteAs = ExecutionType.ExecuteNonQuery )]
+        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteCall = ExecutionType.ExecuteNonQuery )]
         public abstract SqlCommand CallAutoExecuteVoidRefSqlCommandAndReturnSqlCommand( ref SqlCommand cmd, IBasicAuthContext c, int index, string name );
 
-        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteAs = ExecutionType.ExecuteNonQuery )]
+        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteCall = ExecutionType.ExecuteNonQuery )]
         public abstract SqlCommand CallAutoExecuteVoidReturnSqlCommand( IBasicAuthContext c, int index, string name );
 
-        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteAs = ExecutionType.ExecuteScalar )]
+        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteCall = ExecutionType.ExecuteScalar )]
         public abstract object CallAutoExecuteObject( IAuthContext c, int index, string name );
     }
 }

@@ -19,7 +19,7 @@ namespace SqlCallDemo
     }
 
     [SqlPackage( Schema = "CK", Database = typeof( SqlDefaultDatabase ), ResourceType = typeof( GuidRefTestPackage ), ResourcePath = "Res" ), Versions( "2.11.25" )]
-    public abstract class GuidRefTestPackage : SqlPackage, IAmTheClassThatDefinesTheProcedure
+    public abstract partial class GuidRefTestPackage : SqlPackage, IAmTheClassThatDefinesTheProcedure
     {
         /// <summary>
         /// Creating a SqlCommand object. All parameters are added to the command and input parameters are set to the values of the parameters. 

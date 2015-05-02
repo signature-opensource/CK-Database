@@ -39,7 +39,7 @@ namespace CK.SqlServer.Setup
 
             ParameterInfo[] mParameters = m.GetParameters();
             GenerationType gType;
-            ExecutionType eType = m.GetCustomAttribute<SqlProcedureAttribute>().ExecuteAs;
+            ExecutionType eType = m.GetCustomAttribute<SqlProcedureAttribute>().ExecuteCall;
 
             // If method use SqlCallContext, it must have an ExecuteAs parameter on his attribute.
             bool doExecute = eType != ExecutionType.Unknown;

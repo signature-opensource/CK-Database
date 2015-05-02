@@ -24,7 +24,7 @@ namespace CK.SqlServer.Setup
         }
 
 
-        public ExecutionType ExecuteAs { get; set; }
+        public ExecutionType ExecuteCall { get; set; }
     }
 
     public enum ExecutionType

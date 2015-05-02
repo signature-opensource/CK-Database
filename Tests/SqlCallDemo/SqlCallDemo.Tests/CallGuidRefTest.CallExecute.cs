@@ -1,0 +1,33 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using CK.Core;
+using CK.SqlServer.Setup;
+using NUnit.Framework;
+
+namespace SqlCallDemo.Tests
+{
+    [TestFixture]
+    public partial class CallGuidRefTest
+    {
+        [Test]
+        public void calling_a_ExecuteNonQuery_method_with_the_standard_SqlStandardCallContext()
+        {
+            var p = TestHelper.StObjMap.Default.Obtain<GuidRefTestPackage>();
+            Guid inOut = Guid2;
+            string result;
+            using( var ctx = new SqlStandardCallContext() )
+            {
+                Assume.That( false, "TODO!" );
+                //p.GuidRefTest( ctx, true, Guid1, ref inOut, out result );
+            }
+            Assert.That( inOut, Is.Not.EqualTo( Guid2 ), "Since ReplaceInAndOut was true." );
+            //Assert.That( result, Is.EqualTo( "@InOnly is not null, @InAndOut is not null." ) );
+        }
+
+    }
+}

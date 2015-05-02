@@ -10,7 +10,6 @@ using System.Data;
 using System.Data.SqlClient;
 using CK.Core;
 using CK.Setup;
-using Microsoft.QualityTools.Testing.Fakes;
 using NUnit.Framework;
 
 namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage

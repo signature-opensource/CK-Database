@@ -71,6 +71,7 @@
     <Compile Include="Attributes\SqlPackageAttributeBase.cs" />
     <Compile Include="SqlPackageBase.cs" />
     <Compile Include="Attributes\SqlProcedureAttribute.cs" />
+    <Compile Include="SqlStandardCallContext.cs" />
     <Compile Include="SqlTable.cs" />
     <Compile Include="Attributes\SqlTableAttribute.cs" />
     <Compile Include="SqlView.cs" />
