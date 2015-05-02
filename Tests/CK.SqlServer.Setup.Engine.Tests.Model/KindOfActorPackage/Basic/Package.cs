@@ -6,8 +6,10 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using CK.Core;
 using CK.Setup;
 using CK.SqlServer;
 using CK.SqlServer.Setup;
@@ -236,8 +238,10 @@ namespace SqlActorPackage.Basic
             int ActorId { get; set; }
         }
 
-        public interface IBasicAuthContext : IAmHereToTestPropertyMasking, ISqlCallContext
+        public interface IBasicAuthContext : IAmHereToTestPropertyMasking, ISqlCallContext, IDisposable
         {
+            SqlConnectionProvider GetProvider( string connectionString );
+
             new int ActorId { get; set; }
         }
 
@@ -248,9 +252,64 @@ namespace SqlActorPackage.Basic
 
         public class BasicAuthContext : IAuthContext
         {
+            object _cache;
+
             public int ActorId { get; set; }
             
             public int SecurityZoneId { get; set; }
+
+            #region ISqlCallContext Members
+
+            public SqlConnectionProvider GetProvider( string connectionString )
+            {
+                SqlConnectionProvider c;
+                if( _cache == null )
+                {
+                    c = new SqlConnectionProvider( connectionString );
+                    _cache = c;
+                    return c;
+                }
+                SqlConnectionProvider newC;
+                c = _cache as SqlConnectionProvider;
+                if( c != null )
+                {
+                    if( c.ConnectionString == connectionString ) return c;
+                    newC = new SqlConnectionProvider( connectionString );
+                    _cache = new SqlConnectionProvider[] { c, newC };
+                }
+                else
+                {
+                    SqlConnectionProvider[] cache = (SqlConnectionProvider[])_cache;
+                    for( int i = 0; i < cache.Length; i++ )
+                    {
+                        c = cache[i];
+                        if( c.ConnectionString == connectionString ) return c;
+                    }
+                    SqlConnectionProvider[] newCache = new SqlConnectionProvider[cache.Length + 1];
+                    Array.Copy( cache, newCache, cache.Length );
+                    newC = new SqlConnectionProvider( connectionString );
+                    newCache[cache.Length] = newC;
+                    _cache = newCache;
+                }
+                return newC;
+            }
+
+            public void Dispose()
+            {
+                if( _cache != null )
+                {
+                    SqlConnectionProvider c = _cache as SqlConnectionProvider;
+                    if( c != null ) c.Dispose();
+                    else
+                    {
+                        SqlConnectionProvider[] cache = _cache as SqlConnectionProvider[];
+                        for( int i = 0; i < cache.Length; ++i ) cache[i].Dispose();
+                    }
+                    _cache = null;
+                }
+            }
+            
+            #endregion
         }
 
         public class OutputCmd<T> : IDisposable
@@ -293,5 +352,27 @@ namespace SqlActorPackage.Basic
         public abstract OutputCmd<T> CallWithAuth<T>( IAuthContext c, int index, string name, out string result );
 
         #endregion
+
+
+        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteCall = ExecutionType.ExecuteIndependentReader )]
+        public abstract OutputCmd<string> CallAutoExecuteSqlDataReader( IAuthContext c, SqlConnection conn, int index, string name, out int result );
+
+        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteCall = ExecutionType.ExecuteNonQuery )]
+        public abstract int CallAutoExecuteInt( IBasicAuthContext c, int index, string name );
+
+        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteCall = ExecutionType.ExecuteNonQuery )]
+        public abstract void CallAutoExecuteVoid( IBasicAuthContext c, int index, string name );
+
+        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteCall = ExecutionType.ExecuteNonQuery )]
+        public abstract void CallAutoExecuteVoidRefSqlCommand( ref SqlCommand cmd, IBasicAuthContext c, int index, string name );
+
+        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteCall = ExecutionType.ExecuteNonQuery )]
+        public abstract SqlCommand CallAutoExecuteVoidRefSqlCommandAndReturnSqlCommand( ref SqlCommand cmd, IBasicAuthContext c, int index, string name );
+
+        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteCall = ExecutionType.ExecuteNonQuery )]
+        public abstract SqlCommand CallAutoExecuteVoidReturnSqlCommand( IBasicAuthContext c, int index, string name );
+
+        [SqlProcedure( "sBasicProcedureWithAuth", ExecuteCall = ExecutionType.ExecuteScalar )]
+        public abstract object CallAutoExecuteObject( IAuthContext c, int index, string name );
     }
 }

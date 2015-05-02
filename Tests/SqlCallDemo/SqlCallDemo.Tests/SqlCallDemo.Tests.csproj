@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{8133B6AE-8D7F-42E9-B6F1-DA583707F177}</ProjectGuid>
+    <ProjectGuid>{25F78C1F-96C1-41A5-9C15-CAB46136F83B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SqlZonePackage.Tests</RootNamespace>
-    <AssemblyName>SqlZonePackage.Tests</AssemblyName>
+    <RootNamespace>SqlCallDemo.Tests</RootNamespace>
+    <AssemblyName>SqlCallDemo.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -30,8 +30,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CK.Core">
+      <HintPath>..\..\..\packages\CK.Core.4.2.0\lib\net45\CK.Core.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework">
-      <HintPath>..\..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
+      <HintPath>..\..\..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -42,83 +45,77 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\CK.UnitTestHelper\DBSetup.cs">
+    <Compile Include="..\..\CK.UnitTestHelper\DBSetup.cs">
       <Link>DBSetup.cs</Link>
     </Compile>
-    <Compile Include="..\SqlActorPackage.Tests\HandlerInjection.cs">
-      <Link>FromActor\HandlerInjection.cs</Link>
-    </Compile>
-    <Compile Include="HandlerInjection.cs" />
+    <Compile Include="CallGuidRefTest.CallExecute.cs" />
+    <Compile Include="CallGuidRefTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">
+    <ProjectReference Include="..\..\..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">
       <Project>{87f54185-5226-4eee-8d59-5d03e6c1ab7c}</Project>
       <Name>CK.Setup.Dependency</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\CK.Setupable.Engine\CK.Setupable.Engine.csproj">
+    <ProjectReference Include="..\..\..\CK.Setupable.Engine\CK.Setupable.Engine.csproj">
       <Project>{d3c700e1-3546-437c-9b96-1f867a539b6a}</Project>
       <Name>CK.Setupable.Engine</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\CK.Setupable.Model\CK.Setupable.Model.csproj">
+    <ProjectReference Include="..\..\..\CK.Setupable.Model\CK.Setupable.Model.csproj">
       <Project>{64da8104-2c71-4d52-8f44-d34738f6d564}</Project>
       <Name>CK.Setupable.Model</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\CK.SqlServer.Core\CK.SqlServer.Core.csproj">
+    <ProjectReference Include="..\..\..\CK.Setupable.Runtime\CK.Setupable.Runtime.csproj">
+      <Project>{a5380f73-7050-4090-8e75-4cfc7afa5b7b}</Project>
+      <Name>CK.Setupable.Runtime</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\CK.SqlServer.Core\CK.SqlServer.Core.csproj">
       <Project>{f2977613-731a-4efa-9703-cd6b92f00558}</Project>
       <Name>CK.SqlServer.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\CK.SqlServer.Parser\CK.SqlServer.Parser.csproj">
+    <ProjectReference Include="..\..\..\CK.SqlServer.Parser\CK.SqlServer.Parser.csproj">
       <Project>{c569dc3c-aed5-449d-9c7d-cadc46423687}</Project>
       <Name>CK.SqlServer.Parser</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\CK.SqlServer.Setup.Engine\CK.SqlServer.Setup.Engine.csproj">
+    <ProjectReference Include="..\..\..\CK.SqlServer.Setup.Engine\CK.SqlServer.Setup.Engine.csproj">
       <Project>{9a0bce15-00ef-411b-8283-68aed047fce5}</Project>
       <Name>CK.SqlServer.Setup.Engine</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj">
+    <ProjectReference Include="..\..\..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj">
       <Project>{b64d3d2a-fd2b-4731-8559-8a52c3a45351}</Project>
       <Name>CK.SqlServer.Setup.Model</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\CK.SqlServer.Setup.Runtime\CK.SqlServer.Setup.Runtime.csproj">
+    <ProjectReference Include="..\..\..\CK.SqlServer.Setup.Runtime\CK.SqlServer.Setup.Runtime.csproj">
       <Project>{14e253cb-f606-4228-8860-fd04880df379}</Project>
       <Name>CK.SqlServer.Setup.Runtime</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\CK.StObj.Engine\CK.StObj.Engine.csproj">
+    <ProjectReference Include="..\..\..\CK.StObj.Engine\CK.StObj.Engine.csproj">
       <Project>{df7a0b05-4b48-44c2-b6c8-6fcfd66df8f8}</Project>
       <Name>CK.StObj.Engine</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\CK.StObj.Model\CK.StObj.Model.csproj">
+    <ProjectReference Include="..\..\..\CK.StObj.Model\CK.StObj.Model.csproj">
       <Project>{96dedeee-de7d-4b14-8fde-bc4d8d9ccb78}</Project>
       <Name>CK.StObj.Model</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\CK.StObj.Runtime\CK.StObj.Runtime.csproj">
+    <ProjectReference Include="..\..\..\CK.StObj.Runtime\CK.StObj.Runtime.csproj">
       <Project>{db108ff8-42a4-4787-92c2-2d5a4daab85e}</Project>
       <Name>CK.StObj.Runtime</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CK.SqlServer.Setup.Engine.Tests.Model\KindOfActorPackage\SqlActorPackage.csproj">
-      <Project>{6d0d47c8-98f7-47de-b118-ad3606455f7e}</Project>
-      <Name>SqlActorPackage</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.SqlServer.Setup.Engine.Tests.Model\SqlActorPackage.Runtime\SqlActorPackage.Runtime.csproj">
-      <Project>{e03b0333-1607-47c6-b6bf-d21e4489f659}</Project>
-      <Name>SqlActorPackage.Runtime</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.SqlServer.Setup.Engine.Tests.Model\SqlZonePackage\SqlZonePackage.csproj">
-      <Project>{3ff4bf4a-3a28-4ad6-bff1-e87f11124e31}</Project>
-      <Name>SqlZonePackage</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.UnitTestHelper\CK.UnitTestHelper.csproj">
+    <ProjectReference Include="..\..\CK.UnitTestHelper\CK.UnitTestHelper.csproj">
       <Project>{a221b88d-d164-4099-9ab3-909f5781bae1}</Project>
       <Name>CK.UnitTestHelper</Name>
     </ProjectReference>
+    <ProjectReference Include="..\SqlCallDemo\SqlCallDemo.csproj">
+      <Project>{10fc486c-4b3f-4ace-8af6-d2d7a937f2f9}</Project>
+      <Name>SqlCallDemo</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

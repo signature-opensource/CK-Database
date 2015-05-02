@@ -999,7 +999,7 @@ namespace CK.Setup
                     if( actualType == DependentItemKind.Item )
                     {
                         // If not, check if it is NOT a group that nevertheless exposes children: this must be 
-                        // considered as an error to stay independant of the registration order.
+                        // considered as an error to stay independent of the registration order.
                         if( g != null )
                         {
                             var children = g.Children;

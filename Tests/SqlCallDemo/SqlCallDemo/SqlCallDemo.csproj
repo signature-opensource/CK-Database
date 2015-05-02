@@ -1,21 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{94F93F54-E70F-45B4-BB7B-4ADB82059257}</ProjectGuid>
+    <ProjectGuid>{10FC486C-4B3F-4ACE-8AF6-D2D7A937F2F9}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>IntoTheWild0</RootNamespace>
-    <AssemblyName>IntoTheWild0</AssemblyName>
+    <RootNamespace>SqlCallDemo</RootNamespace>
+    <AssemblyName>SqlCallDemo</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -25,7 +20,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -34,60 +28,42 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CK.Core, Version=4.2.0.0, Culture=neutral, PublicKeyToken=edfa2f62fc978217, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\CK.Core.4.2.0\lib\net45\CK.Core.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\..\SharedAssemblyInfo.cs">
-      <Link>Properties\SharedAssemblyInfo.cs</Link>
-    </Compile>
+    <Compile Include="GuidRefTestPackage.CallExecute.cs" />
+    <Compile Include="GuidRefTestPackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ResPackage\ResPackage.cs" />
-    <Compile Include="SqlHistoDatabase.cs" />
-    <Compile Include="ResPackage\ResHome.cs" />
-    <Compile Include="ResPackage\ResDataRawTextHome.cs" />
-    <Compile Include="ResPackage\ResDataStringHome.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\CK.Setupable.Model\CK.Setupable.Model.csproj">
-      <Project>{64DA8104-2C71-4D52-8F44-D34738F6D564}</Project>
+      <Project>{64da8104-2c71-4d52-8f44-d34738f6d564}</Project>
       <Name>CK.Setupable.Model</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\CK.SqlServer.Core\CK.SqlServer.Core.csproj">
-      <Project>{f2977613-731a-4efa-9703-cd6b92f00558}</Project>
-      <Name>CK.SqlServer.Core</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj">
-      <Project>{B64D3D2A-FD2B-4731-8559-8A52C3A45351}</Project>
+      <Project>{b64d3d2a-fd2b-4731-8559-8a52c3a45351}</Project>
       <Name>CK.SqlServer.Setup.Model</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\CK.StObj.Model\CK.StObj.Model.csproj">
-      <Project>{96DEDEEE-DE7D-4B14-8FDE-BC4D8D9CCB78}</Project>
+      <Project>{96dedeee-de7d-4b14-8fde-bc4d8d9ccb78}</Project>
       <Name>CK.StObj.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\CK.UnitTestHelper\CK.UnitTestHelper.csproj">
+      <Project>{a221b88d-d164-4099-9ab3-909f5781bae1}</Project>
+      <Name>CK.UnitTestHelper</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="ResPackage\Resource\sResDataStringSet.sql" />
-    <EmbeddedResource Include="ResPackage\Resource\sResDataStringRemove.sql" />
-    <EmbeddedResource Include="ResPackage\Resource\sResCreate.sql" />
-    <EmbeddedResource Include="ResPackage\Resource\sResRemove.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="ResPackage\Resource\CK.ResDataRawTextHome.Init.2.9.2.sql" />
-    <EmbeddedResource Include="ResPackage\Resource\CK.ResDataStringHome.Init.2.9.2.sql" />
-    <EmbeddedResource Include="ResPackage\Resource\IntoTheWild0.ResPackage.Init.2.9.2.sql" />
-    <EmbeddedResource Include="ResPackage\Resource\CK.ResHome.Init.2.9.2.sql" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Res\sGuidRefTest.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

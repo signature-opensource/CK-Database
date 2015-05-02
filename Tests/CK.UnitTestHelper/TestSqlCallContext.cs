@@ -11,5 +11,14 @@ namespace CK.SqlServer
         public TestSqlCallContext()
         {
         }
+
+        #region ISqlCallContext Members
+
+        public SqlConnectionProvider GetProvider( string connectionString )
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
     }
 }
