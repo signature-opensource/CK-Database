@@ -122,15 +122,6 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
                 CheckSqlCallContext( c, map );
                 CheckCommandWrapper( c, map );
                 CheckCommandParamInjection( c, map );
-
-                //using( ShimsContext.Create() )
-                //{
-                //    CK.SqlServer.Fakes.ShimSqlConnectionProvider.AllInstances.ExecuteNonQuerySqlCommand = delegate { return 0; };
-                //    CK.SqlServer.Fakes.ShimSqlConnectionProvider.AllInstances.ExecuteScalarSqlCommand = delegate { return null; };
-                //    CK.SqlServer.Fakes.ShimSqlConnectionProvider.AllInstances.ExecuteIndependentReaderSqlCommand = delegate { return (SqlDataReader)null; };
-                //    System.Data.SqlClient.Fakes.ShimSqlConnection.AllInstances.Open = delegate { };
-                    CheckSqlCallContextAutoExecute( c, map );
-                //}
             }
         }
 

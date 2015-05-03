@@ -52,6 +52,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="ISqlItem.cs" />
+    <Compile Include="Parser\ExprExtensions.cs" />
     <Compile Include="Parser\Expr\SqlExprCollate.cs" />
     <Compile Include="Parser\Expr\SqlExprCast.cs" />
     <Compile Include="Parser\Expr\SqlExprStFunctionScalar.cs" />

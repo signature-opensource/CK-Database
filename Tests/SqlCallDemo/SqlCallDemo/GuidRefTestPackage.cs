@@ -28,6 +28,12 @@ namespace SqlCallDemo
         public abstract SqlCommand CmdGuidRefTest( bool replaceInAndOut, Guid inOnly, ref Guid inAndOut, out string textResult );
 
         /// <summary>
+        /// Nullable support: all value types can be nullable. 
+        /// </summary>
+        [SqlProcedure( "sGuidRefTest" )]
+        public abstract SqlCommand CmdGuidRefTest( Nullable<bool> replaceInAndOut, Nullable<Guid> inOnly, ref Nullable<Guid> inAndOut, out string textResult );
+
+        /// <summary>
         /// Output only parameters are optional. (They however actually appears in the SqlCommand's parameters in order to be able to call the procedure.) 
         /// </summary>
         [SqlProcedure( "sGuidRefTest" )]

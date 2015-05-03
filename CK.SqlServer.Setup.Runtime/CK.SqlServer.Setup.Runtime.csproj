@@ -87,7 +87,7 @@
     <Compile Include="SqlPackage\SqlPackageAttributeImpl.cs" />
     <Compile Include="SqlProcedureAttributeImpl.cs" />
     <Compile Include="SqlProcedureAttributeImpl.SqlCallContextInfo.cs" />
-    <Compile Include="SqlProcedureAttributeImpl.SqlParametersSetter.cs" />
+    <Compile Include="SqlProcedureAttributeImpl.SqlParametersHandler.cs" />
     <Compile Include="SqlProcedureAttributeImpl.WrapperCtorMatcher.cs" />
     <Compile Include="SqlTable\SqlTableAttributeImpl.cs" />
     <Compile Include="SqlTable\SqlTableItem.cs" />

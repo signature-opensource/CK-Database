@@ -50,6 +50,7 @@ namespace CK.SqlServer.Setup
         internal readonly static MethodInfo MParameterGetValue = TypeParameter.GetProperty( "Value" ).GetGetMethod();
         internal readonly static FieldInfo FieldDBNullValue = typeof( DBNull ).GetField( "Value", BindingFlags.Public | BindingFlags.Static );
 
+        internal readonly static Type[] ExecuteCallMethodParameters = new Type[] { typeof(string), TypeCommand };
 
         SqlObjectProtoItem _protoItem;
         string _physicalDB;

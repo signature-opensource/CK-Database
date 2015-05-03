@@ -16,11 +16,30 @@ namespace SqlCallDemo
         /// Calling the procedure: as long as the <see cref="ISqlCallContext"/> object exposes a public ExecuteNonQuery( string connectionString, SqlCommand cmd ) method,
         /// and the attribute specifies ExecuteCall = ExecutionType.ExecuteNonQuery, the call is executed.
         /// Here, we use the standard <see cref="SqlStandardCallContext"/>.
+        /// When mutiple ISqlCallContext parameters occur, the first one that can handle the call will be used.
         /// </summary>
+        [SqlProcedure( "sGuidRefTest", ExecuteCall = ExecutionType.ExecuteNonQuery )]
+        public abstract void GuidRefTest( SqlStandardCallContext ctx, bool replaceInAndOut, Guid inOnly, ref Guid inAndOut, out string textResult );
 
-        // TODO !
+        /// <summary>
+        /// When a returned type exists, its corresponds to the last output or input/output parameter with a compatible type.
+        /// </summary>
+        [SqlProcedure( "sGuidRefTest", ExecuteCall = ExecutionType.ExecuteNonQuery )]
+        public abstract string GuidRefTestReturn( SqlStandardCallContext ctx, bool replaceInAndOut, Guid inOnly, ref Guid inAndOut );
+
+        /// <summary>
+        /// Any output with a compatible type can be used (here the inAndOut unique identifier is returned). The returned value is always the 
+        /// one that corresponds to the last compatible type.
+        /// </summary>
+        [SqlProcedure( "sGuidRefTest", ExecuteCall = ExecutionType.ExecuteNonQuery )]
+        public abstract Guid GuidRefTestReturnInOut( SqlStandardCallContext ctx, bool replaceInAndOut, Guid inOnly, Guid inAndOut, out string textResult );
+
+        // TODO
+        ///// <summary>
+        ///// Any type that have a constructor with parameters that can be matched with output parameters can be returned: this works for Tuple.
+        ///// </summary>
         //[SqlProcedure( "sGuidRefTest", ExecuteCall = ExecutionType.ExecuteNonQuery )]
-        //public abstract void GuidRefTest( SqlStandardCallContext ctx, bool replaceInAndOut, Guid inOnly, ref Guid inAndOut, out string textResult );
+        //public abstract Tuple<string,Guid> GuidRefTestReturnTuple( SqlStandardCallContext ctx, bool replaceInAndOut, Guid inOnly, Guid inAndOut );
 
     }
 }

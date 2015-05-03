@@ -46,21 +46,5 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
                 Assert.That( c.Call(), Is.EqualTo( "21: Name2 - 2" ) );
             }
         }
-
-        static void CheckSqlCallContextAutoExecute( SqlManager c, IStObjMap map )
-        {
-            using( TestHelper.ConsoleMonitor.OpenTrace().Send( "CheckCommandWrapper" ) )
-            {
-                var package = map.Default.Obtain<Package>();
-                using( var ctx = new Package.BasicAuthContext() { ActorId = 21 } )
-                {
-                    package.CallAutoExecuteInt( ctx, 2, "Name2" );
-                    package.CallAutoExecuteVoid( ctx, 2, "Name2" );
-                    package.CallAutoExecuteObject( ctx, 2, "Name2" );
-                    int a = 0;
-                    package.CallAutoExecuteSqlDataReader( ctx, c.Connection.InternalConnection, 2, "Name2", out a );
-                }
-            }
-        }
     }
 }

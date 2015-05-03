@@ -76,6 +76,64 @@ namespace CK.SqlServer
             return w;
         }
 
+
+        static readonly Type[] _typesMap = new Type[] 
+        {
+            typeof(Int64), // SqlDbType.BigInt
+            typeof(byte[]), // SqlDbType.Binary
+            typeof(bool), // SqlDbType.Bit
+            typeof(string), // SqlDbType.Char
+            typeof(DateTime), // SqlDbType.DateTime
+            typeof(Decimal), // SqlDbType.Decimal
+            typeof(Double), // SqlDbType.Float
+            typeof(byte[]), // SqlDbType.Image
+            typeof(Int32), // SqlDbType.Int
+            typeof(Decimal), // SqlDbType.Money
+            typeof(string), // SqlDbType.NChar
+            typeof(string), // SqlDbType.NText
+            typeof(string), // SqlDbType.NVarChar
+            typeof(Single), // SqlDbType.Real
+            typeof(Guid), // SqlDbType.UniqueIdentifier
+            typeof(DateTime), // SqlDbType.SmallDateTime
+            typeof(Int16), // SqlDbType.SmallInt
+            typeof(Decimal), // SqlDbType.SmallMoney
+            typeof(string), // SqlDbType.Text
+            typeof(byte[]), // SqlDbType.Timestamp
+            typeof(byte), // SqlDbType.TinyInt
+            typeof(byte[]), // SqlDbType.VarBinary
+            typeof(string), // SqlDbType.VarChar
+            typeof(object), // SqlDbType.Variant
+            null,
+            typeof(string), // SqlDbType.Xml
+            null, null, null,
+            typeof(object), // SqlDbType.Udt
+            typeof(object), // SqlDbType.Structured
+            typeof(DateTime), // SqlDbType.Date
+            typeof(DateTime), // SqlDbType.Time
+            typeof(DateTime), // SqlDbType.DateTime2
+            typeof(DateTimeOffset), // SqlDbType.DateTimeOffset
+
+
+        };
+
+        /// <summary>
+        /// Simple association to a Type from a Sql type.
+        /// </summary>
+        /// <param name="tSql">Sql type.</param>
+        /// <returns>.net type to consider.</returns>
+        static public Type ToType( SqlDbType tSql )
+        {
+            Debug.Assert( _typesMap.Length == 35 );
+            return _typesMap[(int)tSql];
+        }
+
+
+        /// <summary>
+        /// Express a value of a given <see cref="SqlDbType"/> into a syntaxically compatible string. 
+        /// </summary>
+        /// <param name="v">Object for which a string representation must be obtained.</param>
+        /// <param name="dbType">Sql type.</param>
+        /// <returns>A sql string that represents the value.</returns>
         static public string SqlValue( object v, SqlDbType dbType )
         {
             if( v == null || v == DBNull.Value ) return "null";

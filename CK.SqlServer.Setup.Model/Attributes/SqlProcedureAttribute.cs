@@ -30,9 +30,6 @@ namespace CK.SqlServer.Setup
     public enum ExecutionType
     {
         Unknown,
-        ExecuteNonQuery,
-        ExecuteScalar,
-        ExecuteIndependentReader,
-        ExecuteXmlReader
+        ExecuteNonQuery
     }
 }

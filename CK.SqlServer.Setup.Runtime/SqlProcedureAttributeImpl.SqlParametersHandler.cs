@@ -1,6 +1,6 @@
 #region Proprietary License
 /*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Setup.Runtime\SqlProcedureAttributeImpl.SqlParametersSetter.cs) is part of CK-Database. 
+* This file (CK.SqlServer.Setup.Runtime\SqlProcedureAttributeImpl.SqlParametersHandler.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
 *-----------------------------------------------------------------------------*/
 #endregion
@@ -21,24 +21,29 @@ namespace CK.SqlServer.Setup
 {
     public partial class SqlProcedureAttributeImpl
     {
-        class SqlParametersSetter
+        /// <summary>
+        /// Manages sql parameters thanks to <see cref="SqlParamHandler"/> objects that are built on <see cref="SqlExprParameter"/> objects
+        /// and can be associated to <see cref="ParameterInfo"/>.
+        /// </summary>
+        class SqlParametersHandler
         {
-            List<Setter> _params;
+            readonly List<SqlParamHandler> _params;
 
-            public class Setter
+            public class SqlParamHandler
             {
-                readonly SqlParametersSetter _holder;
+                readonly SqlParametersHandler _holder;
+                
                 public readonly SqlExprParameter SqlExprParam;
                 // ParameterName without the '@' prefix char.
                 public readonly string SqlParameterName;
-
                 int _index;
+
                 ParameterInfo _methodParam;
                 SqlCallContextInfo.Property _ctxProp;
                 bool _isIgnoredOutputParameter;
                 bool _mapped;
 
-                public Setter( SqlParametersSetter holder, SqlExprParameter sP, int index )
+                public SqlParamHandler( SqlParametersHandler holder, SqlExprParameter sP, int index )
                 {
                     _holder = holder;
                     SqlExprParam = sP;
@@ -47,9 +52,20 @@ namespace CK.SqlServer.Setup
                     _index = index;
                 }
 
+                /// <summary>
+                /// Gets whether this Sql parameter has a corresponding method parameter or a property in one of the ISqlCallContext objects 
+                /// or is an ignored output.
+                /// </summary>
                 public bool IsMapped
                 {
                     get { return _mapped; }
+                }
+
+                public void SetParameterMapping( SqlCallContextInfo.Property prop )
+                {
+                    Debug.Assert( !IsMapped );
+                    _mapped = true;
+                    _ctxProp = prop;
                 }
 
                 public bool SetParameterMapping( ParameterInfo mP, IActivityMonitor monitor )
@@ -113,13 +129,6 @@ namespace CK.SqlServer.Setup
                     return nbError;
                 }
 
-                public void SetParameterMapping( SqlCallContextInfo.Property prop )
-                {
-                    Debug.Assert( !IsMapped );
-                    _mapped = true;
-                    _ctxProp = prop;
-                }
-
                 public void SetMappingToIgnoredOutput()
                 {
                     Debug.Assert( !IsMapped );
@@ -130,6 +139,9 @@ namespace CK.SqlServer.Setup
                 public void RemoveParameterForOptionalDefaultValue( ILGenerator g, LocalBuilder locParams )
                 {
                     Debug.Assert( !IsMapped );
+                    Debug.Assert( SqlExprParam.DefaultValue != null );
+                    Debug.Assert( SqlExprParam.IsInput, "Input our input/output." );
+
                     _mapped = true;
                     // Removing the optional parameter.
                     g.LdLoc( locParams );
@@ -151,15 +163,15 @@ namespace CK.SqlServer.Setup
                 /// - OR the method does not declare the Sql Parameter that is a pure output parameter,
                 /// - OR the method parameter is out.
                 /// </summary>
-                bool SkipEmitSetValue
+                bool SkipEmitSetSqlParameterValue
                 {
                     get { return _index == -1 || _isIgnoredOutputParameter || (_methodParam != null && _methodParam.IsOut); }
                 }
 
-                internal void EmitSetParameter( ILGenerator g, LocalBuilder locParams )
+                internal void EmitSetSqlParameterValue( ILGenerator g, LocalBuilder locParameterCollection )
                 {
-                    if( SkipEmitSetValue ) return;
-                    g.LdLoc( locParams );
+                    if( SkipEmitSetSqlParameterValue ) return;
+                    g.LdLoc( locParameterCollection );
                     g.LdInt32( _index );
                     g.Emit( OpCodes.Call, SqlObjectItem.MParameterCollectionGetParameter );
                     Label notNull = g.DefineLabel();
@@ -182,35 +194,38 @@ namespace CK.SqlServer.Setup
                     g.Emit( OpCodes.Call, SqlObjectItem.MParameterSetValue );
                 }
 
-                internal void EmitSetFromParameter( ILGenerator g, LocalBuilder locParams )
+                bool SkipEmitSetRefOrRefParameter
                 {
-                    //TODO: PLEASE CHECK
-                    if( _index == -1 || _isIgnoredOutputParameter ) return;
-                    if( _methodParam != null ) g.LdArgBox( _methodParam );
-                    else
-                    {
-                        Debug.Assert( _ctxProp != null );
-                        g.LdArgBox( _ctxProp.Parameter );
-                        g.Emit( OpCodes.Callvirt, _ctxProp.Prop.GetGetMethod() );
-                        if( _ctxProp.Prop.PropertyType.IsGenericParameter || _ctxProp.Prop.PropertyType.IsValueType )
-                        {
-                            g.Emit( OpCodes.Box, _ctxProp.Prop.PropertyType );
-                        }
-                    }
-                    g.LdLoc( locParams );
+                    get { return _index == -1 || _isIgnoredOutputParameter || _methodParam == null || !_methodParam.ParameterType.IsByRef; }
+                }
+
+                internal void EmitSetRefOrOutParameter( ILGenerator g, LocalBuilder locParameterCollection )
+                {
+                    if( SkipEmitSetRefOrRefParameter ) return;
+
+                    g.LdArg( _methodParam.Position + 1 );
+                    g.LdLoc( locParameterCollection );
                     g.LdInt32( _index );
                     g.Emit( OpCodes.Call, SqlObjectItem.MParameterCollectionGetParameter );
                     g.Emit( OpCodes.Call, SqlObjectItem.MParameterGetValue );
-                    g.Emit( OpCodes.Stind_Ref );
+                    if( _methodParam.ParameterType.IsValueType )
+                    {
+                        g.Emit( OpCodes.Unbox_Any, _methodParam.ParameterType );
+                        g.Emit( OpCodes.Stobj, _methodParam.ParameterType );
+                    }
+                    else
+                    {
+                        g.Emit( OpCodes.Stind_Ref );
+                    }
                 }
             }
 
-            public SqlParametersSetter( SqlExprParameterList parameters )
+            public SqlParametersHandler( SqlExprParameterList parameters )
             {
-                _params = parameters.Select( ( p, idx ) => new Setter( this, p, idx ) ).ToList();
+                _params = parameters.Select( ( p, idx ) => new SqlParamHandler( this, p, idx ) ).ToList();
             }
 
-            public IReadOnlyList<Setter> Setters
+            public IReadOnlyList<SqlParamHandler> Handlers
             {
                 get { return _params; }
             }
@@ -223,6 +238,26 @@ namespace CK.SqlServer.Setup
                     ++iStart;
                 }
                 return -1;
+            }
+
+            internal void EmitReturn( ILGenerator g, LocalBuilder locParameterCollection, Type returnType )
+            {
+                for( int i = _params.Count - 1; i >= 0; --i )
+                {
+                    var p = _params[i];
+                    if( p.SqlExprParam.IsOutput && p.SqlExprParam.Variable.TypeDecl.ActualType.IsTypeCompatible( returnType ) )
+                    {
+                        g.LdLoc( locParameterCollection );
+                        g.LdInt32( i );
+                        g.Emit( OpCodes.Call, SqlObjectItem.MParameterCollectionGetParameter );
+                        g.Emit( OpCodes.Call, SqlObjectItem.MParameterGetValue );
+                        if( returnType.IsValueType )
+                        {
+                            g.Emit( OpCodes.Unbox_Any, returnType );
+                        }
+                    }
+                }
+
             }
         }
 

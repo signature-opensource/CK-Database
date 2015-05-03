@@ -22,15 +22,27 @@ namespace CK.SqlServer.Setup
 {
     public partial class SqlProcedureAttributeImpl
     {
+        [Flags]
         enum GenerationType
         {
-            ReturnSqlCommand,
-            ByRefSqlCommand,
-            ReturnWrapper,
-            ReturnExecutionValue
+            ReturnSqlCommand = 1,
+            ByRefSqlCommand = 2,
+            ReturnWrapper = 3,
+            IsCall = 4,
+            ExecuteNonQuery = IsCall | 0
         }
 
-        private bool GenerateCreateSqlCommand( GenerationType gType, ExecutionType eType, IActivityMonitor monitor, MethodInfo createCommand, SqlExprMultiIdentifier sqlName, SqlExprParameterList sqlParameters, MethodInfo m, ParameterInfo[] mParameters, TypeBuilder tB, bool isVirtual, bool doExecute, bool hasRefSqlCommand )
+        private bool GenerateCreateSqlCommand( 
+            GenerationType gType, 
+            IActivityMonitor monitor, 
+            MethodInfo createCommand, 
+            SqlExprMultiIdentifier sqlName, 
+            SqlExprParameterList sqlParameters, 
+            MethodInfo m, 
+            ParameterInfo[] mParameters, 
+            TypeBuilder tB, 
+            bool isVirtual, 
+            bool hasRefSqlCommand )
         {
             MethodAttributes mA = m.Attributes & ~(MethodAttributes.Abstract | MethodAttributes.VtableLayoutMask);
             if( isVirtual ) mA |= MethodAttributes.Virtual;
@@ -89,7 +101,7 @@ namespace CK.SqlServer.Setup
             // Analyses parameters and generate removing of optional parameters if C# does not use them.
             int nbError = 0;
 
-            SqlParametersSetter setters = new SqlParametersSetter( sqlParameters );
+            SqlParametersHandler sqlParamHandlers = new SqlParametersHandler( sqlParameters );
 
             // We directly manage the first occurrence of a SqlConnection and a SqlTransaction parameters by setting
             // them on the SqlCommand (whatever the generation type is).
@@ -99,7 +111,6 @@ namespace CK.SqlServer.Setup
             // - Method parameters that are SqlCallContext objects are registered in order to consider their properties as method parameters. 
             ParameterInfo firstSqlConnectionParameter = null;
             ParameterInfo firstSqlTransactionParameter = null;
-            ParameterInfo firstSqlCallContextParameter = null;
             List<ParameterInfo> extraMethodParameters = gType == GenerationType.ReturnWrapper ? new List<ParameterInfo>() : null;
             SqlCallContextInfo sqlCallContexts = null;
 
@@ -107,7 +118,7 @@ namespace CK.SqlServer.Setup
             for( int iM = mParameterFirstIndex; iM < mParameters.Length; ++iM )
             {
                 ParameterInfo mP = mParameters[iM];
-                int iSFound = setters.IndexOf( iS, mP );
+                int iSFound = sqlParamHandlers.IndexOf( iS, mP );
                 if( iSFound < 0 )
                 {
                     Debug.Assert( SqlObjectItem.TypeConnection.IsSealed && SqlObjectItem.TypeTransaction.IsSealed );
@@ -131,8 +142,7 @@ namespace CK.SqlServer.Setup
                         // in order to consider its properties as method parameters.
                         if( SqlCallContextInfo.IsSqlCallContext( mP ) )
                         {
-                            firstSqlCallContextParameter = mP;
-                            if( sqlCallContexts == null ) sqlCallContexts = new SqlCallContextInfo();
+                            if( sqlCallContexts == null ) sqlCallContexts = new SqlCallContextInfo( gType );
                             if( !sqlCallContexts.Add( mP, monitor ) ) ++nbError;
                         }
                         else if( gType != GenerationType.ReturnWrapper )
@@ -146,13 +156,11 @@ namespace CK.SqlServer.Setup
                 }
                 else
                 {
-                    var set = setters.Setters[iSFound];
+                    var set = sqlParamHandlers.Handlers[iSFound];
                     if( !set.SetParameterMapping( mP, monitor ) ) ++nbError;
                     iS = iSFound + 1;
                 }
             }
-
-            Debug.Assert( gType != GenerationType.ReturnExecutionValue || sqlCallContexts != null );
 
             if( nbError == 0 )
             {
@@ -160,18 +168,20 @@ namespace CK.SqlServer.Setup
                 // - be purely output
                 // - OR be found as a property of one SqlCallContext object,
                 // - OR have a default value.
-                foreach( var setter in setters.Setters )
+                foreach( var setter in sqlParamHandlers.Handlers )
                 {
                     if( !setter.IsMapped )
                     {
                         var sqlP = setter.SqlExprParam;
                         if( !sqlP.IsInput )
                         {
+                            // Pure output.
                             monitor.Info().Send( "Method '{0}' does not declare the Sql Parameter '{1}'. Since it is an output parameter, it will be ignored.", m.Name, sqlP.ToStringClean() );
                             setter.SetMappingToIgnoredOutput();
                         }
                         else if( sqlCallContexts == null || !sqlCallContexts.FindMatchingProperty( setter, monitor ) )
                         {
+                            // Input or input/output.
                             if( sqlP.DefaultValue == null )
                             {
                                 monitor.Error().Send( "Sql parameter '{0}' in procedure parameters has no default value. The method '{1}' must declare it.", sqlP.Variable.Identifier.Name, m.Name );
@@ -195,51 +205,9 @@ namespace CK.SqlServer.Setup
                 {
                     SetConnectionAndTransactionProperties( g, locCmd, firstSqlConnectionParameter, firstSqlTransactionParameter );
                 }
-
-                foreach( var setter in setters.Setters )
+                foreach( var setter in sqlParamHandlers.Handlers )
                 {
-                    setter.EmitSetParameter( g, locParams );
-                }
-            }
-
-            MethodInfo getProviderMethodInfo = null;
-            if( doExecute )
-            {
-                if( eType == ExecutionType.ExecuteXmlReader )
-                {
-                    monitor.Error().Send( "Actually, auto ExecuteXmlReader call was unsupported. It's SqlProcedure with ExecuteAs set with ExecutionType.ExecuteXmlReader" );
-                    ++nbError;
-                }
-
-                //todo: if sqlCallContext wasn't interface type
-                getProviderMethodInfo = ReflectionHelper.GetFlattenMethods( firstSqlCallContextParameter.ParameterType ).First( mi => mi.Name == "GetProvider" );
-
-                Debug.Assert( getProviderMethodInfo != null );
-
-                g.LdArg( firstSqlCallContextParameter.Position + 1 );
-                g.Emit( OpCodes.Ldarg_0 );
-                g.Emit( OpCodes.Call, SqlObjectItem.MGetDatabase );
-                g.Emit( OpCodes.Call, SqlObjectItem.MDatabaseGetConnectionString );
-                g.Emit( OpCodes.Call, getProviderMethodInfo );
-
-                g.LdLoc( locCmd );
-                var execute = SelectExecuteMethod( gType, eType, getProviderMethodInfo.ReturnType, m.ReturnType );
-                if( execute != null )
-                {
-                    g.Emit( OpCodes.Call, execute );
-
-                    foreach( var setter in setters.Setters )
-                    {
-                        if( setter.SqlExprParam.IsOutput )
-                        {
-                            setter.EmitSetFromParameter( g, locParams );
-                        }
-                    }
-                }
-                else
-                {
-                    monitor.Error().Send( "Cannot found {1} signature on SqlConnectionProvide, that return {0} and accept only one parameter SqlCommand type.", m.ReturnType, eType.ToString() );
-                    ++nbError;
+                    setter.EmitSetSqlParameterValue( g, locParams );
                 }
             }
 
@@ -254,20 +222,8 @@ namespace CK.SqlServer.Setup
             {
                 g.LdLoc( locCmd );
             }
-            else if( gType == GenerationType.ReturnExecutionValue )
-            {
-                if( eType == ExecutionType.ExecuteNonQuery && m.ReturnType == typeof( void ) )
-                {
-                    g.Emit( OpCodes.Pop );
-                }
-                else
-                {
-                    //todo if return wrapper, contruct wrapper with execute return value
-                }
-            }
             else if( gType == GenerationType.ReturnWrapper )
             {
-                if( doExecute ) g.Emit( OpCodes.Pop );
                 var availableCtors = m.ReturnType.GetConstructors()
                                                     .Select( ctor => new WrapperCtorMatcher( ctor, extraMethodParameters, m.DeclaringType ) )
                                                     .Where( matcher => matcher.HasSqlCommand && matcher.Parameters.Count >= 1 + extraMethodParameters.Count )
@@ -296,7 +252,29 @@ namespace CK.SqlServer.Setup
                         g.Emit( OpCodes.Newobj, matcher.Ctor );
                     }
                 }
-
+            }
+            else if( (gType & GenerationType.IsCall) != 0 )
+            {
+                if( sqlCallContexts == null || sqlCallContexts.SelectedCallProviderParameter == null )
+                {
+                    monitor.Error().Send( "When calling with {0}, at least one ISqlCallContext object with a public {0} method must occur in the parameters.", gType );
+                    ++nbError;
+                }
+                else
+                {
+                    if( gType == GenerationType.ExecuteNonQuery )
+                    {
+                        sqlCallContexts.GenerateExecuteNonQueryCall( g, locCmd );
+                    }
+                    foreach( var h in sqlParamHandlers.Handlers )
+                    {
+                        h.EmitSetRefOrOutParameter( g, locParams );
+                    }
+                    if( m.ReturnType != typeof(void) )
+                    {
+                        sqlParamHandlers.EmitReturn( g, locParams, m.ReturnType ); 
+                    }
+                }
             }
             if( nbError != 0 )
             {
@@ -320,7 +298,7 @@ namespace CK.SqlServer.Setup
                                                            .Where( mi => mi.Name == eType.ToString()
                                                                && mi.GetParameters().Count() == 1
                                                                && mi.GetParameters().Any( pi => pi.ParameterType == SqlObjectItem.TypeCommand ) );
-            if( gType == GenerationType.ReturnExecutionValue )
+            if( gType == GenerationType.ExecuteNonQuery )
             {
                 if( eType == ExecutionType.ExecuteNonQuery )
                 {
@@ -485,9 +463,11 @@ namespace CK.SqlServer.Setup
 
         static bool CheckParameterType( Type t, SqlExprParameter p, IActivityMonitor monitor )
         {
-            //TODO: Check .Net type against: p.Variable.TypeDecl.ActualType.DbType 
-            return true;
+            if( p.Variable.TypeDecl.ActualType.IsTypeCompatible( t ) ) return true;
+            monitor.Error().Send( "Sql parameter '{0}' is not compliant with Type {1}.", p.ToStringClean(), t.Name );
+            return false;
         }
+
 
     }
 

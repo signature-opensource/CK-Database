@@ -48,6 +48,39 @@ namespace SqlCallDemo.Tests
         }
 
         [Test]
+        public void all_value_types_parameters_can_be_nullable()
+        {
+            var p = TestHelper.StObjMap.Default.Obtain<GuidRefTestPackage>();
+            Nullable<bool> replaceInAndOut = true;
+            Nullable<Guid> inOnly = null;
+            Nullable<Guid> inOut = null;
+            string result;
+            SqlCommand cmd = p.CmdGuidRefTest( replaceInAndOut, inOnly, ref inOut, out result );
+            Assert.That( cmd.Parameters.Count, Is.EqualTo( 4 ) );
+
+            Assert.That( cmd.Parameters[0].ParameterName, Is.EqualTo( "@ReplaceInAndOut" ) );
+            Assert.That( cmd.Parameters[0].Direction, Is.EqualTo( ParameterDirection.Input ) );
+            Assert.That( cmd.Parameters[0].Value, Is.EqualTo( true ) );
+
+            Assert.That( cmd.Parameters[1].ParameterName, Is.EqualTo( "@InOnly" ) );
+            Assert.That( cmd.Parameters[1].Direction, Is.EqualTo( ParameterDirection.Input ) );
+            Assert.That( cmd.Parameters[1].Value, Is.EqualTo( Guid1 ) );
+
+            Assert.That( cmd.Parameters[2].ParameterName, Is.EqualTo( "@InAndOut" ) );
+            Assert.That( cmd.Parameters[2].Direction, Is.EqualTo( ParameterDirection.InputOutput ) );
+            Assert.That( cmd.Parameters[2].Value, Is.EqualTo( Guid2 ) );
+
+            Assert.That( cmd.Parameters[3].ParameterName, Is.EqualTo( "@TextResult" ) );
+            Assert.That( cmd.Parameters[3].Direction, Is.EqualTo( ParameterDirection.Output ) );
+            Assert.That( cmd.Parameters[3].Value, Is.Null );
+
+            p.Database.ExecuteNonQuery( cmd );
+            Assert.That( cmd.Parameters[2].Value, Is.Not.Null.And.Not.EqualTo( Guid.Empty ), "Since ReplaceInAndOut was true." );
+            Assert.That( cmd.Parameters[3].Value, Is.EqualTo( "@InOnly is null, @InAndOut is null." ) );
+
+        }
+
+        [Test]
         public void output_only_parameters_are_optionals_in_signature_but_such_parameters_have_to_be_in_the_SqlCommand_to_be_able_to_execute_it()
         {
             var p = TestHelper.StObjMap.Default.Obtain<GuidRefTestPackage>();
