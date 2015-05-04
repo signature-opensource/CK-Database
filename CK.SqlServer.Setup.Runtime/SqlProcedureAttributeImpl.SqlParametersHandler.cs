@@ -32,7 +32,7 @@ namespace CK.SqlServer.Setup
             public class SqlParamHandler
             {
                 readonly SqlParametersHandler _holder;
-                
+
                 public readonly SqlExprParameter SqlExprParam;
                 // ParameterName without the '@' prefix char.
                 public readonly string SqlParameterName;
@@ -168,29 +168,53 @@ namespace CK.SqlServer.Setup
                     get { return _index == -1 || _isIgnoredOutputParameter || (_methodParam != null && _methodParam.IsOut); }
                 }
 
+                void LdObjectToSet( ILGenerator g )
+                {
+                    Type typeToSet;
+                    if( _methodParam != null )
+                    {
+                        typeToSet = _methodParam.ParameterType;
+                        g.LdArg( _methodParam.Position + 1 );
+                        if( typeToSet.IsByRef )
+                        {
+                            typeToSet = typeToSet.GetElementType();
+                            if( typeToSet.IsValueType )
+                            {
+                                g.Emit( OpCodes.Ldobj, typeToSet );
+                            }
+                        }
+                    }
+                    else 
+                    {
+                        Debug.Assert( _ctxProp != null );
+                        g.LdArg( _ctxProp.Parameter.Position + 1 );
+                        g.Emit( OpCodes.Callvirt, _ctxProp.Prop.GetGetMethod() );
+                        typeToSet = _ctxProp.Prop.PropertyType;
+                    }
+                    // The value is on the stack: it may be a value or reference type of type typeToSet.
+                    // If it is null or a Nullable<T> that has no value, we must transform it into DBNull.Value.
+                    Label objectIsAvailable = g.DefineLabel();
+                    if( typeToSet.IsValueType )
+                    {
+                        // Boxinf a Nullable<T> is handled at the CLR level: if Nullable<T>.HasValue is false,
+                        // a null reference is left on the stack.
+                        g.Emit( OpCodes.Box, typeToSet );
+                    }
+                    g.Emit( OpCodes.Dup );
+                    g.Emit( OpCodes.Brtrue_S, objectIsAvailable );
+                    g.Emit( OpCodes.Pop );
+                    g.Emit( OpCodes.Ldsfld, SqlObjectItem.FieldDBNullValue );
+                    g.MarkLabel( objectIsAvailable );
+                }
+
                 internal void EmitSetSqlParameterValue( ILGenerator g, LocalBuilder locParameterCollection )
                 {
                     if( SkipEmitSetSqlParameterValue ) return;
                     g.LdLoc( locParameterCollection );
                     g.LdInt32( _index );
                     g.Emit( OpCodes.Call, SqlObjectItem.MParameterCollectionGetParameter );
-                    Label notNull = g.DefineLabel();
-                    if( _methodParam != null ) g.LdArgBox( _methodParam );
-                    else
-                    {
-                        Debug.Assert( _ctxProp != null );
-                        g.LdArgBox( _ctxProp.Parameter );
-                        g.Emit( OpCodes.Callvirt, _ctxProp.Prop.GetGetMethod() );
-                        if( _ctxProp.Prop.PropertyType.IsGenericParameter || _ctxProp.Prop.PropertyType.IsValueType )
-                        {
-                            g.Emit( OpCodes.Box, _ctxProp.Prop.PropertyType );
-                        }
-                    }
-                    g.Emit( OpCodes.Dup );
-                    g.Emit( OpCodes.Brtrue_S, notNull );
-                    g.Emit( OpCodes.Pop );
-                    g.Emit( OpCodes.Ldsfld, SqlObjectItem.FieldDBNullValue );
-                    g.MarkLabel( notNull );
+                    // Load object on the stack.
+                    LdObjectToSet( g );
                     g.Emit( OpCodes.Call, SqlObjectItem.MParameterSetValue );
                 }
 
@@ -238,7 +262,7 @@ namespace CK.SqlServer.Setup
                     ++iStart;
                 }
                 return -1;
-            }
+            } 
 
             internal void EmitReturn( ILGenerator g, LocalBuilder locParameterCollection, Type returnType )
             {

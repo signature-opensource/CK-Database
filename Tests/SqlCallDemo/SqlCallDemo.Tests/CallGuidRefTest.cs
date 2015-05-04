@@ -64,11 +64,11 @@ namespace SqlCallDemo.Tests
 
             Assert.That( cmd.Parameters[1].ParameterName, Is.EqualTo( "@InOnly" ) );
             Assert.That( cmd.Parameters[1].Direction, Is.EqualTo( ParameterDirection.Input ) );
-            Assert.That( cmd.Parameters[1].Value, Is.EqualTo( Guid1 ) );
+            Assert.That( cmd.Parameters[1].Value, Is.EqualTo( DBNull.Value ) );
 
             Assert.That( cmd.Parameters[2].ParameterName, Is.EqualTo( "@InAndOut" ) );
             Assert.That( cmd.Parameters[2].Direction, Is.EqualTo( ParameterDirection.InputOutput ) );
-            Assert.That( cmd.Parameters[2].Value, Is.EqualTo( Guid2 ) );
+            Assert.That( cmd.Parameters[2].Value, Is.EqualTo( DBNull.Value ) );
 
             Assert.That( cmd.Parameters[3].ParameterName, Is.EqualTo( "@TextResult" ) );
             Assert.That( cmd.Parameters[3].Direction, Is.EqualTo( ParameterDirection.Output ) );
