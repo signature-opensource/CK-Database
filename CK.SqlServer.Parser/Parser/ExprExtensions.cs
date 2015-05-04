@@ -12,6 +12,8 @@ namespace CK.SqlServer.Parser
         static public bool IsTypeCompatible( this ISqlExprUnifiedTypeDecl @this, Type t )
         {
             if( t.IsByRef ) t = t.GetElementType();
+            Type underlyingType = Nullable.GetUnderlyingType( t );
+            if( underlyingType != null ) t = underlyingType;
             SqlDbType sql = @this.DbType;
             if( sql == SqlDbType.Char || sql == SqlDbType.NChar )
             {
