@@ -26,7 +26,7 @@ namespace CK.SqlServer.Parser
             }
             else
             {
-                if( t == SqlHelper.ToType( sql ) ) return true;
+                if( t == SqlHelper.FromSqlDbTypeToNetType( sql ) ) return true;
             }
             return false;
         }

@@ -6,11 +6,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CK.Core;
+using CK.SqlServer;
 using CK.SqlServer.Setup;
 using NUnit.Framework;
 
 namespace SqlCallDemo.Tests
 {
+
+
     [TestFixture]
     public partial class CallGuidRefTest
     {
@@ -54,6 +57,25 @@ namespace SqlCallDemo.Tests
                 Assert.That( result, Is.EqualTo( "@InOnly is not null, @InAndOut is not null." ) );
             }
         }
+
+
+        public class NonStandardSqlCallContext : SqlStandardCallContext, INonStandardSqlCallContextSpecialized
+        {
+        }   
+    
+        [Test]
+        public void calling_a_ExecuteNonQuery_method_with_a_non_standard_SqlCallContext_with_a_return_value()
+        {
+            var p = TestHelper.StObjMap.Default.Obtain<GuidRefTestPackage>();
+            Guid inOut = Guid2;
+            using( var ctx = new NonStandardSqlCallContext() )
+            {
+                string result = p.GuidRefTestReturnWithInterfaceContext( ctx, true, Guid1, ref inOut );
+                Assert.That( inOut, Is.Not.EqualTo( Guid2 ), "Since ReplaceInAndOut was true." );
+                Assert.That( result, Is.EqualTo( "@InOnly is not null, @InAndOut is not null." ) );
+            }
+        }
+
 
     }
 }

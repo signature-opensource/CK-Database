@@ -196,7 +196,7 @@ namespace CK.SqlServer.Setup
                     Label objectIsAvailable = g.DefineLabel();
                     if( typeToSet.IsValueType )
                     {
-                        // Boxinf a Nullable<T> is handled at the CLR level: if Nullable<T>.HasValue is false,
+                        // Boxing a Nullable<T> is handled at the CLR level: if Nullable<T>.HasValue is false,
                         // a null reference is left on the stack.
                         g.Emit( OpCodes.Box, typeToSet );
                     }
@@ -266,22 +266,32 @@ namespace CK.SqlServer.Setup
 
             internal void EmitReturn( ILGenerator g, LocalBuilder locParameterCollection, Type returnType )
             {
-                for( int i = _params.Count - 1; i >= 0; --i )
+                if( IsSimpleReturnType( returnType ) )
                 {
-                    var p = _params[i];
-                    if( p.SqlExprParam.IsOutput && p.SqlExprParam.Variable.TypeDecl.ActualType.IsTypeCompatible( returnType ) )
+                    // Look for the first last (reverse order) parameter for which the returned type is compatible.
+                    for( int i = _params.Count - 1; i >= 0; --i )
                     {
-                        g.LdLoc( locParameterCollection );
-                        g.LdInt32( i );
-                        g.Emit( OpCodes.Call, SqlObjectItem.MParameterCollectionGetParameter );
-                        g.Emit( OpCodes.Call, SqlObjectItem.MParameterGetValue );
-                        if( returnType.IsValueType )
+                        var p = _params[i];
+                        if( p.SqlExprParam.IsOutput && p.SqlExprParam.Variable.TypeDecl.ActualType.IsTypeCompatible( returnType ) )
                         {
-                            g.Emit( OpCodes.Unbox_Any, returnType );
+                            g.LdLoc( locParameterCollection );
+                            g.LdInt32( i );
+                            g.Emit( OpCodes.Call, SqlObjectItem.MParameterCollectionGetParameter );
+                            g.Emit( OpCodes.Call, SqlObjectItem.MParameterGetValue );
+                            if( returnType.IsValueType )
+                            {
+                                g.Emit( OpCodes.Unbox_Any, returnType );
+                            }
                         }
                     }
                 }
 
+
+            }
+
+            static bool IsSimpleReturnType( Type returnType )
+            {
+                return SqlHelper.IsNetTypeMapped( returnType );
             }
         }
 

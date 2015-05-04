@@ -10,6 +10,17 @@ using CK.SqlServer.Setup;
 
 namespace SqlCallDemo
 {
+
+    public interface INonStandardSqlCallContext : ISqlCallContext
+    {
+        void ExecuteNonQuery( string connectionString, SqlCommand cmd );
+    }
+
+    public interface INonStandardSqlCallContextSpecialized : INonStandardSqlCallContext
+    {
+        void ExecuteNonQuery( string connectionString, SqlCommand cmd );
+    }
+
     public abstract partial class GuidRefTestPackage
     {
         /// <summary>
@@ -26,6 +37,13 @@ namespace SqlCallDemo
         /// </summary>
         [SqlProcedure( "sGuidRefTest", ExecuteCall = ExecutionType.ExecuteNonQuery )]
         public abstract string GuidRefTestReturn( SqlStandardCallContext ctx, bool replaceInAndOut, Guid inOnly, ref Guid inAndOut );
+
+        /// <summary>
+        /// Calling with an interface that exposes the ExecuteNonQuery is possible (even a specialized one).
+        /// </summary>
+        [SqlProcedure( "sGuidRefTest", ExecuteCall = ExecutionType.ExecuteNonQuery )]
+        public abstract string GuidRefTestReturnWithInterfaceContext( INonStandardSqlCallContextSpecialized ctx, bool replaceInAndOut, Guid inOnly, ref Guid inAndOut );
+
 
         /// <summary>
         /// Any output with a compatible type can be used (here the inAndOut unique identifier is returned). The returned value is always the 

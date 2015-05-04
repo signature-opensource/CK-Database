@@ -96,7 +96,6 @@ namespace CK.Setup
         {
             List<GenericItemSetupDriver> _drivers;
             DriverBaseList _baseList;
-            SetupCoreEngine _center;
 
             public DriverList( DriverBaseList l )
             {

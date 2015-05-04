@@ -112,8 +112,6 @@ namespace CK.SqlServer
             typeof(DateTime), // SqlDbType.Time
             typeof(DateTime), // SqlDbType.DateTime2
             typeof(DateTimeOffset), // SqlDbType.DateTimeOffset
-
-
         };
 
         /// <summary>
@@ -121,10 +119,27 @@ namespace CK.SqlServer
         /// </summary>
         /// <param name="tSql">Sql type.</param>
         /// <returns>.net type to consider.</returns>
-        static public Type ToType( SqlDbType tSql )
+        static public Type FromSqlDbTypeToNetType( SqlDbType tSql )
         {
             Debug.Assert( _typesMap.Length == 35 );
             return _typesMap[(int)tSql];
+        }
+
+        /// <summary>
+        /// Tests whether a type has a corresponding <see cref="SqlDbType"/>. 
+        /// It is all the types that are mapped by <see cref="FromSqlDbTypeToNetType"/> except <see cref="Object"/> plus <see cref="Char"/>
+        /// and any <see cref="Nullable{T}"/> where T is mapped.
+        /// </summary>
+        /// <param name="t">Type to challenge.</param>
+        /// <returns>True if this type can be mapped to a basic Sql type.</returns>
+        static public bool IsNetTypeMapped( Type t )
+        {
+            if( t == null ) throw new ArgumentNullException();
+            if( t == typeof( object ) ) return false;
+            var nT = Nullable.GetUnderlyingType( t );
+            if( nT != null ) t = nT;
+            if( t == typeof( char ) ) return true;
+            return _typesMap.Any( m => m == t );
         }
 
 
