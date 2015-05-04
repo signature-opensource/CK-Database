@@ -84,13 +84,18 @@ namespace CK.SqlServer.Setup
                     monitor.Error().Send( "Resource '{0}' of '{2}' contains the definition of '{1}'. Names must match.", fileName, protoObject.ContextLocName.Name, packageItem.FullName );
                     protoObject = null;
                 }
+                else if( String.IsNullOrEmpty( protoObject.ContextLocName.Schema ) )
+                {
+                    protoObject.ContextLocName.Schema = name.Schema;
+                    monitor.Trace().Send( "{0} '{1}' does not specify a schema: it will use '{2}' schema.", protoObject.ItemType, protoObject.ContextLocName.Name, name.Schema );
+                }
                 else if( protoObject.ContextLocName.Schema.Length > 0 && protoObject.ContextLocName.Schema != name.Schema )
                 {
                     monitor.Error().Send( "Resource '{0}' of '{4}' defines the {1} in the schema '{2}' instead of '{3}'.", fileName, protoObject.ItemType, protoObject.ContextLocName.Schema, name.Schema, packageItem.FullName );
                     protoObject = null;
                 }
-                else monitor.Trace().Send( "Loaded {0} '{1}' of '{2}'.", protoObject.ItemType, protoObject.ContextLocName.Name, packageItem.FullName );
             }
+            if( protoObject != null ) monitor.Trace().Send( "Loaded {0} '{1}' of '{2}'.", protoObject.ItemType, protoObject.ContextLocName.Name, packageItem.FullName );
             return protoObject;
         }
 
