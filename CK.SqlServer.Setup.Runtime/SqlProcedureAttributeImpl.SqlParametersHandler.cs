@@ -32,7 +32,7 @@ namespace CK.SqlServer.Setup
             public class SqlParamHandler
             {
                 readonly SqlParametersHandler _holder;
-                
+
                 public readonly SqlExprParameter SqlExprParam;
                 // ParameterName without the '@' prefix char.
                 public readonly string SqlParameterName;
@@ -168,14 +168,13 @@ namespace CK.SqlServer.Setup
                     get { return _index == -1 || _isIgnoredOutputParameter || (_methodParam != null && _methodParam.IsOut); }
                 }
 
-                internal void EmitSetSqlParameterValue( ILGenerator g, LocalBuilder locParameterCollection )
+                private Type LdParameterType( ILGenerator g )
                 {
-                    if( SkipEmitSetSqlParameterValue ) return;
-                    g.LdLoc( locParameterCollection );
-                    g.LdInt32( _index );
-                    g.Emit( OpCodes.Call, SqlObjectItem.MParameterCollectionGetParameter );
-                    Label notNull = g.DefineLabel();
-                    if( _methodParam != null ) g.LdArgBox( _methodParam );
+                    if( _methodParam != null )
+                    {
+                        g.LdArgBox( _methodParam );
+                        return _methodParam.ParameterType;
+                    }
                     else
                     {
                         Debug.Assert( _ctxProp != null );
@@ -185,11 +184,48 @@ namespace CK.SqlServer.Setup
                         {
                             g.Emit( OpCodes.Box, _ctxProp.Prop.PropertyType );
                         }
+                        return _ctxProp.Parameter.ParameterType;
                     }
-                    g.Emit( OpCodes.Dup );
-                    g.Emit( OpCodes.Brtrue_S, notNull );
-                    g.Emit( OpCodes.Pop );
-                    g.Emit( OpCodes.Ldsfld, SqlObjectItem.FieldDBNullValue );
+                }
+
+                internal void EmitSetSqlParameterValue( ILGenerator g, LocalBuilder locParameterCollection )
+                {
+                    if( SkipEmitSetSqlParameterValue ) return;
+                    g.LdLoc( locParameterCollection );
+                    g.LdInt32( _index );
+                    g.Emit( OpCodes.Call, SqlObjectItem.MParameterCollectionGetParameter );
+                    
+                    Label notNull = g.DefineLabel();
+
+                    //Load ParameterType on the stack
+                    Type t = LdParameterType( g );
+
+                    if( t.IsByRef ) t = t.GetElementType();
+                    if( t.IsGenericType && t.GetGenericTypeDefinition() == typeof( Nullable<> ) )
+                    {
+                        var trueLabel = g.DefineLabel();
+
+                        g.Emit( OpCodes.Brtrue_S, trueLabel );
+
+                        //false
+                        g.Emit( OpCodes.Ldsfld, SqlObjectItem.FieldDBNullValue );
+                        g.Emit( OpCodes.Br, notNull );
+
+                        g.MarkLabel( trueLabel );
+                        LdParameterType( g );
+                        g.Emit( OpCodes.Call, t.GetProperty( "Value", t.GetGenericArguments()[0] ).GetGetMethod() );
+                        if( t.GetGenericArguments()[0].IsGenericParameter || t.GetGenericArguments()[0].IsValueType )
+                        {
+                            g.Emit( OpCodes.Box, t.GetGenericArguments()[0] );
+                        }
+                    }
+                    else
+                    {
+                        g.Emit( OpCodes.Dup );
+                        g.Emit( OpCodes.Brtrue_S, notNull );
+                        g.Emit( OpCodes.Pop );
+                        g.Emit( OpCodes.Ldsfld, SqlObjectItem.FieldDBNullValue );
+                    }
                     g.MarkLabel( notNull );
                     g.Emit( OpCodes.Call, SqlObjectItem.MParameterSetValue );
                 }
@@ -238,7 +274,7 @@ namespace CK.SqlServer.Setup
                     ++iStart;
                 }
                 return -1;
-            }
+            } 
 
             internal void EmitReturn( ILGenerator g, LocalBuilder locParameterCollection, Type returnType )
             {

@@ -56,7 +56,7 @@ namespace CK.SqlServer.Setup
             {
                 tB = module.DefineType( _builderTypeName, TypeAttributes.Class | TypeAttributes.Sealed | TypeAttributes.NotPublic );
                 dynamicAssembly.Memory.Add( _builderTypeName, tB );
-                dynamicAssembly.PushFinalAction( FinalizeSqlCreator ); 
+                dynamicAssembly.PushFinalAction( FinalizeSqlCreator );
             }
             string methodKey = _builderTypeName + ':' + FullName;
             MethodInfo m = (MethodInfo)dynamicAssembly.Memory[methodKey];

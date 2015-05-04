@@ -52,7 +52,7 @@ namespace CK.Core
         public static bool LogToConsole
         {
             get { return Monitor.Output.Clients.Contains( _console ); }
-            set 
+            set
             {
                 if( value ) Monitor.Output.RegisterClient( _console );
                 else Monitor.Output.UnregisterClient( _console );
@@ -251,11 +251,11 @@ namespace CK.Core
                         _config.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( a );
                     }
                     _config.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = DynamicAssemblyName;
-                    
+
                     var c = new SqlSetupAspectConfiguration();
                     c.DefaultDatabaseConnectionString = TestHelper.ConnectionString;
                     c.IgnoreMissingDependencyIsError = true; // Set to true while we don't have SqlFragment support.
-                    
+
                     _config.Aspects.Add( c );
                 }
                 return _config;
@@ -282,7 +282,7 @@ namespace CK.Core
                 throw new InvalidOperationException( "The solution must contain a 'Tests' folder." );
             }
 
-            _logFolder = Path.Combine( p, "Logs" ); 
+            _logFolder = Path.Combine( p, "Logs" );
         }
     }
 }
