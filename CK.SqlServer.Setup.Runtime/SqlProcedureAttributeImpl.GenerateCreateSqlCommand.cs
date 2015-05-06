@@ -60,7 +60,6 @@ namespace CK.SqlServer.Setup
                     Type genericTypeArgument = genericArguments[i];
                     GenericTypeParameterBuilder genericTypeBuilder = genericParameters[i];
 
-
                     genericTypeBuilder.SetGenericParameterAttributes( genericTypeArgument.GenericParameterAttributes );
                     genericTypeBuilder.SetInterfaceConstraints( genericTypeArgument.GetGenericParameterConstraints() );
                 }
@@ -101,7 +100,14 @@ namespace CK.SqlServer.Setup
             // Analyses parameters and generate removing of optional parameters if C# does not use them.
             int nbError = 0;
 
-            SqlParametersHandler sqlParamHandlers = new SqlParametersHandler( sqlParameters );
+            SqlParameterHandlerList sqlParamHandlers = new SqlParameterHandlerList( sqlParameters );
+
+            // We initialize the SetUsedByReturnedType information on parameters 
+            // so that they can relax their checks on Sql parameter direction accordingly.
+            if( (gType & GenerationType.IsCall) != 0 && m.ReturnType != typeof( void ) )
+            {
+                if( !sqlParamHandlers.HandleReturnType( monitor, m.ReturnType ) ) ++nbError;
+            }
 
             // We directly manage the first occurrence of a SqlConnection and a SqlTransaction parameters by setting
             // them on the SqlCommand (whatever the generation type is).
@@ -165,32 +171,40 @@ namespace CK.SqlServer.Setup
             if( nbError == 0 )
             {
                 // If there are sql parameters not covered, then they MUST:
-                // - be purely output
-                // - OR be found as a property of one SqlCallContext object,
-                // - OR have a default value.
+                // - be found as a property of one SqlCallContext object,
+                // - OR specify a default value,
+                // - OR be purely output.
+                // Otherwise,  have a default value.
                 foreach( var setter in sqlParamHandlers.Handlers )
                 {
-                    if( !setter.IsMapped )
+                    if( !setter.IsMappedToMethodParameterOrCallContextProperty )
                     {
                         var sqlP = setter.SqlExprParam;
-                        if( !sqlP.IsInput )
+                        if( sqlCallContexts == null || !sqlCallContexts.MatchPropertyToSqlParameter( setter, monitor ) )
                         {
-                            // Pure output.
-                            monitor.Info().Send( "Method '{0}' does not declare the Sql Parameter '{1}'. Since it is an output parameter, it will be ignored.", m.Name, sqlP.ToStringClean() );
-                            setter.SetMappingToIgnoredOutput();
-                        }
-                        else if( sqlCallContexts == null || !sqlCallContexts.FindMatchingProperty( setter, monitor ) )
-                        {
-                            // Input or input/output.
                             if( sqlP.DefaultValue == null )
                             {
-                                monitor.Error().Send( "Sql parameter '{0}' in procedure parameters has no default value. The method '{1}' must declare it.", sqlP.Variable.Identifier.Name, m.Name );
-                                ++nbError;
+                                // If it is a pure output parameters then we don't care setting a value for it.
+                                if( sqlP.IsPureOutput )
+                                {
+                                    // Pure output.
+                                    monitor.Info().Send( "Method '{0}' does not declare the Sql Parameter '{1}'. Since it is a pure output parameter, it will be ignored.", m.Name, sqlP.ToStringClean() );
+                                    setter.SetMappingToIgnoredOutput();
+                                }
+                                else
+                                {
+                                    monitor.Error().Send( "Sql parameter '{0}' in procedure parameters has no default value. The method '{1}' must declare it (or a property must exist in one of the ISQlCallContext parameters) or the procedure must specify the default value.", sqlP.Variable.Identifier.Name, m.Name );
+                                    ++nbError;
+                                }
                             }
                             else
                             {
-                                monitor.Trace().Send( "Method '{0}' will use the default value for the Sql Parameter '{1}'.", m.Name, sqlP.Variable.Identifier.Name, sqlP.ToStringClean() );
-                                setter.RemoveParameterForOptionalDefaultValue( g, locParams );
+                                // The parameter has a default value.
+                                if( sqlP.IsPureOutput )
+                                {
+                                    monitor.Warn().Send( "Sql parameter '{0}' in procedure is a pure output parameter that has a default value. If the input matters, it should be marked /*input*/output.", sqlP.Variable.Identifier.Name );
+                                }
+                                setter.SetMappingToSqlDefaultValue();
                             }
                         }
                     }
@@ -200,6 +214,7 @@ namespace CK.SqlServer.Setup
             if( hasRefSqlCommand ) g.MarkLabel( setValues );
             if( nbError == 0 )
             {
+                Debug.Assert( sqlParamHandlers.Handlers.All( h => h.MappingDone ) );
                 // Configures Connection and Transaction properties if such method parameters appear.
                 if( firstSqlConnectionParameter != null || firstSqlTransactionParameter != null )
                 {
@@ -207,7 +222,7 @@ namespace CK.SqlServer.Setup
                 }
                 foreach( var setter in sqlParamHandlers.Handlers )
                 {
-                    setter.EmitSetSqlParameterValue( g, locParams );
+                    if( !setter.EmitSetSqlParameterValue( monitor, g, locParams ) ) ++nbError;
                 }
             }
 
@@ -278,7 +293,7 @@ namespace CK.SqlServer.Setup
             }
             if( nbError != 0 )
             {
-                monitor.Info().Send( GenerateBothSignatures( sqlName, sqlParameters, m, mParameters, mParameterFirstIndex, extraMethodParameters ) );
+                monitor.Info().Send( GenerateBothSignatures( sqlName, sqlParameters, m, mParameters, extraMethodParameters ) );
             }
             g.Emit( OpCodes.Ret );
             return nbError == 0;
@@ -387,19 +402,14 @@ namespace CK.SqlServer.Setup
             }
         }
 
-        private static string GenerateBothSignatures( SqlExprMultiIdentifier sqlName, SqlExprParameterList sqlParameters, MethodInfo m, ParameterInfo[] mParameters, int mParameterFirstIndex, IList<ParameterInfo> extraParameters )
+        private static string GenerateBothSignatures( SqlExprMultiIdentifier sqlName, SqlExprParameterList sqlParameters, MethodInfo m, ParameterInfo[] mParameters, IList<ParameterInfo> extraParameters )
         {
             StringBuilder b = new StringBuilder();
             b.Append( "Procedure '" );
             sqlName.Tokens.WriteTokensWithoutTrivias( String.Empty, b );
             b.Append( "': " ).Append( sqlParameters.ToStringClean() );
             b.Append( Environment.NewLine );
-            b.Append( "Method '" ).Append( m.DeclaringType.Name ).Append( '.' ).Append( m.Name ).Append( "': " );
-            DumpParameters( b, mParameters.Skip( mParameterFirstIndex ) );
-            if( m.ReturnType != typeof( void ) )
-            {
-                b.Append( " => " ).Append( m.ReturnType.Name );
-            }
+            DumpMethodSignature( b, m, mParameters );
             if( extraParameters != null && extraParameters.Count > 0 )
             {
                 b.Append( Environment.NewLine );
@@ -407,6 +417,24 @@ namespace CK.SqlServer.Setup
                 DumpParameters( b, extraParameters );
             }
             return b.ToString();
+        }
+
+        internal static string DumpMethodSignature( MethodInfo m )
+        {
+            StringBuilder b = new StringBuilder();
+            DumpMethodSignature( b, m );
+            return b.ToString();
+        }
+
+        static void DumpMethodSignature( StringBuilder b, MethodInfo m, IEnumerable<ParameterInfo> mParameters = null )
+        {
+            b.Append( "Method " ).Append( m.DeclaringType.Name ).Append( '.' ).Append( m.Name ).Append( "( " );
+            DumpParameters( b, mParameters ?? m.GetParameters() );
+            b.Append( " )" );
+            if( m.ReturnType != typeof( void ) )
+            {
+                b.Append( " => " ).Append( m.ReturnType.Name );
+            }
         }
 
         static string DumpParameters( IEnumerable<ParameterInfo> parameters )

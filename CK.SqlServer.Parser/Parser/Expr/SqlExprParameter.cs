@@ -107,6 +107,11 @@ namespace CK.SqlServer.Parser
         public bool IsOutput { get { return OutputT != null; } }
 
         /// <summary>
+        /// Gets whether the parameter is only an output parameter (ie. it is <see cref="IsOutput"/> but not <see cref="IsInputOutput"/>).
+        /// </summary>
+        public bool IsPureOutput { get { return IsOutput && !IsInputOutput; } }
+
+        /// <summary>
         /// Gets whether the parameter is input and output (by ref). <see cref="IsOutput"/> is true: the parameter uses the '/*input*/output' syntax.
         /// </summary>
         public bool IsInputOutput 

@@ -23,6 +23,10 @@ namespace CK.SqlServer.Parser
             Value = value;
         }
 
+        /// <summary>
+        /// Money is kept as a string, it is not converted to a numeric .Net type.
+        /// Since Money is actually a Int64 for sql server: we could handle the conversion here...
+        /// </summary>
         public string Value { get; private set; }
 
         public override string LiteralValue { get { return Value; } }

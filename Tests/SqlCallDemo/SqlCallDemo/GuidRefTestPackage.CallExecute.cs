@@ -18,7 +18,6 @@ namespace SqlCallDemo
 
     public interface INonStandardSqlCallContextSpecialized : INonStandardSqlCallContext
     {
-        void ExecuteNonQuery( string connectionString, SqlCommand cmd );
     }
 
     public abstract partial class GuidRefTestPackage

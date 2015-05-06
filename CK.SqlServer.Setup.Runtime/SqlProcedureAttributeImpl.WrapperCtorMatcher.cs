@@ -102,7 +102,7 @@ namespace CK.SqlServer.Setup
 
             internal void ExplainFailure( IActivityMonitor monitor )
             {
-                using( monitor.OpenInfo().Send( "Considering constructor: {0}.", DumpParameters( Parameters ) ) )
+                using( monitor.OpenInfo().Send( "Considering constructor: ({0}).", DumpParameters( Parameters ) ) )
                 {
                     for( int idx = 0; idx < _mappedParameters.Length; ++idx )
                     {

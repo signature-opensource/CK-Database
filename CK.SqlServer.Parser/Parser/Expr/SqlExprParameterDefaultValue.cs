@@ -42,6 +42,51 @@ namespace CK.SqlServer.Parser
         
         public bool IsLiteral { get { return _tokens.Length == 3 || (_tokens[1].TokenType & SqlTokenType.LitteralMask) != 0; } }
 
+        public bool HasMinusSign { get { return _tokens.Length == 3; } }
+
+        /// <summary>
+        /// Gets the default value (<see cref="IsVariable"/> must be false).
+        /// It can be <see cref="DBNull.Value"/>, a <see cref="Int32"/>, a <see cref="Double"/> or a string for numerics and money:
+        /// .Net <see cref="Decimal"/> type has only 28 digits whereas Sql server numerics has 38. And money is actually a Int64 for
+        /// sql server.
+        /// </summary>
+        public object NullOrLitteralDotNetValue
+        {
+            get
+            {
+                if( IsVariable ) throw new InvalidOperationException();
+                if( IsNull ) return DBNull.Value;
+                Debug.Assert( IsLiteral );
+                SqlTokenBaseLiteral t = (SqlTokenBaseLiteral)_tokens[_tokens.Length == 3 ? 2 : 1];
+                if( (t.TokenType & SqlTokenType.IsString) != 0 )
+                {
+                    return ((SqlTokenLiteralString)t).Value;
+                }
+                Debug.Assert( (t.TokenType & SqlTokenType.IsNumber) != 0 );
+                if( t.TokenType == SqlTokenType.Integer )
+                {
+                    int v = ((SqlTokenLiteralInteger)t).Value;
+                    return HasMinusSign ? -v : v;
+                }
+                if( t.TokenType == SqlTokenType.Decimal )
+                {
+                    string s = ((SqlTokenLiteralDecimal)t).Value;
+                    return HasMinusSign ? '-' + s : s;
+                }
+                if( t.TokenType == SqlTokenType.Float )
+                {
+                    double d = ((SqlTokenLiteralFloat)t).Value;
+                    return HasMinusSign ? -d : d;
+                }
+                if( t.TokenType == SqlTokenType.Money )
+                {
+                    string s = ((SqlTokenLiteralMoney)t).Value;
+                    return HasMinusSign ? '-' + s : s;
+                }
+                throw new NotSupportedException();
+            }
+        }
+
         public sealed override IEnumerable<ISqlItem> Items { get { return _tokens; } }
 
         public override SqlToken FirstOrEmptyT { get { return _tokens[0]; } }

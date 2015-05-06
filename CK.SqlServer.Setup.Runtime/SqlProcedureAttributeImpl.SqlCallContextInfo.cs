@@ -75,7 +75,18 @@ namespace CK.SqlServer.Setup
                 {
                     if( _gType == GenerationType.ExecuteNonQuery )
                     {
-                        _callProviderParameterMethod = param.ParameterType.GetMethod( "ExecuteNonQuery", SqlObjectItem.ExecuteCallMethodParameters );
+                        if( param.ParameterType.IsInterface )
+                        {
+                            _callProviderParameterMethod = ReflectionHelper.GetFlattenMethods( param.ParameterType )
+                                                                           .Where( m => m.Name == "ExecuteNonQuery" )
+                                                                           .Select( m => new { M = m, P = m.GetParameters() } )
+                                                                           .Where( m => m.P.Length == 2
+                                                                                        && m.P[0].ParameterType == SqlObjectItem.ExecuteCallMethodParameters[0]
+                                                                                        && m.P[1].ParameterType == SqlObjectItem.ExecuteCallMethodParameters[1] )
+                                                                           .Select( m => m.M )
+                                                                           .FirstOrDefault();
+                        }
+                        else _callProviderParameterMethod = param.ParameterType.GetMethod( "ExecuteNonQuery", SqlObjectItem.ExecuteCallMethodParameters );
                         if( _callProviderParameterMethod != null )
                         {
                             _callProviderParameter = param;
@@ -86,7 +97,7 @@ namespace CK.SqlServer.Setup
                 return true;
             }
 
-            public bool FindMatchingProperty( SqlParametersHandler.SqlParamHandler setter, IActivityMonitor monitor )
+            public bool MatchPropertyToSqlParameter( SqlParameterHandlerList.SqlParamHandler setter, IActivityMonitor monitor )
             {
                 foreach( var p in _props )
                 {

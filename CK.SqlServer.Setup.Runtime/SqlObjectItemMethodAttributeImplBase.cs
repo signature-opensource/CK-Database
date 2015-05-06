@@ -76,7 +76,7 @@ namespace CK.SqlServer.Setup
                 return false;
             }
             // 3 - Ready to implement the method (BestSetupObjectItem has been initialized by DynamicItemInitialize).
-            using( monitor.OpenInfo().Send( "Generating method '{0}.{1}'.", m.DeclaringType.FullName, m.Name ) )
+            using( monitor.OpenInfo().Send( "Generating {0}.", SqlProcedureAttributeImpl.DumpMethodSignature( m ) ) )
             {
                 return DoImplement( monitor, m, (SqlObjectItem)SetupObjectItem, dynamicAssembly, tB, isVirtual );
             }

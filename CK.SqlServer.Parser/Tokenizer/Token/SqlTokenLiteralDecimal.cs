@@ -41,6 +41,10 @@ namespace CK.SqlServer.Parser
             Scale = (byte)scale;
         }
 
+        /// <summary>
+        /// Decimal is kept as a string, it is not converted to a numeric .Net type.
+        /// Since .Net <see cref="Decimal"/> type has only 28 digits whereas Sql server numerics has 38.
+        /// </summary>
         public string Value { get; private set; }
 
         public byte Precision { get; private set; }
