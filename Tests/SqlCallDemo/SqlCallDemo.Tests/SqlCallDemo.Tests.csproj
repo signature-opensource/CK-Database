@@ -48,6 +48,9 @@
     <Compile Include="..\..\CK.UnitTestHelper\DBSetup.cs">
       <Link>DBSetup.cs</Link>
     </Compile>
+    <Compile Include="AllDefaultValuesTest.cs" />
+    <Compile Include="ReturnTest.cs" />
+    <Compile Include="PurelyInputLogTest.cs" />
     <Compile Include="OutputParameterTest.cs" />
     <Compile Include="CallGuidRefTest.CallExecute.cs" />
     <Compile Include="CallGuidRefTest.cs" />

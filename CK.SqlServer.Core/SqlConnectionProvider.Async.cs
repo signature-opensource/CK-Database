@@ -11,6 +11,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CK.SqlServer
@@ -45,7 +46,7 @@ namespace CK.SqlServer
             bool mustClose;
             if( cmd.Connection == null )
             {
-                var result = await AcquireConnAsync();
+                var result = await AcquireConnAsync( null );
                 cmd.Connection = result.Item1;
                 mustClose = result.Item2;
             }
@@ -53,19 +54,42 @@ namespace CK.SqlServer
             return new SqlConnectionProviderAsyncDisposable( cmd, mustClose, this );
         }
 
-        async Task<Tuple<SqlConnection, bool>> AcquireConnAsync()
+        /// <summary>
+        /// Acquires a connection.
+        /// If possible, use the methods that encapsulates handles management (methods named ExecuteXXX or ReadXXX) 
+        /// rather that AcquireXXX methods like this one.
+        /// </summary>
+        /// <param name="cmd">The command to execute.</param>
+        /// <returns>States whether the connection used to execute the command must be closed or not.</returns>
+        public async Task<IDisposable> AcquireConnectionAsync( SqlCommand cmd, CancellationToken cancellationToken )
+        {
+            if( cmd == null ) throw new ArgumentNullException( "cmd" );
+            bool mustClose;
+            if( cmd.Connection == null )
+            {
+                var result = await AcquireConnAsync( cancellationToken );
+                cmd.Connection = result.Item1;
+                mustClose = result.Item2;
+            }
+            else mustClose = false;
+            return new SqlConnectionProviderAsyncDisposable( cmd, mustClose, this );
+        }
+
+        async Task<Tuple<SqlConnection, bool>> AcquireConnAsync( CancellationToken? cancellationToken )
         {
             bool mustClose = false;
             if( _oConIsWorking )
             {
                 SqlConnection c = new SqlConnection( _strConn );
-                await c.OpenAsync();
+                if( cancellationToken.HasValue ) await c.OpenAsync( cancellationToken.Value );
+                else await c.OpenAsync();
                 mustClose = true;
                 return new Tuple<SqlConnection, bool>( c, mustClose );
             }
             if( _oCon.State == ConnectionState.Closed )
             {
-                await _oCon.OpenAsync();
+                if( cancellationToken.HasValue ) await _oCon.OpenAsync( cancellationToken.Value );
+                else await _oCon.OpenAsync();
                 mustClose = _autoClose;
             }
             else mustClose = false;

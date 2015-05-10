@@ -37,6 +37,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AllDefaultValuesPackage.cs" />
+    <Compile Include="ReturnPackage.cs" />
+    <Compile Include="PurelyInputLogPackage.cs" />
     <Compile Include="OutputParameterPackage.cs" />
     <Compile Include="GuidRefTestPackage.CallExecute.cs" />
     <Compile Include="GuidRefTestPackage.cs" />
@@ -71,6 +74,21 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Res\sOutputInputParameterWithDefault.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Res\sPurelyInputLog.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Res\sPurelyInputSimpleLog.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Res\sAllDefaultValues.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Res\sStringReturn.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Res\sIntReturn.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

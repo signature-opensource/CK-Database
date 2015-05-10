@@ -3,17 +3,18 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CK.SqlServer.Setup
 {
     /// <summary>
     /// Standard implementation of a disposable <see cref="ISqlCallContext"/> that supports 
-    /// query execution.
+    /// query execution by explicitely implementing <see cref="ISqlCommandExecutor"/>).
     /// This is the simplest way to implement calls to the database: by specializing this type, generic contextual properties
     /// (like ActorId) can also be used to automatically set method parameter values.
     /// </summary>
-    public class SqlStandardCallContext : ISqlCallContext, IDisposable
+    public class SqlStandardCallContext : ISqlCallContext, ISqlCommandExecutor, IDisposable
     {
         object _cache;
 
@@ -74,15 +75,69 @@ namespace CK.SqlServer.Setup
             }
         }
 
-        /// <summary>
-        /// Executes the given command.
-        /// </summary>
-        /// <param name="connectionString">The connection string.</param>
-        /// <param name="cmd">The command to execute.</param>
-        public void ExecuteNonQuery( string connectionString, SqlCommand cmd )
+        void ISqlCommandExecutor.ExecuteNonQuery( string connectionString, SqlCommand cmd )
         {
-            var c = GetProvider( connectionString );
-            c.ExecuteNonQuery( cmd );
+            GetProvider( connectionString ).ExecuteNonQuery( cmd );
+        }
+
+        Task ISqlCommandExecutor.ExecuteNonQueryAsync( string connectionString, SqlCommand cmd )
+        {
+            return ExecAsync<string>( connectionString, cmd, _ => null, null );
+        }
+
+        Task ISqlCommandExecutor.ExecuteNonQueryAsyncCancellable( string connectionString, SqlCommand cmd, CancellationToken cancellationToken )
+        {
+            return ExecAsync<string>( connectionString, cmd, _ => null, cancellationToken );
+        }
+
+        Task<T> ISqlCommandExecutor.ExecuteNonQueryAsyncTyped<T>( string connectionString, SqlCommand cmd, Func<SqlCommand, T> resultBuilder )
+        {
+            return ExecAsync<T>( connectionString, cmd, resultBuilder, null );
+        }
+
+        Task<T> ISqlCommandExecutor.ExecuteNonQueryAsyncTypedCancellable<T>( string connectionString, SqlCommand cmd, Func<SqlCommand, T> resultBuilder, CancellationToken cancellationToken )
+        {
+            return ExecAsync<T>( connectionString, cmd, resultBuilder, cancellationToken );
+        }
+
+        Task<T> ExecAsync<T>( string connectionString, SqlCommand cmd, Func<SqlCommand, T> resultBuilder, CancellationToken? cancellationToken )
+        {
+            var tcs = new TaskCompletionSource<T>();
+
+            Task<IDisposable> openTask = cancellationToken.HasValue
+                                            ? GetProvider( connectionString ).AcquireConnectionAsync( cmd, cancellationToken.Value )
+                                            : GetProvider( connectionString ).AcquireConnectionAsync( cmd );
+            openTask
+                .ContinueWith( open =>
+                    {
+                        if( open.IsFaulted ) tcs.SetException( open.Exception.InnerExceptions );
+                        else if( open.IsCanceled ) tcs.SetCanceled();
+                        else
+                        {
+                            try
+                            {
+                                var execTask = cancellationToken.HasValue
+                                                    ? cmd.ExecuteNonQueryAsync( cancellationToken.Value )
+                                                    : cmd.ExecuteNonQueryAsync();
+                                execTask.ContinueWith( exec =>
+                                {
+                                    if( exec.IsFaulted ) tcs.SetException( exec.Exception.InnerExceptions );
+                                    else if( exec.IsCanceled ) tcs.SetCanceled();
+                                    else
+                                    {
+                                        tcs.SetResult( resultBuilder( cmd ) );
+                                    }
+                                }, TaskContinuationOptions.ExecuteSynchronously );
+                            }
+                            catch( Exception exc ) { tcs.TrySetException( exc ); }
+                        }
+                    }, TaskContinuationOptions.ExecuteSynchronously )
+                .ContinueWith( _ =>
+                    {
+                        if( !openTask.IsFaulted ) openTask.Result.Dispose();
+                    }, TaskContinuationOptions.ExecuteSynchronously );
+
+            return tcs.Task;
         }
     }
 }

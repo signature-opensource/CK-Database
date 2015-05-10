@@ -22,7 +22,7 @@ namespace CK.SqlServer.Parser
         public SqlExprParameterDefaultValue( SqlTokenTerminal assignToken, SqlTokenTerminal minusSign, SqlTokenBaseLiteral value )
         {
             if( assignToken == null ) throw new ArgumentNullException( "assignToken" );
-            if( minusSign != null && minusSign.TokenType == SqlTokenType.Minus ) throw new ArgumentException( "Must be null or minus." );
+            if( minusSign != null && minusSign.TokenType != SqlTokenType.Minus ) throw new ArgumentException( "Must be null or minus." );
             if( value == null ) throw new ArgumentNullException( "value" );
 
             _tokens = minusSign == null ? CreateArray( assignToken, value ) : CreateArray( assignToken, minusSign, value );
@@ -46,7 +46,8 @@ namespace CK.SqlServer.Parser
 
         /// <summary>
         /// Gets the default value (<see cref="IsVariable"/> must be false).
-        /// It can be <see cref="DBNull.Value"/>, a <see cref="Int32"/>, a <see cref="Double"/> or a string for numerics and money:
+        /// It can be <see cref="DBNull.Value"/>, a <see cref="Int32"/>, <see cref="Decimal"/>, a <see cref="Double"/> or a string for 
+        /// too big numerics (that exceed Decimal .Net capacity) and money:
         /// .Net <see cref="Decimal"/> type has only 28 digits whereas Sql server numerics has 38. And money is actually a Int64 for
         /// sql server.
         /// </summary>
@@ -70,7 +71,13 @@ namespace CK.SqlServer.Parser
                 }
                 if( t.TokenType == SqlTokenType.Decimal )
                 {
-                    string s = ((SqlTokenLiteralDecimal)t).Value;
+                    SqlTokenLiteralDecimal dec = (SqlTokenLiteralDecimal)t; 
+                    if( dec.IsValidDecimalValue )
+                    {
+                        Decimal d = dec.DecimalValue;
+                        return HasMinusSign ? -d : d;
+                    }
+                    string s = dec.ValueAsString;
                     return HasMinusSign ? '-' + s : s;
                 }
                 if( t.TokenType == SqlTokenType.Float )

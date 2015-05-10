@@ -64,6 +64,7 @@
     <Compile Include="ISqlManager.cs" />
     <Compile Include="ISqlManagerProvider.cs" />
     <Compile Include="ISqlScriptExecutor.cs" />
+    <Compile Include="MethodILReader.cs" />
     <Compile Include="SqlContextLocName.cs" />
     <Compile Include="SqlObjectItemMethodAttributeImplBase.cs" />
     <Compile Include="SqlObject\ISqlObjectParser.cs" />

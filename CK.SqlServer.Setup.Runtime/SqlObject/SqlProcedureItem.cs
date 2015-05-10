@@ -46,15 +46,14 @@ namespace CK.SqlServer.Setup
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="dynamicAssembly">Use the memory associated to the dynamic to share the static class that implements the creation methods
         /// and the PushFinalAction to actually create it.</param>
-        /// <param name="module">A module builder.</param>
         /// <returns>The method info. Null if <see cref="IsValid"/> is false or if an error occurred while generating it.</returns>
-        internal MethodInfo AssumeCommandBuilder( IActivityMonitor monitor, IDynamicAssembly dynamicAssembly, ModuleBuilder module )
+        internal MethodInfo AssumeCommandBuilder( IActivityMonitor monitor, IDynamicAssembly dynamicAssembly )
         {
             if( _storedProc == null ) return null;
             TypeBuilder tB = (TypeBuilder)dynamicAssembly.Memory[_builderTypeName];
             if( tB == null )
             {
-                tB = module.DefineType( _builderTypeName, TypeAttributes.Class | TypeAttributes.Sealed | TypeAttributes.NotPublic );
+                tB = dynamicAssembly.ModuleBuilder.DefineType( _builderTypeName, TypeAttributes.Class | TypeAttributes.Sealed | TypeAttributes.NotPublic );
                 dynamicAssembly.Memory.Add( _builderTypeName, tB );
                 dynamicAssembly.PushFinalAction( FinalizeSqlCreator );
             }
@@ -107,6 +106,7 @@ namespace CK.SqlServer.Setup
 
             foreach( SqlExprParameter p in sqlParameters )
             {
+                g.LdLoc( locParams );
                 g.Emit( OpCodes.Ldstr, p.Variable.Identifier.Name );
                 g.LdInt32( (int)p.Variable.TypeDecl.ActualType.DbType );
                 int size = p.Variable.TypeDecl.ActualType.SyntaxSize;
@@ -119,17 +119,27 @@ namespace CK.SqlServer.Setup
                 {
                     g.Emit( OpCodes.Newobj, SqlParameterCtor2 );
                 }
-                g.StLoc( locOneParam );
-
                 if( p.IsOutput )
                 {
-                    g.LdLoc( locOneParam );
+                    g.Emit( OpCodes.Dup );
                     ParameterDirection dir = p.IsInputOutput ? ParameterDirection.InputOutput : ParameterDirection.Output;
                     g.LdInt32( (int)dir );
                     g.Emit( OpCodes.Callvirt, MParameterSetDirection );
                 }
-                g.LdLoc( locParams );
-                g.LdLoc( locOneParam );
+                var precision = p.Variable.TypeDecl.ActualType.SyntaxPrecision;
+                if( precision != 0 )
+                {
+                    g.Emit( OpCodes.Dup );
+                    g.LdInt32( precision );
+                    g.Emit( OpCodes.Callvirt, MParameterSetPrecision );
+                    var scale = p.Variable.TypeDecl.ActualType.SyntaxScale;
+                    if( scale != 0 )
+                    {
+                        g.Emit( OpCodes.Dup );
+                        g.LdInt32( scale );
+                        g.Emit( OpCodes.Callvirt, MParameterSetScale );
+                    }
+                }
                 g.Emit( OpCodes.Callvirt, MParameterCollectionAddParameter );
                 g.Emit( OpCodes.Pop );
             }

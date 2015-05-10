@@ -46,11 +46,19 @@ namespace CK.SqlServer.Setup
         internal readonly static MethodInfo MParameterCollectionGetParameter = TypeParameterCollection.GetProperty( "Item", new Type[] { typeof( Int32 ) } ).GetGetMethod();
 
         internal readonly static MethodInfo MParameterSetDirection = TypeParameter.GetProperty( "Direction" ).GetSetMethod();
+        internal readonly static MethodInfo MParameterSetPrecision = TypeParameter.GetProperty( "Precision" ).GetSetMethod();
+        internal readonly static MethodInfo MParameterSetScale = TypeParameter.GetProperty( "Scale" ).GetSetMethod();
         internal readonly static MethodInfo MParameterSetValue = TypeParameter.GetProperty( "Value" ).GetSetMethod();
         internal readonly static MethodInfo MParameterGetValue = TypeParameter.GetProperty( "Value" ).GetGetMethod();
         internal readonly static FieldInfo FieldDBNullValue = typeof( DBNull ).GetField( "Value", BindingFlags.Public | BindingFlags.Static );
 
-        internal readonly static Type[] ExecuteCallMethodParameters = new Type[] { typeof(string), TypeCommand };
+        internal readonly static MethodInfo MExecutorCallNonQuery = typeof( ISqlCommandExecutor ).GetMethod( "ExecuteNonQuery" );
+        internal readonly static MethodInfo MExecutorCallNonQueryAsync = typeof( ISqlCommandExecutor ).GetMethod( "ExecuteNonQueryAsync" );
+        internal readonly static MethodInfo MExecutorCallNonQueryAsyncCancellable = typeof( ISqlCommandExecutor ).GetMethod( "ExecuteNonQueryAsyncCancellable" );
+        internal readonly static MethodInfo MExecutorCallNonQueryAsyncTyped = typeof( ISqlCommandExecutor ).GetMethod( "ExecuteNonQueryAsyncTyped" );
+        internal readonly static MethodInfo MExecutorCallNonQueryAsyncTypedCancellable = typeof( ISqlCommandExecutor ).GetMethod( "ExecuteNonQueryAsyncTypedCancellable" );
+
+        internal readonly static ConstructorInfo CtorDecimalBits = typeof( Decimal ).GetConstructor( new Type[]{ typeof(int[]) } );
 
         SqlObjectProtoItem _protoItem;
         string _physicalDB;

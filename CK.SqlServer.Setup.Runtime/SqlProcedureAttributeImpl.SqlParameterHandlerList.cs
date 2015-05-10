@@ -30,6 +30,9 @@ namespace CK.SqlServer.Setup
         {
             readonly List<SqlParamHandler> _params;
             SqlParamHandler _simpleReturnType;
+            bool _isAsyncCall;
+            Type _unwrappedReturnedType;
+            readonly StringBuilder _funcResultBuilderSignature;
 
             public class SqlParamHandler
             {
@@ -252,10 +255,28 @@ namespace CK.SqlServer.Setup
                     else if( o is Int32 )
                     {
                         g.LdInt32( (int)o );
+                        g.Emit( OpCodes.Box, typeof(Int32) );
+                    }
+                    else if( o is Decimal )
+                    {
+                        Decimal d = (Decimal)o;
+                        int[] bits = Decimal.GetBits( d );
+                        g.LdInt32( 4 );
+                        g.Emit( OpCodes.Newarr, typeof( Int32 ) );
+                        for( int i = 0; i < 4; ++i  )
+                        {
+                            g.Emit( OpCodes.Dup );
+                            g.LdInt32( i );
+                            g.LdInt32( bits[i] );
+                            g.Emit( OpCodes.Stelem_I4 );
+                        }
+                        g.Emit( OpCodes.Newobj, SqlObjectItem.CtorDecimalBits );
+                        g.Emit( OpCodes.Box, typeof(Decimal) );
                     }
                     else if( o is Double )
                     {
                         g.Emit( OpCodes.Ldc_R8, (double)o );
+                        g.Emit( OpCodes.Box, typeof( Double ) );
                     }
                     else if( o is string )
                     {
@@ -330,6 +351,7 @@ namespace CK.SqlServer.Setup
             public SqlParameterHandlerList( SqlExprParameterList parameters )
             {
                 _params = parameters.Select( ( p, idx ) => new SqlParamHandler( this, p, idx ) ).ToList();
+                _funcResultBuilderSignature = new StringBuilder();
             }
 
             public IReadOnlyList<SqlParamHandler> Handlers
@@ -347,9 +369,22 @@ namespace CK.SqlServer.Setup
                 return -1;
             }
 
-            internal bool HandleReturnType( IActivityMonitor monitor, Type returnType )
+            public bool IsAsyncCall
             {
-                if( IsSimpleReturnType( returnType ) )
+                get { return _isAsyncCall; }
+            }
+
+            internal bool HandleNonVoidCallingReturnedType( IActivityMonitor monitor, Type returnType )
+            {
+                if( returnType == typeof( Task ) ) return _isAsyncCall = true;
+                bool isSimpleType = IsSimpleReturnType( returnType );
+                if( !isSimpleType && returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Task<>) )
+                {
+                    _isAsyncCall = true;
+                    returnType = returnType.GetGenericArguments()[0];
+                    isSimpleType = IsSimpleReturnType( returnType );
+                }
+                if( isSimpleType )
                 {
                     // Look for the first last (reverse order) parameter for which the returned type is compatible.
                     for( int i = _params.Count - 1; i >= 0; --i )
@@ -358,6 +393,8 @@ namespace CK.SqlServer.Setup
                         if( p.SqlExprParam.IsOutput && p.SqlExprParam.Variable.TypeDecl.ActualType.IsTypeCompatible( returnType ) )
                         {
                             _simpleReturnType = p;
+                            _unwrappedReturnedType = returnType;
+                            _funcResultBuilderSignature.Append( _unwrappedReturnedType.FullName ).Append('-').Append( p.Index );
                             p.SetUsedByReturnedType();
                             return true;
                         }
@@ -365,13 +402,12 @@ namespace CK.SqlServer.Setup
                 }
                 else
                 {
-
                 }
                 monitor.Error().Send( "Unable to find a way to return the required return type '{0}'.", returnType.Name );
                 return false;
             }
 
-            internal void EmitReturn( ILGenerator g, LocalBuilder locParameterCollection, Type returnType )
+            internal void EmitInlineReturn( ILGenerator g, LocalBuilder locParameterCollection )
             {
                 if( _simpleReturnType != null )
                 {
@@ -379,9 +415,9 @@ namespace CK.SqlServer.Setup
                     g.LdInt32( _simpleReturnType.Index );
                     g.Emit( OpCodes.Call, SqlObjectItem.MParameterCollectionGetParameter );
                     g.Emit( OpCodes.Call, SqlObjectItem.MParameterGetValue );
-                    if( returnType.IsValueType )
+                    if( _unwrappedReturnedType.IsValueType )
                     {
-                        g.Emit( OpCodes.Unbox_Any, returnType );
+                        g.Emit( OpCodes.Unbox_Any, _unwrappedReturnedType );
                     }
                 }
                 else
@@ -395,6 +431,75 @@ namespace CK.SqlServer.Setup
             {
                 return SqlHelper.IsNetTypeMapped( returnType );
             }
+
+            #region Result builders functions (AssumeResultBuilder)
+
+            const string _funcHolderTypeName = "CK.<FuncResultBuilder>";
+
+            class FuncTypeHolder
+            {
+                public readonly TypeBuilder TypeBuilder;
+                public FuncImpl FirstFuncImpl;
+                public FuncTypeHolder( TypeBuilder b ) { TypeBuilder = b; }
+            }
+
+            class FuncImpl
+            {
+                public readonly FieldInfo Field;
+                public readonly MethodInfo Func;
+                public readonly FuncImpl Next;
+                public FuncImpl( FieldInfo field, MethodInfo func, FuncImpl next ) { Field = field; Func = func; Next = next; }
+            }
+
+            internal FieldInfo AssumeResultBuilder( IDynamicAssembly dynamicAssembly )
+            {
+                FuncTypeHolder fB = (FuncTypeHolder)dynamicAssembly.Memory[_funcHolderTypeName];
+                if( fB == null )
+                {
+                    TypeBuilder tB = dynamicAssembly.ModuleBuilder.DefineType( _funcHolderTypeName, TypeAttributes.Class | TypeAttributes.Sealed | TypeAttributes.NotPublic );
+                    dynamicAssembly.Memory.Add( _funcHolderTypeName, (fB = new FuncTypeHolder( tB )) );
+                    dynamicAssembly.PushFinalAction( FinalizeFuncHolderType );
+                }
+                string funcKey = _funcHolderTypeName + ':' + _funcResultBuilderSignature.ToString();
+                FuncImpl f = (FuncImpl)dynamicAssembly.Memory[funcKey];
+                if( f == null )
+                {
+                    string funcName = 'f' + dynamicAssembly.NextUniqueNumber();
+                    string fieldName = "_" + funcName;
+                    Type tFunc = typeof( Func<,> ).MakeGenericType( SqlObjectItem.TypeCommand, _unwrappedReturnedType );
+                    var field = fB.TypeBuilder.DefineField( fieldName, tFunc, FieldAttributes.Assembly | FieldAttributes.Static | FieldAttributes.InitOnly );
+                    var func = fB.TypeBuilder.DefineMethod( funcName, MethodAttributes.Private | MethodAttributes.Static, _unwrappedReturnedType, new Type[]{ SqlObjectItem.TypeCommand } );
+                    ILGenerator g = func.GetILGenerator();
+                    LocalBuilder locParams = g.DeclareLocal( SqlObjectItem.TypeParameterCollection );
+                    g.LdArg( 0 );
+                    g.Emit( OpCodes.Callvirt, SqlObjectItem.MCommandGetParameters );
+                    g.StLoc( locParams );
+                    EmitInlineReturn( g, locParams );
+                    g.Emit( OpCodes.Ret );
+                    dynamicAssembly.Memory[funcKey] = (fB.FirstFuncImpl = f = new FuncImpl( field, func, fB.FirstFuncImpl ));
+                }
+                return f.Field;
+            }
+
+            void FinalizeFuncHolderType( IDynamicAssembly dynamicAssembly )
+            {
+                FuncTypeHolder fB = (FuncTypeHolder)dynamicAssembly.Memory[_funcHolderTypeName];
+                ConstructorBuilder cB = fB.TypeBuilder.DefineTypeInitializer();
+                ILGenerator g = cB.GetILGenerator();
+                FuncImpl f = fB.FirstFuncImpl;
+                while( f != null )
+                {
+                    g.Emit( OpCodes.Ldnull );
+                    g.Emit( OpCodes.Ldftn, f.Func );
+                    g.Emit( OpCodes.Newobj, f.Field.FieldType.GetConstructor( new Type[]{ typeof( object ), typeof( IntPtr ) } ) );
+                    g.Emit( OpCodes.Stsfld, f.Field );
+                    f = f.Next;
+                }
+                fB.TypeBuilder.CreateType();
+            }
+
+            #endregion
+
         }
 
     }

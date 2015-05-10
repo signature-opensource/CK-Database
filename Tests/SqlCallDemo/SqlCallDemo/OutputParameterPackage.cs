@@ -46,5 +46,11 @@ namespace SqlCallDemo
         [SqlProcedure( "sOutputParameterWithDefault", ExecuteCall = ExecutionType.ExecuteNonQuery )]
         public abstract string OutputParameterWithDefault( SqlStandardCallContext ctx, string textResult );
 
+        ///// <summary>
+        ///// A simple return type on a pure output parameter but with a value for the default (a warning is still emitted about the missing /*input*/ marker).
+        ///// </summary>
+        //[SqlProcedure( "sOutputParameterWithDefault", ExecuteCall = ExecutionType.ExecuteNonQuery )]
+        //public abstract Task<string> OutputParameterWithDefaultAsync( SqlStandardCallContext ctx, string textResult );
+
     }
 }

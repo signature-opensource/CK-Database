@@ -22,7 +22,7 @@ namespace CK.SqlServer.Parser
         {
             if( t != SqlTokenType.Decimal ) throw new ArgumentException( "Invalid token type.", "t" );
             if( value == null ) throw new ArgumentNullException( "value" );
-            Value = value;
+            ValueAsString = value;
             int precision, scale;
 
             int iDot = value.IndexOf( '.' );
@@ -39,19 +39,32 @@ namespace CK.SqlServer.Parser
             }
             Precision = (byte)precision;
             Scale = (byte)scale;
+            Decimal d;
+            IsValidDecimalValue = Decimal.TryParse( value, NumberStyles.Number, CultureInfo.InvariantCulture, out d );
+            DecimalValue = d;
         }
 
         /// <summary>
         /// Decimal is kept as a string, it is not converted to a numeric .Net type.
         /// Since .Net <see cref="Decimal"/> type has only 28 digits whereas Sql server numerics has 38.
         /// </summary>
-        public string Value { get; private set; }
+        public string ValueAsString { get; private set; }
+
+        /// <summary>
+        /// Decimal value parsed if <see cref="IsValidDecimalValue"/> is true. 0 otherwise.
+        /// </summary>
+        public Decimal DecimalValue { get; private set; }
+
+        /// <summary>
+        /// Whether <see cref="DecimalVale"/> has been successfully parsed into a <see cref="Decimal"/> .Net type.
+        /// </summary>
+        public bool IsValidDecimalValue { get; private set; }
 
         public byte Precision { get; private set; }
 
         public byte Scale { get; private set; }
 
-        public override string LiteralValue { get { return Value; } }
+        public override string LiteralValue { get { return ValueAsString; } }
 
     }
 

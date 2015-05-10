@@ -13,17 +13,26 @@ namespace SqlCallDemo
 
     public interface INonStandardSqlCallContext : ISqlCallContext
     {
-        void ExecuteNonQuery( string connectionString, SqlCommand cmd );
+        ISqlCommandExecutor GetExecutor();
     }
 
     public interface INonStandardSqlCallContextSpecialized : INonStandardSqlCallContext
     {
     }
 
+    public interface INonStandardSqlCallContextByProperty : ISqlCallContext
+    {
+        ISqlCommandExecutor Executor { get; }
+    }
+
+    public interface INonStandardSqlCallContextByPropertySpecialized : INonStandardSqlCallContextByProperty
+    {
+    }
+
     public abstract partial class GuidRefTestPackage
     {
         /// <summary>
-        /// Calling the procedure: as long as the <see cref="ISqlCallContext"/> object exposes a public ExecuteNonQuery( string connectionString, SqlCommand cmd ) method,
+        /// Calling the procedure: as long as the <see cref="ISqlCallContext"/> implements <see cref="ISqlCommandExecutor"/>,
         /// and the attribute specifies ExecuteCall = ExecutionType.ExecuteNonQuery, the call is executed.
         /// Here, we use the standard <see cref="SqlStandardCallContext"/>.
         /// When mutiple ISqlCallContext parameters occur, the first one that can handle the call will be used.
@@ -38,11 +47,10 @@ namespace SqlCallDemo
         public abstract string GuidRefTestReturn( SqlStandardCallContext ctx, bool replaceInAndOut, Guid inOnly, ref Guid inAndOut );
 
         /// <summary>
-        /// Calling with an interface that exposes the ExecuteNonQuery is possible (even a specialized one).
+        /// Calling with an interface that exposes the ISqlCommandExecutor is possible (even a specialized one).
         /// </summary>
         [SqlProcedure( "sGuidRefTest", ExecuteCall = ExecutionType.ExecuteNonQuery )]
         public abstract string GuidRefTestReturnWithInterfaceContext( INonStandardSqlCallContextSpecialized ctx, bool replaceInAndOut, Guid inOnly, ref Guid inAndOut );
-
 
         /// <summary>
         /// Any output with a compatible type can be used (here the inAndOut unique identifier is returned). The returned value is always the 
@@ -50,6 +58,12 @@ namespace SqlCallDemo
         /// </summary>
         [SqlProcedure( "sGuidRefTest", ExecuteCall = ExecutionType.ExecuteNonQuery )]
         public abstract Guid GuidRefTestReturnInOut( SqlStandardCallContext ctx, bool replaceInAndOut, Guid inOnly, Guid inAndOut, out string textResult );
+
+        /// <summary>
+        /// Calling with an interface that exposes the ISqlCommandExecutor via a property.
+        /// </summary>
+        [SqlProcedure( "sGuidRefTest", ExecuteCall = ExecutionType.ExecuteNonQuery )]
+        public abstract string GuidRefTestReturnWithInterfaceContext( INonStandardSqlCallContextByProperty ctx, bool replaceInAndOut, Guid inOnly, ref Guid inAndOut );
 
         // TODO
         ///// <summary>

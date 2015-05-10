@@ -30,7 +30,7 @@ namespace CK.SqlServer.Setup
         protected override bool DoImplement( IActivityMonitor monitor, MethodInfo m, SqlObjectItem objectItem, IDynamicAssembly dynamicAssembly, TypeBuilder tB, bool isVirtual )
         {
             SqlProcedureItem item = objectItem as SqlProcedureItem;
-            MethodInfo mCreateCommand = item != null ? item.AssumeCommandBuilder( monitor, dynamicAssembly, (ModuleBuilder)tB.Module ) : null;
+            MethodInfo mCreateCommand = item != null ? item.AssumeCommandBuilder( monitor, dynamicAssembly ) : null;
             if( mCreateCommand == null )
             {
                 monitor.Error().Send( "Invalid low level SqlCommand creation method for '{0}'.", item.FullName );
@@ -88,7 +88,7 @@ namespace CK.SqlServer.Setup
                 }
             }
             SqlExprParameterList sqlParameters = item.OriginalStatement.Parameters;
-            return GenerateCreateSqlCommand( gType, monitor, mCreateCommand, item.OriginalStatement.Name, sqlParameters, m, mParameters, tB, isVirtual, hasRefSqlCommand );
+            return GenerateCreateSqlCommand( dynamicAssembly, gType, monitor, mCreateCommand, item.OriginalStatement.Name, sqlParameters, m, mParameters, tB, isVirtual, hasRefSqlCommand );
         }
 
     }

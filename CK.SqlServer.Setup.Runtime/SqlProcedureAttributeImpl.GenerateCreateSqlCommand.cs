@@ -17,6 +17,7 @@ using CK.Reflection;
 using System.Linq;
 using System.Text;
 using CK.SqlServer.Parser;
+using System.Threading;
 
 namespace CK.SqlServer.Setup
 {
@@ -33,6 +34,7 @@ namespace CK.SqlServer.Setup
         }
 
         private bool GenerateCreateSqlCommand( 
+            IDynamicAssembly dynamicAssembly, 
             GenerationType gType, 
             IActivityMonitor monitor, 
             MethodInfo createCommand, 
@@ -106,7 +108,7 @@ namespace CK.SqlServer.Setup
             // so that they can relax their checks on Sql parameter direction accordingly.
             if( (gType & GenerationType.IsCall) != 0 && m.ReturnType != typeof( void ) )
             {
-                if( !sqlParamHandlers.HandleReturnType( monitor, m.ReturnType ) ) ++nbError;
+                if( !sqlParamHandlers.HandleNonVoidCallingReturnedType( monitor, m.ReturnType ) ) ++nbError;
             }
 
             // We directly manage the first occurrence of a SqlConnection and a SqlTransaction parameters by setting
@@ -145,13 +147,19 @@ namespace CK.SqlServer.Setup
                             extraMethodParameters.Add( mP );
                         }
                         // If the parameter is a SqlCallContext, we register it
-                        // in order to consider its properties as method parameters.
+                        // in order to consider its properties as method parameters and when Executing Call, find the ISqlCommandExecutor.
                         if( SqlCallContextInfo.IsSqlCallContext( mP ) )
                         {
-                            if( sqlCallContexts == null ) sqlCallContexts = new SqlCallContextInfo( gType );
+                            if( sqlCallContexts == null ) sqlCallContexts = new SqlCallContextInfo( gType, m.ReturnType, mParameters );
                             if( !sqlCallContexts.Add( mP, monitor ) ) ++nbError;
                         }
-                        else if( gType != GenerationType.ReturnWrapper )
+                        else if( mP.ParameterType.IsByRef && sqlParamHandlers.IsAsyncCall )
+                        {
+                            monitor.Error().Send( "Parameter '{0}' is ref or out: ref or out are not compatible with an asynchronous execution (the returned type of the method is a Task).", mP.Name );
+                            ++nbError;
+                        }
+                        else if( !(sqlParamHandlers.IsAsyncCall && mP.ParameterType == typeof(CancellationToken)) 
+                                 && gType != GenerationType.ReturnWrapper )
                         {
                             // When direct parameters can not be mapped to Sql parameters, this is an error.
                             Debug.Assert( extraMethodParameters == null );
@@ -167,7 +175,7 @@ namespace CK.SqlServer.Setup
                     iS = iSFound + 1;
                 }
             }
-
+            
             if( nbError == 0 )
             {
                 // If there are sql parameters not covered, then they MUST:
@@ -270,24 +278,36 @@ namespace CK.SqlServer.Setup
             }
             else if( (gType & GenerationType.IsCall) != 0 )
             {
-                if( sqlCallContexts == null || sqlCallContexts.SelectedCallProviderParameter == null )
+                if( sqlCallContexts == null || sqlCallContexts.SqlCommandExecutorParameter == null )
                 {
-                    monitor.Error().Send( "When calling with {0}, at least one ISqlCallContext object with a public {0} method must occur in the parameters.", gType );
+                    monitor.Error().Send( "When calling with {0}, at least one ISqlCallContext object must be or exposes a ISqlCommandExecutor.", gType );
                     ++nbError;
                 }
                 else
                 {
-                    if( gType == GenerationType.ExecuteNonQuery )
+                    Debug.Assert( gType == GenerationType.ExecuteNonQuery );
+                    if( sqlCallContexts.RequiresReturnTypeBuilder )
                     {
-                        sqlCallContexts.GenerateExecuteNonQueryCall( g, locCmd );
+                        Debug.Assert( sqlCallContexts.IsAsyncCall );
+                        FieldInfo fR = sqlParamHandlers.AssumeResultBuilder( dynamicAssembly );
+                        sqlCallContexts.GenerateExecuteNonQueryCall( g, locCmd, fR );
+                        // The Async call leaves the task on the stack.
                     }
-                    foreach( var h in sqlParamHandlers.Handlers )
+                    else
                     {
-                        h.EmitSetRefOrOutParameter( g, locParams );
-                    }
-                    if( m.ReturnType != typeof(void) )
-                    {
-                        sqlParamHandlers.EmitReturn( g, locParams, m.ReturnType ); 
+                        sqlCallContexts.GenerateExecuteNonQueryCall( g, locCmd, null );
+                        if( !sqlCallContexts.IsAsyncCall )
+                        {
+                            foreach( var h in sqlParamHandlers.Handlers )
+                            {
+                                h.EmitSetRefOrOutParameter( g, locParams );
+                            }
+                            if( m.ReturnType != typeof(void) )
+                            {
+                                sqlParamHandlers.EmitInlineReturn( g, locParams ); 
+                            }
+                        }
+                        // The Async call leaves the task on the stack.
                     }
                 }
             }
@@ -297,42 +317,6 @@ namespace CK.SqlServer.Setup
             }
             g.Emit( OpCodes.Ret );
             return nbError == 0;
-        }
-
-        private static MethodInfo SelectExecuteMethod( GenerationType gType, ExecutionType eType, Type providerReturnType, Type returnType )
-        {
-            Debug.Assert( eType != ExecutionType.Unknown );
-            Debug.Assert( gType != GenerationType.ByRefSqlCommand );
-
-            MethodInfo returnValue = null;
-
-            //todo: if return type wasn't interface type
-            //todo support generic method
-            //IEnumerable<MethodInfo> filtered = ReflectionHelper.GetFlattenMethods( providerReturnType )
-            IEnumerable<MethodInfo> filtered = providerReturnType.GetMethods()
-                                                           .Where( mi => mi.Name == eType.ToString()
-                                                               && mi.GetParameters().Count() == 1
-                                                               && mi.GetParameters().Any( pi => pi.ParameterType == SqlObjectItem.TypeCommand ) );
-            if( gType == GenerationType.ExecuteNonQuery )
-            {
-                if( eType == ExecutionType.ExecuteNonQuery )
-                {
-                    //todo support return wrapper with constructor match with execution return value
-                    filtered = filtered.Where( mi => (returnType == typeof( void ) || ReflectionHelper.CovariantMatch( mi.ReturnType, returnType )) );
-                }
-                else
-                {
-                    filtered = filtered.Where( mi => ReflectionHelper.CovariantMatch( mi.ReturnType, returnType ) );
-                }
-
-                returnValue = filtered.FirstOrDefault();
-            }
-            else
-            {
-                returnValue = filtered.FirstOrDefault();
-            }
-
-            return returnValue;
         }
 
         private static void GenerateByRefInitialization( ILGenerator g, LocalBuilder locCmd, LocalBuilder locParams, Label setValues )
