@@ -116,7 +116,7 @@ namespace CK.Deploy.Console
             config.SqlFileDirectories.Add( args.FilePath );
             var c = new SetupEngineConfiguration();
             c.Aspects.Add( config );
-            c.StObjEngineConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
+            c.StObjEngineConfiguration.FinalAssemblyConfiguration.GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile;
 
             StObjContextRoot.Build( c, null, monitor ).Dispose();
         }
@@ -148,7 +148,7 @@ namespace CK.Deploy.Console
             var c = new SetupEngineConfiguration();
             c.Aspects.Add( config );
             c.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.AddRange( args.AssemblyNames );
-            c.StObjEngineConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = false;
+            c.StObjEngineConfiguration.FinalAssemblyConfiguration.GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFile;
 
             StObjContextRoot.Build( c, null, monitor ).Dispose();
         }

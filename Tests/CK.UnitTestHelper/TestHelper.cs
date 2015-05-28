@@ -246,6 +246,7 @@ namespace CK.Core
                 {
                     _config = new SetupEngineConfiguration();
                     _config.StObjEngineConfiguration.BuildAndRegisterConfiguration.UseIndependentAppDomain = true;
+                    _config.StObjEngineConfiguration.FinalAssemblyConfiguration.GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFileAndPEVerify;
                     foreach( var a in AssembliesToSetup )
                     {
                         _config.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( a );

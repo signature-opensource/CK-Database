@@ -51,7 +51,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Generates final assembly. It is optionaly saved to disk depending on <see cref="BuilderFinalAssemblyConfiguration.DoNotGenerateFinalAssembly"/>.
+        /// Generates final assembly. It is optionaly saved to disk depending on <see cref="BuilderFinalAssemblyConfiguration.GenerateFinalAssemblyOption"/>.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="runtimeBuilder">Runtime builder to use to create final mapper object.</param>
@@ -60,7 +60,7 @@ namespace CK.Setup
         public StObjContextRoot GenerateFinalAssembly( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, BuilderFinalAssemblyConfiguration config )
         {
             if( config == null ) throw new ArgumentNullException( "config" );
-            return GenerateFinalAssembly( monitor, runtimeBuilder, config.DoNotGenerateFinalAssembly, config.Directory, config.AssemblyName, config.ExternalVersionStamp, config.SignAssembly, config.SignKeyPair );
+            return GenerateFinalAssembly( monitor, runtimeBuilder, config.GenerateFinalAssemblyOption, config.Directory, config.AssemblyName, config.ExternalVersionStamp, config.SignAssembly, config.SignKeyPair );
         }
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace CK.Setup
         /// </summary>
         /// <param name="monitor">Logger to use.</param>
         /// <param name="runtimeBuilder">Runtime builder to use to create final mapper object.</param>
-        /// <param name="doNotGenerateFinalAssembly">See <see cref="BuilderFinalAssemblyConfiguration.DoNotGenerateFinalAssembly"/>.</param>
+        /// <param name="generateFinalAssemblyOption">See <see cref="BuilderFinalAssemblyConfiguration.GenerateFinalAssemblyOption"/>.</param>
         /// <param name="directory">See <see cref="BuilderFinalAssemblyConfiguration.Directory"/>.</param>
         /// <param name="assemblyName">See <see cref="BuilderFinalAssemblyConfiguration.AssemblyName"/>.</param>
         /// <param name="externalVersionStamp">See <see cref="BuilderFinalAssemblyConfiguration.ExternalVersionStamp"/>.</param>
@@ -81,7 +81,7 @@ namespace CK.Setup
         public StObjContextRoot GenerateFinalAssembly( 
             IActivityMonitor monitor, 
             IStObjRuntimeBuilder runtimeBuilder,
-            bool doNotGenerateFinalAssembly, 
+            BuilderFinalAssemblyConfiguration.GenerateOption generateFinalAssemblyOption, 
             string directory = null, 
             string assemblyName = null, 
             string externalVersionStamp = null, 
@@ -92,7 +92,8 @@ namespace CK.Setup
             if( HasFatalError ) throw new InvalidOperationException();
             try
             {
-                if( doNotGenerateFinalAssembly ) directory = null;
+                bool doNotGenerateFile = generateFinalAssemblyOption == BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile;
+                if( doNotGenerateFile ) directory = null;
                 else if( String.IsNullOrEmpty( directory ) )
                 {
                     directory = BuilderFinalAssemblyConfiguration.GetFinalDirectory( directory );
@@ -109,7 +110,7 @@ namespace CK.Setup
                 }
                 else if( signKeyPair != null ) throw new ArgumentException( "A StrongNameKeyPair has been provided but signAssembly flag is false. signKeyPair must be null in this case." );
 
-                DynamicAssembly a = new DynamicAssembly( directory, assemblyName, externalVersionStamp, signKeyPair, doNotGenerateFinalAssembly ? AssemblyBuilderAccess.Run : AssemblyBuilderAccess.RunAndSave );
+                DynamicAssembly a = new DynamicAssembly( directory, assemblyName, externalVersionStamp, signKeyPair, doNotGenerateFile ? AssemblyBuilderAccess.Run : AssemblyBuilderAccess.RunAndSave );
 
                 TypeBuilder root = a.ModuleBuilder.DefineType( StObjContextRoot.RootContextTypeName, TypeAttributes.Class | TypeAttributes.Sealed, typeof( StObjContextRoot ) );
                 
@@ -173,12 +174,56 @@ namespace CK.Setup
                     monitor.Trace().Send( "Graph description requires {0} bytes in resource.", graphDescSize );
                     
                 }
-                if( !doNotGenerateFinalAssembly )
+                if( !doNotGenerateFile )
                 {
                     // Generates the Resource BLOB now.
                     outS.Memory.Position = 0;
                     a.ModuleBuilder.DefineManifestResource( StObjContextRoot.RootContextTypeName + ".Data", outS.Memory, ResourceAttributes.Private );
                     a.Save();
+                    if( generateFinalAssemblyOption == BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFileAndPEVerify )
+                    {
+                        monitor.OpenInfo().Send( "PEVerify the generated assembly." );
+                        string peVerfiyPath = Path.Combine( directory, "PEVerify.exe" );
+                        if( !File.Exists( peVerfiyPath ) )
+                        {
+                            using( monitor.OpenWarn().Send( "PEVerify.exe not found in directory '{0}': extracting a self-embedded version.", directory ) )
+                            {
+                                using( var source = Assembly.GetExecutingAssembly().GetManifestResourceStream( "CK.Setup.PEVerify.PEVerify.exe" ) )
+                                using( var target = File.Create( peVerfiyPath ) )
+                                {
+                                    source.CopyTo( target );
+                                }
+                                using( var source = Assembly.GetExecutingAssembly().GetManifestResourceStream( "CK.Setup.PEVerify.pevrfyrc.dll" ) )
+                                using( var target = File.Create( Path.Combine( directory, "pevrfyrc.dll" ) ) )
+                                {
+                                    source.CopyTo( target );
+                                }
+                            }
+                        }
+                        var pInfo = new ProcessStartInfo()
+                        {
+                            CreateNoWindow = true,
+                            RedirectStandardOutput = true,
+                            UseShellExecute = false,
+                            Arguments = '"' + a.SaveFileName + '"',
+                            FileName = peVerfiyPath,
+                            WorkingDirectory = directory
+                        };
+                        using( var pr = Process.Start( pInfo ) )
+                        {
+                            string output = pr.StandardOutput.ReadToEnd();
+                            if( pr.ExitCode == 0 )
+                            {
+                                monitor.Trace().Send( output );
+                            }
+                            else
+                            {
+                                monitor.Error().Send( output );
+                                monitor.CloseGroup( String.Format( "PEVerify.exe exited with code: {0}.", pr.ExitCode ) );
+                                return null;
+                            }
+                        }
+                    }
                 }
 
                 // Time to instanciate the final mapper.

@@ -97,7 +97,7 @@ namespace CK.StObj.Engine.Tests
                 var r = collector.GetResult();
                 Assert.That( r.HasFatalError, Is.False );
                 // Null as directory => use CK.StObj.Model folder.
-                r.GenerateFinalAssembly( TestHelper.ConsoleMonitor, StObjContextRoot.DefaultStObjRuntimeBuilder, false, null, "TEST_SimpleEmit" );
+                r.GenerateFinalAssembly( TestHelper.ConsoleMonitor, StObjContextRoot.DefaultStObjRuntimeBuilder, BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFile, null, "TEST_SimpleEmit" );
 
                 IStObjMap c = StObjContextRoot.Load( "TEST_SimpleEmit", runtimeBuilder, TestHelper.ConsoleMonitor );
                 Assert.That( typeof( B ).IsAssignableFrom( c.Default.ToLeafType( typeof( A ) ) ) );
@@ -181,8 +181,8 @@ namespace CK.StObj.Engine.Tests
                     Assert.That( theA.StObjPower, Is.EqualTo( "ASpec level property." ) );
                     Assert.That( typeof( A ).GetProperty( "StObjPower" ).GetValue( theA, null ), Is.EqualTo( "This is the A property." ) );
                 }
-                
-                r.GenerateFinalAssembly( TestHelper.ConsoleMonitor, StObjContextRoot.DefaultStObjRuntimeBuilder, false, TestHelper.BinFolder, "TEST_ConstructCalled" );
+
+                r.GenerateFinalAssembly( TestHelper.ConsoleMonitor, StObjContextRoot.DefaultStObjRuntimeBuilder, BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFile, TestHelper.BinFolder, "TEST_ConstructCalled" );
 
                 IStObjMap c = StObjContextRoot.Load( "TEST_ConstructCalled", StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.ConsoleMonitor );
                 {

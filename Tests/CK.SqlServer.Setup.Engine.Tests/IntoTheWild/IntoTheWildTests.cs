@@ -34,7 +34,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
 
             var c = new SetupEngineConfiguration();
             c.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( "IntoTheWild0" );
-            c.StObjEngineConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
+            c.StObjEngineConfiguration.FinalAssemblyConfiguration.GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile;
 
             var config = new SqlSetupAspectConfiguration();
             config.DefaultDatabaseConnectionString = "Server=.;Database=IntoTheWildAutoCreated;Integrated Security=SSPI";
@@ -90,7 +90,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
 
             var c = new SetupEngineConfiguration();
             c.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( "IntoTheWild0" );
-            c.StObjEngineConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
+            c.StObjEngineConfiguration.FinalAssemblyConfiguration.GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile;
             c.StObjEngineConfiguration.BuildAndRegisterConfiguration.ProbePaths.Add( TestHelper.TestBinFolder );
             c.StObjEngineConfiguration.BuildAndRegisterConfiguration.UseIndependentAppDomain = true;
             var config = new SqlSetupAspectConfiguration();
@@ -125,7 +125,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
                 // generates the assemly to test ConnectionString injection on SqlDatabase objects.
                 c.RunningMode = SetupEngineRunningMode.DefaultWithRevertOrderingNames;
                 c.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = "IntoTheWild.Auto";
-                c.StObjEngineConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = false;
+                c.StObjEngineConfiguration.FinalAssemblyConfiguration.GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFileAndPEVerify;
 
                 using( var r = StObjContextRoot.Build( c, null, TestHelper.ConsoleMonitor ) )
                 {

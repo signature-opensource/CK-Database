@@ -28,6 +28,8 @@ namespace CK.Core
         readonly AssemblyBuilder _assemblyBuilder;
         readonly IDictionary _memory;
         readonly List<Action<IDynamicAssembly>> _postActions;
+        readonly string _saveFileName;
+        readonly string _saveFilePath;
 
         /// <summary>
         /// This is the public key of the generated assembly.
@@ -95,10 +97,30 @@ namespace CK.Core
                 _assemblyBuilder.SetCustomAttribute( attr );
             }
             if( mustSave )
-                _moduleBuilder = _assemblyBuilder.DefineDynamicModule( aName.Name, aName.Name + ".dll" );
+            {
+                _saveFileName = aName.Name + ".dll";
+                _moduleBuilder = _assemblyBuilder.DefineDynamicModule( aName.Name, _saveFileName );
+                _saveFilePath = Path.Combine( directory, _saveFileName );
+            }
             else _moduleBuilder = _assemblyBuilder.DefineDynamicModule( aName.Name );
             _memory = new Hashtable();
             _postActions = new List<Action<IDynamicAssembly>>();
+        }
+
+        /// <summary>
+        /// Gets the name of the dll if it must be saved at the end, otherwise null.
+        /// </summary>
+        public string SaveFileName
+        {
+            get { return _saveFileName; }
+        }
+            
+        /// <summary>
+        /// Gets the full path of the dll if it must be saved at the end, otherwise null.
+        /// </summary>
+        public string SaveFilePath
+        {
+            get { return _saveFilePath; }
         }
             
         /// <summary>

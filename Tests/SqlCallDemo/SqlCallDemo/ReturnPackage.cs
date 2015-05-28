@@ -22,7 +22,10 @@ namespace SqlCallDemo
         public abstract Task<int> IntReturnAsync( SqlStandardCallContext ctx, int? v );
 
         [SqlProcedure( "sIntReturnWithActor", ExecuteCall = ExecutionType.ExecuteNonQuery )]
-        public abstract Task<int> IntReturnWithActorAsync( IActorCallContext ctx );
+        public abstract int IntReturnWithActor( IActorCallContext ctx, string def = "5" );
+
+        [SqlProcedure( "sIntReturnWithActor", ExecuteCall = ExecutionType.ExecuteNonQuery )]
+        public abstract Task<int> IntReturnWithActorAsync( IActorCallContext ctx, string def = "5" );
 
     }
 }

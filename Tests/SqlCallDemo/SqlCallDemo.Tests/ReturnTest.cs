@@ -49,7 +49,9 @@ namespace SqlCallDemo.Tests
             using( var ctx = new TestActorContext( 3712 ) )
             {
                 int i = await p.IntReturnWithActorAsync( ctx );
-                Assert.That( i, Is.EqualTo( 3712 * 3712 ) );
+                Assert.That( i, Is.EqualTo( 3712 * 3712 * 5 ) );
+                int j = await p.IntReturnWithActorAsync( ctx, "12" );
+                Assert.That( j, Is.EqualTo( 3712 * 3712 * 12 ) );
             }
         }
 

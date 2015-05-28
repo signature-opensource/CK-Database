@@ -14,6 +14,7 @@ using System.IO;
 
 namespace CK.Core
 {
+
     /// <summary>
     /// Defines options related to final assembly generation.
     /// </summary>
@@ -26,11 +27,37 @@ namespace CK.Core
         public const string DefaultAssemblyName = "CK.StObj.AutoAssembly";
 
         /// <summary>
-        /// Flags that prevents final assembly generation: the final asembly is always
-        /// created to be able to interact with eventually implemented StObj, this flag only 
-        /// prevents the assembly to be saved on disk.
+        /// Describes how and if the generated assembly should be saved to disk.
         /// </summary>
-        public bool DoNotGenerateFinalAssembly { get; set; }
+        public enum GenerateOption
+        {
+            /// <summary>
+            /// Saves the generated assembly.
+            /// </summary>
+            GenerateFile = 0,
+
+            /// <summary>
+            /// Default is <see cref="GenerateFile"/>.
+            /// </summary>
+            Default = GenerateFile,
+
+            /// <summary>
+            /// Does not save the generated assembly file.
+            /// </summary>
+            DoNotGenerateFile = 1,
+
+            /// <summary>
+            /// Saves the generated assembly and call PEVerify on it.
+            /// </summary>
+            GenerateFileAndPEVerify = 2
+        }
+
+        /// <summary>
+        /// Options that may prevent final assembly generation: the final asembly is always
+        /// created to be able to interact with eventually implemented StObj, this option can 
+        /// prevents the assembly to be saved on disk or saving it and verifying it through PEVerify.
+        /// </summary>
+        public GenerateOption GenerateFinalAssemblyOption { get; set; }
 
         /// <summary>
         /// Gets or set the directory where the final assembly must be saved.

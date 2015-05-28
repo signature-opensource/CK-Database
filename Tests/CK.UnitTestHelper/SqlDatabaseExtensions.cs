@@ -85,7 +85,10 @@ namespace CK.Core
         {
             Execute( connectionString, selectClause, parameters, cmd =>
             {
-                Assert.That( cmd.ExecuteReader( System.Data.CommandBehavior.SingleRow ).Read(), Is.False );
+                using( var reader = cmd.ExecuteReader( System.Data.CommandBehavior.SingleRow ) )
+                {
+                    Assert.That( reader.Read(), Is.False );
+                }
             } );
         }
 

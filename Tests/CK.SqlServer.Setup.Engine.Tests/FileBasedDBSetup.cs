@@ -32,7 +32,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
             config.DefaultDatabaseConnectionString = dbFromScratch;
 
             var c = new SetupEngineConfiguration();
-            c.StObjEngineConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
+            c.StObjEngineConfiguration.FinalAssemblyConfiguration.GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile;
             c.Aspects.Add( config );
 
             using( var defaultDB = SqlManager.OpenOrCreate( dbFromScratch, TestHelper.ConsoleMonitor ) )
@@ -79,7 +79,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
             config.DefaultDatabaseConnectionString = dbFromScratchWithView;
             SetupEngineConfiguration c = new SetupEngineConfiguration();
             c.Aspects.Add( config );
-            c.StObjEngineConfiguration.FinalAssemblyConfiguration.DoNotGenerateFinalAssembly = true;
+            c.StObjEngineConfiguration.FinalAssemblyConfiguration.GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile;
 
             using( var r = StObjContextRoot.Build( c, null, TestHelper.ConsoleMonitor ) )
             {

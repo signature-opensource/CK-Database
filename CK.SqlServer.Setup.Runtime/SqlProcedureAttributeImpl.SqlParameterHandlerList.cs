@@ -495,6 +495,7 @@ namespace CK.SqlServer.Setup
                     g.Emit( OpCodes.Stsfld, f.Field );
                     f = f.Next;
                 }
+                g.Emit( OpCodes.Ret );
                 fB.TypeBuilder.CreateType();
             }
 
