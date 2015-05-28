@@ -56,12 +56,14 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="AssemblyExtension.cs" />
     <Compile Include="ContextLocName\ContextLocName.cs" />
     <Compile Include="ContextLocName\ContextLocNameStructImpl.cs" />
     <Compile Include="ContextLocName\DefaultContextLocNaming.cs" />
     <Compile Include="ContextLocName\IContextLocNaming.cs" />
     <Compile Include="ContextLocName\ISetupNameManager.cs" />
     <Compile Include="HelperExtensions.cs" />
+    <Compile Include="ResourceLocator.cs" />
     <Compile Include="SetupItemSelectorBaseAttributeImpl.cs" />
     <Compile Include="SetupObjectItemRefMemberAttributeImplBase.cs" />
     <Compile Include="SetupObjectItem\ISetupObjectItemProvider.cs" />

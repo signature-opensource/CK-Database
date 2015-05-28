@@ -64,11 +64,10 @@
     <Compile Include="Configuration\ISetupEngineAspectConfiguration.cs" />
     <Compile Include="Configuration\SetupEngineConfiguration.cs" />
     <Compile Include="Configuration\SetupEngineRunningMode.cs" />
-    <Compile Include="Core\AssemblyExtension.cs" />
-    <Compile Include="Core\ResourceLocator.cs" />
     <Compile Include="Attributes\SetupItemSelectorBaseAttribute.cs" />
     <Compile Include="Attributes\GroupsAttribute.cs" />
     <Compile Include="Attributes\IAttributeSetupName.cs" />
+    <Compile Include="IResourceLocator.cs" />
     <Compile Include="ISetupEngineAspect.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Attributes\RequiredByAttribute.cs" />

@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{10FC486C-4B3F-4ACE-8AF6-D2D7A937F2F9}</ProjectGuid>
+    <ProjectGuid>{2E484407-FBC8-4190-884A-6BE639DD3EC4}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SqlCallDemo</RootNamespace>
-    <AssemblyName>SqlCallDemo</AssemblyName>
+    <RootNamespace>SqlColumns</RootNamespace>
+    <AssemblyName>SqlColumns</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -33,16 +33,13 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AllDefaultValuesPackage.cs" />
-    <Compile Include="ReturnPackage.cs" />
-    <Compile Include="PurelyInputLogPackage.cs" />
-    <Compile Include="OutputParameterPackage.cs" />
-    <Compile Include="GuidRefTestPackage.CallExecute.cs" />
-    <Compile Include="GuidRefTestPackage.cs" />
+    <Compile Include="ProductTable.cs" />
+    <Compile Include="ProductPackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -60,31 +57,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Res\sGuidRefTest.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Res\sOutputParameterWithDefault.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Res\sOutputInputParameterWithDefault.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Res\sPurelyInputLog.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Res\sPurelyInputSimpleLog.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Res\sAllDefaultValues.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Res\sStringReturn.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Res\sIntReturn.sql" />
+    <EmbeddedResource Include="Res\Prd.ProductTable.Install.1.0.0.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -35,19 +35,19 @@ namespace CK.Setupable.Engine.Tests
         public void ResourceLocationReliesOnDefaultNamespaceOfTheAssembly()
         {
             {
-                ResourceLocator r = new ResourceLocator( typeof( Resources ), "Res" );
+                ResourceLocator r = new ResourceLocator( typeof( Resources ), "Res", null );
                 Assert.That( r.GetString( "TextFile.txt", true ), Is.EqualTo( "A content." ) );
             }
             {
-                ResourceLocator r = new ResourceLocator( typeof( Resources ), "~CK.Setupable.Engine.Tests.Res" );
+                ResourceLocator r = new ResourceLocator( typeof( Resources ), "~CK.Setupable.Engine.Tests.Res", null );
                 Assert.That( r.GetString( "TextFile.txt", true ), Is.EqualTo( "A content." ) );
             }
             {
-                ResourceLocator r = new ResourceLocator( typeof( CK.Setupable.Engine.Tests.SubNamespace.OneType ), "Sub.Res" );
+                ResourceLocator r = new ResourceLocator( typeof( CK.Setupable.Engine.Tests.SubNamespace.OneType ), "Sub.Res", null );
                 Assert.That( r.GetString( "TextFile.txt", true ), Is.EqualTo( "A content 2." ) );
             }
             {
-                ResourceLocator r = new ResourceLocator( typeof( CK.Setupable.Engine.Tests.SubNamespace.OneType ), "~CK.Setupable.Engine.Tests.SubNamespace.Sub.Res" );
+                ResourceLocator r = new ResourceLocator( typeof( CK.Setupable.Engine.Tests.SubNamespace.OneType ), "~CK.Setupable.Engine.Tests.SubNamespace.Sub.Res", null );
                 Assert.That( r.GetString( "TextFile.txt", true ), Is.EqualTo( "A content 2." ) );
             }
         }
@@ -56,11 +56,11 @@ namespace CK.Setupable.Engine.Tests
         public void ResourceLocationInAnotherNamespace()
         {
             {
-                ResourceLocator r = new ResourceLocator( typeof( Another.Namespace.OneTypeInAnotherNamespace ), null );
+                ResourceLocator r = new ResourceLocator( typeof( Another.Namespace.OneTypeInAnotherNamespace ), null, null );
                 Assert.Throws<CKException>( () => r.GetString( "TextFile.txt", true ), "No way to get the resource without ~ root trick." );
             }
             {
-                ResourceLocator r = new ResourceLocator( typeof( Another.Namespace.OneTypeInAnotherNamespace ), "~CK.Setupable.Engine.Tests.Another.Namespace" );
+                ResourceLocator r = new ResourceLocator( typeof( Another.Namespace.OneTypeInAnotherNamespace ), "~CK.Setupable.Engine.Tests.Another.Namespace", null );
                 Assert.That( r.GetString( "TextFile.txt", true ), Is.EqualTo( "A content 3." ), "The compiler injects the Default namespace of the Assembly." );
             }
         }
@@ -69,7 +69,7 @@ namespace CK.Setupable.Engine.Tests
         public void GetMultipleNames()
         {
             {
-                ResourceLocator r = new ResourceLocator( typeof( Resources ), null );
+                ResourceLocator r = new ResourceLocator( typeof( Resources ), null, null );
                 Assert.That( r.GetNames( null ).ToArray(), Is.EquivalentTo( new string[] { "Another.Namespace.TextFile.txt", "Res.TextFile.txt", "SubNamespace.Sub.Multi.Multi.Text1.txt", "SubNamespace.Sub.Multi.Multi.Text2.txt", "SubNamespace.Sub.Res.TextFile.txt" } ) );
                 Assert.That( r.GetNames( "" ).ToArray(), Is.EquivalentTo( new string[] { "Another.Namespace.TextFile.txt", "Res.TextFile.txt", "SubNamespace.Sub.Multi.Multi.Text1.txt", "SubNamespace.Sub.Multi.Multi.Text2.txt", "SubNamespace.Sub.Res.TextFile.txt" } ) );
                 Assert.That( r.GetNames( "Res." ).ToArray(), Is.EquivalentTo( new string[] { "Res.TextFile.txt" } ) );
@@ -85,7 +85,7 @@ namespace CK.Setupable.Engine.Tests
                 Assert.DoesNotThrow( () => r.GetNames( "SubNamespace.Sub.Res." ).Select( name => r.GetString( name, true ) ) );
             }
             {
-                ResourceLocator r = new ResourceLocator( typeof( Resources ), "Res" );
+                ResourceLocator r = new ResourceLocator( typeof( Resources ), "Res", null );
                 Assert.That( r.GetNames( null ).ToArray(), Is.EquivalentTo( new string[] { "TextFile.txt" } ) );
                 Assert.That( r.GetNames( "T" ).ToArray(), Is.EquivalentTo( new string[] { "TextFile.txt" } ) );
                 Assert.That( r.GetNames( "Tex" ).ToArray(), Is.EquivalentTo( new string[] { "TextFile.txt" } ) );
@@ -95,7 +95,7 @@ namespace CK.Setupable.Engine.Tests
                 Assert.DoesNotThrow( () => r.GetNames( null ).Select( name => r.GetString( name, true ) ) );
             }
             {
-                ResourceLocator r = new ResourceLocator( typeof( Resources ), "SubNamespace" );
+                ResourceLocator r = new ResourceLocator( typeof( Resources ), "SubNamespace", null );
                 Assert.That( r.GetNames( null ).ToArray(), Is.EquivalentTo( new string[] { "Sub.Multi.Multi.Text1.txt", "Sub.Multi.Multi.Text2.txt", "Sub.Res.TextFile.txt" } ) );
                 Assert.That( r.GetNames( "Sub." ).ToArray(), Is.EquivalentTo( new string[] { "Sub.Multi.Multi.Text1.txt", "Sub.Multi.Multi.Text2.txt", "Sub.Res.TextFile.txt" } ) );
                 Assert.That( r.GetNames( "Sub.Multi." ).ToArray(), Is.EquivalentTo( new string[] { "Sub.Multi.Multi.Text1.txt", "Sub.Multi.Multi.Text2.txt" } ) );

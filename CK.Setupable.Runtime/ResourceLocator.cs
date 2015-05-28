@@ -21,13 +21,14 @@ namespace CK.Core
     /// The path may begin with a ~ and in such case, the resource path is "assembly based"
     /// and the <see cref="Type"/> is used only for its assembly.
     /// </remarks>
-    public class ResourceLocator : IMergeable
+    public class ResourceLocator : IResourceLocator
     {
         Type	_type;
+        Type	_fallbackType;
         string	_path;
 
         /// <summary>
-        /// Initializes an empty <see cref="ResourceLocator"/>: <see cref="P:Type"/> and <see cref="Path"/> are null.
+        /// Initializes an empty <see cref="ResourceLocator"/>: <see cref="PrimaryType"/>, <see cref="Path"/> and <see cref="FallbackType"/> are null.
         /// </summary>
         public ResourceLocator()
         {
@@ -36,29 +37,47 @@ namespace CK.Core
         /// <summary>
         /// Initializes a <see cref="ResourceLocator"/>.
         /// </summary>
-        /// <param name="resourceHolder">
+        /// <param name="primaryType">
         /// The assembly of this type must hold the resources. The <see cref="T:Type.Namespace"/>
         /// is the path prefix of the resources. Can be null.
         /// </param>
         /// <param name="path">
-        /// An optional sub path from the namespace of the type to the resource 
+        /// An optional sub path (can be null) from the namespace of the type to the resource 
         /// itself. Can be null or <see cref="String.Empty"/> if the resources are 
         /// directly associated to the type.
         /// </param>
-        public ResourceLocator( Type resourceHolder, string path )
+        public ResourceLocator( Type primaryType, string path, Type fallbackType )
         {
-            _type = resourceHolder;
+            _type = primaryType;
             _path = path;
+            _fallbackType = fallbackType;
         }
 
         /// <summary>
-        /// Gets or sets the type that will be used to locate the resource: its <see cref="T:Type.Namespace"/> is the path prefix of the resources.
+        /// Gets or sets the type that will be used to locate the resource: its <see cref="T:PrimaryType.Namespace"/> is the path prefix of the resources.
         /// The resources must belong to its <see cref="System.Reflection.Assembly"/>.
         /// </summary>
-        public Type Type
+        public Type PrimaryType
         {
             get { return _type; }
             set { _type = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the fallback type that will be used if <see cref="PrimaryType"/> is null.
+        /// </summary>
+        public Type FallbackType
+        {
+            get { return _fallbackType; }
+            set { _fallbackType = value; }
+        }
+
+        /// <summary>
+        /// Gets the type that will be used to locate the resource (either <see cref="PrimaryType"/> or <see cref="FallbackType"/>).
+        /// </summary>
+        public Type Type
+        {
+            get { return _type ?? _fallbackType; }
         }
 
         /// <summary>
@@ -80,7 +99,7 @@ namespace CK.Core
         /// <returns>The full resource name.</returns>
         public string ResourceName( string name )
         {
-            return ResourceName( _type, _path, name );
+            return ResourceName( Type, _path, name );
         }
 
         /// <summary>
@@ -93,8 +112,8 @@ namespace CK.Core
         /// </returns>
         public IEnumerable<string> GetNames( string namePrefix )
         {
-            if( _type == null ) return Util.EmptyStringArray;
-            IReadOnlyList<string> a = _type.Assembly.GetSortedResourceNames();
+            if( Type == null ) return Util.EmptyStringArray;
+            IReadOnlyList<string> a = Type.Assembly.GetSortedResourceNames();
             
             string p = ResourceName( "." );
             namePrefix = p + namePrefix;
@@ -119,7 +138,7 @@ namespace CK.Core
         /// </returns>
         public Stream OpenStream( string name, bool throwError )
         {
-            return LoadStream( _type, _path, name, throwError );
+            return LoadStream( Type, _path, name, throwError );
         }
 
         /// <summary>
@@ -145,7 +164,7 @@ namespace CK.Core
                 string s = LoadString( _type, _path, p + name, false );
                 if( s != null ) return s;
             }
-            return LoadString( _type, _path, name, throwError );
+            return LoadString( Type, _path, name, throwError );
         }
 
         /// <summary>
@@ -171,7 +190,7 @@ namespace CK.Core
         {
             foreach( var p in allowedNamePrefix )
             {
-                string s = LoadString( _type, _path, p + name, false );
+                string s = LoadString( Type, _path, p + name, false );
                 if( s != null )
                 {
                     namePrefix = p;
@@ -188,7 +207,7 @@ namespace CK.Core
         /// <returns>The assembly:path string.</returns>
         public override string ToString()
         {
-            return String.Format( "{0}:{1}", _type != null ? _type.Assembly.GetName().Name : "(no assembly)", ResourceName( "*" ) );
+            return String.Format( "{0}:{1}", Type != null ? Type.Assembly.GetName().Name : "(no assembly)", ResourceName( "*" ) );
         }
 
         /// <summary>
@@ -331,7 +350,7 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Merges information from another locator: whenever this <see cref="P:Type"/> or <see cref="Path"/>
+        /// Merges information from another <see cref="IResourceLocator"/>: whenever this <see cref="P:Type"/> or <see cref="Path"/>
         /// are null, they are set.
         /// When this Path starts with a dot, it is appended to the path of the merged object.
         /// </summary>
@@ -340,14 +359,14 @@ namespace CK.Core
         /// <returns>True on success, false otherwise.</returns>
         public bool Merge( object source, IServiceProvider services = null )
         {
-            ResourceLocator r = source as ResourceLocator;
+            IResourceLocator r = source as IResourceLocator;
             if( r != null )
             {
-                if( _type == null ) _type = r._type;
-                if( _path == null ) _path = r._path;
-                else if( r._path != null && _path.Length > 0 && _path[0] == '.' )
+                if( _type == null ) _type = r.Type;
+                if( _path == null ) _path = r.Path;
+                else if( r.Path != null && _path.Length > 0 && _path[0] == '.' )
                 {
-                    _path = r._path + _path;
+                    _path = r.Path + _path;
                 }
                 return true;
             }

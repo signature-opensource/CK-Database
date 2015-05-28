@@ -82,13 +82,16 @@ namespace CK.SqlServer.Setup
             if( fullName == null ) throw new ArgumentNullException( "fullName" );
             ISqlManager m = null;
             string context, location, name;
-            if( !DefaultContextLocNaming.TryParse( fullName, out context, out location, out name ) || String.IsNullOrEmpty( location ) )
+            if( !DefaultContextLocNaming.TryParse( fullName, out context, out location, out name ) )
             {
                 monitor.Error().Send( "Unable to extract a location from FullName '{0}' in order to find a Sql connection.", fullName );
             }
-            else if( (m = provider.FindManagerByName( location )) == null )
+            else
             {
-                monitor.Error().Send( "Location '{0}' from FullName '{1}' can not be mapped to an existing Sql Connection.", location, fullName );
+               if( (m = provider.FindManagerByName( location )) == null )
+                {
+                    monitor.Error().Send( "Location '{0}' from FullName '{1}' can not be mapped to an existing Sql Connection.", location, fullName );
+                }
             }
             return m;
         }
