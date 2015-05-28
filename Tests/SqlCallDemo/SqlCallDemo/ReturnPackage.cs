@@ -12,14 +12,17 @@ using CK.SqlServer.Setup;
 namespace SqlCallDemo
 {
 
-    [SqlPackage( Schema = "CK", Database = typeof( SqlDefaultDatabase ), ResourceType = typeof( ReturnPackage ), ResourcePath = "Res" ), Versions( "2.11.25" )]
+    [SqlPackage( Schema = "CK", ResourcePath = "Res" ), Versions( "2.11.25" )]
     public abstract partial class ReturnPackage : SqlPackage
     {
         [SqlProcedure( "sStringReturn", ExecuteCall = ExecutionType.ExecuteNonQuery )]
-        public abstract Task<string> StringReturn( SqlStandardCallContext ctx, int v );
+        public abstract Task<string> StringReturnAsync( SqlStandardCallContext ctx, int v );
 
         [SqlProcedure( "sIntReturn", ExecuteCall = ExecutionType.ExecuteNonQuery )]
-        public abstract Task<int> IntReturn( SqlStandardCallContext ctx, int? v );
+        public abstract Task<int> IntReturnAsync( SqlStandardCallContext ctx, int? v );
+
+        [SqlProcedure( "sIntReturnWithActor", ExecuteCall = ExecutionType.ExecuteNonQuery )]
+        public abstract Task<int> IntReturnWithActorAsync( IActorCallContext ctx );
 
     }
 }

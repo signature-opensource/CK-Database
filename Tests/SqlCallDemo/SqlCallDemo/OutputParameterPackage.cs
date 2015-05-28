@@ -11,7 +11,7 @@ using CK.SqlServer.Setup;
 namespace SqlCallDemo
 {
 
-    [SqlPackage( Schema = "CK", Database = typeof( SqlDefaultDatabase ), ResourceType = typeof( OutputParameterPackage ), ResourcePath = "Res" ), Versions( "2.11.25" )]
+    [SqlPackage( Schema = "CK", ResourcePath = "Res" ), Versions( "2.11.25" )]
     public abstract partial class OutputParameterPackage : SqlPackage
     {
         /// <summary>
@@ -21,7 +21,7 @@ namespace SqlCallDemo
         /// the default value of the parameter. 
         /// But this does not work for table valued functions (see http://stackoverflow.com/questions/2970516/how-do-you-specify-default-as-a-sql-parameter-value-in-ado-net).
         /// For the table valued case, we HAVE TO manually inject the actual default value parsed from the header.
-        /// This is why the sql expression of the default vallue is reinjected in the call. 
+        /// This is why the sql expression of the default value is reinjected in the call. 
         /// </para>
         /// </summary>
         [SqlProcedure( "sOutputInputParameterWithDefault", ExecuteCall = ExecutionType.ExecuteNonQuery )]

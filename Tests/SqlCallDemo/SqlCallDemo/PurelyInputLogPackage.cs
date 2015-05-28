@@ -12,7 +12,7 @@ using CK.SqlServer.Setup;
 namespace SqlCallDemo
 {
 
-    [SqlPackage( Schema = "CK", Database = typeof( SqlDefaultDatabase ), ResourceType = typeof( PurelyInputLogPackage ), ResourcePath = "Res" ), Versions( "2.11.25" )]
+    [SqlPackage( Schema = "CK", ResourcePath = "Res" ), Versions( "2.11.25" )]
     public abstract partial class PurelyInputLogPackage : SqlPackage
     {
         [SqlProcedure( "sPurelyInputSimpleLog", ExecuteCall = ExecutionType.ExecuteNonQuery )]

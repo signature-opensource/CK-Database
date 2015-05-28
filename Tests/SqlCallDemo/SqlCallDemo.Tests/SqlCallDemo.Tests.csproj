@@ -55,6 +55,7 @@
     <Compile Include="CallGuidRefTest.CallExecute.cs" />
     <Compile Include="CallGuidRefTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestActorContext.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
