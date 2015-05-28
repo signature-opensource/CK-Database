@@ -60,7 +60,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Disposes any cached <see cref="SqlConnectionProvider"/>: this <see cref="SqlStandardCallContext"/> instance can be reused once disposed.
         /// </summary>
-        public void Dispose()
+        public virtual void Dispose()
         {
             if( _cache != null )
             {
