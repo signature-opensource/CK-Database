@@ -5,25 +5,59 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CK.Core;
 
-namespace CK.SqlServer.Setup
+namespace CK.SqlServer
 {
     /// <summary>
     /// Standard implementation of a disposable <see cref="ISqlParameterContext"/> that supports 
     /// query execution by explicitely implementing <see cref="ISqlCommandExecutor"/>).
-    /// This is the simplest way to implement calls to the database: by specializing this type, generic contextual properties
-    /// (like ActorId) can also be used to automatically set method parameter values.
+    /// This is the simplest way to implement calls to the database: by specializing this type, application specific
+    /// properties (like the ActorId) can also be used to automatically set method parameter values.
     /// </summary>
-    public class SqlStandardCallContext : ISqlParameterContext, ISqlCommandExecutor, IDisposable
+    /// <remarks>
+    /// <para>
+    /// This class directly implements <see cref="ISqlCommandExecutor"/> interface but with explicit methodsin order to avoid interface pollution
+    /// when this object exposes parameter values (it is a <see cref="ISqlParameterContext"/>) and also to avoid creating any extra object.
+    /// </para>
+    /// <para>
+    /// The <see cref="SqlConnectionProvider"/> that are created by <see cref="ISqlCommandExecutor.GetProvider"/> are cached
+    /// and reused until <see cref="Dispose"/> is called.
+    /// </para>
+    /// </remarks>
+    public class SqlStandardCallContext : IDisposableSqlCallContext, ISqlCommandExecutor
     {
         object _cache;
 
         /// <summary>
-        /// Finds or creates a cached <see cref="SqlConnectionProvider"/>. 
+        /// Disposes any cached <see cref="SqlConnectionProvider"/>: this <see cref="SqlStandardCallContext"/> instance can be reused once disposed.
         /// </summary>
-        /// <param name="connectionString">The connection string.</param>
-        /// <returns>A new or already existing <see cref="SqlConnectionProvider"/>.</returns>
-        public SqlConnectionProvider GetProvider( string connectionString )
+        public virtual void Dispose()
+        {
+            if( _cache != null )
+            {
+                SqlConnectionProvider c = _cache as SqlConnectionProvider;
+                if( c != null ) c.Dispose();
+                else
+                {
+                    SqlConnectionProvider[] cache = _cache as SqlConnectionProvider[];
+                    for( int i = 0; i < cache.Length; ++i ) cache[i].Dispose();
+                }
+                _cache = null;
+            }
+        }
+
+        ISqlCommandExecutor ISqlCallContext.Executor
+        {
+            get { return this; }
+        }
+
+        SqlConnectionProvider ISqlCommandExecutor.GetProvider( string connectionString )
+        {
+            return GetProvider( connectionString );
+        }
+
+        SqlConnectionProvider GetProvider( string connectionString )
         {
             SqlConnectionProvider c;
             if( _cache == null )
@@ -55,24 +89,6 @@ namespace CK.SqlServer.Setup
                 _cache = newCache;
             }
             return newC;
-        }
-
-        /// <summary>
-        /// Disposes any cached <see cref="SqlConnectionProvider"/>: this <see cref="SqlStandardCallContext"/> instance can be reused once disposed.
-        /// </summary>
-        public virtual void Dispose()
-        {
-            if( _cache != null )
-            {
-                SqlConnectionProvider c = _cache as SqlConnectionProvider;
-                if( c != null ) c.Dispose();
-                else
-                {
-                    SqlConnectionProvider[] cache = _cache as SqlConnectionProvider[];
-                    for( int i = 0; i < cache.Length; ++i ) cache[i].Dispose();
-                }
-                _cache = null;
-            }
         }
 
         void ISqlCommandExecutor.ExecuteNonQuery( string connectionString, SqlCommand cmd )

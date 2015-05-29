@@ -38,8 +38,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AllDefaultValuesPackage.cs" />
-    <Compile Include="IActorCallContext.cs" />
+    <Compile Include="ProviderDemo\IActorCultureCallContext.cs" />
+    <Compile Include="ProviderDemo\ICultureTenantCallContext.cs" />
+    <Compile Include="ProviderDemo\IAllCallContext.cs" />
+    <Compile Include="ProviderDemo\ITenantCallContext.cs" />
+    <Compile Include="ProviderDemo\ICultureCallContext.cs" />
+    <Compile Include="ProviderDemo\IActorCallContext.cs" />
     <Compile Include="IActorCallContextIsExecutor.cs" />
+    <Compile Include="ProviderDemo\ProviderDemoPackage.cs" />
     <Compile Include="ReturnPackage.cs" />
     <Compile Include="PurelyInputLogPackage.cs" />
     <Compile Include="OutputParameterPackage.cs" />
@@ -90,6 +96,24 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Res\sIntReturnWithActor.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ProviderDemo\Res\sCultureOnly.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ProviderDemo\Res\sActorOnly.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ProviderDemo\Res\sTenantOnly.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ProviderDemo\Res\sActorCulture.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ProviderDemo\Res\sCultureTenant.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ProviderDemo\Res\sAllContexts.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

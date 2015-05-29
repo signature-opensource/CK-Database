@@ -63,9 +63,14 @@
     <Compile Include="Attributes\SqlViewAttribute.cs" />
     <Compile Include="Configuration\SqlDatabaseDescriptor.cs" />
     <Compile Include="Configuration\SqlSetupAspectConfiguration.cs" />
-    <Compile Include="ISqlParameterContext.cs" />
+    <Compile Include="ParameterAndCallContext\SqlStandardCallContextProvider.cs" />
+    <Compile Include="ParameterAndCallContext\SqlStandardCallContextProviderT.cs" />
+    <Compile Include="ParameterAndCallContext\SqlStandardCallContextRefCounter.cs" />
+    <Compile Include="ParameterAndCallContext\ISqlCallContextProvider.cs" />
+    <Compile Include="ParameterAndCallContext\IDisposableSqlCallContext.cs" />
+    <Compile Include="ParameterAndCallContext\ISqlParameterContext.cs" />
     <Compile Include="ISqlCallContext.cs" />
-    <Compile Include="ISqlCommandExecutor.cs" />
+    <Compile Include="ParameterAndCallContext\ISqlCommandExecutor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlDatabase.cs" />
     <Compile Include="SqlDefaultDatabase.cs" />
@@ -74,7 +79,7 @@
     <Compile Include="Attributes\SqlPackageAttributeBase.cs" />
     <Compile Include="SqlPackageBase.cs" />
     <Compile Include="Attributes\SqlProcedureAttribute.cs" />
-    <Compile Include="SqlStandardCallContext.cs" />
+    <Compile Include="ParameterAndCallContext\SqlStandardCallContext.cs" />
     <Compile Include="SqlTable.cs" />
     <Compile Include="Attributes\SqlTableAttribute.cs" />
     <Compile Include="SqlView.cs" />

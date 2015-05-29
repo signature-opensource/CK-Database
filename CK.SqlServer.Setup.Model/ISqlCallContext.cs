@@ -13,7 +13,7 @@ namespace CK.SqlServer
     public interface ISqlCallContext : ISqlParameterContext
     {
         /// <summary>
-        /// Gets the <see cref="ISqlCommandExecutor"/> that can be used to support call to the database.
+        /// Gets the <see cref="ISqlCommandExecutor"/> that can be used to support calls to the database.
         /// </summary>
         ISqlCommandExecutor Executor { get; }
     }

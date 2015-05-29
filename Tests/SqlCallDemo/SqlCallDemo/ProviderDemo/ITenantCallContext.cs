@@ -8,8 +8,12 @@ using CK.SqlServer.Setup;
 
 namespace SqlCallDemo
 {
-    public interface IActorCallContext : ISqlCallContext
+    public interface ITenantCallContext : ISqlCallContext
     {
-        int ActorId { get; }
+        int TenantId { get; }
+    }
+
+    public interface IDisposableTenantCallContext : ITenantCallContext, IDisposableSqlCallContext 
+    {
     }
 }
