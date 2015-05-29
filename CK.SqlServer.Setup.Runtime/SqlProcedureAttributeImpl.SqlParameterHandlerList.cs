@@ -343,6 +343,7 @@ namespace CK.SqlServer.Setup
                     }
                     else
                     {
+                        g.Emit( OpCodes.Castclass, t );
                         g.Emit( OpCodes.Stind_Ref );
                     }
                 }
@@ -418,6 +419,10 @@ namespace CK.SqlServer.Setup
                     if( _unwrappedReturnedType.IsValueType )
                     {
                         g.Emit( OpCodes.Unbox_Any, _unwrappedReturnedType );
+                    }
+                    else
+                    {
+                        g.Emit( OpCodes.Castclass, _unwrappedReturnedType );
                     }
                 }
                 else
