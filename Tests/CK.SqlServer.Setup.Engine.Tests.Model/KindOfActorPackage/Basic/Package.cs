@@ -238,7 +238,7 @@ namespace SqlActorPackage.Basic
             int ActorId { get; set; }
         }
 
-        public interface IBasicAuthContext : IAmHereToTestPropertyMasking, ISqlCallContext, IDisposable
+        public interface IBasicAuthContext : IAmHereToTestPropertyMasking, ISqlParameterContext, IDisposable
         {
             SqlConnectionProvider GetProvider( string connectionString );
 

@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CK.SqlServer.Setup
+namespace CK.SqlServer
 {
     /// <summary>
     /// Defines all required methods to support command execution.

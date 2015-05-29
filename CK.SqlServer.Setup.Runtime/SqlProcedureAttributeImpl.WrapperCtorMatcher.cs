@@ -96,7 +96,7 @@ namespace CK.SqlServer.Setup
                         else if( IsValidDefaultValue( toMatch ) ) _mappedParameters[i] = toMatch;
                     }
                 }
-                return _methodParameters.All( p => p.IdxTarget >= 0 || SqlCallContextInfo.IsSqlCallContext( p.Parameter ) ) 
+                return _methodParameters.All( p => p.IdxTarget >= 0 || SqlCallContextInfo.IsSqlParameterContext( p.Parameter ) ) 
                         && !_mappedParameters.Where( ( p, idx ) => idx != _idxSqlCommand && p == null ).Any();
             }
 
@@ -129,7 +129,7 @@ namespace CK.SqlServer.Setup
                     }
                     foreach( var mP in _methodParameters.Where( p => p.IdxTarget == -1 ) )
                     {
-                        if( SqlCallContextInfo.IsSqlCallContext( mP.Parameter ) )
+                        if( SqlCallContextInfo.IsSqlParameterContext( mP.Parameter ) )
                             monitor.Trace().Send( "SqlCallContext method parameter '{0}' is ignored.", DumpParameter( mP.Parameter ) );
                         else monitor.Error().Send( "Unable to map extra method parameter '{0}'.", DumpParameter( mP.Parameter ) );
                     }

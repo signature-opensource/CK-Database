@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 namespace CK.SqlServer.Setup
 {
     /// <summary>
-    /// Standard implementation of a disposable <see cref="ISqlCallContext"/> that supports 
+    /// Standard implementation of a disposable <see cref="ISqlParameterContext"/> that supports 
     /// query execution by explicitely implementing <see cref="ISqlCommandExecutor"/>).
     /// This is the simplest way to implement calls to the database: by specializing this type, generic contextual properties
     /// (like ActorId) can also be used to automatically set method parameter values.
     /// </summary>
-    public class SqlStandardCallContext : ISqlCallContext, ISqlCommandExecutor, IDisposable
+    public class SqlStandardCallContext : ISqlParameterContext, ISqlCommandExecutor, IDisposable
     {
         object _cache;
 

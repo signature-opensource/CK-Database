@@ -39,6 +39,7 @@
   <ItemGroup>
     <Compile Include="AllDefaultValuesPackage.cs" />
     <Compile Include="IActorCallContext.cs" />
+    <Compile Include="IActorCallContextIsExecutor.cs" />
     <Compile Include="ReturnPackage.cs" />
     <Compile Include="PurelyInputLogPackage.cs" />
     <Compile Include="OutputParameterPackage.cs" />

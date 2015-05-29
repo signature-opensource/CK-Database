@@ -48,24 +48,24 @@ namespace SqlCallDemo
 
 
         /// <summary>
-        /// An object that implements marker interface <see cref="ISqlCallContext"/> can be used to inject parameters.
+        /// An object that implements marker interface <see cref="ISqlParameterContext"/> can be used to inject parameters.
         /// </summary>
-        public class GuidRefTestContext : ISqlCallContext
+        public class GuidRefTestContext : ISqlParameterContext
         {
             public bool ReplaceInAndOut { get; set; }
             public Guid InOnly { get; set; }
         }
 
         /// <summary>
-        /// Using a <see cref="ISqlCallContext"/> parameter to provide values to input parameters.
+        /// Using a <see cref="ISqlParameterContext"/> parameter to provide values to input parameters.
         /// </summary>
         [SqlProcedure( "sGuidRefTest" )]
         public abstract SqlCommand CmdGuidRefTest( GuidRefTestContext context, ref Guid inAndOut, out string textResult );
 
         /// <summary>
-        /// An object that implements marker interface <see cref="ISqlCallContext"/> can be used to inject parameters.
+        /// An object that implements marker interface <see cref="ISqlParameterContext"/> can be used to inject parameters.
         /// </summary>
-        public class GuidRefTestInOutContext : ISqlCallContext
+        public class GuidRefTestInOutContext : ISqlParameterContext
         {
             public bool ReplaceInAndOut { get; set; }
             public Guid InOnly { get; set; }
@@ -73,7 +73,7 @@ namespace SqlCallDemo
         }
 
         /// <summary>
-        /// Using a <see cref="ISqlCallContext"/> parameter to provide values to input parameters but also to input/output parameters.
+        /// Using a <see cref="ISqlParameterContext"/> parameter to provide values to input parameters but also to input/output parameters.
         /// </summary>
         [SqlProcedure( "sGuidRefTest" )]
         public abstract SqlCommand CmdGuidRefTest( GuidRefTestInOutContext context, out string textResult );

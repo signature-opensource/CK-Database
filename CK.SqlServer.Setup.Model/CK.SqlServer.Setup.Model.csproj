@@ -59,9 +59,11 @@
     </Compile>
     <Compile Include="Attributes\SqlObjectItemMemberAttributeBase.cs" />
     <Compile Include="Attributes\SqlObjectItemAttribute.cs" />
+    <Compile Include="Attributes\SqlProcedureNonQuery.cs" />
     <Compile Include="Attributes\SqlViewAttribute.cs" />
     <Compile Include="Configuration\SqlDatabaseDescriptor.cs" />
     <Compile Include="Configuration\SqlSetupAspectConfiguration.cs" />
+    <Compile Include="ISqlParameterContext.cs" />
     <Compile Include="ISqlCallContext.cs" />
     <Compile Include="ISqlCommandExecutor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -8,7 +8,7 @@ using CK.SqlServer.Setup;
 
 namespace SqlCallDemo
 {
-    public interface IActorCallContext : ISqlCallContext
+    public interface IActorCallContextIsExecutor : ISqlParameterContext, ISqlCommandExecutor
     {
         int ActorId { get; }
     }

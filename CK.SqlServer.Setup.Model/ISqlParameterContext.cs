@@ -5,16 +5,18 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
 namespace CK.SqlServer
 {
     /// <summary>
-    /// A ISqlCallContext is a <see cref="ISqlParameterContext"/> that exposes a <see cref="ISqlCommandExecutor"/>.
+    /// Marker interface for classes that hold contextual parameters.
     /// </summary>
-    public interface ISqlCallContext : ISqlParameterContext
+    public interface ISqlParameterContext
     {
-        /// <summary>
-        /// Gets the <see cref="ISqlCommandExecutor"/> that can be used to support call to the database.
-        /// </summary>
-        ISqlCommandExecutor Executor { get; }
     }
 }

@@ -149,7 +149,7 @@ namespace CK.SqlServer.Setup
                         }
                         // If the parameter is a SqlCallContext, we register it
                         // in order to consider its properties as method parameters and when Executing Call, find the ISqlCommandExecutor.
-                        if( SqlCallContextInfo.IsSqlCallContext( mP ) )
+                        if( SqlCallContextInfo.IsSqlParameterContext( mP ) )
                         {
                             if( sqlCallContexts == null ) sqlCallContexts = new SqlCallContextInfo( gType, m.ReturnType, mParameters );
                             if( !sqlCallContexts.Add( mP, monitor ) ) ++nbError;

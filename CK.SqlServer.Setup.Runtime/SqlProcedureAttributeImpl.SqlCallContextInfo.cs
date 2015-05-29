@@ -123,7 +123,6 @@ namespace CK.SqlServer.Setup
                                 monitor.Trace().Send( "Planning to use parameter '{0}.GetExecutor()' method {1} method.", param.Name, _executorCallNonQuery.Name );
                             }
                         }
-
                     }
                 }
                 return true;
@@ -207,13 +206,13 @@ namespace CK.SqlServer.Setup
             }
 
             /// <summary>
-            /// Centralized helper that states whether a parameter is a <see cref="ISqlCallContext"/> object.
+            /// Centralized helper that states whether a parameter is a <see cref="ISqlParameterContext"/> object.
             /// </summary>
             /// <param name="mP">The parameter info.</param>
             /// <returns>True for ISqlCallContext parameter.</returns>
-            static public bool IsSqlCallContext( ParameterInfo mP )
+            static internal bool IsSqlParameterContext( ParameterInfo mP )
             {
-                return typeof( ISqlCallContext ).IsAssignableFrom( mP.ParameterType );
+                return SqlObjectItem.TypeISqlParameterContext.IsAssignableFrom( mP.ParameterType );
             }
 
         }

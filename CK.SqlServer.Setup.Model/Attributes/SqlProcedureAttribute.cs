@@ -15,6 +15,13 @@ using System.Reflection;
 
 namespace CK.SqlServer.Setup
 {
+
+    public enum ExecutionType
+    {
+        Unknown,
+        ExecuteNonQuery
+    } 
+    
     [AttributeUsage( AttributeTargets.Method, AllowMultiple = false, Inherited = false )]
     public class SqlProcedureAttribute : SqlObjectItemMemberAttributeBase
     {
@@ -27,9 +34,4 @@ namespace CK.SqlServer.Setup
         public ExecutionType ExecuteCall { get; set; }
     }
 
-    public enum ExecutionType
-    {
-        Unknown,
-        ExecuteNonQuery
-    }
 }
