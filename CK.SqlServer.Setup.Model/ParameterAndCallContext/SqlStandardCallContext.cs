@@ -98,7 +98,7 @@ namespace CK.SqlServer
 
         Task ISqlCommandExecutor.ExecuteNonQueryAsync( string connectionString, SqlCommand cmd )
         {
-            return ExecAsync<string>( connectionString, cmd, _ => null, null );
+            return ExecAsync<string>( connectionString, cmd, _ => null );
         }
 
         Task ISqlCommandExecutor.ExecuteNonQueryAsyncCancellable( string connectionString, SqlCommand cmd, CancellationToken cancellationToken )
@@ -108,7 +108,7 @@ namespace CK.SqlServer
 
         Task<T> ISqlCommandExecutor.ExecuteNonQueryAsyncTyped<T>( string connectionString, SqlCommand cmd, Func<SqlCommand, T> resultBuilder )
         {
-            return ExecAsync<T>( connectionString, cmd, resultBuilder, null );
+            return ExecAsync<T>( connectionString, cmd, resultBuilder );
         }
 
         Task<T> ISqlCommandExecutor.ExecuteNonQueryAsyncTypedCancellable<T>( string connectionString, SqlCommand cmd, Func<SqlCommand, T> resultBuilder, CancellationToken cancellationToken )
@@ -116,13 +116,11 @@ namespace CK.SqlServer
             return ExecAsync<T>( connectionString, cmd, resultBuilder, cancellationToken );
         }
 
-        Task<T> ExecAsync<T>( string connectionString, SqlCommand cmd, Func<SqlCommand, T> resultBuilder, CancellationToken? cancellationToken )
+        Task<T> ExecAsync<T>( string connectionString, SqlCommand cmd, Func<SqlCommand, T> resultBuilder, CancellationToken cancellationToken = default(CancellationToken) )
         {
             var tcs = new TaskCompletionSource<T>();
 
-            Task<IDisposable> openTask = cancellationToken.HasValue
-                                            ? GetProvider( connectionString ).AcquireConnectionAsync( cmd, cancellationToken.Value )
-                                            : GetProvider( connectionString ).AcquireConnectionAsync( cmd );
+            Task<IDisposable> openTask = GetProvider( connectionString ).AcquireConnectionAsync( cmd, cancellationToken );
             openTask
                 .ContinueWith( open =>
                     {
@@ -132,9 +130,7 @@ namespace CK.SqlServer
                         {
                             try
                             {
-                                var execTask = cancellationToken.HasValue
-                                                    ? cmd.ExecuteNonQueryAsync( cancellationToken.Value )
-                                                    : cmd.ExecuteNonQueryAsync();
+                                var execTask = cmd.ExecuteNonQueryAsync( cancellationToken );
                                 execTask.ContinueWith( exec =>
                                 {
                                     if( exec.IsFaulted ) tcs.SetException( exec.Exception.InnerExceptions );

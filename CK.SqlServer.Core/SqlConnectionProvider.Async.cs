@@ -28,9 +28,9 @@ namespace CK.SqlServer
         /// the <see cref="KeepOpened"/> parameter is ignored: the connection will remain opened
         /// until an explicit call to <see cref="Close"/> is made.
         /// </remarks>
-        public async Task OpenAsync()
+        public Task OpenAsync()
         {
-            if( _oCon.State == ConnectionState.Closed ) await _oCon.OpenAsync();
+            return _oCon.State == ConnectionState.Closed ? _oCon.OpenAsync() : Task.FromResult( 0 );
         }
 
         /// <summary>
@@ -39,82 +39,61 @@ namespace CK.SqlServer
         /// rather that AcquireXXX methods like this one.
         /// </summary>
         /// <param name="cmd">The command to execute.</param>
+        /// <param name="cancellationToken">Optional <see cref="CancellationToken"/>.</param>
         /// <returns>States whether the connection used to execute the command must be closed or not.</returns>
-        public async Task<IDisposable> AcquireConnectionAsync( SqlCommand cmd )
-        {
-            if( cmd == null ) throw new ArgumentNullException( "cmd" );
-            bool mustClose;
-            if( cmd.Connection == null )
-            {
-                var result = await AcquireConnAsync( null );
-                cmd.Connection = result.Item1;
-                mustClose = result.Item2;
-            }
-            else mustClose = false;
-            return new SqlConnectionProviderAsyncDisposable( cmd, mustClose, this );
-        }
-
-        /// <summary>
-        /// Acquires a connection.
-        /// If possible, use the methods that encapsulates handles management (methods named ExecuteXXX or ReadXXX) 
-        /// rather that AcquireXXX methods like this one.
-        /// </summary>
-        /// <param name="cmd">The command to execute.</param>
-        /// <returns>States whether the connection used to execute the command must be closed or not.</returns>
-        public async Task<IDisposable> AcquireConnectionAsync( SqlCommand cmd, CancellationToken cancellationToken )
+        public async Task<IDisposable> AcquireConnectionAsync( SqlCommand cmd, CancellationToken cancellationToken = default(CancellationToken) )
         {
             if( cmd == null ) throw new ArgumentNullException( "cmd" );
             bool mustClose;
             if( cmd.Connection == null )
             {
                 var result = await AcquireConnAsync( cancellationToken );
-                cmd.Connection = result.Item1;
-                mustClose = result.Item2;
+                cmd.Connection = result.Key;
+                mustClose = result.Value;
             }
             else mustClose = false;
-            return new SqlConnectionProviderAsyncDisposable( cmd, mustClose, this );
+            return new SqlConnectionProviderDisposable( cmd, mustClose, this );
         }
 
-        async Task<Tuple<SqlConnection, bool>> AcquireConnAsync( CancellationToken? cancellationToken )
+        async Task<KeyValuePair<SqlConnection, bool>> AcquireConnAsync( CancellationToken cancellationToken )
         {
             bool mustClose = false;
             if( _oConIsWorking )
             {
                 SqlConnection c = new SqlConnection( _strConn );
-                if( cancellationToken.HasValue ) await c.OpenAsync( cancellationToken.Value );
-                else await c.OpenAsync();
+                await c.OpenAsync( cancellationToken );
                 mustClose = true;
-                return new Tuple<SqlConnection, bool>( c, mustClose );
+                return new KeyValuePair<SqlConnection, bool>( c, mustClose );
             }
             if( _oCon.State == ConnectionState.Closed )
             {
-                if( cancellationToken.HasValue ) await _oCon.OpenAsync( cancellationToken.Value );
-                else await _oCon.OpenAsync();
+                await _oCon.OpenAsync( cancellationToken );
                 mustClose = _autoClose;
             }
             else mustClose = false;
             _oConIsWorking = true;
-            return new Tuple<SqlConnection, bool>( _oCon, mustClose );
+            return new KeyValuePair<SqlConnection, bool>( _oCon, mustClose );
         }
 
         /// <summary>
         /// Executes the command and returns the first row as an array of object values.
         /// </summary>
         /// <param name="cmd">The <see cref="SqlCommand"/> to execute.</param>
+        /// <param name="cancellationToken">Optional <see cref="CancellationToken"/>.</param>
         /// <returns>An array of objects or null if nothing has been returned from database.</returns>
         /// <remarks>
         /// Exceptions are not caught by this method: acquired resources will be 
         /// correctly released but exceptions will be propagated to caller.
         /// </remarks>
-        public async Task<object[]> ReadFirstRowAsync( SqlCommand cmd )
+        public async Task<object[]> ReadFirstRowAsync( SqlCommand cmd, CancellationToken cancellationToken = default(CancellationToken) )
         {
             using( await AcquireConnectionAsync( cmd ) )
             {
-                using( SqlDataReader r = await cmd.ExecuteReaderAsync( CommandBehavior.SingleRow ) )
+                using( SqlDataReader r = await cmd.ExecuteReaderAsync( CommandBehavior.SingleRow, cancellationToken ) ) 
                 {
                     try
                     {
-                        if( !await r.ReadAsync() ) return null;
+                        if( !await r.ReadAsync( cancellationToken ) ) return null;
                         object[] res = new object[r.FieldCount];
                         r.GetValues( res );
                         return res;
@@ -127,27 +106,28 @@ namespace CK.SqlServer
             }
         }
 
-
-        class SqlConnectionProviderAsyncDisposable : IDisposable
+        /// <summary>
+        /// Executes the command on the main shared connection if possible and, if the 
+        /// main connection is in use, acquires a new connection.
+        /// </summary>
+        /// <param name="cmd">The <see cref="SqlCommand"/> to execute.</param>
+        /// <param name="cancellationToken">Optional <see cref="CancellationToken"/>.</param>
+        /// <returns>The first column of the first row in the result set.</returns>
+        /// <remarks>
+        /// Exceptions are not caught by this method: acquired resources will be 
+        /// correctly released but exceptions will be propagated to caller.
+        /// </remarks>
+        public async Task<object> ExecuteScalarAsync( SqlCommand cmd, CancellationToken cancellationToken = default(CancellationToken) )
         {
-            SqlCommand _cmd;
-            bool _mustClose;
-            SqlConnectionProvider _p;
-
-            public SqlConnectionProviderAsyncDisposable( SqlCommand cmd, bool mustClose, SqlConnectionProvider p )
+            using( await AcquireConnectionAsync( cmd, cancellationToken ) )
             {
-                _cmd = cmd;
-                _mustClose = mustClose;
-                _p = p;
-            }
-
-            public void Dispose()
-            {
-                if( _mustClose ) _cmd.Connection.Close();
-
-                if( _cmd.Connection == _p._oCon )
+                try
                 {
-                    _p._oConIsWorking = false;
+                    return await cmd.ExecuteScalarAsync( cancellationToken );
+                }
+                catch( SqlException ex )
+                {
+                    throw SqlDetailedException.Create( cmd, ex );
                 }
             }
         }
