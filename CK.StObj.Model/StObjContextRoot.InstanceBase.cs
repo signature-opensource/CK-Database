@@ -129,5 +129,9 @@ namespace CK.Core
             return DoFindContext( context );
         }
 
+        public IEnumerable<StObjMapMapping> AllMappings
+        {
+            get { return _contexts.SelectMany( c => c.Types, (c, t) => new StObjMapMapping( t, c.Context, c.Obtain( t ) ) ); }
+        }
     }
 }

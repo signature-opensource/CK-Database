@@ -102,5 +102,9 @@ namespace CK.Core
             return _map.ContainsKey( t );
         }
 
+        public IEnumerable<Type> Types
+        {
+            get { return _map.Keys.Select( o => o is Type ? (Type)o : ((AmbientContractInterfaceKey)o).InterfaceType ); }
+        }
     }
 }

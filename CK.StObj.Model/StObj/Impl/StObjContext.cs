@@ -7,6 +7,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -20,6 +21,7 @@ namespace CK.Core
 
         internal StObjContext( StObjContextRoot root, string name, Dictionary<Type, int> mappings )
         {
+            Debug.Assert( name != null );
             _root = root;
             _name = name;
             _mappings = mappings;
@@ -33,6 +35,11 @@ namespace CK.Core
         IContextualRoot<IContextualTypeMap> IContextualTypeMap.AllContexts
         {
             get { return _root; }
+        }
+
+        public IEnumerable<Type> Types 
+        { 
+            get { return _mappings.Keys; } 
         }
 
         public IStObjMap AllContexts

@@ -7,6 +7,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -24,6 +25,7 @@ namespace CK.Core
 
         public AmbientContractInterfaceKey( Type ambientContractInterface )
         {
+            Debug.Assert( ambientContractInterface.IsInterface );
             InterfaceType = ambientContractInterface;
         }
 
