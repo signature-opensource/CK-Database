@@ -97,6 +97,37 @@ namespace CK.SqlServer
             return new Tuple<SqlConnection, bool>( _oCon, mustClose );
         }
 
+        /// <summary>
+        /// Executes the command and returns the first row as an array of object values.
+        /// </summary>
+        /// <param name="cmd">The <see cref="SqlCommand"/> to execute.</param>
+        /// <returns>An array of objects or null if nothing has been returned from database.</returns>
+        /// <remarks>
+        /// Exceptions are not caught by this method: acquired resources will be 
+        /// correctly released but exceptions will be propagated to caller.
+        /// </remarks>
+        public async Task<object[]> ReadFirstRowAsync( SqlCommand cmd )
+        {
+            using( await AcquireConnectionAsync( cmd ) )
+            {
+                using( SqlDataReader r = await cmd.ExecuteReaderAsync( CommandBehavior.SingleRow ) )
+                {
+                    try
+                    {
+                        if( !await r.ReadAsync() ) return null;
+                        object[] res = new object[r.FieldCount];
+                        r.GetValues( res );
+                        return res;
+                    }
+                    catch( SqlException ex )
+                    {
+                        throw SqlDetailedException.Create( cmd, ex );
+                    }
+                }
+            }
+        }
+
+
         class SqlConnectionProviderAsyncDisposable : IDisposable
         {
             SqlCommand _cmd;

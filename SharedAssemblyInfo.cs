@@ -16,7 +16,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTrademark( "" )]
 [assembly: CLSCompliant( true )]
 
-[assembly: AssemblyVersion( "3.0.16" )]
+[assembly: AssemblyVersion( "3.0.17" )]
 
 
 #if DEBUG
