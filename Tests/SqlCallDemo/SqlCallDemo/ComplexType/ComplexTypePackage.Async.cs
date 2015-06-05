@@ -1,0 +1,32 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using CK.Setup;
+using CK.SqlServer;
+using CK.SqlServer.Setup;
+
+namespace SqlCallDemo.ComplexType
+{
+
+    public abstract partial class ComplexTypePackage : SqlPackage
+    {
+        [SqlProcedureNonQuery( "sComplexTypeStupidEmpty" )]
+        public abstract Task<ComplexTypeStupidEmpty> GetComplexTypeStupidEmptyAsync( ISqlCallContext ctx );
+
+        [SqlProcedureNonQuery( "sComplexTypeSimple" )]
+        public abstract Task<ComplexTypeSimple> GetComplexTypeSimpleAsync( ISqlCallContext ctx, int id = 0 );
+
+        [SqlProcedureNonQuery( "sComplexTypeSimple" )]
+        public abstract Task<ComplexTypeSimpleWithCtor> GetComplexTypeSimpleWithCtorAsync( ISqlCallContext ctx, int id = 0 );
+
+        [SqlProcedureNonQuery( "sComplexTypeSimple" )]
+        public abstract Task<ComplexTypeSimpleWithExtraProperty> GetComplexTypeSimpleWithExtraPropertyAsync( ISqlCallContext ctx, int id = 0 );
+
+        [SqlProcedureNonQuery( "sComplexTypeSimple" )]
+        public abstract Task<ComplexTypeSimpleWithMissingProperty> GetComplexTypeSimpleWithMissingPropertyAsync( ISqlCallContext ctx, int id = 0 );
+
+    }
+}

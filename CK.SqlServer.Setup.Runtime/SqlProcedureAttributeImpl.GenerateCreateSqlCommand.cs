@@ -284,7 +284,7 @@ namespace CK.SqlServer.Setup
                     monitor.Error().Send( "When calling with {0}, at least one ISqlCallContext object must be or exposes a ISqlCommandExecutor.", gType );
                     ++nbError;
                 }
-                else
+                else if( nbError == 0 )
                 {
                     Debug.Assert( gType == GenerationType.ExecuteNonQuery );
                     if( sqlCallContexts.RequiresReturnTypeBuilder )
@@ -422,10 +422,12 @@ namespace CK.SqlServer.Setup
             }
         }
 
-        static string DumpParameters( IEnumerable<ParameterInfo> parameters )
+        internal static string DumpParameters( IEnumerable<ParameterInfo> parameters, bool withParenthesis )
         {
             StringBuilder b = new StringBuilder();
+            if( withParenthesis ) b.Append( "( " );
             DumpParameters( b, parameters );
+            if( withParenthesis ) b.Append( " )" );
             return b.ToString();
         }
 

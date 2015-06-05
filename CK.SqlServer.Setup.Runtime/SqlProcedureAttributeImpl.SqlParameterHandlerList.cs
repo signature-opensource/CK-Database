@@ -33,13 +33,17 @@ namespace CK.SqlServer.Setup
             bool _isAsyncCall;
             Type _unwrappedReturnedType;
             readonly StringBuilder _funcResultBuilderSignature;
+            ComplexTypeMapperModel _complexReturnType;
 
             public class SqlParamHandler
             {
                 readonly SqlParameterHandlerList _holder;
 
                 public readonly SqlExprParameter SqlExprParam;
-                // ParameterName without the '@' prefix char.
+
+                /// <summary>
+                /// ParameterName without the '@' prefix char.
+                /// </summary>
                 public readonly string SqlParameterName;
                 readonly int _index;
 
@@ -98,65 +102,95 @@ namespace CK.SqlServer.Setup
                 {
                     int nbError = 0;
                     bool sqlIsInputOutput = p.IsInputOutput;
-                    bool sqlIsOutput = sqlIsInputOutput || p.IsOutput;
-                    bool sqlIsInput = sqlIsInputOutput || p.IsInput;
+                    bool sqlIsOutput = p.IsOutput;
+                    bool sqlIsInput = p.IsInput;
+                    bool sqlIsPureOutput = p.IsPureOutput;
+                    bool isComplexReturnedType = _holder.ComplexReturnType != null;
+                    bool sqlParameterHasDefaultValue = p.DefaultValue != null;
                     Debug.Assert( sqlIsInput || sqlIsOutput );
+                    // Analysing Method vs. Procedure parameters.
                     if( mP.ParameterType.IsByRef )
                     {
-                        if( mP.IsOut )
+                        #region ref or out Method parameter
+                        if( _holder.IsAsyncCall )
                         {
-                            #region out method parameter
-                            if( sqlIsInputOutput )
-                            {
-                                if( _isUsedByReturnedType )
-                                {
-                                    monitor.Warn().Send( "Sql parameter '{0}' is an /*input*/output parameter. The method '{1}' should use 'ref' for it (not 'out') or no ref nor out since this parameter is used by returned call.", p.Variable.Identifier.Name, mP.Member.Name );
-                                }
-                                else
-                                {
-                                    monitor.Error().Send( "Sql parameter '{0}' is an /*input*/output parameter. The method '{1}' must use 'ref' for it (not 'out').", p.Variable.Identifier.Name, mP.Member.Name );
-                                    ++nbError;
-                                }
-                            }
-                            else if( sqlIsInput )
-                            {
-                                Debug.Assert( !sqlIsOutput );
-                                monitor.Error().Send( "Sql parameter '{0}' is an input parameter. The method '{1}' can not use 'out' for it (and 'ref' modifier will be useless).", p.Variable.Identifier.Name, mP.Member.Name );
-                                ++nbError;
-                            }
-                            #endregion
+                            monitor.Error().Send( "The method '{0}' implements an async call, There can not be 'ref' or 'out' parameters (like parameter '{1}').", mP.Member.Name, mP.Name );
+                            ++nbError;
                         }
                         else
                         {
-                            // ref method parameter.
-                            if( !sqlIsOutput )
+                            if( isComplexReturnedType )
                             {
                                 monitor.Warn().Send( "Sql parameter '{0}' is not an output parameter. The method '{1}' uses 'ref' for it. That is useless.", p.Variable.Identifier.Name, mP.Member.Name );
                             }
-                        }
-                    }
-                    else
-                    {
-                        // by value parameter.
-                        if( sqlIsInputOutput )
-                        {
-                            if( !_isUsedByReturnedType )
+                            if( mP.IsOut )
                             {
-                                monitor.Warn().Send( "Sql parameter '{0}' is an /*input*/output parameter and this parameter is not returned. The method '{1}' should use 'ref' to retrieve the new value after the call.", p.Variable.Identifier.Name, mP.Member.Name );
-                            }
-                        }
-                        else if( sqlIsOutput )
-                        {
-                            if( _isUsedByReturnedType )
-                            {
-                                monitor.Warn().Send( "Sql parameter '{0}' is an output parameter whose value will be returned. Setting its value is useless. Should it be marked /*input*/output?.", p.Variable.Identifier.Name );
+                                #region out Method parameter
+                                if( sqlIsInputOutput )
+                                {
+                                    if( _isUsedByReturnedType )
+                                    {
+                                        monitor.Warn().Send( "Sql parameter '{0}' is an /*input*/output parameter. The method '{1}' should use 'ref' for it (not 'out') or no ref nor out since this parameter is used by returned call.", p.Variable.Identifier.Name, mP.Member.Name );
+                                    }
+                                    else
+                                    {
+                                        monitor.Error().Send( "Sql parameter '{0}' is an /*input*/output parameter. The method '{1}' must use 'ref' for it (not 'out').", p.Variable.Identifier.Name, mP.Member.Name );
+                                        ++nbError;
+                                    }
+                                }
+                                else if( sqlIsInput )
+                                {
+                                    Debug.Assert( !sqlIsOutput );
+                                    monitor.Error().Send( "Sql parameter '{0}' is an input parameter. The method '{1}' can not use 'out' for it (and 'ref' modifier will be useless).", p.Variable.Identifier.Name, mP.Member.Name );
+                                    ++nbError;
+                                }
+                                #endregion
                             }
                             else
                             {
-                                monitor.Error().Send( "Sql parameter '{0}' is an output parameter. The method '{1}' must use 'out' for the parameter (you can also simply remove the method's parameter the output value can be ignored).", p.Variable.Identifier.Name, mP.Member.Name );
-                                ++nbError;
+                                // ref Method parameter.
+                                if( !sqlIsOutput )
+                                {
+                                    monitor.Warn().Send( "Sql parameter '{0}' is not an output parameter. The method '{1}' uses 'ref' for it. That is useless.", p.Variable.Identifier.Name, mP.Member.Name );
+                                }
                             }
                         }
+                        #endregion
+                    }
+                    else
+                    {
+                        #region By value Method parameter.
+                        if( sqlIsPureOutput )
+                        {
+                            // By value method parameter with a pure output Sql parameter: it should be /*input*/output in sql.
+                            monitor.Warn().Send( "Sql parameter '{0}' is an output parameter. Setting its value is useless. Should it be marked /*input*/output?.", p.Variable.Identifier.Name );
+                        }
+                        // Whenever the sql parameter is output but it is not ref nor out, we warn the user: it is an ignored return from the database.
+                        // When using specialization, this should NOT occur if we succeed to reroute the call to the most specialized, covariant, method.
+                        //
+                        // For complex returned type (1), this is easier than for output parameters (2):
+                        //   1 - Complex type: one need to find a specialized definition that return a specialized Complex Type. Then this most specialized one SHOULD
+                        //       handle all output parameters: the warnings below make sense.
+                        //   2 - Output parameters: one need to generate local fake variables to be able to call
+                        //       the specialized method and, if the method parameter has no default value, use the sql default value transformed to its .Net type.
+                        //
+                        if( sqlIsInputOutput && !_isUsedByReturnedType )
+                        {
+                            if( isComplexReturnedType )
+                            {
+                                monitor.Warn().Send( "Sql parameter '{0}' is an /*input*/output parameter and this parameter is not returned in '{2} {1}' method.", 
+                                                            p.Variable.Identifier.Name, 
+                                                            mP.Member.Name,
+                                                            _holder.ComplexReturnType.CreatedType.Name );
+                            }
+                            else
+                            {
+                                monitor.Warn().Send( "Sql parameter '{0}' is an /*input*/output parameter and this parameter is not returned. The method '{1}' may use 'ref' to retrieve the new value after the call.", 
+                                                            p.Variable.Identifier.Name, 
+                                                            mP.Member.Name );
+                            }
+                        }
+                        #endregion
                     }
                     return nbError;
                 }
@@ -375,6 +409,11 @@ namespace CK.SqlServer.Setup
                 get { return _isAsyncCall; }
             }
 
+            public ComplexTypeMapperModel ComplexReturnType
+            {
+                get { return _complexReturnType; }
+            }
+
             internal bool HandleNonVoidCallingReturnedType( IActivityMonitor monitor, Type returnType )
             {
                 if( returnType == typeof( Task ) ) return _isAsyncCall = true;
@@ -403,6 +442,26 @@ namespace CK.SqlServer.Setup
                 }
                 else
                 {
+                    if( returnType.IsInterface )
+                    {
+                        monitor.Error().Send( "Return type '{0}' is an interface. This is not yet supported.", returnType.Name );
+                        return false;
+                    }
+                    _unwrappedReturnedType = returnType;
+                    _complexReturnType = new ComplexTypeMapperModel( returnType );
+                    _funcResultBuilderSignature.Append( _unwrappedReturnedType.FullName );
+                    foreach( var p in _params )
+                    {
+                        if( _complexReturnType.AddInput( p.Index, p.SqlParameterName, p.SqlExprParam.Variable.TypeDecl.ActualType.IsTypeCompatible, p.SqlExprParam.Variable.TypeDecl.ToStringClean(), p.SqlExprParam.IsOutput ) )
+                        {
+                            _funcResultBuilderSignature.Append( '-' ).Append( p.Index );
+                            p.SetUsedByReturnedType();
+                        }
+                    }
+                    if( _complexReturnType.CheckValidity( monitor ) )
+                    {
+                        return true;
+                    }
                 }
                 monitor.Error().Send( "Unable to find a way to return the required return type '{0}'.", returnType.Name );
                 return false;
@@ -412,24 +471,53 @@ namespace CK.SqlServer.Setup
             {
                 if( _simpleReturnType != null )
                 {
-                    g.LdLoc( locParameterCollection );
-                    g.LdInt32( _simpleReturnType.Index );
-                    g.Emit( OpCodes.Call, SqlObjectItem.MParameterCollectionGetParameter );
-                    g.Emit( OpCodes.Call, SqlObjectItem.MParameterGetValue );
-                    if( _unwrappedReturnedType.IsValueType )
+                    EmitGetSqlCommandParameterValue( g, locParameterCollection, _simpleReturnType.Index, _unwrappedReturnedType );
+                }
+                else
+                {
+                    Debug.Assert( _complexReturnType != null );
+                    _complexReturnType.EmitFullInitialization( g, ( idxValue, targetType ) => 
+                        {
+                            EmitGetSqlCommandParameterValue( g, locParameterCollection, idxValue, targetType );
+                        } );
+                }
+
+            }
+
+            static void EmitGetSqlCommandParameterValue( ILGenerator g, LocalBuilder locParameterCollection, int sqlParameterIndex, Type targetType )
+            {
+                g.LdLoc( locParameterCollection );
+                g.LdInt32( sqlParameterIndex );
+                g.Emit( OpCodes.Call, SqlObjectItem.MParameterCollectionGetParameter );
+                g.Emit( OpCodes.Call, SqlObjectItem.MParameterGetValue );
+                if( targetType.IsValueType )
+                {
+                    Type actualType = Nullable.GetUnderlyingType( targetType );
+                    if( actualType != null )
                     {
-                        g.Emit( OpCodes.Unbox_Any, _unwrappedReturnedType );
+                        Label isNull = g.DefineLabel();
+                        Label afterIsNotNull = g.DefineLabel();
+                        LocalBuilder defNullable = g.DeclareLocal( targetType );
+                        g.Emit( OpCodes.Dup );
+                        g.Emit( OpCodes.Ldsfld, SqlObjectItem.FieldDBNullValue );
+                        g.Emit( OpCodes.Ceq );
+                        g.Emit( OpCodes.Brtrue_S, isNull );
+                        g.Emit( OpCodes.Unbox_Any, targetType );
+                        g.Emit( OpCodes.Br, afterIsNotNull );
+                        g.MarkLabel( isNull );
+                        g.Emit( OpCodes.Pop );
+                        g.Emit( OpCodes.Ldloc, defNullable );
+                        g.MarkLabel( afterIsNotNull );
                     }
                     else
                     {
-                        g.Emit( OpCodes.Castclass, _unwrappedReturnedType );
+                        g.Emit( OpCodes.Unbox_Any, targetType );
                     }
                 }
                 else
                 {
-
+                    g.Emit( OpCodes.Castclass, targetType );
                 }
-
             }
 
             static bool IsSimpleReturnType( Type returnType )
@@ -439,6 +527,9 @@ namespace CK.SqlServer.Setup
 
             #region Result builders functions (AssumeResultBuilder)
 
+            /// <summary>
+            /// Equals to: "CK.&lt;FuncResultBuilder&gt;".
+            /// </summary>
             const string _funcHolderTypeName = "CK.<FuncResultBuilder>";
 
             class FuncTypeHolder

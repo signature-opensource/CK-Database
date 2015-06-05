@@ -37,7 +37,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ComplexType\ComplexTypePackage.Async.cs" />
+    <Compile Include="ComplexType\ComplexTypePackage.cs" />
     <Compile Include="AllDefaultValuesPackage.cs" />
+    <Compile Include="ComplexType\ComplexTypeSimpleWithMissingProperty.cs" />
+    <Compile Include="ComplexType\ComplexTypeSimpleWithExtraProperty.cs" />
+    <Compile Include="ComplexType\ComplexTypeSimple.cs" />
+    <Compile Include="ComplexType\ComplexTypeSimpleWithCtor.cs" />
+    <Compile Include="ComplexType\ComplexTypeStupidEmpty.cs" />
     <Compile Include="ProviderDemo\IActorCultureCallContext.cs" />
     <Compile Include="ProviderDemo\ICultureTenantCallContext.cs" />
     <Compile Include="ProviderDemo\IAllCallContext.cs" />
@@ -114,6 +121,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="ProviderDemo\Res\sAllContexts.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ComplexType\Res\sComplexTypeSimple.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ComplexType\Res\sComplexTypeStupidEmpty.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

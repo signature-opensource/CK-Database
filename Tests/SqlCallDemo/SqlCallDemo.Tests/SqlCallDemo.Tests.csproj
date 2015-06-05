@@ -49,6 +49,8 @@
       <Link>DBSetup.cs</Link>
     </Compile>
     <Compile Include="AllDefaultValuesTest.cs" />
+    <Compile Include="ComplexTypeAsyncTests.cs" />
+    <Compile Include="ComplexTypeTests.cs" />
     <Compile Include="ProviderDemo\ProviderDemoTests.cs" />
     <Compile Include="ProviderDemo\SqlFinalApplicationContext.cs" />
     <Compile Include="ProviderDemo\SqlProviderContextCleaner.cs" />

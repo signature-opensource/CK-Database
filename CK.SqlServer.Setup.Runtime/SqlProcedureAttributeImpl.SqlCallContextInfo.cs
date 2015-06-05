@@ -55,7 +55,7 @@ namespace CK.SqlServer.Setup
                     {
                         if( sqlP.Variable.TypeDecl.ActualType.IsTypeCompatible( Prop.PropertyType ) )
                         {
-                            monitor.Info().Send( "Sql Parameter '{0}' will take its value from the SqlCallContext parameter '{1}' property '{2}'.", sqlP.ToStringClean(), Parameter.Name, Prop.Name );
+                            monitor.Info().Send( "Sql Parameter '{0}' will take its value from the ISqlCallParameter '{1}' property '{2}'.", sqlP.ToStringClean(), Parameter.Name, Prop.Name );
                             return true;
                         }
                     }

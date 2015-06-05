@@ -63,15 +63,24 @@ namespace CK.SqlServer.Setup
             {
                 // Adds a fake key to avoid multiple attempts.
                 dynamicAssembly.Memory.Add( methodKey, MCommandGetParameters );
-                try
+                using( monitor.OpenTrace().Send( "Low level SqlCommand create method for: '{0}'.", _storedProc.ToStringSignature( true ) ) )
                 {
-                    m = GenerateCreateSqlCommand( tB, FullName, ContextLocName.Name, _storedProc.Parameters );
-                    dynamicAssembly.Memory[methodKey] = m;
-                    monitor.Trace().Send( "Low level SqlCommand create method for: '{0}'.", _storedProc.ToStringSignature( true ) );
-                }
-                catch( Exception ex )
-                {
-                    monitor.Error().Send( ex, "While generating low level SqlCommand method creation for: '{0}'.", _storedProc.ToStringSignature( true ) );
+                    try
+                    {
+                        m = GenerateCreateSqlCommand( tB, FullName, ContextLocName.Name, _storedProc.Parameters );
+                        dynamicAssembly.Memory[methodKey] = m;
+                        foreach( var p in _storedProc.Parameters )
+                        {
+                            if( p.IsPureOutput && p.DefaultValue != null )
+                            {
+                                monitor.Warn().Send( "Sql parameter '{0}' is an output parameter but has a default value: if it is used as an input parameter it should be marked as /*input*/output.", p.Variable.Identifier.Name );
+                            }
+                        }
+                    }
+                    catch( Exception ex )
+                    {
+                        monitor.Error().Send( ex );
+                    }
                 }
             }
             return m;
