@@ -57,9 +57,11 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Parsing\ExplainWriter.cs" />
+    <Compile Include="Parsing\RewritingTests.cs" />
     <Compile Include="Parsing\SqlAnalyserTest.cs" />
     <Compile Include="Parsing\SqlTokenizerTest.cs" />
     <Compile Include="Parsing\SqlTokenReaderTests.cs" />
+    <Compile Include="SetStatementTests.cs" />
     <Compile Include="TestHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -70,6 +72,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Parsing\Scripts\CLASSEMENT.sql" />
+    <Content Include="Parsing\Scripts\CLASSEMENT_POSTE.sql" />
+    <Content Include="Parsing\Scripts\fReadThings.sql" />
     <Content Include="Parsing\Scripts\fAclGrantLevel.sql" />
     <Content Include="Parsing\Scripts\sStoredProcedure03.sql" />
     <Content Include="Parsing\Scripts\sWithOptions.sql" />

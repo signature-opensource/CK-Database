@@ -69,6 +69,35 @@ namespace CK.SqlServer.Parser.Tests
             return File.ReadAllText( TestHelper.GetFolder( "Parsing", "Scripts", fileName ) );
         }
 
+        [DebuggerStepThrough]
+        public static T ParseOneStatementAndCheckString<T>( string text, bool addSemiColon = false ) where T : SqlExprBaseSt
+        {
+            if( addSemiColon ) text += ';';
+            SqlExprBaseSt statement;
+            SqlAnalyser.ErrorResult r = SqlAnalyser.ParseStatement( out statement, text );
+            Assert.That( !r.IsError, r.ToString() );
+            Assert.That( statement, Is.InstanceOf<T>() );
+            T s = (T)statement;
+            Assert.That( statement.ToString(), Is.EqualTo( text ) );
+            return s;
+        }
+
+        /// <summary>
+        /// Parses the one statement that must be the first one (other statements may follow).
+        /// </summary>
+        /// <typeparam name="T">Type of the statement to parse.</typeparam>
+        /// <param name="text">Text to parse.</param>
+        /// <returns>Statement.</returns>
+        [DebuggerStepThrough]
+        public static T ParseOneStatement<T>( string text ) where T : SqlExprBaseSt
+        {
+            SqlExprBaseSt statement;
+            SqlAnalyser.ErrorResult r = SqlAnalyser.ParseStatement( out statement, text );
+            Assert.That( !r.IsError, r.ToString() );
+            Assert.That( statement, Is.InstanceOf<T>() );
+            return (T)statement;
+        }
+
         private static void InitalizePaths()
         {
             string p = new Uri( System.Reflection.Assembly.GetExecutingAssembly().CodeBase ).LocalPath;

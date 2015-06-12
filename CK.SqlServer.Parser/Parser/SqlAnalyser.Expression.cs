@@ -23,7 +23,7 @@ namespace CK.SqlServer.Parser
                 e = null;
                 if( R.IsErrorOrEndOfInput || !IsExpressionNud( ref e ) )
                 {
-                    if( expected && !R.IsError ) R.SetCurrentError( "Expected expression." );
+                    if( expected ) R.SetCurrentError( "Expected expression." );
                     return false;
                 }
                 // Not (as a left denotation) is the same as a between or a like (since it introduces them).
@@ -387,7 +387,7 @@ namespace CK.SqlServer.Parser
 
             /// <summary>
             /// Reads a potential <see cref="SqlExprRawItemList"/> (a list of expressions) up to a specific token
-            /// or a known <see cref="SqlExpr"/> if possible.
+            /// or a known <see cref="SqlToken"/> if possible.
             /// </summary>
             /// <param name="e">Read expression.</param>
             /// <param name="closer">Predicate that detects the stopper (will NOT be added to the expression).</param>
@@ -401,8 +401,8 @@ namespace CK.SqlServer.Parser
             }
 
             /// <summary>
-            /// Reads a potential <see cref="SqlExprRawItemList"/> (a list of expressions) up to a specific token
-            /// or a known <see cref="SqlExpr"/> enclosed in parenthesis: the stopper is the closing parenthesis. 
+            /// Reads a single <see cref="SqlExpr"/> or <see cref="SqlExprRawItemList"/> (a list of expressions) up to the closing parenthesis: 
+            /// the stopper is the closing parenthesis. 
             /// </summary>
             /// <param name="e">Read expression.</param>
             /// <param name="openPar">Opening parenthesis (will be the very first token).</param>
@@ -416,6 +416,7 @@ namespace CK.SqlServer.Parser
 
             bool IsExpressionOrRawListInternal( out SqlExpr e, SqlTokenOpenPar openPar, Predicate<SqlToken> closer, bool blindlyAcceptCurrentToken, bool setErrorIfEmpty )
             {
+                Debug.Assert( openPar == null || closer( SqlTokenClosePar.ClosePar ), "If we have an open parenthesis, the closer function must detect a closing parenthesis." );
                 e = null;
                 List<ISqlItem> exprs = new List<ISqlItem>();
                 SqlExpr lastExpr = null;
@@ -437,20 +438,23 @@ namespace CK.SqlServer.Parser
                 // - if the opener is null, without any opener/closer and the closer is not consumed.
                 if( !R.IsError )
                 {
-                    Debug.Assert( closer( R.Current ), "We are on the Closer token." );
+                    Debug.Assert( closer( R.Current ) || R.IsEndOfInput, "We are on the Closer token or at the end." );
                     if( openPar != null )
                     {
                         // If an opener exists, we always create the block.
-                        Debug.Assert( R.Current is SqlTokenClosePar );
-                        SqlTokenClosePar closePar = R.Read<SqlTokenClosePar>();
-                        if( exprs.Count == 1 )
+                        if( R.Current.TokenType == SqlTokenType.ClosePar )
                         {
-                            lastExpr.MutableEnclose( openPar, closePar );
-                            e = lastExpr;
+                            SqlTokenClosePar closePar = R.Read<SqlTokenClosePar>();
+                            if( exprs.Count == 1 )
+                            {
+                                lastExpr.MutableEnclose( openPar, closePar );
+                                e = lastExpr;
+                                return true;
+                            }
+                            e = new SqlExprRawItemList( openPar, exprs, closePar );
                             return true;
                         }
-                        e = new SqlExprRawItemList( openPar, exprs, closePar );
-                        return true;
+                        else return R.SetCurrentError( "Expected ')'." );
                     }
                     // When no opener/closer exist and the block is empty, we do not instantiate it.
                     if( exprs.Count > 0 )

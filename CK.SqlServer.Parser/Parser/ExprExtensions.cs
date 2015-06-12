@@ -31,6 +31,21 @@ namespace CK.SqlServer.Parser
             return false;
         }
 
+        static public Type BestNetType( this ISqlExprUnifiedTypeDecl @this )
+        {
+            SqlDbType sql = @this.DbType;
+            if( sql == SqlDbType.Char || sql == SqlDbType.NChar )
+            {
+                int sz = @this.SyntaxSize;
+                if( sz == 0 || sz == 1 )
+                {
+                    return typeof( char );
+                }
+                return typeof( string );
+            }
+            return SqlHelper.FromSqlDbTypeToNetType( sql );
+        }
+
 
     }
 }

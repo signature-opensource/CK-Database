@@ -20,21 +20,21 @@ namespace CK.SqlServer.Parser
     /// </summary>
     public class SqlExprStLabelDef : SqlExprBaseSt
     {
-        public SqlExprStLabelDef( SqlTokenIdentifier id, SqlTokenTerminal statementTerminator )
-            : base( Build( id, statementTerminator ), statementTerminator )
+        public SqlExprStLabelDef( SqlTokenIdentifier id, SqlTokenTerminal colon, SqlTokenTerminal statementTerminator )
+            : base( Build( id, colon ), statementTerminator )
         {
         }
 
-        static ISqlItem[] Build( SqlTokenIdentifier id, SqlTokenTerminal statementTerminator )
+        static ISqlItem[] Build( SqlTokenIdentifier id, SqlTokenTerminal colon )
         {
             if( id == null
                 || id.IsQuoted
                 || SqlKeyword.IsReservedKeyword( id.Name )
                 || id.TrailingTrivia.Count > 0
-                || statementTerminator == null
-                || statementTerminator.TokenType != SqlTokenType.Colon
-                || statementTerminator.LeadingTrivia.Count > 0 ) throw new ArgumentException( "Invalid 'label:' definition." );
-            return CreateArray( id );
+                || colon == null
+                || colon.TokenType != SqlTokenType.Colon
+                || colon.LeadingTrivia.Count > 0 ) throw new ArgumentException( "Invalid 'label:' definition." );
+            return CreateArray( id, colon );
         }
 
         public SqlTokenIdentifier IdentifierT { get { return (SqlTokenIdentifier)Slots[0]; } }

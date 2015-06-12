@@ -55,8 +55,15 @@
     <Compile Include="Parser\ExprExtensions.cs" />
     <Compile Include="Parser\Expr\SqlExprCollate.cs" />
     <Compile Include="Parser\Expr\SqlExprCast.cs" />
+    <Compile Include="Parser\Expr\SqlExprDeclare.cs" />
+    <Compile Include="Parser\Expr\SqlExprDeclareList.cs" />
+    <Compile Include="Parser\Expr\SqlExprStFunctionInlineTable.cs" />
     <Compile Include="Parser\Expr\SqlExprStFunctionScalar.cs" />
     <Compile Include="Parser\Expr\SqlExprStFunction.cs" />
+    <Compile Include="Parser\Expr\SqlExprStGoto.cs" />
+    <Compile Include="Parser\Expr\SqlExprStSetOpt.cs" />
+    <Compile Include="Parser\Expr\SqlExprStDeclare.cs" />
+    <Compile Include="Parser\Expr\SqlExprStSetVar.cs" />
     <Compile Include="Parser\Expr\SqlExprStReturn.cs" />
     <Compile Include="Parser\Expr\SqlNoExprOverClause.cs" />
     <Compile Include="Parser\Expr\Select\SelectOrderByOffset.cs" />
@@ -138,6 +145,7 @@
     <Compile Include="Parser\SqlAnalyser.LowLevel.cs" />
     <Compile Include="Parser\SqlItemVisitor.cs" />
     <Compile Include="Parser\SqlTokenReader.cs" />
+    <Compile Include="Tokenizer\SourcePosition.cs" />
     <Compile Include="Tokenizer\SqlTokenExtension.cs" />
     <Compile Include="Tokenizer\SqlExprMultiToken.cs" />
     <Compile Include="Tokenizer\SqlKeyword.cs" />

@@ -56,13 +56,8 @@ namespace CK.SqlServer.Parser
         /// or a standard identifer that also can start a statement (throw, get, move, etc.).
         /// </summary>
         public bool IsStartStatement 
-        { 
-            get 
-            {
-                Debug.Assert( SqlTokenType.IdentifierStandardStatement == SqlTokenType.IsIdentifier
-                                && SqlTokenType.IdentifierReservedStatement == (SqlTokenType.IsIdentifier + (1 << 11)), "Statement identifiers must be the first ones." );
-                return (TokenType & SqlTokenType.IdentifierTypeMask) <= SqlTokenType.IdentifierReservedStatement; 
-            } 
+        {
+            get { return TokenType.IsStartStatement(); } 
         }
 
         public SqlTokenIdentifier RemoveQuoteIfPossible( bool keepIfReservedKeyword )

@@ -21,13 +21,13 @@ namespace CK.SqlServer.Parser
     /// </summary>
     public class SqlTokenError : SqlToken
     {
-        public static readonly SqlTokenError EndOfInput = new SqlTokenError( SqlTokenTypeError.EndOfInput, null, null );
+        public static readonly SqlTokenError EndOfInput = new SqlTokenError( SqlTokenTypeError.EndOfInput, null, null, null );
 
-        public SqlTokenError( SqlTokenTypeError t, IReadOnlyList<SqlTrivia> leadingTrivia = null, IReadOnlyList<SqlTrivia> trailingTrivia = null )
+        public SqlTokenError( SqlTokenTypeError t, IReadOnlyList<SqlTrivia> leadingTrivia = null, IReadOnlyList<SqlTrivia> trailingTrivia = null, string message = null )
             : base( (SqlTokenType)t, leadingTrivia, trailingTrivia )
         {
             if( t >= 0 ) throw new ArgumentException( "Invalid error token type." );
-            ErrorMessage = t.ToString();
+            ErrorMessage = message ?? t.ToString();
         }
 
         public SqlTokenError( string message )

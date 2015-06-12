@@ -395,13 +395,13 @@ namespace CK.SqlServer.Parser.Tests
         [Test]
         public void ParseIf()
         {
-            var ifS = ParseStatement<SqlExprStIf>( @"if @i is null
+            var ifS = TestHelper.ParseOneStatementAndCheckString<SqlExprStIf>( @"if @i is null
                                                      print '1';
                                                    else print 2, 9, 'toto';" );
 
             Assert.That( ExplainWriter.Write( ifS ), Is.EqualTo( "if[IsNull(@i)]then[<¤{print-'1'}¤>]else[<¤{print-2-,-9-,-'toto'}¤>]" ) );
 
-            ifS = ParseStatement<SqlExprStIf>( @"if exists(select t.* from sys.tables t) print N'OK';" );
+            ifS = TestHelper.ParseOneStatementAndCheckString<SqlExprStIf>( @"if exists(select t.* from sys.tables t) print N'OK';" );
             Assert.That( ExplainWriter.Write( ifS ), Is.EqualTo( "if[call:exists([select-(t.*)-from[¤{sys.tables-t}¤]])]then[<¤{print-N'OK'}¤>]" ) );
         }
 
@@ -432,186 +432,225 @@ namespace CK.SqlServer.Parser.Tests
         [Test]
         public void ParseFunctionAclGrantLevel()
         {
-            var f = ReadStatement<SqlExprStFunctionScalar>( "fAclGrantLevel.sql" );
-
-            Assert.That( f.Name.ToString(), Is.EqualTo( "CK.fAclGrantLevel\r\n" ) );
-            Assert.That( f.Parameters[0].IsOutput, Is.False );
-            Assert.That( f.Parameters[0].IsReadOnly, Is.False );
-            Assert.That( f.Parameters[0].DefaultValue, Is.Null );
-            Assert.That( f.Parameters[0].Variable.Identifier.IsVariable, Is.True );
-            Assert.That( f.Parameters[0].Variable.Identifier.Name, Is.EqualTo( "@ActorId" ) );
-            Assert.That( f.Parameters[0].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.Int ) );
-            Assert.That( f.Parameters.Count, Is.EqualTo( 2 ) );
-            Assert.That( f.Parameters[1].Variable.Identifier.Name, Is.EqualTo( "@AclId" ) );
-            Assert.That( f.Parameters[1].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.Int ) );
-            Assert.That( f.ReturnsT, Is.Not.Null );
-            Assert.That( f.ReturnedType.ActualType.DbType, Is.EqualTo( SqlDbType.TinyInt ) );
-            Assert.That( f.BodyStatements.Statements.Count, Is.EqualTo( 1 ) );
-            Assert.That( f.BodyStatements.Statements[0], Is.InstanceOf<SqlExprStReturn>() );
-            SqlExprStReturn r = (SqlExprStReturn)f.BodyStatements.Statements[0];
-            SqlExprKoCall isNull = (SqlExprKoCall)r.Value;
-            SqlExprKoCall isNull2 = (SqlExprKoCall)isNull.Parameters[1];
-            SqlExprLiteral zero = (SqlExprLiteral)isNull2.Parameters[1];
-
-            Assert.That( zero.Token.LiteralValue, Is.EqualTo( "0" ) );
+            CheckStatement<SqlExprStFunctionScalar>( "fAclGrantLevel.sql", f =>
+            {
+                Assert.That( f.Name.ToString(), Is.EqualTo( "CK.fAclGrantLevel\r\n" ) );
+                Assert.That( f.Parameters[0].IsOutput, Is.False );
+                Assert.That( f.Parameters[0].IsReadOnly, Is.False );
+                Assert.That( f.Parameters[0].DefaultValue, Is.Null );
+                Assert.That( f.Parameters[0].Variable.Identifier.IsVariable, Is.True );
+                Assert.That( f.Parameters[0].Variable.Identifier.Name, Is.EqualTo( "@ActorId" ) );
+                Assert.That( f.Parameters[0].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.Int ) );
+                Assert.That( f.Parameters.Count, Is.EqualTo( 2 ) );
+                Assert.That( f.Parameters[1].Variable.Identifier.Name, Is.EqualTo( "@AclId" ) );
+                Assert.That( f.Parameters[1].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.Int ) );
+                Assert.That( f.ReturnsT, Is.Not.Null );
+                Assert.That( f.ReturnedType.ActualType.DbType, Is.EqualTo( SqlDbType.TinyInt ) );
+                Assert.That( f.BodyStatements.Statements.Count, Is.EqualTo( 1 ) );
+                Assert.That( f.BodyStatements.Statements[0], Is.InstanceOf<SqlExprStReturn>() );
+                SqlExprStReturn r = (SqlExprStReturn)f.BodyStatements.Statements[0];
+                SqlExprKoCall isNull = (SqlExprKoCall)r.Value;
+                SqlExprKoCall isNull2 = (SqlExprKoCall)isNull.Parameters[1];
+                SqlExprLiteral zero = (SqlExprLiteral)isNull2.Parameters[1];
+                Assert.That( zero.Token.LiteralValue, Is.EqualTo( "0" ) );
+            } );
         }
 
+        [Test]
+        public void ParseFunctionInlineTable()
+        {
+            CheckStatement<SqlExprStFunctionInlineTable>( "fReadThings.sql", f =>
+                {
+                    Assert.That( f.Name.ToString(), Is.EqualTo( "CK.fReadThings\r\n" ) );
+                    Assert.That( f.Parameters[0].IsOutput, Is.False );
+                    Assert.That( f.Parameters[0].IsReadOnly, Is.False );
+                    Assert.That( f.Parameters[0].DefaultValue, Is.Null );
+                    Assert.That( f.Parameters[0].Variable.Identifier.IsVariable, Is.True );
+                    Assert.That( f.Parameters[0].Variable.Identifier.Name, Is.EqualTo( "@ActorId" ) );
+                    Assert.That( f.Parameters[0].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.Int ) );
+                    Assert.That( f.Parameters.Count, Is.EqualTo( 2 ) );
+                    Assert.That( f.Parameters[1].Variable.Identifier.Name, Is.EqualTo( "@AclId" ) );
+                    Assert.That( f.Parameters[1].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.Int ) );
+                    Assert.That( f.ReturnsT, Is.Not.Null );
+                    Assert.That( f.Select, Is.Not.Null );
+                } );
+        }
 
         [Test]
         public void ParseStoredProcedureWithOptions()
         {
-            var sp = ReadStatement<SqlExprStStoredProc>( "sWithOptions.sql" );
-
-            Assert.That( sp.Name.ToString(), Is.EqualTo( "sWithOptions\r\n" ) );
-            Assert.That( sp.Parameters.Count, Is.EqualTo( 0 ) );
-            Assert.That( sp.Options.Items.Count(), Is.EqualTo( 4 ), "[with] [recompile] [,] [execute as owner]" );
-            Assert.That( sp.Options.Tokens.ToStringWithoutTrivias( "|" ), Is.EqualTo( "with|recompile|,|execute|as|owner" ) );
-
-            Assert.That( sp.BodyStatements.Statements.Count, Is.EqualTo( 2 ) );
+            //
+            // create procedure sWithOptions
+            //    with recompile, execute as owner
+            // as
+            //    select * from sys.tables;
+            //    return 0;
+            //
+            CheckStatement<SqlExprStStoredProc>( "sWithOptions.sql", sp =>
+                {
+                    Assert.That( sp.Name.ToString(), Is.EqualTo( "sWithOptions\r\n" ) );
+                    Assert.That( sp.Parameters.Count, Is.EqualTo( 0 ) );
+                    Assert.That( sp.HasOptions );
+                    Assert.That( sp.Options.Items.Count(), Is.EqualTo( 4 ), "[with] [recompile] [,] [execute as owner]" );
+                    Assert.That( sp.Options.Tokens.ToStringWithoutTrivias( "|" ), Is.EqualTo( "with|recompile|,|execute|as|owner" ) );
+                    Assert.That( sp.BodyStatements.Statements.Count, Is.EqualTo( 2 ).Or.EqualTo( 3 ), "Two statements (select and return) but..." );
+                    Assert.That( sp.BodyStatements.Statements.Count == 2 || sp.BodyStatements.Statements[2] is SqlExprStEmpty, "...when ';' is added, it is a third empty statement." );
+                } );
         }
 
         [Test]
         public void ParseStrangeStoredProcedure()
         {
-            var sp = ReadStatement<SqlExprStStoredProc>( "sStrange.sql" );
-
-            Assert.That( sp.Name.ToString(), Is.EqualTo( "sStrange\r\n" ) );
-            Assert.That( sp.Parameters, Is.Empty );
-            Assert.That( sp.BodyStatements.Statements.Count, Is.EqualTo( 5 ) );
+            CheckStatement<SqlExprStStoredProc>( "sStrange.sql", sp =>
+                {
+                    Assert.That( sp.Name.ToString(), Is.EqualTo( "sStrange\r\n" ) );
+                    Assert.That( sp.Parameters, Is.Empty );
+                    Assert.That( sp.BodyStatements.Statements.Count, Is.EqualTo( 5 ) );
+                } );
         }
 
         [Test]
         public void ParseStoredProcedure01()
         {
-            var sp = ReadStatement<SqlExprStStoredProc>( "sStoredProcedure01.sql" );
-
-            Assert.That( sp.Name.ToString(), Is.EqualTo( "CKCore.sErrorRethrow\r\n" ) );
-            Assert.That( sp.Parameters[0].IsOutput, Is.False );
-            Assert.That( sp.Parameters[0].IsReadOnly, Is.False );
-            Assert.That( sp.Parameters[0].DefaultValue, Is.Null );
-            Assert.That( sp.Parameters[0].Variable.Identifier.IsVariable, Is.True );
-            Assert.That( sp.Parameters[0].Variable.Identifier.Name, Is.EqualTo( "@ProcId" ) );
-            Assert.That( sp.Parameters[0].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.Int ) );
-            Assert.That( sp.BodyStatements.Statements.Count, Is.EqualTo( 2 ) );
+            CheckStatement<SqlExprStStoredProc>( "sStoredProcedure01.sql", sp =>
+                {
+                    Assert.That( sp.Name.ToString(), Is.EqualTo( "CKCore.sErrorRethrow\r\n" ) );
+                    Assert.That( sp.Parameters[0].IsOutput, Is.False );
+                    Assert.That( sp.Parameters[0].IsReadOnly, Is.False );
+                    Assert.That( sp.Parameters[0].DefaultValue, Is.Null );
+                    Assert.That( sp.Parameters[0].Variable.Identifier.IsVariable, Is.True );
+                    Assert.That( sp.Parameters[0].Variable.Identifier.Name, Is.EqualTo( "@ProcId" ) );
+                    Assert.That( sp.Parameters[0].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.Int ) );
+                    Assert.That( sp.HasBeginEnd );
+                    Assert.That( sp.HasOptions, Is.False );
+                    Assert.That( sp.BodyStatements.Statements.Count, Is.EqualTo( 2 ) );
+                } );
         }
 
         [Test]
         public void ParseStoredProcedure02()
         {
-            var sp = ReadStatement<SqlExprStStoredProc>( "sStoredProcedure02.sql" );
-
-            Assert.That( sp.Name.ToString(), Is.EqualTo( "CK.sResDataStringSet -- Merge inside.\r\n" ) );
-            Assert.That( sp.Parameters.Count, Is.EqualTo( 2 ) );
-            Assert.That( sp.BodyStatements.Statements.Count, Is.EqualTo( 1 ), "Unmodeled." );
+            CheckStatement<SqlExprStStoredProc>( "sStoredProcedure02.sql", sp =>
+                {
+                    Assert.That( sp.Name.ToString(), Is.EqualTo( "CK.sResDataStringSet -- Merge inside.\r\n" ) );
+                    Assert.That( sp.Parameters.Count, Is.EqualTo( 2 ) );
+                    Assert.That( sp.HasBeginEnd );
+                    Assert.That( sp.HasOptions, Is.False );
+                    Assert.That( sp.BodyStatements.Statements.Count, Is.EqualTo( 1 ), "Unmodeled." );
+                } );
         }
 
         [Test]
         public void ParseStoredProcedure03()
         {
-            var sp = ReadStatement<SqlExprStStoredProc>( "sStoredProcedure03.sql" );
-
-            Assert.That( sp.Name.ToString(), Is.EqualTo( "InvBack.sOfferCreate\r\n" ) );
-            Assert.That( sp.Parameters.Count, Is.EqualTo( 7 ) );
+            CheckStatement<SqlExprStStoredProc>( "sStoredProcedure03.sql", sp =>
+                {
+                    Assert.That( sp.Name.ToString(), Is.EqualTo( "InvBack.sOfferCreate\r\n" ) );
+                    Assert.That( sp.HasBeginEnd );
+                    Assert.That( sp.HasOptions, Is.False );
+                    Assert.That( sp.Parameters.Count, Is.EqualTo( 7 ) );
+                } );
         }
 
         [Test]
         public void ParseStoredProcedureInputOutput()
         {
-            var sp = ReadStatement<SqlExprStStoredProc>( "sStoredProcedureInputOutput.sql" );
+            CheckStatement<SqlExprStStoredProc>( "sStoredProcedureInputOutput.sql", sp =>
+                {
+                    Assert.That( sp.Name.IdentifierAt(1).Name, Is.EqualTo( "sStoredProcedureInputOutput" ) );
 
-            Assert.That( sp.Name.IdentifierAt(1).Name, Is.EqualTo( "sStoredProcedureInputOutput" ) );
+                    Assert.That( sp.Parameters[0].IsOutput, Is.False );
+                    Assert.That( sp.Parameters[0].IsReadOnly, Is.False );
+                    Assert.That( sp.Parameters[0].DefaultValue, Is.Null );
+                    Assert.That( sp.Parameters[0].Variable.Identifier.IsVariable, Is.True );
+                    Assert.That( sp.Parameters[0].Variable.Identifier.Name, Is.EqualTo( "@p1" ) );
+                    Assert.That( sp.Parameters[0].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.Int ) );
+                    Assert.That( sp.Parameters[0].Variable.TypeDecl.ActualType.SyntaxSize, Is.EqualTo( -2 ), "Size does not apply." );
 
-            Assert.That( sp.Parameters[0].IsOutput, Is.False );
-            Assert.That( sp.Parameters[0].IsReadOnly, Is.False );
-            Assert.That( sp.Parameters[0].DefaultValue, Is.Null );
-            Assert.That( sp.Parameters[0].Variable.Identifier.IsVariable, Is.True );
-            Assert.That( sp.Parameters[0].Variable.Identifier.Name, Is.EqualTo( "@p1" ) );
-            Assert.That( sp.Parameters[0].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.Int ) );
-            Assert.That( sp.Parameters[0].Variable.TypeDecl.ActualType.SyntaxSize, Is.EqualTo( -2 ), "Size does not apply." );
+                    Assert.That( sp.Parameters[1].IsOutput, Is.False );
+                    Assert.That( sp.Parameters[1].IsReadOnly, Is.False );
+                    Assert.That( sp.Parameters[1].DefaultValue, Is.Not.Null );
+                    Assert.That( sp.Parameters[1].DefaultValue.ToString(), Is.EqualTo( "= 0" ) );
+                    Assert.That( sp.Parameters[1].Variable.Identifier.IsVariable, Is.True );
+                    Assert.That( sp.Parameters[1].Variable.Identifier.Name, Is.EqualTo( "@p2" ) );
+                    Assert.That( sp.Parameters[1].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.TinyInt ) );
 
-            Assert.That( sp.Parameters[1].IsOutput, Is.False );
-            Assert.That( sp.Parameters[1].IsReadOnly, Is.False );
-            Assert.That( sp.Parameters[1].DefaultValue, Is.Not.Null );
-            Assert.That( sp.Parameters[1].DefaultValue.ToString(), Is.EqualTo( "= 0" ) );
-            Assert.That( sp.Parameters[1].Variable.Identifier.IsVariable, Is.True );
-            Assert.That( sp.Parameters[1].Variable.Identifier.Name, Is.EqualTo( "@p2" ) );
-            Assert.That( sp.Parameters[1].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.TinyInt ) );
+                    Assert.That( sp.Parameters[2].IsOutput, Is.True );
+                    Assert.That( sp.Parameters[2].IsReadOnly, Is.False );
+                    Assert.That( sp.Parameters[2].DefaultValue, Is.Null );
+                    Assert.That( sp.Parameters[2].Variable.Identifier.IsVariable, Is.True );
+                    Assert.That( sp.Parameters[2].Variable.Identifier.Name, Is.EqualTo( "@p3" ) );
+                    Assert.That( sp.Parameters[2].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.SmallInt ) );
 
-            Assert.That( sp.Parameters[2].IsOutput, Is.True );
-            Assert.That( sp.Parameters[2].IsReadOnly, Is.False );
-            Assert.That( sp.Parameters[2].DefaultValue, Is.Null );
-            Assert.That( sp.Parameters[2].Variable.Identifier.IsVariable, Is.True );
-            Assert.That( sp.Parameters[2].Variable.Identifier.Name, Is.EqualTo( "@p3" ) );
-            Assert.That( sp.Parameters[2].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.SmallInt ) );
+                    Assert.That( sp.Parameters[3].IsOutput, Is.False );
+                    Assert.That( sp.Parameters[3].IsReadOnly, Is.False );
+                    Assert.That( sp.Parameters[3].DefaultValue.ToString(), Is.EqualTo( "= N'Murfn...'" ) );
+                    Assert.That( sp.Parameters[3].Variable.Identifier.IsVariable, Is.True );
+                    Assert.That( sp.Parameters[3].Variable.Identifier.Name, Is.EqualTo( "@p4" ) );
+                    Assert.That( sp.Parameters[3].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.NVarChar ) );
+                    Assert.That( sp.Parameters[3].Variable.TypeDecl.ActualType.SyntaxSize, Is.EqualTo( 50 ) );
 
-            Assert.That( sp.Parameters[3].IsOutput, Is.False );
-            Assert.That( sp.Parameters[3].IsReadOnly, Is.False );
-            Assert.That( sp.Parameters[3].DefaultValue.ToString(), Is.EqualTo( "= N'Murfn...'" ) );
-            Assert.That( sp.Parameters[3].Variable.Identifier.IsVariable, Is.True );
-            Assert.That( sp.Parameters[3].Variable.Identifier.Name, Is.EqualTo( "@p4" ) );
-            Assert.That( sp.Parameters[3].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.NVarChar ) );
-            Assert.That( sp.Parameters[3].Variable.TypeDecl.ActualType.SyntaxSize, Is.EqualTo( 50 ) );
+                    Assert.That( sp.Parameters[4].IsOutput, Is.True );
+                    Assert.That( sp.Parameters[4].IsInputOutput, Is.True );
+                    Assert.That( sp.Parameters[4].IsReadOnly, Is.False );
+                    Assert.That( sp.Parameters[4].DefaultValue, Is.Null );
+                    Assert.That( sp.Parameters[4].Variable.Identifier.IsVariable, Is.True );
+                    Assert.That( sp.Parameters[4].Variable.Identifier.Name, Is.EqualTo( "@p5" ) );
+                    Assert.That( sp.Parameters[4].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.VarChar ) );
+                    Assert.That( sp.Parameters[4].Variable.TypeDecl.ActualType.SyntaxSize, Is.EqualTo( -1 ), "Size is max." );
 
-            Assert.That( sp.Parameters[4].IsOutput, Is.True );
-            Assert.That( sp.Parameters[4].IsInputOutput, Is.True );
-            Assert.That( sp.Parameters[4].IsReadOnly, Is.False );
-            Assert.That( sp.Parameters[4].DefaultValue, Is.Null );
-            Assert.That( sp.Parameters[4].Variable.Identifier.IsVariable, Is.True );
-            Assert.That( sp.Parameters[4].Variable.Identifier.Name, Is.EqualTo( "@p5" ) );
-            Assert.That( sp.Parameters[4].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.VarChar ) );
-            Assert.That( sp.Parameters[4].Variable.TypeDecl.ActualType.SyntaxSize, Is.EqualTo( -1 ), "Size is max." );
+                    Assert.That( sp.Parameters[5].IsOutput, Is.True );
+                    Assert.That( sp.Parameters[5].IsInputOutput, Is.True );
+                    Assert.That( sp.Parameters[5].IsReadOnly, Is.False );
+                    Assert.That( sp.Parameters[5].DefaultValue, Is.Null );
+                    Assert.That( sp.Parameters[5].Variable.Identifier.IsVariable, Is.True );
+                    Assert.That( sp.Parameters[5].Variable.Identifier.Name, Is.EqualTo( "@p6" ) );
+                    Assert.That( sp.Parameters[5].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.Char ) );
+                    Assert.That( sp.Parameters[5].Variable.TypeDecl.ActualType.SyntaxSize, Is.EqualTo( 0 ), "Size is undefined." );
 
-            Assert.That( sp.Parameters[5].IsOutput, Is.True );
-            Assert.That( sp.Parameters[5].IsInputOutput, Is.True );
-            Assert.That( sp.Parameters[5].IsReadOnly, Is.False );
-            Assert.That( sp.Parameters[5].DefaultValue, Is.Null );
-            Assert.That( sp.Parameters[5].Variable.Identifier.IsVariable, Is.True );
-            Assert.That( sp.Parameters[5].Variable.Identifier.Name, Is.EqualTo( "@p6" ) );
-            Assert.That( sp.Parameters[5].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.Char ) );
-            Assert.That( sp.Parameters[5].Variable.TypeDecl.ActualType.SyntaxSize, Is.EqualTo( 0 ), "Size is undefined." );
+                    Assert.That( sp.Parameters[6].IsOutput, Is.True );
+                    Assert.That( sp.Parameters[6].IsInputOutput, Is.False, "--input behind the comma..." );
+                    Assert.That( sp.Parameters[6].IsReadOnly, Is.False );
+                    Assert.That( sp.Parameters[6].DefaultValue, Is.Null );
+                    Assert.That( sp.Parameters[6].Variable.Identifier.IsVariable, Is.True );
+                    Assert.That( sp.Parameters[6].Variable.Identifier.Name, Is.EqualTo( "@p7" ) );
+                    Assert.That( sp.Parameters[6].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.Xml ) );
+                    Assert.That( sp.Parameters[6].Variable.TypeDecl.ActualType.SyntaxSize, Is.EqualTo( -2 ), "Size does not apply." );
 
-            Assert.That( sp.Parameters[6].IsOutput, Is.True );
-            Assert.That( sp.Parameters[6].IsInputOutput, Is.False, "--input behind the comma..." );
-            Assert.That( sp.Parameters[6].IsReadOnly, Is.False );
-            Assert.That( sp.Parameters[6].DefaultValue, Is.Null );
-            Assert.That( sp.Parameters[6].Variable.Identifier.IsVariable, Is.True );
-            Assert.That( sp.Parameters[6].Variable.Identifier.Name, Is.EqualTo( "@p7" ) );
-            Assert.That( sp.Parameters[6].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.Xml ) );
-            Assert.That( sp.Parameters[6].Variable.TypeDecl.ActualType.SyntaxSize, Is.EqualTo( -2 ), "Size does not apply." );
+                    Assert.That( sp.Parameters[7].IsOutput, Is.True );
+                    Assert.That( sp.Parameters[7].IsInputOutput, Is.True, "-- input on the line above." );
+                    Assert.That( sp.Parameters[7].IsReadOnly, Is.False );
+                    Assert.That( sp.Parameters[7].DefaultValue, Is.Null );
+                    Assert.That( sp.Parameters[7].Variable.Identifier.IsVariable, Is.True );
+                    Assert.That( sp.Parameters[7].Variable.Identifier.Name, Is.EqualTo( "@p8" ) );
+                    Assert.That( sp.Parameters[7].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.SmallDateTime ) );
+                    Assert.That( sp.Parameters[7].Variable.TypeDecl.ActualType.SyntaxSize, Is.EqualTo( -2 ), "Size does not apply." );
 
-            Assert.That( sp.Parameters[7].IsOutput, Is.True );
-            Assert.That( sp.Parameters[7].IsInputOutput, Is.True, "-- input on the line above." );
-            Assert.That( sp.Parameters[7].IsReadOnly, Is.False );
-            Assert.That( sp.Parameters[7].DefaultValue, Is.Null );
-            Assert.That( sp.Parameters[7].Variable.Identifier.IsVariable, Is.True );
-            Assert.That( sp.Parameters[7].Variable.Identifier.Name, Is.EqualTo( "@p8" ) );
-            Assert.That( sp.Parameters[7].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.SmallDateTime ) );
-            Assert.That( sp.Parameters[7].Variable.TypeDecl.ActualType.SyntaxSize, Is.EqualTo( -2 ), "Size does not apply." );
-
-            Assert.That( sp.Parameters[8].IsOutput, Is.False );
-            Assert.That( sp.Parameters[8].IsInputOutput, Is.False );
-            Assert.That( sp.Parameters[8].IsReadOnly, Is.False );
-            Assert.That( sp.Parameters[8].DefaultValue.IsVariable, Is.False );
-            Assert.That( sp.Parameters[8].DefaultValue.IsNull, Is.True );
-            Assert.That( sp.Parameters[8].DefaultValue.IsLiteral, Is.False );
+                    Assert.That( sp.Parameters[8].IsOutput, Is.False );
+                    Assert.That( sp.Parameters[8].IsInputOutput, Is.False );
+                    Assert.That( sp.Parameters[8].IsReadOnly, Is.False );
+                    Assert.That( sp.Parameters[8].DefaultValue.IsVariable, Is.False );
+                    Assert.That( sp.Parameters[8].DefaultValue.IsNull, Is.True );
+                    Assert.That( sp.Parameters[8].DefaultValue.IsLiteral, Is.False );
+                } );
         }
 
         [DebuggerStepThrough]
-        private static T ReadStatement<T>( string fileName ) where T : SqlExprBaseSt
+        internal static T CheckStatement<T>( string fileName, Action<T> check ) where T : SqlExprBaseSt
         {
-            return ParseStatement<T>( TestHelper.LoadTextFromParsingScripts( fileName ) );
-        }
-
-        [DebuggerStepThrough]
-        private static T ParseStatement<T>( string text ) where T : SqlExprBaseSt
-        {
-            SqlExprBaseSt statement;
-            SqlAnalyser.ErrorResult r = SqlAnalyser.ParseStatement( out statement, text );
-            Assert.That( !r.IsError, r.ToString() );
-            Assert.That( statement, Is.InstanceOf<T>() );
-            T s = (T)statement;
-            Assert.That( statement.ToString(), Is.EqualTo( text ) );
+            string text = TestHelper.LoadTextFromParsingScripts( fileName );
+            T s = TestHelper.ParseOneStatementAndCheckString<T>( text, false );
+            check( s );
+            s = TestHelper.ParseOneStatementAndCheckString<T>( text, true );
+            check( s );
             return s;
+        }
+
+        [DebuggerStepThrough]
+        internal static T ReadStatement<T>( string fileName, bool addSemiColon = false ) where T : SqlExprBaseSt
+        {
+            string text = TestHelper.LoadTextFromParsingScripts( fileName );
+            return TestHelper.ParseOneStatementAndCheckString<T>( text, addSemiColon );
         }
 
     }

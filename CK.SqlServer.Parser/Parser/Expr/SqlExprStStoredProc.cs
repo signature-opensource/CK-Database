@@ -88,19 +88,19 @@ namespace CK.SqlServer.Parser
 
         public SqlExprParameterList Parameters { get { return (SqlExprParameterList)Slots[3]; } }
 
-        public bool HasOptions { get { return Slots.Length == 9 || Slots.Length == 7; } }
+        public bool HasOptions { get { return SlotsLengthWithoutTerminator == 9 || SlotsLengthWithoutTerminator == 7; } }
 
         public SqlExprUnmodeledItems Options { get { return HasOptions ? (SqlExprUnmodeledItems)Slots[4] : null; } }
 
         public SqlTokenIdentifier AsT { get { return (SqlTokenIdentifier)Slots[HasOptions ? 5 : 4]; } }
 
-        public bool HasBeginEnd { get { return Slots.Length == 8 || Slots.Length == 6; } }
+        public bool HasBeginEnd { get { return SlotsLengthWithoutTerminator == 8 || SlotsLengthWithoutTerminator == 6; } }
 
-        public SqlTokenIdentifier BeginT { get { return HasBeginEnd ? (SqlTokenIdentifier)Slots[Slots.Length - 3] : null; } }
+        public SqlTokenIdentifier BeginT { get { return HasBeginEnd ? (SqlTokenIdentifier)Slots[SlotsLengthWithoutTerminator - 3] : null; } }
 
-        public SqlExprStatementList BodyStatements { get { return (SqlExprStatementList)Slots[ HasBeginEnd ? Slots.Length - 2 : Slots.Length - 1 ]; } }
+        public SqlExprStatementList BodyStatements { get { return (SqlExprStatementList)Slots[HasBeginEnd ? SlotsLengthWithoutTerminator - 2 : SlotsLengthWithoutTerminator - 1]; } }
 
-        public SqlTokenIdentifier EndT { get { return HasBeginEnd ? (SqlTokenIdentifier)Slots[ Slots.Length - 1 ] : null; } }
+        public SqlTokenIdentifier EndT { get { return HasBeginEnd ? (SqlTokenIdentifier)Slots[ SlotsLengthWithoutTerminator - 1 ] : null; } }
 
         public string ToStringSignature( bool withOptions )
         {

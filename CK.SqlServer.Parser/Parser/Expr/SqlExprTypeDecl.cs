@@ -38,6 +38,11 @@ namespace CK.SqlServer.Parser
 
         public override SqlToken LastOrEmptyT { get { return _type[0].LastOrEmptyT; } }
 
+        public string ToStringClean()
+        {
+            return Tokens.ToStringWithoutTrivias( String.Empty );
+        }
+
         /// <summary>
         /// Gets a unified type for different kind of type declaration.
         /// </summary>

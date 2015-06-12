@@ -14,26 +14,25 @@ using CK.Core;
 
 namespace CK.SqlServer.Parser
 {
-    public class SqlExprStFunctionScalar : SqlExprStFunction
+    public class SqlExprStFunctionInlineTable : SqlExprStFunction
     {
-        public SqlExprStFunctionScalar( 
+        public SqlExprStFunctionInlineTable( 
             SqlTokenIdentifier alterOrCreate, 
             SqlTokenIdentifier type, 
             SqlExprMultiIdentifier name, 
             SqlExprParameterList parameters,
             SqlTokenIdentifier returns,
-            SqlExprTypeDecl returrnScalarType,
+            SqlTokenIdentifier table,
             SqlExprUnmodeledItems options,
             SqlTokenIdentifier asToken,
-            SqlTokenIdentifier begin,
-            SqlExprStatementList bodyStatements, 
-            SqlTokenIdentifier end, 
+            SqlTokenIdentifier returnToken,
+            SelectSpecification query, 
             SqlTokenTerminal term )
-            : base( Build( alterOrCreate, type, name, parameters, returns, returrnScalarType, options, asToken, begin, bodyStatements, end ), term )
+            : base( Build( alterOrCreate, type, name, parameters, returns, table, options, asToken, returnToken, query ), term )
         {
         }
 
-        internal SqlExprStFunctionScalar( ISqlItem[] items )
+        internal SqlExprStFunctionInlineTable( ISqlItem[] items )
             : base( items )
         {
         }
@@ -45,33 +44,32 @@ namespace CK.SqlServer.Parser
             SqlExprMultiIdentifier name,
             SqlExprParameterList parameters,
             SqlTokenIdentifier returns,
-            SqlExprTypeDecl returrnScalarType,
+            SqlTokenIdentifier table,
             SqlExprUnmodeledItems options,
             SqlTokenIdentifier asToken,
-            SqlTokenIdentifier begin,
-            SqlExprStatementList bodyStatements,
-            SqlTokenIdentifier end )
+            SqlTokenIdentifier returnToken,
+            SelectSpecification query )
         {
             if( options != null )
             {
                 if( asToken != null )
                 {
-                    return CreateArray( alterOrCreate, type, name, parameters, returns, returrnScalarType, options, asToken, begin, bodyStatements, end );
+                    return CreateArray( alterOrCreate, type, name, parameters, returns, table, options, asToken, returnToken, query );
                 }
                 else
                 {
-                    return CreateArray( alterOrCreate, type, name, parameters, returns, returrnScalarType, options, begin, bodyStatements, end );
+                    return CreateArray( alterOrCreate, type, name, parameters, returns, table, options, returnToken, query );
                 }
             }
             else
             {
                 if( asToken != null )
                 {
-                    return CreateArray( alterOrCreate, type, name, parameters, returns, returrnScalarType, asToken, begin, bodyStatements, end );
+                    return CreateArray( alterOrCreate, type, name, parameters, returns, table, asToken, returnToken, query );
                 }
                 else
                 {
-                    return CreateArray( alterOrCreate, type, name, parameters, returns, returrnScalarType, begin, bodyStatements, end );
+                    return CreateArray( alterOrCreate, type, name, parameters, returns, table, returnToken, query );
                 }
             }
         }
@@ -80,13 +78,7 @@ namespace CK.SqlServer.Parser
 
         public SqlExprParameterList Parameters { get { return (SqlExprParameterList)Slots[3]; } }
 
-        public SqlExprTypeDecl ReturnedType { get { return (SqlExprTypeDecl)Slots[5]; } }
-
-        public SqlTokenIdentifier BeginT { get { return (SqlTokenIdentifier)Slots[SlotsLengthWithoutTerminator - 3]; } }
-
-        public SqlExprStatementList BodyStatements { get { return (SqlExprStatementList)Slots[SlotsLengthWithoutTerminator - 2]; } }
-
-        public SqlTokenIdentifier EndT { get { return (SqlTokenIdentifier)Slots[SlotsLengthWithoutTerminator - 1]; } }
+        public SelectSpecification Select { get { return (SelectSpecification)Slots[SlotsLengthWithoutTerminator - 1]; } }
 
         [DebuggerStepThrough]
         internal protected override T Accept<T>( ISqlItemVisitor<T> visitor )

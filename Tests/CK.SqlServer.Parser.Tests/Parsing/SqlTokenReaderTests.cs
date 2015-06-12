@@ -20,7 +20,7 @@ namespace CK.SqlServer.Parser.Tests.Parsing
         static SqlTokenReader CreateReader( string s )
         {
             SqlTokenizer t = new SqlTokenizer();
-            var r = new SqlTokenReader( t.Parse( s ), t.ToString );
+            var r = new SqlTokenReader( t.Parse( s ), t.ToString, t.GetTokenPosition );
             r.MoveNext();
             return r;
         }

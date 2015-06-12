@@ -126,7 +126,7 @@ namespace CK.SqlServer.Parser
 
         public virtual SqlItem Visit( SqlExprStUnmodeled e )
         {
-            SqlExpr vC = (SqlExpr)VisitItem( e.Content );
+            SqlItem vC = VisitItem( e.Content );
             if( ReferenceEquals( vC, e.Content ) ) return e;
             return new SqlExprStUnmodeled( vC, e.StatementTerminator );
         }
@@ -150,6 +150,27 @@ namespace CK.SqlServer.Parser
             var v = (SqlExpr)VisitItem( e.Value );
             if( ReferenceEquals( v, e.Value ) ) return e;
             return new SqlExprStReturn( e.ReturnT, v, e.StatementTerminator );
+        }
+
+        public virtual SqlItem Visit( SqlExprStSetVar e )
+        {
+            List<ISqlItem> modified = VisitItems( e.Items );
+            if( modified == null ) return e;
+            return new SqlExprStSetVar( modified.ToArray() );
+        }
+
+        public virtual SqlItem Visit( SqlExprStSetOpt e )
+        {
+            List<ISqlItem> modified = VisitItems( e.Items );
+            if( modified == null ) return e;
+            return new SqlExprStSetOpt( modified.ToArray() );
+        }
+
+        public virtual SqlItem Visit( SqlExprStGoto e )
+        {
+            List<ISqlItem> modified = VisitItems( e.Items );
+            if( modified == null ) return e;
+            return new SqlExprStGoto( modified.ToArray() );
         }
 
         public virtual SqlItem Visit( SqlExprStMonoStatement e )
@@ -188,6 +209,27 @@ namespace CK.SqlServer.Parser
             return new SqlNoExprExecuteAs( modified.ToArray() );
         }
 
+        public virtual SqlItem Visit( SqlExprStDeclare e )
+        {
+            List<ISqlItem> modified = VisitItems( e.Items );
+            if( modified == null ) return e;
+            return new SqlExprStDeclare( modified.ToArray() );
+        }
+
+        public virtual SqlItem Visit( SqlExprDeclareList e )
+        {
+            List<ISqlItem> modified = VisitItems( e.Items );
+            if( modified == null ) return e;
+            return new SqlExprDeclareList( modified.ToArray() );
+        }
+
+        public virtual SqlItem Visit( SqlExprDeclare e )
+        {
+            List<ISqlItem> modified = VisitItems( e.Items );
+            if( modified == null ) return e;
+            return new SqlExprDeclare( modified.ToArray() );
+        }
+
         public virtual SqlItem Visit( SqlExprCast e )
         {
             List<ISqlItem> modified = VisitItems( e.Items );
@@ -208,11 +250,6 @@ namespace CK.SqlServer.Parser
         }
 
         public virtual SqlItem Visit( SqlExprMultiIdentifier e )
-        {
-            return e;
-        }
-
-        public virtual SqlItem Visit( SqlExprTerminal e )
         {
             return e;
         }
@@ -468,5 +505,11 @@ namespace CK.SqlServer.Parser
 
         #endregion
 
+        public virtual SqlItem Visit( SqlExprStFunctionInlineTable e )
+        {
+            List<ISqlItem> modified = VisitItems( e.Items );
+            if( modified == null ) return e;
+            return new SqlExprStFunctionInlineTable( modified.ToArray() );
+        }
     }
 }

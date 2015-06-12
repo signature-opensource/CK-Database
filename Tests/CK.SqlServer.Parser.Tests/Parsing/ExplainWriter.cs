@@ -114,12 +114,6 @@ namespace CK.SqlServer.Parser.Tests
             return e;
         }
 
-        public override SqlItem Visit( SqlExprTerminal e )
-        {
-            Out.Append( SqlTokenizer.Explain( e.Token.TokenType ) );
-            return e;
-        }
-
         public override SqlItem Visit( SqlExprUnaryOperator e )
         {
             Out.Append( e.OperatorT.ToString().ToLowerInvariant() ).Append( '[' );

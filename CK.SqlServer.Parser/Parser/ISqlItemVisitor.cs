@@ -29,17 +29,22 @@ namespace CK.SqlServer.Parser
         T Visit( SqlExprStStoredProc e );
         T Visit( SqlExprStFunctionScalar e );
         T Visit( SqlExprStReturn e );
+        T Visit( SqlExprStSetVar e );
+        T Visit( SqlExprStSetOpt e );
+        T Visit( SqlExprStGoto e );
         T Visit( SqlExprStMonoStatement e );
         T Visit( SqlExprStLabelDef e );
         T Visit( SqlExprStEmpty e );
         T Visit( SqlExprStView e );
         T Visit( SqlExprColumnList e );
         T Visit( SqlNoExprExecuteAs e );
-
+        T Visit( SqlExprStDeclare e );
+        T Visit( SqlExprDeclareList e );       
+        T Visit( SqlExprDeclare e );
+        
         T Visit( SqlExprCast e );
         T Visit( SqlExprIdentifier e );
         T Visit( SqlExprMultiIdentifier e );
-        T Visit( SqlExprTerminal e );
         T Visit( SqlExprLiteral e );
         T Visit( SqlExprNull e );
         T Visit( SqlExprUnaryOperator e );
@@ -84,6 +89,8 @@ namespace CK.SqlServer.Parser
         
         T Visit( SelectFor e );
         T Visit( SelectOption e );
+
+        T Visit( SqlExprStFunctionInlineTable e );
         
 
     }

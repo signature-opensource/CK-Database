@@ -607,6 +607,7 @@ namespace CK.SqlServer.Parser
         Fetch       = IdentifierReservedStatement | 16,
         Return      = IdentifierReservedStatement | 17,
         Execute     = IdentifierReservedStatement | 18,
+        Set         = IdentifierReservedStatement | 19,
         #endregion
 
         #region IdentifierDbType values

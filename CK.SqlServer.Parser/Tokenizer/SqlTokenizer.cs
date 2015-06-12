@@ -26,7 +26,10 @@ namespace CK.SqlServer.Parser
 
         string _input;
         int _inputIdx;
-        int _headPos; 
+        int _headPos;
+        int _lineHead;
+        int _colHead;
+        SourcePosition _tokenPosition;
 
         // Lookup characters (because of comment detection 
         // in trivias, 2 characters are required).
@@ -65,6 +68,7 @@ namespace CK.SqlServer.Parser
             _input = String.Empty;
             _inputIdx = -1;
             _headPos = 0;
+            _lineHead = _colHead = 1;
         }
 
         public bool Reset( string input )
@@ -73,6 +77,7 @@ namespace CK.SqlServer.Parser
             _input = input;
             _inputIdx = -1;
             _headPos = 0;
+            _lineHead = _colHead = 1;
             if( (_curC0 = ReadInput()) != -1 ) _curC1 = ReadInput();
             _tokenType = 0;
             ClearBuffer();
@@ -139,6 +144,22 @@ namespace CK.SqlServer.Parser
         public SqlToken Token
         {
             get { return _token; }
+        }
+
+        /// <summary>
+        /// Gets the line/column position of the <see cref="Token"/>.
+        /// </summary>
+        public SourcePosition GetTokenPosition()
+        {
+            return _tokenPosition;
+        }
+
+        /// <summary>
+        /// Gets the line/column position of the head.
+        /// </summary>
+        public SourcePosition GetHeadPosition()
+        {
+            return new SourcePosition( _lineHead, _colHead );
         }
 
         /// <summary>
@@ -274,6 +295,8 @@ namespace CK.SqlServer.Parser
             if( _curC0 != c1 || _curC1 != c2 ) return false;
             if( (_curC0 = ReadInput()) != -1 ) _curC1 = ReadInput();
             _headPos += 2;
+            HandleLineCol( c1 );
+            HandleLineCol( c2 );
             return true;
         }
 
@@ -282,6 +305,7 @@ namespace CK.SqlServer.Parser
             if( _curC0 != c ) return false;
             if( (_curC0 = _curC1) != -1 ) _curC1 = ReadInput();
             _headPos += 1;
+            HandleLineCol( c );
             return true;
         }
 
@@ -290,7 +314,14 @@ namespace CK.SqlServer.Parser
             int c;
             if( (c = _curC0) != -1 && (_curC0 = _curC1) != -1 ) _curC1 = ReadInput();
             _headPos += 1;
+            HandleLineCol( c );
             return c;
+        }
+
+        void HandleLineCol( int c )
+        {
+            if( c == '\n' ) ++_lineHead;
+            else if( c != '\r' ) ++_colHead;
         }
 
         int ReadLeadingWhitespace()
@@ -389,7 +420,7 @@ namespace CK.SqlServer.Parser
                 }
                 if( _tokenType < 0 )
                 {
-                    _token = new SqlTokenError( (SqlTokenTypeError)_tokenType, _leadingTrivias.ToReadOnlyList() );
+                    _token = new SqlTokenError( (SqlTokenTypeError)_tokenType, _leadingTrivias.ToReadOnlyList(), null, String.Format( "Unexpected {0} {1}.", _tokenType, GetTokenPosition() ) );
                 }
                 else
                 {
@@ -435,6 +466,7 @@ namespace CK.SqlServer.Parser
         int NextTokenLowLevel()
         {
             int ic = ReadLeadingWhitespace();
+            _tokenPosition = GetHeadPosition();
             if( ic == -1 ) return (int)SqlTokenTypeError.EndOfInput;
             switch( ic )
             {

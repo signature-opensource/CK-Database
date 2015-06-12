@@ -199,6 +199,7 @@ namespace CK.SqlServer.Parser
             // "open",
             // "return",
             // "throw",
+            // "set",
 
             "raiserror",
             "waitfor",
@@ -213,7 +214,6 @@ namespace CK.SqlServer.Parser
             "insert",
             "merge",
             "kill",
-            "set",
             "readtext",
             "writetext",
             "dbcc",
@@ -432,6 +432,7 @@ namespace CK.SqlServer.Parser
             _keywords.Add( "return", SqlTokenType.Return );
             _keywords.Add( "exec", SqlTokenType.Execute );
             _keywords.Add( "execute", SqlTokenType.Execute );
+            _keywords.Add( "set", SqlTokenType.Set );
 
             // Reserved keywords.
             foreach( string s in _sqlServerReserved )

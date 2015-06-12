@@ -97,7 +97,12 @@ namespace CK.SqlServer.Parser
         public SqlExprParameterDefaultValue DefaultValue { get { return Slots.Length > 1 ? Slots[1] as SqlExprParameterDefaultValue : null; } }
 
         /// <summary>
-        /// Gets whether the parameter is a pure input parameter or an output one with a /*input*/ tag.
+        /// Gets whether the parameter is a input only parameter.
+        /// </summary>
+        public bool IsPureInput { get { return OutputT == null; } }
+        
+        /// <summary>
+        /// Gets whether the parameter is an input parameter or an output one with a /*input*/ tag.
         /// </summary>
         public bool IsInput { get { return OutputT == null || IsInputOutput; } }
         
@@ -107,7 +112,7 @@ namespace CK.SqlServer.Parser
         public bool IsOutput { get { return OutputT != null; } }
 
         /// <summary>
-        /// Gets whether the parameter is only an output parameter (ie. it is <see cref="IsOutput"/> but not <see cref="IsInputOutput"/>).
+        /// Gets whether the parameter is an output only parameter (ie. it is <see cref="IsOutput"/> but not <see cref="IsInputOutput"/>).
         /// </summary>
         public bool IsPureOutput { get { return IsOutput && !IsInputOutput; } }
 

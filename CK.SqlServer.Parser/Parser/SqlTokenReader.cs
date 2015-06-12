@@ -17,30 +17,24 @@ namespace CK.SqlServer.Parser
     /// <summary>
     /// An <see cref="IEnumerator{T}"/> of <see cref="SqlToken"/> decorator that acts as a reading head
     /// on a raw tokens stream. It adds useful behavior such as one token lookup and = (Assign vs. Compare) operator
-    /// adaptation based on a toggle <see cref="ComparisonContext"/> flag.
+    /// adaptation based on a toggle <see cref="AssignmentContext"/> flag.
     /// </summary>
     internal class SqlTokenReader : IEnumerator<SqlToken> 
     {
         readonly IEnumerable<SqlToken> _tokens;
         readonly Func<string> _currentAnalyzedText;
-        readonly IDisposable _leaveAssignement;
-        readonly IDisposable _enterAssignement;
+        readonly Func<SourcePosition> _currentTokenPosition;
         IEnumerator<SqlToken> _e;
         SqlToken _c;
         SqlToken _rawLookup;
         bool _assignmentContext;
 
-        public SqlTokenReader( IEnumerable<SqlToken> tokens, Func<string> currentAnalyzedText = null )
+        public SqlTokenReader( IEnumerable<SqlToken> tokens, Func<string> currentAnalyzedText, Func<SourcePosition> currentTokenPosition )
         {
             Debug.Assert( tokens != null );
-            _leaveAssignement = Util.CreateDisposableAction( () => _assignmentContext = false );
-            _enterAssignement = Util.CreateDisposableAction( () => _assignmentContext = true );
             _tokens = tokens;
-            if( (_currentAnalyzedText = currentAnalyzedText) == null )
-            {
-                SqlTokenizer t = tokens as SqlTokenizer;
-                if( t != null ) _currentAnalyzedText = t.ToString;
-            }
+            _currentAnalyzedText = currentAnalyzedText;
+            _currentTokenPosition = currentTokenPosition;
             Reset();
         }
 
@@ -52,8 +46,8 @@ namespace CK.SqlServer.Parser
         public IDisposable SetAssignmentContext( bool assignment )
         {
             if( _assignmentContext == assignment ) return Util.EmptyDisposable;
-            if( (_assignmentContext = assignment) ) return _leaveAssignement;
-            return _enterAssignement;
+            if( (_assignmentContext = assignment) ) return Util.CreateDisposableAction( () => _assignmentContext = false );
+            return Util.CreateDisposableAction( () => _assignmentContext = true );
         }
 
         /// <summary>
@@ -209,7 +203,16 @@ namespace CK.SqlServer.Parser
         public bool SetCurrentError( string error )
         {
             Debug.Assert( !String.IsNullOrWhiteSpace( error ) );
-            _c = new SqlTokenError( error );
+            string suffix = null;
+            if( IsError )
+            {
+                suffix = " <- " + GetErrorMessage();
+            }
+            else if( _currentTokenPosition != null )
+            {
+                suffix = " " + _currentTokenPosition(); 
+            }
+            _c = new SqlTokenError( error + suffix );
             return false;
         }
 
