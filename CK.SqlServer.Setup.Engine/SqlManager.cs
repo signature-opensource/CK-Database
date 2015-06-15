@@ -83,7 +83,7 @@ namespace CK.SqlServer.Setup
                     _oCon.InternalConnection.StateChange += new StateChangeEventHandler( OnConnStateChange );
                     _oCon.InternalConnection.InfoMessage += new SqlInfoMessageEventHandler( OnConnInfo );
                 }
-                _oCon.Open();
+                _oCon.ExplicitOpen();
             }
             catch
             {

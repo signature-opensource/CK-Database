@@ -17,7 +17,7 @@ namespace CK.SqlServer
     /// </summary>
     /// <remarks>
     /// <para>
-    /// This class directly implements <see cref="ISqlCommandExecutor"/> interface but with explicit methodsin order to avoid interface pollution
+    /// This class directly implements <see cref="ISqlCommandExecutor"/> interface but with explicit methods in order to avoid interface pollution
     /// when this object exposes parameter values (it is a <see cref="ISqlParameterContext"/>) and also to avoid creating any extra object.
     /// </para>
     /// <para>

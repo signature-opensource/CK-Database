@@ -16,7 +16,9 @@ namespace CK.SqlServer
 {
     /// <summary>
     /// Offers methods such as ExecuteNonQuery and ExecuteScalar that safely reuse 
-    /// one connection instead of creating new ones.
+    /// one connection (see <see cref="KeepOpened"/> that is true by default) instead of creating new ones.
+    /// This object is resilient to multiple dispose/<see cref="ExplicitClose"/> and <see cref="ExplicitOpen"/> calls: the 
+    /// <see cref="InternalConnection"/> is opened/closed as needed.
     /// </summary>
     public partial class SqlConnectionProvider : IDisposable
     {
@@ -24,10 +26,11 @@ namespace CK.SqlServer
         /// The connection string must be kept as is because <see cref="SqlConnection.ConnectionString"/>
         /// may be modified by the SqlConnection (security information are removed).
         /// </summary>
-        string			_strConn;
-        SqlConnection	_oCon;
-        bool			_oConIsWorking;
-        bool			_autoClose;
+        readonly string			_strConn;
+        readonly SqlConnection	_oCon;
+        int                     _explicitOpen;
+        bool			        _oConIsWorking;
+        bool			        _autoClose;
 
         /// <summary>
         /// Initializes a new unitialized instance. 
@@ -57,7 +60,7 @@ namespace CK.SqlServer
 
         /// <summary>
         /// Gets the main <see cref="SqlConnection"/> for this <see cref="SqlConnectionProvider"/>. 
-        /// Should be used for read access to properties only.
+        /// This connection is not necessarily opened.
         /// </summary>
         public SqlConnection InternalConnection
         {
@@ -72,39 +75,56 @@ namespace CK.SqlServer
             get { return _strConn; }
         }
 
-        /// <summary>
-        /// Closes the connection to the database if it were opened. Can be called safely 
-        /// multiple times.
-        /// </summary>
-        public void Close()
-        {
-            _oCon.Close();
-        }
 
         /// <summary>
-        /// Closes the connection to the database if it were opened. Can be called safely 
-        /// multiple times.
-        /// </summary>
-        public void Dispose()
-        {
-            Close();
-        }
-
-        /// <summary>
-        /// Open the main connection to the database if it were closed (does nothing if the 
+        /// Open the main connection to the database if it were closed (only increments <see cref="ExplicitOpenCount"/> if the 
         /// <see cref="SqlConnection"/> were already opened). Once directly opened with this method,
         /// the <see cref="KeepOpened"/> parameter is ignored: the connection will remain opened
-        /// until an explicit call to <see cref="Close"/> is made.
+        /// until a corresponding explicit call to <see cref="ExplicitClose"/> is made.
         /// </summary>
-        /// <remarks>Once directly opened with this method,
-        /// the <see cref="KeepOpened"/> parameter is ignored: the connection will remain opened
-        /// until an explicit call to <see cref="Close"/> is made.
+        /// <remarks>
+        /// Once directly opened with this method, the <see cref="KeepOpened"/> parameter is ignored: the connection will remain opened
+        /// until an explicit call to <see cref="ExplicitClose"/> is made.
         /// </remarks>
-        public void Open()
+        public void ExplicitOpen()
         {
+            ++_explicitOpen;
             if( _oCon.State == ConnectionState.Broken ) _oCon.Close();
             if( _oCon.State == ConnectionState.Closed ) _oCon.Open();
         }
+        
+        /// <summary>
+        /// Gets the current number of <see cref="ExplicitOpen"/>.
+        /// </summary>
+        public int ExplicitOpenCount
+        {
+            get { return _explicitOpen; }
+        }
+
+        /// <summary>
+        /// Closes the connection to the database: decrements <see cref="ExplicitOpenCount"/> and closes the connection if it is zero
+        /// and if no connection acquired by <see cref="AcquireConnection"/> are pending (ie. not disposed).
+        /// Can be called safely multiple times.
+        /// </summary>
+        public void ExplicitClose()
+        {
+            if( _explicitOpen != 0 )
+            {
+                if( --_explicitOpen == 0 && !_oConIsWorking ) _oCon.Close();
+            }
+        }
+
+        /// <summary>
+        /// Closes the connection to the database regardless of the number of times <see cref="ExplicitOpen"/> has been called
+        /// or wether connection acquired by <see cref="AcquireConnection"/> are pending.
+        /// Can be called safely multiple times.
+        /// </summary>
+        public void Dispose()
+        {
+            _oCon.Close();
+            _explicitOpen = 0;
+        }
+
 
         /// <summary>
         /// Gets or sets whether the main connection will be reused as much as possible.
@@ -403,9 +423,9 @@ namespace CK.SqlServer
 
         internal class SqlConnectionProviderDisposable : IDisposable
         {
-            SqlCommand _cmd;
-            bool _mustClose;
-            SqlConnectionProvider _p;
+            readonly SqlCommand _cmd;
+            readonly bool _mustClose;
+            readonly SqlConnectionProvider _p;
 
             public SqlConnectionProviderDisposable( SqlCommand cmd, bool mustClose, SqlConnectionProvider p )
             {

@@ -22,11 +22,12 @@ namespace CK.SqlServer
         /// Open the main connection in async fashion way to the database if it were closed (does nothing if the 
         /// <see cref="SqlConnection"/> were already opened). Once directly opened with this method,
         /// the <see cref="KeepOpened"/> parameter is ignored: the connection will remain opened
-        /// until an explicit call to <see cref="Close"/> is made.
+        /// until an explicit call to <see cref="ExplicitClose"/> is made.
+        /// <returns>A task representing the asynchronous operation.</returns>
         /// </summary>
         /// <remarks>Once directly opened with this method,
         /// the <see cref="KeepOpened"/> parameter is ignored: the connection will remain opened
-        /// until an explicit call to <see cref="Close"/> is made.
+        /// until an explicit call to <see cref="ExplicitClose"/> is made.
         /// </remarks>
         public Task OpenAsync()
         {
@@ -40,7 +41,7 @@ namespace CK.SqlServer
         /// </summary>
         /// <param name="cmd">The command to execute.</param>
         /// <param name="cancellationToken">Optional <see cref="CancellationToken"/>.</param>
-        /// <returns>States whether the connection used to execute the command must be closed or not.</returns>
+        /// <returns>A task representing the asynchronous operation: a disposable object that must be disposed.</returns>
         public async Task<IDisposable> AcquireConnectionAsync( SqlCommand cmd, CancellationToken cancellationToken = default(CancellationToken) )
         {
             if( cmd == null ) throw new ArgumentNullException( "cmd" );
@@ -80,10 +81,9 @@ namespace CK.SqlServer
         /// </summary>
         /// <param name="cmd">The <see cref="SqlCommand"/> to execute.</param>
         /// <param name="cancellationToken">Optional <see cref="CancellationToken"/>.</param>
-        /// <returns>An array of objects or null if nothing has been returned from database.</returns>
+        /// <returns>A task representing the asynchronous operation: an array of objects or null if nothing has been returned from database.</returns>
         /// <remarks>
-        /// Exceptions are not caught by this method: acquired resources will be 
-        /// correctly released but exceptions will be propagated to caller.
+        /// Exceptions will be reported by the returned task object.
         /// </remarks>
         public async Task<object[]> ReadFirstRowAsync( SqlCommand cmd, CancellationToken cancellationToken = default(CancellationToken) )
         {
@@ -112,10 +112,9 @@ namespace CK.SqlServer
         /// </summary>
         /// <param name="cmd">The <see cref="SqlCommand"/> to execute.</param>
         /// <param name="cancellationToken">Optional <see cref="CancellationToken"/>.</param>
-        /// <returns>The first column of the first row in the result set.</returns>
+        /// <returns>A task representing the asynchronous operation: the first column of the first row in the result set.</returns>
         /// <remarks>
-        /// Exceptions are not caught by this method: acquired resources will be 
-        /// correctly released but exceptions will be propagated to caller.
+        /// Exceptions will be reported by the returned task object.
         /// </remarks>
         public async Task<object> ExecuteScalarAsync( SqlCommand cmd, CancellationToken cancellationToken = default(CancellationToken) )
         {
@@ -124,6 +123,31 @@ namespace CK.SqlServer
                 try
                 {
                     return await cmd.ExecuteScalarAsync( cancellationToken );
+                }
+                catch( SqlException ex )
+                {
+                    throw SqlDetailedException.Create( cmd, ex );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Executes the non query command on the main shared connection if possible and, if the 
+        /// main connection is in use, acquires a new connection.
+        /// </summary>
+        /// <param name="cmd">The <see cref="SqlCommand"/> to execute.</param>
+        /// <param name="cancellationToken">Optional <see cref="CancellationToken"/>.</param>
+        /// <returns>A task representing the asynchronous operation (the number of rows affected).</returns>
+        /// <remarks>
+        /// Exceptions will be reported by the returned task object.
+        /// </remarks>
+        public async Task<int> ExecuteNonQueryAsync( SqlCommand cmd, CancellationToken cancellationToken = default(CancellationToken) )
+        {
+            using( await AcquireConnectionAsync( cmd, cancellationToken ) )
+            {
+                try
+                {
+                    return await cmd.ExecuteNonQueryAsync( cancellationToken );
                 }
                 catch( SqlException ex )
                 {
