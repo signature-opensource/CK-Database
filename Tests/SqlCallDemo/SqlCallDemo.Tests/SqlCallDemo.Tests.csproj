@@ -61,6 +61,7 @@
     <Compile Include="CallGuidRefTest.CallExecute.cs" />
     <Compile Include="CallGuidRefTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StandardSqlCallContextTests.cs" />
     <Compile Include="TestActorContext.cs" />
     <Compile Include="TestActorContextIsExecutor.cs" />
   </ItemGroup>

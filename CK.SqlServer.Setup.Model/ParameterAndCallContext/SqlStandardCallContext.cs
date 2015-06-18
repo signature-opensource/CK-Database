@@ -10,7 +10,7 @@ using CK.Core;
 namespace CK.SqlServer
 {
     /// <summary>
-    /// Standard implementation of a disposable <see cref="ISqlParameterContext"/> that supports 
+    /// Standard implementation of a disposable <see cref="ISqlCallContext"/> that supports 
     /// query execution by explicitely implementing <see cref="ISqlCommandExecutor"/>).
     /// This is the simplest way to implement calls to the database: by specializing this type, application specific
     /// properties (like the ActorId) can also be used to automatically set method parameter values.
@@ -91,6 +91,18 @@ namespace CK.SqlServer
             return newC;
         }
 
+        SqlConnectionProvider GetProviderWithWrappedAggregationException( string connectionString )
+        {
+            try
+            {
+                return GetProvider( connectionString );
+            }
+            catch( Exception ex )
+            {
+                throw new AggregateException( ex );
+            }
+        }
+
         void ISqlCommandExecutor.ExecuteNonQuery( string connectionString, SqlCommand cmd )
         {
             GetProvider( connectionString ).ExecuteNonQuery( cmd );
@@ -120,7 +132,7 @@ namespace CK.SqlServer
         {
             var tcs = new TaskCompletionSource<T>();
 
-            Task<IDisposable> openTask = GetProvider( connectionString ).AcquireConnectionAsync( cmd, cancellationToken );
+            Task<IDisposable> openTask = GetProviderWithWrappedAggregationException( connectionString ).AcquireConnectionAsync( cmd, cancellationToken );
             openTask
                 .ContinueWith( open =>
                     {
@@ -128,22 +140,22 @@ namespace CK.SqlServer
                         else if( open.IsCanceled ) tcs.SetCanceled();
                         else
                         {
-                            try
+                            var execTask = cmd.ExecuteNonQueryAsync( cancellationToken );
+                            execTask.ContinueWith( exec =>
                             {
-                                var execTask = cmd.ExecuteNonQueryAsync( cancellationToken );
-                                execTask.ContinueWith( exec =>
+                                if( exec.IsFaulted ) tcs.SetException( exec.Exception.InnerExceptions );
+                                else if( exec.IsCanceled ) tcs.SetCanceled();
+                                else
                                 {
-                                    if( exec.IsFaulted ) tcs.SetException( exec.Exception.InnerExceptions );
-                                    else if( exec.IsCanceled ) tcs.SetCanceled();
-                                    else
+                                    try
                                     {
                                         tcs.SetResult( resultBuilder( cmd ) );
                                     }
-                                }, TaskContinuationOptions.ExecuteSynchronously );
-                            }
-                            catch( Exception exc ) { tcs.TrySetException( exc ); }
+                                    catch( Exception exc ) { tcs.TrySetException( exc ); }
+                                }
+                            }, TaskContinuationOptions.ExecuteSynchronously );
                         }
-                    }, TaskContinuationOptions.ExecuteSynchronously )
+                    } )
                 .ContinueWith( _ =>
                     {
                         if( !openTask.IsFaulted ) openTask.Result.Dispose();
