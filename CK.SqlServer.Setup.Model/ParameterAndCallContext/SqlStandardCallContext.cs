@@ -91,18 +91,6 @@ namespace CK.SqlServer
             return newC;
         }
 
-        SqlConnectionProvider GetProviderWithWrappedAggregationException( string connectionString )
-        {
-            try
-            {
-                return GetProvider( connectionString );
-            }
-            catch( Exception ex )
-            {
-                throw new AggregateException( ex );
-            }
-        }
-
         void ISqlCommandExecutor.ExecuteNonQuery( string connectionString, SqlCommand cmd )
         {
             GetProvider( connectionString ).ExecuteNonQuery( cmd );
@@ -132,9 +120,13 @@ namespace CK.SqlServer
         {
             var tcs = new TaskCompletionSource<T>();
 
-            Task<IDisposable> openTask = GetProviderWithWrappedAggregationException( connectionString ).AcquireConnectionAsync( cmd, cancellationToken );
-            openTask
-                .ContinueWith( open =>
+            SqlConnectionProvider p;
+            try
+            {
+                p = GetProvider( connectionString );
+                Task<IDisposable> openTask = p.AcquireConnectionAsync( cmd, cancellationToken );
+                openTask
+                    .ContinueWith( open =>
                     {
                         if( open.IsFaulted ) tcs.SetException( open.Exception.InnerExceptions );
                         else if( open.IsCanceled ) tcs.SetCanceled();
@@ -156,12 +148,30 @@ namespace CK.SqlServer
                             }, TaskContinuationOptions.ExecuteSynchronously );
                         }
                     } )
-                .ContinueWith( _ =>
+                    .ContinueWith( _ =>
                     {
                         if( !openTask.IsFaulted ) openTask.Result.Dispose();
                     }, TaskContinuationOptions.ExecuteSynchronously );
-
+            }
+            catch( Exception ex )
+            {
+                tcs.SetException( ex );
+            }
             return tcs.Task;
         }
+        // Above code written with async/await. 
+        // Generated code is far more big and there is no TaskContinuationOptions.ExecuteSynchronously... 
+        // (see http://stackoverflow.com/questions/30919601/async-await-vs-hand-made-continuations-is-executesynchronously-cleverly-used)
+        //
+        //  async Task<T> ExecAsync<T>( string connectionString, SqlCommand cmd, Func<SqlCommand, T> resultBuilder, CancellationToken cancellationToken = default(CancellationToken) )
+        //  {
+        //      SqlConnectionProvider p = GetProvider( connectionString );
+        //      using( IDisposable openTask = await p.AcquireConnectionAsync( cmd, cancellationToken ) )
+        //      {
+        //          await cmd.ExecuteNonQueryAsync( cancellationToken );
+        //          return resultBuilder( cmd );
+        //      }
+        //  }
+
     }
 }

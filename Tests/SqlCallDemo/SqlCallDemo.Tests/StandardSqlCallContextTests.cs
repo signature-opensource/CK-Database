@@ -35,9 +35,9 @@ namespace SqlCallDemo.Tests
         }
 
         [Test]
-        public void when_acquire_connection_throws_SqlException_when_database_name_is_not_valid()
+        public void when_acquire_connection_throws_SqlException_when_database_does_not_exist()
         {
-            AsynCallCatch<SqlException>( "select 1;", command => 3, "Server=.;Database=invalid-db-name;Integrated Security=SSPI" );
+            AsynCallCatch<SqlException>( "select 1;", command => 3, "Server=.;Database=kexistepas-db;Integrated Security=SSPI" );
         }
 
         [Test]
@@ -46,7 +46,6 @@ namespace SqlCallDemo.Tests
         {
             AsynCallCatch<SqlException>( "select 1;", command => 3, "Server=serverOfNothing;Database=ThisIsNotADatabase;Integrated Security=SSPI" );
         }
-
 
         void AsynCallCatch<TException>( string cmd, Func<SqlCommand,int> resultBuilder, string connectionString = null )
         {
