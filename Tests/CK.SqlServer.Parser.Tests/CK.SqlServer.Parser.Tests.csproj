@@ -76,6 +76,8 @@
     <Content Include="Parsing\Scripts\CLASSEMENT_POSTE.sql" />
     <Content Include="Parsing\Scripts\fReadThings.sql" />
     <Content Include="Parsing\Scripts\fAclGrantLevel.sql" />
+    <Content Include="Parsing\Scripts\cursor_usage.sql" />
+    <Content Include="Parsing\Scripts\sGroupRemoveAllUsers.sql" />
     <Content Include="Parsing\Scripts\sStoredProcedure03.sql" />
     <Content Include="Parsing\Scripts\sWithOptions.sql" />
     <Content Include="Parsing\Scripts\sStoredProcedure02.sql" />

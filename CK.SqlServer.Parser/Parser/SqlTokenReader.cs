@@ -301,7 +301,7 @@ namespace CK.SqlServer.Parser
 
         public bool IsUnquotedIdentifier( out SqlTokenIdentifier identifier, string name, bool expected )
         {
-            if( SqlToken.IsUnquotedIdentifier( Current, name ) )
+            if( Current.IsUnquotedIdentifier( name ) )
             {
                 identifier = Read<SqlTokenIdentifier>();
                 return true;

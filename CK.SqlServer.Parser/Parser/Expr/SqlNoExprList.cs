@@ -18,12 +18,12 @@ namespace CK.SqlServer.Parser
     /// <summary>
     /// Non-enclosable list of comma separated <see cref="SqlItem"/>.
     /// </summary>
-    public abstract class SqlNoExprList<T> : SqlNoExpr, IReadOnlyList<T> where T : SqlItem
+    public abstract class SqlNoExprList<T> : SqlNoExpr, IReadOnlyList<T> where T : class, ISqlItem
     {
         public SqlNoExprList( IList<ISqlItem> components )
             : this( components.ToArray() )
         {
-            SqlExprBaseListWithSeparator<T>.CheckArray( Slots, true, false, false, SqlToken.IsCommaSeparator );
+            SqlExprBaseListWithSeparator<T>.CheckArray( Slots, true, false, false, ISqlItemExtension.IsCommaSeparator );
         }
 
         internal SqlNoExprList( ISqlItem[] items )

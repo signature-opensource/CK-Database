@@ -17,7 +17,7 @@ namespace CK.SqlServer.Parser
 {
     public partial class SqlAnalyser
     {
-        bool MatchSelectSpecification( out SelectSpecification e, SqlTokenIdentifier select, bool allowExtension )
+        bool MatchSelectSpecification( out SelectSpecification e, SqlTokenIdentifier select )
         {
             e = null;
             SelectHeader header;
@@ -151,10 +151,10 @@ namespace CK.SqlServer.Parser
         bool SelectPartStopper( SqlToken t )
         {
             return t.TokenType == SqlTokenType.EndOfInput
-                    || SqlToken.IsCloseParenthesisOrTerminatorOrPossibleStartStatement( t )
-                    || SqlToken.IsSelectOperator( t.TokenType )
+                    || t.IsCloseParenthesisOrTerminatorOrPossibleStartStatement()
+                    || t.TokenType.IsSelectOperator()
                     || IsSpecificationPart( t ) != SpecificationPart.None
-                    || SqlToken.IsUnquotedIdentifier( t, "having", "option" );
+                    || t.IsUnquotedIdentifier( "having", "option" );
         }
 
         bool IsPossibleColumnDefinition( SqlToken t )

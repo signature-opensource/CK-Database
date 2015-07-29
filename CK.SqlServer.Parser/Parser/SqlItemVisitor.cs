@@ -95,6 +95,34 @@ namespace CK.SqlServer.Parser
             return new SqlExprStIf( modified.ToArray() );
         }
 
+        public SqlItem Visit( SqlExprCursor e )
+        {
+            List<ISqlItem> modified = VisitItems( e.Items );
+            if( modified == null ) return e;
+            return new SqlExprCursor( modified.ToArray() );
+        }
+
+        public SqlItem Visit( SqlNoExprIdentifierList e )
+        {
+            List<ISqlItem> modified = VisitItems( e.Items );
+            if( modified == null ) return e;
+            return new SqlNoExprIdentifierList( modified.ToArray() );
+        }
+
+        public SqlItem Visit( SqlExprCursorSql92 e )
+        {
+            List<ISqlItem> modified = VisitItems( e.Items );
+            if( modified == null ) return e;
+            return new SqlExprCursorSql92( modified.ToArray() );
+        }
+
+        public virtual SqlItem Visit( SqlExprStDeclareCursor e )
+        {
+            List<ISqlItem> modified = VisitItems( e.Items );
+            if( modified == null ) return e;
+            return new SqlExprStDeclareCursor( modified.ToArray() );
+        }
+
         public virtual SqlItem Visit( SqlExprStBeginTran e )
         {
             List<ISqlItem> modified = VisitItems( e.Items );

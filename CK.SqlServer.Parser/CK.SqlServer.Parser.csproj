@@ -11,7 +11,7 @@
     <AssemblyName>CK.SqlServer.Parser</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <NuGetPackageImportStamp>f8b906ac</NuGetPackageImportStamp>
+    <NuGetPackageImportStamp>bf56ea9b</NuGetPackageImportStamp>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup>
@@ -53,6 +53,9 @@
     </Compile>
     <Compile Include="ISqlItem.cs" />
     <Compile Include="Parser\ExprExtensions.cs" />
+    <Compile Include="Parser\Expr\ISqlExprCursor.cs" />
+    <Compile Include="Parser\Expr\SqlExprCursorSql92.cs" />
+    <Compile Include="Parser\Expr\SqlExprCursor.cs" />
     <Compile Include="Parser\Expr\SqlExprCollate.cs" />
     <Compile Include="Parser\Expr\SqlExprCast.cs" />
     <Compile Include="Parser\Expr\SqlExprDeclare.cs" />
@@ -63,8 +66,10 @@
     <Compile Include="Parser\Expr\SqlExprStGoto.cs" />
     <Compile Include="Parser\Expr\SqlExprStSetOpt.cs" />
     <Compile Include="Parser\Expr\SqlExprStDeclare.cs" />
+    <Compile Include="Parser\Expr\SqlExprStDeclareCursor.cs" />
     <Compile Include="Parser\Expr\SqlExprStSetVar.cs" />
     <Compile Include="Parser\Expr\SqlExprStReturn.cs" />
+    <Compile Include="Parser\Expr\SqlNoExprIdentifierList.cs" />
     <Compile Include="Parser\Expr\SqlNoExprOverClause.cs" />
     <Compile Include="Parser\Expr\Select\SelectOrderByOffset.cs" />
     <Compile Include="Parser\Expr\Select\SelectOrderByColumnList.cs" />
@@ -145,6 +150,7 @@
     <Compile Include="Parser\SqlAnalyser.LowLevel.cs" />
     <Compile Include="Parser\SqlItemVisitor.cs" />
     <Compile Include="Parser\SqlTokenReader.cs" />
+    <Compile Include="Tokenizer\ISqlItemExtension.cs" />
     <Compile Include="Tokenizer\SourcePosition.cs" />
     <Compile Include="Tokenizer\SqlTokenExtension.cs" />
     <Compile Include="Tokenizer\SqlExprMultiToken.cs" />
@@ -153,6 +159,7 @@
     <Compile Include="Tokenizer\SqlTokenizer.cs" />
     <Compile Include="Tokenizer\SqlTokenType.cs" />
     <Compile Include="Tokenizer\SqlTokenTypeError.cs" />
+    <Compile Include="Tokenizer\SqlTokenTypeExtension.cs" />
     <Compile Include="Tokenizer\SqlTrivia.cs" />
     <Compile Include="Tokenizer\Token\SqlTokenBaseLiteral.cs" />
     <Compile Include="Tokenizer\Token\SqlTokenClosePar.cs" />
@@ -177,17 +184,7 @@
     <None Include="packages.config" />
     <None Include="Parser\Expr\ExpressionsAndStatements.cd" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="FodyWeavers.xml" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\Fody.1.27.1\build\Fody.targets" Condition="Exists('..\packages\Fody.1.27.1\build\Fody.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Fody.1.27.1\build\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.1.27.1\build\Fody.targets'))" />
-  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

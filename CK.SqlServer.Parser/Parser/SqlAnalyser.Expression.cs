@@ -87,7 +87,7 @@ namespace CK.SqlServer.Parser
                     if( id.TokenType == SqlTokenType.Select )
                     {
                         SelectSpecification select;
-                        if( !MatchSelectSpecification( out select, id, true ) )
+                        if( !MatchSelectSpecification( out select, id ) )
                         {
                             Debug.Assert( R.IsError );
                             return false;
@@ -215,11 +215,26 @@ namespace CK.SqlServer.Parser
                     left = new SqlExprBinaryOperator( left, cmp, right );
                     return true;
                 }
-                if( SqlToken.IsSelectOperator( R.Current.TokenType ) )
+                if( R.Current.TokenType.IsSelectOperator() )
                 {
                     ISelectSpecification lSelect = left as ISelectSpecification;
                     if( lSelect == null ) return false;
-                    SqlTokenIdentifier op = R.Read<SqlTokenIdentifier>();
+                    SqlTokenIdentifier op;
+                    if( R.Current.TokenType == SqlTokenType.For )
+                    {
+                        // Limits Select For operator to Brows, Xml and JSON.
+                        // The other For is for cursor options...
+                        if( R.RawLookup.TokenType == SqlTokenType.IdentifierTypeXml || R.RawLookup.IsUnquotedIdentifier( "browse", "json" ) )
+                        {
+                            op = R.Read<SqlTokenIdentifier>();
+                            SqlExpr content;
+                            if( !IsExpressionOrRawList( out content, SelectPartStopper, false, true ) ) return false;
+                            left = new SelectFor( lSelect, op, content );
+                            return true;
+                        }
+                        return false;
+                    }
+                    op = R.Read<SqlTokenIdentifier>();
                     if( op.TokenType == SqlTokenType.Order )
                     {
                         SqlTokenIdentifier by;
@@ -237,13 +252,6 @@ namespace CK.SqlServer.Parser
                             if( R.IsError ) return false;
                             left = new SelectOrderBy( lSelect, op, by, columns );
                         }
-                        return true;
-                    }
-                    if( op.TokenType == SqlTokenType.For )
-                    {
-                        SqlExpr content;
-                        if( !IsExpressionOrRawList( out content, SelectPartStopper, false, true ) ) return false;
-                        left = new SelectFor( lSelect, op, content );
                         return true;
                     }
                     Debug.Assert( SelectCombineOperator.IsValidOperator( op.TokenType ) );
@@ -382,7 +390,7 @@ namespace CK.SqlServer.Parser
 
             bool MatchInList( out SqlExpr e, bool expected )
             {
-                return IsExpressionOrRawList( out e, SqlToken.IsCommaOrCloseParenthesisOrTerminator, false, expected );
+                return IsExpressionOrRawList( out e, ISqlItemExtension.IsCommaOrCloseParenthesisOrTerminator, false, expected );
             }
 
             /// <summary>

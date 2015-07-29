@@ -31,7 +31,7 @@ namespace CK.SqlServer.Parser
         /// <param name="closePar">Closing parenthesis.</param>
         /// <param name="allowEmpty">False to throw an argument exception if the <paramref name="exprOrCommaTokens"/> is empty.</param>
         public SqlExprBaseExprList( SqlTokenOpenPar openPar, IList<ISqlItem> exprOrCommaTokens, SqlTokenClosePar closePar, bool allowEmpty )
-            : base( openPar, exprOrCommaTokens, closePar, allowEmpty, SqlToken.IsCommaSeparator )
+            : base( openPar, exprOrCommaTokens, closePar, allowEmpty, ISqlItemExtension.IsCommaSeparator )
         {
         }
 
@@ -42,7 +42,7 @@ namespace CK.SqlServer.Parser
         /// <param name="exprOrCommaTokens">List of tokens or expressions.</param>
         /// <param name="validSeparator">Defaults to a predicate that checks that separators are commas (see <see cref="IsCommaSeparator"/>).</param>
         public SqlExprBaseExprList( IList<ISqlItem> exprOrCommaTokens, bool allowEmpty )
-            : base( exprOrCommaTokens, allowEmpty, SqlToken.IsCommaSeparator )
+            : base( exprOrCommaTokens, allowEmpty, ISqlItemExtension.IsCommaSeparator )
         {
         }
 

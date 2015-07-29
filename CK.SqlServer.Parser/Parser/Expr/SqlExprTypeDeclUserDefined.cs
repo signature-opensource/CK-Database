@@ -22,10 +22,15 @@ namespace CK.SqlServer.Parser
     /// </summary>
     public class SqlExprTypeDeclUserDefined : SqlNoExpr, IReadOnlyList<SqlTokenIdentifier>, ISqlExprUnifiedTypeDecl
     {
+        public SqlExprTypeDeclUserDefined( SqlTokenIdentifier monoIdentifier )
+            : this( CreateArray( monoIdentifier ) )
+        {
+        }
+
         public SqlExprTypeDeclUserDefined( IList<ISqlItem> tokens )
             : this( CreateArray( tokens.ToArray() ) )
         {
-            SqlExprBaseListWithSeparator<SqlTokenIdentifier>.CheckArray( Slots, false, false, false, SqlToken.IsDotSeparator );
+            SqlExprBaseListWithSeparator<SqlTokenIdentifier>.CheckArray( Slots, false, false, false, ISqlItemExtension.IsDotSeparator );
         }
 
         internal SqlExprTypeDeclUserDefined( ISqlItem[] items )

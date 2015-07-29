@@ -74,10 +74,6 @@ namespace CK.SqlServer.Parser
             }
         }
 
-        public SqlExprMultiIdentifier Name { get { return (SqlExprMultiIdentifier)Slots[2]; } }
-
-        public SqlExprParameterList Parameters { get { return (SqlExprParameterList)Slots[3]; } }
-
         public SelectSpecification Select { get { return (SelectSpecification)Slots[SlotsLengthWithoutTerminator - 1]; } }
 
         [DebuggerStepThrough]

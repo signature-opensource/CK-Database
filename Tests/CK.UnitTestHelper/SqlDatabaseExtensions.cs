@@ -93,7 +93,7 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Checks that the <paramref name="selectClause"/> with its optional parameters @0, @1... returns no results.
+        /// Checks that the <paramref name="selectClause"/> with its optional parameters @0, @1... returns a given scalar.
         /// </summary>
         /// <param name="connectionString">The connection string.</param>
         /// <param name="expectedValue">Expected value of the <paramref name="selectClause"/>.</param>

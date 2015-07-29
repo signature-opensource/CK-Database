@@ -33,14 +33,6 @@ namespace CK.SqlServer.Parser
             _statements = newStatements;
         }
 
-        /// <summary>
-        /// Gets the list of statements.
-        /// </summary>
-        public IReadOnlyList<SqlExprBaseSt> Statements
-        {
-            get { return this; }
-        }
-
         public override sealed IEnumerable<ISqlItem> Items
         {
             get { return _statements; }
@@ -56,30 +48,27 @@ namespace CK.SqlServer.Parser
             return visitor.Visit( this );
         }
 
-        #region IReadOnlyList<SqlExprBaseSt> Members
-
-        SqlExprBaseSt IReadOnlyList<SqlExprBaseSt>.this[int index]
+        public SqlExprBaseSt this[int index]
         {
             get { return _statements[index]; }
         }
 
 
-        int IReadOnlyCollection<SqlExprBaseSt>.Count
+        public int Count
         {
             get { return _statements.Length; }
         }
 
-        IEnumerator<SqlExprBaseSt> IEnumerable<SqlExprBaseSt>.GetEnumerator()
+        public IEnumerator<SqlExprBaseSt> GetEnumerator()
         {
             return (IEnumerator<SqlExprBaseSt>)_statements.GetEnumerator();
         }
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
-            return (IEnumerator<SqlExprBaseSt>)_statements.GetEnumerator();
+            return _statements.GetEnumerator();
         }
 
-        #endregion
     }
 
 

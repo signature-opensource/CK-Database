@@ -16,14 +16,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTrademark( "" )]
 [assembly: CLSCompliant( true )]
 
-[assembly: AssemblyVersion( "3.0.20" )]
-
-
 #if DEBUG
     [assembly: AssemblyConfiguration( "Debug" )]
 #else
     [assembly: AssemblyConfiguration( "Release" )]
 #endif
-
-// Added by CKReleaser.
-[assembly: AssemblyInformationalVersion( "%ck-standard%" )]

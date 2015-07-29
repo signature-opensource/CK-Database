@@ -268,7 +268,18 @@ namespace CK.SqlServer.Parser
                             SqlTokenTerminal assignT;
                             SqlExpr right;
                             if( !R.IsToken( out assignT, t => (t.TokenType & SqlTokenType.IsAssignOperator) != 0, expected: true ) ) return false;
-                            if( !IsExpression( out right, 0, true ) ) return false;
+                            SqlTokenIdentifier cursorToken;
+                            if( R.IsToken( out cursorToken, SqlTokenType.Cursor, false ) )
+                            {
+                                ISqlExprCursor c;
+                                if( !MatchCursorDefinition( cursorToken, out c ) )
+                                {
+                                    Debug.Assert( R.IsError );
+                                    return false;
+                                }
+                                right = (SqlExpr)c;
+                            }
+                            else if( !IsExpression( out right, 0, true ) ) return false;
                             statement = new SqlExprStSetVar( id, left, assignT, right, GetOptionalTerminator() );
                             return true;
                         }
@@ -281,6 +292,24 @@ namespace CK.SqlServer.Parser
                 if( id.TokenType == SqlTokenType.Declare )
                 {
                     R.MoveNext();
+                    // Syntax: declare cursorName cursor ...
+                    //   - cursorName can not be a @Variable.
+                    //   - cursorName can be a quoted identifier.
+                    //   - no 'as' between cursorName and 'cursor'.
+                    if( R.Current.TokenType != SqlTokenType.IdentifierVariable )
+                    {
+                        SqlTokenIdentifier name;
+                        SqlTokenIdentifier cursorToken;
+                        if( !R.IsToken( out name, true ) || !R.IsToken( out cursorToken, SqlTokenType.Cursor, true ) ) return false;
+                        ISqlExprCursor cursorExpr;
+                        if( !MatchCursorDefinition( cursorToken, out cursorExpr ) )
+                        {
+                            Debug.Assert( R.IsError );
+                            return false;
+                        }
+                        statement = new SqlExprStDeclareCursor( id, name, cursorExpr, GetOptionalTerminator() );
+                        return true;
+                    }
                     SqlTokenOpenPar openPar;
                     SqlTokenClosePar closePar;
                     List<ISqlItem> items;
@@ -634,6 +663,7 @@ namespace CK.SqlServer.Parser
                 SqlExprTypedIdentifier declVar;
                 SqlTokenTerminal assignToken = null;
                 SqlExpr initialValue = null;
+                // Syntax: declare @name [as] type
                 using( R.SetAssignmentContext( true ) )
                 {
                     if( !IsTypedIdentifer( out declVar, t => t.IsVariable, expected ) ) return false;
@@ -643,6 +673,51 @@ namespace CK.SqlServer.Parser
                     }
                 }
                 declare = new SqlExprDeclare( declVar, assignToken, initialValue );
+                return true;
+            }
+
+            bool MatchCursorDefinition( SqlTokenIdentifier cursorToken, out ISqlExprCursor cursor )
+            {
+                cursor = null;
+                SqlExprUnmodeledItems options;
+                SqlTokenIdentifier forToken;
+                if( !IsUnmodeledUntil( out options, out forToken, t => t.TokenType == SqlTokenType.For ) ) return false;
+                SqlExpr eSelect;
+                if( !IsExpression( out eSelect, 0, true ) ) return false;
+                ISelectSpecification select;
+                if( (select = eSelect as ISelectSpecification) == null ) return R.SetCurrentError( "Select statement expected." );
+                SqlTokenIdentifier forOptionsToken;
+                SqlTokenIdentifier readTokenSql92 = null;
+                SqlTokenIdentifier onlyTokenSql92 = null;
+                SqlTokenIdentifier updateToken = null;
+                SqlTokenIdentifier ofToken = null;
+                SqlNoExprIdentifierList updateColumns = null;
+                if( R.IsToken( out forOptionsToken, SqlTokenType.For, false ) )
+                {
+                    if( R.IsUnquotedIdentifier( out readTokenSql92, "read", false ) )
+                    {
+                        if( !R.IsToken( out onlyTokenSql92, SqlTokenType.Only, true ) ) return false;
+                    }
+                    else
+                    {
+                        if( !R.IsToken( out updateToken, SqlTokenType.Update, true ) ) return false;
+                        if( R.IsToken( out ofToken, SqlTokenType.Of, false ) )
+                        {
+                            List<ISqlItem> columns = null;
+                            if( !IsCommaListNonEnclosed<SqlExprIdentifier>( out columns, IsMonoIdentifier, true ) ) return false;
+                            updateColumns = new SqlNoExprIdentifierList( columns );
+                        }
+                    }
+                }
+                if( readTokenSql92 != null )
+                {
+                    if( options != null ) return R.SetCurrentError( "Sql92: There can be no options in 'cursor [Options] for <select> for read only;'." );
+                    cursor = new SqlExprCursorSql92( null, null, cursorToken, forToken, select, forOptionsToken, readTokenSql92, onlyTokenSql92, updateToken, ofToken, updateColumns );
+                }
+                else
+                {
+                    cursor = new SqlExprCursor( cursorToken, options, forToken, select, forOptionsToken, updateToken, ofToken, updateColumns );
+                }
                 return true;
             }
 

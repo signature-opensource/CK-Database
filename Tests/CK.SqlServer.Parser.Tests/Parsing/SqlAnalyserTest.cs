@@ -415,6 +415,23 @@ namespace CK.SqlServer.Parser.Tests
         }
 
         [Test]
+        public void Parse_OpenJSON_select()
+        {
+            string s = @"SELECT Number, Customer, Date, Quantity
+                         FROM OPENJSON (@JSalestOrderDetails, '$.OrdersArray')
+                         WITH (
+                                Number varchar(200), 
+                                Date datetime,
+                                Customer varchar(200),
+                                Quantity int
+                         ) AS OrdersArray";
+            SqlExpr e;
+            var r = SqlAnalyser.ParseExpression( out e, s );
+            Assert.That( r.IsError, Is.False, r.ToString() );
+            Assert.That( e is ISelectSpecification );
+        }
+
+        [Test]
         public void ParseStoredProcedureWithoutTerminator()
         {
             var sp = ReadStatement<SqlExprStStoredProc>( "sProcWithoutTerminator.sql" );
@@ -426,7 +443,7 @@ namespace CK.SqlServer.Parser.Tests
             Assert.That( sp.Parameters[0].Variable.Identifier.IsVariable, Is.True );
             Assert.That( sp.Parameters[0].Variable.Identifier.Name, Is.EqualTo( "@P" ) );
             Assert.That( sp.Parameters[0].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.Int ) );
-            Assert.That( sp.BodyStatements.Statements.Count, Is.EqualTo( 1 ) );
+            Assert.That( sp.BodyStatements.Count, Is.EqualTo( 1 ) );
         }
 
         [Test]
@@ -446,9 +463,9 @@ namespace CK.SqlServer.Parser.Tests
                 Assert.That( f.Parameters[1].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.Int ) );
                 Assert.That( f.ReturnsT, Is.Not.Null );
                 Assert.That( f.ReturnedType.ActualType.DbType, Is.EqualTo( SqlDbType.TinyInt ) );
-                Assert.That( f.BodyStatements.Statements.Count, Is.EqualTo( 1 ) );
-                Assert.That( f.BodyStatements.Statements[0], Is.InstanceOf<SqlExprStReturn>() );
-                SqlExprStReturn r = (SqlExprStReturn)f.BodyStatements.Statements[0];
+                Assert.That( f.BodyStatements.Count, Is.EqualTo( 1 ) );
+                Assert.That( f.BodyStatements[0], Is.InstanceOf<SqlExprStReturn>() );
+                SqlExprStReturn r = (SqlExprStReturn)f.BodyStatements[0];
                 SqlExprKoCall isNull = (SqlExprKoCall)r.Value;
                 SqlExprKoCall isNull2 = (SqlExprKoCall)isNull.Parameters[1];
                 SqlExprLiteral zero = (SqlExprLiteral)isNull2.Parameters[1];
@@ -493,8 +510,8 @@ namespace CK.SqlServer.Parser.Tests
                     Assert.That( sp.HasOptions );
                     Assert.That( sp.Options.Items.Count(), Is.EqualTo( 4 ), "[with] [recompile] [,] [execute as owner]" );
                     Assert.That( sp.Options.Tokens.ToStringWithoutTrivias( "|" ), Is.EqualTo( "with|recompile|,|execute|as|owner" ) );
-                    Assert.That( sp.BodyStatements.Statements.Count, Is.EqualTo( 2 ).Or.EqualTo( 3 ), "Two statements (select and return) but..." );
-                    Assert.That( sp.BodyStatements.Statements.Count == 2 || sp.BodyStatements.Statements[2] is SqlExprStEmpty, "...when ';' is added, it is a third empty statement." );
+                    Assert.That( sp.BodyStatements.Count, Is.EqualTo( 2 ).Or.EqualTo( 3 ), "Two statements (select and return) but..." );
+                    Assert.That( sp.BodyStatements.Count == 2 || sp.BodyStatements[2] is SqlExprStEmpty, "...when ';' is added, it is a third empty statement." );
                 } );
         }
 
@@ -505,7 +522,7 @@ namespace CK.SqlServer.Parser.Tests
                 {
                     Assert.That( sp.Name.ToString(), Is.EqualTo( "sStrange\r\n" ) );
                     Assert.That( sp.Parameters, Is.Empty );
-                    Assert.That( sp.BodyStatements.Statements.Count, Is.EqualTo( 5 ) );
+                    Assert.That( sp.BodyStatements.Count, Is.EqualTo( 5 ) );
                 } );
         }
 
@@ -523,7 +540,7 @@ namespace CK.SqlServer.Parser.Tests
                     Assert.That( sp.Parameters[0].Variable.TypeDecl.ActualType.DbType, Is.EqualTo( SqlDbType.Int ) );
                     Assert.That( sp.HasBeginEnd );
                     Assert.That( sp.HasOptions, Is.False );
-                    Assert.That( sp.BodyStatements.Statements.Count, Is.EqualTo( 2 ) );
+                    Assert.That( sp.BodyStatements.Count, Is.EqualTo( 2 ) );
                 } );
         }
 
@@ -536,7 +553,7 @@ namespace CK.SqlServer.Parser.Tests
                     Assert.That( sp.Parameters.Count, Is.EqualTo( 2 ) );
                     Assert.That( sp.HasBeginEnd );
                     Assert.That( sp.HasOptions, Is.False );
-                    Assert.That( sp.BodyStatements.Statements.Count, Is.EqualTo( 1 ), "Unmodeled." );
+                    Assert.That( sp.BodyStatements.Count, Is.EqualTo( 1 ), "Unmodeled." );
                 } );
         }
 
@@ -633,6 +650,26 @@ namespace CK.SqlServer.Parser.Tests
                     Assert.That( sp.Parameters[8].DefaultValue.IsNull, Is.True );
                     Assert.That( sp.Parameters[8].DefaultValue.IsLiteral, Is.False );
                 } );
+        }
+
+        [Test]
+        public void ParseStoredProcedure_GroupRemoveAllUsers()
+        {
+            var sp = ReadStatement<SqlExprStStoredProc>( "sGroupRemoveAllUsers.sql" );
+
+            Assert.That( sp.Name.ToString(), Is.EqualTo( "CK.sGroupRemoveAllUsers\r\n" ) );
+            Assert.That( sp.Parameters.Count, Is.EqualTo( 2 ) );
+            Assert.That( sp.BodyStatements.Count, Is.GreaterThan( 1 ) );
+        }
+
+        [Test]
+        public void ParseStoredProcedure_cursor_usage()
+        {
+            var sp = ReadStatement<SqlExprStStoredProc>( "cursor_usage.sql" );
+
+            Assert.That( sp.Name.ToString(), Is.EqualTo( "cursor_usage\r\n" ) );
+            Assert.That( sp.Parameters.Count, Is.EqualTo( 0 ) );
+            Assert.That( sp.BodyStatements.Count, Is.GreaterThan( 1 ) );
         }
 
         [DebuggerStepThrough]

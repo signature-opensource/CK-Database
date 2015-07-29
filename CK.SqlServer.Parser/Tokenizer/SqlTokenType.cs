@@ -586,6 +586,7 @@ namespace CK.SqlServer.Parser
         Distinct    = IdentifierReservedFirstNonOperator + 38,
         Pivot       = IdentifierReservedFirstNonOperator + 39,
         Having      = IdentifierReservedFirstNonOperator + 40,
+        Cursor      = IdentifierReservedFirstNonOperator + 41,
         #endregion
 
         #region IdentifierReservedStatement values
@@ -608,6 +609,8 @@ namespace CK.SqlServer.Parser
         Return      = IdentifierReservedStatement | 17,
         Execute     = IdentifierReservedStatement | 18,
         Set         = IdentifierReservedStatement | 19,
+        Update      = IdentifierReservedStatement | 20,
+        Insert      = IdentifierReservedStatement | 21,
         #endregion
 
         #region IdentifierDbType values

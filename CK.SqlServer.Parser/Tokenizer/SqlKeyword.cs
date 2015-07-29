@@ -65,7 +65,6 @@ namespace CK.SqlServer.Parser
             "current_timestamp",
             "current_user",
             "national",
-            "cursor",
             "nullif",
             "default",
             "tsequal",
@@ -170,6 +169,7 @@ namespace CK.SqlServer.Parser
             // "percent",
             // "values",
             // "distinct",
+            // "cursor",
             // "pivot",
 
 
@@ -200,6 +200,8 @@ namespace CK.SqlServer.Parser
             // "return",
             // "throw",
             // "set",
+            // "update",
+            // "insert",
 
             "raiserror",
             "waitfor",
@@ -209,9 +211,7 @@ namespace CK.SqlServer.Parser
             "commit",
             "rollback",
             "delete",
-            "update",
             "updatetext",
-            "insert",
             "merge",
             "kill",
             "readtext",
@@ -409,6 +409,7 @@ namespace CK.SqlServer.Parser
             _keywords.Add( "distinct", SqlTokenType.Distinct );
             _keywords.Add( "pivot", SqlTokenType.Pivot );
             _keywords.Add( "having", SqlTokenType.Having );
+            _keywords.Add( "cursor", SqlTokenType.Cursor );
             _keywords.Add( "collate", SqlTokenType.Collate );
                         
 
@@ -433,6 +434,8 @@ namespace CK.SqlServer.Parser
             _keywords.Add( "exec", SqlTokenType.Execute );
             _keywords.Add( "execute", SqlTokenType.Execute );
             _keywords.Add( "set", SqlTokenType.Set );
+            _keywords.Add( "update", SqlTokenType.Update );
+            _keywords.Add( "insert", SqlTokenType.Insert );
 
             // Reserved keywords.
             foreach( string s in _sqlServerReserved )

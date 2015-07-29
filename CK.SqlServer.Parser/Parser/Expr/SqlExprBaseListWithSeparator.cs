@@ -50,7 +50,7 @@ namespace CK.SqlServer.Parser
             if( exprOrTokens == null ) throw new ArgumentNullException( "exprOrTokens" );
             if( closePar == null ) throw new ArgumentNullException( "closePar" );
             var c = CreateArray( openPar, exprOrTokens, exprOrTokens.Count, closePar );
-            CheckArray( c, allowEmpty, true, true, validSeparator ?? SqlToken.IsCommaSeparator );
+            CheckArray( c, allowEmpty, true, true, validSeparator ?? ISqlItemExtension.IsCommaSeparator );
             return c;
         }
 
@@ -58,7 +58,7 @@ namespace CK.SqlServer.Parser
         {
             if( exprOrTokens == null ) throw new ArgumentNullException( "exprOrTokens" );
             var c = CreateArray( SqlExprMultiToken<SqlTokenOpenPar>.Empty, exprOrTokens, 0, exprOrTokens.Count, SqlExprMultiToken<SqlTokenClosePar>.Empty );
-            CheckArray( c, allowEmpty, true, false, validSeparator ?? SqlToken.IsCommaSeparator );
+            CheckArray( c, allowEmpty, true, false, validSeparator ?? ISqlItemExtension.IsCommaSeparator );
             return c;
         }
 

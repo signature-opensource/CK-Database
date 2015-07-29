@@ -35,7 +35,7 @@ namespace CK.SqlServer.Parser
             ISqlItem[] r;
             if( isEnclosed ) r = tokens.ToArray();
             else r = CreateEnclosedArray( tokens.AsReadOnlyList() );
-            SqlExprBaseListWithSeparator<SqlTokenIdentifier>.CheckArray( r, false, true, false, SqlToken.IsDotOrDoubleColonSeparator );
+            SqlExprBaseListWithSeparator<SqlTokenIdentifier>.CheckArray( r, false, true, false, ISqlItemExtension.IsDotOrDoubleColonSeparator );
             return r;
         }
 
@@ -46,7 +46,7 @@ namespace CK.SqlServer.Parser
 
         static internal string BuildArray( IEnumerator<ISqlItem> tokens, out ISqlItem[] result, SqlTokenIdentifier firstForLookup = null )
         {
-            return SqlExprBaseListWithSeparator<SqlTokenIdentifier>.BuildArray( tokens, false, SqlToken.IsDotOrDoubleColonSeparator, "identifier", out result, firstForLookup );
+            return SqlExprBaseListWithSeparator<SqlTokenIdentifier>.BuildArray( tokens, false, ISqlItemExtension.IsDotOrDoubleColonSeparator, "identifier", out result, firstForLookup );
         }
 
         /// <summary>
