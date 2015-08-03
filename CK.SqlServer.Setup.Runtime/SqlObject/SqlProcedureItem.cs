@@ -20,9 +20,9 @@ namespace CK.SqlServer.Setup
     public class SqlProcedureItem : SqlObjectItem
     {
         const string _builderTypeName = "CK.<CreatorForSqlCommand>";
-        readonly SqlExprStStoredProc _storedProc;
+        readonly ISqlServerCallableObject _storedProc;
 
-        internal SqlProcedureItem( SqlObjectProtoItem p, SqlExprStStoredProc storedProc )
+        internal SqlProcedureItem( SqlObjectProtoItem p, ISqlServerCallableObject storedProc )
             : base( p )
         {
             Debug.Assert( p.ItemType == SqlObjectProtoItem.TypeProcedure );
@@ -38,7 +38,7 @@ namespace CK.SqlServer.Setup
         /// Gets the original parsed stored procedure. 
         /// Can be null if an error occurred during parsing.
         /// </summary>
-        public SqlExprStStoredProc OriginalStatement { get { return _storedProc; } }
+        public ISqlServerCallableObject OriginalStatement { get { return _storedProc; } }
 
         /// <summary>
         /// Gets or generates the method that creates the <see cref="SqlCommand"/> for this <see cref="SqlProcedureItem."/>
@@ -73,7 +73,7 @@ namespace CK.SqlServer.Setup
                         {
                             if( p.IsPureOutput && p.DefaultValue != null )
                             {
-                                monitor.Warn().Send( "Sql parameter '{0}' is an output parameter but has a default value: if it is used as an input parameter it should be marked as /*input*/output.", p.Variable.Identifier.Name );
+                                monitor.Warn().Send( "Sql parameter '{0}' is an output parameter but has a default value: if it is used as an input parameter it should be marked as /*input*/output.", p.Name );
                             }
                         }
                     }
@@ -92,7 +92,7 @@ namespace CK.SqlServer.Setup
             tB.CreateType();
         }
 
-        private static MethodBuilder GenerateCreateSqlCommand( TypeBuilder tB, string methodName, string spSchemaName, SqlExprParameterList sqlParameters )
+        private static MethodBuilder GenerateCreateSqlCommand( TypeBuilder tB, string methodName, string spSchemaName, ISqlServerParameterList sqlParameters )
         {
             MethodBuilder mB = tB.DefineMethod( methodName, MethodAttributes.Assembly | MethodAttributes.Static, TypeCommand, Type.EmptyTypes );
 
@@ -113,12 +113,12 @@ namespace CK.SqlServer.Setup
             g.Emit( OpCodes.Callvirt, MCommandGetParameters );
             g.StLoc( locParams );
 
-            foreach( SqlExprParameter p in sqlParameters )
+            foreach( ISqlServerParameter p in sqlParameters )
             {
                 g.LdLoc( locParams );
-                g.Emit( OpCodes.Ldstr, p.Variable.Identifier.Name );
-                g.LdInt32( (int)p.Variable.TypeDecl.ActualType.DbType );
-                int size = p.Variable.TypeDecl.ActualType.SyntaxSize;
+                g.Emit( OpCodes.Ldstr, p.Name );
+                g.LdInt32( (int)p.SqlType.DbType );
+                int size = p.SqlType.SyntaxSize;
                 if( size != 0 && size != -2 )
                 {
                     g.LdInt32( size );
@@ -135,13 +135,13 @@ namespace CK.SqlServer.Setup
                     g.LdInt32( (int)dir );
                     g.Emit( OpCodes.Callvirt, MParameterSetDirection );
                 }
-                var precision = p.Variable.TypeDecl.ActualType.SyntaxPrecision;
+                var precision = p.SqlType.SyntaxPrecision;
                 if( precision != 0 )
                 {
                     g.Emit( OpCodes.Dup );
                     g.LdInt32( precision );
                     g.Emit( OpCodes.Callvirt, MParameterSetPrecision );
-                    var scale = p.Variable.TypeDecl.ActualType.SyntaxScale;
+                    var scale = p.SqlType.SyntaxScale;
                     if( scale != 0 )
                     {
                         g.Emit( OpCodes.Dup );

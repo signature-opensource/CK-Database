@@ -16,8 +16,8 @@ using System.Reflection;
 namespace CK.Setup
 {
     /// <summary>
-    /// Base class for attributes that is associated to a SetupObjectItem that must be defined 
-    /// by another attribute (typically a <see cref="SetupObjectItemMemberAttributeBase"/>).
+    /// Base class for an attribute appleid to a member that is associated to a SetupObjectItem that must be defined 
+    /// by another attribute on the same member (typically a <see cref="SetupObjectItemMemberAttributeBase"/>).
     /// </summary>
     public abstract class SetupObjectItemRefMemberAttributeBase : AmbientContextBoundDelegationAttribute
     {

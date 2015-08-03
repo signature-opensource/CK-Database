@@ -91,6 +91,10 @@
       <Project>{f2977613-731a-4efa-9703-cd6b92f00558}</Project>
       <Name>CK.SqlServer.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CK.SqlServer.Parser.Model\CK.SqlServer.Parser.Model.csproj">
+      <Project>{1d1c5311-2b86-4039-acfa-050c3b405433}</Project>
+      <Name>CK.SqlServer.Parser.Model</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj">
       <Project>{B64D3D2A-FD2B-4731-8559-8A52C3A45351}</Project>
       <Name>CK.SqlServer.Setup.Model</Name>
@@ -98,10 +102,6 @@
     <ProjectReference Include="..\CK.SqlServer.Setup.Runtime\CK.SqlServer.Setup.Runtime.csproj">
       <Project>{14E253CB-F606-4228-8860-FD04880DF379}</Project>
       <Name>CK.SqlServer.Setup.Runtime</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.SqlServer.Parser\CK.SqlServer.Parser.csproj">
-      <Project>{c569dc3c-aed5-449d-9c7d-cadc46423687}</Project>
-      <Name>CK.SqlServer.Parser</Name>
     </ProjectReference>
     <ProjectReference Include="..\CK.StObj.Engine\CK.StObj.Engine.csproj">
       <Project>{DF7A0B05-4B48-44C2-B6C8-6FCFD66DF8F8}</Project>

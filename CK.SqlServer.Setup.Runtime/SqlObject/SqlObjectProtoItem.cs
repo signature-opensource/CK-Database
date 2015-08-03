@@ -103,14 +103,15 @@ namespace CK.SqlServer.Setup
             MissingDependencyIsError = missingDependencyIsError;
         }
 
-        public SqlProcedureItem CreateProcedureItem( IActivityMonitor monitor )
+        public SqlProcedureItem CreateProcedureItem( ISqlServerParser parser, IActivityMonitor monitor )
         {
+            if( parser == null ) throw new ArgumentNullException( "parser" );
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
             if( ItemType != SqlObjectProtoItem.TypeProcedure ) throw new InvalidOperationException( "Not a procedure." );
             try
             {
-                SqlExprStStoredProc sp;
-                var error = SqlAnalyser.ParseStatement( out sp, FullOriginalText );
+                ISqlServerStoredProcedure sp = null;
+                var error = parser.ParseStoredProcedure( FullOriginalText, out sp );
                 error.LogOnError( monitor );
                 return new SqlProcedureItem( this, sp );
             }
@@ -124,13 +125,13 @@ namespace CK.SqlServer.Setup
             }
         }
 
-        public SqlObjectItem CreateItem( IActivityMonitor monitor, bool defaultMissingDependencyIsError, SqlPackageBaseItem package = null )
+        public SqlObjectItem CreateItem( ISqlServerParser parser, IActivityMonitor monitor, bool defaultMissingDependencyIsError, SqlPackageBaseItem package = null )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
             SqlObjectItem result = null;
             if( ItemType == SqlObjectProtoItem.TypeProcedure )
             {
-                result = CreateProcedureItem( monitor );
+                result = CreateProcedureItem( parser, monitor );
             }
             else if( ItemType == SqlObjectProtoItem.TypeView )
             {

@@ -75,9 +75,8 @@ namespace CK.SqlServer
             get { return _strConn; }
         }
 
-
         /// <summary>
-        /// Open the main connection to the database if it were closed (only increments <see cref="ExplicitOpenCount"/> if the 
+        /// Opens the main connection to the database if it were closed (only increments <see cref="ExplicitOpenCount"/> if the 
         /// <see cref="SqlConnection"/> were already opened). Once directly opened with this method,
         /// the <see cref="KeepOpened"/> parameter is ignored: the connection will remain opened
         /// until a corresponding explicit call to <see cref="ExplicitClose"/> is made.
@@ -89,6 +88,7 @@ namespace CK.SqlServer
         public void ExplicitOpen()
         {
             ++_explicitOpen;
+            if( _oCon.State == ConnectionState.Open ) return;
             if( _oCon.State == ConnectionState.Broken ) _oCon.Close();
             if( _oCon.State == ConnectionState.Closed ) _oCon.Open();
         }

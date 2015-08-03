@@ -187,15 +187,14 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets the first typed aspect that is assignable to <typeparamref name="T"/>. 
-        /// If such aspect can not be found, a <see cref="CKException"/> is thrown.
+        /// If such aspect can not be found, depending on <paramref name="required"/> a <see cref="CKException"/> is thrown or null is returned.
         /// </summary>
         /// <typeparam name="T">Type of the aspect to obtain.</typeparam>
-        /// <returns>The first compatible aspect.</returns>
-        public T Aspect<T>()
+        /// <param name="required">False to silently return null instead of throwing an exception if the aspect can not be found.</param>
+        /// <returns>The first compatible aspect (may be null if <param name="required" is false).</returns>
+        public T GetSetupEngineAspect<T>( bool required = true ) where T : class
         {
-            T a = _aspects.OfType<T>().FirstOrDefault();
-            if( a == null ) throw new CKException( "Aspect '{0}' is required. Did you forget to ragister an aspect configuration in the SetupEngineConfiguration.Aspects list?", typeof(T).FullName );
-            return a;
+            return SetupEngine.GetSetupEngineAspect<T>( _aspects, required );
         }
 
         /// <summary>

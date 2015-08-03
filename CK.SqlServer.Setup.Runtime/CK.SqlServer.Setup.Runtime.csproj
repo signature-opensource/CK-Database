@@ -65,6 +65,8 @@
     <Compile Include="ISqlManager.cs" />
     <Compile Include="ISqlManagerProvider.cs" />
     <Compile Include="ISqlScriptExecutor.cs" />
+    <Compile Include="ISqlServerExtensions.cs" />
+    <Compile Include="ISqlSetupAspect.cs" />
     <Compile Include="MethodILReader.cs" />
     <Compile Include="SqlContextLocName.cs" />
     <Compile Include="SqlObjectItemMethodAttributeImplBase.cs" />
@@ -115,13 +117,13 @@
       <Project>{f2977613-731a-4efa-9703-cd6b92f00558}</Project>
       <Name>CK.SqlServer.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CK.SqlServer.Parser.Model\CK.SqlServer.Parser.Model.csproj">
+      <Project>{1d1c5311-2b86-4039-acfa-050c3b405433}</Project>
+      <Name>CK.SqlServer.Parser.Model</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj">
       <Project>{B64D3D2A-FD2B-4731-8559-8A52C3A45351}</Project>
       <Name>CK.SqlServer.Setup.Model</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.SqlServer.Parser\CK.SqlServer.Parser.csproj">
-      <Project>{c569dc3c-aed5-449d-9c7d-cadc46423687}</Project>
-      <Name>CK.SqlServer.Parser</Name>
     </ProjectReference>
     <ProjectReference Include="..\CK.StObj.Model\CK.StObj.Model.csproj">
       <Project>{96DEDEEE-DE7D-4B14-8FDE-BC4D8D9CCB78}</Project>

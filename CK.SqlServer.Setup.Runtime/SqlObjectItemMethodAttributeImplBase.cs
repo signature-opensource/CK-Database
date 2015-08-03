@@ -15,6 +15,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CK.Core;
 using CK.Setup;
+using CK.SqlServer.Parser;
 
 namespace CK.SqlServer.Setup
 {
@@ -54,7 +55,8 @@ namespace CK.SqlServer.Setup
         protected override SetupObjectItem CreateSetupObjectItem( IActivityMonitor monitor, IMutableSetupItem ownerItem, IStObjResult ownerStObj, IContextLocNaming name )
         {
             SqlPackageBaseItem p = (SqlPackageBaseItem)ownerItem;
-            return SqlObjectItemAttributeImpl.LoadItemFromResource( monitor, p, Attribute.MissingDependencyIsError, (SqlContextLocName)name, _sqlObjectProtoItemType );
+            ISqlSetupAspect sql = SetupEngineAspectProvider.GetSetupEngineAspect<ISqlSetupAspect>();
+            return SqlObjectItemAttributeImpl.LoadItemFromResource( sql.SqlParser, monitor, p, Attribute.MissingDependencyIsError, (SqlContextLocName)name, _sqlObjectProtoItemType );
         }
 
         bool IAutoImplementorMethod.Implement( IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, TypeBuilder tB, bool isVirtual )

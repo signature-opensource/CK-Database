@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace CK.SqlServer.Parser
 {
-    public static class ExprExtensions
+    public static class ISqlServerExtensions
     {
-        static public bool IsTypeCompatible( this ISqlExprUnifiedTypeDecl @this, Type t )
+        static public bool IsTypeCompatible( this ISqlServerUnifiedTypeDecl @this, Type t )
         {
             if( t.IsByRef ) t = t.GetElementType();
             Type underlyingType = Nullable.GetUnderlyingType( t );
@@ -31,7 +31,7 @@ namespace CK.SqlServer.Parser
             return false;
         }
 
-        static public Type BestNetType( this ISqlExprUnifiedTypeDecl @this )
+        static public Type BestNetType( this ISqlServerUnifiedTypeDecl @this )
         {
             SqlDbType sql = @this.DbType;
             if( sql == SqlDbType.Char || sql == SqlDbType.NChar )

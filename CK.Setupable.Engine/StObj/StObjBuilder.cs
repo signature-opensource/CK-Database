@@ -49,7 +49,7 @@ namespace CK.Setup
                         IEnumerable<ISetupItem> setupItems = null;
                         using( monitor.OpenInfo().Send( "Creating Setup Items from Structured Objects." ) )
                         {
-                            var itemBuilder = new StObjSetupItemBuilder( monitor, configurator, configurator, configurator );
+                            var itemBuilder = new StObjSetupItemBuilder( monitor, engine.StartConfiguration.Aspects, configurator, configurator, configurator );
                             setupItems = itemBuilder.Build( result.OrderedStObjs );
                             Debug.Assert( setupItems != null || hasError, "setupItems == null ==> An error has been logged." );
                         }

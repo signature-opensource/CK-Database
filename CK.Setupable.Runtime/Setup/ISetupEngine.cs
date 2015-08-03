@@ -13,24 +13,13 @@ using CK.Core;
 
 namespace CK.Setup
 {
+
+
     /// <summary>
     /// Core abstraction of Setup engine.
     /// </summary>
-    public interface ISetupEngine
+    public interface ISetupEngine : ISetupEngineAspectProvider
     {
-        /// <summary>
-        /// Gets the <see cref="ISetupEngineAspect"/> that participate to setup.
-        /// </summary>
-        IReadOnlyList<ISetupEngineAspect> Aspects { get; }
-
-        /// <summary>
-        /// Gets the first typed aspect that is assignable to <typeparamref name="T"/>. 
-        /// If such aspect can not be found, a <see cref="CKException"/> is thrown.
-        /// </summary>
-        /// <typeparam name="T">Type of the aspect to obtain.</typeparam>
-        /// <returns>The first compatible aspect.</returns>
-        T Aspect<T>();
-
         /// <summary>
         /// Triggered before registration (at the beginning of the Register step).
         /// This event fires before the <see cref="SetupEvent"/> (with <see cref="SetupEventArgs.Step"/> set to None), and enables

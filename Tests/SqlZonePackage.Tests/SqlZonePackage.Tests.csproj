@@ -75,10 +75,6 @@
       <Project>{f2977613-731a-4efa-9703-cd6b92f00558}</Project>
       <Name>CK.SqlServer.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\CK.SqlServer.Parser\CK.SqlServer.Parser.csproj">
-      <Project>{c569dc3c-aed5-449d-9c7d-cadc46423687}</Project>
-      <Name>CK.SqlServer.Parser</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\CK.SqlServer.Setup.Engine\CK.SqlServer.Setup.Engine.csproj">
       <Project>{9a0bce15-00ef-411b-8283-68aed047fce5}</Project>
       <Name>CK.SqlServer.Setup.Engine</Name>

@@ -9,11 +9,16 @@ using CK.Core;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Base implementation for <see cref="SetupObjectItemMemberAttributeBase"/> attributes applied to members that
+    /// dynamically define one <see cref="SetupObjectItem"/>.
+    /// </summary>
     public abstract class SetupObjectItemMemberAttributeImplBase : IStObjSetupDynamicInitializer, IAttributeAmbientContextBoundInitializer, ISetupObjectItemProvider
     {
         readonly AmbientContextBoundDelegationAttribute _attribute;
         ICKCustomAttributeTypeMultiProvider _owner;
         MemberInfo _member;
+        ISetupEngineAspectProvider _aspectProvider;
         SetupObjectItemAttributeImplBase.BestInitializer _theBest;
         
         /// <summary>
@@ -66,6 +71,14 @@ namespace CK.Setup
             get { return _member; }
         }
 
+        /// <summary>
+        /// Gets the aspects provider.
+        /// </summary>
+        protected ISetupEngineAspectProvider SetupEngineAspectProvider
+        {
+            get { return _aspectProvider; }
+        }
+
         void IAttributeAmbientContextBoundInitializer.Initialize( ICKCustomAttributeTypeMultiProvider owner, MemberInfo m )
         {
             _owner = owner;
@@ -74,6 +87,7 @@ namespace CK.Setup
 
         void IStObjSetupDynamicInitializer.DynamicItemInitialize( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjResult stObj )
         {
+            _aspectProvider = state.AspectProvider;
             IContextLocNaming name = BuildFullName( item, stObj, ObjectName );
             if( name == null )
             {

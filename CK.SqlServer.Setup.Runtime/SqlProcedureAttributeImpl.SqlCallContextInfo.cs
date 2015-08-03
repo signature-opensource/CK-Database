@@ -49,11 +49,11 @@ namespace CK.SqlServer.Setup
                     Prop = prop;
                 }
 
-                internal bool Match( SqlExprParameter sqlP, IActivityMonitor monitor )
+                internal bool Match( ISqlServerParameter sqlP, IActivityMonitor monitor )
                 {
-                    if( StringComparer.OrdinalIgnoreCase.Equals( '@' + Prop.Name, sqlP.Variable.Identifier.Name ) )
+                    if( StringComparer.OrdinalIgnoreCase.Equals( '@' + Prop.Name, sqlP.Name ) )
                     {
-                        if( sqlP.Variable.TypeDecl.ActualType.IsTypeCompatible( Prop.PropertyType ) )
+                        if( sqlP.SqlType.IsTypeCompatible( Prop.PropertyType ) )
                         {
                             monitor.Info().Send( "Sql Parameter '{0}' will take its value from the ISqlCallParameter '{1}' property '{2}'.", sqlP.ToStringClean(), Parameter.Name, Prop.Name );
                             return true;

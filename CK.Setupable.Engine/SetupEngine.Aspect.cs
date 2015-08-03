@@ -9,6 +9,13 @@ namespace CK.Setup
 {
     public sealed partial class SetupEngine
     {
+        static internal T GetSetupEngineAspect<T>( IReadOnlyList<ISetupEngineAspect> aspects, bool required = true ) where T : class
+        {
+            T a = aspects.OfType<T>().FirstOrDefault();
+            if( a == null && required ) throw new CKException( "Aspect '{0}' is required. Did you forget to register an aspect configuration in the SetupEngineConfiguration.Aspects list?", typeof( T ).FullName );
+            return a;
+        }
+
         bool CreateEngineAspectsFromConfiguration()
         {
             bool success = true;

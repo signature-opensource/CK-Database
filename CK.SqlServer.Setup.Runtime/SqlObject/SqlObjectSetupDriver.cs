@@ -23,7 +23,7 @@ namespace CK.SqlServer.Setup
         public SqlObjectSetupDriver( BuildInfo info )
             : base( info )
         {
-            _provider = info.Engine.Aspect<ISqlManagerProvider>();
+            _provider = info.Engine.GetSetupEngineAspect<ISqlSetupAspect>().SqlDatabases;
         }
 
         public new SqlObjectItem Item

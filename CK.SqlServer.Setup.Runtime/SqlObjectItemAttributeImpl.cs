@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Linq;
 using CK.Core;
 using CK.Setup;
+using CK.SqlServer.Parser;
 
 namespace CK.SqlServer.Setup
 {
@@ -46,14 +47,15 @@ namespace CK.SqlServer.Setup
         protected override SetupObjectItem CreateSetupObjectItem( IActivityMonitor monitor, IMutableSetupItem ownerItem, IStObjResult ownerStObj, IContextLocNaming name )
         {
             SqlPackageBaseItem p = (SqlPackageBaseItem)ownerItem;
-            return LoadItemFromResource( monitor, p, Attribute.MissingDependencyIsError, (SqlContextLocName)name,  null );
+            ISqlSetupAspect sql = SetupEngineAspectProvider.GetSetupEngineAspect<ISqlSetupAspect>();
+            return LoadItemFromResource( sql.SqlParser, monitor, p, Attribute.MissingDependencyIsError, (SqlContextLocName)name, null );
         }
 
-        static internal SqlObjectItem LoadItemFromResource( IActivityMonitor monitor, SqlPackageBaseItem packageItem, bool missingDependencyIsError, SqlContextLocName name, string expectedItemType = null )
+        static internal SqlObjectItem LoadItemFromResource( ISqlServerParser parser, IActivityMonitor monitor, SqlPackageBaseItem packageItem, bool missingDependencyIsError, SqlContextLocName name, string expectedItemType = null )
         {
             SqlObjectProtoItem protoObject = LoadProtoItemFromResource( monitor, packageItem, name, expectedItemType );
             if( protoObject == null ) return null;
-            return protoObject.CreateItem( monitor, missingDependencyIsError, packageItem );
+            return protoObject.CreateItem( parser, monitor, missingDependencyIsError, packageItem );
         }
 
         static SqlObjectProtoItem LoadProtoItemFromResource( IActivityMonitor monitor, SqlPackageBaseItem packageItem, SqlContextLocName name, string expectedItemType )

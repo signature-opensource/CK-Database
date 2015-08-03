@@ -38,12 +38,12 @@ namespace CK.SqlServer.Setup
             GenerationType gType, 
             IActivityMonitor monitor, 
             MethodInfo createCommand, 
-            SqlExprMultiIdentifier sqlName, 
-            SqlExprParameterList sqlParameters, 
+            string sqlName, 
+            ISqlServerParameterList sqlParameters, 
             MethodInfo m, 
             ParameterInfo[] mParameters, 
             TypeBuilder tB, 
-            bool isVirtual, 
+            bool isVirtual,
             bool hasRefSqlCommand )
         {
             MethodAttributes mA = m.Attributes & ~(MethodAttributes.Abstract | MethodAttributes.VtableLayoutMask);
@@ -202,7 +202,7 @@ namespace CK.SqlServer.Setup
                                 }
                                 else
                                 {
-                                    monitor.Error().Send( "Sql parameter '{0}' in procedure parameters has no default value. The method '{1}' must declare it (or a property must exist in one of the ISQlCallContext parameters) or the procedure must specify the default value.", sqlP.Variable.Identifier.Name, m.Name );
+                                    monitor.Error().Send( "Sql parameter '{0}' in procedure parameters has no default value. The method '{1}' must declare it (or a property must exist in one of the ISQlCallContext parameters) or the procedure must specify the default value.", sqlP.Name, m.Name );
                                     ++nbError;
                                 }
                             }
@@ -211,7 +211,7 @@ namespace CK.SqlServer.Setup
                                 // The parameter has a default value.
                                 if( sqlP.IsPureOutput )
                                 {
-                                    monitor.Warn().Send( "Sql parameter '{0}' in procedure is a pure output parameter that has a default value. If the input matters, it should be marked /*input*/output.", sqlP.Variable.Identifier.Name );
+                                    monitor.Warn().Send( "Sql parameter '{0}' in procedure is a pure output parameter that has a default value. If the input matters, it should be marked /*input*/output.", sqlP.Name );
                                 }
                                 setter.SetMappingToSqlDefaultValue();
                             }
@@ -387,11 +387,10 @@ namespace CK.SqlServer.Setup
             }
         }
 
-        private static string GenerateBothSignatures( SqlExprMultiIdentifier sqlName, SqlExprParameterList sqlParameters, MethodInfo m, ParameterInfo[] mParameters, IList<ParameterInfo> extraParameters )
+        private static string GenerateBothSignatures( string sqlName, ISqlServerParameterList sqlParameters, MethodInfo m, ParameterInfo[] mParameters, IList<ParameterInfo> extraParameters )
         {
             StringBuilder b = new StringBuilder();
-            b.Append( "Procedure '" );
-            sqlName.Tokens.WriteTokensWithoutTrivias( String.Empty, b );
+            b.Append( "Procedure '" ).Append( sqlName );
             b.Append( "': " ).Append( sqlParameters.ToStringClean() );
             b.Append( Environment.NewLine );
             DumpMethodSignature( b, m, mParameters );
@@ -466,19 +465,19 @@ namespace CK.SqlServer.Setup
             return atLeastOne;
         }
 
-        int IndexOf( SqlExprParameterList parameters, int iStart, string name )
+        int IndexOf( ISqlServerParameterList parameters, int iStart, string name )
         {
             while( iStart < parameters.Count )
             {
-                if( StringComparer.OrdinalIgnoreCase.Equals( parameters[iStart].Variable.Identifier.Name, name ) ) return iStart;
+                if( StringComparer.OrdinalIgnoreCase.Equals( parameters[iStart].Name, name ) ) return iStart;
                 ++iStart;
             }
             return -1;
         }
 
-        static bool CheckParameterType( Type t, SqlExprParameter p, IActivityMonitor monitor )
+        static bool CheckParameterType( Type t, ISqlServerParameter p, IActivityMonitor monitor )
         {
-            if( p.Variable.TypeDecl.ActualType.IsTypeCompatible( t ) ) return true;
+            if( p.SqlType.IsTypeCompatible( t ) ) return true;
             monitor.Error().Send( "Sql parameter '{0}' is not compliant with Type {1}.", p.ToStringClean(), t.Name );
             return false;
         }

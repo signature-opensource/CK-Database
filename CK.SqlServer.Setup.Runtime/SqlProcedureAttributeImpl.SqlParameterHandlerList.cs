@@ -39,7 +39,7 @@ namespace CK.SqlServer.Setup
             {
                 readonly SqlParameterHandlerList _holder;
 
-                public readonly SqlExprParameter SqlExprParam;
+                public readonly ISqlServerParameter SqlExprParam;
 
                 /// <summary>
                 /// ParameterName without the '@' prefix char.
@@ -53,11 +53,11 @@ namespace CK.SqlServer.Setup
                 bool _isUseDefaultSqlValue;
                 bool _isUsedByReturnedType;
 
-                public SqlParamHandler( SqlParameterHandlerList holder, SqlExprParameter sP, int index )
+                public SqlParamHandler( SqlParameterHandlerList holder, ISqlServerParameter sP, int index )
                 {
                     _holder = holder;
                     SqlExprParam = sP;
-                    SqlParameterName = sP.Variable.Identifier.Name;
+                    SqlParameterName = sP.Name;
                     if( SqlParameterName[0] == '@' ) SqlParameterName = SqlParameterName.Substring( 1 );
                     _index = index;
                 }
@@ -92,13 +92,13 @@ namespace CK.SqlServer.Setup
                     return true;
                 }
 
-                bool CheckParameter( ParameterInfo mP, SqlExprParameter p, IActivityMonitor monitor )
+                bool CheckParameter( ParameterInfo mP, ISqlServerParameter p, IActivityMonitor monitor )
                 {
                     int nbError = CheckParameterDirection( mP, p, monitor );
                     return nbError == 0 && CheckParameterType( mP.ParameterType, p, monitor );
                 }
 
-                int CheckParameterDirection( ParameterInfo mP, SqlExprParameter p, IActivityMonitor monitor )
+                int CheckParameterDirection( ParameterInfo mP, ISqlServerParameter p, IActivityMonitor monitor )
                 {
                     int nbError = 0;
                     bool sqlIsInputOutput = p.IsInputOutput;
@@ -121,7 +121,7 @@ namespace CK.SqlServer.Setup
                         {
                             if( isComplexReturnedType )
                             {
-                                monitor.Warn().Send( "Sql parameter '{0}' is not an output parameter. The method '{1}' uses 'ref' for it. That is useless.", p.Variable.Identifier.Name, mP.Member.Name );
+                                monitor.Warn().Send( "Sql parameter '{0}' is not an output parameter. The method '{1}' uses 'ref' for it. That is useless.", p.Name, mP.Member.Name );
                             }
                             if( mP.IsOut )
                             {
@@ -130,18 +130,18 @@ namespace CK.SqlServer.Setup
                                 {
                                     if( _isUsedByReturnedType )
                                     {
-                                        monitor.Warn().Send( "Sql parameter '{0}' is an /*input*/output parameter. The method '{1}' should use 'ref' for it (not 'out') or no ref nor out since this parameter is used by returned call.", p.Variable.Identifier.Name, mP.Member.Name );
+                                        monitor.Warn().Send( "Sql parameter '{0}' is an /*input*/output parameter. The method '{1}' should use 'ref' for it (not 'out') or no ref nor out since this parameter is used by returned call.", p.Name, mP.Member.Name );
                                     }
                                     else
                                     {
-                                        monitor.Error().Send( "Sql parameter '{0}' is an /*input*/output parameter. The method '{1}' must use 'ref' for it (not 'out').", p.Variable.Identifier.Name, mP.Member.Name );
+                                        monitor.Error().Send( "Sql parameter '{0}' is an /*input*/output parameter. The method '{1}' must use 'ref' for it (not 'out').", p.Name, mP.Member.Name );
                                         ++nbError;
                                     }
                                 }
                                 else if( sqlIsInput )
                                 {
                                     Debug.Assert( !sqlIsOutput );
-                                    monitor.Error().Send( "Sql parameter '{0}' is an input parameter. The method '{1}' can not use 'out' for it (and 'ref' modifier will be useless).", p.Variable.Identifier.Name, mP.Member.Name );
+                                    monitor.Error().Send( "Sql parameter '{0}' is an input parameter. The method '{1}' can not use 'out' for it (and 'ref' modifier will be useless).", p.Name, mP.Member.Name );
                                     ++nbError;
                                 }
                                 #endregion
@@ -151,7 +151,7 @@ namespace CK.SqlServer.Setup
                                 // ref Method parameter.
                                 if( !sqlIsOutput )
                                 {
-                                    monitor.Warn().Send( "Sql parameter '{0}' is not an output parameter. The method '{1}' uses 'ref' for it. That is useless.", p.Variable.Identifier.Name, mP.Member.Name );
+                                    monitor.Warn().Send( "Sql parameter '{0}' is not an output parameter. The method '{1}' uses 'ref' for it. That is useless.", p.Name, mP.Member.Name );
                                 }
                             }
                         }
@@ -163,7 +163,7 @@ namespace CK.SqlServer.Setup
                         if( sqlIsPureOutput )
                         {
                             // By value method parameter with a pure output Sql parameter: it should be /*input*/output in sql.
-                            monitor.Warn().Send( "Sql parameter '{0}' is an output parameter. Setting its value is useless. Should it be marked /*input*/output?.", p.Variable.Identifier.Name );
+                            monitor.Warn().Send( "Sql parameter '{0}' is an output parameter. Setting its value is useless. Should it be marked /*input*/output?.", p.Name );
                         }
                         // Whenever the sql parameter is output but it is not ref nor out, we warn the user: it is an ignored return from the database.
                         // When using specialization, this should NOT occur if we succeed to reroute the call to the most specialized, covariant, method.
@@ -179,14 +179,14 @@ namespace CK.SqlServer.Setup
                             if( isComplexReturnedType )
                             {
                                 monitor.Warn().Send( "Sql parameter '{0}' is an /*input*/output parameter and this parameter is not returned in '{2} {1}' method.", 
-                                                            p.Variable.Identifier.Name, 
+                                                            p.Name, 
                                                             mP.Member.Name,
                                                             _holder.ComplexReturnType.CreatedType.Name );
                             }
                             else
                             {
                                 monitor.Warn().Send( "Sql parameter '{0}' is an /*input*/output parameter and this parameter is not returned. The method '{1}' may use 'ref' to retrieve the new value after the call.", 
-                                                            p.Variable.Identifier.Name, 
+                                                            p.Name, 
                                                             mP.Member.Name );
                             }
                         }
@@ -383,7 +383,7 @@ namespace CK.SqlServer.Setup
                 }
             }
 
-            public SqlParameterHandlerList( SqlExprParameterList parameters )
+            public SqlParameterHandlerList( ISqlServerParameterList parameters )
             {
                 _params = parameters.Select( ( p, idx ) => new SqlParamHandler( this, p, idx ) ).ToList();
                 _funcResultBuilderSignature = new StringBuilder();
@@ -430,7 +430,7 @@ namespace CK.SqlServer.Setup
                     for( int i = _params.Count - 1; i >= 0; --i )
                     {
                         var p = _params[i];
-                        if( p.SqlExprParam.IsOutput && p.SqlExprParam.Variable.TypeDecl.ActualType.IsTypeCompatible( returnType ) )
+                        if( p.SqlExprParam.IsOutput && p.SqlExprParam.SqlType.IsTypeCompatible( returnType ) )
                         {
                             _simpleReturnType = p;
                             _unwrappedReturnedType = returnType;
@@ -452,7 +452,7 @@ namespace CK.SqlServer.Setup
                     _funcResultBuilderSignature.Append( _unwrappedReturnedType.FullName );
                     foreach( var p in _params )
                     {
-                        if( _complexReturnType.AddInput( p.Index, p.SqlParameterName, p.SqlExprParam.Variable.TypeDecl.ActualType.IsTypeCompatible, p.SqlExprParam.Variable.TypeDecl.ToStringClean(), p.SqlExprParam.IsOutput ) )
+                        if( _complexReturnType.AddInput( p.Index, p.SqlParameterName, p.SqlExprParam.SqlType.IsTypeCompatible, p.SqlExprParam.SqlType.ToStringClean(), p.SqlExprParam.IsOutput ) )
                         {
                             _funcResultBuilderSignature.Append( '-' ).Append( p.Index );
                             p.SetUsedByReturnedType();

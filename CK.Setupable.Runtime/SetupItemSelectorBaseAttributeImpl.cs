@@ -11,7 +11,8 @@ namespace CK.Setup
 {
     /// <summary>
     /// Base class to implement <see cref="SetupItemSelectorBaseAttribute"/> delegated attribute.
-    /// This handles the lookup of the setup items and offers a 
+    /// This handles the lookup of the setup items and offers an alternative to <see cref="SetupObjectItemRefMemberAttributeImplBase"/> 
+    /// to reference multiple items by their names.
     /// </summary>
     public abstract class SetupItemSelectorBaseAttributeImpl<T> : ISetupItemDriverAware where T : class
     {
@@ -22,6 +23,9 @@ namespace CK.Setup
             _attribute = a;
         }
 
+        /// <summary>
+        /// Gets the actual attribute.
+        /// </summary>
         protected SetupItemSelectorBaseAttribute Attribute
         {
             get { return _attribute; }

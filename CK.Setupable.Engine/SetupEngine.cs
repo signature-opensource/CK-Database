@@ -184,7 +184,7 @@ namespace CK.Setup
         }
 
 
-        private bool DoRun( object[] items, IEnumerable<ISetupItem> stObjItems, ISetupSessionMemory m )
+        bool DoRun( object[] items, IEnumerable<ISetupItem> stObjItems, ISetupSessionMemory m )
         {
             bool hasError = false;
             using( _monitor.OnError( () => hasError = true ) )
@@ -263,7 +263,7 @@ namespace CK.Setup
             }
         }
 
-        private SetupCoreEngine CreateCoreEngine( ISetupSessionMemory m )
+        SetupCoreEngine CreateCoreEngine( ISetupSessionMemory m )
         {
             SetupCoreEngine engine = null;
             using( _monitor.OpenInfo().Send( "Setup engine initialization." ) )

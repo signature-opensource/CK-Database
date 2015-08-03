@@ -61,8 +61,8 @@
     <Compile Include="ContextLocName\ContextLocNameStructImpl.cs" />
     <Compile Include="ContextLocName\DefaultContextLocNaming.cs" />
     <Compile Include="ContextLocName\IContextLocNaming.cs" />
-    <Compile Include="ContextLocName\ISetupNameManager.cs" />
     <Compile Include="HelperExtensions.cs" />
+    <Compile Include="Setup\ISetupEngineAspect.cs" />
     <Compile Include="ResourceLocator.cs" />
     <Compile Include="SetupItemSelectorBaseAttributeImpl.cs" />
     <Compile Include="SetupObjectItemRefMemberAttributeImplBase.cs" />
@@ -81,6 +81,7 @@
     <Compile Include="SetupObjectItemAttributeImplBase.cs" />
     <Compile Include="SetupObjectItemMemberAttributeImplBase.cs" />
     <Compile Include="Setup\IDriverList.cs" />
+    <Compile Include="Setup\ISetupEngineAspectProvider.cs" />
     <Compile Include="Setup\ISetupItemDriverAware.cs" />
     <Compile Include="Setup\RegisterSetupEventArgs.cs" />
     <Compile Include="Setup\DriverBase.cs" />
@@ -122,7 +123,7 @@
     <Compile Include="Package\AutoDependentPackagelItem.cs" />
     <Compile Include="Scripts\ParsedFileName.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SetupCallGroupStep.cs" />
+    <Compile Include="Setup\SetupCallGroupStep.cs" />
     <Compile Include="SetupStep.cs" />
     <Compile Include="Version\VersionedName.cs" />
     <Compile Include="Version\VersionedNameExtension.cs" />
