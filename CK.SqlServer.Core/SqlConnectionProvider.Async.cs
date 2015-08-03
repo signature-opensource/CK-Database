@@ -19,19 +19,27 @@ namespace CK.SqlServer
     public partial class SqlConnectionProvider
     {
         /// <summary>
-        /// Open the main connection in async fashion way to the database if it were closed (does nothing if the 
+        /// Asynchronously opens the main connection to the database if it were closed (only increments <see cref="ExplicitOpenCount"/> if the 
         /// <see cref="SqlConnection"/> were already opened). Once directly opened with this method,
         /// the <see cref="KeepOpened"/> parameter is ignored: the connection will remain opened
-        /// until an explicit call to <see cref="ExplicitClose"/> is made.
-        /// <returns>A task representing the asynchronous operation.</returns>
+        /// until a corresponding explicit call to <see cref="ExplicitClose"/> is made.
         /// </summary>
-        /// <remarks>Once directly opened with this method,
-        /// the <see cref="KeepOpened"/> parameter is ignored: the connection will remain opened
+        /// <param name="cancellationToken">Optional <see cref="CancellationToken"/>.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        /// <remarks>
+        /// Once directly opened with this method, the <see cref="KeepOpened"/> parameter is ignored: the connection will remain opened
         /// until an explicit call to <see cref="ExplicitClose"/> is made.
         /// </remarks>
-        public Task OpenAsync()
+        public Task ExplicitOpenAsync( CancellationToken cancellationToken = default( CancellationToken ) )
         {
-            return _oCon.State == ConnectionState.Closed ? _oCon.OpenAsync() : Task.FromResult( 0 );
+            ++_explicitOpen;
+            if( _oCon.State == ConnectionState.Open ) return Task.FromResult( 0 );
+            if( _oCon.State == ConnectionState.Broken ) _oCon.Close();
+            if( _oCon.State == ConnectionState.Closed )
+            {
+                return _oCon.OpenAsync( cancellationToken );
+            }
+            return Task.FromResult( 0 );
         }
 
         /// <summary>
