@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.Setupable.Engine", "CK.Setupable.Engine\CK.Setupable.Engine.csproj", "{D3C700E1-3546-437C-9B96-1F867A539B6A}"
 EndProject
@@ -88,8 +88,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlColumns", "Tests\SqlColumns\SqlColumns\SqlColumns.csproj", "{2E484407-FBC8-4190-884A-6BE639DD3EC4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlColumns.Tests", "Tests\SqlColumns\SqlColumns.Tests\SqlColumns.Tests.csproj", "{76AE43EC-93FB-43CF-8531-95420CFFB112}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.SqlServer.Parser.Model", "CK.SqlServer.Parser.Model\CK.SqlServer.Parser.Model.csproj", "{1D1C5311-2B86-4039-ACFA-050C3B405433}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -413,16 +411,6 @@ Global
 		{76AE43EC-93FB-43CF-8531-95420CFFB112}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{76AE43EC-93FB-43CF-8531-95420CFFB112}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{76AE43EC-93FB-43CF-8531-95420CFFB112}.Release|x86.ActiveCfg = Release|Any CPU
-		{1D1C5311-2B86-4039-ACFA-050C3B405433}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1D1C5311-2B86-4039-ACFA-050C3B405433}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1D1C5311-2B86-4039-ACFA-050C3B405433}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{1D1C5311-2B86-4039-ACFA-050C3B405433}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{1D1C5311-2B86-4039-ACFA-050C3B405433}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{1D1C5311-2B86-4039-ACFA-050C3B405433}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1D1C5311-2B86-4039-ACFA-050C3B405433}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1D1C5311-2B86-4039-ACFA-050C3B405433}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{1D1C5311-2B86-4039-ACFA-050C3B405433}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{1D1C5311-2B86-4039-ACFA-050C3B405433}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

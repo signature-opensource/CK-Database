@@ -1,4 +1,4 @@
-﻿-- Version = 1.0.2
+﻿-- Version = 1.0.3
 alter procedure CK.sPurelyInputLog
 (
     @OneMore bit = 1,
@@ -23,7 +23,7 @@ begin
 		set @now = dateadd( ms, @WaitTimeMS, @now );
 		WaitFor time @now; 
 	end 
-	insert into CK.tPurelyInputLog( CreationDate, LogText ) values( sysutcdatetime(), @Logtext );
+	insert into CK.tPurelyInputLog( CreationDate, LogText ) values( sysutcdatetime(), @LogText );
 
 	--<endsp>
 	return 0;

@@ -34,6 +34,14 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\CK.Core.4.2.0\lib\net45\CK.Core.dll</HintPath>
     </Reference>
+    <Reference Include="CK.SqlServer.Parser, Version=4.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\CK.SqlServer.Parser.4.0.0\lib\net45\CK.SqlServer.Parser.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="CK.SqlServer.Parser.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\CK.SqlServer.Parser.Model.1.0.0\lib\net45\CK.SqlServer.Parser.Model.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
     </Reference>

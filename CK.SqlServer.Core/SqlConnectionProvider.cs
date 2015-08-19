@@ -92,7 +92,7 @@ namespace CK.SqlServer
             if( _oCon.State == ConnectionState.Broken ) _oCon.Close();
             if( _oCon.State == ConnectionState.Closed ) _oCon.Open();
         }
-        
+
         /// <summary>
         /// Gets the current number of <see cref="ExplicitOpen"/>.
         /// </summary>
@@ -441,9 +441,9 @@ namespace CK.SqlServer
                 if( _cmd.Connection == _p._oCon )
                 {
                     _p._oConIsWorking = false;
-                    _cmd.Connection = null;
+                    // August 2015: VS2015/Windows 10 -> this triggers a "Connection cannot be changed while asyn operation is in progress.".
+                    // _cmd.Connection = null;
                 }
-
                 if( _mustClose ) _cmd.Connection = null;
             }
         }

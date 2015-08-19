@@ -24,19 +24,20 @@ namespace CK.SqlServer
         /// the <see cref="KeepOpened"/> parameter is ignored: the connection will remain opened
         /// until a corresponding explicit call to <see cref="ExplicitClose"/> is made.
         /// </summary>
+        /// <param name="cancellationToken">Optional <see cref="CancellationToken"/>.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         /// <remarks>
         /// Once directly opened with this method, the <see cref="KeepOpened"/> parameter is ignored: the connection will remain opened
         /// until an explicit call to <see cref="ExplicitClose"/> is made.
         /// </remarks>
-        public Task ExplicitOpenAsync()
+        public Task ExplicitOpenAsync( CancellationToken cancellationToken = default( CancellationToken ) )
         {
             ++_explicitOpen;
             if( _oCon.State == ConnectionState.Open ) return Task.FromResult( 0 );
             if( _oCon.State == ConnectionState.Broken ) _oCon.Close();
-            if( _oCon.State == ConnectionState.Closed ) 
+            if( _oCon.State == ConnectionState.Closed )
             {
-                return _oCon.OpenAsync();
+                return _oCon.OpenAsync( cancellationToken );
             }
             return Task.FromResult( 0 );
         }
