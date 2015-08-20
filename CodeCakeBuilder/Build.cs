@@ -20,7 +20,7 @@ using Cake.Core.IO;
 namespace CodeCakeBuilder
 {
     [AddPath( "%LOCALAPPDATA%/NuGet" )]
-    [AddPath( "packages/**/tools/**" )]
+    [AddPath( "packages/**/tools*" )]
     public class Build : CodeCakeHost
     {
         public Build()
@@ -29,9 +29,6 @@ namespace CodeCakeBuilder
             var securePath = Cake.Argument( "securePath", "../../_Secure" );
             var secureDir = Cake.Directory( securePath );
 
-            //var nugetExe = Cake.File( Environment.ExpandEnvironmentVariables( "%LOCALAPPDATA%/NuGet/NuGet.exe" ) );
-            //if( !Cake.FileExists( nugetExe ) ) throw new Exception( "Unable to find nuget.exe: " + nugetExe );
-
             var nugetOutputDir = Cake.Directory( "CodeCakeBuilder/Release" );
             SimpleRepositoryInfo gitInfo = null;
             SignToolSignSettings signSettingsForRelease = null;
@@ -39,7 +36,7 @@ namespace CodeCakeBuilder
             var allProjects = Cake.ParseSolution( "CK-Database.sln" )
                                     .Projects
                                     .Where( p => p.Name != "CodeCakeBuilder" );
-            
+
             var topProjects = allProjects.Where( d => d.Path.Segments.Length == Cake.Environment.WorkingDirectory.Segments.Length + 2 );
 
             var topProjectAssemblies = topProjects
@@ -47,18 +44,18 @@ namespace CodeCakeBuilder
                                            .SelectMany( p => new[] { p + ".dll", p + ".exe" } )
                                            .Where( p => Cake.FileExists( p ) );
 
-
             Task( "Clean" )
                 .Does( () =>
                 {
                     Cake.CleanDirectory( nugetOutputDir );
+                    Cake.DeleteFiles( "CodeCakeBuilder/NuSpec/*.temp.nuspec" );
                 } );
 
             Task( "Restore-NuGet-Packages" )
                 .IsDependentOn( "Clean" )
                 .Does( () =>
                 {
-                    Cake.NuGetRestore( "CK-Database.sln"/*, new Cake.Common.Tools.NuGet.Restore.NuGetRestoreSettings() { ToolPath = nugetExe }*/ );
+                    Cake.NuGetRestore( "CK-Database.sln" );
                 } );
 
             Task( "Build" )
@@ -111,7 +108,7 @@ namespace CodeCakeBuilder
                 .IsDependentOn( "Build" )
                 .Does( () =>
                 {
-                    Cake.NUnit( "Tests/**/bin/" + configuration + "/*.Tests.dll"  );
+                    Cake.NUnit( "Tests/**/bin/" + configuration + "/*.Tests.dll" );
                 } );
 
             Task( "Create-NuGet-Package" )
@@ -127,7 +124,7 @@ namespace CodeCakeBuilder
                         BasePath = Cake.Environment.WorkingDirectory,
                         OutputDirectory = nugetOutputDir
                     };
-                    foreach( var nuspec in Cake.GetFiles( "CodeCakeBuilder/NuSpec/**.nuspec" ) )
+                    foreach( var nuspec in Cake.GetFiles( "CodeCakeBuilder/NuSpec/*.nuspec" ) )
                     {
                         Cake.NuGetPack( nuspec, settings );
                     }

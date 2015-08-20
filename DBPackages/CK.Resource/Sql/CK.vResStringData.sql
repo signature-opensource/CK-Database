@@ -1,1 +1,0 @@
--- Version = 1.0.0, Package = CK.Resourcecreate view CK.vResStringDataas	select 	'ResName'	= R.ResName,			'Val'		= S.Val		from CK.tRes R		inner join CK.tResStringData S on S.ResId = R.ResId;
