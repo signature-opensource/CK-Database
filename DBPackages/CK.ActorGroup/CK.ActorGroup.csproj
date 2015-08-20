@@ -68,7 +68,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="FodyWeavers.xml" />
     <Content Include="Sql\CK.sGroupActorAdd.sql" />
     <Content Include="Sql\CK.sGroupActorRemove.sql" />
     <Content Include="Sql\CK.sGroupCreate.sql" />
