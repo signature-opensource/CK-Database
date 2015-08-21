@@ -17,8 +17,8 @@ CK.SqlServer.Core contains helpers for Sql Server and ADO.Net.
     </dependencies>
   </metadata>
   <files>
-    <file src="CK.SqlServer.Core\bin\Debug\CK.SqlServer.Core.dll" target="lib\net45" />
-    <file src="CK.SqlServer.Core\bin\Debug\CK.SqlServer.Core.pdb" target="lib\net45" />
+    <file src="CK.SqlServer.Core\bin\Release\CK.SqlServer.Core.dll" target="lib\net45" />
+    <file src="CK.SqlServer.Core\bin\Release\CK.SqlServer.Core.pdb" target="lib\net45" />
     <file src="CK.SqlServer.Core\bin\Release\CK.SqlServer.Core.xml" target="lib\net45" />
   </files>
 </package>

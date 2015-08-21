@@ -53,9 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\CK.UnitTestHelper\DBSetup.cs">
-      <Link>DBSetup.cs</Link>
-    </Compile>
+    <Compile Include="DBSetup.cs" />
     <Compile Include="ProductTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -100,9 +98,9 @@
       <Project>{db108ff8-42a4-4787-92c2-2d5a4daab85e}</Project>
       <Name>CK.StObj.Runtime</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\CK.UnitTestHelper\CK.UnitTestHelper.csproj">
+    <ProjectReference Include="..\..\CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj">
       <Project>{a221b88d-d164-4099-9ab3-909f5781bae1}</Project>
-      <Name>CK.UnitTestHelper</Name>
+      <Name>CK.DB.Tests.NUnit</Name>
     </ProjectReference>
     <ProjectReference Include="..\SqlColumns\SqlColumns.csproj">
       <Project>{2e484407-fbc8-4190-884a-6be639dd3ec4}</Project>

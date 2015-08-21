@@ -75,6 +75,7 @@
     <None Include="NuSpec\CK.Setupable.Engine.nuspec" />
     <None Include="NuSpec\CK.Setupable.Model.nuspec" />
     <None Include="NuSpec\CK.Setupable.Runtime.nuspec" />
+    <None Include="NuSpec\CK.DB.Tests.NUnit.nuspec" />
     <None Include="NuSpec\CK.SqlServer.Core.nuspec" />
     <None Include="NuSpec\CK.SqlServer.Setup.Engine.nuspec" />
     <None Include="NuSpec\CK.SqlServer.Setup.Model.nuspec" />

@@ -53,12 +53,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\CK.UnitTestHelper\DBSetup.cs">
-      <Link>DBSetup.cs</Link>
-    </Compile>
     <Compile Include="AllDefaultValuesTest.cs" />
     <Compile Include="ComplexTypeAsyncTests.cs" />
     <Compile Include="ComplexTypeTests.cs" />
+    <Compile Include="DBSetup.cs" />
     <Compile Include="ProviderDemo\ProviderDemoTests.cs" />
     <Compile Include="ProviderDemo\SqlFinalApplicationContext.cs" />
     <Compile Include="ProviderDemo\SqlProviderContextCleaner.cs" />
@@ -122,9 +120,9 @@
       <Project>{db108ff8-42a4-4787-92c2-2d5a4daab85e}</Project>
       <Name>CK.StObj.Runtime</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\CK.UnitTestHelper\CK.UnitTestHelper.csproj">
+    <ProjectReference Include="..\..\CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj">
       <Project>{a221b88d-d164-4099-9ab3-909f5781bae1}</Project>
-      <Name>CK.UnitTestHelper</Name>
+      <Name>CK.DB.Tests.NUnit</Name>
     </ProjectReference>
     <ProjectReference Include="..\SqlCallDemo\SqlCallDemo.csproj">
       <Project>{10fc486c-4b3f-4ace-8af6-d2d7a937f2f9}</Project>

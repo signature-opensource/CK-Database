@@ -19,8 +19,8 @@ CK.Setupable.Model enables StObj objects to support TSS (Three Steps Setup).
     </dependencies>
   </metadata>
   <files>
-    <file src="CK.Setupable.Model\bin\Debug\CK.Setupable.Model.dll" target="lib\net45" />
-    <file src="CK.Setupable.Model\bin\Debug\CK.Setupable.Model.pdb" target="lib\net45" />
+    <file src="CK.Setupable.Model\bin\Release\CK.Setupable.Model.dll" target="lib\net45" />
+    <file src="CK.Setupable.Model\bin\Release\CK.Setupable.Model.pdb" target="lib\net45" />
     <file src="CK.Setupable.Model\bin\Release\CK.Setupable.Model.xml" target="lib\net45" />
   </files>
 </package>

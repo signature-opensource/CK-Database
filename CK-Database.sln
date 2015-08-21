@@ -27,6 +27,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.StObj.Engine.Tests", "Te
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared Items", "Shared Items", "{9DEAD117-3101-4DED-9FCC-8AA28CF4F34C}"
 	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
 		Conception.docx = Conception.docx
 		SharedAssemblyInfo.cs = SharedAssemblyInfo.cs
 	EndProjectSection
@@ -62,7 +63,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlActorPackage.Runtime", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlActorPackage.Tests", "Tests\SqlActorPackage.Tests\SqlActorPackage.Tests.csproj", "{EA0228B9-75E2-48E4-9E74-1EE83D0ED4FF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.UnitTestHelper", "Tests\CK.UnitTestHelper\CK.UnitTestHelper.csproj", "{A221B88D-D164-4099-9AB3-909F5781BAE1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.DB.Tests.NUnit", "Tests\CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj", "{A221B88D-D164-4099-9AB3-909F5781BAE1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlZonePackage.Tests", "Tests\SqlZonePackage.Tests\SqlZonePackage.Tests.csproj", "{8133B6AE-8D7F-42E9-B6F1-DA583707F177}"
 EndProject

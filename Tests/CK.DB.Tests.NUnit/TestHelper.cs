@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using CK.Setup;
 using CK.SqlServer.Setup;
-using NUnit.Framework;
 
 namespace CK.Core
 {

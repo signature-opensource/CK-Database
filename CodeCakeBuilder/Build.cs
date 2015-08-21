@@ -37,7 +37,7 @@ namespace CodeCakeBuilder
                                     .Projects
                                     .Where( p => p.Name != "CodeCakeBuilder" );
 
-            var topProjects = allProjects.Where( d => d.Path.Segments.Length == Cake.Environment.WorkingDirectory.Segments.Length + 2 );
+            var topProjects = allProjects.Where( d => d.Name == "CK.DB.Tests.NUnit" || d.Path.Segments.Length == Cake.Environment.WorkingDirectory.Segments.Length + 2 );
 
             var topProjectAssemblies = topProjects
                                            .Select( p => p.Path.GetDirectory() + "/bin/Release/" + p.Name )

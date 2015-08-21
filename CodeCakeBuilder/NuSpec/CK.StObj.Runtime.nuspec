@@ -21,8 +21,8 @@ CK.StObj.Runtime contains runtime objects that enables StObj implementation to b
     </dependencies>
   </metadata>
   <files>
-    <file src="CK.StObj.Runtime\bin\Debug\CK.StObj.Runtime.dll" target="lib\net45" />
-    <file src="CK.StObj.Runtime\bin\Debug\CK.StObj.Runtime.pdb" target="lib\net45" />
+    <file src="CK.StObj.Runtime\bin\Release\CK.StObj.Runtime.dll" target="lib\net45" />
+    <file src="CK.StObj.Runtime\bin\Release\CK.StObj.Runtime.pdb" target="lib\net45" />
     <file src="CK.StObj.Runtime\bin\Release\CK.StObj.Runtime.xml" target="lib\net45" />
   </files>
 </package>

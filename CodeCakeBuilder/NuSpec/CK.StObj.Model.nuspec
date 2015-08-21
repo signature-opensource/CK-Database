@@ -19,8 +19,8 @@ It contains attributes and basic objects that enables StObj implementation to be
     </dependencies>
   </metadata>
   <files>
-    <file src="CK.StObj.Model\bin\Debug\CK.StObj.Model.dll" target="lib\net45" />
-    <file src="CK.StObj.Model\bin\Debug\CK.StObj.Model.pdb" target="lib\net45" />   
+    <file src="CK.StObj.Model\bin\Release\CK.StObj.Model.dll" target="lib\net45" />
+    <file src="CK.StObj.Model\bin\Release\CK.StObj.Model.pdb" target="lib\net45" />   
     <file src="CK.StObj.Model\bin\Release\CK.StObj.Model.xml" target="lib\net45" />
   </files>
 </package>

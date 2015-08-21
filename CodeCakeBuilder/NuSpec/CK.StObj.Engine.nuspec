@@ -25,8 +25,8 @@ CK.StObj.Engine supports actual generation of StObj implementation.
     </dependencies>
   </metadata>
   <files>
-    <file src="CK.StObj.Engine\bin\Debug\CK.StObj.Engine.dll" target="lib\net45" />
-    <file src="CK.StObj.Engine\bin\Debug\CK.StObj.Engine.pdb" target="lib\net45" />
+    <file src="CK.StObj.Engine\bin\Release\CK.StObj.Engine.dll" target="lib\net45" />
+    <file src="CK.StObj.Engine\bin\Release\CK.StObj.Engine.pdb" target="lib\net45" />
     <file src="CK.StObj.Engine\bin\Release\CK.StObj.Engine.xml" target="lib\net45" />
   </files>
 </package>

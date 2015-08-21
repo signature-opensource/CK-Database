@@ -54,12 +54,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\CK.UnitTestHelper\DBSetup.cs">
-      <Link>DBSetup.cs</Link>
-    </Compile>
     <Compile Include="..\SqlActorPackage.Tests\HandlerInjection.cs">
       <Link>FromActor\HandlerInjection.cs</Link>
     </Compile>
+    <Compile Include="DBSetup.cs" />
     <Compile Include="HandlerInjection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -123,9 +121,9 @@
       <Project>{3ff4bf4a-3a28-4ad6-bff1-e87f11124e31}</Project>
       <Name>SqlZonePackage</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CK.UnitTestHelper\CK.UnitTestHelper.csproj">
+    <ProjectReference Include="..\CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj">
       <Project>{a221b88d-d164-4099-9ab3-909f5781bae1}</Project>
-      <Name>CK.UnitTestHelper</Name>
+      <Name>CK.DB.Tests.NUnit</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

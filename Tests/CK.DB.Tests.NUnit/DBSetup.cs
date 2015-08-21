@@ -7,7 +7,7 @@ using CK.Core;
 using NUnit.Framework;
 using CK.SqlServer.Setup;
 
-namespace CK.UnitTestHelper
+namespace CK.DB.Tests
 {
     [TestFixture]
     public class DBSetup
