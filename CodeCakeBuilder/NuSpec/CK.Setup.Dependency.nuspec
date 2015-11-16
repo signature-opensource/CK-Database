@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>CK.Setup.Dependency</id>
+    <version>$version$</version>
+    <authors>Invenietis</authors>
+    <owners>Invenietis</owners>
+    <licenseUrl>https://github.com/Invenietis/ck-database/license</licenseUrl>
+    <projectUrl>https://github.com/Invenietis/ck-database</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>
+Contains Dependent Items (with Containers and Groups) model and the ordering algorithm.
+</description>
+    <language>en-US</language>
+    <dependencies>
+      <dependency id="CK.Core" version="4.2.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="CK.Setup.Dependency\bin\Release\CK.Setup.Dependency.dll" target="lib\net45" />
+    <file src="CK.Setup.Dependency\bin\Release\CK.Setup.Dependency.pdb" target="lib\net45" />
+    <file src="CK.Setup.Dependency\bin\Release\CK.Setup.Dependency.xml" target="lib\net45" />
+  </files>
+</package>

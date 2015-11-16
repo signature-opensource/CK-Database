@@ -15,20 +15,22 @@ using System.Collections;
 
 namespace CK.Setup
 {
-    class StObjSetupItemBuilder
+    class StObjSetupItemBuilder : ISetupEngineAspectProvider
     {
         readonly IActivityMonitor _monitor;
         readonly IStObjSetupConfigurator _configurator;
         readonly IStObjSetupItemFactory _setupItemFactory;
         readonly IStObjSetupDynamicInitializer _dynamicInitializer;
+        readonly IReadOnlyList<ISetupEngineAspect> _aspects;
 
-        public StObjSetupItemBuilder( IActivityMonitor monitor, IStObjSetupConfigurator configurator = null, IStObjSetupItemFactory setupItemFactory = null, IStObjSetupDynamicInitializer dynamicInitializer = null )
+        public StObjSetupItemBuilder( IActivityMonitor monitor, IReadOnlyList<ISetupEngineAspect> aspects, IStObjSetupConfigurator configurator = null, IStObjSetupItemFactory setupItemFactory = null, IStObjSetupDynamicInitializer dynamicInitializer = null )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
             _monitor = monitor;
             _configurator = configurator;
             _setupItemFactory = setupItemFactory;
             _dynamicInitializer = dynamicInitializer;
+            _aspects = aspects;
         }
 
         /// <summary>
@@ -245,6 +247,8 @@ namespace CK.Setup
 
             public IActivityMonitor Monitor { get { return _builder._monitor; } }
 
+            public ISetupEngineAspectProvider AspectProvider { get { return _builder; } }
+
             public IDictionary Memory { get { return _memory; } }
 
             public int PushedActionsCount { get { return _actions.Count; } }
@@ -331,6 +335,16 @@ namespace CK.Setup
         }
         
         #endregion
+
+        IReadOnlyList<ISetupEngineAspect> ISetupEngineAspectProvider.Aspects
+        {
+            get { return _aspects; }
+        }
+
+        T ISetupEngineAspectProvider.GetSetupEngineAspect<T>( bool required )
+        {
+            return SetupEngine.GetSetupEngineAspect<T>( _aspects, required );
+        }
 
     }
 }

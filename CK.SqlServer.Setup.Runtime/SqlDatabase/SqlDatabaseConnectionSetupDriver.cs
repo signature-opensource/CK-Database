@@ -19,7 +19,7 @@ namespace CK.SqlServer.Setup
         public SqlDatabaseConnectionSetupDriver( BuildInfo info )
             : base( info )
         {
-            _sqlProvider = info.Engine.Aspect<ISqlManagerProvider>();
+            _sqlProvider = info.Engine.GetSetupEngineAspect<ISqlSetupAspect>().SqlDatabases;
         }
 
         public new SqlDatabaseConnectionItem Item { get { return (SqlDatabaseConnectionItem)base.Item; } }

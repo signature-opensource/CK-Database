@@ -57,10 +57,6 @@
       <Project>{a5380f73-7050-4090-8e75-4cfc7afa5b7b}</Project>
       <Name>CK.Setupable.Runtime</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\CK.SqlServer.Parser\CK.SqlServer.Parser.csproj">
-      <Project>{c569dc3c-aed5-449d-9c7d-cadc46423687}</Project>
-      <Name>CK.SqlServer.Parser</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj">
       <Project>{b64d3d2a-fd2b-4731-8559-8a52c3a45351}</Project>
       <Name>CK.SqlServer.Setup.Model</Name>

@@ -30,6 +30,12 @@ namespace CK.SqlServer
 
         static Regex _rGo = new Regex( @"^GO(?:\s|$)+", RegexOptions.Multiline | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled );
 
+        /// <summary>
+        /// Writes the command as a text with its parameters. Handles stored procedure calls as well as simple text commands.
+        /// </summary>
+        /// <param name="w">The writer to use.</param>
+        /// <param name="cmd">The command to write.</param>
+        /// <returns>The writer.</returns>
         static public TextWriter CommandAsText( TextWriter w, SqlCommand cmd )
         {
             if( cmd.CommandType == System.Data.CommandType.StoredProcedure )
@@ -46,6 +52,11 @@ namespace CK.SqlServer
             return w;
         }
 
+        /// <summary>
+        /// Returns a string the command its parameters. Handles stored procedure calls as well as simple text commands.
+        /// </summary>
+        /// <param name="cmd">The command to call.</param>
+        /// <returns>A textual representation.</returns>
         static public string CommandAsText( SqlCommand cmd )
         {
             StringWriter w = new StringWriter();
@@ -204,54 +215,6 @@ namespace CK.SqlServer
         }
 
         /// <summary>
-        /// Transforms a <see cref="IDataReader"/> into a <see cref="DataTable"/>.
-        /// The reader is forwarded while <see cref="IDataReader.Read"/> returns true. 
-        /// It is left opened since a next result set may exist.
-        /// </summary>
-        /// <param name="r">The <see cref="IDataReader"/> to transform. Can be null and in this case null is returned.</param>
-        /// <returns>A <see cref="DataTable"/> populated with the content of <paramref name="r"/>, or null if the data reader was null.</returns>
-        static public DataTable ToDataTable( IDataReader r )
-        {
-            if( r == null ) return null;
-            DataTable t = new DataTable();
-            FillDataTable( r, t );
-            return t;
-        }
-
-        /// <summary>
-        /// Populates an empty <see cref="DataTable"/> with the content of a <see cref="IDataReader"/>.
-        /// The reader is forwarded while <see cref="IDataReader.Read"/> returns true.
-        /// It is left opened since another result set may exist.
-        /// </summary>
-        /// <param name="r">The <see cref="IDataReader"/> to process. Can be null and in this case nothing is done.</param>
-        /// <param name="target">An empty <see cref="DataTable"/>. If columns exist, an exception is thrown.</param>
-        static public void FillDataTable( IDataReader r, DataTable target )
-        {
-            if( target.Columns.Count > 0 )
-                throw new ApplicationException( "An empty DataTable must be provided (no columns must exist)." );
-            if( r != null )
-            {
-                DataTable schema = r.GetSchemaTable();
-
-                Debug.Assert( schema.Columns[0].ColumnName == "ColumnName" );
-                Debug.Assert( schema.Columns[12].ColumnName == "DataType" );
-
-                foreach( DataRow rSchema in schema.Rows )
-                {
-                    target.Columns.Add( new DataColumn( rSchema[0].ToString(), rSchema[12] as Type ) );
-                }
-                object[] row = new object[r.FieldCount];
-                target.BeginLoadData();
-                while( r.Read() )
-                {
-                    r.GetValues( row );
-                    target.LoadDataRow( row, true );
-                }
-                target.EndLoadData();
-            }
-        }
-
-        /// <summary>
         /// Provides a correct string content by replacing ' with ''.
         /// </summary>
         /// <param name="s">The starting string.</param>
@@ -265,19 +228,19 @@ namespace CK.SqlServer
 
         /// <summary>
         /// Protects pattern meta character of Sql Server: <c>[</c>, <c>_</c> and <c>%</c> by 
-        /// appropriates encoding. Then, if <paramref name="expandStarsAndMaks"/> is true, 
+        /// appropriates encoding. Then, if <paramref name="expandWildCards"/> is true, 
         /// expands <c>*</c> and <c>?</c> by appropriate pattern markers.
         /// </summary>
         /// <param name="s">The starting string.</param>
-        /// <param name="expandStdWildCards">True if the pattern contains * and ? that must be expanded.. See remarks.</param>
+        /// <param name="expandWildCards">True if the pattern contains * and ? that must be expanded.. See remarks.</param>
         /// <param name="innerPattern">True to ensure that the pattern starts and ends with a %. See remarks.</param>
         /// <returns>An encoded string.</returns>
         /// <remarks>
-        /// When <paramref name="expandStdWildCards"/> is true, use \* for a real *, \? for a 
+        /// When <paramref name="expandWildCards"/> is true, use \* for a real *, \? for a 
         /// real ?. \ can be used directly except when directly followed by *, ? or another \: it must then be duplicated.<br/>
         /// When <paramref name="innerPattern"/> is true, an empty or null string is returned as '%'.
         /// </remarks>
-        static public string SqlEncodePattern( string s, bool expandStdWildCards, bool innerPattern )
+        static public string SqlEncodePattern( string s, bool expandWildCards, bool innerPattern )
         {
             if( s == null || s.Length == 0 ) return innerPattern ? "%" : String.Empty;
             StringBuilder b = new StringBuilder( s );
@@ -285,7 +248,7 @@ namespace CK.SqlServer
             b.Replace( "[", "[[]" );
             b.Replace( "_", "[_]" );
             b.Replace( "%", "[%]" );
-            if( expandStdWildCards )
+            if( expandWildCards )
             {
                 b.Replace( @"\\", "\x0" );
                 b.Replace( @"\*", "\x1" );

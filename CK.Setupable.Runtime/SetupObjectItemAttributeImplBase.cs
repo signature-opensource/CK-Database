@@ -9,12 +9,14 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// Base implementation for attributes declared on a class that define dynamically created one or more <see cref="SetupObjectItem"/>.
+    /// Base implementation for <see cref="SetupObjectItemAttributeBase"/> attributes declared on a class that dynamically define 
+    /// one or more <see cref="SetupObjectItem"/>.
     /// Multiples object names like "sUserCreate, sUserDestroy, AnotherSchema.sUserUpgrade, CK.sUserRun" can be defined.
     /// </summary>
     public abstract class SetupObjectItemAttributeImplBase : IStObjSetupDynamicInitializer
     {
         readonly SetupObjectItemAttributeBase _attribute;
+        ISetupEngineAspectProvider _aspectProvider;
         List<BestInitializer> _theBest;
 
         protected SetupObjectItemAttributeImplBase( SetupObjectItemAttributeBase a )
@@ -29,6 +31,35 @@ namespace CK.Setup
         {
             get { return _attribute; }
         }
+
+        /// <summary>
+        /// Gets the aspects provider.
+        /// </summary>
+        protected ISetupEngineAspectProvider SetupEngineAspectProvider 
+        { 
+            get { return _aspectProvider; } 
+        }
+
+        /// <summary>
+        /// Must build the <see cref="IContextLocNaming"/> name of the future <see cref="SetupObjectItem"/> with the help of the owner object and the name in the attribute.
+        /// This is called for each name in <see cref="SetupObjectItemAttributeBase.CommaSeparatedObjectNames"/>.
+        /// </summary>
+        /// <param name="ownerItem">Owner item.</param>
+        /// <param name="ownerStObj">Owner object StObj information.</param>
+        /// <param name="attributeName">Name as it appears in the attribute.</param>
+        /// <returns>The name of the SetupObjectItem.</returns>
+        protected abstract IContextLocNaming BuildFullName( IMutableSetupItem ownerItem, IStObjResult ownerStObj, string attributeName );
+
+        /// <summary>
+        /// Must create the <see cref="SetupObjectItem"/>.
+        /// This is called for each name in <see cref="SetupObjectItemAttributeBase.CommaSeparatedObjectNames"/>.
+        /// </summary>
+        /// <param name="monitor">Monitor to use.</param>
+        /// <param name="ownerItem">Owner item.</param>
+        /// <param name="ownerStObj">Owner object StObj information.</param>
+        /// <param name="name">The name from <see cref="BuildFullName"/> method.</param>
+        /// <returns>A new SetupObject.</returns>
+        protected abstract SetupObjectItem CreateSetupObjectItem( IActivityMonitor monitor, IMutableSetupItem ownerItem, IStObjResult ownerStObj, IContextLocNaming name );
 
         /// <summary>
         /// This is used both for the key and the value.
@@ -70,6 +101,7 @@ namespace CK.Setup
 
         void IStObjSetupDynamicInitializer.DynamicItemInitialize( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjResult stObj )
         {
+            _aspectProvider = state.AspectProvider;
             HashSet<string> already = new HashSet<string>();
             foreach( var n in Attribute.CommaSeparatedObjectNames.Split( ',' ) )
             {
@@ -145,25 +177,6 @@ namespace CK.Setup
                 }
             }
         }
-
-        /// <summary>
-        /// Must build the <see cref="IContextLocNaming"/> name of the future <see cref="SetupObjectItem"/> with the help of the owner object and the name in the attribute.
-        /// </summary>
-        /// <param name="ownerItem">Owner item.</param>
-        /// <param name="ownerStObj">Owner object StObj information.</param>
-        /// <param name="attributeName">Name as it appears in the attribute.</param>
-        /// <returns>The name of the SetupObjectItem.</returns>
-        protected abstract IContextLocNaming BuildFullName( IMutableSetupItem ownerItem, IStObjResult ownerStObj, string attributeName );
-
-        /// <summary>
-        /// Must create the <see cref="SetupObjectItem"/>.
-        /// </summary>
-        /// <param name="monitor">Monitor to use.</param>
-        /// <param name="ownerItem">Owner item.</param>
-        /// <param name="ownerStObj">Owner object StObj information.</param>
-        /// <param name="name">The name from <see cref="BuildFullName"/> method.</param>
-        /// <returns>A new SetupObject.</returns>
-        protected abstract SetupObjectItem CreateSetupObjectItem( IActivityMonitor monitor, IMutableSetupItem ownerItem, IStObjResult ownerStObj, IContextLocNaming name );
 
     }
 

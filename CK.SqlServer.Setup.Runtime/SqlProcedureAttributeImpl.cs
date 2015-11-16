@@ -87,8 +87,8 @@ namespace CK.SqlServer.Setup
                     }
                 }
             }
-            SqlExprParameterList sqlParameters = item.OriginalStatement.Parameters;
-            return GenerateCreateSqlCommand( dynamicAssembly, gType, monitor, mCreateCommand, item.OriginalStatement.Name, sqlParameters, m, mParameters, tB, isVirtual, hasRefSqlCommand );
+            ISqlServerParameterList sqlParameters = item.OriginalStatement.Parameters;
+            return GenerateCreateSqlCommand( dynamicAssembly, gType, monitor, mCreateCommand, item.OriginalStatement.ObjectName, sqlParameters, m, mParameters, tB, isVirtual, hasRefSqlCommand );
         }
 
     }

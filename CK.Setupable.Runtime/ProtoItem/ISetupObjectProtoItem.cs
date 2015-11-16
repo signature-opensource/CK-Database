@@ -32,7 +32,7 @@ namespace CK.Setup
     /// This should not be an issue (one can use a special FullName marker like "*" or "?" to handle this case - String.Empty may perfectly do the job if it has no semantics in the system).
     /// </para>
     /// </remarks>
-    public interface ISetupObjectProtoItem// : IContextLocNaming
+    public interface ISetupObjectProtoItem
     {
         /// <summary>
         /// Gets the contaxt-location-name triplet.
@@ -95,7 +95,7 @@ namespace CK.Setup
         IEnumerable<string> Children { get; }
 
         /// <summary>
-        /// Gets an optionnal list of <see cref="VersionedName"/>. <see cref="VersionedName.FullName"/> in this list
+        /// Gets an optionnal list of <see cref="VersionedName"/>. The <see cref="VersionedName.FullName"/> in this list
         /// are not null and the list is sorted by <see cref="VersionedName.Version"/> in ascending order.
         /// Can be null if no previous names exists.
         /// </summary>

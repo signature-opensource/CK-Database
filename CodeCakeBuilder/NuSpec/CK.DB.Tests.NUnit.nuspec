@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>CK.DB.Tests.NUnit</id>
+    <version>$version$</version>
+    <authors>Invenietis</authors>
+    <owners>Invenietis</owners>
+    <licenseUrl>https://github.com/Invenietis/ck-database/license</licenseUrl>
+    <projectUrl>https://github.com/Invenietis/ck-database</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>
+      Contains NUnit test helpers.
+    </description>
+    <language>en-US</language>
+    <dependencies>
+      <dependency id="CK.Core" version="4.2.0" />
+      <dependency id="CK.Monitoring" version="4.1.0" />
+      <dependency id="CK.Reflection" version="4.1.0" />
+      <dependency id="NUnit" version="2.6.4" />
+      <dependency id="CK.SqlServer.Setup.Engine" version="$version$" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="Tests/CK.DB.Tests.NUnit\bin\Release\CK.DB.Tests.NUnit.dll" target="lib\net45" />
+    <file src="Tests/CK.DB.Tests.NUnit\bin\Release\CK.DB.Tests.NUnit.pdb" target="lib\net45" />
+    <file src="Tests/CK.DB.Tests.NUnit\bin\Release\CK.DB.Tests.NUnit.xml" target="lib\net45" />
+  </files>
+</package>

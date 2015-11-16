@@ -10,16 +10,18 @@ using System.Collections.Generic;
 using System.Linq;
 using CK.Core;
 using CK.Setup;
+using CK.SqlServer.Parser;
 
 namespace CK.SqlServer.Setup
 {
-    public class SqlSetupAspect : ISetupEngineAspect, ISqlManagerProvider, IDisposable
+    public class SqlSetupAspect : ISetupEngineAspect, ISqlSetupAspect, IDisposable
     {
         readonly SqlSetupAspectConfiguration _config;
         readonly SetupEngine _engine;
         readonly SqlManagerProvider _databases;
         readonly SqlFileDiscoverer _sqlFileDiscoverer;
         readonly SetupObjectItemCollector _sqlFiles;
+        ISqlServerParser _sqlParser;
         ISqlManager _defaultDatabase;
 
         class ConfiguratorHook : SetupEngineConfigurator
@@ -76,7 +78,7 @@ namespace CK.SqlServer.Setup
             _engine.StartConfiguration.SetupSessionMemoryProvider = new SqlSetupSessionMemoryProvider( _defaultDatabase );
 
             _engine.SetupableConfigurator = new ConfiguratorHook( this );
-            var sqlHandler = new SqlScriptTypeHandler( this );
+            var sqlHandler = new SqlScriptTypeHandler( _databases );
             // Registers source "res-sql" first: resource scripts have low priority.
             sqlHandler.RegisterSource( "res-sql" );
             // Then registers "file-sql".
@@ -112,6 +114,21 @@ namespace CK.SqlServer.Setup
             get { return _config; }
         }
 
+        /// <summary>
+        /// Gets the <see cref="ISqlServerParser"/> to use.
+        /// </summary>
+        public ISqlServerParser SqlParser
+        {
+            get
+            {
+                if( _sqlParser == null )
+                {
+                    Type t = SimpleTypeFinder.WeakDefault.ResolveType( "CK.SqlServer.Parser.SqlServerParser, CK.SqlServer.Parser", true );
+                    _sqlParser = (ISqlServerParser)Activator.CreateInstance( t );
+                }
+                return _sqlParser;
+            }
+        }
 
         /// <summary>
         /// Discovers file packages (*.ck xml files) in given directory and sub directories.
@@ -145,7 +162,7 @@ namespace CK.SqlServer.Setup
         /// Gets the available databases (including the <see cref="DefaultSqlDatabase"/>).
         /// It is initialized with <see cref="SqlSetupAspectConfiguration.Databases"/> content but can be changed.
         /// </summary>
-        public SqlManagerProvider SqlDatabases
+        public ISqlManagerProvider SqlDatabases
         {
             get { return _databases; }
         }
@@ -185,7 +202,7 @@ namespace CK.SqlServer.Setup
                         var items = new List<ISetupItem>();
                         foreach( var proto in _sqlFiles.OfType<SqlObjectProtoItem>() )
                         {
-                            var item = proto.CreateItem( monitor, !_config.IgnoreMissingDependencyIsError, null );
+                            var item = proto.CreateItem( SqlParser, monitor, !_config.IgnoreMissingDependencyIsError, null );
                             if( item == null ) hasError = true;
                             else items.Add( item );
                         }
@@ -198,34 +215,6 @@ namespace CK.SqlServer.Setup
             {
                 e.CancelSetup( "Error while registering files." );
             }
-        }
-
-        ISqlManager ISqlManagerProvider.FindManagerByName( string dbName )
-        {
-            if( dbName == null ) throw new ArgumentNullException( "dbName" );
-            if( dbName == SqlDatabase.DefaultDatabaseName ) return _defaultDatabase;
-            ISqlManager m = ObtainManager( dbName );
-            if( m == null ) _engine.Monitor.Warn().Send( "Database named '{0}' is not mapped.", dbName );
-            return m;
-        }
-
-        ISqlManager ISqlManagerProvider.FindManagerByConnectionString( string conString )
-        {
-            if( conString == null ) throw new ArgumentNullException( "conString" );
-            if( conString == _defaultDatabase.Connection.ConnectionString ) return _defaultDatabase;
-            ISqlManager m = ObtainManagerByConnectionString( conString );
-            if( m == null ) _engine.Monitor.Warn().Send( "Database connection to '{0}' is not mapped.", conString );
-            return m;
-        }
-
-        protected virtual ISqlManager ObtainManager( string dbName )
-        {
-            return _databases.FindManagerByName( dbName );
-        }
-
-        protected virtual ISqlManager ObtainManagerByConnectionString( string conString )
-        {
-            return _databases.FindManagerByConnectionString( conString );
         }
 
         /// <summary>

@@ -34,6 +34,14 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\CK.Core.4.2.0\lib\net45\CK.Core.dll</HintPath>
     </Reference>
+    <Reference Include="CK.SqlServer.Parser, Version=4.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\CK.SqlServer.Parser.4.0.0\lib\net45\CK.SqlServer.Parser.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="CK.SqlServer.Parser.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\CK.SqlServer.Parser.Model.1.0.0\lib\net45\CK.SqlServer.Parser.Model.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
     </Reference>
@@ -46,9 +54,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\CK.UnitTestHelper\DBSetup.cs">
-      <Link>DBSetup.cs</Link>
-    </Compile>
+    <Compile Include="DBSetup.cs" />
     <Compile Include="HandlerInjection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -64,10 +70,6 @@
     <ProjectReference Include="..\..\CK.SqlServer.Core\CK.SqlServer.Core.csproj">
       <Project>{f2977613-731a-4efa-9703-cd6b92f00558}</Project>
       <Name>CK.SqlServer.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\CK.SqlServer.Parser\CK.SqlServer.Parser.csproj">
-      <Project>{c569dc3c-aed5-449d-9c7d-cadc46423687}</Project>
-      <Name>CK.SqlServer.Parser</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj">
       <Project>{b64d3d2a-fd2b-4731-8559-8a52c3a45351}</Project>
@@ -93,9 +95,9 @@
       <Project>{e03b0333-1607-47c6-b6bf-d21e4489f659}</Project>
       <Name>SqlActorPackage.Runtime</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CK.UnitTestHelper\CK.UnitTestHelper.csproj">
+    <ProjectReference Include="..\CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj">
       <Project>{a221b88d-d164-4099-9ab3-909f5781bae1}</Project>
-      <Name>CK.UnitTestHelper</Name>
+      <Name>CK.DB.Tests.NUnit</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

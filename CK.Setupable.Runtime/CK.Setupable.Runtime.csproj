@@ -16,7 +16,8 @@
     </TargetFrameworkProfile>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
-    <NuGetPackageImportStamp>d65d3b56</NuGetPackageImportStamp>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>..\SharedKey.snk</AssemblyOriginatorKeyFile>
@@ -61,8 +62,8 @@
     <Compile Include="ContextLocName\ContextLocNameStructImpl.cs" />
     <Compile Include="ContextLocName\DefaultContextLocNaming.cs" />
     <Compile Include="ContextLocName\IContextLocNaming.cs" />
-    <Compile Include="ContextLocName\ISetupNameManager.cs" />
     <Compile Include="HelperExtensions.cs" />
+    <Compile Include="Setup\ISetupEngineAspect.cs" />
     <Compile Include="ResourceLocator.cs" />
     <Compile Include="SetupItemSelectorBaseAttributeImpl.cs" />
     <Compile Include="SetupObjectItemRefMemberAttributeImplBase.cs" />
@@ -81,6 +82,7 @@
     <Compile Include="SetupObjectItemAttributeImplBase.cs" />
     <Compile Include="SetupObjectItemMemberAttributeImplBase.cs" />
     <Compile Include="Setup\IDriverList.cs" />
+    <Compile Include="Setup\ISetupEngineAspectProvider.cs" />
     <Compile Include="Setup\ISetupItemDriverAware.cs" />
     <Compile Include="Setup\RegisterSetupEventArgs.cs" />
     <Compile Include="Setup\DriverBase.cs" />
@@ -122,7 +124,7 @@
     <Compile Include="Package\AutoDependentPackagelItem.cs" />
     <Compile Include="Scripts\ParsedFileName.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SetupCallGroupStep.cs" />
+    <Compile Include="Setup\SetupCallGroupStep.cs" />
     <Compile Include="SetupStep.cs" />
     <Compile Include="Version\VersionedName.cs" />
     <Compile Include="Version\VersionedNameExtension.cs" />
@@ -149,12 +151,12 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\SimpleGitVersionTask.0.0.0-alpha-10\Build\SimpleGitVersionTask.targets" Condition="Exists('..\packages\SimpleGitVersionTask.0.0.0-alpha-10\Build\SimpleGitVersionTask.targets')" />
+  <Import Project="..\packages\SimpleGitVersionTask.0.9.0\build\SimpleGitVersionTask.targets" Condition="Exists('..\packages\SimpleGitVersionTask.0.9.0\build\SimpleGitVersionTask.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\SimpleGitVersionTask.0.0.0-alpha-10\Build\SimpleGitVersionTask.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SimpleGitVersionTask.0.0.0-alpha-10\Build\SimpleGitVersionTask.targets'))" />
+    <Error Condition="!Exists('..\packages\SimpleGitVersionTask.0.9.0\build\SimpleGitVersionTask.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SimpleGitVersionTask.0.9.0\build\SimpleGitVersionTask.targets'))" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

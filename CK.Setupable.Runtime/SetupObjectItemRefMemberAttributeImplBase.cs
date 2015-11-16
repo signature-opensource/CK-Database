@@ -17,7 +17,7 @@ namespace CK.Setup
         ISetupObjectItemProvider _setupItemProvider;
 
         /// <summary>
-        /// Initializes a new <see cref="SetupObjectItemMemberAttributeImplBase"/> bound to a <see cref="SetupObjectItemRefMemberAttributeBase"/>.
+        /// Initializes a new <see cref="SetupObjectItemRefMemberAttributeImplBase"/> bound to a <see cref="SetupObjectItemRefMemberAttributeBase"/>.
         /// </summary>
         /// <param name="a">The attribute.</param>
         protected SetupObjectItemRefMemberAttributeImplBase( SetupObjectItemRefMemberAttributeBase a )
