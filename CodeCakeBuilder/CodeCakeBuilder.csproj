@@ -84,6 +84,9 @@
     <None Include="NuSpec\CK.StObj.Model.nuspec" />
     <None Include="NuSpec\CK.StObj.Runtime.nuspec" />
     <None Include="packages.config" />
+    <None Include="RepositoryInfo.xsd">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
