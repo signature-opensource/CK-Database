@@ -13,12 +13,12 @@ CK.SqlServer.Core contains helpers for Sql Server and ADO.Net.
 </description>
     <language>en-US</language>
     <dependencies>
-      <dependency id="CK.Core" version="4.2.0" />
+      <dependency id="CK.Core" version="4.3.0" />
     </dependencies>
   </metadata>
   <files>
-    <file src="CK.SqlServer.Core\bin\Release\CK.SqlServer.Core.dll" target="lib\net45" />
-    <file src="CK.SqlServer.Core\bin\Release\CK.SqlServer.Core.pdb" target="lib\net45" />
-    <file src="CK.SqlServer.Core\bin\Release\CK.SqlServer.Core.xml" target="lib\net45" />
+    <file src="CK.SqlServer.Core\bin\{{configuration}}\CK.SqlServer.Core.dll" target="lib\net45" />
+    <file src="CK.SqlServer.Core\bin\{{configuration}}\CK.SqlServer.Core.pdb" target="lib\net45" />
+    <file src="CK.SqlServer.Core\bin\{{configuration}}\CK.SqlServer.Core.xml" target="lib\net45" />
   </files>
 </package>

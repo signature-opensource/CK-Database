@@ -1,26 +1,24 @@
 ﻿using Code.Cake;
+using CodeCake;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CodeCakeBuilder
 {
     class Program
     {
-        static void Main( string[] args )
+        static int Main( string[] args )
         {
             var app = new CodeCakeApplication();
-            app.Run( args );
-            // From: http://stackoverflow.com/questions/1188658/how-can-a-c-sharp-windows-console-application-tell-if-it-is-run-interactively
-            if( Console.OpenStandardInput( 1 ) != Stream.Null )
+            bool interactive = !args.Contains( '-' + InteractiveAliases.NoInteractionArgument, StringComparer.OrdinalIgnoreCase );
+            int result = app.Run( args );
+            Console.WriteLine();
+            if( interactive )
             {
-                Console.WriteLine();
-                Console.WriteLine( "Interactive mode detected: hit any key to exit." );
+                Console.WriteLine( "Hit any key to exit. (Use -{0} parameter to exit immediately)", InteractiveAliases.NoInteractionArgument );
                 Console.ReadKey();
             }
+            return result;
         }
     }
 }

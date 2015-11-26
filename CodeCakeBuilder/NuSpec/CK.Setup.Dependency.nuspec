@@ -13,12 +13,12 @@ Contains Dependent Items (with Containers and Groups) model and the ordering alg
 </description>
     <language>en-US</language>
     <dependencies>
-      <dependency id="CK.Core" version="4.2.0" />
+      <dependency id="CK.Core" version="4.3.0" />
     </dependencies>
   </metadata>
   <files>
-    <file src="CK.Setup.Dependency\bin\Release\CK.Setup.Dependency.dll" target="lib\net45" />
-    <file src="CK.Setup.Dependency\bin\Release\CK.Setup.Dependency.pdb" target="lib\net45" />
-    <file src="CK.Setup.Dependency\bin\Release\CK.Setup.Dependency.xml" target="lib\net45" />
+    <file src="CK.Setup.Dependency\bin\{{configuration}}\CK.Setup.Dependency.dll" target="lib\net45" />
+    <file src="CK.Setup.Dependency\bin\{{configuration}}\CK.Setup.Dependency.pdb" target="lib\net45" />
+    <file src="CK.Setup.Dependency\bin\{{configuration}}\CK.Setup.Dependency.xml" target="lib\net45" />
   </files>
 </package>

@@ -14,15 +14,15 @@ CK.StObj.Runtime contains runtime objects that enables StObj implementation to b
 </description>
     <language>en-US</language>
     <dependencies>
-      <dependency id="CK.Core" version="4.2.0" />
+      <dependency id="CK.Core" version="4.3.0" />
 
       <dependency id="CK.StObj.Model" version="$version$" />
 
     </dependencies>
   </metadata>
   <files>
-    <file src="CK.StObj.Runtime\bin\Release\CK.StObj.Runtime.dll" target="lib\net45" />
-    <file src="CK.StObj.Runtime\bin\Release\CK.StObj.Runtime.pdb" target="lib\net45" />
-    <file src="CK.StObj.Runtime\bin\Release\CK.StObj.Runtime.xml" target="lib\net45" />
+    <file src="CK.StObj.Runtime\bin\{{configuration}}\CK.StObj.Runtime.dll" target="lib\net45" />
+    <file src="CK.StObj.Runtime\bin\{{configuration}}\CK.StObj.Runtime.pdb" target="lib\net45" />
+    <file src="CK.StObj.Runtime\bin\{{configuration}}\CK.StObj.Runtime.xml" target="lib\net45" />
   </files>
 </package>

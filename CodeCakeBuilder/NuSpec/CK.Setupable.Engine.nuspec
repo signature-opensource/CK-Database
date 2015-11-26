@@ -14,7 +14,7 @@ CK.Setupable.Runtime is able to generate StObj objects support for TSS (Three St
 </description>
     <language>en-US</language>
     <dependencies>
-      <dependency id="CK.Core" version="4.2.0" />
+      <dependency id="CK.Core" version="4.3.0" />
 
       <dependency id="CK.Setup.Dependency" version="$version$" />        
       
@@ -28,8 +28,8 @@ CK.Setupable.Runtime is able to generate StObj objects support for TSS (Three St
     </dependencies>
   </metadata>
   <files>
-    <file src="CK.Setupable.Engine\bin\Release\CK.Setupable.Engine.dll" target="lib\net45" />
-    <file src="CK.Setupable.Engine\bin\Release\CK.Setupable.Engine.pdb" target="lib\net45" />
-    <file src="CK.Setupable.Engine\bin\Release\CK.Setupable.Engine.xml" target="lib\net45" />
+    <file src="CK.Setupable.Engine\bin\{{configuration}}\CK.Setupable.Engine.dll" target="lib\net45" />
+    <file src="CK.Setupable.Engine\bin\{{configuration}}\CK.Setupable.Engine.pdb" target="lib\net45" />
+    <file src="CK.Setupable.Engine\bin\{{configuration}}\CK.Setupable.Engine.xml" target="lib\net45" />
   </files>
 </package>

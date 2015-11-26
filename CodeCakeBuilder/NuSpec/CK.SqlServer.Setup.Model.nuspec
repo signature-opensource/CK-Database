@@ -15,7 +15,7 @@ define setupable StObj for Sql Server databases.
 </description>
     <language>en-US</language>
     <dependencies>
-      <dependency id="CK.Core" version="4.2.0" />
+      <dependency id="CK.Core" version="4.3.0" />
 
       <dependency id="CK.StObj.Model" version="$version$" />
       <dependency id="CK.Setupable.Model" version="$version$" />
@@ -23,8 +23,8 @@ define setupable StObj for Sql Server databases.
     </dependencies>
   </metadata>
   <files>
-    <file src="CK.SqlServer.Setup.Model\bin\Release\CK.SqlServer.Setup.Model.dll" target="lib\net45" />
-    <file src="CK.SqlServer.Setup.Model\bin\Release\CK.SqlServer.Setup.Model.pdb" target="lib\net45" />
-    <file src="CK.SqlServer.Setup.Model\bin\Release\CK.SqlServer.Setup.Model.xml" target="lib\net45" />
+    <file src="CK.SqlServer.Setup.Model\bin\{{configuration}}\CK.SqlServer.Setup.Model.dll" target="lib\net45" />
+    <file src="CK.SqlServer.Setup.Model\bin\{{configuration}}\CK.SqlServer.Setup.Model.pdb" target="lib\net45" />
+    <file src="CK.SqlServer.Setup.Model\bin\{{configuration}}\CK.SqlServer.Setup.Model.xml" target="lib\net45" />
   </files>
 </package>

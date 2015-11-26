@@ -15,12 +15,12 @@ It contains attributes and basic objects that enables StObj implementation to be
 </description>
     <language>en-US</language>
     <dependencies>
-      <dependency id="CK.Core" version="4.2.0" />
+      <dependency id="CK.Core" version="4.3.0" />
     </dependencies>
   </metadata>
   <files>
-    <file src="CK.StObj.Model\bin\Release\CK.StObj.Model.dll" target="lib\net45" />
-    <file src="CK.StObj.Model\bin\Release\CK.StObj.Model.pdb" target="lib\net45" />   
-    <file src="CK.StObj.Model\bin\Release\CK.StObj.Model.xml" target="lib\net45" />
+    <file src="CK.StObj.Model\bin\{{configuration}}\CK.StObj.Model.dll" target="lib\net45" />
+    <file src="CK.StObj.Model\bin\{{configuration}}\CK.StObj.Model.pdb" target="lib\net45" />   
+    <file src="CK.StObj.Model\bin\{{configuration}}\CK.StObj.Model.xml" target="lib\net45" />
   </files>
 </package>

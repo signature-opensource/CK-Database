@@ -14,8 +14,8 @@ CK.SqlServer.Setup.Engine provides full Database Setup support.
 </description>
     <language>en-US</language>
     <dependencies>
-      <dependency id="CK.Core" version="4.2.0" />
-      <dependency id="CK.SqlServer.Parser.Model" version="1.0.0" />
+      <dependency id="CK.Core" version="4.3.0" />
+      <dependency id="CK.SqlServer.Parser.Model" version="1.0.1" />
       
       <dependency id="CK.Setup.Dependency" version="$version$" />        
 
@@ -35,8 +35,8 @@ CK.SqlServer.Setup.Engine provides full Database Setup support.
     </dependencies>
   </metadata>
   <files>
-    <file src="CK.SqlServer.Setup.Engine\bin\Release\CK.SqlServer.Setup.Engine.dll" target="lib\net45" />
-    <file src="CK.SqlServer.Setup.Engine\bin\Release\CK.SqlServer.Setup.Engine.pdb" target="lib\net45" />
-    <file src="CK.SqlServer.Setup.Engine\bin\Release\CK.SqlServer.Setup.Engine.xml" target="lib\net45" />
+    <file src="CK.SqlServer.Setup.Engine\bin\{{configuration}}\CK.SqlServer.Setup.Engine.dll" target="lib\net45" />
+    <file src="CK.SqlServer.Setup.Engine\bin\{{configuration}}\CK.SqlServer.Setup.Engine.pdb" target="lib\net45" />
+    <file src="CK.SqlServer.Setup.Engine\bin\{{configuration}}\CK.SqlServer.Setup.Engine.xml" target="lib\net45" />
   </files>
 </package>
