@@ -38,7 +38,6 @@ namespace CK.Core
                     CK.Monitoring.GrandOutput.EnsureActiveDefaultWithDefaultSettings();
                     _monitor = new ActivityMonitor();
                     _console = new ActivityMonitorConsoleClient();
-                    _monitor.Output.RegisterClient( _console );
                 }
                 return _monitor;
             }

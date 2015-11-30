@@ -189,7 +189,6 @@
     <Content Include="Scripts\InstallFromScratch\Model.Test.WithModel.Install.1.0.0.sql" />
     <Content Include="Scripts\InstallFromScratch\Test.fTest.sql" />
     <Content Include="Scripts\CallProcedureAutoImplementor.sql" />
-    <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="Scripts\InstallFromScratchWithSPDependsOnVersion\WithSPDependsOnVersion.ck">
       <SubType>Designer</SubType>

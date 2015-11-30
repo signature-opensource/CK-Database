@@ -50,7 +50,6 @@
     <EmbeddedResource Include="Res\Model.CK.UserHome-Local.Install.2.12.10.sql" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="Properties\CK.Authentication.Local.nuspec" />
   </ItemGroup>

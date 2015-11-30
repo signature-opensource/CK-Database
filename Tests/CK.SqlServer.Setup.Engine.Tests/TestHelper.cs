@@ -29,7 +29,6 @@ namespace CK.SqlServer.Setup.Engine.Tests
             _monitor = new ActivityMonitor();
             _monitor.Output.BridgeTarget.HonorMonitorFilter = false;
             _console = new ActivityMonitorConsoleClient();
-            _monitor.Output.RegisterClients( _console );
         }
 
         public const string MasterConnection = "Server=.;Database=master;Integrated Security=SSPI";
