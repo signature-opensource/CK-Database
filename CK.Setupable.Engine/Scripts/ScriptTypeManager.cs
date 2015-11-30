@@ -27,7 +27,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Registers a new <see cref="ScriptTypeHandler"/>. Its <see cref="IScriptTypeHandler.ScriptType"/> must not 
+        /// Registers a new <see cref="ScriptTypeHandler"/>. Its <see cref="ScriptTypeHandler.HandlerName"/> must not 
         /// be already registered otherwise an exception is thrown.
         /// </summary>
         /// <param name="handler">The handler to register. Must not be null.</param>

@@ -18,6 +18,10 @@ using System.Diagnostics;
 
 namespace CK.Core
 {
+    /// <summary>
+    /// Abstract root object that is a <see cref="IStObjMap"/> and is able to build and load concrete maps thanks
+    /// to static methods.
+    /// </summary>
     public abstract partial class StObjContextRoot : IStObjMap
     {
         /// <summary>

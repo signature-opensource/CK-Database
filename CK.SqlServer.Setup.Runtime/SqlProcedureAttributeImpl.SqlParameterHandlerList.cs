@@ -23,7 +23,7 @@ namespace CK.SqlServer.Setup
     public partial class SqlProcedureAttributeImpl
     {
         /// <summary>
-        /// Manages sql parameters thanks to <see cref="SqlParamHandler"/> objects that are built on <see cref="SqlExprParameter"/> objects
+        /// Manages sql parameters thanks to <see cref="SqlParamHandler"/> objects that are built on SqlExprParameter objects
         /// and can be associated to <see cref="ParameterInfo"/>.
         /// </summary>
         class SqlParameterHandlerList

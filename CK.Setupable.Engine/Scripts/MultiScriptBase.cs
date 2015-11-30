@@ -107,7 +107,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Executes the given script. This default implementation calls <see cref="Executor"/>.
+        /// Executes the given script.
         /// </summary>
         /// <param name="numScript">Zero based script index (for multiple scripts).</param>
         /// <param name="scriptBody">Script text to execute.</param>

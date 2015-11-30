@@ -41,7 +41,7 @@ namespace CK.SqlServer.Setup
         public ISqlServerCallableObject OriginalStatement { get { return _storedProc; } }
 
         /// <summary>
-        /// Gets or generates the method that creates the <see cref="SqlCommand"/> for this <see cref="SqlProcedureItem."/>
+        /// Gets or generates the method that creates the <see cref="SqlCommand"/> for this <see cref="SqlProcedureItem"/>.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="dynamicAssembly">Use the memory associated to the dynamic to share the static class that implements the creation methods

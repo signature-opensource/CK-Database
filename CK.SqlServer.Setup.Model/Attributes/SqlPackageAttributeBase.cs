@@ -31,12 +31,12 @@ namespace CK.SqlServer.Setup
         public string Schema { get; set; }
 
         /// <summary>
-        /// Gets or sets the Resource path to use for the <see cref="ResourceLocator"/>. 
+        /// Gets or sets the Resource path to use for the <see cref="IResourceLocator"/>. 
         /// </summary>
         public string ResourcePath { get; set; }
 
         /// <summary>
-        /// Gets or sets the Resource Type to use for the <see cref="ResourceLocator"/>.
+        /// Gets or sets the Resource Type to use for the <see cref="IResourceLocator"/>.
         /// When null (the default that should rarely be changed), it is the package's resource type is used or the decorated type itself that is 
         /// used to locate the resources.
         /// </summary>
@@ -44,7 +44,7 @@ namespace CK.SqlServer.Setup
 
         /// <summary>
         /// Gets or sets the <see cref="SqlDatabase"/> type targeted by the package. Let it to null to use the ambient one.
-        /// The <see cref="SqlPackage.Database"/> property is automatically set (see remarks).
+        /// The <see cref="SqlPackageBase.Database"/> property is automatically set (see remarks).
         /// </summary>
         /// <remarks>
         /// The type must be a specialization of <see cref="SqlDatabase"/>. 

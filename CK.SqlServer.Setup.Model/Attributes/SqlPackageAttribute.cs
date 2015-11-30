@@ -30,7 +30,7 @@ namespace CK.SqlServer.Setup
 
         /// <summary>
         /// Gets or sets the full name (for the setup process).
-        /// Defaults to the <see cref="Type.Name"/> of the decorated package type.
+        /// Defaults to the <see cref="Type.FullName"/> of the decorated package type.
         /// </summary>
         public string FullName { get; set; }
     

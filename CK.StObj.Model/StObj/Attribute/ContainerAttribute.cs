@@ -19,6 +19,9 @@ namespace CK.Setup
     [AttributeUsage( AttributeTargets.Parameter, Inherited=false, AllowMultiple=false )]
     public class ContainerAttribute : Attribute
     {
+        /// <summary>
+        /// Initializes a new <see cref="ContainerAttribute"/>.
+        /// </summary>
         public ContainerAttribute()
         {
         }

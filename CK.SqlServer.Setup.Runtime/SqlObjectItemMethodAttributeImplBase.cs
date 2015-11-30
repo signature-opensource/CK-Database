@@ -27,7 +27,7 @@ namespace CK.SqlServer.Setup
 
         /// <summary>
         /// Initializes a new <see cref="SqlObjectItemMethodAttributeImplBase"/> bound to a <see cref="SqlObjectItemMemberAttributeBase"/> 
-        /// and a <see cref="SqlObjectProtoItem.Type"/>.
+        /// and a <see cref="SqlObjectProtoItem.ItemType"/>.
         /// </summary>
         /// <param name="a">The attribute.</param>
         /// <param name="sqlObjectProtoItemType">The type of the object.</param>
@@ -37,6 +37,9 @@ namespace CK.SqlServer.Setup
             _sqlObjectProtoItemType = sqlObjectProtoItemType;
         }
 
+        /// <summary>
+        /// Gets the attribute (covariant implementation).
+        /// </summary>
         protected new SqlObjectItemMemberAttributeBase Attribute 
         { 
             get { return (SqlObjectItemMemberAttributeBase)base.Attribute; } 
@@ -86,13 +89,13 @@ namespace CK.SqlServer.Setup
 
         /// <summary>
         /// Implements the given method on the given <see cref="TypeBuilder"/> that targets the given <see cref="SqlObjectItem"/>.
-        /// Implementations can rely on the <paramref name="dynamicAssemblyMemory"/> to store shared information if needed.
+        /// Implementations can rely on the <paramref name="dynamicAssembly"/> to store shared information if needed.
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
         /// <param name="m">The method to implement.</param>
         /// <param name="sqlObjectItem">The associated <see cref="SqlObjectItem"/> (target of the method).</param>
         /// <param name="dynamicAssembly">Dynamic assembly being implemented.</param>
-        /// <param name="b">The type builder to use.</param>
+        /// <param name="tB">The type builder to use.</param>
         /// <param name="isVirtual">True if a virtual method must be implemented. False if it must be sealed.</param>
         /// <returns>
         /// True if the method is actually implemented, false if, for any reason, another implementation (empty for instance) must be generated 

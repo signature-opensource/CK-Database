@@ -14,10 +14,8 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// Abstract base class for setup drivers. It exposes the <see cref="Item"/> that must be setup, its current <see cref="ExternalVersion"/> 
-    /// if any and the set of <see cref="DirectDependencies"/>.
-    /// Only these direct dependencies should be used by a setup driver, even if by using the <see cref="Engine"/> property, the whole list
-    /// of drivers is available.
+    /// Abstract base class for setup drivers. 
+    /// It exposes the <see cref="Item"/> that must be setup, its current <see cref="ExternalVersion"/> if any.
     /// </summary>
     /// <remarks>
     /// This class is not intended to be specialized outside this CK.Setupable.Runtime assembly: it is used as a base 

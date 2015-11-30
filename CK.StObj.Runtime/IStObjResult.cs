@@ -51,7 +51,7 @@ namespace CK.Setup
         /// and can keep an internal state if needed.
         /// </summary>
         /// <remarks>
-        /// All attributes related to <see cref="ObjectType"/> (either on the type itself or on any of its members) should be retrieved 
+        /// All attributes related to this <see cref="IStObj.ObjectType"/> (either on the type itself or on any of its members) should be retrieved 
         /// thanks to this method otherwise stateful attributes will not work correctly.
         /// </remarks>
         ICKCustomAttributeTypeMultiProvider Attributes { get; }
@@ -63,7 +63,7 @@ namespace CK.Setup
         DependentItemKindSpec ItemKind { get; }
 
         /// <summary>
-        /// Gets the parent <see cref="IStObjResult"/> in the inheritance chain (the one associated to the base class of this <see cref="ObjectType"/>).
+        /// Gets the parent <see cref="IStObjResult"/> in the inheritance chain (the one associated to the base class of this <see cref="IStObj.ObjectType"/>).
         /// May be null.
         /// </summary>
         new IStObjResult Generalization { get; }
@@ -108,7 +108,7 @@ namespace CK.Setup
         IReadOnlyList<IStObjResult> Groups { get; }
 
         /// <summary>
-        /// Gets a list of children objects when this <see cref="ItemKind"/> is either a <see cref="DependentItemKind.Group"/> or a <see cref="DependentItemKind.Container"/>.
+        /// Gets a list of children objects when this <see cref="ItemKind"/> is either a <see cref="DependentItemKindSpec.Group"/> or a <see cref="DependentItemKindSpec.Container"/>.
         /// </summary>
         IReadOnlyList<IStObjResult> Children { get; }
 

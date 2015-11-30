@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using CK.Core;
+using System.Reflection;
+
 namespace CK.Setup
 {
     /// <summary>
@@ -46,7 +48,7 @@ namespace CK.Setup
         /// <summary>
         /// Sets the value for this parameter.
         /// By setting an explicit value through this method, the <see cref="IStObjMutableReference.Context"/> and <see cref="IStObjMutableReference.Type"/> that describes
-        /// a reference to a <see cref="IStObjResult"/> are ignored: this breaks the potential dependency to the <see cref="IAmbientContact"/> object that may be referenced.
+        /// a reference to a <see cref="IStObjResult"/> are ignored: this breaks the potential dependency to the <see cref="IAmbientContract"/> object that may be referenced.
         /// </summary>
         /// <remarks>
         /// The <see cref="IStObjFinalParameter"/> also exposes this method: by using <see cref="IStObjFinalParameter.SetParameterValue"/> from <see cref="IStObjValueResolver.ResolveParameterValue"/>, an 

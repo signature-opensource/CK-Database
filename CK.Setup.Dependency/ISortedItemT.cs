@@ -54,7 +54,7 @@ namespace CK.Setup
         /// and <see cref="IDependentItem.RequiredBy"/> declared by existing other items without any duplicates.
         /// Defaults to an empty enumerable.
         /// Requirement to the <see cref="IDependentItem.Generalization"/> is always removed.
-        /// Requirements to any Container are removed when <see cref="DependencySorter.Options.SkipDependencyToContainer"/> is true.
+        /// Requirements to any Container are removed when <see cref="DependencySorterOptions.SkipDependencyToContainer"/> is true.
         /// </summary>
         new IEnumerable<ISortedItem<T>> Requires { get; }
 

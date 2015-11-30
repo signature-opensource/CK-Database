@@ -20,7 +20,7 @@ namespace CK.Core
     public interface IAmbientContractDispatcher
     {
         /// <summary>
-        /// This method is called for any class Type that are not <see cref="AmbientContractCollector.IsStaticallyTypedAmbientContract">statically typed</see>
+        /// This method is called for any class Type that are not statically typed (supporting <see cref="IAmbientContract"/>)
         /// as an ambient contract.
         /// As long as the implementation returns true for a Type, any specialization are automatically considered as an Ambient contract.
         /// </summary>

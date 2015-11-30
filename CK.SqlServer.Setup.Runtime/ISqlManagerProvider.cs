@@ -16,7 +16,7 @@ namespace CK.SqlServer.Setup
 {
 
     /// <summary>
-    /// Providers for ready to use <see cref="SqlManager"/> must offer two ways to access 
+    /// Providers for ready to use <see cref="ISqlManager"/> must offer two ways to access 
     /// them: by name and by connection string.
     /// </summary>
     public interface ISqlManagerProvider

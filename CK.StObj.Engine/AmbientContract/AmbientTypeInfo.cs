@@ -17,10 +17,13 @@ namespace CK.Core
     /// exposes the different contexts that contain the type.
     /// It is a concrete class that can be specialized to capture more specific information related to the type: 
     /// the virtual <see cref="CreateContextTypeInfo"/> factory method should be overrriden to create 
-    /// appropriate <see cref="AmbientContextualTypeInfo{T}"/> contextualized type information.
+    /// appropriate AmbientContextualTypeInfo&lt;T&gt; contextualized type information.
     /// </summary>
     public class AmbientTypeInfo
     {
+        /// <summary>
+        /// Type that this instance decorates.
+        /// </summary>
         public readonly Type Type;
 
         internal readonly ISet<string> MutableFinalContexts;
@@ -66,8 +69,14 @@ namespace CK.Core
             Type = typeof( object );
         }
 
+        /// <summary>
+        /// Gets the generalizatiuon of this <see cref="Type"/>.
+        /// </summary>
         public AmbientTypeInfo Generalization { get; private set; }
 
+        /// <summary>
+        /// Gets the contexts to which this <see cref="Type"/> appears.
+        /// </summary>
         public IReadOnlyCollection<string> FinalContexts
         {
             get { return _finalContextsEx; }

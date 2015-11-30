@@ -22,7 +22,7 @@ namespace CK.SqlServer.Setup
         IActivityMonitor Monitor { get; }
         
         /// <summary>
-        /// Gets the <see cref="SqlConnectionProvider"/> of this <see cref="SqlManager"/>.
+        /// Gets the <see cref="SqlConnectionProvider"/> of this <see cref="ISqlManager"/>.
         /// </summary>
         SqlConnectionProvider Connection { get; }
 
@@ -44,7 +44,7 @@ namespace CK.SqlServer.Setup
 
         /// <summary>
         /// True if the connection to the current database is opened. Can be called on a 
-        /// disposed <see cref="SqlManager"/>.
+        /// disposed <see cref="ISqlManager"/>.
         /// </summary>
         bool IsOpen();
         
@@ -67,14 +67,16 @@ namespace CK.SqlServer.Setup
         bool EnsureCKCoreIsInstalled( IActivityMonitor monitor );
 
         /// <summary>
-        /// The script is <see cref="IActivityMonitor.Trace"/>d (if <see cref="monitor"/> is not null).
+        /// The script is traced (if <paramref name="monitor"/> is not null).
         /// </summary>
         /// <param name="monitor">The monitor to use. Null to not log anything (and throw exception on error).</param>
+        /// <param name="checkTransactionCount">By default, transaction count is checked: it must be the same before and after the execution.</param>
+        /// <param name="autoRestoreTargetDatabase">By default, if the script USE another database, the initial one is automatically restored.</param>
         ISqlScriptExecutor CreateExecutor( IActivityMonitor monitor, bool checkTransactionCount = true, bool autoRestoreTargetDatabase = true );
 
         /// <summary>
         /// Executes one script (no GO separator must exist inside). 
-        /// The script is <see cref="IActivityMonitor.Trace"/>d (if <see cref="monitor"/> is not null).
+        /// The script is traced (if <paramref name="monitor"/> is not null).
         /// </summary>
         /// <param name="monitor">The monitor to use. Null to not log anything (and throw exception on error).</param>
         /// <param name="script">The script to execute.</param>

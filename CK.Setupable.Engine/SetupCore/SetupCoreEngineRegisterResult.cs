@@ -28,7 +28,7 @@ namespace CK.Setup
         public DependencySorterResult<ISetupItem> SortResult { get; private set; }
 
         /// <summary>
-        /// Gets whether the <see cref="SetupCoreEngine.Register"/> succeeded: <see cref="SortResult"/>.<see cref="DependencySorterResult.IsComplete">IsComplete</see>
+        /// Gets whether the <see cref="SetupCoreEngine.Register"/> succeeded: <see cref="SortResult"/>.<see cref="IDependencySorterResult.IsComplete">IsComplete</see>
         /// must be true, no <see cref="UnexpectedError"/> occurred, no <see cref="CancelReason"/> exists and no <see cref="CanceledRegistrationCulprit"/> canceled the registration.
         /// </summary>
         public bool IsValid

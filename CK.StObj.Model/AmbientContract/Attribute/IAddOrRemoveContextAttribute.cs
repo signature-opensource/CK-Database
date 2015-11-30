@@ -17,6 +17,9 @@ namespace CK.Core
     /// </summary>
     public interface IAddOrRemoveContextAttribute
     {
+        /// <summary>
+        /// Gets the context name.
+        /// </summary>
         string Context { get; }
     }
 }

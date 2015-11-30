@@ -16,7 +16,7 @@ namespace CK.Setup
     /// <summary>
     /// Enables explicit configuration of Construct method parameters as well as manual resolution for ambient 
     /// properties that are not bound to <see cref="IStObjResult"/> objects. 
-    /// Must be passed as a parameter to the constructor of <see cref="StObjCollector"/>.
+    /// Must be passed as a parameter to the constructor of StObjCollector.
     /// </summary>
     public interface IStObjValueResolver
     {

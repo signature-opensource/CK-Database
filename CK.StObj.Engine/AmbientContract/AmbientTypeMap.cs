@@ -54,6 +54,9 @@ namespace CK.Core
             }
         }
 
+        /// <summary>
+        /// Initializes a new <see cref="AmbientTypeMap{T}"/>.
+        /// </summary>
         public AmbientTypeMap()
         {
             _contextMappers = new ListDictionary();
@@ -93,6 +96,14 @@ namespace CK.Core
             return (CT)c;
         }
 
+        /// <summary>
+        /// Creates a new <see cref="IContextualTypeMap"/>.
+        /// </summary>
+        /// <typeparam name="T">A <see cref="AmbientTypeInfo"/> type.</typeparam>
+        /// <typeparam name="TC">A <see cref="AmbientContextualTypeInfo{T,TC}"/> type.</typeparam>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="context">The context name to create.</param>
+        /// <returns>A new instance.</returns>
         protected virtual IContextualTypeMap CreateContext<T, TC>( IActivityMonitor monitor, string context )
             where T : AmbientTypeInfo
             where TC : AmbientContextualTypeInfo<T, TC>

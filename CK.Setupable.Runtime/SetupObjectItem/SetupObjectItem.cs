@@ -108,7 +108,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the type of the object ("Procedure" for instance). This implements the <see cref="IVersionedItem.Type"/>.
+        /// Gets the type of the object ("Procedure" for instance). This implements the <see cref="IVersionedItem.ItemType"/>.
         /// </summary>
         public string ItemType
         {
@@ -156,6 +156,10 @@ namespace CK.Setup
             return StartDependencySort();
         }
 
+        /// <summary>
+        /// Abstract method that is called at the beginning of the topological sort.
+        /// </summary>
+        /// <returns>An object (a state) that will be associated to this item.</returns>
         protected abstract object StartDependencySort();
 
     }

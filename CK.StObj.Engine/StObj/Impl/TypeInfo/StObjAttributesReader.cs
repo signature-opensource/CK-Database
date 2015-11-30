@@ -18,7 +18,7 @@ namespace CK.Setup
         /// <summary>
         /// Retrieves a <see cref="IStObjAttribute"/> from (potentially multiple) attributes on a type.
         /// If multiple attributes are defined, <see cref="IStObjAttribute.Requires"/>, <see cref="IStObjAttribute.Children"/>, and <see cref="IStObjAttribute.RequiredBy"/>
-        /// are merged, but if their <see cref="IStObjAttribute.Container"/> are not null or if <see cref="ItemKind"/> is not <see cref="DependentItemKind.Unknown"/> and differ, the 
+        /// are merged, but if their <see cref="IStObjAttribute.Container"/> are not null or if <see cref="IStObjAttribute.ItemKind"/> is not <see cref="DependentItemKind.Unknown"/> and differ, the 
         /// first one is kept and a log is emitted in the <paramref name="monitor"/>.
         /// </summary>
         /// <param name="objectType">The type for which the attribute must be found.</param>

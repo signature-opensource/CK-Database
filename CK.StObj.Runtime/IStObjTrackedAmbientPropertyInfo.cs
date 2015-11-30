@@ -13,6 +13,9 @@ using System.Reflection;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Describes the property of an object that is tracked.
+    /// </summary>
     public interface IStObjTrackedAmbientPropertyInfo
     {
         /// <summary>

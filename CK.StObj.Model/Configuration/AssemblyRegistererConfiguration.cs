@@ -34,6 +34,9 @@ namespace CK.Core
                 "Microsoft.CSharp", "Microsoft.Practices.ServiceLocation", "Microsoft.Practices.Unity", "Microsoft.Practices.Unity.Configuration"
             };
 
+        /// <summary>
+        /// Initializes a new <see cref="AssemblyRegistererConfiguration"/>.
+        /// </summary>
         public AssemblyRegistererConfiguration()
         {
             _ignoredAssemblies = new HashSet<string>( _defaultIgnored );

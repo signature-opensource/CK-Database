@@ -27,7 +27,7 @@ namespace CK.Core
         TC _specialization;
 
         /// <summary>
-        /// Initializes a new <see cref="AmbientContextualTypeInfo"/>. 
+        /// Initializes a new <see cref="AmbientContextualTypeInfo{T,TC}"/>. 
         /// Attributes must be retrieved with <see cref="AmbientContextualAttributesCache.GetCustomAttributes">GetCustomAttributes</see> methods.
         /// </summary>
         /// <param name="t">Type.</param>
@@ -93,6 +93,10 @@ namespace CK.Core
             return false;
         }
 
+        /// <summary>
+        /// Overridden to return the name of the type in the context.
+        /// </summary>
+        /// <returns>Formatted name.</returns>
         public override string ToString()
         {
             return AmbientContractCollector.FormatContextualFullName( Context.Context, Type );

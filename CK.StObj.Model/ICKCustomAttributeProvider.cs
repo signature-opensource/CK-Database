@@ -43,7 +43,7 @@ namespace CK.Core
         bool IsDefined( MemberInfo m, Type attributeType );
 
         /// <summary>
-        /// Gets all the attributes that are assignable to the given <paramref cref="attributeType"/>.
+        /// Gets all the attributes that are assignable to the given <paramref name="attributeType"/>.
         /// </summary>
         /// <param name="m">The member info (can be a <see cref="Type"/>).</param>
         /// <param name="attributeType">Type of requested attributes.</param>

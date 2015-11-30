@@ -22,11 +22,18 @@ namespace CK.Setup
     [AttributeUsage( AttributeTargets.Parameter | AttributeTargets.ReturnValue | AttributeTargets.Property, Inherited = false, AllowMultiple = false )]
     public class ContextAttribute : Attribute
     {
+        /// <summary>
+        /// Initializes a new <see cref="ContextAttribute"/>.
+        /// </summary>
+        /// <param name="context">Context name.</param>
         public ContextAttribute( string context )
         {
             Context = context;
         }
 
+        /// <summary>
+        /// Gets the context name.
+        /// </summary>
         public string Context { get; private set; }
     }
 }

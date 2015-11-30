@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 namespace CK.Core
 {
     /// <summary>
-    /// Captures mapping in a <see cref="IStObjMap"/>.
+    /// Captures mapping in a <see cref="IStObjMap"/>: in a <see cref="Context"/>, the final <see cref="Implementation"/>
+    /// for a <see cref="Type"/>.
     /// </summary>
     public struct StObjMapMapping
     {

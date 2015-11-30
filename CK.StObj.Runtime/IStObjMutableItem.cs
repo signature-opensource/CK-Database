@@ -11,6 +11,9 @@ using CK.Core;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Mutable object. This support (re)configuration of the objects.
+    /// </summary>
     public interface IStObjMutableItem
     {
         /// <summary>
@@ -48,7 +51,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets or sets how Ambient Properties that reference this StObj must be considered.
-        /// </summary
+        /// </summary>
         TrackAmbientPropertiesMode TrackAmbientProperties { get; set; }
 
         /// <summary>

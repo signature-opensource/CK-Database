@@ -7,7 +7,7 @@ namespace CK.Core
 {
     /// <summary>
     /// A locator combines a <see cref="Type"/> and a path to a resource. 
-    /// A IResourceLocator can be <see cref="Merge"/>d (combined) with another one.
+    /// A IResourceLocator can be <see cref="IMergeable.Merge"/>d (combined) with another one.
     /// </summary>
     /// <remarks>
     /// The path may begin with a ~ and in such case, the resource path is "assembly based"

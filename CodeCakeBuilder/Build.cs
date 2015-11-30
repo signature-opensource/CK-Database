@@ -119,6 +119,7 @@ namespace CodeCake
 
             Task( "Push-NuGet-Packages" )
                 .IsDependentOn( "Create-NuGet-Packages" )
+                .WithCriteria( () => gitInfo.IsValid )
                 .Does( () =>
                 {
                     IEnumerable<FilePath> nugetPackages = Cake.GetFiles( releasesDir.Path + "/*.nupkg" );

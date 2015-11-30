@@ -12,6 +12,9 @@ using System.Text;
 
 namespace CK.Core
 {
+    /// <summary>
+    /// Base interface that describes an "object slice".
+    /// </summary>
     public interface IStObj
     {
         /// <summary>

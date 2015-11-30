@@ -1,4 +1,5 @@
-﻿using CK.SqlServer.Parser;
+﻿using CK.Setup;
+using CK.SqlServer.Parser;
 
 namespace CK.SqlServer.Setup
 {
@@ -10,7 +11,7 @@ namespace CK.SqlServer.Setup
         ISqlServerParser SqlParser { get; }
 
         /// <summary>
-        /// Gets the default database as a <see cref="SqlManager"/> object.
+        /// Gets the default database as a <see cref="ISqlManager"/> object.
         /// </summary>
         ISqlManager DefaultSqlDatabase { get; }
 

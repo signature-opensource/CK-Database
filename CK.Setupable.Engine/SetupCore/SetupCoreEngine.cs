@@ -18,7 +18,7 @@ namespace CK.Setup
     /// Core setup object. Contains the execution context and all ambient services required to
     /// process a setup. It is in charge of item ordering, setup drivers management and Init/Install/Settle steps.
     /// It does not contain anything related to script management: the <see cref="SetupEngine"/> wraps
-    /// this class and offers package script support (see <see cref="SetupEngine.ScriptTypeManager"/> and <see cref="SetupEngine.Scripts"/>).
+    /// this class and offers package script support (see <see cref="SetupEngine.Scripts"/>).
     /// </summary>
     sealed class SetupCoreEngine : ISetupEngine, IDisposable
     {

@@ -45,7 +45,7 @@ namespace CK.Setup
         /// Gets the context associated to the <see cref="P:Type"/> of this reference.
         /// When not null, the type is searched in this context only. 
         /// When null, the type is first searched in the same context as this <see cref="Owner"/>.
-        /// If not found, the type is searched in all context and, if it exists, it must exist in one and only one <see cref="IStObjContextualMapper"/> (otherwise an error will be logged).
+        /// If not found, the type is searched in all context and, if it exists, it must exist in one and only one <see cref="IContextualStObjMap"/> (otherwise an error will be logged).
         /// </summary>
         string Context { get; }
 
@@ -74,7 +74,7 @@ namespace CK.Setup
         /// dependency may even be missing - ie. let to null for reference types - if <see cref="IStObjMutableParameter.IsOptional"/> is true).
         /// </para>
         /// <para>
-        /// Defaults to <see cref="StObjRequirementBehavior.None"/> for ambient properties and <see cref="IStObjMutableItem.Requiredby"/> since "required by" are always considered as optional
+        /// Defaults to <see cref="StObjRequirementBehavior.None"/> for ambient properties and <see cref="IStObjMutableItem.RequiredBy"/> since "required by" are always considered as optional
         /// and ambient properties are not necessarily bound to another Structured Object.
         /// </para>
         /// </summary>

@@ -12,6 +12,9 @@ using System.Text;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Defines how properties of objects of a given type must be tracked.
+    /// </summary>
     public enum TrackAmbientPropertiesMode
     {
         /// <summary>

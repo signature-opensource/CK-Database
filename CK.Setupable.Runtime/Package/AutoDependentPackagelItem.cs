@@ -17,8 +17,7 @@ namespace CK.Setup
     /// An AutoDependentPackageItem is a <see cref="IPackageItem"/> associated to a <see cref="IPackageItem"/> that owns it (in 
     /// terms of lifecyle, not in terms of containment) that is projected before or after its owner and reproduces the set of its
     /// owner dependencies on its own dependencies.
-    /// Its <see cref="FullName"/> uses a "XXX." prefix followed by the FullName of the associated Package. This <see cref="Prefix"/>
-    /// is also used to "type" this package for <see cref=""/>
+    /// Its <see cref="FullName"/> uses a "XXX." prefix followed by the FullName of the associated Package.
     /// </summary>
     /// <remarks>
     /// An AutoDependentPackageItem should only be built or removed by its owner Package itself 
@@ -174,6 +173,9 @@ namespace CK.Setup
             get { return _package.Version; }
         }
 
+        /// <summary>
+        /// Gets the children list.
+        /// </summary>
         public IDependentItemList Children
         {
             get { return _children ?? (_children = new DependentItemList()); }
@@ -261,7 +263,8 @@ namespace CK.Setup
             get { return _prefix; }
         }
 
-        //TODO: CHECK that Children relationships supports optionality and projects them into potential "Prefix." children. ?? Not sure it is a good idea for container/Children... 
+        //TODO: CHECK that Children relationships supports optionality and projects them into potential "Prefix." children. ??
+        //      Not sure it is a good idea for container/Children... 
         IEnumerable<IDependentItemRef> IDependentItemGroup.Children
         {
             get { return _children.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _package.Context, _package.Location ) ); }

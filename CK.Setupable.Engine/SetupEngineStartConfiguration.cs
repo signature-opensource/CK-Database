@@ -1,11 +1,12 @@
-﻿using System;
+﻿using CK.Core;
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace CK.Setup
 {
     /// <summary>
-    /// Offers properties that may be set before the call to <see cref="SetupEngine.Run"/> or <see cref="SetupEngine.RunManual"/>.
+    /// Offers properties that may be set before the call to <see cref="SetupEngine.Run"/>.
     /// <see cref="VersionRepository"/> and <see cref="SetupSessionMemoryProvider"/> must be set, otherwise an <see cref="InvalidOperationException"/>
     /// will be thrown when running the engine.
     /// </summary>
@@ -33,7 +34,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the <see cref="ScriptTypeManager"/> into which <see cref="IScriptTypeHandler"/> must be registered
+        /// Gets the <see cref="ScriptTypeManager"/> into which <see cref="ScriptTypeHandler"/> must be registered
         /// before <see cref="SetupEngine.Run"/> in order for <see cref="ISetupScript"/> added to <see cref="SetupEngine.Scripts"/> to be executed.
         /// </summary>
         public ScriptTypeManager ScriptTypeManager
@@ -128,7 +129,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets or sets a function that will be called when items have been sorted.
-        /// The final <see cref="DependencySorterResult"/> may not be successful (ie. <see cref="DependencySorterResult.HasStructureError"/> may be true),
+        /// The final <see cref="IDependencySorterResult"/> may not be successful (ie. <see cref="IDependencySorterResult.HasStructureError"/> may be true),
         /// but if a cycle has been detected, this hook is not called.
         /// This can be used to dump detailed information about items registration and ordering.
         /// </summary>

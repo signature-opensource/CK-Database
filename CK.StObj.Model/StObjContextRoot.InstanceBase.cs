@@ -31,11 +31,27 @@ namespace CK.Core
         internal readonly StObj[] StObjs;
         internal readonly int SpecializationCount;
 
+        /// <summary>
+        /// Initializes a new <see cref="StObjContextRoot"/>. Dynamically generated concrete contexts use
+        /// this during their load.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="runtimeBuilder">The object builder.</param>
+        /// <param name="allTypes">All concrete types in the context.</param>
         protected StObjContextRoot( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, Type[] allTypes )
             : this( monitor, runtimeBuilder, allTypes, null )
         {
         }
 
+        /// <summary>
+        /// Initializes a new <see cref="StObjContextRoot"/>. Dynamically generated concrete contexts use
+        /// this during build (<paramref name="resources"/> is provided) or during load (the resources are extracted
+        /// from the assembly itself).
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="runtimeBuilder">The object builder.</param>
+        /// <param name="allTypes">All concrete types in the context.</param>
+        /// <param name="resources">Resources stream when building.</param>
         protected StObjContextRoot( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, Type[] allTypes, Stream resources )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
@@ -114,21 +130,35 @@ namespace CK.Core
             return null;
         }
 
+        /// <summary>
+        /// Gets the default context.
+        /// </summary>
         public IContextualStObjMap Default
         {
             get { return _defaultContext; }
         }
 
+        /// <summary>
+        /// Gets all the contexts.
+        /// </summary>
         public IReadOnlyCollection<IContextualStObjMap> Contexts
         {
             get { return _contextsEx; }
         }
 
+        /// <summary>
+        /// Finds a context by its name.
+        /// </summary>
+        /// <param name="context">Name of the context.</param>
+        /// <returns>A context or null.</returns>
         public IContextualStObjMap FindContext( string context )
         {
             return DoFindContext( context );
         }
 
+        /// <summary>
+        /// Gets all type to object mappings.
+        /// </summary>
         public IEnumerable<StObjMapMapping> AllMappings
         {
             get { return _contexts.SelectMany( c => c.Types, (c, t) => new StObjMapMapping( t, c.Context, c.Obtain( t ) ) ); }

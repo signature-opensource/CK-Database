@@ -27,7 +27,7 @@ namespace CK.Setup
         bool _started;
 
         /// <summary>
-        /// Initializes a new <see cref="SetupEngine"/>. This constructor is the one used when calling <see cref="StObjContextRoot.SafeBuildStObj"/> method 
+        /// Initializes a new <see cref="SetupEngine"/>. This constructor is the one used when calling <see cref="StObjBuilder.SafeBuildStObj"/> method 
         /// with a <see cref="SetupEngineConfiguration"/> configuration object.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
@@ -100,8 +100,8 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Triggered before registration (at the beginning of <see cref="SetupEgine.Register"/>).
-        /// This event fires before the <see cref="SetupEvent"/> (with <see cref="SetupEvent.Step"/> set to None), and enables
+        /// Triggered before registration (at the beginning of <see cref="SetupCoreEngine.Register"/>).
+        /// This event fires before the <see cref="SetupEvent"/> (with <see cref="SetupEventArgs.Step"/> set to None), and enables
         /// registration of setup items.
         /// </summary>
         public event EventHandler<RegisterSetupEventArgs> RegisterSetupEvent;
@@ -118,7 +118,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Executes the whole setup process (<see cref="SetupCoreEngine.Register"/>, <see cref="SetupCoreEngine.RunInit"/>, <see cref="SetupCoreEngine.RunInstall"/>, <see cref="SetupCoreEngine.RunSettle"/>).
-        /// This is automatically called by  <see cref="StObjContextRoot.SafeBuildStObj"/> after it has instanciating this object when using a <see cref="SetupEngineConfiguration"/>.
+        /// This is automatically called by  <see cref="StObjBuilder.SafeBuildStObj(SetupEngine, IStObjRuntimeBuilder, SetupEngineConfigurator)"/> after it has instanciating this object when using a <see cref="SetupEngineConfiguration"/>.
         /// This can be called only once.
         /// </summary>
         /// <returns>True on success, false if an error occured.</returns>
@@ -182,7 +182,6 @@ namespace CK.Setup
                 DisposeDisposableAspects();
             }
         }
-
 
         bool DoRun( object[] items, IEnumerable<ISetupItem> stObjItems, ISetupSessionMemory m )
         {

@@ -6,6 +6,8 @@
 #endregion
 
 
+using CK.Core;
+
 namespace CK.Setup
 {
     /// <summary>

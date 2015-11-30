@@ -16,7 +16,7 @@ namespace CK.Core
 {
 
     /// <summary>
-    ///
+    /// Concrete bse implementation for a <see cref="IContextualTypeMap"/>.
     /// </summary>
     public class AmbientContextualTypeMap<T, TC> : IContextualTypeMap
         where T : AmbientTypeInfo
@@ -26,6 +26,11 @@ namespace CK.Core
         string _context;
         IContextualRoot<IContextualTypeMap> _owner;
 
+        /// <summary>
+        /// Initializes a new <see cref="AmbientContextualTypeMap{T,TC}"/>.
+        /// </summary>
+        /// <param name="owner">The root context.</param>
+        /// <param name="context">Name of this context.</param>
         internal protected AmbientContextualTypeMap( IContextualRoot<IContextualTypeMap> owner, string context )
         {
             Debug.Assert( context != null );
@@ -34,26 +39,43 @@ namespace CK.Core
             _owner = owner;
         }
 
+        /// <summary>
+        /// Gets all the contexts including this one.
+        /// </summary>
         public IContextualRoot<IContextualTypeMap> AllContexts
         {
             get { return _owner; }
         }
 
+        /// <summary>
+        /// Gets the mappings between types (base types as well as ambient contract interfaces) to objects. 
+        /// </summary>
         public Dictionary<object, TC> RawMappings 
         { 
             get { return _map; } 
         }
 
+        /// <summary>
+        /// Gets this context name.
+        /// </summary>
         public string Context
         {
             get { return _context; }
         }
 
+        /// <summary>
+        /// Gets the number of existing mappings.
+        /// </summary>
         public int MappedTypeCount 
         { 
             get { return _map.Count; } 
         }
 
+        /// <summary>
+        /// Gets the final mapped type for any type that is mapped.
+        /// </summary>
+        /// <param name="t">Base type.</param>
+        /// <returns>Most specialized type or null if not found.</returns>
         public Type ToLeafType( Type t )
         {
             TC c = ToLeaf( t );
@@ -67,6 +89,11 @@ namespace CK.Core
             return null;
         }
 
+        /// <summary>
+        /// Gets the most abstract type for any type mapped.
+        /// </summary>
+        /// <param name="t">Any mapped type.</param>
+        /// <returns>The most abstract, less specialized, associated type.</returns>
         public Type ToHighestImplType( Type t )
         {
             TC c = ToHighestImpl( t );
@@ -97,11 +124,19 @@ namespace CK.Core
             return c;
         }
 
+        /// <summary>
+        /// Gets whether a type is mapped.
+        /// </summary>
+        /// <param name="t">Any type.</param>
+        /// <returns>True if the type is mapped.</returns>
         public bool IsMapped( Type t )
         {
             return _map.ContainsKey( t );
         }
 
+        /// <summary>
+        /// Gets all types mapped by this contextual map.
+        /// </summary>
         public IEnumerable<Type> Types
         {
             get { return _map.Keys.Select( o => o is Type ? (Type)o : ((AmbientContractInterfaceKey)o).InterfaceType ); }

@@ -31,7 +31,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets or sets a function that will be called when items have been sorted.
-        /// The final <see cref="DependencySorterResult"/> may not be successful (ie. <see cref="DependencySorterResult.HasStructureError"/> may be true),
+        /// The final <see cref="IDependencySorterResult"/> may not be successful (ie. <see cref="IDependencySorterResult.HasStructureError"/> may be true),
         /// but if a cycle has been detected, this hook is not called.
         /// </summary>
         public Action<IEnumerable<ISortedItem>> HookOutput { get; set; }

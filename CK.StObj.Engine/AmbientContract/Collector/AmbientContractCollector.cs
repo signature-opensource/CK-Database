@@ -59,6 +59,12 @@ namespace CK.Core
         
     }
 
+    /// <summary>
+    /// Typed implementation of an <see cref="AmbientContractCollector"/>.
+    /// </summary>
+    /// <typeparam name="CT">A <see cref="AmbientContextualTypeMap{T,TC}"/> type.</typeparam>
+    /// <typeparam name="T">A <see cref="AmbientTypeInfo"/> type.</typeparam>
+    /// <typeparam name="TC">A <see cref="AmbientContextualTypeInfo{T,TC}"/> type.</typeparam>
     public class AmbientContractCollector<CT,T,TC> : AmbientContractCollector
         where CT : AmbientContextualTypeMap<T, TC>
         where T : AmbientTypeInfo
@@ -86,6 +92,14 @@ namespace CK.Core
         readonly IActivityMonitor _monitor;
         readonly DynamicAssembly _tempAssembly;
 
+        /// <summary>
+        /// Initializes a new <see cref="AmbientContractCollector{CT,T,TC}"/> instance.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="mapFactory">Factory for <see cref="IContextualTypeMap"/> objects.</param>
+        /// <param name="typeInfoFactory">Factory for <see cref="AmbientTypeInfo"/> objects.</param>
+        /// <param name="tempAssembly">The <see cref="DynamicAssembly"/>.</param>
+        /// <param name="contextDispatcher">The strategy that will be used to alter type dispatching.</param>
         public AmbientContractCollector( 
             IActivityMonitor monitor,
             Func<IActivityMonitor, AmbientTypeMap<CT>> mapFactory,
@@ -102,6 +116,9 @@ namespace CK.Core
             _typeInfoFactory = typeInfoFactory;
         }
 
+        /// <summary>
+        /// Gets the number of registered types.
+        /// </summary>
         public int RegisteredTypeCount
         {
             get { return _collector.Count; }
@@ -274,6 +291,10 @@ namespace CK.Core
             }
         }
 
+        /// <summary>
+        /// Obtains the result of the collection.
+        /// </summary>
+        /// <returns>The result object.</returns>
         public AmbientContractCollectorResult<CT,T,TC> GetResult()
         {
             var mappings = _mapFactory( _monitor );

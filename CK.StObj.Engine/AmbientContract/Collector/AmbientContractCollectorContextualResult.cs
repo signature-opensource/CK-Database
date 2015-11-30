@@ -13,6 +13,12 @@ using System.Diagnostics;
 
 namespace CK.Core
 {
+    /// <summary>
+    /// Result of the <see cref="AmbientContractCollector{CT,T,TC}"/> work.
+    /// </summary>
+    /// <typeparam name="CT">A <see cref="AmbientContextualTypeMap{T,TC}"/> type.</typeparam>
+    /// <typeparam name="T">A <see cref="AmbientTypeInfo"/> type.</typeparam>
+    /// <typeparam name="TC">A <see cref="AmbientContextualTypeInfo{T,TC}"/> type.</typeparam>
     public class AmbientContractCollectorContextualResult<CT,T,TC> : IContextualResult
         where CT : AmbientContextualTypeMap<T,TC>
         where T : AmbientTypeInfo
@@ -79,6 +85,9 @@ namespace CK.Core
             get { return _interfaceAmbiguities; }
         }
 
+        /// <summary>
+        /// Gets the list of tails that are abstract types.
+        /// </summary>
         public IReadOnlyList<Type> AbstractTails
         {
             get { return _abstractTails; }
