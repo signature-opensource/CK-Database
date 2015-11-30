@@ -622,7 +622,9 @@ namespace CK.Setup
         /// </summary>
         /// <param name="idx">The index in the whole ordered list of items.</param>
         /// <param name="idxSpecialization">Maintained index for specialization only.</param>
-        /// <param name="requiresFromSorter">Cleaned up requirements (no Generalization nor Containers).</param>
+        /// <param name="requiresFromSorter">Required items.</param>
+        /// <param name="childrenFromSorter">Children items.</param>
+        /// <param name="groupsFromSorter">Groups items.</param>
         internal void SetSorterData( int idx, ref int idxSpecialization, IEnumerable<ISortedItem> requiresFromSorter, IEnumerable<ISortedItem> childrenFromSorter, IEnumerable<ISortedItem> groupsFromSorter )
         {
             Debug.Assert( IndexOrdered == 0 );

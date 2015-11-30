@@ -14,6 +14,9 @@ using System.Diagnostics;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Encapsulates the result of the <see cref="StObjCollector"/> work.
+    /// </summary>
     public partial class StObjCollectorResult : MultiContextualResult<StObjCollectorContextualResult>
     {
         readonly AmbientContractCollectorResult<StObjContextualMapper,StObjTypeInfo,MutableItem> _contractResult;

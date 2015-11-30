@@ -28,7 +28,7 @@ namespace CK.Setup
     ///     <description>Its <see cref="ConfigureDependentItem"/> will be called after the ones of the attributes (for each "slice" of the object, from top most base class to the most specialized one).</description>
     /// </item>
     /// <item>
-    ///     <term>As a parameter to the <see cref="StObjSetupItemBuilder"/>.</term>
+    ///     <term>As a parameter to the StObjSetupItemBuilder.</term>
     ///     <description>Its <see cref="ConfigureDependentItem"/> will be called last for all StObj beeing setup (for each "slice" of each object).</description>
     /// </item>
     /// </list>

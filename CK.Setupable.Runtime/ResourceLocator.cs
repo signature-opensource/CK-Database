@@ -46,6 +46,7 @@ namespace CK.Core
         /// itself. Can be null or <see cref="String.Empty"/> if the resources are 
         /// directly associated to the type.
         /// </param>
+        /// <param name="fallbackType">Will be used whenever <see cref="PrimaryType"/> is null.</param>
         public ResourceLocator( Type primaryType, string path, Type fallbackType )
         {
             _type = primaryType;

@@ -45,8 +45,7 @@ namespace CK.Setup
             }
 
             /// <summary>
-            /// Gets the <see cref="ISetupEngine"/>. <see cref="ISetupEngine.Aspects"/> (and <see cref="ISetupEngine.Aspect{T}"/>)
-            /// can be used by driver constructors to interact with their aspects.
+            /// Gets the <see cref="ISetupEngine"/>.
             /// </summary>
             public ISetupEngine Engine { get; set; }
 

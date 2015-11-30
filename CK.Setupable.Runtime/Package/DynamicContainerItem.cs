@@ -38,7 +38,6 @@ namespace CK.Setup
         /// <summary>
         /// Initializes a new dynamic package with <see cref="ItemKind"/> set to <see cref="DependentItemKind.Container"/>.
         /// </summary>
-        /// <param name="itemType">The <see cref="IVersionedItem.ItemType"/> for this item.</param>
         /// <param name="driverType">
         /// Type of the driver to use. Can be the <see cref="Type"/> itself or the Assembly Qualified Name of the type.
         /// When null, the type of <see cref="GenericItemSetupDriver"/> is asumed.

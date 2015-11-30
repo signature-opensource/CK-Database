@@ -170,8 +170,9 @@ namespace CK.SqlServer.Setup
             /// <summary>
             /// Emits call to SqlCommandExecutorParameter.ExecuteNonQuery( string, SqlCommand ) method.
             /// </summary>
-            /// <param name="g">The IL genrator.</param>
+            /// <param name="g">The IL generator.</param>
             /// <param name="localSqlCommand">The SqlCommand local variable.</param>
+            /// <param name="resultBuilder">Field that holds the generated function (when <see cref="RequiresReturnTypeBuilder"/> is true).</param>
             public void GenerateExecuteNonQueryCall( ILGenerator g, LocalBuilder localSqlCommand, FieldInfo resultBuilder )
             {
                 Debug.Assert( _executorCallNonQuery != null && (RequiresReturnTypeBuilder == (resultBuilder != null)) );

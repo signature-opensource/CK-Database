@@ -18,6 +18,9 @@ namespace CK.Setup
     [Flags]
     public enum TypedScriptVectortConstraint
     {
+        /// <summary>
+        /// No requirements.
+        /// </summary>
         None = 0,
 
         /// <summary>

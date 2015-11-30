@@ -18,7 +18,7 @@ namespace CK.Setup
         /// <summary>
         /// Implementation must execute the given script.
         /// </summary>
-        /// <param name="_monitor">The _monitor to use.</param>
+        /// <param name="monitor">The monitor to use.</param>
         /// <param name="driver">The item driver for which the script is executed.</param>
         /// <param name="script">The script to execute.</param>
         /// <returns>True on success, false to stop the setup process.</returns>

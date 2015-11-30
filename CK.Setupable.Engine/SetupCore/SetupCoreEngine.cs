@@ -160,7 +160,8 @@ namespace CK.Setup
         /// </summary>
         /// <param name="versionRepository">Provides version information about items already installed.</param>
         /// <param name="memory">Provides persistent memory to setup participants.</param>
-        /// <param name="_monitor">Monitor to use.</param>
+        /// <param name="aspects">Available aspects.</param>
+        /// <param name="monitor">Monitor to use.</param>
         /// <param name="driverFactory">Factory for setup drivers.</param>
         public SetupCoreEngine( IVersionedItemRepository versionRepository, ISetupSessionMemory memory, IReadOnlyList<ISetupEngineAspect> aspects, IActivityMonitor monitor, ISetupDriverFactory driverFactory )
         {
@@ -191,7 +192,7 @@ namespace CK.Setup
         /// </summary>
         /// <typeparam name="T">Type of the aspect to obtain.</typeparam>
         /// <param name="required">False to silently return null instead of throwing an exception if the aspect can not be found.</param>
-        /// <returns>The first compatible aspect (may be null if <param name="required" is false).</returns>
+        /// <returns>The first compatible aspect (may be null if <paramref name="required"/> is false).</returns>
         public T GetSetupEngineAspect<T>( bool required = true ) where T : class
         {
             return SetupEngine.GetSetupEngineAspect<T>( _aspects, required );
@@ -199,7 +200,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Triggered before registration (at the beginning of <see cref="Register"/>).
-        /// This event fires before the <see cref="SetupEvent"/> (with <see cref="SetupEvent.Step"/> set to None), and enables
+        /// This event fires before the <see cref="SetupEvent"/> (with <see cref="SetupEventArgs.Step"/> set to None), and enables
         /// registration of setup items.
         /// </summary>
         public event EventHandler<RegisterSetupEventArgs> RegisterSetupEvent;

@@ -73,6 +73,7 @@ namespace CK.Setup
         /// can be altered: properties can be set, dependencies like Container, Requires, Children, etc. but also parameters' value of the Construct method can be changed.
         /// This empty implementation of <see cref="IStObjStructuralConfigurator.Configure"/> calls <see cref="Previous"/> if it is not null.
         /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
         /// <param name="o">The item to configure.</param>
         public virtual void Configure( IActivityMonitor monitor, IStObjMutableItem o )
         {
@@ -83,7 +84,7 @@ namespace CK.Setup
         /// Step n°4 - Last step before ordering. Ambient properties that had not been resolved can be set to a value here.
         /// This empty implementation of <see cref="IStObjValueResolver.ResolveExternalPropertyValue"/> calls <see cref="Previous"/> if it is not null.
         /// </summary>
-        /// <param name="_monitor">The _monitor to use.</param>
+        /// <param name="monitor">The monitor to use.</param>
         /// <param name="ambientProperty">Property for which a value should be set.</param>
         public virtual void ResolveExternalPropertyValue( IActivityMonitor monitor, IStObjFinalAmbientProperty ambientProperty )
         {
@@ -96,7 +97,7 @@ namespace CK.Setup
         /// This is the last step of the pure StObj level work: after this one, object graph dependencies have been resolved, objects are configured.
         /// This empty implementation of <see cref="IStObjValueResolver.ResolveParameterValue"/> (calls <see cref="Previous"/> if it is not null.
         /// </summary>
-        /// <param name="_monitor">The _monitor to use.</param>
+        /// <param name="monitor">The _monitor to use.</param>
         /// <param name="parameter">Parameter of a Construct method.</param>
         public virtual void ResolveParameterValue( IActivityMonitor monitor, IStObjFinalParameter parameter )
         {
@@ -108,7 +109,7 @@ namespace CK.Setup
         /// driver type to use, versions, requirements and other properties related to the three-steps setup phasis.
         /// This empty implementation of <see cref="IStObjSetupConfigurator.ConfigureDependentItem"/> calls <see cref="Previous"/> if it is not null.
         /// </summary>
-        /// <param name="_monitor">Monitor to use.</param>
+        /// <param name="monitor">Monitor to use.</param>
         /// <param name="data">Mutable data (typically initialized by attributes and other direct code-first approaches).</param>
         public virtual void ConfigureDependentItem( IActivityMonitor monitor, IMutableStObjSetupData data )
         {
@@ -120,7 +121,7 @@ namespace CK.Setup
         /// a generic <see cref="StObjDynamicPackageItem"/> does the job.
         /// This empty implementation of <see cref="IStObjSetupItemFactory.CreateSetupItem"/> calls <see cref="Previous"/> if it is not null, otherwise returns null.
         /// </summary>
-        /// <param name="_monitor">Monitor to use.</param>
+        /// <param name="monitor">Monitor to use.</param>
         /// <param name="data">Descriptive data (initialized by attributes and other direct code-first approaches and configured by any <see cref="IStObjSetupConfigurator"/>).</param>
         /// <returns>A <see cref="IStObjSetupItem"/> implementation that must be correctly initialized by the given data, or null to use the default <see cref="StObjDynamicPackageItem"/>.</returns>
         public virtual IStObjSetupItem CreateSetupItem( IActivityMonitor monitor, IStObjSetupData data )

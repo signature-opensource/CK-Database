@@ -135,6 +135,7 @@ namespace CK.SqlServer.Setup
         /// Opens a database from a connection string.
         /// </summary>
         /// <param name="connectionString">The connection string to the database.</param>
+        /// <param name="autoCreate">False to not creating the database if it does not exist.</param>
         /// <returns>True on success.</returns>
         public bool OpenFromConnectionString( string connectionString, bool autoCreate = false )
         {
@@ -239,7 +240,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Returns the object text definition of <paramref name="schemaName"/> object.
         /// </summary>
-        /// <param name="schemaname">Namme of the object.</param>
+        /// <param name="schemaName">Namme of the object.</param>
         /// <returns>The object's text.</returns>
         public string GetObjectDefinition( string schemaName )
         {
@@ -255,9 +256,8 @@ namespace CK.SqlServer.Setup
         /// Tries to remove all objects from a given schema.
         /// </summary>
         /// <param name="schema">Name of the schema. Must not be null nor empty.</param>
-        /// <returns>Always true if no <see cref="Monitor"/> is set (an exception
-        /// will be thrown in case of failure). If a <see cref="Monitor"/> is set,
-        /// this method will return true or false to indicate success.</returns>
+        /// <param name="dropSchema">True to drop the schema itself.</param>
+        /// <returns>True on success, false otherwise.</returns>
         public bool SchemaDropAllObjects( string schema, bool dropSchema )
         {
             CheckOpen();
@@ -429,15 +429,27 @@ namespace CK.SqlServer.Setup
         }
 
         /// <summary>
-        /// The script is <see cref="IActivityMonitor.Trace"/>d (if <see cref="monitor"/> is not null).
+        /// The script is traced (if <paramref name="monitor"/> is not null).
         /// </summary>
         /// <param name="monitor">The monitor to use. Null to not log anything (and throw exception on error).</param>
+        /// <param name="checkTransactionCount">By default, transaction count is checked: it must be the same before and after the execution.</param>
+        /// <param name="autoRestoreDatabase">By default, if the script USE another database, the initial one is automatically restored.</param>
         public ISqlScriptExecutor CreateExecutor( IActivityMonitor monitor, bool checkTransactionCount = true, bool autoRestoreDatabase = true )
         {
             CheckOpen();
             return new SqlExecutor( this, monitor, checkTransactionCount, autoRestoreDatabase );
         }
 
+        /// <summary>
+        /// Simple helper to call <see cref="ExecuteOneScript"/> for multiple scripts (this uses the same <see cref="ISqlScriptExecutor"/>).
+        /// </summary>
+        /// <param name="scripts">Set of scripts to execute.</param>
+        /// <param name="monitor">The monitor to use. Null to not log anything (and throw exception on error).</param>
+        /// <returns>
+        /// Always true if <paramref name="monitor"/> is null since otherwise an exception
+        /// will be thrown in case of failure. 
+        /// If a monitor is set, this method will return true or false to indicate success.
+        /// </returns>
         public bool ExecuteScripts( IEnumerable<string> scripts, IActivityMonitor monitor )
         {
             using( var e = CreateExecutor( monitor ) )
@@ -448,7 +460,7 @@ namespace CK.SqlServer.Setup
 
         /// <summary>
         /// Executes one script (no GO separator must exist inside). 
-        /// The script is <see cref="IActivityMonitor.Trace"/>d (if <see cref="monitor"/> is not null).
+        /// The script is traced (if <paramref name="monitor"/> is not null).
         /// </summary>
         /// <param name="monitor">The monitor to use. Null to not log anything (and throw exception on error).</param>
         /// <param name="script">The script to execute.</param>

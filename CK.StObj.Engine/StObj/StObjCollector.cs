@@ -39,7 +39,7 @@ namespace CK.Setup
         /// <param name="monitor">Logger to use. Can not be null.</param>
         /// <param name="traceDepencySorterInput">True to trace in <paramref name="monitor"/> the input of dependency graph.</param>
         /// <param name="traceDepencySorterOutput">True to trace in <paramref name="monitor"/> the sorted dependency graph.</param>
-        /// <param name="runtimeBuilder">Runtime builder to use. <see cref="StObjContext.DefaultStObjRuntimeBuilder"/> can be used.</param>
+        /// <param name="runtimeBuilder">Runtime builder to use. A <see cref="BasicStObjBuilder"/> can be used.</param>
         /// <param name="dispatcher">Used to dispatch Types betwenn contexts or hide them. See <see cref="IAmbientContractDispatcher"/>.</param>
         /// <param name="configurator">Used to configure items. See <see cref="IStObjStructuralConfigurator"/>.</param>
         /// <param name="valueResolver">Used to explicitely resolve or alter Construct parameters and object ambient properties. See <see cref="IStObjValueResolver"/>.</param>

@@ -114,7 +114,7 @@ namespace CK.Setup
         /// Gets the list of handlers sorted according to the Requires/RequiredBy constraints.
         /// Null if the list can not be obtained.
         /// </summary>
-        /// <param name="_monitor">Monitor to use. Any error will be logged.</param>
+        /// <param name="monitor">Monitor to use. Any error will be logged.</param>
         /// <returns>Null on error or the sorted list.</returns>
         internal IReadOnlyList<ScriptTypeHandler> GetSortedHandlers( IActivityMonitor monitor )
         {

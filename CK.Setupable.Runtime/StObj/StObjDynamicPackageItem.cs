@@ -77,7 +77,7 @@ namespace CK.Setup
         /// </summary>
         /// <remarks>
         /// <para>
-        /// The function that is injected during the graph creation (at the StObj level) simply returns the <see cref="IStObjResult.StObj"/> instance that is NOT always a "real",
+        /// The function that is injected during the graph creation (at the StObj level) simply returns the <see cref="IStObjResult.InitialObject"/> instance that is NOT always a "real",
         /// fully operational, object since its auto implemented methods (or other aspects) have not been generated yet.
         /// </para>
         /// <para>

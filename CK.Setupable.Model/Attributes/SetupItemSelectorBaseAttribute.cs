@@ -15,7 +15,9 @@ namespace CK.Setup
         /// <summary>
         /// Initializes a new <see cref="SetupItemSelectorBaseAttribute"/> with (potentially) multiple item names.
         /// </summary>
+        /// <param name="actualAttributeTypeAssemblyQualifiedName">Concrete type name (provided by the specialized class).</param>
         /// <param name="commaSeparatedTypeNames">Name or multiple comma separated names.</param>
+        /// <param name="scope">Defines the scope to which this attribute applies.</param>
         protected SetupItemSelectorBaseAttribute( string actualAttributeTypeAssemblyQualifiedName, string commaSeparatedTypeNames, SetupItemSelectorScope scope )
             : base( actualAttributeTypeAssemblyQualifiedName )
         {

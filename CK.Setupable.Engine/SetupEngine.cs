@@ -83,7 +83,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets or sets a <see cref="SetupableConfigurator"/> that will be used.
         /// This can be changed at any moment during setup: the current configurator will always be used.
-        /// When setting it, care should be taken to not break the chain by setting the current configurator as the <see cref="SetupableConfigurator.Previous"/>.
+        /// When setting it, care should be taken to not break the chain by setting the current configurator as the <see cref="SetupEngineConfigurator.Previous"/>.
         /// </summary>
         public SetupEngineConfigurator SetupableConfigurator
         {

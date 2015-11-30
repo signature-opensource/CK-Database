@@ -118,7 +118,7 @@ namespace CK.SqlServer.Setup
         /// Type matcher for the input (can be null).
         /// When the actual type is known (inputType), it is typically the revert of <see cref="T:Type.IsAssignableFrom"/>, this lambda is fine: t => t.IsAsignableFrom( inputType ).
         /// </param>
-        /// <param name="typeName">Optional string with the type name used for warnings and errors.</param>
+        /// <param name="inputTypeName">Optional string with the type name used for warnings and errors.</param>
         /// <param name="shouldBeMapped">False to state that the input is not considered sensitive regarding the mapping.</param>
         /// <returns>True if the input has been mapped at least once.</returns>
         public bool AddInput( int index, string name, Func<Type,bool> typeMatcher, string inputTypeName, bool shouldBeMapped = true )
@@ -139,9 +139,7 @@ namespace CK.SqlServer.Setup
         /// </summary>
         /// <param name="index">Zero based index of the input. Must be positive.</param>
         /// <param name="name">Name of th input (can be null).</param>
-        /// <param name="type">Type matcher for the input (can be null).
-        /// </param>
-        /// <param name="typeName">Optional string with the type name used for warnings and errors.</param>
+        /// <param name="type">Type matcher for the input (can be null).</param>
         /// <param name="shouldBeMapped">False to state that the input is not considered sensitive regarding the mapping.</param>
         /// <returns>True if the input has been mapped at least once.</returns>
         public bool AddInput( int index, string name, Type type, bool shouldBeMapped = true )

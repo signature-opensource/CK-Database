@@ -24,7 +24,6 @@ namespace CK.Setup
         /// <summary>
         /// Initializes this attribute with the assembly qualified name of actual implementation.
         /// </summary>
-        /// <param name="objectName">Name of the object.</param>
         /// <param name="actualAttributeTypeAssemblyQualifiedName">Assembly Qualified Name of the object that will replace this attribute during setup.</param>
         protected SetupObjectItemRefMemberAttributeBase( string actualAttributeTypeAssemblyQualifiedName )
             : base( actualAttributeTypeAssemblyQualifiedName )

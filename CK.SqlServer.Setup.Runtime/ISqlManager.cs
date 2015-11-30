@@ -50,13 +50,10 @@ namespace CK.SqlServer.Setup
         
         /// <summary>
         /// Opens a database from a connection string.
-        /// If a <see cref="Monitor"/> is set, exceptions will be routed to it.
         /// </summary>
         /// <param name="connectionString">The connection string to the database.</param>
-        /// <returns>
-        /// If a <see cref="Monitor"/> is set, this method will return true or false 
-        /// to indicate success.
-        /// </returns>
+        /// <param name="autoCreate">True to automatically create the database if it does not exist.</param>
+        /// <returns>True on success, false otherwise.</returns>
         bool OpenFromConnectionString( string connectionString, bool autoCreate = false );
         
         /// <summary>
@@ -71,8 +68,8 @@ namespace CK.SqlServer.Setup
         /// </summary>
         /// <param name="monitor">The monitor to use. Null to not log anything (and throw exception on error).</param>
         /// <param name="checkTransactionCount">By default, transaction count is checked: it must be the same before and after the execution.</param>
-        /// <param name="autoRestoreTargetDatabase">By default, if the script USE another database, the initial one is automatically restored.</param>
-        ISqlScriptExecutor CreateExecutor( IActivityMonitor monitor, bool checkTransactionCount = true, bool autoRestoreTargetDatabase = true );
+        /// <param name="autoRestoreDatabase">By default, if the script USE another database, the initial one is automatically restored.</param>
+        ISqlScriptExecutor CreateExecutor( IActivityMonitor monitor, bool checkTransactionCount = true, bool autoRestoreDatabase = true );
 
         /// <summary>
         /// Executes one script (no GO separator must exist inside). 
@@ -110,11 +107,8 @@ namespace CK.SqlServer.Setup
         /// Tries to remove all objects from a given schema.
         /// </summary>
         /// <param name="schemaName">Name of the schema. Must not be null nor empty.</param>
-        /// <returns>
-        /// Always true if no <see cref="Monitor"/> is set (an exception
-        /// will be thrown in case of failure). If a <see cref="Monitor"/> is set,
-        /// this method will return true or false to indicate success.
-        /// </returns>
+        /// <param name="dropSchema">True to drop the schema itself.</param>
+        /// <returns>True on success, false otherwise.</returns>
         bool SchemaDropAllObjects( string schemaName, bool dropSchema );
     }
 }

@@ -36,7 +36,7 @@ namespace CK.Setup
         /// <summary>
         /// Initializes a set of <see cref="ISetupItem"/> given a dependency-ordered list of <see cref="IStObjResult"/> objects.
         /// </summary>
-        /// <param name="rootObjects">Root <see cref="IStObjResult"/> objects.</param>
+        /// <param name="orderedObjects">Root <see cref="IStObjResult"/> objects.</param>
         /// <returns>A set of setup items.</returns>
         public IEnumerable<ISetupItem> Build( IReadOnlyList<IStObjResult> orderedObjects )
         {

@@ -22,7 +22,8 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the <see cref="DependencySorterResult"/>. Null if an <see cref="UnexpectedError"/> occurred
+        /// Gets the <see cref="DependencySorterResult{T}"/> of <see cref="ISetupItem"/>. 
+        /// Null if an <see cref="UnexpectedError"/> occurred
         /// during its initialization or if a <see cref="CancelReason"/> has been set.
         /// </summary>
         public DependencySorterResult<ISetupItem> SortResult { get; private set; }
@@ -57,10 +58,10 @@ namespace CK.Setup
         public ISortedItem CanceledRegistrationCulprit { get; internal set; }
 
         /// <summary>
-        /// Logs any error: <see cref="UnexpectedError"/> and any <see cref="DependencySorterResult"/> errors. 
+        /// Logs any error: <see cref="UnexpectedError"/> and any <see cref="IDependencySorterResult"/> errors. 
         /// Does nothing if <see cref="IsValid"/> is true.
         /// </summary>
-        /// <param name="_monitor">The _monitor to use.</param>
+        /// <param name="monitor">The monitor to use.</param>
         public void LogError( IActivityMonitor monitor )
         {
             Debug.Assert( SortResult != null || (UnexpectedError != null || CancelReason != null), "(SortResult == null) ==> (UnexpectedError != null || CancelReason != null)" );

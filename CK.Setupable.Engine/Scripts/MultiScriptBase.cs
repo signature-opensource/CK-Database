@@ -19,11 +19,11 @@ namespace CK.Setup
         /// <summary>
         /// Initializes a new instance of <see cref="MultiScriptBase"/>.
         /// </summary>
-        /// <param name="_monitor">The _monitor to use.</param>
+        /// <param name="monitor">The monitor to use.</param>
         /// <param name="script">Script to execute.</param>
         public MultiScriptBase( IActivityMonitor monitor, ISetupScript script )
         {
-            if( monitor == null ) throw new ArgumentNullException( "_monitor" );
+            if( monitor == null ) throw new ArgumentNullException( "monitor" );
             if( script == null ) throw new ArgumentNullException( "script" );
 
             Monitor = monitor;
@@ -94,7 +94,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Optionaly pre processes one script before calling <see cref="ExecuteOneScript"/>.
-        /// This default implementation simply returns the <param name="scriptBody"/> unchanged.
+        /// This default implementation simply returns the <paramref name="scriptBody"/> unchanged.
         /// Returning null enables to ignore the script: the script execution is skipped without 
         /// stopping the setup process.
         /// </summary>

@@ -86,7 +86,6 @@ namespace CK.Setup
         /// of the configurations in <see cref="SetupEngineConfiguration.Aspects"/> drives the order of Aspects creation).
         /// When <see cref="ISetupEngineAspect.Configure"/> is called, all available aspects are registered.
         /// </summary>
-        /// <param name="type">Type to register.</param>
         public IReadOnlyList<ISetupEngineAspect> Aspects 
         {
             get { return _aspects; }

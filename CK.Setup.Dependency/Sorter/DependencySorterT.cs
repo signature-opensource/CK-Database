@@ -29,7 +29,7 @@ namespace CK.Setup
         /// <param name="items">Set of <see cref="IDependentItem"/> to order.</param>
         /// <param name="discoverers">An optional set of <see cref="IDependentItemDiscoverer"/> (can be null).</param>
         /// <param name="options">Options for advanced uses.</param>
-        /// <returns>A <see cref="DependencySorterResult"/>.</returns>
+        /// <returns>A <see cref="IDependencySorterResult"/>.</returns>
         public static DependencySorterResult<T> OrderItems( IEnumerable<T> items, IEnumerable<IDependentItemDiscoverer<T>> discoverers, DependencySorterOptions options = null )
         {
             var computer = new RankComputer( items, discoverers, options ?? _defaultOptions );
@@ -42,7 +42,7 @@ namespace CK.Setup
         /// collected and resulting ordered items are initialized in the correct order.
         /// </summary>
         /// <param name="items">Set of <see cref="IDependentItem"/> to order.</param>
-        /// <returns>A <see cref="DependencySorterResult"/>.</returns>
+        /// <returns>A <see cref="DependencySorterResult{T}"/>.</returns>
         public static DependencySorterResult<T> OrderItems( params T[] items )
         {
             return OrderItems( items, null, null );
@@ -54,7 +54,7 @@ namespace CK.Setup
         /// </summary>
         /// <param name="reverseName">True to reverse lexicographic order for items that share the same rank.</param>
         /// <param name="items">Set of <see cref="IDependentItem"/> to order.</param>
-        /// <returns>A <see cref="DependencySorterResult"/>.</returns>
+        /// <returns>A <see cref="DependencySorterResult{T}"/>.</returns>
         public static DependencySorterResult<T> OrderItems( bool reverseName, params T[] items )
         {
             return OrderItems( items, null, new DependencySorterOptions() { ReverseName = reverseName } );
@@ -66,7 +66,7 @@ namespace CK.Setup
         /// </summary>
         /// <param name="options">Options for advanced uses.</param>
         /// <param name="items">Set of <see cref="IDependentItem"/> to order.</param>
-        /// <returns>A <see cref="DependencySorterResult"/>.</returns>
+        /// <returns>A <see cref="DependencySorterResult{T}"/>.</returns>
         public static DependencySorterResult<T> OrderItems( DependencySorterOptions options, params T[] items )
         {
             return OrderItems( items, null, options );

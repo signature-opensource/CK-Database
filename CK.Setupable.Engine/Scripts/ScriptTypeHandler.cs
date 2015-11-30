@@ -69,7 +69,7 @@ namespace CK.Setup
         /// <summary>
         /// Creates the object that will be in charge of script execution.
         /// </summary>
-        /// <param name="_monitor">Monitor to use.</param>
+        /// <param name="monitor">Monitor to use.</param>
         /// <param name="driver">
         /// The item driver for which an executor must be created. 
         /// It can be ignored by an implementation that may choose, for instance, to use the same object regardless of the specific object
@@ -81,7 +81,7 @@ namespace CK.Setup
         /// <summary>
         /// Called by the framework to indicate that a <see cref="IScriptExecutor"/> is no longer needed.
         /// </summary>
-        /// <param name="_monitor">Monitor to use.</param>
+        /// <param name="monitor">Monitor to use.</param>
         /// <param name="executor">The useless executor.</param>
         protected internal abstract void ReleaseExecutor( IActivityMonitor monitor, IScriptExecutor executor );
 

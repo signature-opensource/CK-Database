@@ -182,6 +182,7 @@ namespace CK.Core
         /// On success, resulting type becomes the <see cref="LastGeneratedType"/>. Of course, implemented methods and properties are let virtual.
         /// </summary>
         /// <param name="monitor">Logger to use.</param>
+        /// <param name="assembly">Dynamic assembly.</param>
         /// <returns>The newly created type in the dynamic assembly. Null if an error occurred.</returns>
         public Type CreateTypeFromCurrent( IActivityMonitor monitor, IDynamicAssembly assembly )
         {

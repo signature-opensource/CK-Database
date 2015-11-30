@@ -14,12 +14,24 @@ using System.Diagnostics;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Contains versionned scripts related to the same object.
+    /// </summary>
     public class TypedScriptVector
     {
+        /// <summary>
+        /// The final version.
+        /// </summary>
         public readonly Version Final;
         
+        /// <summary>
+        /// The available scripts.
+        /// </summary>
         public readonly IReadOnlyList<CoveringScript> Scripts;
         
+        /// <summary>
+        /// Gets whether the "no version" script exists (if it exists, it is the last one in <see cref="Scripts"/>).
+        /// </summary>
         public bool HasTheNoVersionScript
         {
             get { return Scripts.Count > 0 && Scripts[Scripts.Count - 1].Script.Name.Version == null; }
