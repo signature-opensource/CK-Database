@@ -10,6 +10,7 @@ using CK.Core;
 using CK.SqlServer;
 using CK.SqlServer.Setup;
 using NUnit.Framework;
+using System.Globalization;
 
 namespace SqlCallDemo.Tests
 {
@@ -83,7 +84,13 @@ namespace SqlCallDemo.Tests
                     catch( AggregateException ex )
                     {
                         Assert.That( ex.InnerException is SqlException );
-                        Assert.That( ex.InnerException.Message, Is.StringEnding( "Operation cancelled by user." ) );
+                        // If someone has a better solution...
+                        //Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo( "en-US" );
+                        //string msg2 = new FileNotFoundException().Message;
+
+                        Assert.That( ex.InnerException.Message, 
+                                        Is.StringEnding( "Operation cancelled by user." )
+                                        .Or.StringEnding( "Opération annulée par l'utilisateur." ) );
                         TestHelper.Monitor.Info().Send( ex, "Cancellation: the inner exception is a SqlException with a message that contains 'Operation cancelled by user.' suffix." );
                     }
                     p.Database.AssertScalarEquals( "This one must pass. - @OneMore = 1", "select top 1 LogText from CK.tPurelyInputLog order by Id desc" );

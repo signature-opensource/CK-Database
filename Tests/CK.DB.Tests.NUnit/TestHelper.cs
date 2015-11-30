@@ -1,20 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
 using System.Linq;
 using CK.Setup;
 using CK.SqlServer.Setup;
+using NUnit.Framework;
+using System.Data.SqlClient;
 
 namespace CK.Core
 {
     /// <summary>
-    /// Centralized helper functions that offers a Monitor, initializes monitoring Logs.
+    /// Centralized helper functions that offers a Monitor, monitoring Logs initialization
+    /// and simple database management.
     /// </summary>
     public static class TestHelper
     {
         static IActivityMonitor _monitor;
         static ActivityMonitorConsoleClient _console;
+        static SqlConnectionStringBuilder _masterConnectionString;
         static SetupEngineConfiguration _config;
         static IStObjMap _map;
         static string _binFolder;
@@ -79,7 +82,7 @@ namespace CK.Core
             {
                 if( _map == null )
                 {
-                    RunDBSetup();
+                    Assert.That( RunDBSetup() );
                 }
                 return _map;
             }
@@ -143,15 +146,17 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Clears all <see cref="UsedSchemas"/> and resets <see cref="StObjMap"/>.
+        /// Clears all <see cref="UsedSchemas"/> and resets <see cref="StObjMap"/> (using <see cref="DatabaseTestConnectionString"/>
+        /// by default).
         /// </summary>
-        public static void ClearDatabaseUsedSchemas()
+        public static void ClearDatabaseUsedSchemas( string connectionSting = null )
         {
+            connectionSting = connectionSting ?? DatabaseTestConnectionString;
             var monitor = TestHelper.Monitor;
-            using( monitor.OpenInfo().Send( "Clearing used schemas." ) )
+            using( monitor.OpenInfo().Send( "Clearing used schemas ({0}).", connectionSting ) )
             using( var m = new SqlManager( monitor ) )
             {
-                m.OpenFromConnectionString( TestHelper.ConnectionString );
+                m.OpenFromConnectionString( connectionSting );
                 var schemas = TestHelper.UsedSchemas;
                 int maxTryCount = schemas.Count;
                 bool retry;
@@ -179,14 +184,54 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Gets the connection string named "DefaultTestDatabase" from configuration file.
+        /// Gets the connection string to the master database.
+        /// It is first the environment variable named "CK_DB_TEST_MASTER_CONNECTION_STRING", then 
+        /// the <see cref="AppSettings.Default"/>["CK_DB_TEST_MASTER_CONNECTION_STRING"] in configuration 
+        /// file end then, if none are defined, this defaults to "Server=.;Database=master;Integrated Security=SSPI".
         /// </summary>
-        public static string ConnectionString
+        public static string ConnectionStringMaster => EnsureMasterConnection().ToString();
+
+        static SqlConnectionStringBuilder EnsureMasterConnection()
         {
-            get
+            if( _masterConnectionString == null )
             {
-                return ConfigurationManager.ConnectionStrings["DefaultTestDatabase"].ConnectionString;
+                string c = Environment.GetEnvironmentVariable( "CK_DB_TEST_MASTER_CONNECTION_STRING" );
+                if( c == null ) c = AppSettings.Default["CK_DB_TEST_MASTER_CONNECTION_STRING"];
+                if( c == null )
+                {
+                    c = "Server=.;Database=master;Integrated Security=SSPI";
+                    Monitor.Info().Send( "Using default connection string: {0}", c );
+                }
+                _masterConnectionString = new SqlConnectionStringBuilder( c );
             }
+            return _masterConnectionString;
+        }
+
+        /// <summary>
+        /// Gets the database test name from AppSettings.Default["DatabaseTestName"] (typically from configuration file).
+        /// Note that the <see cref="AppSettings.Default"/> may be <see cref="AppSettings.Override(Func{Func{string, object}, string, object})">overridden</see>
+        /// by code.
+        /// </summary>
+        public static string DatabaseTestName => AppSettings.Default["DatabaseTestName"];
+
+        /// <summary>
+        /// Gets the connection string to the <see cref="DatabaseTestName"/>.
+        /// </summary>
+        public static string DatabaseTestConnectionString => GetConnectionString( DatabaseTestName );
+
+        /// <summary>
+        /// Gets the connection string based on <see cref="ConnectionStringMaster"/> to the given database.
+        /// </summary>
+        /// <param name="dbName">Name of the database.</param>
+        /// <returns>The connection string to the database.</returns>
+        public static string GetConnectionString( string dbName )
+        {
+            var c = EnsureMasterConnection();
+            string savedMaster = c.InitialCatalog;
+            c.InitialCatalog = dbName;
+            string result = c.ToString();
+            c.InitialCatalog = savedMaster;
+            return result;
         }
 
         /// <summary>
@@ -196,7 +241,7 @@ namespace CK.Core
         {
             get
             {
-                var c = ConfigurationManager.AppSettings["AssembliesToSetup"];
+                var c = AppSettings.Default["AssembliesToSetup"];
                 if( c == null ) c = String.Empty;
                 return c.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
                         .Select( s => s.Trim() ).ToReadOnlyList();
@@ -211,7 +256,7 @@ namespace CK.Core
         {
             get
             {
-                var c = ConfigurationManager.AppSettings["UsedSchemas"];
+                var c = AppSettings.Default["UsedSchemas"];
                 if( c == null ) c = String.Empty;
                 return c.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
                         .Select( s => s.Trim() )
@@ -224,17 +269,12 @@ namespace CK.Core
         /// <summary>
         /// Gets the assembly name that will be emitted from configuration file application settings (first "DynamicAssemblyName" key).
         /// </summary>
-        public static string DynamicAssemblyName
-        {
-            get
-            {
-                return ConfigurationManager.AppSettings["DynamicAssemblyName"];
-            }
-        }
+        public static string DynamicAssemblyName => AppSettings.Default["DynamicAssemblyName"];
 
         /// <summary>
         /// Gets the configuration that <see cref="StObjMap"/> will use.
-        /// This configuration uses <see cref="DynamicAssemblyName"/> and <see cref="AssembliesToSetup"/>.
+        /// This configuration uses <see cref="DynamicAssemblyName"/>, <see cref="AssembliesToSetup"/>
+        /// and <see cref="DatabaseTestConnectionString"/> by default.
         /// </summary>
         public static SetupEngineConfiguration Config
         {
@@ -252,7 +292,7 @@ namespace CK.Core
                     _config.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = DynamicAssemblyName;
 
                     var c = new SqlSetupAspectConfiguration();
-                    c.DefaultDatabaseConnectionString = TestHelper.ConnectionString;
+                    c.DefaultDatabaseConnectionString = DatabaseTestConnectionString;
                     c.IgnoreMissingDependencyIsError = true; // Set to true while we don't have SqlFragment support.
 
                     _config.Aspects.Add( c );

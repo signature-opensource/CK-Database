@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (Tests\CK.SqlServer.Setup.Engine.Tests\TestHelper.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -121,7 +114,6 @@ namespace CK.SqlServer.Setup.Engine.Tests
             return ee != null ? String.Join( ", ", ee.Select( o => o.FullName ) ) : String.Empty;
         }
         #endregion
-
 
         public static string TestBinFolder
         {

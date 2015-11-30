@@ -25,9 +25,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.Setup.Dependency.Tests",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.StObj.Engine.Tests", "Tests\CK.StObj.Engine.Tests\CK.StObj.Engine.Tests.csproj", "{7CC3C3E5-BDC6-4112-8FA7-3AFE7566E0EF}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared Items", "Shared Items", "{9DEAD117-3101-4DED-9FCC-8AA28CF4F34C}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9DEAD117-3101-4DED-9FCC-8AA28CF4F34C}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		appveyor.yml = appveyor.yml
 		Conception.docx = Conception.docx
 		RepositoryInfo.xml = RepositoryInfo.xml
 		SharedAssemblyInfo.cs = SharedAssemblyInfo.cs

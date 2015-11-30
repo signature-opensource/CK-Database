@@ -53,20 +53,25 @@ namespace CK.StObj.Engine.Tests
         {
             var callingDomain = AppDomain.CurrentDomain;
 
-            Console.WriteLine( "------------------1CallingDomain---------------------------" );
-            Console.WriteLine( callingDomain.FriendlyName );
-            Console.WriteLine( callingDomain.SetupInformation.ApplicationBase );
-            Console.WriteLine( callingDomain.SetupInformation.PrivateBinPath );
-            Console.WriteLine( "--------------------/1-------------------------" );
+            if( TestHelper.LogsToConsole )
+            {
+                Console.WriteLine( "------------------1CallingDomain---------------------------" );
+                Console.WriteLine( callingDomain.FriendlyName );
+                Console.WriteLine( callingDomain.SetupInformation.ApplicationBase );
+                Console.WriteLine( callingDomain.SetupInformation.PrivateBinPath );
+                Console.WriteLine( "--------------------/1-------------------------" );
+            }
 
             var domain = AppDomain.CreateDomain( "xrq-test-domain2", null, null );
 
-            Console.WriteLine( "--------------------2-------------------------" );
-            Console.WriteLine( domain.FriendlyName );
-            Console.WriteLine( domain.SetupInformation.ApplicationBase );
-            Console.WriteLine( domain.SetupInformation.PrivateBinPath );
-            Console.WriteLine( "--------------------/2-------------------------" );
-
+            if( TestHelper.LogsToConsole )
+            {
+                Console.WriteLine( "--------------------2-------------------------" );
+                Console.WriteLine( domain.FriendlyName );
+                Console.WriteLine( domain.SetupInformation.ApplicationBase );
+                Console.WriteLine( domain.SetupInformation.PrivateBinPath );
+                Console.WriteLine( "--------------------/2-------------------------" );
+            }
             AppDomain.Unload( domain );
 
             var setup = new AppDomainSetup()
@@ -76,19 +81,15 @@ namespace CK.StObj.Engine.Tests
 
             domain = AppDomain.CreateDomain( "xrq-test-domain3", null, setup );
 
-            Console.WriteLine( "---------------------3------------------------" );
-            Console.WriteLine( domain.FriendlyName );
-            Console.WriteLine( domain.SetupInformation.ApplicationBase );
-            Console.WriteLine( domain.SetupInformation.PrivateBinPath );
-            Console.WriteLine( "----------------------/3-----------------------" );
-
+            if( TestHelper.LogsToConsole )
+            {
+                Console.WriteLine( "---------------------3------------------------" );
+                Console.WriteLine( domain.FriendlyName );
+                Console.WriteLine( domain.SetupInformation.ApplicationBase );
+                Console.WriteLine( domain.SetupInformation.PrivateBinPath );
+                Console.WriteLine( "----------------------/3-----------------------" );
+            }
             var assembly = Assembly.GetExecutingAssembly().CodeBase;
-
-            //var facade = domain.CreateInstanceFromAndUnwrap(
-            //    assembly,
-            //    "AppDomainInNUnit.Facade" ) as Facade;
-
-            //facade.Run( new[] { "some", "args" } );
 
             AppDomain.Unload( domain );
         }
