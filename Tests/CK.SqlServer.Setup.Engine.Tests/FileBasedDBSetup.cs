@@ -111,30 +111,39 @@ namespace CK.SqlServer.Setup.Engine.Tests
         [Test]
         public void InstallPackageWithSPDependsOnVersion()
         {
-            using( var defaultDB = SqlManager.OpenOrCreate( dbFromScratch, TestHelper.Monitor ) )
+            TestHelper.LogToConsole = true;
+            try
             {
-                defaultDB.Connection.ExecuteNonQuery( @"if object_id(N'[CKCore].[tSetupMemoryItem]') is not null delete from [CKCore].[tSetupMemoryItem] where ItemKey like '%WithSPDependsOnVersion%';" );
-                defaultDB.Connection.ExecuteNonQuery( @"if object_id(N'[CKCore].[tItemVersion]') is not null delete from [CKCore].[tItemVersion] where FullName like '%WithSPDependsOnVersion%';" );
 
-                defaultDB.Connection.ExecuteNonQuery( @"if object_id(N'[dbo].[tTestVSP]') is not null drop table dbo.tTestVSP;" ); // Reset
-                defaultDB.Connection.ExecuteNonQuery( @"if object_id(N'[dbo].[sStoredProcedureWithSPDependsOnVersion]') is not null drop procedure [dbo].[sStoredProcedureWithSPDependsOnVersion];" );
+                using( var defaultDB = SqlManager.OpenOrCreate( dbFromScratch, TestHelper.Monitor ) )
+                {
+                    defaultDB.Connection.ExecuteNonQuery( @"if object_id(N'[CKCore].[tSetupMemoryItem]') is not null delete from [CKCore].[tSetupMemoryItem] where ItemKey like '%WithSPDependsOnVersion%';" );
+                    defaultDB.Connection.ExecuteNonQuery( @"if object_id(N'[CKCore].[tItemVersion]') is not null delete from [CKCore].[tItemVersion] where FullName like '%WithSPDependsOnVersion%';" );
 
-                SqlSetupAspectConfiguration config = new SqlSetupAspectConfiguration();
-                config.FilePackageDirectories.Add( Path.Combine( TestHelper.ProjectFolder, "Scripts/InstallFromScratchWithSPDependsOnVersion" ) );
-                config.SqlFileDirectories.Add( Path.Combine( TestHelper.ProjectFolder, "Scripts/InstallFromScratchWithSPDependsOnVersion" ) );
+                    defaultDB.Connection.ExecuteNonQuery( @"if object_id(N'[dbo].[tTestVSP]') is not null drop table dbo.tTestVSP;" ); // Reset
+                    defaultDB.Connection.ExecuteNonQuery( @"if object_id(N'[dbo].[sStoredProcedureWithSPDependsOnVersion]') is not null drop procedure [dbo].[sStoredProcedureWithSPDependsOnVersion];" );
 
-                config.DefaultDatabaseConnectionString = defaultDB.Connection.InternalConnection.ConnectionString;
-                SetupEngineConfiguration c = new SetupEngineConfiguration();
-                c.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = "InstallPackageWithSPDependsOnVersion";
-                c.Aspects.Add( config );
+                    SqlSetupAspectConfiguration config = new SqlSetupAspectConfiguration();
+                    config.FilePackageDirectories.Add( Path.Combine( TestHelper.ProjectFolder, "Scripts/InstallFromScratchWithSPDependsOnVersion" ) );
+                    config.SqlFileDirectories.Add( Path.Combine( TestHelper.ProjectFolder, "Scripts/InstallFromScratchWithSPDependsOnVersion" ) );
 
-                var engine = new SetupEngine( TestHelper.Monitor, c, StObjContextRoot.DefaultStObjRuntimeBuilder );
+                    config.DefaultDatabaseConnectionString = defaultDB.Connection.InternalConnection.ConnectionString;
+                    SetupEngineConfiguration c = new SetupEngineConfiguration();
+                    c.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = "InstallPackageWithSPDependsOnVersion";
+                    c.Aspects.Add( config );
 
-                StObjContextRoot.Build( c, null, TestHelper.Monitor ).Dispose();
+                    var engine = new SetupEngine( TestHelper.Monitor, c, StObjContextRoot.DefaultStObjRuntimeBuilder );
+
+                    StObjContextRoot.Build( c, null, TestHelper.Monitor ).Dispose();
+                }
+                using( var db = new SqlConnectionProvider( dbFromScratch ) )
+                {
+                    Assert.That( db.ExecuteScalar( "select Id2 from dbo.tTestVSP where Id = 0" ), Is.EqualTo( 3713 ) );
+                }
             }
-            using( var db = new SqlConnectionProvider( dbFromScratch ) )
+            finally
             {
-                Assert.That( db.ExecuteScalar( "select Id2 from dbo.tTestVSP where Id = 0" ), Is.EqualTo( 3713 ) );
+                TestHelper.LogToConsole = false;
             }
         }
     }
