@@ -14,6 +14,7 @@ using CK.Core;
 using CK.SqlServer;
 using CK.Setup;
 using System.IO;
+using System.Data.SqlClient;
 
 namespace CK.SqlServer.Setup.Engine.Tests
 {
@@ -130,8 +131,10 @@ namespace CK.SqlServer.Setup.Engine.Tests
                 var engine = new SetupEngine( TestHelper.Monitor, c, StObjContextRoot.DefaultStObjRuntimeBuilder );
 
                 StObjContextRoot.Build( c, null, TestHelper.Monitor ).Dispose();
-
-                Assert.That( defaultDB.Connection.ExecuteScalar( "select Id2 from dbo.tTestVSP where Id = 0" ), Is.EqualTo( 3713 ) );
+            }
+            using( var db = new SqlConnectionProvider( dbFromScratch ) )
+            {
+                Assert.That( db.ExecuteScalar( "select Id2 from dbo.tTestVSP where Id = 0" ), Is.EqualTo( 3713 ) );
             }
         }
     }
