@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (Tests\CK.Setup.Dependency.Tests\ContainerDynamicallyTyped.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -38,7 +45,7 @@ namespace CK.Setup.Dependency.Tests
 
             var r = DependencySorter.OrderItems( c );
             Assert.That( r.HasStructureError );
-            r.LogError( TestHelper.Logger );
+            r.LogError( TestHelper.ConsoleMonitor );
         }
 
         [Test]
@@ -50,7 +57,7 @@ namespace CK.Setup.Dependency.Tests
 
             var r = DependencySorter.OrderItems( e );
             Assert.That( r.HasStructureError );
-            r.LogError( TestHelper.Logger );
+            r.LogError( TestHelper.ConsoleMonitor );
         }
 
         [Test]
@@ -61,7 +68,7 @@ namespace CK.Setup.Dependency.Tests
                 var c1 = new TestableContainer( "C1", "⊏C0" );
                 var c2 = new TestableContainer( "C2", "⊏C1" );
                 var r = DependencySorter.OrderItems( c2, c0, c1 );
-                r.LogError( TestHelper.Logger );
+                r.LogError( TestHelper.ConsoleMonitor );
                 Assert.That( r.HasStructureError );
             }
             {
@@ -69,7 +76,7 @@ namespace CK.Setup.Dependency.Tests
                 var c1 = new TestableContainer( DependentItemKind.Item, "C1", "⊏C0" );
                 var c2 = new TestableContainer( "C2", "⊏C1" );
                 var r = DependencySorter.OrderItems( c2, c0, c1 );
-                r.LogError( TestHelper.Logger );
+                r.LogError( TestHelper.ConsoleMonitor );
                 Assert.That( r.HasStructureError );
             }
             {

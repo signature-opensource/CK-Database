@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (Tests\CK.Setup.Dependency.Tests\Groups.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -88,7 +95,7 @@ namespace CK.Setup.Dependency.Tests
                 g3.Add( "∈G2" );
                 g2.Add( "∈G1" );
                 {
-                    var r = DependencySorter.OrderItems( g1, g2, g3 );
+                    var r = DependencySorter<IDependentItem>.OrderItems( g1, g2, g3 );
                     CheckG1G2G3( r );
 
                 }
@@ -96,13 +103,13 @@ namespace CK.Setup.Dependency.Tests
                 g2.Groups.Add( g1 );
                 {
                     // Auto discovering by Groups (and no clashes with names).
-                    var r = DependencySorter.OrderItems( g3 );
+                    var r = DependencySorter<IDependentItem>.OrderItems( g3 );
                     CheckG1G2G3( r );
                 }
             }
         }
 
-        private static void CheckG1G2G3( DependencySorterResult r )
+        private static void CheckG1G2G3( IDependencySorterResult r )
         {
             Assert.That( r.IsComplete );
             r.AssertOrdered( "G1.Head", "G2.Head", "G3.Head", "G3", "G2", "G1" );

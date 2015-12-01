@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (CK.Setup.Dependency\IDependentItem.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,8 +16,7 @@ namespace CK.Setup
     /// <summary>
     /// An item that is identified by a <see cref="IDependentItemRef.FullName">FullName</see>, can be in 
     /// a <see cref="IDependentItemContainer"/> and have dependencies 
-    /// onto other items. The <see cref="DependencySorter"/> is used to 
-    /// order such items based on their dependencies.
+    /// onto other items. The <see cref="DependencySorter"/> is used to order such items based on their dependencies.
     /// </summary>
     public interface IDependentItem
     {
@@ -25,7 +31,7 @@ namespace CK.Setup
         /// Null if this item does not belong to a container.
         /// </summary>
         /// <remarks>
-        /// If a container exists, this item may belong to <see cref="IDependentItemContainer.Children"/>
+        /// If a container exists, this item may belong to <see cref="IDependentItemGroup.Children">Children</see>
         /// (but it is not mandatory as long as the <see cref="DependencySorter"/> is concerned: it will
         /// correctly handle all cases).
         /// </remarks>
@@ -76,7 +82,7 @@ namespace CK.Setup
         /// Allows the dependent item to prepare itself before ordering. The returned object (if any)
         /// is made available after the sort in <see cref="ISortedItem.StartValue"/>.
         /// </summary>
-        /// <returns>Any object that has to be associated to this item and a <see cref="DependencySorter.OrderItems"/> call.</returns>
+        /// <returns>Any object that has to be associated to this item and a <see cref="G:DependencySorter.OrderItems"/> call.</returns>
         object StartDependencySort();
     }
 }

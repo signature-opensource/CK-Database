@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (CK.Setup.Dependency\Sorter\DependentItemIssue.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +15,9 @@ using System.IO;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Describes an error in the structure for an <see cref="Item"/> like missing dependencies, homonyms, etc. 
+    /// </summary>
     public sealed class DependentItemIssue
     {
         string[] _missingDep;
@@ -104,6 +114,9 @@ namespace CK.Setup
             }
         }
 
+        /// <summary>
+        /// Gets the total count of missing items (required dependencies and generalization if any).
+        /// </summary>
         public int RequiredMissingCount
         {
             get 
@@ -114,6 +127,9 @@ namespace CK.Setup
             }
         }
 
+        /// <summary>
+        /// The item for which this issue exists.
+        /// </summary>
         public readonly IDependentItem Item;
 
         /// <summary>
@@ -121,64 +137,67 @@ namespace CK.Setup
         /// </summary>
         public DependentItemStructureError StructureError { get; internal set; }
 
-        public void LogError( IActivityLogger logger )
+        /// <summary>
+        /// Dumps this issue to the monitor.
+        /// </summary>
+        /// <param name="monitor">Monitor to use. Must not be null.</param>
+        public void LogError( IActivityMonitor monitor )
         {
-            if( logger == null ) throw new ArgumentNullException( "logger" );
+            if( monitor == null ) throw new ArgumentNullException( "monitor" );
             if( StructureError != DependentItemStructureError.None )
             {
-                using( logger.OpenGroup( LogLevel.Info, "Errors on '{0}'", Item.FullName ) )
+                using( monitor.OpenInfo().Send( "Errors on '{0}'", Item.FullName ) )
                 {
                     if( (StructureError & DependentItemStructureError.MissingNamedContainer) != 0 )
                     {
-                        logger.Error( "Missing container named '{0}'", Item.Container.FullName );
+                        monitor.Error().Send( "Missing container named '{0}'", Item.Container.FullName );
                     }
                     if( (StructureError & DependentItemStructureError.ExistingItemIsNotAContainer) != 0 )
                     {
-                        logger.Error( "Items's container named '{0}' is not a container.", Item.Container.FullName );
+                        monitor.Error().Send( "Items's container named '{0}' is not a container.", Item.Container.FullName );
                     }
                     if( (StructureError & DependentItemStructureError.ExistingContainerAskedToNotBeAContainer) != 0 )
                     {
-                        logger.Error( "Items's container '{0}' dynamically states that it is actually not a container. (Did you forget to configure the ItemKind of the object? This can be done for instance with the attribute [StObj( ItemKind = DependentItemType.Container )].)", Item.Container.FullName );
+                        monitor.Error().Send( "Items's container '{0}' dynamically states that it is actually not a container. (Did you forget to configure the ItemKind of the object? This can be done for instance with the attribute [StObj( ItemKind = DependentItemType.Container )].)", Item.Container.FullName );
                     }
                     if( (StructureError & DependentItemStructureError.ContainerAskedToNotBeAGroupButContainsChildren) != 0 )
                     {
-                        logger.Error( "Potential container '{0}' dynamically states that it is actually not a Container nor a Group but contains Children. (Did you forget to configure the ItemKind of the object? When IDependentItemContainerTyped.ItemKind is SimpleItem, the Children enumeration must be null or empty. This can be done for instance with the attribute [StObj( ItemKind = DependentItemType.Container )].)", Item.FullName );
+                        monitor.Error().Send( "Potential container '{0}' dynamically states that it is actually not a Container nor a Group but contains Children. (Did you forget to configure the ItemKind of the object? When IDependentItemContainerTyped.ItemKind is SimpleItem, the Children enumeration must be null or empty. This can be done for instance with the attribute [StObj( ItemKind = DependentItemType.Container )].)", Item.FullName );
                     }
                     if( (StructureError & DependentItemStructureError.MissingGeneralization) != 0 )
                     {
-                        logger.Error( "Item '{0}' requires '{1}' as its Generalization. The Generalization is missing.", Item.FullName, Item.Generalization.FullName );
+                        monitor.Error().Send( "Item '{0}' requires '{1}' as its Generalization. The Generalization is missing.", Item.FullName, Item.Generalization.FullName );
                     }
                     if( (StructureError & DependentItemStructureError.DeclaredGroupRefusedToBeAGroup) != 0 )
                     {
-                        logger.Error( "Item '{0}' declares Groups that states that they are actually not Groups (their ItemKind is SimpleItem): '{1}'.", Item.FullName, String.Join( "', '", _invalidGroups ) );
+                        monitor.Error().Send( "Item '{0}' declares Groups that states that they are actually not Groups (their ItemKind is SimpleItem): '{1}'.", Item.FullName, String.Join( "', '", _invalidGroups ) );
                     }
                     if( (StructureError & DependentItemStructureError.MissingNamedGroup) != 0 )
                     {
-                        logger.Error( "Item '{0}' declares required Groups that are not registered: '{1}'. ", Item.FullName, String.Join( "', '", _missingGroups ) );
+                        monitor.Error().Send( "Item '{0}' declares required Groups that are not registered: '{1}'. ", Item.FullName, String.Join( "', '", _missingGroups ) );
                     }
-
                     if( _homonyms != null )
                     {
-                        logger.Error( "Homonyms: {0} objects with the same full name.", _homonyms.Length );
+                        monitor.Error().Send( "Homonyms: {0} objects with the same full name.", _homonyms.Length );
                     }
                     if( _extraneousContainers != null )
                     {
                         if( Item.Container != null )
                         {
-                            logger.Error( "This item states to belong to container '{0}', but other containers ('{1}') claim to own it.", Item.Container.FullName, String.Join( "', '", _extraneousContainers ) );
+                            monitor.Error().Send( "This item states to belong to container '{0}', but other containers ('{1}') claim to own it.", Item.Container.FullName, String.Join( "', '", _extraneousContainers ) );
                         }
                         else
                         {
-                            logger.Error( "More than one container claim to own the item: '{0}'.", String.Join( "', '", _extraneousContainers ) );
+                            monitor.Error().Send( "More than one container claim to own the item: '{0}'.", String.Join( "', '", _extraneousContainers ) );
                         }
                     }
                     if( _missingChildren != null )
                     {
-                        logger.Error( "Missing children items: '{0}'.", String.Join( "', '", _missingChildren ) );
+                        monitor.Error().Send( "Missing children items: '{0}'.", String.Join( "', '", _missingChildren ) );
                     }
                     if( _nbRequiredMissingDep > 0 )
                     {
-                        logger.Error( "Missing required dependencies: '{0}'.", String.Join( "', '", _missingDep.Where( s => s[0] != '?' ) ) );
+                        monitor.Error().Send( "Missing required dependencies: '{0}'.", String.Join( "', '", _missingDep.Where( s => s[0] != '?' ) ) );
                     }
                 }
             }
@@ -225,14 +244,19 @@ namespace CK.Setup
             get { return _nbRequiredMissingDep > 0 ? _missingDep.Where( s => s[0] != '?' ) : null; }
         }
 
+        /// <summary>
+        /// Overridden to use <see cref="LogError"/>.
+        /// </summary>
+        /// <returns>The text of the dump.</returns>
         public override string ToString()
         {
             if( StructureError != DependentItemStructureError.None )
             {
                 TextWriter writer = new StringWriter();
-                IDefaultActivityLogger l = new DefaultActivityLogger();
-                l.Tap.Register( new ActivityLoggerTextWriterSink( writer ) );
-                LogError( l );
+                var m = new ActivityMonitor( false );
+                m.Output.RegisterClient( new ActivityMonitorErrorCounter( generateConclusion: true ) );
+                m.Output.RegisterClient( new ActivityMonitorTextWriterClient( writer.Write ) );
+                LogError( m );
                 return writer.ToString();
             }
             return "(no error)";

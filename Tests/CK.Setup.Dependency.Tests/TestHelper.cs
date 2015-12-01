@@ -1,3 +1,10 @@
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (Tests\CK.Setup.Dependency.Tests\TestHelper.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
 using System.IO;
 using NUnit.Framework;
 using CK.Core;
@@ -10,28 +17,30 @@ namespace CK.Setup.Dependency.Tests
 {
     static class TestHelper
     {
-        static IDefaultActivityLogger _logger;
-        static ActivityLoggerConsoleSink _console;
+        static string _solutionFolder;
+
+        static IActivityMonitor _monitor;
+        static ActivityMonitorConsoleClient _console;
 
         static TestHelper()
         {
-            _console = new ActivityLoggerConsoleSink();
-            _logger = new DefaultActivityLogger();
-            _logger.Tap.Register( _console );
+            _monitor = new ActivityMonitor();
+            _monitor.Output.BridgeTarget.HonorMonitorFilter = false;
+            _console = new ActivityMonitorConsoleClient();
         }
 
-        public static IActivityLogger Logger
+        public static IActivityMonitor ConsoleMonitor
         {
-            get { return _logger; }
+            get { return _monitor; }
         }
 
         public static bool LogsToConsole
         {
-            get { return _logger.Tap.RegisteredSinks.Contains( _console ); }
+            get { return _monitor.Output.Clients.Contains( _console ); }
             set
             {
-                if( value ) _logger.Tap.Register( _console );
-                else _logger.Tap.Unregister( _console );
+                if( value ) _monitor.Output.RegisterUniqueClient( c => c == _console, () => _console );
+                else _monitor.Output.UnregisterClient( _console );
             }
         }
 
@@ -44,22 +53,22 @@ namespace CK.Setup.Dependency.Tests
 
         public static void Trace( IDependentItem i )
         {
-            using( _logger.OpenGroup( LogLevel.Trace, "FullName = {0}", i.FullName ) )
+            using( _monitor.OpenTrace().Send( "FullName = {0}", i.FullName ) )
             {
-                _logger.Trace( "Container = {0}", OneName( i.Container ) );
-                _logger.Trace( "Generalization = {0}", OneName( i.Generalization ) );
-                _logger.Trace( "Requires = {0}", Names( i.Requires ) );
-                _logger.Trace( "RequiredBy = {0}", Names( i.RequiredBy ) );
-                _logger.Trace( "Groups = {0}", Names( i.Groups ) );
+                _monitor.Trace().Send( "Container = {0}", OneName( i.Container ) );
+                _monitor.Trace().Send( "Generalization = {0}", OneName( i.Generalization ) );
+                _monitor.Trace().Send( "Requires = {0}", Names( i.Requires ) );
+                _monitor.Trace().Send( "RequiredBy = {0}", Names( i.RequiredBy ) );
+                _monitor.Trace().Send( "Groups = {0}", Names( i.Groups ) );
                 IDependentItemGroup g = i as IDependentItemGroup;
                 if( g != null )
                 {
                     IDependentItemContainerTyped c = i as IDependentItemContainerTyped;
                     if( c != null )
                     {
-                        _logger.Trace( "[{0}]Children = {1}", c.ItemKind.ToString()[0], Names( g.Children ) );
+                        _monitor.Trace().Send( "[{0}]Children = {1}", c.ItemKind.ToString()[0], Names( g.Children ) );
                     }
-                    else _logger.Trace( "[G]Children = {0}", Names( g.Children ) );
+                    else _monitor.Trace().Send( "[G]Children = {0}", Names( g.Children ) );
                 }
             }
         }
@@ -87,13 +96,13 @@ namespace CK.Setup.Dependency.Tests
 
         public static void Trace( ISortedItem i )
         {
-            using( _logger.OpenGroup( LogLevel.Trace, "[{1}]FullName = {0}", i.FullName, i.ItemKind.ToString()[0] ) )
+            using( _monitor.OpenTrace().Send( "[{1}]FullName = {0}", i.FullName, i.ItemKind.ToString()[0] ) )
             {
-                _logger.Trace( "Container = {0}", i.Container != null ? i.Container.FullName : "(null)" );
-                _logger.Trace( "Generalization = {0}", i.Generalization != null ? i.Generalization.FullName : "(null)" );
-                _logger.Trace( "Requires = {0}", Names( i.Requires ) );
-                _logger.Trace( "Groups = {0}", Names( i.Groups ) );
-                _logger.Trace( "Children = {0}", Names( i.Children ) );
+                _monitor.Trace().Send( "Container = {0}", i.Container != null ? i.Container.FullName : "(null)" );
+                _monitor.Trace().Send( "Generalization = {0}", i.Generalization != null ? i.Generalization.FullName : "(null)" );
+                _monitor.Trace().Send( "Requires = {0}", Names( i.Requires ) );
+                _monitor.Trace().Send( "Groups = {0}", Names( i.Groups ) );
+                _monitor.Trace().Send( "Children = {0}", Names( i.Children ) );
             }
         }
 
@@ -103,5 +112,32 @@ namespace CK.Setup.Dependency.Tests
         }
         #endregion
 
+        public static string SolutionFolder
+        {
+            get
+            {
+                if( _solutionFolder == null ) InitalizePaths();
+                return _solutionFolder;
+            }
+        }
+
+        private static void InitalizePaths()
+        {
+            string p = new Uri( System.Reflection.Assembly.GetExecutingAssembly().CodeBase ).LocalPath;
+            // => CK.XXX.Tests/bin/Debug/
+            p = Path.GetDirectoryName( p );
+            // => CK.XXX.Tests/bin/
+            p = Path.GetDirectoryName( p );
+            // => CK.XXX.Tests/
+            p = Path.GetDirectoryName( p );
+            do
+            {
+                p = Path.GetDirectoryName( p );
+            }
+            while( !File.Exists( Path.Combine( p, "CK-Database.sln" ) ) );
+            _solutionFolder = p;
+
+            ConsoleMonitor.Info().Send( "SolutionFolder is: {0}", _solutionFolder );
+        }
     }
 }

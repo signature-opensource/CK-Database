@@ -1,0 +1,147 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{10FC486C-4B3F-4ACE-8AF6-D2D7A937F2F9}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SqlCallDemo</RootNamespace>
+    <AssemblyName>SqlCallDemo</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="CK.Core, Version=4.3.0.0, Culture=neutral, PublicKeyToken=edfa2f62fc978217, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\CK.Core.4.3.0\lib\net45\CK.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="CK.SqlServer.Parser.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\CK.SqlServer.Parser.Model.1.0.1\lib\net45\CK.SqlServer.Parser.Model.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ComplexType\ComplexTypePackage.Async.cs" />
+    <Compile Include="ComplexType\ComplexTypePackage.cs" />
+    <Compile Include="AllDefaultValuesPackage.cs" />
+    <Compile Include="ComplexType\ComplexTypeSimpleWithMissingProperty.cs" />
+    <Compile Include="ComplexType\ComplexTypeSimpleWithExtraProperty.cs" />
+    <Compile Include="ComplexType\ComplexTypeSimple.cs" />
+    <Compile Include="ComplexType\ComplexTypeSimpleWithCtor.cs" />
+    <Compile Include="ComplexType\ComplexTypeStupidEmpty.cs" />
+    <Compile Include="ProviderDemo\IActorCultureCallContext.cs" />
+    <Compile Include="ProviderDemo\ICultureTenantCallContext.cs" />
+    <Compile Include="ProviderDemo\IAllCallContext.cs" />
+    <Compile Include="ProviderDemo\ITenantCallContext.cs" />
+    <Compile Include="ProviderDemo\ICultureCallContext.cs" />
+    <Compile Include="ProviderDemo\IActorCallContext.cs" />
+    <Compile Include="IActorCallContextIsExecutor.cs" />
+    <Compile Include="ProviderDemo\ProviderDemoPackage.cs" />
+    <Compile Include="ReturnPackage.cs" />
+    <Compile Include="PurelyInputLogPackage.cs" />
+    <Compile Include="OutputParameterPackage.cs" />
+    <Compile Include="GuidRefTestPackage.CallExecute.cs" />
+    <Compile Include="GuidRefTestPackage.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\CK.Setupable.Model\CK.Setupable.Model.csproj">
+      <Project>{64da8104-2c71-4d52-8f44-d34738f6d564}</Project>
+      <Name>CK.Setupable.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj">
+      <Project>{b64d3d2a-fd2b-4731-8559-8a52c3a45351}</Project>
+      <Name>CK.SqlServer.Setup.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\CK.StObj.Model\CK.StObj.Model.csproj">
+      <Project>{96dedeee-de7d-4b14-8fde-bc4d8d9ccb78}</Project>
+      <Name>CK.StObj.Model</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Res\sGuidRefTest.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Res\sOutputParameterWithDefault.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Res\sOutputInputParameterWithDefault.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Res\sPurelyInputLog.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Res\sPurelyInputSimpleLog.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Res\sAllDefaultValues.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Res\sStringReturn.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Res\sIntReturn.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Res\sIntReturnWithActor.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ProviderDemo\Res\sCultureOnly.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ProviderDemo\Res\sActorOnly.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ProviderDemo\Res\sTenantOnly.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ProviderDemo\Res\sActorCulture.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ProviderDemo\Res\sCultureTenant.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ProviderDemo\Res\sAllContexts.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ComplexType\Res\sComplexTypeSimple.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ComplexType\Res\sComplexTypeStupidEmpty.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

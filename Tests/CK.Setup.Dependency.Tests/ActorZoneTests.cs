@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (Tests\CK.Setup.Dependency.Tests\ActorZoneTests.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -36,7 +43,7 @@ namespace CK.Setup.Dependency.Tests
 
             {
                 var r = DependencySorter.OrderItems(
-                    new DependencySorter.Options()
+                    new DependencySorterOptions()
                     {
                         HookInput = TestHelper.Trace,
                         HookOutput = sortedItems => TestHelper.Trace( sortedItems, false )

@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (Tests\CK.Setup.Dependency.Tests\ResultChecker.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,20 +18,20 @@ namespace CK.Setup.Dependency.Tests
     {
         Dictionary<string, ISortedItem> _byName;
 
-        public ResultChecker( DependencySorterResult r )
+        public ResultChecker( IDependencySorterResult r )
         {
             Result = r;
             _byName = r.SortedItems.ToDictionary( o => o.FullName );
         }
         
-        public readonly DependencySorterResult Result;
+        public readonly IDependencySorterResult Result;
 
         public void CheckRecurse( params string[] fullNames )
         {
             foreach( string s in fullNames ) Check( s );
         }
 
-        public static void SimpleCheck( DependencySorterResult r )
+        public static void SimpleCheck( IDependencySorterResult r )
         {
             if( r.SortedItems != null )
             {
@@ -36,7 +43,7 @@ namespace CK.Setup.Dependency.Tests
             CheckMissingInvariants( r );
         }
 
-        public static void CheckMissingInvariants( DependencySorterResult r )
+        public static void CheckMissingInvariants( IDependencySorterResult r )
         {
             // Naive implementation. 
             if( r.ItemIssues.Count > 0 )

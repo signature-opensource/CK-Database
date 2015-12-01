@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>CK.Setupable.Model</id>
+    <version>$version$</version>
+    <authors>Invenietis</authors>
+    <owners>Invenietis</owners>
+    <licenseUrl>https://github.com/Invenietis/ck-database/license</licenseUrl>
+    <projectUrl>https://github.com/Invenietis/ck-database</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>
+CK-Database helps to setup, construct, manages and build modular relationnal databases upon SqlServer.
+CK.Setupable.Model enables StObj objects to support TSS (Three Steps Setup).
+</description>
+    <language>en-US</language>
+    <dependencies>
+      <dependency id="CK.Core" version="4.3.0" />
+      <dependency id="CK.StObj.Model" version="$version$" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="CK.Setupable.Model\bin\{{configuration}}\CK.Setupable.Model.dll" target="lib\net45" />
+    <file src="CK.Setupable.Model\bin\{{configuration}}\CK.Setupable.Model.pdb" target="lib\net45" />
+    <file src="CK.Setupable.Model\bin\{{configuration}}\CK.Setupable.Model.xml" target="lib\net45" />
+  </files>
+</package>

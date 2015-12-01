@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (CK.Setup.Dependency\Sorter\DependencySorterResult.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,15 +15,15 @@ using System.Diagnostics;
 namespace CK.Setup
 {
     /// <summary>
-    /// Encapsulates the result of the <see cref="DependencySorter.OrderItems"/> method.
+    /// Encapsulates the result of the <see cref="G:DependencySorter.OrderItems"/> methods.
     /// </summary>
-    public sealed class DependencySorterResult
+    public sealed class DependencySorterResult<T> : IDependencySorterResult where T : class, IDependentItem
     {
-        readonly IReadOnlyList<CycleExplainedElement> _cycle;
+        readonly ICKReadOnlyList<CycleExplainedElement> _cycle;
         int _itemIssueWithStructureErrorCount;
         bool _requiredMissingIsError;
 
-        internal DependencySorterResult( List<DependencySorter.Entry> result, List<CycleExplainedElement> cycle, List<DependentItemIssue> itemIssues )
+        internal DependencySorterResult( List<DependencySorter<T>.Entry> result, List<CycleExplainedElement> cycle, List<DependentItemIssue> itemIssues )
         {
             Debug.Assert( (result == null) != (cycle == null), "cycle ^ result" );
             if( result == null )
@@ -26,7 +33,7 @@ namespace CK.Setup
             }
             else
             {
-                SortedItems = new CKReadOnlyListOnIList<DependencySorter.Entry>( result );
+                SortedItems = new CKReadOnlyListOnIList<DependencySorter<T>.Entry>( result );
                 _cycle = null;
             }
             ItemIssues = itemIssues != null && itemIssues.Count > 0 ? new CKReadOnlyListOnIList<DependentItemIssue>( itemIssues ) : CKReadOnlyListEmpty<DependentItemIssue>.Empty;
@@ -40,14 +47,19 @@ namespace CK.Setup
         public IReadOnlyList<ICycleExplainedElement> CycleDetected { get { return _cycle; } }
         
         /// <summary>
-        /// Gets the list of <see cref="ISortedItem"/>: null if <see cref="CycleDetected"/> is not null.
+        /// Gets the list of <see cref="ISortedItem{T}"/>: null if <see cref="CycleDetected"/> is not null.
         /// </summary>
-        public readonly IReadOnlyList<ISortedItem> SortedItems;
+        public readonly IReadOnlyList<ISortedItem<T>> SortedItems;
+
+        IReadOnlyList<ISortedItem> IDependencySorterResult.SortedItems 
+        { 
+            get { return SortedItems; } 
+        }
 
         /// <summary>
         /// List of <see cref="DependentItemIssue"/>. Never null.
         /// </summary>
-        public readonly IReadOnlyList<DependentItemIssue> ItemIssues;
+        public IReadOnlyList<DependentItemIssue> ItemIssues { get; private set; }
 
         /// <summary>
         /// Gets or sets whether any non optional missing requirement or generalization is a structure error (<see cref="HasStructureError"/> 
@@ -117,7 +129,7 @@ namespace CK.Setup
         /// <summary>
         /// True only if no cycle has been detected, and no structure error (<see cref="HasStructureError"/>) 
         /// exist: <see cref="SortedItems"/> can be exploited.
-        /// When IsComplete is false, <see cref="LogError"/> can be used to have a dump of the errors in a <see cref="IActivityLogger"/>.
+        /// When IsComplete is false, <see cref="LogError"/> can be used to have a dump of the errors in a <see cref="IActivityMonitor"/>.
         /// </summary>
         public bool IsComplete
         {
@@ -148,20 +160,20 @@ namespace CK.Setup
         /// <summary>
         /// Logs <see cref="CycleExplainedString"/> and any structure errors. Does nothing if <see cref="IsComplete"/> is true.
         /// </summary>
-        /// <param name="logger">The logger to use.</param>
-        public void LogError( IActivityLogger logger )
+        /// <param name="monitor">The monitor to use.</param>
+        public void LogError( IActivityMonitor monitor )
         {
-            if( logger == null ) throw new ArgumentNullException( "logger" );
+            if( monitor == null ) throw new ArgumentNullException( "monitor" );
             if( HasStructureError )
             {
                 foreach( var bug in ItemIssues.Where( d => d.StructureError != DependentItemStructureError.None ) )
                 {
-                    bug.LogError( logger );
+                    bug.LogError( monitor );
                 }
             }
             if( CycleDetected != null )
             {
-                logger.Error( "Cycle detected: {0}.", CycleExplainedString );
+                monitor.Error().Send( "Cycle detected: {0}.", CycleExplainedString );
             }
         }
 

@@ -1,1 +1,0 @@
--- Version = 1.0.0, Package = CK.Resource---- Deletes a String Data ressource-- Deletes ressource too if @AllRes bit equals 1--create procedure CK.sResStringDataRemove(	@ActorId	int,	@ResId		int,	@AllRes 	bit)asbegin		delete from CK.tResStringData where ResId = @ResId;	if @AllRes = 1 exec CK.sResRemove @ActorId, @ResId;	return 0;end

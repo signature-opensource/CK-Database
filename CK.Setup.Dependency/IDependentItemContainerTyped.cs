@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (CK.Setup.Dependency\IDependentItemContainerTyped.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,6 +27,9 @@ namespace CK.Setup
     /// </remarks>
     public interface IDependentItemContainerTyped : IDependentItemContainer
     {
+        /// <summary>
+        /// Gets the kind of this item (can be <see cref="DependentItemKind.Item"/>, <see cref="DependentItemKind.Group"/> or <see cref="DependentItemKind.Container"/>).
+        /// </summary>
         DependentItemKind ItemKind { get; }
     }
 }

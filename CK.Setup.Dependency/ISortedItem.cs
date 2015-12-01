@@ -1,9 +1,15 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (CK.Setup.Dependency\ISortedItem.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 
 namespace CK.Setup
 {
-
     /// <summary>
     /// A sorted item can be directly associated to a <see cref="IDependentItem"/>, a <see cref="IDependentItemContainer"/> 
     /// or can be the head for a container.
@@ -42,7 +48,7 @@ namespace CK.Setup
         object StartValue { get; }
 
         /// <summary>
-        /// Gets the container to which this item belongs thanks to its own configuration (<see cref="IDependentItem.Container)"/>.
+        /// Gets the container to which this item belongs thanks to its own configuration (<see cref="IDependentItem.Container"/>.
         /// If the actual <see cref="Container"/> is inherited through <see cref="Generalization"/>, this ConfiguredContainer is null.
         /// </summary>
         ISortedItem ConfiguredContainer { get; }
@@ -84,8 +90,9 @@ namespace CK.Setup
         /// <summary>
         /// Gets a clean set of requirements for the item. Combines direct <see cref="IDependentItem.Requires"/>
         /// and <see cref="IDependentItem.RequiredBy"/> declared by existing other items without any duplicates.
+        /// Defaults to an empty enumerable.
         /// Requirement to the <see cref="IDependentItem.Generalization"/> is always removed.
-        /// Requirements to any Container are removed when <see cref="DependencySorter.Options.SkipDependencyToContainer"/> is true.
+        /// Requirements to any Container are removed when <see cref="DependencySorterOptions.SkipDependencyToContainer"/> is true.
         /// </summary>
         IEnumerable<ISortedItem> Requires { get; }
 
@@ -94,12 +101,22 @@ namespace CK.Setup
         /// Defaults to an empty enumerable.
         /// </summary>
         IEnumerable<ISortedItem> Groups { get; }
-        
+
         /// <summary>
         /// Gets the items (as their <see cref="ISortedItem"/> wrapper) that are contained in 
         /// the <see cref="Item"/> if it is a <see cref="IDependentItemGroup"/> (that can be a <see cref="IDependentItemContainer"/>).
         /// Empty otherwise.
         /// </summary>
         IEnumerable<ISortedItem> Children { get; }
+
+        /// <summary>
+        /// Gets all the items recursively (as their <see cref="ISortedItem"/> wrapper) that are contained in 
+        /// the <see cref="Item"/> if it is a <see cref="IDependentItemGroup"/> (that can be a <see cref="IDependentItemContainer"/>).
+        /// Groups introduce the a complexity here (a group contains items that belong to a container or other groups): this enumeration 
+        /// removes duplicates and corretcly handles any cycles that may exist.
+        /// Empty otherwise.
+        /// </summary>
+        IEnumerable<ISortedItem> AllChildren { get; }
     }
+
 }

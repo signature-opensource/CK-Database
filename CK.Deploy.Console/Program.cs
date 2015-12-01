@@ -1,14 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using CK.Core;
-using CK.Setup;
-using CK.Setup.SqlServer;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (CK.Deploy.Console\Program.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
-using System.Diagnostics;
+using CK.Core;
+using CK.Monitoring;
+using CK.Setup;
+using CK.SqlServer.Setup;
 
 namespace CK.Deploy.Console
 {
@@ -32,7 +37,7 @@ namespace CK.Deploy.Console
             output.WriteLine( "<connectionString>\t\t Connection String" );
         }
 
-        static void Main(string[] args)
+        static void Main( string[] args )
         {
             if( args.Contains( "/?" ) )
             {
@@ -47,10 +52,8 @@ namespace CK.Deploy.Console
                 if( analyzer.IsV2 )
                 {
                     AppDomain app = PrepareAppDomain( analyzer.V2Args );
-                    Semaphore semaphore = new Semaphore( 0, 1, "MySemaphore" );
                     app.SetData( "MainArgs", analyzer.V2Args );
                     app.DoCallBack( new CrossAppDomainDelegate( RunV2 ) );
-                    semaphore.WaitOne();
                 }
                 else
                 {
@@ -79,7 +82,7 @@ namespace CK.Deploy.Console
 
             Ancestor.FinderResult result = Ancestor.FindCommonAncestor( codeBaseDir, projectRootDir );
             if( result == null )
-                throw new ApplicationException( string.Format( "Code base must has common ancestor with AbsoluteRootPath. No ancestor can be found from {0} and {1}", codeBaseDir.FullName, projectRootDir.FullName) );
+                throw new ApplicationException( string.Format( "Code base must has common ancestor with AbsoluteRootPath. No ancestor can be found from {0} and {1}", codeBaseDir.FullName, projectRootDir.FullName ) );
 
             var dllProb = args.RelativeDllPaths.Select( x => Path.Combine( result.ProjectRootRelativePath, x ) ).ToList();
             dllProb.Add( result.CodeBaseRelativePath ); // inject path for this program in the new appdomain
@@ -98,68 +101,56 @@ namespace CK.Deploy.Console
 
         public static void RunV1( V1Args args )
         {
-            var console = new ActivityLoggerConsoleSink();
-            var logger = new DefaultActivityLogger();
-            logger.Tap.Register( console );
+            var monitor = new ActivityMonitor();
+            monitor.Output.RegisterClient( new ActivityMonitorConsoleClient() );
 
-            using( logger.OpenGroup( LogLevel.Info, "Begin dbSetup with:" ) )
+            using( monitor.OpenInfo().Send( "Begin dbSetup with:" ) )
             {
-                logger.Info( string.Format( "FilePath: {0}", args.FilePath ) );
-                logger.Info( "ConnectionString: " + args.ConnectionString );
+                monitor.Info().Send( string.Format( "FilePath: {0}", args.FilePath ) );
+                monitor.Info().Send( "ConnectionString: " + args.ConnectionString );
             }
 
-            using( var context = new SqlSetupContext( args.ConnectionString, logger ) )
-            {
-                //if( !context.DefaultSqlDatabase.IsOpen() ) context.DefaultSqlDatabase.Open( context.DefaultSqlDatabase.Server );
-                using( context.Logger.OpenGroup( LogLevel.Trace, "First setup" ) )
-                {
-                    SqlSetupCenter c = new SqlSetupCenter( context );
-                    c.DiscoverFilePackages( args.FilePath );
-                    c.DiscoverSqlFiles( args.FilePath );
-                    c.Run();
-                }
-            }
+            var config = new SqlSetupAspectConfiguration();
+            config.DefaultDatabaseConnectionString = args.ConnectionString;
+            config.FilePackageDirectories.Add( args.FilePath );
+            config.SqlFileDirectories.Add( args.FilePath );
+            var c = new SetupEngineConfiguration();
+            c.Aspects.Add( config );
+            c.StObjEngineConfiguration.FinalAssemblyConfiguration.GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile;
+
+            StObjContextRoot.Build( c, null, monitor ).Dispose();
         }
 
         public static void RunV2()
         {
-            try
+            V2Args args = (V2Args)AppDomain.CurrentDomain.GetData( "MainArgs" );
+
+            SystemActivityMonitor.RootLogPath = args.LogPath;
+            GrandOutput.EnsureActiveDefaultWithDefaultSettings();
+            
+            var monitor = new ActivityMonitor();
+            monitor.Output.RegisterClient( new ActivityMonitorConsoleClient() );
+
+            using( monitor.OpenInfo().Send( "Begin dbSetup with:" ) )
             {
-                V2Args args = (V2Args)AppDomain.CurrentDomain.GetData( "MainArgs" );
-
-                var console = new ActivityLoggerConsoleSink();
-                var logger = new DefaultActivityLogger();
-                logger.Tap.Register( console );
-
-                using( logger.OpenGroup( LogLevel.Info, "Begin dbSetup with:" ) )
-                {
-                    logger.Info( string.Format( "RootPath: {0}", args.AbsoluteRootPath ) );
-                    logger.Info( string.Format( "FilePaths: {0}", string.Join( ", ", args.RelativeFilePaths ) ) );
-                    logger.Info( string.Format( "DllPaths: {0}", string.Join( ", ", args.RelativeDllPaths ) ) );
-                    logger.Info( string.Format( "Assembly: {0}", string.Join( ", ", args.AssemblyNames ) ) );
-                    logger.Info( "ConnectionString: " + args.ConnectionString );
-                }
-
-                using( var context = new SqlSetupContext( args.ConnectionString, logger ) )
-                {
-                    //if( !context.DefaultSqlDatabase.IsOpen() ) context.DefaultSqlDatabase.Open( context.DefaultSqlDatabase.Server );
-                    using( context.Logger.OpenGroup( LogLevel.Trace, "First setup" ) )
-                    {
-                        SqlSetupCenter c = new SqlSetupCenter( context );
-                        foreach( var item in args.RelativeFilePaths )
-                        {
-                            c.DiscoverFilePackages( Path.Combine( args.AbsoluteRootPath, item ) );
-                            c.DiscoverSqlFiles( Path.Combine( args.AbsoluteRootPath, item ) );
-                        }
-                        context.AssemblyRegistererConfiguration.DiscoverAssemblyNames.AddRange( args.AssemblyNames );
-                        c.Run();
-                    }
-                }
+                monitor.Info().Send( string.Format( "RootPath: {0}", args.AbsoluteRootPath ) );
+                monitor.Info().Send( string.Format( "FilePaths: {0}", string.Join( ", ", args.RelativeFilePaths ) ) );
+                monitor.Info().Send( string.Format( "DllPaths: {0}", string.Join( ", ", args.RelativeDllPaths ) ) );
+                monitor.Info().Send( string.Format( "Assembly: {0}", string.Join( ", ", args.AssemblyNames ) ) );
+                monitor.Info().Send( "ConnectionString: " + args.ConnectionString );
             }
-            finally
-            {
-                Semaphore.OpenExisting( "MySemaphore" ).Release();
-            }
+
+            var config = new SqlSetupAspectConfiguration();
+            config.DefaultDatabaseConnectionString = args.ConnectionString;
+            var rootedPaths = args.RelativeFilePaths.Select( p => Path.Combine( args.AbsoluteRootPath, p ) );
+            config.FilePackageDirectories.AddRange( rootedPaths );
+            config.SqlFileDirectories.AddRange( rootedPaths );
+            var c = new SetupEngineConfiguration();
+            c.Aspects.Add( config );
+            c.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.AddRange( args.AssemblyNames );
+            c.StObjEngineConfiguration.FinalAssemblyConfiguration.GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFile;
+
+            StObjContextRoot.Build( c, null, monitor ).Dispose();
         }
     }
 }

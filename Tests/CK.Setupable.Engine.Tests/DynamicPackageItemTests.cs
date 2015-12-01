@@ -1,0 +1,30 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using CK.Setup;
+using NUnit.Framework;
+
+namespace CK.Setupable.Engine.Tests
+{
+    [TestFixture]
+    public class DynamicPackageItemTests
+    {
+        [Test]
+        public void Model_and_ObjectsPackage_are_correctly_ordered()
+        {
+            var pA = new DynamicPackageItem( "Package" ) { Name = "A" };
+            var pB = new DynamicPackageItem( "Package" ) { Name = "B" };
+            var pAObjects = pA.EnsureObjectsPackage();
+            var pBObjects = pB.EnsureObjectsPackage();
+            var pAModel = pA.EnsureModel();
+            var pBModel = pB.EnsureModel();
+            pB.Requires.Add( pA );
+            var sortResult = DependencySorter.OrderItems( pB );
+            Assert.That( sortResult.IsComplete );
+            var sortedNames = sortResult.SortedItems.Select( i => i.FullName ).ToArray();
+            CollectionAssert.AreEqual( new[] { "Model.A.Head", "Model.A", "A.Head", "Model.B.Head", "A", "Model.B", "B.Head", "Objects.A.Head", "B", "Objects.A", "Objects.B.Head", "Objects.B" }, sortedNames );
+        }
+    }
+}

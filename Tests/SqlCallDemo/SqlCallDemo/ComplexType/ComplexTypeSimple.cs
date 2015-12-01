@@ -1,0 +1,17 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace SqlCallDemo.ComplexType
+{
+
+    public class ComplexTypeSimple
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public DateTime CreationDate { get; set; }
+        public int? NullableInt { get; set; }
+    }
+}

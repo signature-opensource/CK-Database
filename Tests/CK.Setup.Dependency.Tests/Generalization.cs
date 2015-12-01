@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (Tests\CK.Setup.Dependency.Tests\Generalization.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -118,16 +125,14 @@ namespace CK.Setup.Dependency.Tests
             // Ruby belongs to "Root" container.
             // Here we can see the the "Generalized By" ↟ relations.
             var c = new TestableContainer( "Root",
-                        new TestableContainer( "Pierre", "⇀Nuage",
-                            new TestableItem( "Gem" )
-                        ),
+                        new TestableContainer( "Pierre", new TestableItem( "Gem" ) ),
                         new TestableItem( "Nuage", "⇀Rubis", "↽Pierre" ),
                         new TestableItem( "Rubis", "↟Gem" )
                     );
             var r = DependencySorter.OrderItems( c );
             Assert.That( r.CycleDetected, Is.Not.Null );
             Assert.That( r.SortedItems, Is.Null );
-            Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ Rubis ↟ Gem ⊏ Pierre ⇀ Nuage ⇀ Rubis" ) );
+            Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ Rubis ↟ Gem ⊏ Pierre ⇌ Nuage ⇀ Rubis" ) );
             ResultChecker.SimpleCheck( r );
         }
 

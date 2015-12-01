@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (Tests\CK.Setup.Dependency.Tests\ContainerAndRequirementsSemantics.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -112,7 +119,7 @@ namespace CK.Setup.Dependency.Tests
                 }
                 // Under certain circumstances, one can consider that an item that is contained in a Container can require it.
                 {
-                    var r = DependencySorter.OrderItems( new DependencySorter.Options() { SkipDependencyToContainer = true }, C );
+                    var r = DependencySorter.OrderItems( new DependencySorterOptions() { SkipDependencyToContainer = true }, C );
                     Assert.That( r.IsComplete );
                     Assert.That( r.IsOrdered( "C.Head", "I", "C" ) );
                     Assert.That( r.SortedItems[1].Requires, Is.Empty, "Requires have been cleaned up." );
@@ -134,7 +141,7 @@ namespace CK.Setup.Dependency.Tests
                 // If ISpec requires SuperC, this creates a cycle without the option.
                 ISpec.Add( "⇀SuperC" );
                 {
-                    var r = DependencySorter.OrderItems( new DependencySorter.Options() { SkipDependencyToContainer = true }, C, ISpec );
+                    var r = DependencySorter.OrderItems( new DependencySorterOptions() { SkipDependencyToContainer = true }, C, ISpec );
                     Assert.That( r.IsComplete );
                     Assert.That( r.IsOrdered( "SuperC.Head", "C.Head", "A", "I", "ISpec", "C", "SuperC" ) );
                     Assert.That( r.SortedItems[1].Requires, Is.Empty, "Requires have been cleaned up." );

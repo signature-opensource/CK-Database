@@ -1,0 +1,60 @@
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (CK.Setupable.Runtime\Setup\SetupHandlerFuncAdapter.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace CK.Setup
+{
+    /// <summary>
+    /// Internal adapter used by <see cref="GenericItemSetupDriver"/>.
+    /// </summary>
+    class SetupHandlerFuncAdapter : ISetupHandler
+    {
+        readonly Func<GenericItemSetupDriver,bool> _func;
+        readonly SetupCallGroupStep _step;
+
+        public SetupHandlerFuncAdapter( Func<GenericItemSetupDriver, bool> handler, SetupCallGroupStep step )
+        {
+            _func = handler;
+            _step = step;
+        }
+
+        public bool Init( GenericItemSetupDriver d )
+        {
+            return _step == SetupCallGroupStep.Init ? _func( d ) : true;
+        }
+
+        public bool InitContent( GenericItemSetupDriver d )
+        {
+            return _step == SetupCallGroupStep.InitContent ? _func( d ) : true;
+        }
+
+        public bool Install( GenericItemSetupDriver d )
+        {
+            return _step == SetupCallGroupStep.Install ? _func( d ) : true;
+        }
+
+        public bool InstallContent( GenericItemSetupDriver d )
+        {
+            return _step == SetupCallGroupStep.InstallContent ? _func( d ) : true;
+        }
+
+        public bool Settle( GenericItemSetupDriver d )
+        {
+            return _step == SetupCallGroupStep.Settle ? _func( d ) : true;
+        }
+
+        public bool SettleContent( GenericItemSetupDriver d )
+        {
+            return _step == SetupCallGroupStep.SettleContent ? _func( d ) : true;
+        }
+    }
+
+}

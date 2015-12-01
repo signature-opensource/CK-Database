@@ -1,4 +1,11 @@
-﻿using System;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (Tests\CK.Setup.Dependency.Tests\ContainerDependencies.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +18,7 @@ namespace CK.Setup.Dependency.Tests
     public class ContainerDependencies
     {
         [Test]
-        public void EmptyContainer()
+        public void an_empty_container_has_its_head_before_its_content()
         {
             var c = new TestableContainer( "C" );
             {
@@ -27,7 +34,7 @@ namespace CK.Setup.Dependency.Tests
         }
 
         [Test]
-        public void AutoChildrenRegistration()
+        public void container_children_are_automatically_registered()
         {
             var c = new TestableContainer( "C", new TestableItem( "A" ), new TestableItem( "B" ) );
 
@@ -44,7 +51,7 @@ namespace CK.Setup.Dependency.Tests
         }
 
         [Test]
-        public void AutoContainerRegistration()
+        public void a_container_is_automatically_registered_by_any_of_its_children()
         {
             var c = new TestableContainer( "ZeContainer", new TestableItem( "A" ), new TestableItem( "B" ) );
             var e = new TestableItem( "E" );
@@ -65,7 +72,128 @@ namespace CK.Setup.Dependency.Tests
         }
 
         [Test]
-        public void ThreeDependentContainers()
+        public void one_package_with_its_model()
+        {
+            var pA = new TestableContainer( "A" );
+            var pAModel = new TestableContainer( "Model.A" );
+
+            Action test = () =>
+                { 
+                    var r = DependencySorter.OrderItems( pAModel, pA );
+                    ResultChecker.SimpleCheck( r );
+                    var rRevert = DependencySorter.OrderItems( true, pAModel, pA );
+                    ResultChecker.SimpleCheck( rRevert );
+            
+                    r.AssertOrdered( "Model.A.Head", "Model.A", "A.Head", "A" );
+                    rRevert.AssertOrdered( "Model.A.Head", "Model.A", "A.Head", "A" );
+                };
+
+            pA.Requires.Add( pAModel );
+            test();
+
+            pA.Requires.Clear();
+            pAModel.RequiredBy.Add( pA );
+            test();
+        }
+
+        [Test]
+        public void packages_with_model()
+        {
+            var pA = new TestableContainer( "A" );
+            var pAModel = new TestableContainer( "Model.A" );
+            var pB = new TestableContainer( "B" );
+            var pBModel = new TestableContainer( "Model.B" );
+            
+            Action testAndRestore = () =>
+                { 
+                    var r1 = DependencySorter.OrderItems( pAModel, pA, pBModel, pB );
+                    ResultChecker.SimpleCheck( r1 );
+                    var r2 = DependencySorter.OrderItems( true, pAModel, pA, pBModel, pB );
+                    ResultChecker.SimpleCheck( r2 );
+            
+                    // There is no constraint between A and Model.B: depending on the sort order this changes.
+                    r1.AssertOrdered( "Model.A.Head", "Model.A", "A.Head", "Model.B.Head", "A", "Model.B", "B.Head", "B" );
+                    r2.AssertOrdered( "Model.A.Head", "Model.A", "Model.B.Head", "A.Head", "Model.B", "A", "B.Head", "B" );
+
+                    pB.RequiredBy.Clear();
+                    pA.RequiredBy.Clear();
+                    pAModel.RequiredBy.Clear();
+                    pBModel.RequiredBy.Clear();
+                    pB.Requires.Clear();
+                    pA.Requires.Clear();
+                    pAModel.Requires.Clear();
+                    pBModel.Requires.Clear();
+                };
+
+            pB.Requires.Add( pA );
+            pB.Requires.Add( pBModel );
+            pA.Requires.Add( pAModel );
+            pBModel.Requires.Add( pAModel );
+            testAndRestore();
+
+            pA.RequiredBy.Add( pB );
+            pBModel.RequiredBy.Add( pB );
+            pAModel.RequiredBy.Add( pA );
+            pAModel.RequiredBy.Add( pBModel );
+            testAndRestore();
+        }
+
+        [Test]
+        public void packages_with_model_and_objects()
+        {
+            var pA = new TestableContainer( "A" );
+            var pAModel = new TestableContainer( "Model.A" );
+            var pAObjects = new TestableContainer( "Objects.A" );
+            var pB = new TestableContainer( "B" );
+            var pBModel = new TestableContainer( "Model.B" );
+            var pBObjects = new TestableContainer( "Objects.B" );
+            var all = new[]{ pA, pAModel, pAObjects, pB, pBModel, pBObjects };
+
+            Action testAndRestore = () =>
+            {
+                var r1 = DependencySorter.OrderItems( all );
+                ResultChecker.SimpleCheck( r1 );
+                var r2 = DependencySorter.OrderItems( true, all );
+                ResultChecker.SimpleCheck( r2 );
+
+                // There is no constraint between:
+                // - A and Model.B
+                // - A and Objects.B
+                // depending on the sort order this changes.
+                r1.AssertOrdered( "Model.A.Head", "Model.A", "A.Head", "Model.B.Head", "A", "Model.B", "B.Head", "Objects.A.Head", "B", "Objects.A", "Objects.B.Head", "Objects.B" );
+                r2.AssertOrdered( "Model.A.Head", "Model.A", "Model.B.Head", "A.Head", "Model.B", "A", "Objects.A.Head", "B.Head", "Objects.A", "B", "Objects.B.Head", "Objects.B" );
+
+                foreach( var p in all )
+                {
+                    p.RequiredBy.Clear();
+                    p.Requires.Clear();
+                }
+            };
+
+            pB.Requires.Add( pA );
+            pB.Requires.Add( pBModel );
+            pA.Requires.Add( pAModel );
+            pBModel.Requires.Add( pAModel );
+            pBObjects.Requires.Add( pB );
+            pAObjects.Requires.Add( pA );
+            pBObjects.Requires.Add( pAObjects );
+            testAndRestore();
+
+            Random r = new Random();
+            for( int i = 0; i < 30; ++i )
+            {
+                if( r.Next( 2 ) == 0 ) pB.Requires.Add( pA ); else pA.RequiredBy.Add( pB );
+                if( r.Next( 2 ) == 0 ) pB.Requires.Add( pBModel ); else pBModel.RequiredBy.Add( pB );
+                if( r.Next( 2 ) == 0 ) pA.Requires.Add( pAModel ); else pAModel.RequiredBy.Add( pA );
+                if( r.Next( 2 ) == 0 ) pBModel.Requires.Add( pAModel ); else pAModel.RequiredBy.Add( pBModel );
+                if( r.Next( 2 ) == 0 ) pBObjects.Requires.Add( pB ); else pB.RequiredBy.Add( pBObjects );
+                if( r.Next( 2 ) == 0 ) pAObjects.Requires.Add( pA ); else pA.RequiredBy.Add( pAObjects );
+                if( r.Next( 2 ) == 0 ) pBObjects.Requires.Add( pAObjects ); else pAObjects.RequiredBy.Add( pBObjects );
+            }
+        }
+
+        [Test]
+        public void registering_order_does_not_matter()
         {
             var c0 = new TestableContainer( "C0", new TestableItem( "A" ), new TestableItem( "B" ), new TestableItem( "C" ) );
             var c1 = new TestableContainer( "C1", new TestableItem( "X" ), "⇀C0" );
@@ -162,7 +290,7 @@ namespace CK.Setup.Dependency.Tests
             Assert.That( r.CycleDetected, Is.Not.Null );
             Assert.That( r.SortedItems, Is.Null );
             // The detected cycle depends on the algorithm. 
-            // This works here because since we register the Root, we the last registered child is Nuage: we know
+            // This works here because since we register the Root, the last registered child is Nuage: we know
             // that the cycle starts (and ends) with Nuage because children are in linked list (added at the head).
             // (This remarks is valid for the other CycleDetection below.)
             Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ Nuage ⇀ Pierre ⇀ Stratus ⊏ Nuage" ) );
