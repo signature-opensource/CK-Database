@@ -40,15 +40,11 @@ namespace CK.Deploy.Console
                     var common = di.Where( x => x.FullName == projectParent.FullName ).SingleOrDefault();
                     if( common != null )
                     {
-                        var codeBase = codeBaseDir.FullName.Substring( common.FullName.Length );
-                        var pojDir = projectRootDir.FullName.Substring( common.FullName.Length );
-                        if( codeBase[0] == '\\' ) codeBase = codeBase.Substring( 1 );
-                        if( pojDir[0] == '\\' ) pojDir = pojDir.Substring( 1 );
                         return new FinderResult()
                         {
                             CommonPath = common.FullName,
-                            CodeBaseRelativePath = codeBase,
-                            ProjectRootRelativePath = pojDir,
+                            CodeBaseRelativePath = codeBaseDir.FullName.Substring( common.FullName.Length + 1 ),
+                            ProjectRootRelativePath = projectRootDir.FullName.Substring( common.FullName.Length + 1 ),
                         };
                     }
                 }

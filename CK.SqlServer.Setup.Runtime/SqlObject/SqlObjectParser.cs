@@ -15,7 +15,7 @@ namespace CK.SqlServer.Setup
 {
     public class SqlObjectParser : ISqlObjectParser
     {
-        static Regex _rSqlObject = new Regex( @"(create|alter)\s+(?<1>proc(?:edure)?|function|view|type)\s+(\[?(?<2>\w+)]?\.)?(\[?(?<3>\w+)]?\.)?\[?(?<4>\w+)]?",
+        static Regex _rSqlObject = new Regex( @"(create|alter)\s+(?<1>proc(?:edure)?|function|view)\s+(\[?(?<2>\w+)]?\.)?(\[?(?<3>\w+)]?\.)?\[?(?<4>\w+)]?",
                                             RegexOptions.CultureInvariant
                                             | RegexOptions.IgnoreCase
                                             | RegexOptions.ExplicitCapture );
@@ -48,7 +48,6 @@ namespace CK.SqlServer.Setup
             {
                 case 'V': type = SqlObjectProtoItem.TypeView; break;
                 case 'P': type = SqlObjectProtoItem.TypeProcedure; break;
-                case 'T': type = SqlObjectProtoItem.TypeUserType; break;
                 default: type = SqlObjectProtoItem.TypeFunction; break;
             }
             if( expectedType != null && expectedType != type )

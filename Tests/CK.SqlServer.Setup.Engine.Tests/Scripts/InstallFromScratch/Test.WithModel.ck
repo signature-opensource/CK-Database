@@ -10,14 +10,13 @@
     -->
     <Requirements RequiredBy="Test.sOneStoredProcedure" />
   </Model>
-
+  
   <Content>
     <!-- 
           As long as no conflict occurs, the relationship between a Package and its Items 
           can be created by the Package and/or the Item.
     -->
     <Add FullName="Test.fTest" />
-    <Add FullName="Test.udtMyTestType" />
 
     <Add FullName="Test.sOneStoredProcedureA" />
     <Add FullName="Test.sStoredProcedureRequires" />
