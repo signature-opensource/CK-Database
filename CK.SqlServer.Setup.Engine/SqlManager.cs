@@ -139,7 +139,7 @@ namespace CK.SqlServer.Setup
         /// <returns>True on success.</returns>
         public bool OpenFromConnectionString( string connectionString, bool autoCreate = false )
         {
-            using( _monitor.OpenInfo().Send( "Connection" ) )
+            using( _monitor.OpenInfo().Send( "Connection to {0}.", connectionString ) )
             {
                 try
                 {

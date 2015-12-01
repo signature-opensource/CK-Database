@@ -114,7 +114,6 @@ namespace CK.SqlServer.Setup.Engine.Tests
             TestHelper.LogToConsole = true;
             try
             {
-
                 using( var defaultDB = SqlManager.OpenOrCreate( dbFromScratch, TestHelper.Monitor ) )
                 {
                     defaultDB.Connection.ExecuteNonQuery( @"if object_id(N'[CKCore].[tSetupMemoryItem]') is not null delete from [CKCore].[tSetupMemoryItem] where ItemKey like '%WithSPDependsOnVersion%';" );
