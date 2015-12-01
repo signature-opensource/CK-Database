@@ -11,6 +11,7 @@ using System.Xml.Linq;
 using CK.Core;
 using CK.Setup;
 using NUnit.Framework;
+using System.IO;
 
 namespace CK.SqlServer.Setup.Engine.Tests
 {
@@ -103,8 +104,8 @@ namespace CK.SqlServer.Setup.Engine.Tests
             ScriptTypeManager typeManager = new ScriptTypeManager();
             typeManager.Register( new SqlScriptTypeHandler() );
             ScriptCollector collector = new ScriptCollector( typeManager );
-            SqlFileDiscoverer discoverer = new SqlFileDiscoverer( new SqlObjectParserStub(), TestHelper.ConsoleMonitor );
-            Assert.That( discoverer.DiscoverSqlFiles( null, null, TestHelper.GetScriptsFolder( "FileBased/FromOpenTo" ), new SetupObjectItemCollector(), collector ), Is.True );
+            SqlFileDiscoverer discoverer = new SqlFileDiscoverer( new SqlObjectParserStub(), TestHelper.Monitor );
+            Assert.That( discoverer.DiscoverSqlFiles( null, null, Path.Combine( TestHelper.ProjectFolder, "Scripts/FileBased/FromOpenTo" ), new SetupObjectItemCollector(), collector ), Is.True );
 
             bool caseDiffer;
             ScriptSet scripts = collector.Find( "Test", out caseDiffer );
@@ -153,9 +154,9 @@ namespace CK.SqlServer.Setup.Engine.Tests
             typeManager.Register( new SqlScriptTypeHandler() );
             ScriptCollector collector = new ScriptCollector( typeManager );
             
-            SqlFileDiscoverer discoverer = new SqlFileDiscoverer( new SqlObjectParserStub(), TestHelper.ConsoleMonitor );
+            SqlFileDiscoverer discoverer = new SqlFileDiscoverer( new SqlObjectParserStub(), TestHelper.Monitor );
 
-            Assert.That( discoverer.DiscoverSqlFiles( null, null, TestHelper.GetScriptsFolder( "FileBased/AllSteps" ), new SetupObjectItemCollector(), collector ), Is.True );
+            Assert.That( discoverer.DiscoverSqlFiles( null, null, Path.Combine( TestHelper.ProjectFolder, "Scripts/FileBased/AllSteps" ), new SetupObjectItemCollector(), collector ), Is.True );
 
             bool caseDiffer;
             ScriptSet scripts = collector.Find( "test", out caseDiffer );

@@ -43,7 +43,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void AbstractDetection()
         {
-            StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor );
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor );
             collector.RegisterClass( typeof( A2 ) );
             StObjCollectorResult result = collector.GetResult();
             Assert.That( result.HasFatalError, Is.False );

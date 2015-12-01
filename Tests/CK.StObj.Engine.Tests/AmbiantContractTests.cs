@@ -219,7 +219,7 @@ namespace CK.Setup.Tests
             Action<DefaultAmbientContractCollector> check = c =>
             {
                 var rAll = c.GetResult();
-                rAll.LogErrorAndWarnings( TestHelper.ConsoleMonitor );
+                rAll.LogErrorAndWarnings( TestHelper.Monitor );
                 {
                     var r = rAll.Default;
                     Assert.That( r.AbstractTails.Count, Is.EqualTo( 1 ) );

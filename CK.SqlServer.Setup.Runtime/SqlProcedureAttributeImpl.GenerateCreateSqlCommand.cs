@@ -102,7 +102,6 @@ namespace CK.SqlServer.Setup
             // Analyses parameters and generate removing of optional parameters if C# does not use them.
             int nbError = 0;
 
-            //if( m.Name == "IntReturnWithActorAsync" ) Debugger.Break();
             SqlParameterHandlerList sqlParamHandlers = new SqlParameterHandlerList( sqlParameters );
 
             // We initialize the SetUsedByReturnedType information on parameters 

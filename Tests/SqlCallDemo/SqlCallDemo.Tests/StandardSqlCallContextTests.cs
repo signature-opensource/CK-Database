@@ -37,7 +37,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void when_acquire_connection_throws_SqlException_when_database_does_not_exist()
         {
-            AsynCallCatch<SqlException>( "select 1;", command => 3, "Server=.;Database=kexistepas-db;Integrated Security=SSPI" );
+            AsynCallCatch<SqlException>( "select 1;", command => 3, TestHelper.GetConnectionString( "kexistepas-db" ) );
         }
 
         [Test]

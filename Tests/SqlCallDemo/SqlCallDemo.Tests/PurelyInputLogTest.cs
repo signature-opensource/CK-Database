@@ -84,10 +84,7 @@ namespace SqlCallDemo.Tests
                     catch( AggregateException ex )
                     {
                         Assert.That( ex.InnerException is SqlException );
-                        // If someone has a better solution...
-                        //Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo( "en-US" );
-                        //string msg2 = new FileNotFoundException().Message;
-
+                        // Does someone has a better (yet simple) solution?
                         Assert.That( ex.InnerException.Message, 
                                         Is.StringEnding( "Operation cancelled by user." )
                                         .Or.StringEnding( "Opération annulée par l'utilisateur." ) );

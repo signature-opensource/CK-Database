@@ -21,6 +21,7 @@ namespace CK.Core
         static SetupEngineConfiguration _config;
         static IStObjMap _map;
         static string _binFolder;
+        static string _projectFolder;
         static string _solutionFolder;
         static string _logFolder;
 
@@ -55,8 +56,19 @@ namespace CK.Core
             get { return Monitor.Output.Clients.Contains( _console ); }
             set
             {
-                if( value ) Monitor.Output.RegisterClient( _console );
-                else Monitor.Output.UnregisterClient( _console );
+                if( LogToConsole != value )
+                {
+                    if( value )
+                    {
+                        Monitor.Output.RegisterClient( _console );
+                        Monitor.Info().Send( "Switching console log ON." );
+                    }
+                    else
+                    {
+                        Monitor.Info().Send( "Switching console log OFF." );
+                        Monitor.Output.UnregisterClient( _console );
+                    }
+                }
             }
         }
 
@@ -69,6 +81,18 @@ namespace CK.Core
             {
                 if( _logFolder == null ) InitalizePaths();
                 return _logFolder;
+            }
+        }
+
+        /// <summary>
+        /// Gets the path to the project folder.
+        /// </summary>
+        public static string ProjectFolder
+        {
+            get
+            {
+                if( _projectFolder == null ) InitalizePaths();
+                return _projectFolder;
             }
         }
 
@@ -122,7 +146,7 @@ namespace CK.Core
         /// <param name="revertNames">True to revert names in ordering.</param>
         public static bool RunDBSetup( bool traceStObjGraphOrdering = false, bool traceSetupGraphOrdering = false, bool revertNames = false )
         {
-            using( Monitor.OpenTrace().Send( "Running Setup" ) )
+            using( Monitor.OpenTrace().Send( "Running Setup on {0}.", TestHelper.DatabaseTestConnectionString ) )
             {
                 try
                 {
@@ -187,7 +211,7 @@ namespace CK.Core
         /// Gets the connection string to the master database.
         /// It is first the environment variable named "CK_DB_TEST_MASTER_CONNECTION_STRING", then 
         /// the <see cref="AppSettings.Default"/>["CK_DB_TEST_MASTER_CONNECTION_STRING"] in configuration 
-        /// file end then, if none are defined, this defaults to "Server=.;Database=master;Integrated Security=SSPI".
+        /// file end then, if none are defined, this defaults to "Server=(local)\\NIMP;Database=master;Integrated Security=SSPI".
         /// </summary>
         public static string ConnectionStringMaster => EnsureMasterConnection().ToString();
 
@@ -306,6 +330,7 @@ namespace CK.Core
             string p = new Uri( System.Reflection.Assembly.GetExecutingAssembly().CodeBase ).LocalPath;
             // Code base is like "...HumanSide\Tests\CK.ActorModel.Tests\Debug\bin\CK.ActorModel.Tests.dll"
             _binFolder = p = Path.GetDirectoryName( p );
+            _projectFolder = p = Path.GetDirectoryName( Path.GetDirectoryName( p ) );
 
             bool hasGit = false;
             while( p.Length > 2 && !(hasGit = Directory.Exists( Path.Combine( p, ".git" ) )) )

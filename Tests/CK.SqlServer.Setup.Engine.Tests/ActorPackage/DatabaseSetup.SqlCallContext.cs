@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (Tests\CK.SqlServer.Setup.Engine.Tests\ActorPackage\DatabaseSetup.SqlCallContext.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,7 +11,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
     {
         static void CheckSqlCallContext( SqlManager c, IStObjMap map )
         {
-            using( TestHelper.ConsoleMonitor.OpenTrace().Send( "CheckSqlCallContext" ) )
+            using( TestHelper.Monitor.OpenTrace().Send( "CheckSqlCallContext" ) )
             {
                 var package = map.Default.Obtain<Package>();
                 CallWithAuthContext( package );

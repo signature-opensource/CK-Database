@@ -151,7 +151,7 @@ namespace CK.StObj.Engine.Tests
                 config.StObjEngineConfiguration.FinalAssemblyConfiguration.ExternalVersionStamp = extVersionStamp;
 
                 DateTime buildTime1;
-                using( StObjBuildResult result = StObjContextRoot.Build( config, null, null, TestHelper.ConsoleMonitor, forceBuild: true ) )
+                using( StObjBuildResult result = StObjContextRoot.Build( config, null, null, TestHelper.Monitor, forceBuild: true ) )
                 {
                     Assert.That( result.Success, Is.True, "Build succeed..." );
                     Assert.That( result.IndependentAppDomain, Is.Null, "...in this app domain." );
@@ -160,7 +160,7 @@ namespace CK.StObj.Engine.Tests
                     Assert.That( File.Exists( fileName ), Is.True, "Build generated the dll." );
                     buildTime1 = File.GetLastWriteTimeUtc( fileName );
                 }
-                using( StObjBuildResult result = StObjContextRoot.Build( config, null, null, TestHelper.ConsoleMonitor, forceBuild: false ) )
+                using( StObjBuildResult result = StObjContextRoot.Build( config, null, null, TestHelper.Monitor, forceBuild: false ) )
                 {
                     Assert.That( result.Success, Is.True, "Build succeed..." );
                     Assert.That( result.IndependentAppDomain, Is.Not.Null, "...used to read the version stamp." );
@@ -169,7 +169,7 @@ namespace CK.StObj.Engine.Tests
                     Assert.That( File.GetLastWriteTimeUtc( fileName ), Is.EqualTo( buildTime1 ) );
                 }
                 Thread.Sleep( 200 );
-                using( StObjBuildResult result = StObjContextRoot.Build( config, null, null, TestHelper.ConsoleMonitor, forceBuild: true ) )
+                using( StObjBuildResult result = StObjContextRoot.Build( config, null, null, TestHelper.Monitor, forceBuild: true ) )
                 {
                     Assert.That( result.Success, Is.True, "Build succeed..." );
                     Assert.That( result.IndependentAppDomain, Is.Null, "...no read of the version stamp." );
@@ -254,7 +254,7 @@ namespace CK.StObj.Engine.Tests
                 config.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( "AutoGenTestObjBuilder, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" );
 
                 DateTime buildTime1;
-                using( StObjBuildResult result = StObjContextRoot.Build( config, null, null, TestHelper.ConsoleMonitor, forceBuild: false ) )
+                using( StObjBuildResult result = StObjContextRoot.Build( config, null, null, TestHelper.Monitor, forceBuild: false ) )
                 {
                     Assert.That( result.Success, Is.True, "Build succeed..." );
                     Assert.That( result.IndependentAppDomain, Is.Not.Null.And.Not.EqualTo( AppDomain.CurrentDomain ), "...in an independent AppDomain." );
@@ -270,7 +270,7 @@ namespace CK.StObj.Engine.Tests
                     Assert.That( AppDomain.CurrentDomain.GetAssemblies().Any( x => x.FullName.Contains( "AutoGenTestObjBuilder" ) ), Is.False, "AutoGenTestObjBuilder has not been loaded in this application domain." );
                 }
                 Thread.Sleep( 200 );
-                using( StObjBuildResult result = StObjContextRoot.Build( config, null, null, TestHelper.ConsoleMonitor, forceBuild: false ) )
+                using( StObjBuildResult result = StObjContextRoot.Build( config, null, null, TestHelper.Monitor, forceBuild: false ) )
                 {
                     Assert.That( result.Success, Is.True, "Succeed: found the previous one." );
                     Assert.That( result.IndependentAppDomain, Is.Not.Null.And.Not.EqualTo( AppDomain.CurrentDomain ), "...we looked for the version stamp in an independent AppDomain." );
@@ -287,7 +287,7 @@ namespace CK.StObj.Engine.Tests
                 }
                 catch( Exception ex )
                 {
-                    TestHelper.ConsoleMonitor.Error().Send( ex, "While deleting temporary folder." );
+                    TestHelper.Monitor.Error().Send( ex, "While deleting temporary folder." );
                 }
             }
         }

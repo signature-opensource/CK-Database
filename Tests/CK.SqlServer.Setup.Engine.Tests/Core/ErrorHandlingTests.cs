@@ -21,19 +21,17 @@ namespace CK.SqlServer.Setup.Engine.Tests
     [TestFixture]
     public class ErrorHandlingTests
     {
-        const string ConnectionString = "Server=.;Database=CKSqlServerTests;Integrated Security=SSPI";
-
         static bool _installedDone;
 
         static public SqlManager CreateInstallContext()
         {
-            SqlManager m = new SqlManager( TestHelper.ConsoleMonitor );
-            Assert.That( m.OpenFromConnectionString( ConnectionString, true ), "Unable to open or create CKSqlServerTests database on local server." );
+            SqlManager m = new SqlManager( TestHelper.Monitor );
+            Assert.That( m.OpenFromConnectionString( TestHelper.DatabaseTestConnectionString, true ), "Unable to open or create CKSqlServerTests database on local server." );
             if( !_installedDone )
             {
-                m.EnsureCKCoreIsInstalled( TestHelper.ConsoleMonitor );
-                var install = SqlHelper.SplitGoSeparator( File.ReadAllText( TestHelper.GetScriptsFolder( "ErrorHandling.Install.sql" ) ) );
-                m.ExecuteScripts( install, TestHelper.ConsoleMonitor );
+                m.EnsureCKCoreIsInstalled( TestHelper.Monitor );
+                var install = SqlHelper.SplitGoSeparator( File.ReadAllText( Path.Combine( TestHelper.ProjectFolder, "Scripts/ErrorHandling.Install.sql" ) ) );
+                m.ExecuteScripts( install, TestHelper.Monitor );
                 _installedDone = true;
             }
             return m;
@@ -44,7 +42,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
         {
             using( SqlManager m = CreateInstallContext() )
             {
-                var microTests = SqlHelper.SplitGoSeparator( File.ReadAllText( TestHelper.GetScriptsFolder( "ErrorHandling.MicroTests.sql" ) ) );
+                var microTests = SqlHelper.SplitGoSeparator( File.ReadAllText( Path.Combine( TestHelper.ProjectFolder, "Scripts/ErrorHandling.MicroTests.sql" ) ) );
                 foreach( string s in microTests.Where( script => script.Contains( "bug" ) ) )
                 {
                     bool errorExpected = s.Contains( "EXCEPTION" );
@@ -53,7 +51,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
                         // Checks that an exception is raised since there is no monitor.
                         Assert.Throws<SqlException>( () => m.ExecuteOneScript( s, null ), s );
                         // Dump to console.
-                        Assert.That( m.ExecuteOneScript( s, TestHelper.ConsoleMonitor ), Is.False, s );
+                        Assert.That( m.ExecuteOneScript( s, TestHelper.Monitor ), Is.False, s );
                     }
                     else
                     {

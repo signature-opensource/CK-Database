@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 
-namespace SqlColumns.Tests
+namespace From.CKDBNUnit
 {
     [TestFixture]
     public class DBSetup : CK.DB.Tests.DBSetup

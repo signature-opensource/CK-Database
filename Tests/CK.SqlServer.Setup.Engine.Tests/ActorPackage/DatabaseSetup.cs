@@ -11,9 +11,6 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
     [Category( "DBSetup" )]
     public partial class DatabaseSetup
     {
-        const string ConnectionString = "Server=.;Database=ActorPackage;Integrated Security=SSPI";
-
-
         [Test]
         public void InstallActorBasicFromScracth()
         {
@@ -42,10 +39,10 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             c.TraceDependencySorterInput = true;
             c.TraceDependencySorterOutput = true;
             var config = new SqlSetupAspectConfiguration();
-            config.DefaultDatabaseConnectionString = ConnectionString;
+            config.DefaultDatabaseConnectionString = TestHelper.DatabaseTestConnectionString;
             c.Aspects.Add( config );
 
-            using( var db = SqlManager.OpenOrCreate( ConnectionString, TestHelper.ConsoleMonitor ) )
+            using( var db = SqlManager.OpenOrCreate( TestHelper.DatabaseTestConnectionString, TestHelper.Monitor ) )
             {
                 if( resetFirst )
                 {
@@ -53,18 +50,18 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
                     db.SchemaDropAllObjects( "CKCore", false );
                 }
             }
-            using( var result = StObjContextRoot.Build( c, null, TestHelper.ConsoleMonitor ) )
+            using( var result = StObjContextRoot.Build( c, null, TestHelper.Monitor ) )
             {
                 Assert.That( result.Success );
                 Assert.That( result.IndependentAppDomain != null );
             }
-            using( var db = SqlManager.OpenOrCreate( ConnectionString, TestHelper.ConsoleMonitor ) )
+            using( var db = SqlManager.OpenOrCreate( TestHelper.DatabaseTestConnectionString, TestHelper.Monitor ) )
             {
-                IStObjMap m = StObjContextRoot.Load( dllName, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.ConsoleMonitor );
+                IStObjMap m = StObjContextRoot.Load( dllName, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
                 if( withZone ) CheckBasicAndZone( db, m );
                 else CheckBasicOnly( db, m );
             }
-            using( var db = SqlManager.OpenOrCreate( ConnectionString, TestHelper.ConsoleMonitor ) )
+            using( var db = SqlManager.OpenOrCreate( TestHelper.DatabaseTestConnectionString, TestHelper.Monitor ) )
             {
                 Assert.That( db.Connection.ExecuteScalar( "select count(*) from sys.tables where name in ('tActor','tItemVersion')" ), Is.EqualTo( 2 ) );
                 db.SchemaDropAllObjects( "CK", true );
@@ -74,18 +71,18 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
             c.RunningMode = SetupEngineRunningMode.DefaultWithRevertOrderingNames;
             c.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = dllName + ".Reverted";
-            using( TestHelper.ConsoleMonitor.OpenTrace().Send( "Second setup (reverse order)" ) )
+            using( TestHelper.Monitor.OpenTrace().Send( "Second setup (reverse order)" ) )
             {
-                using( var result = StObjContextRoot.Build( c, null, TestHelper.ConsoleMonitor ) )
+                using( var result = StObjContextRoot.Build( c, null, TestHelper.Monitor ) )
                 {
                     Assert.That( result.Success );
                     Assert.That( result.IndependentAppDomain != null );
                 }
             }
 
-            using( var db = SqlManager.OpenOrCreate( ConnectionString, TestHelper.ConsoleMonitor ) )
+            using( var db = SqlManager.OpenOrCreate( TestHelper.DatabaseTestConnectionString, TestHelper.Monitor ) )
             {
-                IStObjMap m = StObjContextRoot.Load( dllName, null, TestHelper.ConsoleMonitor );
+                IStObjMap m = StObjContextRoot.Load( dllName, null, TestHelper.Monitor );
                 if( withZone ) CheckBasicAndZone( db, m );
                 else CheckBasicOnly( db, m );
             }
@@ -93,7 +90,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
         private static void CheckBasicOnly( SqlManager c, IStObjMap map )
         {
-            using( TestHelper.ConsoleMonitor.OpenTrace().Send( "CheckBasicOnly" ) )
+            using( TestHelper.Monitor.OpenTrace().Send( "CheckBasicOnly" ) )
             {
                 Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tActor where ActorId <= 1" ), Is.EqualTo( 2 ) );
                 Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tGroup where GroupName = 'Public'" ), Is.EqualTo( 1 ) );
@@ -120,7 +117,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
         private static void CheckBasicAndZone( SqlManager c, IStObjMap map )
         {
-            using( TestHelper.ConsoleMonitor.OpenTrace().Send( "CheckBasicAndZone" ) )
+            using( TestHelper.Monitor.OpenTrace().Send( "CheckBasicAndZone" ) )
             {
                 Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tActor where ActorId <= 1" ), Is.EqualTo( 2 ) );
                 Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tSecurityZone where SecurityZoneId <= 1" ), Is.EqualTo( 2 ) );

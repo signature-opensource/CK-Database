@@ -38,7 +38,7 @@ namespace CK.StObj.Engine.Tests
         public void OneObject()
         {
             {
-                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor );
+                StObjCollector collector = new StObjCollector( TestHelper.Monitor );
                 collector.RegisterClass( typeof( SimpleContainer ) );
                 StObjCollectorResult result = collector.GetResult();
                 Assert.That( result.OrderedStObjs.First().GetStObjProperty( "OneIntValue" ), Is.EqualTo( 3712 ) );
@@ -82,7 +82,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void SchmurtzPropagation()
         {
-            StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor, false, false, null, null, new SchmurtzConfigurator() );
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, false, false, null, null, new SchmurtzConfigurator() );
             collector.RegisterClass( typeof( SimpleContainer ) );
             collector.RegisterClass( typeof( SpecializedContainer ) );
             collector.RegisterClass( typeof( BaseObject ) );

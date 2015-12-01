@@ -31,7 +31,7 @@ namespace CK.StObj.Engine.Tests
             _console = new ActivityMonitorConsoleClient();
         }
 
-        public static IActivityMonitor ConsoleMonitor
+        public static IActivityMonitor Monitor
         {
             get { return _monitor; }
         }

@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (Tests\CK.SqlServer.Setup.Engine.Tests\CallProcedureAutoImplementor.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,7 +29,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
 
         public IActivityMonitor Logger
         {
-            get { return TestHelper.ConsoleMonitor; }
+            get { return TestHelper.Monitor; }
         }
 
         public SqlConnectionProvider Connection
@@ -49,7 +42,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
     [TestFixture]
     public class CallProcedureAutoImplementor
     {
-        const string ConnectionString = "Server=.;Database=CKSqlServerTests;Integrated Security=SSPI";
+        readonly static string ConnectionString = TestHelper.DatabaseTestConnectionString;
 
         class ManualCall
         {
@@ -127,11 +120,11 @@ namespace CK.SqlServer.Setup.Engine.Tests
         [Test]
         public void ManualImplementation()
         {
-            using( SqlManager m = new SqlManager( TestHelper.ConsoleMonitor ) )
+            using( SqlManager m = new SqlManager( TestHelper.Monitor ) )
             {
-                Assert.That( m.OpenFromConnectionString( ConnectionString, true ), "Unable to open or create CKSqlServerTests database on local server." );
-                var install = SqlHelper.SplitGoSeparator( File.ReadAllText( TestHelper.GetScriptsFolder( "CallProcedureAutoImplementor.sql" ) ) );
-                m.ExecuteScripts( install, TestHelper.ConsoleMonitor );
+                Assert.That( m.OpenFromConnectionString( ConnectionString, true ), "Unable to open or create test database on local server: {0}.", ConnectionString );
+                var install = SqlHelper.SplitGoSeparator( File.ReadAllText( Path.Combine( TestHelper.ProjectFolder, "Scripts/CallProcedureAutoImplementor.sql" ) ) );
+                m.ExecuteScripts( install, TestHelper.Monitor );
 
                 SqlCallContext c = new SqlCallContext( m );
                 ManualCall manual = new ManualCall();

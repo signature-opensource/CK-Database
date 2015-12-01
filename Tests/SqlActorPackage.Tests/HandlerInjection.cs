@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CK.Core;
 using NUnit.Framework;
 using SqlActorPackage.Basic;
+using System.Diagnostics;
 
 namespace SqlActorPackage.Tests
 {

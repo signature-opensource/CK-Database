@@ -77,7 +77,7 @@ namespace CK.StObj.Engine.Tests
         public void OneObjectDirectProperty()
         {
             {
-                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor );
+                StObjCollector collector = new StObjCollector( TestHelper.Monitor );
                 collector.RegisterClass( typeof( SimpleObjectDirect ) );
                 StObjCollectorResult result = collector.GetResult();
                 Assert.That( result.OrderedStObjs.FirstOrDefault(), Is.Not.Null, "We registered SimpleObjectDirect." );
@@ -85,7 +85,7 @@ namespace CK.StObj.Engine.Tests
                 Assert.That( ((SimpleObjectDirect)result.OrderedStObjs.First().InitialObject).OneIntValue, Is.EqualTo( 3712 ), "Direct properties can be set by Attribute." );
             }
             {
-                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor, configurator: new ConfiguratorOneIntValueSetTo42() );
+                StObjCollector collector = new StObjCollector( TestHelper.Monitor, configurator: new ConfiguratorOneIntValueSetTo42() );
                 collector.RegisterClass( typeof( SimpleObjectDirect ) );
                 StObjCollectorResult result = collector.GetResult();
                 Assert.That( ((SimpleObjectDirect)result.OrderedStObjs.First().InitialObject).OneIntValue, Is.EqualTo( 42 ), "Direct properties can be set by any IStObjStructuralConfigurator participant (here the global one)." );
@@ -96,7 +96,7 @@ namespace CK.StObj.Engine.Tests
         public void OneObjectAmbiantProperty()
         {
             {
-                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor );
+                StObjCollector collector = new StObjCollector( TestHelper.Monitor );
                 collector.RegisterClass( typeof( SimpleObjectAmbient ) );
                 StObjCollectorResult result = collector.GetResult();
                 Assert.That( result.OrderedStObjs.FirstOrDefault(), Is.Not.Null, "We registered SimpleObjectAmbient." );
@@ -104,7 +104,7 @@ namespace CK.StObj.Engine.Tests
                 Assert.That( ((SimpleObjectAmbient)result.OrderedStObjs.First().InitialObject).OneIntValue, Is.EqualTo( 3712 ), "Same as Direct properties (above) regarding direct setting. The difference between Ambient and non-ambient lies in value propagation." );
             }
             {
-                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor, configurator: new ConfiguratorOneIntValueSetTo42() );
+                StObjCollector collector = new StObjCollector( TestHelper.Monitor, configurator: new ConfiguratorOneIntValueSetTo42() );
                 collector.RegisterClass( typeof( SimpleObjectAmbient ) );
                 StObjCollectorResult result = collector.GetResult();
                 Assert.That( ((SimpleObjectAmbient)result.OrderedStObjs.First().InitialObject).OneIntValue, Is.EqualTo( 42 ), "Same as Direct properties (above) regarding direct setting. The difference between Ambient and non-ambient lies in value propagation." );
@@ -129,14 +129,14 @@ namespace CK.StObj.Engine.Tests
         public void AmbiantOrDirectPropertyDeclaredInBaseClassCanBeSet()
         {
             {
-                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor );
+                StObjCollector collector = new StObjCollector( TestHelper.Monitor );
                 collector.RegisterClass( typeof( SpecializedObjectDirect ) );
                 StObjCollectorResult result = collector.GetResult();
                 Assert.That( result.OrderedStObjs.Count, Is.EqualTo( 2 ), "SpecializedObjectDirect and SimpleObjectDirect." );
                 Assert.That( result.Default.StObjMap.Obtain<SpecializedObjectDirect>().OneIntValue, Is.EqualTo( 999 ), "Direct properties can be set by Attribute (or any IStObjStructuralConfigurator)." );
             }
             {
-                StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor );
+                StObjCollector collector = new StObjCollector( TestHelper.Monitor );
                 collector.RegisterClass( typeof( SpecializedObjectAmbient ) );
                 StObjCollectorResult result = collector.GetResult();
                 Assert.That( result.OrderedStObjs.Count, Is.EqualTo( 2 ), "SpecializedObjectAmbient and SimpleObjectAmbient." );
@@ -163,7 +163,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void PropagationFromDirectPropertyDoesNotWork()
         {
-            StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor, configurator: new ConfiguratorOneIntValueSetTo42() );
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, configurator: new ConfiguratorOneIntValueSetTo42() );
             collector.RegisterClass( typeof( SimpleObjectDirect ) );
             collector.RegisterClass( typeof( SimpleObjectInsideDirect ) );
             StObjCollectorResult result = collector.GetResult();
@@ -174,7 +174,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void PropagationFromAmbientProperty()
         {
-            StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor, configurator: new ConfiguratorOneIntValueSetTo42() );
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, configurator: new ConfiguratorOneIntValueSetTo42() );
             collector.RegisterClass( typeof( SimpleObjectAmbient ) );
             collector.RegisterClass( typeof( SimpleObjectInsideAmbiant ) );
             StObjCollectorResult result = collector.GetResult();
@@ -230,7 +230,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void TypeResolution()
         {
-            StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor, configurator: new AmbientResolutionTypeSetter() );
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, configurator: new AmbientResolutionTypeSetter() );
             collector.RegisterClass( typeof( O2InC2 ) );
             collector.RegisterClass( typeof( C2 ) );
             collector.RegisterClass( typeof( TypeToMap ) );

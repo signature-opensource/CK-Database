@@ -21,6 +21,13 @@ namespace CK.DB.Tests
 
         [Test]
         [Explicit]
+        public void toggle_logging_to_console()
+        {
+            TestHelper.LogToConsole = !TestHelper.LogToConsole;
+        }
+
+        [Test]
+        [Explicit]
         public void db_setup()
         {
             Assert.That( TestHelper.RunDBSetup(), "DBSetup failed." );

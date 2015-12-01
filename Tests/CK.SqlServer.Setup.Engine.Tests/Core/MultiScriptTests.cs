@@ -109,11 +109,11 @@ end
         private static void TestScriptOnError( SqlManager m, string script, string expected )
         {
             var sC = new SimpleScriptTagHandler( script );
-            Assert.That( sC.Expand( TestHelper.ConsoleMonitor, true ) );
+            Assert.That( sC.Expand( TestHelper.Monitor, true ) );
             var s = sC.SplitScript();
             Assert.That( s.Count, Is.AtLeast( 2 ) );
 
-            using( var e = m.CreateExecutor( TestHelper.ConsoleMonitor ) )
+            using( var e = m.CreateExecutor( TestHelper.Monitor ) )
             {
                 Assert.That( e.Execute( s[0].Body ) );
                 Assert.That( e.Execute( s[1].Body ), Is.False );

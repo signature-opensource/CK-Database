@@ -74,7 +74,6 @@
     <Compile Include="Core\SqlManagerTests.cs" />
     <Compile Include="FileBasedDBSetup.cs" />
     <Compile Include="FileBasedDiscoveringAndParsing.cs" />
-    <Compile Include="IntoTheWild\IntoTheWildTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ActorPackage\DatabaseSetup.cs" />
     <Compile Include="ShallowParserTests.cs" />
@@ -125,6 +124,10 @@
       <Project>{DB108FF8-42A4-4787-92C2-2D5A4DAAB85E}</Project>
       <Name>CK.StObj.Runtime</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj">
+      <Project>{c9bcbea7-e5e9-4685-b976-4a6e85af4453}</Project>
+      <Name>CK.DB.Tests.NUnit</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CK.SqlServer.Setup.Engine.Tests.Model\CK.Authentication.Local\CK.Authentication.Local.csproj">
       <Project>{346344C2-F522-4B69-914C-E911B3C3D92B}</Project>
       <Name>CK.Authentication.Local</Name>
@@ -136,10 +139,6 @@
     <ProjectReference Include="..\CK.SqlServer.Setup.Engine.Tests.Model\SqlZonePackage\SqlZonePackage.csproj">
       <Project>{3ff4bf4a-3a28-4ad6-bff1-e87f11124e31}</Project>
       <Name>SqlZonePackage</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.SqlServer.Setup.Engine.Tests.Model\IntoTheWild0\IntoTheWild0.csproj">
-      <Project>{94F93F54-E70F-45B4-BB7B-4ADB82059257}</Project>
-      <Name>IntoTheWild0</Name>
     </ProjectReference>
     <ProjectReference Include="..\CK.SqlServer.Setup.Engine.Tests.Model\KindOfActorPackage\SqlActorPackage.csproj">
       <Project>{6D0D47C8-98F7-47DE-B118-AD3606455F7E}</Project>
@@ -189,6 +188,7 @@
     <Content Include="Scripts\InstallFromScratch\Model.Test.WithModel.Install.1.0.0.sql" />
     <Content Include="Scripts\InstallFromScratch\Test.fTest.sql" />
     <Content Include="Scripts\CallProcedureAutoImplementor.sql" />
+    <None Include="App.config" />
     <None Include="packages.config" />
     <None Include="Scripts\InstallFromScratchWithSPDependsOnVersion\WithSPDependsOnVersion.ck">
       <SubType>Designer</SubType>

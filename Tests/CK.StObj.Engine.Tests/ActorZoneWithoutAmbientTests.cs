@@ -105,7 +105,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void LayeredArchitecture()
         {
-            StObjCollector collector = new StObjCollector( TestHelper.ConsoleMonitor );
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor );
             collector.RegisterClass( typeof( BasicPackage ) );
             collector.RegisterClass( typeof( BasicActor ) );
             collector.RegisterClass( typeof( BasicUser ) );
@@ -116,8 +116,8 @@ namespace CK.StObj.Engine.Tests
             collector.RegisterClass( typeof( AuthenticationPackage ) );
             collector.RegisterClass( typeof( AuthenticationUser ) );
             collector.RegisterClass( typeof( SqlDatabaseDefault ) );
-            collector.DependencySorterHookInput = items => TestHelper.ConsoleMonitor.TraceDependentItem( items );
-            collector.DependencySorterHookOutput = sortedItems => TestHelper.ConsoleMonitor.TraceSortedItem( sortedItems, false );
+            collector.DependencySorterHookInput = items => TestHelper.Monitor.TraceDependentItem( items );
+            collector.DependencySorterHookOutput = sortedItems => TestHelper.Monitor.TraceSortedItem( sortedItems, false );
             
             var r = collector.GetResult();
             Assert.That( r.HasFatalError, Is.False );

@@ -15,7 +15,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
     {
         static void CheckCommandWrapper( SqlManager c, IStObjMap map )
         {
-            using( TestHelper.ConsoleMonitor.OpenTrace().Send( "CheckCommandWrapper" ) )
+            using( TestHelper.Monitor.OpenTrace().Send( "CheckCommandWrapper" ) )
             {
                 var package = map.Default.Obtain<Package>();
                 SimplestScalar( c, package );

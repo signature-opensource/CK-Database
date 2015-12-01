@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SqlCallDemo.Tests
+namespace From.CKDBNUnit
 {
     [TestFixture]
     public class DBSetup : CK.DB.Tests.DBSetup

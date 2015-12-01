@@ -27,7 +27,7 @@ create view CV.vQuestionAnsweredCount
 as
     select * from CV.vAnswer;
 ";
-            SqlObjectProtoItem item = SqlObjectParser.Create( TestHelper.ConsoleMonitor, new ContextLocName( "CV.vQuestionAnsweredCount" ), h );
+            SqlObjectProtoItem item = SqlObjectParser.Create( TestHelper.Monitor, new ContextLocName( "CV.vQuestionAnsweredCount" ), h );
             Assert.That( item.ItemKind, Is.EqualTo( CK.Setup.DependentItemKind.Item ) );
             Assert.That( item.ItemType, Is.EqualTo( SqlObjectProtoItem.TypeView ) );
             Assert.That( item.Version, Is.Null );
