@@ -5,8 +5,8 @@
     <version>$version$</version>
     <authors>Invenietis</authors>
     <owners>Invenietis</owners>
-    <licenseUrl>https://github.com/Invenietis/ck-database/license</licenseUrl>
-    <projectUrl>https://github.com/Invenietis/ck-database</projectUrl>
+    <licenseUrl>https://bitbucket.org/olivier_spinelli/ck-database/license</licenseUrl>
+    <projectUrl>https://bitbucket.org/olivier_spinelli/ck-database</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>
 CK.SqlServer.Core contains helpers for Sql Server and ADO.Net.

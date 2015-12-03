@@ -5,8 +5,8 @@
     <version>$version$</version>
     <authors>Invenietis</authors>
     <owners>Invenietis</owners>
-    <licenseUrl>https://github.com/Invenietis/ck-database/license</licenseUrl>
-    <projectUrl>https://github.com/Invenietis/ck-database</projectUrl>
+    <licenseUrl>https://bitbucket.org/olivier_spinelli/ck-database/license</licenseUrl>
+    <projectUrl>https://bitbucket.org/olivier_spinelli/ck-database</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>
       Contains NUnit test helpers.
@@ -17,6 +17,8 @@
       <dependency id="CK.Monitoring" version="4.3.0" />
       <dependency id="CK.Reflection" version="4.3.0" />
       <dependency id="NUnit" version="2.6.4" />
+      <dependency id="NUnit.Runners" version="2.6.4" />
+      <dependency id="CK.SqlServer.Parser" version="4.0.2" />
       <dependency id="CK.SqlServer.Setup.Engine" version="$version$" />
     </dependencies>
   </metadata>

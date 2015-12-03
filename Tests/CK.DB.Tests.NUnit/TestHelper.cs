@@ -236,7 +236,18 @@ namespace CK.Core
         /// Note that the <see cref="AppSettings.Default"/> may be <see cref="AppSettings.Override(Func{Func{string, object}, string, object})">overridden</see>
         /// by code.
         /// </summary>
-        public static string DatabaseTestName => AppSettings.Default["DatabaseTestName"];
+        public static string DatabaseTestName
+        {
+            get
+            {
+                var dbName = AppSettings.Default["DatabaseTestName"];
+                if( dbName == null )
+                {
+                    throw new Exception( "AppSettings.Default[\"DatabaseTestName\"] is null. Defines <appSettings><add key=\"DatabaseTestName\" value=\"XXXX\" /></appSettings> in App.config file." );
+                }
+                return dbName;
+            }
+        }
 
         /// <summary>
         /// Gets the connection string to the <see cref="DatabaseTestName"/>.
@@ -333,7 +344,7 @@ namespace CK.Core
             _projectFolder = p = Path.GetDirectoryName( Path.GetDirectoryName( p ) );
 
             bool hasGit = false;
-            while( p.Length > 2 && !(hasGit = Directory.Exists( Path.Combine( p, ".git" ) )) )
+            while( p != null && !(hasGit = Directory.Exists( Path.Combine( p, ".git" ) )) )
             {
                 p = Path.GetDirectoryName( p );
             }
