@@ -167,7 +167,7 @@ namespace CK.SqlServer
             {
                 case SqlDbType.NVarChar: return String.Format( "N'{0}'", SqlEncode( Convert.ToString( v, CultureInfo.InvariantCulture ) ) );
                 case SqlDbType.Int: return Convert.ToString( v, CultureInfo.InvariantCulture );
-                case SqlDbType.Bit: return (bool)v ? "1" : "0";
+                case SqlDbType.Bit: return Convert.ToBoolean( v ) ? "1" : "0";
                 case SqlDbType.Char: goto case SqlDbType.VarChar;
                 case SqlDbType.VarChar: return String.Format( "'{0}'", SqlEncode( Convert.ToString( v, CultureInfo.InvariantCulture ) ) );
                 case SqlDbType.NChar: goto case SqlDbType.NVarChar;
