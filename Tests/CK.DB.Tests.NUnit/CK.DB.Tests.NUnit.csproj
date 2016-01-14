@@ -47,8 +47,8 @@
       <HintPath>..\..\packages\CK.Reflection.4.3.0\lib\net45\CK.Reflection.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="CK.SqlServer.Parser, Version=4.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\CK.SqlServer.Parser.4.0.2\lib\net45\CK.SqlServer.Parser.dll</HintPath>
+    <Reference Include="CK.SqlServer.Parser, Version=4.1.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\CK.SqlServer.Parser.4.1.0-a\lib\net45\CK.SqlServer.Parser.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="CK.SqlServer.Parser.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
@@ -60,6 +60,10 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Collections.Immutable, Version=1.1.37.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Collections.Immutable.1.1.37\lib\dotnet\System.Collections.Immutable.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -125,12 +129,12 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\..\packages\SimpleGitVersionTask.0.11.1\build\SimpleGitVersionTask.targets" Condition="Exists('..\..\packages\SimpleGitVersionTask.0.11.1\build\SimpleGitVersionTask.targets')" />
+  <Import Project="..\..\packages\SimpleGitVersionTask.0.13.0\build\SimpleGitVersionTask.targets" Condition="Exists('..\..\packages\SimpleGitVersionTask.0.13.0\build\SimpleGitVersionTask.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\SimpleGitVersionTask.0.11.1\build\SimpleGitVersionTask.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SimpleGitVersionTask.0.11.1\build\SimpleGitVersionTask.targets'))" />
+    <Error Condition="!Exists('..\..\packages\SimpleGitVersionTask.0.13.0\build\SimpleGitVersionTask.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SimpleGitVersionTask.0.13.0\build\SimpleGitVersionTask.targets'))" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
