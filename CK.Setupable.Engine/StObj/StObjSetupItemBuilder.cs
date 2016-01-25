@@ -222,7 +222,9 @@ namespace CK.Setup
         {
             readonly StObjSetupItemBuilder _builder;
             readonly IDictionary _memory;
-            readonly List<PushedAction> _actions;
+            List<PushedAction> _actions;
+            List<PushedAction> _nextRoundActions;
+            int _currentRoundActions;
 
             class PushedAction
             {
@@ -252,6 +254,10 @@ namespace CK.Setup
             public IDictionary Memory { get { return _memory; } }
 
             public int PushedActionsCount { get { return _actions.Count; } }
+
+            public int PushedNextRoundActionsCount { get { return _nextRoundActions != null ? _nextRoundActions.Count : 0; } }
+
+            public int CurrentRoundNumber => _currentRoundActions;
             
             public IMutableSetupItem CurrentItem;
             public IStObjResult CurrentStObj;
@@ -261,7 +267,29 @@ namespace CK.Setup
                 _actions.Add( new PushedAction( CurrentItem, CurrentStObj, a ) );
             }
 
+            public void PushNextRoundAction( Action<IStObjSetupDynamicInitializerState, IMutableSetupItem, IStObjResult> a )
+            {
+                if( _nextRoundActions == null ) _nextRoundActions = new List<PushedAction>();
+                _nextRoundActions.Add( new PushedAction( CurrentItem, CurrentStObj, a ) );
+            }
+
             internal bool ExecuteActions()
+            {
+                for(;;)
+                {
+                    using( Monitor.OpenInfo().Send( "Starting intialization round n°{0}.", _currentRoundActions ) )
+                    {
+                        if( !ExecuteCurrentActions() ) return false;
+                        if( _nextRoundActions == null ) return true;
+                        Debug.Assert( _nextRoundActions.Count > 0 );
+                        _actions = _nextRoundActions;
+                        _nextRoundActions = null;
+                        ++_currentRoundActions;
+                    }
+                }
+            }
+
+            bool ExecuteCurrentActions()
             {
                 bool success = true;
                 int i = 0;
@@ -276,7 +304,7 @@ namespace CK.Setup
                     }
                     catch( Exception ex )
                     {
-                        Monitor.Error().Send( ex, "While calling a pushed action on '{0}'.", CurrentItem.FullName );
+                        Monitor.Error().Send( ex, "While calling a pushed action on '{0}' (round n°{1}).", CurrentItem.FullName, _currentRoundActions );
                         success = false;
                     }
                     ++i;
@@ -300,7 +328,7 @@ namespace CK.Setup
                     try
                     {
                         initSource = "Attributes";
-                        // ApplyAttributesDynamicInitializer on attributes (attributes of the type itself comes first).
+                        // ApplyAttributesDynamicInitializer on attributes (attributes of the type itself come first).
                         {
                             var all = o.Attributes.GetAllCustomAttributes<IStObjSetupDynamicInitializer>();
                             foreach( IStObjSetupDynamicInitializer init in all )
@@ -310,7 +338,7 @@ namespace CK.Setup
                         }
                         initSource = "Structured Item itself";
                         IStObjSetupDynamicInitializer objectItself = o.ObjectAccessor() as IStObjSetupDynamicInitializer;
-                        if( objectItself != null ) ((IStObjSetupDynamicInitializer)objectItself).DynamicItemInitialize( state, item, o );
+                        if( objectItself != null ) objectItself.DynamicItemInitialize( state, item, o );
                         initSource = "Setup Item itself";
                         if( item is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)item).DynamicItemInitialize( state, item, o );
                         initSource = "Global StObjSetupBuilder initializer";
@@ -323,7 +351,7 @@ namespace CK.Setup
                     }
                 }
                 // On success, we execute the pushed actions.
-                if( success && state.PushedActionsCount > 0 )
+                if( success && state.PushedActionsCount > 0 || state.PushedNextRoundActionsCount > 0 )
                 {
                     using( _monitor.OpenInfo().Send( "Executing {0} deferred actions.", state.PushedActionsCount ) )
                     {

@@ -124,14 +124,6 @@ namespace CK.Setup
             set { base.ItemKind = value; }
         }
 
-        /// <summary>
-        /// Gets the prefix that can be used to locate child names (typically for resource lookup).
-        /// </summary>
-        public virtual IReadOnlyList<string> AvailableChildPrefix
-        {
-            get { return CKReadOnlyListEmpty<string>.Empty; }
-        }
-
         protected override object StartDependencySort()
         {
             return _driverType;

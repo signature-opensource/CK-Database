@@ -35,12 +35,20 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Cake.Common, Version=0.7.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Cake.Common.0.7.0\lib\net45\Cake.Common.dll</HintPath>
+    <Reference Include="Cake.Common, Version=0.8.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Cake.Common.0.8.0\lib\net45\Cake.Common.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Cake.Core, Version=0.7.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Cake.Core.0.7.0\lib\net45\Cake.Core.dll</HintPath>
+    <Reference Include="Cake.Core, Version=0.8.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Cake.Core.0.8.0\lib\net45\Cake.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="CK.Core, Version=4.3.0.0, Culture=neutral, PublicKeyToken=edfa2f62fc978217, processorArchitecture=MSIL">
+      <HintPath>..\packages\CK.Core.4.3.0\lib\net45\CK.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="CK.SqlServer.Parser.Model, Version=1.2.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\packages\CK.SqlServer.Parser.Model.1.2.0\lib\net45\CK.SqlServer.Parser.Model.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Code.Cake, Version=0.7.0.0, Culture=neutral, processorArchitecture=MSIL">

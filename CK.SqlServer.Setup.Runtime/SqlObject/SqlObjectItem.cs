@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Setup.Runtime\SqlObject\SqlObjectItem.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -13,6 +6,7 @@ using System.IO;
 using System.Reflection;
 using CK.Core;
 using CK.Setup;
+using System.Text;
 
 namespace CK.SqlServer.Setup
 {
@@ -72,7 +66,7 @@ namespace CK.SqlServer.Setup
             // Keeps the physical database name if the proto item defines it.
             // It is currently unused.
             _physicalDB = p.PhysicalDatabaseName;
-            _header = _protoItem.Header;
+            _header = p.Header;
             _missingDependencyIsError = p.MissingDependencyIsError;
         }
 
@@ -129,44 +123,42 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Writes the drop instruction.
         /// </summary>
-        /// <param name="b">The target <see cref="TextWriter"/>.</param>
-        public void WriteDrop( TextWriter b )
+        /// <param name="b">The target <see cref="StringBuilder"/>.</param>
+        public void WriteDrop( StringBuilder b )
         {
-            b.Write( "if OBJECT_ID('" );
-            b.Write( ContextLocName.Name );
-            b.Write( "') is not null drop " );
-            b.Write( ItemType );
-            b.Write( ' ' );
-            b.Write( ContextLocName.Name );
-            b.WriteLine( ';' );
+            b.Append( "if OBJECT_ID('" )
+                .Append( ContextLocName.Name )
+                .Append( "') is not null drop " )
+                .Append( ItemType )
+                .Append( ' ' )
+                .Append( ContextLocName.Name )
+                .Append( ';' )
+                .AppendLine();
         }
 
         /// <summary>
         /// Writes the whole object.
         /// </summary>
-        /// <param name="b">The target <see cref="TextWriter"/>.</param>
-        public void WriteCreate( TextWriter b )
+        /// <param name="b">The target <see cref="StringBuilder"/>.</param>
+        public void WriteCreate( StringBuilder b )
         {
-            if( _protoItem != null ) b.WriteLine( _header );
-            b.Write( "create " );
-            b.Write( ItemType );
-            b.Write( ' ' );
-            b.Write( ContextLocName.Name );
             if( ReplacedBy != null )
             {
-                b.WriteLine();
-                b.WriteLine( "-- This {0} is replaced.", ItemType );
-                // For fonctions we must consider the actual kind of function.
-                // I'll do this later.
-                if( ItemType == SqlObjectProtoItem.TypeProcedure )
-                {
-                    b.WriteLine( "as begin" );
-                    b.WriteLine( "  return 0;" );
-                    b.WriteLine( "end" );
-                    return;
-                }
+                b.AppendFormat( "-- This {0} is replaced.", ItemType ).AppendLine();
+                b.AppendFormat( "-- create {0} {1}", ItemType, ContextLocName.Name ).AppendLine();
             }
-            if( _protoItem != null ) b.WriteLine( _protoItem.TextAfterName );
+            else DoWriteCreate( b );
+        }
+
+        protected virtual void DoWriteCreate( StringBuilder b )
+        {
+            b.Append( _header ).AppendLine();
+            b.Append( "create " )
+                .Append( ItemType )
+                .Append( ' ' )
+                .Append( ContextLocName.Name )
+                .Append( _protoItem.TextAfterName )
+                .AppendLine();
         }
 
     }

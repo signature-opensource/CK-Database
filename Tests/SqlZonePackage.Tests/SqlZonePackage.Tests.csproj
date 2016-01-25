@@ -35,11 +35,11 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="CK.SqlServer.Parser, Version=4.1.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\CK.SqlServer.Parser.4.1.0-a\lib\net45\CK.SqlServer.Parser.dll</HintPath>
+      <HintPath>..\..\packages\CK.SqlServer.Parser.4.1.0-a00-00-explore-0003\lib\net45\CK.SqlServer.Parser.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="CK.SqlServer.Parser.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\CK.SqlServer.Parser.Model.1.0.1\lib\net45\CK.SqlServer.Parser.Model.dll</HintPath>
+    <Reference Include="CK.SqlServer.Parser.Model, Version=1.2.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\CK.SqlServer.Parser.Model.1.2.0\lib\net45\CK.SqlServer.Parser.Model.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="nunit.framework">
@@ -70,10 +70,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">
-      <Project>{87f54185-5226-4eee-8d59-5d03e6c1ab7c}</Project>
-      <Name>CK.Setup.Dependency</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\CK.Setupable.Engine\CK.Setupable.Engine.csproj">
       <Project>{d3c700e1-3546-437c-9b96-1f867a539b6a}</Project>
       <Name>CK.Setupable.Engine</Name>
@@ -109,6 +105,10 @@
     <ProjectReference Include="..\..\CK.StObj.Runtime\CK.StObj.Runtime.csproj">
       <Project>{db108ff8-42a4-4787-92c2-2d5a4daab85e}</Project>
       <Name>CK.StObj.Runtime</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\SqlZonePackage.Runtime\SqlZonePackage.Runtime.csproj">
+      <Project>{b48c03f8-2273-4bc3-a1bf-43bd6ad5b7e9}</Project>
+      <Name>SqlZonePackage.Runtime</Name>
     </ProjectReference>
     <ProjectReference Include="..\CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj">
       <Project>{c9bcbea7-e5e9-4685-b976-4a6e85af4453}</Project>

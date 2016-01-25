@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using CK.Core;
 using CK.Setup;
+using System.Text;
 
 namespace CK.SqlServer.Setup
 {
@@ -41,7 +42,7 @@ namespace CK.SqlServer.Setup
             if( m == null ) return false;
  
             string s;
-            StringWriter w = new StringWriter();
+            StringBuilder b = new StringBuilder();
 
             IDisposable configRestorer = null;
             bool itemMissingDependencyIsError = Item.MissingDependencyIsError.HasValue ? Item.MissingDependencyIsError.Value : true;
@@ -59,13 +60,13 @@ namespace CK.SqlServer.Setup
             }
             using( configRestorer )
             {
-                Item.WriteDrop( w );
-                s = w.GetStringBuilder().ToString();
+                Item.WriteDrop( b );
+                s = b.ToString();
                 if( !m.ExecuteOneScript( s, Engine.Monitor ) ) return false;
-                w.GetStringBuilder().Clear();
+                b.Clear();
 
-                Item.WriteCreate( w );
-                s = w.GetStringBuilder().ToString();
+                Item.WriteCreate( b );
+                s = b.ToString();
 
                 var tagHandler = new SimpleScriptTagHandler( s );
                 if( !tagHandler.Expand( Engine.Monitor, true ) ) return false;

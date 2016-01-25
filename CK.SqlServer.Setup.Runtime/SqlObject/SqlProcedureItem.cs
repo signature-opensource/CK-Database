@@ -1,19 +1,14 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Setup.Runtime\SqlObject\SqlProcedureItem.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using System.Reflection.Emit;
 using CK.Core;
 using CK.Reflection;
 using CK.SqlServer.Parser;
+using System.Text;
 
 namespace CK.SqlServer.Setup
 {
@@ -39,6 +34,18 @@ namespace CK.SqlServer.Setup
         /// Can be null if an error occurred during parsing.
         /// </summary>
         public ISqlServerCallableObject OriginalStatement { get { return _storedProc; } }
+
+        /// <summary>
+        /// Gets or sets a replacement of the <see cref="OriginalStatement"/>.
+        /// </summary>
+        public ISqlServerCallableObject FinalStatement { get; set; }
+
+        protected override void DoWriteCreate( StringBuilder b )
+        {
+            ISqlServerCallableObject s = FinalStatement ?? _storedProc;
+            if( s.IsAlterKeyword ) s = (ISqlServerCallableObject)s.ToggleKeyword();
+            s.Write( b );
+        }
 
         /// <summary>
         /// Gets or generates the method that creates the <see cref="SqlCommand"/> for this <see cref="SqlProcedureItem"/>.
