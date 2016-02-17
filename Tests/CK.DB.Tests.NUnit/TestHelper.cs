@@ -338,10 +338,21 @@ namespace CK.Core
 
         static void InitalizePaths()
         {
-            string p = new Uri( System.Reflection.Assembly.GetExecutingAssembly().CodeBase ).LocalPath;
-            // Code base is like "...HumanSide\Tests\CK.ActorModel.Tests\Debug\bin\CK.ActorModel.Tests.dll"
-            _binFolder = p = Path.GetDirectoryName( p );
-            _projectFolder = p = Path.GetDirectoryName( Path.GetDirectoryName( p ) );
+            string p;
+            Type tDNX = Type.GetType( "Microsoft.Extensions.PlatformAbstractions.PlatformServices, Microsoft.Extensions.PlatformAbstractions", false );
+            if( tDNX != null )
+            {
+                dynamic s = tDNX.InvokeMember( "Default", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.Static, null, null, null );
+                p = s.Application.ApplicationBasePath;
+                _projectFolder = _binFolder = p;
+            }
+            else
+            {
+                p = new Uri( System.Reflection.Assembly.GetExecutingAssembly().CodeBase ).LocalPath;
+                // Code base is like "...HumanSide\Tests\CK.ActorModel.Tests\Debug\bin\CK.ActorModel.Tests.dll"
+                _binFolder = p = Path.GetDirectoryName( p );
+                _projectFolder = p = Path.GetDirectoryName( Path.GetDirectoryName( p ) );
+            }
 
             bool hasGit = false;
             while( p != null && !(hasGit = Directory.Exists( Path.Combine( p, ".git" ) )) )
