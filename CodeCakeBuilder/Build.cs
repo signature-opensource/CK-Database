@@ -94,7 +94,7 @@ namespace CodeCake
                 .IsDependentOn( "Build" )
                 .Does( () =>
                 {
-                    Cake.NUnit( "Tests/**/*.Tests/bin/" + configuration + "/*.Tests.dll", new NUnitSettings() { Framework = "v4.5" } );
+                    Cake.NUnit3( "Tests/**/*.Tests/bin/" + configuration + "/*.Tests.dll", new NUnit3Settings() { Framework = "v4.5" } );
                 } );
 
             Task( "Create-NuGet-Packages" )

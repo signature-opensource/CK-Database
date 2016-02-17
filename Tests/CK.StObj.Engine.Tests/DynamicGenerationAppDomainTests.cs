@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (Tests\CK.StObj.Engine.Tests\DynamicGenerationAppDomainTests.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
@@ -297,26 +290,15 @@ namespace CK.StObj.Engine.Tests
             CompilerParameters parameters = new CompilerParameters();
             parameters.GenerateExecutable = false;
             parameters.OutputAssembly = Path.Combine( dir, "AutoGenTestObjBuilder.dll" );
-            parameters.ReferencedAssemblies.Add( "CK.Core.dll" );
-            parameters.ReferencedAssemblies.Add( "CK.Reflection.dll" );
-            parameters.ReferencedAssemblies.Add( "CK.StObj.Model.dll" );
             if( !Directory.Exists( dir ) ) Directory.CreateDirectory( dir );
 
             DirectoryInfo d = new DirectoryInfo( dir );
 
             Assert.That( d.Exists );
-            if( !File.Exists( Path.Combine( d.FullName, "CK.Core.dll" ) ) )
-            {
-                File.Copy( Path.Combine( TestHelper.BinFolder, @"CK.Core.dll" ), Path.Combine( d.FullName, "CK.Core.dll" ), true );
-            }
-            if( !File.Exists( Path.Combine( d.FullName, "CK.Reflection.dll" ) ) )
-            {
-                File.Copy( Path.Combine( TestHelper.BinFolder, @"CK.Reflection.dll" ), Path.Combine( d.FullName, "CK.Reflection.dll" ), true );
-            }
-            if( !File.Exists( Path.Combine( d.FullName, "CK.StObj.Model.dll" ) ) )
-            {
-                File.Copy( Path.Combine( TestHelper.BinFolder, @"CK.StObj.Model.dll" ), Path.Combine( d.FullName, "CK.StObj.Model.dll" ), true );
-            }
+
+            parameters.ReferencedAssemblies.Add( Path.Combine( TestHelper.BinFolder, @"CK.Core.dll" ) );
+            parameters.ReferencedAssemblies.Add( Path.Combine( TestHelper.BinFolder, @"CK.Reflection.dll" ) );
+            parameters.ReferencedAssemblies.Add( Path.Combine( TestHelper.BinFolder, @"CK.StObj.Model.dll" ) );
 
             CompilerResults r = CodeDomProvider.CreateProvider( "C#" ).CompileAssemblyFromSource( parameters,
                 @"  using System;
@@ -375,7 +357,7 @@ namespace CK.StObj.Engine.Tests
                     }"
             );
             foreach( CompilerError item in r.Errors ) Console.WriteLine( item.ErrorText );
-            Assert.That( r.Errors.Count, Is.EqualTo( 0 ) );
+            Assert.That( r.Errors, Is.Empty );
             Assert.That( File.Exists( r.PathToAssembly ) );
         }
 

@@ -16,9 +16,9 @@
       <dependency id="CK.Core" version="4.3.0" />
       <dependency id="CK.Monitoring" version="4.3.0" />
       <dependency id="CK.Reflection" version="4.3.0" />
-      <dependency id="NUnit" version="2.6.4" />
-      <dependency id="NUnit.Runners" version="2.6.4" />
-      <dependency id="CK.SqlServer.Parser" version="4.0.2" />
+      <dependency id="NUnit" version="3.0.1" />
+      <dependency id="NUnit.Console" version="3.0.1" />
+      <dependency id="CK.SqlServer.Parser" version="4.1.0-a01-00-explore-0003" />
       <dependency id="CK.SqlServer.Setup.Engine" version="$version$" />
     </dependencies>
   </metadata>

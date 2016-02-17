@@ -337,9 +337,9 @@ namespace CK.Setup.Dependency.Tests
             Assert.That( r.SortedItems, Is.Null );
             Assert.That( r.CycleDetected[0].Item, Is.SameAs( r.CycleDetected.Last().Item ), "Detected cycle shares its first and last item." );
 
-            bool cycle1 = Is.EquivalentTo( new[] { b, d, h } ).Matches( r.CycleDetected.Skip( 1 ).Select( ec => ec.Item ) );
-            bool cycle2 = Is.EquivalentTo( new[] { b, d, e, c } ).Matches( r.CycleDetected.Skip( 1 ).Select( ec => ec.Item ) );
-            bool cycle3 = Is.EquivalentTo( new[] { b, d, e, c, h } ).Matches( r.CycleDetected.Skip( 1 ).Select( ec => ec.Item ) );
+            bool cycle1 = Is.EquivalentTo( new[] { b, d, h } ).ApplyTo( r.CycleDetected.Skip( 1 ).Select( ec => ec.Item ) ).IsSuccess;
+            bool cycle2 = Is.EquivalentTo( new[] { b, d, e, c } ).ApplyTo( r.CycleDetected.Skip( 1 ).Select( ec => ec.Item ) ).IsSuccess;
+            bool cycle3 = Is.EquivalentTo( new[] { b, d, e, c, h } ).ApplyTo( r.CycleDetected.Skip( 1 ).Select( ec => ec.Item ) ).IsSuccess;
             Assert.That( cycle1 || cycle2 || cycle3 );
             ResultChecker.SimpleCheck( r );
         }
