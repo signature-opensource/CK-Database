@@ -15,11 +15,11 @@ namespace SqlActorPackage.Basic
 {
     [SqlTable( "tActor", Package = typeof( Package ) ), Versions( "CK.tActor=2.12.9, 2.12.10" )]
     [SqlObjectItem( "sActorCreate" )]
-    [TestAutoHeaderSP( "--Injected From ActorHome - TestAutoHeaderAttribute.", "sActorCreate, sActorGuidRefTest" )]
+    [TestAutoHeaderSP( "Injected From ActorHome - TestAutoHeaderAttribute.", "sActorCreate, sActorGuidRefTest" )]
     public abstract class ActorHome : SqlTable
     {
         [SqlProcedure( "sActorGuidRefTest" )]
-        [TestAutoHeaderSPMember( "--Injected From CmdGuidRefTest - TestAutoHeaderSPMember." )]
+        [TestAutoHeaderSPMember( "Injected From CmdGuidRefTest - TestAutoHeaderSPMember." )]
         public abstract void CmdGuidRefTest( ref SqlCommand cmd, Guid? inOnly, ref Guid? inAndOut, out string textResult );
 
         public void ManualCmdGuidRefTest( ref SqlCommand commandRef1, Guid? nullable1, ref Guid? nullableRef1, out string textRef1 )

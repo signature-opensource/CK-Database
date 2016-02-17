@@ -32,11 +32,11 @@ namespace SqlActorPackage.Basic
         public abstract void CmdExists2( ref SqlCommand cmdExists, int userPart1, int userPart2, out bool existsResult );
 
         [SqlProcedure( "sUserToBeOverriden" )]
-        [TestAutoHeaderSPMember( "-- Injected from UserHome.CmdUserToBeOverriden (n°1/2)." )]
+        [TestAutoHeaderSPMember( "Injected from UserHome.CmdUserToBeOverriden (n°1/2)." )]
         public abstract void CmdUserToBeOverriden( ref SqlCommand cmdExists, int param1, out bool done );
 
         [SqlProcedure( "sUserToBeOverridenIndirect" )]
-        [TestAutoHeaderSPMember( "-- Injected from UserHome.CmdUserToBeOverridenIndirect (n°1/2)." )]
+        [TestAutoHeaderSPMember( "Injected from UserHome.CmdUserToBeOverridenIndirect (n°1/2)." )]
         public abstract void CmdUserToBeOverridenIndirect( ref SqlCommand cmdExists, int param1, out bool done );
     }
 

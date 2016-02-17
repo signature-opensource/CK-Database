@@ -10,13 +10,13 @@ namespace SqlActorPackage
     [AttributeUsage(AttributeTargets.Class, AllowMultiple=true, Inherited=false)]
     public class TestAutoHeaderSPAttribute : SetupItemSelectorBaseAttribute
     {
-        public TestAutoHeaderSPAttribute( string sqlHeader, string commaSeparatedNames )
+        public TestAutoHeaderSPAttribute( string headerComment, string commaSeparatedNames )
             : base( "SqlActorPackage.Runtime.TestAutoHeaderSPAttributeImpl, SqlActorPackage.Runtime", commaSeparatedNames, SetupItemSelectorScope.All )
         {
-            SqlHeader = sqlHeader;
+            HeaderComment = headerComment;
         }
 
-        public string SqlHeader { get; set;}
+        public string HeaderComment { get; set;}
 
     }
 }

@@ -292,22 +292,24 @@ namespace CK.Setup
             bool ExecuteCurrentActions()
             {
                 bool success = true;
-                int i = 0;
-                while( i < _actions.Count )
+                using( _builder._monitor.OnError( () => success = false ) )
                 {
-                    PushedAction a = _actions[i];
-                    try
+                    int i = 0;
+                    while( i < _actions.Count )
                     {
-                        CurrentItem = a.Item;
-                        CurrentStObj = a.StObj;
-                        a.Action( this, CurrentItem, CurrentStObj );
+                        PushedAction a = _actions[i];
+                        try
+                        {
+                            CurrentItem = a.Item;
+                            CurrentStObj = a.StObj;
+                            a.Action( this, CurrentItem, CurrentStObj );
+                        }
+                        catch( Exception ex )
+                        {
+                            Monitor.Fatal().Send( ex, "While calling a pushed action on '{0}' (round n°{1}).", CurrentItem.FullName, _currentRoundActions );
+                        }
+                        ++i;
                     }
-                    catch( Exception ex )
-                    {
-                        Monitor.Error().Send( ex, "While calling a pushed action on '{0}' (round n°{1}).", CurrentItem.FullName, _currentRoundActions );
-                        success = false;
-                    }
-                    ++i;
                 }
                 return success;
             }

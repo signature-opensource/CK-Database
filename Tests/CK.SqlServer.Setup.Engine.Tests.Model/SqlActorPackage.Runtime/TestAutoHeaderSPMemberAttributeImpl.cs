@@ -22,7 +22,7 @@ namespace SqlActorPackage.Runtime
 
         bool ISetupItemDriverAware.OnDriverCreated( GenericItemSetupDriver driver )
         {
-            new TestAutoHeaderSPHandler( driver.Engine.Drivers[SetupObjectItem], Attribute.SqlHeader );
+            new TestAutoHeaderSPHandler( driver.Engine.Drivers[SetupObjectItem], Attribute.HeaderComment );
             return true;
         }
     }

@@ -24,7 +24,7 @@ namespace SqlActorPackage.Runtime
         {
             foreach( var sp in items )
             {
-                new TestAutoHeaderSPHandler( driver.Engine.Drivers[sp], Attribute.SqlHeader );
+                new TestAutoHeaderSPHandler( driver.Engine.Drivers[sp], Attribute.HeaderComment );
             }
             return true;
         }

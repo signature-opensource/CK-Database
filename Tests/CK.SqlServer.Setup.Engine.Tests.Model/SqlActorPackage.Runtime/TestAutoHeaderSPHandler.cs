@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CK.Setup;
 using CK.SqlServer.Setup;
+using CK.SqlServer.Parser;
 
 namespace SqlActorPackage.Runtime
 {
@@ -22,9 +23,11 @@ namespace SqlActorPackage.Runtime
         protected override bool Init()
         {
             SqlProcedureItem item = (SqlProcedureItem)Driver.Item;
-            item.Header += Environment.NewLine;
-            item.Header += _header;
-            item.Header += Environment.NewLine;
+            SqlStoredProcedure p = (SqlStoredProcedure)item.FinalStatement;
+            if( p != null )
+            {
+                item.FinalStatement = p.AddLeadingTrivia( new SqlTrivia( SqlTokenType.LineComment, _header ) );
+            }
             return true;
         }
 

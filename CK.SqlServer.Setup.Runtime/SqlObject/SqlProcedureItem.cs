@@ -15,36 +15,50 @@ namespace CK.SqlServer.Setup
     public class SqlProcedureItem : SqlObjectItem
     {
         const string _builderTypeName = "CK.<CreatorForSqlCommand>";
-        readonly ISqlServerCallableObject _storedProc;
+        readonly ISqlServerStoredProcedure _originalStoredProc;
+        ISqlServerStoredProcedure _finalStoredProc;
 
-        internal SqlProcedureItem( SqlObjectProtoItem p, ISqlServerCallableObject storedProc )
+        internal SqlProcedureItem( SqlObjectProtoItem p, ISqlServerStoredProcedure storedProc )
             : base( p )
         {
             Debug.Assert( p.ItemType == SqlObjectProtoItem.TypeProcedure );
-            _storedProc = storedProc;
+            _finalStoredProc = _originalStoredProc = storedProc;
+            if( p.ContextLocName.Schema != null && p.ContextLocName.Schema != storedProc.SchemaName )
+            {
+                _finalStoredProc = (ISqlServerStoredProcedure)storedProc.SetSchemaName( p.ContextLocName.Schema );
+            }
+            else _finalStoredProc = storedProc;
         }
 
         /// <summary>
         /// Gets whether the definition of this item is valid (its body is available).
         /// </summary>
-        public bool IsValid { get { return _storedProc != null; } }
+        public bool IsValid => _originalStoredProc != null;
 
         /// <summary>
         /// Gets the original parsed stored procedure. 
         /// Can be null if an error occurred during parsing.
         /// </summary>
-        public ISqlServerCallableObject OriginalStatement { get { return _storedProc; } }
+        public ISqlServerStoredProcedure OriginalStatement => _originalStoredProc;
 
         /// <summary>
         /// Gets or sets a replacement of the <see cref="OriginalStatement"/>.
+        /// Initialized with <see cref="OriginalStatement"/>.
         /// </summary>
-        public ISqlServerCallableObject FinalStatement { get; set; }
+        public ISqlServerStoredProcedure FinalStatement
+        {
+            get { return _finalStoredProc; }
+            set { _finalStoredProc = value; }
+        }
 
         protected override void DoWriteCreate( StringBuilder b )
         {
-            ISqlServerCallableObject s = FinalStatement ?? _storedProc;
-            if( s.IsAlterKeyword ) s = (ISqlServerCallableObject)s.ToggleKeyword();
-            s.Write( b );
+            ISqlServerStoredProcedure s = FinalStatement;
+            if( s != null )
+            {
+                if( s.IsAlterKeyword ) s = (ISqlServerStoredProcedure)s.ToggleAlterKeyword();
+                s.Write( b );
+            }
         }
 
         /// <summary>
@@ -56,7 +70,7 @@ namespace CK.SqlServer.Setup
         /// <returns>The method info. Null if <see cref="IsValid"/> is false or if an error occurred while generating it.</returns>
         internal MethodInfo AssumeCommandBuilder( IActivityMonitor monitor, IDynamicAssembly dynamicAssembly )
         {
-            if( _storedProc == null ) return null;
+            if( _originalStoredProc == null ) return null;
             TypeBuilder tB = (TypeBuilder)dynamicAssembly.Memory[_builderTypeName];
             if( tB == null )
             {
@@ -70,13 +84,13 @@ namespace CK.SqlServer.Setup
             {
                 // Adds a fake key to avoid multiple attempts.
                 dynamicAssembly.Memory.Add( methodKey, MCommandGetParameters );
-                using( monitor.OpenTrace().Send( "Low level SqlCommand create method for: '{0}'.", _storedProc.ToStringSignature( true ) ) )
+                using( monitor.OpenTrace().Send( "Low level SqlCommand create method for: '{0}'.", _originalStoredProc.ToStringSignature( true ) ) )
                 {
                     try
                     {
-                        m = GenerateCreateSqlCommand( tB, FullName, ContextLocName.Name, _storedProc.Parameters );
+                        m = GenerateCreateSqlCommand( tB, FullName, ContextLocName.Name, _originalStoredProc.Parameters );
                         dynamicAssembly.Memory[methodKey] = m;
-                        foreach( var p in _storedProc.Parameters )
+                        foreach( var p in _originalStoredProc.Parameters )
                         {
                             if( p.IsPureOutput && p.DefaultValue != null )
                             {

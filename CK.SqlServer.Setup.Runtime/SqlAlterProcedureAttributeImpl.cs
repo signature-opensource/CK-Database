@@ -43,7 +43,8 @@ namespace CK.SqlServer.Setup
                     state.Monitor.Fatal().Send( "Unable to find transformer method '{0}' on '{1}'.", Member.Name, transformer.GetType().AssemblyQualifiedName );
                     return;
                 }
-
+                SqlPackageBaseItem container = (SqlPackageBaseItem)item;
+                m.Invoke( transformer, new object[] { new SqlTransformContext( state.Monitor, container, (SqlProcedureItem)SetupObjectItem ) } );
             }
 
         }
@@ -57,13 +58,21 @@ namespace CK.SqlServer.Setup
             {
                 AssemblyName a = holderType.Assembly.GetName();
                 a.Name += ".Runtime";
-                string transformerType = holderType.FullName + ", " + a.FullName;
-                transformer = SimpleTypeFinder.WeakDefault.ResolveType( transformerType, false );
-                if( transformer == null )
+                string transformerTypeName = holderType.FullName + ", " + a.FullName;
+                Type transformerType = SimpleTypeFinder.WeakDefault.ResolveType( transformerTypeName, false );
+                if( transformerType == null )
                 {
-                    state.Monitor.Fatal().Send( "Unable to locate transformer object. Tried '{0}'.", transformerType );
-                    state.Memory[cacheKey] = this;
+                    string altTypeName = "Runtime." + transformerTypeName;
+                    transformerType = SimpleTypeFinder.WeakDefault.ResolveType( altTypeName, false );
+                    if( transformerType == null )
+                    {
+                        state.Monitor.Fatal().Send( "Unable to locate transformer object. Tried '{0}' and '{1}'.", transformerTypeName, altTypeName );
+                        state.Memory[cacheKey] = this;
+                        return null;
+                    }
                 }
+                transformer = Activator.CreateInstance( transformerType );
+                state.Memory[cacheKey] = transformer;
             }
             return transformer;
         }
