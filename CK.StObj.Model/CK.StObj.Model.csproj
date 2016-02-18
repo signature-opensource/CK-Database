@@ -53,6 +53,7 @@
       <HintPath>..\packages\CK.Core.4.3.0\lib\net45\CK.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
   </ItemGroup>

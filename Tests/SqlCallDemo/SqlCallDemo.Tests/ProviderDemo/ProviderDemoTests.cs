@@ -48,7 +48,7 @@ namespace SqlCallDemo.Tests.ProviderDemo
 
         static bool CallActorOnly( string s )
         {
-            Assert.That( s, Is.StringMatching( "@ActorId = (1|2)" ) );
+            Assert.That( s, Does.Match( "@ActorId = (1|2)" ) );
             return s == "@ActorId = 1";
         }
 
@@ -82,7 +82,7 @@ namespace SqlCallDemo.Tests.ProviderDemo
 
         static bool CallCultureOnly( string s )
         {
-            Assert.That( s, Is.StringMatching( "@CultureId = (3|4)" ) );
+            Assert.That( s, Does.Match( "@CultureId = (3|4)" ) );
             return s == "@CultureId = 3";
         }
 

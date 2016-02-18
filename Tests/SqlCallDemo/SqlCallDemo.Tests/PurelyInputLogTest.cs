@@ -86,8 +86,8 @@ namespace SqlCallDemo.Tests
                         Assert.That( ex.InnerException is SqlException );
                         // Does someone has a better (yet simple) solution?
                         Assert.That( ex.InnerException.Message, 
-                                        Is.StringEnding( "Operation cancelled by user." )
-                                        .Or.StringEnding( "Opération annulée par l'utilisateur." ) );
+                                        Does.EndWith( "Operation cancelled by user." )
+                                        .Or.EndWith( "Opération annulée par l'utilisateur." ) );
                         TestHelper.Monitor.Info().Send( ex, "Cancellation: the inner exception is a SqlException with a message that contains 'Operation cancelled by user.' suffix." );
                     }
                     p.Database.AssertScalarEquals( "This one must pass. - @OneMore = 1", "select top 1 LogText from CK.tPurelyInputLog order by Id desc" );

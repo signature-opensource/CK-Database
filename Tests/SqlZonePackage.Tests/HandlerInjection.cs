@@ -18,13 +18,13 @@ namespace SqlZonePackage.Tests
             var a = TestHelper.StObjMap.Default.Obtain<ActorHome>();
 
             var textA = a.Database.GetObjectDefinition( "CK.sUserToBeOverriden" );
-            Assert.That( textA, Is.StringStarting( 
+            Assert.That( textA, Does.StartWith( 
                 "--Injected from SqlZonePackage.Zone.UserHome.CmdUserToBeOverriden (n°2/2)."
                 + Environment.NewLine
                 + "--Injected from UserHome.CmdUserToBeOverriden (n°1/2)." ) );
 
             var textB = a.Database.GetObjectDefinition( "CK.sUserToBeOverridenIndirect" );
-            Assert.That( textB, Is.StringStarting( 
+            Assert.That( textB, Does.StartWith( 
                 "--Injected from SqlZonePackage.Zone.Package.TestAutoHeaderSP attribute (n°2/2)."
                 + Environment.NewLine
                 + "--Injected from UserHome.CmdUserToBeOverridenIndirect (n°1/2)." ) );

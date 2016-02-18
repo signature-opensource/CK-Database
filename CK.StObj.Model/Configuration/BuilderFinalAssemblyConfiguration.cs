@@ -61,7 +61,9 @@ namespace CK.Core
 
         /// <summary>
         /// Gets or set the directory where the final assembly must be saved.
-        /// When null (the default), the local path of the CodeBase of CK.StObj.Model assembly is used.
+        /// When null (the default) and when in DNX environment, uses 
+        /// Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationBasePath
+        /// otherwise, uses the current path of CK.StObj.Model assembly.
         /// </summary>
         public string Directory { get; set; }
 
@@ -92,14 +94,26 @@ namespace CK.Core
         public StrongNameKeyPair SignKeyPair { get; set; }
 
         /// <summary>
-        /// Uses <see paramref="directory"/> if it is not null nor empty, otherwise tries to use the path of CK.StObj.Model assembly.
+        /// Uses <see paramref="directory"/> if it is not null nor empty, otherwise when in DNX environment, uses 
+        /// Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationBasePath
+        /// otherwise, uses the current path of CK.StObj.Model assembly.
         /// </summary>
         /// <returns>The directory into which the final assembly must be saved.</returns>
         static public string GetFinalDirectory( string directory )
         {
-            return String.IsNullOrEmpty( directory ) ? Path.GetDirectoryName( new Uri( typeof( StObjContextRoot ).Assembly.CodeBase ).LocalPath ) : directory;
+            if( string.IsNullOrEmpty( directory ) )
+            {
+                Type tDNX = Type.GetType( "Microsoft.Extensions.PlatformAbstractions.PlatformServices, Microsoft.Extensions.PlatformAbstractions", false );
+                if( tDNX != null )
+                {
+                    dynamic s = tDNX.InvokeMember( "Default", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.Static, null, null, null );
+                    directory = s.Application.ApplicationBasePath;
+                }
+                else directory = Path.GetDirectoryName( new Uri( typeof( StObjContextRoot ).Assembly.CodeBase ).LocalPath );
+            }
+            return directory;
         }
-        
+
         /// <summary>
         /// Uses <paramref name="assemblyName"/> if it is not null nor empty or <see cref="DefaultAssemblyName"/>.
         /// </summary>

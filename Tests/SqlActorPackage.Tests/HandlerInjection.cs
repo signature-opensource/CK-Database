@@ -19,10 +19,10 @@ namespace SqlActorPackage.Tests
             var a = TestHelper.StObjMap.Default.Obtain<ActorHome>();
 
             var textA = a.Database.GetObjectDefinition( "CK.sActorCreate" );
-            Assert.That( textA, Is.StringContaining( "--Injected From ActorHome - TestAutoHeaderAttribute." ) );
+            Assert.That( textA, Does.Contain( "--Injected From ActorHome - TestAutoHeaderAttribute." ) );
 
             var textB = a.Database.GetObjectDefinition( "CK.sActorGuidRefTest" );
-            Assert.That( textB, Is.StringContaining( "--Injected From ActorHome - TestAutoHeaderAttribute." ) );
+            Assert.That( textB, Does.Contain( "--Injected From ActorHome - TestAutoHeaderAttribute." ) );
         }
         
         [Test]
@@ -31,7 +31,7 @@ namespace SqlActorPackage.Tests
             var a = TestHelper.StObjMap.Default.Obtain<ActorHome>();
 
             var text = a.Database.GetObjectDefinition( "CK.sActorGuidRefTest" );
-            Assert.That( text, Is.StringContaining( "--Injected From CmdGuidRefTest - TestAutoHeaderSPMember." ) );
+            Assert.That( text, Does.Contain( "--Injected From CmdGuidRefTest - TestAutoHeaderSPMember." ) );
         }
     }
 }
