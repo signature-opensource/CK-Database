@@ -59,7 +59,7 @@ namespace CK.Core
             }
             catch( Exception ex )
             {
-                if( monitor != null ) monitor.Warn().Send( ex, "Unable to load assembly by name. Trying a LoadFrom its path." );
+                if( monitor != null ) monitor.Warn().Send( ex, "Unable to load assembly by its name. Trying a LoadFrom its path." );
             }
             if( a == null ) a = Assembly.LoadFrom( config.FinalAssemblyConfiguration.GeneratedAssemblyPath );
             return Load( a, runtimeBuilder, monitor );

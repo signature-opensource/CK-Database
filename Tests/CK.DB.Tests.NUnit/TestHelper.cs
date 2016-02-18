@@ -157,7 +157,7 @@ namespace CK.Core
                     Config.TraceDependencySorterOutput = traceSetupGraphOrdering;
                     using( var r = StObjContextRoot.Build( Config, null, TestHelper.Monitor ) )
                     {
-                        _map = StObjContextRoot.Load( Config.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName, StObjContextRoot.DefaultStObjRuntimeBuilder, Monitor );
+                        _map = StObjContextRoot.Load( Config.StObjEngineConfiguration, StObjContextRoot.DefaultStObjRuntimeBuilder, Monitor );
                         return r.Success;
                     }
                 }
