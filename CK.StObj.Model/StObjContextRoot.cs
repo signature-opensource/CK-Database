@@ -44,6 +44,40 @@ namespace CK.Core
         }
 
         /// <summary>
+        /// Loads a generated assembly according to the configuration.
+        /// </summary>
+        /// <param name="config">Cofiguration that provides path and name of the assembly to load.</param>
+        /// <param name="runtimeBuilder">Runtime builder to use. When null, <see cref="DefaultStObjRuntimeBuilder"/> is used.</param>
+        /// <param name="monitor">Optional monitor for loading operation.</param>
+        /// <returns>A <see cref="IStObjMap"/> that provides access to the objects graph.</returns>
+        public static IStObjMap Load( StObjEngineConfiguration config, IStObjRuntimeBuilder runtimeBuilder = null, IActivityMonitor monitor = null )
+        {
+            Assembly a = null;
+            try
+            {
+                a = Assembly.Load( BuilderFinalAssemblyConfiguration.GetFinalAssemblyName( config.FinalAssemblyConfiguration.AssemblyName ) );
+            }
+            catch( Exception ex )
+            {
+                if( monitor != null ) monitor.Warn().Send( ex, "Unable to load assembly by name. Trying a LoadFrom its path." );
+            }
+            if( a == null ) a = Assembly.LoadFrom( config.FinalAssemblyConfiguration.GeneratedAssemblyPath );
+            return Load( a, runtimeBuilder, monitor );
+        }
+
+        /// <summary>
+        /// Loads a previously generated assembly by its assembly name.
+        /// </summary>
+        /// <param name="assemblyPath">Assembly path that will be loaded in the current AppDomain (uses <see cref="Assembly.LoadFrom(string)"/>).</param>
+        /// <param name="runtimeBuilder">Runtime builder to use. When null, <see cref="DefaultStObjRuntimeBuilder"/> is used.</param>
+        /// <param name="monitor">Optional monitor for loading operation.</param>
+        /// <returns>A <see cref="IStObjMap"/> that provides access to the objects graph.</returns>
+        public static IStObjMap LoadFrom( string assemblyPath, IStObjRuntimeBuilder runtimeBuilder = null, IActivityMonitor monitor = null )
+        {
+            return Load( Assembly.LoadFrom( assemblyPath ), runtimeBuilder, monitor );
+        }
+
+        /// <summary>
         /// Loads a previously generated assembly.
         /// </summary>
         /// <param name="a">Assembly (loaded in the current AppDomain).</param>
@@ -382,15 +416,7 @@ namespace CK.Core
                 if( appDomainComm.Mode == AppDomainMode.GetVersionStamp
                     || (appDomainComm.Mode == AppDomainMode.BuildIfRequired && config.FinalAssemblyConfiguration.ExternalVersionStamp != null) )
                 {
-                    // If no directory has been specified for final assembly. Trying to use the path of CK.StObj.Model assembly.
-                    // If no assembly name has been specified for final assembly. Using default name.
-                    // ==> This mimics GenerateFinalAssembly behavior.
-                    string directory = config.FinalAssemblyConfiguration.Directory;
-                    if( String.IsNullOrEmpty( directory ) ) directory = BuilderFinalAssemblyConfiguration.GetFinalDirectory( directory );
-                    string assemblyName = config.FinalAssemblyConfiguration.AssemblyName;
-                    if( String.IsNullOrEmpty( assemblyName ) ) assemblyName = BuilderFinalAssemblyConfiguration.GetFinalAssemblyName( assemblyName );
-
-                    string p = Path.Combine( directory, assemblyName + ".dll" );
+                    string p = config.FinalAssemblyConfiguration.GeneratedAssemblyPath;
                     try
                     {
                         if( File.Exists( p ) )

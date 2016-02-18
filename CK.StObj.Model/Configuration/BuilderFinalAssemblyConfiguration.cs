@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.StObj.Model\Configuration\BuilderFinalAssemblyConfiguration.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -72,6 +65,19 @@ namespace CK.Core
         /// When null (the default), <see cref="DefaultAssemblyName"/> "CK.StObj.AutoAssembly" is used.
         /// </summary>
         public string AssemblyName { get; set; }
+
+        /// <summary>
+        /// Gets the full path of the generated assembly (that may not exist) based on <see cref="Directory"/>, 
+        /// <see cref="AssemblyName"/> and <see cref="GetFinalDirectory"/> and <see cref="GetFinalAssemblyName"/>
+        /// helpers. The returned path ends with a ".dll".
+        /// </summary>
+        public string GeneratedAssemblyPath
+        {
+            get
+            {
+                return Path.Combine( GetFinalDirectory( Directory ), GetFinalAssemblyName( AssemblyName ) + ".dll" );
+            }
+        }
 
         /// <summary>
         /// Gets or sets a string (that can have any value) that will be stored inside the final assembly.

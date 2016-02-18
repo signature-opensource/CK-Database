@@ -94,12 +94,12 @@ namespace CK.Setup
             {
                 bool doNotGenerateFile = generateFinalAssemblyOption == BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile;
                 if( doNotGenerateFile ) directory = null;
-                else if( String.IsNullOrEmpty( directory ) )
+                else if( string.IsNullOrEmpty( directory ) )
                 {
                     directory = BuilderFinalAssemblyConfiguration.GetFinalDirectory( directory );
-                    monitor.Info().Send( "No directory has been specified for final assembly. Trying to use the path of CK.StObj.Model assembly: {0}", directory );
+                    monitor.Info().Send( "No directory has been specified for final assembly. Trying to use the path of CK.StObj.Model assembly or dnx base path: {0}", directory );
                 }
-                if( String.IsNullOrEmpty( assemblyName ) )
+                if( string.IsNullOrEmpty( assemblyName ) )
                 {
                     assemblyName = BuilderFinalAssemblyConfiguration.GetFinalAssemblyName( assemblyName );
                     monitor.Info().Send( "No assembly name has been specified for final assembly. Using default: {0}", assemblyName );
