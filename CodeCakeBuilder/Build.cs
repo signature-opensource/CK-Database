@@ -135,13 +135,13 @@ namespace CodeCake
                             }
                         }
                     }
-                    if( gitInfo.IsValidRelease )
+                    if( gitInfo.IsValidRelease && gitInfo.PreReleaseName == "" )
                     {
                         PushNuGetPackages( "NUGET_API_KEY", "https://www.nuget.org/api/v2/package", nugetPackages );
                     }
                     else
                     {
-                        Debug.Assert( gitInfo.IsValidCIBuild );
+                        Debug.Assert( gitInfo.IsValidCIBuild || gitInfo.PreReleaseName != "" );
                         PushNuGetPackages( "MYGET_EXPLORE_API_KEY", "https://www.myget.org/F/invenietis-explore/api/v2/package", nugetPackages );
                     }
                 } );
