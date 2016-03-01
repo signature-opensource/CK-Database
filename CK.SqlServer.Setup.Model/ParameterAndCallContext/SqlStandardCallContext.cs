@@ -13,12 +13,13 @@ namespace CK.SqlServer
     /// Standard implementation of a disposable <see cref="ISqlCallContext"/> that supports 
     /// query execution by explicitely implementing <see cref="ISqlCommandExecutor"/>).
     /// This is the simplest way to implement calls to the database: by specializing this type, application specific
-    /// properties (like the ActorId) can also be used to automatically set method parameter values.
+    /// properties (like the ActorId) can also be used to automatically set method parameter values when used 
+    /// with a <see cref="CK.SqlServer.Setup.ParameterSourceAttribute"/>.
     /// </summary>
     /// <remarks>
     /// <para>
     /// This class directly implements <see cref="ISqlCommandExecutor"/> interface but with explicit methods in order to avoid interface pollution
-    /// when this object exposes parameter values (it is a <see cref="ISqlParameterContext"/>) and also to avoid creating any extra object.
+    /// when this object exposes parameter values.
     /// </para>
     /// <para>
     /// The <see cref="SqlConnectionProvider"/> that are created by <see cref="ISqlCommandExecutor.GetProvider"/> are cached

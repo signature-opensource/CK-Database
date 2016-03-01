@@ -120,7 +120,7 @@ namespace CK.SqlServer.Setup
             ParameterInfo firstSqlConnectionParameter = null;
             ParameterInfo firstSqlTransactionParameter = null;
             List<ParameterInfo> extraMethodParameters = gType == GenerationType.ReturnWrapper ? new List<ParameterInfo>() : null;
-            SqlCallContextInfo sqlCallContexts = null;
+            SqlCallContextInfo sqlCallContexts = new SqlCallContextInfo( gType, m.ReturnType, mParameters );
 
             int iS = 0;
             for( int iM = mParameterFirstIndex; iM < mParameters.Length; ++iM )
@@ -146,19 +146,16 @@ namespace CK.SqlServer.Setup
                         {
                             extraMethodParameters.Add( mP );
                         }
-                        // If the parameter is a SqlCallContext, we register it
-                        // in order to consider its properties as method parameters and when Executing Call, find the ISqlCommandExecutor.
-                        if( SqlCallContextInfo.IsSqlParameterContext( mP ) )
-                        {
-                            if( sqlCallContexts == null ) sqlCallContexts = new SqlCallContextInfo( gType, m.ReturnType, mParameters );
-                            if( !sqlCallContexts.Add( mP, monitor ) ) ++nbError;
-                        }
-                        else if( mP.ParameterType.IsByRef && sqlParamHandlers.IsAsyncCall )
+                        // If the parameter is a parameter source, we register it.
+                        bool isParameterSourceOrCommandExecutor = sqlCallContexts.AddParameterSourceAndSqlCommandExecutor( mP, monitor );
+
+                        if( mP.ParameterType.IsByRef && sqlParamHandlers.IsAsyncCall )
                         {
                             monitor.Error().Send( "Parameter '{0}' is ref or out: ref or out are not compatible with an asynchronous execution (the returned type of the method is a Task).", mP.Name );
                             ++nbError;
                         }
-                        else if( !(sqlParamHandlers.IsAsyncCall && mP.ParameterType == typeof(CancellationToken)) 
+                        else if( !isParameterSourceOrCommandExecutor
+                                 && !(sqlParamHandlers.IsAsyncCall && mP.ParameterType == typeof(CancellationToken)) 
                                  && gType != GenerationType.ReturnWrapper )
                         {
                             // When direct parameters can not be mapped to Sql parameters, this is an error.
@@ -185,7 +182,7 @@ namespace CK.SqlServer.Setup
                 // Otherwise,  have a default value.
                 foreach( var setter in sqlParamHandlers.Handlers )
                 {
-                    if( !setter.IsMappedToMethodParameterOrCallContextProperty )
+                    if( !setter.IsMappedToMethodParameterOrParameterSourceProperty )
                     {
                         var sqlP = setter.SqlExprParam;
                         if( sqlCallContexts == null || !sqlCallContexts.MatchPropertyToSqlParameter( setter, monitor ) )
@@ -201,7 +198,7 @@ namespace CK.SqlServer.Setup
                                 }
                                 else
                                 {
-                                    monitor.Error().Send( "Sql parameter '{0}' in procedure parameters has no default value. The method '{1}' must declare it (or a property must exist in one of the ISQlCallContext parameters) or the procedure must specify the default value.", sqlP.Name, m.Name );
+                                    monitor.Error().Send( "Sql parameter '{0}' in procedure parameters has no default value. The method '{1}' must declare it (or a property must exist in one of the [ParameterSource] parameters) or the procedure must specify the default value.", sqlP.Name, m.Name );
                                     ++nbError;
                                 }
                             }

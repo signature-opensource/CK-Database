@@ -43,14 +43,14 @@ namespace CK.SqlServer
         }
 
         /// <summary>
-        /// Acquires a connection.
+        /// Acquires a connection bound to a <see cref="SqlCommand"/>.
         /// If possible, use the methods that encapsulates handles management (methods named ExecuteXXX or ReadXXX) 
         /// rather that AcquireXXX methods like this one.
         /// </summary>
         /// <param name="cmd">The command to execute.</param>
         /// <param name="cancellationToken">Optional <see cref="CancellationToken"/>.</param>
         /// <returns>A task representing the asynchronous operation: a disposable object that must be disposed.</returns>
-        public async Task<IDisposable> AcquireConnectionAsync( SqlCommand cmd, CancellationToken cancellationToken = default(CancellationToken) )
+        public async Task<IDisposable> AcquireConnectionAsync( SqlCommand cmd, CancellationToken cancellationToken = default( CancellationToken ) )
         {
             if( cmd == null ) throw new ArgumentNullException( "cmd" );
             bool mustClose;
@@ -62,6 +62,17 @@ namespace CK.SqlServer
             }
             else mustClose = false;
             return new SqlConnectionProviderDisposable( cmd, mustClose, this );
+        }
+
+        /// <summary>
+        /// Acquires a connection wrapped in a <see cref="SqlConnectionDisposable"/> object.
+        /// </summary>
+        /// <param name="cancellationToken">Optional <see cref="CancellationToken"/>.</param>
+        /// <returns>A task representing the asynchronous operation: a <see cref="SqlConnectionDisposable"/> that must be disposed.</returns>
+        public async Task<SqlConnectionDisposable> AcquireConnectionAsync( CancellationToken cancellationToken = default( CancellationToken ) )
+        {
+            KeyValuePair<SqlConnection,bool> a = await AcquireConnAsync( cancellationToken );
+            return new SqlConnectionDisposable( a.Key, this, a.Value );
         }
 
         async Task<KeyValuePair<SqlConnection, bool>> AcquireConnAsync( CancellationToken cancellationToken )

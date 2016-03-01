@@ -11,7 +11,7 @@ using CK.SqlServer.Setup;
 namespace SqlCallDemo
 {
 
-    public interface INonStandardSqlCallContext : ISqlParameterContext
+    public interface INonStandardSqlCallContext
     {
         ISqlCommandExecutor GetExecutor();
     }
@@ -20,7 +20,7 @@ namespace SqlCallDemo
     {
     }
 
-    public interface INonStandardSqlCallContextByProperty : ISqlParameterContext
+    public interface INonStandardSqlCallContextByProperty
     {
         ISqlCommandExecutor Executor { get; }
     }
@@ -32,10 +32,11 @@ namespace SqlCallDemo
     public abstract partial class GuidRefTestPackage
     {
         /// <summary>
-        /// Calling the procedure: as long as the <see cref="ISqlParameterContext"/> implements <see cref="ISqlCommandExecutor"/>,
+        /// Calling the procedure: as long as a parameter implements <see cref="ISqlCommandExecutor"/>,
         /// and the attribute specifies ExecuteCall = ExecutionType.ExecuteNonQuery, the call is executed.
         /// Here, we use the standard <see cref="SqlStandardCallContext"/>.
-        /// When mutiple ISqlCallContext parameters occur, the first one that can handle the call will be used.
+        /// When mutiple ISqlCallContext parameters occur, the first one that can handle the call (ie. the firs Executor) 
+        /// will be used.
         /// </summary>
         [SqlProcedureNonQuery( "sGuidRefTest" )]
         public abstract void GuidRefTest( SqlStandardCallContext ctx, bool replaceInAndOut, Guid inOnly, ref Guid inAndOut, out string textResult );

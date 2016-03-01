@@ -63,10 +63,10 @@ namespace CK.SqlServer.Setup
                 }
 
                 /// <summary>
-                /// Gets whether this Sql parameter has a corresponding method parameter or a property in one of the ISqlCallContext objects 
+                /// Gets whether this Sql parameter has a corresponding method parameter or a property in one of the ParameterSource objects 
                 /// or is an ignored output.
                 /// </summary>
-                public bool IsMappedToMethodParameterOrCallContextProperty
+                public bool IsMappedToMethodParameterOrParameterSourceProperty
                 {
                     get { return _methodParam != null || _ctxProp != null; }
                 }
@@ -86,7 +86,7 @@ namespace CK.SqlServer.Setup
                 /// </summary>
                 public bool SetParameterMapping( ParameterInfo mP, IActivityMonitor monitor )
                 {
-                    Debug.Assert( !IsMappedToMethodParameterOrCallContextProperty );
+                    Debug.Assert( !IsMappedToMethodParameterOrParameterSourceProperty );
                     _methodParam = mP;
                     if( !CheckParameter( mP, SqlExprParam, monitor ) ) return false;
                     return true;
@@ -201,7 +201,7 @@ namespace CK.SqlServer.Setup
                 /// </summary>
                 public void SetParameterMapping( SqlCallContextInfo.Property prop )
                 {
-                    Debug.Assert( !IsMappedToMethodParameterOrCallContextProperty );
+                    Debug.Assert( !IsMappedToMethodParameterOrParameterSourceProperty );
                     _ctxProp = prop;
                 }
 
@@ -210,7 +210,7 @@ namespace CK.SqlServer.Setup
                 /// </summary>
                 public void SetMappingToIgnoredOutput()
                 {
-                    Debug.Assert( !IsMappedToMethodParameterOrCallContextProperty );
+                    Debug.Assert( !IsMappedToMethodParameterOrParameterSourceProperty );
                     _isIgnoredOutputParameter = true;
                 }
 
@@ -219,7 +219,7 @@ namespace CK.SqlServer.Setup
                 /// </summary>
                 public void SetMappingToSqlDefaultValue()
                 {
-                    Debug.Assert( !IsMappedToMethodParameterOrCallContextProperty );
+                    Debug.Assert( !IsMappedToMethodParameterOrParameterSourceProperty );
                     _isUseDefaultSqlValue = true;
                 }
 
@@ -332,7 +332,7 @@ namespace CK.SqlServer.Setup
                         monitor.Info().Send( "Parameter '{0}' will use its default value.", SqlExprParam.ToStringClean() );
                         return EmitSetParameterCode( monitor, g, locParameterCollection, LdObjectToSetFromDefaultSqlValue );
                     }
-                    Debug.Assert( IsMappedToMethodParameterOrCallContextProperty );
+                    Debug.Assert( IsMappedToMethodParameterOrParameterSourceProperty );
                     // Do not set any Value if the C# parameter is out.
                     if( _methodParam != null && _methodParam.IsOut ) return true;
                     return EmitSetParameterCode( monitor, g, locParameterCollection, LdObjectToSetFromParameterOrCallContextProperty );

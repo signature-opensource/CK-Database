@@ -55,14 +55,13 @@ namespace CK.SqlServer.Setup
                     {
                         if( sqlP.SqlType.IsTypeCompatible( Prop.PropertyType ) )
                         {
-                            monitor.Info().Send( "Sql Parameter '{0}' will take its value from the ISqlCallParameter '{1}' property '{2}'.", sqlP.ToStringClean(), Parameter.Name, Prop.Name );
+                            monitor.Info().Send( "Sql Parameter '{0}' will take its value from the [ParameterSource] '{1}' property '{2}'.", sqlP.ToStringClean(), Parameter.Name, Prop.Name );
                             return true;
                         }
                     }
                     return false;
                 }
             }
-
 
             public SqlCallContextInfo( GenerationType gType, Type returnedType, ParameterInfo[] methodParameters )
             {
@@ -89,43 +88,50 @@ namespace CK.SqlServer.Setup
                     }
                 }
             }
- 
-            public bool Add( ParameterInfo param, IActivityMonitor monitor )
+
+            public bool AddParameterSourceAndSqlCommandExecutor( ParameterInfo param, IActivityMonitor monitor )
             {
-                var properties = param.ParameterType.IsInterface ? ReflectionHelper.GetFlattenProperties( param.ParameterType ) : param.ParameterType.GetProperties();
-                _props.AddRange( properties.Select( p => new Property( param, p ) ) );
-                
-                if( (_gType & GenerationType.IsCall) != 0 && _sqlCommandExecutorParameter == null )
+                if( param.ParameterType.IsValueType || typeof( string ).IsAssignableFrom( param.ParameterType ) ) return false;
+
+                bool isParameterSource = param.GetCustomAttribute<ParameterSourceAttribute>() != null;
+                bool needExecutor = (_gType & GenerationType.IsCall) != 0 && _sqlCommandExecutorParameter == null;
+                if( isParameterSource || needExecutor )
                 {
-                    Debug.Assert( _gType == GenerationType.ExecuteNonQuery );
-                    if( typeof(ISqlCommandExecutor).IsAssignableFrom( param.ParameterType ) )
+                    var rawProperties = param.ParameterType.IsInterface ? ReflectionHelper.GetFlattenProperties( param.ParameterType ) : param.ParameterType.GetProperties();
+                    var allProperties = rawProperties.Select( p => new Property( param, p ) ).ToList();
+                    if( isParameterSource )
                     {
-                        _sqlCommandExecutorParameter = param;
-                        monitor.Trace().Send( "Planning to use parameter '{0}' {1} method.", param.Name, _executorCallNonQuery.Name );
+                        _props.AddRange( allProperties );
                     }
-                    else
+                    if( needExecutor )
                     {
-                        PropertyInfo pE = _props.Select( p => p.Prop ).FirstOrDefault( p => p.Name == "Executor" && typeof( ISqlCommandExecutor ).IsAssignableFrom( p.PropertyType ) );
+                        Debug.Assert( _gType == GenerationType.ExecuteNonQuery );
+                        if( typeof( ISqlCommandExecutor ).IsAssignableFrom( param.ParameterType ) )
+                        {
+                            _sqlCommandExecutorParameter = param;
+                            monitor.Trace().Send( "Planning to use parameter '{0}' {1} method.", param.Name, _executorCallNonQuery.Name );
+                            return true;
+                        }
+                        PropertyInfo pE = allProperties.Select( p => p.Prop ).FirstOrDefault( p => p.Name == "Executor" && typeof( ISqlCommandExecutor ).IsAssignableFrom( p.PropertyType ) );
                         if( pE != null )
                         {
                             _sqlCommandExecutorParameter = param;
                             _sqlCommandExecutorMethodGetter = pE.GetGetMethod();
                             monitor.Trace().Send( "Planning to use parameter '{0}.Executor' property {1} method.", param.Name, _executorCallNonQuery.Name );
+                            return true;
                         }
-                        else
+                        var methods = param.ParameterType.IsInterface ? ReflectionHelper.GetFlattenMethods( param.ParameterType ) : param.ParameterType.GetMethods();
+                        MethodInfo mE = methods.FirstOrDefault( m => m.Name == "GetExecutor" && m.GetParameters().Length == 0 && typeof( ISqlCommandExecutor ).IsAssignableFrom( m.ReturnType ) );
+                        if( mE != null )
                         {
-                            var methods = param.ParameterType.IsInterface ? ReflectionHelper.GetFlattenMethods( param.ParameterType ) : param.ParameterType.GetMethods();
-                            MethodInfo mE = methods.FirstOrDefault( m => m.Name == "GetExecutor" && m.GetParameters().Length == 0 && typeof( ISqlCommandExecutor ).IsAssignableFrom( m.ReturnType ) );
-                            if( mE != null )
-                            {
-                                _sqlCommandExecutorParameter = param;
-                                _sqlCommandExecutorMethodGetter = mE;
-                                monitor.Trace().Send( "Planning to use parameter '{0}.GetExecutor()' method {1} method.", param.Name, _executorCallNonQuery.Name );
-                            }
+                            _sqlCommandExecutorParameter = param;
+                            _sqlCommandExecutorMethodGetter = mE;
+                            monitor.Trace().Send( "Planning to use parameter '{0}.GetExecutor()' method {1} method.", param.Name, _executorCallNonQuery.Name );
+                            return true;
                         }
                     }
                 }
-                return true;
+                return isParameterSource;
             }
 
             public bool MatchPropertyToSqlParameter( SqlParameterHandlerList.SqlParamHandler setter, IActivityMonitor monitor )
@@ -207,13 +213,14 @@ namespace CK.SqlServer.Setup
             }
 
             /// <summary>
-            /// Centralized helper that states whether a parameter is a <see cref="ISqlParameterContext"/> object.
+            /// Centralized helper that states whether a parameter carries parameter values.
             /// </summary>
             /// <param name="mP">The parameter info.</param>
-            /// <returns>True for ISqlCallContext parameter.</returns>
-            static internal bool IsSqlParameterContext( ParameterInfo mP )
+            /// <returns>True for parameter that are parameter sources.</returns>
+            static internal bool IsSqlParameterSource( ParameterInfo mP )
             {
-                return SqlObjectItem.TypeISqlParameterContext.IsAssignableFrom( mP.ParameterType );
+                return !(mP.ParameterType.IsValueType || typeof(string).IsAssignableFrom( mP.ParameterType ))
+                        && mP.GetCustomAttribute<ParameterSourceAttribute>() != null;
             }
 
         }

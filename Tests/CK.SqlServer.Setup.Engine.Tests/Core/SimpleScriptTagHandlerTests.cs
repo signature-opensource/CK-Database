@@ -41,13 +41,17 @@ We must have this line as a the third script.
             Assert.That( s.Count, Is.EqualTo( 3 ) );
             
             Assert.That( s[0].IsScriptTag, Is.False );
-            Assert.That( s[0].Body, Does.Contain( "Before begin appears." ) );
+            //Assert.That( s[0].Body, Does.Contain( "Before begin appears." ) );
+            Assert.That( s[0].Body, Is.StringContaining( "Before begin appears." ) );
 
             Assert.That( s[1].IsScriptTag );
-            Assert.That( s[1].Body, Does.Contain( "This nested tag is ignored." )
-                                    .And.Contain( "This appears." )
-                                    .And.Contain( "This appears too." ) );
-            
+            //Assert.That( s[1].Body, Does.Contain( "This nested tag is ignored." )
+            //                        .And.Contain( "This appears." )
+            //                        .And.Contain( "This appears too." ) );
+            Assert.That( s[1].Body, Is.StringContaining( "This nested tag is ignored." )
+                                    .And.StringContaining( "This appears." )
+                                    .And.StringContaining( "This appears too." ) );
+
             Assert.That( s[2].IsScriptTag, Is.False );
             Assert.That( s[2].Body, Is.EqualTo( "We must have this line as a the third script." ) );
 
@@ -127,14 +131,19 @@ go  n°3
                 Assert.That( s.Count, Is.EqualTo( 5 ) );
                 
                 Assert.That( s.Select( o => o.IsScriptTag ).All( t => t == false ), "When GO are allowed and occur inside the begin/endscript, there is no notion of ScriptTag." );
-                
-                Assert.That( s[0].Body, Does.Contain( "Before" ) );
-                
-                Assert.That( s[1].Body, Does.Contain( "n°1" ) );
-                Assert.That( s[2].Body, Does.Contain( "n°2" ) );
-                Assert.That( s[3].Body, Does.Contain( "n°3" ) );
 
-                Assert.That( s[4].Body, Does.Contain( "n°4" ) );
+                //Assert.That( s[0].Body, Does.Contain( "Before" ) );
+                Assert.That( s[0].Body, Is.StringContaining( "Before" ) );
+
+                //Assert.That( s[1].Body, Does.Contain( "n°1" ) );
+                //Assert.That( s[2].Body, Does.Contain( "n°2" ) );
+                //Assert.That( s[3].Body, Does.Contain( "n°3" ) );
+                //Assert.That( s[4].Body, Does.Contain( "n°4" ) );
+
+                Assert.That( s[1].Body, Is.StringContaining( "n°1" ) );
+                Assert.That( s[2].Body, Is.StringContaining( "n°2" ) );
+                Assert.That( s[3].Body, Is.StringContaining( "n°3" ) );
+                Assert.That( s[4].Body, Is.StringContaining( "n°4" ) );
             }
             {
                 var p = new SimpleScriptTagHandler( script1 );

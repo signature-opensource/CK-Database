@@ -28,16 +28,16 @@ namespace SqlCallDemo
         public abstract Task<int> IntReturnAsync( SqlStandardCallContext ctx, int? v );
 
         [SqlProcedureNonQuery( "sIntReturnWithActor" )]
-        public abstract int IntReturnWithActor( IActorCallContextIsExecutor ctx, string def = "5" );
+        public abstract int IntReturnWithActor( [ParameterSource]IActorCallContextIsExecutor ctx, string def = "5" );
 
         [SqlProcedureNonQuery( "sIntReturnWithActor" )]
-        public abstract Task<int> IntReturnWithActorAsync( IActorCallContextIsExecutor ctx, string def = "5" );
+        public abstract Task<int> IntReturnWithActorAsync( [ParameterSource]IActorCallContextIsExecutor ctx, string def = "5" );
 
         [SqlProcedureNonQuery( "sIntReturnWithActor" )]
-        public abstract int IntReturnWithActor( IActorCallContext ctx, string def = "5" );
+        public abstract int IntReturnWithActor( [ParameterSource]IActorCallContext ctx, string def = "5" );
 
         [SqlProcedureNonQuery( "sIntReturnWithActor" )]
-        public abstract Task<int> IntReturnWithActorAsync( IActorCallContext ctx, string def = "5" );
+        public abstract Task<int> IntReturnWithActorAsync( [ParameterSource]IActorCallContext ctx, string def = "5" );
 
     }
 }

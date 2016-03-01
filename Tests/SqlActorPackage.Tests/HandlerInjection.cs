@@ -7,6 +7,7 @@ using CK.Core;
 using NUnit.Framework;
 using SqlActorPackage.Basic;
 using System.Diagnostics;
+using NUnit.Framework.Constraints;
 
 namespace SqlActorPackage.Tests
 {
@@ -24,7 +25,7 @@ namespace SqlActorPackage.Tests
             var textB = a.Database.GetObjectDefinition( "CK.sActorGuidRefTest" );
             Assert.That( textB, Does.Contain( "--Injected From ActorHome - TestAutoHeaderAttribute." ) );
         }
-        
+
         [Test]
         public void auto_header_injection_by_attribute_on_member()
         {
@@ -34,4 +35,5 @@ namespace SqlActorPackage.Tests
             Assert.That( text, Does.Contain( "--Injected From CmdGuidRefTest - TestAutoHeaderSPMember." ) );
         }
     }
+
 }

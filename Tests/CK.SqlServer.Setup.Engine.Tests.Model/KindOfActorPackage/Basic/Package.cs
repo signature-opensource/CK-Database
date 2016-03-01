@@ -238,7 +238,7 @@ namespace SqlActorPackage.Basic
             int ActorId { get; set; }
         }
 
-        public interface IBasicAuthContext : IAmHereToTestPropertyMasking, ISqlParameterContext, IDisposable
+        public interface IBasicAuthContext : IAmHereToTestPropertyMasking, IDisposable
         {
             SqlConnectionProvider GetProvider( string connectionString );
 
@@ -343,13 +343,13 @@ namespace SqlActorPackage.Basic
 
 
         [SqlProcedure( "sBasicProcedureWithAuth" )]
-        public abstract OutputCmd<string> CallWithAuth( IAuthContext c, int index, string name, out string result );
+        public abstract OutputCmd<string> CallWithAuth( [ParameterSource]IAuthContext c, int index, string name, out string result );
 
         [SqlProcedure( "sBasicProcedureWithAuth" )]
-        public abstract OutputCmd<string> CallWithAuth( IBasicAuthContext c, int index, string name );
+        public abstract OutputCmd<string> CallWithAuth( [ParameterSource]IBasicAuthContext c, int index, string name );
 
         [SqlProcedure( "sBasicProcedureWithAuth" )]
-        public abstract OutputCmd<T> CallWithAuth<T>( IAuthContext c, int index, string name, out string result );
+        public abstract OutputCmd<T> CallWithAuth<T>( [ParameterSource]IAuthContext c, int index, string name, out string result );
 
         #endregion
     }

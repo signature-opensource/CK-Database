@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Core\SqlConnectionProvider.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.IO;
 using System.Data;
@@ -402,6 +395,17 @@ namespace CK.SqlServer
             return new SqlConnectionProviderDisposable( cmd, mustClose, this );
         }
 
+        /// <summary>
+        /// Acquires a connection wrapped in a <see cref="SqlConnectionDisposable"/> object.
+        /// </summary>
+        /// <returns>A <see cref="SqlConnectionDisposable"/> that must be disposed.</returns>
+        public SqlConnectionDisposable AcquireConnection()
+        {
+            bool mustClose;
+            SqlConnection c = AcquireConn( out mustClose );
+            return new SqlConnectionDisposable( c, this, mustClose );
+        }
+
         SqlConnection AcquireConn( out bool mustClose )
         {
             if( _oConIsWorking )
@@ -421,7 +425,7 @@ namespace CK.SqlServer
             return _oCon;
         }
 
-        internal class SqlConnectionProviderDisposable : IDisposable
+        class SqlConnectionProviderDisposable : IDisposable
         {
             readonly SqlCommand _cmd;
             readonly bool _mustClose;
@@ -445,6 +449,44 @@ namespace CK.SqlServer
                     // _cmd.Connection = null;
                 }
                 if( _mustClose ) _cmd.Connection = null;
+            }
+        }
+
+        /// <summary>
+        /// Disposable wrapper for SqlConnection.
+        /// This is returned by <see cref="AcquireConnection"/> and <see cref="AcquireConnectionAsync(System.Threading.CancellationToken)"/>
+        /// and follows the provider's way of dealing with connections: the obtained connection may be the currently opened one
+        /// or a new one if it was in use.
+        /// </summary>
+        public class SqlConnectionDisposable : IDisposable
+        {
+            SqlConnection _connection;
+            readonly bool _mustClose;
+            readonly SqlConnectionProvider _p;
+
+            internal SqlConnectionDisposable( SqlConnection connection, SqlConnectionProvider p, bool mustClose )
+            {
+                _connection = connection;
+                _p = p;
+                _mustClose = mustClose;
+            }
+
+            /// <summary>
+            /// Gets the opened connection. Null once this is <see cref="Dispose"/>d.
+            /// </summary>
+            public SqlConnection Connection => _connection;
+
+            /// <summary>
+            /// Must be called to release the connection.
+            /// </summary>
+            public void Dispose()
+            {
+                if( _connection != null )
+                {
+                    if( _mustClose ) _connection.Close();
+                    if( _connection == _p._oCon ) _p._oConIsWorking = false;
+                    _connection = null;
+                }
             }
         }
 

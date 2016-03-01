@@ -18,7 +18,6 @@ namespace CK.SqlServer.Setup
         internal readonly static Type TypeTransaction = typeof( SqlTransaction );
         internal readonly static Type TypeParameterCollection = typeof( SqlParameterCollection );
         internal readonly static Type TypeParameter = typeof( SqlParameter );
-        internal readonly static Type TypeISqlParameterContext = typeof( ISqlParameterContext );
         internal readonly static Type TypeSqlPackageBase = typeof( SqlPackageBase );
         internal readonly static Type TypeSqlDatabase = typeof( SqlDatabase );
 
