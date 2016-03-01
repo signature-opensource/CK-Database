@@ -108,15 +108,15 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Gets the name of the dll if it must be saved at the end, otherwise null.
+        /// Gets the name of the dll (ends with '.dll') if it must be eventually saved, otherwise null.
         /// </summary>
         public string SaveFileName
         {
             get { return _saveFileName; }
         }
-            
+
         /// <summary>
-        /// Gets the full path of the dll if it must be saved at the end, otherwise null.
+        /// Gets the full path of the dll if it must be eventually saved, otherwise null.
         /// </summary>
         public string SaveFilePath
         {

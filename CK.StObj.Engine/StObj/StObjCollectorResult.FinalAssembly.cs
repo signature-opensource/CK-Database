@@ -205,7 +205,7 @@ namespace CK.Setup
                             CreateNoWindow = true,
                             RedirectStandardOutput = true,
                             UseShellExecute = false,
-                            Arguments = '"' + a.SaveFileName + '"',
+                            Arguments = '"' + a.SaveFilePath + '"',
                             FileName = peVerfiyPath,
                             WorkingDirectory = directory
                         };
