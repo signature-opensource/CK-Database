@@ -20,7 +20,7 @@ using CK.SqlServer.Parser;
 
 namespace CK.SqlServer.Setup
 {
-    public partial class SqlProcedureAttributeImpl
+    public partial class SqlCallableAttributeImpl
     {
         /// <summary>
         /// Manages sql parameters thanks to <see cref="SqlParamHandler"/> objects that are built on SqlExprParameter objects
@@ -30,6 +30,7 @@ namespace CK.SqlServer.Setup
         {
             readonly List<SqlParamHandler> _params;
             SqlParamHandler _simpleReturnType;
+            ISqlServerParameter _funcReturnParameter;
             bool _isAsyncCall;
             Type _unwrappedReturnedType;
             readonly StringBuilder _funcResultBuilderSignature;
@@ -383,9 +384,20 @@ namespace CK.SqlServer.Setup
                 }
             }
 
-            public SqlParameterHandlerList( ISqlServerParameterList parameters )
+            public SqlParameterHandlerList( ISqlServerCallableObject sqlObject )
             {
-                _params = parameters.Select( ( p, idx ) => new SqlParamHandler( this, p, idx ) ).ToList();
+                _params = new List<SqlParamHandler>();
+                int idx = 0;
+                ISqlServerFunctionScalar func = sqlObject as ISqlServerFunctionScalar;
+                if( func != null )
+                {
+                    _funcReturnParameter = new SqlParameterReturnedValue( func.ReturnType );
+                    _params.Add( new SqlParamHandler( this, _funcReturnParameter, idx++ ) );
+                }
+                foreach( var p in sqlObject.Parameters )
+                {
+                    _params.Add( new SqlParamHandler( this, p, idx++ ) );
+                }
                 _funcResultBuilderSignature = new StringBuilder();
             }
 
@@ -424,6 +436,23 @@ namespace CK.SqlServer.Setup
                     returnType = returnType.GetGenericArguments()[0];
                     isSimpleType = IsSimpleReturnType( returnType );
                 }
+                // If it is a scalar function
+                if( _funcReturnParameter != null )
+                {
+                    if( isSimpleType )
+                    {
+                        if( _funcReturnParameter.SqlType.IsTypeCompatible( returnType ) )
+                        {
+                            SetSimpleReturnedTypeParameter( returnType, _params[0] );
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        monitor.Error().Send( "Type mismatch for function returned type '{0}' / '{1}'.", returnType.Name, _funcReturnParameter.SqlType.ToStringClean() );
+                        return false;
+                    }
+                }
                 if( isSimpleType )
                 {
                     // Look for the first last (reverse order) parameter for which the returned type is compatible.
@@ -432,10 +461,7 @@ namespace CK.SqlServer.Setup
                         var p = _params[i];
                         if( p.SqlExprParam.IsOutput && p.SqlExprParam.SqlType.IsTypeCompatible( returnType ) )
                         {
-                            _simpleReturnType = p;
-                            _unwrappedReturnedType = returnType;
-                            _funcResultBuilderSignature.Append( _unwrappedReturnedType.FullName ).Append('-').Append( p.Index );
-                            p.SetUsedByReturnedType();
+                            SetSimpleReturnedTypeParameter( returnType, p );
                             return true;
                         }
                     }
@@ -465,6 +491,14 @@ namespace CK.SqlServer.Setup
                 }
                 monitor.Error().Send( "Unable to find a way to return the required return type '{0}'.", returnType.Name );
                 return false;
+            }
+
+            private void SetSimpleReturnedTypeParameter( Type returnType, SqlParamHandler p )
+            {
+                _simpleReturnType = p;
+                _unwrappedReturnedType = returnType;
+                _funcResultBuilderSignature.Append( _unwrappedReturnedType.FullName ).Append( '-' ).Append( p.Index );
+                p.SetUsedByReturnedType();
             }
 
             internal void EmitInlineReturn( ILGenerator g, LocalBuilder locParameterCollection )

@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Setup.Runtime\SqlProcedureAttributeImpl.GenerateCreateSqlCommand.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -21,7 +14,7 @@ using System.Threading;
 
 namespace CK.SqlServer.Setup
 {
-    public partial class SqlProcedureAttributeImpl
+    public partial class SqlCallableAttributeImpl
     {
         [Flags]
         enum GenerationType
@@ -38,8 +31,7 @@ namespace CK.SqlServer.Setup
             GenerationType gType, 
             IActivityMonitor monitor, 
             MethodInfo createCommand, 
-            string sqlName, 
-            ISqlServerParameterList sqlParameters, 
+            ISqlServerCallableObject sqlObject, 
             MethodInfo m, 
             ParameterInfo[] mParameters, 
             TypeBuilder tB, 
@@ -102,7 +94,7 @@ namespace CK.SqlServer.Setup
             // Analyses parameters and generate removing of optional parameters if C# does not use them.
             int nbError = 0;
 
-            SqlParameterHandlerList sqlParamHandlers = new SqlParameterHandlerList( sqlParameters );
+            SqlParameterHandlerList sqlParamHandlers = new SqlParameterHandlerList( sqlObject );
 
             // We initialize the SetUsedByReturnedType information on parameters 
             // so that they can relax their checks on Sql parameter direction accordingly.
@@ -310,7 +302,7 @@ namespace CK.SqlServer.Setup
             }
             if( nbError != 0 )
             {
-                monitor.Info().Send( GenerateBothSignatures( sqlName, sqlParameters, m, mParameters, extraMethodParameters ) );
+                monitor.Info().Send( GenerateBothSignatures( sqlObject, m, mParameters, extraMethodParameters ) );
             }
             g.Emit( OpCodes.Ret );
             return nbError == 0;
@@ -383,12 +375,10 @@ namespace CK.SqlServer.Setup
             }
         }
 
-        private static string GenerateBothSignatures( string sqlName, ISqlServerParameterList sqlParameters, MethodInfo m, ParameterInfo[] mParameters, IList<ParameterInfo> extraParameters )
+        private static string GenerateBothSignatures( ISqlServerCallableObject sqlObject, MethodInfo m, ParameterInfo[] mParameters, IList<ParameterInfo> extraParameters )
         {
             StringBuilder b = new StringBuilder();
-            b.Append( "Procedure '" ).Append( sqlName );
-            b.Append( "': " ).Append( sqlParameters.ToStringClean() );
-            b.Append( Environment.NewLine );
+            b.AppendLine( sqlObject.ToStringSignature( false ) );
             DumpMethodSignature( b, m, mParameters );
             if( extraParameters != null && extraParameters.Count > 0 )
             {

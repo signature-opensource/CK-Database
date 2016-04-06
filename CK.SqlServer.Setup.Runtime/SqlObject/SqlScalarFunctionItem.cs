@@ -12,10 +12,10 @@ using System.Text;
 
 namespace CK.SqlServer.Setup
 {
-    public class SqlProcedureItem : SqlCallableItem<ISqlServerStoredProcedure>
+    public class SqlFunctionScalarItem : SqlCallableItem<ISqlServerFunctionScalar>
     {
-        internal SqlProcedureItem( SqlObjectProtoItem p, ISqlServerStoredProcedure storedProc )
-            : base( p, storedProc )
+        internal SqlFunctionScalarItem( SqlObjectProtoItem p, ISqlServerFunctionScalar scalarFunction )
+            : base( p, scalarFunction )
         {
         }
     }

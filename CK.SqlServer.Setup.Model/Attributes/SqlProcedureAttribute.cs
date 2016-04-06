@@ -8,23 +8,15 @@ using System.Reflection;
 
 namespace CK.SqlServer.Setup
 {
-
-    public enum ExecutionType
-    {
-        Unknown,
-        ExecuteNonQuery
-    } 
     
     [AttributeUsage( AttributeTargets.Method, AllowMultiple = false, Inherited = false )]
-    public class SqlProcedureAttribute : SqlObjectItemMemberAttributeBase
+    public class SqlProcedureAttribute : SqlCallableAttributeBase
     {
         public SqlProcedureAttribute( string procedureName )
-            : base( procedureName, "CK.SqlServer.Setup.SqlProcedureAttributeImpl, CK.SqlServer.Setup.Runtime" )
+            : base( procedureName, "Procedure" )
         {
         }
-
-
-        public ExecutionType ExecuteCall { get; set; }
+        
     }
 
 }

@@ -18,7 +18,7 @@ using CK.Reflection;
 
 namespace CK.SqlServer.Setup
 {
-    public partial class SqlProcedureAttributeImpl
+    public partial class SqlCallableAttributeImpl
     {
         class WrapperCtorMatcher
         {

@@ -12,10 +12,10 @@ using System.Text;
 
 namespace CK.SqlServer.Setup
 {
-    public class SqlProcedureItem : SqlCallableItem<ISqlServerStoredProcedure>
+    public class SqlFunctionInlineTableItem : SqlCallableItem<ISqlServerFunctionInlineTable>
     {
-        internal SqlProcedureItem( SqlObjectProtoItem p, ISqlServerStoredProcedure storedProc )
-            : base( p, storedProc )
+        internal SqlFunctionInlineTableItem( SqlObjectProtoItem p, ISqlServerFunctionInlineTable inlineFunction )
+            : base( p, inlineFunction )
         {
         }
     }

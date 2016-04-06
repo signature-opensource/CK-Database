@@ -61,6 +61,7 @@
     <Compile Include="ProviderDemo\IActorCallContext.cs" />
     <Compile Include="IActorCallContextIsExecutor.cs" />
     <Compile Include="ProviderDemo\ProviderDemoPackage.cs" />
+    <Compile Include="FunctionPackage.cs" />
     <Compile Include="ReturnPackage.cs" />
     <Compile Include="PurelyInputLogPackage.cs" />
     <Compile Include="OutputParameterPackage.cs" />
@@ -135,6 +136,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Res\fStringFunction.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

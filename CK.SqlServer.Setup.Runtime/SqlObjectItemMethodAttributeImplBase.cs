@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Setup.Runtime\SqlMethodForObjectItemAttributeImplBase.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -40,10 +33,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Gets the attribute (covariant implementation).
         /// </summary>
-        protected new SqlObjectItemMemberAttributeBase Attribute 
-        { 
-            get { return (SqlObjectItemMemberAttributeBase)base.Attribute; } 
-        }
+        protected new SqlObjectItemMemberAttributeBase Attribute => (SqlObjectItemMemberAttributeBase)base.Attribute; 
 
         protected override IContextLocNaming BuildFullName( IMutableSetupItem ownerItem, IStObjResult ownerStObj, string attributeName )
         {
@@ -81,7 +71,7 @@ namespace CK.SqlServer.Setup
                 return false;
             }
             // 3 - Ready to implement the method (BestSetupObjectItem has been initialized by DynamicItemInitialize).
-            using( monitor.OpenInfo().Send( "Generating {0}.", SqlProcedureAttributeImpl.DumpMethodSignature( m ) ) )
+            using( monitor.OpenInfo().Send( "Generating {0}.", SqlCallableAttributeImpl.DumpMethodSignature( m ) ) )
             {
                 return DoImplement( monitor, m, (SqlObjectItem)SetupObjectItem, dynamicAssembly, tB, isVirtual );
             }

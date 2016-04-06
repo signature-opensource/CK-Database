@@ -13,16 +13,18 @@ using CK.Reflection;
 namespace CK.SqlServer.Setup
 {
 
-    public partial class SqlProcedureAttributeImpl : SqlObjectItemMethodAttributeImplBase
+    public partial class SqlCallableAttributeImpl : SqlObjectItemMethodAttributeImplBase
     {
-        public SqlProcedureAttributeImpl( SqlProcedureAttribute a )
-            : base( a, SqlObjectProtoItem.TypeProcedure )
+        public SqlCallableAttributeImpl( SqlCallableAttributeBase a )
+            : base( a, a.ObjectType )
         {
         }
 
+        protected new SqlCallableAttributeBase Attribute => (SqlCallableAttributeBase)base.Attribute;
+
         protected override bool DoImplement( IActivityMonitor monitor, MethodInfo m, SqlObjectItem objectItem, IDynamicAssembly dynamicAssembly, TypeBuilder tB, bool isVirtual )
         {
-            SqlProcedureItem item = objectItem as SqlProcedureItem;
+            ISqlCallableItem item = objectItem as ISqlCallableItem;
             MethodInfo mCreateCommand = item != null ? item.AssumeCommandBuilder( monitor, dynamicAssembly ) : null;
             if( mCreateCommand == null )
             {
@@ -32,7 +34,7 @@ namespace CK.SqlServer.Setup
 
             ParameterInfo[] mParameters = m.GetParameters();
             GenerationType gType;
-            ExecutionType execType = m.GetCustomAttribute<SqlProcedureAttribute>().ExecuteCall;
+            ExecutionType execType = Attribute.ExecuteCall;
 
             // ExecuteCall parameter on the attribute.
             bool executeCall = execType != ExecutionType.Unknown;
@@ -80,8 +82,7 @@ namespace CK.SqlServer.Setup
                     }
                 }
             }
-            ISqlServerParameterList sqlParameters = item.OriginalStatement.Parameters;
-            return GenerateCreateSqlCommand( dynamicAssembly, gType, monitor, mCreateCommand, item.OriginalStatement.ObjectName, sqlParameters, m, mParameters, tB, isVirtual, hasRefSqlCommand );
+            return GenerateCreateSqlCommand( dynamicAssembly, gType, monitor, mCreateCommand, item.CallableObject, m, mParameters, tB, isVirtual, hasRefSqlCommand );
         }
 
     }

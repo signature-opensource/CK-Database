@@ -20,7 +20,7 @@ using CK.SqlServer.Parser;
 
 namespace CK.SqlServer.Setup
 {
-    public partial class SqlProcedureAttributeImpl
+    public partial class SqlCallableAttributeImpl
     {
 
         /// <summary>

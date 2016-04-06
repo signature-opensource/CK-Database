@@ -186,8 +186,8 @@ namespace CK.SqlServer.Setup
                         else if( _selectedCtor.Parameters.Count == c.Parameters.Count )
                         {
                             monitor.Error().Send( "Ambiguous constructors: both '{0}' and '{1}' are statisfied.",
-                                                        SqlProcedureAttributeImpl.DumpParameters( _selectedCtor.CtorParameters, true ),
-                                                        SqlProcedureAttributeImpl.DumpParameters( c.CtorParameters, true ) );
+                                                        SqlCallableAttributeImpl.DumpParameters( _selectedCtor.CtorParameters, true ),
+                                                        SqlCallableAttributeImpl.DumpParameters( c.CtorParameters, true ) );
                             return false;
                         }
                     }

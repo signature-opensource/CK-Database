@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Setup.Runtime\SqlObject\SqlObjectProtoItem.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -103,11 +96,8 @@ namespace CK.SqlServer.Setup
             MissingDependencyIsError = missingDependencyIsError;
         }
 
-        public SqlProcedureItem CreateProcedureItem( ISqlServerParser parser, IActivityMonitor monitor )
+        SqlProcedureItem CreateProcedureItem( ISqlServerParser parser, IActivityMonitor monitor )
         {
-            if( parser == null ) throw new ArgumentNullException( "parser" );
-            if( monitor == null ) throw new ArgumentNullException( "monitor" );
-            if( ItemType != SqlObjectProtoItem.TypeProcedure ) throw new InvalidOperationException( "Not a procedure." );
             try
             {
                 ISqlServerStoredProcedure sp = null;
@@ -125,21 +115,56 @@ namespace CK.SqlServer.Setup
             }
         }
 
+        ISqlServerObject SafeParse( ISqlServerParser parser, IActivityMonitor monitor ) 
+        {
+            ISqlServerObject parsed = null;
+            try
+            {
+                var error = parser.ParseObject( FullOriginalText, out parsed );
+                error.LogOnError( monitor );
+            }
+            catch( Exception ex )
+            {
+                using( monitor.OpenError().Send( ex, "While parsing {0}.", ContextLocName.FullName ) )
+                {
+                    monitor.Info().Send( FullOriginalText );
+                }
+            }
+            return parsed;
+        }
+
         public SqlObjectItem CreateItem( ISqlServerParser parser, IActivityMonitor monitor, bool defaultMissingDependencyIsError, SqlPackageBaseItem package = null )
         {
+            if( parser == null ) throw new ArgumentNullException( "parser" );
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
             SqlObjectItem result = null;
-            if( ItemType == SqlObjectProtoItem.TypeProcedure )
-            {
-                result = CreateProcedureItem( parser, monitor );
-            }
-            else if( ItemType == SqlObjectProtoItem.TypeView )
+            if( ItemType == SqlObjectProtoItem.TypeView )
             {
                 result = new SqlViewObjectItem( this );
             }
-            else if( ItemType == SqlObjectProtoItem.TypeFunction )
+            else if( ItemType == SqlObjectProtoItem.TypeProcedure || ItemType == SqlObjectProtoItem.TypeFunction )
             {
-                result = new SqlFunctionItem( this );
+                ISqlServerObject o = SafeParse( parser, monitor );
+                if( o is ISqlServerStoredProcedure )
+                {
+                    result = new SqlProcedureItem( this, (ISqlServerStoredProcedure)o );
+                }
+                else if( o is ISqlServerFunctionScalar )
+                {
+                    result = new SqlFunctionScalarItem( this, (ISqlServerFunctionScalar)o );
+                }
+                else if( o is ISqlServerFunctionInlineTable )
+                {
+                    result = new SqlFunctionInlineTableItem( this, (ISqlServerFunctionInlineTable)o );
+                }
+                else if( o is ISqlServerFunctionTable )
+                {
+                    result = new SqlFunctionTableItem( this, (ISqlServerFunctionTable)o );
+                }
+                else
+                {
+                    throw new NotSupportedException( "Unhandled type of object: " + o.ToStringSignature( true ) );
+                }
             }
             else
             {

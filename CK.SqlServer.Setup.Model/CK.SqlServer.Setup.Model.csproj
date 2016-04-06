@@ -68,6 +68,8 @@
     <Compile Include="Attributes\SqlAlterProcedureAttribute.cs" />
     <Compile Include="Attributes\SqlObjectItemMemberAttributeBase.cs" />
     <Compile Include="Attributes\SqlObjectItemAttribute.cs" />
+    <Compile Include="Attributes\SqlCallableAttribute.cs" />
+    <Compile Include="Attributes\SqlScalarFunctionAttribute.cs" />
     <Compile Include="Attributes\SqlProcedureNonQueryAttribute.cs" />
     <Compile Include="Attributes\SqlViewAttribute.cs" />
     <Compile Include="Configuration\SqlDatabaseDescriptor.cs" />
