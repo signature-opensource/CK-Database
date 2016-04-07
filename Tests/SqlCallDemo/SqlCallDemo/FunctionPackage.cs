@@ -21,5 +21,11 @@ namespace SqlCallDemo
         [SqlScalarFunction( "fStringFunction" )]
         public abstract Task<string> StringFunctionAsync( SqlStandardCallContext ctx, int v );
 
+        [SqlScalarFunction( "fByteFunction" )]
+        public abstract byte ByteFunction( SqlStandardCallContext ctx, int v );
+
+        [SqlScalarFunction( "fByteFunction" )]
+        public abstract Task<byte> ByteFunctionAsync( SqlStandardCallContext ctx, int v );
+
     }
 }

@@ -79,7 +79,7 @@ namespace CK.SqlServer.Setup
             ISqlServerCallableObject s = FinalStatement;
             if( s != null )
             {
-                if( s.IsAlterKeyword ) s = (ISqlServerStoredProcedure)s.ToggleAlterKeyword();
+                if( s.IsAlterKeyword ) s = (ISqlServerCallableObject)s.ToggleAlterKeyword();
                 s.Write( b );
             }
         }

@@ -177,15 +177,19 @@ namespace CK.SqlServer.Setup
                     if( !setter.IsMappedToMethodParameterOrParameterSourceProperty )
                     {
                         var sqlP = setter.SqlExprParam;
-                        if( sqlCallContexts == null || !sqlCallContexts.MatchPropertyToSqlParameter( setter, monitor ) )
+                        if( sqlCallContexts == null 
+                            || !sqlCallContexts.MatchPropertyToSqlParameter( setter, monitor ) )
                         {
                             if( sqlP.DefaultValue == null )
                             {
                                 // If it is a pure output parameters then we don't care setting a value for it.
                                 if( sqlP.IsPureOutput )
                                 {
-                                    // Pure output.
-                                    monitor.Info().Send( "Method '{0}' does not declare the Sql Parameter '{1}'. Since it is a pure output parameter, it will be ignored.", m.Name, sqlP.ToStringClean() );
+                                    // Pure output. If it is the RETURN_VALUE of a function, we do not warn.
+                                    if( !(sqlP is SqlParameterReturnedValue) )
+                                    {
+                                        monitor.Info().Send( "Method '{0}' does not declare the Sql Parameter '{1}'. Since it is a pure output parameter, it will be ignored.", m.Name, sqlP.ToStringClean() );
+                                    }
                                     setter.SetMappingToIgnoredOutput();
                                 }
                                 else

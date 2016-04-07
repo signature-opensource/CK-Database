@@ -42,5 +42,31 @@ namespace SqlCallDemo.Tests
             }
         }
 
+        [Test]
+        public async Task async_call_returns_byte()
+        {
+            var p = TestHelper.StObjMap.Default.Obtain<FunctionPackage>();
+            using( var ctx = new SqlStandardCallContext() )
+            {
+                byte t1 = await p.ByteFunctionAsync( ctx, 2 );
+                byte t2 = await p.ByteFunctionAsync( ctx, 4 );
+                Assert.That( t1, Is.EqualTo( 4 ) );
+                Assert.That( t2, Is.EqualTo( 16 ) );
+            }
+        }
+
+        [Test]
+        public void call_returns_byte()
+        {
+            var p = TestHelper.StObjMap.Default.Obtain<FunctionPackage>();
+            using( var ctx = new SqlStandardCallContext() )
+            {
+                byte t1 = p.ByteFunction( ctx, 3 );
+                byte t2 = p.ByteFunction( ctx, 5 );
+                Assert.That( t1, Is.EqualTo( 9 ) );
+                Assert.That( t2, Is.EqualTo( 25 ) );
+            }
+        }
+
     }
 }
