@@ -36,6 +36,14 @@
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <StartAction>Program</StartAction>
+    <StartProgram>$(SolutionDir)packages\NUnit.Runners.Net4.2.6.4\tools\nunit.exe</StartProgram>
+    <StartArguments>CK.Setupable.Engine.Tests.dll</StartArguments>
+  </PropertyGroup>
+
+
   <ItemGroup>
     <Reference Include="CK.Core, Version=4.3.0.0, Culture=neutral, PublicKeyToken=edfa2f62fc978217, processorArchitecture=MSIL">
       <HintPath>..\..\packages\CK.Core.4.3.0\lib\net45\CK.Core.dll</HintPath>
