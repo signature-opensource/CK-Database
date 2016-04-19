@@ -14,23 +14,9 @@ CK.SqlServer.Setup.Engine provides full Database Setup support.
 </description>
     <language>en-US</language>
     <dependencies>
-      <dependency id="CK.Core" version="4.3.0" />
-      <dependency id="CK.SqlServer.Parser.Model" version="1.3.0" />
-      
-      <dependency id="CK.Setup.Dependency" version="$version$" />        
-
+            
       <dependency id="CK.Setupable.Engine" version="$version$" />
-      <dependency id="CK.Setupable.Model" version="$version$" />
-      <dependency id="CK.Setupable.Runtime" version="$version$" />
-
-      <dependency id="CK.SqlServer.Core" version="$version$" />
-
-      <dependency id="CK.SqlServer.Setup.Model" version="$version$" />
       <dependency id="CK.SqlServer.Setup.Runtime" version="$version$" />
-
-      <dependency id="CK.StObj.Engine" version="$version$" />
-      <dependency id="CK.StObj.Model" version="$version$" />
-      <dependency id="CK.StObj.Runtime" version="$version$" />
 
     </dependencies>
   </metadata>

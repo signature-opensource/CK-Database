@@ -15,9 +15,7 @@ define setupable StObj for Sql Server databases.
 </description>
     <language>en-US</language>
     <dependencies>
-      <dependency id="CK.Core" version="4.3.0" />
 
-      <dependency id="CK.StObj.Model" version="$version$" />
       <dependency id="CK.Setupable.Model" version="$version$" />
 
     </dependencies>

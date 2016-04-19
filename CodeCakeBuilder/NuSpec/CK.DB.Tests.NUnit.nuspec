@@ -13,12 +13,12 @@
     </description>
     <language>en-US</language>
     <dependencies>
-      <dependency id="CK.Core" version="4.3.0" />
-      <dependency id="CK.Monitoring" version="4.3.0" />
-      <dependency id="CK.Reflection" version="4.3.0" />
+      <dependency id="CK.ActivityMonitor.StandardSender" version="5.0.0-d01" />
+      <dependency id="CK.Monitoring" version="5.0.0-d01" />
+      <dependency id="CK.Reflection" version="5.0.0-d01" />
+      <dependency id="CK.SqlServer.Parser" version="5.0.0-a02" />
       <dependency id="NUnit" version="2.6.4" />
       <dependency id="NUnit.Runners.Net4" version="2.6.4" />
-      <dependency id="CK.SqlServer.Parser" version="4.1.0-a02" />
       <dependency id="CK.SqlServer.Setup.Engine" version="$version$" />
     </dependencies>
   </metadata>

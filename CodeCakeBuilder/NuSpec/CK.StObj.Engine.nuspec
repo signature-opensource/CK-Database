@@ -14,12 +14,9 @@ CK.StObj.Engine supports actual generation of StObj implementation.
 </description>
     <language>en-US</language>
     <dependencies>
-      <dependency id="CK.Core" version="4.3.0" />
-      <dependency id="CK.Reflection" version="4.3.0" />
+      <dependency id="CK.Reflection" version="5.0.0-d01" />
 
       <dependency id="CK.Setup.Dependency" version="$version$" />
-
-      <dependency id="CK.StObj.Model" version="$version$" />
       <dependency id="CK.StObj.Runtime" version="$version$" />
 
     </dependencies>

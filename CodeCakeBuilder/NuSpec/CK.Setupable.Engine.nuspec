@@ -14,15 +14,8 @@ CK.Setupable.Runtime is able to generate StObj objects support for TSS (Three St
 </description>
     <language>en-US</language>
     <dependencies>
-      <dependency id="CK.Core" version="4.3.0" />
-
-      <dependency id="CK.Setup.Dependency" version="$version$" />        
       
-      <dependency id="CK.StObj.Model" version="$version$" />        
-      <dependency id="CK.StObj.Runtime" version="$version$" />
       <dependency id="CK.StObj.Engine" version="$version$" />
-
-      <dependency id="CK.Setupable.Model" version="$version$" />
       <dependency id="CK.Setupable.Runtime" version="$version$" />
 
     </dependencies>
