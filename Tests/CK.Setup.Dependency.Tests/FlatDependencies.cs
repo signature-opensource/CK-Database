@@ -25,7 +25,7 @@ namespace CK.Setup.Dependency.Tests
         [Test]
         public void NoItem()
         {
-            IDependencySorterResult r = DependencySorter.OrderItems( CKReadOnlyListEmpty<TestableItem>.Empty, null );
+            IDependencySorterResult r = DependencySorter.OrderItems( Util.Array.Empty<TestableItem>(), null );
             Assert.That( r.CycleDetected == null );
             Assert.That( r.ItemIssues, Is.Empty );
             Assert.That( r.SortedItems, Is.Empty );
@@ -36,7 +36,7 @@ namespace CK.Setup.Dependency.Tests
         public void OneItem()
         {
             var oneItem = new TestableItem( "Test" );
-            IDependencySorterResult r = DependencySorter.OrderItems( new CKReadOnlyListMono<TestableItem>( oneItem ), null );
+            IDependencySorterResult r = DependencySorter.OrderItems( new[] { oneItem }, null );
             Assert.That( r.CycleDetected == null );
             Assert.That( r.ItemIssues, Is.Empty );
             Assert.That( r.SortedItems.Count, Is.EqualTo( 1 ) );
@@ -49,7 +49,7 @@ namespace CK.Setup.Dependency.Tests
         public void OneItemMissingDependency()
         {
             var oneItem = new TestableItem( "Test", "⇀MissingDep" );
-            IDependencySorterResult r = DependencySorter.OrderItems( new CKReadOnlyListMono<TestableItem>( oneItem ), null );
+            IDependencySorterResult r = DependencySorter.OrderItems( new[] { oneItem }, null );
             Assert.That( r.CycleDetected == null );
             Assert.That( r.HasRequiredMissing );
             Assert.That( r.HasStructureError );
@@ -75,7 +75,7 @@ namespace CK.Setup.Dependency.Tests
         {
             var oneItem = new TestableItem( "Test" );
             oneItem.RequiredBy.Add( new TestableItem( "AutoDiscovered" ) );
-            IDependencySorterResult r = DependencySorter.OrderItems( new CKReadOnlyListMono<TestableItem>( oneItem ), null );
+            IDependencySorterResult r = DependencySorter.OrderItems( new[] { oneItem }, null );
             Assert.That( r.CycleDetected == null );
             Assert.That( r.ItemIssues, Is.Empty );
             Assert.That( r.SortedItems.Count, Is.EqualTo( 2 ) );
@@ -91,7 +91,7 @@ namespace CK.Setup.Dependency.Tests
         {
             var oneItem = new TestableItem( "Test" );
             oneItem.Requires.Add( new TestableItem( "AutoDiscovered" ) );
-            IDependencySorterResult r = DependencySorter.OrderItems( new CKReadOnlyListMono<TestableItem>( oneItem ), null );
+            IDependencySorterResult r = DependencySorter.OrderItems( new[] { oneItem }, null );
             Assert.That( r.CycleDetected == null );
             Assert.That( r.ItemIssues, Is.Empty );
             Assert.That( r.SortedItems.Count, Is.EqualTo( 2 ) );

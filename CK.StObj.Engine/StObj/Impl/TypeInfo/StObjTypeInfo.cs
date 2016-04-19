@@ -48,9 +48,9 @@ namespace CK.Setup
                         result = new TypeInfoForBaseClasses();
                         if( t == typeof( object ) )
                         {
-                            result.AmbientProperties = CKReadOnlyListEmpty<AmbientPropertyInfo>.Empty;
-                            result.AmbientContracts = CKReadOnlyListEmpty<InjectContractInfo>.Empty;
-                            result.StObjProperties = CKReadOnlyListEmpty<StObjPropertyInfo>.Empty;
+                            result.AmbientProperties = Util.Array.Empty<AmbientPropertyInfo>();
+                            result.AmbientContracts = Util.Array.Empty<InjectContractInfo>();
+                            result.StObjProperties = Util.Array.Empty<StObjPropertyInfo>();
                         }
                         else
                         {
@@ -89,7 +89,7 @@ namespace CK.Setup
                             Debug.Assert( apList != null && acList != null );
                             result.AmbientProperties = apList;
                             result.AmbientContracts = acList;
-                            result.StObjProperties = stObjProperties.ToReadOnlyList();
+                            result.StObjProperties = stObjProperties;
                         }
                         _cache.Add( t, result );
                     }
@@ -110,8 +110,8 @@ namespace CK.Setup
             {
                 if( type == typeof( object ) )
                 {
-                    apListResult = CKReadOnlyListEmpty<AmbientPropertyInfo>.Empty;
-                    acListResult = CKReadOnlyListEmpty<InjectContractInfo>.Empty;
+                    apListResult = Util.Array.Empty<AmbientPropertyInfo>();
+                    acListResult = Util.Array.Empty<InjectContractInfo>();
                 }
                 else
                 {
@@ -167,7 +167,7 @@ namespace CK.Setup
             // since they are not necessarily IAmbientContract, we use infoFromParent abstraction).
             AmbientProperties = AmbientPropertyInfo.MergeWithAboveProperties( monitor, infoFromParent.AmbientProperties, apCollector );
             AmbientContracts = AmbientPropertyInfo.MergeWithAboveProperties( monitor, infoFromParent.AmbientContracts, acCollector );
-            StObjProperties = stObjProperties.ToReadOnlyList();
+            StObjProperties = stObjProperties;
             Debug.Assert( AmbientContracts != null && AmbientProperties != null && StObjProperties != null );
 
             // Simple detection of name clashing: I prefer to keep it simple and check property kind coherency here instead of injecting 
@@ -226,7 +226,7 @@ namespace CK.Setup
                 else
                 {
                     ConstructParameters = Construct.GetParameters();
-                    ConstructParameterTypedContext = ConstructParameters.Length > 0 ? new string[ConstructParameters.Length] : Util.EmptyStringArray;
+                    ConstructParameterTypedContext = ConstructParameters.Length > 0 ? new string[ConstructParameters.Length] : Util.Array.Empty<string>();
                     ContainerConstructParameterIndex = -1;
                     for( int i = 0; i < ConstructParameters.Length; ++i )
                     {

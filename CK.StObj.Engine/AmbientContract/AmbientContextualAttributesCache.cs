@@ -79,7 +79,7 @@ namespace CK.Core
                 object finalAttributeToUse = a;
                 if( delegated != null )
                 {
-                    Type dT = SimpleTypeFinder.WeakDefault.ResolveType( delegated.ActualAttributeTypeAssemblyQualifiedName, true );
+                    Type dT = SimpleTypeFinder.WeakResolver( delegated.ActualAttributeTypeAssemblyQualifiedName, true );
                     finalAttributeToUse = Activator.CreateInstance( dT, new object[] { a } );
                 }
                 all.Add( new Entry( m, finalAttributeToUse ) );

@@ -44,11 +44,11 @@ namespace CK.Core
             if( t == null ) throw new ArgumentNullException( "t" );
             Type = t;
             MutableFinalContexts = new HashSet<string>();
-            _finalContextsEx = new CKReadOnlyCollectionOnISet<string>( MutableFinalContexts );
+            _finalContextsEx = new CKReandOnlyCollectionOnICollection<string>( MutableFinalContexts );
             if( (Generalization = parent) == null )
             {
                 _nextSibling = null;
-                MutableFinalContexts.Add( String.Empty );
+                MutableFinalContexts.Add( string.Empty );
             }
             else
             {

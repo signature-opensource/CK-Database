@@ -19,7 +19,7 @@ namespace CK.Setup
     /// </summary>
     public sealed class DependencySorterResult<T> : IDependencySorterResult where T : class, IDependentItem
     {
-        readonly ICKReadOnlyList<CycleExplainedElement> _cycle;
+        readonly IReadOnlyList<CycleExplainedElement> _cycle;
         int _itemIssueWithStructureErrorCount;
         bool _requiredMissingIsError;
 
@@ -29,14 +29,14 @@ namespace CK.Setup
             if( result == null )
             {
                 SortedItems = null;
-                _cycle = cycle.ToReadOnlyList();
+                _cycle = cycle.ToArray();
             }
             else
             {
-                SortedItems = new CKReadOnlyListOnIList<DependencySorter<T>.Entry>( result );
+                SortedItems = result;
                 _cycle = null;
             }
-            ItemIssues = itemIssues != null && itemIssues.Count > 0 ? new CKReadOnlyListOnIList<DependentItemIssue>( itemIssues ) : CKReadOnlyListEmpty<DependentItemIssue>.Empty;
+            ItemIssues = itemIssues != null && itemIssues.Count > 0 ? itemIssues : (IReadOnlyList<DependentItemIssue>)Util.Array.Empty<DependentItemIssue>();
             _requiredMissingIsError = true;
             _itemIssueWithStructureErrorCount = -1;
         }

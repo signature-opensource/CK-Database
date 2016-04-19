@@ -90,9 +90,9 @@ namespace CK.Setup
         /// Gets the sorted list of <see cref="VersionedName"/> if it exists (an empty list if no 
         /// previous names have been set).
         /// </summary>
-        public ICKReadOnlyList<VersionedName> PreviousNames
+        public IReadOnlyList<VersionedName> PreviousNames
         {
-            get { return _previousNames ?? CKReadOnlyListEmpty<VersionedName>.Empty; }
+            get { return _previousNames ?? (IReadOnlyList<VersionedName>)Util.Array.Empty<VersionedName>(); }
         }
 
         /// <summary>

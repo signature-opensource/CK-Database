@@ -43,7 +43,7 @@ namespace CK.SqlServer.Setup
             var s = new SimpleScriptTagHandler( scriptBody );
             if( !s.Expand( Monitor, true ) ) return null;
             _scripts = s.SplitScript();
-            return _scripts.Select( script => script.Body ).ToReadOnlyList();
+            return _scripts.Select( script => script.Body ).ToArray();
         }
 
         protected override bool ExecuteOneScript( int numScript, string scriptBody )

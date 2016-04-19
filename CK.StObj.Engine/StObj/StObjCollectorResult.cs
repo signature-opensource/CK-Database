@@ -80,7 +80,7 @@ namespace CK.Setup
         internal void SetFatal()
         {
             _fatal = true;
-            _orderedStObjs = CKReadOnlyListEmpty<MutableItem>.Empty;
+            _orderedStObjs = Util.Array.Empty<MutableItem>();
         }
 
         internal void SetSuccess( IReadOnlyList<MutableItem> ordered )

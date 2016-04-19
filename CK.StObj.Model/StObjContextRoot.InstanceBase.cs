@@ -22,7 +22,6 @@ namespace CK.Core
     {
         readonly StObjContext _defaultContext;
         readonly StObjContext[] _contexts;
-        readonly IReadOnlyCollection<StObjContext> _contextsEx;
         readonly IStObjRuntimeBuilder _runtimeBuilder;
 
         internal readonly StructuredObjectCache SingletonCache;
@@ -71,7 +70,6 @@ namespace CK.Core
                 BinaryReader reader = new BinaryReader( s );
 
                 _contexts = new StObjContext[reader.ReadInt32()];
-                _contextsEx = new CKReadOnlyListOnIList<StObjContext>( _contexts );
                 _defaultContext = ReadContexts( reader );
 
                 BinaryFormatter formatter = new BinaryFormatter();
@@ -113,7 +111,7 @@ namespace CK.Core
                 Dictionary<Type,int> mappings = new Dictionary<Type, int>( typeMappingCount );
                 while( --typeMappingCount >= 0 )
                 {
-                    mappings.Add( SimpleTypeFinder.Default.ResolveType( reader.ReadString(), true ), reader.ReadInt32() );
+                    mappings.Add( SimpleTypeFinder.StandardResolver( reader.ReadString(), true ), reader.ReadInt32() );
                 }
                 _contexts[i] = new StObjContext( this, name, mappings );
                 if( name.Length == 0 ) def = _contexts[i];
@@ -141,10 +139,7 @@ namespace CK.Core
         /// <summary>
         /// Gets all the contexts.
         /// </summary>
-        public IReadOnlyCollection<IContextualStObjMap> Contexts
-        {
-            get { return _contextsEx; }
-        }
+        public IReadOnlyCollection<IContextualStObjMap> Contexts => _contexts;
 
         /// <summary>
         /// Finds a context by its name.

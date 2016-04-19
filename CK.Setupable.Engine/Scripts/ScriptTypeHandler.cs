@@ -15,7 +15,6 @@ namespace CK.Setup
     {
         readonly string _name;
         readonly List<ScriptSource> _sources;
-        readonly IReadOnlyList<ScriptSource> _sourcesEx;
         ScriptTypeManager _manager;
         List<string> _requires;
         List<string> _requiredBy;
@@ -29,23 +28,19 @@ namespace CK.Setup
             }
             _name = _name.Remove( _name.Length - 17 );
             _sources = new List<ScriptSource>();
-            _sourcesEx = new CKReadOnlyListOnIList<ScriptSource>( _sources );
         }
 
         /// <summary>
         /// Gets the type of scripts that this script handler manages.
         /// It is automatically computed from the name of the class: for "SqlScriptTypeHandler", the HandlerName is "Sql".
         /// </summary>
-        public string HandlerName { get { return _name; } }
+        public string HandlerName => _name;
 
         /// <summary>
         /// Gets the <see cref="ScriptSource"/> that this <see cref="ScriptTypeHandler"/> handles.
         /// Script sources are ordered by priority in ascending order.
         /// </summary>
-        public IReadOnlyList<ScriptSource> Sources
-        {
-            get { return _sourcesEx; }
-        }
+        public IReadOnlyList<ScriptSource> Sources => _sources; 
 
         /// <summary>
         /// Registers a new <see cref="ScriptSource"/> (its name must be unique).

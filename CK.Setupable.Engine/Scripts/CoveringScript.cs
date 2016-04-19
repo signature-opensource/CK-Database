@@ -46,9 +46,9 @@ namespace CK.Setup
                 Debug.Assert( covered.Count > 0 && covered.IsSortedStrict( CompareUpgradeScripts ) );
                 Debug.Assert( covered.All( c => s.Name.FromVersion <= c.Name.FromVersion ), "The covering script starts before any covered script." );
                 Debug.Assert( covered.All( c => s.Name.Version > c.Name.FromVersion ), "The covering script brings the system to a version strictely greater than the starting point of any covered script." );
-                CoveredScripts = BuildCoveringScripts( covered ).ToReadOnlyList();
+                CoveredScripts = BuildCoveringScripts( covered );
             }
-            else CoveredScripts = CKReadOnlyListEmpty<CoveringScript>.Empty;
+            else CoveredScripts = Util.Array.Empty<CoveringScript>();
         }
 
         static internal List<CoveringScript> BuildCoveringScripts( List<ISetupScript> scripts )

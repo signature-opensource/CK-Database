@@ -133,11 +133,11 @@ namespace CK.Setup
         {
             if( _objects == null )
             {
-                return _model != null ? new CKReadOnlyListMono<ISetupItem>( _model ) : null;
+                return _model != null ? new [] { _model } : null;
             }
             else if( _model == null )
             {
-                return new CKReadOnlyListMono<ISetupItem>( _objects );
+                return new [] { _objects };
             }
             else 
             {

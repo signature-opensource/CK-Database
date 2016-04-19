@@ -113,7 +113,7 @@ namespace CK.Core
         /// </returns>
         public IEnumerable<string> GetNames( string namePrefix )
         {
-            if( Type == null ) return Util.EmptyStringArray;
+            if( Type == null ) return Util.Array.Empty<string>();
             IReadOnlyList<string> a = Type.Assembly.GetSortedResourceNames();
             
             string p = ResourceName( "." );

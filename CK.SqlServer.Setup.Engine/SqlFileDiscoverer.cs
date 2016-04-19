@@ -29,7 +29,6 @@ namespace CK.Setup
         ISqlObjectParser _sqlObjectParser;
         IActivityMonitor _monitor;
         List<DynamicPackageItem> _packages;
-        IReadOnlyList<DynamicPackageItem> _packagesEx;
 
         int _packageDiscoverErrorCount;
         int _sqlFileDiscoverErrorCount;
@@ -43,23 +42,13 @@ namespace CK.Setup
             _monitor = monitor;
 
             _packages = new List<DynamicPackageItem>();
-            _packagesEx = new CKReadOnlyListOnIList<DynamicPackageItem>( _packages );
         }
 
-        public int PackageDiscoverErrorCount
-        {
-            get { return _packageDiscoverErrorCount; }
-        }
+        public int PackageDiscoverErrorCount => _packageDiscoverErrorCount; 
 
-        public int SqlFileDiscoverErrorCount
-        {
-            get { return _sqlFileDiscoverErrorCount; }
-        }
+        public int SqlFileDiscoverErrorCount => _sqlFileDiscoverErrorCount; 
 
-        public IReadOnlyList<DynamicPackageItem> DiscoveredPackages
-        {
-            get { return _packagesEx; }
-        }
+        public IReadOnlyList<DynamicPackageItem> DiscoveredPackages => _packages; 
 
         /// <summary>
         /// Discovers *.ck files recursively in a directory and collects them as <see cref="DynamicPackageItem"/> exposed by <see cref="DiscoveredPackages"/> property.

@@ -244,7 +244,7 @@ namespace CK.Core
                         ambiguousPath.AddRange( deepestConcretes.Select( m => m.Item1.AmbientTypeInfo.Type ) );
 
                         if( _classAmbiguities == null ) _classAmbiguities = new List<IReadOnlyList<Type>>();
-                        _classAmbiguities.Add( ambiguousPath.ToReadOnlyList() );
+                        _classAmbiguities.Add( ambiguousPath.ToArray() );
                     }
                 }
             }
@@ -283,10 +283,10 @@ namespace CK.Core
                 }
                 var ctxResult = new AmbientContractCollectorContextualResult<CT,T,TC>(
                     Context,
-                    _concreteClasses.Select( list => list.ToReadOnlyList() ).ToReadOnlyList(),
-                    _classAmbiguities != null ? new CKReadOnlyListOnIList<IReadOnlyList<Type>>( _classAmbiguities ) : CKReadOnlyListEmpty<IReadOnlyList<Type>>.Empty,
-                    interfaceAmbiguities != null ? interfaceAmbiguities.Values.Select( list => list.ToReadOnlyList() ).ToReadOnlyList() : CKReadOnlyListEmpty<IReadOnlyList<Type>>.Empty,
-                    new CKReadOnlyListOnIList<Type>( _abstractTails ) );
+                    _concreteClasses.Select( list => list.ToArray() ).ToArray(),
+                    _classAmbiguities != null ? _classAmbiguities : (IReadOnlyList<IReadOnlyList<Type>>)Util.Array.Empty<IReadOnlyList<Type>>(),
+                    interfaceAmbiguities != null ? interfaceAmbiguities.Values.Select( list => list.ToArray() ).ToArray() : (IReadOnlyList<IReadOnlyList<Type>>)Util.Array.Empty<IReadOnlyList<Type>>(),
+                    _abstractTails );
                 return ctxResult;
             }
         }

@@ -37,7 +37,7 @@ namespace CK.SqlServer.Setup
 
         /// <summary>
         /// Gets or sets the Resource Type to use for the <see cref="IResourceLocator"/>.
-        /// When null (the default that should rarely be changed), it is the package's resource type is used or the decorated type itself that is 
+        /// When null (the default that should rarely be changed), it is the decorated type itself that is 
         /// used to locate the resources.
         /// </summary>
         public Type ResourceType { get; set; }

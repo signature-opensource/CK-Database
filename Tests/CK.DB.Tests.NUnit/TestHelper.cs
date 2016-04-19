@@ -279,7 +279,7 @@ namespace CK.Core
                 var c = AppSettings.Default["AssembliesToSetup"];
                 if( c == null ) c = String.Empty;
                 return c.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
-                        .Select( s => s.Trim() ).ToReadOnlyList();
+                        .Select( s => s.Trim() ).ToArray();
             }
         }
 
@@ -297,7 +297,7 @@ namespace CK.Core
                         .Select( s => s.Trim() )
                         .Append( "CK" ).Append( "CKCore" )
                         .Distinct()
-                        .ToReadOnlyList();
+                        .ToArray();
             }
         }
 

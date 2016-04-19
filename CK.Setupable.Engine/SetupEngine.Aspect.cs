@@ -28,7 +28,7 @@ namespace CK.Setup
                     try
                     {
                         name = c.AspectType;
-                        Type t = SimpleTypeFinder.WeakDefault.ResolveType( c.AspectType, true );
+                        Type t = SimpleTypeFinder.WeakResolver( c.AspectType, true );
                         if( !aspectsType.Add( t ) )
                         {
                             success = false;

@@ -70,8 +70,8 @@ namespace CK.Setup
 
         internal void ResolveItemAndDriverTypes( IActivityMonitor monitor )
         {
-            if( ItemType == null && ItemTypeName != null ) ItemType = SimpleTypeFinder.WeakDefault.ResolveType( ItemTypeName, true );
-            if( DriverType == null && DriverTypeName != null ) DriverType = SimpleTypeFinder.WeakDefault.ResolveType( DriverTypeName, true );
+            if( ItemType == null && ItemTypeName != null ) ItemType = SimpleTypeFinder.WeakResolver( ItemTypeName, true );
+            if( DriverType == null && DriverTypeName != null ) DriverType = SimpleTypeFinder.WeakResolver( DriverTypeName, true );
         }
 
         internal IStObjSetupItem SetupItem { get; set; }

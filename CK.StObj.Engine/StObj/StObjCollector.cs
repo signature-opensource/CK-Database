@@ -144,7 +144,7 @@ namespace CK.Setup
                 {
                     try
                     {
-                        RegisterClass( SimpleTypeFinder.WeakDefault.ResolveType( aqn, true ) );
+                        RegisterClass( SimpleTypeFinder.WeakResolver( aqn, true ) );
                     }
                     catch( Exception ex )
                     {
@@ -283,7 +283,7 @@ namespace CK.Setup
                     {
                         SetPostBuildProperties( result );
                     }
-                    if( !result.HasFatalError ) result.SetSuccess( ordered.ToReadOnlyList() );
+                    if( !result.HasFatalError ) result.SetSuccess( ordered );
                     return result;
                 }
             }

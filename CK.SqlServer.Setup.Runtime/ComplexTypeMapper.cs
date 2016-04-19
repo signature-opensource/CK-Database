@@ -59,7 +59,7 @@ namespace CK.SqlServer.Setup
             public readonly ParameterInfo[] CtorParameters;
 
             public MappedCtor( ConstructorInfo c, ParameterInfo[] ctorParameters )
-                : base( ctorParameters.Select( ( p, i ) => new Param( p.Name, p.ParameterType, i ) ).ToReadOnlyList() )
+                : base( ctorParameters.Select( ( p, i ) => new Param( p.Name, p.ParameterType, i ) ).ToArray() )
             {
                 Ctor = c;
                 CtorParameters = ctorParameters;
@@ -71,7 +71,7 @@ namespace CK.SqlServer.Setup
             public readonly PropertyInfo Property;
 
             public MappedProperty( PropertyInfo info )
-                : base( new CKReadOnlyListMono<Param>( new Param( info.Name, info.PropertyType, 0 ) ) )
+                : base( new[] { new Param( info.Name, info.PropertyType, 0 ) } )
             {
                 Property = info;
             }
@@ -100,10 +100,10 @@ namespace CK.SqlServer.Setup
         public ComplexTypeMapperModel( Type t )
         {
             CreatedType = t;
-            _ctors = t.GetConstructors( BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic ).Select( c => new MappedCtor( c, c.GetParameters() ) ).ToReadOnlyList();
+            _ctors = t.GetConstructors( BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic ).Select( c => new MappedCtor( c, c.GetParameters() ) ).ToArray();
             _props = t.GetProperties()
                             .Where( p => p.CanWrite && p.GetSetMethod() != null )
-                            .Select( p => new MappedProperty( p ) ).ToReadOnlyList();
+                            .Select( p => new MappedProperty( p ) ).ToArray();
         }
 
         IEnumerable<Mapped> AllMapped { get { return ((IEnumerable<Mapped>)_ctors).Concat( _props ); } }
@@ -209,10 +209,10 @@ namespace CK.SqlServer.Setup
         public bool CheckValidity( IActivityMonitor monitor )
         {
             if( !ChooseCtor( monitor ) ) return false;
-            var unmappedProperties = _props.Where( p => !p.IsInputSatisfied ).ToReadOnlyList();
-            if( unmappedProperties.Count != 0 &&_unmappedInputs != null )
+            var unmappedProperties = _props.Where( p => !p.IsInputSatisfied ).ToArray();
+            if( unmappedProperties.Length != 0 &&_unmappedInputs != null )
             {
-                using( monitor.OpenWarn().Send( "There are {0} unmapped property(ie)s and {1} unmapped input(s).", unmappedProperties.Count, _unmappedInputs.Count ) )
+                using( monitor.OpenWarn().Send( "There are {0} unmapped property(ie)s and {1} unmapped input(s).", unmappedProperties.Length, _unmappedInputs.Count ) )
                 {
                     foreach( var p in unmappedProperties )
                     {

@@ -123,7 +123,7 @@ namespace CK.SqlServer.Setup
             {
                 if( _sqlParser == null )
                 {
-                    Type t = SimpleTypeFinder.WeakDefault.ResolveType( "CK.SqlServer.Parser.SqlServerParser, CK.SqlServer.Parser", true );
+                    Type t = SimpleTypeFinder.WeakResolver( "CK.SqlServer.Parser.SqlServerParser, CK.SqlServer.Parser", true );
                     _sqlParser = (ISqlServerParser)Activator.CreateInstance( t );
                 }
                 return _sqlParser;

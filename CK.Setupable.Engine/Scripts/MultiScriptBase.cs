@@ -89,7 +89,7 @@ namespace CK.Setup
         /// <returns>Zero, one or multiple pre processed scripts. Null on error (an error or fatal error should have been logged).</returns>
         protected virtual IReadOnlyList<string> SplitScripts( string scriptBody )
         {
-            return new CKReadOnlyListMono<string>( scriptBody );
+            return new[] { scriptBody };
         }
 
         /// <summary>

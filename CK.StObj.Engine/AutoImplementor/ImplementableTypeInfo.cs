@@ -174,7 +174,7 @@ namespace CK.Core
                 }
             }
             if( nbUncovered > 0 ) return null;
-            return new ImplementableTypeInfo( abstractType, properties.ToReadOnlyList(), methods.ToReadOnlyList() );
+            return new ImplementableTypeInfo( abstractType, properties, methods );
         }
 
         /// <summary>

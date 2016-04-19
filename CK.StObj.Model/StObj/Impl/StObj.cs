@@ -104,7 +104,7 @@ namespace CK.Core
                 setters = new PropertySetter[nb];
                 for( int i = 0; i < nb; ++i )
                 {
-                    Type t = SimpleTypeFinder.WeakDefault.ResolveType( r.ReadString(), true );
+                    Type t = SimpleTypeFinder.WeakResolver( r.ReadString(), true );
                     setters[i].Property = t.GetProperty( r.ReadString(), BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic );
                     setters[i].Index = r.ReadInt32();
                 }

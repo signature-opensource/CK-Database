@@ -59,11 +59,11 @@ namespace CK.SqlServer.Setup
                 AssemblyName a = holderType.Assembly.GetName();
                 a.Name += ".Runtime";
                 string transformerTypeName = holderType.FullName + ", " + a.FullName;
-                Type transformerType = SimpleTypeFinder.WeakDefault.ResolveType( transformerTypeName, false );
+                Type transformerType = SimpleTypeFinder.WeakResolver( transformerTypeName, false );
                 if( transformerType == null )
                 {
                     string altTypeName = "Runtime." + transformerTypeName;
-                    transformerType = SimpleTypeFinder.WeakDefault.ResolveType( altTypeName, false );
+                    transformerType = SimpleTypeFinder.WeakResolver( altTypeName, false );
                     if( transformerType == null )
                     {
                         state.Monitor.Fatal().Send( "Unable to locate transformer object. Tried '{0}' and '{1}'.", transformerTypeName, altTypeName );

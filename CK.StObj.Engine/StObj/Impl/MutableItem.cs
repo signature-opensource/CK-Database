@@ -133,7 +133,6 @@ namespace CK.Setup
 
         // Ambient properties are per StObj.
         List<TrackedAmbientPropertyInfo> _trackedAmbientProperties;
-        IReadOnlyList<TrackedAmbientPropertyInfo> _trackedAmbientPropertiesEx;
         /// <summary>
         /// True if this or any Generalization has _trackAmbientPropertiesMode != None.
         /// </summary>
@@ -259,11 +258,11 @@ namespace CK.Setup
                     }
                     parameters[idx] = p;
                 }
-                _constructParameterEx = new CKReadOnlyListOnIList<MutableParameter>( parameters );
+                _constructParameterEx = parameters;
             }
             else
             {
-                _constructParameterEx = CKReadOnlyListEmpty<MutableParameter>.Empty;
+                _constructParameterEx = Util.Array.Empty<MutableParameter>();
             }
         }
 
@@ -507,22 +506,22 @@ namespace CK.Setup
                 }
             }
             // This will be updated after the Sort with clean Requirements (no Generalization nor Containers in it).
-            _dRequires = req.ToReadOnlyList();
+            _dRequires = req.ToArray();
 
             // RequiredBy initialization.
             if( _requiredBy.Count > 0 )
             {
-                _dRequiredBy = _requiredBy.AsList.Select( r => r.ResolveToStObj( monitor, collector, cachedCollector ) ).Where( m => m != null ).ToReadOnlyList();
+                _dRequiredBy = _requiredBy.AsList.Select( r => r.ResolveToStObj( monitor, collector, cachedCollector ) ).Where( m => m != null ).ToArray();
             }
             // Children Initialization.
             if( _children.Count > 0 )
             {
-                _dChildren = _children.AsList.Select( r => r.ResolveToStObj( monitor, collector, cachedCollector ) ).Where( m => m != null ).ToReadOnlyList();
+                _dChildren = _children.AsList.Select( r => r.ResolveToStObj( monitor, collector, cachedCollector ) ).Where( m => m != null ).ToArray();
             }
             // Groups Initialization.
             if( _groups.Count > 0 )
             {
-                _dGroups = _groups.AsList.Select( r => r.ResolveToStObj( monitor, collector, cachedCollector ) ).Where( m => m != null ).ToReadOnlyList();
+                _dGroups = _groups.AsList.Select( r => r.ResolveToStObj( monitor, collector, cachedCollector ) ).Where( m => m != null ).ToArray();
             }
             return result;
         }
@@ -629,9 +628,9 @@ namespace CK.Setup
         {
             Debug.Assert( IndexOrdered == 0 );
             IndexOrdered = idx;
-            _dRequires = requiresFromSorter.Select( s => (MutableItem)s.Item ).ToReadOnlyList();
-            _dChildren = childrenFromSorter.Select( s => (MutableItem)s.Item ).ToReadOnlyList();
-            _dGroups = groupsFromSorter.Select( s => (MutableItem)s.Item ).ToReadOnlyList();
+            _dRequires = requiresFromSorter.Select( s => (MutableItem)s.Item ).ToArray();
+            _dChildren = childrenFromSorter.Select( s => (MutableItem)s.Item ).ToArray();
+            _dGroups = groupsFromSorter.Select( s => (MutableItem)s.Item ).ToArray();
             // requiredBy are useless.
             _dRequiredBy = null;
             // Increments Specialization index.
@@ -830,14 +829,7 @@ namespace CK.Setup
         }
 
 
-        IReadOnlyList<IStObjTrackedAmbientPropertyInfo> IStObjResult.TrackedAmbientProperties
-        {
-            get 
-            { 
-                if( _trackedAmbientProperties == null ) return null;
-                return _trackedAmbientPropertiesEx ?? (_trackedAmbientPropertiesEx = new CKReadOnlyListOnIList<TrackedAmbientPropertyInfo>( _trackedAmbientProperties )); 
-            }
-        }
+        IReadOnlyList<IStObjTrackedAmbientPropertyInfo> IStObjResult.TrackedAmbientProperties => _trackedAmbientProperties;
 
         object IStObjResult.GetStObjProperty( string propertyName )
         {

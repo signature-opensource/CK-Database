@@ -123,7 +123,7 @@ namespace CK.Setup
                 IDependencySorterResult r = DependencySorter.OrderItems( _handlers.Values.Select( h => new DependencyWrapper( h ) ), null );
                 if( r.IsComplete )
                 {
-                    _sortedHandlers = r.SortedItems.Select( o => ((DependencyWrapper)o.Item).Handler ).ToReadOnlyList();
+                    _sortedHandlers = r.SortedItems.Select( o => ((DependencyWrapper)o.Item).Handler ).ToArray();
                 }
                 else
                 {

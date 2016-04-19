@@ -21,7 +21,6 @@ namespace CK.Setup
     public class ScriptSet
     {
         readonly List<ForHandler> _handlers;
-        readonly IReadOnlyList<ForHandler> _handlersEx;
         readonly string _fullName;
 
         /// <summary>
@@ -172,13 +171,12 @@ namespace CK.Setup
         {
             _fullName = fullName;
             _handlers = new List<ForHandler>();
-            _handlersEx = new CKReadOnlyListOnIList<ForHandler>( _handlers );
         }
 
         /// <summary>
         /// Gets the full name of the item that is associated to these scripts.
         /// </summary>
-        public string FullName { get { return _fullName; } }      
+        public string FullName => _fullName;
 
         internal bool Add( IActivityMonitor monitor, ScriptSource source, ISetupScript script, ScriptTypeManager manager )
         {
@@ -196,10 +194,7 @@ namespace CK.Setup
         /// Gets the scripts grouped by their handler that this set contains.
         /// </summary>
         /// <returns>A collection of <see cref="ForHandler"/> objects.</returns>
-        public IReadOnlyCollection<ForHandler> ScriptsByHandlers
-        {
-            get { return _handlersEx; }
-        }
+        public IReadOnlyCollection<ForHandler> ScriptsByHandlers => _handlers; 
 
         internal ForHandler FindScripts( ScriptTypeHandler handler )
         {

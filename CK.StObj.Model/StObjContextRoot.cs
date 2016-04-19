@@ -320,9 +320,9 @@ namespace CK.Core
                     if( builderMethod != null ) runtimeBuilder = builderMethod();
                     else
                     {
-                        Type t = SimpleTypeFinder.WeakDefault.ResolveType( stObjRuntimeBuilderFactoryTypeName, true );
+                        Type t = SimpleTypeFinder.WeakResolver( stObjRuntimeBuilderFactoryTypeName, true );
                         MethodInfo m = t.GetMethod( stObjRuntimeBuilderFactoryMethodName );
-                        runtimeBuilder = (IStObjRuntimeBuilder)m.Invoke( null, Util.EmptyArray<object>.Empty );
+                        runtimeBuilder = (IStObjRuntimeBuilder)m.Invoke( null, Util.Array.Empty<object>() );
                     }
                 }
                 monitor.CloseGroup( runtimeBuilder.GetType().AssemblyQualifiedName );
@@ -333,7 +333,7 @@ namespace CK.Core
         private static bool LaunchRun( IActivityMonitor monitor, IStObjBuilderConfiguration config, IStObjRuntimeBuilder runtimeBuilder )
         {
             monitor.Info().Send( "Current AppDomain.CurrentDomain.FriendlyName = '{0}'.", AppDomain.CurrentDomain.FriendlyName );
-            IStObjBuilder runner = (IStObjBuilder)Activator.CreateInstance( SimpleTypeFinder.WeakDefault.ResolveType( config.BuilderAssemblyQualifiedName, true ), monitor, config, runtimeBuilder );
+            IStObjBuilder runner = (IStObjBuilder)Activator.CreateInstance( SimpleTypeFinder.WeakResolver( config.BuilderAssemblyQualifiedName, true ), monitor, config, runtimeBuilder );
             return runner.Run();
         }
 

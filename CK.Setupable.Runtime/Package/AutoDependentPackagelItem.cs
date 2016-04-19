@@ -212,7 +212,7 @@ namespace CK.Setup
                     }
                 }
                 if( _frontPackage ) return thisRequires;
-                return thisRequires != null ? thisRequires.Append( _package.GetReference() ) : new CKReadOnlyListMono<IDependentItemRef>( _package.GetReference() );
+                return thisRequires != null ? thisRequires.Append( _package.GetReference() ) : new [] { _package.GetReference() };
             }
         }
 
@@ -232,7 +232,7 @@ namespace CK.Setup
                     }
                 }
                 if( !_frontPackage ) return thisRequiredBy;
-                return thisRequiredBy != null ? thisRequiredBy.Append( _package.GetReference() ) : new CKReadOnlyListMono<IDependentItemRef>( _package.GetReference() );
+                return thisRequiredBy != null ? thisRequiredBy.Append( _package.GetReference() ) : new[] { _package.GetReference() };
             }
         }
 
@@ -273,7 +273,7 @@ namespace CK.Setup
 
         IEnumerable<ISetupItem> IDependentItemDiscoverer<ISetupItem>.GetOtherItemsToRegister()
         {
-            return new CKReadOnlyListMono<ISetupItem>( _package );
+            return new[] { _package };
         }
     }
 

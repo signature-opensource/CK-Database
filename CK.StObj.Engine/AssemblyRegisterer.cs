@@ -38,10 +38,10 @@ namespace CK.Core
             public Assembly Assembly { get; private set; }
             public IReadOnlyList<Type> Types { get; private set; }
 
-            internal void Init( IReadOnlyList<Type> types, int index )
+            internal void Init( IEnumerable<Type> types, int index )
             {
                 Index = index;
-                Types = types;
+                Types = types.ToArray();
             }
         }
 
@@ -55,7 +55,6 @@ namespace CK.Core
             _monitor = monitor;
             _index = new Dictionary<Assembly, DiscoveredInfo>();
             _list = new List<DiscoveredInfo>();
-            _listEx = new CKReadOnlyListOnIList<DiscoveredInfo>( _list );
         }
 
         /// <summary>
@@ -256,7 +255,7 @@ namespace CK.Core
                             }
                             IEnumerable<Type> types = _publicTypesOnly ? assembly.GetExportedTypes() : assembly.GetTypes();
                             if( _typeFilter != null ) types = types.Where( t => _typeFilter( t ) );
-                            disco.Init( types.ToReadOnlyList(), _list.Count );
+                            disco.Init( types, _list.Count );
                             _list.Add( disco );
                             _monitor.CloseGroup( String.Format( "{0} types discovered.", disco.Types.Count ) );
                         }

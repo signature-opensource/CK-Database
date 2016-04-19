@@ -206,26 +206,17 @@ namespace CK.Setup
         /// <summary>
         /// Gets the list of conflicting containers if any. Never null.
         /// </summary>
-        public IEnumerable<string> ExtraneousContainers
-        {
-            get { return _extraneousContainers ?? Util.EmptyStringArray; }
-        }
+        public IEnumerable<string> ExtraneousContainers => _extraneousContainers ?? Util.Array.Empty<string>();
 
         /// <summary>
         /// Gets the list of <see cref="IDependentItem"/> that share the same name. Never null.
         /// </summary>
-        public IEnumerable<IDependentItem> Homonyms
-        {
-            get { return _homonyms ?? new IDependentItem[0]; }
-        }
+        public IEnumerable<IDependentItem> Homonyms => _homonyms ?? Util.Array.Empty<IDependentItem>();
 
         /// <summary>
         /// Gets the list of missing children if any (when named references are used). Never null.
         /// </summary>
-        public IEnumerable<string> MissingChildren
-        {
-            get { return _missingChildren ?? Util.EmptyStringArray; }
-        }
+        public IEnumerable<string> MissingChildren => _missingChildren ?? Util.Array.Empty<string>();
 
         /// <summary>
         /// Gets a list of missing dependencies either optional (starting with '?') or required. 
@@ -233,7 +224,7 @@ namespace CK.Setup
         /// It is never null and there are no duplicates in this list and a required dependency "hides" an optional one:
         /// if a dependency is both required and optional, only the required one appears in this list.
         /// </summary>
-        public IEnumerable<string> MissingDependencies { get { return _missingDep ?? Util.EmptyStringArray; } }
+        public IEnumerable<string> MissingDependencies => _missingDep ?? Util.Array.Empty<string>();
 
         /// <summary>
         /// Gets a list of required missing dependencies for this <see cref="Item"/>. 
