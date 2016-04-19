@@ -127,7 +127,6 @@ namespace CK.SqlServer.Setup.Engine.Tests
                 SetupEngineConfiguration c = new SetupEngineConfiguration();
                 c.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = "InstallPackageWithSPDependsOnVersion";
                 c.Aspects.Add( config );
-                c.StObjEngineConfiguration.BuildAndRegisterConfiguration.UseIndependentAppDomain = true;
                 var engine = new SetupEngine( TestHelper.Monitor, c, StObjContextRoot.DefaultStObjRuntimeBuilder );
 
                 StObjContextRoot.Build( c, null, TestHelper.Monitor ).Dispose();

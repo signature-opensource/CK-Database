@@ -25,7 +25,6 @@ namespace CK.Core
         bool                            _publicTypesOnly;
         Dictionary<Assembly,DiscoveredInfo>	_index;
         List<DiscoveredInfo>                _list;
-        IReadOnlyList<DiscoveredInfo>       _listEx;
 
         public class DiscoveredInfo
         {
@@ -122,16 +121,13 @@ namespace CK.Core
             get { return _publicTypesOnly; }
             set { _publicTypesOnly = value; }
         }
-        
+
         /// <summary>
         /// Gets the list of assemblies that have been discovered so far. 
         /// Use <see cref="Clear(Assembly)"/> for <see cref="DiscoverRecurse(Assembly)"/> to be able to 
         /// discover again an assembly.
         /// </summary>
-        public IReadOnlyList<DiscoveredInfo> Assemblies
-        {
-            get { return _listEx; }
-        }
+        public IReadOnlyList<DiscoveredInfo> Assemblies => _list;
 
         /// <summary>
         /// Finds an existing discovered information. Returns null if not found.
@@ -169,7 +165,7 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Discover assemblies currently loaded in the <see cref="AppDomain.CurrentDomain"/> and all their 
+        /// Discover assemblies currently loaded and all their 
         /// dependencies (even if they are not already loaded).
         /// </summary>
         public void DiscoverCurrenlyLoadedAssemblies()

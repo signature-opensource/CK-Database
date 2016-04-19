@@ -35,7 +35,6 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             c.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( "SqlActorPackage" );
             if( withZone ) c.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( "SqlZonePackage" );
             c.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = dllName;
-            c.StObjEngineConfiguration.BuildAndRegisterConfiguration.UseIndependentAppDomain = true;
             c.TraceDependencySorterInput = true;
             c.TraceDependencySorterOutput = true;
             var config = new SqlSetupAspectConfiguration();
@@ -53,7 +52,6 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             using( var result = StObjContextRoot.Build( c, null, TestHelper.Monitor ) )
             {
                 Assert.That( result.Success );
-                Assert.That( result.IndependentAppDomain != null );
             }
             using( var db = SqlManager.OpenOrCreate( TestHelper.DatabaseTestConnectionString, TestHelper.Monitor ) )
             {
@@ -76,7 +74,6 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
                 using( var result = StObjContextRoot.Build( c, null, TestHelper.Monitor ) )
                 {
                     Assert.That( result.Success );
-                    Assert.That( result.IndependentAppDomain != null );
                 }
             }
 

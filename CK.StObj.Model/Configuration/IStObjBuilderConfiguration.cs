@@ -29,7 +29,7 @@ namespace CK.Core
         string BuilderAssemblyQualifiedName { get; }
 
         /// <summary>
-        /// Gets the configuration related to the StObj: whether the engine must run in an independent AppDomain or not, which assemblies and types 
+        /// Gets the configuration related to the StObj: which assemblies and types 
         /// must be discovered, and configuration related to the emitted dll.
         /// </summary>
         StObjEngineConfiguration StObjEngineConfiguration { get; }

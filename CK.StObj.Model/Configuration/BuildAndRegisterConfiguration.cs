@@ -18,7 +18,6 @@ namespace CK.Core
     [Serializable]
     public class BuildAndRegisterConfiguration
     {
-        readonly List<string> _probePaths;
         readonly AssemblyRegistererConfiguration _assemblyRegister;
         readonly List<string> _explicitClasses;
 
@@ -27,31 +26,19 @@ namespace CK.Core
         /// </summary>
         public BuildAndRegisterConfiguration()
         {
-            _probePaths = new List<string>();
             _assemblyRegister = new AssemblyRegistererConfiguration();
             _explicitClasses = new List<string>();
         }
 
         /// <summary>
-        /// Gets or sets whether the setup phasis must be executed in a new Application Domain.
-        /// Defaults to false.
-        /// </summary>
-        public bool UseIndependentAppDomain { get; set; }
-
-        /// <summary>
-        /// Probe paths to use to discover assemblies. Used only if <see cref="UseIndependentAppDomain"/> is set to true.
-        /// </summary>
-        public List<string> ProbePaths { get { return _probePaths; } }
-
-        /// <summary>
         /// Gets the <see cref="AssemblyRegistererConfiguration"/> that describes assemblies that must participate (or not) to setup.
         /// </summary>
-        public AssemblyRegistererConfiguration Assemblies { get { return _assemblyRegister; } }
+        public AssemblyRegistererConfiguration Assemblies => _assemblyRegister;
 
         /// <summary>
         /// List of assembly qualified type names that must be explicitely registered regardless of <see cref="Assemblies"/>.
         /// </summary>
-        public List<string> ExplicitClasses { get { return _explicitClasses; } }
+        public List<string> ExplicitClasses => _explicitClasses;
 
     }
 }

@@ -20,13 +20,12 @@ namespace CK.Core
     {
         readonly IActivityMonitor _monitor;
 
-        internal StObjBuildResult( bool success, string externalVersionStamp, bool assemblyAlreadyExists, AppDomain d, IActivityMonitor loggerForAppDomainUnloadError )
+        internal StObjBuildResult( bool success, string externalVersionStamp, bool assemblyAlreadyExists, IActivityMonitor buildMonitor )
         {
             Success = success;
             ExternalVersionStamp = externalVersionStamp;
             AssemblyAlreadyExists = assemblyAlreadyExists;
-            IndependentAppDomain = d;
-            _monitor = loggerForAppDomainUnloadError;
+            _monitor = buildMonitor;
         }
 
         /// <summary>
@@ -46,29 +45,10 @@ namespace CK.Core
         public string ExternalVersionStamp { get; private set; }
 
         /// <summary>
-        /// Gets the independent Application Domain that has been used to get the version stamp and/or build the assembly.
-        /// It is null if this <see cref="StObjBuildResult"/> has been disposed or if no independent domain was needed.
-        /// </summary>
-        public AppDomain IndependentAppDomain { get; private set; }
-
-        /// <summary>
-        /// Unloads the <see cref="IndependentAppDomain"/> if it exists.
+        /// Unloads any external resources.
         /// </summary>
         public void Dispose()
         {
-            if( IndependentAppDomain != null )
-            {
-                try
-                {
-                    AppDomain.Unload( IndependentAppDomain );
-                    _monitor.Info().Send( "Independent AppDomain successfuly unloaded." );
-                }
-                catch( Exception ex )
-                {
-                    _monitor.Error().Send( ex, "While unloading independent AppDomain." );
-                }
-                IndependentAppDomain = null;
-            }
         }
     }
 }

@@ -318,7 +318,6 @@ namespace CK.Core
                 if( _config == null )
                 {
                     _config = new SetupEngineConfiguration();
-                    _config.StObjEngineConfiguration.BuildAndRegisterConfiguration.UseIndependentAppDomain = true;
                     _config.StObjEngineConfiguration.FinalAssemblyConfiguration.GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFileAndPEVerify;
                     foreach( var a in AssembliesToSetup )
                     {

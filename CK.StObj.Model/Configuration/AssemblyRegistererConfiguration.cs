@@ -54,7 +54,7 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Gets or sets whether assemblies loaded in the <see cref="AppDomain.CurrentDomain"/> and all their 
+        /// Gets or sets whether current loaded assemblies and all their 
         /// dependencies (even if they are not already loaded) must be discovered.
         /// Defaults to false.
         /// </summary>
