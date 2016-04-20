@@ -288,7 +288,7 @@ namespace CK.Core
                 return null;
             }
             string fullName = ResourceName( resourceHolder, path, name );
-            return LoadStream( resourceHolder.Assembly, fullName, name, throwError );
+            return LoadStream( resourceHolder.GetTypeInfo().Assembly, fullName, name, throwError );
         }
 
         /// <summary>
@@ -319,7 +319,7 @@ namespace CK.Core
                 return null;
             }
             string fullName = ResourceName( resourceHolder, path, name );
-            using( Stream stream = LoadStream( resourceHolder.Assembly, fullName, name, throwError ) )
+            using( Stream stream = LoadStream( resourceHolder.GetTypeInfo().Assembly, fullName, name, throwError ) )
             {
                 if( stream == null ) return null;
                 using( StreamReader reader = new StreamReader( stream, true ) )

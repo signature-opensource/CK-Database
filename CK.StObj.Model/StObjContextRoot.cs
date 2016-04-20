@@ -117,7 +117,8 @@ namespace CK.Core
             string methodName = null;
             if( builderFactoryStaticMethod != null )
             {
-                if( !builderFactoryStaticMethod.Method.IsStatic || !builderFactoryStaticMethod.Method.DeclaringType.IsPublic || !builderFactoryStaticMethod.Method.IsPublic )
+                var method = builderFactoryStaticMethod.GetMethodInfo();
+                if( !method.IsStatic || !method.DeclaringType.GetTypeInfo().IsPublic || !method.IsPublic )
                 {
                     throw new ArgumentException( "Must be a public static method of a public class.", "builderFactoryStaticMethod" );
                 }

@@ -8,6 +8,7 @@
 using System;
 using CK.Core;
 using CK.Setup;
+using System.Reflection;
 
 namespace CK.SqlServer.Setup
 {
@@ -24,7 +25,7 @@ namespace CK.SqlServer.Setup
 
         void IStObjStructuralConfigurator.Configure( IActivityMonitor monitor, IStObjMutableItem o )
         {
-            if( !typeof( SqlPackageBase ).IsAssignableFrom( o.ObjectType.BaseType ) )
+            if( !typeof( SqlPackageBase ).IsAssignableFrom( o.ObjectType.GetTypeInfo().BaseType ) )
             {
                 monitor.Error().Send( "{0}: Attribute {1} must be set only on class that specialize SqlPackageBase.", o.ToString(), GetType().Name );
             }

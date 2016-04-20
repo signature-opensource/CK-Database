@@ -64,7 +64,7 @@ namespace CK.Core
             }
             // Resources stream is explicitly provided when instanciating objects from the dynamic assembly
             // since GetManifestResourceStream is NOT supported on a dynamic assembly...
-            using( Stream s = resources ?? GetType().Assembly.GetManifestResourceStream( RootContextTypeName + ".Data" ) )
+            using( Stream s = resources ?? GetType().GetTypeInfo().Assembly.GetManifestResourceStream( RootContextTypeName + ".Data" ) )
             {
                 BinaryReader reader = new BinaryReader( s );
 

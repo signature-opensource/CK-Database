@@ -72,7 +72,7 @@ namespace CK.SqlServer.Setup
                     get { return _methodParam != null || _ctxProp != null; }
                 }
 
-                public int Index { get { return _index; } }
+                public int Index => _index; 
 
                 /// <summary>
                 /// 1 - This is done first, right after the SqlParameterHandlerList has been created when in Calling mode.
@@ -234,6 +234,7 @@ namespace CK.SqlServer.Setup
                 bool LdObjectToSetFromParameterOrCallContextProperty( IActivityMonitor monitor, ILGenerator g )
                 {
                     Type typeToSet;
+                    TypeInfo typeToSetInfo;
                     if( _methodParam != null )
                     {
                         typeToSet = _methodParam.ParameterType;
@@ -241,7 +242,8 @@ namespace CK.SqlServer.Setup
                         if( typeToSet.IsByRef )
                         {
                             typeToSet = typeToSet.GetElementType();
-                            if( typeToSet.IsValueType )
+                            typeToSetInfo = typeToSet.GetTypeInfo();
+                            if( typeToSetInfo.IsValueType )
                             {
                                 g.Emit( OpCodes.Ldobj, typeToSet );
                             }
@@ -250,6 +252,7 @@ namespace CK.SqlServer.Setup
                                 g.Emit( OpCodes.Ldind_Ref );
                             }
                         }
+                        else typeToSetInfo = typeToSet.GetTypeInfo();
                     }
                     else
                     {
@@ -257,11 +260,12 @@ namespace CK.SqlServer.Setup
                         g.LdArg( _ctxProp.Parameter.Position + 1 );
                         g.Emit( OpCodes.Callvirt, _ctxProp.Prop.GetGetMethod() );
                         typeToSet = _ctxProp.Prop.PropertyType;
+                        typeToSetInfo = typeToSet.GetTypeInfo();
                     }
                     // The value is on the stack: it may be a value or reference type of type typeToSet.
                     // If it is null or a Nullable<T> that has no value, we must transform it into DBNull.Value.
                     Label objectIsAvailable = g.DefineLabel();
-                    if( typeToSet.IsValueType )
+                    if( typeToSetInfo.IsValueType )
                     {
                         // Boxing a Nullable<T> is handled at the CLR level: if Nullable<T>.HasValue is false,
                         // a null reference is left on the stack.
@@ -371,7 +375,7 @@ namespace CK.SqlServer.Setup
                     g.Emit( OpCodes.Call, SqlObjectItem.MParameterCollectionGetParameter );
                     g.Emit( OpCodes.Call, SqlObjectItem.MParameterGetValue );
                     Type t = _methodParam.ParameterType.GetElementType();
-                    if( t.IsValueType )
+                    if( t.GetTypeInfo().IsValueType )
                     {
                         g.Emit( OpCodes.Unbox_Any, t );
                         g.Emit( OpCodes.Stobj, t );
@@ -430,7 +434,7 @@ namespace CK.SqlServer.Setup
             {
                 if( returnType == typeof( Task ) ) return _isAsyncCall = true;
                 bool isSimpleType = IsSimpleReturnType( returnType );
-                if( !isSimpleType && returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Task<>) )
+                if( !isSimpleType && returnType.GetTypeInfo().IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Task<>) )
                 {
                     _isAsyncCall = true;
                     returnType = returnType.GetGenericArguments()[0];
@@ -468,7 +472,7 @@ namespace CK.SqlServer.Setup
                 }
                 else
                 {
-                    if( returnType.IsInterface )
+                    if( returnType.GetTypeInfo().IsInterface )
                     {
                         monitor.Error().Send( "Return type '{0}' is an interface. This is not yet supported.", returnType.Name );
                         return false;
@@ -524,7 +528,7 @@ namespace CK.SqlServer.Setup
                 g.LdInt32( sqlParameterIndex );
                 g.Emit( OpCodes.Call, SqlObjectItem.MParameterCollectionGetParameter );
                 g.Emit( OpCodes.Call, SqlObjectItem.MParameterGetValue );
-                if( targetType.IsValueType )
+                if( targetType.GetTypeInfo().IsValueType )
                 {
                     Type actualType = Nullable.GetUnderlyingType( targetType );
                     if( actualType != null )

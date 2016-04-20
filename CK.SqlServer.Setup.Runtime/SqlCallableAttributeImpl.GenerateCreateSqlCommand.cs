@@ -54,8 +54,8 @@ namespace CK.SqlServer.Setup
                     Type genericTypeArgument = genericArguments[i];
                     GenericTypeParameterBuilder genericTypeBuilder = genericParameters[i];
 
-                    genericTypeBuilder.SetGenericParameterAttributes( genericTypeArgument.GenericParameterAttributes );
-                    genericTypeBuilder.SetInterfaceConstraints( genericTypeArgument.GetGenericParameterConstraints() );
+                    genericTypeBuilder.SetGenericParameterAttributes( genericTypeArgument.GetTypeInfo().GenericParameterAttributes );
+                    genericTypeBuilder.SetInterfaceConstraints( genericTypeArgument.GetTypeInfo().GetGenericParameterConstraints() );
                 }
             }
             mB.SetReturnType( m.ReturnType );
@@ -121,7 +121,7 @@ namespace CK.SqlServer.Setup
                 int iSFound = sqlParamHandlers.IndexOf( iS, mP );
                 if( iSFound < 0 )
                 {
-                    Debug.Assert( SqlObjectItem.TypeConnection.IsSealed && SqlObjectItem.TypeTransaction.IsSealed );
+                    Debug.Assert( SqlObjectItem.TypeConnection.GetTypeInfo().IsSealed && SqlObjectItem.TypeTransaction.GetTypeInfo().IsSealed );
                     // Catches first Connection and Transaction parameters.
                     if( firstSqlConnectionParameter == null && mP.ParameterType == SqlObjectItem.TypeConnection && !mP.ParameterType.IsByRef )
                     {

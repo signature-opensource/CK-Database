@@ -46,7 +46,6 @@ namespace CK.SqlServer.Setup
                 SqlPackageBaseItem container = (SqlPackageBaseItem)item;
                 m.Invoke( transformer, new object[] { new SqlTransformContext( state.Monitor, container, (SqlProcedureItem)SetupObjectItem ) } );
             }
-
         }
 
         object GetTransformerObject( IStObjSetupDynamicInitializerState state, Type holderType )
@@ -56,7 +55,7 @@ namespace CK.SqlServer.Setup
             if( transformer == this ) return null;
             if( transformer == null )
             {
-                AssemblyName a = holderType.Assembly.GetName();
+                AssemblyName a = holderType.GetTypeInfo().Assembly.GetName();
                 a.Name += ".Runtime";
                 string transformerTypeName = holderType.FullName + ", " + a.FullName;
                 Type transformerType = SimpleTypeFinder.WeakResolver( transformerTypeName, false );
