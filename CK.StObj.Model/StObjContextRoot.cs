@@ -11,7 +11,6 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Reflection.Emit;
 using System.Threading;
 using System.Diagnostics;
@@ -102,7 +101,7 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Runs a build based on the given serializable <paramref name="config"/> object. 
+        /// Runs a build based on the given <paramref name="config"/> object. 
         /// The returned <see cref="StObjBuildResult"/> must be disposed once done with it.
         /// </summary>
         /// <param name="config">Configuration object. It must be serializable.</param>
@@ -129,7 +128,7 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Runs a build based on the given serializable <paramref name="config"/> object. 
+        /// Runs a build based on the given <paramref name="config"/> object. 
         /// The returned <see cref="StObjBuildResult"/> must be disposed once done with it.
         /// </summary>
         /// <param name="config">Configuration object. It must be serializable.</param>
@@ -163,11 +162,21 @@ namespace CK.Core
             if( monitor == null ) monitor = new ActivityMonitor( "CK.Core.StObjContextRoot.Build" );
 
             var stObjConfig = config.StObjEngineConfiguration;
+            string stamp = stObjConfig.FinalAssemblyConfiguration.ExternalVersionStamp;
+            if( !forceBuild && !string.IsNullOrEmpty( stamp ) )
+            {
+                string path = stObjConfig.FinalAssemblyConfiguration.GeneratedAssemblyPath;
+                if( File.Exists( path ) )
+                {
+                    //TODO: use Mono.Cecil to load the InformalVersionAttribute, compare it to the stamp
+                    //      and sucessfully returns if they are equal.
+                }
+            }
             IStObjRuntimeBuilder runtimeBuilder = ResolveRuntimeBuilder( builderMethod, stObjRuntimeBuilderFactoryTypeName, stObjRuntimeBuilderFactoryMethodName, monitor );
             return new StObjBuildResult( LaunchRun( monitor, config, runtimeBuilder ), stObjConfig.FinalAssemblyConfiguration.ExternalVersionStamp, false, null );
         }
 
-        private static IStObjRuntimeBuilder ResolveRuntimeBuilder( Func<IStObjRuntimeBuilder> builderMethod, string stObjRuntimeBuilderFactoryTypeName, string stObjRuntimeBuilderFactoryMethodName, IActivityMonitor monitor )
+        static IStObjRuntimeBuilder ResolveRuntimeBuilder( Func<IStObjRuntimeBuilder> builderMethod, string stObjRuntimeBuilderFactoryTypeName, string stObjRuntimeBuilderFactoryMethodName, IActivityMonitor monitor )
         {
             IStObjRuntimeBuilder runtimeBuilder;
             using( monitor.OpenInfo().Send( "Obtention of the IStObjRuntimeBuilder." ) )
@@ -188,7 +197,7 @@ namespace CK.Core
             return runtimeBuilder;
         }
 
-        private static bool LaunchRun( IActivityMonitor monitor, IStObjBuilderConfiguration config, IStObjRuntimeBuilder runtimeBuilder )
+        static bool LaunchRun( IActivityMonitor monitor, IStObjBuilderConfiguration config, IStObjRuntimeBuilder runtimeBuilder )
         {
             IStObjBuilder runner = (IStObjBuilder)Activator.CreateInstance( SimpleTypeFinder.WeakResolver( config.BuilderAssemblyQualifiedName, true ), monitor, config, runtimeBuilder );
             return runner.Run();

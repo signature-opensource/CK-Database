@@ -18,7 +18,7 @@ namespace CK.SqlServer.Setup
     [AttributeUsage( AttributeTargets.Method, AllowMultiple = false, Inherited = false )]
     public abstract class SqlCallableAttributeBase : SqlObjectItemMemberAttributeBase
     {
-        internal SqlCallableAttributeBase( string callableName, string objectType )
+        protected SqlCallableAttributeBase( string callableName, string objectType )
             : base( callableName, "CK.SqlServer.Setup.SqlCallableAttributeImpl, CK.SqlServer.Setup.Runtime" )
         {
             ObjectType = objectType;

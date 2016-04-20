@@ -87,6 +87,7 @@
     <Compile Include="DifferentKindOfProperties.cs" />
     <Compile Include="DynamicGenerationTests.cs" />
     <Compile Include="SchmurtzProperty.cs" />
+    <Compile Include="SimpleSerializerDeserializerTests.cs" />
     <Compile Include="StObjPropertiesTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleObjectsTests.cs" />

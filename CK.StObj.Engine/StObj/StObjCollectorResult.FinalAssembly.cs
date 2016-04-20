@@ -143,7 +143,7 @@ namespace CK.Setup
                     monitor.Trace().Send( "Type mappings require {0} bytes in resource.", typeMappingSize );
                     
                     // Once Contexts are serialized, we serialize the values that have been injected during graph construction.
-                    outS.Formatter.Serialize( outS.Memory, _buildValueCollector.Values.ToArray() );
+                    outS.Formatter.Write( _buildValueCollector.Values, _buildValueCollector.Values.Count );
 
                     long valuesSize = outS.Memory.Length - typeMappingSize;
                     monitor.Trace().Send( "Configured properties and parameter require {0} bytes in resource.", valuesSize );

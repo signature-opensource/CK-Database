@@ -97,6 +97,7 @@
     <Compile Include="StObj\IContextualStObjMapRuntime.cs" />
     <Compile Include="StObj\Impl\Builder\BuildValueCollector.cs" />
     <Compile Include="StObj\Impl\Builder\RawOutStream.cs" />
+    <Compile Include="StObj\Impl\Builder\SimpleSerializer.cs" />
     <Compile Include="StObj\Impl\MutableItem.Construct.cs" />
     <Compile Include="StObj\StObjCollectorResult.FinalAssembly.cs" />
     <Compile Include="StObj\Impl\MutableItem.StructuredObject.cs" />

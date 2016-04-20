@@ -11,7 +11,6 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Reflection.Emit;
 using System.Threading;
 using System.Diagnostics;
@@ -72,8 +71,8 @@ namespace CK.Core
                 _contexts = new StObjContext[reader.ReadInt32()];
                 _defaultContext = ReadContexts( reader );
 
-                BinaryFormatter formatter = new BinaryFormatter();
-                BuilderValues = (object[])formatter.Deserialize( s );
+                SimpleDeserializer des = new SimpleDeserializer( s );
+                BuilderValues = (object[])des.Read().Value;
                 
                 SpecializationCount = reader.ReadInt32();
                 SingletonCache = new StructuredObjectCache( SpecializationCount );
