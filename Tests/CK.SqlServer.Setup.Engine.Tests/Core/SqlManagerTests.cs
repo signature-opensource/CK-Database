@@ -39,12 +39,8 @@ namespace CK.SqlServer.Setup.Engine.Tests.Core
                 Assert.That( r.Success, Is.False );
             }
 
-            using( var defaultDB = new SqlManager( TestHelper.Monitor ) )
-            {
-                defaultDB.OpenFromConnectionString( TestHelper.ConnectionStringMaster );
-                Assert.That( defaultDB.Connection.ExecuteScalar( "select DB_Name()" ), Is.EqualTo( "master" ) );
-                Assert.That( defaultDB.Connection.ExecuteScalar( "select count(*) from sys.tables where name = 'tSystem';" ), Is.EqualTo( 0 ) );
-            }
+            SqlDatabaseExtensions.AssertScalar( TestHelper.ConnectionStringMaster, Is.EqualTo( "master" ), "select DB_Name()" );
+            SqlDatabaseExtensions.AssertScalar( TestHelper.ConnectionStringMaster, Is.EqualTo( 0 ), "select count(*) from sys.tables where name = 'tSystem';" );
         }
 
         [Test]

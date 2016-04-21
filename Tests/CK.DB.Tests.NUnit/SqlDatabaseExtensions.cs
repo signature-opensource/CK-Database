@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CK.SqlServer.Setup;
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 
 namespace CK.Core
 {
@@ -22,7 +23,7 @@ namespace CK.Core
             AssertEmptyReader( @this.ConnectionString, selectClause, parameters );
             return @this;
         }
-        
+
         /// <summary>
         /// Checks that the <paramref name="selectClause"/> with its optional parameters @0, @1... returns an expected result.
         /// </summary>
@@ -32,7 +33,21 @@ namespace CK.Core
         /// <param name="parameters">Parameters that will replace @0, @1,...@n placeholders in <paramref name="selectClause"/>.</param>
         public static SqlDatabase AssertScalarEquals( this SqlDatabase @this, object expectedValue, string selectClause, params object[] parameters )
         {
-            AssertScalarEquals( @this.ConnectionString, expectedValue, selectClause, parameters );
+            AssertScalar( @this.ConnectionString, Is.EqualTo( expectedValue ), selectClause, parameters );
+            return @this;
+        }
+
+        /// <summary>
+        /// Checks that the <paramref name="selectClause"/> with its optional parameters @0, @1... returns a 
+        /// scalar value that satisfies a constraint.
+        /// </summary>
+        /// <param name="this">This database.</param>
+        /// <param name="constraint">The NUnit constraint to satisfy.</param>
+        /// <param name="selectClause">The select clause.</param>
+        /// <param name="parameters">Parameters that will replace @0, @1,...@n placeholders in <paramref name="selectClause"/>.</param>
+        public static SqlDatabase AssertScalar( this SqlDatabase @this, Constraint constraint, string selectClause, params object[] parameters )
+        {
+            AssertScalarEquals( @this.ConnectionString, constraint, selectClause, parameters );
             return @this;
         }
 
@@ -101,10 +116,23 @@ namespace CK.Core
         /// <param name="parameters">Parameters that will replace @0, @1,...@n placeholders in <paramref name="selectClause"/>.</param>
         public static void AssertScalarEquals( string connectionString, object expectedValue, string selectClause, params object[] parameters )
         {
+            AssertScalar( connectionString, Is.EqualTo( expectedValue ), selectClause, parameters );
+        }
+
+        /// <summary>
+        /// Checks that the <paramref name="selectClause"/> with its optional parameters @0, @1... returns a scalar
+        /// that satifies the NUnit constraint.
+        /// </summary>
+        /// <param name="connectionString">The connection string.</param>
+        /// <param name="constraint">Constraint tha must match the returned value.</param>
+        /// <param name="selectClause">The select clause.</param>
+        /// <param name="parameters">Parameters that will replace @0, @1,...@n placeholders in <paramref name="selectClause"/>.</param>
+        public static void AssertScalar( string connectionString, Constraint constraint, string selectClause, params object[] parameters )
+        {
             Execute( connectionString, selectClause, parameters, cmd =>
-                {
-                    Assert.That( cmd.ExecuteScalar(), Is.EqualTo( expectedValue ) );
-                } );
+            {
+                Assert.That( cmd.ExecuteScalar(), constraint );
+            } );
         }
 
         /// <summary>
