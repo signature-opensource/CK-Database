@@ -24,7 +24,7 @@ namespace CK.Core
         }
         
         /// <summary>
-        /// Checks that the <paramref name="selectClause"/> with its optional parameters @0, @1... returns no results.
+        /// Checks that the <paramref name="selectClause"/> with its optional parameters @0, @1... returns an expected result.
         /// </summary>
         /// <param name="this">This database.</param>
         /// <param name="expectedValue">Expected value of the <paramref name="selectClause"/>.</param>

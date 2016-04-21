@@ -321,35 +321,38 @@ namespace CK.Setup
             {
                 var state = new DynamicInitializerState( this );
                 bool success = true;
-                foreach( IStObjResult o in orderedObjects )
+                using( _monitor.OnError( () => success = false ) )
                 {
-                    IMutableSetupItem item = setupableItems[o].SetupItem;
-                    state.CurrentItem = item;
-                    state.CurrentStObj = o;
-                    string initSource = null;
-                    try
+                    foreach( IStObjResult o in orderedObjects )
                     {
-                        initSource = "Attributes";
-                        // ApplyAttributesDynamicInitializer on attributes (attributes of the type itself come first).
+                        IMutableSetupItem item = setupableItems[o].SetupItem;
+                        state.CurrentItem = item;
+                        state.CurrentStObj = o;
+                        string initSource = null;
+                        try
                         {
-                            var all = o.Attributes.GetAllCustomAttributes<IStObjSetupDynamicInitializer>();
-                            foreach( IStObjSetupDynamicInitializer init in all )
+                            initSource = "Attributes";
+                            // ApplyAttributesDynamicInitializer on attributes (attributes of the type itself come first).
                             {
-                                init.DynamicItemInitialize( state, item, o );
+                                var all = o.Attributes.GetAllCustomAttributes<IStObjSetupDynamicInitializer>();
+                                foreach( IStObjSetupDynamicInitializer init in all )
+                                {
+                                    init.DynamicItemInitialize( state, item, o );
+                                }
                             }
+                            initSource = "Structured Item itself";
+                            IStObjSetupDynamicInitializer objectItself = o.ObjectAccessor() as IStObjSetupDynamicInitializer;
+                            if( objectItself != null ) objectItself.DynamicItemInitialize( state, item, o );
+                            initSource = "Setup Item itself";
+                            if( item is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)item).DynamicItemInitialize( state, item, o );
+                            initSource = "Global StObjSetupBuilder initializer";
+                            if( _dynamicInitializer != null ) _dynamicInitializer.DynamicItemInitialize( state, item, o );
                         }
-                        initSource = "Structured Item itself";
-                        IStObjSetupDynamicInitializer objectItself = o.ObjectAccessor() as IStObjSetupDynamicInitializer;
-                        if( objectItself != null ) objectItself.DynamicItemInitialize( state, item, o );
-                        initSource = "Setup Item itself";
-                        if( item is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)item).DynamicItemInitialize( state, item, o );
-                        initSource = "Global StObjSetupBuilder initializer";
-                        if( _dynamicInitializer != null ) _dynamicInitializer.DynamicItemInitialize( state, item, o );
-                    }
-                    catch( Exception ex )
-                    {
-                        _monitor.Error().Send( ex, "While Dynamic item initialization (from {2}) of '{0}' for object '{1}'.", item.FullName, o.ObjectType.Name, initSource );
-                        success = false;
+                        catch( Exception ex )
+                        {
+                            _monitor.Error().Send( ex, "While Dynamic item initialization (from {2}) of '{0}' for object '{1}'.", item.FullName, o.ObjectType.Name, initSource );
+                            Debug.Assert( success == false, "OnError dit the job..." );
+                        }
                     }
                 }
                 // On success, we execute the pushed actions.

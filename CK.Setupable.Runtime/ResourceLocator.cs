@@ -162,7 +162,7 @@ namespace CK.Core
         {
             foreach( var p in allowedNamePrefix )
             {
-                string s = LoadString( _type, _path, p + name, false );
+                string s = LoadString( Type, _path, p + name, false );
                 if( s != null ) return s;
             }
             return LoadString( Type, _path, name, throwError );
@@ -199,7 +199,7 @@ namespace CK.Core
                 }
             }
             namePrefix = String.Empty;
-            return LoadString( _type, _path, name, throwError );
+            return LoadString( Type, _path, name, throwError );
         }
 
         /// <summary>
