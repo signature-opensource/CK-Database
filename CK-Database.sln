@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.Setupable.Engine", "CK.Setupable.Engine\CK.Setupable.Engine.csproj", "{D3C700E1-3546-437C-9B96-1F867A539B6A}"
 EndProject
@@ -83,6 +83,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.DB.Tests.NUnit", "Tests\CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj", "{C9BCBEA7-E5E9-4685-B976-4A6E85AF4453}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlZonePackage.Runtime", "SqlZonePackage.Runtime\SqlZonePackage.Runtime.csproj", "{B48C03F8-2273-4BC3-A1BF-43BD6AD5B7E9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CkDbSetup", "CkDbSetup\CkDbSetup.csproj", "{7C935FE7-758F-47E3-908D-9DDB76D80AC6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -392,6 +394,18 @@ Global
 		{B48C03F8-2273-4BC3-A1BF-43BD6AD5B7E9}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{B48C03F8-2273-4BC3-A1BF-43BD6AD5B7E9}.Release|x86.ActiveCfg = Release|Any CPU
 		{B48C03F8-2273-4BC3-A1BF-43BD6AD5B7E9}.Release|x86.Build.0 = Release|Any CPU
+		{7C935FE7-758F-47E3-908D-9DDB76D80AC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C935FE7-758F-47E3-908D-9DDB76D80AC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C935FE7-758F-47E3-908D-9DDB76D80AC6}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{7C935FE7-758F-47E3-908D-9DDB76D80AC6}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{7C935FE7-758F-47E3-908D-9DDB76D80AC6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7C935FE7-758F-47E3-908D-9DDB76D80AC6}.Debug|x86.Build.0 = Debug|Any CPU
+		{7C935FE7-758F-47E3-908D-9DDB76D80AC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C935FE7-758F-47E3-908D-9DDB76D80AC6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C935FE7-758F-47E3-908D-9DDB76D80AC6}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{7C935FE7-758F-47E3-908D-9DDB76D80AC6}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{7C935FE7-758F-47E3-908D-9DDB76D80AC6}.Release|x86.ActiveCfg = Release|Any CPU
+		{7C935FE7-758F-47E3-908D-9DDB76D80AC6}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
