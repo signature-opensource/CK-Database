@@ -1,36 +1,16 @@
-﻿using System.Reflection;
+﻿#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (CkDbSetup\Properties\AssemblyInfo.cs) is part of CK-Database. 
+* Copyright © 2007-2016, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-// General Information about an assembly is controlled through the following 
-// set of attributes. Change these attribute values to modify the information
-// associated with an assembly.
 [assembly: AssemblyTitle( "CkDbSetup" )]
-[assembly: AssemblyDescription( "" )]
-[assembly: AssemblyConfiguration( "" )]
-[assembly: AssemblyCompany( "" )]
-[assembly: AssemblyProduct( "CkDbSetup" )]
-[assembly: AssemblyCopyright( "Copyright ©  2016" )]
-[assembly: AssemblyTrademark( "" )]
+[assembly: AssemblyDescription( "Database setup utilities for CK.Database assemblies" )]
 [assembly: AssemblyCulture( "" )]
-
-// Setting ComVisible to false makes the types in this assembly not visible 
-// to COM components.  If you need to access a type in this assembly from 
-// COM, set the ComVisible attribute to true on that type.
 [assembly: ComVisible( false )]
-
-// The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid( "7c935fe7-758f-47e3-908d-9ddb76d80ac6" )]
-
-// Version information for an assembly consists of the following four values:
-//
-//      Major Version
-//      Minor Version 
-//      Build Number
-//      Revision
-//
-// You can specify all the values or you can default the Build and Revision Numbers 
-// by using the '*' as shown below:
-// [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion( "1.0.0.0" )]
-[assembly: AssemblyFileVersion( "1.0.0.0" )]
+[assembly: Guid( "093ffd64-66d6-4623-aef9-2117e80cdad0" )]
