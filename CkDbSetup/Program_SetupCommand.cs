@@ -52,7 +52,16 @@ namespace CkDbSetup
 
             c.OnExecute( () =>
             {
-                var monitor = PrepareActivityMonitorFromOptions(logLevelOpt);
+                var monitor = PrepareActivityMonitor(logLevelOpt);
+
+                // Invalid LogFilter
+                if( monitor == null )
+                {
+                    Error.WriteLine( LogFilterErrorDesc );
+                    c.ShowHelp();
+                    Error.WriteLine( sampleUsage );
+                    return EXIT_ERROR;
+                }
 
                 string connectionString;
                 List<string> assemblyNames;
