@@ -46,7 +46,7 @@ namespace CK.SqlServer.Setup
             {
                 if( p.ContextLocName.Schema != null && p.ContextLocName.Schema != procOrFunc.SchemaName )
                 {
-                    _finalCallable = (T)procOrFunc.SetSchemaName( p.ContextLocName.Schema );
+                    _finalCallable = (T)procOrFunc.SetSchema( p.ContextLocName.Schema );
                 }
             }
         }
