@@ -145,25 +145,28 @@ namespace CK.SqlServer.Setup
             else if( ItemType == SqlObjectProtoItem.TypeProcedure || ItemType == SqlObjectProtoItem.TypeFunction )
             {
                 ISqlServerObject o = SafeParse( parser, monitor );
-                if( o is ISqlServerStoredProcedure )
+                if( o != null )
                 {
-                    result = new SqlProcedureItem( this, (ISqlServerStoredProcedure)o );
-                }
-                else if( o is ISqlServerFunctionScalar )
-                {
-                    result = new SqlFunctionScalarItem( this, (ISqlServerFunctionScalar)o );
-                }
-                else if( o is ISqlServerFunctionInlineTable )
-                {
-                    result = new SqlFunctionInlineTableItem( this, (ISqlServerFunctionInlineTable)o );
-                }
-                else if( o is ISqlServerFunctionTable )
-                {
-                    result = new SqlFunctionTableItem( this, (ISqlServerFunctionTable)o );
-                }
-                else
-                {
-                    throw new NotSupportedException( "Unhandled type of object: " + o.ToStringSignature( true ) );
+                    if( o is ISqlServerStoredProcedure )
+                    {
+                        result = new SqlProcedureItem( this, (ISqlServerStoredProcedure)o );
+                    }
+                    else if( o is ISqlServerFunctionScalar )
+                    {
+                        result = new SqlFunctionScalarItem( this, (ISqlServerFunctionScalar)o );
+                    }
+                    else if( o is ISqlServerFunctionInlineTable )
+                    {
+                        result = new SqlFunctionInlineTableItem( this, (ISqlServerFunctionInlineTable)o );
+                    }
+                    else if( o is ISqlServerFunctionTable )
+                    {
+                        result = new SqlFunctionTableItem( this, (ISqlServerFunctionTable)o );
+                    }
+                    else
+                    {
+                        throw new NotSupportedException( "Unhandled type of object: " + o.ToStringSignature( true ) );
+                    }
                 }
             }
             else

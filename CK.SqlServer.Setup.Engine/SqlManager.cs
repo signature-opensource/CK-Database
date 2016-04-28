@@ -201,9 +201,7 @@ namespace CK.SqlServer.Setup
         }
 
         /// <summary>
-        /// Gets or sets a <see cref="IActivityMonitor"/>. When a monitor is set,
-        /// exceptions are redirected to it and this <see cref="SqlManager"/> does not throw 
-        /// exceptions any more.
+        /// Gets the <see cref="IActivityMonitor"/>.
         /// </summary>
         public IActivityMonitor Monitor
         {
