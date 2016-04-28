@@ -39,6 +39,7 @@ namespace CkDbSetup
             PrepareVersionOption( app );
 
             app.Command( "setup", SetupCommand );
+            app.Command( "backup", BackupCommand );
 
             app.OnExecute( () =>
             {

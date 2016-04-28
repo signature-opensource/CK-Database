@@ -73,6 +73,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="DbSetupHelper.cs" />
+    <Compile Include="Program_Backup.cs" />
     <Compile Include="Program_SetupCommand.cs" />
     <Compile Include="Program_Monitoring.cs" />
     <Compile Include="Program.cs" />
