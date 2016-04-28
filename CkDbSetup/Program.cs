@@ -46,7 +46,14 @@ namespace CkDbSetup
                 return EXIT_HELP;
             } );
 
-            return app.Execute( args );
+            try
+            {
+                return app.Execute( args );
+            }
+            finally
+            {
+                DisposeLogFileWriter();
+            }
         }
 
         static CommandOption PrepareHelpOption( CommandLineApplication c ) => c.HelpOption( "-?|-h|--help" );

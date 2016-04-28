@@ -16,36 +16,71 @@ namespace CkDbSetup
 
         static CommandOption PrepareLogLevelOption( CommandLineApplication c )
         {
-            return c.Option( "-l|--logLevel", $"Sets a log level filter for console output. Defaults to {{Info,Info}}. {LogFilterDesc}", CommandOptionType.SingleValue );
+            return c.Option( "-l|--logLevel", $"Sets a log level filter for console and/or file output. {LogFilterDesc}", CommandOptionType.SingleValue );
+        }
+        static CommandOption PrepareLogFileOption( CommandLineApplication c )
+        {
+            return c.Option( "-f|--logFile", $"Path of a log file which will ontain the log output. Defaults to none (console logging only).", CommandOptionType.SingleValue );
         }
 
-        static ActivityMonitor PrepareActivityMonitor( LogFilter lf )
+        static ActivityMonitor PrepareActivityMonitor( LogFilter lf, string logFilePath )
         {
             ActivityMonitor m = new ActivityMonitor();
-            //StupidFlatActivityMonitorConsoleClient consoleClient = new StupidFlatActivityMonitorConsoleClient();
-            ActivityMonitorConsoleClient consoleClient = new ActivityMonitorConsoleClient();
+            ColoredActivityMonitorConsoleClient consoleClient = new ColoredActivityMonitorConsoleClient();
+
             m.Output.RegisterClient( consoleClient );
 
-            // TODO: Client.Filter { set; } throws an IOE right now
+            if( !string.IsNullOrWhiteSpace( logFilePath ) )
+            {
+                PrepareLogFileWriter( logFilePath, m );
+            }
+
             consoleClient.Filter = lf;
 
             return m;
         }
 
-        static ActivityMonitor PrepareActivityMonitor( CommandOption logLevelOption )
+        static ActivityMonitor PrepareActivityMonitor( CommandOption logLevelOption, CommandOption logFileOption )
         {
-            string s = logLevelOption.Value();
+            string filterString = logLevelOption.Value();
+            string logFilePath = logFileOption.Value();
             LogFilter lf;
 
-            if( string.IsNullOrWhiteSpace( s ) ) { return PrepareActivityMonitor( LogFilter.Undefined ); }
+            if( string.IsNullOrWhiteSpace( filterString ) ) { return PrepareActivityMonitor( LogFilter.Undefined, logFilePath ); }
 
-            if( LogFilter.TryParse( s, out lf ) )
+            if( LogFilter.TryParse( filterString, out lf ) )
             {
-                return PrepareActivityMonitor( lf );
+                return PrepareActivityMonitor( lf, logFilePath );
             }
             else
             {
                 return null;
+            }
+        }
+
+        static ActivityMonitorTextWriterClient LogFileWriterClient;
+        static TextWriter LogFileTextWriter;
+
+        static void PrepareLogFileWriter( string logFilePath, IActivityMonitor m )
+        {
+            if( LogFileTextWriter != null ) { throw new InvalidOperationException(); }
+            if( LogFileWriterClient != null ) { throw new InvalidOperationException(); }
+
+            logFilePath = Path.GetFullPath( logFilePath );
+            string dir = Path.GetDirectoryName(logFilePath);
+            if( !Directory.Exists( dir ) ) { Directory.CreateDirectory( dir ); }
+
+            LogFileTextWriter = new StreamWriter( logFilePath, true, Encoding.UTF8, 4096 );
+            LogFileWriterClient = new ActivityMonitorTextWriterClient( ( s ) => LogFileTextWriter.Write( s ) );
+            m.Output.RegisterClient( LogFileWriterClient );
+        }
+
+        static void DisposeLogFileWriter()
+        {
+            if( LogFileTextWriter != null )
+            {
+                LogFileTextWriter.Flush();
+                LogFileTextWriter.Dispose();
             }
         }
     }

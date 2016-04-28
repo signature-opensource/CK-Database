@@ -50,10 +50,11 @@ namespace CkDbSetup
             var sampleUsage = $"\nSample usage: {c.Parent.Name} {c.Name} \"Server=.;Database=MyDatabase;Integrated Security=true;\" My.Assembly1 My.Assembly2\n";
 
             var logLevelOpt = PrepareLogLevelOption(c);
+            var logFileOpt = PrepareLogFileOption(c);
 
             c.OnExecute( () =>
             {
-                var monitor = PrepareActivityMonitor(logLevelOpt);
+                var monitor = PrepareActivityMonitor(logLevelOpt, logFileOpt);
 
                 // Invalid LogFilter
                 if( monitor == null )
