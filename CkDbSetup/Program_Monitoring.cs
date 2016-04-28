@@ -16,11 +16,11 @@ namespace CkDbSetup
 
         static CommandOption PrepareLogLevelOption( CommandLineApplication c )
         {
-            return c.Option( "-l|--logLevel", $"Sets a log level filter for console and/or file output. {LogFilterDesc}", CommandOptionType.SingleValue );
+            return c.Option( "-f|--logFilter", $"Sets a log level filter for console and/or file output. {LogFilterDesc}", CommandOptionType.SingleValue );
         }
         static CommandOption PrepareLogFileOption( CommandLineApplication c )
         {
-            return c.Option( "-f|--logFile", $"Path of a log file which will ontain the log output. Defaults to none (console logging only).", CommandOptionType.SingleValue );
+            return c.Option( "-l|--logFile", $"Path of a log file which will ontain the log output. Defaults to none (console logging only).", CommandOptionType.SingleValue );
         }
 
         static ActivityMonitor PrepareActivityMonitor( LogFilter lf, string logFilePath )
