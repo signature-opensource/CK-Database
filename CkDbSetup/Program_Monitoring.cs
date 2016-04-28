@@ -22,7 +22,7 @@ namespace CkDbSetup
         static ActivityMonitor PrepareActivityMonitor( LogFilter lf )
         {
             ActivityMonitor m = new ActivityMonitor();
-            ActivityMonitorConsoleClient consoleClient = new ActivityMonitorConsoleClient();
+            StupidFlatActivityMonitorConsoleClient consoleClient = new StupidFlatActivityMonitorConsoleClient();
             m.Output.RegisterClient( consoleClient );
 
             // TODO: Client.Filter { set; } throws an IOE right now
