@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using CK.Core;
+using CK.Setup;
 using Microsoft.Extensions.CommandLineUtils;
 
 namespace CkDbSetup
@@ -120,6 +121,7 @@ namespace CkDbSetup
                 {
                     AssemblyName an = new AssemblyName(a.Name);
                     string dllPath = Path.Combine( binPath, an.Name + ".dll" );
+
                     monitor.Trace().Send($"Manually resolving assembly {a.Name} in: {dllPath}");
 
                     if(File.Exists(dllPath))
