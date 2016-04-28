@@ -182,6 +182,7 @@ namespace CK.SqlServer
                 case SqlDbType.Float: return Convert.ToString( v, CultureInfo.InvariantCulture );
                 case SqlDbType.Real: return Convert.ToString( v, CultureInfo.InvariantCulture );
                 case SqlDbType.Money: return Convert.ToString( v, CultureInfo.InvariantCulture );
+                case SqlDbType.Decimal: return Convert.ToString( v, CultureInfo.InvariantCulture );
                 case SqlDbType.Xml: return String.Format( "cast( '{0}' as xml )", SqlEncode( Convert.ToString( v, CultureInfo.InvariantCulture ) ) );
                 case SqlDbType.Structured: return Convert.ToString( v, CultureInfo.InvariantCulture );
 
