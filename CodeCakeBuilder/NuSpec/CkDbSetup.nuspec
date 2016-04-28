@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>CkDbSetup</id>
+    <version>$version$</version>
+    <authors>Invenietis</authors>
+    <owners>Invenietis</owners>
+    <licenseUrl>https://bitbucket.org/olivier_spinelli/ck-database/license</licenseUrl>
+    <projectUrl>https://bitbucket.org/olivier_spinelli/ck-database</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>
+CK-Database helps to setup, construct, manages and build modular relationnal databases upon SqlServer.
+CkDbSetup contains the eponymous executable utility to set up the database.
+</description>
+    <language>en-US</language>
+    <dependencies>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="CkDbSetup\bin\{{configuration}}\CkDbSetup.exe" target="tools" />
+  </files>
+</package>
