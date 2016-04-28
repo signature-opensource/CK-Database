@@ -53,6 +53,7 @@ namespace CkDbSetup
             }
             finally
             {
+                Console.ResetColor();
                 DisposeLogFileWriter();
             }
         }
