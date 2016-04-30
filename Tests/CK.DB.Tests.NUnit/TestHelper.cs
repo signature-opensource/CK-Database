@@ -150,7 +150,7 @@ namespace CK.Core
             {
                 try
                 {
-                    Config.RunningMode = revertNames ? SetupEngineRunningMode.DefaultWithRevertOrderingNames : SetupEngineRunningMode.Default;
+                    Config.RunningMode = revertNames ? SetupEngineRunningMode.RevertNames : SetupEngineRunningMode.Default;
                     Config.StObjEngineConfiguration.TraceDependencySorterInput = traceStObjGraphOrdering;
                     Config.StObjEngineConfiguration.TraceDependencySorterOutput = traceStObjGraphOrdering;
                     Config.TraceDependencySorterInput = traceSetupGraphOrdering;

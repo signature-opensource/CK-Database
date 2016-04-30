@@ -7,8 +7,8 @@
     <ProjectGuid>{7C935FE7-758F-47E3-908D-9DDB76D80AC6}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CkDbSetup</RootNamespace>
-    <AssemblyName>CkDbSetup</AssemblyName>
+    <RootNamespace>CKDBSetup</RootNamespace>
+    <AssemblyName>CKDBSetup</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -73,8 +73,8 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="DbSetupHelper.cs" />
-    <Compile Include="Program_SetupCommand.cs" />
-    <Compile Include="Program_Monitoring.cs" />
+    <Compile Include="Program.SetupCommand.cs" />
+    <Compile Include="Program.Monitoring.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StupidFlatActivityMonitorConsoleClient.cs" />

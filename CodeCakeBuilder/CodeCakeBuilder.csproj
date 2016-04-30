@@ -84,7 +84,7 @@
     <None Include="NuSpec\CK.StObj.Engine.nuspec" />
     <None Include="NuSpec\CK.StObj.Model.nuspec" />
     <None Include="NuSpec\CK.StObj.Runtime.nuspec" />
-    <None Include="NuSpec\CkDbSetup.nuspec" />
+    <None Include="NuSpec\CKDBSetup.nuspec" />
     <None Include="NuSpec\nuspec.xsd">
       <SubType>Designer</SubType>
     </None>
