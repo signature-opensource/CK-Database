@@ -67,7 +67,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
                 Assert.That( db.Connection.ExecuteScalar( "select count(*) from sys.tables where name in ('tSystem','tItemVersion')" ), Is.EqualTo( 0 ) );
             }
 
-            c.RunningMode = SetupEngineRunningMode.DefaultWithRevertOrderingNames;
+            c.RunningMode = SetupEngineRunningMode.RevertNames;
             c.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = dllName + ".Reverted";
             using( TestHelper.Monitor.OpenTrace().Send( "Second setup (reverse order)" ) )
             {
