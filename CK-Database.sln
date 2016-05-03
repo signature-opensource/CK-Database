@@ -84,7 +84,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.DB.Tests.NUnit", "Tests\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlZonePackage.Runtime", "SqlZonePackage.Runtime\SqlZonePackage.Runtime.csproj", "{B48C03F8-2273-4BC3-A1BF-43BD6AD5B7E9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CKDBSetup", "CkDbSetup\CKDBSetup.csproj", "{7C935FE7-758F-47E3-908D-9DDB76D80AC6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CKDBSetup", "CKDBSetup\CKDBSetup.csproj", "{7C935FE7-758F-47E3-908D-9DDB76D80AC6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

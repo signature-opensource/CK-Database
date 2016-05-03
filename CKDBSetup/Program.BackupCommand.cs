@@ -7,7 +7,7 @@ using CK.Core;
 using CK.SqlServer;
 using Microsoft.Extensions.CommandLineUtils;
 
-namespace CkDbSetup
+namespace CKDBSetup
 {
     static partial class Program
     {
@@ -155,8 +155,8 @@ namespace CkDbSetup
                 "COPY_ONLY",
                 "FORMAT",
                 "STATS",
-                "NAME='CkDbSetup backup'",
-                "DESCRIPTION='CkDbSetup backup'"
+                "NAME='CKDBSetup backup'",
+                "DESCRIPTION='CKDBSetup backup'"
             };
 
             backupPath = SqlHelper.SqlEncode( backupPath );

@@ -4,7 +4,7 @@ using System.Data.SqlClient;
 using System.Text.RegularExpressions;
 using CK.Core;
 
-namespace CkDbSetup
+namespace CKDBSetup
 {
     static partial class Program
     {

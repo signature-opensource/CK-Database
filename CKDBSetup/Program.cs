@@ -2,7 +2,7 @@
 using System.Reflection;
 using Microsoft.Extensions.CommandLineUtils;
 
-namespace CkDbSetup
+namespace CKDBSetup
 {
     static partial class Program
     {
@@ -20,7 +20,7 @@ namespace CkDbSetup
 
             var app = new CommandLineApplication
             {
-                Name = "CkDbSetup",
+                Name = "CKDBSetup",
                 Description = $"Database setup utilities for CK.Database assemblies",
                 FullName = "CK.Database setup console utility",
                 LongVersionGetter = GetLongVersion,

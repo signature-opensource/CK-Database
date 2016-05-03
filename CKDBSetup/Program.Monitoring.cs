@@ -4,7 +4,7 @@ using System.Text;
 using CK.Core;
 using Microsoft.Extensions.CommandLineUtils;
 
-namespace CkDbSetup
+namespace CKDBSetup
 {
     static partial class Program
     {

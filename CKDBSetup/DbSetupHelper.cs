@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using CK.Core;
 using CK.Setup;
 
-namespace CkDbSetup
+namespace CKDBSetup
 {
     static class DbSetupHelper
     {

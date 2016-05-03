@@ -9,12 +9,11 @@
     <projectUrl>https://bitbucket.org/olivier_spinelli/ck-database</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>
-      CLI tool for CK-Database code.
+      Command line tool for CK-Database code.
     </summary>
     <description>
-      CK-Database helps to setup, construct, manages and build modular relationnal databases upon SqlServer.
-      CkDbSetup contains the eponymous executable utility to set up the database.
-      CKDBSetup is the CLI that setups databases and generates final dynamic assembly.
+      CK-Database helps to setup, construct, manages and build modular relational databases upon SqlServer.
+      CKDBSetup contains an executable command-line utility to set up the database, and generate a structure assembly.
     </description>
     <language>en-US</language>
     <dependencies>

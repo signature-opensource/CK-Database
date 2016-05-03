@@ -8,7 +8,7 @@ using CK.Setup;
 using CK.Text;
 using Microsoft.Extensions.CommandLineUtils;
 
-namespace CkDbSetup
+namespace CKDBSetup
 {
     static partial class Program
     {
@@ -22,7 +22,7 @@ namespace CkDbSetup
             var logLevelOpt = PrepareLogLevelOption(c);
             var logFileOpt = PrepareLogFileOption(c);
 
-            // Sample usage: CkDbSetup setup "Server=.;Database=MyDatabase;Integrated Security=true;" My.Assembly1 My.Assembly2
+            // Sample usage: CKDBSetup setup "Server=.;Database=MyDatabase;Integrated Security=true;" My.Assembly1 My.Assembly2
 
             var connectionStringArg = c.Argument(
                 "ConnectionString",
