@@ -73,8 +73,9 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="DbSetupHelper.cs" />
-    <Compile Include="Program_Restore.cs" />
-    <Compile Include="Program_Backup.cs" />
+    <Compile Include="Program.SqlServer.cs" />
+    <Compile Include="Program.RestoreCommand.cs" />
+    <Compile Include="Program.BackupCommand.cs" />
     <Compile Include="Program.SetupCommand.cs" />
     <Compile Include="Program.Monitoring.cs" />
     <Compile Include="Program.cs" />
