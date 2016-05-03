@@ -143,7 +143,7 @@ namespace CK.Setup
                 if( !CreateEngineAspectsFromConfiguration() ) return false;
                 if( _startConfiguration.VersionRepository == null ) throw new InvalidOperationException( "StartConfiguration.VersionRepository must be set before calling Run or ManualRun." );
                 if( _startConfiguration.SetupSessionMemoryProvider == null ) throw new InvalidOperationException( "StartConfiguration.SetupSessionMemoryProvider must be set before calling Run or ManualRun." );
-                if( _config.RunningMode == SetupEngineRunningMode.InitializeAspectsOnly )
+                if( _config.RunningMode == SetupEngineRunningMode.InitializeEngineOnly )
                 {
                     _monitor.Info().Send( "RunningMode = InitializeAspectsOnly complete." );
                     return true;
@@ -191,7 +191,7 @@ namespace CK.Setup
             {
                 using( _monitor.OpenInfo().Send( "Register step." ) )
                 {
-                    DependencySorterOptions sorterOptions = new DependencySorterOptions() { ReverseName = _config.RunningMode == SetupEngineRunningMode.DefaultWithRevertOrderingNames };
+                    DependencySorterOptions sorterOptions = new DependencySorterOptions() { ReverseName = _config.RunningMode == SetupEngineRunningMode.RevertNames };
                     if( _config.TraceDependencySorterInput ) sorterOptions.HookInput += i => i.Trace( _monitor );
                     if( _config.TraceDependencySorterOutput ) sorterOptions.HookOutput += i => i.Trace( _monitor );
                     sorterOptions.HookInput += _startConfiguration.DependencySorterHookInput;

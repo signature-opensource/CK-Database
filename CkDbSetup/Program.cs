@@ -19,8 +19,6 @@ namespace CkDbSetup
         static AnsiConsole Output;
         static AnsiConsole Error;
 
-        static readonly string DefaultGeneratedAssemblyName = @"CK.StObj.AutoAsssembly";
-
         static int Main( string[] args )
         {
             Output = AnsiConsole.GetOutput( true );

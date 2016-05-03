@@ -12,15 +12,15 @@ namespace CK.Setup
     public enum SetupEngineRunningMode
     {
         /// <summary>
-        /// Normal process: StObj cration and three-steps setup.
+        /// Normal process: StObj creation and three-steps setup.
         /// </summary>
         Default = 0,
 
         /// <summary>
-        /// Normal process: StObj cration and three-steps setup except that the ordering for setupable items that share the same rank 
+        /// Normal process: StObj creation and three-steps setup except that the ordering for setupable items that share the same rank 
         /// in the pure dependency graph is inverted. (See DependencySorter object in CK.Setup.Dependency assembly for more information.)
         /// </summary>
-        DefaultWithRevertOrderingNames = 1,
+        RevertNames = 1,
 
         /// <summary>
         /// Only resolves and builds the StObj graph and generates the dynamic assembly (if <see cref="SetupEngineConfiguration.StObjEngineConfiguration"/> specifies it).
@@ -30,7 +30,7 @@ namespace CK.Setup
         /// <summary>
         /// Does nothing except initializing configured aspects.
         /// </summary>
-        InitializeAspectsOnly = 3
+        InitializeEngineOnly = 3
 
     }
 }

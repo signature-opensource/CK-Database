@@ -10,9 +10,15 @@ namespace CkDbSetup
 {
     static class DbSetupHelper
     {
-        public static SetupEngineConfiguration BuildSetupConfig( string connectionString, IEnumerable<string> assembliesToSetup, string dynamicAssemblyName, string binPath )
+        public static SetupEngineConfiguration BuildSetupConfig( 
+            string connectionString, 
+            IEnumerable<string> assembliesToSetup, 
+            string dynamicAssemblyName, 
+            string binPath,
+            SetupEngineRunningMode runningMode )
         {
             var config = new SetupEngineConfiguration();
+            config.RunningMode = runningMode;
 
             foreach( var a in assembliesToSetup )
             {

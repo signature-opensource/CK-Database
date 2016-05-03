@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using CK.Core;
 using CK.Setup;
 using Microsoft.Extensions.CommandLineUtils;
+using CK.Text;
 
 namespace CkDbSetup
 {
@@ -45,11 +46,22 @@ namespace CkDbSetup
 
             var generatedAssemblyNameOpt = c.Option(
                 "-n|--generatedAssemblyName",
-                $"Assembly name, and file name (without the .dll suffix) of the generated structure assembly. Defaults to {DefaultGeneratedAssemblyName}.",
+                $"Assembly name, and file name (without the .dll suffix) of the generated structure assembly. Defaults to {BuilderFinalAssemblyConfiguration.DefaultAssemblyName}.",
                 CommandOptionType.SingleValue
                 );
 
-            var sampleUsage = $"\nSample usage: {c.Parent.Name} {c.Name} \"Server=.;Database=MyDatabase;Integrated Security=true;\" My.Assembly1 My.Assembly2\n";
+            var runningOpt = c.Option(
+                "-r|--runningMode",
+@"Controls the setup:
+- Default : Normal process: StObj creation and three-steps setup.
+- RevertNames: StObj creation and three-steps setup except that the ordering for setupable 
+               items that share the same rank in the pure dependency graph is inverted.
+- StObjLayerOnly: Only resolves and builds the StObj graph and generates the dynamic assembly.
+- InitializeEngineOnly: Does nothing except initializing the engine.
+", CommandOptionType.SingleValue
+                );
+
+            var sampleUsage = $"\nSample usage: {c.Parent.Name} {c.Name} \"Server=.;Database=MyDatabase;Integrated Security=true;\" CK.DB.Actor My.Assembly1\n";
 
 
             c.OnExecute( () =>
@@ -68,7 +80,8 @@ namespace CkDbSetup
                 string connectionString;
                 List<string> assemblyNames;
                 string binPath = Environment.CurrentDirectory;
-                string generatedAssemblyName = DefaultGeneratedAssemblyName;
+                string generatedAssemblyName = BuilderFinalAssemblyConfiguration.DefaultAssemblyName;
+                SetupEngineRunningMode runningMode = SetupEngineRunningMode.Default;
 
                 connectionString = connectionStringArg.Value?.Trim();
 
@@ -86,32 +99,32 @@ namespace CkDbSetup
                 {
                     generatedAssemblyName = generatedAssemblyNameOpt.Value().Trim();
                 }
+
                 // No connectionString given
                 if( string.IsNullOrEmpty( connectionString ) )
                 {
-                    Error.WriteLine( "\nError: A connection string is required." );
-                    c.ShowHelp();
-                    Error.WriteLine( sampleUsage );
-                    return EXIT_ERROR;
+                    return DisplayErrorAndExit( c, sampleUsage, "A connection string is required." );
                 }
-
                 // No assembly name given
                 if( assemblyNames.Count < 1 )
                 {
-                    Error.WriteLine( "\nError: One or more assembly names are required." );
-                    c.ShowHelp();
-                    Error.WriteLine( sampleUsage );
-                    return EXIT_ERROR;
+                    return DisplayErrorAndExit( c, sampleUsage, "One or more assembly names are required." );
+                }
+                // Handling running mode.
+                if( runningOpt.HasValue() && !Enum.TryParse( runningOpt.Value(), out runningMode ) )
+                {
+                    return DisplayErrorAndExit( c, sampleUsage, "Invalid --runningMode. Must be Default, RevertNames, StObjLayerOnly or InitializeEngineOnly." );
                 }
 
                 c.ShowRootCommandFullNameAndVersion();
 
                 monitor.Trace().Send( $"Connection string: {connectionString}" );
-                monitor.Trace().Send( $"Assembly names: {string.Join( "; ", assemblyNames )}" );
+                monitor.Trace().Send( $"Assembly names: {assemblyNames.Concatenate()}" );
                 monitor.Trace().Send( $"Binaries path: {binPath}" );
                 monitor.Trace().Send( $"Generated assembly name: {generatedAssemblyName}" );
+                monitor.Trace().Send( $"Running mode: {runningMode}" );
 
-                var buildConfig = DbSetupHelper.BuildSetupConfig( connectionString, assemblyNames, generatedAssemblyName, binPath );
+                var buildConfig = DbSetupHelper.BuildSetupConfig( connectionString, assemblyNames, generatedAssemblyName, binPath, runningMode );
 
                 bool isSuccess = false;
 
@@ -137,10 +150,7 @@ namespace CkDbSetup
                 };
                 AppDomain.CurrentDomain.AssemblyResolve += reh;
                 // Execution
-                using( monitor.CollectEntries( errors =>
-                {
-                    errorEntries.AddRange( errors );
-                }, LogLevelFilter.Error ) )
+                using( monitor.CollectEntries( errorEntries.AddRange, LogLevelFilter.Error ) )
                 {
                     try
                     {
@@ -181,6 +191,14 @@ namespace CkDbSetup
 
                 return isSuccess ? EXIT_SUCCESS : EXIT_ERROR;
             } );
+        }
+
+        static int DisplayErrorAndExit( CommandLineApplication c, string sampleUsage, string msg )
+        {
+            Error.WriteLine( "\nError: " + msg );
+            c.ShowHelp();
+            Error.WriteLine( sampleUsage );
+            return EXIT_ERROR;
         }
     }
 }

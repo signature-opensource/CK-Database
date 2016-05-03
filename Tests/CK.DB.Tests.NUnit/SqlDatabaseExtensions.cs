@@ -47,7 +47,7 @@ namespace CK.Core
         /// <param name="parameters">Parameters that will replace @0, @1,...@n placeholders in <paramref name="selectClause"/>.</param>
         public static SqlDatabase AssertScalar( this SqlDatabase @this, Constraint constraint, string selectClause, params object[] parameters )
         {
-            AssertScalarEquals( @this.ConnectionString, constraint, selectClause, parameters );
+            AssertScalar( @this.ConnectionString, constraint, selectClause, parameters );
             return @this;
         }
 
