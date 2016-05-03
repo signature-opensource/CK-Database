@@ -14,7 +14,7 @@ namespace CkDbSetup
         private static void RestoreCommand( CommandLineApplication c )
         {
             c.FullName = c.Parent.FullName;
-            c.Description = "Calls a restore of a SQL Server database from a backup file.";
+            c.Description = "Restores a SQL Server database from a backup file, automatically moving its data and log files.";
 
             PrepareHelpOption( c );
             PrepareVersionOption( c );
@@ -127,8 +127,10 @@ namespace CkDbSetup
 
                         using( SqlCommand cmd = new SqlCommand( q, sqlConn ) )
                         {
-                            int result = cmd.ExecuteNonQuery();
-                            monitor.Trace().Send( "Non-query returned {0}", result );
+                            using( monitor.OpenTrace().Send( "SQL Server command execution", q ) )
+                            {
+                                int result = cmd.ExecuteNonQuery();
+                            }
                         }
 
                         sqlConn.Close();
@@ -162,7 +164,7 @@ namespace CkDbSetup
             };
 
             string dataFileNewPath = Path.Combine( dataDir, $"{targetDatabaseName}.mdf" );
-            string logFileNewPath = Path.Combine( logDir, $"{targetDatabaseName}_Log.ldf" );
+            string logFileNewPath = Path.Combine( logDir, $"{targetDatabaseName}_log.ldf" );
 
             m.Info().Send( "Restoring data file to: {0}", dataFileNewPath );
             m.Info().Send( "Restoring log file to: {0}", logFileNewPath );

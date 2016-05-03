@@ -14,7 +14,7 @@ namespace CkDbSetup
         private static void BackupCommand( CommandLineApplication c )
         {
             c.FullName = c.Parent.FullName;
-            c.Description = "Calls a full independent backup of a SQL Server database to file on the SQL Server instance.";
+            c.Description = "Creates a full independent backup of a SQL Server database to a file on the SQL Server instance.";
 
             PrepareHelpOption( c );
             PrepareVersionOption( c );
@@ -122,8 +122,10 @@ namespace CkDbSetup
 
                         using( SqlCommand cmd = new SqlCommand( q, sqlConn ) )
                         {
-                            int result = cmd.ExecuteNonQuery();
-                            monitor.Trace().Send( "Non-query returned {0}", result );
+                            using( monitor.OpenTrace().Send( "SQL Server command execution", q ) )
+                            {
+                                int result = cmd.ExecuteNonQuery();
+                            }
                         }
 
                         sqlConn.Close();

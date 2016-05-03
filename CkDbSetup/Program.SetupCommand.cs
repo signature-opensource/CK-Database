@@ -48,15 +48,10 @@ namespace CkDbSetup
                 CommandOptionType.SingleValue
                 );
 
-            var runningOpt = c.Option(
-                "-r|--runningMode",
-@"Controls the setup:
-- Default : Normal process: StObj creation and three-steps setup.
-- RevertNames: StObj creation and three-steps setup except that the ordering for setupable 
-               items that share the same rank in the pure dependency graph is inverted.
-- StObjLayerOnly: Only resolves and builds the StObj graph and generates the dynamic assembly.
-- InitializeEngineOnly: Does nothing except initializing the engine.
-", CommandOptionType.SingleValue
+            var generateAssemblyOnlyOpt = c.Option(
+                "--generateAssemblyOnly",
+                @"Generates the structure assembly without setting up the database.",
+                CommandOptionType.NoValue
                 );
 
             var sampleUsage = $"\nSample usage: {c.Parent.Name} {c.Name} \"Server=.;Database=MyDatabase;Integrated Security=true;\" CK.DB.Actor My.Assembly1\n";
@@ -108,10 +103,11 @@ namespace CkDbSetup
                 {
                     return DisplayErrorAndExit( c, sampleUsage, "One or more assembly names are required." );
                 }
-                // Handling running mode.
-                if( runningOpt.HasValue() && !Enum.TryParse( runningOpt.Value(), out runningMode ) )
+
+                // Handle running mode
+                if( generateAssemblyOnlyOpt.HasValue() )
                 {
-                    return DisplayErrorAndExit( c, sampleUsage, "Invalid --runningMode. Must be Default, RevertNames, StObjLayerOnly or InitializeEngineOnly." );
+                    runningMode = SetupEngineRunningMode.StObjLayerOnly;
                 }
 
                 c.ShowRootCommandFullNameAndVersion();
