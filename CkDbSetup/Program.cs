@@ -40,6 +40,7 @@ namespace CkDbSetup
 
             app.Command( "setup", SetupCommand );
             app.Command( "backup", BackupCommand );
+            app.Command( "restore", RestoreCommand );
 
             app.OnExecute( () =>
             {

@@ -17,10 +17,10 @@ namespace CkDbSetup
 {
     static partial class Program
     {
-        private static void BackupCommand( CommandLineApplication c )
+        private static void RestoreCommand( CommandLineApplication c )
         {
             c.FullName = c.Parent.FullName;
-            c.Description = "Calls a full independent backup of a SQL Server database to file on the SQL Server instance.";
+            c.Description = "Calls a restore of a SQL Server database from a backup file.";
 
             PrepareHelpOption( c );
             PrepareVersionOption( c );
@@ -29,13 +29,13 @@ namespace CkDbSetup
 
             var connectionStringArg = c.Argument(
                 "ConnectionString",
-                "SQL Server connection string used, pointing to the target database.",
+                "SQL Server connection string used, pointing to the target (restored) database.",
                 false
                 );
 
             var backupPathArg = c.Argument(
                 "BackupFilePath",
-                "Path to the new backup file on the machine hosting the SQL Server instance. It must be writable by the SQL Server service. Non-absolute paths will be resolved relative to the default server backup directory.",
+                "Path to the backup file to restore, on the machine hosting the SQL Server instance. It must be readable by the SQL Server service. Non-absolute paths will be resolved relative to the default server backup directory.",
                 false
                 );
 
@@ -86,12 +86,12 @@ namespace CkDbSetup
 
                 monitor.Trace().Send( "Target connection string: {0}", connectionString );
                 monitor.Trace().Send( "Path to backup: {0}", backupPath );
-                monitor.Trace().Send( "Database name: {0}", targetDatabaseName );
+                monitor.Trace().Send( "Restored database name: {0}", targetDatabaseName );
                 monitor.Trace().Send( "Effective connection string: {0}", dcsb.ToString() );
 
                 try
                 {
-                    using( SqlConnection sqlConn = new SqlConnection( connectionString ) )
+                    using( SqlConnection sqlConn = new SqlConnection( dcsb.ToString() ) )
                     {
                         sqlConn.InfoMessage += ( s, ev ) =>
                         {
@@ -119,10 +119,15 @@ namespace CkDbSetup
                             backupPath = Path.GetFullPath( Path.Combine( defaultBackupPath, backupPath ) );
                         }
 
+                        monitor.Info().Send( "Restoring from backup file: {0}", backupPath );
 
-                        monitor.Info().Send( "Effective backup path: {0}", backupPath );
+                        string dataDir = GetDefaultServerDataPath(monitor, sqlConn);
+                        monitor.Trace().Send( "Server data directory: {0}", dataDir );
 
-                        string q = BuildBackupQuery(targetDatabaseName, backupPath);
+                        string logDir = GetDefaultServerLogPath(monitor, sqlConn);
+                        monitor.Trace().Send( "Server log directory: {0}", logDir );
+
+                        string q = BuildRestoreQuery(monitor, sqlConn, targetDatabaseName, backupPath, dataDir, logDir);
 
                         monitor.Trace().Send( "Calling: {0}", q );
 
@@ -137,39 +142,47 @@ namespace CkDbSetup
                 }
                 catch( Exception e )
                 {
-                    monitor.Fatal().Send( e, "Backup failed" );
+                    monitor.Fatal().Send( e, "Restore failed" );
                     return EXIT_ERROR;
                 }
 
-                monitor.Info().Send( "Backup to file successful." );
+                monitor.Info().Send( "Restore from file successful." );
 
                 return EXIT_SUCCESS;
             } );
         }
 
-        private static string BuildBackupQuery( string targetDatabaseName, string backupPath )
+        private static string BuildRestoreQuery( IActivityMonitor m, SqlConnection sqlConn, string targetDatabaseName, string backupPath, string dataDir, string logDir )
         {
             if( !ValidateIdentifier( targetDatabaseName ) )
             {
                 throw new ArgumentException( $"Invalid SQL Server identifier: {targetDatabaseName}" );
             }
 
+            var logicalNames = GetBackupDataAndLogLogicalNames( m, sqlConn, backupPath );
+
             List<string> options = new List<string>()
             {
-                "COPY_ONLY",
-                "FORMAT",
+                "REPLACE",
                 "STATS",
-                "NAME='CkDbSetup backup'",
-                "DESCRIPTION='CkDbSetup backup'"
             };
+
+            string dataFileNewPath = Path.Combine( dataDir, $"{targetDatabaseName}.mdf" );
+            string logFileNewPath = Path.Combine( logDir, $"{targetDatabaseName}_Log.ldf" );
+
+            m.Info().Send( "Restoring data file to: {0}", dataFileNewPath );
+            m.Info().Send( "Restoring log file to: {0}", logFileNewPath );
+
+            options.Add( $"MOVE '{SqlHelper.SqlEncode( logicalNames.Item1 )}' TO '{SqlHelper.SqlEncode( dataFileNewPath )}'" );
+            options.Add( $"MOVE '{SqlHelper.SqlEncode( logicalNames.Item2 )}' TO '{SqlHelper.SqlEncode( logFileNewPath )}'" );
 
             backupPath = SqlHelper.SqlEncode( backupPath );
 
             StringBuilder sb = new StringBuilder();
 
-            sb.Append( "BACKUP DATABASE " );
+            sb.Append( "RESTORE DATABASE " );
             sb.Append( targetDatabaseName );
-            sb.Append( " TO DISK = '" );
+            sb.Append( " FROM DISK = '" );
             sb.Append( backupPath );
             sb.Append( "'" );
 
@@ -182,61 +195,52 @@ namespace CkDbSetup
             return sb.ToString();
         }
 
-        private static string GetDefaultServerBackupPath( IActivityMonitor m, SqlConnection c )
+        private static Tuple<string, string> GetBackupDataAndLogLogicalNames( IActivityMonitor m, SqlConnection c, string backupPath )
         {
-            return ExecXpInstanceRegread( m, c, "HKEY_LOCAL_MACHINE", @"Software\Microsoft\MSSQLServer\MSSQLServer", "BackupDirectory" );
-        }
-        private static string GetDefaultServerDataPath( IActivityMonitor m, SqlConnection c )
-        {
-            using( SqlCommand cmd = new SqlCommand( "select serverproperty('InstanceDefaultDataPath')", c ) )
+            backupPath = SqlHelper.SqlEncode( backupPath );
+
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append( "RESTORE FILELISTONLY" );
+            sb.Append( " FROM DISK = '" );
+            sb.Append( backupPath );
+            sb.Append( "'" );
+
+            string dataLogicalName = null;
+            string logLogicalName = null;
+
+            m.Trace().Send( $"Executing: {0}", sb.ToString() );
+            using( SqlCommand cmd = new SqlCommand( sb.ToString(), c ) )
             {
-                return (string)cmd.ExecuteScalar();
+                using( SqlDataReader r = cmd.ExecuteReader() )
+                {
+                    while( r.Read() )
+                    {
+                        string logicalName = r.GetString(0);
+                        string physicalName = r.GetString(1);
+                        string type = r.GetString(2);
+                        long fileId = r.GetInt64(6);
+
+                        m.Trace().Send( $"{fileId}: [{type}] {logicalName} ({physicalName})" );
+
+                        if( type == "D" )
+                        {
+                            if( dataLogicalName != null ) { throw new NotSupportedException( "Complex backups with multiple data files are not supported" ); }
+                            dataLogicalName = logicalName;
+                        }
+                        else if( type == "L" )
+                        {
+                            if( logLogicalName != null ) { throw new NotSupportedException( "Complex backups with multiple lognote files are not supported" ); }
+                            logLogicalName = logicalName;
+                        }
+                    }
+                }
             }
+
+            if( dataLogicalName == null ) { throw new NotSupportedException( "Backups without data files are not supported" ); }
+            if( logLogicalName == null ) { throw new NotSupportedException( "Backups without log files are not supported" ); }
+
+            return Tuple.Create( dataLogicalName, logLogicalName );
         }
-        private static string GetDefaultServerLogPath( IActivityMonitor m, SqlConnection c )
-        {
-            using( SqlCommand cmd = new SqlCommand( "select serverproperty('InstanceDefaultLogPath')", c ) )
-            {
-                return (string)cmd.ExecuteScalar();
-            }
-        }
-
-        private static string ExecXpInstanceRegread( IActivityMonitor m, SqlConnection c, string rootKey, string key, string valueName )
-        {
-            using( SqlCommand cmd = new SqlCommand( "master.dbo.xp_instance_regread", c ) )
-            {
-                cmd.CommandType = CommandType.StoredProcedure;
-
-                var p1 = cmd.Parameters.Add( "@rootkey", SqlDbType.NVarChar );
-                p1.Size = 256;
-                p1.Direction = ParameterDirection.Input;
-                p1.Value = rootKey;
-
-                var p2 = cmd.Parameters.Add( "@key", SqlDbType.NVarChar );
-                p2.Size = 256;
-                p2.Direction = ParameterDirection.Input;
-                p2.Value = key;
-
-                var p3 = cmd.Parameters.Add( "@value_name", SqlDbType.NVarChar );
-                p3.Size = 256;
-                p3.Direction = ParameterDirection.Input;
-                p3.Value = valueName;
-
-                var valParam = cmd.Parameters.Add( "@value", SqlDbType.NVarChar );
-                valParam.Size = 256;
-                valParam.Direction = ParameterDirection.Output;
-
-                m.Trace().Send( "Executing command: {0}", cmd.CommandText );
-                int r = cmd.ExecuteNonQuery();
-                m.Trace().Send( "Non-query returned {0}", r );
-
-                string value = valParam.Value is DBNull ? null : (string)valParam.Value;
-                return value;
-            }
-        }
-
-        private static readonly Regex SqlServerIdentifierRegex = new Regex(@"^[\p{L}_][\p{L}\p{N}@$#_]{0,127}$");
-
-        private static bool ValidateIdentifier( string name ) => SqlServerIdentifierRegex.IsMatch( name );
     }
 }
