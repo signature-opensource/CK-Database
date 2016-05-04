@@ -67,11 +67,6 @@ namespace CKDBSetup
                     return DisplayErrorAndExit( c, sampleUsage, LogFilterErrorDesc );
                 }
 
-                AppDomain.CurrentDomain.AssemblyLoad += ( sender, args ) =>
-                {
-                    monitor.Trace().Send( $"AssemblyLoad: {args.LoadedAssembly} ({args.LoadedAssembly.Location})" );
-                };
-
                 string connectionString;
                 List<string> assemblyNames;
                 string binPath = Environment.CurrentDirectory;
@@ -190,7 +185,8 @@ namespace CKDBSetup
 
                 if( File.Exists( dllPath ) )
                 {
-                    return Assembly.LoadFrom( dllPath );
+                    // Don't use LoadFrom(), as it will fork into its own assembly load context.
+                    return Assembly.LoadFile( dllPath );
                 }
                 else
                 {
