@@ -4,7 +4,7 @@ using Microsoft.Extensions.CommandLineUtils;
 
 namespace CKDBSetup
 {
-    static partial class Program
+    public static partial class Program
     {
         const int EXIT_SUCCESS = 0;
         const int EXIT_ERROR = 1;
@@ -13,7 +13,7 @@ namespace CKDBSetup
         static AnsiConsole Output;
         static AnsiConsole Error;
 
-        static int Main( string[] args )
+        public static int Main( string[] args )
         {
             Output = AnsiConsole.GetOutput( true );
             Error = AnsiConsole.GetError( true );
