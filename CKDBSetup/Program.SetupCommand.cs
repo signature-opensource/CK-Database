@@ -64,11 +64,13 @@ namespace CKDBSetup
                 // Invalid LogFilter
                 if( monitor == null )
                 {
-                    Error.WriteLine( LogFilterErrorDesc );
-                    c.ShowHelp();
-                    Error.WriteLine( sampleUsage );
-                    return EXIT_ERROR;
+                    return DisplayErrorAndExit( c, sampleUsage, LogFilterErrorDesc );
                 }
+
+                AppDomain.CurrentDomain.AssemblyLoad += ( sender, args ) =>
+                {
+                    monitor.Trace().Send( $"AssemblyLoad: {args.LoadedAssembly} ({args.LoadedAssembly.Location})" );
+                };
 
                 string connectionString;
                 List<string> assemblyNames;
@@ -127,22 +129,11 @@ namespace CKDBSetup
                 // We need to manually hook Assembly resolution to allow DbSetup to probe the correct one.
                 ResolveEventHandler reh = (s, a) =>
                 {
-                    AssemblyName an = new AssemblyName(a.Name);
-                    string dllPath = Path.Combine( binPath, an.Name + ".dll" );
-
-                    monitor.Trace().Send($"Manually resolving assembly {a.Name} in: {dllPath}");
-
-                    if(File.Exists(dllPath))
-                    {
-                        return Assembly.LoadFrom( dllPath );
-                    }
-                    else
-                    {
-                        monitor.Error().Send($"Failed to resolve assembly {a.Name} (File not found: {dllPath})");
-                        return null;
-                    }
+                    monitor.Trace().Send( $"AssemblyResolve: {a.Name}" );
+                    return LoadAssembly( monitor, binPath, a.Name );
                 };
                 AppDomain.CurrentDomain.AssemblyResolve += reh;
+
                 // Execution
                 using( monitor.CollectEntries( errorEntries.AddRange, LogLevelFilter.Error ) )
                 {
@@ -155,6 +146,7 @@ namespace CKDBSetup
                         monitor.Fatal().Send( e );
                     }
                 }
+
                 AppDomain.CurrentDomain.AssemblyResolve -= reh;
 
                 // Summary log entry
@@ -185,6 +177,27 @@ namespace CKDBSetup
 
                 return isSuccess ? EXIT_SUCCESS : EXIT_ERROR;
             } );
+        }
+
+        private static Assembly LoadAssembly( IActivityMonitor m, string binPath, string name )
+        {
+            using( m.OpenTrace().Send( "Loading manually: {0}", name ) )
+            {
+                AssemblyName assemblyName = new AssemblyName(name);
+                string dllPath = Path.Combine( binPath, assemblyName.Name + ".dll" );
+
+                m.Trace().Send( $"Manually resolving assembly {assemblyName.Name} in: {dllPath}" );
+
+                if( File.Exists( dllPath ) )
+                {
+                    return Assembly.LoadFrom( dllPath );
+                }
+                else
+                {
+                    m.Error().Send( $"Failed to resolve assembly {assemblyName.Name} (File not found: {dllPath})" );
+                    return null;
+                }
+            }
         }
 
         static int DisplayErrorAndExit( CommandLineApplication c, string sampleUsage, string msg )
