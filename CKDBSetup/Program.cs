@@ -1,16 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using CK.Core;
 using Microsoft.Extensions.CommandLineUtils;
 
-namespace CkDbSetup
+namespace CKDBSetup
 {
-    static partial class Program
+    public static partial class Program
     {
         const int EXIT_SUCCESS = 0;
         const int EXIT_ERROR = 1;
@@ -19,16 +13,14 @@ namespace CkDbSetup
         static AnsiConsole Output;
         static AnsiConsole Error;
 
-        static readonly string DefaultGeneratedAssemblyName = @"CK.StObj.AutoAsssembly";
-
-        static int Main( string[] args )
+        public static int Main( string[] args )
         {
             Output = AnsiConsole.GetOutput( true );
             Error = AnsiConsole.GetError( true );
 
             var app = new CommandLineApplication
             {
-                Name = "CkDbSetup",
+                Name = "CKDBSetup",
                 Description = $"Database setup utilities for CK.Database assemblies",
                 FullName = "CK.Database setup console utility",
                 LongVersionGetter = GetLongVersion,
@@ -39,6 +31,8 @@ namespace CkDbSetup
             PrepareVersionOption( app );
 
             app.Command( "setup", SetupCommand );
+            app.Command( "backup", BackupCommand );
+            app.Command( "restore", RestoreCommand );
 
             app.OnExecute( () =>
             {
@@ -46,7 +40,15 @@ namespace CkDbSetup
                 return EXIT_HELP;
             } );
 
-            return app.Execute( args );
+            try
+            {
+                return app.Execute( args );
+            }
+            finally
+            {
+                Console.ResetColor();
+                DisposeLogFileWriter();
+            }
         }
 
         static CommandOption PrepareHelpOption( CommandLineApplication c ) => c.HelpOption( "-?|-h|--help" );

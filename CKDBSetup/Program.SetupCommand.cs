@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using CK.Core;
 using CK.Setup;
+using CK.Text;
 using Microsoft.Extensions.CommandLineUtils;
 
-namespace CkDbSetup
+namespace CKDBSetup
 {
     static partial class Program
     {
@@ -20,8 +19,10 @@ namespace CkDbSetup
 
             PrepareHelpOption( c );
             PrepareVersionOption( c );
+            var logLevelOpt = PrepareLogLevelOption(c);
+            var logFileOpt = PrepareLogFileOption(c);
 
-            // Sample usage: CkDbSetup setup "Server=.;Database=MyDatabase;Integrated Security=true;" My.Assembly1 My.Assembly2
+            // Sample usage: CKDBSetup setup "Server=.;Database=MyDatabase;Integrated Security=true;" My.Assembly1 My.Assembly2
 
             var connectionStringArg = c.Argument(
                 "ConnectionString",
@@ -43,31 +44,34 @@ namespace CkDbSetup
 
             var generatedAssemblyNameOpt = c.Option(
                 "-n|--generatedAssemblyName",
-                $"Assembly name, and file name (without the .dll suffix) of the generated structure assembly. Defaults to {DefaultGeneratedAssemblyName}.",
+                $"Assembly name, and file name (without the .dll suffix) of the generated structure assembly. Defaults to {BuilderFinalAssemblyConfiguration.DefaultAssemblyName}.",
                 CommandOptionType.SingleValue
                 );
 
-            var sampleUsage = $"\nSample usage: {c.Parent.Name} {c.Name} \"Server=.;Database=MyDatabase;Integrated Security=true;\" My.Assembly1 My.Assembly2\n";
+            var generateAssemblyOnlyOpt = c.Option(
+                "--generateAssemblyOnly",
+                @"Generates the structure assembly without setting up the database.",
+                CommandOptionType.NoValue
+                );
 
-            var logLevelOpt = PrepareLogLevelOption(c);
+            var sampleUsage = $"\nSample usage: {c.Parent.Name} {c.Name} \"Server=.;Database=MyDatabase;Integrated Security=true;\" CK.DB.Actor My.Assembly1\n";
+
 
             c.OnExecute( () =>
             {
-                var monitor = PrepareActivityMonitor(logLevelOpt);
+                var monitor = PrepareActivityMonitor(logLevelOpt, logFileOpt);
 
                 // Invalid LogFilter
                 if( monitor == null )
                 {
-                    Error.WriteLine( LogFilterErrorDesc );
-                    c.ShowHelp();
-                    Error.WriteLine( sampleUsage );
-                    return EXIT_ERROR;
+                    return DisplayErrorAndExit( c, sampleUsage, LogFilterErrorDesc );
                 }
 
                 string connectionString;
                 List<string> assemblyNames;
                 string binPath = Environment.CurrentDirectory;
-                string generatedAssemblyName = DefaultGeneratedAssemblyName;
+                string generatedAssemblyName = BuilderFinalAssemblyConfiguration.DefaultAssemblyName;
+                SetupEngineRunningMode runningMode = SetupEngineRunningMode.Default;
 
                 connectionString = connectionStringArg.Value?.Trim();
 
@@ -85,32 +89,33 @@ namespace CkDbSetup
                 {
                     generatedAssemblyName = generatedAssemblyNameOpt.Value().Trim();
                 }
+
                 // No connectionString given
                 if( string.IsNullOrEmpty( connectionString ) )
                 {
-                    Error.WriteLine( "\nError: A connection string is required." );
-                    c.ShowHelp();
-                    Error.WriteLine( sampleUsage );
-                    return EXIT_ERROR;
+                    return DisplayErrorAndExit( c, sampleUsage, "A connection string is required." );
                 }
-
                 // No assembly name given
                 if( assemblyNames.Count < 1 )
                 {
-                    Error.WriteLine( "\nError: One or more assembly names are required." );
-                    c.ShowHelp();
-                    Error.WriteLine( sampleUsage );
-                    return EXIT_ERROR;
+                    return DisplayErrorAndExit( c, sampleUsage, "One or more assembly names are required." );
+                }
+
+                // Handle running mode
+                if( generateAssemblyOnlyOpt.HasValue() )
+                {
+                    runningMode = SetupEngineRunningMode.StObjLayerOnly;
                 }
 
                 c.ShowRootCommandFullNameAndVersion();
 
                 monitor.Trace().Send( $"Connection string: {connectionString}" );
-                monitor.Trace().Send( $"Assembly names: {string.Join( "; ", assemblyNames )}" );
+                monitor.Trace().Send( $"Assembly names: {assemblyNames.Concatenate()}" );
                 monitor.Trace().Send( $"Binaries path: {binPath}" );
                 monitor.Trace().Send( $"Generated assembly name: {generatedAssemblyName}" );
+                monitor.Trace().Send( $"Running mode: {runningMode}" );
 
-                var buildConfig = DbSetupHelper.BuildSetupConfig( connectionString, assemblyNames, generatedAssemblyName, binPath );
+                var buildConfig = DbSetupHelper.BuildSetupConfig( connectionString, assemblyNames, generatedAssemblyName, binPath, runningMode );
 
                 bool isSuccess = false;
 
@@ -119,27 +124,13 @@ namespace CkDbSetup
                 // We need to manually hook Assembly resolution to allow DbSetup to probe the correct one.
                 ResolveEventHandler reh = (s, a) =>
                 {
-                    AssemblyName an = new AssemblyName(a.Name);
-                    string dllPath = Path.Combine( binPath, an.Name + ".dll" );
-
-                    monitor.Trace().Send($"Manually resolving assembly {a.Name} in: {dllPath}");
-
-                    if(File.Exists(dllPath))
-                    {
-                        return Assembly.LoadFrom( dllPath );
-                    }
-                    else
-                    {
-                        monitor.Error().Send($"Failed to resolve assembly {a.Name} (File not found: {dllPath})");
-                        return null;
-                    }
+                    monitor.Trace().Send( $"AssemblyResolve: {a.Name}" );
+                    return LoadAssembly( monitor, binPath, a.Name );
                 };
                 AppDomain.CurrentDomain.AssemblyResolve += reh;
+
                 // Execution
-                using( monitor.CollectEntries( errors =>
-                {
-                    errorEntries.AddRange( errors );
-                }, LogLevelFilter.Error ) )
+                using( monitor.CollectEntries( errorEntries.AddRange, LogLevelFilter.Error ) )
                 {
                     try
                     {
@@ -150,6 +141,7 @@ namespace CkDbSetup
                         monitor.Fatal().Send( e );
                     }
                 }
+
                 AppDomain.CurrentDomain.AssemblyResolve -= reh;
 
                 // Summary log entry
@@ -180,6 +172,36 @@ namespace CkDbSetup
 
                 return isSuccess ? EXIT_SUCCESS : EXIT_ERROR;
             } );
+        }
+
+        private static Assembly LoadAssembly( IActivityMonitor m, string binPath, string name )
+        {
+            using( m.OpenTrace().Send( "Loading manually: {0}", name ) )
+            {
+                AssemblyName assemblyName = new AssemblyName(name);
+                string dllPath = Path.Combine( binPath, assemblyName.Name + ".dll" );
+
+                m.Trace().Send( $"Manually resolving assembly {assemblyName.Name} in: {dllPath}" );
+
+                if( File.Exists( dllPath ) )
+                {
+                    // Don't use LoadFrom(), as it will fork into its own assembly load context.
+                    return Assembly.LoadFile( dllPath );
+                }
+                else
+                {
+                    m.Error().Send( $"Failed to resolve assembly {assemblyName.Name} (File not found: {dllPath})" );
+                    return null;
+                }
+            }
+        }
+
+        static int DisplayErrorAndExit( CommandLineApplication c, string sampleUsage, string msg )
+        {
+            Error.WriteLine( "\nError: " + msg );
+            c.ShowHelp();
+            Error.WriteLine( sampleUsage );
+            return EXIT_ERROR;
         }
     }
 }
