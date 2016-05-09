@@ -58,7 +58,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Extensions.CommandLineUtils, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.CommandLineUtils.1.0.0-rc3-20827\lib\net451\Microsoft.Extensions.CommandLineUtils.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Extensions.CommandLineUtils.1.0.0-rc3-20842\lib\net451\Microsoft.Extensions.CommandLineUtils.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
