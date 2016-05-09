@@ -12,6 +12,11 @@ namespace CK.Setup
     {
         #region Trace & ToStringDetails for IDependentItem
 
+        /// <summary>
+        /// Traces a set of <see cref="IDependentItem"/> to a monitor.
+        /// </summary>
+        /// <param name="this">This set of dependent items.</param>
+        /// <param name="monitor">Monitor to use.</param>
         public static void Trace( this IEnumerable<IDependentItem> @this, IActivityMonitor monitor )
         {
             using( monitor.OpenTrace().Send( "Dependent items (C - for container, G - for group and I - for item)" ) )
@@ -20,6 +25,12 @@ namespace CK.Setup
             }
         }
 
+        /// <summary>
+        /// Returns detailed information: FullName, Container, Group, Generalization, Requires, 
+        /// RequiredBy, Groups and Chilren if this is a Container.
+        /// </summary>
+        /// <param name="this">This dependent item.</param>
+        /// <returns>Detaile information.</returns>
         public static string ToStringDetails( this IDependentItem @this )
         {
             StringBuilder b = new StringBuilder();
@@ -80,6 +91,11 @@ namespace CK.Setup
 
         #region Trace for ISortedItem
 
+        /// <summary>
+        /// Traces detailed information for a set of <see cref="ISortedItem"/>.
+        /// </summary>
+        /// <param name="this">This et of sorte item.</param>
+        /// <param name="monitor">Monitor to use.</param>
         public static void Trace( this IEnumerable<ISortedItem> @this, IActivityMonitor monitor  )
         {
             using( monitor.OpenTrace().Send( "Sorted items (C - for container, G - for group and I - for item)" ) )
@@ -89,6 +105,11 @@ namespace CK.Setup
             }
         }
 
+        /// <summary>
+        /// Returs detailed information.
+        /// </summary>
+        /// <param name="this">This sorted item.</param>
+        /// <returns>Detailed information.</returns>
         public static string ToStringDetails( this ISortedItem @this )
         {
             StringBuilder b = new StringBuilder();

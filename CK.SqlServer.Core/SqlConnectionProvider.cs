@@ -96,7 +96,7 @@ namespace CK.SqlServer
 
         /// <summary>
         /// Closes the connection to the database: decrements <see cref="ExplicitOpenCount"/> and closes the connection if it is zero
-        /// and if no connection acquired by <see cref="AcquireConnection"/> are pending (ie. not disposed).
+        /// and if no connection acquired by <see cref="AcquireConnection()"/> are pending (ie. not disposed).
         /// Can be called safely multiple times.
         /// </summary>
         public void ExplicitClose()
@@ -109,7 +109,7 @@ namespace CK.SqlServer
 
         /// <summary>
         /// Closes the connection to the database regardless of the number of times <see cref="ExplicitOpen"/> has been called
-        /// or wether connection acquired by <see cref="AcquireConnection"/> are pending.
+        /// or wether connection acquired by <see cref="AcquireConnection()"/> are pending.
         /// Can be called safely multiple times.
         /// </summary>
         public void Dispose()
@@ -454,7 +454,7 @@ namespace CK.SqlServer
 
         /// <summary>
         /// Disposable wrapper for SqlConnection.
-        /// This is returned by <see cref="AcquireConnection"/> and <see cref="AcquireConnectionAsync(System.Threading.CancellationToken)"/>
+        /// This is returned by <see cref="AcquireConnection()"/> and <see cref="AcquireConnectionAsync(System.Threading.CancellationToken)"/>
         /// and follows the provider's way of dealing with connections: the obtained connection may be the currently opened one
         /// or a new one if it was in use.
         /// </summary>

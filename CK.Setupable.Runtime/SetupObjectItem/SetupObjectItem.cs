@@ -13,7 +13,7 @@ namespace CK.Setup
     /// </summary>
     public abstract class SetupObjectItem : ISetupItem, IDependentItemRef
     {
-        string _type;
+        readonly string _type;
         DependentItemList _requires;
         DependentItemList _requiredBy;
         DependentItemGroupList _groups;

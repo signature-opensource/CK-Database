@@ -67,8 +67,8 @@ namespace CK.SqlServer
         /// <summary>
         /// Writes to the given <see cref="TextWriter"/> the parameters separated by commas.
         /// </summary>
-        /// <param name="b">The target <see cref="TextWriter"/>.</param>
-        /// <param name="c"><see cref="SqlParameterCollection"/> to write.</param
+        /// <param name="w">The target <see cref="TextWriter"/>.</param>
+        /// <param name="c"><see cref="SqlParameterCollection"/> to write.</param>
         static public TextWriter WriteCallParameters( TextWriter w, SqlParameterCollection c )
         {
             bool atLeastOne = false;

@@ -15,6 +15,9 @@ using System.Diagnostics;
 
 namespace CK.SqlServer
 {
+    /// <summary>
+    /// Parses scripts string to hanle 'go', 'begin/ensp' and 'begin/enscript'.
+    /// </summary>
     public class SimpleScriptTagHandler
     {
         static Regex _rTag = new Regex( @"^go(\s+|$)|(?<!^\s*--.*)\s*--\[(?<1>(=/?)?[a-z]{3,})(\s+(?<2>\w+)\s*)?]\s*", RegexOptions.Multiline | RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant | RegexOptions.Compiled );
@@ -123,6 +126,10 @@ namespace CK.SqlServer
             public bool IsScriptTag { get { return Label != null; } }
         }
 
+        /// <summary>
+        /// Initializes a new <see cref="SimpleScriptTagHandler"/> on a script.
+        /// </summary>
+        /// <param name="script"></param>
         public SimpleScriptTagHandler( string script )
         {
             if( script == null ) throw new ArgumentNullException( "script" );
@@ -132,10 +139,7 @@ namespace CK.SqlServer
         /// <summary>
         /// Gets the original script (the  constructor parameter but trimmed).
         /// </summary>
-        public string OriginalScript
-        {
-            get { return _text; }
-        }
+        public string OriginalScript => _text; 
 
         /// <summary>
         /// Processes the script: <see cref="SplitScript"/> must be called to retrieve the script parts.
@@ -160,10 +164,7 @@ namespace CK.SqlServer
         /// <summary>
         /// Gets the number of scripts (available after a call to <see cref="Expand"/>).
         /// </summary>
-        public int ScriptCount
-        {
-            get { return _nbScripts; }
-        }
+        public int ScriptCount => _nbScripts; 
 
         /// <summary>
         /// Gets the list of expanded <see cref="Script"/> objects.

@@ -19,11 +19,21 @@ namespace CK.SqlServer
     [Serializable]
     public class SqlDetailedException : Exception
     {
+        /// <summary>
+        /// Initializes a new <see cref="SqlDetailedException"/> on an inner <see cref="SqlException"/>.
+        /// </summary>
+        /// <param name="message">Message for this exception.</param>
+        /// <param name="ex">Inner exception.</param>
         public SqlDetailedException( string message, SqlException ex )
             : base( message, ex )
         {
         }
 
+        /// <summary>
+        /// Serialization support.
+        /// </summary>
+        /// <param name="info">The serialization info.</param>
+        /// <param name="c">The context.</param>
         protected SqlDetailedException( SerializationInfo info, StreamingContext c )
             : base( info, c )
         {

@@ -124,10 +124,6 @@
       <Project>{db108ff8-42a4-4787-92c2-2d5a4daab85e}</Project>
       <Name>CK.StObj.Runtime</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\SqlZonePackage.Runtime\SqlZonePackage.Runtime.csproj">
-      <Project>{b48c03f8-2273-4bc3-a1bf-43bd6ad5b7e9}</Project>
-      <Name>SqlZonePackage.Runtime</Name>
-    </ProjectReference>
     <ProjectReference Include="..\CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj">
       <Project>{c9bcbea7-e5e9-4685-b976-4a6e85af4453}</Project>
       <Name>CK.DB.Tests.NUnit</Name>
@@ -139,6 +135,10 @@
     <ProjectReference Include="..\CK.SqlServer.Setup.Engine.Tests.Model\SqlActorPackage.Runtime\SqlActorPackage.Runtime.csproj">
       <Project>{e03b0333-1607-47c6-b6bf-d21e4489f659}</Project>
       <Name>SqlActorPackage.Runtime</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CK.SqlServer.Setup.Engine.Tests.Model\SqlZonePackage.Runtime\SqlZonePackage.Runtime.csproj">
+      <Project>{b48c03f8-2273-4bc3-a1bf-43bd6ad5b7e9}</Project>
+      <Name>SqlZonePackage.Runtime</Name>
     </ProjectReference>
     <ProjectReference Include="..\CK.SqlServer.Setup.Engine.Tests.Model\SqlZonePackage\SqlZonePackage.csproj">
       <Project>{3ff4bf4a-3a28-4ad6-bff1-e87f11124e31}</Project>

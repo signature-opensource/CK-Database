@@ -19,18 +19,9 @@ namespace CK.Setup
     /// All properties are optional (except <see cref="IContextLocNaming.FullName">FullName</see>, see remarks) and are mere strings.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// This captures information that can define (or partialy define) a dependent item (or be used to define/compose a dependent item) without beeing itself a <see cref="IDependentItem"/>
+    /// This captures information that can define (or partialy define) a dependent item (or be used *
+    /// to define/compose a dependent item) without beeing itself a <see cref="IDependentItem"/>
     /// nor a <see cref="IVersionedItem"/>.
-    /// </para>
-    /// <para>
-    /// It seems coherent to consider FullName a nullable (ie. optional) property like the others since such proto item can be used as a partial definition. 
-    /// Actually it is not nullable in order to extend from <see cref="IContextLocNaming"/> naming interface that requires its <see cref="IContextLocNaming.FullName"/> (and Name) to be not null.
-    /// </para>
-    /// <para>
-    /// Extending IContextLocName makes this proto item simpler to understand and easier to work with.
-    /// This should not be an issue (one can use a special FullName marker like "*" or "?" to handle this case - String.Empty may perfectly do the job if it has no semantics in the system).
-    /// </para>
     /// </remarks>
     public interface ISetupObjectProtoItem
     {

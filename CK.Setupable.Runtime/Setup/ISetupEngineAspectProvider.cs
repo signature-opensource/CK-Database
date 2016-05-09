@@ -22,7 +22,7 @@ namespace CK.Setup
         /// </summary>
         /// <typeparam name="T">Type of the aspect to obtain.</typeparam>
         /// <param name="required">False to silently return null instead of throwing an exception if the aspect can not be found.</param>
-        /// <returns>The first compatible aspect (may be null if <param name="required" is false).</returns>
+        /// <returns>The first compatible aspect (may be null if <param name="required"/> is false).</returns>
         T GetSetupEngineAspect<T>( bool required = true ) where T : class;
     }
 }

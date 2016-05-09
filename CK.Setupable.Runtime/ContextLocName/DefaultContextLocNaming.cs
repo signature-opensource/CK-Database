@@ -200,7 +200,7 @@ namespace CK.Core
         #region TryParse
 
         /// <summary>
-        /// Extracts Context, Location &amp; Name informatin from a given string: [context]location^name. 
+        /// Extracts Context, Location &amp; Name information from a given string: [context]location^name. 
         /// When no context nor location exists, they are null and name is the original unchanged string.
         /// </summary>
         /// <param name="input">The string to parse. Can not be null.</param>
@@ -214,6 +214,17 @@ namespace CK.Core
             return DoTryParse( input, 0, input.Length, out context, out location, out name );
         }
 
+        /// <summary>
+        /// Extracts Context, Location &amp; Name information from a given string starting at a position: 
+        /// [context]location^name. When no context nor location exists, they are null and name is the 
+        /// original unchanged string.
+        /// </summary>
+        /// <param name="input">The string to parse. Can not be null.</param>
+        /// <param name="startIndex">Starting index to consider in the input string.</param>
+        /// <param name="context">Output context if found. Null if not found.</param>
+        /// <param name="location">Output location if found. Null if not found.</param>
+        /// <param name="name">Output name. Never null.</param>
+        /// <returns>True on success, false on error (context, location are null and name is empty in this case).</returns>
         public static bool TryParse( string input, int startIndex, out string context, out string location, out string name )
         {
             if( input == null ) throw new ArgumentNullException( "input" );
@@ -221,6 +232,18 @@ namespace CK.Core
             return DoTryParse( input, startIndex, input.Length - startIndex, out context, out location, out name );
         }
 
+        /// <summary>
+        /// Extracts Context, Location &amp; Name information from a segment of a given string: 
+        /// [context]location^name. When no context nor location exists, they are null and name is the 
+        /// original unchanged string.
+        /// </summary>
+        /// <param name="input">The string to parse. Can not be null.</param>
+        /// <param name="startIndex">Starting index to consider in the input string.</param>
+        /// <param name="count">Number of characters to consier.</param>
+        /// <param name="context">Output context if found. Null if not found.</param>
+        /// <param name="location">Output location if found. Null if not found.</param>
+        /// <param name="name">Output name. Never null.</param>
+        /// <returns>True on success, false on error (context, location are null and name is empty in this case).</returns>
         public static bool TryParse( string input, int startIndex, int count, out string context, out string location, out string name )
         {
             if( input == null ) throw new ArgumentNullException( "input" );

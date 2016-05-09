@@ -7,8 +7,8 @@
     <ProjectGuid>{E8682506-4230-464A-A707-C092A82E76D8}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Transform.Tests</RootNamespace>
-    <AssemblyName>Transform.Tests</AssemblyName>
+    <RootNamespace>SqlTransform.Tests</RootNamespace>
+    <AssemblyName>SqlTransform.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -82,7 +82,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DBSetup.cs" />
-    <Compile Include="TransformTests.cs" />
+    <Compile Include="SqlTransformTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

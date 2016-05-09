@@ -50,7 +50,7 @@ namespace CK.SqlServer
         /// </summary>
         /// <param name="connectionString">The connection string.</param>
         /// <param name="cmd">The command to execute.</param>
-        /// <param name="resultBuilder">Result object builder.</param><
+        /// <param name="resultBuilder">Result object builder.</param>
         /// <returns>A task of the result.</returns>
         Task<T> ExecuteNonQueryAsyncTyped<T>( string connectionString, SqlCommand cmd, Func<SqlCommand, T> resultBuilder );
 
