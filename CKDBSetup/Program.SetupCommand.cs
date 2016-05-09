@@ -6,9 +6,7 @@ using System.Reflection;
 using CK.Core;
 using CK.Setup;
 using Microsoft.Extensions.CommandLineUtils;
-#if !CKDBLEGACY
 using CK.Text;
-#endif
 
 namespace CKDBSetup
 {
