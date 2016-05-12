@@ -42,4 +42,5 @@ namespace CK.Core
         /// <param name="postAction">Action to execute.</param>
         void PushFinalAction( Action<IDynamicAssembly> postAction );
     }
+
 }

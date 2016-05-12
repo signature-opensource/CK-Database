@@ -41,35 +41,17 @@ namespace CK.Core
             _type = t;
         }
 
-        public IContextualStObjMap Context
-        {
-            get { return _context; }
-        }
+        public IContextualStObjMap Context => _context; 
 
-        public Type ObjectType
-        {
-            get { return _type; }
-        }
+        public Type ObjectType => _type; 
 
-        public IStObj Generalization
-        {
-            get { return _generalization; }
-        }
+        public IStObj Generalization => _generalization; 
 
-        public IStObj Specialization
-        {
-            get { return _specialization; }
-        }
+        public IStObj Specialization => _specialization; 
 
-        public IStObj LeafSpecialization
-        {
-            get { return _leafSpecialization; }
-        }
+        public IStObj LeafSpecialization => _leafSpecialization; 
 
-        public int CacheIndex
-        {
-            get { return _cacheIndex; }
-        }
+        public int CacheIndex => _cacheIndex; 
 
         internal void Initialize( BinaryReader r )
         {
@@ -89,7 +71,8 @@ namespace CK.Core
                 {
                     _constructParametersIndex[i] = r.ReadInt32();
                 }
-                _construct = _type.GetMethod( "Construct", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly );
+                Type actualType = _type.Namespace != "<CK>" ? _type : _type.BaseType;
+                _construct = actualType.GetMethod( "Construct", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly );
             }
             _preConstruct = ReadPropertySetters( r );
             if( _specialization == null ) _postBuild = ReadPropertySetters( r );

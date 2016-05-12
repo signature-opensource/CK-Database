@@ -232,7 +232,7 @@ namespace CK.Core
         {
             TypeAttributes tA = TypeAttributes.Class | TypeAttributes.Public;
             if( finalImplementation ) tA |= TypeAttributes.Sealed;
-            TypeBuilder b = assembly.ModuleBuilder.DefineType( current.Name + assembly.NextUniqueNumber(), tA, current );
+            TypeBuilder b = assembly.ModuleBuilder.DefineType( assembly.AutoNextTypeName( current.Name ), tA, current );
             // Relayed constructors replicates all their potential attributes (included attributes on parameters).
             b.DefinePassThroughConstructors( c => c.Attributes|MethodAttributes.Public );
             bool hasFatal = false;

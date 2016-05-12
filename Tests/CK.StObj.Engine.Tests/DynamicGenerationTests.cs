@@ -121,7 +121,7 @@ namespace CK.StObj.Engine.Tests
                 }
             }
 
-            public class ASpec : A
+            public abstract class ASpec : A
             {
                 [StObjProperty]
                 new public string StObjPower { get; set; }

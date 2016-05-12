@@ -110,41 +110,29 @@ namespace CK.Core
         /// <summary>
         /// Gets the name of the dll (ends with '.dll') if it must be eventually saved, otherwise null.
         /// </summary>
-        public string SaveFileName
-        {
-            get { return _saveFileName; }
-        }
+        public string SaveFileName => _saveFileName; 
 
         /// <summary>
         /// Gets the full path of the dll if it must be eventually saved, otherwise null.
         /// </summary>
-        public string SaveFilePath
-        {
-            get { return _saveFilePath; }
-        }
+        public string SaveFilePath => _saveFilePath; 
             
         /// <summary>
         /// Gets the <see cref="ModuleBuilder"/> for this <see cref="DynamicAssembly"/>.
         /// </summary>
-        public ModuleBuilder ModuleBuilder
-        {
-            get { return _moduleBuilder; }
-        }
+        public ModuleBuilder ModuleBuilder => _moduleBuilder; 
 
         /// <summary>
         /// Provides a new unique number that can be used for generating unique names inside this dynamic assembly.
         /// </summary>
         /// <returns>A unique number.</returns>
-        public string NextUniqueNumber()
-        {
-            return Interlocked.Increment( ref _typeID ).ToString();
-        }
+        public string NextUniqueNumber() => Interlocked.Increment( ref _typeID ).ToString();
 
         /// <summary>
         /// Gets a shared dictionary associated to the dynamic assembly. 
         /// Methods that generate code can rely on this to store shared information as required by their generation process.
         /// </summary>
-        public IDictionary Memory { get { return _memory; } }
+        public IDictionary Memory => _memory;
 
         /// <summary>
         /// Pushes an action that will be executed before the generation of the final assembly: use this to 
