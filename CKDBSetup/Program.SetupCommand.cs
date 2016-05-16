@@ -5,8 +5,8 @@ using System.Linq;
 using System.Reflection;
 using CK.Core;
 using CK.Setup;
-using CK.Text;
 using Microsoft.Extensions.CommandLineUtils;
+using CK.Text;
 
 namespace CKDBSetup
 {
