@@ -227,7 +227,6 @@ namespace CK.Core
             return t;
         }
 
-
         private Type DoCreateType( IActivityMonitor monitor, IDynamicAssembly assembly, Type current, bool finalImplementation )
         {
             TypeAttributes tA = TypeAttributes.Class | TypeAttributes.Public;

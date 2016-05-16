@@ -15,7 +15,7 @@ It contains attributes and basic objects that enables StObj implementation to be
 </description>
     <language>en-US</language>
     <dependencies>
-      <dependency id="CK.ActivityMonitor.StandardSender" version="5.0.0-e" />
+      <dependency id="CK.ActivityMonitor.StandardSender" version="5.0.0-e1" />
     </dependencies>
   </metadata>
   <files>

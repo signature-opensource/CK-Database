@@ -15,7 +15,7 @@ CK.SqlServer.Setup.Runtime contains objects that generate StObj (like SqlTable o
     <language>en-US</language>
     <dependencies>
       
-      <dependency id="CK.SqlServer.Parser.Model" version="3.0.0-a" />
+      <dependency id="CK.SqlServer.Parser.Model" version="3.0.0-g" />
 
       <dependency id="CK.SqlServer.Core" version="$version$" />
 

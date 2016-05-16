@@ -138,7 +138,7 @@ namespace CK.Core
         /// Pushes an action that will be executed before the generation of the final assembly: use this to 
         /// create final type from a <see cref="TypeBuilder"/> or to execute any action that must be done at the end 
         /// of the generation process.
-        /// An action can be pushed at any moment: a pushed action can push another action.
+        /// An action can be pushed at any moment and a pushed action can push another action.
         /// </summary>
         /// <param name="postAction">Action to execute.</param>
         public void PushFinalAction( Action<IDynamicAssembly> postAction )

@@ -36,27 +36,27 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CK.ActivityMonitor, Version=5.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\CK.ActivityMonitor.5.0.0-e\lib\net45\CK.ActivityMonitor.dll</HintPath>
+      <HintPath>..\..\..\packages\CK.ActivityMonitor.5.0.0-e01\lib\net45\CK.ActivityMonitor.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="CK.ActivityMonitor.StandardSender, Version=0.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\CK.ActivityMonitor.StandardSender.5.0.0-e\lib\net45\CK.ActivityMonitor.StandardSender.dll</HintPath>
+      <HintPath>..\..\..\packages\CK.ActivityMonitor.StandardSender.5.0.0-e01\lib\net45\CK.ActivityMonitor.StandardSender.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="CK.Core, Version=5.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\CK.Core.5.0.0-e\lib\net45\CK.Core.dll</HintPath>
+      <HintPath>..\..\..\packages\CK.Core.5.0.0-e01\lib\net45\CK.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="CK.SqlServer.Parser, Version=5.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\CK.SqlServer.Parser.5.0.0-a06\lib\net45\CK.SqlServer.Parser.dll</HintPath>
+      <HintPath>..\..\..\packages\CK.SqlServer.Parser.5.0.0-a07\lib\net45\CK.SqlServer.Parser.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="CK.SqlServer.Parser.Model, Version=3.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\CK.SqlServer.Parser.Model.3.0.0-a\lib\net45\CK.SqlServer.Parser.Model.dll</HintPath>
+      <HintPath>..\..\..\packages\CK.SqlServer.Parser.Model.3.0.0-g\lib\net45\CK.SqlServer.Parser.Model.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="CK.Text, Version=1.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\CK.Text.5.0.0-e\lib\net45\CK.Text.dll</HintPath>
+      <HintPath>..\..\..\packages\CK.Text.5.0.0-e01\lib\net45\CK.Text.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">

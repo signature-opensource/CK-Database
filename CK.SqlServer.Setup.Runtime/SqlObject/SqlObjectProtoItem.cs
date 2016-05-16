@@ -100,10 +100,9 @@ namespace CK.SqlServer.Setup
         {
             try
             {
-                ISqlServerStoredProcedure sp = null;
-                var error = parser.ParseStoredProcedure( FullOriginalText, out sp );
-                error.LogOnError( monitor );
-                return new SqlProcedureItem( this, sp );
+                var r = parser.ParseStoredProcedure( FullOriginalText );
+                if( r.IsError ) r.LogOnError( monitor );
+                return new SqlProcedureItem( this, r.Result );
             }
             catch( Exception ex )
             {
@@ -117,11 +116,11 @@ namespace CK.SqlServer.Setup
 
         ISqlServerObject SafeParse( ISqlServerParser parser, IActivityMonitor monitor ) 
         {
-            ISqlServerObject parsed = null;
             try
             {
-                var error = parser.ParseObject( FullOriginalText, out parsed );
-                error.LogOnError( monitor );
+                var r = parser.ParseObject( FullOriginalText );
+                if( r.IsError ) r.LogOnError( monitor );
+                return r.Result;
             }
             catch( Exception ex )
             {
@@ -129,8 +128,8 @@ namespace CK.SqlServer.Setup
                 {
                     monitor.Info().Send( FullOriginalText );
                 }
+                return null;
             }
-            return parsed;
         }
 
         public SqlObjectItem CreateItem( ISqlServerParser parser, IActivityMonitor monitor, bool defaultMissingDependencyIsError, SqlPackageBaseItem package = null )
