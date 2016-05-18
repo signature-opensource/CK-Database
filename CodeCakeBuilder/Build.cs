@@ -140,13 +140,21 @@ namespace CodeCake
                             }
                         }
                     }
-                    if( gitInfo.IsValidRelease && gitInfo.PreReleaseName == "" )
+                    if( gitInfo.IsValidRelease )
                     {
-                        PushNuGetPackages( "NUGET_API_KEY", "https://www.nuget.org/api/v2/package", nugetPackages );
+                        if( gitInfo.PreReleaseName == "" || gitInfo.PreReleaseName == "rc" )
+                        {
+                            PushNuGetPackages( "NUGET_API_KEY", "https://www.nuget.org/api/v2/package", nugetPackages );
+                        }
+                        else
+                        {
+                            // An alpha, beta, delta, epsilon, gamma, kappa, prerelease goes to invenietis-prerelease.
+                            PushNuGetPackages( "MYGET_PRERELEASE_API_KEY", "https://www.myget.org/F/invenietis-prerelease/api/v2/package", nugetPackages );
+                        }
                     }
                     else
                     {
-                        Debug.Assert( gitInfo.IsValidCIBuild || gitInfo.PreReleaseName != "" );
+                        Debug.Assert( gitInfo.IsValidCIBuild );
                         PushNuGetPackages( "MYGET_EXPLORE_API_KEY", "https://www.myget.org/F/invenietis-explore/api/v2/package", nugetPackages );
                     }
                 } );
