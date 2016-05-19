@@ -12,7 +12,7 @@ namespace CKDBSetup
 {
     static partial class Program
     {
-        private static void DBAnalyseCommand( CommandLineApplication c )
+        private static void DBAnalyzeCommand( CommandLineApplication c )
         {
             c.FullName = c.Parent.FullName;
             c.Description = "Analyses a SQL Server database from a connection string.";
@@ -89,7 +89,10 @@ namespace CKDBSetup
                                         if( result.IsError )
                                         {
                                             result.LogOnError( monitor );
-                                            monitor.Trace().Send( fullBody );
+                                            using( monitor.OpenTrace().Send( "Full text:" ) )
+                                            {
+                                                monitor.Trace().Send( fullBody );
+                                            }
                                         }
                                         else monitor.Trace().Send( "Successfuly parsed: " + result.Result.ToStringSignature( true ) );
                                     }

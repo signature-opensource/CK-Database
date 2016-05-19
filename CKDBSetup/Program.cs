@@ -33,7 +33,7 @@ namespace CKDBSetup
             app.Command( "setup", SetupCommand );
             app.Command( "backup", BackupCommand );
             app.Command( "restore", RestoreCommand );
-            app.Command( "db-analyse", DBAnalyseCommand );
+            app.Command( "db-analyze", DBAnalyzeCommand );
 
             app.OnExecute( () =>
             {
