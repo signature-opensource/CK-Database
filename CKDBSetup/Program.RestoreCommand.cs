@@ -71,7 +71,7 @@ namespace CKDBSetup
                 // No backup path given
                 if( string.IsNullOrEmpty( targetDatabaseName ) )
                 {
-                    Error.WriteLine( "\nError: The connection string does not point to a database." );
+                    Error.WriteLine( "\nError: The connection string does not specify a database (InitialCatalog)." );
                     c.ShowHelp();
                     return EXIT_ERROR;
                 }
