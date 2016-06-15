@@ -13,7 +13,7 @@ CK.SqlServer.Core contains helpers for Sql Server and ADO.Net.
 </description>
     <language>en-US</language>
     <dependencies>
-      <dependency id="CK.ActivityMonitor.StandardSender" version="5.0.0-e01" />
+      <dependency id="CK.ActivityMonitor.StandardSender" version="5.0.0-k" />
     </dependencies>
   </metadata>
   <files>

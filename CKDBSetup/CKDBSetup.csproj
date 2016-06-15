@@ -42,19 +42,19 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CK.ActivityMonitor, Version=5.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.ActivityMonitor.5.0.0-e01\lib\net45\CK.ActivityMonitor.dll</HintPath>
+      <HintPath>..\packages\CK.ActivityMonitor.5.0.0-k\lib\net45\CK.ActivityMonitor.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="CK.ActivityMonitor.StandardSender, Version=0.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.ActivityMonitor.StandardSender.5.0.0-e01\lib\net45\CK.ActivityMonitor.StandardSender.dll</HintPath>
+      <HintPath>..\packages\CK.ActivityMonitor.StandardSender.5.0.0-k\lib\net45\CK.ActivityMonitor.StandardSender.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="CK.Core, Version=5.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.Core.5.0.0-e01\lib\net45\CK.Core.dll</HintPath>
+      <HintPath>..\packages\CK.Core.5.0.0-k\lib\net45\CK.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="CK.SqlServer.Parser, Version=5.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.SqlServer.Parser.5.0.0-a09\lib\net45\CK.SqlServer.Parser.dll</HintPath>
+      <HintPath>..\packages\CK.SqlServer.Parser.5.0.0-b\lib\net45\CK.SqlServer.Parser.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="CK.SqlServer.Parser.Model, Version=3.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
@@ -62,7 +62,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="CK.Text, Version=1.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.Text.5.0.0-e01\lib\net45\CK.Text.dll</HintPath>
+      <HintPath>..\packages\CK.Text.5.0.0-k\lib\net45\CK.Text.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Extensions.CommandLineUtils, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
@@ -159,11 +159,11 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Fody.1.30.0-beta01\build\dotnet\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.1.30.0-beta01\build\dotnet\Fody.targets'))" />
     <Error Condition="!Exists('..\packages\Costura.Fody.2.0.0-beta0018\build\Costura.Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Costura.Fody.2.0.0-beta0018\build\Costura.Fody.targets'))" />
-    <Error Condition="!Exists('..\packages\SimpleGitVersionTask.0.16.0\build\SimpleGitVersionTask.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SimpleGitVersionTask.0.16.0\build\SimpleGitVersionTask.targets'))" />
+    <Error Condition="!Exists('..\packages\SimpleGitVersionTask.0.17.0\build\SimpleGitVersionTask.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SimpleGitVersionTask.0.17.0\build\SimpleGitVersionTask.targets'))" />
   </Target>
   <Import Project="..\packages\Fody.1.30.0-beta01\build\dotnet\Fody.targets" Condition="Exists('..\packages\Fody.1.30.0-beta01\build\dotnet\Fody.targets')" />
   <Import Project="..\packages\Costura.Fody.2.0.0-beta0018\build\Costura.Fody.targets" Condition="Exists('..\packages\Costura.Fody.2.0.0-beta0018\build\Costura.Fody.targets')" />
-  <Import Project="..\packages\SimpleGitVersionTask.0.16.0\build\SimpleGitVersionTask.targets" Condition="Exists('..\packages\SimpleGitVersionTask.0.16.0\build\SimpleGitVersionTask.targets')" />
+  <Import Project="..\packages\SimpleGitVersionTask.0.17.0\build\SimpleGitVersionTask.targets" Condition="Exists('..\packages\SimpleGitVersionTask.0.17.0\build\SimpleGitVersionTask.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
