@@ -17,7 +17,7 @@ namespace CK.Setup
     {
         readonly SetupObjectItemAttributeBase _attribute;
         ISetupEngineAspectProvider _aspectProvider;
-        List<BestInitializer> _theBest;
+        List<BestCreator> _theBest;
 
         protected SetupObjectItemAttributeImplBase( SetupObjectItemAttributeBase a )
         {
@@ -59,11 +59,11 @@ namespace CK.Setup
         /// This is used both for the key and the value.
         /// This secures the key in the IStObjSetupDynamicInitializerState.Memory dictionary: only an internal BestInitializer can be equal to a BestInitializer.
         /// </summary>
-        internal class BestInitializer
+        internal class BestCreator
         {
             int _hash;
 
-            public BestInitializer( IContextLocNaming name )
+            public BestCreator( IContextLocNaming name )
             {
                 Name = name;
                 _hash = name.FullName.GetHashCode();
@@ -71,7 +71,7 @@ namespace CK.Setup
 
             public override bool Equals( object obj )
             {
-                BestInitializer x = obj as BestInitializer;
+                BestCreator x = obj as BestCreator;
                 return x != null && x.Name.FullName == Name.FullName;
             }
 
@@ -82,11 +82,11 @@ namespace CK.Setup
 
             public readonly IContextLocNaming Name;
 
-            public IStObjSetupDynamicInitializer Initializer;
+            public IStObjSetupDynamicInitializer Creator;
 
             public SetupObjectItem Item;
 
-            public IStObjSetupDynamicInitializer FirstInitializer;
+            public IStObjSetupDynamicInitializer FirstCreator;
 
             public SetupObjectItem FirstItem;
 
@@ -111,9 +111,9 @@ namespace CK.Setup
                         }
                         else
                         {
-                            if( _theBest == null ) _theBest = new List<BestInitializer>();
-                            var meBest = AssumeBestInitializer( state, name, this );
-                            if( meBest.FirstInitializer == this )
+                            if( _theBest == null ) _theBest = new List<BestCreator>();
+                            var meBest = AssumeBestCreator( state, name, this );
+                            if( meBest.FirstCreator == this )
                             {
                                 meBest.FirstItem = CreateSetupObjectItem( state.Monitor, item, stObj, name );
                                 meBest.LastPackagesSeen = item;
@@ -126,34 +126,34 @@ namespace CK.Setup
             }
             if( _theBest != null )
             {
-                state.PushAction( DynamicItemInitializeAfterFollowing );
+                state.PushAction( DynamicItemCreateAfterFollowing );
             }
         }
 
-        internal static BestInitializer AssumeBestInitializer( IStObjSetupDynamicInitializerState state, IContextLocNaming name, IStObjSetupDynamicInitializer initializer )
+        internal static BestCreator AssumeBestCreator( IStObjSetupDynamicInitializerState state, IContextLocNaming name, IStObjSetupDynamicInitializer candidate )
         {
-            var meBest = new BestInitializer( name );
-            BestInitializer theBest = (BestInitializer)state.Memory[meBest];
+            var meBest = new BestCreator( name );
+            BestCreator theBest = (BestCreator)state.Memory[meBest];
             if( theBest == null )
             {
                 state.Memory[meBest] = theBest = meBest;
-                meBest.FirstInitializer = initializer;
+                meBest.FirstCreator = candidate;
             }
             Debug.Assert( theBest.Name.FullName == name.FullName );
-            // Override any previous configurations: initializer is the best so far.
-            theBest.Initializer = initializer;
+            // Override any previous configurations: candidate is the best so far.
+            theBest.Creator = candidate;
             return theBest;
         }
 
-        void DynamicItemInitializeAfterFollowing( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjResult stObj )
+        void DynamicItemCreateAfterFollowing( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjResult stObj )
         {
             foreach( var best in _theBest )
             {
                 // If we are the best, our resource wins.
-                if( best.Initializer == this )
+                if( best.Creator == this )
                 {
                     Debug.Assert( best.Item == null, "We are the only winner (the last one)." );
-                    if( best.FirstInitializer == this )
+                    if( best.FirstCreator == this )
                     {
                         best.Item = best.FirstItem;
                     }

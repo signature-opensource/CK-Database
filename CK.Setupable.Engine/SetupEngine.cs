@@ -126,22 +126,20 @@ namespace CK.Setup
                     _monitor.Info().Send( "RunningMode = InitializeAspectsOnly complete." );
                     return true;
                 }
-                IEnumerable<ISetupItem> stObjItems = StObjBuilder.SafeBuildStObj( this, _runtimeBuilder, _configurator );
-                if( stObjItems == null ) return false;
-                if( _config.RunningMode == SetupEngineRunningMode.StObjLayerOnly )
-                {
-                    _monitor.Info().Send( "RunningMode = StObjLayerOnly complete." );
-                    return true;
-                }
+                var buildResult = StObjBuilder.SafeBuildStObj( this, _runtimeBuilder, _configurator );
+                if( buildResult == null ) return false;
                 var path = _monitor.Output.RegisterClient( new ActivityMonitorPathCatcher() );
                 ISetupSessionMemory m = null;
                 try
                 {
                     m = _startConfiguration.SetupSessionMemoryProvider.StartSetup();
-                    if( DoRun( items, stObjItems, m ) )
+                    if( DoRun( items, buildResult.SetupItems, m ) )
                     {
                         _startConfiguration.SetupSessionMemoryProvider.StopSetup( null );
-                        return true;
+                        if( buildResult.GenerateFinalAssembly( _monitor ) )
+                        {
+                            return true;
+                        }
                     }
                 }
                 catch( Exception ex )
@@ -183,11 +181,6 @@ namespace CK.Setup
                         return false;
                     }
                     _monitor.CloseGroup( String.Format( "{0} Setup items registered.", r.SortResult.SortedItems.Count ) );
-                    if( _config.RunningMode == SetupEngineRunningMode.StObjLayerOnly )
-                    {
-                        _monitor.Info().Send( "RunningMode = StObjLayerOnly complete." );
-                        return true;
-                    }
                 }
                 using( _monitor.OpenInfo().Send( "Init step." ) )
                 {

@@ -31,7 +31,7 @@ namespace CK.Setup
             /// <summary>
             /// Gets the ordered <see cref="IStObjResult"/> list.
             /// </summary>
-            public readonly IReadOnlyList<IStObjResult> OrderedStObjs;
+            public IReadOnlyList<IStObjResult> OrderedStObjs => _result.OrderedStObjs;
 
             /// <summary>
             /// Gets all the <see cref="ISetupItem"/> for the StObj.
@@ -55,7 +55,8 @@ namespace CK.Setup
                         finalObjects = _result.GenerateFinalAssembly( monitor, _runtimeBuilder, _configuration );
                         Debug.Assert( finalObjects != null || hasError, "finalObjects == null ==> An error has been logged." );
                     }
-                    if( finalObjects != null )
+                    if( finalObjects == null ) return false;
+                    if( injectFinalObjectAccessor )
                     {
                         bool injectDone;
                         using( monitor.OpenInfo().Send( "Injecting final objects mapper." ) )
@@ -65,12 +66,12 @@ namespace CK.Setup
                         }
                         return injectDone;
                     }
-                    return false;
+                    return true;
                 }
             }
         }
 
-        static public IEnumerable<ISetupItem> SafeBuildStObj( SetupEngine engine, IStObjRuntimeBuilder runtimeBuilder, SetupEngineConfigurator configurator )
+        static public BuildStObjResult SafeBuildStObj( SetupEngine engine, IStObjRuntimeBuilder runtimeBuilder, SetupEngineConfigurator configurator )
         {
             var monitor = engine.Monitor;
             var config = engine.Configuration.StObjEngineConfiguration;
@@ -109,29 +110,7 @@ namespace CK.Setup
                         }
                         if( setupItems != null )
                         {
-                            bool hasError2 = false;
-                            using( monitor.OnError( () => hasError2 = true ) )
-                            {
-                                StObjContextRoot finalObjects;
-                                using( monitor.OpenInfo().Send( "Generating StObj dynamic assembly." ) )
-                                {
-                                    finalObjects = result.GenerateFinalAssembly( monitor, runtimeBuilder, config.FinalAssemblyConfiguration );
-                                    Debug.Assert( finalObjects != null || hasError2, "finalObjects == null ==> An error has been logged." );
-                                }
-                                if( finalObjects != null )
-                                {
-                                    bool injectDone;
-                                    using( monitor.OpenInfo().Send( "Injecting final objects mapper." ) )
-                                    {
-                                        injectDone = result.InjectFinalObjectAccessor( monitor, finalObjects );
-                                        Debug.Assert( injectDone || hasError2, "inject failed ==> An error has been logged." );
-                                    }
-                                    if( injectDone )
-                                    {
-                                        return setupItems;
-                                    }
-                                }
-                            }
+                            return new BuildStObjResult( result, setupItems, runtimeBuilder, config.FinalAssemblyConfiguration );
                         }
                     }
                 }

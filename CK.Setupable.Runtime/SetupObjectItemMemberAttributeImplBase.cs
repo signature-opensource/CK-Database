@@ -19,7 +19,7 @@ namespace CK.Setup
         ICKCustomAttributeTypeMultiProvider _owner;
         MemberInfo _member;
         ISetupEngineAspectProvider _aspectProvider;
-        SetupObjectItemAttributeImplBase.BestInitializer _theBest;
+        SetupObjectItemAttributeImplBase.BestCreator _theBest;
         
         /// <summary>
         /// Name of the object.
@@ -81,8 +81,8 @@ namespace CK.Setup
                 state.Monitor.Error().Send( "Invalid object name '{0}' in {3} attribute of '{1}' for '{2}'.", ObjectName, Member.Name, item.FullName, Attribute.GetShortTypeName() );
                 return;
             }
-            _theBest = SetupObjectItemAttributeImplBase.AssumeBestInitializer( state, name, this );
-            if( _theBest.FirstInitializer == this )
+            _theBest = SetupObjectItemAttributeImplBase.AssumeBestCreator( state, name, this );
+            if( _theBest.FirstCreator == this )
             {
                 _theBest.FirstItem = CreateSetupObjectItem( state.Monitor, item, stObj, name );
                 _theBest.LastPackagesSeen = item;
@@ -93,9 +93,9 @@ namespace CK.Setup
         void DynamicItemInitializeAfterFollowing( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjResult stObj )
         {
             // If we are the best, our resource wins.
-            if( _theBest.Initializer == this )
+            if( _theBest.Creator == this )
             {
-                Debug.Assert( _theBest.FirstInitializer != this, "We did not push any action for the first." );
+                Debug.Assert( _theBest.FirstCreator != this, "We did not push any action for the first." );
                 Debug.Assert( _theBest.Item == null, "We are the only winner." );
                 // When multiples methods exist bound to the same object, this avoids 
                 // to load the same resource multiple times: only the first occurence per package is considered.
