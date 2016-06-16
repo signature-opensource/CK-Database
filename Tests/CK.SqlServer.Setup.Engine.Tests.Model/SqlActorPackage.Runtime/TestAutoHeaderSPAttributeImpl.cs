@@ -20,7 +20,7 @@ namespace SqlActorPackage.Runtime
             get { return (TestAutoHeaderSPAttribute)base.Attribute; }
         }
 
-        protected override bool OnDriverCreated( GenericItemSetupDriver driver, IEnumerable<SqlProcedureItem> items )
+        protected override bool OnDriverCreated( SetupItemDriver driver, IEnumerable<SqlProcedureItem> items )
         {
             foreach( var sp in items )
             {

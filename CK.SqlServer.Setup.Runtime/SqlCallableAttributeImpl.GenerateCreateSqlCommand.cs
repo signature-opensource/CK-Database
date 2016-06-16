@@ -26,7 +26,7 @@ namespace CK.SqlServer.Setup
             ExecuteNonQuery = IsCall | 0
         }
 
-        private bool GenerateCreateSqlCommand( 
+        bool GenerateCreateSqlCommand( 
             IDynamicAssembly dynamicAssembly, 
             GenerationType gType, 
             IActivityMonitor monitor, 
@@ -312,7 +312,7 @@ namespace CK.SqlServer.Setup
             return nbError == 0;
         }
 
-        private static void GenerateByRefInitialization( ILGenerator g, LocalBuilder locCmd, LocalBuilder locParams, Label setValues )
+        static void GenerateByRefInitialization( ILGenerator g, LocalBuilder locCmd, LocalBuilder locParams, Label setValues )
         {
             // For ByRef SqlCommand, generates code that checks for null arguments:
             // we must create the SqlCommand in this case.
@@ -379,7 +379,7 @@ namespace CK.SqlServer.Setup
             }
         }
 
-        private static string GenerateBothSignatures( ISqlServerCallableObject sqlObject, MethodInfo m, ParameterInfo[] mParameters, IList<ParameterInfo> extraParameters )
+        static string GenerateBothSignatures( ISqlServerCallableObject sqlObject, MethodInfo m, ParameterInfo[] mParameters, IList<ParameterInfo> extraParameters )
         {
             StringBuilder b = new StringBuilder();
             b.AppendLine( sqlObject.ToStringSignature( false ) );

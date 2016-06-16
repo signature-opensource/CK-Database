@@ -179,7 +179,8 @@ namespace CK.Core
 
         /// <summary>
         /// Implements a new Type in a dynamic assembly that specializes <see cref="CurrentBaseType"/> and returns it.
-        /// On success, resulting type becomes the <see cref="LastGeneratedType"/>. Of course, implemented methods and properties are let virtual.
+        /// On success, resulting type becomes the <see cref="LastGeneratedType"/>. 
+        /// Of course, implemented methods and properties are let virtual.
         /// </summary>
         /// <param name="monitor">Logger to use.</param>
         /// <param name="assembly">Dynamic assembly.</param>
@@ -249,7 +250,7 @@ namespace CK.Core
                     {
                         try
                         {
-                            if( !m.Implement( monitor, am.Method, assembly, b, !finalImplementation ) )
+                            if( !m.Implement( monitor, am.Method, assembly, b, isVirtual: !finalImplementation ) )
                             {
                                 if( finalImplementation )
                                 {

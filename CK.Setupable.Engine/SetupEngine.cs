@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setupable.Engine\SetupCenter.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -51,34 +44,22 @@ namespace CK.Setup
         /// <summary>
         /// Gets whether this engine is running or has <see cref="Run"/> (it can run only once).
         /// </summary>
-        public bool Started
-        {
-            get { return _started; }
-        }
+        public bool Started => _started; 
 
         /// <summary>
         /// Gets the <see cref="ScriptCollector"/>.
         /// </summary>
-        public ScriptCollector Scripts
-        {
-            get { return _scripts; }
-        }
+        public ScriptCollector Scripts => _scripts; 
 
         /// <summary>
         /// Gets the monitor that should be used for the whole setup process.
         /// </summary>
-        public IActivityMonitor Monitor
-        {
-            get { return _monitor; }
-        }
+        public IActivityMonitor Monitor => _monitor; 
 
         /// <summary>
         /// Gets the configuration object of this engine.
         /// </summary>
-        public SetupEngineConfiguration Configuration
-        {
-            get { return _config; }
-        }
+        public SetupEngineConfiguration Configuration => _config; 
 
         /// <summary>
         /// Gets or sets a <see cref="SetupableConfigurator"/> that will be used.
@@ -94,13 +75,10 @@ namespace CK.Setup
         /// <summary>
         /// Gets the <see cref="SetupEngineStartConfiguration"/> object.
         /// </summary>
-        public SetupEngineStartConfiguration StartConfiguration
-        {
-            get { return _startConfiguration; }
-        }
+        public SetupEngineStartConfiguration StartConfiguration => _startConfiguration; 
 
         /// <summary>
-        /// Triggered before registration (at the beginning of <see cref="SetupCoreEngine.Register"/>).
+        /// Triggered before registration (at the beginning of <see cref="SetupCoreEngine.RegisterAndCreateDrivers"/>).
         /// This event fires before the <see cref="SetupEvent"/> (with <see cref="SetupEventArgs.Step"/> set to None), and enables
         /// registration of setup items.
         /// </summary>
@@ -117,7 +95,7 @@ namespace CK.Setup
         public event EventHandler<DriverEventArgs> DriverEvent;       
 
         /// <summary>
-        /// Executes the whole setup process (<see cref="SetupCoreEngine.Register"/>, <see cref="SetupCoreEngine.RunInit"/>, <see cref="SetupCoreEngine.RunInstall"/>, <see cref="SetupCoreEngine.RunSettle"/>).
+        /// Executes the whole setup process (<see cref="SetupCoreEngine.RegisterAndCreateDrivers"/>, <see cref="SetupCoreEngine.RunInit"/>, <see cref="SetupCoreEngine.RunInstall"/>, <see cref="SetupCoreEngine.RunSettle"/>).
         /// This is automatically called by  <see cref="StObjBuilder.SafeBuildStObj(SetupEngine, IStObjRuntimeBuilder, SetupEngineConfigurator)"/> after it has instanciating this object when using a <see cref="SetupEngineConfiguration"/>.
         /// This can be called only once.
         /// </summary>
@@ -129,7 +107,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Creates the configured aspects, resolves and builds the StObj graph and registers any number of <see cref="IDependentItem"/> and/or <see cref="IDependentItemDiscoverer"/> 
-        /// and/or <see cref="IEnumerable"/> of such objects (recursively) and executes the whole setup process (<see cref="SetupCoreEngine.Register"/>, <see cref="SetupCoreEngine.RunInit"/>, <see cref="SetupCoreEngine.RunInstall"/>, <see cref="SetupCoreEngine.RunSettle"/>).
+        /// and/or <see cref="IEnumerable"/> of such objects (recursively) and executes the whole setup process (<see cref="SetupCoreEngine.RegisterAndCreateDrivers"/>, <see cref="SetupCoreEngine.RunInit"/>, <see cref="SetupCoreEngine.RunInstall"/>, <see cref="SetupCoreEngine.RunSettle"/>).
         /// This can be called only once.
         /// </summary>
         /// <param name="items">Objects that can be <see cref="IDependentItem"/>, <see cref="IDependentItemDiscoverer"/> or both and/or <see cref="IEnumerable"/> of such objects (recursively).</param>
@@ -198,7 +176,7 @@ namespace CK.Setup
                     sorterOptions.HookOutput += _startConfiguration.DependencySorterHookOutput;
 
                     var itemsToRegister = OfTypeRecurse<ISetupItem>( items ).Concat( stObjItems );
-                    SetupCoreEngineRegisterResult r = engine.Register( itemsToRegister, items.OfType<IDependentItemDiscoverer<ISetupItem>>(), sorterOptions );
+                    SetupCoreEngineRegisterResult r = engine.RegisterAndCreateDrivers( itemsToRegister, items.OfType<IDependentItemDiscoverer<ISetupItem>>(), sorterOptions );
                     if( !r.IsValid )
                     {
                         r.LogError( _monitor );

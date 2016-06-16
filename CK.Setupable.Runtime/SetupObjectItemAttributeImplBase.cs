@@ -9,8 +9,8 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// Base implementation for <see cref="SetupObjectItemAttributeBase"/> attributes declared on a class that dynamically define 
-    /// one or more <see cref="SetupObjectItem"/>.
+    /// Base implementation for <see cref="SetupObjectItemAttributeBase"/> attributes declared on a class 
+    /// that dynamically define one or more <see cref="SetupObjectItem"/>.
     /// Multiples object names like "sUserCreate, sUserDestroy, AnotherSchema.sUserUpgrade, CK.sUserRun" can be defined.
     /// </summary>
     public abstract class SetupObjectItemAttributeImplBase : IStObjSetupDynamicInitializer
@@ -27,18 +27,12 @@ namespace CK.Setup
         /// <summary>
         /// Gets the attribute.
         /// </summary>
-        protected SetupObjectItemAttributeBase Attribute
-        {
-            get { return _attribute; }
-        }
+        protected SetupObjectItemAttributeBase Attribute => _attribute; 
 
         /// <summary>
         /// Gets the aspects provider.
         /// </summary>
-        protected ISetupEngineAspectProvider SetupEngineAspectProvider 
-        { 
-            get { return _aspectProvider; } 
-        }
+        protected ISetupEngineAspectProvider SetupEngineAspectProvider => _aspectProvider; 
 
         /// <summary>
         /// Must build the <see cref="IContextLocNaming"/> name of the future <see cref="SetupObjectItem"/> with the help of the owner object and the name in the attribute.

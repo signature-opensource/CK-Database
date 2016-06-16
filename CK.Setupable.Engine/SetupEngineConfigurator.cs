@@ -146,13 +146,13 @@ namespace CK.Setup
         /// Step n°9 - This is the last step that is not called if <see cref="SetupEngineConfiguration.RunningMode"/> is <see cref="SetupEngineRunningMode.StObjLayerOnly"/>: 
         /// the dependency graph of the setup items (StObj and/or pure <see cref="IDependentItem"/>) has been resolved, we now create the Setup Drivers for each of them that 
         /// will support the three-steps setup phasis.
-        /// Creates a (potentially configured) instance of <see cref="GenericItemSetupDriver"/> of a given <paramref name="driverType"/>.
+        /// Creates a (potentially configured) instance of <see cref="SetupItemDriver"/> of a given <paramref name="driverType"/>.
         /// This empty implementation calls <see cref="Previous"/> if it is not null, otherwise it always returns null.
         /// </summary>
         /// <param name="driverType">SetupDriver type to create.</param>
         /// <param name="info">Internal constructor information.</param>
         /// <returns>A setup driver. Null if not able to create it (a basic <see cref="Activator.CreateInstance(Type)"/> will be used to create the driver).</returns>
-        public virtual GenericItemSetupDriver CreateDriver( Type driverType, GenericItemSetupDriver.BuildInfo info )
+        public virtual SetupItemDriver CreateDriver( Type driverType, SetupItemDriver.BuildInfo info )
         {
             return _previous != null ? _previous.CreateDriver( driverType, info ) : null;
         }

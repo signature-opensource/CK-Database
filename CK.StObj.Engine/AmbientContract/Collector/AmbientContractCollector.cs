@@ -119,10 +119,7 @@ namespace CK.Core
         /// <summary>
         /// Gets the number of registered types.
         /// </summary>
-        public int RegisteredTypeCount
-        {
-            get { return _collector.Count; }
-        }
+        public int RegisteredTypeCount => _collector.Count; 
 
         /// <summary>
         /// Registers multiple types. Only classes are actually registered (the enumearation 

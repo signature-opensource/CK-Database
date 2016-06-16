@@ -94,26 +94,26 @@ namespace CK.Setup
 
         class DriverList : IDriverList
         {
-            List<GenericItemSetupDriver> _drivers;
+            List<SetupItemDriver> _drivers;
             DriverBaseList _baseList;
 
             public DriverList( DriverBaseList l )
             {
                 _baseList = l;
-                _drivers = new List<GenericItemSetupDriver>();
+                _drivers = new List<SetupItemDriver>();
             }
 
-            public GenericItemSetupDriver this[string fullName]
+            public SetupItemDriver this[string fullName]
             {
-                get { return _baseList[fullName] as GenericItemSetupDriver; }
+                get { return _baseList[fullName] as SetupItemDriver; }
             }
 
-            public GenericItemSetupDriver this[IDependentItem item]
+            public SetupItemDriver this[IDependentItem item]
             {
-                get { return _baseList[item] as GenericItemSetupDriver; }
+                get { return _baseList[item] as SetupItemDriver; }
             }
 
-            public GenericItemSetupDriver this[int index]
+            public SetupItemDriver this[int index]
             {
                 get { return _drivers[index]; }
             }
@@ -123,7 +123,7 @@ namespace CK.Setup
                 get { return _drivers.Count; }
             }
 
-            public IEnumerator<GenericItemSetupDriver> GetEnumerator()
+            public IEnumerator<SetupItemDriver> GetEnumerator()
             {
                 return _drivers.GetEnumerator();
             }
@@ -138,7 +138,7 @@ namespace CK.Setup
                 _drivers.Clear();
             }
 
-            internal void Add( GenericItemSetupDriver d )
+            internal void Add( SetupItemDriver d )
             {
                 _drivers.Add( d );
             }
@@ -149,9 +149,9 @@ namespace CK.Setup
         {
             public readonly static ISetupDriverFactory Default = new DefaultDriverfactory();
 
-            GenericItemSetupDriver ISetupDriverFactory.CreateDriver( Type type, GenericItemSetupDriver.BuildInfo info )
+            SetupItemDriver ISetupDriverFactory.CreateDriver( Type type, SetupItemDriver.BuildInfo info )
             {
-                return (GenericItemSetupDriver)Activator.CreateInstance( type, info );
+                return (SetupItemDriver)Activator.CreateInstance( type, info );
             }
         }
 
@@ -199,7 +199,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Triggered before registration (at the beginning of <see cref="Register"/>).
+        /// Triggered before registration (at the beginning of <see cref="RegisterAndCreateDrivers"/>).
         /// This event fires before the <see cref="SetupEvent"/> (with <see cref="SetupEventArgs.Step"/> set to None), and enables
         /// registration of setup items.
         /// </summary>
@@ -242,7 +242,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gives access to the ordered list of the <see cref="GenericItemSetupDriver"/>.
+        /// Gives access to the ordered list of the <see cref="SetupItemDriver"/>.
         /// </summary>
         public IDriverList Drivers
         {
@@ -281,7 +281,7 @@ namespace CK.Setup
         /// <param name="discoverers">Set of <see cref="IDependentItemDiscoverer"/>.</param>
         /// <param name="options">Optional configuration for dependency graph computation (see <see cref="DependencySorter"/> for more information).</param>
         /// <returns>A <see cref="SetupCoreEngineRegisterResult"/> that captures detailed information about the registration result.</returns>
-        public SetupCoreEngineRegisterResult Register( IEnumerable<ISetupItem> items, IEnumerable<IDependentItemDiscoverer<ISetupItem>> discoverers, DependencySorterOptions options = null )
+        public SetupCoreEngineRegisterResult RegisterAndCreateDrivers( IEnumerable<ISetupItem> items, IEnumerable<IDependentItemDiscoverer<ISetupItem>> discoverers, DependencySorterOptions options = null )
         {
             CheckState( SetupEngineState.None );
 
@@ -323,14 +323,14 @@ namespace CK.Setup
                     var reusableEvent = new DriverEventArgs( SetupStep.PreInit );
                     foreach( var item in result.SortResult.SortedItems )
                     {
-                        GenericItemSetupDriver setupItemDriver = null;
+                        SetupItemDriver setupItemDriver = null;
                         DriverBase d;
                         Type typeToCreate = null;
                         if( item.IsGroup )
                         {
                             var head = (GroupHeadSetupDriver)_allDrivers[item.HeadForGroup.FullName];
                             typeToCreate = ResolveDriverType( item );
-                            setupItemDriver = CreateSetupDriver( typeToCreate, new GenericItemSetupDriver.BuildInfo( head, item ) );
+                            setupItemDriver = CreateSetupDriver( typeToCreate, new SetupItemDriver.BuildInfo( head, item ) );
                             d = head.Group = setupItemDriver;
                         }
                         else
@@ -347,7 +347,7 @@ namespace CK.Setup
                             else
                             {
                                 typeToCreate = ResolveDriverType( item );
-                                d = setupItemDriver = CreateSetupDriver( typeToCreate, new GenericItemSetupDriver.BuildInfo( this, item, externalVersion ) );
+                                d = setupItemDriver = CreateSetupDriver( typeToCreate, new SetupItemDriver.BuildInfo( this, item, externalVersion ) );
                             }
                         }
                         Debug.Assert( d != null, "Otherwise an exception is thrown by CreateSetupDriver that will be caught as the result.UnexpectedError." );
@@ -371,7 +371,7 @@ namespace CK.Setup
                 {
                     if( !d.IsGroupHead )
                     {
-                        GenericItemSetupDriver genDriver = (GenericItemSetupDriver)d;
+                        SetupItemDriver genDriver = (SetupItemDriver)d;
                         IStObjSetupItem stObjIem  = d.Item as IStObjSetupItem;
                         if( stObjIem != null && stObjIem.StObj != null )
                         {
@@ -413,7 +413,7 @@ namespace CK.Setup
             return result;
         }
 
-        GenericItemSetupDriver CreateSetupDriver( Type typeToCreate, GenericItemSetupDriver.BuildInfo buildInfo )
+        SetupItemDriver CreateSetupDriver( Type typeToCreate, SetupItemDriver.BuildInfo buildInfo )
         {
             try
             {
@@ -447,7 +447,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// This is the second step: called after a successful call to <see cref="Register"/>.
+        /// This is the second step: called after a successful call to <see cref="RegisterAndCreateDrivers"/>.
         /// 1 - Raises the <see cref="SetupEvent"/> at step <see cref="SetupStep.Init"/>.
         ///     If a cancellation occurs, returns false.
         /// 2 - For each drivers:

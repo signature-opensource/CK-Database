@@ -40,11 +40,11 @@ namespace CK.Setup
         /// </summary>
         /// <param name="driverType">
         /// Type of the driver to use. Can be the <see cref="Type"/> itself or the Assembly Qualified Name of the type.
-        /// When null, the type of <see cref="GenericItemSetupDriver"/> is asumed.
+        /// When null, the type of <see cref="SetupItemDriver"/> is asumed.
         /// </param>
         public DynamicContainerItem( object driverType = null )
         {
-            _driverType = driverType ?? typeof( GenericItemSetupDriver );
+            _driverType = driverType ?? typeof( SetupItemDriver );
             ItemKind = DependentItemKind.Container;
         }
 
@@ -161,8 +161,8 @@ namespace CK.Setup
         /// and <see cref="Requires"/> if they are <see cref="IDependentItem"/> (and not strings).
         /// </summary>
         /// <returns>
-        /// Must return the <see cref="Type"/> of the setup driver (specialization of <see cref="GenericItemSetupDriver"/>), or its assembly qualified name.
-        /// By default, returns the type of <see cref="GenericItemSetupDriver"/>.
+        /// Must return the <see cref="Type"/> of the setup driver (specialization of <see cref="SetupItemDriver"/>), or its assembly qualified name.
+        /// By default, returns the type of <see cref="SetupItemDriver"/>.
         /// </returns>
         protected virtual object StartDependencySort()
         {

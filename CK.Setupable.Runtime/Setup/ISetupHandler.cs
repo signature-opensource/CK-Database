@@ -17,16 +17,16 @@ namespace CK.Setup
     /// </summary>
     public interface ISetupHandler
     {
-        bool Init( GenericItemSetupDriver d );
+        bool Init( SetupItemDriver d );
 
-        bool Install( GenericItemSetupDriver d );
+        bool Install( SetupItemDriver d );
 
-        bool Settle( GenericItemSetupDriver d );
+        bool Settle( SetupItemDriver d );
         
-        bool InitContent( GenericItemSetupDriver d );
+        bool InitContent( SetupItemDriver d );
 
-        bool InstallContent( GenericItemSetupDriver d );
+        bool InstallContent( SetupItemDriver d );
 
-        bool SettleContent( GenericItemSetupDriver d );
+        bool SettleContent( SetupItemDriver d );
     }
 }

@@ -55,16 +55,14 @@ namespace CK.Core
         /// Gets the last <see cref="IAutoImplementorMethod"/> that has been used to 
         /// generate the <see cref="ImplementableTypeInfo.LastGeneratedType"/>.
         /// </summary>
-        public IAutoImplementorMethod LastImplementor { get { return _last; } }
+        public IAutoImplementorMethod LastImplementor => _last; 
 
         /// <summary>
         /// Gets wether this property is waiting for an implementation: its <see cref="ImplementorToUse"/> is not null 
         /// and differs from <see cref="LastImplementor"/>.
         /// </summary>
-        public bool ExpectImplementation
-        {
-            get { return ImplementorToUse != null && ImplementorToUse != _last; }
-        }
+        public bool ExpectImplementation => ImplementorToUse != null && ImplementorToUse != _last; 
+
     }
 
 }

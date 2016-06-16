@@ -14,7 +14,7 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
-    public class SqlPackageBaseSetupDriver : GenericItemSetupDriver
+    public class SqlPackageBaseSetupDriver : SetupItemDriver
     {
         public SqlPackageBaseSetupDriver( BuildInfo info )
             : base( info ) 

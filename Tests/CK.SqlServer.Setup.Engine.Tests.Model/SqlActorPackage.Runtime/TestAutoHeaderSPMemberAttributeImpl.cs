@@ -20,7 +20,7 @@ namespace SqlActorPackage.Runtime
             get { return (TestAutoHeaderSPMemberAttribute)base.Attribute; }
         }
 
-        bool ISetupItemDriverAware.OnDriverCreated( GenericItemSetupDriver driver )
+        bool ISetupItemDriverAware.OnDriverCreated( SetupItemDriver driver )
         {
             new TestAutoHeaderSPHandler( driver.Engine.Drivers[SetupObjectItem], Attribute.HeaderComment );
             return true;

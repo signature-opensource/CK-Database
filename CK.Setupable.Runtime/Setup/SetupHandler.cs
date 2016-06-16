@@ -14,7 +14,7 @@ namespace CK.Setup
 {
     public class SetupHandler : ISetupHandler
     {
-        protected SetupHandler( GenericItemSetupDriver d )
+        protected SetupHandler( SetupItemDriver d )
         {
             if( d == null ) throw new ArgumentNullException();
             Driver = d;
@@ -24,7 +24,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets the driver to which this handler is associated.
         /// </summary>
-        protected GenericItemSetupDriver Driver { get; private set; }
+        protected SetupItemDriver Driver { get; private set; }
 
         /// <summary>
         /// Helper function for specialized handlers that throws an ArgumentException if the driver's item type is not the 
@@ -37,42 +37,42 @@ namespace CK.Setup
         }
 
 
-        void CheckCall( GenericItemSetupDriver d )
+        void CheckCall( SetupItemDriver d )
         {
             if( d != Driver ) throw new InvalidOperationException( String.Format( "Call mismatch: handler is bound to '{0}' but called from '{1}'.", Driver.FullName, d.FullName ) );
         }
 
-        bool ISetupHandler.Init( GenericItemSetupDriver d )
+        bool ISetupHandler.Init( SetupItemDriver d )
         {
             CheckCall( d );
             return Init();
         }
 
-        bool ISetupHandler.InitContent( GenericItemSetupDriver d )
+        bool ISetupHandler.InitContent( SetupItemDriver d )
         {
             CheckCall( d );
             return InitContent();
         }
 
-        bool ISetupHandler.Install( GenericItemSetupDriver d )
+        bool ISetupHandler.Install( SetupItemDriver d )
         {
             CheckCall( d );
             return Install();
         }
 
-        bool ISetupHandler.InstallContent( GenericItemSetupDriver d )
+        bool ISetupHandler.InstallContent( SetupItemDriver d )
         {
             CheckCall( d );
             return InstallContent();
         }
 
-        bool ISetupHandler.Settle( GenericItemSetupDriver d )
+        bool ISetupHandler.Settle( SetupItemDriver d )
         {
             CheckCall( d );
             return Settle();
         }
 
-        bool ISetupHandler.SettleContent( GenericItemSetupDriver d )
+        bool ISetupHandler.SettleContent( SetupItemDriver d )
         {
             CheckCall( d );
             return SettleContent();

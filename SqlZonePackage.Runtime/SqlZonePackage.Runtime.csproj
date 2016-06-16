@@ -66,6 +66,7 @@
   <ItemGroup>
     <Compile Include="GroupHome.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SqlAlterProcedureAttributeImpl.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.Setupable.Model\CK.Setupable.Model.csproj">
@@ -91,6 +92,10 @@
     <ProjectReference Include="..\CK.StObj.Runtime\CK.StObj.Runtime.csproj">
       <Project>{db108ff8-42a4-4787-92c2-2d5a4daab85e}</Project>
       <Name>CK.StObj.Runtime</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tests\CK.SqlServer.Setup.Engine.Tests.Model\SqlZonePackage\SqlZonePackage.csproj">
+      <Project>{3FF4BF4A-3A28-4AD6-BFF1-E87F11124E31}</Project>
+      <Name>SqlZonePackage</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

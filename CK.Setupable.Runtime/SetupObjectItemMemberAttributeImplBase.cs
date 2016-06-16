@@ -31,9 +31,8 @@ namespace CK.Setup
         /// </summary>
         /// <param name="a">The attribute.</param>
         protected SetupObjectItemMemberAttributeImplBase( SetupObjectItemMemberAttributeBase a )
+            : this( a, a.ObjectName )
         {
-            _attribute = a;
-            ObjectName = a.ObjectName;
         }
 
         /// <summary>
@@ -50,34 +49,22 @@ namespace CK.Setup
         /// <summary>
         /// Gets the original attribute.
         /// </summary>
-        protected AmbientContextBoundDelegationAttribute Attribute
-        {
-            get { return _attribute; }
-        }
+        protected AmbientContextBoundDelegationAttribute Attribute => _attribute; 
 
         /// <summary>
         /// Gets the owner (type and provider of its other attributes).
         /// </summary>
-        protected ICKCustomAttributeTypeMultiProvider Owner
-        {
-            get { return _owner; }
-        }
+        protected ICKCustomAttributeTypeMultiProvider Owner => _owner; 
 
         /// <summary>
         /// Gets the member to which the attribute applies.
         /// </summary>
-        protected MemberInfo Member
-        {
-            get { return _member; }
-        }
+        protected MemberInfo Member => _member; 
 
         /// <summary>
         /// Gets the aspects provider.
         /// </summary>
-        protected ISetupEngineAspectProvider SetupEngineAspectProvider
-        {
-            get { return _aspectProvider; }
-        }
+        protected ISetupEngineAspectProvider SetupEngineAspectProvider => _aspectProvider; 
 
         void IAttributeAmbientContextBoundInitializer.Initialize( ICKCustomAttributeTypeMultiProvider owner, MemberInfo m )
         {
@@ -130,7 +117,8 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Must build the <see cref="IContextLocNaming"/> name of the future <see cref="SetupObjectItem"/> with the help of the owner object and the name in the attribute.
+        /// Must build the <see cref="IContextLocNaming"/> name of the future <see cref="SetupObjectItem"/> with 
+        /// the help of the owner object and the name in the attribute.
         /// </summary>
         /// <param name="ownerItem">Owner item.</param>
         /// <param name="ownerStObj">Owner object StObj information.</param>

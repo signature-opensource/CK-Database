@@ -13,7 +13,7 @@ namespace SqlActorPackage.Runtime
     {
         readonly string _header;
 
-        public TestAutoHeaderSPHandler( GenericItemSetupDriver d, string header )
+        public TestAutoHeaderSPHandler( SetupItemDriver d, string header )
             : base( d )
         {
             CheckItemType<SqlProcedureItem>();

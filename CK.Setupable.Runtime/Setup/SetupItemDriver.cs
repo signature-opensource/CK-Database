@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setupable.Runtime\Setup\SetupDriver.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,13 +9,13 @@ namespace CK.Setup
     /// <summary>
     /// Generic driver for <see cref="IDependentItem"/> that also handles the composite <see cref="IDependentItemGroup"/>.
     /// </summary>
-    public class GenericItemSetupDriver : DriverBase
+    public class SetupItemDriver : DriverBase
     {
         List<ISetupHandler> _handlers;
         internal readonly DriverBase Head;
 
         /// <summary>
-        /// Encapsulates construction information for <see cref="GenericItemSetupDriver"/> objects.
+        /// Encapsulates construction information for <see cref="SetupItemDriver"/> objects.
         /// This is an opaque parameter (except the <see cref="Engine"/> property) that enables the abstract 
         /// DriverBase to be correctly intialized.
         /// </summary>
@@ -55,28 +48,22 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Initializes a new <see cref="GenericItemSetupDriver"/>.
+        /// Initializes a new <see cref="SetupItemDriver"/>.
         /// </summary>
         /// <param name="info">Opaque parameter built by the framework.</param>
-        public GenericItemSetupDriver( BuildInfo info )
+        public SetupItemDriver( BuildInfo info )
             : base( info.Engine, info.SortedItem, info.ExternalVersion )
         {
             Debug.Assert( info.Head == null || info.SortedItem.FullName + ".Head" == info.Head.FullName );
             Head = info.Head;
         }
 
-        internal override bool IsGroupHead
-        {
-            get { return false; }
-        }
+        internal override bool IsGroupHead => false; 
 
         /// <summary>
-        /// Gets whether this <see cref="GenericItemSetupDriver"/> is associated to a group or a container.
+        /// Gets whether this <see cref="SetupItemDriver"/> is associated to a group or a container.
         /// </summary>
-        public bool IsGroup 
-        { 
-            get { return Head != null; } 
-        }
+        public bool IsGroup => Head != null; 
 
         /// <summary>
         /// Provides a way for this driver to load scripts (<see cref="ISetupScript"/> abstraction) from any storage 
@@ -188,37 +175,37 @@ namespace CK.Setup
             _handlers.Add( handler );
         }
 
-        public void AddInitHandler( Func<GenericItemSetupDriver, bool> handler )
+        public void AddInitHandler( Func<SetupItemDriver, bool> handler )
         {
             if( handler == null ) throw new ArgumentNullException( "handler" );
             AddHandler( new SetupHandlerFuncAdapter( handler, SetupCallGroupStep.Init ) );
         }
 
-        public void AddInitContentHandler( Func<GenericItemSetupDriver, bool> handler )
+        public void AddInitContentHandler( Func<SetupItemDriver, bool> handler )
         {
             if( handler == null ) throw new ArgumentNullException( "handler" );
             AddHandler( new SetupHandlerFuncAdapter( handler, SetupCallGroupStep.InitContent ) );
         }
 
-        public void AddInstallHandler( Func<GenericItemSetupDriver, bool> handler )
+        public void AddInstallHandler( Func<SetupItemDriver, bool> handler )
         {
             if( handler == null ) throw new ArgumentNullException( "handler" );
             AddHandler( new SetupHandlerFuncAdapter( handler, SetupCallGroupStep.Install ) );
         }
 
-        public void AddInstallContentHandler( Func<GenericItemSetupDriver, bool> handler )
+        public void AddInstallContentHandler( Func<SetupItemDriver, bool> handler )
         {
             if( handler == null ) throw new ArgumentNullException( "handler" );
             AddHandler( new SetupHandlerFuncAdapter( handler, SetupCallGroupStep.InstallContent ) );
         }
 
-        public void AddSettleHandler( Func<GenericItemSetupDriver, bool> handler )
+        public void AddSettleHandler( Func<SetupItemDriver, bool> handler )
         {
             if( handler == null ) throw new ArgumentNullException( "handler" );
             AddHandler( new SetupHandlerFuncAdapter( handler, SetupCallGroupStep.Settle ) );
         }
 
-        public void AddSettleContentHandler( Func<GenericItemSetupDriver, bool> handler )
+        public void AddSettleContentHandler( Func<SetupItemDriver, bool> handler )
         {
             if( handler == null ) throw new ArgumentNullException( "handler" );
             AddHandler( new SetupHandlerFuncAdapter( handler, SetupCallGroupStep.SettleContent ) );

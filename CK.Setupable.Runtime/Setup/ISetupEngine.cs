@@ -49,7 +49,7 @@ namespace CK.Setup
         IActivityMonitor Monitor { get; }
 
         /// <summary>
-        /// Gives access to the ordered list of the <see cref="GenericItemSetupDriver"/>.
+        /// Gives access to the ordered list of the <see cref="SetupItemDriver"/>.
         /// </summary>
         IDriverList Drivers { get; }
 

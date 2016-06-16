@@ -87,7 +87,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
                 RegisterSource( "file-sql" );
             }
 
-            protected override IScriptExecutor CreateExecutor( IActivityMonitor monitor, GenericItemSetupDriver driver )
+            protected override IScriptExecutor CreateExecutor( IActivityMonitor monitor, SetupItemDriver driver )
             {
                 throw new NotImplementedException();
             }

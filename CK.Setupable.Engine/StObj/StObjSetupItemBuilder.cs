@@ -369,15 +369,9 @@ namespace CK.Setup
         
         #endregion
 
-        IReadOnlyList<ISetupEngineAspect> ISetupEngineAspectProvider.Aspects
-        {
-            get { return _aspects; }
-        }
+        IReadOnlyList<ISetupEngineAspect> ISetupEngineAspectProvider.Aspects => _aspects; 
 
-        T ISetupEngineAspectProvider.GetSetupEngineAspect<T>( bool required )
-        {
-            return SetupEngine.GetSetupEngineAspect<T>( _aspects, required );
-        }
+        T ISetupEngineAspectProvider.GetSetupEngineAspect<T>( bool required ) => SetupEngine.GetSetupEngineAspect<T>( _aspects, required );
 
     }
 }

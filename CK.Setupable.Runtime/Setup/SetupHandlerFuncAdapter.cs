@@ -13,45 +13,45 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
-    /// Internal adapter used by <see cref="GenericItemSetupDriver"/>.
+    /// Internal adapter used by <see cref="SetupItemDriver"/>.
     /// </summary>
     class SetupHandlerFuncAdapter : ISetupHandler
     {
-        readonly Func<GenericItemSetupDriver,bool> _func;
+        readonly Func<SetupItemDriver,bool> _func;
         readonly SetupCallGroupStep _step;
 
-        public SetupHandlerFuncAdapter( Func<GenericItemSetupDriver, bool> handler, SetupCallGroupStep step )
+        public SetupHandlerFuncAdapter( Func<SetupItemDriver, bool> handler, SetupCallGroupStep step )
         {
             _func = handler;
             _step = step;
         }
 
-        public bool Init( GenericItemSetupDriver d )
+        public bool Init( SetupItemDriver d )
         {
             return _step == SetupCallGroupStep.Init ? _func( d ) : true;
         }
 
-        public bool InitContent( GenericItemSetupDriver d )
+        public bool InitContent( SetupItemDriver d )
         {
             return _step == SetupCallGroupStep.InitContent ? _func( d ) : true;
         }
 
-        public bool Install( GenericItemSetupDriver d )
+        public bool Install( SetupItemDriver d )
         {
             return _step == SetupCallGroupStep.Install ? _func( d ) : true;
         }
 
-        public bool InstallContent( GenericItemSetupDriver d )
+        public bool InstallContent( SetupItemDriver d )
         {
             return _step == SetupCallGroupStep.InstallContent ? _func( d ) : true;
         }
 
-        public bool Settle( GenericItemSetupDriver d )
+        public bool Settle( SetupItemDriver d )
         {
             return _step == SetupCallGroupStep.Settle ? _func( d ) : true;
         }
 
-        public bool SettleContent( GenericItemSetupDriver d )
+        public bool SettleContent( SetupItemDriver d )
         {
             return _step == SetupCallGroupStep.SettleContent ? _func( d ) : true;
         }

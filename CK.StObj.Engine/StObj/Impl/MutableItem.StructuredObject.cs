@@ -54,7 +54,9 @@ namespace CK.Setup
         public Type CreateFinalType( IActivityMonitor monitor, DynamicAssembly a )
         {
             Debug.Assert( Specialization == null );
-            return _leafData.ImplementableTypeInfo == null ? Type : _leafData.ImplementableTypeInfo.CreateFinalType( monitor, a, storeAsLastGeneratedType: false );
+            return _leafData.ImplementableTypeInfo == null 
+                        ? Type 
+                        : _leafData.ImplementableTypeInfo.CreateFinalType( monitor, a, storeAsLastGeneratedType: false );
         }
 
         public void InjectFinalObjectAccessor( StObjContextRoot finalMapper )

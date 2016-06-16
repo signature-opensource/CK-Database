@@ -26,24 +26,21 @@ namespace CK.Setup
         /// <summary>
         /// Gets the actual attribute.
         /// </summary>
-        protected SetupItemSelectorBaseAttribute Attribute
-        {
-            get { return _attribute; }
-        }
+        protected SetupItemSelectorBaseAttribute Attribute => _attribute; 
 
-        bool ISetupItemDriverAware.OnDriverCreated( GenericItemSetupDriver driver )
+        bool ISetupItemDriverAware.OnDriverCreated( SetupItemDriver driver )
         {
             HashSet<string> already = new HashSet<string>();
             bool result = true;
             var items = new HashSet<ISortedItem>();
             foreach( var n in _attribute.CommaSeparatedTypeNames.Split( ',' ) )
             {
-                string nTrimmed = n.Trim();
-                if( nTrimmed.Length > 0 )
+                string itemName = n.Trim();
+                if( itemName.Length > 0 )
                 {
-                    if( already.Add( nTrimmed ) )
+                    if( already.Add( itemName ) )
                     {
-                        IEnumerable<ISortedItem<ISetupItem>> namedItems = ItemsByName( driver, nTrimmed );
+                        IEnumerable<ISortedItem<ISetupItem>> namedItems = ItemsByName( driver, itemName );
                         int count = 0;
                         foreach( var i in namedItems )
                         {
@@ -57,11 +54,11 @@ namespace CK.Setup
                         }
                         if( count == 0 )
                         {
-                            driver.Engine.Monitor.Error().Send( "Name '{0}' in {2} attribute of '{1}' not found.", nTrimmed, driver.Item.FullName, _attribute.GetShortTypeName() );
+                            driver.Engine.Monitor.Error().Send( "Name '{0}' in {2} attribute of '{1}' not found.", itemName, driver.Item.FullName, _attribute.GetShortTypeName() );
                             result = false;
                         }
                     }
-                    else driver.Engine.Monitor.Warn().Send( "Duplicate name '{0}' in {2} attribute of '{1}'.", nTrimmed, driver.Item.FullName, _attribute.GetShortTypeName() );
+                    else driver.Engine.Monitor.Warn().Send( "Duplicate name '{0}' in {2} attribute of '{1}'.", itemName, driver.Item.FullName, _attribute.GetShortTypeName() );
                 }
             }
             if( !result ) return false;
@@ -75,9 +72,9 @@ namespace CK.Setup
         /// <param name="driver">The driver associated to the object to which the attribute is applied.</param>
         /// <param name="items">Selected items (in setup order).</param>
         /// <returns>True on success, false to stop the process.</returns>
-        protected abstract bool OnDriverCreated( GenericItemSetupDriver driver, IEnumerable<T> items );
+        protected abstract bool OnDriverCreated( SetupItemDriver driver, IEnumerable<T> items );
 
-        IEnumerable<ISortedItem<ISetupItem>> ItemsByName( GenericItemSetupDriver driver, string name )
+        IEnumerable<ISortedItem<ISetupItem>> ItemsByName( SetupItemDriver driver, string name )
         {
             if( _attribute.SetupItemSelectorScope == SetupItemSelectorScope.DirectChildren )
             {

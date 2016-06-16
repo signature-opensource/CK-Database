@@ -18,7 +18,7 @@ namespace CK.Setup
         /// </summary>
         /// <param name="driver">The driver associated to this item.</param>
         /// <returns>True on success. Returning false cancels the setup process.</returns>
-        bool OnDriverCreated( GenericItemSetupDriver driver );
+        bool OnDriverCreated( SetupItemDriver driver );
 
     }
 }

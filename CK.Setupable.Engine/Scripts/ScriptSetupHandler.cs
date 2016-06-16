@@ -16,7 +16,7 @@ namespace CK.Setup
     {
         readonly ScriptSet.ForHandler _scripts;
 
-        public ScriptSetupHandler( GenericItemSetupDriver driver, ScriptSet.ForHandler scripts )
+        public ScriptSetupHandler( SetupItemDriver driver, ScriptSet.ForHandler scripts )
             : base( driver )
         {
             if( scripts == null ) throw new ArgumentNullException( "scripts" );

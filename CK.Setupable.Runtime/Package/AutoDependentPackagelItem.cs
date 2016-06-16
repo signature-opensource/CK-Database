@@ -188,7 +188,7 @@ namespace CK.Setup
 
         object IDependentItem.StartDependencySort()
         {
-            return typeof( GenericItemSetupDriver );
+            return typeof( SetupItemDriver );
         }
 
         bool IDependentItemRef.Optional

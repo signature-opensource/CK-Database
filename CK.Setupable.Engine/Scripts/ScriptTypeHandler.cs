@@ -71,7 +71,7 @@ namespace CK.Setup
         /// to setup but based on some other properties.
         /// </param>
         /// <returns>A <see cref="IScriptExecutor"/> object that should be <see cref="ReleaseExecutor">released</see> once useless.</returns>
-        protected internal abstract IScriptExecutor CreateExecutor( IActivityMonitor monitor, GenericItemSetupDriver driver );
+        protected internal abstract IScriptExecutor CreateExecutor( IActivityMonitor monitor, SetupItemDriver driver );
 
         /// <summary>
         /// Called by the framework to indicate that a <see cref="IScriptExecutor"/> is no longer needed.

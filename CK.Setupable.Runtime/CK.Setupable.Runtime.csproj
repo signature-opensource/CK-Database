@@ -107,7 +107,7 @@
     <Compile Include="Setup\ISetupEngine.cs" />
     <Compile Include="Setup\ISetupHandler.cs" />
     <Compile Include="Setup\ISetupSessionMemory.cs" />
-    <Compile Include="Setup\GenericItemSetupDriver.cs" />
+    <Compile Include="Setup\SetupItemDriver.cs" />
     <Compile Include="Setup\SetupEngineState.cs" />
     <Compile Include="Setup\SetupEventArgs.cs" />
     <Compile Include="Setup\SetupHandler.cs" />

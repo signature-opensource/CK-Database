@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setupable.Engine\StObj\StObjSetupHook.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,6 +9,67 @@ namespace CK.Setup
 {
     class StObjBuilder 
     {
+        /// <summary>
+        /// Exposes the <see cref="OrderedStObjs"/> and the resulting <see cref="SetupItems"/> for them
+        /// and captures required context (<see cref="StObjCollectorResult"/>, <see cref="IStObjRuntimeBuilder"/> and <see cref="BuilderFinalAssemblyConfiguration"/>)
+        /// to be able to <see cref="GenerateFinalAssembly"/>.
+        /// </summary>
+        public class BuildStObjResult
+        {
+            readonly StObjCollectorResult _result;
+            readonly IStObjRuntimeBuilder _runtimeBuilder;
+            readonly BuilderFinalAssemblyConfiguration _configuration;
+
+            public BuildStObjResult( StObjCollectorResult r, IEnumerable<ISetupItem> items, IStObjRuntimeBuilder runtimeBuilder, BuilderFinalAssemblyConfiguration configuration )
+            {
+                _result = r;
+                SetupItems = items;
+                _runtimeBuilder = runtimeBuilder;
+                _configuration = configuration;
+            }
+
+            /// <summary>
+            /// Gets the ordered <see cref="IStObjResult"/> list.
+            /// </summary>
+            public readonly IReadOnlyList<IStObjResult> OrderedStObjs;
+
+            /// <summary>
+            /// Gets all the <see cref="ISetupItem"/> for the StObj.
+            /// </summary>
+            public readonly IEnumerable<ISetupItem> SetupItems;
+
+            /// <summary>
+            /// Generates the final assembly.
+            /// </summary>
+            /// <param name="monitor">Monitor to use.</param>
+            /// <param name="injectFinalObjectAccessor">True to set the <see cref="IStObjResult.ObjectAccessor"/> to return the real final object.</param>
+            /// <returns>True on success, false on error.</returns>
+            public bool GenerateFinalAssembly( IActivityMonitor monitor, bool injectFinalObjectAccessor = false )
+            {
+                bool hasError = false;
+                using( monitor.OnError( () => hasError = true ) )
+                {
+                    StObjContextRoot finalObjects;
+                    using( monitor.OpenInfo().Send( "Generating StObj dynamic assembly." ) )
+                    {
+                        finalObjects = _result.GenerateFinalAssembly( monitor, _runtimeBuilder, _configuration );
+                        Debug.Assert( finalObjects != null || hasError, "finalObjects == null ==> An error has been logged." );
+                    }
+                    if( finalObjects != null )
+                    {
+                        bool injectDone;
+                        using( monitor.OpenInfo().Send( "Injecting final objects mapper." ) )
+                        {
+                            injectDone = _result.InjectFinalObjectAccessor( monitor, finalObjects );
+                            Debug.Assert( injectDone || hasError, "inject failed ==> An error has been logged." );
+                        }
+                        return injectDone;
+                    }
+                    return false;
+                }
+            }
+        }
+
         static public IEnumerable<ISetupItem> SafeBuildStObj( SetupEngine engine, IStObjRuntimeBuilder runtimeBuilder, SetupEngineConfigurator configurator )
         {
             var monitor = engine.Monitor;
@@ -55,23 +109,27 @@ namespace CK.Setup
                         }
                         if( setupItems != null )
                         {
-                            StObjContextRoot finalObjects;
-                            using( monitor.OpenInfo().Send( "Generating StObj dynamic assembly." ) )
+                            bool hasError2 = false;
+                            using( monitor.OnError( () => hasError2 = true ) )
                             {
-                                finalObjects = result.GenerateFinalAssembly( monitor, runtimeBuilder, config.FinalAssemblyConfiguration );
-                                Debug.Assert( finalObjects != null || hasError, "finalObjects == null ==> An error has been logged." );
-                            }
-                            if( finalObjects != null )
-                            {
-                                bool injectDone;
-                                using( monitor.OpenInfo().Send( "Injecting final objects mapper." ) )
+                                StObjContextRoot finalObjects;
+                                using( monitor.OpenInfo().Send( "Generating StObj dynamic assembly." ) )
                                 {
-                                    injectDone = result.InjectFinalObjectAccessor( monitor, finalObjects );
-                                    Debug.Assert( injectDone || hasError, "inject failed ==> An error has been logged." );
+                                    finalObjects = result.GenerateFinalAssembly( monitor, runtimeBuilder, config.FinalAssemblyConfiguration );
+                                    Debug.Assert( finalObjects != null || hasError2, "finalObjects == null ==> An error has been logged." );
                                 }
-                                if( injectDone )
+                                if( finalObjects != null )
                                 {
-                                    return setupItems;
+                                    bool injectDone;
+                                    using( monitor.OpenInfo().Send( "Injecting final objects mapper." ) )
+                                    {
+                                        injectDone = result.InjectFinalObjectAccessor( monitor, finalObjects );
+                                        Debug.Assert( injectDone || hasError2, "inject failed ==> An error has been logged." );
+                                    }
+                                    if( injectDone )
+                                    {
+                                        return setupItems;
+                                    }
                                 }
                             }
                         }

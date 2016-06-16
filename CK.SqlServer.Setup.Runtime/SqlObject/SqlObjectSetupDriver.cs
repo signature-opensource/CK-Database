@@ -17,7 +17,7 @@ namespace CK.SqlServer.Setup
     /// <summary>
     /// Driver for <see cref="SqlObjectItem"/>.
     /// </summary>
-    public class SqlObjectSetupDriver : GenericItemSetupDriver
+    public class SqlObjectSetupDriver : SetupItemDriver
     {
         readonly ISqlManagerProvider _provider;
 

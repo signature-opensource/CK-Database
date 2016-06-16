@@ -33,8 +33,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		SharedAssemblyInfo.cs = SharedAssemblyInfo.cs
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.Deploy.Console", "CK.Deploy.Console\CK.Deploy.Console.csproj", "{CA18CAFE-AC00-4030-8C97-365CA5D6050A}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlActorPackage", "Tests\CK.SqlServer.Setup.Engine.Tests.Model\KindOfActorPackage\SqlActorPackage.csproj", "{6D0D47C8-98F7-47DE-B118-AD3606455F7E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlZonePackage", "Tests\CK.SqlServer.Setup.Engine.Tests.Model\SqlZonePackage\SqlZonePackage.csproj", "{3FF4BF4A-3A28-4AD6-BFF1-E87F11124E31}"
@@ -186,18 +184,6 @@ Global
 		{7CC3C3E5-BDC6-4112-8FA7-3AFE7566E0EF}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{7CC3C3E5-BDC6-4112-8FA7-3AFE7566E0EF}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{7CC3C3E5-BDC6-4112-8FA7-3AFE7566E0EF}.Release|x86.ActiveCfg = Release|Any CPU
-		{CA18CAFE-AC00-4030-8C97-365CA5D6050A}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{CA18CAFE-AC00-4030-8C97-365CA5D6050A}.Debug|Any CPU.Build.0 = Debug|x86
-		{CA18CAFE-AC00-4030-8C97-365CA5D6050A}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{CA18CAFE-AC00-4030-8C97-365CA5D6050A}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{CA18CAFE-AC00-4030-8C97-365CA5D6050A}.Debug|x86.ActiveCfg = Debug|x86
-		{CA18CAFE-AC00-4030-8C97-365CA5D6050A}.Debug|x86.Build.0 = Debug|x86
-		{CA18CAFE-AC00-4030-8C97-365CA5D6050A}.Release|Any CPU.ActiveCfg = Release|x86
-		{CA18CAFE-AC00-4030-8C97-365CA5D6050A}.Release|Any CPU.Build.0 = Release|x86
-		{CA18CAFE-AC00-4030-8C97-365CA5D6050A}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{CA18CAFE-AC00-4030-8C97-365CA5D6050A}.Release|Mixed Platforms.Build.0 = Release|x86
-		{CA18CAFE-AC00-4030-8C97-365CA5D6050A}.Release|x86.ActiveCfg = Release|x86
-		{CA18CAFE-AC00-4030-8C97-365CA5D6050A}.Release|x86.Build.0 = Release|x86
 		{6D0D47C8-98F7-47DE-B118-AD3606455F7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6D0D47C8-98F7-47DE-B118-AD3606455F7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6D0D47C8-98F7-47DE-B118-AD3606455F7E}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU

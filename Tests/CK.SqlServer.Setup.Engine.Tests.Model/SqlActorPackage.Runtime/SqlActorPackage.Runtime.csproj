@@ -97,6 +97,10 @@
       <Project>{96dedeee-de7d-4b14-8fde-bc4d8d9ccb78}</Project>
       <Name>CK.StObj.Model</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\CK.StObj.Runtime\CK.StObj.Runtime.csproj">
+      <Project>{db108ff8-42a4-4787-92c2-2d5a4daab85e}</Project>
+      <Name>CK.StObj.Runtime</Name>
+    </ProjectReference>
     <ProjectReference Include="..\KindOfActorPackage\SqlActorPackage.csproj">
       <Project>{6d0d47c8-98f7-47de-b118-ad3606455f7e}</Project>
       <Name>SqlActorPackage</Name>
