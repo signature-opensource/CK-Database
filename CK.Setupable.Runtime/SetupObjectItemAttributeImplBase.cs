@@ -23,7 +23,7 @@ namespace CK.Setup
         {
             IContextLocNaming BuildFullName( Registerer r, SetupObjectItemBehavior b, string name );
 
-            SetupObjectItem CreateSetupObjectItem( Registerer r, SetupObjectItemBehavior b, IContextLocNaming name );
+            SetupObjectItem CreateSetupObjectItem( Registerer r, IContextLocNaming name );
 
             string GetDetailedName( Registerer r, string name );
         }
@@ -37,9 +37,8 @@ namespace CK.Setup
         {
             int _hash;
 
-            internal BestCreator( SetupObjectItemBehavior b, IContextLocNaming name )
+            internal BestCreator( IContextLocNaming name )
             {
-                Behavior = b;
                 Name = name;
                 _hash = name.FullName.GetHashCode();
             }
@@ -54,15 +53,11 @@ namespace CK.Setup
 
             public readonly IContextLocNaming Name;
 
-            public readonly SetupObjectItemBehavior Behavior;
-
-            public IStObjSetupDynamicInitializer Creator;
-
             public SetupObjectItem Item;
 
-            public IStObjSetupDynamicInitializer FirstCreator;
+            public IStObjSetupDynamicInitializer LastDefiner;
 
-            public SetupObjectItem FirstItem;
+            public IMutableSetupItem FirstPackagesSeen;
 
             public IMutableSetupItem LastPackagesSeen;
         }
@@ -70,18 +65,18 @@ namespace CK.Setup
         public class Registerer
         {
             readonly IStObjSetupDynamicInitializerState _state;
-            readonly ISetupItemCreator _creator;
+            readonly ISetupItemCreator _candidate;
 
             internal Registerer(
                 IStObjSetupDynamicInitializerState state,
                 IMutableSetupItem item,
                 IStObjResult stObj,
-                ISetupItemCreator creator )
+                ISetupItemCreator candidate )
             {
                 _state = state;
                 Item = item;
                 StObj = stObj;
-                _creator = creator;
+                _candidate = candidate;
             }
 
 
@@ -101,77 +96,75 @@ namespace CK.Setup
 
             internal BestCreator Register( SetupObjectItemBehavior b, string name )
             {
-                var n = _creator.BuildFullName( this, b, name );
+                var n = _candidate.BuildFullName( this, b, name );
                 if( n == null )
                 {
-                    _state.Monitor.Error().Send( "Invalid name: "+ _creator.GetDetailedName( this, name ) );
+                    _state.Monitor.Error().Send( "Invalid name: "+ _candidate.GetDetailedName( this, name ) );
                     return SetError();
                 }
-                var best = AssumeBestCreator( b, n );
-                if( best.FirstCreator == _creator )
+                bool replace = b == SetupObjectItemBehavior.Replace;
+                var key = new BestCreator( n );
+                BestCreator best = (BestCreator)_state.Memory[key];
+                if( best == null )
                 {
-                    if( b == SetupObjectItemBehavior.Replace )
+                    if( replace )
                     {
-                        _state.Monitor.Error().Send( "Object {0} does not exist.", _creator.GetDetailedName( this, name ) );
+                        _state.Monitor.Error().Send( "Object {0} is not defined. It can not be replaced.", _candidate.GetDetailedName( this, name ) );
                         return SetError();
                     }
-                    best.FirstItem = DoCreateSetupObjectItem( b, n );
-                    best.LastPackagesSeen = Item;
+                    _state.Memory[key] = best = key;
+                    best.LastDefiner = _candidate;
+                    best.LastPackagesSeen = best.FirstPackagesSeen = Item;
                 }
-                else if( b == SetupObjectItemBehavior.Define )
+                else
                 {
-                    _state.Monitor.Error().Send( "Object {0} already exists.", _creator.GetDetailedName( this, name ) );
-                    return SetError();
+                    if( replace  )
+                    {
+                        // Replace from another package: memorze it as the best one so far, 
+                        // otherwise skip it, except if it has been define in the same package..
+                        if( best.LastPackagesSeen != Item )
+                        {
+                            best.LastDefiner = _candidate;
+                            best.LastPackagesSeen = Item;
+                        }
+                        else if( best.FirstPackagesSeen == Item )
+                        {
+                            _state.Monitor.Error().Send( "Object {0} is both defined and replaced by the same package.", _candidate.GetDetailedName( this, name ) );
+                            return SetError();
+                        }
+                    }
+                    else 
+                    {
+                        // Defining from another package than the first one is an error.
+                        // Otherwise, we keep the candidate. 
+                        if( best.LastPackagesSeen != Item )
+                        {
+                            _state.Monitor.Error().Send( "Object {0} is already defined.", _candidate.GetDetailedName( this, name ) );
+                            return SetError();
+                        }
+                    }
                 }
                 return best;
             }
 
-            internal void FinalizeRegister( BestCreator best )
+            internal bool FinalizeRegister( BestCreator best )
             {
-                if( best.Creator == _creator )
+                if( best.LastDefiner == _candidate )
                 {
                     Debug.Assert( best.Item == null, "We are the only winner (the last one)." );
-                    if( best.FirstCreator == _creator )
-                    {
-                        best.Item = best.FirstItem;
-                    }
-                    else
-                    {
-                        // When multiples members exist bound to the same object, this avoids 
-                        // to load the same resource multiple times: only the first occurence per owner is considered.
-                        if( best.LastPackagesSeen != Item )
-                        {
-                            best.Item = DoCreateSetupObjectItem( best.Behavior, best.Name );
-                            best.FirstItem.ReplacedBy = best.Item;
-                            best.LastPackagesSeen = Item;
-                        }
-                    }
+                    best.Item = DoCreateSetupObjectItem( best.Name );
                 }
+                return best.Item != null;
             }
 
-            SetupObjectItem DoCreateSetupObjectItem( SetupObjectItemBehavior behavior, IContextLocNaming name )
+            SetupObjectItem DoCreateSetupObjectItem( IContextLocNaming name )
             {
                 SetupObjectItem o;
                 using( _state.Monitor.OnError( () => HaseError = true ) )
                 {
-                    o = _creator.CreateSetupObjectItem( this, behavior, name );
+                    o = _candidate.CreateSetupObjectItem( this, name );
                 }
                 return HaseError ? null : o;
-            }
-
-            BestCreator AssumeBestCreator( SetupObjectItemBehavior b, IContextLocNaming name )
-            {
-                var meBest = new BestCreator( b, name );
-                BestCreator theBest = (BestCreator)_state.Memory[meBest];
-                if( theBest == null )
-                {
-                    _state.Memory[meBest] = theBest = meBest;
-                    meBest.FirstCreator = _creator;
-                }
-                Debug.Assert( theBest.Name.FullName == name.FullName );
-                // Override any previous configurations: this _creator is the best so far.
-                theBest.Creator = _creator;
-                return theBest;
             }
 
         }
@@ -256,9 +249,9 @@ namespace CK.Setup
             return BuildFullName( r, b, name );
         }
 
-        SetupObjectItem ISetupItemCreator.CreateSetupObjectItem( Registerer r, SetupObjectItemBehavior b, IContextLocNaming name )
+        SetupObjectItem ISetupItemCreator.CreateSetupObjectItem( Registerer r, IContextLocNaming name )
         {
-            return CreateSetupObjectItem( r, b, name );
+            return CreateSetupObjectItem( r, name );
         }
 
         /// <summary>
@@ -277,13 +270,12 @@ namespace CK.Setup
         /// after <see cref="BuildFullName"/> has been called.
         /// </summary>
         /// <param name="Registerer">Registerer context object.</param>
-        /// <param name="b">Registration behavior.</param>
         /// <param name="name">The name from <see cref="BuildFullName"/> method.</param>
         /// <returns>
         /// A new SetupObject or null if it can not be created. If an errr occurred, it must 
         /// be logged to the monitor.
         /// </returns>
-        protected abstract SetupObjectItem CreateSetupObjectItem( Registerer r, SetupObjectItemBehavior b, IContextLocNaming name );
+        protected abstract SetupObjectItem CreateSetupObjectItem( Registerer r, IContextLocNaming name );
 
 
     }

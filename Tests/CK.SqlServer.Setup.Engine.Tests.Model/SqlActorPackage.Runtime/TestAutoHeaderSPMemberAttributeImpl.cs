@@ -15,10 +15,7 @@ namespace SqlActorPackage.Runtime
         {
         }
 
-        protected new TestAutoHeaderSPMemberAttribute Attribute
-        {
-            get { return (TestAutoHeaderSPMemberAttribute)base.Attribute; }
-        }
+        protected new TestAutoHeaderSPMemberAttribute Attribute => (TestAutoHeaderSPMemberAttribute)base.Attribute; 
 
         bool ISetupItemDriverAware.OnDriverCreated( SetupItemDriver driver )
         {

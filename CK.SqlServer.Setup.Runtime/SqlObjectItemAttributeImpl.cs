@@ -34,7 +34,7 @@ namespace CK.SqlServer.Setup
             return name;
         }
 
-        protected override SetupObjectItem CreateSetupObjectItem( Registerer r, SetupObjectItemBehavior b, IContextLocNaming name )
+        protected override SetupObjectItem CreateSetupObjectItem( Registerer r, IContextLocNaming name )
         {
             SqlPackageBaseItem p = (SqlPackageBaseItem)r.Item;
             ISqlSetupAspect sql = SetupEngineAspectProvider.GetSetupEngineAspect<ISqlSetupAspect>();

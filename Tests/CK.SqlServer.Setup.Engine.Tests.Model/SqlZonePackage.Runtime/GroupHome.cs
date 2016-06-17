@@ -13,7 +13,6 @@ namespace Runtime.SqlZonePackage.Zone
         public void CmdDemoCreate( SqlTransformContext ctx )
         {
             // "add parameter @SecurityZoneId int = 0  before @GroupName;"
-            SqlStoredProcedure p = (SqlStoredProcedure)((SqlProcedureItem)ctx.Item).FinalStatement;
         }
     }
 

@@ -97,10 +97,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets the best <see cref="SetupObjectItem"/> found.
         /// </summary>
-        public SetupObjectItem SetupObjectItem
-        {
-            get { return _theBest != null ? _theBest.Item ?? _theBest.FirstItem : null; }
-        }
+        public SetupObjectItem SetupObjectItem => _theBest?.Item; 
 
         string SetupObjectItemAttributeImplBase.ISetupItemCreator.GetDetailedName( SetupObjectItemAttributeImplBase.Registerer r, string name )
         {
@@ -112,9 +109,9 @@ namespace CK.Setup
             return BuildFullName( r, b, name );
         }
 
-        SetupObjectItem SetupObjectItemAttributeImplBase.ISetupItemCreator.CreateSetupObjectItem( SetupObjectItemAttributeImplBase.Registerer r, SetupObjectItemBehavior b, IContextLocNaming name )
+        SetupObjectItem SetupObjectItemAttributeImplBase.ISetupItemCreator.CreateSetupObjectItem( SetupObjectItemAttributeImplBase.Registerer r, IContextLocNaming name )
         {
-            return CreateSetupObjectItem( r, b, name );
+            return CreateSetupObjectItem( r, name );
         }
 
         /// <summary>
@@ -139,7 +136,7 @@ namespace CK.Setup
         /// A new SetupObject or null if it can not be created. If an errr occurred, it must 
         /// be logged to the monitor.
         /// </returns>
-        protected abstract SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeImplBase.Registerer r, SetupObjectItemBehavior b, IContextLocNaming name );
+        protected abstract SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeImplBase.Registerer r, IContextLocNaming name );
 
     }
 
