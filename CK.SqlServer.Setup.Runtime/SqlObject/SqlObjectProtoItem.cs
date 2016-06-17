@@ -13,16 +13,16 @@ namespace CK.SqlServer.Setup
         static public readonly string TypeView = "View";
         static public readonly string TypeProcedure = "Procedure";
         static public readonly string TypeFunction = "Function";
+        static public readonly string TypeTransformer = "Transformer";
 
         /// <summary>
         /// Exposes the <see cref="SqlContextLocName"/> of this proto item.
         /// </summary>
         public readonly SqlContextLocName ContextLocName;
 
-        IContextLocNaming ISetupObjectProtoItem.ContextLocName
-        {
-            get { return ContextLocName; }
-        }
+        IContextLocNaming ISetupObjectProtoItem.ContextLocName => ContextLocName;
+
+        public bool IsTransformer => ReferenceEquals( ItemType, TypeTransformer );
 
         /// <summary>
         /// Gets whether missing dependency must be considered an error.
@@ -132,16 +132,16 @@ namespace CK.SqlServer.Setup
             }
         }
 
-        public SqlObjectItem CreateItem( ISqlServerParser parser, IActivityMonitor monitor, bool defaultMissingDependencyIsError, SqlPackageBaseItem package = null )
+        public SetupObjectItem CreateItem( ISqlServerParser parser, IActivityMonitor monitor, bool defaultMissingDependencyIsError, SqlPackageBaseItem package = null )
         {
             if( parser == null ) throw new ArgumentNullException( "parser" );
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
-            SqlObjectItem result = null;
-            if( ItemType == SqlObjectProtoItem.TypeView )
+            SetupObjectItem result = null;
+            if( ItemType == TypeView )
             {
                 result = new SqlViewObjectItem( this );
             }
-            else if( ItemType == SqlObjectProtoItem.TypeProcedure || ItemType == SqlObjectProtoItem.TypeFunction )
+            else if( ItemType == TypeTransformer || ItemType == TypeProcedure || ItemType == TypeFunction )
             {
                 ISqlServerObject o = SafeParse( parser, monitor );
                 if( o != null )
@@ -162,6 +162,10 @@ namespace CK.SqlServer.Setup
                     {
                         result = new SqlFunctionTableItem( this, (ISqlServerFunctionTable)o );
                     }
+                    else if( o is ISqlServerTransformer )
+                    {
+                        result = new SqlTransformerItem( this, (ISqlServerTransformer)o );
+                    }
                     else
                     {
                         throw new NotSupportedException( "Unhandled type of object: " + o.ToStringSignature( true ) );
@@ -174,7 +178,9 @@ namespace CK.SqlServer.Setup
             }
             if( result != null )
             {
-                if( !result.MissingDependencyIsError.HasValue ) result.MissingDependencyIsError = defaultMissingDependencyIsError;
+                SqlObjectItem sql = result as SqlObjectItem;
+                if( sql != null && !sql.MissingDependencyIsError.HasValue ) sql.MissingDependencyIsError = defaultMissingDependencyIsError;
+
                 if( package != null ) package.EnsureObjectsPackage().Children.Add( result );
             }
             return result;

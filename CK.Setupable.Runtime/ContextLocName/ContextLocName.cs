@@ -43,7 +43,7 @@ namespace CK.Core
         /// </summary>
         /// <param name="context">Can be null (unknown).</param>
         /// <param name="location">Can be null (unknown).</param>
-        /// <param name="name">Can not be null.</param>
+        /// <param name="name">Can not be null but can be empty.</param>
         public ContextLocName( string context, string location, string name )
         {
             _impl = new ContextLocNameStructImpl( context, location, name );

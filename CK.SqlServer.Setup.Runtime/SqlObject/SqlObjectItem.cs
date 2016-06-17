@@ -81,16 +81,9 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Gets the object that is replaced by this one.
         /// </summary>
-        public new SqlObjectItem Replaces
-        {
-            get { return (SqlObjectItem)base.Replaces; }
-        }
+        public new SqlObjectItem Replaces => (SqlObjectItem)base.Replaces; 
 
-        public new SqlContextLocName ContextLocName
-        {
-            get { return (SqlContextLocName)base.ContextLocName; }
-        }
-
+        public new SqlContextLocName ContextLocName => (SqlContextLocName)base.ContextLocName; 
 
         /// <summary>
         /// Gets or sets whether when installing, the informational message 'The module 'X' depends 
@@ -111,13 +104,10 @@ namespace CK.SqlServer.Setup
         public string Header
         {
             get { return _header; }
-            set { _header = value ?? String.Empty; }
+            set { _header = value ?? string.Empty; }
         }
 
-        protected override object StartDependencySort()
-        { 
-            return typeof(SqlObjectSetupDriver);
-        }
+        protected override object StartDependencySort() => typeof(SqlObjectSetupDriver);
 
         /// <summary>
         /// Writes the drop instruction.

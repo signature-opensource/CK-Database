@@ -94,6 +94,8 @@
     <Compile Include="SqlObject\SqlCallableItem.cs" />
     <Compile Include="SqlObject\SqlFunctionTableItem.cs" />
     <Compile Include="SqlObject\SqlFunctionInlineTableItem.cs" />
+    <Compile Include="SqlObject\SqlTransformerItemDriver.cs" />
+    <Compile Include="SqlObject\SqlTransformerItem.cs" />
     <Compile Include="SqlObject\SqlScalarFunctionItem.cs" />
     <Compile Include="SqlCallableAttributeImpl.GenerateCreateSqlCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

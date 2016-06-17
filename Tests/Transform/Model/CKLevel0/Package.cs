@@ -13,7 +13,11 @@ namespace CKLevel0
     [Versions("0.0.0")]
     public abstract class Package : SqlPackage
     {
-        [SqlProcedureNonQuery("sTest")]
-        public abstract string Test( ISqlCallContext ctx, string textParam );
+        [SqlProcedureNonQuery( "define:sSimpleReplaceTest" )]
+        public abstract string SimpleReplaceTest( ISqlCallContext ctx, string textParam );
+        
+        // "define:" prefix is optional.
+        [SqlProcedureNonQuery( "sSimpleTransformTest" )]
+        public abstract string SimpleTransormTest( ISqlCallContext ctx );
     }
 }

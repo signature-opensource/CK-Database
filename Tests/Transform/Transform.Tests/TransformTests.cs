@@ -13,12 +13,13 @@ namespace Transform.Tests
     public class TransformTests
     {
         [Test]
-        public void calling_test_method()
+        public void calling_SimpleReplaceTest_method()
         {
             var p = TestHelper.StObjMap.Default.Obtain<CKLevel0.Package>();
             using( var ctx = new SqlStandardCallContext() )
             {
-                p.Test( ctx, "Hello!" );
+                string s = p.SimpleReplaceTest( ctx, "Hello!" );
+                Assert.That( s, Is.EqualTo( "Return: Hello! 0" ) );
             }
         }
     }

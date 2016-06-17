@@ -20,7 +20,7 @@ namespace CK.SqlServer.Setup
         /// </summary>
         public SqlContextLocName()
         {
-            _objectName = String.Empty;
+            _objectName = string.Empty;
         }
 
         /// <summary>
@@ -75,11 +75,11 @@ namespace CK.SqlServer.Setup
             get { return _objectName; }
             set 
             {
-                if( value == null ) value = String.Empty;
+                if( value == null ) value = string.Empty;
                 if( _objectName != value )
                 {
                     _objectName = value;
-                    Name = String.IsNullOrEmpty( _schema ) ? value : _schema + '.' + value;
+                    Name = string.IsNullOrEmpty( _schema ) ? value : _schema + '.' + value;
                 }
             }
         }

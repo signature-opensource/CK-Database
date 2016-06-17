@@ -11,10 +11,10 @@ namespace CKLevel2
 {
     [SqlPackage( ResourcePath = "Res", Schema = "CK" )]
     [Versions("0.0.0")]
+    [SqlObjectItem( "transform:sSimpleTransformTest" )]
     public abstract class Package : SqlPackage
     {
-
-        [SqlProcedureNonQuery( "sTest" )]
-        public abstract string Test( ISqlCallContext ctx, string textParam, int added );
+        [SqlProcedureNonQuery( "replace:sSimpleReplaceTest" )]
+        public abstract string SimpleReplaceTest( ISqlCallContext ctx, string textParam, int added );
     }
 }

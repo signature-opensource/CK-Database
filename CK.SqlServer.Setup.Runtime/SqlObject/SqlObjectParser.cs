@@ -15,12 +15,12 @@ namespace CK.SqlServer.Setup
 {
     public class SqlObjectParser : ISqlObjectParser
     {
-        static Regex _rSqlObject = new Regex( @"(create|alter)\s+(?<1>proc(?:edure)?|function|view)\s+(\[?(?<2>\w+)]?\.)?(\[?(?<3>\w+)]?\.)?\[?(?<4>\w+)]?",
+        static Regex _rSqlObject = new Regex( @"(create|alter)\s+(?<1>proc(?:edure)?|function|view|transformer)\s+(\[?(?<2>\w+)]?\.)?(\[?(?<3>\w+)]?\.)?\[?(?<4>\w+)]?",
                                             RegexOptions.CultureInvariant
                                             | RegexOptions.IgnoreCase
                                             | RegexOptions.ExplicitCapture );
 
-        static Regex _rHeader = new Regex( @"^\s*--\s*Version\s*=\s*(?<1>\d+(\.\d+)*|\*)\s*(,\s*(Package\s*=\s*(?<2>(\w|\.|-)+)|Requires\s*=\s*{\s*(?<3>\??(\w+|-|\^|\[|]|\.)+)\s*(,\s*(?<3>\??(\w+|-|\^|\[|]|\.)+)\s*)*}|Groups\s*=\s*{\s*(?<4>(\w+|-|\^|\[|]|\.)+)\s*(,\s*(?<4>(\w+|-|\^|\[|]|\.)+)\s*)*}|RequiredBy\s*=\s*{\s*(?<5>(\w+|-|\^|\[|]|\.)+)\s*(,\s*(?<5>(\w+|-|\^|\[|]|\.)+)\s*)*}|PreviousNames\s*=\s*{\s*((?<6>(\w+|-|\^|\[|]|\.)+)\s*=\s*(?<6>\d+\.\d+\.\d+(\.\d+)?))\s*(,\s*((?<6>(\w+|-|\^|\[|]|\.)+)\s*=\s*(?<6>\d+(\.\d+){1,3}))\s*)*})\s*)*",
+        static Regex _rHeader = new Regex( @"^\s*--\s*(Version\s*=\s*(?<1>\d+(\.\d+)*|\*))?\s*(,\s*(Package\s*=\s*(?<2>(\w|\.|-)+)|Requires\s*=\s*{\s*(?<3>\??(\w+|-|\^|\[|]|\.)+)\s*(,\s*(?<3>\??(\w+|-|\^|\[|]|\.)+)\s*)*}|Groups\s*=\s*{\s*(?<4>(\w+|-|\^|\[|]|\.)+)\s*(,\s*(?<4>(\w+|-|\^|\[|]|\.)+)\s*)*}|RequiredBy\s*=\s*{\s*(?<5>(\w+|-|\^|\[|]|\.)+)\s*(,\s*(?<5>(\w+|-|\^|\[|]|\.)+)\s*)*}|PreviousNames\s*=\s*{\s*((?<6>(\w+|-|\^|\[|]|\.)+)\s*=\s*(?<6>\d+\.\d+\.\d+(\.\d+)?))\s*(,\s*((?<6>(\w+|-|\^|\[|]|\.)+)\s*=\s*(?<6>\d+(\.\d+){1,3}))\s*)*})\s*)*",
                 RegexOptions.CultureInvariant
                 | RegexOptions.IgnoreCase
                 | RegexOptions.ExplicitCapture );
@@ -40,7 +40,7 @@ namespace CK.SqlServer.Setup
             Match mSqlObject = _rSqlObject.Match( text );
             if( !mSqlObject.Success )
             {
-                monitor.Error().Send( "Unable to detect create or alter statement for view, procedure or function (the object name must be Schema.Name)." );
+                monitor.Error().Send( "Unable to detect create or alter statement for view, procedure, function or transformer." );
                 return null;
             }
             string type;
@@ -48,11 +48,12 @@ namespace CK.SqlServer.Setup
             {
                 case 'V': type = SqlObjectProtoItem.TypeView; break;
                 case 'P': type = SqlObjectProtoItem.TypeProcedure; break;
+                case 'T': type = SqlObjectProtoItem.TypeTransformer; break;
                 default: type = SqlObjectProtoItem.TypeFunction; break;
             }
             if( expectedType != null && expectedType != type )
             {
-                monitor.Error().Send( "Expected Sql object of type '{0}' but found a {1}.", expectedType, type );
+                monitor.Error().Send( "Expected object of type '{0}' but found a {1}.", expectedType, type );
                 return null;
             }
 
@@ -82,7 +83,7 @@ namespace CK.SqlServer.Setup
                 var prevVer = mHeader.Groups[6].Captures.Cast<Capture>().Select( m => Version.Parse( m.Value ) );
                 previousNames = prevNames.Zip( prevVer, ( n, v ) => new VersionedName( n, v ) ).ToArray();
             }
-            if( mHeader.Groups[1].Length == 1 ) version = null;
+            if( mHeader.Groups[1].Length <= 1 ) version = null;
             else if( !Version.TryParse( mHeader.Groups[1].Value, out version ) || version.Revision != -1 || version.Build == -1 )
             {
                 monitor.Error().Send( "-- Version=X.Y.Z (with Major.Minor.Build) or Version=* must appear first in header." );
@@ -103,6 +104,7 @@ namespace CK.SqlServer.Setup
             string databaseOrSchema = mSqlObject.Groups[2].Value;
             string schema = mSqlObject.Groups[3].Value;
             string name = mSqlObject.Groups[4].Value;
+            if( ReferenceEquals( type, SqlObjectProtoItem.TypeTransformer ) && name == "on" ) name = string.Empty;
             if( schema.Length == 0 && databaseOrSchema.Length > 0 )
             {
                 string tmp = schema;

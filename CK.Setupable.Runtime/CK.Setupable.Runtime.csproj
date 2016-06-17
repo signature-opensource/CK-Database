@@ -78,6 +78,7 @@
     <Compile Include="ContextLocName\DefaultContextLocNaming.cs" />
     <Compile Include="ContextLocName\IContextLocNaming.cs" />
     <Compile Include="HelperExtensions.cs" />
+    <Compile Include="SetupObjectItemBehavior.cs" />
     <Compile Include="Setup\ISetupEngineAspect.cs" />
     <Compile Include="ResourceLocator.cs" />
     <Compile Include="SetupItemSelectorBaseAttributeImpl.cs" />

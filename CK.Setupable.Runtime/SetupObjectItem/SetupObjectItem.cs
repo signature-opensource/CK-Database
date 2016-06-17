@@ -57,40 +57,22 @@ namespace CK.Setup
         /// <summary>
         /// Gets the object that is replaced by this one.
         /// </summary>
-        public SetupObjectItem Replaces
-        {
-            get { return _replaces; }
-        }
+        public SetupObjectItem Replaces => _replaces; 
 
-        public IContextLocNaming ContextLocName
-        {
-            get { return _contextLocName; }
-        }
+        public IContextLocNaming ContextLocName => _contextLocName; 
 
-        public IDependentItemList Requires
-        {
-            get { return _requires ?? (_requires = new DependentItemList()); }
-        }
+        public IDependentItemList Requires => _requires ?? (_requires = new DependentItemList()); 
 
-        public IDependentItemList RequiredBy
-        {
-            get { return _requiredBy ?? (_requiredBy = new DependentItemList()); }
-        }
+        public IDependentItemList RequiredBy => _requiredBy ?? (_requiredBy = new DependentItemList()); 
 
-        public IDependentItemGroupList Groups
-        {
-            get { return _groups ?? (_groups = new DependentItemGroupList()); }
-        }
+        public IDependentItemGroupList Groups => _groups ?? (_groups = new DependentItemGroupList()); 
 
         IDependentItemContainerRef IDependentItem.Container
         {
             get { return _container.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _contextLocName.Context, _contextLocName.Location ) ); }
         }
 
-        IDependentItemRef IDependentItem.Generalization
-        {
-            get { return null; }
-        }
+        IDependentItemRef IDependentItem.Generalization => null; 
 
         IEnumerable<IDependentItemRef> IDependentItem.Requires
         {
@@ -110,20 +92,11 @@ namespace CK.Setup
         /// <summary>
         /// Gets the type of the object ("Procedure" for instance). This implements the <see cref="IVersionedItem.ItemType"/>.
         /// </summary>
-        public string ItemType
-        {
-            get { return _type; }
-        }
+        public string ItemType => _type; 
 
-        string IContextLocNaming.Context
-        {
-            get { return _contextLocName.Context; }
-        }
+        string IContextLocNaming.Context => _contextLocName.Context; 
 
-        string IContextLocNaming.Location
-        {
-            get { return _contextLocName.Location; }
-        }
+        string IContextLocNaming.Location => _contextLocName.Location; 
 
         string IContextLocNaming.Name
         {
@@ -146,15 +119,9 @@ namespace CK.Setup
             }
         }
 
-        bool IDependentItemRef.Optional
-        {
-            get { return false; }
-        }
+        bool IDependentItemRef.Optional => false; 
 
-        object IDependentItem.StartDependencySort()
-        {
-            return StartDependencySort();
-        }
+        object IDependentItem.StartDependencySort() => StartDependencySort();
 
         /// <summary>
         /// Abstract method that is called at the beginning of the topological sort.

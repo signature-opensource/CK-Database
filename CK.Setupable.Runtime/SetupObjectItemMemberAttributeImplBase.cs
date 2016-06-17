@@ -13,18 +13,13 @@ namespace CK.Setup
     /// Base implementation for <see cref="SetupObjectItemMemberAttributeBase"/> attributes applied to members that
     /// dynamically define one <see cref="SetupObjectItem"/>.
     /// </summary>
-    public abstract class SetupObjectItemMemberAttributeImplBase : IStObjSetupDynamicInitializer, IAttributeAmbientContextBoundInitializer, ISetupObjectItemProvider
+    public abstract class SetupObjectItemMemberAttributeImplBase : SetupObjectItemAttributeImplBase.ISetupItemCreator, IAttributeAmbientContextBoundInitializer, ISetupObjectItemProvider
     {
         readonly AmbientContextBoundDelegationAttribute _attribute;
         ICKCustomAttributeTypeMultiProvider _owner;
         MemberInfo _member;
         ISetupEngineAspectProvider _aspectProvider;
         SetupObjectItemAttributeImplBase.BestCreator _theBest;
-        
-        /// <summary>
-        /// Name of the object.
-        /// </summary>
-        protected readonly string ObjectName;
 
         /// <summary>
         /// Initializes a new <see cref="SetupObjectItemMemberAttributeImplBase"/> bound to a <see cref="SetupObjectItemMemberAttributeBase"/>.
@@ -43,8 +38,18 @@ namespace CK.Setup
         protected SetupObjectItemMemberAttributeImplBase( AmbientContextBoundDelegationAttribute a, string objectName )
         {
             _attribute = a;
-            ObjectName = objectName;
+            ObjectName = SetupObjectItemAttributeImplBase.ExtractBehavior( out Behavior, objectName );
         }
+
+        /// <summary>
+        /// Name of the object.
+        /// </summary>
+        protected readonly string ObjectName;
+
+        /// <summary>
+        /// Registration behavior.
+        /// </summary>
+        protected readonly SetupObjectItemBehavior Behavior;
 
         /// <summary>
         /// Gets the original attribute.
@@ -75,36 +80,17 @@ namespace CK.Setup
         void IStObjSetupDynamicInitializer.DynamicItemInitialize( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjResult stObj )
         {
             _aspectProvider = state.AspectProvider;
-            IContextLocNaming name = BuildFullName( item, stObj, ObjectName );
-            if( name == null )
-            {
-                state.Monitor.Error().Send( "Invalid object name '{0}' in {3} attribute of '{1}' for '{2}'.", ObjectName, Member.Name, item.FullName, Attribute.GetShortTypeName() );
-                return;
-            }
-            _theBest = SetupObjectItemAttributeImplBase.AssumeBestCreator( state, name, this );
-            if( _theBest.FirstCreator == this )
-            {
-                _theBest.FirstItem = CreateSetupObjectItem( state.Monitor, item, stObj, name );
-                _theBest.LastPackagesSeen = item;
-            }
-            else state.PushAction( DynamicItemInitializeAfterFollowing );
+            var r = new SetupObjectItemAttributeImplBase.Registerer( state, item, stObj, this );
+            _theBest = r.Register( Behavior, ObjectName );
+            if( _theBest != null ) state.PushAction( DynamicItemInitializeAfterFollowing );
         }
 
         void DynamicItemInitializeAfterFollowing( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjResult stObj )
         {
-            // If we are the best, our resource wins.
-            if( _theBest.Creator == this )
+            if( _theBest != null )
             {
-                Debug.Assert( _theBest.FirstCreator != this, "We did not push any action for the first." );
-                Debug.Assert( _theBest.Item == null, "We are the only winner." );
-                // When multiples methods exist bound to the same object, this avoids 
-                // to load the same resource multiple times: only the first occurence per package is considered.
-                if( _theBest.LastPackagesSeen != item )
-                {
-                    _theBest.Item = CreateSetupObjectItem( state.Monitor, item, stObj, _theBest.Name ); ;
-                    _theBest.FirstItem.ReplacedBy = _theBest.Item;
-                    _theBest.LastPackagesSeen = item;
-                }
+                var r = new SetupObjectItemAttributeImplBase.Registerer( state, item, stObj, this );
+                r.FinalizeRegister( _theBest );
             }
         }
 
@@ -116,25 +102,44 @@ namespace CK.Setup
             get { return _theBest != null ? _theBest.Item ?? _theBest.FirstItem : null; }
         }
 
+        string SetupObjectItemAttributeImplBase.ISetupItemCreator.GetDetailedName( SetupObjectItemAttributeImplBase.Registerer r, string name )
+        {
+            return $"'{ObjectName}' in '{Member.Name}' {Attribute.GetShortTypeName()} attribute of '{r.Item.FullName}'.";
+        }
+
+        IContextLocNaming SetupObjectItemAttributeImplBase.ISetupItemCreator.BuildFullName( SetupObjectItemAttributeImplBase.Registerer r, SetupObjectItemBehavior b, string name )
+        {
+            return BuildFullName( r, b, name );
+        }
+
+        SetupObjectItem SetupObjectItemAttributeImplBase.ISetupItemCreator.CreateSetupObjectItem( SetupObjectItemAttributeImplBase.Registerer r, SetupObjectItemBehavior b, IContextLocNaming name )
+        {
+            return CreateSetupObjectItem( r, b, name );
+        }
+
         /// <summary>
-        /// Must build the <see cref="IContextLocNaming"/> name of the future <see cref="SetupObjectItem"/> with 
-        /// the help of the owner object and the name in the attribute.
+        /// Must build the <see cref="IContextLocNaming"/> name of the future <see cref="SetupObjectItem"/> with the help of the owner object and the name in the attribute.
+        /// This is called for each name in <see cref="SetupObjectItemAttributeBase.CommaSeparatedObjectNames"/>.
         /// </summary>
-        /// <param name="ownerItem">Owner item.</param>
-        /// <param name="ownerStObj">Owner object StObj information.</param>
-        /// <param name="attributeName">Name as it appears in the attribute.</param>
+        /// <param name="Registerer">Registerer context object.</param>
+        /// <param name="b">Registration behavior.</param>
+        /// <param name="name">The raw name.</param>
         /// <returns>The name of the SetupObjectItem.</returns>
-        protected abstract IContextLocNaming BuildFullName( IMutableSetupItem ownerItem, IStObjResult ownerStObj, string attributeName );
+        protected abstract IContextLocNaming BuildFullName( SetupObjectItemAttributeImplBase.Registerer r, SetupObjectItemBehavior b, string name );
 
         /// <summary>
         /// Must create the <see cref="SetupObjectItem"/>.
+        /// This is called for each name in <see cref="SetupObjectItemAttributeBase.CommaSeparatedObjectNames"/>
+        /// after <see cref="BuildFullName"/> has been called.
         /// </summary>
-        /// <param name="monitor">Monitor to use.</param>
-        /// <param name="ownerItem">Owner item.</param>
-        /// <param name="ownerStObj">Owner object StObj information.</param>
+        /// <param name="Registerer">Registerer context object.</param>
+        /// <param name="b">Registration behavior.</param>
         /// <param name="name">The name from <see cref="BuildFullName"/> method.</param>
-        /// <returns>A new SetupObject.</returns>
-        protected abstract SetupObjectItem CreateSetupObjectItem( IActivityMonitor monitor, IMutableSetupItem ownerItem, IStObjResult ownerStObj, IContextLocNaming name );
+        /// <returns>
+        /// A new SetupObject or null if it can not be created. If an errr occurred, it must 
+        /// be logged to the monitor.
+        /// </returns>
+        protected abstract SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeImplBase.Registerer r, SetupObjectItemBehavior b, IContextLocNaming name );
 
     }
 
