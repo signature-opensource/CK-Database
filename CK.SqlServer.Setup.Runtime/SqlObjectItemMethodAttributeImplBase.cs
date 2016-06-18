@@ -37,7 +37,7 @@ namespace CK.SqlServer.Setup
 
         protected override IContextLocNaming BuildFullName( SetupObjectItemAttributeImplBase.Registerer r, SetupObjectItemBehavior b, string attributeName )
         {
-            SqlPackageBaseItem p = (SqlPackageBaseItem)r.Item;
+            SqlPackageBaseItem p = (SqlPackageBaseItem)r.Container;
             var name = new SqlContextLocName( attributeName );
             if( name.Context == null ) name.Context = p.Context;
             if( name.Location == null ) name.Location = p.Location;
@@ -45,11 +45,13 @@ namespace CK.SqlServer.Setup
             return name;
         }
 
-        protected override SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeImplBase.Registerer r, IContextLocNaming name )
+        protected override SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeImplBase.Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name )
         {
-            SqlPackageBaseItem p = (SqlPackageBaseItem)r.Item;
             ISqlSetupAspect sql = SetupEngineAspectProvider.GetSetupEngineAspect<ISqlSetupAspect>();
-            return SqlObjectItemAttributeImpl.LoadItemFromResource( sql.SqlParser, r.Monitor, p, Attribute.MissingDependencyIsError, (SqlContextLocName)name, _sqlObjectProtoItemType );
+            SetupObjectItem item = SqlObjectItemAttributeImpl.LoadItemFromResource( sql.SqlParser, r.Monitor, (SqlPackageBaseItem)r.Container, Attribute.MissingDependencyIsError, (SqlContextLocName)name, _sqlObjectProtoItemType );
+            var p = (SqlPackageBaseItem)firstContainer;
+            p.EnsureObjectsPackage().Children.Add( item );
+            return item;
         }
 
         bool IAutoImplementorMethod.Implement( IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, TypeBuilder tB, bool isVirtual )

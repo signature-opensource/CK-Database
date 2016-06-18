@@ -356,7 +356,7 @@ namespace CK.Setup
                     }
                 }
                 // On success, we execute the pushed actions.
-                if( success && state.PushedActionsCount > 0 || state.PushedNextRoundActionsCount > 0 )
+                if( success && (state.PushedActionsCount > 0 || state.PushedNextRoundActionsCount > 0) )
                 {
                     using( _monitor.OpenInfo().Send( "Executing {0} deferred actions.", state.PushedActionsCount ) )
                     {

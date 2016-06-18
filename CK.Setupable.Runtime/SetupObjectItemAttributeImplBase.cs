@@ -23,7 +23,17 @@ namespace CK.Setup
         {
             IContextLocNaming BuildFullName( Registerer r, SetupObjectItemBehavior b, string name );
 
-            SetupObjectItem CreateSetupObjectItem( Registerer r, IContextLocNaming name );
+            /// <summary>
+            /// Must create the object.
+            /// </summary>
+            /// <param name="r">The registerer that exposes context informations.</param>
+            /// <param name="firstContainer">
+            /// The first container in which the item has been defined.
+            /// When there is no replacement, this is the same as <see cref="Registerer.Container"/>.
+            /// </param>
+            /// <param name="name">The name of the object to create.</param>
+            /// <returns>The newly created item.</returns>
+            SetupObjectItem CreateSetupObjectItem( Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name );
 
             string GetDetailedName( Registerer r, string name );
         }
@@ -51,15 +61,31 @@ namespace CK.Setup
 
             public override int GetHashCode() => _hash;
 
+            /// <summary>
+            /// Name of the item to create is the key.
+            /// </summary>
             public readonly IContextLocNaming Name;
 
+            /// <summary>
+            /// Rhe eventually created item.
+            /// </summary>
             public SetupObjectItem Item;
 
+            /// <summary>
+            /// The last definer is the winner.
+            /// </summary>
             public IStObjSetupDynamicInitializer LastDefiner;
 
-            public IMutableSetupItem FirstPackagesSeen;
+            /// <summary>
+            /// Keeps the container that has the first definer.
+            /// </summary>
+            public IMutableSetupItem FirstContainer;
 
-            public IMutableSetupItem LastPackagesSeen;
+            /// <summary>
+            /// Keeping the last container is used to handle multiple definitions
+            /// in the same container.
+            /// </summary>
+            public IMutableSetupItem LastContainerSeen;
         }
 
         public class Registerer
@@ -74,17 +100,26 @@ namespace CK.Setup
                 ISetupItemCreator candidate )
             {
                 _state = state;
-                Item = item;
+                Container = item;
                 StObj = stObj;
                 _candidate = candidate;
             }
 
+            /// <summary>
+            /// Gets the monitor to use.
+            /// </summary>
+            public IActivityMonitor Monitor => _state.Monitor;
 
-            public readonly IMutableSetupItem Item;
+            /// <summary>
+            /// Gets the container that attempts to register the item.
+            /// </summary>
+            public readonly IMutableSetupItem Container;
 
+            /// <summary>
+            /// Gets the stObj associated to the <see cref="Container"/>.
+            /// </summary>
             public readonly IStObjResult StObj;
 
-            public IActivityMonitor Monitor => _state.Monitor;
 
             public bool HaseError { get; private set; }
 
@@ -114,7 +149,7 @@ namespace CK.Setup
                     }
                     _state.Memory[key] = best = key;
                     best.LastDefiner = _candidate;
-                    best.LastPackagesSeen = best.FirstPackagesSeen = Item;
+                    best.LastContainerSeen = best.FirstContainer = Container;
                 }
                 else
                 {
@@ -122,12 +157,12 @@ namespace CK.Setup
                     {
                         // Replace from another package: memorze it as the best one so far, 
                         // otherwise skip it, except if it has been define in the same package..
-                        if( best.LastPackagesSeen != Item )
+                        if( best.LastContainerSeen != Container )
                         {
                             best.LastDefiner = _candidate;
-                            best.LastPackagesSeen = Item;
+                            best.LastContainerSeen = Container;
                         }
-                        else if( best.FirstPackagesSeen == Item )
+                        else if( best.FirstContainer == Container )
                         {
                             _state.Monitor.Error().Send( "Object {0} is both defined and replaced by the same package.", _candidate.GetDetailedName( this, name ) );
                             return SetError();
@@ -137,7 +172,7 @@ namespace CK.Setup
                     {
                         // Defining from another package than the first one is an error.
                         // Otherwise, we keep the candidate. 
-                        if( best.LastPackagesSeen != Item )
+                        if( best.LastContainerSeen != Container )
                         {
                             _state.Monitor.Error().Send( "Object {0} is already defined.", _candidate.GetDetailedName( this, name ) );
                             return SetError();
@@ -152,17 +187,21 @@ namespace CK.Setup
                 if( best.LastDefiner == _candidate )
                 {
                     Debug.Assert( best.Item == null, "We are the only winner (the last one)." );
-                    best.Item = DoCreateSetupObjectItem( best.Name );
+                    best.Item = DoCreateSetupObjectItem( best.FirstContainer, best.Name );
                 }
                 return best.Item != null;
             }
 
-            SetupObjectItem DoCreateSetupObjectItem( IContextLocNaming name )
+            SetupObjectItem DoCreateSetupObjectItem( IMutableSetupItem firstContainer, IContextLocNaming name )
             {
                 SetupObjectItem o;
                 using( _state.Monitor.OnError( () => HaseError = true ) )
                 {
-                    o = _candidate.CreateSetupObjectItem( this, name );
+                    o = _candidate.CreateSetupObjectItem( this, firstContainer, name );
+                    if( o == null && HaseError == false )
+                    {
+                        _state.Monitor.Error().Send( "Unable to create setup object: " + _candidate.GetDetailedName( this, name.FullName ) );
+                    }
                 }
                 return HaseError ? null : o;
             }
@@ -241,7 +280,7 @@ namespace CK.Setup
 
         string ISetupItemCreator.GetDetailedName( Registerer r, string name )
         {
-            return $"'{name}' in {Attribute.GetShortTypeName()} attribute of '{r.Item.FullName}' already exists."; 
+            return $"'{name}' in {Attribute.GetShortTypeName()} attribute of '{r.Container.FullName}'"; 
         }
 
         IContextLocNaming ISetupItemCreator.BuildFullName( Registerer r, SetupObjectItemBehavior b, string name )
@@ -249,9 +288,9 @@ namespace CK.Setup
             return BuildFullName( r, b, name );
         }
 
-        SetupObjectItem ISetupItemCreator.CreateSetupObjectItem( Registerer r, IContextLocNaming name )
+        SetupObjectItem ISetupItemCreator.CreateSetupObjectItem( Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name )
         {
-            return CreateSetupObjectItem( r, name );
+            return CreateSetupObjectItem( r, firstContainer, name );
         }
 
         /// <summary>
@@ -270,12 +309,16 @@ namespace CK.Setup
         /// after <see cref="BuildFullName"/> has been called.
         /// </summary>
         /// <param name="Registerer">Registerer context object.</param>
+        /// <param name="firstContainer">
+        /// The first container in which the item has been defined.
+        /// When there is no replacement, this is the same as <see cref="Registerer.Container"/>.
+        /// </param>
         /// <param name="name">The name from <see cref="BuildFullName"/> method.</param>
         /// <returns>
         /// A new SetupObject or null if it can not be created. If an errr occurred, it must 
         /// be logged to the monitor.
         /// </returns>
-        protected abstract SetupObjectItem CreateSetupObjectItem( Registerer r, IContextLocNaming name );
+        protected abstract SetupObjectItem CreateSetupObjectItem( Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name );
 
 
     }

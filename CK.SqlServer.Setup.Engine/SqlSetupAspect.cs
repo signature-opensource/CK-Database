@@ -202,7 +202,7 @@ namespace CK.SqlServer.Setup
                         var items = new List<ISetupItem>();
                         foreach( var proto in _sqlFiles.OfType<SqlObjectProtoItem>() )
                         {
-                            var item = proto.CreateItem( SqlParser, monitor, !_config.IgnoreMissingDependencyIsError, null );
+                            var item = proto.CreateItem( SqlParser, monitor, !_config.IgnoreMissingDependencyIsError );
                             if( item == null ) hasError = true;
                             else items.Add( item );
                         }

@@ -5,7 +5,7 @@ namespace SqlZonePackage.Zone
 {
 
     [SqlPackage( ResourceType = typeof( Package ), ResourcePath = "~SqlZonePackage.Res" ), Versions( "2.11.25" )]
-    [SqlObjectItem( "sUserToBeOverridenIndirect" )]
+    [SqlObjectItem( "replace:sUserToBeOverridenIndirect" )]
     [SqlActorPackage.TestAutoHeaderSP( "Injected from SqlZonePackage.Zone.Package.TestAutoHeaderSP attribute (n°2/2).", "sUserToBeOverridenIndirect" )]
     public abstract class Package : SqlActorPackage.Basic.Package
     {

@@ -26,7 +26,7 @@ namespace CK.SqlServer.Setup
 
         protected override IContextLocNaming BuildFullName( Registerer r, SetupObjectItemBehavior b, string attributeName )
         {
-            SqlPackageBaseItem p = (SqlPackageBaseItem)r.Item;
+            SqlPackageBaseItem p = (SqlPackageBaseItem)r.Container;
             var name = new SqlContextLocName( attributeName );
             if( name.Context == null ) name.Context = p.Context;
             if( name.Location == null ) name.Location = p.Location;
@@ -34,18 +34,20 @@ namespace CK.SqlServer.Setup
             return name;
         }
 
-        protected override SetupObjectItem CreateSetupObjectItem( Registerer r, IContextLocNaming name )
+        protected override SetupObjectItem CreateSetupObjectItem( Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name )
         {
-            SqlPackageBaseItem p = (SqlPackageBaseItem)r.Item;
             ISqlSetupAspect sql = SetupEngineAspectProvider.GetSetupEngineAspect<ISqlSetupAspect>();
-            return LoadItemFromResource( sql.SqlParser, r.Monitor, p, Attribute.MissingDependencyIsError, (SqlContextLocName)name, null );
+            var item = LoadItemFromResource( sql.SqlParser, r.Monitor, (SqlPackageBaseItem)r.Container, Attribute.MissingDependencyIsError, (SqlContextLocName)name, null );
+            var p = (SqlPackageBaseItem)firstContainer;
+            p.EnsureObjectsPackage().Children.Add( item );
+            return item;
         }
 
         static internal SetupObjectItem LoadItemFromResource( ISqlServerParser parser, IActivityMonitor monitor, SqlPackageBaseItem packageItem, bool missingDependencyIsError, SqlContextLocName name, string expectedItemType = null )
         {
             SqlObjectProtoItem protoObject = LoadProtoItemFromResource( monitor, packageItem, name, expectedItemType );
             if( protoObject == null ) return null;
-            return protoObject.CreateItem( parser, monitor, missingDependencyIsError, packageItem );
+            return protoObject.CreateItem( parser, monitor, missingDependencyIsError );
         }
 
         static SqlObjectProtoItem LoadProtoItemFromResource( IActivityMonitor monitor, SqlPackageBaseItem packageItem, SqlContextLocName name, string expectedItemType )

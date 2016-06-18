@@ -132,7 +132,7 @@ namespace CK.SqlServer.Setup
             }
         }
 
-        public SetupObjectItem CreateItem( ISqlServerParser parser, IActivityMonitor monitor, bool defaultMissingDependencyIsError, SqlPackageBaseItem package = null )
+        public SetupObjectItem CreateItem( ISqlServerParser parser, IActivityMonitor monitor, bool defaultMissingDependencyIsError )
         {
             if( parser == null ) throw new ArgumentNullException( "parser" );
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
@@ -180,8 +180,6 @@ namespace CK.SqlServer.Setup
             {
                 SqlObjectItem sql = result as SqlObjectItem;
                 if( sql != null && !sql.MissingDependencyIsError.HasValue ) sql.MissingDependencyIsError = defaultMissingDependencyIsError;
-
-                if( package != null ) package.EnsureObjectsPackage().Children.Add( result );
             }
             return result;
         }

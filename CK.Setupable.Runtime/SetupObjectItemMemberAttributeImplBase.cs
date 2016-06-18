@@ -101,7 +101,7 @@ namespace CK.Setup
 
         string SetupObjectItemAttributeImplBase.ISetupItemCreator.GetDetailedName( SetupObjectItemAttributeImplBase.Registerer r, string name )
         {
-            return $"'{ObjectName}' in '{Member.Name}' {Attribute.GetShortTypeName()} attribute of '{r.Item.FullName}'.";
+            return $"'{ObjectName}' in '{Member.Name}' {Attribute.GetShortTypeName()} attribute of '{r.Container.FullName}'";
         }
 
         IContextLocNaming SetupObjectItemAttributeImplBase.ISetupItemCreator.BuildFullName( SetupObjectItemAttributeImplBase.Registerer r, SetupObjectItemBehavior b, string name )
@@ -109,9 +109,9 @@ namespace CK.Setup
             return BuildFullName( r, b, name );
         }
 
-        SetupObjectItem SetupObjectItemAttributeImplBase.ISetupItemCreator.CreateSetupObjectItem( SetupObjectItemAttributeImplBase.Registerer r, IContextLocNaming name )
+        SetupObjectItem SetupObjectItemAttributeImplBase.ISetupItemCreator.CreateSetupObjectItem( SetupObjectItemAttributeImplBase.Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name )
         {
-            return CreateSetupObjectItem( r, name );
+            return CreateSetupObjectItem( r, firstContainer, name );
         }
 
         /// <summary>
@@ -130,13 +130,16 @@ namespace CK.Setup
         /// after <see cref="BuildFullName"/> has been called.
         /// </summary>
         /// <param name="Registerer">Registerer context object.</param>
-        /// <param name="b">Registration behavior.</param>
+        /// <param name="firstContainer">
+        /// The first container in which the item has been defined.
+        /// When there is no replacement, this is the same as <see cref="SetupObjectItemAttributeImplBase.Registerer.Container"/>.
+        /// </param>
         /// <param name="name">The name from <see cref="BuildFullName"/> method.</param>
         /// <returns>
         /// A new SetupObject or null if it can not be created. If an errr occurred, it must 
         /// be logged to the monitor.
         /// </returns>
-        protected abstract SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeImplBase.Registerer r, IContextLocNaming name );
+        protected abstract SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeImplBase.Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name );
 
     }
 
