@@ -207,11 +207,12 @@ namespace CK.Core
         /// <param name="context">Output context if found. Null if not found.</param>
         /// <param name="location">Output location if found. Null if not found.</param>
         /// <param name="name">Output name. Never null.</param>
+        /// <param name="transformArg">Output optional full name of the transformation argument. Null if this name is not a transformation.</param>
         /// <returns>True on success, false on error (context, location are null and name is empty in this case).</returns>
-        public static bool TryParse( string input, out string context, out string location, out string name )
+        public static bool TryParse( string input, out string context, out string location, out string name, out string transformArg )
         {
             if( input == null ) throw new ArgumentNullException( "input" );
-            return DoTryParse( input, 0, input.Length, out context, out location, out name );
+            return DoTryParse( input, 0, input.Length, out context, out location, out name, out transformArg );
         }
 
         /// <summary>
@@ -224,12 +225,13 @@ namespace CK.Core
         /// <param name="context">Output context if found. Null if not found.</param>
         /// <param name="location">Output location if found. Null if not found.</param>
         /// <param name="name">Output name. Never null.</param>
+        /// <param name="transformArg">Output optional full name of the transformation argument. Null if this name is not a transformation.</param>
         /// <returns>True on success, false on error (context, location are null and name is empty in this case).</returns>
-        public static bool TryParse( string input, int startIndex, out string context, out string location, out string name )
+        public static bool TryParse( string input, int startIndex, out string context, out string location, out string name, out string transformArg )
         {
             if( input == null ) throw new ArgumentNullException( "input" );
             if( startIndex < 0 || startIndex > input.Length ) throw new ArgumentOutOfRangeException( "startIndex" );
-            return DoTryParse( input, startIndex, input.Length - startIndex, out context, out location, out name );
+            return DoTryParse( input, startIndex, input.Length - startIndex, out context, out location, out name, out transformArg );
         }
 
         /// <summary>
@@ -242,20 +244,29 @@ namespace CK.Core
         /// <param name="count">Number of characters to consier.</param>
         /// <param name="context">Output context if found. Null if not found.</param>
         /// <param name="location">Output location if found. Null if not found.</param>
+        /// <param name="transformArg">Output optional full name of the transformation argument. Null if this name is not a transformation.</param>
         /// <param name="name">Output name. Never null.</param>
-        /// <returns>True on success, false on error (context, location are null and name is empty in this case).</returns>
-        public static bool TryParse( string input, int startIndex, int count, out string context, out string location, out string name )
+        /// <returns>True on success, false on error (context, location and source are null and name is empty in this case).</returns>
+        public static bool TryParse( string input, int startIndex, int count, out string context, out string location, out string name, out string transformArg )
         {
             if( input == null ) throw new ArgumentNullException( "input" );
             if( startIndex < 0 || startIndex > input.Length ) throw new ArgumentOutOfRangeException( "startIndex" );
             if( startIndex + count >= input.Length ) throw new ArgumentOutOfRangeException( "count" );
-            return DoTryParse( input, startIndex, count, out context, out location, out name );
+            return DoTryParse( input, startIndex, count, out context, out location, out name, out transformArg );
         }
 
-        private static bool DoTryParse( string input, int startIndex, int count, out string context, out string location, out string name )
+        private static bool DoTryParse( 
+            string input, 
+            int startIndex, 
+            int count, 
+            out string context, 
+            out string location, 
+            out string name,
+            out string source )
         {
             context = null;
             location = null;
+            source = null;
             name = String.Empty;
             if( count == 0 ) return true;
             if( input[startIndex] == '[' )
@@ -277,9 +288,87 @@ namespace CK.Core
                     startIndex = idxEnd + 1;
                     count -= lenLoc + 1;
                 }
+                if( count > 0 )
+                {
+                    source = ExtractTransformArg( input, startIndex, count );
+                    if( source != null && source.Length == 0 ) return false;
+                }
             }
             name = input.Substring( startIndex, count );
             return true;
+        }
+
+        /// <summary>
+        /// Extracts the '(...)' suffix if it exists.
+        /// An empty string is returned if the suffix is '()'.
+        /// </summary>
+        /// <param name="input">The input string.</param>
+        /// <param name="startIndex">Start of the sustring to consider in input.</param>
+        /// <param name="count">Number of characters to consider.</param>
+        /// <returns>The transformation argument without the enclosing parenthesis.</returns>
+        public static string ExtractTransformArg( string input, int startIndex, int count )
+        {
+            if( count > 0 && input[startIndex + count - 1] == ')' )
+            {
+                int idxStart = input.LastIndexOf( '(', startIndex + count - 1, count );
+                if( idxStart >= 0 )
+                {
+                    return input.Substring( idxStart + 1, count - 2 );
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Removes the (...) suffix if it exists.
+        /// </summary>
+        /// <param name="input">The input string (name or full name).</param>
+        /// <returns>The input string without transformation argument if it exists.</returns>
+        public static string RemoveTransformArg( string input )
+        {
+            if( input == null ) throw new ArgumentNullException( nameof( input ) );
+            if( input[input.Length - 1] == ')' )
+            {
+                int idxStart = input.LastIndexOf( '(' );
+                if( idxStart >= 0 )
+                {
+                    return input.Substring( idxStart );
+                }
+            }
+            return input;
+        }
+
+        /// <summary>
+        /// Tests whether the name or full name ends with a transformation argument.
+        /// This is true even if the transformation argument is empty (which is invalid).
+        /// </summary>
+        /// <param name="input">The name or full name. Must not be null.</param>
+        /// <returns>True if and only if the input ends with a (..).</returns>
+        public static bool HasTransformArg( string input )
+        {
+            if( input == null ) throw new ArgumentNullException( nameof( input ) );
+            return input[input.Length - 1] == ')' && input.LastIndexOf( '(' ) >= 0;
+        }
+
+        /// <summary>
+        /// Appends a (...) suffix.
+        /// </summary>
+        /// <param name="input">The input string (name or full name).</param>
+        /// <returns>The source full name without the enclosing parenthesis.</returns>
+        public static string AppendTransformArg( string input, string transformArg )
+        {
+            if( input == null ) throw new ArgumentNullException( nameof( input ) );
+            return input + "(" + transformArg + ")";
+        }
+
+        /// <summary>
+        /// Helper that throws an <see cref="ArgumentException"/> if the input name or full name
+        /// ends with a (...).
+        /// </summary>
+        /// <param name="input">Nam or full name. Can be null: no exception is thrown in this case.</param>
+        public static void ThrowIfTransformArg( string input )
+        {
+            if( input != null && HasTransformArg( input ) ) throw new ArgumentException( "No TransformArg can be set." );
         }
 
         #endregion
@@ -329,12 +418,22 @@ namespace CK.Core
 
         static string DoResolve( string input, int startIndex, int count, string curContext, string curLoc, bool throwError )
         {
-            string context, location, name;
+            string context, location, name, source;
 
-            if( !DoTryParse( input, startIndex, count, out context, out location, out name ) )
+            if( !DoTryParse( input, startIndex, count, out context, out location, out name, out source ) )
             {
                 if( throwError ) throw new CKException( "Syntax error in ContextLocName '{0}'.", input.Substring( startIndex, count ) );
                 return null;
+            }
+            if( source != null )
+            {
+                if( source.Length == 0 )
+                {
+                    if( throwError ) throw new CKException( "Syntax error in ContextLocName '{0}': invalid suffix '()'.", input.Substring( startIndex, count ) );
+                    return null;
+                }
+                source = Resolve( source, curContext, curLoc, throwError );
+                name = AppendTransformArg( RemoveTransformArg( name ), source );
             }
             if( !DoCombine( curContext, curLoc, ref context, ref location, throwError ? () => input.Substring( startIndex, count ) : (Func<string>)null ) ) return null;
             string r = Format( context, location, name );

@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setupable.Runtime\Package\DynamicContainerItem.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -77,7 +70,7 @@ namespace CK.Setup
         public string Name
         {
             get { return _name.Name; }
-            set { _name.Name = value; }
+            set { DefaultContextLocNaming.ThrowIfTransformArg( value ); _name.Name = value; }
         }
 
         /// <summary>
@@ -87,8 +80,10 @@ namespace CK.Setup
         public string FullName
         {
             get { return _name.FullName; }
-            set { _name.FullName = value; }
+            set { DefaultContextLocNaming.ThrowIfTransformArg( value ); _name.FullName = value; }
         }
+
+        string IContextLocNaming.TransformArg => null;
 
         /// <summary>
         /// Gets or sets whether this container is actually NOT a Container or even not a Group.
@@ -142,18 +137,12 @@ namespace CK.Setup
         /// <summary>
         /// Gets a mutable list of groups to which this package belongs.
         /// </summary>
-        public IDependentItemGroupList Groups
-        {
-            get { return _groups ?? (_groups = new DependentItemGroupList()); }
-        }
+        public IDependentItemGroupList Groups => _groups ?? (_groups = new DependentItemGroupList()); 
 
         /// <summary>
         /// Gets a mutable list of children for this package.
         /// </summary>
-        public IDependentItemList Children
-        {
-            get { return _children ?? (_children = new DependentItemList()); }
-        }
+        public IDependentItemList Children => _children ?? (_children = new DependentItemList()); 
 
         /// <summary>
         /// Called at the very beginning of the setup phasis, before <see cref="IDependentItem.FullName"/> is used to planify the setup. 
@@ -164,20 +153,11 @@ namespace CK.Setup
         /// Must return the <see cref="Type"/> of the setup driver (specialization of <see cref="SetupItemDriver"/>), or its assembly qualified name.
         /// By default, returns the type of <see cref="SetupItemDriver"/>.
         /// </returns>
-        protected virtual object StartDependencySort()
-        {
-            return _driverType;
-        }
+        protected virtual object StartDependencySort() => _driverType;
 
-        object IDependentItem.StartDependencySort()
-        {
-            return StartDependencySort();
-        }
+        object IDependentItem.StartDependencySort() => StartDependencySort();
 
-        bool IDependentItemRef.Optional
-        {
-            get { return false; }
-        }
+        bool IDependentItemRef.Optional => false; 
 
         IDependentItemContainerRef IDependentItem.Container
         {

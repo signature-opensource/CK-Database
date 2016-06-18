@@ -43,10 +43,24 @@ namespace CK.Core
         /// </summary>
         /// <param name="context">Can be null (unknown).</param>
         /// <param name="location">Can be null (unknown).</param>
-        /// <param name="name">Can not be null but can be empty.</param>
+        /// <param name="name">Can not be null.</param>
         public ContextLocName( string context, string location, string name )
         {
             _impl = new ContextLocNameStructImpl( context, location, name );
+        }
+
+        /// <summary>
+        /// Initializes a new <see cref="ContextLocName"/> with a context, location and base name plus
+        /// the transform argument.
+        /// </summary>
+        /// <param name="context">The context string. Can be null.</param>
+        /// <param name="location">The location. Can be null.</param>
+        /// <param name="nameWithoutTransformArg">The name. Can not be null.</param>
+        /// <param name="transformArg">The transform argument. Can not be null nor empty.</param>
+
+        public ContextLocName( string context, string location, string nameWithoutTransformArg, string transformArg )
+        {
+            _impl = new ContextLocNameStructImpl( context, location, nameWithoutTransformArg, transformArg );
         }
 
         /// <summary>
@@ -80,7 +94,8 @@ namespace CK.Core
         {
             get { return _impl.Name; }
             set 
-            { 
+            {
+                if( value == null ) value = string.Empty;
                 if( _impl.Name != value )
                 {
                     _impl.Name = value;
@@ -90,7 +105,24 @@ namespace CK.Core
         }
 
         /// <summary>
+        /// Gets or sets the transformation argument. <see cref="Name"/> and <see cref="FullName"/> are 
+        /// automatically updated.
+        /// </summary>
+        public string TransformArg
+        {
+            get { return _impl.TransformArg; }
+            set
+            {
+                string oldName = _impl.Name;
+                _impl.TransformArg = value;
+                if( oldName != _impl.Name ) OnNameChanged();
+            }
+        }
+
+        /// <summary>
         /// Called whenever the <see cref="Name"/> has changed.
+        /// This may be because the <see cref="FullName"/>, the <see cref="TransformArg"/> or the <see cref="Name"/>
+        /// itsef has been set.
         /// </summary>
         protected virtual void OnNameChanged()
         {
@@ -104,7 +136,7 @@ namespace CK.Core
         public string FullName
         {
             get { return _impl.FullName; }
-            set 
+            set
             {
                 string oldName = _impl.Name;
                 _impl.FullName = value;
@@ -116,9 +148,7 @@ namespace CK.Core
         /// Overriden to return the <see cref="FullName"/>.
         /// </summary>
         /// <returns>The FullName of this name.</returns>
-        public override string ToString()
-        {
-            return _impl.FullName;
-        }
+        public override string ToString() => _impl.FullName;
+
     }
 }

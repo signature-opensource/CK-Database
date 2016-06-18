@@ -40,5 +40,10 @@ namespace CK.Core
         /// Must not be null.
         /// </summary>
         string FullName { get; }
+
+        /// <summary>
+        /// Gets the source name: the suffix enclosed in parenthesis if it exists, null otherwise. 
+        /// </summary>
+        string TransformArg { get; }
     }
 }

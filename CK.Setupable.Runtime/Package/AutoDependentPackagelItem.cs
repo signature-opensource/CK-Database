@@ -62,18 +62,12 @@ namespace CK.Setup
         /// <summary>
         /// Gets the "owner" package.
         /// </summary>
-        public IPackageItem Package
-        {
-            get { return _package; }
-        }
+        public IPackageItem Package => _package; 
 
         /// <summary>
         /// Gets the prefix.
         /// </summary>
-        public string Prefix
-        {
-            get { return _prefix; }
-        }
+        public string Prefix => _prefix; 
 
         /// <summary>
         /// Gets or sets whether any <see cref="Package"/> requirements (that is not itself a AutoDependentPackageItem) is automatically projected as a requirement to its AutoDependentPackageItem 
@@ -101,34 +95,24 @@ namespace CK.Setup
         /// <summary>
         /// Gets the context of this model that is the same as the <see cref="P:Package"/>.
         /// </summary>
-        public string Context
-        {
-            get { return _package.Context; }
-        }
+        public string Context => _package.Context; 
 
         /// <summary>
         /// Gets the location of this model that is the same as the <see cref="P:Package"/>.
         /// </summary>
-        public string Location
-        {
-            get { return _package.Location; }
-        }
+        public string Location => _package.Location; 
 
         /// <summary>
         /// Gets the name of this <see cref="AutoDependentPackageItem"/>: it is the <see cref="P:Package"/>'s name prefixed by "<see cref="Prefix"/>.".
         /// </summary>
-        public string Name
-        {
-            get { return _prefixWithDot + _package.Name; }
-        }
+        public string Name => _prefixWithDot + _package.Name; 
 
         /// <summary>
         /// Gets the full name of this model.
         /// </summary>
-        public string FullName
-        {
-            get { return DefaultContextLocNaming.Format( _package.Context, _package.Location, Name ); }
-        }
+        public string FullName => DefaultContextLocNaming.Format( _package.Context, _package.Location, Name ); 
+
+        string IContextLocNaming.TransformArg => null;
 
         /// <summary>
         /// Gets the container to which this Model belongs. 
@@ -144,52 +128,34 @@ namespace CK.Setup
         /// <summary>
         /// Gets a mutable list of items that this AutoDependentPackageItem requires.
         /// </summary>
-        public IDependentItemList Requires
-        {
-            get { return _requires ?? (_requires = new DependentItemList()); }
-        }
+        public IDependentItemList Requires => _requires ?? (_requires = new DependentItemList()); 
 
         /// <summary>
         /// Gets a mutable list of items that are required by this AutoDependentPackageItem.
         /// </summary>
-        public IDependentItemList RequiredBy
-        {
-            get { return _requiredBy ?? (_requiredBy = new DependentItemList()); }
-        }
+        public IDependentItemList RequiredBy => _requiredBy ?? (_requiredBy = new DependentItemList()); 
 
         /// <summary>
         /// Gets a mutable list of groups to which this AutoDependentPackageItem belongs.
         /// </summary>
-        public IDependentItemGroupList Groups
-        {
-            get { return _groups ?? (_groups = new DependentItemGroupList()); }
-        }
+        public IDependentItemGroupList Groups => _groups ?? (_groups = new DependentItemGroupList()); 
         
         /// <summary>
         /// Gets the version: it is the same as the <see cref="P:Package"/>'s one.
         /// </summary>
-        public Version Version
-        {
-            get { return _package.Version; }
-        }
+        public Version Version => _package.Version; 
 
         /// <summary>
         /// Gets the children list.
         /// </summary>
-        public IDependentItemList Children
-        {
-            get { return _children ?? (_children = new DependentItemList()); }
-        }
+        public IDependentItemList Children => _children ?? (_children = new DependentItemList()); 
 
         IDependentItemRef IDependentItem.Generalization
         {
             get { return _package.Generalization != null ? new NamedDependentItemRef( DefaultContextLocNaming.AddNamePrefix( _package.Generalization.FullName, _prefixWithDot ), true ) : null; }
         }
 
-        object IDependentItem.StartDependencySort()
-        {
-            return typeof( SetupItemDriver );
-        }
+        object IDependentItem.StartDependencySort() => typeof( GenericItemSetupDriver );
 
         bool IDependentItemRef.Optional
         {
@@ -258,10 +224,7 @@ namespace CK.Setup
             }
         }
 
-        string IVersionedItem.ItemType
-        {
-            get { return _prefix; }
-        }
+        string IVersionedItem.ItemType =>  _prefix; 
 
         //TODO: CHECK that Children relationships supports optionality and projects them into potential "Prefix." children. ??
         //      Not sure it is a good idea for container/Children... 
@@ -270,11 +233,8 @@ namespace CK.Setup
             get { return _children.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _package.Context, _package.Location ) ); }
         }
 
+        IEnumerable<ISetupItem> IDependentItemDiscoverer<ISetupItem>.GetOtherItemsToRegister() => new[] { _package };
 
-        IEnumerable<ISetupItem> IDependentItemDiscoverer<ISetupItem>.GetOtherItemsToRegister()
-        {
-            return new[] { _package };
-        }
     }
 
 

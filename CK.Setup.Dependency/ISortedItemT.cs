@@ -1,3 +1,10 @@
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (CK.Setup.Dependency\ISortedItem.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
 using System;
 using System.Collections.Generic;
 
@@ -67,7 +74,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets all the items recursively (as their <see cref="ISortedItem{T}"/> wrapper) that are contained in 
         /// the <see cref="Item"/> if it is a <see cref="IDependentItemGroup"/> (that can be a <see cref="IDependentItemContainer"/>).
-        /// Groups introduce a complexity here (a group contains items that belong to a container or other groups): this enumeration 
+        /// Groups introduce the a complexity here (a group contains items that belong to a container or other groups): this enumeration 
         /// removes duplicates and corretcly handles any cycles that may exist.
         /// Empty otherwise.
         /// </summary>
