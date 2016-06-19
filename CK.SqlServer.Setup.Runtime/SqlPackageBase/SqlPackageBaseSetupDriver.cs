@@ -39,8 +39,8 @@ namespace CK.SqlServer.Setup
                 }
                 else
                 {
-                    string context, location, name;
-                    if( !DefaultContextLocNaming.TryParse( FullName, out context, out location, out name ) )
+                    string context, location, name, targetName;
+                    if( !DefaultContextLocNaming.TryParse( FullName, out context, out location, out name, out targetName ) )
                     {
                         monitor.Error().Send( "Unable to parse '{0}' to extract context and location.", FullName );
                         return false;

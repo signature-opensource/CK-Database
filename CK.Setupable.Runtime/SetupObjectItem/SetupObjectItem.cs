@@ -96,7 +96,9 @@ namespace CK.Setup
 
         string IContextLocNaming.Context => _contextLocName.Context; 
 
-        string IContextLocNaming.Location => _contextLocName.Location; 
+        string IContextLocNaming.Location => _contextLocName.Location;
+
+        string IContextLocNaming.TransformArg => _contextLocName.TransformArg;
 
         string IContextLocNaming.Name
         {

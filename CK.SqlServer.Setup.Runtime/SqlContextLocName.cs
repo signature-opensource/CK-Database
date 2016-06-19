@@ -85,7 +85,7 @@ namespace CK.SqlServer.Setup
         }
 
         /// <summary>
-        /// Gets or sets the schema. This can be null (unknown) or empty (ther is explicitely no schema).
+        /// Gets or sets the schema. This can be null (unknown) or empty (there is explicitely no schema).
         /// </summary>
         public string Schema
         {
@@ -112,14 +112,14 @@ namespace CK.SqlServer.Setup
             set
             {
                 if( !value ) _schema = null;
-                else if( _schema == null ) _schema = String.Empty;
+                else if( _schema == null ) _schema = string.Empty;
             }
         }
 
         protected override void OnNameChanged()
         {
             string newSchema = DefaultContextLocNaming.SplitNamespace( Name, out _objectName );
-            if( newSchema.Length == 0 && String.IsNullOrEmpty( _schema ) ) return;
+            if( newSchema.Length == 0 && string.IsNullOrEmpty( _schema ) ) return;
             _schema = newSchema;
         }
 

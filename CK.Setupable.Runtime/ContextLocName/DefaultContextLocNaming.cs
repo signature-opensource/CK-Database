@@ -88,6 +88,37 @@ namespace CK.Core
         }
         #endregion
 
+        /// <summary>
+        /// Gets the namespace of a name.
+        /// </summary>
+        /// <param name="name">Name with dots.</param>
+        /// <returns>Prefix up to the last dot or the empty string if there is no dots.</returns>
+        public static string GetNamespace( string name )
+        {
+            if( name == null ) return String.Empty;
+            int idxMax = name.IndexOf( '(' );
+            int idx = name.LastIndexOf( '.', idxMax >= 0 ? idxMax : name.Length - 1 );
+            return idx < 0 ? string.Empty : name.Substring( 0, idx );
+        }
+
+        /// <summary>
+        /// Extracts and returns the namespace (never null, can be empty) and the leaf name (never null, can be empty if and only if
+        /// the given name is null or empty).
+        /// </summary>
+        /// <param name="name">Name to split.</param>
+        /// <param name="leafName">Leaf name. Never null.</param>
+        /// <returns>The namespace. Never null, empty if there is no namespace.</returns>
+        public static string SplitNamespace( string name, out string leafName )
+        {
+            leafName = name;
+            if( string.IsNullOrEmpty( name ) ) return string.Empty;
+            int idxMax = name.IndexOf( '(' );
+            int idx = name.LastIndexOf( '.', idxMax >= 0 ? idxMax : name.Length - 1 );
+            if( idx < 0 ) return string.Empty;
+            leafName = name.Substring( idx + 1 );
+            return name.Substring( 0, idx );
+        }
+
         #region NameStartsWith
 
         /// <summary>
@@ -135,10 +166,10 @@ namespace CK.Core
 
         static bool DoNameStartsWith( string input, int startIndex, int count, string prefix )
         {
-            if( String.IsNullOrEmpty( prefix ) ) return true;
+            if( string.IsNullOrEmpty( prefix ) ) return true;
             int iName = input.LastIndexOfAny( _nameStartChars, startIndex + count - 1, count );
             if( iName < 0 ) iName = startIndex;
-            return String.CompareOrdinal( input, iName, prefix, 0, prefix.Length ) == 0;
+            return string.CompareOrdinal( input, iName, prefix, 0, prefix.Length ) == 0;
         }
 
         #endregion
@@ -262,12 +293,12 @@ namespace CK.Core
             out string context, 
             out string location, 
             out string name,
-            out string source )
+            out string target )
         {
             context = null;
             location = null;
-            source = null;
-            name = String.Empty;
+            target = null;
+            name = string.Empty;
             if( count == 0 ) return true;
             if( input[startIndex] == '[' )
             {
@@ -280,7 +311,7 @@ namespace CK.Core
             }
             if( count > 0 )
             {
-                int idxEnd = input.LastIndexOf( _locNameSeparator, startIndex+count-1, count );
+                int idxEnd = input.IndexOf( _locNameSeparator, startIndex, count );
                 if( idxEnd >= 0 )
                 {
                     int lenLoc = idxEnd - startIndex;
@@ -290,8 +321,8 @@ namespace CK.Core
                 }
                 if( count > 0 )
                 {
-                    source = ExtractTransformArg( input, startIndex, count );
-                    if( source != null && source.Length == 0 ) return false;
+                    target = ExtractTransformArg( input, startIndex, count );
+                    if( target != null && target.Length == 0 ) return false;
                 }
             }
             name = input.Substring( startIndex, count );
@@ -299,8 +330,8 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Extracts the '(...)' suffix if it exists.
-        /// An empty string is returned if the suffix is '()'.
+        /// Extracts the '(...)' suffix if it exists and contains balanced opening/closing parenthesis.
+        /// An empty string is returned if the suffix is '()' (that is invalid).
         /// </summary>
         /// <param name="input">The input string.</param>
         /// <param name="startIndex">Start of the sustring to consider in input.</param>
@@ -308,34 +339,48 @@ namespace CK.Core
         /// <returns>The transformation argument without the enclosing parenthesis.</returns>
         public static string ExtractTransformArg( string input, int startIndex, int count )
         {
-            if( count > 0 && input[startIndex + count - 1] == ')' )
+            int idx = IndexOfTransformArgOpenPar( input, startIndex, count );
+            return idx >= 0 ? input.Substring( idx + 1, count - idx - 2 ) : null;
+        }
+
+        /// <summary>
+        /// Gets the starting index of '(...)' suffix if it exists and contains balanced opening/closing parenthesis.
+        /// A positive index is returned even if the suffix is '()' (that is invalid).
+        /// </summary>
+        /// <param name="input">The input string.</param>
+        /// <param name="startIndex">Start of the sustring to consider in input.</param>
+        /// <param name="count">Number of characters to consider.</param>
+        /// <returns>The index of the opening parenthsis.</returns>
+        public static int IndexOfTransformArgOpenPar( string input, int startIndex, int count )
+        {
+            int idx;
+            if( count > 0 && input[(idx = startIndex + count - 1)] == ')' )
             {
-                int idxStart = input.LastIndexOf( '(', startIndex + count - 1, count );
-                if( idxStart >= 0 )
+                int nbClose = 1;
+                while( --idx > startIndex )
                 {
-                    return input.Substring( idxStart + 1, count - 2 );
+                    char c = input[idx];
+                    if( c == ')' ) ++nbClose;
+                    else if( c == '(' )
+                    {
+                        if( --nbClose == 0 ) return idx;
+                    }
                 }
             }
-            return null;
+            return -1;
         }
 
         /// <summary>
         /// Removes the (...) suffix if it exists.
         /// </summary>
         /// <param name="input">The input string (name or full name).</param>
+        /// <param name="startIndex">Start of the sustring to consider in input.</param>
+        /// <param name="count">Number of characters to consider.</param>
         /// <returns>The input string without transformation argument if it exists.</returns>
-        public static string RemoveTransformArg( string input )
+        public static string RemoveTransformArg( string input, int startIndex, int count )
         {
-            if( input == null ) throw new ArgumentNullException( nameof( input ) );
-            if( input[input.Length - 1] == ')' )
-            {
-                int idxStart = input.LastIndexOf( '(' );
-                if( idxStart >= 0 )
-                {
-                    return input.Substring( idxStart );
-                }
-            }
-            return input;
+            int idx = IndexOfTransformArgOpenPar( input, startIndex, count );
+            return idx >= 0 ? input.Substring( 0, idx ) : input;
         }
 
         /// <summary>
@@ -347,7 +392,7 @@ namespace CK.Core
         public static bool HasTransformArg( string input )
         {
             if( input == null ) throw new ArgumentNullException( nameof( input ) );
-            return input[input.Length - 1] == ')' && input.LastIndexOf( '(' ) >= 0;
+            return input.Length > 0 && input[input.Length - 1] == ')';
         }
 
         /// <summary>
@@ -376,11 +421,11 @@ namespace CK.Core
         #region Resolve
 
         /// <summary>
-        /// Updates the <paramref name="input"/> with the [curContext] and the ^curLocation if the input does not specify them.
+        /// Updates the <paramref name="input"/> with the [curContext] and the curLocation^ if the input does not specify them.
         /// </summary>
         /// <param name="input">The input location to resolve.</param>
         /// <param name="curContext">The current context: when null, the [context] (if any) is not changed.</param>
-        /// <param name="curLoc">The current location: when null, the ^location (if it exists) is not changed.</param>
+        /// <param name="curLoc">The current location: when null, the location^ (if it exists) is not changed.</param>
         /// <param name="throwError">True to throw error if any parts have a syntax error. Otherwise returns null.</param>
         /// <returns>The updated input.</returns>
         public static string Resolve( string input, string curContext, string curLoc, bool throwError = true )
@@ -390,7 +435,7 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Updates the <paramref name="input"/> with the [curContext] and the ^curLocation of the current naming if the input does not specify them.
+        /// Updates the <paramref name="input"/> with the [curContext] and the curLocation^ of the current naming if the input does not specify them.
         /// </summary>
         /// <param name="input">The input location to resolve.</param>
         /// <param name="current">The current naming.</param>
@@ -418,22 +463,22 @@ namespace CK.Core
 
         static string DoResolve( string input, int startIndex, int count, string curContext, string curLoc, bool throwError )
         {
-            string context, location, name, source;
+            string context, location, name, target;
 
-            if( !DoTryParse( input, startIndex, count, out context, out location, out name, out source ) )
+            if( !DoTryParse( input, startIndex, count, out context, out location, out name, out target ) )
             {
                 if( throwError ) throw new CKException( "Syntax error in ContextLocName '{0}'.", input.Substring( startIndex, count ) );
                 return null;
             }
-            if( source != null )
+            if( target != null )
             {
-                if( source.Length == 0 )
+                if( target.Length == 0 )
                 {
                     if( throwError ) throw new CKException( "Syntax error in ContextLocName '{0}': invalid suffix '()'.", input.Substring( startIndex, count ) );
                     return null;
                 }
-                source = Resolve( source, curContext, curLoc, throwError );
-                name = AppendTransformArg( RemoveTransformArg( name ), source );
+                target = Resolve( target, curContext, curLoc, throwError );
+                name = AppendTransformArg( RemoveTransformArg( name, 0, name.Length ), target );
             }
             if( !DoCombine( curContext, curLoc, ref context, ref location, throwError ? () => input.Substring( startIndex, count ) : (Func<string>)null ) ) return null;
             string r = Format( context, location, name );
@@ -442,29 +487,7 @@ namespace CK.Core
 
         #endregion
 
-        #region Combine
-
-        static readonly char _root = '~';
-        static readonly char _sep = '.';
-        static readonly char[] _sepArray = new char[] { '.' };
-
-        /// <summary>
-        /// Combines a name with a base name. If the name starts with a dot, it is always relative to the base name, '.~' or '.~.' goes up one 
-        /// level, '.~.~' or '.~.~.' goes up for two levels, etc.
-        /// When the name starts with '~', the base name is ignored: the name is considered as rooted.
-        /// When the name is "normal", base name is considered by default as a namespace: setting <paramref name="baseIsNamespace"/> to false
-        /// acts as if it was the <see cref="GetNamespace"/> of this base name. 
-        /// </summary>
-        /// <param name="name">Name to be combined. Can be null or empty.</param>
-        /// <param name="baseName">Base name. Can be null or empty.</param>
-        /// <param name="baseIsNamespace">False to skip the base name suffix (considering only its namespace) when name is "normal".</param>
-        /// <returns>The combined name.</returns>
-        public static string CombineNamePart( string name, string baseName, bool baseIsNamespace = true )
-        {
-            string result;
-            if( TryCombineNamePart( name, baseName, out result, baseIsNamespace ) ) return result;
-            throw new ArgumentException( String.Format( "Unable to combine '{0}' with '{1}'.", name, baseName ) );
-        }
+        #region Combine.
 
         /// <summary>
         /// Tries to combine a name with a base name. If the name starts with a dot, it is always relative to the base name, '.~' or '.~.' goes up one 
@@ -480,19 +503,19 @@ namespace CK.Core
         /// <returns>False on error.</returns>
         public static bool TryCombineNamePart( string name, string baseName, out string result, bool baseIsNamespace = true )
         {
-            if( baseName == null ) baseName = String.Empty;
+            if( baseName == null ) baseName = string.Empty;
             result = null;
-            if( String.IsNullOrEmpty( name ) )
+            if( string.IsNullOrEmpty( name ) )
             {
                 result = baseIsNamespace ? baseName : GetNamespace( baseName );
                 return true;
             }
-            if( name[0] == _root )
+            if( name[0] == '~' )
             {
                 result = name.Substring( 1 );
                 return true;
             }
-            if( name[0] == _sep )
+            if( name[0] == '.' )
             {
                 if( name.Length == 1 )
                 {
@@ -500,10 +523,10 @@ namespace CK.Core
                     return true;
                 }
                 int iStart = 1;
-                while( name[iStart] == _root )
+                while( name[iStart] == '~' )
                 {
                     if( ++iStart == name.Length ) break;
-                    if( name[iStart] != _sep ) return false;
+                    if( name[iStart] != '.' ) return false;
                     if( ++iStart == name.Length ) break;
                 }
                 if( iStart == 1 )
@@ -517,7 +540,7 @@ namespace CK.Core
                 while( nbToSkip > 0 )
                 {
                     if( startIndex <= 0 ) return false;
-                    startIndex = baseName.LastIndexOfAny( _sepArray, startIndex - 1 );
+                    startIndex = baseName.LastIndexOf( '.', startIndex - 1 );
                     --nbToSkip;
                 }
                 result = name.Substring( iStart );
@@ -532,59 +555,11 @@ namespace CK.Core
             else if( baseIsNamespace ) result = baseName + '.' + name;
             else
             {
-                int idx = baseName.LastIndexOfAny( _sepArray );
+                int idx = baseName.LastIndexOf( '.' );
                 if( idx < 0 ) result = name;
                 else result = baseName.Substring( 0, idx + 1 ) + name;
             }
             return true;
-        }
-
-        /// <summary>
-        /// Ensures that <paramref name="name"/> has a namespace (ie. it contains at least one dot).
-        /// If not and if <paramref name="defaultNamespace"/> is not null nor empty, "defaultNamespace.name" is returned.
-        /// </summary>
-        /// <param name="name">The name to check. Must not bu null nor empty.</param>
-        /// <param name="defaultNamespace">Namespace to prepend if name has no namespace.</param>
-        /// <returns>The unchanged name or "defaultNamespace.name".</returns>
-        public static string SetDefaultNamespace( string name, string defaultNamespace )
-        {
-            if( String.IsNullOrEmpty( name ) ) throw new ArgumentException( "name" );
-            if( defaultNamespace != null && defaultNamespace.Length > 0 )
-            {
-                int idx = name.IndexOfAny( _sepArray );
-                if( idx < 0 ) name = defaultNamespace + '.' + name;
-            }
-            return name;
-        }
-
-        /// <summary>
-        /// Gets the namespace of a name.
-        /// </summary>
-        /// <param name="name">Name with dots.</param>
-        /// <returns>Prefix up to the last dot or the empty string if there is no dots.</returns>
-        public static string GetNamespace( string name )
-        {
-            if( name == null ) return String.Empty;
-            int idx = name.LastIndexOfAny( _sepArray );
-            if( idx < 0 ) return String.Empty;
-            return name.Substring( 0, idx );
-        }
-
-        /// <summary>
-        /// Extracts and returrns the namespace (never null, can be empty) and the leaf name (never null, can be empty if and only if
-        /// the given name is null or empty).
-        /// </summary>
-        /// <param name="name">Name to split.</param>
-        /// <param name="leafName">Leaf name. Never null.</param>
-        /// <returns>The namespace. Never null, empty if there is no namespace.</returns>
-        public static string SplitNamespace( string name, out string leafName )
-        {
-            leafName = name;
-            if( String.IsNullOrEmpty( name ) ) return String.Empty;
-            int idx = name.LastIndexOfAny( _sepArray );
-            if( idx < 0 ) return String.Empty;
-            leafName = name.Substring( idx + 1 );
-            return name.Substring( 0, idx );
         }
 
         static public bool Combine( string curContext, string curLoc, ref string context, ref string location )

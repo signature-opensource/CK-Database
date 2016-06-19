@@ -29,6 +29,7 @@ namespace CK.Setup
         string _context;
         string _loc;
         string _name;
+        string _transformArg;
         string _fullName;
         Version _fromVersion;
         Version _version;
@@ -50,81 +51,71 @@ namespace CK.Setup
             _isContent = isContent;
         }
 
+        private ParsedFileName( string fileName, object extraPath, string context, string location, string name, string transformArg )
+        {
+            _fileName = fileName;
+            _extraPath = extraPath;
+            _context = context;
+            _loc = location;
+            _name = name;
+            _transformArg = transformArg;
+            _fullName = DefaultContextLocNaming.Format( _context, _loc, _name );
+            _step = SetupStep.PreInit;
+        }
+
         /// <summary>
         /// Gets the context identifier (see <see cref="DefaultContextLocNaming"/>).
         /// </summary>
-        public string Context
-        {
-            get { return _context; }
-        }
+        public string Context => _context; 
 
         /// <summary>
         /// Gets the location (see <see cref="DefaultContextLocNaming"/>).
         /// </summary>
-        public string Location
-        {
-            get { return _loc; }
-        }
+        public string Location => _loc; 
 
         /// <summary>
         /// Gets the name of the item without its <see cref="Context"/> nor <see cref="Location"/>. Not null nor empty.
         /// </summary>
-        public string Name
-        {
-            get { return _name; }
-        }
+        public string Name => _name; 
+
+        /// <summary>
+        /// Gets the source full name (suffix enclosed in parenthesis) if it exists.
+        /// </summary>
+        public string TransformArg => _transformArg;
 
         /// <summary>
         /// Gets the name of the item with its context, location and name. Not null nor empty.
         /// </summary>
-        public string FullName
-        {
-            get { return _fullName; }
-        }
+        public string FullName => _fullName; 
 
         /// <summary>
         /// Gets the original file name (including its extension and [Context] prefix if any) without any normalization.
         /// Not null nor empty.
         /// </summary>
-        public string FileName
-        {
-            get { return _fileName; }
-        }
+        public string FileName => _fileName; 
 
         /// <summary>
         /// Gets the path (the prefix for a string or any contextual data that enables to locate the resource). 
         /// This information is not processed and is passed as-is from <see cref="TryParse"/> and <see cref="Parse"/> parameter.
         /// It can be null at this level. It is up to the <see cref="ISetupScript"/> that wraps it to exploit it.
         /// </summary>
-        public object ExtraPath
-        {
-            get { return _extraPath; }
-        }
+        public object ExtraPath => _extraPath; 
 
         /// <summary>
         /// Gets the initial version extracted from the <see cref="FileName"/> if it is a migration script.
         /// Null if this is not a migration script.
         /// </summary>
-        public Version FromVersion
-        {
-            get { return _fromVersion; }
-        }
+        public Version FromVersion => _fromVersion; 
 
         /// <summary>
         /// Gets whether this is a migration script (<see cref="FromVersion"/> is not null and <see cref="Version"/> is greater than it).
         /// </summary>
-        public bool IsUpgradeScript
-        {
-            get { return _fromVersion != null && _fromVersion < _version; }
-        }
+        public bool IsUpgradeScript => _fromVersion != null && _fromVersion < _version; 
 
         /// <summary>
         /// Gets whether this is a downgrade script (<see cref="FromVersion"/> is not null and <see cref="Version"/> is smaller than it).
         /// </summary>
-        public bool IsDowngradeScript
-        {
-            get { return _fromVersion != null && _fromVersion > _version; }
-        }
+        public bool IsDowngradeScript => _fromVersion != null && _fromVersion > _version; 
 
         /// <summary>
         /// Gets the version extracted from the <see cref="FileName"/>. Null if no version at all is specified: this is the "no version" script. See remarks.
@@ -140,27 +131,18 @@ namespace CK.Setup
         /// be applied after the last versioned script if it exists (be it a <see cref="IsUpgradeScript"/> or not).
         /// </para>
         /// </remarks>
-        public Version Version
-        {
-            get { return _version; }
-        }
+        public Version Version => _version; 
 
         /// <summary>
         /// Gets the <see cref="SetupStep"/>.
         /// </summary>
-        public SetupStep SetupStep
-        {
-            get { return _step; }
-        }
+        public SetupStep SetupStep => _step; 
 
         /// <summary>
         /// Gets whether the <see cref="FileName"/> applies to the content of a container (must be called after 
         /// content elements setup).
         /// </summary>
-        public bool IsContent
-        {
-            get { return _isContent; }
-        }
+        public bool IsContent => _isContent; 
 
         /// <summary>
         /// Gets the combination of <see cref="P:SetupStep"/> and <see cref="IsContent"/> as a <see cref="SetupCallGroupStep"/>.
@@ -226,7 +208,7 @@ namespace CK.Setup
         /// <param name="curContext">Current context identifier. It will be used as the <see cref="Context"/> if <paramref name="fileName"/> does not contain it. Null if no current context exist.</param>
         /// <param name="curLoc">Current location identifier. It will be used as the <see cref="Location"/> if <paramref name="fileName"/> does not contain a location. Null if no current location exist.</param>
         /// <param name="fileName">The file name. Should not start with a path.</param>
-        /// <param name="extraPath">Path part (context dependant data) of the <paramref name="fileName"/>.</param>
+        /// <param name="extraPath">Path part (context dependent data) of the <paramref name="fileName"/>.</param>
         /// <param name="hasExtension">
         /// True to ignore the trailing extension (.xxx). False if the <paramref name="fileName"/> does not end with an extension: the last .part is part of the name.
         /// The <see cref="FileName"/> property will contain the extension.
@@ -246,9 +228,19 @@ namespace CK.Setup
             string n = hasExtension ? fileName.Remove( fileName.LastIndexOf( '.' ) ) : fileName;
             if( n.Length == 0 ) return false;
             
-            string context, location;
-            if( !DefaultContextLocNaming.TryParse( n, out context, out location, out n ) ) return false;
+            string context, location, source;
+            if( !DefaultContextLocNaming.TryParse( n, out context, out location, out n, out source ) ) return false;
             if( !DefaultContextLocNaming.Combine( curContext, curLoc, ref context, ref location ) ) return false;
+            if( source != null )
+            {
+                if( (source = DefaultContextLocNaming.Resolve( source, curContext, curLoc, throwError: false )) == null )
+                {
+                    return false;
+                }
+                result = new ParsedFileName( fileName, extraPath, context, location, n, source );
+                return true;
+            }
+
             Version f = null;
             Version v = null;
             SetupStep step = SetupStep.PreInit;

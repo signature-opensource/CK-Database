@@ -107,6 +107,7 @@ namespace CK.Core
         /// <summary>
         /// Gets or sets the transformation argument. <see cref="Name"/> and <see cref="FullName"/> are 
         /// automatically updated.
+        /// This can be null (no target) or not empty: an empty transformation argument is not valid.
         /// </summary>
         public string TransformArg
         {

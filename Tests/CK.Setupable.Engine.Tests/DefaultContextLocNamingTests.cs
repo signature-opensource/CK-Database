@@ -8,64 +8,66 @@ using CK.Core;
 namespace CK.Setupable.Engine.Tests
 {
     [TestFixture]
+    [CLSCompliant( false )]
     public class DefaultContextLocNamingTests
     {
-        [Test]
-        public void parsing_multiple_forms()
+        [TestCase( "", null, null, "" )]
+        [TestCase( "^", null, "", "" )]
+        [TestCase( "[]^", "", "", "" )]
+        [TestCase( "[H]loc^", "H", "loc", "" )]
+        [TestCase( "[H]loc^N", "H", "loc", "N" )]
+
+        [TestCase( "CK.fTest", null, null, "CK.fTest" )]
+        [TestCase( "[]CK.fTest", "", null, "CK.fTest" )]
+        [TestCase( "[]^CK.fTest", "", "", "CK.fTest" )]
+        [TestCase( "^CK.fTest", null, "", "CK.fTest" )]
+        [TestCase( "[H]^CK.fTest", "H", "", "CK.fTest" )]
+
+        [TestCase( "[H]db^CK.fTest", "H", "db", "CK.fTest" )]
+        [TestCase( "[H]-db^CK.fTest", "H", "-db", "CK.fTest" )]
+        [TestCase( "[H]--db^CK.fTest", "H", "--db", "CK.fTest" )]
+        [TestCase( "[H]---srv-db^CK.fTest", "H", "---srv-db", "CK.fTest" )]
+
+        [TestCase( "srv-db^CK.fTest", null, "srv-db", "CK.fTest" )]
+        [TestCase( "[H]srvPrd-db^CK.fTest", "H", "srvPrd-db", "CK.fTest" )]
+        [TestCase( "[]srvPrd-db^CK.fTest", "", "srvPrd-db", "CK.fTest" )]
+        public void parsing_multiple_forms( string input, string expectedContext, string expectedLocation, string expectedName )
         {
-            CheckParse( "", null, null, "" );
-            CheckParse( "^", null, "", "" );
-            CheckParse( "[]^", "", "", "" );
-            CheckParse( "[H]loc^", "H", "loc", "" );
-            CheckParse( "[H]loc^N", "H", "loc", "N" );
-
-            CheckParse( "CK.fTest", null, null, "CK.fTest" );
-            CheckParse( "[]CK.fTest", "", null, "CK.fTest" );
-            CheckParse( "[]^CK.fTest", "", "", "CK.fTest" );
-            CheckParse( "^CK.fTest", null, "", "CK.fTest" );
-            CheckParse( "[H]^CK.fTest", "H", "", "CK.fTest" );
-
-            CheckParse( "[H]db^CK.fTest", "H", "db", "CK.fTest" );
-            CheckParse( "[H]-db^CK.fTest", "H", "-db", "CK.fTest" );
-            CheckParse( "[H]--db^CK.fTest", "H", "--db", "CK.fTest" );
-            CheckParse( "[H]---srv-db^CK.fTest", "H", "---srv-db", "CK.fTest" );
-
-            CheckParse( "srv-db^CK.fTest", null, "srv-db", "CK.fTest" );
-            CheckParse( "[H]srvPrd-db^CK.fTest", "H", "srvPrd-db", "CK.fTest" );
-            CheckParse( "[]srvPrd-db^CK.fTest", "", "srvPrd-db", "CK.fTest" );
+            CheckParseWhole( input, expectedContext, expectedLocation, expectedName, null );
+            CheckParseSub( input, expectedContext, expectedLocation, expectedName, null );
         }
 
-        void CheckParse( string input, string expectedContext, string expectedLocation, string expectedName )
+        private static void CheckParseWhole( 
+            string input, 
+            string expectedContext, 
+            string expectedLocation, 
+            string expectedName,
+            string expectedTransformArg )
         {
-            CheckParseWhole( input, expectedContext, expectedLocation, expectedName );
-            CheckParseSub( input, expectedContext, expectedLocation, expectedName );
+            string c, l, n, t;
+            Assert.That( DefaultContextLocNaming.TryParse( input, out c, out l, out n, out t ) );
+            CheckOutput( expectedContext, expectedLocation, expectedName, expectedTransformArg, c, l, n, t );
         }
 
-        private static void CheckParseWhole( string input, string expectedContext, string expectedLocation, string expectedName )
+        private static void CheckParseSub( string input, string expectedContext, string expectedLocation, string expectedName, string expectedTransformArg )
         {
-            string c, l, n;
-            Assert.That( DefaultContextLocNaming.TryParse( input, out c, out l, out n ) );
-            CheckOutput( expectedContext, expectedLocation, expectedName, c, l, n );
+            string c, l, n, t;
+            Assert.That( DefaultContextLocNaming.TryParse( "?" + input, 1, out c, out l, out n, out t ) );
+            CheckOutput( expectedContext, expectedLocation, expectedName, expectedTransformArg, c, l, n, t );
+            Assert.That( DefaultContextLocNaming.TryParse( "??" + input, 2, out c, out l, out n, out t ) );
+            CheckOutput( expectedContext, expectedLocation, expectedName, expectedTransformArg, c, l, n, t );
+            Assert.That( DefaultContextLocNaming.TryParse( input + "pouf", 0, input.Length, out c, out l, out n, out t ) );
+            CheckOutput( expectedContext, expectedLocation, expectedName, expectedTransformArg, c, l, n, t );
+            Assert.That( DefaultContextLocNaming.TryParse( "pif" + input + "pouf", 3, input.Length, out c, out l, out n, out t ) );
+            CheckOutput( expectedContext, expectedLocation, expectedName, expectedTransformArg, c, l, n, t );
         }
 
-        private static void CheckParseSub( string input, string expectedContext, string expectedLocation, string expectedName )
-        {
-            string c, l, n;
-            Assert.That( DefaultContextLocNaming.TryParse( "?" + input, 1, out c, out l, out n ) );
-            CheckOutput( expectedContext, expectedLocation, expectedName, c, l, n );
-            Assert.That( DefaultContextLocNaming.TryParse( "??" + input, 2, out c, out l, out n ) );
-            CheckOutput( expectedContext, expectedLocation, expectedName, c, l, n );
-            Assert.That( DefaultContextLocNaming.TryParse( input + "pouf", 0, input.Length, out c, out l, out n ) );
-            CheckOutput( expectedContext, expectedLocation, expectedName, c, l, n );
-            Assert.That( DefaultContextLocNaming.TryParse( "pif" + input + "pouf", 3, input.Length, out c, out l, out n ) );
-            CheckOutput( expectedContext, expectedLocation, expectedName, c, l, n );
-        }
-
-        private static void CheckOutput( string expectedContext, string expectedLocation, string expectedName, string c, string l, string n )
+        private static void CheckOutput( string expectedContext, string expectedLocation, string expectedName, string expectedTransformArg, string c, string l, string n, string t )
         {
             Assert.That( c, Is.EqualTo( expectedContext ) );
             Assert.That( l, Is.EqualTo( expectedLocation ) );
             Assert.That( n, Is.EqualTo( expectedName ) );
+            Assert.That( t, Is.EqualTo( expectedTransformArg ) );
         }
 
         [Test]
@@ -121,7 +123,7 @@ namespace CK.Setupable.Engine.Tests
         [Test]
         public void combining_names_that_goes_up_in_the_path_considers_the_baseName_as_a_namespace()
         {
-            CheckCombineName( ".~", "A", expected: "", getNamespaceOnBaseNameGivesTheSame: false  );
+            CheckCombineName( ".~", "A", expected: "", getNamespaceOnBaseNameGivesTheSame: false );
             CheckCombineNamespace( ".~", "A", expected: "" );
             CheckCombineName( ".~.", "A", expected: "", getNamespaceOnBaseNameGivesTheSame: false );
             CheckCombineNamespace( ".~.", "A", expected: "" );
@@ -141,9 +143,8 @@ namespace CK.Setupable.Engine.Tests
             CheckCombineNamespace( ".~.X", "A.B.C.D", expected: "A.B.C.X" );
         }
 
-
         [Test]
-        public void combining_with_baseName_as_a_name_is_the_same_as_combinig_to_the_namespace_of_the_baseName()
+        public void combining_with_baseName_as_a_name_is_the_same_as_combining_to_the_namespace_of_the_baseName()
         {
             CheckCombineName( "R.S", "", expected: "R.S" );
             CheckCombineName( "R.S", "B", expected: "R.S" );
@@ -212,37 +213,32 @@ namespace CK.Setupable.Engine.Tests
             Assert.That( result, Is.EqualTo( expected ) );
         }
 
-        [Test]
-        public void Resolve()
-        {
-            CheckResolve( "CK.fTest", null, null, "CK.fTest" );
-            CheckResolve( "CK.fTest", "", null, "[]CK.fTest" );
-            CheckResolve( "CK.fTest", "", "", "[]^CK.fTest" );
-            CheckResolve( "CK.fTest", null, "", "^CK.fTest" );
-            CheckResolve( "CK.fTest", "H", "db", "[H]db^CK.fTest" );
-            CheckResolve( "^CK.fTest", "H", "nimp", "[H]^CK.fTest" );
-            CheckResolve( "srv-db^CK.fTest", "H", "nimp", "[H]srv-db^CK.fTest" );
-            CheckResolve( "[]srv-db^CK.fTest", "nimp", "nimp", "[]srv-db^CK.fTest" );
-            CheckResolve( "[]^CK.fTest", "nimp", "nimp", "[]^CK.fTest" );
-            CheckResolve( "^CK.fTest", "H", "nimp", "[H]^CK.fTest" );
-            CheckResolve( "-^CK.fTest", null, "srv-db", "srv^CK.fTest" );
-            CheckResolve( "--srv2-db3^CK.fTest", "", "sys-srv-db", "[]sys-srv2-db3^CK.fTest" );
-            CheckResolve( "---srv2-db3^CK.fTest", "A", null, "[A]---srv2-db3^CK.fTest" );
-
-            CheckFormatException( "-^H", "nimp", "" );
-            CheckFormatException( "--^H", "nimp", "oneLoc" );
-        }
-
-        void CheckResolve( string input, string curContext, string curLoc, string expectedResult )
+        [TestCase( "CK.fTest", null, null, "CK.fTest" )]
+        [TestCase( "CK.fTest", "", null, "[]CK.fTest" )]
+        [TestCase( "CK.fTest", "", "", "[]^CK.fTest" )]
+        [TestCase( "CK.fTest", null, "", "^CK.fTest" )]
+        [TestCase( "CK.fTest", "H", "db", "[H]db^CK.fTest" )]
+        [TestCase( "^CK.fTest", "H", "nimp", "[H]^CK.fTest" )]
+        [TestCase( "srv-db^CK.fTest", "H", "nimp", "[H]srv-db^CK.fTest" )]
+        [TestCase( "[]srv-db^CK.fTest", "nimp", "nimp", "[]srv-db^CK.fTest" )]
+        [TestCase( "[]^CK.fTest", "nimp", "nimp", "[]^CK.fTest" )]
+        [TestCase( "^CK.fTest", "H", "nimp", "[H]^CK.fTest" )]
+        [TestCase( "-^CK.fTest", null, "srv-db", "srv^CK.fTest" )]
+        [TestCase( "--srv2-db3^CK.fTest", "", "sys-srv-db", "[]sys-srv2-db3^CK.fTest" )]
+        [TestCase( "---srv2-db3^CK.fTest", "A", null, "[A]---srv2-db3^CK.fTest" )]
+        public void resolving_context_and_location( string input, string curContext, string curLoc, string expectedResult )
         {
             Assert.That( DefaultContextLocNaming.Resolve( input, curContext, curLoc ), Is.EqualTo( expectedResult ) );
             Assert.That( DefaultContextLocNaming.Resolve( "?" + input, 1, curContext, curLoc ), Is.EqualTo( "?" + expectedResult ) );
             Assert.That( DefaultContextLocNaming.Resolve( "??" + input, 2, curContext, curLoc ), Is.EqualTo( "??" + expectedResult ) );
             Assert.That( DefaultContextLocNaming.Resolve( input + "pouf", 0, input.Length, curContext, curLoc ), Is.EqualTo( expectedResult + "pouf" ) );
             Assert.That( DefaultContextLocNaming.Resolve( "pif" + input + "pouf", 3, input.Length, curContext, curLoc ), Is.EqualTo( "pif" + expectedResult + "pouf" ) );
+
         }
 
-        void CheckFormatException( string input, string curContext, string curLoc )
+        [TestCase( "-^H", "nimp", "" )]
+        [TestCase( "--^H", "nimp", "oneLoc" )]
+        public void ResolveException( string input, string curContext, string curLoc )
         {
             Assert.Throws<CKException>( () => DefaultContextLocNaming.Resolve( input, curContext, curLoc ) );
             Assert.Throws<CKException>( () => DefaultContextLocNaming.Resolve( "?" + input, 1, curContext, curLoc ) );
@@ -262,6 +258,15 @@ namespace CK.Setupable.Engine.Tests
             Assert.That( DefaultContextLocNaming.AddNamePrefix( "[]CK.UserHome-Local", "Model." ), Is.EqualTo( "[]Model.CK.UserHome-Local" ) );
             Assert.That( DefaultContextLocNaming.AddNamePrefix( "[]-db^CK.UserHome", "Model." ), Is.EqualTo( "[]-db^Model.CK.UserHome" ) );
             Assert.That( DefaultContextLocNaming.AddNamePrefix( "[]-db^CK.UserHome-Local", "Model." ), Is.EqualTo( "[]-db^Model.CK.UserHome-Local" ) );
+        }
+
+        [TestCase( "x(y)", "y" )]
+        [TestCase( "x(y(z))", "y(z)" )]
+        [TestCase( "x(((A)))", "((A))" )]
+        [TestCase( "x((B()(A)C)D)", "(B()(A)C)D" )]
+        public void targetName_extraction( string s, string expected )
+        {
+            Assert.That( DefaultContextLocNaming.ExtractTransformArg( s, 0, s.Length ), Is.EqualTo( expected ) );
         }
     }
 }

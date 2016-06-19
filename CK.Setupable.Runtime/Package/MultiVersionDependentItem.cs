@@ -69,7 +69,7 @@ namespace CK.Setup
         public string Name
         {
             get { return _name.Name; }
-            set { _name.Name = value; }
+            set { DefaultContextLocNaming.ThrowIfTransformArg( value ); _name.Name = value; }
         }
 
         /// <summary>
@@ -79,8 +79,11 @@ namespace CK.Setup
         public string FullName
         {
             get { return _name.FullName; }
-            set { _name.FullName = value; }
+            set { DefaultContextLocNaming.ThrowIfTransformArg( value ); _name.FullName = value; }
         }
+
+        string IContextLocNaming.TransformArg => null;
+
 
         /// <summary>
         /// Gets whether this item is a simple Item, a Group or a Container.

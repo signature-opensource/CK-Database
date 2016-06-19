@@ -68,11 +68,15 @@ namespace CK.Setup
 
         bool DoDiscoverPackages( DirectoryInfo d, string curContext, string curLoc )
         {
-            string context, loc, name;
-            if( DefaultContextLocNaming.TryParse( d.Name, out context, out loc, out name ) )
+            string context, loc, name, source;
+            if( DefaultContextLocNaming.TryParse( d.Name, out context, out loc, out name, out source ) )
             {
                 if( context != null ) curContext = context;
                 if( loc != null ) curLoc = loc;
+            }
+            if( source != null )
+            {
+                _monitor.Warn().Send( $"Directory name '{d.Name}': suffix '({source})' is ignored." );
             }
             bool result = true;
             foreach( var file in d.EnumerateFiles( "*.ck", SearchOption.TopDirectoryOnly ) )
@@ -89,7 +93,6 @@ namespace CK.Setup
             }
             return result;
         }
-
 
         bool DoRegisterPackage( FileInfo file, string curContext, string curLoc )
         {
@@ -196,11 +199,12 @@ namespace CK.Setup
 
         bool DoDiscoverSqlFiles( DirectoryInfo d, string curContext, string curLoc, SetupObjectItemCollector itemCollector, IScriptCollector collector, string sqlFileScriptSource )
         {
-            string context, loc, name;
-            if( DefaultContextLocNaming.TryParse( d.Name, out context, out loc, out name ) )
+            string context, loc, name, transformArg;
+            if( DefaultContextLocNaming.TryParse( d.Name, out context, out loc, out name, out transformArg ) )
             {
                 if( context != null ) curContext = context;
                 if( loc != null ) curLoc = loc;
+                if( transformArg != null ) _monitor.Warn().Send( $"Tansform argument in '{d.Name}' is ignored." );
             }
             bool result = true;
             foreach( var file in d.EnumerateFiles( "*.sql", SearchOption.TopDirectoryOnly ) )

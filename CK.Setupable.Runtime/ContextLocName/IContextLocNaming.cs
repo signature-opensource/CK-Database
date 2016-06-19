@@ -43,6 +43,7 @@ namespace CK.Core
 
         /// <summary>
         /// Gets the source name: the suffix enclosed in parenthesis if it exists, null otherwise. 
+        /// This can be null (no target) or not empty: an empty transformation argument is not valid.
         /// </summary>
         string TransformArg { get; }
     }

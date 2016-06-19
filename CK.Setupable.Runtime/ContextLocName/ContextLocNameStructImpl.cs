@@ -146,7 +146,7 @@ namespace CK.Core
         /// <summary>
         /// Gets or sets the tranformation argument full name. 
         /// The <see cref="Name"/> and <see cref="FullName"/> are updated.
-        /// This can be null (no source) or not empty: an empty transformation argument is not valid.
+        /// This can be null (no target) or not empty: an empty transformation argument is not valid.
         /// </summary>
         public string TransformArg
         {
@@ -156,7 +156,7 @@ namespace CK.Core
                 if( value != null && value.Length == 0 ) throw new ArgumentException( "TransformArg can not be empty (but can be null)." );
                 if( _transformArg != value )
                 {
-                    if( _transformArg != null ) _name = DefaultContextLocNaming.RemoveTransformArg( _name );
+                    if( _transformArg != null ) _name = DefaultContextLocNaming.RemoveTransformArg( _name, 0, _name.Length );
                     _name = DefaultContextLocNaming.AppendTransformArg( _name, value );
                     _transformArg = value;
                     _fullName = DefaultContextLocNaming.Format( _context, _location, _name );

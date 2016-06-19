@@ -155,12 +155,9 @@ namespace CK.Setup
             get { return _package.Generalization != null ? new NamedDependentItemRef( DefaultContextLocNaming.AddNamePrefix( _package.Generalization.FullName, _prefixWithDot ), true ) : null; }
         }
 
-        object IDependentItem.StartDependencySort() => typeof( GenericItemSetupDriver );
+        object IDependentItem.StartDependencySort() => typeof( SetupItemDriver );
 
-        bool IDependentItemRef.Optional
-        {
-            get { return false; }
-        }
+        bool IDependentItemRef.Optional => false; 
 
         IEnumerable<IDependentItemRef> IDependentItem.Requires
         {

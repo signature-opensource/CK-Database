@@ -7,6 +7,7 @@
 
 using System.Collections.Generic;
 using CK.Setup;
+using CK.Core;
 
 namespace CK.SqlServer.Setup
 {
@@ -19,61 +20,30 @@ namespace CK.SqlServer.Setup
             _db = db;
         }
 
-        public SqlDatabase SqlDatabase { get { return _db.GetObject(); } }
+        public SqlDatabase SqlDatabase => _db.GetObject();
 
-        public string FullName
-        {
-            get { return _db.FullName + ".Connection"; }
-        }
+        public string FullName => _db.FullName + ".Connection"; 
 
-        public IDependentItemContainerRef Container
-        {
-            get { return null; }
-        }
+        public IDependentItemContainerRef Container => null; 
 
-        public IDependentItemRef Generalization
-        {
-            get { return null; }
-        }
+        public IDependentItemRef Generalization => null; 
 
-        public IEnumerable<IDependentItemRef> Requires
-        {
-            get { return null; }
-        }
+        public IEnumerable<IDependentItemRef> Requires => null; 
 
-        public IEnumerable<IDependentItemGroupRef> Groups
-        {
-            get { return null; }
-        }
+        public IEnumerable<IDependentItemGroupRef> Groups => null; 
 
-        public IEnumerable<IDependentItemRef> RequiredBy
-        {
-            get { return null; }
-        }
+        public IEnumerable<IDependentItemRef> RequiredBy => null; 
 
-        public object StartDependencySort()
-        {
-            return typeof( SqlDatabaseConnectionSetupDriver );
-        }
+        public object StartDependencySort() => typeof( SqlDatabaseConnectionSetupDriver );
 
-        bool IDependentItemRef.Optional
-        {
-            get { return false; }
-        }
+        bool IDependentItemRef.Optional => false; 
 
-        public string Context
-        {
-            get { return _db.Context; }
-        }
+        public string Context => _db.Context; 
 
-        public string Location
-        {
-            get { return _db.Location; }
-        }
+        public string Location => _db.Location;
 
-        public string Name
-        {
-            get { return _db.Name + ".Connection"; }
-        }
+        string IContextLocNaming.TransformArg => null;
+
+        public string Name => _db.Name + ".Connection"; 
     }
 }

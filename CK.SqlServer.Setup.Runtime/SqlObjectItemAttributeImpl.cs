@@ -27,27 +27,50 @@ namespace CK.SqlServer.Setup
         protected override IContextLocNaming BuildFullName( Registerer r, SetupObjectItemBehavior b, string attributeName )
         {
             SqlPackageBaseItem p = (SqlPackageBaseItem)r.Container;
-            var name = new SqlContextLocName( attributeName );
-            if( name.Context == null ) name.Context = p.Context;
-            if( name.Location == null ) name.Location = p.Location;
-            if( name.Schema == null ) name.Schema = p.GetObject().Schema;
-            return name;
+            return SqlBuildFullName( p, b, attributeName );
         }
 
         protected override SetupObjectItem CreateSetupObjectItem( Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name )
         {
             ISqlSetupAspect sql = SetupEngineAspectProvider.GetSetupEngineAspect<ISqlSetupAspect>();
-            var item = LoadItemFromResource( sql.SqlParser, r.Monitor, (SqlPackageBaseItem)r.Container, Attribute.MissingDependencyIsError, (SqlContextLocName)name, null );
-            var p = (SqlPackageBaseItem)firstContainer;
-            p.EnsureObjectsPackage().Children.Add( item );
-            return item;
+            return SqlCreateSetupObjectItem( sql.SqlParser, r.Monitor, (SqlPackageBaseItem)r.Container, (SqlPackageBaseItem)firstContainer, Attribute.MissingDependencyIsError, (SqlContextLocName)name, null );
         }
 
-        static internal SetupObjectItem LoadItemFromResource( ISqlServerParser parser, IActivityMonitor monitor, SqlPackageBaseItem packageItem, bool missingDependencyIsError, SqlContextLocName name, string expectedItemType = null )
+        internal static IContextLocNaming SqlBuildFullName( SqlPackageBaseItem p, SetupObjectItemBehavior b, string attributeName )
+        {
+            var name = new SqlContextLocName( attributeName );
+            if( name.Context == null ) name.Context = p.Context;
+            if( name.Location == null ) name.Location = p.Location;
+            if( name.Schema == null ) name.Schema = p.GetObject().Schema;
+            if( name.TransformArg != null )
+            {
+                var target = new SqlContextLocName( attributeName );
+                if( target.Context == null ) target.Context = name.Context;
+                if( target.Location == null ) target.Location = name.Location;
+                if( target.Schema == null ) target.Schema = name.Schema;
+                name.TransformArg = target.FullName;
+            }
+            if( b == SetupObjectItemBehavior.Transform )
+            {
+                name = new SqlContextLocName( p.Context, p.Location, p.GetObject().Schema, p.Name + '(' + name.FullName + ')' );
+            }
+            return name;
+        }
+
+        static internal SetupObjectItem SqlCreateSetupObjectItem( 
+            ISqlServerParser parser, 
+            IActivityMonitor monitor,
+            SqlPackageBaseItem firstContainer,
+            SqlPackageBaseItem packageItem, 
+            bool missingDependencyIsError, 
+            SqlContextLocName name, 
+            string expectedItemType = null )
         {
             SqlObjectProtoItem protoObject = LoadProtoItemFromResource( monitor, packageItem, name, expectedItemType );
             if( protoObject == null ) return null;
-            return protoObject.CreateItem( parser, monitor, missingDependencyIsError );
+            var item = protoObject.CreateItem( parser, monitor, missingDependencyIsError );
+            firstContainer.EnsureObjectsPackage().Children.Add( item );
+            return item;
         }
 
         static SqlObjectProtoItem LoadProtoItemFromResource( IActivityMonitor monitor, SqlPackageBaseItem packageItem, SqlContextLocName name, string expectedItemType )
