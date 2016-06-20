@@ -1,7 +1,7 @@
 ﻿-- Version = *
 create procedure CK.sSimpleTransformTest
 (
-    @TextParam output
+    @TextParam nvarchar(20) output
 )
 as
 begin

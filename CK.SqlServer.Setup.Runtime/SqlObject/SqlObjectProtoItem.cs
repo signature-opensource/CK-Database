@@ -114,11 +114,11 @@ namespace CK.SqlServer.Setup
             }
         }
 
-        ISqlServerObject SafeParse( ISqlServerParser parser, IActivityMonitor monitor ) 
+        ISqlServerParsedText SafeParse( ISqlServerParser parser, IActivityMonitor monitor ) 
         {
             try
             {
-                var r = parser.ParseObject( FullOriginalText );
+                var r = parser.Parse( FullOriginalText );
                 if( r.IsError ) r.LogOnError( monitor );
                 return r.Result;
             }
@@ -143,7 +143,7 @@ namespace CK.SqlServer.Setup
             }
             else if( ItemType == TypeTransformer || ItemType == TypeProcedure || ItemType == TypeFunction )
             {
-                ISqlServerObject o = SafeParse( parser, monitor );
+                ISqlServerParsedText o = SafeParse( parser, monitor );
                 if( o != null )
                 {
                     if( o is ISqlServerStoredProcedure )
@@ -168,7 +168,7 @@ namespace CK.SqlServer.Setup
                     }
                     else
                     {
-                        throw new NotSupportedException( "Unhandled type of object: " + o.ToStringSignature( true ) );
+                        throw new NotSupportedException( "Unhandled type of object: " + o.ToString() );
                     }
                 }
             }

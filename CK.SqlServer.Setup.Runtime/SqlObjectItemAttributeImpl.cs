@@ -5,6 +5,7 @@ using System.Linq;
 using CK.Core;
 using CK.Setup;
 using CK.SqlServer.Parser;
+using CK.Text;
 
 namespace CK.SqlServer.Setup
 {
@@ -44,15 +45,18 @@ namespace CK.SqlServer.Setup
             if( name.Schema == null ) name.Schema = p.GetObject().Schema;
             if( name.TransformArg != null )
             {
-                var target = new SqlContextLocName( attributeName );
+                var target = new SqlContextLocName( name.TransformArg );
                 if( target.Context == null ) target.Context = name.Context;
                 if( target.Location == null ) target.Location = name.Location;
                 if( target.Schema == null ) target.Schema = name.Schema;
                 name.TransformArg = target.FullName;
             }
-            if( b == SetupObjectItemBehavior.Transform )
+            else
             {
-                name = new SqlContextLocName( p.Context, p.Location, p.GetObject().Schema, p.Name + '(' + name.FullName + ')' );
+                if( b == SetupObjectItemBehavior.Transform )
+                {
+                    name = new SqlContextLocName( p.Context, p.Location, p.Name + '(' + name.FullName + ')' );
+                }
             }
             return name;
         }
@@ -75,16 +79,16 @@ namespace CK.SqlServer.Setup
 
         static SqlObjectProtoItem LoadProtoItemFromResource( IActivityMonitor monitor, SqlPackageBaseItem packageItem, SqlContextLocName name, string expectedItemType )
         {
-            string fileName = name.Name + ".sql";
-            string text = packageItem.ResourceLocation.GetString( fileName, false, _allowedResourcePrefixes );
-            if( text == null )
+            var candidates = GetResourceNameCandidates( packageItem, name );
+            string fileName = null, text = null;
+            foreach( var fName in candidates )
             {
-                fileName = name.ObjectName + ".sql";
-                text = packageItem.ResourceLocation.GetString( fileName, false, _allowedResourcePrefixes );
+                fileName = fName;
+                if( (text = packageItem.ResourceLocation.GetString( fName, false, _allowedResourcePrefixes )) != null ) break;
             }
             if( text == null )
             {
-                monitor.Error().Send( "Resource '{0}' of '{1}' not found (tried '{2}' and '{3}').", name.Name, packageItem.FullName, name.Name + ".sql", fileName );
+                monitor.Error().Send( $"Resource '{name.FullName}' of '{packageItem.FullName}' not found. Tried: '{candidates.Concatenate( "' ,'" )}'." );
                 return null;
             }
 
@@ -117,6 +121,23 @@ namespace CK.SqlServer.Setup
             }
             if( protoObject != null ) monitor.Trace().Send( "Loaded {0} '{1}' of '{2}'.", protoObject.ItemType, protoObject.ContextLocName.Name, packageItem.FullName );
             return protoObject;
+        }
+
+        static IEnumerable<string> GetResourceNameCandidates( IContextLocNaming containerName, SqlContextLocName name )
+        {
+            yield return name.FullName + ".sql";
+            yield return name.Name + ".sql";
+            yield return name.ObjectName + ".sql";
+            if( name.TransformArg != null )
+            {
+                if( name.FullName.StartsWith( containerName.FullName ) )
+                {
+                    SqlContextLocName t = new SqlContextLocName( name.TransformArg );
+                    yield return t.FullName + ".sql";
+                    yield return t.Name + ".sql";
+                    yield return t.ObjectName + ".sql";
+                }
+            }
         }
 
     }

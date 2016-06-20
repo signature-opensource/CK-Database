@@ -8,7 +8,8 @@ using CK.Core;
 namespace CK.SqlServer.Setup
 {
     /// <summary>
-    /// Extends <see cref="ContextLocName"/> to split <see cref="ContextLocName.Name"/> into <see cref="Schema"/> and <see cref="ObjectName"/>.
+    /// Extends <see cref="ContextLocName"/> to split <see cref="ContextLocName.Name"/> 
+    /// into <see cref="Schema"/> and <see cref="ObjectName"/>.
     /// </summary>
     public class SqlContextLocName : ContextLocName 
     {
@@ -51,10 +52,20 @@ namespace CK.SqlServer.Setup
         /// Schema can be null (unknown) or empty (no schema).
         /// </summary>
         public SqlContextLocName( string context, string location, string schema, string objectName )
-            : base( context, location, String.Empty )
+            : base( context, location, string.Empty )
         {
             _schema = schema;
             ObjectName = objectName;
+        }
+
+        /// <summary>
+        /// Copy constructor. Initializes a new <see cref="SqlContextLocName"/> from another SqlContextLocName.
+        /// </summary>
+        public SqlContextLocName( SqlContextLocName other )
+            : base( other )
+        {
+            _schema = other._schema;
+            _objectName = other._objectName;
         }
 
         /// <summary>

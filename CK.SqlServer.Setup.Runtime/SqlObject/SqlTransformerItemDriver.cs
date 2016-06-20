@@ -15,7 +15,7 @@ namespace CK.SqlServer.Setup
 {
     public class SqlTransformerItemDriver : SetupItemDriver
     {
-        internal SqlTransformerItemDriver( BuildInfo info )
+        public SqlTransformerItemDriver( BuildInfo info )
             : base( info )
         {
         }

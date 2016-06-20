@@ -22,7 +22,7 @@ namespace CK.Core
         static readonly char[] _nameStartChars = new[] { _locNameSeparator, ']' };
 
         /// <summary>
-        /// Returns the correct full name like "[context]location^name". 
+        /// Returns the correct full name: "[context]location^name". 
         /// Correctly handle null context, location or name.
         /// </summary>
         /// <returns>Never null.</returns>
@@ -30,7 +30,7 @@ namespace CK.Core
         {
             if( context == null )
             {
-                if( location == null ) return name ?? String.Empty;
+                if( location == null ) return name ?? string.Empty;
                 return location + _locNameSeparator + name;
             }
             if( location == null ) return '[' + context + ']' + name;
@@ -81,7 +81,9 @@ namespace CK.Core
 
         static string DoGetName( string input, int startIndex, int count )
         {
-            int iName = input.LastIndexOfAny( _nameStartChars, startIndex + count - 1, count );
+            int idxOpenPar = input.IndexOf( '(', startIndex, count );
+            int countLookup = idxOpenPar >= 0 ? idxOpenPar - startIndex : count;
+            int iName = input.LastIndexOfAny( _nameStartChars, startIndex + countLookup - 1, countLookup );
             if( iName < 0 ) iName = startIndex;
             else count -= (iName - startIndex);
             return input.Substring( iName, count );
@@ -398,11 +400,13 @@ namespace CK.Core
         /// <summary>
         /// Appends a (...) suffix.
         /// </summary>
-        /// <param name="input">The input string (name or full name).</param>
+        /// <param name="input">The input string (name or full name). Can not be null.</param>
+        /// <param name="transformArg">Transorm argument. Can not be null nor empty nor whitespace.</param>
         /// <returns>The source full name without the enclosing parenthesis.</returns>
         public static string AppendTransformArg( string input, string transformArg )
         {
             if( input == null ) throw new ArgumentNullException( nameof( input ) );
+            if( string.IsNullOrWhiteSpace(transformArg) ) throw new ArgumentException( "Can not be null, empty or whitespace.", nameof( transformArg ) );
             return input + "(" + transformArg + ")";
         }
 

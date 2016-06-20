@@ -29,6 +29,22 @@ namespace CK.Core
         }
 
         /// <summary>
+        /// Initializes a new <see cref="ContextLocName"/> from a <see cref="ContextLocNameStructImpl"/>.
+        /// </summary>
+        public ContextLocName( ContextLocNameStructImpl impl )
+        {
+            _impl = impl;
+        }
+
+        /// <summary>
+        /// Copy constructor. Initializes a new <see cref="ContextLocName"/> from another ContextLocName.
+        /// </summary>
+        public ContextLocName( ContextLocName other )
+        {
+            _impl = other._impl;
+        }
+
+        /// <summary>
         /// Initializes a new <see cref="ContextLocName"/> with a full name.
         /// </summary>
         /// <param name="fullName">Initial full name.</param>
@@ -114,6 +130,7 @@ namespace CK.Core
             get { return _impl.TransformArg; }
             set
             {
+                if( value != null && string.IsNullOrWhiteSpace( value ) ) throw new ArgumentException( "Must not ne null, empty or whitespace.", nameof(TransformArg) );
                 string oldName = _impl.Name;
                 _impl.TransformArg = value;
                 if( oldName != _impl.Name ) OnNameChanged();
