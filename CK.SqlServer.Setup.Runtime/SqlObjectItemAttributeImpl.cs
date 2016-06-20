@@ -16,7 +16,7 @@ namespace CK.SqlServer.Setup
     /// </summary>
     public class SqlObjectItemAttributeImpl : SetupObjectItemAttributeImplBase
     {
-        static readonly string[] _allowedResourcePrefixes = new string[] { "[Replace]", "[Override]" };
+        static readonly string[] _allowedResourcePrefixes = new string[] { "[Replace]", "[Transform]" };
 
         public SqlObjectItemAttributeImpl( SqlObjectItemAttribute a )
             : base( a )
@@ -70,6 +70,7 @@ namespace CK.SqlServer.Setup
             SqlContextLocName name, 
             string expectedItemType = null )
         {
+            if( name.TransformArg != null ) expectedItemType = SqlObjectProtoItem.TypeTransformer;
             SqlObjectProtoItem protoObject = LoadProtoItemFromResource( monitor, packageItem, name, expectedItemType );
             if( protoObject == null ) return null;
             var item = protoObject.CreateItem( parser, monitor, missingDependencyIsError );
@@ -83,12 +84,12 @@ namespace CK.SqlServer.Setup
             string fileName = null, text = null;
             foreach( var fName in candidates )
             {
-                fileName = fName;
-                if( (text = packageItem.ResourceLocation.GetString( fName, false, _allowedResourcePrefixes )) != null ) break;
+                fileName = fName + ".sql";
+                if( (text = packageItem.ResourceLocation.GetString( fileName, false, _allowedResourcePrefixes )) != null ) break;
             }
             if( text == null )
             {
-                monitor.Error().Send( $"Resource '{name.FullName}' of '{packageItem.FullName}' not found. Tried: '{candidates.Concatenate( "' ,'" )}'." );
+                monitor.Error().Send( $"Resource '{name.FullName}' of '{packageItem.FullName}' not found. Tried: '{candidates.Concatenate( ".sql' ,'" )}.sql'." );
                 return null;
             }
 
@@ -98,25 +99,34 @@ namespace CK.SqlServer.Setup
                 if( expectedItemType != null && protoObject.ItemType != expectedItemType )
                 {
                     monitor.Error().Send( "Resource '{0}' of '{1}' is a '{2}' whereas a '{3}' is expected.", fileName, packageItem.FullName, protoObject.ItemType, expectedItemType );
-                    protoObject = null;
+                    return null;
                 }
-                else if( !protoObject.IsTransformer || protoObject.ContextLocName.ObjectName != string.Empty )
+                if( !protoObject.IsTransformer || protoObject.ContextLocName.ObjectName != string.Empty )
                 {
                     if( protoObject.ContextLocName.ObjectName != name.ObjectName )
                     {
                         monitor.Error().Send( "Resource '{0}' of '{2}' contains the definition of '{1}'. Names must match.", fileName, protoObject.ContextLocName.Name, packageItem.FullName );
-                        protoObject = null;
+                        return null;
                     }
-                    else if( string.IsNullOrEmpty( protoObject.ContextLocName.Schema ) )
+                    if( string.IsNullOrEmpty( protoObject.ContextLocName.Schema ) )
                     {
                         protoObject.ContextLocName.Schema = name.Schema;
                         monitor.Trace().Send( "{0} '{1}' does not specify a schema: it will use '{2}' schema.", protoObject.ItemType, protoObject.ContextLocName.Name, name.Schema );
                     }
-                    else if( protoObject.ContextLocName.Schema.Length > 0 && protoObject.ContextLocName.Schema != name.Schema )
+                    else if( protoObject.ContextLocName.Schema != name.Schema )
                     {
                         monitor.Error().Send( "Resource '{0}' of '{4}' defines the {1} in the schema '{2}' instead of '{3}'.", fileName, protoObject.ItemType, protoObject.ContextLocName.Schema, name.Schema, packageItem.FullName );
-                        protoObject = null;
+                        return null;
                     }
+                    if( protoObject.IsTransformer )
+                    {
+                        // Named transformer and its name matches the referenced name.
+                    }
+                }
+                else
+                {
+                    Debug.Assert( protoObject.IsTransformer && protoObject.ContextLocName.ObjectName == string.Empty );
+                    protoObject.ContextLocName.Name = name.Name;
                 }
             }
             if( protoObject != null ) monitor.Trace().Send( "Loaded {0} '{1}' of '{2}'.", protoObject.ItemType, protoObject.ContextLocName.Name, packageItem.FullName );
@@ -125,17 +135,17 @@ namespace CK.SqlServer.Setup
 
         static IEnumerable<string> GetResourceNameCandidates( IContextLocNaming containerName, SqlContextLocName name )
         {
-            yield return name.FullName + ".sql";
-            yield return name.Name + ".sql";
-            yield return name.ObjectName + ".sql";
+            yield return name.FullName;
+            yield return name.Name;
+            yield return name.ObjectName;
             if( name.TransformArg != null )
             {
                 if( name.FullName.StartsWith( containerName.FullName ) )
                 {
                     SqlContextLocName t = new SqlContextLocName( name.TransformArg );
-                    yield return t.FullName + ".sql";
-                    yield return t.Name + ".sql";
-                    yield return t.ObjectName + ".sql";
+                    yield return t.FullName;
+                    yield return t.Name;
+                    yield return t.ObjectName;
                 }
             }
         }

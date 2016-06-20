@@ -32,7 +32,7 @@ namespace CK.SqlServer.Setup
 
         ISetupObjectProtoItem ISqlObjectParser.Create( IActivityMonitor monitor, IContextLocNaming externalName, string text )
         {
-            return SqlObjectParser.Create( monitor, externalName, text, null );
+            return Create( monitor, externalName, text, null );
         }
 
         static public SqlObjectProtoItem Create( IActivityMonitor monitor, IContextLocNaming externalName, string text, string expectedType = null )

@@ -23,6 +23,7 @@ namespace CK.SqlServer.Setup
         {
             Debug.Assert( p.ItemType == SqlObjectProtoItem.TypeTransformer );
             _final = _original = t;
+            Debug.Assert( p.ContextLocName.TransformArg != null );
         }
 
         /// <summary>

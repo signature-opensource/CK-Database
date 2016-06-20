@@ -96,24 +96,6 @@ namespace CK.SqlServer.Setup
             MissingDependencyIsError = missingDependencyIsError;
         }
 
-        SqlProcedureItem CreateProcedureItem( ISqlServerParser parser, IActivityMonitor monitor )
-        {
-            try
-            {
-                var r = parser.ParseStoredProcedure( FullOriginalText );
-                if( r.IsError ) r.LogOnError( monitor );
-                return new SqlProcedureItem( this, r.Result );
-            }
-            catch( Exception ex )
-            {
-                using( monitor.OpenError().Send( ex, "While parsing {0}.", ContextLocName.FullName ) )
-                {
-                    monitor.Info().Send( FullOriginalText );
-                }
-                return null;
-            }
-        }
-
         ISqlServerParsedText SafeParse( ISqlServerParser parser, IActivityMonitor monitor ) 
         {
             try
@@ -176,11 +158,8 @@ namespace CK.SqlServer.Setup
             {
                 monitor.Error().Send( "Unable to create item for '{0}', type '{1}' is unknown.", ContextLocName.FullName, ItemType ); 
             }
-            if( result != null )
-            {
-                SqlObjectItem sql = result as SqlObjectItem;
-                if( sql != null && !sql.MissingDependencyIsError.HasValue ) sql.MissingDependencyIsError = defaultMissingDependencyIsError;
-            }
+            SqlObjectItem sql = result as SqlObjectItem;
+            if( sql != null && !sql.MissingDependencyIsError.HasValue ) sql.MissingDependencyIsError = defaultMissingDependencyIsError;
             return result;
         }
     }
