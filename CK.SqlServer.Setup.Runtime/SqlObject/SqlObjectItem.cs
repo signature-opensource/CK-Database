@@ -54,7 +54,6 @@ namespace CK.SqlServer.Setup
         internal readonly static ConstructorInfo CtorDecimalBits = typeof( Decimal ).GetConstructor( new Type[]{ typeof(int[]) } );
 
         SqlObjectProtoItem _protoItem;
-        string _physicalDB;
         bool? _missingDependencyIsError;
         string _header;
 
@@ -62,26 +61,9 @@ namespace CK.SqlServer.Setup
             : base( p )
         {
             _protoItem = p;
-            // Keeps the physical database name if the proto item defines it.
-            // It is currently unused.
-            _physicalDB = p.PhysicalDatabaseName;
             _header = p.Header;
             _missingDependencyIsError = p.MissingDependencyIsError;
         }
-
-        /// <summary>
-        /// Gets or sets the object that replaces this object.
-        /// </summary>
-        public new SqlObjectItem ReplacedBy
-        {
-            get { return (SqlObjectItem)base.ReplacedBy; }
-            set { base.ReplacedBy = value; }
-        }
-
-        /// <summary>
-        /// Gets the object that is replaced by this one.
-        /// </summary>
-        public new SqlObjectItem Replaces => (SqlObjectItem)base.Replaces; 
 
         public new SqlContextLocName ContextLocName => (SqlContextLocName)base.ContextLocName; 
 
@@ -131,12 +113,7 @@ namespace CK.SqlServer.Setup
         /// <param name="b">The target <see cref="StringBuilder"/>.</param>
         public void WriteCreate( StringBuilder b )
         {
-            if( ReplacedBy != null )
-            {
-                b.AppendFormat( "-- This {0} is replaced.", ItemType ).AppendLine();
-                b.AppendFormat( "-- create {0} {1}", ItemType, ContextLocName.Name ).AppendLine();
-            }
-            else DoWriteCreate( b );
+            DoWriteCreate( b );
         }
 
         protected virtual void DoWriteCreate( StringBuilder b )

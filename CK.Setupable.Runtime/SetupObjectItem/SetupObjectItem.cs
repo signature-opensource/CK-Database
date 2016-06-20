@@ -18,8 +18,6 @@ namespace CK.Setup
         DependentItemList _requiredBy;
         DependentItemGroupList _groups;
         IDependentItemContainerRef _container;
-        SetupObjectItem _replacedBy;
-        SetupObjectItem _replaces;
         IContextLocNaming _contextLocName;
 
         /// <summary>
@@ -39,25 +37,6 @@ namespace CK.Setup
             // is added later, an error will be raised during the ordering. 
             if( p.Container != null ) _container = new NamedDependentItemContainerRef( p.Container );
         }
-
-        /// <summary>
-        /// Gets or sets the object that replaces this object.
-        /// </summary>
-        public SetupObjectItem ReplacedBy
-        {
-            get { return _replacedBy; }
-            internal protected set
-            {
-                if( _replacedBy != null ) _replacedBy._replaces = null;
-                _replacedBy = value;
-                if( _replacedBy != null ) _replacedBy._replaces = this;
-            }
-        }
-
-        /// <summary>
-        /// Gets the object that is replaced by this one.
-        /// </summary>
-        public SetupObjectItem Replaces => _replaces; 
 
         public IContextLocNaming ContextLocName => _contextLocName; 
 
@@ -100,26 +79,12 @@ namespace CK.Setup
 
         string IContextLocNaming.TransformArg => _contextLocName.TransformArg;
 
-        string IContextLocNaming.Name
-        {
-            get
-            {
-                if( _replaces != null ) return _contextLocName.Name + "#replace";
-                return _contextLocName.Name;
-            }
-        }
+        string IContextLocNaming.Name => _contextLocName.Name;
 
         /// <summary>
         /// Gets the full name of this object.
         /// </summary>
-        public string FullName
-        {
-            get
-            {
-                if( _replaces != null ) return _contextLocName.FullName + "#replace";
-                return _contextLocName.FullName;
-            }
-        }
+        public string FullName => _contextLocName.FullName;
 
         bool IDependentItemRef.Optional => false; 
 

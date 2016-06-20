@@ -24,32 +24,12 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets or sets the object that replaces this object.
-        /// </summary>
-        public new SetupObjectItemCV ReplacedBy
-        {
-            get { return (SetupObjectItemCV)base.ReplacedBy; }
-            internal protected set { base.ReplacedBy = value; }
-        }
-
-        /// <summary>
-        /// Gets the object that is replaced by this one.
-        /// </summary>
-        public new SetupObjectItemCV Replaces
-        {
-            get { return (SetupObjectItemCV)base.Replaces; }
-        }
-
-        /// <summary>
         /// Gets or sets the version number. Can be null.
         /// </summary>
         /// <remarks>
         /// When code builds the object, it may be safer to let the version be null and to rewrite the object.
         /// </remarks>
-        public Version Version
-        {
-            get { return _version; }
-        }
+        public Version Version => _version; 
 
         IEnumerable<VersionedName> IVersionedItem.PreviousNames
         {

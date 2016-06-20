@@ -23,27 +23,7 @@ namespace CK.Setup
             if( p.Children != null ) Children.Add( p.Children );
         }
 
-        /// <summary>
-        /// Gets or sets the object that replaces this object.
-        /// </summary>
-        public new SetupObjectItemC ReplacedBy
-        {
-            get { return (SetupObjectItemC)base.ReplacedBy; }
-            internal protected set { base.ReplacedBy = value; }
-        }
-
-        /// <summary>
-        /// Gets the object that is replaced by this one.
-        /// </summary>
-        public new SetupObjectItemC Replaces
-        {
-            get { return (SetupObjectItemC)base.Replaces; }
-        }
-
-        public IDependentItemList Children
-        {
-            get { return _children ?? (_children = new DependentItemList()); }
-        }
+        public IDependentItemList Children => _children ?? (_children = new DependentItemList()); 
 
         /// <summary>
         /// Gets or sets the kind of item.
