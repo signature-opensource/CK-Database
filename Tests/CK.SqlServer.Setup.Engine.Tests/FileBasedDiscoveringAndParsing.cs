@@ -12,6 +12,7 @@ using CK.Core;
 using CK.Setup;
 using NUnit.Framework;
 using System.IO;
+using System.Collections.Generic;
 
 namespace CK.SqlServer.Setup.Engine.Tests
 {
@@ -72,9 +73,10 @@ namespace CK.SqlServer.Setup.Engine.Tests
         }
 
 
-        class SqlObjectParserStub : ISqlObjectParser
+        class SqlObjectParserStub : ISetupItemParser
         {
-            public ISetupObjectProtoItem Create( IActivityMonitor monitor, IContextLocNaming externalName, string text )
+
+            public ISetupItem Create( IActivityMonitor monitor, IContextLocNaming itemName, string text, string fileName, IDependentItemContainer package = null, IEnumerable<string> expectedItemTypes = null )
             {
                 throw new NotImplementedException();
             }
@@ -105,7 +107,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
             typeManager.Register( new SqlScriptTypeHandler() );
             ScriptCollector collector = new ScriptCollector( typeManager );
             SqlFileDiscoverer discoverer = new SqlFileDiscoverer( new SqlObjectParserStub(), TestHelper.Monitor );
-            Assert.That( discoverer.DiscoverSqlFiles( null, null, Path.Combine( TestHelper.ProjectFolder, "Scripts/FileBased/FromOpenTo" ), new SetupObjectItemCollector(), collector ), Is.True );
+            Assert.That( discoverer.DiscoverSqlFiles( null, null, Path.Combine( TestHelper.ProjectFolder, "Scripts/FileBased/FromOpenTo" ), new SetupItemCollector(), collector ), Is.True );
 
             bool caseDiffer;
             ScriptSet scripts = collector.Find( "Test", out caseDiffer );
@@ -156,7 +158,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
             
             SqlFileDiscoverer discoverer = new SqlFileDiscoverer( new SqlObjectParserStub(), TestHelper.Monitor );
 
-            Assert.That( discoverer.DiscoverSqlFiles( null, null, Path.Combine( TestHelper.ProjectFolder, "Scripts/FileBased/AllSteps" ), new SetupObjectItemCollector(), collector ), Is.True );
+            Assert.That( discoverer.DiscoverSqlFiles( null, null, Path.Combine( TestHelper.ProjectFolder, "Scripts/FileBased/AllSteps" ), new SetupItemCollector(), collector ), Is.True );
 
             bool caseDiffer;
             ScriptSet scripts = collector.Find( "test", out caseDiffer );

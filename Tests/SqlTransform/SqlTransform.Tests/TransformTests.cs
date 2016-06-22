@@ -22,5 +22,16 @@ namespace SqlTransform.Tests
                 Assert.That( s, Is.EqualTo( "Return: Hello! 0" ) );
             }
         }
+
+        [Test]
+        public void calling_SimpleTransformTest_method()
+        {
+            var p = TestHelper.StObjMap.Default.Obtain<CKLevel0.Package>();
+            using( var ctx = new SqlStandardCallContext() )
+            {
+                string s = p.SimpleTransormTest( ctx );
+                Assert.That( s, Is.EqualTo( "Yes! 0" ) );
+            }
+        }
     }
 }

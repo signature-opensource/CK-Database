@@ -7,12 +7,139 @@ using System.Reflection;
 using CK.Core;
 using CK.Setup;
 using System.Text;
+using CK.SqlServer.Parser;
+using System.Text.RegularExpressions;
 
 namespace CK.SqlServer.Setup
 {
 
-    public class SqlObjectItem : SetupObjectItemV
+    public abstract class SqlObjectItem : SqlBaseItem
     {
+        bool? _missingDependencyIsError;
+
+        internal SqlObjectItem()
+        {
+        }
+
+        internal SqlObjectItem( SqlContextLocName name, string itemType, ISqlServerObject parsed )
+            : base( name, itemType, parsed )
+        {
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="ISqlServerObject"/>. 
+        /// </summary>
+        public new ISqlServerObject SqlObject
+        {
+            get { return (ISqlServerObject)base.SqlObject; }
+            set { base.SqlObject = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets whether when installing, the informational message 'The module 'X' depends 
+        /// on the missing object 'Y'. The module will still be created; however, it cannot run successfully until the object exists.' 
+        /// must be logged as a <see cref="LogLevel.Error"/>. When false, this is a <see cref="LogLevel.Info"/>.
+        /// Sets first by MissingDependencyIsError in text, otherwise an attribute (that should default to true should be applied).
+        /// When not set, it is considered to be true.
+        /// </summary>
+        public bool? MissingDependencyIsError
+        {
+            get { return _missingDependencyIsError; }
+            set { _missingDependencyIsError = value; }
+        }
+
+        protected override object StartDependencySort() => typeof( SqlObjectSetupDriver );
+
+        /// <summary>
+        /// Writes the drop instruction.
+        /// </summary>
+        /// <param name="b">The target <see cref="StringBuilder"/>.</param>
+        public void WriteDrop( StringBuilder b )
+        {
+            b.Append( "if OBJECT_ID('" )
+                .Append( ContextLocName.Name )
+                .Append( "') is not null drop " )
+                .Append( ItemType )
+                .Append( ' ' )
+                .Append( ContextLocName.Name )
+                .Append( ';' )
+                .AppendLine();
+        }
+
+        /// <summary>
+        /// Writes the whole object.
+        /// </summary>
+        /// <param name="b">The target <see cref="StringBuilder"/>.</param>
+        public void WriteCreate( StringBuilder b )
+        {
+            var alterOrCreate = SqlObject as ISqlServerAlterOrCreateStatement;
+            if( alterOrCreate != null )
+            {
+                if( alterOrCreate.IsAlterKeyword ) alterOrCreate = alterOrCreate.ToggleAlterKeyword();
+                alterOrCreate.Write( b );
+            }
+            else SqlObject.Write( b );
+        }
+
+        static Regex _rMissingDep = new Regex( @"MissingDependencyIsError\s*=\s*(?<1>\w+)",
+                                            RegexOptions.CultureInvariant
+                                            | RegexOptions.IgnoreCase
+                                            | RegexOptions.ExplicitCapture );
+
+        internal override bool Initialize( IActivityMonitor monitor, string fileName, IDependentItemContainer packageItem )
+        {
+            return base.Initialize( monitor, fileName, packageItem )
+                    && CheckSchemaAndObjectName( monitor, fileName, packageItem )
+                    && SetMissingIsDependencyIsErrorFromHeader( monitor );
+        }
+
+        bool SetMissingIsDependencyIsErrorFromHeader( IActivityMonitor monitor )
+        {
+            foreach( var h in SqlObject.HeaderComments )
+            {
+                Match missDep = _rMissingDep.Match( h.Text );
+                if( missDep.Success )
+                {
+                    bool m;
+                    if( bool.TryParse( missDep.Groups[1].Value, out m ) )
+                    {
+                        MissingDependencyIsError = m;
+                        break;
+                    }
+                    else
+                    {
+                        monitor.Error().Send( "Invalid syntax: it should be MissingDependencyIsError = true or MissingDependencyIsError = false." );
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        bool CheckSchemaAndObjectName( IActivityMonitor monitor, string fileName, IDependentItemContainer packageItem )
+        {
+            if( ContextLocName.ObjectName != SqlObject.Name )
+            {
+                monitor.Error().Send( $"Resource '{fileName}' of '{packageItem?.FullName}' contains the definition of '{ContextLocName.Name}'. Names must match." );
+                return false;
+            }
+            if( SqlObject.Schema == null )
+            {
+                if( !string.IsNullOrWhiteSpace( ContextLocName.Schema ) )
+                {
+                    SqlObject = SqlObject.SetSchema( ContextLocName.Schema );
+                    monitor.Trace().Send( $"{ItemType} '{SqlObject.Name}' does not specify a schema: it will use '{ContextLocName.Schema}' schema." );
+                }
+            }
+            else if( SqlObject.Schema != ContextLocName.Schema )
+            {
+                monitor.Error().Send( $"Resource '{fileName}' of '{packageItem?.FullName}' defines the {ItemType} in the schema '{SqlObject.Schema}' instead of '{ContextLocName.Schema}'." );
+                return false;
+            }
+            return true;
+        }
+
+        #region static reflection objects
         internal readonly static Type TypeCommand = typeof( SqlCommand );
         internal readonly static Type TypeConnection = typeof( SqlConnection );
         internal readonly static Type TypeTransaction = typeof( SqlTransaction );
@@ -51,81 +178,8 @@ namespace CK.SqlServer.Setup
         internal readonly static MethodInfo MExecutorCallNonQueryAsyncTyped = typeof( ISqlCommandExecutor ).GetMethod( "ExecuteNonQueryAsyncTyped" );
         internal readonly static MethodInfo MExecutorCallNonQueryAsyncTypedCancellable = typeof( ISqlCommandExecutor ).GetMethod( "ExecuteNonQueryAsyncTypedCancellable" );
 
-        internal readonly static ConstructorInfo CtorDecimalBits = typeof( Decimal ).GetConstructor( new Type[]{ typeof(int[]) } );
-
-        SqlObjectProtoItem _protoItem;
-        bool? _missingDependencyIsError;
-        string _header;
-
-        internal SqlObjectItem( SqlObjectProtoItem p )
-            : base( p )
-        {
-            _protoItem = p;
-            _header = p.Header;
-            _missingDependencyIsError = p.MissingDependencyIsError;
-        }
-
-        public new SqlContextLocName ContextLocName => (SqlContextLocName)base.ContextLocName; 
-
-        /// <summary>
-        /// Gets or sets whether when installing, the informational message 'The module 'X' depends 
-        /// on the missing object 'Y'. The module will still be created; however, it cannot run successfully until the object exists.' 
-        /// must be logged as a <see cref="LogLevel.Error"/>. When false, this is a <see cref="LogLevel.Info"/>.
-        /// Sets first by MissingDependencyIsError in text, otherwise an attribute (that should default to true should be applied).
-        /// When not set, it is considered to be true.
-        /// </summary>
-        public bool? MissingDependencyIsError
-        {
-            get { return _missingDependencyIsError; }
-            set { _missingDependencyIsError = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the header part of this object. Never null (normalized to String.Empty).
-        /// </summary>
-        public string Header
-        {
-            get { return _header; }
-            set { _header = value ?? string.Empty; }
-        }
-
-        protected override object StartDependencySort() => typeof(SqlObjectSetupDriver);
-
-        /// <summary>
-        /// Writes the drop instruction.
-        /// </summary>
-        /// <param name="b">The target <see cref="StringBuilder"/>.</param>
-        public void WriteDrop( StringBuilder b )
-        {
-            b.Append( "if OBJECT_ID('" )
-                .Append( ContextLocName.Name )
-                .Append( "') is not null drop " )
-                .Append( ItemType )
-                .Append( ' ' )
-                .Append( ContextLocName.Name )
-                .Append( ';' )
-                .AppendLine();
-        }
-
-        /// <summary>
-        /// Writes the whole object.
-        /// </summary>
-        /// <param name="b">The target <see cref="StringBuilder"/>.</param>
-        public void WriteCreate( StringBuilder b )
-        {
-            DoWriteCreate( b );
-        }
-
-        protected virtual void DoWriteCreate( StringBuilder b )
-        {
-            b.Append( _header ).AppendLine();
-            b.Append( "create " )
-                .Append( ItemType )
-                .Append( ' ' )
-                .Append( ContextLocName.Name )
-                .Append( _protoItem.TextAfterName )
-                .AppendLine();
-        }
+        internal readonly static ConstructorInfo CtorDecimalBits = typeof( decimal ).GetConstructor( new Type[] { typeof( int[] ) } );
+        #endregion
 
     }
 }

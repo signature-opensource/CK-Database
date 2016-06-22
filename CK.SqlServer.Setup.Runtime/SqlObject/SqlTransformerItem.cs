@@ -13,38 +13,19 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
-    public class SqlTransformerItem : SetupObjectItem
+    public class SqlTransformerItem : SqlBaseItem
     {
-        readonly ISqlServerTransformer _original;
-        ISqlServerTransformer _final;
-
-        internal SqlTransformerItem( SqlObjectProtoItem p, ISqlServerTransformer t )
-            : base( p )
+        internal SqlTransformerItem( SqlContextLocName name, ISqlServerTransformer t )
+            : base( name, "Transformer", t )
         {
-            Debug.Assert( p.ItemType == SqlObjectProtoItem.TypeTransformer );
-            _final = _original = t;
-            Debug.Assert( p.ContextLocName.TransformArg != null );
+            Debug.Assert( name.TransformArg != null );
+            Requires.Add( new NamedDependentItemRef( name.TransformArg ) );
         }
 
-        /// <summary>
-        /// Gets whether the definition of this item is valid (its body is available).
-        /// </summary>
-        public bool IsValid => _original != null;
-
-        /// <summary>
-        /// Gets the original parsed object. 
-        /// Can be null if an error occurred during parsing.
-        /// </summary>
-        public ISqlServerTransformer OriginalStatement => _original;
-
-        /// <summary>
-        /// Gets or sets a replacement of the <see cref="OriginalStatement"/>.
-        /// This is initialized with <see cref="OriginalStatement"/> but can be changed.
-        /// </summary>
-        public ISqlServerTransformer FinalStatement
+        public new ISqlServerTransformer SqlObject
         {
-            get { return _final; }
-            set { _final = value; }
+            get { return (ISqlServerTransformer)base.SqlObject; }
+            set { base.SqlObject = value; }
         }
 
         protected override object StartDependencySort() => typeof(SqlTransformerItemDriver);

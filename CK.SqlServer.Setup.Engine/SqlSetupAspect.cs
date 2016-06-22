@@ -19,10 +19,11 @@ namespace CK.SqlServer.Setup
         readonly SqlSetupAspectConfiguration _config;
         readonly SetupEngine _engine;
         readonly SqlManagerProvider _databases;
-        readonly SqlFileDiscoverer _sqlFileDiscoverer;
-        readonly SetupObjectItemCollector _sqlFiles;
         ISqlServerParser _sqlParser;
+        ISetupItemParser _itemParser;
         ISqlManager _defaultDatabase;
+        SqlFileDiscoverer _sqlFileDiscoverer;
+        SetupItemCollector _sqlFiles;
 
         class ConfiguratorHook : SetupEngineConfigurator
         {
@@ -67,8 +68,6 @@ namespace CK.SqlServer.Setup
             {
                 _databases.Add( db.DatabaseName, db.ConnectionString, db.AutoCreate );
             }
-            _sqlFiles = new SetupObjectItemCollector();
-            _sqlFileDiscoverer = new SqlFileDiscoverer( new SqlObjectParser(), _engine.Monitor );
         }
 
         bool ISetupEngineAspect.Configure()
@@ -96,23 +95,14 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Gets the engine to which this aspect is bound.
         /// </summary>
-        public SetupEngine SetupEngine
-        {
-            get { return _engine; }
-        }
+        public SetupEngine SetupEngine => _engine; 
 
-        ISetupEngineAspectConfiguration ISetupEngineAspect.Configuration
-        {
-            get { return _config; }
-        }
+        ISetupEngineAspectConfiguration ISetupEngineAspect.Configuration => _config; 
 
         /// <summary>
         /// Gets the configuration object.
         /// </summary>
-        public SqlSetupAspectConfiguration Configuration
-        {
-            get { return _config; }
-        }
+        public SqlSetupAspectConfiguration Configuration => _config; 
 
         /// <summary>
         /// Gets the <see cref="ISqlServerParser"/> to use.
@@ -131,13 +121,28 @@ namespace CK.SqlServer.Setup
         }
 
         /// <summary>
+        /// Gets the <see cref="ISetupItemParser"/>.
+        /// </summary>
+        public ISetupItemParser ItemParser => _itemParser ?? (_itemParser = new SqlItemParser( SqlParser ) );
+
+        SqlFileDiscoverer EnsureFileDiscoverer()
+        {
+            if( _sqlFileDiscoverer == null )
+            {
+                _sqlFiles = new SetupItemCollector();
+                _sqlFileDiscoverer = new SqlFileDiscoverer( ItemParser, _engine.Monitor );
+            }
+            return _sqlFileDiscoverer;
+        }
+
+        /// <summary>
         /// Discovers file packages (*.ck xml files) in given directory and sub directories.
         /// </summary>
         /// <param name="directoryPath">Directory from where *.ck files must be registered.</param>
         /// <returns>True if no error occurred. Errors are logged.</returns>
         public bool DiscoverFilePackages( string directoryPath )
         {
-            return _sqlFileDiscoverer.DiscoverPackages( String.Empty, SqlDefaultDatabase.DefaultDatabaseName, directoryPath );
+            return EnsureFileDiscoverer().DiscoverPackages( string.Empty, SqlDatabase.DefaultDatabaseName, directoryPath );
         }
 
         /// <summary>
@@ -147,25 +152,19 @@ namespace CK.SqlServer.Setup
         /// <returns>True if no error occurred. Errors are logged.</returns>
         public bool DiscoverSqlFiles( string directoryPath )
         {
-            return _sqlFileDiscoverer.DiscoverSqlFiles( String.Empty, SqlDefaultDatabase.DefaultDatabaseName, directoryPath, _sqlFiles, _engine.Scripts );
+            return EnsureFileDiscoverer().DiscoverSqlFiles( string.Empty, SqlDatabase.DefaultDatabaseName, directoryPath, _sqlFiles, _engine.Scripts );
         }
 
         /// <summary>
         /// Gets the default database as a <see cref="SqlManager"/> object.
         /// </summary>
-        public ISqlManager DefaultSqlDatabase
-        {
-            get { return _defaultDatabase; }
-        }
+        public ISqlManager DefaultSqlDatabase => _defaultDatabase; 
 
         /// <summary>
         /// Gets the available databases (including the <see cref="DefaultSqlDatabase"/>).
         /// It is initialized with <see cref="SqlSetupAspectConfiguration.Databases"/> content but can be changed.
         /// </summary>
-        public ISqlManagerProvider SqlDatabases
-        {
-            get { return _databases; }
-        }
+        public ISqlManagerProvider SqlDatabases => _databases; 
 
         void OnRegisterSetup( object sender, RegisterSetupEventArgs e )
         {
@@ -195,19 +194,11 @@ namespace CK.SqlServer.Setup
                         }
                     }
                 }
-                if( !hasError )
+                if( !hasError && _sqlFiles != null )
                 {
                     using( monitor.OpenInfo().Send( "Creating Sql Objects from {0} sql files.", _sqlFiles.Count ) )
                     {
-                        var items = new List<ISetupItem>();
-                        foreach( var proto in _sqlFiles.OfType<SqlObjectProtoItem>() )
-                        {
-                            var item = proto.CreateItem( SqlParser, monitor, !_config.IgnoreMissingDependencyIsError );
-                            if( item == null ) hasError = true;
-                            else items.Add( item );
-                        }
-                        if( hasError ) monitor.Info().Send( "At least one Sql Object creation failed." );
-                        else e.Register( items );
+                        e.Register( _sqlFiles );
                     }
                 }
             }

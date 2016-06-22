@@ -29,7 +29,7 @@ namespace CK.SqlServer.Setup
         {
             if( data.IsDefaultFullNameWithoutContext )
             {
-                monitor.Info().Send( "SqlPackage class '{0}' uses its own full name as its SetupName.", data.FullNameWithoutContext );
+                monitor.Info().Send( "SqlPackage '{0}' uses its own full name as its SetupName.", data.FullNameWithoutContext );
             }
             data.ItemType = typeof( SqlPackageBaseItem );
             data.DriverType = typeof( SqlPackageBaseSetupDriver );

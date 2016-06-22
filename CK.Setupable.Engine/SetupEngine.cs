@@ -133,13 +133,11 @@ namespace CK.Setup
                 try
                 {
                     m = _startConfiguration.SetupSessionMemoryProvider.StartSetup();
-                    if( DoRun( items, buildResult.SetupItems, m ) )
+                    if( DoRun( items, buildResult.SetupItems, m ) 
+                        && buildResult.GenerateFinalAssembly( _monitor ) )
                     {
                         _startConfiguration.SetupSessionMemoryProvider.StopSetup( null );
-                        if( buildResult.GenerateFinalAssembly( _monitor ) )
-                        {
-                            return true;
-                        }
+                        return true;
                     }
                 }
                 catch( Exception ex )

@@ -88,9 +88,8 @@
     <Compile Include="SetupObjectItem\SetupObjectItemC.cs" />
     <Compile Include="SetupObjectItem\SetupObjectItemV.cs" />
     <Compile Include="SetupObjectItem\SetupObjectItem.cs" />
-    <Compile Include="ProtoItem\ISetupObjectProtoItem.cs" />
     <Compile Include="ISetupItem.cs" />
-    <Compile Include="ProtoItem\SetupObjectProtoItemCollector.cs" />
+    <Compile Include="Setup\SetupItemCollector.cs" />
     <Compile Include="Scripts\FileSetupScript.cs" />
     <Compile Include="Scripts\IScriptCollector.cs" />
     <Compile Include="Scripts\ISetupScript.cs" />

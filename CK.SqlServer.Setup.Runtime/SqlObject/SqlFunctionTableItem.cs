@@ -14,8 +14,8 @@ namespace CK.SqlServer.Setup
 {
     public class SqlFunctionTableItem : SqlCallableItem<ISqlServerFunctionTable>
     {
-        internal SqlFunctionTableItem( SqlObjectProtoItem p, ISqlServerFunctionTable tableFunction )
-            : base( p, tableFunction )
+        internal SqlFunctionTableItem( SqlContextLocName name, ISqlServerFunctionTable tableFunction )
+            : base( name, "Function", tableFunction )
         {
         }
     }

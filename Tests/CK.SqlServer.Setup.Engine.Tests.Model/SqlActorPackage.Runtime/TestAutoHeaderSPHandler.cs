@@ -23,10 +23,10 @@ namespace SqlActorPackage.Runtime
         protected override bool Init()
         {
             SqlProcedureItem item = (SqlProcedureItem)Driver.Item;
-            SqlStoredProcedure p = (SqlStoredProcedure)item.FinalStatement;
+            SqlStoredProcedure p = (SqlStoredProcedure)item.SqlObject;
             if( p != null )
             {
-                item.FinalStatement = p.AddLeadingTrivia( new SqlTrivia( SqlTokenType.LineComment, _header ) );
+                item.SqlObject = p.AddLeadingTrivia( new SqlTrivia( SqlTokenType.LineComment, _header ) );
             }
             return true;
         }

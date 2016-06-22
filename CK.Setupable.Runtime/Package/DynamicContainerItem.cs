@@ -16,7 +16,7 @@ namespace CK.Setup
     /// <remarks>
     /// The <see cref="DynamicPackageItem"/> must be used for container that have multiple versions and optional associated "Model" and "Objects".
     /// </remarks>
-    public abstract class DynamicContainerItem : IMutableSetupItemContainer, ISetupItem, IDependentItemContainerRef
+    public class DynamicContainerItem : IMutableSetupItemContainer, ISetupItem, IDependentItemContainerRef
     {
         ContextLocNameStructImpl _name;
         DependentItemList _requires;

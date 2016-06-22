@@ -21,7 +21,7 @@ namespace CK.SqlServer.Setup
             _attr = a;
         }
 
-        protected SqlPackageAttributeBase Attribute { get { return _attr; } }
+        protected SqlPackageAttributeBase Attribute => _attr;
 
         void IStObjStructuralConfigurator.Configure( IActivityMonitor monitor, IStObjMutableItem o )
         {

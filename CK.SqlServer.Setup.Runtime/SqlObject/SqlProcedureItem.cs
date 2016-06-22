@@ -14,8 +14,8 @@ namespace CK.SqlServer.Setup
 {
     public class SqlProcedureItem : SqlCallableItem<ISqlServerStoredProcedure>
     {
-        internal SqlProcedureItem( SqlObjectProtoItem p, ISqlServerStoredProcedure storedProc )
-            : base( p, storedProc )
+        internal SqlProcedureItem( SqlContextLocName name, ISqlServerStoredProcedure storedProc )
+            : base( name, "Procedure", storedProc )
         {
         }
     }

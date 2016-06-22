@@ -49,7 +49,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="CK.SqlServer.Parser.Model, Version=3.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\CK.SqlServer.Parser.Model.3.0.0-g\lib\net45\CK.SqlServer.Parser.Model.dll</HintPath>
+      <HintPath>..\..\..\packages\CK.SqlServer.Parser.Model.3.0.0-g03\lib\net45\CK.SqlServer.Parser.Model.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="CK.Text, Version=1.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
@@ -67,7 +67,6 @@
     <Compile Include="Package.cs" />
     <Compile Include="GroupHome.cs" />
     <Compile Include="SecurityZoneHome.cs" />
-    <Compile Include="UserView.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Res\Group\CK.GroupHome-Zone.Init.2.11.25.sql" />
@@ -101,9 +100,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Res\Group\sGroupCreate.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Res\CK.UserView-Zone.sql" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Res\[Replace]sUserToBeOverridenIndirect.sql" />

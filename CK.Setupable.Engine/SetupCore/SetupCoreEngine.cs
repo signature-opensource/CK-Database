@@ -94,8 +94,8 @@ namespace CK.Setup
 
         class DriverList : IDriverList
         {
-            List<SetupItemDriver> _drivers;
-            DriverBaseList _baseList;
+            readonly List<SetupItemDriver> _drivers;
+            readonly DriverBaseList _baseList;
 
             public DriverList( DriverBaseList l )
             {
@@ -103,45 +103,21 @@ namespace CK.Setup
                 _drivers = new List<SetupItemDriver>();
             }
 
-            public SetupItemDriver this[string fullName]
-            {
-                get { return _baseList[fullName] as SetupItemDriver; }
-            }
+            public SetupItemDriver this[string fullName] =>  _baseList[fullName] as SetupItemDriver; 
 
-            public SetupItemDriver this[IDependentItem item]
-            {
-                get { return _baseList[item] as SetupItemDriver; }
-            }
+            public SetupItemDriver this[IDependentItem item] => _baseList[item] as SetupItemDriver; 
 
-            public SetupItemDriver this[int index]
-            {
-                get { return _drivers[index]; }
-            }
+            public SetupItemDriver this[int index] => _drivers[index]; 
 
-            public int Count
-            {
-                get { return _drivers.Count; }
-            }
+            public int Count => _drivers.Count; 
 
-            public IEnumerator<SetupItemDriver> GetEnumerator()
-            {
-                return _drivers.GetEnumerator();
-            }
+            public IEnumerator<SetupItemDriver> GetEnumerator() => _drivers.GetEnumerator();
 
-            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-            {
-                return _drivers.GetEnumerator();
-            }
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => _drivers.GetEnumerator();
 
-            internal void Clear()
-            {
-                _drivers.Clear();
-            }
+            internal void Clear() => _drivers.Clear();
 
-            internal void Add( SetupItemDriver d )
-            {
-                _drivers.Add( d );
-            }
+            internal void Add( SetupItemDriver d ) => _drivers.Add( d );
 
         }
 
@@ -181,11 +157,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets the <see cref="ISetupEngineAspect"/> that participate to setup.
         /// </summary>
-        public IReadOnlyList<ISetupEngineAspect> Aspects 
-        {
-            get { return _aspects; } 
-        }
-
+        public IReadOnlyList<ISetupEngineAspect> Aspects => _aspects; 
         /// <summary>
         /// Gets the first typed aspect that is assignable to <typeparamref name="T"/>. 
         /// If such aspect can not be found, depending on <paramref name="required"/> a <see cref="CKException"/> is thrown or null is returned.
@@ -219,51 +191,28 @@ namespace CK.Setup
         /// Gets the <see cref="ISetupSessionMemory"/> service that is used to persist any state related to setup phasis.
         /// It is a simple key-value dictionary where key is a string not longer than 255 characters and value is a non null string.
         /// </summary>
-        public ISetupSessionMemory Memory
-        {
-            get { return _memory; }
-        }
+        public ISetupSessionMemory Memory => _memory; 
 
         /// <summary>
         /// Monitor that will be used during setup.
         /// </summary>
-        public IActivityMonitor Monitor
-        {
-            get { return _monitor; }
-        }
+        public IActivityMonitor Monitor => _monitor; 
 
         /// <summary>
         /// Gives access to the ordered list of all the <see cref="DriverBase"/> that participate to Setup.
         /// This list is filled after <see cref="RegisterSetupEvent"/> (and <see cref="SetupEvent"/> with <see cref="SetupStep.PreInit"/>) but before <see cref="SetupStep.Init"/>.
         /// </summary>
-        public IDriverBaseList AllDrivers
-        {
-            get { return _allDrivers; }
-        }
+        public IDriverBaseList AllDrivers => _allDrivers; 
 
         /// <summary>
         /// Gives access to the ordered list of the <see cref="SetupItemDriver"/>.
         /// </summary>
-        public IDriverList Drivers
-        {
-            get { return _genDrivers; }
-        }
-
-        /// <summary>
-        /// Gets all ordered setup items without heads: a group or a container appears after the setup items it contains.
-        /// </summary>
-        public IEnumerable<ISetupItem> AllItems
-        {
-            get { return _genDrivers.Select( d => d.Item ); }
-        }
+        public IDriverList Drivers => _genDrivers; 
 
         /// <summary>
         /// Gets the current state of the engine.
         /// </summary>
-        public SetupEngineState State
-        {
-            get { return _state; }
-        }
+        public SetupEngineState State => _state; 
 
         /// <summary>
         /// This is the very first step: registers any number of <see cref="IDependentItem"/> and/or <see cref="IDependentItemDiscoverer"/>.

@@ -18,9 +18,6 @@ namespace CK.Setup
     /// </summary>
     public class VersionedName
     {
-        string _name;
-        Version _version;
-
         /// <summary>
         /// Initializes a new <see cref="VersionedName"/> with a <see cref="FullName"/> and a <see cref="Version"/>.
         /// Both of them must be valid.
@@ -29,32 +26,21 @@ namespace CK.Setup
         /// <param name="v">Valid version for the name. Null is converted into <see cref="Util.EmptyVersion"/>.</param>
         public VersionedName( string fullName, Version v )
         {
+            if( string.IsNullOrWhiteSpace( fullName ) ) throw new ArgumentNullException( nameof(fullName) );
             FullName = fullName;
-            Version = v;
+            Version = v ?? Util.EmptyVersion;
         }
 
         /// <summary>
         /// Gets the full name of a versionned name.
         /// </summary>
-        public string FullName 
-        {
-            get { return _name; }
-            private set
-            {
-                if( String.IsNullOrWhiteSpace( value ) ) throw new ArgumentException();
-                _name = value;
-            }
-        }
+        public string FullName { get; }
 
         /// <summary>
         /// Gets the version associated to the <see cref="FullName"/>. 
         /// Never null (<see cref="Util.EmptyVersion"/> at least).
         /// </summary>
-        public Version Version
-        {
-            get { return _version; }
-            private set { _version = value ?? Util.EmptyVersion; }
-        }
+        public Version Version { get; }
 
         /// <summary>
         /// Overridden to return the "FullName - Version".
@@ -62,7 +48,7 @@ namespace CK.Setup
         /// <returns></returns>
         public override string ToString()
         {
-            return _name + " - " + _version.ToString();
+            return FullName + " - " + Version.ToString();
         }
 
     }

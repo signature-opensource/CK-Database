@@ -16,7 +16,8 @@ namespace CK.Setup
 
     /// <summary>
     /// This interface enables an object that is a <see cref="IDependentItemContainer"/> to 
-    /// dynamically choose to be considered as a simple <see cref="IDependentItem"/> or a <see cref="IDependentItemGroup"/> only. 
+    /// dynamically choose to be considered as a simple <see cref="IDependentItem"/> 
+    /// or a <see cref="IDependentItemGroup"/> only. 
     /// This is for advanced use, see remarks.
     /// </summary>
     /// <remarks>
@@ -28,7 +29,8 @@ namespace CK.Setup
     public interface IDependentItemContainerTyped : IDependentItemContainer
     {
         /// <summary>
-        /// Gets the kind of this item (can be <see cref="DependentItemKind.Item"/>, <see cref="DependentItemKind.Group"/> or <see cref="DependentItemKind.Container"/>).
+        /// Gets the kind of this item (can be <see cref="DependentItemKind.Item"/>, <see cref="DependentItemKind.Group"/> 
+        /// or <see cref="DependentItemKind.Container"/>).
         /// </summary>
         DependentItemKind ItemKind { get; }
     }

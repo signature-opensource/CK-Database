@@ -15,7 +15,7 @@ namespace CK.SqlServer.Setup
 
     public abstract class SqlObjectItemMethodAttributeImplBase : SetupObjectItemMemberAttributeImplBase, IAutoImplementorMethod
     {
-        readonly string _sqlObjectProtoItemType;
+        readonly string _expectedItemType;
         bool _implementHasBeenAlreadyBeenCalled;
 
         /// <summary>
@@ -23,11 +23,11 @@ namespace CK.SqlServer.Setup
         /// and a <see cref="SqlObjectProtoItem.ItemType"/>.
         /// </summary>
         /// <param name="a">The attribute.</param>
-        /// <param name="sqlObjectProtoItemType">The type of the object.</param>
-        protected SqlObjectItemMethodAttributeImplBase( SqlObjectItemMemberAttributeBase a, string sqlObjectProtoItemType )
+        /// <param name="expectedItemType">The type of the object.</param>
+        protected SqlObjectItemMethodAttributeImplBase( SqlObjectItemMemberAttributeBase a, string expectedItemType )
             : base( a )
         {
-            _sqlObjectProtoItemType = sqlObjectProtoItemType;
+            _expectedItemType = expectedItemType;
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace CK.SqlServer.Setup
         protected override SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeImplBase.Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name )
         {
             ISqlSetupAspect sql = SetupEngineAspectProvider.GetSetupEngineAspect<ISqlSetupAspect>();
-            return SqlObjectItemAttributeImpl.SqlCreateSetupObjectItem( sql.SqlParser, r.Monitor, (SqlPackageBaseItem)r.Container, (SqlPackageBaseItem)firstContainer, Attribute.MissingDependencyIsError, (SqlContextLocName)name, null );
+            return SqlObjectItemAttributeImpl.SqlCreateSetupObjectItem( sql.SqlParser, r.Monitor, (SqlPackageBaseItem)r.Container, Attribute.MissingDependencyIsError, (SqlContextLocName)name, (SqlPackageBaseItem)firstContainer, new[] { _expectedItemType } );
         }
 
         bool IAutoImplementorMethod.Implement( IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, TypeBuilder tB, bool isVirtual )

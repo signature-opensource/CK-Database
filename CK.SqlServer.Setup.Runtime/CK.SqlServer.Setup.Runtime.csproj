@@ -66,7 +66,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="CK.SqlServer.Parser.Model, Version=3.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.SqlServer.Parser.Model.3.0.0-g\lib\net45\CK.SqlServer.Parser.Model.dll</HintPath>
+      <HintPath>..\packages\CK.SqlServer.Parser.Model.3.0.0-g03\lib\net45\CK.SqlServer.Parser.Model.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="CK.Text, Version=1.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
@@ -81,23 +81,24 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="ComplexTypeMapper.cs" />
+    <Compile Include="SqlCallableAttributeImpl\ComplexTypeMapper.cs" />
     <Compile Include="ISqlManager.cs" />
     <Compile Include="ISqlManagerProvider.cs" />
     <Compile Include="ISqlScriptExecutor.cs" />
     <Compile Include="ISqlServerExtensions.cs" />
     <Compile Include="ISqlSetupAspect.cs" />
+    <Compile Include="SqlCallableAttributeImpl\ISqlCallableItem.cs" />
     <Compile Include="SqlContextLocName.cs" />
     <Compile Include="SqlObjectItemMethodAttributeImplBase.cs" />
-    <Compile Include="SqlObject\ISqlObjectParser.cs" />
-    <Compile Include="SqlAlterProcedureAttributeImpl.cs" />
+    <Compile Include="SqlObject\ISetupItemParser.cs" />
     <Compile Include="SqlObject\SqlCallableItem.cs" />
     <Compile Include="SqlObject\SqlFunctionTableItem.cs" />
     <Compile Include="SqlObject\SqlFunctionInlineTableItem.cs" />
+    <Compile Include="SqlObject\SqlBaseItem.cs" />
     <Compile Include="SqlObject\SqlTransformerItemDriver.cs" />
     <Compile Include="SqlObject\SqlTransformerItem.cs" />
     <Compile Include="SqlObject\SqlScalarFunctionItem.cs" />
-    <Compile Include="SqlCallableAttributeImpl.GenerateCreateSqlCommand.cs" />
+    <Compile Include="SqlCallableAttributeImpl\SqlCallableAttributeImpl.GenerateCreateSqlCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlDatabase\SqlDatabaseConnectionItem.cs" />
     <Compile Include="SqlDatabase\SqlDatabaseConnectionSetupDriver.cs" />
@@ -105,8 +106,6 @@
     <Compile Include="SqlDatabase\SqlDatabaseSetupDriver.cs" />
     <Compile Include="SqlObjectItemAttributeImpl.cs" />
     <Compile Include="SqlObject\SqlObjectItem.cs" />
-    <Compile Include="SqlObject\SqlObjectParser.cs" />
-    <Compile Include="SqlObject\SqlObjectProtoItem.cs" />
     <Compile Include="SqlObject\SqlObjectSetupDriver.cs" />
     <Compile Include="SqlObject\SqlProcedureItem.cs" />
     <Compile Include="SqlObject\SqlViewObjectItem.cs" />
@@ -114,18 +113,15 @@
     <Compile Include="SqlPackageBase\SqlPackageBaseItem.cs" />
     <Compile Include="SqlPackageBase\SqlPackageBaseSetupDriver.cs" />
     <Compile Include="SqlPackage\SqlPackageAttributeImpl.cs" />
-    <Compile Include="SqlCallableAttributeImpl.cs" />
-    <Compile Include="SqlCallableAttributeImpl.SqlCallContextInfo.cs" />
-    <Compile Include="SqlCallableAttributeImpl.SqlParameterHandlerList.cs" />
-    <Compile Include="SqlCallableAttributeImpl.WrapperCtorMatcher.cs" />
+    <Compile Include="SqlCallableAttributeImpl\SqlCallableAttributeImpl.cs" />
+    <Compile Include="SqlCallableAttributeImpl\SqlCallableAttributeImpl.SqlCallContextInfo.cs" />
+    <Compile Include="SqlCallableAttributeImpl\SqlCallableAttributeImpl.SqlParameterHandlerList.cs" />
+    <Compile Include="SqlCallableAttributeImpl\SqlCallableAttributeImpl.WrapperCtorMatcher.cs" />
     <Compile Include="SqlParameterReturnedValue.cs" />
     <Compile Include="SqlTable\SqlTableAttributeImpl.cs" />
     <Compile Include="SqlTable\SqlTableItem.cs" />
     <Compile Include="SqlTable\SqlTableSetupDriver.cs" />
     <Compile Include="SqlTransformContext.cs" />
-    <Compile Include="SqlView\SqlViewAttributeImpl.cs" />
-    <Compile Include="SqlView\SqlViewItem.cs" />
-    <Compile Include="SqlView\SqlViewSetupDriver.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">

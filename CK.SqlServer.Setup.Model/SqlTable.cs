@@ -26,7 +26,7 @@ namespace CK.SqlServer.Setup
 
         public string TableName { get; protected set; }
 
-        public string SchemaName { get { return Schema + '.' + TableName; } }
+        public string SchemaName => Schema + '.' + TableName;
 
     }
 }

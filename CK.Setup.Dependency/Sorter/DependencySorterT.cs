@@ -754,36 +754,6 @@ namespace CK.Setup
                             {
                                 // We are coming from the registration of our Container or Group (code below).
                                 AddChildToGroupOrContainer( alreadyRegisteredGroup, entry );
-                                //if( alreadyRegisteredGroup.ItemKind == DependentItemType.Container )
-                                //{
-                                //    // Since this item is already registered and we skip the child from which we are 
-                                //    // coming (alreadyRegisteredChild that is beeing processed - its Container is null), 
-                                //    // the container must be the same.
-                                //    if( entry.Container != alreadyRegisteredGroup )
-                                //    {
-                                //        // entry.Container can be null for 2 reasons: the item declares no container (null), 
-                                //        // or the item declares a name and the entry has been added to namedContainersToBind.
-                                //        Debug.Assert( entry.Container != null || (entry.Item.Container == null || (!(entry.Item.Container is IDependentItemContainer) && _namedContainersToBind.Contains( entry ))) );
-                                //        // In both case, we set the entry.Container to the alreadyRegisteredGroup (the first container that claims to hold the item).
-                                //        // When Item.Container is null, this is because we consider a null container as a "free" resource for a container.
-                                //        // When the container is declared by name, we let the binding in Register handle the case.
-                                //        if( entry.Container == null )
-                                //        {
-                                //            alreadyRegisteredGroup.AddToContainer( entry );
-                                //        }
-                                //        else
-                                //        {
-                                //            // This entry has a problem: it has more than one container that 
-                                //            // claim to own it.
-                                //            _computer.SetStructureError( entry, DependentItemStructureError.MultipleContainer ).AddExtraneousContainers( alreadyRegisteredGroup.FullName );
-                                //        }
-                                //    }
-                                //}
-                                //else
-                                //{
-                                //    // Simply add the entry to the group.
-                                //    alreadyRegisteredGroup.AddToGroup( entry );
-                                //}
                             }
                         }
                         #endregion

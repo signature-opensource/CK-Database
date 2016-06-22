@@ -20,7 +20,7 @@ namespace CK.Setup
     public interface ISetupItem : IDependentItem, IContextLocNaming
     {
         /// <summary>
-        /// This property is defined her to resolve ambiguity between <see cref="IDependentItem.FullName"/> 
+        /// This property is defined here to resolve ambiguity between <see cref="IDependentItem.FullName"/> 
         /// and <see cref="IContextLocNaming.FullName"/>: they are actually the same.
         /// </summary>
         new string FullName { get; }

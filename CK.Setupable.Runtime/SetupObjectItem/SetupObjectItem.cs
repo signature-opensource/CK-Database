@@ -8,47 +8,127 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// A setup object item is typically an item that originates from an attribute or a StObj member 
-    /// and initialized from a <see cref="ISetupObjectProtoItem"/>.
+    /// A setup object item is typically an item that originates from an attribute or a StObj member.
     /// </summary>
     public abstract class SetupObjectItem : ISetupItem, IDependentItemRef
     {
-        readonly string _type;
+        string _itemType;
+        ContextLocName _contextLocName;
         DependentItemList _requires;
         DependentItemList _requiredBy;
         DependentItemGroupList _groups;
-        IDependentItemContainerRef _container;
-        IContextLocNaming _contextLocName;
 
         /// <summary>
-        /// Initializes a new <see cref="SetupObjectItem"/> from a <see cref="ISetupObjectProtoItem"/>.
+        /// Initializes a <see cref="SetupObjectItem"/> without <see cref="ContextLocName"/> nor <see cref="ItemType"/>.
+        /// Specialized class must take care of initializing them: having no name nor type is not valid.
         /// </summary>
-        /// <param name="p"></param>
-        protected SetupObjectItem( ISetupObjectProtoItem p )
+        protected SetupObjectItem()
         {
-            _contextLocName = p.ContextLocName;
-            _type = p.ItemType;
-            if( p.Requires != null ) Requires.Add( p.Requires );
-            if( p.RequiredBy != null ) RequiredBy.Add( p.RequiredBy );
-            if( p.Groups != null ) Groups.Add( p.Groups );
-            // If the proto object indicates a container, references it: its name will be
-            // used by the dependency sorter.
-            // If it is not the same as the actual container to which this object
-            // is added later, an error will be raised during the ordering. 
-            if( p.Container != null ) _container = new NamedDependentItemContainerRef( p.Container );
         }
 
-        public IContextLocNaming ContextLocName => _contextLocName; 
+        /// <summary>
+        /// Initializes a new <see cref="SetupObjectItem"/>.
+        /// </summary>
+        /// <param name="name">Initial name of this item. Can not be null.</param>
+        /// <param name="itemType">Type of the item. Can not be null nor longer than 16 characters.</param>
+        /// <param name="containerName">
+        /// Optional container name to which this item belongs. Its name will be used by the dependency sorter.
+        /// If it is not the same as the actual container to which this object
+        /// is added later, an error will be raised during the ordering. 
+        /// </param>
+        protected SetupObjectItem( ContextLocName name, string itemType, string containerName = null )
+        {
+            ContextLocName = name;
+            ItemType = itemType;
+            if( containerName != null ) Container = new NamedDependentItemContainerRef( containerName );
+        }
 
-        public IDependentItemList Requires => _requires ?? (_requires = new DependentItemList()); 
+        /// <summary>
+        /// Gets or sets the name of this object. Must not be null.
+        /// </summary>
+        public ContextLocName ContextLocName
+        {
+            get { return _contextLocName; }
+            set
+            {
+                if( value == null ) throw new ArgumentNullException( nameof( ContextLocName ) );
+                _contextLocName = value;
+            }
+        }
 
-        public IDependentItemList RequiredBy => _requiredBy ?? (_requiredBy = new DependentItemList()); 
+        /// <summary>
+        /// Gets or sets the container to which this item belongs.
+        /// </summary>
+        public IDependentItemContainerRef Container { get; set; }
 
-        public IDependentItemGroupList Groups => _groups ?? (_groups = new DependentItemGroupList()); 
+        /// <summary>
+        /// Gets the mutable list of requirements for this item.
+        /// </summary>
+        public IDependentItemList Requires => _requires ?? (_requires = new DependentItemList());
 
+        /// <summary>
+        /// Gets the mutable list or reverse requirements for this item.
+        /// </summary>
+        public IDependentItemList RequiredBy => _requiredBy ?? (_requiredBy = new DependentItemList());
+
+        /// <summary>
+        /// Gets the mutable list or groups to which this item belongs.
+        /// </summary>
+        public IDependentItemGroupList Groups => _groups ?? (_groups = new DependentItemGroupList());
+
+        /// <summary>
+        /// Gets or sets the type of the object ("Procedure" for instance). 
+        /// </summary>
+        /// <summary>
+        /// Gets an identifier of the type of the item. This is required
+        /// in order to be able to handle specific storage for version without 
+        /// relying on any <see cref="IContextLocNaming.FullName">FullName</see> conventions.
+        /// Must be a non null, nor empty or whitespace identifier of at most 16 characters long.
+        /// Moreover this can be used by implementations to "type" objects based on their actual content: this "content-based" type can then be
+        /// checked later (like "the content is a function whereas a procedure is expected.").
+        /// This implements the <see cref="IVersionedItem.ItemType"/>.
+        /// </summary>
+        public string ItemType
+        {
+            get { return _itemType; }
+            set
+            {
+                if( string.IsNullOrWhiteSpace( value ) || value.Length > 16 ) throw new ArgumentException( "Invalid type.", nameof(ItemType) );
+                _itemType = value;
+            }
+        }
+
+
+        /// <summary>
+        /// Gets the full name of this object.
+        /// </summary>
+        public string FullName => _contextLocName.FullName;
+
+        /// <summary>
+        /// Abstract method that is called at the beginning of the topological sort.
+        /// </summary>
+        /// <returns>
+        /// Must return the <see cref="Type"/> or the Assembly qualified name of the 
+        /// associated <see cref="SetupItemDriver"/> for this item.
+        /// </returns>
+        protected abstract object StartDependencySort();
+
+        #region Explicit implementations of IContextLocNaming (to avaoid clutering the interface).
+
+        string IContextLocNaming.Context => _contextLocName.Context; 
+
+        string IContextLocNaming.Location => _contextLocName.Location;
+
+        string IContextLocNaming.TransformArg => _contextLocName.TransformArg;
+
+        string IContextLocNaming.Name => _contextLocName.Name;
+
+        #endregion
+
+        #region Explicit implementation of IDependentItem a IDependentItemRef (used by the DependencySorter).
         IDependentItemContainerRef IDependentItem.Container
         {
-            get { return _container.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _contextLocName.Context, _contextLocName.Location ) ); }
+            get { return Container.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _contextLocName.Context, _contextLocName.Location ) ); }
         }
 
         IDependentItemRef IDependentItem.Generalization => null; 
@@ -68,34 +148,11 @@ namespace CK.Setup
             get { return _groups.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _contextLocName.Context, _contextLocName.Location ) ); }
         }
 
-        /// <summary>
-        /// Gets the type of the object ("Procedure" for instance). This implements the <see cref="IVersionedItem.ItemType"/>.
-        /// </summary>
-        public string ItemType => _type; 
-
-        string IContextLocNaming.Context => _contextLocName.Context; 
-
-        string IContextLocNaming.Location => _contextLocName.Location;
-
-        string IContextLocNaming.TransformArg => _contextLocName.TransformArg;
-
-        string IContextLocNaming.Name => _contextLocName.Name;
-
-        /// <summary>
-        /// Gets the full name of this object.
-        /// </summary>
-        public string FullName => _contextLocName.FullName;
-
         bool IDependentItemRef.Optional => false; 
 
         object IDependentItem.StartDependencySort() => StartDependencySort();
 
-        /// <summary>
-        /// Abstract method that is called at the beginning of the topological sort.
-        /// </summary>
-        /// <returns>An object (a state) that will be associated to this item.</returns>
-        protected abstract object StartDependencySort();
-
+        #endregion
     }
 
 }

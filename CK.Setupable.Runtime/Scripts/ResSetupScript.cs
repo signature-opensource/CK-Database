@@ -37,7 +37,7 @@ namespace CK.Setup
 
         public override string ToString()
         {
-            return String.Format( @"{0} script - {1}\\{2}", ScriptSource, Name.ExtraPath, Name.FileName );
+            return string.Format( @"{0} script - {1}\\{2}", ScriptSource, Name.ExtraPath, Name.FileName );
         }
 
     }

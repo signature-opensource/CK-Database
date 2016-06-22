@@ -14,8 +14,8 @@ namespace CK.SqlServer.Setup
 {
     public class SqlFunctionScalarItem : SqlCallableItem<ISqlServerFunctionScalar>
     {
-        internal SqlFunctionScalarItem( SqlObjectProtoItem p, ISqlServerFunctionScalar scalarFunction )
-            : base( p, scalarFunction )
+        internal SqlFunctionScalarItem( SqlContextLocName name, ISqlServerFunctionScalar scalarFunction )
+            : base( name, "Function", scalarFunction )
         {
         }
     }

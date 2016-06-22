@@ -45,6 +45,15 @@ namespace CK.Core
         }
 
         /// <summary>
+        /// Copy constructor. Initializes a new <see cref="ContextLocName"/> from a <see cref="IContextLocNaming"/>.
+        /// </summary>
+        public ContextLocName( IContextLocNaming other )
+        {
+            ContextLocName l = other as ContextLocName;
+            _impl = l != null ? l._impl: new ContextLocNameStructImpl( other );
+        }
+
+        /// <summary>
         /// Initializes a new <see cref="ContextLocName"/> with a full name.
         /// </summary>
         /// <param name="fullName">Initial full name.</param>

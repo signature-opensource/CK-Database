@@ -1,5 +1,6 @@
 ﻿-- Version = 1.0.0
--- This is from the SqlZonePackage : it is overridden by UserTable with a new method: there is a new parameter to it!
+-- This is from the SqlZonePackage : it is overridden by UserTable with a new method since 
+-- there is a new parameter (@ParamFromZone).
 create procedure CK.sUserToBeOverriden
 (
 	@Param1 int,

@@ -46,5 +46,6 @@ namespace CK.Core
         /// This can be null (no target) or not empty: an empty transformation argument is not valid.
         /// </summary>
         string TransformArg { get; }
+
     }
 }

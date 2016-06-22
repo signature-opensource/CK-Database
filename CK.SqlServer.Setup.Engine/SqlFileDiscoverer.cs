@@ -12,6 +12,7 @@ using System.Linq;
 using System.Xml.Linq;
 using CK.Core;
 using CK.Setup;
+using CK.SqlServer.Setup;
 
 namespace CK.Setup
 {
@@ -26,19 +27,19 @@ namespace CK.Setup
         /// </summary>
         public const string DefaultSourceName = "file-sql";
 
-        ISqlObjectParser _sqlObjectParser;
+        ISetupItemParser _itemParser;
         IActivityMonitor _monitor;
         List<DynamicPackageItem> _packages;
 
         int _packageDiscoverErrorCount;
         int _sqlFileDiscoverErrorCount;
 
-        public SqlFileDiscoverer( ISqlObjectParser sqlObjectParser, IActivityMonitor monitor )
+        public SqlFileDiscoverer( ISetupItemParser itemParser, IActivityMonitor monitor )
         {
-            if( sqlObjectParser == null ) throw new ArgumentNullException( "sqlObjectBuilder" );
-            if( monitor == null ) throw new ArgumentNullException( "_monitor" );
+            if( itemParser == null ) throw new ArgumentNullException( nameof(itemParser) );
+            if( monitor == null ) throw new ArgumentNullException( nameof(monitor) );
  
-            _sqlObjectParser = sqlObjectParser;
+            _itemParser = itemParser;
             _monitor = monitor;
 
             _packages = new List<DynamicPackageItem>();
@@ -68,15 +69,15 @@ namespace CK.Setup
 
         bool DoDiscoverPackages( DirectoryInfo d, string curContext, string curLoc )
         {
-            string context, loc, name, source;
-            if( DefaultContextLocNaming.TryParse( d.Name, out context, out loc, out name, out source ) )
+            string context, loc, name, transformArg;
+            if( DefaultContextLocNaming.TryParse( d.Name, out context, out loc, out name, out transformArg ) )
             {
                 if( context != null ) curContext = context;
                 if( loc != null ) curLoc = loc;
             }
-            if( source != null )
+            if( transformArg != null )
             {
-                _monitor.Warn().Send( $"Directory name '{d.Name}': suffix '({source})' is ignored." );
+                _monitor.Warn().Send( $"Directory name '{d.Name}': suffix '({transformArg})' is ignored." );
             }
             bool result = true;
             foreach( var file in d.EnumerateFiles( "*.ck", SearchOption.TopDirectoryOnly ) )
@@ -176,7 +177,7 @@ namespace CK.Setup
         #region Sql Files
 		/// <summary>
         /// Discovers *.sql files recursively in a directory and, depending on their type, either registers them in the script <paramref name="collector"/>
-        /// or consider them as <see cref="ISetupObjectProtoItem"/> and collects them in <paramref name="itemCollector"/>.
+        /// or consider them as <see cref="ISetupItem"/> and collects them in <paramref name="itemCollector"/>.
         /// </summary>
         /// <param name="curContext">Current context identifier. It will be used as the default. Null if no current context exist.</param>
         /// <param name="curLoc">Current location identifier. It will be used as the default location. Null if no current location exist.</param>
@@ -187,17 +188,17 @@ namespace CK.Setup
         /// It must have been registered as a source in a <see cref="ScriptTypeHandler"/>, itself registered in the <see cref="ScriptTypeManager"/> associated to the collector.
         /// </param>
         /// <returns>True on success. Any warn or error are logged in the <see cref="IActivityMonitor"/> that has been provided to the constructor.</returns>
-        public bool DiscoverSqlFiles( string curContext, string curLoc, string directoryPath, SetupObjectItemCollector itemCollector, IScriptCollector collector = null, string sqlFileScriptSource = DefaultSourceName )
+        public bool DiscoverSqlFiles( string curContext, string curLoc, string directoryPath, SetupItemCollector itemCollector, IScriptCollector collector = null, string sqlFileScriptSource = DefaultSourceName )
         {
             using( _monitor.OpenInfo().Send( "Discovering Sql files in '{0}' for source '{1}'.", directoryPath, sqlFileScriptSource ) )
             {
                 CheckDirectoryPath( directoryPath );
-                if( String.IsNullOrWhiteSpace( sqlFileScriptSource ) ) throw new ArgumentException( "Must not be null, empty or white space.", "sqlFileScriptSource" );
+                if( string.IsNullOrWhiteSpace( sqlFileScriptSource ) ) throw new ArgumentException( "Must not be null, empty or white space.", nameof(sqlFileScriptSource) );
                 return DoDiscoverSqlFiles( new DirectoryInfo( directoryPath ), curContext, curLoc, itemCollector, collector, sqlFileScriptSource );
             }
         }
 
-        bool DoDiscoverSqlFiles( DirectoryInfo d, string curContext, string curLoc, SetupObjectItemCollector itemCollector, IScriptCollector collector, string sqlFileScriptSource )
+        bool DoDiscoverSqlFiles( DirectoryInfo d, string curContext, string curLoc, SetupItemCollector itemCollector, IScriptCollector collector, string sqlFileScriptSource )
         {
             string context, loc, name, transformArg;
             if( DefaultContextLocNaming.TryParse( d.Name, out context, out loc, out name, out transformArg ) )
@@ -224,7 +225,7 @@ namespace CK.Setup
             return result;
         }
 
-        bool DoRegisterSql( ParsedFileName f, SetupObjectItemCollector itemCollector, IScriptCollector collector, Func<string> readContent, Func<ISetupScript> createSetupScript )
+        bool DoRegisterSql( ParsedFileName f, SetupItemCollector itemCollector, IScriptCollector collector, Func<string> readContent, Func<ISetupScript> createSetupScript )
         {
             if( f.SetupStep != SetupStep.PreInit )
             {
@@ -242,23 +243,23 @@ namespace CK.Setup
                 try
                 {
                     // There is no SetupStep suffix: it should be a SqlObject.
-                    var item = _sqlObjectParser.Create( _monitor, f, readContent() );
+                    var item = _itemParser.Create( _monitor, f, readContent(), f.FileName );
                     if( item != null )
                     {
                         // Checking FullName is not perfect here: if the object content defines a Context or a Location, its FullName may
                         // differ from the external one of the ParsedFileName.
                         // It is best to compare only Name part of the two names.
-                        if( item.ContextLocName.FullName != f.FullName )
+                        if( item.FullName != f.FullName )
                         {
-                            _monitor.Error().Send( "File '{0}' in '{1}': content indicates '{2}'. Names must match.", f.FileName, f.ExtraPath, item.ContextLocName.FullName );
+                            _monitor.Error().Send( "File '{0}' in '{1}': content indicates '{2}'. Names must match.", f.FileName, f.ExtraPath, item.FullName );
                             return false;
                         }
                         if( !itemCollector.Add( item ) )
                         {
-                            _monitor.Error().Send( "File '{0}' in '{1}': object '{2}' is already defined.", f.FileName, f.ExtraPath, item.ContextLocName.FullName );
+                            _monitor.Error().Send( "File '{0}' in '{1}': object '{2}' is already defined.", f.FileName, f.ExtraPath, item.FullName );
                             return false;
                         }
-                        _monitor.CloseGroup( item.ContextLocName.FullName );
+                        _monitor.CloseGroup( item.FullName );
                         return true;
                     }
                 }

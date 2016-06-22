@@ -47,8 +47,8 @@ namespace CK.Setup
         public AutoDependentPackageItem( IPackageItem owner, bool frontPackage, string prefix, string prefixWithDot )
         {
             if( owner == null ) throw new ArgumentNullException( "package" );
-            if( String.IsNullOrWhiteSpace( prefix ) ) throw new ArgumentException( "prefix" );
-            if( String.IsNullOrWhiteSpace( prefixWithDot )
+            if( string.IsNullOrWhiteSpace( prefix ) ) throw new ArgumentException( "prefix" );
+            if( string.IsNullOrWhiteSpace( prefixWithDot )
                 || prefixWithDot.Length != prefix.Length + 1
                 || prefixWithDot[prefixWithDot.Length-1] != '.'
                 || String.CompareOrdinal( prefix, 0, prefixWithDot, 0, prefix.Length ) != 0 ) throw new ArgumentException( "prefixWithDot" );

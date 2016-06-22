@@ -60,11 +60,6 @@ namespace CK.Setup
         IDriverBaseList AllDrivers { get; }
 
         /// <summary>
-        /// Gets all ordered setup items without heads: a group or a container appears after the setup items it contains.
-        /// </summary>
-        IEnumerable<ISetupItem> AllItems { get; }
-
-        /// <summary>
         /// Gets the current state of the engine.
         /// </summary>
         SetupEngineState State { get; }

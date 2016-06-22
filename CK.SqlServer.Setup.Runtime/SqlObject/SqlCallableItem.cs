@@ -13,80 +13,29 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
-    internal interface ISqlCallableItem : ISetupItem
-    {
-        /// <summary>
-        /// Gets whether the definition of this item is valid (its body is available).
-        /// </summary>
-        bool IsValid { get; }
-
-        ISqlServerCallableObject CallableObject { get; }
-
-        /// <summary>
-        /// Gets or generates the method that creates the <see cref="SqlCommand"/> for this callable item.
-        /// </summary>
-        /// <param name="monitor">Monitor to use.</param>
-        /// <param name="dynamicAssembly">Use the memory associated to the dynamic to share the static class that implements the creation methods
-        /// and the PushFinalAction to actually create it.</param>
-        /// <returns>The method info. Null if <see cref="IsValid"/> is false or if an error occurred while generating it.</returns>
-        MethodInfo AssumeCommandBuilder( IActivityMonitor monitor, IDynamicAssembly dynamicAssembly );
-    }
-
     public class SqlCallableItem<T> : SqlObjectItem, ISqlCallableItem where T : ISqlServerCallableObject
     {
         const string _builderTypeName = "CK.<CreatorForSqlCommand>";
-        readonly T _originalCallable;
-        T _finalCallable;
 
-        internal SqlCallableItem( SqlObjectProtoItem p, T procOrFunc )
-            : base( p )
+        internal SqlCallableItem( SqlContextLocName name, string itemType, T procOrFunc )
+            : base( name, itemType, procOrFunc )
         {
-            Debug.Assert( p.ItemType == SqlObjectProtoItem.TypeProcedure || p.ItemType == SqlObjectProtoItem.TypeFunction );
-            if( (_finalCallable = _originalCallable = procOrFunc) != null )
-            {
-                if( p.ContextLocName.Schema != null && p.ContextLocName.Schema != procOrFunc.SchemaName )
-                {
-                    _finalCallable = (T)procOrFunc.SetSchema( p.ContextLocName.Schema );
-                }
-            }
         }
 
         /// <summary>
-        /// Gets whether the definition of this item is valid (its body is available).
+        /// Gets or sets the sql object. 
         /// </summary>
-        public bool IsValid => _originalCallable != null;
-
-        /// <summary>
-        /// Gets the original parsed object. 
-        /// Can be null if an error occurred during parsing.
-        /// </summary>
-        public T OriginalStatement => _originalCallable;
-
-        ISqlServerCallableObject ISqlCallableItem.CallableObject => _finalCallable;
-
-        /// <summary>
-        /// Gets or sets a replacement of the <see cref="OriginalStatement"/>.
-        /// This is initialized with <see cref="OriginalStatement"/> but can be changed.
-        /// </summary>
-        public T FinalStatement
+        public new T SqlObject
         {
-            get { return _finalCallable; }
-            set { _finalCallable = value; }
+            get { return (T)base.SqlObject; }
+            set { base.SqlObject = value; }
         }
 
-        protected override void DoWriteCreate( StringBuilder b )
-        {
-            ISqlServerCallableObject s = FinalStatement;
-            if( s != null )
-            {
-                if( s.IsAlterKeyword ) s = (ISqlServerCallableObject)s.ToggleAlterKeyword();
-                s.Write( b );
-            }
-        }
+        ISqlServerCallableObject ISqlCallableItem.CallableObject => SqlObject;
 
         MethodInfo ISqlCallableItem.AssumeCommandBuilder( IActivityMonitor monitor, IDynamicAssembly dynamicAssembly )
         {
-            if( _finalCallable == null ) return null;
+            if( SqlObject == null ) return null;
             TypeBuilder tB = (TypeBuilder)dynamicAssembly.Memory[_builderTypeName];
             if( tB == null )
             {
@@ -100,13 +49,13 @@ namespace CK.SqlServer.Setup
             {
                 // Adds a fake key to avoid multiple attempts.
                 dynamicAssembly.Memory.Add( methodKey, MCommandGetParameters );
-                using( monitor.OpenTrace().Send( "Low level SqlCommand create method for: '{0}'.", _finalCallable.ToStringSignature( true ) ) )
+                using( monitor.OpenTrace().Send( "Low level SqlCommand create method for: '{0}'.", SqlObject.ToStringSignature( true ) ) )
                 {
                     try
                     {
-                        m = GenerateCreateSqlCommand( tB, FullName, ContextLocName.Name, _finalCallable );
+                        m = GenerateCreateSqlCommand( tB, FullName, ContextLocName.Name, SqlObject );
                         dynamicAssembly.Memory[methodKey] = m;
-                        foreach( var p in _finalCallable.Parameters )
+                        foreach( var p in SqlObject.Parameters )
                         {
                             if( p.IsPureOutput && p.DefaultValue != null )
                             {

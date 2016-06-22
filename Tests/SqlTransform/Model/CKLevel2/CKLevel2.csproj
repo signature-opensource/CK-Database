@@ -74,13 +74,13 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Res\sSimpleReplaceTest.sql" />
+    <EmbeddedResource Include="Res\[Replace]sSimpleReplaceTest.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Res\sSimpleTransformTest.sql" />
+    <EmbeddedResource Include="Res\sSimpleTransformTest.tql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

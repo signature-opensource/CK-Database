@@ -39,55 +39,5 @@ namespace SqlActorPackage.Basic
         [TestAutoHeaderSPMember( "Injected from UserHome.CmdUserToBeOverridenIndirect (n°1/2)." )]
         public abstract void CmdUserToBeOverridenIndirect( ref SqlCommand cmdExists, int param1, out bool done );
     }
-
-    [SqlView( "vUser", Package = typeof( Package ) )]
-    public abstract class UserView : SqlView
-    {
-        void Construct( UserHome userHome )
-        {
-        }
-
-        //[Query( "where UserName = @UserName" )]
-        //public abstract SqlCommand FindUserByName( string userName );
-
-        //[Query( "where Email = @Email" )]
-        //public abstract SqlCommand FindUserByEmail( string email );
-
-        //[Query( "where UserName = @UserName" )]
-        //public abstract SqlCommandReader<T> FindUserByName<T>( string userName );
-
-        //[Query( "where Email = @Email" )]
-        //public abstract SqlCommandReader<T> FindUserByEmail<T>( string email );
-
-        //[Query]
-        //public abstract SqlCommandReader<T> AllUsers<T>();
-    }
-
-    public class SqlCommandReader<T>
-    {
-    }
-
-
-    public class QueryAttribute : Attribute
-    {
-        public QueryAttribute()
-        {
-        }
-        public QueryAttribute( string query )
-        {
-
-        }
-    }
-    //public class QueryAttribute : SqlMethodForObjectItemAttributeBase
-    //{
-    //    public QueryAttribute()
-    //        : this( "Query.Auto" )
-    //    {
-    //    }
-
-    //    public QueryAttribute( string query )
-    //        : base( query, "SqlActorPackage.Basic.SqlQueryAttributeImpl, SqlActorPackage.Basic" )
-    //    {
-    //    }
-    //}
+    
 }
