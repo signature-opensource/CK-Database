@@ -16,7 +16,8 @@
       <dependency id="CK.ActivityMonitor.StandardSender" version="5.0.0-k" />
       <dependency id="CK.Monitoring" version="5.0.0-k" />
       <dependency id="CK.Reflection" version="5.0.0-k" />
-      <dependency id="CK.SqlServer.Parser" version="5.0.0-b05" />
+      <dependency id="CK.SqlServer.Parser" version="5.0.0-b06" />
+      <dependency id="CK.SqlServer.Transformer" version="5.0.0-b06" />
       <dependency id="NUnit" version="2.6.4" />
       <dependency id="NUnit.Runners.Net4" version="2.6.4" />
       <dependency id="CK.SqlServer.Setup.Engine" version="$version$" />
