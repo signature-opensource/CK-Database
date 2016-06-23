@@ -88,6 +88,8 @@ namespace CK.Core
             _impl = new ContextLocNameStructImpl( context, location, nameWithoutTransformArg, transformArg );
         }
 
+        public virtual ContextLocName Clone() => new ContextLocName( this );
+
         /// <summary>
         /// Gets or sets the context part of this name.
         /// Can be null (unknown context) or empty (default context).

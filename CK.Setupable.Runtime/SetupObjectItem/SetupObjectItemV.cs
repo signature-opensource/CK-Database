@@ -41,6 +41,14 @@ namespace CK.Setup
             _previousNames = previousNames != null ? previousNames.ToList() : null;
         }
 
+        public new SetupObjectItemV TransformTarget => (SetupObjectItemV)base.TransformTarget;
+
+        protected override void OnTransformTargetCreated( IActivityMonitor monitor )
+        {
+            base.OnTransformTargetCreated( monitor );
+            if( _previousNames == null ) TransformTarget._previousNames = new List<VersionedName>( _previousNames );
+        }
+
         /// <summary>
         /// Gets or sets the version number. Can be null.
         /// </summary>

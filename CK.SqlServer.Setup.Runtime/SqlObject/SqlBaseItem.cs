@@ -21,6 +21,7 @@ namespace CK.SqlServer.Setup
     public abstract class SqlBaseItem : SetupObjectItemV
     {
         ISqlServerParsedText _sqlObject;
+        List<SqlTransformerItem> _transformers;
 
         internal SqlBaseItem()
         {
@@ -31,6 +32,8 @@ namespace CK.SqlServer.Setup
         {
             _sqlObject = parsed;
         }
+
+        public new SqlBaseItem TransformTarget => (SqlBaseItem)base.TransformTarget;
 
         public new SqlContextLocName ContextLocName
         {
@@ -46,6 +49,19 @@ namespace CK.SqlServer.Setup
             get { return _sqlObject; }
             set { _sqlObject = value; }
         }
+
+        internal SqlBaseItem AddTransformer( IActivityMonitor monitor, SqlTransformerItem sqlTransformerItem )
+        {
+            if( _transformers == null )
+            {
+                AssumeTransformTarget( monitor );
+                _transformers = new List<SqlTransformerItem>();
+                _transformers.Add( sqlTransformerItem );
+            }
+            return TransformTarget;
+        }
+
+        public IReadOnlyList<SqlTransformerItem> Transformers => _transformers;
 
         static Regex _rHeader = new Regex( @"^\s*--\s*(Version\s*=\s*(?<1>\d+(\.\d+)*|\*))?\s*(,\s*(Package\s*=\s*(?<2>(\w|\.|-)+)|Requires\s*=\s*{\s*(?<3>\??(\w+|-|\^|\[|]|\.)+)\s*(,\s*(?<3>\??(\w+|-|\^|\[|]|\.)+)\s*)*}|Groups\s*=\s*{\s*(?<4>(\w+|-|\^|\[|]|\.)+)\s*(,\s*(?<4>(\w+|-|\^|\[|]|\.)+)\s*)*}|RequiredBy\s*=\s*{\s*(?<5>(\w+|-|\^|\[|]|\.)+)\s*(,\s*(?<5>(\w+|-|\^|\[|]|\.)+)\s*)*}|PreviousNames\s*=\s*{\s*((?<6>(\w+|-|\^|\[|]|\.)+)\s*=\s*(?<6>\d+\.\d+\.\d+(\.\d+)?))\s*(,\s*((?<6>(\w+|-|\^|\[|]|\.)+)\s*=\s*(?<6>\d+(\.\d+){1,3}))\s*)*})\s*)*",
                                                 RegexOptions.CultureInvariant
@@ -100,7 +116,7 @@ namespace CK.SqlServer.Setup
         }
 
         /// <summary>
-        /// Centralized parsing function.
+        /// Centralized parsing function. Returns null on error.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="name">Name of the item.</param>

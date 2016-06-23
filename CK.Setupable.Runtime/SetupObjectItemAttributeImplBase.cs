@@ -32,8 +32,11 @@ namespace CK.Setup
             /// When there is no replacement, this is the same as <see cref="Registerer.Container"/>.
             /// </param>
             /// <param name="name">The name of the object to create.</param>
+            /// <param name="transformArgument">
+            /// The transformation target if this setup item is a transformer.
+            /// </param>
             /// <returns>The newly created item.</returns>
-            SetupObjectItem CreateSetupObjectItem( Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name );
+            SetupObjectItem CreateSetupObjectItem( Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument );
 
             string GetDetailedName( Registerer r, string name );
         }
@@ -67,7 +70,7 @@ namespace CK.Setup
             public readonly IContextLocNaming Name;
 
             /// <summary>
-            /// Rhe eventually created item.
+            /// The eventually created item.
             /// </summary>
             public SetupObjectItem Item;
 
@@ -86,6 +89,14 @@ namespace CK.Setup
             /// in the same container.
             /// </summary>
             public IMutableSetupItem LastContainerSeen;
+
+            /// <summary>
+            /// The transform target creator in Name has a transform argument.
+            /// </summary>
+            public BestCreator TransformTarget;
+
+            public bool MustWaitForTransformArg => TransformTarget != null && TransformTarget.Item == null;
+
         }
 
         public class Registerer
@@ -103,6 +114,7 @@ namespace CK.Setup
                 Container = item;
                 StObj = stObj;
                 _candidate = candidate;
+                HaseError = _state.Memory[typeof( Registerer )] != null;
             }
 
             /// <summary>
@@ -123,9 +135,11 @@ namespace CK.Setup
 
             public bool HaseError { get; private set; }
 
-            BestCreator SetError()
+            BestCreator SetError( string msg )
             {
+                if( msg != null ) _state.Monitor.Error().Send( msg );
                 HaseError = true;
+                _state.Memory[typeof( Registerer )] = typeof( Registerer );
                 return null;
             }
 
@@ -134,8 +148,7 @@ namespace CK.Setup
                 var n = _candidate.BuildFullName( this, b, name );
                 if( n == null )
                 {
-                    _state.Monitor.Error().Send( "Invalid name: "+ _candidate.GetDetailedName( this, name ) );
-                    return SetError();
+                    return SetError( "Invalid name: " + _candidate.GetDetailedName( this, name ) );
                 }
                 bool replace = b == SetupObjectItemBehavior.Replace;
                 var key = new BestCreator( n );
@@ -144,11 +157,23 @@ namespace CK.Setup
                 {
                     if( replace )
                     {
-                        _state.Monitor.Error().Send( "Object {0} is not defined. It can not be replaced.", _candidate.GetDetailedName( this, name ) );
-                        return SetError();
+                        return SetError( $"Object {_candidate.GetDetailedName( this, name )} is not defined. It can not be replaced." );
+                    }
+                    BestCreator bestT = null;
+                    string transformArg = n.TransformArg;
+                    if( transformArg != null )
+                    {
+                        var nT = new ContextLocName( transformArg );
+                        var keyT = new BestCreator( nT );
+                        bestT = (BestCreator)_state.Memory[keyT];
+                        if( bestT == null )
+                        {
+                            return SetError( $"Transformer {_candidate.GetDetailedName( this, name )}'s target is not defined." );
+                        }
                     }
                     _state.Memory[key] = best = key;
                     best.LastDefiner = _candidate;
+                    best.TransformTarget = bestT;
                     best.LastContainerSeen = best.FirstContainer = Container;
                 }
                 else
@@ -164,8 +189,7 @@ namespace CK.Setup
                         }
                         else if( best.FirstContainer == Container )
                         {
-                            _state.Monitor.Error().Send( "Object {0} is both defined and replaced by the same package.", _candidate.GetDetailedName( this, name ) );
-                            return SetError();
+                            return SetError( $"Object {_candidate.GetDetailedName( this, name )} is both defined and replaced by the same package." );
                         }
                     }
                     else 
@@ -174,33 +198,37 @@ namespace CK.Setup
                         // Otherwise, we keep the candidate. 
                         if( best.LastContainerSeen != Container )
                         {
-                            _state.Monitor.Error().Send( "Object {0} is already defined.", _candidate.GetDetailedName( this, name ) );
-                            return SetError();
+                            return SetError( $"Object {_candidate.GetDetailedName( this, name )} is already defined." );
                         }
                     }
                 }
                 return best;
             }
 
-            internal bool FinalizeRegister( BestCreator best )
+            internal bool PostponeFinalizeRegister( BestCreator best )
             {
                 if( best.LastDefiner == _candidate )
                 {
+                    SetupObjectItem tArg = null;
+                    if( best.TransformTarget != null && (tArg = best.TransformTarget.Item) == null )
+                    {
+                        return !HaseError;
+                    }
                     Debug.Assert( best.Item == null, "We are the only winner (the last one)." );
-                    best.Item = DoCreateSetupObjectItem( best.FirstContainer, best.Name );
+                    best.Item = DoCreateSetupObjectItem( best.FirstContainer, best.Name, tArg );
                 }
-                return best.Item != null;
+                return false;
             }
 
-            SetupObjectItem DoCreateSetupObjectItem( IMutableSetupItem firstContainer, IContextLocNaming name )
+            SetupObjectItem DoCreateSetupObjectItem( IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
             {
                 SetupObjectItem o;
-                using( _state.Monitor.OnError( () => HaseError = true ) )
+                using( _state.Monitor.OnError( () => SetError( null ) ) )
                 {
-                    o = _candidate.CreateSetupObjectItem( this, firstContainer, name );
+                    o = _candidate.CreateSetupObjectItem( this, firstContainer, name, transformArgument );
                     if( o == null && HaseError == false )
                     {
-                        _state.Monitor.Error().Send( "Unable to create setup object: " + _candidate.GetDetailedName( this, name.FullName ) );
+                        SetError( "Unable to create setup object: " + _candidate.GetDetailedName( this, name.FullName ) );
                     }
                 }
                 return HaseError ? null : o;
@@ -271,11 +299,14 @@ namespace CK.Setup
 
         void DynamicItemCreateAfterFollowing( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjResult stObj )
         {
+            Debug.Assert( _theBest != null && _theBest.Count > 0 );
             var r = new Registerer( state, item, stObj, this );
-            foreach( var best in _theBest )
+            for( int i = _theBest.Count - 1; i >= 0 && !r.HaseError; --i )
             {
-                r.FinalizeRegister( best );
+                var best = _theBest[i];
+                if( !r.PostponeFinalizeRegister( best ) ) _theBest.RemoveAt( i );
             }
+            if( !r.HaseError && _theBest.Count > 0 ) state.PushAction( DynamicItemCreateAfterFollowing );
         }
 
         string ISetupItemCreator.GetDetailedName( Registerer r, string name )
@@ -288,9 +319,9 @@ namespace CK.Setup
             return BuildFullName( r, b, name );
         }
 
-        SetupObjectItem ISetupItemCreator.CreateSetupObjectItem( Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name )
+        SetupObjectItem ISetupItemCreator.CreateSetupObjectItem( Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
         {
-            return CreateSetupObjectItem( r, firstContainer, name );
+            return CreateSetupObjectItem( r, firstContainer, name, transformArgument );
         }
 
         /// <summary>
@@ -314,11 +345,14 @@ namespace CK.Setup
         /// When there is no replacement, this is the same as <see cref="Registerer.Container"/>.
         /// </param>
         /// <param name="name">The name from <see cref="BuildFullName"/> method.</param>
+        /// <param name="transformArgument">
+        /// The transformation target if this setup item is a transformer.
+        /// </param>
         /// <returns>
         /// A new SetupObject or null if it can not be created. If an errr occurred, it must 
         /// be logged to the monitor.
         /// </returns>
-        protected abstract SetupObjectItem CreateSetupObjectItem( Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name );
+        protected abstract SetupObjectItem CreateSetupObjectItem( Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument );
 
 
     }

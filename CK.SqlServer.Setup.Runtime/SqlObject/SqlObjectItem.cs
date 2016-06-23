@@ -35,6 +35,8 @@ namespace CK.SqlServer.Setup
             set { base.SqlObject = value; }
         }
 
+        public new SqlObjectItem TransformTarget => (SqlObjectItem)base.TransformTarget;
+
         /// <summary>
         /// Gets or sets whether when installing, the informational message 'The module 'X' depends 
         /// on the missing object 'Y'. The module will still be created; however, it cannot run successfully until the object exists.' 

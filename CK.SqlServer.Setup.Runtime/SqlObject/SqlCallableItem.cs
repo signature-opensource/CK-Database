@@ -31,6 +31,8 @@ namespace CK.SqlServer.Setup
             set { base.SqlObject = value; }
         }
 
+        public new SqlCallableItem<T> TransformTarget => (SqlCallableItem<T>)base.TransformTarget;
+
         ISqlServerCallableObject ISqlCallableItem.CallableObject => SqlObject;
 
         MethodInfo ISqlCallableItem.AssumeCommandBuilder( IActivityMonitor monitor, IDynamicAssembly dynamicAssembly )

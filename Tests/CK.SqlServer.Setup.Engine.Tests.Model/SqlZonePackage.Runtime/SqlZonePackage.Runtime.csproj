@@ -68,6 +68,7 @@
     <Compile Include="GroupHome.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlAlterProcedureAttributeImpl.cs" />
+    <Compile Include="SqlTransformContext.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

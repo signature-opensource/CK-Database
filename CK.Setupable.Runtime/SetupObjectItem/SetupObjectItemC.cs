@@ -38,6 +38,14 @@ namespace CK.Setup
         {
         }
 
+        public new SetupObjectItemC TransformTarget => (SetupObjectItemC)base.TransformTarget;
+
+        protected override void OnTransformTargetCreated( IActivityMonitor monitor )
+        {
+            base.OnTransformTargetCreated( monitor );
+            if( _children == null ) TransformTarget._children = new DependentItemList( _children );
+        }
+
         /// <summary>
         /// Gets the mutable list of children.
         /// </summary>

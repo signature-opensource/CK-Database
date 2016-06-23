@@ -15,6 +15,22 @@ namespace CK.Setup
     public class DependentItemList : List<IDependentItemRef>, IDependentItemList
     {
         /// <summary>
+        /// Intializes a new dependent item with existing items. 
+        /// </summary>
+        /// <param name="existing">Existing items.</param>
+        public DependentItemList( IEnumerable<IDependentItemRef> existing )
+            : base( existing )
+        {
+        }
+
+        /// <summary>
+        /// Intializes a new empty list. 
+        /// </summary>
+        public DependentItemList()
+        {
+        }
+
+        /// <summary>
         /// Adds a full name (that may starts with '?') as a <see cref="NamedDependentItemRef"/>.
         /// </summary>
         /// <param name="fullName">Full name of the dependency. When null or empty, nothing is added.</param>

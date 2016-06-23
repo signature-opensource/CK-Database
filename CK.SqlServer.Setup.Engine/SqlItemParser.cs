@@ -25,8 +25,20 @@ namespace CK.SqlServer.Setup
 
         public ISetupItem Create( IActivityMonitor monitor, IContextLocNaming itemName, string text, string fileName, IDependentItemContainer package = null, IEnumerable<string> expectedItemTypes = null )
         {
+            if( itemName.TransformArg != null )
+            {
+                throw new NotImplementedException( "Transformer can not be loaded by file." );
+                // Actually, all file based should be removed...
+                // File based items MUST be handled like the stobj.
+                // A first toplogical sort must organize the packages (the objects)
+                // Then the Dynamic initialization phase must take place.
+                // File based resources must be some kind of FileStObj objects.
+                // In the future, this file based approach could be participate to a "full model 
+                // based approach" from which C# implementations could be generated...
+            }
             var name = itemName as SqlContextLocName ?? new SqlContextLocName( itemName.Context, itemName.Location, itemName.Name );
-            return SqlBaseItem.Parse( monitor, name, _parser, text, fileName, package, expectedItemTypes );
+            var item = SqlBaseItem.Parse( monitor, name, _parser, text, fileName, package, expectedItemTypes );
+            return item;
         }
     }
 }

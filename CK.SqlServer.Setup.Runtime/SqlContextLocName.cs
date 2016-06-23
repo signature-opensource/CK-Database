@@ -77,6 +77,8 @@ namespace CK.SqlServer.Setup
         {
         }
 
+        public override ContextLocName Clone() => new SqlContextLocName( this );
+
         /// <summary>
         /// Gets or sets the name without schema. 
         /// This is never null (like <see cref="ContextLocName.Name"/>).

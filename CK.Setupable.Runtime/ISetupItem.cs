@@ -24,6 +24,5 @@ namespace CK.Setup
         /// and <see cref="IContextLocNaming.FullName"/>: they are actually the same.
         /// </summary>
         new string FullName { get; }
-
     }
 }

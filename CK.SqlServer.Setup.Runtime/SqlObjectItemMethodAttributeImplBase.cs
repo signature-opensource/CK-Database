@@ -41,10 +41,10 @@ namespace CK.SqlServer.Setup
             return SqlObjectItemAttributeImpl.SqlBuildFullName( p, b, attributeName );
         }
 
-        protected override SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeImplBase.Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name )
+        protected override SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeImplBase.Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
         {
             ISqlSetupAspect sql = SetupEngineAspectProvider.GetSetupEngineAspect<ISqlSetupAspect>();
-            return SqlObjectItemAttributeImpl.SqlCreateSetupObjectItem( sql.SqlParser, r.Monitor, (SqlPackageBaseItem)r.Container, Attribute.MissingDependencyIsError, (SqlContextLocName)name, (SqlPackageBaseItem)firstContainer, new[] { _expectedItemType } );
+            return SqlObjectItemAttributeImpl.SqlCreateSetupObjectItem( sql.SqlParser, r.Monitor, (SqlPackageBaseItem)r.Container, Attribute.MissingDependencyIsError, (SqlContextLocName)name, (SqlPackageBaseItem)firstContainer, (SqlBaseItem)transformArgument, new[] { _expectedItemType } );
         }
 
         bool IAutoImplementorMethod.Implement( IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, TypeBuilder tB, bool isVirtual )

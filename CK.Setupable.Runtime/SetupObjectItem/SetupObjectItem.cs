@@ -17,6 +17,7 @@ namespace CK.Setup
         DependentItemList _requires;
         DependentItemList _requiredBy;
         DependentItemGroupList _groups;
+        SetupObjectItem _transformTarget;
 
         /// <summary>
         /// Initializes a <see cref="SetupObjectItem"/> without <see cref="ContextLocName"/> nor <see cref="ItemType"/>.
@@ -41,6 +42,31 @@ namespace CK.Setup
             ContextLocName = name;
             ItemType = itemType;
             if( containerName != null ) Container = new NamedDependentItemContainerRef( containerName );
+        }
+
+        /// <summary>
+        /// Gets the transform target if any.
+        /// </summary>
+        public SetupObjectItem TransformTarget => _transformTarget;
+
+        protected SetupObjectItem AssumeTransformTarget( IActivityMonitor monitor )
+        {
+            if( _transformTarget == null )
+            {
+                _transformTarget = (SetupObjectItem)MemberwiseClone();
+                OnTransformTargetCreated( monitor );
+            }
+            return _transformTarget;
+        }
+
+        protected virtual void OnTransformTargetCreated( IActivityMonitor monitor )
+        {
+            _transformTarget._contextLocName = _contextLocName.Clone();
+            _transformTarget._contextLocName.Name += "#transformed";
+            _transformTarget.Container = null;
+            if( _requires != null ) _transformTarget._requires = new DependentItemList( _requires );
+            if( _requiredBy != null ) _transformTarget._requiredBy = new DependentItemList( _requiredBy );
+            if( _groups != null ) _transformTarget._groups = new DependentItemGroupList( _groups );
         }
 
         /// <summary>

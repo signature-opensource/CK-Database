@@ -31,10 +31,10 @@ namespace CK.SqlServer.Setup
             return SqlBuildFullName( p, b, attributeName );
         }
 
-        protected override SetupObjectItem CreateSetupObjectItem( Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name )
+        protected override SetupObjectItem CreateSetupObjectItem( Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
         {
             ISqlSetupAspect sql = SetupEngineAspectProvider.GetSetupEngineAspect<ISqlSetupAspect>();
-            return SqlCreateSetupObjectItem( sql.SqlParser, r.Monitor, (SqlPackageBaseItem)r.Container, Attribute.MissingDependencyIsError, (SqlContextLocName)name, (SqlPackageBaseItem)firstContainer, null );
+            return SqlCreateSetupObjectItem( sql.SqlParser, r.Monitor, (SqlPackageBaseItem)r.Container, Attribute.MissingDependencyIsError, (SqlContextLocName)name, (SqlPackageBaseItem)firstContainer, (SqlBaseItem)transformArgument, null );
         }
 
         internal static IContextLocNaming SqlBuildFullName( SqlPackageBaseItem p, SetupObjectItemBehavior b, string attributeName )
@@ -68,15 +68,22 @@ namespace CK.SqlServer.Setup
                 bool missingDependencyIsError,
                 SqlContextLocName name,
                 SqlPackageBaseItem firstContainer,
-                IEnumerable<string> expectedItemTypes = null )
+                SqlBaseItem transformArgument,
+                IEnumerable<string> expectedItemTypes )
         {
-            if( name.TransformArg != null ) expectedItemTypes = new[] { "Transformer" };
+            Debug.Assert( (transformArgument != null) == (name.TransformArg != null) );
+            if( transformArgument != null ) expectedItemTypes = new[] { "Transformer" };
             string fileName;
             string text = LoadTextResource( monitor, packageItem, name, out fileName );
             if( text == null ) return null;
             SqlBaseItem result = SqlBaseItem.Parse( monitor, name, parser, text, fileName, packageItem, expectedItemTypes );
             if( result == null ) return null;
             firstContainer.EnsureObjectsPackage().Children.Add( result );
+            if( transformArgument != null )
+            {
+                var t = (SqlTransformerItem)result;
+                t.SetTransformSource( monitor, transformArgument );
+            }
             monitor.Trace().Send( $"Loaded {result.ItemType} '{result.ContextLocName.Name}' of '{packageItem.FullName}'." );
             return result;
         }

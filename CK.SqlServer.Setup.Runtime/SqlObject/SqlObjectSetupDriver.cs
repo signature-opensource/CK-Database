@@ -27,10 +27,7 @@ namespace CK.SqlServer.Setup
             _provider = info.Engine.GetSetupEngineAspect<ISqlSetupAspect>().SqlDatabases;
         }
 
-        public new SqlObjectItem Item
-        {
-            get { return (SqlObjectItem)base.Item; }
-        }
+        public new SqlObjectItem Item => (SqlObjectItem)base.Item;
 
         protected override bool Install( bool beforeHandlers )
         {

@@ -19,7 +19,6 @@ namespace CK.SqlServer.Setup
             : base( name, "Transformer", t )
         {
             Debug.Assert( name.TransformArg != null );
-            Requires.Add( new NamedDependentItemRef( name.TransformArg ) );
         }
 
         public new ISqlServerTransformer SqlObject
@@ -28,6 +27,19 @@ namespace CK.SqlServer.Setup
             set { base.SqlObject = value; }
         }
 
+        public new SqlTransformerItem TransformTarget => (SqlTransformerItem)base.TransformTarget;
+
+        public SqlBaseItem Source { get; private set; }
+
+        public SqlBaseItem Target { get; private set; }
+
         protected override object StartDependencySort() => typeof(SqlTransformerItemDriver);
+
+        internal void SetTransformSource( IActivityMonitor monitor, SqlBaseItem transformArgument )
+        {
+            Requires.Add( transformArgument );
+            Source = transformArgument;
+            Target = transformArgument.AddTransformer( monitor, this );
+        }
     }
 }

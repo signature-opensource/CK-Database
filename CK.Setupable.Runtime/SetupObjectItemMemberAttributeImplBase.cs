@@ -87,11 +87,9 @@ namespace CK.Setup
 
         void DynamicItemInitializeAfterFollowing( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjResult stObj )
         {
-            if( _theBest != null )
-            {
-                var r = new SetupObjectItemAttributeImplBase.Registerer( state, item, stObj, this );
-                r.FinalizeRegister( _theBest );
-            }
+            Debug.Assert( _theBest != null );
+            var r = new SetupObjectItemAttributeImplBase.Registerer( state, item, stObj, this );
+            if( r.PostponeFinalizeRegister( _theBest ) && !r.HaseError ) state.PushAction( DynamicItemInitializeAfterFollowing );
         }
 
         /// <summary>
@@ -109,9 +107,9 @@ namespace CK.Setup
             return BuildFullName( r, b, name );
         }
 
-        SetupObjectItem SetupObjectItemAttributeImplBase.ISetupItemCreator.CreateSetupObjectItem( SetupObjectItemAttributeImplBase.Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name )
+        SetupObjectItem SetupObjectItemAttributeImplBase.ISetupItemCreator.CreateSetupObjectItem( SetupObjectItemAttributeImplBase.Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
         {
-            return CreateSetupObjectItem( r, firstContainer, name );
+            return CreateSetupObjectItem( r, firstContainer, name, transformArgument );
         }
 
         /// <summary>
@@ -135,11 +133,14 @@ namespace CK.Setup
         /// When there is no replacement, this is the same as <see cref="SetupObjectItemAttributeImplBase.Registerer.Container"/>.
         /// </param>
         /// <param name="name">The name from <see cref="BuildFullName"/> method.</param>
+        /// <param name="transformArgument">
+        /// The transformation target if this setup item is a transformer.
+        /// </param>
         /// <returns>
         /// A new SetupObject or null if it can not be created. If an errr occurred, it must 
         /// be logged to the monitor.
         /// </returns>
-        protected abstract SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeImplBase.Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name );
+        protected abstract SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeImplBase.Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument );
 
     }
 
