@@ -22,27 +22,34 @@ namespace CK.SqlServer.Setup
 
         public new SqlTransformerItem Item => (SqlTransformerItem)base.Item;
 
-        protected override bool Init( bool beforeHandlers )
+        protected override bool Install( bool beforeHandlers )
         {
-            if( beforeHandlers )
-            {
-                SetupItemDriver target = Engine.Drivers[Item.ContextLocName.TransformArg];
-                Debug.Assert( target != null );
-                target.AddInstallHandler( DoTransform ); 
-            }
-            return true;
+            if( beforeHandlers ) return true;
+            Item.Target.SqlObject = Item.SqlObject.SafeTransform( Engine.Monitor, Item.Target.SqlObject );
+            return Item.Target.SqlObject != null;
         }
 
-        bool DoTransform( SetupItemDriver target )
-        {
-            var t = target.Item as SqlBaseItem;
-            if( t == null )
-            {
-                Engine.Monitor.Error().Send( $"Target object type must be a SqlBaseItem. '{Item.ContextLocName.TransformArg}' is {target.Item.GetType().Name}." );
-                return false;
-            }
-            t.SqlObject = Item.SqlObject.SafeTransform( Engine.Monitor, t.SqlObject );
-            return true;
-        }
+        //protected override bool Init( bool beforeHandlers )
+        //{
+        //    if( beforeHandlers )
+        //    {
+        //        SetupItemDriver target = Engine.Drivers[Item.ContextLocName.TransformArg];
+        //        Debug.Assert( target != null );
+        //        target.AddInstallHandler( DoTransform );
+        //    }
+        //    return true;
+        //}
+
+        //bool DoTransform( SetupItemDriver target )
+        //{
+        //    var t = target.Item as SqlBaseItem;
+        //    if( t == null )
+        //    {
+        //        Engine.Monitor.Error().Send( $"Target object type must be a SqlBaseItem. '{Item.ContextLocName.TransformArg}' is {target.Item.GetType().Name}." );
+        //        return false;
+        //    }
+        //    t.SqlObject = Item.SqlObject.SafeTransform( Engine.Monitor, t.SqlObject );
+        //    return true;
+        //}
     }
 }

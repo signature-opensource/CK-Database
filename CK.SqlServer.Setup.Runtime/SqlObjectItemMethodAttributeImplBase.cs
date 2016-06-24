@@ -65,10 +65,14 @@ namespace CK.SqlServer.Setup
                 }
                 return false;
             }
-            // 3 - Ready to implement the method (BestSetupObjectItem has been initialized by DynamicItemInitialize).
+            // 3 - Ready to implement the method (SetupObjectItem has been initialized by DynamicItemInitialize).
             using( monitor.OpenInfo().Send( "Generating {0}.", SqlCallableAttributeImpl.DumpMethodSignature( m ) ) )
             {
-                return DoImplement( monitor, m, (SqlObjectItem)SetupObjectItem, dynamicAssembly, tB, isVirtual );
+                var target = SetupObjectItem is SqlTransformerItem
+                                ? ((SqlTransformerItem)SetupObjectItem).Target
+                                : (SetupObjectItem.TransformTarget ?? SetupObjectItem);
+                var item = (SqlObjectItem)target;
+                return DoImplement( monitor, m, item, dynamicAssembly, tB, isVirtual );
             }
         }
 

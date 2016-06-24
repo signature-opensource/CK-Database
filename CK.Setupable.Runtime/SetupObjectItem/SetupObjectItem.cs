@@ -10,7 +10,7 @@ namespace CK.Setup
     /// <summary>
     /// A setup object item is typically an item that originates from an attribute or a StObj member.
     /// </summary>
-    public abstract class SetupObjectItem : ISetupItem, IDependentItemRef
+    public abstract class SetupObjectItem : ISetupItem, IDependentItemRef, IDependentItemDiscoverer<ISetupItem>
     {
         string _itemType;
         ContextLocName _contextLocName;
@@ -177,6 +177,16 @@ namespace CK.Setup
         bool IDependentItemRef.Optional => false; 
 
         object IDependentItem.StartDependencySort() => StartDependencySort();
+
+        /// <summary>
+        /// This ensures that the transform target is registered if it exists
+        /// even if requirements do not start from referenced objects.
+        /// </summary>
+        /// <returns>The transform target if it exists.</returns>
+        IEnumerable<ISetupItem> IDependentItemDiscoverer<ISetupItem>.GetOtherItemsToRegister()
+        {
+            return _transformTarget != null ? new[] { _transformTarget } : null;
+        }
 
         #endregion
     }

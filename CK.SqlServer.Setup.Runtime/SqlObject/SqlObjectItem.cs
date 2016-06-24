@@ -50,7 +50,7 @@ namespace CK.SqlServer.Setup
             set { _missingDependencyIsError = value; }
         }
 
-        protected override object StartDependencySort() => typeof( SqlObjectSetupDriver );
+        protected override object StartDependencySort() => typeof( SqlObjectItemDriver );
 
         /// <summary>
         /// Writes the drop instruction.
@@ -59,11 +59,11 @@ namespace CK.SqlServer.Setup
         public void WriteDrop( StringBuilder b )
         {
             b.Append( "if OBJECT_ID('" )
-                .Append( ContextLocName.Name )
+                .Append( SqlObject.SchemaName )
                 .Append( "') is not null drop " )
                 .Append( ItemType )
                 .Append( ' ' )
-                .Append( ContextLocName.Name )
+                .Append( SqlObject.SchemaName )
                 .Append( ';' )
                 .AppendLine();
         }

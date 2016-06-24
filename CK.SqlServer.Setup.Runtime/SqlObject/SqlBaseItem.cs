@@ -50,14 +50,16 @@ namespace CK.SqlServer.Setup
             set { _sqlObject = value; }
         }
 
-        internal SqlBaseItem AddTransformer( IActivityMonitor monitor, SqlTransformerItem sqlTransformerItem )
+        internal SqlBaseItem AddTransformer( IActivityMonitor monitor, SqlTransformerItem transformer )
         {
             if( _transformers == null )
             {
                 AssumeTransformTarget( monitor );
                 _transformers = new List<SqlTransformerItem>();
-                _transformers.Add( sqlTransformerItem );
             }
+            _transformers.Add( transformer );
+            transformer.Requires.Add( this );
+            TransformTarget.Requires.Add( transformer );
             return TransformTarget;
         }
 
@@ -168,7 +170,7 @@ namespace CK.SqlServer.Setup
                     }
                     else if( o is ISqlServerView )
                     {
-                        result = new SqlViewObjectItem( name, (ISqlServerView)o );
+                        result = new SqlViewItem( name, (ISqlServerView)o );
                     }
                 }
                 else if( o is ISqlServerTransformer )

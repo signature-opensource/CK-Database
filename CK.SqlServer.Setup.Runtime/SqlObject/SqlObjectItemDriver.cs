@@ -17,11 +17,11 @@ namespace CK.SqlServer.Setup
     /// <summary>
     /// Driver for <see cref="SqlObjectItem"/>.
     /// </summary>
-    public class SqlObjectSetupDriver : SetupItemDriver
+    public class SqlObjectItemDriver : SetupItemDriver
     {
         readonly ISqlManagerProvider _provider;
 
-        public SqlObjectSetupDriver( BuildInfo info )
+        public SqlObjectItemDriver( BuildInfo info )
             : base( info )
         {
             _provider = info.Engine.GetSetupEngineAspect<ISqlSetupAspect>().SqlDatabases;
@@ -34,6 +34,8 @@ namespace CK.SqlServer.Setup
             if( beforeHandlers ) return true;
 
             if( ExternalVersion != null && ExternalVersion.Version == Item.Version ) return true;
+
+            if( Item.TransformTarget != null ) return true;
 
             ISqlManager m = FindManagerFromLocation( Engine.Monitor, _provider, FullName );
             if( m == null ) return false;

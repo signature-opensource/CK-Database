@@ -55,7 +55,7 @@ namespace CK.SqlServer.Setup
                 {
                     try
                     {
-                        m = GenerateCreateSqlCommand( tB, FullName, ContextLocName.Name, SqlObject );
+                        m = GenerateCreateSqlCommand( tB, FullName, SqlObject );
                         dynamicAssembly.Memory[methodKey] = m;
                         foreach( var p in SqlObject.Parameters )
                         {
@@ -80,7 +80,7 @@ namespace CK.SqlServer.Setup
             tB.CreateType();
         }
 
-        private static MethodBuilder GenerateCreateSqlCommand( TypeBuilder tB, string methodName, string spSchemaName, ISqlServerCallableObject sqlObject )
+        private static MethodBuilder GenerateCreateSqlCommand( TypeBuilder tB, string methodName, ISqlServerCallableObject sqlObject )
         {
             MethodBuilder mB = tB.DefineMethod( methodName, MethodAttributes.Assembly | MethodAttributes.Static, TypeCommand, Type.EmptyTypes );
 
@@ -90,7 +90,7 @@ namespace CK.SqlServer.Setup
             LocalBuilder locParams = g.DeclareLocal( TypeParameterCollection );
             LocalBuilder locOneParam = g.DeclareLocal( TypeParameter );
 
-            g.Emit( OpCodes.Ldstr, spSchemaName );
+            g.Emit( OpCodes.Ldstr, sqlObject.SchemaName );
             g.Emit( OpCodes.Newobj, TypeCommand.GetConstructor( new Type[] { typeof( string ) } ) );
             g.StLoc( locCmd );
 

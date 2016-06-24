@@ -37,7 +37,6 @@ namespace CK.SqlServer.Setup
 
         internal void SetTransformSource( IActivityMonitor monitor, SqlBaseItem transformArgument )
         {
-            Requires.Add( transformArgument );
             Source = transformArgument;
             Target = transformArgument.AddTransformer( monitor, this );
         }

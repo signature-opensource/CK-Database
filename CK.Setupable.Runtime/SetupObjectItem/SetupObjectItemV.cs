@@ -46,7 +46,7 @@ namespace CK.Setup
         protected override void OnTransformTargetCreated( IActivityMonitor monitor )
         {
             base.OnTransformTargetCreated( monitor );
-            if( _previousNames == null ) TransformTarget._previousNames = new List<VersionedName>( _previousNames );
+            if( _previousNames != null ) TransformTarget._previousNames = new List<VersionedName>( _previousNames );
         }
 
         /// <summary>

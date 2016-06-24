@@ -6,9 +6,9 @@ using CK.Core;
 
 namespace CK.SqlServer.Setup
 {
-    public class SqlViewObjectItem : SqlObjectItem
+    public class SqlViewItem : SqlObjectItem
     {
-        internal SqlViewObjectItem( SqlContextLocName name, ISqlServerView view )
+        internal SqlViewItem( SqlContextLocName name, ISqlServerView view )
             : base( name, "View", view )
         {
         }

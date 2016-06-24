@@ -93,7 +93,8 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the best <see cref="SetupObjectItem"/> found.
+        /// Gets the created <see cref="SetupObjectItem"/>.
+        /// This is available after the dynamic initialization phase.
         /// </summary>
         public SetupObjectItem SetupObjectItem => _theBest?.Item; 
 
