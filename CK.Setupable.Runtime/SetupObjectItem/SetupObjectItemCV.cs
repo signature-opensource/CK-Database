@@ -30,13 +30,8 @@ namespace CK.Setup
         /// <param name="itemType">Type of the item. Can not be null nor longer than 16 characters.</param>
         /// <param name="version">Version (if known).</param>
         /// <param name="previousNames">Optional initial list for <see cref="PreviousNames"/>.</param>
-        /// <param name="containerName">
-        /// Optional container name to which this item belongs. Its name will be used by the dependency sorter.
-        /// If it is not the same as the actual container to which this object
-        /// is added later, an error will be raised during the ordering. 
-        /// </param>
-        protected SetupObjectItemCV( ContextLocName name, string itemType, Version version = null, IEnumerable<VersionedName> previousNames = null, string containerName = null )
-            : base( name, itemType, containerName )
+        protected SetupObjectItemCV( ContextLocName name, string itemType, Version version = null, IEnumerable<VersionedName> previousNames = null )
+            : base( name, itemType )
         {
             Version = version;
             _previousNames = previousNames != null ? previousNames.ToList() : null;
@@ -44,10 +39,11 @@ namespace CK.Setup
 
         public new SetupObjectItemCV TransformTarget => (SetupObjectItemCV)base.TransformTarget;
 
-        protected override void OnTransformTargetCreated( IActivityMonitor monitor )
+        protected override bool OnTransformTargetCreated( IActivityMonitor monitor )
         {
-            base.OnTransformTargetCreated( monitor );
+            if( !base.OnTransformTargetCreated( monitor ) ) return false;
             if( _previousNames != null ) TransformTarget._previousNames = new List<VersionedName>( _previousNames );
+            return true;
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿-- Version = 3.7.1
+﻿-- SetupConfig : {}
 create procedure CK.sActorGuidRefTest
 (
 	@InOnly uniqueidentifier,

@@ -1,4 +1,4 @@
-﻿-- Version = 3.6.6, Requires = { CK.sActorCreate }
+﻿-- SetupConfig: { "Requires" : [ "CK.sActorCreate" ] }
 create procedure CK.sGroupCreate 
 (
 	@SecurityZoneId int = 0,

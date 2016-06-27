@@ -159,7 +159,7 @@ namespace CKDBSetup
                 "DESCRIPTION='CKDBSetup backup'"
             };
 
-            backupPath = SqlHelper.SqlEncode( backupPath );
+            backupPath = SqlHelper.SqlEncodeString( backupPath );
 
             StringBuilder sb = new StringBuilder();
 

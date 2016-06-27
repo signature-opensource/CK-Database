@@ -1,4 +1,4 @@
-﻿-- Version = 2.12.3, Requires = { CK.sActorCreate }
+﻿-- SetupConfig : { "Requires" : [ "CK.sActorCreate" ] }
 create procedure CK.sGroupCreate 
 (
 	@GroupName varchar( 32 ),

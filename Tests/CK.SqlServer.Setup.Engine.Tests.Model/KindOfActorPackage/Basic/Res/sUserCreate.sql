@@ -1,4 +1,4 @@
-﻿-- Version = 2.12.2, Requires = { CK.sActorCreate }
+﻿-- SetupConfig : { "Requires" : [ "CK.sActorCreate" ] } 
 create procedure CK.sUserCreate 
 (
 	@UserName nvarchar( 255 ),

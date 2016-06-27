@@ -99,6 +99,11 @@ namespace CK.Setup
 
         }
 
+        /// <summary>
+        /// Stateless object that handles object initialization across multiple 
+        /// <see cref="IStObjSetupDynamicInitializer"/>.
+        /// It only exposes contextual information to actual intializers: most of the job is done internally.
+        /// </summary>
         public class Registerer
         {
             readonly IStObjSetupDynamicInitializerState _state;
@@ -131,7 +136,6 @@ namespace CK.Setup
             /// Gets the stObj associated to the <see cref="Container"/>.
             /// </summary>
             public readonly IStObjResult StObj;
-
 
             public bool HaseError { get; private set; }
 
@@ -223,12 +227,13 @@ namespace CK.Setup
             SetupObjectItem DoCreateSetupObjectItem( IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
             {
                 SetupObjectItem o;
+                using( _state.Monitor.OpenInfo().Send( "Handling: " + _candidate.GetDetailedName( this, name.FullName ) ) )
                 using( _state.Monitor.OnError( () => SetError( null ) ) )
                 {
                     o = _candidate.CreateSetupObjectItem( this, firstContainer, name, transformArgument );
                     if( o == null && HaseError == false )
                     {
-                        SetError( "Unable to create setup object: " + _candidate.GetDetailedName( this, name.FullName ) );
+                        SetError( "Unable to create setup object." );
                     }
                 }
                 return HaseError ? null : o;

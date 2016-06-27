@@ -1,4 +1,4 @@
-﻿-- Version = 2.12.13
+﻿-- SetupConfig: {}
 create procedure CKCore.sSecurityZoneSPInCKCoreSchema 
 (
 	@SecurityZoneIdResult int

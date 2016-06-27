@@ -1,4 +1,4 @@
-﻿-- Version = 2.12.3
+﻿-- SetupConfig : {}
 create procedure CK.sActorCreate 
 (
 	@ActorIdResult int output

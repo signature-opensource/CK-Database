@@ -1,4 +1,4 @@
-﻿-- Version = 2.12.2
+﻿-- SetupConfig : {}
 create procedure CK.sUserExists 
 (
 	@UserName nvarchar( 255 ),

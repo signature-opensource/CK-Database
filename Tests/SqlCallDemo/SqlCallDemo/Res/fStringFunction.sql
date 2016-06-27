@@ -1,4 +1,4 @@
-﻿-- Version = 1.0.0
+﻿-- SetupConfig: {}
 create function CK.fStringFunction( @V int ) returns nvarchar(60)
 as
 begin

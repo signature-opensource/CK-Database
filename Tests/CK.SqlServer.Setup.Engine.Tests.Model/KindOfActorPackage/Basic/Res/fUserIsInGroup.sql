@@ -1,4 +1,4 @@
-﻿-- Version = 2.12.2
+﻿-- SetupConfig: {}
 create function CK.fUserIsInGroup
 (
 	@UserId int,

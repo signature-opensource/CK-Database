@@ -1,3 +1,3 @@
-﻿-- Version = 1.0.0
+﻿-- SetupConfig : {}
 create view CK.OneActorView
 as select ActorId from CK.tActor;

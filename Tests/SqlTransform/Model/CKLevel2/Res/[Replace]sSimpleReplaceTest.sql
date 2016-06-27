@@ -1,4 +1,4 @@
-﻿-- Version = *
+﻿-- SetupConfig: {}
 create procedure CK.sSimpleReplaceTest
 (
     @TextParam nvarchar(128) = N'The Sql Default.' /*input*/output,

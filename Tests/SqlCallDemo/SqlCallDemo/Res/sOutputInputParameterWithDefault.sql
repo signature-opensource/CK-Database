@@ -1,4 +1,4 @@
-﻿-- Version = 3.7.1
+﻿-- SetupConfig: {}
 create procedure CK.sOutputInputParameterWithDefault
 (
     @TextResult nvarchar(128) = N'The Sql Default.' /*input*/output

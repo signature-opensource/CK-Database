@@ -13,7 +13,7 @@ Contains Dependent Items (with Containers and Groups) model and the ordering alg
 </description>
     <language>en-US</language>
     <dependencies>
-      <dependency id="CK.ActivityMonitor.StandardSender" version="5.0.0-k" />
+      <dependency id="CK.ActivityMonitor.StandardSender" version="5.0.0" />
     </dependencies>
   </metadata>
   <files>

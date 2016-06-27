@@ -1,4 +1,4 @@
-﻿-- Version = 1.0.10
+﻿-- SetupConfig: {}
 alter procedure CK.sAllDefaultValues
 (
 	@NVarChar nvarchar(64) = N'All Defaults',

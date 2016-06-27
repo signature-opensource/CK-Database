@@ -28,22 +28,18 @@ namespace CK.Setup
         /// </summary>
         /// <param name="name">Initial name of this item. Can not be null.</param>
         /// <param name="itemType">Type of the item. Can not be null nor longer than 16 characters.</param>
-        /// <param name="containerName">
-        /// Optional container name to which this item belongs. Its name will be used by the dependency sorter.
-        /// If it is not the same as the actual container to which this object
-        /// is added later, an error will be raised during the ordering. 
-        /// </param>
-        protected SetupObjectItemC( ContextLocName name, string itemType, string containerName = null )
-            : base( name, itemType, containerName )
+        protected SetupObjectItemC( ContextLocName name, string itemType )
+            : base( name, itemType )
         {
         }
 
         public new SetupObjectItemC TransformTarget => (SetupObjectItemC)base.TransformTarget;
 
-        protected override void OnTransformTargetCreated( IActivityMonitor monitor )
+        protected override bool OnTransformTargetCreated( IActivityMonitor monitor )
         {
-            base.OnTransformTargetCreated( monitor );
+            if( !base.OnTransformTargetCreated( monitor ) ) return false;
             if( _children != null ) TransformTarget._children = new DependentItemList( _children );
+            return true;
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿-- Version = 1.0.3
+﻿-- SetupConfig: {}
 alter procedure CK.sPurelyInputLog
 (
     @OneMore bit = 1,

@@ -11,11 +11,6 @@ namespace CK.SqlServer.Setup
         ISqlServerParser SqlParser { get; }
 
         /// <summary>
-        /// Gets the <see cref="ISetupItemParser"/>.
-        /// </summary>
-        ISetupItemParser ItemParser { get; }
-
-        /// <summary>
         /// Gets the default database as a <see cref="ISqlManager"/> object.
         /// </summary>
         ISqlManager DefaultSqlDatabase { get; }

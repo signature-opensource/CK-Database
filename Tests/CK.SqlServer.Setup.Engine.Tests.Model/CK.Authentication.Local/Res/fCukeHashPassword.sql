@@ -1,4 +1,4 @@
--- Version = 1.0.0
+-- SetupConfig: {}
 -- Computes a hash. @salt is an optional integer value (can be null).
 -- SHA1 is currently used: resulting hash is atually 40 characters long.
 create function [CK].[fCukeHashPassword]

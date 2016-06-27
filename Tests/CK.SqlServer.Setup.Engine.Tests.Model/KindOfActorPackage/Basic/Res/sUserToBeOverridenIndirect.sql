@@ -1,5 +1,4 @@
-﻿-- Version = 1.0.0
--- This is from the SqlActorPackage
+﻿-- SetupConfig: {}
 create procedure CK.sUserToBeOverridenIndirect
 (
 	@Param1 int,

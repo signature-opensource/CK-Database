@@ -1,4 +1,4 @@
-﻿-- Version = *
+﻿-- SetupConfig: {}
 create procedure CK.sSimpleTransformTest
 (
     @TextParam nvarchar(20) output

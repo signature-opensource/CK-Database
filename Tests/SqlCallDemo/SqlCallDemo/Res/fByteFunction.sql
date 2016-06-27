@@ -1,4 +1,4 @@
-﻿-- Version = 1.0.0
+﻿-- SetupConfig: {}
 alter function CK.fByteFunction( @V int ) returns tinyint
 as
 begin

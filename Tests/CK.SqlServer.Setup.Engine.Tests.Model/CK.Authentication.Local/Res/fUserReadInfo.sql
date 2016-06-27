@@ -1,4 +1,4 @@
--- Version = 2.12.7
+-- SetupConfig: {}
 -- sUserReadInfo: 
 --	When @Pwd is null it is not controlled. If it is empty or set to any string, it is controlled.
 -- Returns:

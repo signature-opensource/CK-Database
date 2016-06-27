@@ -10,7 +10,7 @@ namespace CK.Setup
     /// <summary>
     /// A setup object item is typically an item that originates from an attribute or a StObj member.
     /// </summary>
-    public abstract class SetupObjectItem : ISetupItem, IDependentItemRef, IDependentItemDiscoverer<ISetupItem>
+    public abstract class SetupObjectItem : IMutableSetupObjectItem, IDependentItemRef, IDependentItemDiscoverer<ISetupItem>
     {
         string _itemType;
         ContextLocName _contextLocName;
@@ -18,6 +18,7 @@ namespace CK.Setup
         DependentItemList _requiredBy;
         DependentItemGroupList _groups;
         SetupObjectItem _transformTarget;
+        List<ISetupObjectTransformerItem> _transformers;
 
         /// <summary>
         /// Initializes a <see cref="SetupObjectItem"/> without <see cref="ContextLocName"/> nor <see cref="ItemType"/>.
@@ -32,34 +33,58 @@ namespace CK.Setup
         /// </summary>
         /// <param name="name">Initial name of this item. Can not be null.</param>
         /// <param name="itemType">Type of the item. Can not be null nor longer than 16 characters.</param>
-        /// <param name="containerName">
-        /// Optional container name to which this item belongs. Its name will be used by the dependency sorter.
-        /// If it is not the same as the actual container to which this object
-        /// is added later, an error will be raised during the ordering. 
-        /// </param>
-        protected SetupObjectItem( ContextLocName name, string itemType, string containerName = null )
+        protected SetupObjectItem( ContextLocName name, string itemType )
         {
             ContextLocName = name;
             ItemType = itemType;
-            if( containerName != null ) Container = new NamedDependentItemContainerRef( containerName );
         }
 
         /// <summary>
         /// Gets the transform target if any.
+        /// This object is created by the first call to this <see cref="AddTransformer"/> method.
         /// </summary>
         public SetupObjectItem TransformTarget => _transformTarget;
 
-        protected SetupObjectItem AssumeTransformTarget( IActivityMonitor monitor )
+        /// <summary>
+        /// Gets the transformers that were registered with <see cref="AddTransformer"/>.
+        /// </summary>
+        public IReadOnlyList<ISetupObjectTransformerItem> Transformers => _transformers;
+
+        /// <summary>
+        /// Adds a <see cref="ISetupObjectTransformerItem"/> transformers.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="transformer">The transformer to add and configure.</param>
+        /// <returns>The <see cref="TransformTarget"/> object or null on error.</returns>
+        public SetupObjectItem AddTransformer( IActivityMonitor monitor, ISetupObjectTransformerItem transformer )
         {
-            if( _transformTarget == null )
+            if( transformer == null ) throw new ArgumentNullException( nameof( transformer ) );
+            if( transformer.Source != null || transformer.Target != null )
+            {
+                monitor.Error().Send( $"Transformer {transformer.FullName} is already bound to a source ({transformer.Source?.FullName}) and/or to a target ({transformer.Target?.FullName})", nameof( transformer ) );
+                return null;
+            }
+            if( _transformers == null )
             {
                 _transformTarget = (SetupObjectItem)MemberwiseClone();
                 OnTransformTargetCreated( monitor );
+                _transformers = new List<ISetupObjectTransformerItem>();
             }
-            return _transformTarget;
+            transformer.Source = this;
+            transformer.Target = _transformTarget;
+            _transformers.Add( transformer );
+            transformer.Requires.Add( this );
+            TransformTarget.Requires.Add( transformer.GetReference() );
+            return TransformTarget;
         }
 
-        protected virtual void OnTransformTargetCreated( IActivityMonitor monitor )
+        /// <summary>
+        /// Called by <see cref="AddTransformer"/> to initialize the initial 
+        /// transform target as a clone of this object.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <returns>True on success, false if an error occured.</returns>
+        protected virtual bool OnTransformTargetCreated( IActivityMonitor monitor )
         {
             _transformTarget._contextLocName = _contextLocName.Clone();
             _transformTarget._contextLocName.Name += "#transformed";
@@ -67,6 +92,7 @@ namespace CK.Setup
             if( _requires != null ) _transformTarget._requires = new DependentItemList( _requires );
             if( _requiredBy != null ) _transformTarget._requiredBy = new DependentItemList( _requiredBy );
             if( _groups != null ) _transformTarget._groups = new DependentItemGroupList( _groups );
+            return true;
         }
 
         /// <summary>

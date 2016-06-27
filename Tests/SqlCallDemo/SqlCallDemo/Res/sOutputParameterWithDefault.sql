@@ -1,4 +1,4 @@
-﻿-- Version = 3.7.1
+﻿-- SetupConfig: {}
 create procedure CK.sOutputParameterWithDefault
 (
 	-- This emits a warning during DBSetup: if a pure output parameter has a default value then 

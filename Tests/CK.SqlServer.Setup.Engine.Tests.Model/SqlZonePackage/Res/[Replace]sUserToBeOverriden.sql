@@ -1,4 +1,4 @@
-﻿-- Version = 1.0.0
+﻿-- SetupConfig: {}
 -- This is from the SqlZonePackage : it is overridden by UserTable with a new method since 
 -- there is a new parameter (@ParamFromZone).
 create procedure CK.sUserToBeOverriden

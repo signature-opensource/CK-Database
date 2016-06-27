@@ -1,4 +1,4 @@
-﻿-- Version = 3.7.3
+﻿-- SetupConfig: {}
 create procedure CK.sIntReturnWithActor
 (
     @ActorId int,

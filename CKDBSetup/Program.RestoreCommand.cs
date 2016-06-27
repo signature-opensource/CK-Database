@@ -169,10 +169,10 @@ namespace CKDBSetup
             m.Info().Send( "Restoring data file to: {0}", dataFileNewPath );
             m.Info().Send( "Restoring log file to: {0}", logFileNewPath );
 
-            options.Add( $"MOVE '{SqlHelper.SqlEncode( logicalNames.Item1 )}' TO '{SqlHelper.SqlEncode( dataFileNewPath )}'" );
-            options.Add( $"MOVE '{SqlHelper.SqlEncode( logicalNames.Item2 )}' TO '{SqlHelper.SqlEncode( logFileNewPath )}'" );
+            options.Add( $"MOVE '{SqlHelper.SqlEncodeString( logicalNames.Item1 )}' TO '{SqlHelper.SqlEncodeString( dataFileNewPath )}'" );
+            options.Add( $"MOVE '{SqlHelper.SqlEncodeString( logicalNames.Item2 )}' TO '{SqlHelper.SqlEncodeString( logFileNewPath )}'" );
 
-            backupPath = SqlHelper.SqlEncode( backupPath );
+            backupPath = SqlHelper.SqlEncodeString( backupPath );
 
             StringBuilder sb = new StringBuilder();
 
@@ -193,7 +193,7 @@ namespace CKDBSetup
 
         private static Tuple<string, string> GetBackupDataAndLogLogicalNames( IActivityMonitor m, SqlConnection c, string backupPath )
         {
-            backupPath = SqlHelper.SqlEncode( backupPath );
+            backupPath = SqlHelper.SqlEncodeString( backupPath );
 
             StringBuilder sb = new StringBuilder();
 

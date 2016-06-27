@@ -72,18 +72,12 @@ namespace CK.SqlServer.Setup
                 IEnumerable<string> expectedItemTypes )
         {
             Debug.Assert( (transformArgument != null) == (name.TransformArg != null) );
-            if( transformArgument != null ) expectedItemTypes = new[] { "Transformer" };
             string fileName;
             string text = LoadTextResource( monitor, packageItem, name, out fileName );
             if( text == null ) return null;
-            SqlBaseItem result = SqlBaseItem.Parse( monitor, name, parser, text, fileName, packageItem, expectedItemTypes );
+            SqlBaseItem result = SqlBaseItem.Parse( monitor, name, parser, text, fileName, packageItem, transformArgument, expectedItemTypes );
             if( result == null ) return null;
             firstContainer.EnsureObjectsPackage().Children.Add( result );
-            if( transformArgument != null )
-            {
-                var t = (SqlTransformerItem)result;
-                t.SetTransformSource( monitor, transformArgument );
-            }
             monitor.Trace().Send( $"Loaded {result.ItemType} '{result.ContextLocName.Name}' of '{packageItem.FullName}'." );
             return result;
         }

@@ -35,7 +35,8 @@ namespace CK.SqlServer.Setup
             {
                 foreach( var name in Item.SqlDatabase.Schemas )
                 {
-                    _connection.ExecuteOneScript( String.Format( "if not exists(select 1 from sys.schemas where name = '{0}') begin exec( 'create schema {0}' ); end", name ), Engine.Monitor );
+                    string sqlName = name.Replace( "]", "]]" );
+                    _connection.ExecuteOneScript( $"if not exists(select 1 from sys.schemas where name = '{name}') begin exec( 'create schema [{sqlName}]' ); end", Engine.Monitor );
                 }
             }
             return true;
