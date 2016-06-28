@@ -35,7 +35,7 @@ namespace CK.Setup
         DependentItemGroupList _groups;
         IDependentItemList _children;
         bool _frontPackage;
-        bool _automaticModelRequirement;
+        bool _autoProjectRequirements;
 
         /// <summary>
         /// Initializes a new <see cref="AutoDependentPackageItem"/> with a specific prefix.
@@ -51,12 +51,12 @@ namespace CK.Setup
             if( string.IsNullOrWhiteSpace( prefixWithDot )
                 || prefixWithDot.Length != prefix.Length + 1
                 || prefixWithDot[prefixWithDot.Length-1] != '.'
-                || String.CompareOrdinal( prefix, 0, prefixWithDot, 0, prefix.Length ) != 0 ) throw new ArgumentException( "prefixWithDot" );
+                || string.CompareOrdinal( prefix, 0, prefixWithDot, 0, prefix.Length ) != 0 ) throw new ArgumentException( "prefixWithDot" );
             _frontPackage = frontPackage;
             _package = owner;
             _prefix = prefix;
             _prefixWithDot = prefixWithDot;
-            _automaticModelRequirement = true;
+            _autoProjectRequirements = true;
         }
 
         /// <summary>
@@ -70,8 +70,9 @@ namespace CK.Setup
         public string Prefix => _prefix; 
 
         /// <summary>
-        /// Gets or sets whether any <see cref="Package"/> requirements (that is not itself a AutoDependentPackageItem) is automatically projected as a requirement to its AutoDependentPackageItem 
-        /// with the same prefix on this one (the package name is prefixed with "?<see cref="Prefix"/>.").
+        /// Gets or sets whether any <see cref="Package"/> requirements (that is not itself a AutoDependentPackageItem) is 
+        /// automatically projected as a requirement to its AutoDependentPackageItem with the same prefix on this 
+        /// one (the package name is prefixed with "?<see cref="Prefix"/>.").
         /// Defaults to true and applies to Requires and RequiredBy relations.
         /// </summary>
         /// <remarks>
@@ -86,10 +87,10 @@ namespace CK.Setup
         /// "If I want to be required by "B" (ie. I must be before "B"), then if "B" has a "XXX", my "XXX" must also be before "XXX.B".".
         /// </para>
         /// </remarks>
-        public bool AutomaticModelRequirement
+        public bool AutoProjectRequirements
         {
-            get { return _automaticModelRequirement; }
-            set { _automaticModelRequirement = value; }
+            get { return _autoProjectRequirements; }
+            set { _autoProjectRequirements = value; }
         }
 
         /// <summary>
@@ -164,7 +165,7 @@ namespace CK.Setup
             get 
             {
                 var thisRequires = _requires.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _package.Context, _package.Location ) );
-                if( _automaticModelRequirement )
+                if( _autoProjectRequirements )
                 {
                     var req = _package.Requires;
                     if( req != null )
@@ -184,7 +185,7 @@ namespace CK.Setup
             get
             {
                 var thisRequiredBy = _requiredBy.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _package.Context, _package.Location ) );
-                if( _automaticModelRequirement )
+                if( _autoProjectRequirements )
                 {
                     var reqBy = _package.RequiredBy;
                     if( reqBy != null )

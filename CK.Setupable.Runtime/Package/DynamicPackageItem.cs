@@ -66,16 +66,13 @@ namespace CK.Setup
         /// It is null (the default) if this package has no Model: use <see cref="EnsureModel"/> to
         /// create the Model if needed.
         /// </summary>
-        public AutoDependentPackageItem Model
-        {
-            get { return _model; }
-        }
+        public AutoDependentPackageItem Model => _model;
 
         /// <summary>
         /// Creates the associated <see cref="Model"/> package if it does not exist yet.
         /// </summary>
-        /// <returns></returns>
-        public AutoDependentPackageItem EnsureModel()
+        /// <returns>The <see cref="AutoDependentPackageItem"/>.</returns>
+        public virtual AutoDependentPackageItem EnsureModel()
         {
             return _model ?? (_model = new AutoDependentPackageItem( this, true, "Model", "Model." ));
         }
@@ -83,7 +80,7 @@ namespace CK.Setup
         /// <summary>
         /// Removes the <see cref="Model"/> (sets it to null).
         /// </summary>
-        public void SupressModel()
+        public virtual void SupressModel()
         {
             _model = null;
         }
@@ -93,16 +90,13 @@ namespace CK.Setup
         /// It is null (the default) if this package has no associated "Objects" package: use <see cref="EnsureModel"/> to
         /// create the Model if needed.
         /// </summary>
-        public AutoDependentPackageItem ObjectsPackage
-        {
-            get { return _objects; }
-        }
+        public AutoDependentPackageItem ObjectsPackage => _objects; 
 
         /// <summary>
         /// Creates the associated <see cref="ObjectsPackage"/> package if it does not exist yet.
         /// </summary>
-        /// <returns></returns>
-        public AutoDependentPackageItem EnsureObjectsPackage()
+        /// <returns>The <see cref="AutoDependentPackageItem"/>.</returns>
+        public virtual AutoDependentPackageItem EnsureObjectsPackage()
         {
             return _objects ?? (_objects = new AutoDependentPackageItem( this, false, "Objects", "Objects." ));
         }
@@ -110,7 +104,7 @@ namespace CK.Setup
         /// <summary>
         /// Removes the <see cref="ObjectsPackage"/> (sets it to null).
         /// </summary>
-        public void SupressObjectsPackage()
+        public virtual void SupressObjectsPackage()
         {
             _objects = null;
         }
