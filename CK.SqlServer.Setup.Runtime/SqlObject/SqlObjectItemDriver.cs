@@ -35,8 +35,6 @@ namespace CK.SqlServer.Setup
 
             if( ExternalVersion != null && ExternalVersion.Version == Item.Version ) return true;
 
-            if( Item.TransformTarget != null ) return true;
-
             ISqlManager m = FindManagerFromLocation( Engine.Monitor, _provider, FullName );
             if( m == null ) return false;
  
