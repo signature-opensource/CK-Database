@@ -26,30 +26,15 @@ namespace CK.SqlServer.Setup
         {
             if( beforeHandlers ) return true;
             Item.Target.SqlObject = Item.SqlObject.SafeTransform( Engine.Monitor, Item.Target.SqlObject );
+            if( Item != Item.Source.Transformers[Item.Source.Transformers.Count-1] )
+            {
+                using( Engine.Monitor.OpenTrace().Send( "Intermediate transform result:" ) )
+                {
+                    Engine.Monitor.Trace().Send( Item.Target.SqlObject.ToFullString() );
+                }
+            }
             return Item.Target.SqlObject != null;
         }
 
-        //protected override bool Init( bool beforeHandlers )
-        //{
-        //    if( beforeHandlers )
-        //    {
-        //        SetupItemDriver target = Engine.Drivers[Item.ContextLocName.TransformArg];
-        //        Debug.Assert( target != null );
-        //        target.AddInstallHandler( DoTransform );
-        //    }
-        //    return true;
-        //}
-
-        //bool DoTransform( SetupItemDriver target )
-        //{
-        //    var t = target.Item as SqlBaseItem;
-        //    if( t == null )
-        //    {
-        //        Engine.Monitor.Error().Send( $"Target object type must be a SqlBaseItem. '{Item.ContextLocName.TransformArg}' is {target.Item.GetType().Name}." );
-        //        return false;
-        //    }
-        //    t.SqlObject = Item.SqlObject.SafeTransform( Engine.Monitor, t.SqlObject );
-        //    return true;
-        //}
     }
 }

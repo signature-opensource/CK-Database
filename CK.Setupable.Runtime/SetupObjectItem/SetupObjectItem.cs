@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,6 +20,7 @@ namespace CK.Setup
         DependentItemGroupList _groups;
         SetupObjectItem _transformTarget;
         List<ISetupObjectTransformerItem> _transformers;
+        SetupObjectItem _sourceWhenTransformed;
 
         /// <summary>
         /// Initializes a <see cref="SetupObjectItem"/> without <see cref="ContextLocName"/> nor <see cref="ItemType"/>.
@@ -40,15 +42,46 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the transform target if any.
+        /// Gets the transform target item if this item has associated <see cref="Transformers"/>.
         /// This object is created by the first call to this <see cref="AddTransformer"/> method.
         /// </summary>
         public SetupObjectItem TransformTarget => _transformTarget;
 
         /// <summary>
-        /// Gets the transformers that were registered with <see cref="AddTransformer"/>.
+        /// Gets the source item if this item is a target, null otherwise.
         /// </summary>
-        public IReadOnlyList<ISetupObjectTransformerItem> Transformers => _transformers;
+        public SetupObjectItem TransformSource => _sourceWhenTransformed;
+
+        /// <summary>
+        /// Gets the transformers that have been registered with <see cref="AddTransformer"/>.
+        /// Never null (empty when no transformers have been added yet).
+        /// </summary>
+        public IReadOnlyList<ISetupObjectTransformerItem> Transformers => (IReadOnlyList<ISetupObjectTransformerItem>)_transformers ?? Util.Array.Empty<ISetupObjectTransformerItem>();
+
+        class DownCastList<T> : IReadOnlyList<T>
+        {
+            readonly SetupObjectItem _holder;
+
+            public DownCastList( SetupObjectItem holder )
+            {
+                _holder = holder;
+            }
+
+            public T this[int index] => (T)_holder.Transformers[index];
+
+            public int Count => _holder.Transformers.Count;
+
+            public IEnumerator<T> GetEnumerator() => _holder.Transformers.Cast<T>().GetEnumerator();
+
+            IEnumerator IEnumerable.GetEnumerator() => _holder.Transformers.GetEnumerator();
+        }
+
+        /// <summary>
+        /// Helper for specialized class that helps covariant interface implementation.
+        /// </summary>
+        /// <typeparam name="T">The actual type of the trasformer to expose.</typeparam>
+        /// <returns>A wrapper around <see cref="Transformers"/> that downcasts its items.</returns>
+        protected IReadOnlyList<T> CreateTypedTransformersWrapper<T>() => new DownCastList<T>( this ); 
 
         /// <summary>
         /// Adds a <see cref="ISetupObjectTransformerItem"/> transformers.
@@ -64,9 +97,10 @@ namespace CK.Setup
                 monitor.Error().Send( $"Transformer {transformer.FullName} is already bound to a source ({transformer.Source?.FullName}) and/or to a target ({transformer.Target?.FullName})", nameof( transformer ) );
                 return null;
             }
-            if( _transformers == null )
+            if( _transformTarget == null )
             {
                 _transformTarget = (SetupObjectItem)MemberwiseClone();
+                _transformTarget._sourceWhenTransformed = this;
                 OnTransformTargetCreated( monitor );
                 _transformers = new List<ISetupObjectTransformerItem>();
             }

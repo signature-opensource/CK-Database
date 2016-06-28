@@ -21,6 +21,7 @@ namespace CK.SqlServer.Setup
     public abstract class SqlBaseItem : SetupObjectItemV
     {
         ISqlServerParsedText _sqlObject;
+        IReadOnlyList<SqlTransformerItem> _transformers;
 
         internal SqlBaseItem()
         {
@@ -34,12 +35,13 @@ namespace CK.SqlServer.Setup
 
         public new SqlBaseItem TransformTarget => (SqlBaseItem)base.TransformTarget;
 
-        public new IReadOnlyList<SqlTransformerItem> Transformers => (IReadOnlyList<SqlTransformerItem>)base.Transformers;
+        public new SqlBaseItem TransformSource => (SqlBaseItem)base.TransformSource;
+
+        public new IReadOnlyList<SqlTransformerItem> Transformers => _transformers ?? (_transformers = CreateTypedTransformersWrapper<SqlTransformerItem>());
 
         public new SqlContextLocName ContextLocName
         {
             get { return (SqlContextLocName)base.ContextLocName; }
-            set { base.ContextLocName = value; }
         }
 
         /// <summary>

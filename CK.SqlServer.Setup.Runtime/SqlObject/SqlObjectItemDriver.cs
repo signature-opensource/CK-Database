@@ -11,6 +11,8 @@ using System.Linq;
 using CK.Core;
 using CK.Setup;
 using System.Text;
+using CK.Text;
+using System.Diagnostics;
 
 namespace CK.SqlServer.Setup
 {
@@ -58,6 +60,19 @@ namespace CK.SqlServer.Setup
             using( configRestorer )
             {
                 Item.WriteDrop( b );
+                Debug.Assert( Item.TransformTarget == null || Item.TransformSource == null, "Both can not be set on the same item." );
+                if( Item.TransformTarget != null )
+                {
+                    b.Append( $"-- This will be transformed by " )
+                        .AppendStrings( Item.Transformers.Select( t => (t.TransformTarget ?? t).FullName ) )
+                        .AppendLine();
+                }
+                else if( Item.TransformSource != null )
+                {
+                    b.Append( $"-- This has been transformed by " )
+                        .AppendStrings( Item.TransformSource.Transformers.Select( t => (t.TransformTarget ?? t).FullName ) )
+                        .AppendLine();
+                }
                 s = b.ToString();
                 if( !m.ExecuteOneScript( s, Engine.Monitor ) ) return false;
                 b.Clear();
