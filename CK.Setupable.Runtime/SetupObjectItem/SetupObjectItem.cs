@@ -87,7 +87,7 @@ namespace CK.Setup
         protected virtual bool OnTransformTargetCreated( IActivityMonitor monitor )
         {
             _transformTarget._contextLocName = _contextLocName.Clone();
-            _transformTarget._contextLocName.Name += "#transformed";
+            _transformTarget._contextLocName.Name += "#transform";
             _transformTarget.Container = null;
             if( _requires != null ) _transformTarget._requires = new DependentItemList( _requires );
             if( _requiredBy != null ) _transformTarget._requiredBy = new DependentItemList( _requiredBy );
