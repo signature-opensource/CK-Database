@@ -15,16 +15,16 @@ namespace SqlCallDemo
     [SqlPackage( Schema = "CK", ResourcePath = "Res" ), Versions( "2.11.25" )]
     public abstract partial class PurelyInputLogPackage : SqlPackage
     {
-        [SqlProcedureNonQuery( "sPurelyInputSimpleLog" )]
+        [SqlProcedure( "sPurelyInputSimpleLog" )]
         public abstract Task SimpleLog( SqlStandardCallContext ctx, string logText );
 
-        [SqlProcedureNonQuery( "sPurelyInputLog" )]
+        [SqlProcedure( "sPurelyInputLog" )]
         public abstract Task Log( SqlStandardCallContext ctx, bool? oneMore, string logText );
 
-        [SqlProcedureNonQuery( "sPurelyInputLog" )]
+        [SqlProcedure( "sPurelyInputLog" )]
         public abstract Task LogWithDefaultBitValue( SqlStandardCallContext ctx, string logText );
 
-        [SqlProcedureNonQuery( "sPurelyInputLog" )]
+        [SqlProcedure( "sPurelyInputLog" )]
         public abstract Task LogWait( SqlStandardCallContext ctx, string logText, int waitTimeMS, CancellationToken cancellationToken );
 
     }

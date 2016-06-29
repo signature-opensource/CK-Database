@@ -17,7 +17,7 @@ namespace SqlActorPackage.Basic
         /// <param name="groupName">Name of the group.</param>
         /// <param name="groupIdResult">Group identifier.</param>
         /// <returns>The sql command object.</returns>
-        [SqlProcedure( "sGroupCreate" )]
+        [SqlProcedureNoExecute( "sGroupCreate" )]
         public abstract SqlCommand CmdCreate( string groupName, out int groupIdResult );
 
     }

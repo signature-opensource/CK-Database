@@ -18,7 +18,7 @@ namespace SqlZonePackage.Zone
         /// <param name="groupName">Name of the group.</param>
         /// <param name="groupIdResult">Group identifier.</param>
         /// <returns>The sql command object.</returns>
-        [SqlProcedure( "replace:sGroupCreate" )]
+        [SqlProcedureNoExecute( "replace:sGroupCreate" )]
         public abstract SqlCommand CmdCreate( int securityZoneId, string groupName, out int groupIdResult );
         
         /// <summary>
@@ -27,7 +27,7 @@ namespace SqlZonePackage.Zone
         /// <param name="c">The sql command that will be created or configured.</param>
         /// <param name="securityZoneId">SecurityZone identifier of the group. Defaults to 0.</param>
         /// <param name="groupName">Name of the group.</param>
-        [SqlProcedure( "replace:sGroupCreate" )]
+        [SqlProcedureNoExecute( "replace:sGroupCreate" )]
         [SqlAlterProcedure]
         public abstract void CmdDemoCreate( ref SqlCommand c, int securityZoneId, string groupName );
     }

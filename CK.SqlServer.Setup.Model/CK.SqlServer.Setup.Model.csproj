@@ -79,7 +79,7 @@
     <Compile Include="Attributes\SqlObjectItemAttribute.cs" />
     <Compile Include="Attributes\SqlCallableAttribute.cs" />
     <Compile Include="Attributes\SqlScalarFunctionAttribute.cs" />
-    <Compile Include="Attributes\SqlProcedureNonQueryAttribute.cs" />
+    <Compile Include="Attributes\SqlProcedureAttribute.cs" />
     <Compile Include="Configuration\SqlDatabaseDescriptor.cs" />
     <Compile Include="Configuration\SqlSetupAspectConfiguration.cs" />
     <Compile Include="ParameterAndCallContext\ParameterSourceAttribute.cs" />
@@ -97,7 +97,7 @@
     <Compile Include="Attributes\SqlPackageAttribute.cs" />
     <Compile Include="Attributes\SqlPackageAttributeBase.cs" />
     <Compile Include="SqlPackageBase.cs" />
-    <Compile Include="Attributes\SqlProcedureAttribute.cs" />
+    <Compile Include="Attributes\SqlProcedureNoExecuteAttribute.cs" />
     <Compile Include="ParameterAndCallContext\SqlStandardCallContext.cs" />
     <Compile Include="SqlTable.cs" />
     <Compile Include="Attributes\SqlTableAttribute.cs" />

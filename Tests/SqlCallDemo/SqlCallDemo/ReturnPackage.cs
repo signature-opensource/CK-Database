@@ -15,28 +15,28 @@ namespace SqlCallDemo
     [SqlPackage( Schema = "CK", ResourcePath = "Res" ), Versions( "2.11.25" )]
     public abstract partial class ReturnPackage : SqlPackage
     {
-        [SqlProcedureNonQuery( "sStringReturn" )]
+        [SqlProcedure( "sStringReturn" )]
         public abstract string StringReturn( SqlStandardCallContext ctx, int v );
 
-        [SqlProcedureNonQuery( "sStringReturn" )]
+        [SqlProcedure( "sStringReturn" )]
         public abstract Task<string> StringReturnAsync( SqlStandardCallContext ctx, int v );
 
-        [SqlProcedureNonQuery( "sIntReturn" )]
+        [SqlProcedure( "sIntReturn" )]
         public abstract int IntReturn( SqlStandardCallContext ctx, int? v );
 
-        [SqlProcedureNonQuery( "sIntReturn" )]
+        [SqlProcedure( "sIntReturn" )]
         public abstract Task<int> IntReturnAsync( SqlStandardCallContext ctx, int? v );
 
-        [SqlProcedureNonQuery( "sIntReturnWithActor" )]
+        [SqlProcedure( "sIntReturnWithActor" )]
         public abstract int IntReturnWithActor( [ParameterSource]IActorCallContextIsExecutor ctx, string def = "5" );
 
-        [SqlProcedureNonQuery( "sIntReturnWithActor" )]
+        [SqlProcedure( "sIntReturnWithActor" )]
         public abstract Task<int> IntReturnWithActorAsync( [ParameterSource]IActorCallContextIsExecutor ctx, string def = "5" );
 
-        [SqlProcedureNonQuery( "sIntReturnWithActor" )]
+        [SqlProcedure( "sIntReturnWithActor" )]
         public abstract int IntReturnWithActor( [ParameterSource]IActorCallContext ctx, string def = "5" );
 
-        [SqlProcedureNonQuery( "sIntReturnWithActor" )]
+        [SqlProcedure( "sIntReturnWithActor" )]
         public abstract Task<int> IntReturnWithActorAsync( [ParameterSource]IActorCallContext ctx, string def = "5" );
 
     }

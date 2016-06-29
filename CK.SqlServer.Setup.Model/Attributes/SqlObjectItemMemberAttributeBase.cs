@@ -17,7 +17,7 @@ using CK.Setup;
 namespace CK.SqlServer.Setup
 {
     /// <summary>
-    /// Base class for <see cref="SqlProcedureAttribute"/>.
+    /// Base class for <see cref="SqlProcedureNoExecuteAttribute"/>.
     /// </summary>
     public abstract class SqlObjectItemMemberAttributeBase : SetupObjectItemMemberAttributeBase
     {

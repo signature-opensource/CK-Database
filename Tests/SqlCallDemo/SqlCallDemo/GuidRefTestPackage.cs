@@ -24,26 +24,26 @@ namespace SqlCallDemo
         /// <summary>
         /// Creating a SqlCommand object. All parameters are added to the command and input parameters are set to the values of the parameters. 
         /// </summary>
-        [SqlProcedure( "sGuidRefTest" )]
+        [SqlProcedureNoExecute( "sGuidRefTest" )]
         public abstract SqlCommand CmdGuidRefTest( bool replaceInAndOut, Guid inOnly, ref Guid inAndOut, out string textResult );
 
         /// <summary>
         /// Nullable support: all value types can be nullable. 
         /// </summary>
-        [SqlProcedure( "sGuidRefTest" )]
+        [SqlProcedureNoExecute( "sGuidRefTest" )]
         public abstract SqlCommand CmdGuidRefTest( Nullable<bool> replaceInAndOut, Nullable<Guid> inOnly, ref Nullable<Guid> inAndOut, out string textResult );
 
         /// <summary>
         /// Output only parameters are optional. (They however actually appears in the SqlCommand's parameters in order to be able to call the procedure.) 
         /// </summary>
-        [SqlProcedure( "sGuidRefTest" )]
+        [SqlProcedureNoExecute( "sGuidRefTest" )]
         public abstract SqlCommand CmdGuidRefTestWithoutTextResult( bool replaceInAndOut, Guid inOnly, ref Guid inAndOut );
 
         /// <summary>
         /// Reusing a SqlCommand object: this MUST be the first parameter of the method and inital call must be made with a null reference.
         /// When null, the command is initalized with the parameters, when not null, the command is reconfigured with the values of the parameters. 
         /// </summary>
-        [SqlProcedure( "sGuidRefTest" )]
+        [SqlProcedureNoExecute( "sGuidRefTest" )]
         public abstract void CmdGuidRefTest( ref SqlCommand cmd, bool replaceInAndOut, Guid inOnly, ref Guid inAndOut, out string textResult );
 
 
@@ -60,7 +60,7 @@ namespace SqlCallDemo
         /// <summary>
         /// Using a [ParameterSource] attribute on parameter to provide values to input parameters.
         /// </summary>
-        [SqlProcedure( "sGuidRefTest" )]
+        [SqlProcedureNoExecute( "sGuidRefTest" )]
         public abstract SqlCommand CmdGuidRefTest( [ParameterSource]GuidRefTestContext context, ref Guid inAndOut, out string textResult );
 
         /// <summary>
@@ -77,13 +77,13 @@ namespace SqlCallDemo
         /// <summary>
         /// Using a [ParameterSource] attribute on parameter to provide values to input parameters.
         /// </summary>
-        [SqlProcedure( "sGuidRefTest" )]
+        [SqlProcedureNoExecute( "sGuidRefTest" )]
         public abstract SqlCommand CmdGuidRefTest( [ParameterSource]GuidRefTestInOutContext context, out string textResult );
 
         /// <summary>
         /// Since output parameters are optional, this works.
         /// </summary>
-        [SqlProcedure( "sGuidRefTest" )]
+        [SqlProcedureNoExecute( "sGuidRefTest" )]
         public abstract SqlCommand CmdGuidRefTest( [ParameterSource]GuidRefTestInOutContext context );
 
 
@@ -104,7 +104,7 @@ namespace SqlCallDemo
         /// <summary>
         /// Any returned type with a constructor accepting a SqlCommand can be created.
         /// </summary>
-        [SqlProcedure( "sGuidRefTest" )]
+        [SqlProcedureNoExecute( "sGuidRefTest" )]
         public abstract ReturnedWrapper CmdGuidRefTestReturnsWrapper( bool replaceInAndOut, Guid inOnly, ref Guid inAndOut );
 
 
@@ -130,7 +130,7 @@ namespace SqlCallDemo
         /// <summary>
         /// Returned wrapper's constructor must be able to handle all non-parameters.
         /// </summary>
-        [SqlProcedure( "sGuidRefTest" )]
+        [SqlProcedureNoExecute( "sGuidRefTest" )]
         public abstract ReturnedWrapperWithParameters CmdGuidRefTestReturnsWrapperWithParameters( bool replaceInAndOut, string stringParameter, Guid inOnly, string anotherParameter, int yetAnotherOne, ref Guid inAndOut );
 
 
@@ -160,7 +160,7 @@ namespace SqlCallDemo
         /// <summary>
         /// Returned wrapper's constructor will have this package as a IAmTheClassThatDefinesTheProcedure interface.
         /// </summary>
-        [SqlProcedure( "sGuidRefTest" )]
+        [SqlProcedureNoExecute( "sGuidRefTest" )]
         public abstract ReturnedWrapperWithContext CmdGuidRefTestReturnsWrapperWithContext( [ParameterSource]GuidRefTestInOutContext context );
 
     }

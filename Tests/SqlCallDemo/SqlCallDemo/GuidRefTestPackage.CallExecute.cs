@@ -38,32 +38,32 @@ namespace SqlCallDemo
         /// When mutiple ISqlCallContext parameters occur, the first one that can handle the call (ie. the firs Executor) 
         /// will be used.
         /// </summary>
-        [SqlProcedureNonQuery( "sGuidRefTest" )]
+        [SqlProcedure( "sGuidRefTest" )]
         public abstract void GuidRefTest( SqlStandardCallContext ctx, bool replaceInAndOut, Guid inOnly, ref Guid inAndOut, out string textResult );
 
         /// <summary>
         /// When a returned type exists, its corresponds to the last output or input/output parameter with a compatible type.
         /// </summary>
-        [SqlProcedureNonQuery( "sGuidRefTest" )]
+        [SqlProcedure( "sGuidRefTest" )]
         public abstract string GuidRefTestReturn( SqlStandardCallContext ctx, bool replaceInAndOut, Guid inOnly, ref Guid inAndOut );
 
         /// <summary>
         /// Calling with an interface that exposes the ISqlCommandExecutor is possible (even a specialized one).
         /// </summary>
-        [SqlProcedureNonQuery( "sGuidRefTest" )]
+        [SqlProcedure( "sGuidRefTest" )]
         public abstract string GuidRefTestReturnWithInterfaceContext( INonStandardSqlCallContextSpecialized ctx, bool replaceInAndOut, Guid inOnly, ref Guid inAndOut );
 
         /// <summary>
         /// Any output with a compatible type can be used (here the inAndOut unique identifier is returned). The returned value is always the 
         /// one that corresponds to the last compatible type.
         /// </summary>
-        [SqlProcedureNonQuery( "sGuidRefTest" )]
+        [SqlProcedure( "sGuidRefTest" )]
         public abstract Guid GuidRefTestReturnInOut( SqlStandardCallContext ctx, bool replaceInAndOut, Guid inOnly, Guid inAndOut, out string textResult );
 
         /// <summary>
         /// Calling with an interface that exposes the ISqlCommandExecutor via a property.
         /// </summary>
-        [SqlProcedureNonQuery( "sGuidRefTest" )]
+        [SqlProcedure( "sGuidRefTest" )]
         public abstract string GuidRefTestReturnWithInterfaceContext( INonStandardSqlCallContextByProperty ctx, bool replaceInAndOut, Guid inOnly, ref Guid inAndOut );
 
         // TODO
