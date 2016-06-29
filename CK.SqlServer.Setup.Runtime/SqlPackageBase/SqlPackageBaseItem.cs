@@ -39,18 +39,6 @@ namespace CK.SqlServer.Setup
         public new SqlPackageBase GetObject() => (SqlPackageBase)base.GetObject();
 
         /// <summary>
-        /// Creates the Objects package with <see cref="AutoDependentPackageItem.AutoProjectRequirements"/> 
-        /// sets to false.
-        /// </summary>
-        /// <returns>The Objects package.</returns>
-        public override AutoDependentPackageItem EnsureObjectsPackage()
-        {
-            AutoDependentPackageItem p = base.EnsureObjectsPackage();
-            p.AutoProjectRequirements = false;
-            return p;
-        }
-
-        /// <summary>
         /// Gets or sets a <see cref="ResourceLocation"/> that locates the resources associated 
         /// to this package.
         /// </summary>
