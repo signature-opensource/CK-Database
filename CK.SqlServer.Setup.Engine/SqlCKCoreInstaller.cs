@@ -309,22 +309,18 @@ begin
 		Id int not null,
         CreationDate SmallDateTime not null,
         Ver smallint not null,
-		constraint PK_tSystem primary key (Id),
+        constraint PK_tSystem primary key (Id),
 		constraint CK_tSystem_Id check (Id in (1,2))
 	);
 end
 declare @curVer smallint;
 select @curVer = Ver from CKCore.tSystem where Id=1;
-if @@RowCount = 0 insert into CKCore.tSystem(Id,CreationDate,Ver) values(1,GETUTCDATE(),$Ver$);
+if @@RowCount = 0 
+begin
+    insert into CKCore.tSystem(Id,CreationDate,Ver) values(1,GETUTCDATE(),$Ver$);
+end
 else
 begin
-    if @curVer <= 8
-    begin
-        update v set FullName = replace(v.FullName, 'Objects.', 'Model.'),
-			         ItemType = 'MODEL'
-	        from CKCore.tItemVersion v
-	        where v.ItemType = 'OBJECTS';
-    end
     update CKCore.tSystem set Ver = $Ver$ where Id=1;
 end
 ";

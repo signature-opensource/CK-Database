@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Setup.Engine\SqlVersionedItemRepository.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Data;
 using System.Data.SqlClient;
@@ -16,7 +9,7 @@ namespace CK.SqlServer.Setup
 {
     public class SqlVersionedItemRepository : IVersionedItemRepository, IDisposable
     {
-        public readonly static Version CurrentVersion = new Version( 4, 1, 6, 1756 );
+        public readonly static Version CurrentVersion = new Version( 6, 6, 30, 1847 );
 
         readonly ISqlManager _manager;
         SqlCommand _get;
@@ -44,14 +37,19 @@ namespace CK.SqlServer.Setup
             _get.Parameters[0].Value = t;
 
             VersionedName n = DoGetVersion( i.FullName );
-            // Temporary: Looks up for non-prefixed FullName when not found and cleans up the db.
-            if( n == null && i.FullName.StartsWith( "[]db^", StringComparison.Ordinal ) )
+            // Temporary, ugly, hook: 
+            if( n == null )
             {
-                n = DoGetVersion( i.FullName.Substring( 5 ) );
-                if( n != null )
+                // Old code: Handle non-prefixed FullName when not found.
+                // Creates the prefixed one and removes the non prefixed one.
+                if( i.FullName.StartsWith( "[]db^", StringComparison.Ordinal ) )
                 {
-                    DoSetCurrent( t, i.FullName, n.Version );
-                    Delete( i.FullName.Substring( 5 ) );
+                    n = DoGetVersion( i.FullName.Substring( 5 ) );
+                    if( n != null )
+                    {
+                        DoSetCurrent( t, i.FullName, n.Version );
+                        Delete( i.FullName.Substring( 5 ) );
+                    }
                 }
             }
             // Uses Previous Names if any.
@@ -114,7 +112,7 @@ namespace CK.SqlServer.Setup
         private static string CheckItemType( IVersionedItem i )
         {
             string type = i.ItemType;
-            if( String.IsNullOrEmpty( type ) ) throw new ArgumentOutOfRangeException( "ItemType", type, "IVersionedItem.ItemType must be not null nor empty." );
+            if( string.IsNullOrEmpty( type ) ) throw new ArgumentOutOfRangeException( "ItemType", type, "IVersionedItem.ItemType must be not null nor empty." );
             type = type.Trim();
             if( type.Length == 0 || type.Length > 16 ) throw new ArgumentOutOfRangeException( "ItemType", type, "IVersionedItem.ItemType must be between 1 and 16 characters long." );
             return type;
@@ -161,6 +159,11 @@ namespace CK.SqlServer.Setup
                     else if( v.Major == 2 && v.Minor == 6 )
                     {
                         ExecScript( monitor, _scriptFrom2_6_27 );
+                        ExecScript( monitor, _scriptFrom4_1_6 );
+                    }
+                    else if( v.Major == 4 && v.Minor == 1 )
+                    {
+                        ExecScript( monitor, _scriptFrom4_1_6 );
                     }
                     ExecScript( monitor, _scriptAlways.Replace( "$Ver$", CurrentVersion.ToString() ) );
                 }
@@ -192,6 +195,7 @@ create table CKCore.tItemVersion
 	FullName nvarchar(128) collate Latin1_General_BIN not null,
 	ItemType varchar(16) collate Latin1_General_BIN not null,
 	ItemVersion varchar(32) not null,
+    LastAccess datetime2(2) constraint CK_CKCore_tItemVersion_LastAccess default(sysutcdatetime()),
 	constraint PK_tItemVersion primary key(FullName)
 );
 ";
@@ -200,6 +204,25 @@ alter table CKCore.tItemVersion drop UK_tItemVersion;
 alter table CKCore.tItemVersion add
 	constraint PK_tItemVersion primary key(FullName);
 ";
+        static string _scriptFrom4_1_6 = @"
+-- Moving 'OBJECTS' to 'MODEL'.
+update v set FullName = replace(v.FullName, 'Objects.', 'Model.'),
+			    ItemType = 'MODEL'
+	from CKCore.tItemVersion v
+	where v.ItemType = 'OBJECTS';
+-- For packages that never had Objects, we create an artificial Model version.
+insert into CKCore.tItemVersion( FullName, ItemType, ItemVersion )
+    select left(v.FullName,5)+'Model.'+right(v.FullName,len(v.FullName)-5),
+			        'MODEL',
+			        v.ItemVersion
+	from CKCore.tItemVersion v
+	where ItemType = 'STOBJPACKAGE'
+			and not exists( select * from CKCore.tItemVersion m where ItemType = 'MODEL' and FullName = left(v.FullName,5)+'Model.'+right(v.FullName,len(v.FullName)-5));
+
+alter table CKCore.tItemVersion add 
+    LastAccess datetime2(2) constraint CKCore_tItemVersion_LastAccess default(sysutcdatetime());
+";
+
         static string _scriptAlways = @"
 if object_id('CKCore.sItemVersionGet') is not null drop procedure CKCore.sItemVersionGet;
 if object_id('CKCore.sItemVersionSet') is not null drop procedure CKCore.sItemVersionSet;
@@ -259,7 +282,7 @@ begin
         merge CKCore.tItemVersion as t
 		    using (select FullName = @FullName) as s
 		    on t.FullName = s.FullName
-		    when matched then update set ItemVersion = @ItemVersion, ItemType = @ItemType
+		    when matched then update set ItemVersion = @ItemVersion, ItemType = @ItemType, LastAccess = sysutcdatetime()
 		    when not matched then insert (ItemType, FullName, ItemVersion) values (@ItemType, @FullName, @ItemVersion); 
     end
     return 0;
@@ -286,21 +309,26 @@ begin
 	select @ItemVersion = t.ItemVersion from CKCore.tItemVersion t where t.FullName = @FullName;
 		
 	if @ItemVersion is not null
-		and
-		(@ItemType = 'TABLE' or @ItemType = 'PROCEDURE' or @ItemType = 'FUNCTION'  or @ItemType = 'VIEW')
-	begin
-		-- Extracting location from FullName.
-		declare @location varchar(128), @objectName varchar(128);
-		exec CKCore.sItemExtractLocationAndName @FullName, @location output, @objectName output;
-		if @location in ( 'db' )
-		begin
-			if OBJECT_ID( @objectName ) is null
-			begin
-				delete from CKCore.tItemVersion where FullName = @FullName;
-				set @ItemVersion = null;
-			end
-		end
-	end	
+    begin
+		if @ItemType = 'TABLE' or @ItemType = 'PROCEDURE' or @ItemType = 'FUNCTION'  or @ItemType = 'VIEW'
+	    begin
+		    -- Extracting location from FullName.
+		    declare @location varchar(128), @objectName varchar(128);
+		    exec CKCore.sItemExtractLocationAndName @FullName, @location output, @objectName output;
+		    if @location in ( 'db' )
+		    begin
+			    if OBJECT_ID( @objectName ) is null
+			    begin
+				    delete from CKCore.tItemVersion where FullName = @FullName;
+				    set @ItemVersion = null;
+			    end
+		    end
+	    end
+        if @ItemVersion is not null 
+        begin
+            update CKCore.tItemVersion set LastAccess = sysutcdatetime() where FullName = @FullName;
+        end
+    end	
 	return 0;
 end
 GO
