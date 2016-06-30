@@ -72,7 +72,7 @@
     <EmbeddedResource Include="Res\Group\CK.GroupHome-Zone.Init.2.11.25.sql" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Res\CK.SecurityZoneHome.Init.2.11.25.sql" />
+    <EmbeddedResource Include="Res\Model.CK.SecurityZoneHome.Init.2.11.25.sql" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Res\sSecurityZoneCreate.sql" />

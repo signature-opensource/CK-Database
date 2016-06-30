@@ -77,7 +77,7 @@ namespace CK.SqlServer.Setup
             if( text == null ) return null;
             SqlBaseItem result = SqlBaseItem.Parse( monitor, name, parser, text, fileName, packageItem, transformArgument, expectedItemTypes );
             if( result == null ) return null;
-            firstContainer.EnsureObjectsPackage().Children.Add( result );
+            firstContainer.Children.Add( result );
             monitor.Trace().Send( $"Loaded {result.ItemType} '{result.ContextLocName.Name}' of '{packageItem.FullName}'." );
             return result;
         }

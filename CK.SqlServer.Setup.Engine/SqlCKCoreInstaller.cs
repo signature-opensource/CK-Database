@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Setup.Engine\SqlCKCoreInstaller.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +8,7 @@ namespace CK.SqlServer.Setup
 {
     internal class SqlCKCoreInstaller
     {
-        public readonly static Int16 CurrentVersion = 8;
+        public readonly static short CurrentVersion = 9;
 
         /// <summary>
         /// Installs the kernel.
@@ -30,10 +23,10 @@ namespace CK.SqlServer.Setup
 
             using( monitor.OpenTrace().Send( "Installing CKCore kernel." ) )
             {
-                Int16 ver = 0;
-                if( !forceInstall && (ver = (Int16)manager.Connection.ExecuteScalar( "if object_id('CKCore.tSystem') is not null select Ver from CKCore.tSystem where Id=1 else select cast(0 as smallint);" )) == CurrentVersion )
+                short ver = 0;
+                if( !forceInstall && (ver = (short)manager.Connection.ExecuteScalar( "if object_id('CKCore.tSystem') is not null select Ver from CKCore.tSystem where Id=1 else select cast(0 as smallint);" )) == CurrentVersion )
                 {
-                    monitor.CloseGroup( String.Format( "Already installed in version {0}.", CurrentVersion ) );
+                    monitor.CloseGroup( $"Already installed in version {CurrentVersion}." );
                 }
                 else
                 {
@@ -58,6 +51,9 @@ begin
     if object_id('CKCore.sErrorRethrow') is not null drop procedure CKCore.sErrorRethrow;
     if object_id('CKCore.sSchemaDropAllConstraints') is not null drop procedure CKCore.sSchemaDropAllConstraints;
     if object_id('CKCore.sSchemaDropAllObjects') is not null drop procedure CKCore.sSchemaDropAllObjects;
+    if object_id('CKCore.sInvariantRegister') is not null drop procedure CKCore.sInvariantRegister;
+    if object_id('CKCore.sInvariantRun') is not null drop procedure CKCore.sInvariantRun;
+    if object_id('CKCore.sInvariantRunAll') is not null drop procedure CKCore.sInvariantRunAll;
 end
 GO
 create procedure CKCore.sErrorRethrow
@@ -206,6 +202,14 @@ begin
     );
 end
 GO
+-- Registers an invariant: it is any query that returns a count and a min and max values for the count.
+-- The prefix 'select @Count = count(*) ' is automatically added (if @CountSelect doesn't already start with 'select').
+-- example:
+--
+--   exec CKCore.sInvariantRegister 'from CK.tInvariant where upper(left(CountSelect,6)) <> 'SELECT', 0, 0;
+--   
+-- Registers an ivariant that will ALWAYS be satisified :)
+--
 create procedure CKCore.sInvariantRegister
 (
 	@InvariantKey varchar(96),
@@ -217,7 +221,7 @@ as
 begin
 	set nocount on;
 	set @CountSelect = rtrim(ltrim(@CountSelect));
-	if Upper(left(@CountSelect,6)) <> 'SELECT' set @CountSelect = N'select @Count = count(*) ' + @CountSelect;
+	if upper(left(@CountSelect,6)) <> 'SELECT' set @CountSelect = N'select @Count = count(*) ' + @CountSelect;
 	merge CKCore.tInvariant as target
 		using (select @InvariantKey) as source( InvariantKey )
 		on target.InvariantKey = source.InvariantKey
@@ -233,6 +237,9 @@ begin
 			values( @InvariantKey, 0, @CountSelect, @MinValidCount, @MaxValidCount );
 end
 GO
+-- Updates CKCore.tInvariant.LastCount, LastRunDateUTC and LastError errors for the given
+-- invariant.
+-- When setting @SkipIgnore to 1, even an invariant with CKCore.tInvariant.Ignored bit set to 1 is executed.
 create procedure CKCore.sInvariantRun
 ( 
 	@InvariantKey varchar(96), 
@@ -267,6 +274,8 @@ begin
 	 return 0;
 end
 GO
+-- Updates CKCore.tInvariant.LastCount, LastRunDateUTC and LastError errors for  all invariants.
+-- When setting @SkipIgnore to 1, even an invariant with CKCore.tInvariant.Ignored bit set to 1 is executed.
 create procedure CKCore.sInvariantRunAll
 ( 
 	@SkipIgnore bit = 0, 
@@ -304,8 +313,20 @@ begin
 		constraint CK_tSystem_Id check (Id in (1,2))
 	);
 end
-if not exists(select * from CKCore.tSystem where Id=1) insert into CKCore.tSystem(Id,CreationDate,Ver) values(1,GETUTCDATE(),$Ver$);
-else update CKCore.tSystem set Ver = $Ver$ where Id=1;
+declare @curVer smallint;
+select @curVer = Ver from CKCore.tSystem where Id=1;
+if @@RowCount = 0 insert into CKCore.tSystem(Id,CreationDate,Ver) values(1,GETUTCDATE(),$Ver$);
+else
+begin
+    if @curVer <= 8
+    begin
+        update v set FullName = replace(v.FullName, 'Objects.', 'Model.'),
+			         ItemType = 'MODEL'
+	        from CKCore.tItemVersion v
+	        where v.ItemType = 'OBJECTS';
+    end
+    update CKCore.tSystem set Ver = $Ver$ where Id=1;
+end
 ";
     }
 }

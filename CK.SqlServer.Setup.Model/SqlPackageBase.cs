@@ -18,6 +18,11 @@ namespace CK.SqlServer.Setup
     [StObjProperty( PropertyName = "ResourceLocation", PropertyType = typeof( IResourceLocator ) )]
     public class SqlPackageBase
     {
+        public SqlPackageBase()
+        {
+            HasModel = true;
+        }
+
         /// <summary>
         /// Gets or sets the database to which this package belongs.
         /// Typically initialized by an attribute (like <see cref="SqlPackageAttribute"/>).
@@ -34,7 +39,7 @@ namespace CK.SqlServer.Setup
 
         /// <summary>
         /// Gets or sets whether this package is associated to a Model.
-        /// Defaults to false.
+        /// Defaults to true.
         /// </summary>
         public bool HasModel { get; set; }
     }

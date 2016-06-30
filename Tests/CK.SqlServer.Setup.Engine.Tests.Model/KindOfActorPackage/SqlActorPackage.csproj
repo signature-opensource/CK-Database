@@ -92,16 +92,16 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Basic\Res\CK.UserHome.Init.2.12.10.sql" />
+    <EmbeddedResource Include="Basic\Res\Model\CK.UserHome.Init.2.12.10.sql" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Basic\Res\CK.ActorHome.Init.2.12.10.sql" />
+    <EmbeddedResource Include="Basic\Res\Model\CK.ActorHome.Init.2.12.10.sql" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Basic\Res\CK.GroupHome.Init.2.12.10.sql" />
+    <EmbeddedResource Include="Basic\Res\Model\CK.GroupHome.Init.2.12.10.sql" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Basic\Res\CK.ActorProfileHome.Init.2.12.10.sql" />
+    <EmbeddedResource Include="Basic\Res\Model\CK.ActorProfileHome.Init.2.12.10.sql" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Basic\Res\sUserCreate.sql" />
@@ -143,7 +143,7 @@
     <EmbeddedResource Include="Basic\Res\OneActorView.sql" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Basic\Res\bad name table.Install.1.0.0.sql" />
+    <EmbeddedResource Include="Basic\Res\Model\bad name table.Install.1.0.0.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
