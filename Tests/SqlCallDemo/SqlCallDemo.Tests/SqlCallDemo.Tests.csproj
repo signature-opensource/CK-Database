@@ -85,6 +85,7 @@
     <Compile Include="ProviderDemo\SqlProviderContextCleaner.cs" />
     <Compile Include="ProviderDemo\SqlProviderContext.cs" />
     <Compile Include="FunctionTest.cs" />
+    <Compile Include="CommandDemoTests.cs" />
     <Compile Include="ReturnTest.cs" />
     <Compile Include="PurelyInputLogTest.cs" />
     <Compile Include="OutputParameterTest.cs" />
