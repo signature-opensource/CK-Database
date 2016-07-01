@@ -151,9 +151,6 @@ namespace CK.Setup.Dependency.Tests
                     Assert.That( !r.IsComplete );
                     Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ SuperC ⊐ C ⊐ ISpec ⇀ SuperC" ) );
                 }
-
-
-
             }
         }
     }

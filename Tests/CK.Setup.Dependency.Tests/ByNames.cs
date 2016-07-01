@@ -60,5 +60,65 @@ namespace CK.Setup.Dependency.Tests
             }
         }
 
+        [Test]
+        public void Container_optional_reference()
+        {
+            var C = new TestableContainer( "C" );
+            var A = new TestableItem( "A" );
+            A.Container = new NamedDependentItemContainerRef( "C", true );
+            {
+                var r = DependencySorter.OrderItems( A, C );
+                Assert.That( r.IsComplete );
+                Assert.That( r.IsOrdered( "C.Head", "A", "C" ) );
+                ResultChecker.SimpleCheck( r );
+            }
+            {
+                var r = DependencySorter.OrderItems( A );
+                Assert.That( r.IsComplete );
+                Assert.That( r.IsOrdered( "A" ) );
+                ResultChecker.SimpleCheck( r );
+            }
+        }
+
+        [Test]
+        public void Children_optional_reference()
+        {
+            var C = new TestableContainer( "C" );
+            var A = new TestableItem( "A" );
+            C.Children.Add( new NamedDependentItemContainerRef( "A", true ) );
+            {
+                var r = DependencySorter.OrderItems( A, C );
+                Assert.That( r.IsComplete );
+                Assert.That( r.IsOrdered( "C.Head", "A", "C" ) );
+                ResultChecker.SimpleCheck( r );
+            }
+            {
+                var r = DependencySorter.OrderItems( C );
+                Assert.That( r.IsComplete );
+                Assert.That( r.IsOrdered( "C.Head", "C" ) );
+                ResultChecker.SimpleCheck( r );
+            }
+        }
+
+        [Test]
+        public void Groups_optional_reference()
+        {
+            var C = new TestableContainer( "C" );
+            var A = new TestableItem( "A" );
+            A.Groups.Add( new NamedDependentItemContainerRef( "C", true ) );
+
+            {
+                var r = DependencySorter.OrderItems( A, C );
+                Assert.That( r.IsComplete );
+                Assert.That( r.IsOrdered( "C.Head", "A", "C" ) );
+                ResultChecker.SimpleCheck( r );
+            }
+            {
+                var r = DependencySorter.OrderItems( A );
+                Assert.That( r.IsComplete );
+                Assert.That( r.IsOrdered( "A" ) );
+                ResultChecker.SimpleCheck( r );
+            }
+        }
     }
 }

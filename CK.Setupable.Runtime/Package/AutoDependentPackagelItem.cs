@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setupable.Runtime\Package\PackageModelItem.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +22,7 @@ namespace CK.Setup
         readonly IPackageItem _package;
         readonly string _prefix;
         readonly string _prefixWithDot;
-        IDependentItemContainerRef _container;
+        IDependentItemContainerRef _explicitContaner;
         DependentItemList _requires;
         DependentItemList _requiredBy;
         DependentItemGroupList _groups;
@@ -73,7 +66,8 @@ namespace CK.Setup
         /// Gets or sets whether any <see cref="Package"/> requirements (that is not itself a AutoDependentPackageItem) is 
         /// automatically projected as a requirement to its AutoDependentPackageItem with the same prefix on this 
         /// one (the package name is prefixed with "?<see cref="Prefix"/>.").
-        /// Defaults to true and applies to Requires and RequiredBy relations.
+        /// Defaults to true and applies to Requires, RequiredBy, Groups, Children, Generalization relations and Container
+        /// if an explicit <see cref="Container"/> is not set.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -116,14 +110,15 @@ namespace CK.Setup
         string IContextLocNaming.TransformArg => null;
 
         /// <summary>
-        /// Gets the container to which this Model belongs. 
-        /// It is totally independent of the <see cref="Package"/>'s container and should be let to null
-        /// to minimize constraints on the graph.
+        /// Gets or set the container to which this dependent package explicitly belongs. 
+        /// It is totally independent of the <see cref="Package"/>'s container and should be let to null:
+        /// if Package's Container has a similar (<see cref="Prefix"/>) package it will be the container of 
+        /// this dependent package.
         /// </summary>
         public IDependentItemContainerRef Container
         {
-            get { return _container; }
-            set { _container = value; }
+            get { return _explicitContaner; }
+            set { _explicitContaner = value; }
         }
 
         /// <summary>
@@ -147,13 +142,24 @@ namespace CK.Setup
         public Version Version => _package.Version; 
 
         /// <summary>
-        /// Gets the children list.
+        /// Gets the mutable children list.
         /// </summary>
         public IDependentItemList Children => _children ?? (_children = new DependentItemList()); 
 
         IDependentItemRef IDependentItem.Generalization
         {
             get { return _package.Generalization != null ? new NamedDependentItemRef( DefaultContextLocNaming.AddNamePrefix( _package.Generalization.FullName, _prefixWithDot ), true ) : null; }
+        }
+
+        IDependentItemContainerRef IDependentItem.Container
+        {
+            get
+            {
+                return _explicitContaner 
+                        ?? (_package.Container != null 
+                            ? new NamedDependentItemContainerRef( DefaultContextLocNaming.AddNamePrefix( _package.Container.FullName, _prefixWithDot ), true ) 
+                            : null);
+            }
         }
 
         object IDependentItem.StartDependencySort() => typeof( SetupItemDriver );
@@ -200,36 +206,63 @@ namespace CK.Setup
             }
         }
 
-        //TODO: CHECK that Group relationships supports optionality and projects them into potential "Prefix." groups. 
         IEnumerable<IDependentItemGroupRef> IDependentItem.Groups
         {
-            get { return _groups.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _package.Context, _package.Location ) ); }
+            get
+            {
+                var thisGroups = _groups.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _package.Context, _package.Location ) );
+                if( _autoProjectRequirements )
+                {
+                    var groups = _package.Groups;
+                    if( groups != null )
+                    {
+                        var fromPackage = groups.Where( r => !DefaultContextLocNaming.NameStartsWith( r.FullName, _prefixWithDot ) )
+                                                .Select( r => new NamedDependentItemGroupRef( DefaultContextLocNaming.AddNamePrefix( r.FullName, _prefixWithDot ), true ) );
+                        thisGroups = thisGroups != null ? thisGroups.Concat( fromPackage ) : fromPackage;
+                    }
+                }
+                return thisGroups;
+            }
+        }
+
+
+        IEnumerable<IDependentItemRef> IDependentItemGroup.Children
+        {
+            get
+            {
+                var thisChildren = _children.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _package.Context, _package.Location ) );
+                if( _autoProjectRequirements )
+                {
+                    var children = _package.Children;
+                    if( children != null )
+                    {
+                        var fromPackage = children.Where( r => !DefaultContextLocNaming.NameStartsWith( r.FullName, _prefixWithDot ) )
+                                                    .Select( r => new NamedDependentItemRef( DefaultContextLocNaming.AddNamePrefix( r.FullName, _prefixWithDot ), true ) );
+                        thisChildren = thisChildren != null ? thisChildren.Concat( fromPackage ) : fromPackage;
+                    }
+                }
+                return thisChildren;
+            }
         }
 
         IEnumerable<VersionedName> IVersionedItem.PreviousNames
         {
             get 
             {
-                var pp = _package.PreviousNames;
-                if( pp.Any() )
-                {
-                    var f = pp.First();
-                    var name = f.FullName;
-                    var newName = DefaultContextLocNaming.AddNamePrefix( name, _prefixWithDot );
-                    var f2 = new VersionedName( newName, f.Version );
-                }
+                //var pp = _package.PreviousNames;
+                //if( pp.Any() )
+                //{
+                //    var f = pp.First();
+                //    var name = f.FullName;
+                //    var newName = DefaultContextLocNaming.AddNamePrefix( name, _prefixWithDot );
+                //    var f2 = new VersionedName( newName, f.Version );
+                //}
                 return _package.PreviousNames.Select( p => new VersionedName( DefaultContextLocNaming.AddNamePrefix( p.FullName, _prefixWithDot ), p.Version ) ); 
             }
         }
 
         string IVersionedItem.ItemType =>  _prefix; 
 
-        //TODO: CHECK that Children relationships supports optionality and projects them into potential "Prefix." children. ??
-        //      Not sure it is a good idea for container/Children... 
-        IEnumerable<IDependentItemRef> IDependentItemGroup.Children
-        {
-            get { return _children.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _package.Context, _package.Location ) ); }
-        }
 
         IEnumerable<ISetupItem> IDependentItemDiscoverer<ISetupItem>.GetOtherItemsToRegister() => new[] { _package };
 
