@@ -195,7 +195,7 @@ create table CKCore.tItemVersion
 	FullName nvarchar(128) collate Latin1_General_BIN not null,
 	ItemType varchar(16) collate Latin1_General_BIN not null,
 	ItemVersion varchar(32) not null,
-    LastAccess datetime2(2) constraint CK_CKCore_tItemVersion_LastAccess default(sysutcdatetime()),
+    LastAccess datetime2(2) not null constraint CK_CKCore_tItemVersion_LastAccess default(sysutcdatetime()),
 	constraint PK_tItemVersion primary key(FullName)
 );
 ";
@@ -220,7 +220,7 @@ insert into CKCore.tItemVersion( FullName, ItemType, ItemVersion )
 			and not exists( select * from CKCore.tItemVersion m where ItemType = 'MODEL' and FullName = left(v.FullName,5)+'Model.'+right(v.FullName,len(v.FullName)-5));
 
 alter table CKCore.tItemVersion add 
-    LastAccess datetime2(2) constraint CKCore_tItemVersion_LastAccess default(sysutcdatetime());
+    LastAccess datetime2(2) not null constraint CKCore_tItemVersion_LastAccess default(sysutcdatetime());
 ";
 
         static string _scriptAlways = @"
