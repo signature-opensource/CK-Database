@@ -575,9 +575,9 @@ namespace CK.Setup
             {
                 if( item.StartValue == null )
                 {
-                    throw new CKException( "StartDependencySort returned a null object for '{1}', it must be a Type or a string.", item.FullName );
+                    return typeof( SetupItemDriver );
                 }
-                throw new CKException( "Invalid StartDependencySort returned type '{0}' for '{1}', it must be a Type or a string.", item.StartValue.GetType(), item.FullName );
+                throw new CKException( $"StartDependencySort() method returned type '{item.StartValue.GetType()}' for '{item.FullName}', it must be a Type or a string." );
             }
             string typeName = (string)item.StartValue;
             return SimpleTypeFinder.WeakResolver( typeName, true );

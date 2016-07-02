@@ -22,7 +22,7 @@ namespace CK.SqlServer.Setup
             _sqlProvider = info.Engine.GetSetupEngineAspect<ISqlSetupAspect>().SqlDatabases;
         }
 
-        public new SqlDatabaseConnectionItem Item { get { return (SqlDatabaseConnectionItem)base.Item; } }
+        public new SqlDatabaseConnectionItem Item => (SqlDatabaseConnectionItem)base.Item;
 
         protected override bool Init( bool beforeHandlers )
         {

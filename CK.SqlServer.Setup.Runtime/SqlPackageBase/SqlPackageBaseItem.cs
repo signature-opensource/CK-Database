@@ -46,10 +46,6 @@ namespace CK.SqlServer.Setup
 
         protected override object StartDependencySort()
         {
-            if( Model != null )
-            {
-                Model.Groups.AddRange( Groups.OfType<SqlDatabaseItem>() );
-            }
             if( ObjectsPackage != null )
             {
                 ObjectsPackage.Groups.AddRange( Groups.OfType<SqlDatabaseItem>() );

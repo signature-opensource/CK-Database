@@ -39,10 +39,7 @@ namespace CK.SqlServer.Setup
 
         public new IReadOnlyList<SqlTransformerItem> Transformers => _transformers ?? (_transformers = CreateTypedTransformersWrapper<SqlTransformerItem>());
 
-        public new SqlContextLocName ContextLocName
-        {
-            get { return (SqlContextLocName)base.ContextLocName; }
-        }
+        public new SqlContextLocName ContextLocName => (SqlContextLocName)base.ContextLocName; 
 
         /// <summary>
         /// Gets or sets the <see cref="ISqlServerParsedText"/> associated object.

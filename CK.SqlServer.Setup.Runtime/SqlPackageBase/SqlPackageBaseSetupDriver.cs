@@ -59,7 +59,7 @@ namespace CK.SqlServer.Setup
                             }
                             else monitor.Trace().Send( "{1} sql scripts in resource found for '{0}' and 'Model.{0}' in '{2}'.", name, nbScripts, r );
                         }
-                        if( Item.ObjectsPackage != null )
+                        else if( Item.ObjectsPackage != null )
                         {
                             monitor.Trace().Send( "{1} sql scripts in resource found for '{0}' and 'Objects.{0}' in '{2}'.", name, nbScripts, r );
                         }

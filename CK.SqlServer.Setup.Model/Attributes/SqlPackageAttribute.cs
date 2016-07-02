@@ -13,11 +13,13 @@ namespace CK.SqlServer.Setup
         public SqlPackageAttribute()
             : base( "CK.SqlServer.Setup.SqlPackageAttributeImpl, CK.SqlServer.Setup.Runtime" )
         {
+            HasModel = true;
         }
 
         /// <summary>
         /// Gets or sets whether this package has an associated Model.
-        /// Defaults to false.
+        /// Defaults to true.
+        /// It should be set to false only for packages that do not contain any model package.
         /// </summary>
         public bool HasModel { get; set; }
 

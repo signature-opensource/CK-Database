@@ -51,10 +51,7 @@ namespace CK.Setup
             get { return _children ?? (_children = new DependentItemList()); }
         }
 
-        bool IDependentItemRef.Optional
-        {
-            get { return false; }
-        }
+        bool IDependentItemRef.Optional => false; 
 
         IEnumerable<IDependentItemRef> IDependentItemGroup.Children
         {

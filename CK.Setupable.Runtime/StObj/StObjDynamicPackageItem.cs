@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setupable.Runtime\StObj\StObjDynamicPackageItem.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,21 +18,6 @@ namespace CK.Setup
         readonly IStObjResult _stObj;
         object _obj;
 
-        /// <summary>
-        /// Initializes a new <see cref="StObjDynamicPackageItem"/> that must be manually configured associated to an explicit object instance.
-        /// </summary>
-        /// <param name="itemType">
-        /// Type of item (must not be longer than 16 characters). 
-        /// It is "StObjItem" or "StObjPackage" when initialized by the <see cref="StObjDynamicPackageItem(IActivityMonitor,IStObjSetupData)">other constructor</see>.
-        /// </param>
-        /// <param name="driverType">Type of the associated driver or its assembly qualified name.</param>
-        /// <param name="obj">The associated object. Must not be null.</param>
-        protected StObjDynamicPackageItem( string itemType, object driverType, object obj )
-            : base( itemType, driverType )
-        {
-            if( obj == null ) throw new ArgumentNullException( "obj" );
-            _obj = obj;
-        }
 
         /// <summary>
         /// Initializes a new <see cref="StObjDynamicPackageItem"/> initialized by a <see cref="IStObjSetupData"/>.
@@ -65,10 +43,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets the StObj.
         /// </summary>
-        public IStObjResult StObj
-        {
-            get { return _stObj; }
-        }
+        public IStObjResult StObj => _stObj; 
         
         /// <summary>
         /// Gets the associated object instance (the final, most specialized, structured object) when this is bound to a StObj (<see cref="StObj"/> is not null). 
