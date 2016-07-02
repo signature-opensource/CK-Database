@@ -79,7 +79,6 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Labo\Copy of Tests.cs" />
     <Compile Include="Labo\PathImpl.cs" />
     <Compile Include="SqlCKCoreInstaller.cs" />
     <Compile Include="SqlManager.cs" />
