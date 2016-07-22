@@ -755,79 +755,36 @@ namespace CK.Setup
 
         #region IStObj Members
 
-        public object InitialObject
-        {
-            get { return _leafData.StructuredObject; }
-        }
+        public object InitialObject => _leafData.StructuredObject; 
 
-        public Func<object> ObjectAccessor
-        {
-            get { return _leafData.StructuredObjectFunc; }
-        }
+        public Func<object> ObjectAccessor => _leafData.StructuredObjectFunc; 
 
         /// <summary>
         /// Gets the type of the structure object.
         /// </summary>
-        public Type ObjectType
-        {
-            get { return Type; }
-        }
+        public Type ObjectType => Type; 
 
-        IStObj IStObj.Generalization
-        {
-            get { return Generalization; }
-        }
+        IStObj IStObj.Generalization => Generalization; 
 
-        IStObj IStObj.Specialization
-        {
-            get { return Specialization; }
-        }
+        IStObj IStObj.Specialization => Specialization; 
 
-        IStObjResult IStObjResult.Generalization
-        {
-            get { return Generalization; }
-        }
+        IStObjResult IStObjResult.Generalization => Generalization; 
 
-        IStObjResult IStObjResult.Specialization
-        {
-            get { return Specialization; }
-        }
+        IStObjResult IStObjResult.Specialization => Specialization; 
 
-        IStObjResult IStObjResult.RootGeneralization
-        {
-            get { return _leafData.RootGeneralization; }
-        }
+        IStObjResult IStObjResult.RootGeneralization => _leafData.RootGeneralization; 
 
-        IStObjResult IStObjResult.LeafSpecialization
-        {
-            get { return _leafData.LeafSpecialization; }
-        }
+        IStObjResult IStObjResult.LeafSpecialization => _leafData.LeafSpecialization; 
 
-        IStObjResult IStObjResult.ConfiguredContainer 
-        {
-            get { return IsOwnContainer ? _dContainer : null; } 
-        }
+        IStObjResult IStObjResult.ConfiguredContainer => IsOwnContainer ? _dContainer : null; 
 
-        IStObjResult IStObjResult.Container 
-        { 
-            get { return _dContainer; } 
-        }
+        IStObjResult IStObjResult.Container => _dContainer; 
 
-        IReadOnlyList<IStObjResult> IStObjResult.Requires 
-        {
-            get { return _dRequires; } 
-        }
+        IReadOnlyList<IStObjResult> IStObjResult.Requires  => _dRequires; 
 
-        IReadOnlyList<IStObjResult> IStObjResult.Children
-        {
-            get { return _dChildren; }
-        }
+        IReadOnlyList<IStObjResult> IStObjResult.Children => _dChildren; 
 
-        IReadOnlyList<IStObjResult> IStObjResult.Groups
-        {
-            get { return _dGroups; }
-        }
-
+        IReadOnlyList<IStObjResult> IStObjResult.Groups => _dGroups; 
 
         IReadOnlyList<IStObjTrackedAmbientPropertyInfo> IStObjResult.TrackedAmbientProperties => _trackedAmbientProperties;
 

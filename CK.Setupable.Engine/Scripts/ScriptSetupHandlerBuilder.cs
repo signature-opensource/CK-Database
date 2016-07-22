@@ -20,7 +20,7 @@ namespace CK.Setup
     /// - at <see cref="SetupStep.PreInit"/> it enables the object to load scripts into the <see cref="ScriptCollector"/> by 
     /// calling <see cref="SetupItemDriver.LoadScripts"/> on each driver
     /// - and at <see cref="SetupStep.Init"/> it associates a <see cref="ScriptSetupHandler"/> with the scripts that exist for each drivers.
-    /// The scripts can come from the resources (the ones loaded by GenericItemSetupDriver.LoadScripts) or from the file system.
+    /// The scripts can come from the resources (the ones loaded by SetupItemDriver.LoadScripts) or from the file system.
     /// </summary>
     class ScriptSetupHandlerBuilder
     {

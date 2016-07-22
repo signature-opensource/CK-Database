@@ -24,7 +24,7 @@ namespace CK.SqlServer.Setup
             if( schema != null && p.Database != null ) p.Database.EnsureSchema( schema ); 
         }
 
-        public new SqlPackageBaseItem Item { get { return (SqlPackageBaseItem)base.Item; } }
+        public new SqlPackageBaseItem Item => (SqlPackageBaseItem)base.Item;
 
         protected override bool LoadScripts( IScriptCollector scripts )
         {
@@ -45,28 +45,29 @@ namespace CK.SqlServer.Setup
                         monitor.Error().Send( "Unable to parse '{0}' to extract context and location.", FullName );
                         return false;
                     }
+                    int nbScripts = scripts.AddFromResources( monitor, "res-sql", r, context, location, name, ".sql" );
+                    if( Item.Model != null ) nbScripts += scripts.AddFromResources( monitor, "res-sql", r, context, location, "Model." + name, ".sql" );
+                    if( Item.ObjectsPackage != null ) nbScripts += scripts.AddFromResources( monitor, "res-sql", r, context, location, "Objects." + name, ".sql" );
+
+                    nbScripts = scripts.AddFromResources( monitor, "res-y4", r, context, location, name, ".y4" );
+                    if( Item.Model != null ) nbScripts += scripts.AddFromResources( monitor, "res-y4", r, context, location, "Model." + name, ".y4" );
+                    if( Item.ObjectsPackage != null ) nbScripts += scripts.AddFromResources( monitor, "res-y4", r, context, location, "Objects." + name, ".y4" );
+
+                    if( Item.Model != null )
+                    {
+                        if( Item.ObjectsPackage != null )
+                        {
+                            monitor.Trace().Send( "{1} sql scripts in resource found for '{0}' and 'Model.{0}' and 'Objects.{0}' in '{2}'.", name, nbScripts, r );
+                        }
+                        else monitor.Trace().Send( "{1} sql scripts in resource found for '{0}' and 'Model.{0}' in '{2}'.", name, nbScripts, r );
+                    }
+                    else if( Item.ObjectsPackage != null )
+                    {
+                        monitor.Trace().Send( "{1} sql scripts in resource found for '{0}' and 'Objects.{0}' in '{2}'.", name, nbScripts, r );
+                    }
                     else
                     {
-                        int nbScripts = scripts.AddFromResources( monitor, "res-sql", r, context, location, name, ".sql" );
-                        if( Item.Model != null ) nbScripts += scripts.AddFromResources( monitor, "res-sql", r, context, location, "Model." + name, ".sql" );
-                        if( Item.ObjectsPackage != null ) nbScripts += scripts.AddFromResources( monitor, "res-sql", r, context, location, "Objects." + name, ".sql" );
-
-                        if( Item.Model != null )
-                        {
-                            if( Item.ObjectsPackage != null )
-                            {
-                                monitor.Trace().Send( "{1} sql scripts in resource found for '{0}' and 'Model.{0}' and 'Objects.{0}' in '{2}'.", name, nbScripts, r );
-                            }
-                            else monitor.Trace().Send( "{1} sql scripts in resource found for '{0}' and 'Model.{0}' in '{2}'.", name, nbScripts, r );
-                        }
-                        else if( Item.ObjectsPackage != null )
-                        {
-                            monitor.Trace().Send( "{1} sql scripts in resource found for '{0}' and 'Objects.{0}' in '{2}'.", name, nbScripts, r );
-                        }
-                        else
-                        {
-                            monitor.Trace().Send( "{1} sql scripts in resource found for '{0}' in '{2}.", name, nbScripts, r );
-                        }
+                        monitor.Trace().Send( "{1} sql scripts in resource found for '{0}' in '{2}.", name, nbScripts, r );
                     }
                 }
             }

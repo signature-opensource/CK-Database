@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setupable.Engine\Scripts\MultiScriptBase.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using CK.Core;
 using System.Collections.Generic;
 using System;
@@ -23,8 +16,8 @@ namespace CK.Setup
         /// <param name="script">Script to execute.</param>
         public MultiScriptBase( IActivityMonitor monitor, ISetupScript script )
         {
-            if( monitor == null ) throw new ArgumentNullException( "monitor" );
-            if( script == null ) throw new ArgumentNullException( "script" );
+            if( monitor == null ) throw new ArgumentNullException( nameof(monitor) );
+            if( script == null ) throw new ArgumentNullException( nameof(script) );
 
             Monitor = monitor;
             Script = script;
@@ -38,7 +31,7 @@ namespace CK.Setup
         public virtual bool ExecuteScript()
         {
             string scriptBody = Script.GetScript();
-            if( String.IsNullOrWhiteSpace( scriptBody ) ) return true;
+            if( string.IsNullOrWhiteSpace( scriptBody ) ) return true;
             string scriptName = Script.Name.FileName;
 
             var scripts = SplitScripts( scriptBody );

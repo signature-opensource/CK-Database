@@ -51,9 +51,9 @@ namespace CK.Setup
         public ScriptSource RegisterSource( string name )
         {
             if( string.IsNullOrWhiteSpace( name ) ) throw new ArgumentException( "name" );
-            if( _sources.Exists( e => StringComparer.InvariantCultureIgnoreCase.Equals( e.Name, name ) ) ) 
+            if( _sources.Exists( e => StringComparer.OrdinalIgnoreCase.Equals( e.Name, name ) ) ) 
             {
-                throw new InvalidOperationException( String.Format( "Source '{0}' already exists in '{1}'.", name, _name ) );
+                throw new InvalidOperationException( string.Format( "Source '{0}' already exists in '{1}'.", name, _name ) );
             }
             var s = new ScriptSource( this, name );
             _sources.Add( s );

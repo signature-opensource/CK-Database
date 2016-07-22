@@ -24,7 +24,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets the associated object instance (the final, most specialized, structured object).
         /// This instance is built at the beginning of the process and remains the same: it is not necessarily a "real" object since its auto-implemented methods
-        /// are not generated (only stupid default stub implementation are created to be able to instantiate it).
+        /// are not generated (only stupid default stub implementation are created to be able to instanciate it).
         /// Once the dynamic assembly has been generated (and if StObjCollector.InjectFinalObjectAccessor has been called), the <see cref="ObjectAccessor"/>
         /// is updated to obtain a "real" object from the <see cref="StObjContextRoot"/>.
         /// </summary>

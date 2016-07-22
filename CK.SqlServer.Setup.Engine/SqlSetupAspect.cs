@@ -76,6 +76,7 @@ namespace CK.SqlServer.Setup
             _engine.SetupableConfigurator = new ConfiguratorHook( this );
             var sqlHandler = new SqlScriptTypeHandler( _databases );
             sqlHandler.RegisterSource( "res-sql" );
+            sqlHandler.RegisterSource( "res-y4" );
             _engine.StartConfiguration.ScriptTypeManager.Register( sqlHandler );
 
             _engine.StartConfiguration.AddExplicitRegisteredClass( typeof( SqlDefaultDatabase ) );

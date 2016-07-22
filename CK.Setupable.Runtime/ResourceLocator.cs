@@ -339,13 +339,13 @@ namespace CK.Core
                 string sEnd = '.' + name;
                 foreach( string s in resNames )
                 {
-                    if( s.EndsWith( sEnd, StringComparison.InvariantCultureIgnoreCase ) )
+                    if( s.EndsWith( sEnd, StringComparison.OrdinalIgnoreCase ) )
                     {
                         shouldBe = s;
                         break;
                     }
                 }
-                throw new CKException( "Resource not found: '{0}'.{1}", fullResName, shouldBe == null ? String.Empty : String.Format( " It seems to be '{0}'.", shouldBe ) );
+                throw new CKException( "Resource not found: '{0}'.{1}", fullResName, shouldBe == null ? string.Empty : $" It seems to be '{shouldBe}'." );
             }
             return stream;
         }

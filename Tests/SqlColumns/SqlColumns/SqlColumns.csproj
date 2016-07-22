@@ -77,7 +77,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Res\Prd.ProductTable.Install.1.0.0.sql" />
+    <EmbeddedResource Include="Res\Prd.ProductTable.Install.1.0.0.y4" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

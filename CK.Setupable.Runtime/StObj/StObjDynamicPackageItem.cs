@@ -16,8 +16,6 @@ namespace CK.Setup
     public class StObjDynamicPackageItem : DynamicPackageItem, IStObjSetupItem
     {
         readonly IStObjResult _stObj;
-        object _obj;
-
 
         /// <summary>
         /// Initializes a new <see cref="StObjDynamicPackageItem"/> initialized by a <see cref="IStObjSetupData"/>.
@@ -64,10 +62,7 @@ namespace CK.Setup
         /// and not a simple 'Object' or 'FinalObject' property. 
         /// </para>
         /// </remarks>
-        public object GetObject() 
-        {
-            return _obj != null ? _obj : _stObj.ObjectAccessor(); 
-        }
+        public object GetObject() => _stObj.ObjectAccessor(); 
 
     }
 }

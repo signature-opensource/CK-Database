@@ -100,24 +100,7 @@ namespace CK.SqlServer.Setup
             }
             if( fileName.EndsWith( ".y4" ) )
             {
-                using( monitor.OpenInfo().Send( $"Evaluating template '{fileName}' on '{packageItem.FullName}'." ) )
-                {
-                    GlobalContext c = new GlobalContext();
-                    c.Register( "SetupItem", packageItem );
-                    c.Register( "Model", packageItem.GetObject() );
-                    TemplateEngine e = new TemplateEngine( c );
-                    var r = e.Process( text );
-                    if( r.ErrorMessage != null )
-                    {
-                        using( monitor.OpenError().Send( r.ErrorMessage ) )
-                        {
-                            monitor.Trace().Send( text );
-                        }
-                        return null;
-                    }
-                    text = r.Text;
-                    monitor.Trace().Send( text );
-                }
+                text = SqlPackageBaseItem.ProcessY4Template( monitor, packageItem, fileName, text );
             }
             return text;
         }

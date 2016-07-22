@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Linq;
 using CK.Core;
 using CK.Setup;
+using Yodii.Script;
 
 namespace CK.SqlServer.Setup
 {
@@ -51,6 +52,29 @@ namespace CK.SqlServer.Setup
                 ObjectsPackage.Groups.AddRange( Groups.OfType<SqlDatabaseItem>() );
             }
             return base.StartDependencySort();
+        }
+
+        public static string ProcessY4Template( IActivityMonitor monitor, StObjDynamicPackageItem packageItem, string fileName, string text )
+        {
+            using( monitor.OpenInfo().Send( $"Evaluating template '{fileName}' on '{packageItem.FullName}'." ) )
+            {
+                GlobalContext c = new GlobalContext();
+                c.Register( "SetupItem", packageItem );
+                c.Register( "Model", packageItem.StObj.ObjectAccessor() );
+                TemplateEngine e = new TemplateEngine( c );
+                var r = e.Process( text );
+                if( r.ErrorMessage != null )
+                {
+                    using( monitor.OpenError().Send( r.ErrorMessage ) )
+                    {
+                        monitor.Trace().Send( text );
+                    }
+                    return null;
+                }
+                text = r.Text;
+                monitor.Trace().Send( text );
+            }
+            return text;
         }
     }
 }

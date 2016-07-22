@@ -15,18 +15,21 @@ namespace CK.SqlServer.Setup
 {
     class SqlMultiScript : MultiScriptBase
     {
-        ISetupSessionMemory _memory;
+        readonly ISetupSessionMemory _memory;
+        readonly ISqlManager _manager;
+        readonly SetupItemDriver _driver;
         List<SimpleScriptTagHandler.Script> _scripts;
         ISqlScriptExecutor _executor;
-        ISqlManager _manager;
 
-        public SqlMultiScript( IActivityMonitor monitor, ISetupScript script, ISqlManager manager, ISetupSessionMemory memory )
+        public SqlMultiScript( IActivityMonitor monitor, ISetupScript script, ISqlManager manager, ISetupSessionMemory memory, SetupItemDriver driver )
             : base( monitor, script )
         {
-            if( memory == null ) throw new ArgumentNullException( "memory" );
-            if( manager == null ) throw new ArgumentNullException( "manager" );
+            if( memory == null ) throw new ArgumentNullException( nameof( memory ) );
+            if( manager == null ) throw new ArgumentNullException( nameof( manager) );
+            if( driver == null ) throw new ArgumentNullException( nameof( driver ) );
             _manager = manager;
             _memory = memory;
+            _driver = driver;
         }
 
         public override bool ExecuteScript()
@@ -49,6 +52,15 @@ namespace CK.SqlServer.Setup
         protected override bool ExecuteOneScript( int numScript, string scriptBody )
         {
             if( _memory.IsItemRegistered( GetScriptKey( numScript ) ) ) return true;
+            if( Script.ScriptSource.EndsWith( "-y4" ) )
+            {
+                var stObjP = _driver.Item as StObjDynamicPackageItem;
+                if( stObjP != null )
+                {
+                    scriptBody = SqlPackageBaseItem.ProcessY4Template( Monitor, stObjP, Script.Name.FileName, scriptBody );
+                }
+                else throw new NotImplementedException( "Refactoring needed." );
+            }
             return _executor.Execute( scriptBody );
         }
 

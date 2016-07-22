@@ -25,7 +25,7 @@ namespace CK.SqlServer.Setup
 
         protected override MultiScriptBase CreateMultiScript( IActivityMonitor monitor, SetupItemDriver driver, ISetupScript script )
         {
-            return new SqlMultiScript( monitor, script, _manager, _memory );
+            return new SqlMultiScript( monitor, script, _manager, _memory, driver );
         }
 
     }

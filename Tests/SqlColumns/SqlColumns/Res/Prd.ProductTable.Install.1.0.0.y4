@@ -1,6 +1,6 @@
 ﻿--[beginscript]
 
-create table Prd.tProduct 
+create table <%=Model.Schema%>.tProduct 
 (
 	ProductId int not null identity(0,1),
 	ProductName nvarchar( 255 ) collate LATIN1_GENERAL_BIN not null,
