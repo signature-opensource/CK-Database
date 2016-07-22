@@ -13,6 +13,11 @@ namespace CKLevel0
     [Versions("0.0.0")]
     public abstract class Package : SqlPackage
     {
+        public string DynamicPropertySample => $"HashCode = {GetHashCode()}";
+
+        [SqlProcedure( "sSimpleY4TemplateTest" )]
+        public abstract string SimplY4TemplateTest( ISqlCallContext ctx );
+        
         [SqlProcedure( "define:sSimpleReplaceTest" )]
         public abstract string SimpleReplaceTest( ISqlCallContext ctx, string textParam );
         

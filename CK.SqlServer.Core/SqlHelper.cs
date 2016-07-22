@@ -165,11 +165,11 @@ namespace CK.SqlServer
             if( v == null || v == DBNull.Value ) return "null";
             switch( dbType )
             {
-                case SqlDbType.NVarChar: return String.Format( "N'{0}'", SqlEncodeString( Convert.ToString( v, CultureInfo.InvariantCulture ) ) );
+                case SqlDbType.NVarChar: return String.Format( "N'{0}'", SqlEncodeStringContent( Convert.ToString( v, CultureInfo.InvariantCulture ) ) );
                 case SqlDbType.Int: return Convert.ToString( v, CultureInfo.InvariantCulture );
                 case SqlDbType.Bit: return Convert.ToBoolean( v ) ? "1" : "0";
                 case SqlDbType.Char: goto case SqlDbType.VarChar;
-                case SqlDbType.VarChar: return String.Format( "'{0}'", SqlEncodeString( Convert.ToString( v, CultureInfo.InvariantCulture ) ) );
+                case SqlDbType.VarChar: return String.Format( "'{0}'", SqlEncodeStringContent( Convert.ToString( v, CultureInfo.InvariantCulture ) ) );
                 case SqlDbType.NChar: goto case SqlDbType.NVarChar;
                 case SqlDbType.DateTime: return String.Format( "convert( DateTime, '{0:s}', 126 )", v );
                 case SqlDbType.DateTime2: return String.Format( "'{0:O}'", v );
@@ -183,7 +183,7 @@ namespace CK.SqlServer
                 case SqlDbType.Real: return Convert.ToString( v, CultureInfo.InvariantCulture );
                 case SqlDbType.Money: return Convert.ToString( v, CultureInfo.InvariantCulture );
                 case SqlDbType.Decimal: return Convert.ToString( v, CultureInfo.InvariantCulture );
-                case SqlDbType.Xml: return String.Format( "cast( '{0}' as xml )", SqlEncodeString( Convert.ToString( v, CultureInfo.InvariantCulture ) ) );
+                case SqlDbType.Xml: return String.Format( "cast( '{0}' as xml )", SqlEncodeStringContent( Convert.ToString( v, CultureInfo.InvariantCulture ) ) );
                 case SqlDbType.Structured: return Convert.ToString( v, CultureInfo.InvariantCulture );
 
                 default: throw new Exception( "No sql string representation for:" + dbType.ToString() );
@@ -220,7 +220,7 @@ namespace CK.SqlServer
         /// </summary>
         /// <param name="s">The starting string.</param>
         /// <returns>An encoded string.</returns>
-        static public string SqlEncodeString( string s )
+        static public string SqlEncodeStringContent( string s )
         {
             if( s == null ) return string.Empty;
             s = s.Replace( "'", "''" );

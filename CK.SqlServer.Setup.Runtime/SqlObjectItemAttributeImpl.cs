@@ -6,6 +6,7 @@ using CK.Core;
 using CK.Setup;
 using CK.SqlServer.Parser;
 using CK.Text;
+using Yodii.Script;
 
 namespace CK.SqlServer.Setup
 {
@@ -97,19 +98,41 @@ namespace CK.SqlServer.Setup
                 monitor.Error().Send( $"Resource '{name.FullName}' of '{packageItem.FullName}' not found. Tried: '{candidates.Concatenate( "' ,'" )}'." );
                 return null;
             }
+            if( fileName.EndsWith( ".y4" ) )
+            {
+                using( monitor.OpenInfo().Send( $"Evaluating template '{fileName}' on '{packageItem.FullName}'." ) )
+                {
+                    GlobalContext c = new GlobalContext();
+                    c.Register( "SetupItem", packageItem );
+                    c.Register( "Model", packageItem.GetObject() );
+                    TemplateEngine e = new TemplateEngine( c );
+                    var r = e.Process( text );
+                    if( r.ErrorMessage != null )
+                    {
+                        using( monitor.OpenError().Send( r.ErrorMessage ) )
+                        {
+                            monitor.Trace().Send( text );
+                        }
+                        return null;
+                    }
+                    text = r.Text;
+                    monitor.Trace().Send( text );
+                }
+            }
             return text;
         }
 
         static IEnumerable<string> GetResourceFileNameCandidates( IContextLocNaming containerName, SqlContextLocName name )
         {
             bool isTransform = name.TransformArg != null;
+            var y4 = GetResourceNameCandidates( containerName, name ).Select( r => r + ".y4" );
             var sql = GetResourceNameCandidates( containerName, name ).Select( r => r + ".sql" );
             if( isTransform )
             {
                 var tql = GetResourceNameCandidates( containerName, name ).Select( r => r + ".tql" );
-                return tql.Concat( sql );
+                return tql.Concat( sql ).Concat( y4 );
             }
-            return sql;
+            return sql.Concat( y4 );
         }
 
         static IEnumerable<string> GetResourceNameCandidates( IContextLocNaming containerName, SqlContextLocName name )

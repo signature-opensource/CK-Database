@@ -14,8 +14,9 @@ CK.SqlServer.Setup.Runtime contains objects that generate StObj (like SqlTable o
 </description>
     <language>en-US</language>
     <dependencies>
-      
+
       <dependency id="CK.SqlServer.Parser.Model" version="3.0.0" />
+      <dependency id="Yodii.Script" version="0.2.0" />
 
       <dependency id="CK.SqlServer.Core" version="$version$" />
 

@@ -42,10 +42,7 @@ namespace CK.SqlServer.Setup
         /// This name, which is strongly associated to this SqlDatabase object and can not be changed (set only in the constructor), 
         /// defines the location of objects that are bound to it and drives the actual connection string to use.
         /// </summary>
-        public string Name
-        {
-            get { return _name; }
-        }
+        public string Name => _name; 
 
         /// <summary>
         /// Gets or sets the connection string.
@@ -79,10 +76,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Gets the different schemas that are owned by this <see cref="SqlDatabase"/>.
         /// </summary>
-        public IEnumerable<string> Schemas
-        {
-            get { return _schemas.Keys; }
-        }
+        public IEnumerable<string> Schemas => _schemas.Keys; 
 
         /// <summary>
         /// Gets or sets whether CK Core kernel support must be installed in the database.
@@ -98,9 +92,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Default database name is <see cref="DefaultDatabaseName"/> = "db".
         /// </summary>
-        public bool IsDefaultDatabase
-        {
-            get { return _name == DefaultDatabaseName; }
-        }
+        public bool IsDefaultDatabase => _name == DefaultDatabaseName;
+
     }
 }

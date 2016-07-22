@@ -37,5 +37,16 @@ namespace SqlTransform.Tests
                 Assert.That( s, Is.EqualTo( "Yes! 3712" ) );
             }
         }
+
+        [Test]
+        public void calling_SimplY4TemplateTest_method()
+        {
+            var p = TestHelper.StObjMap.Default.Obtain<CKLevel0.Package>();
+            using( var ctx = new SqlStandardCallContext() )
+            {
+                string s = p.SimplY4TemplateTest( ctx );
+                Assert.That( s, Is.StringMatching( @"HashCode = \d+" ) );
+            }
+        }
     }
 }
