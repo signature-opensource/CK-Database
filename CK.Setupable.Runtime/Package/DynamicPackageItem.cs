@@ -46,12 +46,10 @@ namespace CK.Setup
         /// <summary>
         /// Gets a mutable list of children for this package.
         /// </summary>
-        public IDependentItemList Children
-        {
-            get { return _children ?? (_children = new DependentItemList()); }
-        }
+        public IDependentItemList Children => _children ?? (_children = new DependentItemList()); 
 
-        bool IDependentItemRef.Optional => false; 
+        bool IDependentItemRef.Optional => false;
+
 
         IEnumerable<IDependentItemRef> IDependentItemGroup.Children
         {

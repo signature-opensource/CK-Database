@@ -13,7 +13,7 @@ namespace CK.Setup
     /// nor <see cref="IStObjSetupData.ItemTypeName"/> are set).
     /// This class can (and should) be used as a base class for more specific item implementation.
     /// </summary>
-    public class StObjDynamicPackageItem : DynamicPackageItem, IStObjSetupItem
+    public class StObjDynamicPackageItem : DynamicPackageItem, IStObjSetupItem, ISetupObjectItem
     {
         readonly IStObjResult _stObj;
 
@@ -44,25 +44,9 @@ namespace CK.Setup
         public IStObjResult StObj => _stObj; 
         
         /// <summary>
-        /// Gets the associated object instance (the final, most specialized, structured object) when this is bound to a StObj (<see cref="StObj"/> is not null). 
-        /// Otherwise gets the object associated explicitely when this setup item has been created.
-        /// See remarks.
+        /// Gets the associated object instance (the final, most specialized, structured object). 
         /// </summary>
-        /// <remarks>
-        /// <para>
-        /// The function that is injected during the graph creation (at the StObj level) simply returns the <see cref="IStObjResult.InitialObject"/> instance that is NOT always a "real",
-        /// fully operational, object since its auto implemented methods (or other aspects) have not been generated yet.
-        /// </para>
-        /// <para>
-        /// Once the final assembly has been generated, this function is updated with <see cref="IContextualStObjMap.Obtain"/>: during the setup phasis, the actual 
-        /// objects that are associated to items are "real" objects produced/managed by the final <see cref="StObjContextRoot"/>.
-        /// </para>
-        /// <para>
-        /// In order to honor potential transient lifetime (one day), these object should not be aggressively cached, this is why this is a <see cref="GetObject()"/> function 
-        /// and not a simple 'Object' or 'FinalObject' property. 
-        /// </para>
-        /// </remarks>
-        public object GetObject() => _stObj.ObjectAccessor(); 
+        public object ActualObject => _stObj.ObjectAccessor(); 
 
     }
 }

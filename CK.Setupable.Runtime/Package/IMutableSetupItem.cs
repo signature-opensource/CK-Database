@@ -20,7 +20,7 @@ namespace CK.Setup
     /// Its <see cref="IContextLocNaming.Context">Context</see>, <see cref="IContextLocNaming.Location">Location</see>, <see cref="IContextLocNaming.Name">Name</see> 
     /// and <see cref="ISetupItem.FullName">FullName</see> (that identify the item) and <see cref="ItemKind"/> can not be changed through this interface.
     /// </summary>
-    public interface IMutableSetupItem : IMutableSetupObjectItem
+    public interface IMutableSetupItem : IMutableSetupBaseItem
     {
         /// <summary>
         /// Gets whether this object must be considered as a <see cref="IDependentItem"/>, a <see cref="IDependentItemGroup"/> or a <see cref="IDependentItemContainer"/>

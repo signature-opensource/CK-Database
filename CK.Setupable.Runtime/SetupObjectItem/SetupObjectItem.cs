@@ -11,7 +11,7 @@ namespace CK.Setup
     /// <summary>
     /// A setup object item is typically an item that originates from an attribute or a StObj member.
     /// </summary>
-    public abstract class SetupObjectItem : IMutableSetupObjectItem, IDependentItemRef, IDependentItemDiscoverer<ISetupItem>
+    public abstract class SetupObjectItem : IMutableSetupBaseItem, IDependentItemRef, IDependentItemDiscoverer<ISetupItem>
     {
         string _itemType;
         ContextLocName _contextLocName;

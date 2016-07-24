@@ -58,11 +58,11 @@ namespace CK.SqlServer.Setup
             : base( monitor, data )
         {
             Context = data.StObj.Context.Context;
-            Location = GetObject().Name;
+            Location = ActualObject.Name;
             ConnectionItem = new SqlDatabaseConnectionItem( this );
             Requires.Add( new Model( this ) );
         }
 
-        public new SqlDatabase GetObject() => (SqlDatabase)base.GetObject();
+        public new SqlDatabase ActualObject => (SqlDatabase)base.ActualObject;
     }
 }

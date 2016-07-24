@@ -11,7 +11,7 @@ namespace CK.Setup
     /// This is an interface rather than a base class to let actual transformers specialize
     /// existing base class.
     /// </summary>
-    public interface ISetupObjectTransformerItem : IMutableSetupObjectItem
+    public interface ISetupObjectTransformerItem : IMutableSetupBaseItem
     {
         /// <summary>
         /// Gets the source object for this transformer.

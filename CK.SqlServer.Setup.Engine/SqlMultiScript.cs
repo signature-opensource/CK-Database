@@ -54,12 +54,7 @@ namespace CK.SqlServer.Setup
             if( _memory.IsItemRegistered( GetScriptKey( numScript ) ) ) return true;
             if( Script.ScriptSource.EndsWith( "-y4" ) )
             {
-                var stObjP = _driver.Item as StObjDynamicPackageItem;
-                if( stObjP != null )
-                {
-                    scriptBody = SqlPackageBaseItem.ProcessY4Template( Monitor, stObjP, Script.Name.FileName, scriptBody );
-                }
-                else throw new NotImplementedException( "Refactoring needed." );
+                scriptBody = SqlPackageBaseItem.ProcessY4Template( Monitor, _driver, _driver.Item, null, Script.Name.FileName, scriptBody );
             }
             return _executor.Execute( scriptBody );
         }

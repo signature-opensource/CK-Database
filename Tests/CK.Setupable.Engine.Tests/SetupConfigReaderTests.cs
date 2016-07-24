@@ -42,7 +42,7 @@ namespace CK.Setupable.Engine.Tests
         {
             public Dictionary<string, object> ExtendedProperyies;
 
-            protected override void OnUnknownProperty( StringMatcher m, string propName, ISetupObjectTransformerItem transformer, IMutableSetupObjectItem target )
+            protected override void OnUnknownProperty( StringMatcher m, string propName, ISetupObjectTransformerItem transformer, IMutableSetupBaseItem target )
             {
                 object o;
                 if( !m.TryMatchJSONValue( out o ) ) m.SetError( $"value for {propName}." );

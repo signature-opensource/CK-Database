@@ -50,19 +50,8 @@ namespace CK.Setup
         
         /// <summary>
         /// Gets the associated object instance (the final, most specialized, structured object).
-        /// See remarks.
         /// </summary>
-        /// <remarks>
-        /// <para>
-        /// The function that is injected during the graph creation (at the StObj level) simply returns the <see cref="IStObjResult.InitialObject"/> instance that is NOT always a "real",
-        /// fully operational, object since its auto implemented methods (or other aspects) have not been generated yet.
-        /// </para>
-        /// <para>
-        /// In order to honor potential transient lifetime (one day), these object should not be aggressively cached, this is why this is a <see cref="GetObject()"/> function 
-        /// and not a simple 'Object' or 'FinalObject' property. 
-        /// </para>
-        /// </remarks>
-        public object GetObject()  => _stObj.ObjectAccessor(); 
+        public object ActualObject => _stObj.ObjectAccessor(); 
 
     }
 }

@@ -78,7 +78,8 @@
     <Compile Include="ContextLocName\DefaultContextLocNaming.cs" />
     <Compile Include="ContextLocName\IContextLocNaming.cs" />
     <Compile Include="HelperExtensions.cs" />
-    <Compile Include="Package\IMutableSetupObjectItem.cs" />
+    <Compile Include="Package\ISetupObjectItem.cs" />
+    <Compile Include="Package\IMutableSetupBaseItem.cs" />
     <Compile Include="SetupObjectItemBehavior.cs" />
     <Compile Include="SetupObjectItem\ISetupObjectTransformerItem.cs" />
     <Compile Include="SetupObjectItem\SetupConfigReader.cs" />

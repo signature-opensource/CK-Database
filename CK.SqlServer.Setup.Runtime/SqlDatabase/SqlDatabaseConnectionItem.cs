@@ -20,7 +20,7 @@ namespace CK.SqlServer.Setup
             _db = db;
         }
 
-        public SqlDatabase SqlDatabase => _db.GetObject();
+        public SqlDatabase SqlDatabase => _db.ActualObject;
 
         public string FullName => _db.FullName + ".Connection"; 
 

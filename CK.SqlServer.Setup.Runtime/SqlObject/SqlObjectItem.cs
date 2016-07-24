@@ -87,7 +87,7 @@ namespace CK.SqlServer.Setup
 
         class ConfigReader : SetupConfigReader
         {
-            protected override void OnUnknownProperty( StringMatcher m, string propName, ISetupObjectTransformerItem transformer, IMutableSetupObjectItem target )
+            protected override void OnUnknownProperty( StringMatcher m, string propName, ISetupObjectTransformerItem transformer, IMutableSetupBaseItem target )
             {
                 if( propName == "MissingDependencyIsError" )
                 {

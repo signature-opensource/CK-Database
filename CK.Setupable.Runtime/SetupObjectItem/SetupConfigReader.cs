@@ -27,7 +27,7 @@ namespace CK.Setup
         /// <param name="text">The text to analyse.</param>
         /// <param name="target">The target object. If it is a transformer, its target must be set.</param>
         /// <returns>True on success, false if an error occurred.</returns>
-        public bool Apply( IActivityMonitor monitor, string text, IMutableSetupObjectItem target, out bool foundConfig )
+        public bool Apply( IActivityMonitor monitor, string text, IMutableSetupBaseItem target, out bool foundConfig )
         {
             if( target == null ) throw new ArgumentNullException( nameof( target ) );
             var t = target as ISetupObjectTransformerItem;
@@ -47,14 +47,14 @@ namespace CK.Setup
         /// <param name="text">The text to analyse.</param>
         /// <param name="target">The target object. Must not be a transformer.</param>
         /// <returns>True on success, false if an error occurred.</returns>
-        public bool Apply( IActivityMonitor monitor, string text, ISetupObjectTransformerItem transformer, IMutableSetupObjectItem target, out bool foundConfig )
+        public bool Apply( IActivityMonitor monitor, string text, ISetupObjectTransformerItem transformer, IMutableSetupBaseItem target, out bool foundConfig )
         {
             if( transformer == null ) throw new ArgumentNullException( nameof( transformer ) );
             if( target == null ) throw new ArgumentNullException( nameof( target ) );
             return DoApply( monitor, text, transformer, target, out foundConfig );
         }
 
-        bool DoApply( IActivityMonitor monitor, string text, ISetupObjectTransformerItem transformer, IMutableSetupObjectItem target, out bool foundConfig )
+        bool DoApply( IActivityMonitor monitor, string text, ISetupObjectTransformerItem transformer, IMutableSetupBaseItem target, out bool foundConfig )
         {
             foundConfig = true;
             Match match = _ckConfig.Match( text );
@@ -73,7 +73,7 @@ namespace CK.Setup
             return true;
         }
 
-        void ParseContent( StringMatcher m, ISetupObjectTransformerItem transformer, IMutableSetupObjectItem target )
+        void ParseContent( StringMatcher m, ISetupObjectTransformerItem transformer, IMutableSetupBaseItem target )
         {
             while( !m.IsError
                     && !m.IsEnd
@@ -138,12 +138,12 @@ namespace CK.Setup
         /// <param name="propName">The unknown property name.</param>
         /// <param name="transformer">The transformer. Null when applying to actual target.</param>
         /// <param name="target">The target of the apply call.</param>
-        protected virtual void OnUnknownProperty( StringMatcher m, string propName, ISetupObjectTransformerItem transformer, IMutableSetupObjectItem target )
+        protected virtual void OnUnknownProperty( StringMatcher m, string propName, ISetupObjectTransformerItem transformer, IMutableSetupBaseItem target )
         {
             m.SetError( "Unknown property: " + propName );
         }
 
-        bool ParseItemProperties( StringMatcher m, string propName, IMutableSetupObjectItem target )
+        bool ParseItemProperties( StringMatcher m, string propName, IMutableSetupBaseItem target )
         {
             switch( propName )
             {
@@ -157,14 +157,14 @@ namespace CK.Setup
             }
             return true;
         }
-        void ApplyChildren( StringMatcher m, IMutableSetupObjectItem target, bool add )
+        void ApplyChildren( StringMatcher m, IMutableSetupBaseItem target, bool add )
         {
             var g = target as IMutableSetupItemGroup;
             if( g == null ) m.SetError( $"Object is not a group, it can not have Children." );
             else ApplyProperties( m, add ? (Action<string>)(s => g.Children.Add( s )) : s => g.Children.Remove( s ) );
         }
 
-        void ApplyGeneralization( StringMatcher m, IMutableSetupObjectItem target )
+        void ApplyGeneralization( StringMatcher m, IMutableSetupBaseItem target )
         {
             var o = target as IMutableSetupItem;
             if( o == null ) m.SetError( $"Object does not support Generalization." );

@@ -25,7 +25,7 @@ namespace CK.SqlServer.Setup
             : base( monitor, data )
         {
             Context = data.StObj.Context.Context;
-            SqlPackageBase p = GetObject();
+            SqlPackageBase p = ActualObject;
             if( p.Database != null ) Location = p.Database.Name;
             ResourceLocation = (ResourceLocator)data.StObj.GetStObjProperty( "ResourceLocation" );
             if( p.HasModel ) EnsureModel();
@@ -37,7 +37,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Masked to formally be associated to <see cref="SqlPackageBase"/>.
         /// </summary>
-        public new SqlPackageBase GetObject() => (SqlPackageBase)base.GetObject();
+        public new SqlPackageBase ActualObject => (SqlPackageBase)base.ActualObject;
 
         /// <summary>
         /// Gets or sets a <see cref="ResourceLocation"/> that locates the resources associated 
@@ -54,13 +54,25 @@ namespace CK.SqlServer.Setup
             return base.StartDependencySort();
         }
 
-        public static string ProcessY4Template( IActivityMonitor monitor, StObjDynamicPackageItem packageItem, string fileName, string text )
+        public static string ProcessY4Template( 
+            IActivityMonitor monitor, 
+            SetupItemDriver driver,
+            ISetupItem setupItem,
+            object model,
+            string fileName, 
+            string text )
         {
-            using( monitor.OpenInfo().Send( $"Evaluating template '{fileName}' on '{packageItem.FullName}'." ) )
+            using( monitor.OpenInfo().Send( $"Evaluating template '{fileName}'." ) )
             {
                 GlobalContext c = new GlobalContext();
-                c.Register( "SetupItem", packageItem );
-                c.Register( "Model", packageItem.StObj.ObjectAccessor() );
+                if( driver != null ) c.Register( "Driver", driver );
+                if( setupItem != null ) c.Register( "SetupItem", setupItem );
+                if( model == null )
+                {
+                    var sO = setupItem as ISetupObjectItem;
+                    if( sO != null ) model = sO.ActualObject;
+                }
+                if( model != null ) c.Register( "Model", model );
                 TemplateEngine e = new TemplateEngine( c );
                 var r = e.Process( text );
                 if( r.ErrorMessage != null )
@@ -72,7 +84,6 @@ namespace CK.SqlServer.Setup
                     return null;
                 }
                 text = r.Text;
-                monitor.Trace().Send( text );
             }
             return text;
         }

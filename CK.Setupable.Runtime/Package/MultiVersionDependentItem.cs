@@ -143,6 +143,11 @@ namespace CK.Setup
         }
 
         /// <summary>
+        /// Gets or sets the associated model object.
+        /// </summary>
+        public object ModelObject { get; protected set; }
+
+        /// <summary>
         /// Called at the very beginning of the setup phase, before <see cref="IDependentItem.FullName"/> is used to planify the setup. 
         /// This start method has been already called on direct dependencies <see cref="Container"/>, <see cref="Generalization"/>
         /// and <see cref="Requires"/> if they are <see cref="IDependentItem"/> (and not strings).
@@ -151,35 +156,20 @@ namespace CK.Setup
         /// Must return the <see cref="Type"/> of the setup driver (specialization of <see cref="SetupItemDriver"/>), or its assembly qualified name.
         /// By default, returns the type of <see cref="SetupItemDriver"/>.
         /// </returns>
-        protected virtual object StartDependencySort()
-        {
-            return typeof( SetupItemDriver );
-        }
+        protected virtual object StartDependencySort() => typeof( SetupItemDriver );
 
-        object IDependentItem.StartDependencySort()
-        {
-            return StartDependencySort();
-        }
+        object IDependentItem.StartDependencySort() => StartDependencySort();
 
         /// <summary>
         /// Called once the associated driver has been instanciated.
         /// </summary>
         /// <param name="driver">Driver for this item.</param>
         /// <returns>True on success. Returning false cancels the setup process.</returns>
-        protected virtual bool OnDriverCreated( SetupItemDriver driver )
-        {
-            return true;
-        }
+        protected virtual bool OnDriverCreated( SetupItemDriver driver ) => true;
 
-        string IVersionedItem.ItemType
-        {
-            get { return _itemType; }
-        }
+        string IVersionedItem.ItemType => _itemType; 
 
-        bool IDependentItemRef.Optional
-        {
-            get { return false; }
-        }
+        bool IDependentItemRef.Optional => false; 
 
         IDependentItemContainerRef IDependentItem.Container
         {

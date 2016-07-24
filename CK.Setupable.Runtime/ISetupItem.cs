@@ -16,6 +16,7 @@ namespace CK.Setup
     /// <summary>
     /// A setup item is an <see cref="IDependentItem"/> and a <see cref="IContextLocNaming"/>: its FullName 
     /// is structured with the Context-Location-Name triplet.
+    /// It is most obten bound to an actual model object (<see cref="ActualObject"/>).
     /// </summary>
     public interface ISetupItem : IDependentItem, IContextLocNaming
     {
@@ -25,6 +26,5 @@ namespace CK.Setup
         /// </summary>
         new string FullName { get; }
 
-        //object GetObject();
     }
 }

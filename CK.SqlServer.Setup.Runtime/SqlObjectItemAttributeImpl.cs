@@ -43,7 +43,7 @@ namespace CK.SqlServer.Setup
             var name = new SqlContextLocName( attributeName );
             if( name.Context == null ) name.Context = p.Context;
             if( name.Location == null ) name.Location = p.Location;
-            if( name.Schema == null ) name.Schema = p.GetObject().Schema;
+            if( name.Schema == null ) name.Schema = p.ActualObject.Schema;
             if( name.TransformArg != null )
             {
                 var target = new SqlContextLocName( name.TransformArg );
@@ -100,7 +100,7 @@ namespace CK.SqlServer.Setup
             }
             if( fileName.EndsWith( ".y4" ) )
             {
-                text = SqlPackageBaseItem.ProcessY4Template( monitor, packageItem, fileName, text );
+                text = SqlPackageBaseItem.ProcessY4Template( monitor, null, packageItem, null, fileName, text );
             }
             return text;
         }

@@ -19,7 +19,7 @@ namespace CK.SqlServer.Setup
         public SqlPackageBaseSetupDriver( BuildInfo info )
             : base( info ) 
         {
-            SqlPackageBase p = Item.GetObject();
+            SqlPackageBase p = Item.ActualObject;
             string schema = p.Schema;
             if( schema != null && p.Database != null ) p.Database.EnsureSchema( schema ); 
         }
