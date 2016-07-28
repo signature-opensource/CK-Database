@@ -49,12 +49,17 @@ namespace CK.Setup
         IActivityMonitor Monitor { get; }
 
         /// <summary>
-        /// Gives access to the ordered list of the <see cref="SetupItemDriver"/>.
+        /// Gives access to an ordered list of <see cref="SetupItemDriver"/> indexed by the <see cref="IDependentItem.FullName"/> 
+        /// or by the <see cref="IDependentItem"/> object instance itself.
         /// </summary>
         IDriverList Drivers { get; }
 
         /// <summary>
-        /// Gives access to the ordered list of all the <see cref="DriverBase"/> that participate to Setup.
+        /// Gives access to an ordered list of <see cref="DriverBase"/> indexed by the <see cref="IDependentItem.FullName"/> 
+        /// or by the <see cref="IDependentItem"/> object instance itself that participate to Setup.
+        /// This list contains all the <see cref="SetupItemDriver"/> plus all the internal drivers for the head of Groups 
+        /// or Containers (the ones that ar not SetupItemDriver instances and have a <see cref="DriverBase.FullName"/> that
+        /// ends with ".Head").
         /// This list is filled after <see cref="RegisterSetupEvent"/> (and <see cref="SetupEvent"/> with <see cref="SetupStep.PreInit"/>) and before <see cref="SetupStep.Init"/>.
         /// </summary>
         IDriverBaseList AllDrivers { get; }

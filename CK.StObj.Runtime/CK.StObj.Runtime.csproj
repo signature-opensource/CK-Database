@@ -72,6 +72,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="StObjRuntimeExtensions.cs" />
     <Compile Include="CustomAttributeProviderComposite.cs" />
     <Compile Include="IAmbientContractDispatcher.cs" />
     <Compile Include="IStObjResult.cs" />

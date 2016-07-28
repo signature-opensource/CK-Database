@@ -64,15 +64,9 @@ namespace CK.Setup
                 get { return _drivers.Count; }
             }
 
-            public IEnumerator<DriverBase> GetEnumerator()
-            {
-                return _drivers.GetEnumerator();
-            }
+            public IEnumerator<DriverBase> GetEnumerator() => _drivers.GetEnumerator();
 
-            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-            {
-                return _drivers.GetEnumerator();
-            }
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => _drivers.GetEnumerator();
 
             internal void Clear()
             {
@@ -158,6 +152,7 @@ namespace CK.Setup
         /// Gets the <see cref="ISetupEngineAspect"/> that participate to setup.
         /// </summary>
         public IReadOnlyList<ISetupEngineAspect> Aspects => _aspects; 
+
         /// <summary>
         /// Gets the first typed aspect that is assignable to <typeparamref name="T"/>. 
         /// If such aspect can not be found, depending on <paramref name="required"/> a <see cref="CKException"/> is thrown or null is returned.
@@ -199,7 +194,8 @@ namespace CK.Setup
         public IActivityMonitor Monitor => _monitor; 
 
         /// <summary>
-        /// Gives access to the ordered list of all the <see cref="DriverBase"/> that participate to Setup.
+        /// Gives access to the ordered list (also indexed by item fullname) of all the <see cref="DriverBase"/> that participate to Setup.
+        /// DriverBase 
         /// This list is filled after <see cref="RegisterSetupEvent"/> (and <see cref="SetupEvent"/> with <see cref="SetupStep.PreInit"/>) but before <see cref="SetupStep.Init"/>.
         /// </summary>
         public IDriverBaseList AllDrivers => _allDrivers; 

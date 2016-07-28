@@ -22,7 +22,7 @@ namespace CK.SqlServer.Setup
 
         protected override void ConfigureMutableItem( IActivityMonitor monitor, IStObjMutableItem o )
         {
-            o.SetDirectPropertyValue( monitor, "HasModel", Attribute.HasModel );
+            o.SetStObjPropertyValue( monitor, "HasModel", Attribute.HasModel );
         }
 
         void IStObjSetupConfigurator.ConfigureDependentItem( IActivityMonitor monitor, IMutableStObjSetupData data )

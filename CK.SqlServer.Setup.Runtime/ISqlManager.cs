@@ -80,7 +80,7 @@ namespace CK.SqlServer.Setup
         /// <returns>
         /// Always true if <paramref name="monitor"/> is null since otherwise an exception
         /// will be thrown in case of failure. 
-        /// If a monitor is set, this method will return true or false to indicate success.
+        /// If a monitor is provided, this method will return true or false to indicate success.
         /// </returns>
         /// <remarks>
         /// At the end of the execution, the current database is checked and if it has changed,
@@ -99,7 +99,7 @@ namespace CK.SqlServer.Setup
         /// <returns>
         /// Always true if <paramref name="monitor"/> is null since otherwise an exception
         /// will be thrown in case of failure. 
-        /// If a monitor is set, this method will return true or false to indicate success.
+        /// If a monitor is provided, this method will return true or false to indicate success.
         /// </returns>
         bool ExecuteScripts( IEnumerable<string> scripts, IActivityMonitor monitor );
 

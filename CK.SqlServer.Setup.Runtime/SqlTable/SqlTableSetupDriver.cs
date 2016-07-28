@@ -21,7 +21,7 @@ namespace CK.SqlServer.Setup
         {
         }
 
-        public new SqlTableItem Item { get { return (SqlTableItem)base.Item; } }
+        public new SqlTableItem Item => (SqlTableItem)base.Item;
 
     }
 }

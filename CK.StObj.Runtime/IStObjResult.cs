@@ -120,9 +120,10 @@ namespace CK.Setup
         /// <summary>
         /// Gets the value of the named property that may be associated to this StObj or to any StObj 
         /// in <see cref="Container"/> or <see cref="Generalization"/> 's chains (recursively).
+        /// Null is a valid property value: <see cref="Type.Missing"/> is returned if the property is NOT defined.
         /// </summary>
         /// <param name="propertyName">Name of the property. Must not be null nor empty.</param>
-        /// <returns>The property value (can be null) if the property has been defined, <see cref="Type.Missing"/> otherwise.</returns>
+        /// <returns>The <see cref="Type.Missing"/> marker if the property has not been defined.</returns>
         object GetStObjProperty( string propertyName );
         
     }
