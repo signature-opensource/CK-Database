@@ -15,12 +15,13 @@ namespace CK.Setup
     /// <summary>
     /// Contains extension methods for <see cref="ISetupScript"/>.
     /// </summary>
-    public static class SetupScriptExtension
+    public static class SetupScriptExtensions
     {
         /// <summary>
         /// Computes a key that identifies a <see cref="ISetupScript"/>: it is a combination
-        /// of the <see cref="ISetupScript.ScriptSource"/>, <see cref="ParsedFileName.FullName"/>, <see cref="ParsedFileName.CallContainerStep"/>, 
-        /// <see cref="ParsedFileName.FromVersion"/> and <see cref="ParsedFileName.Version"/>.
+        /// of the <see cref="ISetupScript.ScriptSource"/>, <see cref="ParsedFileName.FullName"/>, 
+        /// <see cref="ParsedFileName.CallContainerStep"/>, <see cref="ParsedFileName.FromVersion"/> 
+        /// and <see cref="ParsedFileName.Version"/>.
         /// </summary>
         /// <param name="this">This <see cref="ISetupScript"/> object.</param>
         /// <param name="suffix">Optional suffix to append to the key (avoids another concatenation).</param>

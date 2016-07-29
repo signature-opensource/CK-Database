@@ -37,7 +37,7 @@ namespace CK.SqlServer.Setup
 
             if( ExternalVersion != null && ExternalVersion.Version == Item.Version ) return true;
 
-            ISqlManager m = FindManagerFromLocation( Engine.Monitor, _provider, FullName );
+            ISqlManagerBase m = FindManagerFromLocation( Engine.Monitor, _provider, FullName );
             if( m == null ) return false;
  
             string s;
@@ -88,12 +88,12 @@ namespace CK.SqlServer.Setup
             return true;
         }
 
-        public static ISqlManager FindManagerFromLocation( IActivityMonitor monitor, ISqlManagerProvider provider, string fullName )
+        public static ISqlManagerBase FindManagerFromLocation( IActivityMonitor monitor, ISqlManagerProvider provider, string fullName )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
             if( provider == null ) throw new ArgumentNullException( "provider" );
             if( fullName == null ) throw new ArgumentNullException( "fullName" );
-            ISqlManager m = null;
+            ISqlManagerBase m = null;
             string context, location, name, targetName;
             if( !DefaultContextLocNaming.TryParse( fullName, out context, out location, out name, out targetName ) )
             {

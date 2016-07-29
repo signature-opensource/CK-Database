@@ -29,7 +29,8 @@ namespace CK.SqlServer.Setup
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="ISqlServerObject"/>. 
+        /// Gets or sets the <see cref="ISqlServerObject"/> (specialized <see cref="ISqlServerParsedText"/> with
+        /// schema and name). 
         /// </summary>
         public new ISqlServerObject SqlObject
         {

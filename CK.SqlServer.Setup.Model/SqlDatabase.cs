@@ -60,7 +60,7 @@ namespace CK.SqlServer.Setup
         /// <returns>Registered name.</returns>
         public string EnsureSchema( string name )
         {
-            if( String.IsNullOrWhiteSpace( name ) ) throw new ArgumentException( "Must be not null, empty, nor whitespace.", "name" );
+            if( string.IsNullOrWhiteSpace( name ) ) throw new ArgumentException( "Must be not null, empty, nor whitespace.", "name" );
             string existing;
             if( _schemas.TryGetValue( name, out existing ) )
             {

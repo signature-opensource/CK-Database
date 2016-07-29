@@ -39,15 +39,9 @@ namespace CK.SqlServer.Setup
         /// Gets the <see cref="SqlConnectionProvider"/> of this <see cref="SqlManager"/>.
         /// Null when the connection is closed.
         /// </summary>
-        public SqlConnectionProvider Connection
-        {
-            get { return _oCon; }
-        }
+        public SqlConnectionProvider Connection => _oCon; 
 
-        void IDisposable.Dispose()
-        {
-            Close();
-        }
+        void IDisposable.Dispose() => Close();
 
         /// <summary>
         /// Close the connection. <see cref="Connection"/> becomes null.
@@ -196,10 +190,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Gets the <see cref="IActivityMonitor"/>.
         /// </summary>
-        public IActivityMonitor Monitor
-        {
-            get { return _monitor; }
-        }
+        public IActivityMonitor Monitor => _monitor; 
 
         /// <summary>
         /// True if the connection to the current database is opened. Can be called on a 

@@ -22,7 +22,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Masked Item to formally be associated to a <see cref="SqlDatabaseItem"/> item.
         /// </summary>
-        public new SqlDatabaseItem Item { get { return (SqlDatabaseItem)base.Item; } }
+        public new SqlDatabaseItem Item => (SqlDatabaseItem)base.Item;
 
     }
 }

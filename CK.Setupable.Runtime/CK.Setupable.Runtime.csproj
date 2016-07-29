@@ -127,7 +127,6 @@
     <Compile Include="StObj\StObjDynamicContainerItem.cs" />
     <Compile Include="StObj\StObjDynamicPackageItem.cs" />
     <Compile Include="Version\IVersionedItem.cs" />
-    <Compile Include="Version\IVersionedItemRepository.cs" />
     <Compile Include="Version\MultiVersionManager.cs" />
     <Compile Include="Package\DependentItemGroupList.cs" />
     <Compile Include="Package\DependentItemList.cs" />
@@ -145,8 +144,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Setup\SetupCallGroupStep.cs" />
     <Compile Include="SetupStep.cs" />
+    <Compile Include="Version\VersionedTypedName.cs" />
     <Compile Include="Version\VersionedName.cs" />
-    <Compile Include="Version\VersionedNameExtension.cs" />
+    <Compile Include="Version\VersionRelatedExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">

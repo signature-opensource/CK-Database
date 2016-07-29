@@ -24,7 +24,7 @@ namespace CK.SqlServer.Setup
 
         public SqlSetupSessionMemoryProvider( ISqlManager manager )
         {
-            if( manager == null ) throw new ArgumentNullException( "manager" );
+            if( manager == null ) throw new ArgumentNullException( nameof(manager) );
             _manager = manager;
         }
 
@@ -126,7 +126,7 @@ select LastStartDate, StartCount, LastError from CKCore.tSetupMemory;
             }
             else
             {
-                if( String.IsNullOrWhiteSpace( error ) ) throw new ArgumentException( "Must not be null or empty.", "error" );
+                if( string.IsNullOrWhiteSpace( error ) ) throw new ArgumentException( "Must be null or not be empty.", "error" );
 
                 using( var c = new SqlCommand( @"update CKCore.tSetupMemory set LastError=@LastError; select LastStartDate, StartCount from CKCore.tSetupMemory;" ) )
                 {

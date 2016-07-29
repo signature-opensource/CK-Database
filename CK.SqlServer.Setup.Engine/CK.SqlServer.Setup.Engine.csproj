@@ -90,7 +90,8 @@
     <Compile Include="SqlScriptExecutor.cs" />
     <Compile Include="SqlScriptTypeHandler.cs" />
     <Compile Include="SqlSetupAspect.cs" />
-    <Compile Include="SqlVersionedItemRepository.cs" />
+    <Compile Include="SqlVersionedItemWriter.cs" />
+    <Compile Include="SqlVersionedItemReader.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">

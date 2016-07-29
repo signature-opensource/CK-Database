@@ -7,7 +7,7 @@ namespace CK.Setup
 {
     /// <summary>
     /// Offers properties that may be set before the call to <see cref="SetupEngine.Run"/>.
-    /// <see cref="VersionRepository"/> and <see cref="SetupSessionMemoryProvider"/> must be set, otherwise an <see cref="InvalidOperationException"/>
+    /// <see cref="VersionedItemReader"/> and <see cref="SetupSessionMemoryProvider"/> must be set, otherwise an <see cref="InvalidOperationException"/>
     /// will be thrown when running the engine.
     /// </summary>
     public sealed class SetupEngineStartConfiguration
@@ -15,7 +15,8 @@ namespace CK.Setup
         readonly ScriptTypeManager _scriptTypeManager;
         readonly List<ISetupEngineAspect> _aspects;
         List<Type> _explicitRegisteredClasses;
-        IVersionedItemRepository _versionRepository;
+        IVersionedItemReader _versionReader;
+        IVersionedItemWriter _versionWriter;
         ISetupSessionMemoryProvider _memory;
         Action<IEnumerable<IDependentItem>> _stObjDependencySorterHookInput;
         Action<IEnumerable<ISortedItem>> _stObjDependencySorterHookOutput;
@@ -37,19 +38,26 @@ namespace CK.Setup
         /// Gets the <see cref="ScriptTypeManager"/> into which <see cref="ScriptTypeHandler"/> must be registered
         /// before <see cref="SetupEngine.Run"/> in order for <see cref="ISetupScript"/> added to <see cref="SetupEngine.Scripts"/> to be executed.
         /// </summary>
-        public ScriptTypeManager ScriptTypeManager
+        public ScriptTypeManager ScriptTypeManager => _scriptTypeManager;
+
+        /// <summary>
+        /// Gets or sets a <see cref="IVersionedItemReader"> for version information</see>.
+        /// It must be not null otherwise <see cref="SetupEngine.Run"/> or <see cref="SetupEngine.ManualRun"/> will raise an exception.
+        /// </summary>
+        public IVersionedItemReader VersionedItemReader
         {
-            get { return _scriptTypeManager; }
+            get { return _versionReader; }
+            set { CheckNotRunning(); _versionReader = value; }
         }
 
         /// <summary>
-        /// Gets or sets a <see cref="IVersionedItemRepository">repository for version information</see>.
+        /// Gets or sets a <see cref="IVersionedItemReader"> for version information</see>.
         /// It must be not null otherwise <see cref="SetupEngine.Run"/> or <see cref="SetupEngine.ManualRun"/> will raise an exception.
         /// </summary>
-        public IVersionedItemRepository VersionRepository
+        public IVersionedItemWriter VersionedItemWriter
         {
-            get { return _versionRepository; }
-            set { CheckNotRunning(); _versionRepository = value; }
+            get { return _versionWriter; }
+            set { CheckNotRunning(); _versionWriter = value; }
         }
 
         /// <summary>
@@ -75,10 +83,7 @@ namespace CK.Setup
             _explicitRegisteredClasses.Add( type );
         }
 
-        internal IReadOnlyList<Type> ExplicitRegisteredClasses
-        {
-            get { return _explicitRegisteredClasses; }
-        }
+        internal IReadOnlyList<Type> ExplicitRegisteredClasses =>_explicitRegisteredClasses; 
 
         /// <summary>
         /// Gets the list of all registered aspects.
@@ -86,15 +91,9 @@ namespace CK.Setup
         /// of the configurations in <see cref="SetupEngineConfiguration.Aspects"/> drives the order of Aspects creation).
         /// When <see cref="ISetupEngineAspect.Configure"/> is called, all available aspects are registered.
         /// </summary>
-        public IReadOnlyList<ISetupEngineAspect> Aspects 
-        {
-            get { return _aspects; }
-        }
+        public IReadOnlyList<ISetupEngineAspect> Aspects => _aspects; 
 
-        internal void AddAspect( ISetupEngineAspect a )
-        {
-            _aspects.Add( a );
-        }
+        internal void AddAspect( ISetupEngineAspect a ) => _aspects.Add( a );
 
         /// <summary>
         /// Gets or sets a function that will be called with the list of StObjs once all of them are 

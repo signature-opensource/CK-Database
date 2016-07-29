@@ -22,7 +22,7 @@ namespace CK.Setup
     /// </summary>
     sealed class SetupCoreEngine : ISetupEngine, IDisposable
     {
-        readonly IVersionedItemRepository _versionRepository;
+        readonly VersionedItemTracker _versionTracker;
         readonly DriverBaseList _allDrivers;
         readonly DriverList _genDrivers;
         readonly ISetupDriverFactory _driverFactory;
@@ -133,13 +133,13 @@ namespace CK.Setup
         /// <param name="aspects">Available aspects.</param>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="driverFactory">Factory for setup drivers.</param>
-        public SetupCoreEngine( IVersionedItemRepository versionRepository, ISetupSessionMemory memory, IReadOnlyList<ISetupEngineAspect> aspects, IActivityMonitor monitor, ISetupDriverFactory driverFactory )
+        public SetupCoreEngine( VersionedItemTracker versionTracker, ISetupSessionMemory memory, IReadOnlyList<ISetupEngineAspect> aspects, IActivityMonitor monitor, ISetupDriverFactory driverFactory )
         {
-            Debug.Assert( versionRepository != null );
+            Debug.Assert( versionTracker != null );
             Debug.Assert( aspects != null );
             Debug.Assert( monitor != null );
             Debug.Assert( memory != null );
-            _versionRepository = versionRepository;
+            _versionTracker = versionTracker;
             _memory = memory;
             _aspects = aspects;
             _driverFactory = driverFactory ?? DefaultDriverfactory.Default;
@@ -229,7 +229,6 @@ namespace CK.Setup
         public SetupCoreEngineRegisterResult RegisterAndCreateDrivers( IEnumerable<ISetupItem> items, IEnumerable<IDependentItemDiscoverer<ISetupItem>> discoverers, DependencySorterOptions options = null )
         {
             CheckState( SetupEngineState.None );
-
             var hRegisterSetupEvent = RegisterSetupEvent;
             var hSetupEvent = SetupEvent;
             if( hRegisterSetupEvent != null || hSetupEvent != null )
@@ -282,7 +281,7 @@ namespace CK.Setup
                         {
                             VersionedName externalVersion;
                             IVersionedItem versioned = item.Item as IVersionedItem;
-                            if( versioned != null ) externalVersion = _versionRepository.GetCurrent( versioned );
+                            if( versioned != null ) externalVersion = _versionTracker.GetCurrent( versioned );
                             else externalVersion = null;
 
                             if( item.IsGroupHead )
@@ -521,8 +520,12 @@ namespace CK.Setup
                             hE( this, reusableEvent );
                             if( reusableEvent.CancelSetup ) return false;
                         }
-                        IVersionedItem versioned = d.Item as IVersionedItem;
-                        if( versioned != null ) _versionRepository.SetCurrent( versioned );
+                        if( !(d is GroupHeadSetupDriver) )
+                        {
+                            IVersionedItem versioned = d.Item as IVersionedItem;
+                            if( versioned != null ) _versionTracker.SetCurrent( versioned );
+                            else _versionTracker.Delete( d.FullName );
+                        }
                     }
                 }
             }

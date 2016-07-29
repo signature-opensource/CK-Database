@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Setup.Engine\SqlManagerProvider.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using CK.Core;
@@ -14,39 +7,27 @@ using System.Data.SqlClient;
 namespace CK.SqlServer.Setup
 {
 
-    public class SqlManagerProvider : ISqlManagerProvider, IDisposable
+    class SqlManagerProvider : ISqlManagerProvider, IDisposable
     {
         readonly IActivityMonitor _monitor;
         readonly Dictionary<string, Item> _items;
-        readonly Action<ISqlManager> _dbConfigurator;
+        readonly Action<ISqlManagerBase> _dbConfigurator;
 
         class Item
         {
             public string ConnectionString;
             public ISqlManager Manager;
-            public bool DoNotDispose;
             public bool AutoCreate;
 
-            public override string ToString()
-            {
-                return String.Format( "{0} - {1}", Manager != null, ConnectionString );
-            }
+            public override string ToString() => $"{Manager != null} - {ConnectionString}";
         }
 
-        public SqlManagerProvider( IActivityMonitor monitor, Action<ISqlManager> dbConfigurator = null )
+        public SqlManagerProvider( IActivityMonitor monitor, Action<ISqlManagerBase> dbConfigurator = null )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
             _monitor = monitor;
             _items = new Dictionary<string, Item>();
             _dbConfigurator = dbConfigurator ?? Util.ActionVoid;
-        }
-
-        internal void AddConfiguredDefaultDatabase( ISqlManager m )
-        {
-            Debug.Assert( m.IsOpen() );
-            Item i = new Item() { ConnectionString = m.Connection.ConnectionString, Manager = m, DoNotDispose = true };
-            _items.Add( SqlDatabase.DefaultDatabaseName, i );
-            _items.Add( i.ConnectionString, i );
         }
         
         public void Add( string name, string connectionString, bool autoCreate )
@@ -56,9 +37,9 @@ namespace CK.SqlServer.Setup
             _items[connectionString] =  i;
         }
 
-        public ISqlManager FindManagerByName( string name )
+        public ISqlManagerBase FindManagerByName( string name )
         {
-            if( !String.IsNullOrWhiteSpace( name ) )
+            if( !string.IsNullOrWhiteSpace( name ) )
             {
                 Item i;
                 if( _items.TryGetValue( name, out i ) )
@@ -101,11 +82,15 @@ namespace CK.SqlServer.Setup
             {
                 foreach( var item in _items )
                 {
-                    if( item.Key != null && item.Value.Manager != null && item.Value.DoNotDispose == false ) item.Value.Manager.Dispose();
+                    if( item.Key != null && item.Value.Manager != null ) item.Value.Manager.Dispose();
                 }
                 _items.Clear();
             }
         }
+
+        ISqlManagerBase ISqlManagerProvider.FindManagerByName( string logicalName ) => FindManagerByName( logicalName );
+
+        ISqlManagerBase ISqlManagerProvider.FindManagerByConnectionString( string connectionString ) => FindManagerByConnectionString( connectionString );
 
     }
 }

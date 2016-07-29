@@ -78,22 +78,13 @@ namespace CK.Setup
         /// <summary>
         /// Gets the list of root directories (lookup is recursive) into which file packages (*.ck xml files) must be registered.
         /// </summary>
-        public List<string> FilePackageDirectories
-        {
-            get { return _ckPackageDirectories; }
-        }
+        public List<string> FilePackageDirectories => _ckPackageDirectories; 
 
         /// <summary>
         /// Gets the list of root directories (lookup is recursive) into which sql files (*.sql files) must be registered.
         /// </summary>
-        public List<string> SqlFileDirectories
-        {
-            get { return _sqlFileDirectories; }
-        }
+        public List<string> SqlFileDirectories =>_sqlFileDirectories; 
 
-        string ISetupEngineAspectConfiguration.AspectType
-        {
-            get { return "CK.SqlServer.Setup.SqlSetupAspect, CK.SqlServer.Setup.Engine"; }
-        }
+        string ISetupEngineAspectConfiguration.AspectType => "CK.SqlServer.Setup.SqlSetupAspect, CK.SqlServer.Setup.Engine"; 
     }
 }

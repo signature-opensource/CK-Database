@@ -61,10 +61,10 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             }
             using( var db = SqlManager.OpenOrCreate( TestHelper.DatabaseTestConnectionString, TestHelper.Monitor ) )
             {
-                Assert.That( db.Connection.ExecuteScalar( "select count(*) from sys.tables where name in ('tActor','tItemVersion')" ), Is.EqualTo( 2 ) );
+                Assert.That( db.Connection.ExecuteScalar( "select count(*) from sys.tables where name in ('tActor','tItemVersionStore')" ), Is.EqualTo( 2 ) );
                 db.SchemaDropAllObjects( "CK", true );
                 db.SchemaDropAllObjects( "CKCore", false );
-                Assert.That( db.Connection.ExecuteScalar( "select count(*) from sys.tables where name in ('tSystem','tItemVersion')" ), Is.EqualTo( 0 ) );
+                Assert.That( db.Connection.ExecuteScalar( "select count(*) from sys.tables where name in ('tSystem','tItemVersionStore')" ), Is.EqualTo( 0 ) );
             }
 
             c.RunningMode = SetupEngineRunningMode.RevertNames;

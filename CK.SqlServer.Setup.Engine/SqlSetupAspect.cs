@@ -20,7 +20,7 @@ namespace CK.SqlServer.Setup
         readonly SetupEngine _engine;
         readonly SqlManagerProvider _databases;
         ISqlServerParser _sqlParser;
-        ISqlManager _defaultDatabase;
+        ISqlManagerBase _defaultDatabase;
 
         class ConfiguratorHook : SetupEngineConfigurator
         {
@@ -70,8 +70,37 @@ namespace CK.SqlServer.Setup
         bool ISetupEngineAspect.Configure()
         {
             _defaultDatabase = _databases.FindManagerByName( SqlDatabase.DefaultDatabaseName );
-            _engine.StartConfiguration.VersionRepository = new SqlVersionedItemRepository( _defaultDatabase );
-            _engine.StartConfiguration.SetupSessionMemoryProvider = new SqlSetupSessionMemoryProvider( _defaultDatabase );
+            ISqlManager realSqlManager = _defaultDatabase as ISqlManager;
+            if( _engine.StartConfiguration.VersionedItemReader == null )
+            {
+                if( realSqlManager != null )
+                {
+                    _engine.Monitor.Info().Send( $"Setting SqlVersionedItemReader on the default database as the version reader." );
+                    _engine.StartConfiguration.VersionedItemReader = new SqlVersionedItemReader( realSqlManager );
+                }
+                else
+                {
+                    _engine.Monitor.Info().Send( $"SqlSetupAspects: Unable to use SqlVersionedItemReader on the default database as the version writer since the underlying sql manager is not a real manager." );
+                }
+            }
+            if( _engine.StartConfiguration.VersionedItemWriter == null )
+            {
+                _engine.Monitor.Info().Send( $"Setting SqlVersionedItemWriter on the default database as the version writer." );
+                _engine.StartConfiguration.VersionedItemWriter = new SqlVersionedItemWriter( _defaultDatabase );
+            }
+            if( _engine.StartConfiguration.SetupSessionMemoryProvider == null )
+            {
+
+                if( realSqlManager != null )
+                {
+                    _engine.Monitor.Info().Send( $"Setting SqlSetupSessionMemoryProvider on the default database as the memory provider." );
+                    _engine.StartConfiguration.SetupSessionMemoryProvider = new SqlSetupSessionMemoryProvider( realSqlManager );
+                }
+                else
+                {
+                    _engine.Monitor.Info().Send( $"SqlSetupAspects: Unable to use SqlSetupSessionMemoryProvider on the default database as the memory provider since the underlying sql manager is not a real manager." );
+                }
+            }
 
             _engine.SetupableConfigurator = new ConfiguratorHook( this );
             var sqlHandler = new SqlScriptTypeHandler( _databases );
@@ -113,13 +142,13 @@ namespace CK.SqlServer.Setup
         }
 
         /// <summary>
-        /// Gets the default database as a <see cref="SqlManager"/> object.
+        /// Gets the default database as a <see cref="ISqlManagerBase"/> object.
         /// </summary>
-        public ISqlManager DefaultSqlDatabase => _defaultDatabase; 
+        public ISqlManagerBase DefaultSqlDatabase => _defaultDatabase; 
 
         /// <summary>
         /// Gets the available databases (including the <see cref="DefaultSqlDatabase"/>).
-        /// It is initialized with <see cref="SqlSetupAspectConfiguration.Databases"/> content but can be changed.
+        /// It is initialized with <see cref="SqlSetupAspectConfiguration.Databases"/> content.
         /// </summary>
         public ISqlManagerProvider SqlDatabases => _databases; 
 

@@ -119,7 +119,8 @@ namespace CK.Setup
             try
             {
                 if( !CreateEngineAspectsFromConfiguration() ) return false;
-                if( _startConfiguration.VersionRepository == null ) throw new InvalidOperationException( "StartConfiguration.VersionRepository must be set before calling Run or ManualRun." );
+                if( _startConfiguration.VersionedItemReader == null ) throw new InvalidOperationException( "StartConfiguration.VersionedItemReader must be set before calling Run or ManualRun." );
+                if( _startConfiguration.VersionedItemWriter == null ) throw new InvalidOperationException( "StartConfiguration.VersionedItemWriter must be set before calling Run or ManualRun." );
                 if( _startConfiguration.SetupSessionMemoryProvider == null ) throw new InvalidOperationException( "StartConfiguration.SetupSessionMemoryProvider must be set before calling Run or ManualRun." );
                 if( _config.RunningMode == SetupEngineRunningMode.InitializeEngineOnly )
                 {
@@ -129,15 +130,24 @@ namespace CK.Setup
                 var buildResult = StObjBuilder.SafeBuildStObj( this, _runtimeBuilder, _configurator );
                 if( buildResult == null ) return false;
                 var path = _monitor.Output.RegisterClient( new ActivityMonitorPathCatcher() );
+                var memoryProvider = _startConfiguration.SetupSessionMemoryProvider;
                 ISetupSessionMemory m = null;
                 try
                 {
-                    m = _startConfiguration.SetupSessionMemoryProvider.StartSetup();
-                    if( DoRun( items, buildResult.SetupItems, m ) 
-                        && buildResult.GenerateFinalAssembly( _monitor ) )
+                    m = memoryProvider.StartSetup();
+                    VersionedItemTracker versionTracker = new VersionedItemTracker( _startConfiguration.VersionedItemReader );
+                    if( versionTracker.Initialize( _monitor ) )
                     {
-                        _startConfiguration.SetupSessionMemoryProvider.StopSetup( null );
-                        return true;
+                        bool setupSuccess = DoRun( items, buildResult.SetupItems, versionTracker, m );
+                        setupSuccess &= versionTracker.ConcludeWithFatalOnError( _monitor, _startConfiguration.VersionedItemWriter, setupSuccess );
+                        if( setupSuccess )
+                        {
+                            if( buildResult.GenerateFinalAssembly( _monitor ) )
+                            {
+                                _startConfiguration.SetupSessionMemoryProvider.StopSetup( null );
+                                return true;
+                            }
+                        }
                     }
                 }
                 catch( Exception ex )
@@ -148,7 +158,7 @@ namespace CK.Setup
                 {
                     _monitor.Output.UnregisterClient( path );
                 }
-                if( m != null ) _startConfiguration.SetupSessionMemoryProvider.StopSetup( path.LastErrorPath.ToStringPath() );
+                if( m != null ) memoryProvider.StopSetup( path.LastErrorPath.ToStringPath() );
                 return false;
             }
             finally
@@ -157,11 +167,11 @@ namespace CK.Setup
             }
         }
 
-        bool DoRun( object[] items, IEnumerable<ISetupItem> stObjItems, ISetupSessionMemory m )
+        bool DoRun( object[] items, IEnumerable<ISetupItem> stObjItems, VersionedItemTracker versionTracker, ISetupSessionMemory m )
         {
             bool hasError = false;
             using( _monitor.OnError( () => hasError = true ) )
-            using( SetupCoreEngine engine = CreateCoreEngine( m ) )
+            using( SetupCoreEngine engine = CreateCoreEngine( versionTracker, m ) )
             {
                 using( _monitor.OpenInfo().Send( "Register step." ) )
                 {
@@ -231,7 +241,7 @@ namespace CK.Setup
             }
         }
 
-        SetupCoreEngine CreateCoreEngine( ISetupSessionMemory m )
+        SetupCoreEngine CreateCoreEngine( VersionedItemTracker versionTracker, ISetupSessionMemory m )
         {
             SetupCoreEngine engine = null;
             using( _monitor.OpenInfo().Send( "Setup engine initialization." ) )
@@ -242,7 +252,7 @@ namespace CK.Setup
                 {
                     _monitor.Info().Send( "{0} previous Setup attempt(s). Last on {2}, error was: '{1}'.", memory.StartCount, memory.LastError, memory.LastStartDate );
                 }
-                engine = new SetupCoreEngine( _startConfiguration.VersionRepository, m, _startConfiguration.Aspects, _monitor, _configurator );
+                engine = new SetupCoreEngine( versionTracker, m, _startConfiguration.Aspects, _monitor, _configurator );
                 ScriptSetupHandlerBuilder scriptBuilder = new ScriptSetupHandlerBuilder( engine, _scripts, _startConfiguration.ScriptTypeManager );
                 engine.RegisterSetupEvent += _relayRegisterSetupEvent;
                 engine.SetupEvent += _relaySetupEvent;

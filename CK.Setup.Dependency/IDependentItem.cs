@@ -22,7 +22,7 @@ namespace CK.Setup
     {
         /// <summary>
         /// Gets a name that uniquely identifies the item. 
-        /// It must be not null.
+        /// It must be not null nor empty and should not be longer than 400 characters.
         /// </summary>
         string FullName { get; }
 

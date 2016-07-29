@@ -16,12 +16,12 @@ namespace CK.SqlServer.Setup
     class SqlMultiScript : MultiScriptBase
     {
         readonly ISetupSessionMemory _memory;
-        readonly ISqlManager _manager;
+        readonly ISqlManagerBase _manager;
         readonly SetupItemDriver _driver;
         List<SimpleScriptTagHandler.Script> _scripts;
         ISqlScriptExecutor _executor;
 
-        public SqlMultiScript( IActivityMonitor monitor, ISetupScript script, ISqlManager manager, ISetupSessionMemory memory, SetupItemDriver driver )
+        public SqlMultiScript( IActivityMonitor monitor, ISetupScript script, ISqlManagerBase manager, ISetupSessionMemory memory, SetupItemDriver driver )
             : base( monitor, script )
         {
             if( memory == null ) throw new ArgumentNullException( nameof( memory ) );

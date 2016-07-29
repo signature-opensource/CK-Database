@@ -72,6 +72,9 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="VersionRepository\IVersionedItemWriter.cs" />
+    <Compile Include="VersionRepository\IVersionedItemReader.cs" />
+    <Compile Include="VersionRepository\VersionedItemTracker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -79,7 +82,7 @@
     <Compile Include="Scripts\ScriptTypeHandler.cs" />
     <Compile Include="SetupCore\GroupHeadSetupDriver.cs" />
     <Compile Include="SetupCore\ISetupSessionMemoryProvider.cs" />
-    <Compile Include="Scripts\SetupScriptExtension.cs" />
+    <Compile Include="Scripts\SetupScriptExtensions.cs" />
     <Compile Include="Scripts\MultiScriptBase.cs" />
     <Compile Include="Scripts\MultiScriptExecutorBase.cs" />
     <Compile Include="Scripts\IScriptExecutor.cs" />
@@ -103,6 +106,7 @@
     <Compile Include="StObj\Impl\StObjSetupData.cs" />
     <Compile Include="StObj\StObjBuilder.cs" />
     <Compile Include="StObj\StObjSetupItemBuilder.cs" />
+    <Compile Include="VersionRepository\VersionedNameTracked.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">

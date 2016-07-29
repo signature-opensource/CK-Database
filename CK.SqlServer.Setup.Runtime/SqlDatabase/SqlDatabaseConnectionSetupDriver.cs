@@ -14,7 +14,7 @@ namespace CK.SqlServer.Setup
     public class SqlDatabaseConnectionSetupDriver : SetupItemDriver
     {
         readonly ISqlManagerProvider _sqlProvider;
-        ISqlManager _connection;
+        ISqlManagerBase _connection;
 
         public SqlDatabaseConnectionSetupDriver( BuildInfo info )
             : base( info )
@@ -42,9 +42,9 @@ namespace CK.SqlServer.Setup
             return true;
         }
 
-        static ISqlManager FindManager( ISqlManagerProvider sql, IActivityMonitor monitor, SqlDatabase db )
+        static ISqlManagerBase FindManager( ISqlManagerProvider sql, IActivityMonitor monitor, SqlDatabase db )
         {
-            ISqlManager c = null;
+            ISqlManagerBase c = null;
             if( !String.IsNullOrWhiteSpace( db.ConnectionString ) )
             {
                 c = sql.FindManagerByConnectionString( db.ConnectionString );

@@ -93,7 +93,9 @@ namespace CK.Setup
         public List<string> RequiredBy { get { return _requiredBy ?? (_requiredBy = new List<string>()); } }
 
         internal List<string> InternalRequires { get { return _requires; } }
+
         internal List<string> InternalRequiredBy { get { return _requiredBy; } }
+
         internal void SetScriptTypeManager( ScriptTypeManager m )
         {
             if( _manager != null ) throw new InvalidOperationException( "ScriptTypeHandler is already registered in a ScriptTypeManager." );

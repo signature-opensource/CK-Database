@@ -41,11 +41,17 @@ namespace CK.SqlServer.Setup
             return true;
         }
 
-        static string _script = @"
+        /// <summary>
+        /// Exposes the script fragment that tests for CKCore schema and creates it if needed.
+        /// </summary>
+        public static readonly string EnsureCKCoreSchemaScript = @"
 if not exists(select 1 from sys.schemas where name = 'CKCore')
 begin
     exec( 'create schema CKCore' );
 end
+";
+
+        static readonly string _script = EnsureCKCoreSchemaScript + @"
 else
 begin
     if object_id('CKCore.sErrorRethrow') is not null drop procedure CKCore.sErrorRethrow;
