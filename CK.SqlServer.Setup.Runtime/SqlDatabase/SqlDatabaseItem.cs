@@ -14,6 +14,13 @@ namespace CK.SqlServer.Setup
 {
     public class SqlDatabaseItem : StObjDynamicContainerItem
     {
+        /// <summary>
+        /// All <see cref="SqlDatabaseItem"/> share the same name: "SqlDatabase".
+        /// Their full names are defined only by context and location (the logical databasename): 
+        /// "[context]dbName^SqlDatabase".
+        /// </summary>
+        public static string SqlDatabaseItemName = "SqlDatabase";
+
         internal readonly SqlDatabaseConnectionItem ConnectionItem;
 
         class Model : ISetupItem, IDependentItemGroup, IDependentItemGroupRef
@@ -55,14 +62,25 @@ namespace CK.SqlServer.Setup
         }
 
         public SqlDatabaseItem( IActivityMonitor monitor, IStObjSetupData data )
-            : base( monitor, data )
+            : base( monitor, data, typeof(SqlDatabaseItemDriver) )
         {
             Context = data.StObj.Context.Context;
             Location = ActualObject.Name;
+            Name = SqlDatabaseItemName;
             ConnectionItem = new SqlDatabaseConnectionItem( this );
             Requires.Add( new Model( this ) );
         }
 
         public new SqlDatabase ActualObject => (SqlDatabase)base.ActualObject;
+
+        /// <summary>
+        /// Gets the name of the SqlDatabaseItem based on the context and location.
+        /// </summary>
+        /// <param name="contextLocName">The non null context-locaton-name.</param>
+        /// <returns>The associated database item name.</returns>
+        public static string ItemNameFor( IContextLocNaming contextLocName )
+        {
+            return DefaultContextLocNaming.Format( contextLocName.Context, contextLocName.Location, SqlDatabaseItemName );
+        }
     }
 }

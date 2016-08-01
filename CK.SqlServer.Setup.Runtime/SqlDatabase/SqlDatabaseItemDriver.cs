@@ -6,23 +6,33 @@
 #endregion
 
 using CK.Setup;
+using CK.SqlServer.Parser;
+using System.Collections.Generic;
+using System;
 
 namespace CK.SqlServer.Setup
 {
-    public class SqlDatabaseSetupDriver : SetupItemDriver
+    public class SqlDatabaseItemDriver : SetupItemDriver
     {
-        readonly SqlDatabaseConnectionSetupDriver _connection;
+        readonly SqlDatabaseConnectionItemDriver _connection;
+        readonly List<ISqlServerObject> _sqlObjects;
 
-        public SqlDatabaseSetupDriver( BuildInfo info )
+        public SqlDatabaseItemDriver( BuildInfo info )
             : base( info )
         {
-            _connection = (SqlDatabaseConnectionSetupDriver)Engine.AllDrivers[Item.ConnectionItem];
+            _connection = (SqlDatabaseConnectionItemDriver)Engine.Drivers[Item.ConnectionItem];
+            _sqlObjects = new List<ISqlServerObject>();
         }
 
         /// <summary>
         /// Masked Item to formally be associated to a <see cref="SqlDatabaseItem"/> item.
         /// </summary>
         public new SqlDatabaseItem Item => (SqlDatabaseItem)base.Item;
+
+        /// <summary>
+        /// Gets the Sql manager for this database.
+        /// </summary>
+        public ISqlManagerBase SqlManager => _connection.SqlManager;
 
     }
 }

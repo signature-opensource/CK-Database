@@ -46,12 +46,12 @@ namespace CK.Setup
 
             public DriverBase this[string fullName]
             {
-                get { return _index.GetValueWithDefault( fullName, null ); }
+                get { return fullName == null ? null : _index.GetValueWithDefault( fullName, null ); }
             }
 
             public DriverBase this[ IDependentItem item ]
             {
-                get { return _index.GetValueWithDefault( item, null ); }
+                get { return item == null ? null : _index.GetValueWithDefault( item, null ); }
             }
 
             public DriverBase this[int index]

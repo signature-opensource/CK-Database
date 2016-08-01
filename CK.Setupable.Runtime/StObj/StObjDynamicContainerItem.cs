@@ -29,8 +29,8 @@ namespace CK.Setup
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="data">Descriptive data that is used to configure this item.</param>
-        /// <param name="defaultDriverType">If <see cref="IStObjSetupData.DriverType"/> and <see cref="IStObjSetupData.DriverTypeName"/> is null, this driver is used.</param>
-        public StObjDynamicContainerItem( IActivityMonitor monitor, IStObjSetupData data, Type defaultDriverType = null )
+        /// <param name="defaultDriverType">Can be a string or a Type: if <see cref="IStObjSetupData.DriverType"/> and <see cref="IStObjSetupData.DriverTypeName"/> is null, this driver is used.</param>
+        public StObjDynamicContainerItem( IActivityMonitor monitor, IStObjSetupData data, object defaultDriverType = null )
             : base( (object)data.DriverType ?? (object)data.DriverTypeName ?? defaultDriverType )
         {
             Debug.Assert( data.ItemType == null || typeof( StObjDynamicContainerItem ).IsAssignableFrom( data.ItemType ), "If we are using a StObjDynamicContainerItem, this is because no explicit ItemType (nor ItemTypeName) have been set, or it is a type that specializes this." );

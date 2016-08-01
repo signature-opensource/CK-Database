@@ -58,6 +58,30 @@ namespace CK.Setup
             Head = info.Head;
         }
 
+        /// <summary>
+        /// Gets the container driver (or null if the item does not belong to a container).
+        /// </summary>
+        public SetupItemDriver ContainerDriver => Engine.Drivers[SortedItem.Container?.Item];
+
+        /// <summary>
+        /// Gets all the container driver, starting with this <see cref="ContainerDriver"/> up to the 
+        /// root container driver.
+        /// </summary>
+        public IEnumerable<SetupItemDriver> ContainerDrivers
+        {
+            get
+            {
+                var i = this;
+                for( ;;)
+                {
+                    var c = ContainerDriver;
+                    if( c == null ) break;
+                    yield return c;
+                    i = c;
+                }
+            }
+        }
+
         internal override bool IsGroupHead => false; 
 
         /// <summary>

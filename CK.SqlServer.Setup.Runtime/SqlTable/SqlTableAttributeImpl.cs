@@ -30,7 +30,7 @@ namespace CK.SqlServer.Setup
         {
             SetAutomaticSetupFullNamewithoutContext( monitor, data, "SqlTable" );
             data.ItemType = typeof( SqlTableItem );
-            data.DriverType = typeof( SqlTableSetupDriver );
+            data.DriverType = typeof( SqlTableItemDriver );
         }
 
     }

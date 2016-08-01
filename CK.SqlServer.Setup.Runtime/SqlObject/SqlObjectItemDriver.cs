@@ -21,15 +21,21 @@ namespace CK.SqlServer.Setup
     /// </summary>
     public class SqlObjectItemDriver : SetupItemDriver
     {
-        readonly ISqlManagerProvider _provider;
+        readonly ISqlSetupAspect _aspects;
+        SqlDatabaseItemDriver _dbDriver;
 
         public SqlObjectItemDriver( BuildInfo info )
             : base( info )
         {
-            _provider = info.Engine.GetSetupEngineAspect<ISqlSetupAspect>().SqlDatabases;
+            _aspects = info.Engine.GetSetupEngineAspect<ISqlSetupAspect>();
         }
 
         public new SqlObjectItem Item => (SqlObjectItem)base.Item;
+
+        /// <summary>
+        /// Gets the database driver.
+        /// </summary>
+        public SqlDatabaseItemDriver DatabaseDriver => _dbDriver ?? (_dbDriver = (SqlDatabaseItemDriver)Engine.Drivers[SqlDatabaseItem.ItemNameFor(Item)]);
 
         protected override bool Install( bool beforeHandlers )
         {
@@ -37,9 +43,18 @@ namespace CK.SqlServer.Setup
 
             if( ExternalVersion != null && ExternalVersion.Version == Item.Version ) return true;
 
-            ISqlManagerBase m = FindManagerFromLocation( Engine.Monitor, _provider, FullName );
-            if( m == null ) return false;
- 
+            if( !_aspects.GlobalResolution ) return LegacyInstall();
+
+            Debug.Assert( Item.TransformTarget == null || Item.TransformSource == null, "Both can not be set on the same item." );
+
+            return LegacyInstall();
+
+        }
+
+        bool LegacyInstall()
+        {
+            ISqlManagerBase m = DatabaseDriver.SqlManager;
+
             string s;
             StringBuilder b = new StringBuilder();
 
@@ -87,27 +102,5 @@ namespace CK.SqlServer.Setup
             }
             return true;
         }
-
-        public static ISqlManagerBase FindManagerFromLocation( IActivityMonitor monitor, ISqlManagerProvider provider, string fullName )
-        {
-            if( monitor == null ) throw new ArgumentNullException( "monitor" );
-            if( provider == null ) throw new ArgumentNullException( "provider" );
-            if( fullName == null ) throw new ArgumentNullException( "fullName" );
-            ISqlManagerBase m = null;
-            string context, location, name, targetName;
-            if( !DefaultContextLocNaming.TryParse( fullName, out context, out location, out name, out targetName ) )
-            {
-                monitor.Error().Send( "Unable to extract a location from FullName '{0}' in order to find a Sql connection.", fullName );
-            }
-            else
-            {
-                if( (m = provider.FindManagerByName( location )) == null )
-                {
-                    monitor.Error().Send( "Location '{0}' from FullName '{1}' can not be mapped to an existing Sql Connection.", location, fullName );
-                }
-            }
-            return m;
-        }
-
     }
 }

@@ -18,7 +18,7 @@ namespace CK.SqlServer.Setup
         {
         }
 
-        protected new SqlPackageAttribute Attribute { get { return (SqlPackageAttribute)base.Attribute; } }
+        protected new SqlPackageAttribute Attribute => (SqlPackageAttribute)base.Attribute; 
 
         protected override void ConfigureMutableItem( IActivityMonitor monitor, IStObjMutableItem o )
         {
@@ -32,7 +32,7 @@ namespace CK.SqlServer.Setup
                 monitor.Info().Send( "SqlPackage '{0}' uses its own full name as its SetupName.", data.FullNameWithoutContext );
             }
             data.ItemType = typeof( SqlPackageBaseItem );
-            data.DriverType = typeof( SqlPackageBaseSetupDriver );
+            data.DriverType = typeof( SqlPackageBaseItemDriver );
         }
     
     }

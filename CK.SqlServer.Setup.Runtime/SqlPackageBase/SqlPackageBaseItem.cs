@@ -34,7 +34,7 @@ namespace CK.SqlServer.Setup
             object hasModel = data.StObj.GetStObjProperty( "HasModel" );
             if( !(hasModel is bool) || (bool)hasModel ) EnsureModel();
             
-            Debug.Assert( typeof( SqlPackageBaseSetupDriver ).IsAssignableFrom( data.DriverType ) );
+            Debug.Assert( typeof( SqlPackageBaseItemDriver ).IsAssignableFrom( data.DriverType ) );
             Name = data.FullNameWithoutContext;
         }
 

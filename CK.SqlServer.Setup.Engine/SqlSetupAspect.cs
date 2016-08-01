@@ -123,7 +123,13 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Gets the configuration object.
         /// </summary>
-        public SqlSetupAspectConfiguration Configuration => _config; 
+        public SqlSetupAspectConfiguration Configuration => _config;
+
+        /// <summary>
+        /// Gets whether the resolution of objects must be done globally.
+        /// This is a temporary property: this should eventually be the only mode...
+        /// </summary>
+        public bool GlobalResolution => _config.GlobalResolution;
 
         /// <summary>
         /// Gets the <see cref="ISqlServerParser"/> to use.

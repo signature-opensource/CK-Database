@@ -105,9 +105,9 @@
     <Compile Include="SqlCallableAttributeImpl\SqlCallableAttributeImpl.GenerateCreateSqlCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlDatabase\SqlDatabaseConnectionItem.cs" />
-    <Compile Include="SqlDatabase\SqlDatabaseConnectionSetupDriver.cs" />
+    <Compile Include="SqlDatabase\SqlDatabaseConnectionItemDriver.cs" />
     <Compile Include="SqlDatabase\SqlDatabaseItem.cs" />
-    <Compile Include="SqlDatabase\SqlDatabaseSetupDriver.cs" />
+    <Compile Include="SqlDatabase\SqlDatabaseItemDriver.cs" />
     <Compile Include="SqlObjectItemAttributeImpl.cs" />
     <Compile Include="SqlObject\SqlObjectItem.cs" />
     <Compile Include="SqlObject\SqlObjectItemDriver.cs" />
@@ -115,7 +115,7 @@
     <Compile Include="SqlObject\SqlViewItem.cs" />
     <Compile Include="SqlPackageBase\SqlPackageAttributeImplBase.cs" />
     <Compile Include="SqlPackageBase\SqlPackageBaseItem.cs" />
-    <Compile Include="SqlPackageBase\SqlPackageBaseSetupDriver.cs" />
+    <Compile Include="SqlPackageBase\SqlPackageBaseItemDriver.cs" />
     <Compile Include="SqlPackage\SqlPackageAttributeImpl.cs" />
     <Compile Include="SqlCallableAttributeImpl\SqlCallableAttributeImpl.cs" />
     <Compile Include="SqlCallableAttributeImpl\SqlCallableAttributeImpl.SqlCallContextInfo.cs" />
@@ -124,7 +124,7 @@
     <Compile Include="SqlCallableAttributeImpl\SqlParameterReturnedValue.cs" />
     <Compile Include="SqlTable\SqlTableAttributeImpl.cs" />
     <Compile Include="SqlTable\SqlTableItem.cs" />
-    <Compile Include="SqlTable\SqlTableSetupDriver.cs" />
+    <Compile Include="SqlTable\SqlTableItemDriver.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">

@@ -14,15 +14,22 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
-    public class SqlPackageBaseSetupDriver : SetupItemDriver
+    public class SqlPackageBaseItemDriver : SetupItemDriver
     {
-        public SqlPackageBaseSetupDriver( BuildInfo info )
+        SqlDatabaseItemDriver _dbDriver;
+
+        public SqlPackageBaseItemDriver( BuildInfo info )
             : base( info ) 
         {
             SqlPackageBase p = Item.ActualObject;
             string schema = p.Schema;
             if( schema != null && p.Database != null ) p.Database.EnsureSchema( schema ); 
         }
+
+        /// <summary>
+        /// Gets the database driver.
+        /// </summary>
+        public SqlDatabaseItemDriver DatabaseDriver => _dbDriver ?? (_dbDriver = (SqlDatabaseItemDriver)Engine.Drivers[Item.Groups.OfType<SqlDatabaseItem>().Single()]);
 
         public new SqlPackageBaseItem Item => (SqlPackageBaseItem)base.Item;
 

@@ -22,14 +22,14 @@ namespace CK.Setup
         /// <summary>
         /// Gets a <see cref="SetupItemDriver"/> by its name.
         /// </summary>
-        /// <param name="fullName">The item full name.</param>
+        /// <param name="fullName">The item full name. Can be null: null is returned.</param>
         /// <returns>The associated driver or null if the driver does not exist.</returns>
         SetupItemDriver this[string fullName] { get; }
 
         /// <summary>
         /// Gets a <see cref="SetupItemDriver"/> associated to a <see cref="IDependentItem"/>.
         /// </summary>
-        /// <param name="item">The item.</param>
+        /// <param name="item">The item. Can be null: null is returned.</param>
         /// <returns>The associated driver or null if the driver does not exist.</returns>
         SetupItemDriver this[IDependentItem item] { get; }
 

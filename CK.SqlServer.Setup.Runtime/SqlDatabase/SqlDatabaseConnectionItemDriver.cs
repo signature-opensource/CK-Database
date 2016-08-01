@@ -11,18 +11,23 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
-    public class SqlDatabaseConnectionSetupDriver : SetupItemDriver
+    public class SqlDatabaseConnectionItemDriver : SetupItemDriver
     {
         readonly ISqlManagerProvider _sqlProvider;
         ISqlManagerBase _connection;
 
-        public SqlDatabaseConnectionSetupDriver( BuildInfo info )
+        public SqlDatabaseConnectionItemDriver( BuildInfo info )
             : base( info )
         {
             _sqlProvider = info.Engine.GetSetupEngineAspect<ISqlSetupAspect>().SqlDatabases;
         }
 
         public new SqlDatabaseConnectionItem Item => (SqlDatabaseConnectionItem)base.Item;
+
+        /// <summary>
+        /// Gets the Sql manager. This is initialized by <see cref="Init"/>.
+        /// </summary>
+        public ISqlManagerBase SqlManager => _connection;
 
         protected override bool Init( bool beforeHandlers )
         {
@@ -45,7 +50,7 @@ namespace CK.SqlServer.Setup
         static ISqlManagerBase FindManager( ISqlManagerProvider sql, IActivityMonitor monitor, SqlDatabase db )
         {
             ISqlManagerBase c = null;
-            if( !String.IsNullOrWhiteSpace( db.ConnectionString ) )
+            if( !string.IsNullOrWhiteSpace( db.ConnectionString ) )
             {
                 c = sql.FindManagerByConnectionString( db.ConnectionString );
             }
