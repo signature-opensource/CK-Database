@@ -6,6 +6,11 @@ using System.Threading.Tasks;
 
 namespace SqlCallDemo.CommandDemo
 {
+    /// <summary>
+    /// Demo command POCO (do not look for anything that makes sense).
+    /// Two different results are nested here: a mutable POCO and
+    /// an immutable object, CmdDemo.ResultReadOnly.
+    /// </summary>
     public class CmdDemo
     {
         public int ActorId { get; set; }
@@ -14,6 +19,9 @@ namespace SqlCallDemo.CommandDemo
 
         public DateTime LaunchnDate { get; set; }
 
+        /// <summary>
+        /// Result POCO as a mutable object.
+        /// </summary>
         public class ResultPOCO
         {
             public int Delay { get; set; }
@@ -21,6 +29,9 @@ namespace SqlCallDemo.CommandDemo
             public string ActualCompanyName { get; set; }
         }
 
+        /// <summary>
+        /// Immutable result POCO (often better).
+        /// </summary>
         public class ResultReadOnly
         {
             public ResultReadOnly( int delay, string actualCompanyName )
