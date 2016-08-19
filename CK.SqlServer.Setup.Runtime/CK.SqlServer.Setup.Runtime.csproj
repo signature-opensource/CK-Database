@@ -76,8 +76,8 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
-    <Reference Include="Yodii.Script, Version=0.2.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\Yodii.Script.0.2.0\lib\net45\Yodii.Script.dll</HintPath>
+    <Reference Include="Yodii.Script, Version=0.3.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\packages\Yodii.Script.0.3.0\lib\net45\Yodii.Script.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
