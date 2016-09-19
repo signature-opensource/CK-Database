@@ -43,7 +43,8 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets the transform target item if this item has associated <see cref="Transformers"/>.
-        /// This object is created by the first call to this <see cref="AddTransformer"/> method.
+        /// This object is created as a clone of this object by the first call 
+        /// to this <see cref="AddTransformer"/> method.
         /// </summary>
         public SetupObjectItem TransformTarget => _transformTarget;
 
@@ -199,7 +200,7 @@ namespace CK.Setup
         /// </returns>
         protected abstract object StartDependencySort();
 
-        #region Explicit implementations of IContextLocNaming (to avaoid clutering the interface).
+        #region Explicit implementations of IContextLocNaming (to avoid clutering the interface).
 
         string IContextLocNaming.Context => _contextLocName.Context; 
 

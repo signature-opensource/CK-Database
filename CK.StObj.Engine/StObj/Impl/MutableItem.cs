@@ -277,23 +277,14 @@ namespace CK.Setup
 
         #endregion
 
-        public new IContextualStObjMap Context
-        {
-            get { return (IContextualStObjMap)base.Context; }
-        }
+        public new IContextualStObjMap Context => (IContextualStObjMap)base.Context; 
 
         /// <summary>
         /// Never null.
         /// </summary>
-        internal MutableItem LeafSpecialization
-        {
-            get { return _leafData.LeafSpecialization; }
-        }
+        internal MutableItem LeafSpecialization => _leafData.LeafSpecialization; 
 
-        internal MutableItem RootGeneralization
-        {
-            get { return _leafData.RootGeneralization; }
-        }
+        internal MutableItem RootGeneralization => _leafData.RootGeneralization; 
 
         #region IStObjMutableItem is called during Configuration
 
@@ -311,21 +302,21 @@ namespace CK.Setup
 
         string IStObjMutableItem.Context { get { return base.Context.Context; } }
 
-        IStObjMutableReference IStObjMutableItem.Container { get { return _container; } }
+        IStObjMutableReference IStObjMutableItem.Container => _container; 
 
-        IStObjMutableReferenceList IStObjMutableItem.Children { get { return _children; } }
+        IStObjMutableReferenceList IStObjMutableItem.Children => _children;
 
-        IStObjMutableReferenceList IStObjMutableItem.Requires { get { return _requires; } }
+        IStObjMutableReferenceList IStObjMutableItem.Requires => _requires;
 
-        IStObjMutableReferenceList IStObjMutableItem.RequiredBy { get { return _requiredBy; } }
+        IStObjMutableReferenceList IStObjMutableItem.RequiredBy => _requiredBy; 
 
-        IStObjMutableReferenceList IStObjMutableItem.Groups { get { return _groups; } }
+        IStObjMutableReferenceList IStObjMutableItem.Groups => _groups;
 
-        public IReadOnlyList<IStObjMutableParameter> ConstructParameters { get { return _constructParameterEx; } }
+        public IReadOnlyList<IStObjMutableParameter> ConstructParameters => _constructParameterEx; 
 
-        IReadOnlyList<IStObjAmbientProperty> IStObjMutableItem.SpecializedAmbientProperties { get { return _ambientPropertiesEx; } }
+        IReadOnlyList<IStObjAmbientProperty> IStObjMutableItem.SpecializedAmbientProperties => _ambientPropertiesEx; 
 
-        IReadOnlyList<IStObjMutableInjectAmbientContract> IStObjMutableItem.SpecializedAmbientContracts { get { return _ambientContractsEx; } }
+        IReadOnlyList<IStObjMutableInjectAmbientContract> IStObjMutableItem.SpecializedAmbientContracts => _ambientContractsEx;
 
         bool IStObjMutableItem.SetDirectPropertyValue( IActivityMonitor monitor, string propertyName, object value, string sourceDescription )
         {
@@ -736,21 +727,11 @@ namespace CK.Setup
             }
         }
 
-        object IDependentItem.StartDependencySort()
-        {
-            return null;
-        }
+        object IDependentItem.StartDependencySort() =>  null;
 
-        string IDependentItemRef.FullName
-        {
-            get { return _dFullName; }
-        }
+        string IDependentItemRef.FullName => _dFullName; 
 
-        bool IDependentItemRef.Optional
-        {
-            get { return false; }
-        }
-
+        bool IDependentItemRef.Optional => false; 
         #endregion
 
         #region IStObj Members

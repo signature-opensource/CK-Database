@@ -62,10 +62,7 @@ namespace CK.Setup
                 Handler = h;
             }
 
-            public IDependentItemContainerRef Container
-            {
-                get { return null; }
-            }
+            public IDependentItemContainerRef Container => null; 
 
             public IEnumerable<IDependentItemRef> Requires
             {
@@ -77,30 +74,15 @@ namespace CK.Setup
                 get { return Handler.InternalRequiredBy != null ? Handler.InternalRequiredBy.Select( s => new NamedDependentItemRef( s ) ) : null; }
             }
 
-            public IEnumerable<IDependentItemGroupRef> Groups
-            {
-                get { return null; }
-            }
+            public IEnumerable<IDependentItemGroupRef> Groups => null; 
 
-            public string FullName
-            {
-                get { return Handler.HandlerName; }
-            }
+            public string FullName => Handler.HandlerName; 
 
-            public bool Optional
-            {
-                get { return false; }
-            }
+            public bool Optional => false;
 
-            public IDependentItemRef Generalization
-            {
-                get { return null; }
-            }
+            public IDependentItemRef Generalization => null; 
 
-            public object StartDependencySort()
-            {
-                return null;
-            }
+            public object StartDependencySort() => null;
         }
 
         /// <summary>

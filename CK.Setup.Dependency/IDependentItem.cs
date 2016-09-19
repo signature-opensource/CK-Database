@@ -15,8 +15,8 @@ namespace CK.Setup
 {
     /// <summary>
     /// An item that is identified by a <see cref="IDependentItemRef.FullName">FullName</see>, can be in 
-    /// a <see cref="IDependentItemContainer"/> and have dependencies 
-    /// onto other items. The <see cref="DependencySorter"/> is used to order such items based on their dependencies.
+    /// a <see cref="IDependentItemContainer"/> and have dependencies onto other items. 
+    /// The <see cref="DependencySorter"/> is used to order such items based on their dependencies.
     /// </summary>
     public interface IDependentItem
     {

@@ -50,7 +50,6 @@ namespace CK.Setup
 
         bool IDependentItemRef.Optional => false;
 
-
         IEnumerable<IDependentItemRef> IDependentItemGroup.Children
         {
             get { return _children.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, Context, Location ) ); }
