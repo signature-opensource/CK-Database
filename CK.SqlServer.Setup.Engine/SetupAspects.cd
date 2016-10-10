@@ -15,15 +15,6 @@
   <Comment CommentText="SqlServer">
     <Position X="7.763" Y="9.717" Height="0.568" Width="5.002" />
   </Comment>
-  <Class Name="CK.Setup.SqlSetupAspectConfiguration">
-    <Position X="7.75" Y="6.75" Width="2.5" />
-    <TypeIdentifier />
-    <Lollipop Position="0.2" />
-  </Class>
-  <Class Name="CK.Setup.SqlDatabaseDescriptor">
-    <Position X="10.5" Y="6.75" Width="2" />
-    <TypeIdentifier />
-  </Class>
   <Class Name="CK.Setup.SetupEngineConfiguration">
     <Position X="1.75" Y="6.75" Width="2.5" />
     <TypeIdentifier />
@@ -55,6 +46,15 @@
       <FileName>SqlSetupAspect.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="CK.Setup.SqlSetupAspectConfiguration">
+    <Position X="7.75" Y="6.75" Width="2.5" />
+    <TypeIdentifier />
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="CK.Setup.SqlDatabaseDescriptor">
+    <Position X="10.5" Y="6.75" Width="2" />
+    <TypeIdentifier />
   </Class>
   <Interface Name="CK.Setup.ISetupEngineAspectConfiguration">
     <Position X="4.75" Y="6.75" Width="2.5" />
