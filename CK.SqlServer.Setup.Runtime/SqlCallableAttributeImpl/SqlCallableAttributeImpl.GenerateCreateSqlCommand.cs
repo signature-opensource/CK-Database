@@ -46,7 +46,7 @@ namespace CK.SqlServer.Setup
                 int i = 0;
 
                 Type[] genericArguments = m.GetGenericArguments();
-                string[] names = genericArguments.Select( t => String.Format( "T{0}", i++ ) ).ToArray();
+                string[] names = genericArguments.Select( t => string.Format( "T{0}", i++ ) ).ToArray();
 
                 var genericParameters = mB.DefineGenericParameters( names );
                 for( i = 0; i < names.Length; ++i )

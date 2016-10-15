@@ -541,7 +541,7 @@ namespace CK.SqlServer.Setup
                         g.Emit( OpCodes.Ceq );
                         g.Emit( OpCodes.Brtrue_S, isNull );
                         g.Emit( OpCodes.Unbox_Any, targetType );
-                        g.Emit( OpCodes.Br, afterIsNotNull );
+                        g.Emit( OpCodes.Br_S, afterIsNotNull );
                         g.MarkLabel( isNull );
                         g.Emit( OpCodes.Pop );
                         g.Emit( OpCodes.Ldloc, defNullable );
@@ -554,6 +554,14 @@ namespace CK.SqlServer.Setup
                 }
                 else
                 {
+                    Label afterCheckDBNull = g.DefineLabel();
+                    g.Emit( OpCodes.Dup );
+                    g.Emit( OpCodes.Ldsfld, SqlObjectItem.FieldDBNullValue );
+                    g.Emit( OpCodes.Ceq );
+                    g.Emit( OpCodes.Brfalse_S, afterCheckDBNull );
+                    g.Emit( OpCodes.Pop );
+                    g.Emit( OpCodes.Ldnull );
+                    g.MarkLabel( afterCheckDBNull );
                     g.Emit( OpCodes.Castclass, targetType );
                 }
             }

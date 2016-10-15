@@ -56,7 +56,7 @@ namespace CK.SqlServer.Setup
                     if( Item.Model != null ) nbScripts += scripts.AddFromResources( monitor, "res-sql", r, context, location, "Model." + name, ".sql" );
                     if( Item.ObjectsPackage != null ) nbScripts += scripts.AddFromResources( monitor, "res-sql", r, context, location, "Objects." + name, ".sql" );
 
-                    nbScripts = scripts.AddFromResources( monitor, "res-y4", r, context, location, name, ".y4" );
+                    nbScripts += scripts.AddFromResources( monitor, "res-y4", r, context, location, name, ".y4" );
                     if( Item.Model != null ) nbScripts += scripts.AddFromResources( monitor, "res-y4", r, context, location, "Model." + name, ".y4" );
                     if( Item.ObjectsPackage != null ) nbScripts += scripts.AddFromResources( monitor, "res-y4", r, context, location, "Objects." + name, ".y4" );
 
