@@ -12,6 +12,17 @@ namespace CK.Core
 {
     public static class SqlDatabaseExtensions
     {
+
+        /// <summary>
+        /// Checks that all invariants registered in CKCore.tInvariant are successful.
+        /// </summary>
+        /// <param name="this">This database.</param>
+        public static SqlDatabase AssertAllCKCoreInvariant( this SqlDatabase @this )
+        {
+            @this.AssertEmptyReader( "exec CKCore.sInvariantRunAll; select InvariantKey, CountSelect, RunStatus from CKCore.tInvariant where RunStatus <> 'Success'" );
+            return @this;
+        }
+
         /// <summary>
         /// Checks that the <paramref name="selectClause"/> with its optional parameters @0, @1... returns no results.
         /// </summary>
@@ -80,9 +91,19 @@ namespace CK.Core
         /// </summary>
         /// <param name="this">This database.</param>
         /// <param name="command">The command to execute.</param>
+        public static void ExecuteNonQuery( this SqlDatabase @this, string command )
+        {
+            using( var cmd = new SqlCommand( command ) ) @this.ExecuteNonQuery( cmd );
+        }
+
+        /// <summary>
+        /// Executes the <paramref name="command"/>.
+        /// </summary>
+        /// <param name="this">This database.</param>
+        /// <param name="command">The command to execute.</param>
         public static void ExecuteNonQuery( this SqlDatabase @this, SqlCommand command )
         {
-            using( var c = new SqlConnection( @this.ConnectionString ))
+            using( var c = new SqlConnection( @this.ConnectionString ) )
             {
                 c.Open();
                 command.Connection = c;
@@ -102,7 +123,11 @@ namespace CK.Core
             {
                 using( var reader = cmd.ExecuteReader( System.Data.CommandBehavior.SingleRow ) )
                 {
-                    Assert.That( reader.Read(), Is.False );
+                    var d = new SimpleDataTable( reader );
+                    if( d.Rows.Count > 0 )
+                    {
+                        throw new AssertionException( d.PrettyPrint() );
+                    }
                 }
             } );
         }

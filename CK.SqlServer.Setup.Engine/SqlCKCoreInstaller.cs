@@ -8,7 +8,7 @@ namespace CK.SqlServer.Setup
 {
     internal class SqlCKCoreInstaller
     {
-        public readonly static short CurrentVersion = 9;
+        public readonly static short CurrentVersion = 10;
 
         /// <summary>
         /// Installs the kernel.
@@ -212,11 +212,13 @@ GO
 -- The prefix 'select @Count = count(*) ' is automatically added (if @CountSelect doesn't already start with 'select').
 -- example:
 --
---   exec CKCore.sInvariantRegister 'from CK.tInvariant where upper(left(CountSelect,6)) <> 'SELECT', 0, 0;
+--   exec CKCore.sInvariantRegister 'AutoSample', 'from CK.tInvariant where upper(left(CountSelect,6)) <> 'SELECT', 0, 0;
 --   
--- Registers an ivariant that will ALWAYS be satisified :)
+-- Registers an invariant that will obviously ALWAYS be satisfied :)
 --
-create procedure CKCore.sInvariantRegister
+-- To unregister, simply call CKCore.sInvariantRegister 'AutoSample', null (or '' empty string).
+--
+create procedure CKCore.sInvariantRegister 
 (
 	@InvariantKey varchar(96),
 	@CountSelect nvarchar(2048),
@@ -227,18 +229,20 @@ as
 begin
 	set nocount on;
 	set @CountSelect = rtrim(ltrim(@CountSelect));
-	if upper(left(@CountSelect,6)) <> 'SELECT' set @CountSelect = N'select @Count = count(*) ' + @CountSelect;
+	if len(@CountSelect) = 0 set @CountSelect = null;
+	else if upper(left(@CountSelect,6)) <> 'SELECT' set @CountSelect = N'select @Count = count(*) ' + @CountSelect;
 	merge CKCore.tInvariant as target
 		using (select @InvariantKey) as source( InvariantKey )
 		on target.InvariantKey = source.InvariantKey
-		when matched then 
+		when matched and @CountSelect is not null then 
 			update set CountSelect = @CountSelect, 
 						MinValidCount = @MinValidCount,
 						MaxValidCount = @MaxValidCount,
 						LastCount = null,
 						LastRunDateUTC = null,
 						LastError = null
-		when not matched then
+		when matched and @CountSelect is null then delete
+		when not matched and @CountSelect is not null then
 			insert( InvariantKey, Ignored, CountSelect, MinValidCount, MaxValidCount )
 			values( @InvariantKey, 0, @CountSelect, @MinValidCount, @MaxValidCount );
 end
