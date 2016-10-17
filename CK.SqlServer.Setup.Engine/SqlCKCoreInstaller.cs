@@ -8,7 +8,7 @@ namespace CK.SqlServer.Setup
 {
     internal class SqlCKCoreInstaller
     {
-        public readonly static short CurrentVersion = 10;
+        public readonly static short CurrentVersion = 12;
 
         /// <summary>
         /// Installs the kernel.
@@ -199,13 +199,29 @@ begin
 	    LastError nvarchar(2048) null,
 	    LastRunDateUTC datetime2 null,
 	    RunStatus as case
-					    when LastRunDateUTC is null then 'Never runned' 
+					    when LastRunDateUTC is null then 'Never ran' 
 					    when LastError is not null then 'Fatal Error'
 					    when LastCount >= MinValidCount and LastCount <= MaxValidCount then 'Success'
 					    else 'Failed'
 				     end
 	    constraint PK_CKCore_Invariant primary key( InvariantKey )
     );
+end
+else
+begin
+    declare @curVer smallint;
+    select @curVer = Ver from CKCore.tSystem where Id=1;
+    if @curVer < 12
+    begin
+        alter table CKCore.tInvariant drop column RunStatus;
+        alter table CKCore.tInvariant 
+            add RunStatus as case
+        					    when LastRunDateUTC is null then 'Never ran' 
+        					    when LastError is not null then 'Fatal Error'
+        					    when LastCount >= MinValidCount and LastCount <= MaxValidCount then 'Success'
+        					    else 'Failed'
+        				     end
+    end
 end
 GO
 -- Registers an invariant: it is any query that returns a count and a min and max values for the count.
@@ -248,7 +264,7 @@ begin
 end
 GO
 -- Updates CKCore.tInvariant.LastCount, LastRunDateUTC and LastError errors for the given
--- invariant.
+-- invariant. The invariant must exist otherwise an exception is thrown.
 -- When setting @SkipIgnore to 1, even an invariant with CKCore.tInvariant.Ignored bit set to 1 is executed.
 create procedure CKCore.sInvariantRun
 ( 
@@ -265,23 +281,21 @@ begin
 	select @sql = CountSelect 
 		from CKCore.tInvariant 
 		where InvariantKey = @InvariantKey and (@SkipIgnore = 1 or Ignored = 0);
-	if @sql is not null
-	begin
-		begin try
-			exec sp_executesql @sql, N'@Count int output', @Count = @Count output;
-			update CKCore.tInvariant 
-				set LastCount = @Count, LastRunDateUTC = SYSUTCDATETIME(), LastError = null
-				where InvariantKey = @InvariantKey;
-			set @Success = 1;
-		end try
-		begin catch
-			update CKCore.tInvariant 
-				set LastCount = null, LastRunDateUTC = SYSUTCDATETIME(), LastError = ERROR_MESSAGE()
-				where InvariantKey = @InvariantKey;
-			set @Success = 0;
-		end catch
-	 end
-	 return 0;
+	if @sql is null throw 50000, 'CKCore.InvariantNotFound', 1;
+	begin try
+		exec sp_executesql @sql, N'@Count int output', @Count = @Count output;
+		update CKCore.tInvariant 
+			set LastCount = @Count, LastRunDateUTC = SYSUTCDATETIME(), LastError = null
+			where InvariantKey = @InvariantKey;
+		set @Success = 1;
+	end try
+	begin catch
+		update CKCore.tInvariant 
+			set LastCount = null, LastRunDateUTC = SYSUTCDATETIME(), LastError = ERROR_MESSAGE()
+			where InvariantKey = @InvariantKey;
+		set @Success = 0;
+	end catch
+	return 0;
 end
 GO
 -- Updates CKCore.tInvariant.LastCount, LastRunDateUTC and LastError errors for  all invariants.

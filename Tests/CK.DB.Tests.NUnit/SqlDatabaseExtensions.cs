@@ -7,19 +7,37 @@ using System.Threading.Tasks;
 using CK.SqlServer.Setup;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
+using CK.SqlServer;
 
 namespace CK.Core
 {
     public static class SqlDatabaseExtensions
     {
-
         /// <summary>
-        /// Checks that all invariants registered in CKCore.tInvariant are successful.
+        /// Checks that the given invariants exist and are successful.
+        /// When none are provided, all registered invariants are checked.
         /// </summary>
         /// <param name="this">This database.</param>
-        public static SqlDatabase AssertAllCKCoreInvariant( this SqlDatabase @this )
+        public static SqlDatabase AssertCKCoreInvariants( this SqlDatabase @this, params string[] invariantName )
         {
-            @this.AssertEmptyReader( "exec CKCore.sInvariantRunAll; select InvariantKey, CountSelect, RunStatus from CKCore.tInvariant where RunStatus <> 'Success'" );
+            const string check = "select InvariantKey, CountSelect, RunStatus from CKCore.tInvariant where Ignored = 0 and RunStatus <> 'Success' and RunStatus <> 'Never ran'";
+            if( invariantName.Length == 0 )
+            {
+                @this.AssertEmptyReader( "exec CKCore.sInvariantRunAll;" + check );
+            }
+            else
+            {
+                StringBuilder b = new StringBuilder();
+                foreach( var i in invariantName )
+                {
+                    if( string.IsNullOrWhiteSpace( i ) ) throw new ArgumentException( "invariantName must not be null or white space." );
+                    b.Append( "exec CKCore.sInvariantRun '" )
+                        .Append( SqlHelper.SqlEncodeStringContent( i ) )
+                        .Append( "';" );
+                }
+                b.Append( check );
+                @this.AssertEmptyReader( b.ToString() );
+            }
             return @this;
         }
 
@@ -121,7 +139,7 @@ namespace CK.Core
         {
             Execute( connectionString, selectClause, parameters, cmd =>
             {
-                using( var reader = cmd.ExecuteReader( System.Data.CommandBehavior.SingleRow ) )
+                using( var reader = cmd.ExecuteReader() )
                 {
                     var d = new SimpleDataTable( reader );
                     if( d.Rows.Count > 0 )
