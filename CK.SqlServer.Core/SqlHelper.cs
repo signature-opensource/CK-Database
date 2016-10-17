@@ -138,8 +138,9 @@ namespace CK.SqlServer
 
         /// <summary>
         /// Tests whether a type has a corresponding <see cref="SqlDbType"/>. 
-        /// It is all the types that are mapped by <see cref="FromSqlDbTypeToNetType"/> except <see cref="Object"/> plus <see cref="Char"/>
-        /// and any <see cref="Nullable{T}"/> where T is mapped.
+        /// It is all the types that are mapped by <see cref="FromSqlDbTypeToNetType"/> except <see cref="Object"/> 
+        /// plus <see cref="Char"/> and enum (provided their underlying type is mapped) and 
+        /// any <see cref="Nullable{T}"/> where T is mapped.
         /// </summary>
         /// <param name="t">Type to challenge.</param>
         /// <returns>True if this type can be mapped to a basic Sql type.</returns>
@@ -150,6 +151,7 @@ namespace CK.SqlServer
             var nT = Nullable.GetUnderlyingType( t );
             if( nT != null ) t = nT;
             if( t == typeof( char ) ) return true;
+            if( t.IsEnum ) t = t.GetEnumUnderlyingType();
             return _typesMap.Any( m => m == t );
         }
 

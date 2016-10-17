@@ -80,6 +80,7 @@
     <Compile Include="ComplexTypeAsyncTests.cs" />
     <Compile Include="ComplexTypeTests.cs" />
     <Compile Include="DBSetup.cs" />
+    <Compile Include="EnumSupportTests.cs" />
     <Compile Include="ProviderDemo\ProviderDemoTests.cs" />
     <Compile Include="ProviderDemo\SqlFinalApplicationContext.cs" />
     <Compile Include="ProviderDemo\SqlProviderContextCleaner.cs" />

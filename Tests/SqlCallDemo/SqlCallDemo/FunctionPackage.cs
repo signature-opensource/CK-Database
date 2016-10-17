@@ -27,5 +27,38 @@ namespace SqlCallDemo
         [SqlScalarFunction( "fByteFunction" )]
         public abstract Task<byte> ByteFunctionAsync( SqlStandardCallContext ctx, int v );
 
+        [SqlScalarFunction( "fByteFunction" )]
+        public abstract byte? NullableByteFunction( SqlStandardCallContext ctx, int v = -1 );
+
+        [SqlScalarFunction( "fByteFunction" )]
+        public abstract Task<byte?> NullableByteFunctionAsync( SqlStandardCallContext ctx, int v = -1 );
+
+        public enum Power
+        {
+            None = 0,
+            Min = 1,
+            Med = 2,
+            Max = 3,
+            Overheat = 4
+        }
+
+        public enum BPower : byte
+        {
+            Zero = 0,
+            One = 1,
+            Two = 2
+        }
+
+        [SqlProcedure( "sWithEnumIO" )]
+        public abstract Power ProcWithEnumIO( ISqlCallContext ctx, BPower bytePower, Power power );
+
+        [SqlScalarFunction( "sWithEnumIO" )]
+        public abstract Task<Power> ProcWithEnumIOAsync( ISqlCallContext ctx, BPower bytePower, Power power );
+
+        [SqlProcedure( "sWithEnumIO" )]
+        public abstract Power? ProcWithNullableEnumIO( ISqlCallContext ctx, BPower? bytePower, Power? power );
+
+        [SqlScalarFunction( "sWithEnumIO" )]
+        public abstract Task<Power?> ProcWithNullableEnumIOAsync( ISqlCallContext ctx, BPower? bytePower, Power? power );
     }
 }

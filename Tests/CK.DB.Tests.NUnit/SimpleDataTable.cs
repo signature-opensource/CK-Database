@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CK.Text;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -57,6 +58,11 @@ namespace CK.Core
             return count;
         }
 
+        /// <summary>
+        /// Not so pretty actually (does not work for multiple lines in cell).
+        /// </summary>
+        /// <param name="maxRowCount"></param>
+        /// <returns></returns>
         public string PrettyPrint( int maxRowCount = 100 )
         {
             int rowCount = maxRowCount < 0 ? _rows.Count : Math.Min( maxRowCount, _rows.Count );

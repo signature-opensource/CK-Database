@@ -16,9 +16,21 @@ namespace SqlCallDemo.Tests
     [TestFixture]
     public class FunctionTest
     {
+        FunctionPackage.Power? MMMMMMMMM( int i )
+        {
+            return (FunctionPackage.Power)i + 2;
+        }
+
+        FunctionPackage.Power? MMMMMMMMM2( int i )
+        {
+            var x = (FunctionPackage.Power)i + 2;
+            return x;
+        }
+
         [Test]
         public async Task async_call_returns_string_with_nullable_parameter()
         {
+            MMMMMMMMM( 6 );
             var p = TestHelper.StObjMap.Default.Obtain<FunctionPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
@@ -91,6 +103,28 @@ namespace SqlCallDemo.Tests
                 byte t2 = p.ByteFunction( ctx, 5 );
                 Assert.That( t1, Is.EqualTo( 9 ) );
                 Assert.That( t2, Is.EqualTo( 25 ) );
+            }
+        }
+
+        [Test]
+        public async Task async_call_returns_null_nullable_byte()
+        {
+            var p = TestHelper.StObjMap.Default.Obtain<FunctionPackage>();
+            using( var ctx = new SqlStandardCallContext() )
+            {
+                byte? b = await p.NullableByteFunctionAsync( ctx );
+                Assert.That( b, Is.Null );
+            }
+        }
+
+        [Test]
+        public void call_returns_null_nullable_byte()
+        {
+            var p = TestHelper.StObjMap.Default.Obtain<FunctionPackage>();
+            using( var ctx = new SqlStandardCallContext() )
+            {
+                byte? b = p.NullableByteFunction( ctx );
+                Assert.That( b, Is.Null );
             }
         }
 

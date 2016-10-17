@@ -493,6 +493,8 @@ namespace CK.SqlServer.Setup
                         return true;
                     }
                 }
+                // TODO: Type.Name for byte? is "Nullable'1"... 
+                // A simple extension method Type.GetDisplayName() should be available with a nice string (Nullable<byte>).
                 monitor.Error().Send( "Unable to find a way to return the required return type '{0}'.", returnType.Name );
                 return false;
             }
@@ -519,7 +521,6 @@ namespace CK.SqlServer.Setup
                             EmitGetSqlCommandParameterValue( g, locParameterCollection, idxValue, targetType );
                         } );
                 }
-
             }
 
             static void EmitGetSqlCommandParameterValue( ILGenerator g, LocalBuilder locParameterCollection, int sqlParameterIndex, Type targetType )
@@ -540,7 +541,17 @@ namespace CK.SqlServer.Setup
                         g.Emit( OpCodes.Ldsfld, SqlObjectItem.FieldDBNullValue );
                         g.Emit( OpCodes.Ceq );
                         g.Emit( OpCodes.Brtrue_S, isNull );
-                        g.Emit( OpCodes.Unbox_Any, targetType );
+                        if( actualType.IsEnum )
+                        {
+                            g.Emit( OpCodes.Unbox_Any, actualType );
+                            g.Emit( OpCodes.Newobj, targetType.GetConstructor( new[] { actualType } ) );
+                        }
+                        else
+                        {
+                            // For non enum value type, the Unbox_Any handles the implicit 
+                            // conversion to Nullable<actualType>: newobj is useless.
+                            g.Emit( OpCodes.Unbox_Any, targetType );
+                        }
                         g.Emit( OpCodes.Br_S, afterIsNotNull );
                         g.MarkLabel( isNull );
                         g.Emit( OpCodes.Pop );
