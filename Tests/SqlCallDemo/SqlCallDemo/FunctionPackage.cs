@@ -52,13 +52,13 @@ namespace SqlCallDemo
         [SqlProcedure( "sWithEnumIO" )]
         public abstract Power ProcWithEnumIO( ISqlCallContext ctx, BPower bytePower, Power power );
 
-        [SqlScalarFunction( "sWithEnumIO" )]
+        [SqlProcedure( "sWithEnumIO" )]
         public abstract Task<Power> ProcWithEnumIOAsync( ISqlCallContext ctx, BPower bytePower, Power power );
 
         [SqlProcedure( "sWithEnumIO" )]
         public abstract Power? ProcWithNullableEnumIO( ISqlCallContext ctx, BPower? bytePower, Power? power );
 
-        [SqlScalarFunction( "sWithEnumIO" )]
+        [SqlProcedure( "sWithEnumIO" )]
         public abstract Task<Power?> ProcWithNullableEnumIOAsync( ISqlCallContext ctx, BPower? bytePower, Power? power );
     }
 }
