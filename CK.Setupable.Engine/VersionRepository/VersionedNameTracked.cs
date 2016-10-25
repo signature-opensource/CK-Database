@@ -60,7 +60,6 @@ namespace CK.Setup
 
         internal VersionedNameTracked SetNewVersion( Version v, string type )
         {
-            Debug.Assert( (v == null) == (type == null) );
             if( Deleted || NewVersion != null ) throw new InvalidOperationException( $"New version has already been set on '{FullName}'." );
             if( v == null ) Deleted = true;
             else
