@@ -79,6 +79,11 @@ namespace CK.SqlServer.Setup
 
         public VersionedName OnVersionNotFound( IVersionedItem item, Func<string, VersionedTypedName> originalVersions )
         {
+            // Maps "Model.XXX" to "XXX" versions for default context and database.
+            if( item.FullName.StartsWith( "[]db^Model.", StringComparison.Ordinal ) )
+            {
+                return originalVersions( "[]db^" + item.FullName.Substring( 11 ) );
+            }
             // Old code: Handle non-prefixed FullName when not found.
             return item.FullName.StartsWith( "[]db^", StringComparison.Ordinal ) 
                     ? originalVersions( item.FullName.Substring( 5 ) )
@@ -87,6 +92,11 @@ namespace CK.SqlServer.Setup
 
         public VersionedName OnPreviousVersionNotFound( IVersionedItem item, VersionedName prevVersion, Func<string, VersionedTypedName> originalVersions )
         {
+            // Maps "Model.XXX" to "XXX" versions for default context and database.
+            if( prevVersion.FullName.StartsWith( "[]db^Model.", StringComparison.Ordinal ) )
+            {
+                return originalVersions( "[]db^" + prevVersion.FullName.Substring( 11 ) );
+            }
             // Old code: Handle non-prefixed FullName when not found.
             return prevVersion.FullName.StartsWith( "[]db^", StringComparison.Ordinal )
                     ? originalVersions( prevVersion.FullName.Substring( 5 ) )
@@ -125,12 +135,9 @@ begin
 	select convert( int, ItemVersion) from CKCore.tItemVersionStore where FullName = N'CK.SqlVersionedItemRepository';
 end";
 
-        // Each upgrade scripts must end with:
-        //
-        // 	    update CKCore.tItemVersionStore set ItemVersion = 'X' where FullName = N'CK.SqlVersionedItemRepository';
-        //      
-        readonly static string[] _upgradeScripts = Util.Array.Empty<string>();
+        const string _update1 = @"update CKCore.tItemVersionStore set FullName = stuff(FullName,6,8,'Model.') where FullName like '[[]]db^Objects.%'";
 
+        readonly static string[] _upgradeScripts = new[] { _update1 };
 
     }
 }
