@@ -295,7 +295,7 @@ namespace CK.Setup
                 using( _builder._monitor.OnError( () => success = false ) )
                 {
                     int i = 0;
-                    while( i < _actions.Count )
+                    while( i < _actions.Count && success )
                     {
                         PushedAction a = _actions[i];
                         try
@@ -306,7 +306,8 @@ namespace CK.Setup
                         }
                         catch( Exception ex )
                         {
-                            Monitor.Fatal().Send( ex, "While calling a pushed action on '{0}' (round n°{1}).", CurrentItem.FullName, _currentRoundActions );
+                            Monitor.Fatal().Send( ex, $"While calling a pushed action on '{CurrentItem.FullName}' (round n°{_currentRoundActions})." );
+                            Debug.Assert( success == false, "OnError dit the job..." );
                         }
                         ++i;
                     }
