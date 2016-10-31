@@ -211,7 +211,7 @@ namespace CK.Core
         /// Gets the connection string to the master database.
         /// It is first the environment variable named "CK_DB_TEST_MASTER_CONNECTION_STRING", then 
         /// the <see cref="AppSettings.Default"/>["CK_DB_TEST_MASTER_CONNECTION_STRING"] in configuration 
-        /// file end then, if none are defined, this defaults to "Server=(local)\\NIMP;Database=master;Integrated Security=SSPI".
+        /// file end then, if none are defined, this defaults to "Server=.;Database=master;Integrated Security=SSPI".
         /// </summary>
         public static string ConnectionStringMaster => EnsureMasterConnection().ToString();
 
