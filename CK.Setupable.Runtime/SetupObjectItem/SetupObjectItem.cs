@@ -21,6 +21,7 @@ namespace CK.Setup
         SetupObjectItem _transformTarget;
         List<ISetupObjectTransformerItem> _transformers;
         SetupObjectItem _sourceWhenTransformed;
+        object _driverType;
 
         /// <summary>
         /// Initializes a <see cref="SetupObjectItem"/> without <see cref="ContextLocName"/> nor <see cref="ItemType"/>.
@@ -192,13 +193,35 @@ namespace CK.Setup
         public string FullName => _contextLocName.FullName;
 
         /// <summary>
-        /// Abstract method that is called at the beginning of the topological sort.
+        /// Sets the assembly quelified name of the <see cref="SetupItemDriver"/> object
+        /// to use for setup.
+        /// </summary>
+        /// <param name="assemblyQualifiedName">Assembly qualified name.</param>
+        public void SetDriverType( string assemblyQualifiedName ) => _driverType = assemblyQualifiedName;
+
+        /// <summary>
+        /// Sets the type of the <see cref="SetupItemDriver"/> object
+        /// to use for setup.
+        /// </summary>
+        /// <param name="driverType">Type of the driver.</param>
+        public void SetDriverType( Type driverType ) => _driverType = driverType;
+
+
+        /// <summary>
+        /// Virtual method that is called at the beginning of the topological sort.
+        /// <see cref="SetDriverType(string)"/> or <see cref="SetDriverType(Type)"/> must have been
+        /// called with a non null driver type before this step otherwise an <see cref="InvalidOperationException"/>
+        /// is thrown.
         /// </summary>
         /// <returns>
         /// Must return the <see cref="Type"/> or the Assembly qualified name of the 
         /// associated <see cref="SetupItemDriver"/> for this item.
         /// </returns>
-        protected abstract object StartDependencySort();
+        protected virtual object StartDependencySort()
+        {
+            if( _driverType == null ) throw new InvalidOperationException( "SetDriverType must have been called before starting the topological sort." );
+            return _driverType;
+        }
 
         #region Explicit implementations of IContextLocNaming (to avoid clutering the interface).
 

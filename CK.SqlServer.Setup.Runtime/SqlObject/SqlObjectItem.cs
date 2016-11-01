@@ -26,6 +26,7 @@ namespace CK.SqlServer.Setup
         internal SqlObjectItem( SqlContextLocName name, string itemType, ISqlServerObject parsed )
             : base( name, itemType, parsed )
         {
+            SetDriverType( typeof( SqlObjectItemDriver ) );
         }
 
         /// <summary>
@@ -52,8 +53,6 @@ namespace CK.SqlServer.Setup
             get { return _missingDependencyIsError; }
             set { _missingDependencyIsError = value; }
         }
-
-        protected override object StartDependencySort() => typeof( SqlObjectItemDriver );
 
         /// <summary>
         /// Writes the drop instruction.

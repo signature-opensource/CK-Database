@@ -25,6 +25,7 @@ namespace CK.SqlServer.Setup
             : base( name, "Transformer", t )
         {
             Debug.Assert( name.TransformArg != null );
+            SetDriverType( typeof( SqlTransformerItemDriver ) );
         }
 
         public new ISqlServerTransformer SqlObject
@@ -63,6 +64,5 @@ namespace CK.SqlServer.Setup
             return true;
         }
 
-        protected override object StartDependencySort() => typeof(SqlTransformerItemDriver);
     }
 }

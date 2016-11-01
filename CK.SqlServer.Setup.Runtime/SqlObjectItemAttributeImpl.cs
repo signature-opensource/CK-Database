@@ -26,6 +26,15 @@ namespace CK.SqlServer.Setup
 
         protected new SqlObjectItemAttribute Attribute => (SqlObjectItemAttribute)base.Attribute;
 
+        /// <summary>
+        /// Must build the full name of the object based on the raw attribute name, whether this is
+        /// a definition, a replacement or a transformation and the container of the object provided 
+        /// by the <paramref name="r"/> object.
+        /// </summary>
+        /// <param name="r">The registerer.</param>
+        /// <param name="b">The behavior (Define, Replace or Transform).</param>
+        /// <param name="attributeName">The raw attribute name.</param>
+        /// <returns>The context-location-name for the object.</returns>
         protected override IContextLocNaming BuildFullName( Registerer r, SetupObjectItemBehavior b, string attributeName )
         {
             SqlPackageBaseItem p = (SqlPackageBaseItem)r.Container;
@@ -39,6 +48,19 @@ namespace CK.SqlServer.Setup
         /// </summary>
         protected virtual IEnumerable<string> ExpectedItemTypes => null;
 
+        /// <summary>
+        /// Creates the <see cref="SetupObjectItem"/>.
+        /// This is called only once the potential replacements have been analysed and resolved.
+        /// </summary>
+        /// <param name="r">The registerer that gives access to the <see cref="IStObjSetupDynamicInitializerState"/>.</param>
+        /// <param name="firstContainer">
+        /// The first container that defined this object.
+        /// Actual container if the object has been replaced is provided by 
+        /// <see cref="SetupObjectItemAttributeImplBase.Registerer">Registerer</see>.Container.
+        /// </param>
+        /// <param name="name">Full name of the object to create.</param>
+        /// <param name="transformArgument">Optional transform argument if this object is a transformer.</param>
+        /// <returns>The created object or null if an error occurred and has been logged.</returns>
         protected override SetupObjectItem CreateSetupObjectItem( Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
         {
             ISqlSetupAspect sql = SetupEngineAspectProvider.GetSetupEngineAspect<ISqlSetupAspect>();

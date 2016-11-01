@@ -71,8 +71,6 @@ namespace CK.Setupable.Engine.Tests
             public SetupObjectItem Source { get; set; }
 
             public SetupObjectItem Target { get; set; }
-
-            protected override object StartDependencySort() => null;
         }
 
         [Test]
