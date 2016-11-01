@@ -8,7 +8,7 @@ namespace CK.SqlServer.Setup
 {
     internal class SqlCKCoreInstaller
     {
-        public readonly static short CurrentVersion = 13;
+        public readonly static short CurrentVersion = 14;
 
         /// <summary>
         /// Installs the kernel.
@@ -119,11 +119,60 @@ create procedure CKCore.sSchemaDropAllObjects
 as
 begin
 	set @ObjectType = Upper(@ObjectType);
-	declare @cmd nvarchar(4000);
+	declare @DeleteCount int;
+	declare @DependencyError int;
+runIt:
+	set @DeleteCount = 0;
+	set @DependencyError = 0;
+	declare @tName sysname;
+	-- Pre Sql 2012: raiserror again.
+	declare
+		@ErrorMessage nvarchar(4000),
+		@ErrorNumber int,
+		@ErrorSeverity int,
+		@ErrorState int,
+		@ErrorLine int,
+		@ErrorProcedure nvarchar(200);
+    declare @cmd nvarchar(4000);
 	if @ObjectType is null or @ObjectType = 'CONSTRAINT'
 	begin
-		exec CKCore.sSchemaDropAllConstraints @SchemaName;
-	end
+		declare @C1 cursor;
+		set @C1 = cursor local read_only for 
+			select TABLE_NAME, CONSTRAINT_NAME 
+			from INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc
+			where TABLE_SCHEMA = @SchemaName
+					and CONSTRAINT_TYPE='FOREIGN KEY';
+		declare @cName sysname;
+		open @C1;
+		fetch from @C1 into @tName, @cName
+		while @@FETCH_STATUS = 0
+		begin
+			set @cmd = N'alter table '+QUOTENAME(@SchemaName)+'.'+QUOTENAME(@tName)+N' drop constraint '+QUOTENAME(@cName);
+			begin try
+				exec sp_executesql @cmd;
+				set @DeleteCount = @DeleteCount + 1;
+			end try
+			begin catch
+				select
+					@ErrorMessage = ERROR_MESSAGE(),
+					@ErrorNumber = ERROR_NUMBER(),
+					@ErrorSeverity = ERROR_SEVERITY(),
+					@ErrorState = ERROR_STATE(),
+					@ErrorLine = ERROR_LINE(),
+					@ErrorProcedure = ISNULL(ERROR_PROCEDURE(), '-');
+				if @ErrorNumber = 3729
+				begin
+					set @DependencyError = @DependencyError + 1;
+				end
+				else
+				begin
+					select @ErrorMessage = N'Error %d, Level %d, State %d, Procedure %s, Line %d, ' + 'Message: ' + @ErrorMessage;
+					raiserror( @ErrorMessage, @ErrorSeverity, 1, @ErrorNumber, @ErrorSeverity, @ErrorState, @ErrorProcedure, @ErrorLine )
+				end
+			end catch
+			fetch next from @C1 into @tName, @cName;
+		end 
+    end
 	if @ObjectType is null or @ObjectType = 'PROCEDURE' or @ObjectType = 'FUNCTION'
 	begin
 		declare @C2 cursor
@@ -143,59 +192,133 @@ begin
 		while @@FETCH_STATUS = 0
 		begin
 		    set @cmd = N'drop '+@rType+' '+QUOTENAME(@SchemaName)+'.'+QUOTENAME(@rName);
-		    exec sp_executesql @cmd;
-		    fetch next from @C2 into @rName, @rType;
+			begin try
+				exec sp_executesql @cmd;
+				set @DeleteCount = @DeleteCount + 1;
+			end try
+			begin catch
+				select
+					@ErrorMessage = ERROR_MESSAGE(),
+					@ErrorNumber = ERROR_NUMBER(),
+					@ErrorSeverity = ERROR_SEVERITY(),
+					@ErrorState = ERROR_STATE(),
+					@ErrorLine = ERROR_LINE(),
+					@ErrorProcedure = ISNULL(ERROR_PROCEDURE(), '-');
+				if @ErrorNumber = 3729
+				begin
+					set @DependencyError = @DependencyError + 1;
+				end
+				else
+				begin
+					select @ErrorMessage = N'Error %d, Level %d, State %d, Procedure %s, Line %d, ' + 'Message: ' + @ErrorMessage;
+					raiserror( @ErrorMessage, @ErrorSeverity, 1, @ErrorNumber, @ErrorSeverity, @ErrorState, @ErrorProcedure, @ErrorLine )
+				end
+			end catch
+            fetch next from @C2 into @rName, @rType;
 		end 
 	end
 	if  @ObjectType is null or @ObjectType = 'VIEW'
 	begin
-		declare @C cursor;
-		set @C = cursor local read_only for 
+		declare @C3 cursor;
+		set @C3 = cursor local read_only for 
 			select TABLE_NAME 
 			from INFORMATION_SCHEMA.VIEWS 
 			where TABLE_SCHEMA = @SchemaName 
                     and TABLE_NAME not like 'sys%';
 		declare @vName sysname;
-		open @C;
-		fetch from @C into @vName;
+		open @C3;
+		fetch from @C3 into @vName;
 		while @@FETCH_STATUS = 0
 		begin
 			set @cmd = N'drop view '+QUOTENAME(@SchemaName)+'.'+QUOTENAME(@vName);
-			exec sp_executesql @cmd;
-			fetch next from @C into @vName;
+			begin try
+				exec sp_executesql @cmd;
+				set @DeleteCount = @DeleteCount + 1;
+			end try
+			begin catch
+				select
+					@ErrorMessage = ERROR_MESSAGE(),
+					@ErrorNumber = ERROR_NUMBER(),
+					@ErrorSeverity = ERROR_SEVERITY(),
+					@ErrorState = ERROR_STATE(),
+					@ErrorLine = ERROR_LINE(),
+					@ErrorProcedure = ISNULL(ERROR_PROCEDURE(), '-');
+				if @ErrorNumber = 3729
+				begin
+					set @DependencyError = @DependencyError + 1;
+				end
+				else
+				begin
+					select @ErrorMessage = N'Error %d, Level %d, State %d, Procedure %s, Line %d, ' + 'Message: ' + @ErrorMessage;
+					raiserror( @ErrorMessage, @ErrorSeverity, 1, @ErrorNumber, @ErrorSeverity, @ErrorState, @ErrorProcedure, @ErrorLine )
+				end
+			end catch
+			fetch next from @C3 into @vName;
 		end
 	end
     if @ObjectType is null or @ObjectType = 'TABLE'
 	begin
         -- Turns Sql Server 2016+ versioning off for temporal tables before destroying them.
-        -- This uses feature detection instead of database version check.
-        if exists(select * from sys.all_columns where name = 'temporal_type' and object_id = object_id('sys.tables') )
-        begin
-	        set @cmd = N'';
-	        select @cmd = @cmd + N'alter table ' + QUOTENAME(@SchemaName) + N'.' + QUOTENAME(t.name) + N' set (SYSTEM_VERSIONING = OFF);' 
-		        from sys.tables t 
-			        inner join sys.schemas s on s.schema_id = t.schema_id
-	        where s.name = @SchemaName and t.temporal_type = 2;
-	        exec sp_executesql @cmd;
-        end 
+        -- This uses 'feature detection' instead of database version check.
+		if object_id('sys.all_columns') is not null
+		begin
+            declare @TemporalTypeHere bit = 0;
+            set @cmd = N'select @TemporalTypeHere = 1 from sys.all_columns where name = ''temporal_type'' and object_id = object_id(''sys.tables'')';
+            exec sp_executesql @cmd, N'@TemporalTypeHere bit output', @TemporalTypeHere output;
+			if @TemporalTypeHere = 1
+			begin
+                set @cmd = N'
+	declare @versionOff nvarchar(4000) = N'''';
+	select @versionOff = @versionOff + N''alter table '' + QUOTENAME( @SchemaName) + N''.'' + QUOTENAME( t.name) + N'' set( SYSTEM_VERSIONING = OFF );''
+		from sys.tables t
+        inner join sys.schemas s on s.schema_id = t.schema_id
+    where s.name = @SchemaName and t.temporal_type = 2;
+    exec sp_executesql @versionOff;';
 
-		declare @C3 cursor;
-		set @C3 = cursor local read_only for 
-			select TABLE_NAME 
-			from INFORMATION_SCHEMA.TABLES 
-			where TABLE_SCHEMA = @SchemaName 
+				exec sp_executesql @cmd, N'@SchemaName sysname', @SchemaName;
+			end
+        end
+
+        declare @C4 cursor;
+		set @C4 = cursor local read_only for 
+            select TABLE_NAME
+            from INFORMATION_SCHEMA.TABLES
+            where TABLE_SCHEMA = @SchemaName
                     and TABLE_NAME not like 'sys%';
-		declare @tName sysname;
-		open @C3;
-		fetch from @C3 into @tName;
+        open @C4;
+        fetch from @C4 into @tName;
 		while @@FETCH_STATUS = 0
 		begin
-			set @cmd = N'drop table '+QUOTENAME(@SchemaName)+'.'+QUOTENAME(@tName);
-			exec sp_executesql @cmd;
-			fetch next from @C3 into @tName;
-		end
-	end
+            set @cmd = N'drop table '+QUOTENAME( @SchemaName)+'.'+QUOTENAME( @tName);
+        begin try
+				exec sp_executesql @cmd;
+				set @DeleteCount = @DeleteCount + 1;
+        end try
+			begin catch
+				select
+                    @ErrorMessage = ERROR_MESSAGE(),
+                    @ErrorNumber = ERROR_NUMBER(),
+                    @ErrorSeverity = ERROR_SEVERITY(),
+                    @ErrorState = ERROR_STATE(),
+                    @ErrorLine = ERROR_LINE(),
+                    @ErrorProcedure = ISNULL( ERROR_PROCEDURE(), '-' );
+				if @ErrorNumber = 3729
+				begin
+                    set @DependencyError = @DependencyError + 1;
+				end
+				else
+				begin
+                    select @ErrorMessage = N'Error %d, Level %d, State %d, Procedure %s, Line %d, ' + 'Message: ' + @ErrorMessage;
+
+                    raiserror( @ErrorMessage, @ErrorSeverity, 1, @ErrorNumber, @ErrorSeverity, @ErrorState, @ErrorProcedure, @ErrorLine )
+
+                end
+            end catch
+            fetch next from @C4 into @tName;
+        end
+    end
 end
+
 GO
 if object_id('CKCore.tInvariant') is null
 begin
