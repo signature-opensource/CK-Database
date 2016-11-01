@@ -67,10 +67,7 @@ namespace CK.Setup
             }
         }
 
-        public IStObjSetupData Generalization
-        {
-            get { return _parent; }
-        }
+        public IStObjSetupData Generalization => _parent; 
         
         public string ContainerFullName
         {
@@ -78,25 +75,13 @@ namespace CK.Setup
             set { _containerFullName = value; }
         }
 
-        public IDependentItemList Requires
-        {
-            get { return _requires; }
-        }
+        public IDependentItemList Requires => _requires; 
 
-        public IDependentItemList RequiredBy
-        {
-            get { return _requiredBy; }
-        }
+        public IDependentItemList RequiredBy => _requiredBy; 
 
-        public IDependentItemList Children
-        {
-            get { return _children; }
-        }
+        public IDependentItemList Children => _children; 
 
-        public IDependentItemGroupList Groups
-        {
-            get { return _groups; }
-        }
+        public IDependentItemGroupList Groups => _groups; 
 
         public Type ItemType
         {

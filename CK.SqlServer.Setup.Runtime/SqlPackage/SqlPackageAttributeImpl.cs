@@ -31,9 +31,23 @@ namespace CK.SqlServer.Setup
             {
                 monitor.Info().Send( "SqlPackage '{0}' uses its own full name as its SetupName.", data.FullNameWithoutContext );
             }
-            data.ItemType = typeof( SqlPackageBaseItem );
-            data.DriverType = typeof( SqlPackageBaseItemDriver );
+            if( data.ItemType == null && data.ItemTypeName == null )
+            {
+                data.ItemType = typeof( SqlPackageBaseItem );
+            }
+            else
+            {
+                monitor.Info().Send( $"'{data.FullNameWithoutContext}' is bound to item type '{data.ItemType?.GetType().FullName ?? data.ItemTypeName}' instead of default SqlPackageBaseItem." );
+            }
+            if( data.DriverType == null && data.DriverTypeName == null )
+            {
+                data.DriverType = typeof( SqlPackageBaseItemDriver );
+            }
+            else
+            {
+                monitor.Info().Send( $"'{data.FullNameWithoutContext}' is use '{data.DriverType?.GetType().FullName ?? data.DriverTypeName}' instead of default SqlPackageBaseItemDriver." );
+            }
         }
-    
+
     }
 }
