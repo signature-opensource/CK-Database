@@ -32,10 +32,17 @@ namespace CK.SqlServer.Setup
             return SqlBuildFullName( p, b, attributeName );
         }
 
+        /// <summary>
+        /// When overridden, can return a non null list of item type names.
+        /// Item types can not be null nor longer than 16 characters. For Sql Server, this can be
+        /// "Function" (covers ITVF, table and scalar function), "Procedure", "View" and "Transformer".
+        /// </summary>
+        protected virtual IEnumerable<string> ExpectedItemTypes => null;
+
         protected override SetupObjectItem CreateSetupObjectItem( Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
         {
             ISqlSetupAspect sql = SetupEngineAspectProvider.GetSetupEngineAspect<ISqlSetupAspect>();
-            return SqlCreateSetupObjectItem( sql.SqlParser, r.Monitor, (SqlPackageBaseItem)r.Container, Attribute.MissingDependencyIsError, (SqlContextLocName)name, (SqlPackageBaseItem)firstContainer, (SqlBaseItem)transformArgument, null );
+            return SqlCreateSetupObjectItem( sql.SqlParser, r.Monitor, (SqlPackageBaseItem)r.Container, Attribute.MissingDependencyIsError, (SqlContextLocName)name, (SqlPackageBaseItem)firstContainer, (SqlBaseItem)transformArgument, ExpectedItemTypes );
         }
 
         internal static IContextLocNaming SqlBuildFullName( SqlPackageBaseItem p, SetupObjectItemBehavior b, string attributeName )

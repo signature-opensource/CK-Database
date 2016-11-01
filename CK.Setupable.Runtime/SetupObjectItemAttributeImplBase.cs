@@ -128,6 +128,11 @@ namespace CK.Setup
             public IActivityMonitor Monitor => _state.Monitor;
 
             /// <summary>
+            /// Gets the dynamic initializer shared state.
+            /// </summary>
+            public IStObjSetupDynamicInitializerState State => _state;
+
+            /// <summary>
             /// Gets the container that attempts to register the item.
             /// </summary>
             public readonly IMutableSetupItem Container;

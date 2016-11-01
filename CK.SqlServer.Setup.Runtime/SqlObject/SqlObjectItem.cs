@@ -15,13 +15,13 @@ using CK.Text;
 namespace CK.SqlServer.Setup
 {
 
+    /// <summary>
+    /// Base class for <see cref="SqlViewItem"/> and <see cref="SqlCallableItem{T}"/>.
+    /// </summary>
     public abstract class SqlObjectItem : SqlBaseItem
     {
         bool? _missingDependencyIsError;
 
-        internal SqlObjectItem()
-        {
-        }
 
         internal SqlObjectItem( SqlContextLocName name, string itemType, ISqlServerObject parsed )
             : base( name, itemType, parsed )

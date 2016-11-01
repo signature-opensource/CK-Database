@@ -1,0 +1,12 @@
+using System.Data.SqlClient;
+using CK.Setup;
+using CK.SqlServer.Setup;
+
+namespace SqlZonePackage.Zone
+{
+    [SqlTable( "a Temporal Table Sample", Package = typeof( Package ) )]
+    [Versions( "1.0.0" )]
+    public class TemporalTableSampleTable : SqlTable
+    {
+    }
+}

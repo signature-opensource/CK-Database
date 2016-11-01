@@ -13,6 +13,11 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
+    /// <summary>
+    /// Base class for item type "Function": <see cref="SqlFunctionInlineTableItem"/>, <see cref="SqlFunctionScalarItem"/>, 
+    /// <see cref="SqlFunctionTableItem"/>, and "Procedure": <see cref="SqlProcedureItem"/>.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class SqlCallableItem<T> : SqlObjectItem, ISqlCallableItem where T : ISqlServerCallableObject
     {
         const string _builderTypeName = "CK.<CreatorForSqlCommand>";

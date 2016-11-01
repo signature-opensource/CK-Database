@@ -8,7 +8,7 @@ namespace CK.SqlServer.Setup
 {
     internal class SqlCKCoreInstaller
     {
-        public readonly static short CurrentVersion = 12;
+        public readonly static short CurrentVersion = 13;
 
         /// <summary>
         /// Installs the kernel.
@@ -107,7 +107,7 @@ begin
 	while @@FETCH_STATUS = 0
 	begin
 		declare @cmd nvarchar(800);
-		set @cmd = N'alter table ['+@SchemaName+'].['+@tName+N'] drop constraint '+@cName;
+		set @cmd = N'alter table '+QUOTENAME(@SchemaName)+'.'+QUOTENAME(@tName)+N' drop constraint '+@cName;
 		exec sp_executesql @cmd;
         fetch next from @C into @tName, @cName;
 	end 
@@ -119,7 +119,7 @@ create procedure CKCore.sSchemaDropAllObjects
 as
 begin
 	set @ObjectType = Upper(@ObjectType);
-	declare @cmd nvarchar(800);
+	declare @cmd nvarchar(4000);
 	if @ObjectType is null or @ObjectType = 'CONSTRAINT'
 	begin
 		exec CKCore.sSchemaDropAllConstraints @SchemaName;
@@ -142,7 +142,7 @@ begin
 		fetch from @C2 into @rName, @rType;
 		while @@FETCH_STATUS = 0
 		begin
-		    set @cmd = N'drop '+@rType+' ['+@SchemaName+'].['+@rName+N']';
+		    set @cmd = N'drop '+@rType+' '+QUOTENAME(@SchemaName)+'.'+QUOTENAME(@rName);
 		    exec sp_executesql @cmd;
 		    fetch next from @C2 into @rName, @rType;
 		end 
@@ -160,13 +160,25 @@ begin
 		fetch from @C into @vName;
 		while @@FETCH_STATUS = 0
 		begin
-			set @cmd = N'drop view ['+@SchemaName+'].['+@vName+N']';
+			set @cmd = N'drop view '+QUOTENAME(@SchemaName)+'.'+QUOTENAME(@vName);
 			exec sp_executesql @cmd;
 			fetch next from @C into @vName;
 		end
 	end
     if @ObjectType is null or @ObjectType = 'TABLE'
 	begin
+        -- Turns Sql Server 2016+ versioning off for temporal tables before destroying them.
+        -- This uses feature detection instead of database version check.
+        if exists(select * from sys.all_columns where name = 'temporal_type' and object_id = object_id('sys.tables') )
+        begin
+	        set @cmd = N'';
+	        select @cmd = @cmd + N'alter table ' + QUOTENAME(@SchemaName) + N'.' + QUOTENAME(t.name) + N' set (SYSTEM_VERSIONING = OFF);' 
+		        from sys.tables t 
+			        inner join sys.schemas s on s.schema_id = t.schema_id
+	        where s.name = @SchemaName and t.temporal_type = 2;
+	        exec sp_executesql @cmd;
+        end 
+
 		declare @C3 cursor;
 		set @C3 = cursor local read_only for 
 			select TABLE_NAME 
@@ -178,7 +190,7 @@ begin
 		fetch from @C3 into @tName;
 		while @@FETCH_STATUS = 0
 		begin
-			set @cmd = N'drop table ['+@SchemaName+'].['+@tName+N']';
+			set @cmd = N'drop table '+QUOTENAME(@SchemaName)+'.'+QUOTENAME(@tName);
 			exec sp_executesql @cmd;
 			fetch next from @C3 into @tName;
 		end

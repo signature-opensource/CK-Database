@@ -21,7 +21,19 @@ namespace CK.SqlServer.Setup
         /// </summary>
         /// <param name="commaSeparatedObjectNames">Name or multiple comma separated names.</param>
         public SqlObjectItemAttribute( string commaSeparatedObjectNames )
-            : base( commaSeparatedObjectNames, "CK.SqlServer.Setup.SqlObjectItemAttributeImpl, CK.SqlServer.Setup.Runtime" )
+            : this( commaSeparatedObjectNames, "CK.SqlServer.Setup.SqlObjectItemAttributeImpl, CK.SqlServer.Setup.Runtime" )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new <see cref="SqlObjectItemAttribute"/> with (potentially) multiple object names.
+        /// </summary>
+        /// <param name="commaSeparatedObjectNames">Name or multiple comma separated names.</param>
+        /// <param name="actualAttributeTypeAssemblyQualifiedName">
+        /// Assembly Qualified Name of the object that will replace this attribute during setup.
+        /// </param>
+        protected SqlObjectItemAttribute( string commaSeparatedObjectNames, string actualAttributeTypeAssemblyQualifiedName )
+            : base( commaSeparatedObjectNames, actualAttributeTypeAssemblyQualifiedName )
         {
             MissingDependencyIsError = true;
         }
