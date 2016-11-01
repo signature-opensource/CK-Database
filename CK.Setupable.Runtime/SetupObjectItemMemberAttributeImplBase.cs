@@ -89,7 +89,7 @@ namespace CK.Setup
         {
             Debug.Assert( _theBest != null );
             var r = new SetupObjectItemAttributeImplBase.Registerer( state, item, stObj, this );
-            if( r.PostponeFinalizeRegister( _theBest ) && !r.HaseError ) state.PushAction( DynamicItemInitializeAfterFollowing );
+            if( r.PostponeFinalizeRegister( _theBest ) && !r.HasError ) state.PushAction( DynamicItemInitializeAfterFollowing );
         }
 
         /// <summary>
@@ -98,10 +98,7 @@ namespace CK.Setup
         /// </summary>
         public SetupObjectItem SetupObjectItem => _theBest?.Item; 
 
-        string SetupObjectItemAttributeImplBase.ISetupItemCreator.GetDetailedName( SetupObjectItemAttributeImplBase.Registerer r, string name )
-        {
-            return $"'{ObjectName}' in '{Member.Name}' {Attribute.GetShortTypeName()} attribute of '{r.Container.FullName}'";
-        }
+        string SetupObjectItemAttributeImplBase.ISetupItemCreator.GetDetailedName( SetupObjectItemAttributeImplBase.Registerer r, string name ) => GetDetailedName( r );
 
         IContextLocNaming SetupObjectItemAttributeImplBase.ISetupItemCreator.BuildFullName( SetupObjectItemAttributeImplBase.Registerer r, SetupObjectItemBehavior b, string name )
         {
@@ -112,6 +109,20 @@ namespace CK.Setup
         {
             return CreateSetupObjectItem( r, firstContainer, name, transformArgument );
         }
+
+        /// <summary>
+        /// Helper method used by the kernel that generates a clear string that gives  
+        /// detailed information about the location of the object beeing processed like
+        /// '{ObjectName} in {member} {Attribute] attribute of {holding class}'.
+        /// This is exposed as a protected method so that specialized classes can easily emit log messages.
+        /// </summary>
+        /// <param name="r">The current registerer.</param>
+        /// <returns>Detailed information.</returns>
+        protected string GetDetailedName( SetupObjectItemAttributeImplBase.Registerer r )
+        {
+            return $"'{ObjectName}' in '{Member.Name}' {Attribute.GetShortTypeName()} attribute of '{r.Container.FullName}'";
+        }
+
 
         /// <summary>
         /// Must build the <see cref="IContextLocNaming"/> name of the future <see cref="SetupObjectItem"/> with the help of the owner object and the name in the attribute.

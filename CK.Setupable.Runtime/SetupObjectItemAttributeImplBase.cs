@@ -119,7 +119,7 @@ namespace CK.Setup
                 Container = item;
                 StObj = stObj;
                 _candidate = candidate;
-                HaseError = _state.Memory[typeof( Registerer )] != null;
+                HasError = _state.Memory[typeof( Registerer )] != null;
             }
 
             /// <summary>
@@ -142,12 +142,12 @@ namespace CK.Setup
             /// </summary>
             public readonly IStObjResult StObj;
 
-            public bool HaseError { get; private set; }
+            public bool HasError { get; private set; }
 
             BestCreator SetError( string msg )
             {
                 if( msg != null ) _state.Monitor.Error().Send( msg );
-                HaseError = true;
+                HasError = true;
                 _state.Memory[typeof( Registerer )] = typeof( Registerer );
                 return null;
             }
@@ -221,7 +221,7 @@ namespace CK.Setup
                     SetupObjectItem tArg = null;
                     if( best.TransformTarget != null && (tArg = best.TransformTarget.Item) == null )
                     {
-                        return !HaseError;
+                        return !HasError;
                     }
                     Debug.Assert( best.Item == null, "We are the only winner (the last one)." );
                     best.Item = DoCreateSetupObjectItem( best.FirstContainer, best.Name, tArg );
@@ -236,12 +236,12 @@ namespace CK.Setup
                 using( _state.Monitor.OnError( () => SetError( null ) ) )
                 {
                     o = _candidate.CreateSetupObjectItem( this, firstContainer, name, transformArgument );
-                    if( o == null && HaseError == false )
+                    if( o == null && HasError == false )
                     {
                         SetError( "Unable to create setup object." );
                     }
                 }
-                return HaseError ? null : o;
+                return HasError ? null : o;
             }
 
         }
@@ -285,7 +285,7 @@ namespace CK.Setup
                     else state.Monitor.Warn().Send( "Duplicate name '{0}' in SqlObjectItem attribute of '{1}'.", nTrimmed, item.FullName );
                 }
             }
-            if( !r.HaseError && _theBest != null )
+            if( !r.HasError && _theBest != null )
             {
                 state.PushAction( DynamicItemCreateAfterFollowing );
             }
@@ -311,18 +311,15 @@ namespace CK.Setup
         {
             Debug.Assert( _theBest != null && _theBest.Count > 0 );
             var r = new Registerer( state, item, stObj, this );
-            for( int i = _theBest.Count - 1; i >= 0 && !r.HaseError; --i )
+            for( int i = _theBest.Count - 1; i >= 0 && !r.HasError; --i )
             {
                 var best = _theBest[i];
                 if( !r.PostponeFinalizeRegister( best ) ) _theBest.RemoveAt( i );
             }
-            if( !r.HaseError && _theBest.Count > 0 ) state.PushAction( DynamicItemCreateAfterFollowing );
+            if( !r.HasError && _theBest.Count > 0 ) state.PushAction( DynamicItemCreateAfterFollowing );
         }
 
-        string ISetupItemCreator.GetDetailedName( Registerer r, string name )
-        {
-            return $"'{name}' in {Attribute.GetShortTypeName()} attribute of '{r.Container.FullName}'"; 
-        }
+        string ISetupItemCreator.GetDetailedName( Registerer r, string name ) => GetDetailedName( r, name );
 
         IContextLocNaming ISetupItemCreator.BuildFullName( Registerer r, SetupObjectItemBehavior b, string name )
         {
@@ -332,6 +329,20 @@ namespace CK.Setup
         SetupObjectItem ISetupItemCreator.CreateSetupObjectItem( Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
         {
             return CreateSetupObjectItem( r, firstContainer, name, transformArgument );
+        }
+
+        /// <summary>
+        /// Helper method used by the kernel that generates a clear string that gives  
+        /// detailed information about the location of the name beeing processed like
+        /// '{name} in {Attribute} attribute of {holding class}'.
+        /// This is exposed as a protected method so that specialized classes can easily emit log messages.
+        /// </summary>
+        /// <param name="r">The current registerer.</param>
+        /// <param name="name">The object's name that is processed.</param>
+        /// <returns>Detailed information.</returns>
+        protected string GetDetailedName( Registerer r, string name )
+        {
+            return $"'{name}' in {Attribute.GetShortTypeName()} attribute of '{r.Container.FullName}'"; 
         }
 
         /// <summary>

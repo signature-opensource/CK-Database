@@ -13,5 +13,16 @@ namespace CK.SqlServer.Setup
         {
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="ISqlServerView"/> (specialized <see cref="ISqlServerObject"/>). 
+        /// </summary>
+        public new ISqlServerView SqlObject
+        {
+            get { return (ISqlServerView)base.SqlObject; }
+            set { base.SqlObject = value; }
+        }
+
+        public new SqlViewItem TransformTarget => (SqlViewItem)base.TransformTarget;
+
     }
 }
