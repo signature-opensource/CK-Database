@@ -28,7 +28,7 @@ namespace CK.Setup
         /// <returns>A key that identifies this script: two scripts with this same key can not both participate in a setup.</returns>
         public static string GetScriptKey( this ISetupScript @this, string suffix = null )
         {
-            return String.Format( "{0}|{1}|{2}|{3}|{4}|{5}", @this.ScriptSource, @this.Name.FullName, @this.Name.CallContainerStep, @this.Name.FromVersion, @this.Name.Version, suffix ); 
+            return $"{@this.ScriptSource}|{@this.Name.FullName}|{@this.Name.CallContainerStep}|{@this.Name.FromVersion}|{@this.Name.Version}|{suffix}"; 
         }
 
     }

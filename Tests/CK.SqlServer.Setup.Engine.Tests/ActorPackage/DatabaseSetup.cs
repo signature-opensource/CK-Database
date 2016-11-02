@@ -12,13 +12,19 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
     public partial class DatabaseSetup
     {
         [Test]
-        public void InstallActorBasicFromScracth()
+        public void InstallActorBasic()
+        {
+            InstallDropAndReverseInstall( false, false, "InstallActorBasic", false );
+        }
+
+        [Test]
+        public void InstallActorBasicFromScracthDropAndReverseInstall()
         {
             InstallDropAndReverseInstall( true, false, "InstallActorBasicFromScracth" );
         }
 
         [Test]
-        public void InstallActorBasic()
+        public void InstallActorBasicDropAndReverseInstall()
         {
             InstallDropAndReverseInstall( false, false, "InstallActorBasic" );
         }
@@ -29,7 +35,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             InstallDropAndReverseInstall( false, true, "InstallActorWithZone" );
         }
 
-        private static void InstallDropAndReverseInstall( bool resetFirst, bool withZone, string dllName )
+        private static void InstallDropAndReverseInstall( bool resetFirst, bool withZone, string dllName, bool doRevert = true )
         {
             var c = new SetupEngineConfiguration();
             c.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( "SqlActorPackage" );
@@ -45,6 +51,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             {
                 if( resetFirst )
                 {
+                    db.SchemaDropAllObjects( "bad schema name", true );
                     db.SchemaDropAllObjects( "CK", true );
                     db.SchemaDropAllObjects( "CKCore", false );
                 }
@@ -59,14 +66,17 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
                 if( withZone ) CheckBasicAndZone( db, m );
                 else CheckBasicOnly( db, m );
             }
+
+            if( !doRevert ) return;
+
             using( var db = SqlManager.OpenOrCreate( TestHelper.DatabaseTestConnectionString, TestHelper.Monitor ) )
             {
                 Assert.That( db.Connection.ExecuteScalar( "select count(*) from sys.tables where name in ('tActor','tItemVersionStore')" ), Is.EqualTo( 2 ) );
+                db.SchemaDropAllObjects( "bad schema name", true );
                 db.SchemaDropAllObjects( "CK", true );
                 db.SchemaDropAllObjects( "CKCore", false );
                 Assert.That( db.Connection.ExecuteScalar( "select count(*) from sys.tables where name in ('tSystem','tItemVersionStore')" ), Is.EqualTo( 0 ) );
             }
-
             c.RunningMode = SetupEngineRunningMode.RevertNames;
             c.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = dllName + ".Reverted";
             using( TestHelper.Monitor.OpenTrace().Send( "Second setup (reverse order)" ) )
@@ -118,6 +128,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             {
                 Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tActor where ActorId <= 1" ), Is.EqualTo( 2 ) );
                 Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tSecurityZone where SecurityZoneId <= 1" ), Is.EqualTo( 2 ) );
+                Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.a_stupid_view" ), Is.GreaterThan( 1 ) );
                 CallCreateUser( c, map, Guid.NewGuid().ToString() );
                 CallCreateGroupZone( c, map, 0, "ZoneGroupIn0" );
                 CallCreateGroupZone( c, map, 1, "ZoneGroupIn1" );

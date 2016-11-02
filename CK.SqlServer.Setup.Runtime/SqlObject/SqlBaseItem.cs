@@ -129,14 +129,5 @@ namespace CK.SqlServer.Setup
             }
         }
 
-        static bool ChechItemType( IActivityMonitor monitor, string fileName, IDependentItemContainer packageItem, IEnumerable<string> expectedItemTypes, SqlBaseItem result )
-        {
-            if( expectedItemTypes != null && !expectedItemTypes.Contains( result.ItemType ) )
-            {
-                monitor.Error().Send( $"Resource '{fileName}' of '{packageItem?.FullName}' is a '{result.ItemType}' whereas '{expectedItemTypes.Concatenate( "' or '" )}' is expected." );
-                return false;
-            }
-            return true;
-        }
     }
 }

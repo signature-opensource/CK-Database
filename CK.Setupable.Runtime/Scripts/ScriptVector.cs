@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setupable.Engine\Scripts\TypedScriptVector.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +10,7 @@ namespace CK.Setup
     /// <summary>
     /// Contains versionned scripts related to the same object.
     /// </summary>
-    public class TypedScriptVector
+    public class ScriptVector
     {
         /// <summary>
         /// The final version.
@@ -40,7 +33,7 @@ namespace CK.Setup
         /// <summary>
         /// A (last) versioned script and an optional NoVersion script found.
         /// </summary>
-        internal TypedScriptVector( ISetupScript maxScript, ISetupScript noVersion )
+        internal ScriptVector( ISetupScript maxScript, ISetupScript noVersion )
         {
             Debug.Assert( maxScript != null );
             Debug.Assert( noVersion == null || (noVersion.ScriptSource == maxScript.ScriptSource) );
@@ -52,7 +45,7 @@ namespace CK.Setup
         /// <summary>
         /// A starting script, a migration script and an optional NoVersion one.
         /// </summary>
-        internal TypedScriptVector( ISetupScript startingScript, ISetupScript migrationScript, ISetupScript noVersion )
+        internal ScriptVector( ISetupScript startingScript, ISetupScript migrationScript, ISetupScript noVersion )
         {
             Debug.Assert( startingScript != null && migrationScript != null );
             Debug.Assert( noVersion == null || (noVersion.ScriptSource == startingScript.ScriptSource) );
@@ -68,7 +61,7 @@ namespace CK.Setup
         /// <summary>
         /// Only the NoVersion script found. No script with version at all.
         /// </summary>
-        internal TypedScriptVector( ISetupScript noVersion )
+        internal ScriptVector( ISetupScript noVersion )
             : this( noVersion, null )
         {
         }
@@ -76,7 +69,7 @@ namespace CK.Setup
         /// <summary>
         /// A list of versioned script and an optional NoVersion script found.
         /// </summary>
-        internal TypedScriptVector( List<CoveringScript> scripts, ISetupScript noVersion )
+        internal ScriptVector( List<CoveringScript> scripts, ISetupScript noVersion )
         {
             Debug.Assert( scripts.All( s => s.Script.ScriptSource == scripts[0].Script.ScriptSource ) );
             Final = scripts[scripts.Count - 1].Script.Name.Version;

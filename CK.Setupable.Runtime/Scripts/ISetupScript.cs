@@ -13,18 +13,25 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
-    /// A <see cref="ParsedFileName"/> associated to a way to read its content and a script source.
+    /// A <see cref="ParsedFileName"/> associated to a way to read its content and a script source name.
     /// </summary>
-    /// <remarks>
-    /// The <see cref="ScriptSource"/> drives the choice of the ScriptTypeHandler that will be used
-    /// to execute the script.
-    /// </remarks>
     public interface ISetupScript
     {
+        /// <summary>
+        /// Gets the name of this script.
+        /// </summary>
         ParsedFileName Name { get; }
 
+        /// <summary>
+        /// Gets the source name.
+        /// Never be null nor empty.
+        /// </summary>
         string ScriptSource { get; }
 
+        /// <summary>
+        /// Gets the script itself.
+        /// </summary>
+        /// <returns>The script text.</returns>
         string GetScript();
     }
 }

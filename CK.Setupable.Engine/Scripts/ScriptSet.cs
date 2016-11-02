@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setupable.Engine\Scripts\ScriptSet.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -75,7 +68,7 @@ namespace CK.Setup
             /// <param name="to">The final version. When null, the "no version" script, if it exists, is always returned.</param>
             /// <param name="alwaysAddNoVersionScript">True to return the "no version" script even when there are no scripts to execute.</param>
             /// <returns>The list of version or null if no scripts must be executed.</returns>
-            public TypedScriptVector GetScriptVector( SetupCallGroupStep step, Version from, Version to, bool alwaysAddNoVersionScript = false )
+            public ScriptVector GetScriptVector( SetupCallGroupStep step, Version from, Version to, bool alwaysAddNoVersionScript = false )
             {
                 Debug.Assert( _scripts.Values.Where( s => s.Name.CallContainerStep == step ).Count( s => s.Name.Version == null ) <= 1, "There is either 0 or 1 'no version' script for a step." );
 
@@ -83,7 +76,7 @@ namespace CK.Setup
                 {
                     // Delivers only the NoVersion script if it exists.
                     var noV = _scripts.Values.Where( s => s.Name.CallContainerStep == step && s.Name.Version == null ).SingleOrDefault();
-                    if( noV != null ) return new TypedScriptVector( noV );
+                    if( noV != null ) return new ScriptVector( noV );
                     return null;
                 }
 
@@ -93,30 +86,30 @@ namespace CK.Setup
                 {
                     // If there is no "from", consider the best one as the starting point.
                     // If there is no script at all, there is nothing to do.
-                    if( !versionStep.Any() ) return alwaysAddNoVersionScript && noVersion != null ? new TypedScriptVector( noVersion ) : null;
+                    if( !versionStep.Any() ) return alwaysAddNoVersionScript && noVersion != null ? new ScriptVector( noVersion ) : null;
                     // Looking for the best version script, not migration one.
                     var startingVersions = versionStep.Where( s => s.Name.FromVersion == null );
                     // If there is only migration scripts... there is nothing to do.
-                    if( !startingVersions.Any() ) return alwaysAddNoVersionScript && noVersion != null ? new TypedScriptVector( noVersion ) : null;
+                    if( !startingVersions.Any() ) return alwaysAddNoVersionScript && noVersion != null ? new ScriptVector( noVersion ) : null;
                     // Taking the better one.
                     ISetupScript maxVersion = startingVersions.MaxBy( s => s.Name.Version );
                     
                     var fromScripts = versionStep.Where( s => s.Name.BelongsToUpgradeFrom( maxVersion.Name.Version ) ).ToList();
-                    if( fromScripts.Count == 0 ) return new TypedScriptVector( maxVersion, noVersion );
-                    if( fromScripts.Count == 1 ) return new TypedScriptVector( maxVersion, fromScripts[0], noVersion );
+                    if( fromScripts.Count == 0 ) return new ScriptVector( maxVersion, noVersion );
+                    if( fromScripts.Count == 1 ) return new ScriptVector( maxVersion, fromScripts[0], noVersion );
 
                     fromScripts.Sort( CoveringScript.CompareUpgradeScripts );
                     List<CoveringScript> coveringMigrationScripts = CoveringScript.BuildCoveringScripts( fromScripts );
                     coveringMigrationScripts.Insert( 0, new CoveringScript( maxVersion ) );
-                    return new TypedScriptVector( coveringMigrationScripts, noVersion );
+                    return new ScriptVector( coveringMigrationScripts, noVersion );
                 }
                 var scripts = versionStep.Where( s => s.Name.BelongsToUpgradeFrom( from ) ).ToList();
-                if( scripts.Count == 0 ) return alwaysAddNoVersionScript && noVersion != null ? new TypedScriptVector( noVersion ) : null;
-                if( scripts.Count == 1 ) return new TypedScriptVector( scripts[0], noVersion );
+                if( scripts.Count == 0 ) return alwaysAddNoVersionScript && noVersion != null ? new ScriptVector( noVersion ) : null;
+                if( scripts.Count == 1 ) return new ScriptVector( scripts[0], noVersion );
 
                 scripts.Sort( CoveringScript.CompareUpgradeScripts );
                 List<CoveringScript> coveringScripts = CoveringScript.BuildCoveringScripts( scripts );
-                return new TypedScriptVector( coveringScripts, noVersion );
+                return new ScriptVector( coveringScripts, noVersion );
             }
 
             class CompareScript : IEqualityComparer<ISetupScript>
@@ -160,10 +153,7 @@ namespace CK.Setup
                 return _scripts.TryGetValue( s, out existing ) && existing.ScriptSource == s.ScriptSource;
             }
 
-            public int Count
-            {
-                get { return _scripts.Count; }
-            }
+            public int Count => _scripts.Count; 
 
         }
 

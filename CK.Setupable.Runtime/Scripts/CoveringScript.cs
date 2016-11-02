@@ -16,8 +16,9 @@ namespace CK.Setup
 {
     /// <summary>
     /// Represents a <see cref="Script"/> that covers one or more other scripts: the script has a
-    /// final <see cref="ParsedFileName.Version">Version</see> that is greater than any <see cref="ParsedFileName.FromVersion"/> of its <see cref="CoveredScripts"/>
-    /// and a FromVersion that is less than or equal to any FromVersion  of its CoveredScripts.
+    /// final <see cref="ParsedFileName.Version">Version</see> that is greater than 
+    /// any <see cref="ParsedFileName.FromVersion"/> of its <see cref="CoveredScripts"/>
+    /// and a FromVersion that is less than or equal to any FromVersion of its CoveredScripts.
     /// </summary>
     public class CoveringScript
     {

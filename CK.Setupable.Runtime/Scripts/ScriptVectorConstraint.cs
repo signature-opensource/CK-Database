@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setupable.Engine\Scripts\TypedScriptVectorConstraint.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,10 +6,10 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
-    /// Defines the constraints that a <see cref="TypedScriptVector"/> may satisfy.
+    /// Defines the constraints that a <see cref="ScriptVector"/> may satisfy.
     /// </summary>
     [Flags]
-    public enum TypedScriptVectortConstraint
+    public enum ScriptVectortConstraint
     {
         /// <summary>
         /// No requirements.

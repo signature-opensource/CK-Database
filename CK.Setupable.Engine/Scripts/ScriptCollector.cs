@@ -84,7 +84,7 @@ namespace CK.Setup
         /// <returns>The number of scripts that have been added.</returns>
         public int AddFromResources( IActivityMonitor monitor, string scriptSource, ResourceLocator resLoc, string context, string location, string name, string fileSuffix )
         {
-            if( monitor == null ) throw new ArgumentNullException( "_monitor" );
+            if( monitor == null ) throw new ArgumentNullException( "monitor" );
             if( scriptSource == null ) throw new ArgumentNullException( "scriptSource" );
             if( resLoc == null ) throw new ArgumentNullException( "scriptSource" );
             if( name == null ) throw new ArgumentNullException( "name" );

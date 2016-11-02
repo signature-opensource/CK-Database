@@ -19,6 +19,7 @@ namespace SqlActorPackage.Basic
 
     [SqlPackage( Schema = "CK", Database = typeof( SqlDefaultDatabase ), ResourcePath = "Res" ), Versions( "2.11.25" )]
     [SqlObjectItem( "OneActorView" )]
+    [SqlObjectItem( "fUserIsInGroup" )]
     public abstract class Package : SqlPackage, IKnowTheConnectionString
     {
         [InjectContract]

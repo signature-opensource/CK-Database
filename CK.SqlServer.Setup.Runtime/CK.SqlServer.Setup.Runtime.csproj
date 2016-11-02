@@ -116,6 +116,8 @@
     <Compile Include="SqlPackageBase\SqlPackageAttributeImplBase.cs" />
     <Compile Include="SqlPackageBase\SqlPackageBaseItem.cs" />
     <Compile Include="SqlPackageBase\SqlPackageBaseItemDriver.cs" />
+    <Compile Include="SqlPackageBase\SqlPackageScript.cs" />
+    <Compile Include="SqlPackageBase\SqlPackageScripts.cs" />
     <Compile Include="SqlPackage\SqlPackageAttributeImpl.cs" />
     <Compile Include="SqlCallableAttributeImpl\SqlCallableAttributeImpl.cs" />
     <Compile Include="SqlCallableAttributeImpl\SqlCallableAttributeImpl.SqlCallContextInfo.cs" />

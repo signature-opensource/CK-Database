@@ -80,6 +80,11 @@
     <Compile Include="HelperExtensions.cs" />
     <Compile Include="Package\ISetupObjectItem.cs" />
     <Compile Include="Package\IMutableSetupBaseItem.cs" />
+    <Compile Include="Scripts\CoveringScript.cs" />
+    <Compile Include="Scripts\ScriptsCollection.cs" />
+    <Compile Include="Scripts\ScriptVector.cs" />
+    <Compile Include="Scripts\ScriptVectorConstraint.cs" />
+    <Compile Include="Scripts\SetupScriptExtensions.cs" />
     <Compile Include="SetupObjectItemBehavior.cs" />
     <Compile Include="SetupObjectItem\ISetupObjectTransformerItem.cs" />
     <Compile Include="SetupObjectItem\SetupConfigReader.cs" />
@@ -142,7 +147,7 @@
     <Compile Include="Package\AutoDependentPackagelItem.cs" />
     <Compile Include="Scripts\ParsedFileName.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Setup\SetupCallGroupStep.cs" />
+    <Compile Include="SetupCallGroupStep.cs" />
     <Compile Include="SetupStep.cs" />
     <Compile Include="Version\VersionedTypedName.cs" />
     <Compile Include="Version\VersionedName.cs" />

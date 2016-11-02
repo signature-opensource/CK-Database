@@ -16,6 +16,8 @@ namespace CK.Setup
 {
     public class ResSetupScript : ISetupScript
     {
+        string _cached;
+
         public ResSetupScript( ParsedFileName n, string scriptSource )
         {
             if( n == null ) throw new ArgumentNullException( "n" );
@@ -31,14 +33,15 @@ namespace CK.Setup
 
         public string GetScript()
         {
-            ResourceLocator resLoc = (ResourceLocator)Name.ExtraPath;
-            return resLoc.GetString( Name.FileName, true );
+            if( _cached == null )
+            {
+                ResourceLocator resLoc = (ResourceLocator)Name.ExtraPath;
+                _cached = resLoc.GetString( Name.FileName, true );
+            }
+            return _cached;
         }
 
-        public override string ToString()
-        {
-            return string.Format( @"{0} script - {1}\\{2}", ScriptSource, Name.ExtraPath, Name.FileName );
-        }
+        public override string ToString() => $@"{ScriptSource} script - {Name.ExtraPath}\\{Name.FileName}";
 
     }
 }

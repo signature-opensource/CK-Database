@@ -4,9 +4,9 @@ create function CK.fUserIsInGroup
 	@UserId int,
 	@GroupId int
 )
-returns bit 
+returns bit with schemabinding
 as 
 begin
-	return case when exists( select * from CK.tActorProfile where ActorId = @UserId and GroupId = @GroupId ) then 1 else 0 end;
+	return case when exists( select 1 from CK.tActorProfile where ActorId = @UserId and GroupId = @GroupId ) then 1 else 0 end;
 end
 

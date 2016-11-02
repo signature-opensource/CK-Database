@@ -82,16 +82,12 @@
     <Compile Include="Scripts\ScriptTypeHandler.cs" />
     <Compile Include="SetupCore\GroupHeadSetupDriver.cs" />
     <Compile Include="SetupCore\ISetupSessionMemoryProvider.cs" />
-    <Compile Include="Scripts\SetupScriptExtensions.cs" />
     <Compile Include="Scripts\MultiScriptBase.cs" />
     <Compile Include="Scripts\MultiScriptExecutorBase.cs" />
     <Compile Include="Scripts\IScriptExecutor.cs" />
-    <Compile Include="Scripts\CoveringScript.cs" />
     <Compile Include="Scripts\ScriptCollector.cs" />
     <Compile Include="Scripts\ScriptSet.cs" />
     <Compile Include="Scripts\ScriptSetupHandler.cs" />
-    <Compile Include="Scripts\TypedScriptVector.cs" />
-    <Compile Include="Scripts\TypedScriptVectorConstraint.cs" />
     <Compile Include="Scripts\ScriptSetupHandlerBuilder.cs" />
     <Compile Include="Scripts\ScriptTypeManager.cs" />
     <Compile Include="SetupEngine.Aspect.cs" />

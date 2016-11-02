@@ -26,7 +26,7 @@ namespace CK.Setup
 
         bool Execute( SetupCallGroupStep step )
         {
-            TypedScriptVector v = _scripts.GetScriptVector( step, Driver.ExternalVersion?.Version, Driver.ItemVersion );
+            ScriptVector v = _scripts.GetScriptVector( step, Driver.ExternalVersion?.Version, Driver.ItemVersion );
             if( v == null || v.Scripts.Count == 0 ) return true;
 
             var monitor = Driver.Engine.Monitor;
