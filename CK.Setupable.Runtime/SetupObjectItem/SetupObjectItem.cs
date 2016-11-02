@@ -54,6 +54,11 @@ namespace CK.Setup
         /// </summary>
         public SetupObjectItem TransformSource => _sourceWhenTransformed;
 
+        /// Gets or sets whether explicit requirements to objects applies to their 
+        /// eventual transformed object if any.
+        /// </summary>
+        public bool ExplicitRequiresMustBeTransformed { get; set; }
+
         /// <summary>
         /// Gets the transformers that have been registered with <see cref="AddTransformer"/>.
         /// Never null (empty when no transformers have been added yet).
@@ -124,10 +129,25 @@ namespace CK.Setup
         {
             _transformTarget._contextLocName = _contextLocName.Clone();
             _transformTarget._contextLocName.Name += "#transform";
+            // This new target requires its source (its cloned origin), therefore it is useless 
+            // to duplicate its requires.
+            // This is obvious.
+            //if( _requires != null ) _transformTarget._requires = new DependentItemList( _requires );
+
+            // If the source object defines any RequiredBy, it is up to the transformation 
+            // to also define them.
+            // This is a less obvious choice as the previous one.
+            //if( _requiredBy != null ) _transformTarget._requiredBy = new DependentItemList( _requiredBy );
+
+            // Same consideration here: it is up to the transformation to consider the transformed item
+            // to be in the same groups as the original.
+            // This choice, as well as the following one regarding the container, is the most 
+            // questionable one.
+            //if( _groups != null ) _transformTarget._groups = new DependentItemGroupList( _groups );
+
+            // Here, we free the transformed object to be in the same container as its original one.
+            // This is clearly a choice that can be discussed...
             _transformTarget.Container = null;
-            if( _requires != null ) _transformTarget._requires = new DependentItemList( _requires );
-            if( _requiredBy != null ) _transformTarget._requiredBy = new DependentItemList( _requiredBy );
-            if( _groups != null ) _transformTarget._groups = new DependentItemGroupList( _groups );
             return true;
         }
 
@@ -260,8 +280,18 @@ namespace CK.Setup
 
         bool IDependentItemRef.Optional => false; 
 
-        object IDependentItem.StartDependencySort() => StartDependencySort();
-
+        object IDependentItem.StartDependencySort()
+        {
+            if( _requires != null && ExplicitRequiresMustBeTransformed )
+            {
+                for( int i = 0; i < _requires.Count; ++i )
+                {
+                    var transformed = (_requires[i] as SetupObjectItem)?.TransformTarget;
+                    if( transformed != null ) _requires[i] = transformed;
+                }
+            }
+            return StartDependencySort();
+        }
         /// <summary>
         /// This ensures that the transform target is registered if it exists
         /// even if requirements do not start from referenced objects.

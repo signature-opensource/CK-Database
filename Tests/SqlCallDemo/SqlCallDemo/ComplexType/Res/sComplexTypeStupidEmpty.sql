@@ -1,4 +1,4 @@
-﻿-- Version = 1.0.10
+﻿-- SetupConfig: {}
 alter procedure CK.sComplexTypeStupidEmpty
 as
 begin

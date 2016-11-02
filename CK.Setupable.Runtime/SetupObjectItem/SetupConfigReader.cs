@@ -67,7 +67,7 @@ namespace CK.Setup
             if( m.MatchChar( '{' ) ) ParseContent( m, transformer, target );
             if( m.IsError )
             {
-                monitor.OpenError().Send( m.ErrorMessage );
+                monitor.Error().Send( m.ErrorMessage );
                 return false;
             }
             return true;

@@ -243,7 +243,7 @@ namespace CK.SqlServer.Setup
         public bool SchemaDropAllObjects( string schema, bool dropSchema )
         {
             CheckOpen();
-            if( String.IsNullOrEmpty( schema )
+            if( string.IsNullOrEmpty( schema )
                 || schema.IndexOf( '\'' ) >= 0
                 || schema.IndexOf( ';' ) >= 0 ) throw new ArgumentException( "schemaName" );
             try
@@ -256,7 +256,7 @@ namespace CK.SqlServer.Setup
                     if( dropSchema )
                     {
                         c.CommandType = CommandType.Text;
-                        c.CommandText = String.Format( "if exists(select 1 from sys.schemas where name = '{0}') drop schema {0};", schema );
+                        c.CommandText = $"if exists(select 1 from sys.schemas where name = '{schema}') drop schema [{schema.Replace( "]", "]]" )}];";
                         _oCon.ExecuteNonQuery( c );
                     }
                 }

@@ -60,7 +60,6 @@ namespace CK.Setup
         /// This list contains all the <see cref="SetupItemDriver"/> plus all the internal drivers for the head of Groups 
         /// or Containers (the ones that ar not SetupItemDriver instances and have a <see cref="DriverBase.FullName"/> that
         /// ends with ".Head").
-        /// This list is filled after <see cref="RegisterSetupEvent"/> (and <see cref="SetupEvent"/> with <see cref="SetupStep.PreInit"/>) and before <see cref="SetupStep.Init"/>.
         /// </summary>
         IDriverBaseList AllDrivers { get; }
 

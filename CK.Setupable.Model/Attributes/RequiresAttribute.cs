@@ -34,7 +34,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets a comma separated list of item names.
         /// </summary>
-        public string Requirements { get { return _requires; } }
+        public string Requirements => _requires;
 
     }
 }

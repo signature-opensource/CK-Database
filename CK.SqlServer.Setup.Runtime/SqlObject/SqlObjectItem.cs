@@ -26,6 +26,7 @@ namespace CK.SqlServer.Setup
         internal SqlObjectItem( SqlContextLocName name, string itemType, ISqlServerObject parsed )
             : base( name, itemType, parsed )
         {
+            ExplicitRequiresMustBeTransformed = parsed.Options.SchemaBinding;
             SetDriverType( typeof( SqlObjectItemDriver ) );
         }
 

@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setup.Dependency\Sorter\DependencySorter.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -77,6 +70,7 @@ namespace CK.Setup
             // This marker saves one iteration over specialized items to resolve Generalizations.
             internal static readonly Entry GeneralizationMissingMarker = new Entry( null, String.Empty );
 
+            // Reference to the entries of the 
             // This is unfortunately required only for ISortedItem.Requires to give ISortedItems instead of
             // poor IDependentItemRef. Mapping from a reference (FullName) to its Entry is done dynamically 
             // by a LINQ Select. The other way would be to compute the list of Entries for each ISortedItem.Requires
@@ -272,154 +266,95 @@ namespace CK.Setup
 
             #region ISortedItem
 
-            int ISortedItem.Index
-            {
-                get { return Index; }
-            }
+            int ISortedItem.Index => Index; 
 
-            string ISortedItem.FullName
-            {
-                get { return FullName; }
-            }
+            string ISortedItem.FullName => FullName; 
 
-            int ISortedItem.Rank
-            {
-                get { return Rank; }
-            }
+            int ISortedItem.Rank => Rank; 
 
-            object ISortedItem.StartValue
-            {
-                get { return StartValue; }
-            }
+            object ISortedItem.StartValue => StartValue; 
 
-            bool ISortedItem.IsGroupHead
-            {
-                get { return GroupIfHead != null; }
-            }
+            bool ISortedItem.IsGroupHead => GroupIfHead != null; 
 
-            bool ISortedItem.IsGroup
-            {
-                get { return HeadIfGroupOrContainer != null; }
-            }
+            bool ISortedItem.IsGroup => HeadIfGroupOrContainer != null; 
 
-            ISortedItem ISortedItem.GroupForHead
-            {
-                get { return GroupIfHead; }
-            }
+            ISortedItem ISortedItem.GroupForHead => GroupIfHead; 
 
-            IDependentItem ISortedItem.Item
-            {
-                get { return Item; }
-            }
+            IDependentItem ISortedItem.Item => Item; 
 
-            ISortedItem ISortedItem.Container
-            {
-                get { return Container; }
-            }
+            ISortedItem ISortedItem.Container => Container; 
 
-            ISortedItem ISortedItem.ConfiguredContainer
-            {
-                get { return ConfiguredContainer; }
-            }
+            ISortedItem ISortedItem.ConfiguredContainer => ConfiguredContainer; 
 
-            ISortedItem ISortedItem.HeadForGroup
-            {
-                get { return HeadIfGroupOrContainer; }
-            }
+            ISortedItem ISortedItem.HeadForGroup => HeadIfGroupOrContainer; 
 
-            ISortedItem ISortedItem.Generalization
-            {
-                get { return Generalization == GeneralizationMissingMarker ? null : Generalization; }
-            }
+            ISortedItem ISortedItem.Generalization => Generalization == GeneralizationMissingMarker ? null : Generalization;
 
-            IEnumerable<ISortedItem> ISortedItem.Groups
-            {
-                get { return GetGroups(); }
-            }
+            IEnumerable<ISortedItem> ISortedItem.Groups => GetGroups(); 
 
-            IEnumerable<ISortedItem> ISortedItem.Requires
-            {
-                get { return GetRequires(); }
-            }
+            IEnumerable<ISortedItem> ISortedItem.Requires => GetRequires(); 
 
-            IEnumerable<ISortedItem> ISortedItem.Children
-            {
-                get { return GetChildren(); }
-            }
+            IEnumerable<ISortedItem> ISortedItem.DirectRequires => GetDirectRequires(); 
 
-            IEnumerable<ISortedItem> ISortedItem.AllChildren
-            {
-                get { return GetAllChildren( new HashSet<Entry>() ); }
-            }
+            IEnumerable<ISortedItem> ISortedItem.Children => GetChildren(); 
+
+            IEnumerable<ISortedItem> ISortedItem.AllChildren => GetAllChildren( new HashSet<Entry>() ); 
 
             #endregion
 
             #region ISortedItem<T> Members
 
-            ISortedItem<T> ISortedItem<T>.Container
-            {
-                get { return Container; }
-            }
+            ISortedItem<T> ISortedItem<T>.Container => Container; 
 
             // By double checking the full name, we handle any "Optional"ity of the original Container reference.
             public ISortedItem<T> ConfiguredContainer 
             {
-                get { return Item.Container != null && ReferenceEquals( Item.Container.FullName, Container.FullName ) ? Container : null; } 
+                get { return Item.Container != null && ReferenceEquals( Item.Container.FullName, Container.FullName ) 
+                                ? Container 
+                                : null; } 
             }
 
-            ISortedItem<T> ISortedItem<T>.Generalization
-            {
-                get { return Generalization == GeneralizationMissingMarker ? null : Generalization; }
-            }
+            ISortedItem<T> ISortedItem<T>.Generalization =>  Generalization == GeneralizationMissingMarker 
+                                                                ? null 
+                                                                : Generalization; 
 
-            ISortedItem<T> ISortedItem<T>.HeadForGroup
-            {
-                get { return HeadIfGroupOrContainer; }
-            }
+            ISortedItem<T> ISortedItem<T>.HeadForGroup => HeadIfGroupOrContainer; 
 
-            ISortedItem<T> ISortedItem<T>.GroupForHead
-            {
-                get { return GroupIfHead; }
-            }
+            ISortedItem<T> ISortedItem<T>.GroupForHead => GroupIfHead; 
 
-            T ISortedItem<T>.Item
-            {
-                get { return Item; }
-            }
+            T ISortedItem<T>.Item => Item;
 
-            IEnumerable<ISortedItem<T>> ISortedItem<T>.Requires
-            {
-                get { return GetRequires(); }
-            }
+            IEnumerable<ISortedItem<T>> ISortedItem<T>.Requires => GetRequires();
 
-            IEnumerable<ISortedItem<T>> ISortedItem<T>.Groups
-            {
-                get { return GetGroups(); }
-            }
+            IEnumerable<ISortedItem<T>> ISortedItem<T>.DirectRequires => GetDirectRequires();
 
-            IEnumerable<ISortedItem<T>> ISortedItem<T>.Children
-            {
-                get { return GetChildren(); }
-            }
+            IEnumerable<ISortedItem<T>> ISortedItem<T>.Groups => GetGroups(); 
 
-            IEnumerable<ISortedItem<T>> ISortedItem<T>.AllChildren
-            {
-                get { return GetAllChildren( new HashSet<Entry>() ); }
-            }
+            IEnumerable<ISortedItem<T>> ISortedItem<T>.Children => GetChildren(); 
+
+            IEnumerable<ISortedItem<T>> ISortedItem<T>.AllChildren => GetAllChildren( new HashSet<Entry>() ); 
 
             #endregion
+            IEnumerable<Entry> GetDirectRequires()
+            {
+                return RemoveMissing( Item.Requires );
+            }
+
 
             IEnumerable<Entry> GetRequires()
             {
-                var req = HeadIfGroupOrContainer != null ? HeadIfGroupOrContainer.Requires : Requires;
-                return req == null
+                return RemoveMissing( HeadIfGroupOrContainer != null ? HeadIfGroupOrContainer.Requires : Requires );
+            }
+
+            IEnumerable<Entry> RemoveMissing( IEnumerable<IDependentItemRef> r )
+            {
+                return r == null
                     ? Util.Array.Empty<Entry>()
-                    : req.Where( d => !d.Optional )
-                            // We can not blindly use (ISortedItem)_entries[r.FullName] because if DependencySorterResult.HasRequiredMissing is true
-                            // and the resulting graph is nevertheless used (for Tracing by example) there will be no associated ISortedItem.
-                            // ==> We must TryGetValue and filter unexisting sorted items.
-                            .Select( r => (Entry)_entries.GetValueWithDefault( r.FullName, null ) )
-                            .Where( i => i != null );
+                        // We can not blindly use (ISortedItem)_entries[r.FullName] because if DependencySorterResult.HasRequiredMissing is true
+                        // and the resulting graph is nevertheless used (for Tracing by example) there will be no associated ISortedItem.
+                        // ==> We must TryGetValue and filter unexisting sorted items.
+                    : r.Select( r2 => (Entry)_entries.GetValueWithDefault( r2.FullName, null ) )
+                        .Where( e => e != null );
             }
 
             IEnumerable<Entry> GetGroups()

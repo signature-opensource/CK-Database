@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Core\SimpleScriptTagHandler.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +9,7 @@ using System.Diagnostics;
 namespace CK.SqlServer
 {
     /// <summary>
-    /// Parses scripts string to hanle 'go', 'begin/ensp' and 'begin/enscript'.
+    /// Parses scripts string to hanle 'go', 'begin/endsp' and 'begin/endscript'.
     /// </summary>
     public class SimpleScriptTagHandler
     {
@@ -58,7 +51,7 @@ namespace CK.SqlServer
                 Length = m.Length;
                 Type = type;
                 string label = m.Groups[2].Value;
-                if( !String.IsNullOrWhiteSpace( label ) ) Label = label;
+                if( !string.IsNullOrWhiteSpace( label ) ) Label = label;
             }
 
             internal Token( int idxText, int lenText )
@@ -72,15 +65,15 @@ namespace CK.SqlServer
             public int Length { get; set; }
             public TokenType Type { get; set; }
             public string Label { get; set; } 
-            public bool IsExpanded { get { return (Type & TokenType.IsExpanded) != 0; } }
-            public bool IsBegin { get { return (Type & TokenType.IsBegin) != 0; } }
-            public bool IsEnd { get { return (Type & TokenType.IsEnd) != 0; } }
-            public bool IsGo { get { return (Type & TokenType.IsGO) != 0; } }
-            public bool IsScript { get { return (Type & TokenType.IsScript) != 0; } }
-            public bool IsSP { get { return (Type & TokenType.IsSP) != 0; } }
-            public bool IsText { get { return (Type & TokenType.IsText) != 0; } }
-            public bool IsScriptBegin { get { return (Type & (TokenType.IsScript | TokenType.IsBegin)) == (TokenType.IsScript | TokenType.IsBegin); } }
-            public bool IsScriptEnd { get { return (Type & (TokenType.IsScript | TokenType.IsEnd)) == (TokenType.IsScript | TokenType.IsEnd); } }
+            public bool IsExpanded => (Type & TokenType.IsExpanded) != 0; 
+            public bool IsBegin => (Type & TokenType.IsBegin) != 0;
+            public bool IsEnd => (Type & TokenType.IsEnd) != 0; 
+            public bool IsGo => (Type & TokenType.IsGO) != 0;
+            public bool IsScript => (Type & TokenType.IsScript) != 0; 
+            public bool IsSP => (Type & TokenType.IsSP) != 0;
+            public bool IsText => (Type & TokenType.IsText) != 0;
+            public bool IsScriptBegin => (Type & (TokenType.IsScript | TokenType.IsBegin)) == (TokenType.IsScript | TokenType.IsBegin);
+            public bool IsScriptEnd => (Type & (TokenType.IsScript | TokenType.IsEnd)) == (TokenType.IsScript | TokenType.IsEnd);
 
             internal void MergeExpanded( Token t )
             {
@@ -123,7 +116,7 @@ namespace CK.SqlServer
             /// Gets whether this script is included in a [beginscript]/[endscript] tag.
             /// When true, this script has a not null <see cref="Label"/> automatically computed like "AutoNum0" or sets in the script.
             /// </summary>
-            public bool IsScriptTag { get { return Label != null; } }
+            public bool IsScriptTag => Label != null; 
         }
 
         /// <summary>

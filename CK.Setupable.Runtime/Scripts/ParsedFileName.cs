@@ -293,10 +293,7 @@ namespace CK.Setup
             return true; 
         }
 
-        public override string ToString()
-        {
-            return FileName;
-        }
+        public override string ToString() => FileName;
 
     }
 }

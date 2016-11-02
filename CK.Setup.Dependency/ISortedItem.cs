@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setup.Dependency\ISortedItem.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 
@@ -95,6 +88,13 @@ namespace CK.Setup
         /// Requirements to any Container are removed when <see cref="DependencySorterOptions.SkipDependencyToContainer"/> is true.
         /// </summary>
         IEnumerable<ISortedItem> Requires { get; }
+
+        /// <summary>
+        /// Gets the direct requirements for the item (it the direct mapping of <see cref="IDependentItem.Requires"/>)
+        /// to their associated to sorted items.
+        /// Defaults to an empty enumerable.
+        /// </summary>
+        IEnumerable<ISortedItem> DirectRequires { get; }
 
         /// <summary>
         /// Gets the groups (as their <see cref="ISortedItem"/> wrapper) to which this item belongs.

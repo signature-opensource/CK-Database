@@ -59,6 +59,13 @@ namespace CK.Setup
         new IEnumerable<ISortedItem<T>> Requires { get; }
 
         /// <summary>
+        /// Gets the direct requirements for the item (it the direct mapping of <see cref="IDependentItem.Requires"/>)
+        /// to their associated to sorted items.
+        /// Defaults to an empty enumerable.
+        /// </summary>
+        new IEnumerable<ISortedItem<T>> DirectRequires { get; }
+
+        /// <summary>
         /// Gets the groups (as their <see cref="ISortedItem{T}"/> wrapper) to which this item belongs.
         /// Defaults to an empty enumerable.
         /// </summary>
