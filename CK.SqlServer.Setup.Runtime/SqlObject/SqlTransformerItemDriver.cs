@@ -26,6 +26,11 @@ namespace CK.SqlServer.Setup
         {
             if( beforeHandlers ) return true;
             Item.Target.SqlObject = Item.SqlObject.SafeTransform( Engine.Monitor, Item.Target.SqlObject );
+            if( Item.Target.SqlObject == null )
+            {
+                Engine.Monitor.Error().Send( "Transformation failed." );
+                return false;
+            }
             // If this is not the last transformer, we log the result of this intermediate transformation.
             if( Item != Item.Source.Transformers[Item.Source.Transformers.Count-1] )
             {
@@ -34,7 +39,7 @@ namespace CK.SqlServer.Setup
                     Engine.Monitor.Trace().Send( Item.Target.SqlObject.ToFullString() );
                 }
             }
-            return Item.Target.SqlObject != null;
+            return true;
         }
 
     }
