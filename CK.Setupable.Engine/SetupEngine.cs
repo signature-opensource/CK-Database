@@ -12,7 +12,6 @@ namespace CK.Setup
         readonly SetupEngineConfigurator _configurator;
         readonly IActivityMonitor _monitor;
         readonly SetupEngineStartConfiguration _startConfiguration;
-        readonly ScriptCollector _scripts;
         readonly IStObjRuntimeBuilder _runtimeBuilder;
         readonly EventHandler<RegisterSetupEventArgs> _relayRegisterSetupEvent;
         readonly EventHandler<SetupEventArgs> _relaySetupEvent;
@@ -35,7 +34,6 @@ namespace CK.Setup
             _configurator = new SetupEngineConfigurator();
             _startConfiguration = new SetupEngineStartConfiguration( this );
             _runtimeBuilder = runtimeBuilder;
-            _scripts = new ScriptCollector( _startConfiguration.ScriptTypeManager );
             _relayRegisterSetupEvent = OnEngineRegisterSetupEvent;
             _relaySetupEvent = OnEngineSetupEvent;
             _relayDriverEvent = OnEngineDriverEvent;
@@ -45,11 +43,6 @@ namespace CK.Setup
         /// Gets whether this engine is running or has <see cref="Run"/> (it can run only once).
         /// </summary>
         public bool Started => _started; 
-
-        /// <summary>
-        /// Gets the <see cref="ScriptCollector"/>.
-        /// </summary>
-        public ScriptCollector Scripts => _scripts; 
 
         /// <summary>
         /// Gets the monitor that should be used for the whole setup process.
@@ -253,7 +246,6 @@ namespace CK.Setup
                     _monitor.Info().Send( "{0} previous Setup attempt(s). Last on {2}, error was: '{1}'.", memory.StartCount, memory.LastError, memory.LastStartDate );
                 }
                 engine = new SetupCoreEngine( versionTracker, m, _startConfiguration.Aspects, _monitor, _configurator );
-                ScriptSetupHandlerBuilder scriptBuilder = new ScriptSetupHandlerBuilder( engine, _scripts, _startConfiguration.ScriptTypeManager );
                 engine.RegisterSetupEvent += _relayRegisterSetupEvent;
                 engine.SetupEvent += _relaySetupEvent;
                 engine.DriverEvent += _relayDriverEvent;

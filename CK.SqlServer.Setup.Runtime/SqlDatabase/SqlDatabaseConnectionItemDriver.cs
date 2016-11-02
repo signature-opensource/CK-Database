@@ -25,18 +25,19 @@ namespace CK.SqlServer.Setup
         public new SqlDatabaseConnectionItem Item => (SqlDatabaseConnectionItem)base.Item;
 
         /// <summary>
-        /// Gets the Sql manager. This is initialized by <see cref="Init"/>.
+        /// Gets the Sql manager. This is initialized by <see cref="ExecutePreInit"/>.
         /// </summary>
         public ISqlManagerBase SqlManager => _connection;
 
+        protected override bool ExecutePreInit()
+        {
+            _connection = FindManager( _sqlProvider, Engine.Monitor, Item.SqlDatabase );
+            return _connection != null;
+        }
+
         protected override bool Init( bool beforeHandlers )
         {
-            if( beforeHandlers )
-            {
-                _connection = FindManager( _sqlProvider, Engine.Monitor, Item.SqlDatabase );
-                if( _connection == null ) return false;
-            }
-            else
+            if( !beforeHandlers )
             {
                 foreach( var name in Item.SqlDatabase.Schemas )
                 {

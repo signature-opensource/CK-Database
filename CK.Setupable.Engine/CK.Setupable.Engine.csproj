@@ -78,18 +78,8 @@
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Scripts\ScriptSource.cs" />
-    <Compile Include="Scripts\ScriptTypeHandler.cs" />
     <Compile Include="SetupCore\GroupHeadSetupDriver.cs" />
     <Compile Include="SetupCore\ISetupSessionMemoryProvider.cs" />
-    <Compile Include="Scripts\MultiScriptBase.cs" />
-    <Compile Include="Scripts\MultiScriptExecutorBase.cs" />
-    <Compile Include="Scripts\IScriptExecutor.cs" />
-    <Compile Include="Scripts\ScriptCollector.cs" />
-    <Compile Include="Scripts\ScriptSet.cs" />
-    <Compile Include="Scripts\ScriptSetupHandler.cs" />
-    <Compile Include="Scripts\ScriptSetupHandlerBuilder.cs" />
-    <Compile Include="Scripts\ScriptTypeManager.cs" />
     <Compile Include="SetupEngine.Aspect.cs" />
     <Compile Include="SetupEngine.cs" />
     <Compile Include="SetupCore\SetupCoreEngineRegisterResult.cs" />

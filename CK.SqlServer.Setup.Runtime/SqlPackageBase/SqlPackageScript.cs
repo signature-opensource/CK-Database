@@ -16,6 +16,7 @@ namespace CK.SqlServer.Setup
         internal SqlPackageScript( SqlPackageBaseItemDriver driver, SetupCallGroupStep step, string key, ISqlServerParsedText script )
         {
             _driver = driver;
+            _step = step;
             ScriptKey = key;
             Script = script;
         }

@@ -38,6 +38,28 @@ namespace CK.SqlServer.Setup
         public ISqlManagerBase SqlManager => _connection.SqlManager;
 
         /// <summary>
+        /// Installs a script.
+        /// </summary>
+        /// <param name="script">The script to install.</param>
+        /// <returns>True on succes, false on error.</returns>
+        public bool InstallScript( SqlPackageScript script )
+        {
+            if( Engine.Memory.IsItemRegistered( script.ScriptKey ) )
+            {
+                Engine.Monitor.Trace().Send( $"Script '{script.ScriptKey}' has already been executed." );
+                return true;
+            }
+            using( Engine.Monitor.OpenTrace().Send( $"Executing '{script.ScriptKey}'." ) )
+            {
+                if( SqlManager.ExecuteOneScript( script.Script.ToFullString(), Engine.Monitor ) )
+                {
+                    Engine.Memory.RegisterItem( script.ScriptKey );
+                    return true;
+                }
+            }
+            return false;
+        }
+
         /// Gets a shared state for drivers: drivers from the same database can
         /// easily share any service scoped to their database: <see cref="RegisterService{T}(T)"/>
         /// and 

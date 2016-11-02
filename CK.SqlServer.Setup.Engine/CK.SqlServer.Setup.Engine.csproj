@@ -84,11 +84,8 @@
     <Compile Include="SqlManager.cs" />
     <Compile Include="SqlManagerProvider.cs" />
     <Compile Include="Labo\Tests.cs" />
-    <Compile Include="SqlMultiScript.cs" />
     <Compile Include="SqlSetupSessionMemoryProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SqlScriptExecutor.cs" />
-    <Compile Include="SqlScriptTypeHandler.cs" />
     <Compile Include="SqlSetupAspect.cs" />
     <Compile Include="SqlVersionedItemWriter.cs" />
     <Compile Include="SqlVersionedItemReader.cs" />

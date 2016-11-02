@@ -12,7 +12,6 @@ namespace CK.Setup
     /// </summary>
     public sealed class SetupEngineStartConfiguration
     {
-        readonly ScriptTypeManager _scriptTypeManager;
         readonly List<ISetupEngineAspect> _aspects;
         List<Type> _explicitRegisteredClasses;
         IVersionedItemReader _versionReader;
@@ -25,7 +24,6 @@ namespace CK.Setup
 
         internal SetupEngineStartConfiguration( SetupEngine e )
         {
-            _scriptTypeManager = new ScriptTypeManager();
             _aspects = new List<ISetupEngineAspect>();
         }
 
@@ -33,12 +31,6 @@ namespace CK.Setup
         {
             if( _memory != null && _memory.IsStarted ) throw new InvalidOperationException( String.Format( "StartConfiguration.{0} must not be called while the engine is running.", name ) );
         }
-
-        /// <summary>
-        /// Gets the <see cref="ScriptTypeManager"/> into which <see cref="ScriptTypeHandler"/> must be registered
-        /// before <see cref="SetupEngine.Run"/> in order for <see cref="ISetupScript"/> added to <see cref="SetupEngine.Scripts"/> to be executed.
-        /// </summary>
-        public ScriptTypeManager ScriptTypeManager => _scriptTypeManager;
 
         /// <summary>
         /// Gets or sets a <see cref="IVersionedItemReader"> for version information</see>.

@@ -90,18 +90,6 @@ namespace CK.Setup
         public bool IsGroup => Head != null;
 
         /// <summary>
-        /// Provides a way for this driver to load scripts (<see cref="ISetupScript"/> abstraction) from any storage 
-        /// and to register them in the given <see cref="IScriptCollector"/>.
-        /// </summary>
-        /// <param name="scripts">Collector for scripts.</param>
-        /// <returns>True on success. False when an error occured that must stop the setup process.</returns>
-        [Obsolete]
-        protected internal virtual bool LoadScripts( IScriptCollector scripts )
-        {
-            return true;
-        }
-
-        /// <summary>
         /// Very first method called after all driver have been created.
         /// Any <see cref="ISetupItemDriverAware.OnDriverPreInitialized(SetupItemDriver)"/> on setup items
         /// are called right after.
