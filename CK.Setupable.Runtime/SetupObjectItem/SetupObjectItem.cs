@@ -129,21 +129,25 @@ namespace CK.Setup
         {
             _transformTarget._contextLocName = _contextLocName.Clone();
             _transformTarget._contextLocName.Name += "#transform";
+
             // This new target requires its source (its cloned origin), therefore it is useless 
             // to duplicate its requires.
             // This is obvious.
             //if( _requires != null ) _transformTarget._requires = new DependentItemList( _requires );
+            _transformTarget._requires = null;
 
             // If the source object defines any RequiredBy, it is up to the transformation 
             // to also define them.
             // This is a less obvious choice as the previous one.
             //if( _requiredBy != null ) _transformTarget._requiredBy = new DependentItemList( _requiredBy );
+            _transformTarget._requiredBy = null;
 
             // Same consideration here: it is up to the transformation to consider the transformed item
             // to be in the same groups as the original.
             // This choice, as well as the following one regarding the container, is the most 
             // questionable one.
             //if( _groups != null ) _transformTarget._groups = new DependentItemGroupList( _groups );
+            _transformTarget._groups = null;
 
             // Here, we free the transformed object to be in the same container as its original one.
             // This is clearly a choice that can be discussed...

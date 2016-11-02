@@ -17,7 +17,7 @@ namespace CKDBSetup
         }
         static CommandOption PrepareLogFileOption( CommandLineApplication c )
         {
-            return c.Option( "-l|--logFile", $"Path of a log file which will ontain the log output. Defaults to none (console logging only).", CommandOptionType.SingleValue );
+            return c.Option( "-l|--logFile", $"Path of a log file which will contain the log output. Defaults to none (console logging only).", CommandOptionType.SingleValue );
         }
 
         static ActivityMonitor PrepareActivityMonitor( LogFilter lf, string logFilePath )

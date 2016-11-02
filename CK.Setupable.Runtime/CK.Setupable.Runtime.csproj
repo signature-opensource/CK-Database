@@ -88,14 +88,13 @@
     <Compile Include="SetupObjectItemBehavior.cs" />
     <Compile Include="SetupObjectItem\ISetupObjectTransformerItem.cs" />
     <Compile Include="SetupObjectItem\SetupConfigReader.cs" />
+    <Compile Include="SetupObjectItem\SetupObjectItemV.cs" />
     <Compile Include="Setup\ISetupEngineAspect.cs" />
     <Compile Include="ResourceLocator.cs" />
     <Compile Include="SetupItemSelectorBaseAttributeImpl.cs" />
     <Compile Include="SetupObjectItemRefMemberAttributeImplBase.cs" />
     <Compile Include="SetupObjectItem\ISetupObjectItemProvider.cs" />
-    <Compile Include="SetupObjectItem\SetupObjectItemCV.cs" />
     <Compile Include="SetupObjectItem\SetupObjectItemC.cs" />
-    <Compile Include="SetupObjectItem\SetupObjectItemV.cs" />
     <Compile Include="SetupObjectItem\SetupObjectItem.cs" />
     <Compile Include="ISetupItem.cs" />
     <Compile Include="Setup\SetupItemCollector.cs" />

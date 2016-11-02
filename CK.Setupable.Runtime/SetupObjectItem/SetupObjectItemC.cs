@@ -38,7 +38,10 @@ namespace CK.Setup
         protected override bool OnTransformTargetCreated( IActivityMonitor monitor )
         {
             if( !base.OnTransformTargetCreated( monitor ) ) return false;
-            if( _children != null ) TransformTarget._children = new DependentItemList( _children );
+            // Should the transformed item be the container of the non transformed one?
+            // I guess no.
+            // if( _children != null ) TransformTarget._children = new DependentItemList( _children );
+            _children = null;
             return true;
         }
 
