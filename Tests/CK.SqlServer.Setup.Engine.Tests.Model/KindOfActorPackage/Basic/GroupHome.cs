@@ -1,6 +1,7 @@
 using System.Data.SqlClient;
 using CK.Setup;
 using CK.SqlServer.Setup;
+using CK.SqlServer;
 
 namespace SqlActorPackage.Basic
 {
@@ -13,13 +14,20 @@ namespace SqlActorPackage.Basic
         }
 
         /// <summary>
+        /// Creates a command to call sDestroyGroup.
+        /// </summary>
+        /// <param name="groupId"></param>
+        /// <returns>The sql command object.</returns>
+        [SqlProcedureNoExecute( "sGroupDestroy" )]
+        public abstract SqlCommand CmdDestroy( int groupId );
+
+        /// <summary>
         /// Finds or creates a Group. 
         /// </summary>
         /// <param name="groupName">Name of the group.</param>
         /// <param name="groupIdResult">Group identifier.</param>
-        /// <returns>The sql command object.</returns>
-        [SqlProcedureNoExecute( "sGroupCreate" )]
-        public abstract SqlCommand CmdCreate( string groupName, out int groupIdResult );
+        [SqlProcedure( "sGroupCreate" )]
+        public abstract void CmdCreate( ISqlCallContext ctx, string groupName, out int groupIdResult );
 
     }
 }

@@ -1,0 +1,9 @@
+﻿-- SetupConfig : {}
+create transformer on CK.sGroupDestroy
+as
+begin
+	inject "-- Hello World!
+	"
+	before single "--[endsp]";
+end
+

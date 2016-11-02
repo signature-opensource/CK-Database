@@ -72,6 +72,7 @@
     <Compile Include="HandlerImpl\TestAutoHeaderSPAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Basic\UserHome.cs" />
+    <Compile Include="TransformPackageSample.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\CK.Setupable.Model\CK.Setupable.Model.csproj">
@@ -150,6 +151,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Basic\Res\a_stupid_view.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TransformPackageRes\sGroupDestroy.tql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Basic\Res\sGroupDestroy.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

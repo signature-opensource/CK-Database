@@ -239,10 +239,9 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
         {
             var groupHome = map.Default.Obtain<SqlActorPackage.Basic.GroupHome>();
             int groupId;
-            using( SqlCommand cmd = groupHome.CmdCreate( Guid.NewGuid().ToString(), out groupId ) )
+            using( var ctx = new SqlStandardCallContext() )
             {
-                c.Connection.ExecuteNonQuery( cmd );
-                groupId = (int)cmd.Parameters["@GroupIdResult"].Value;
+                groupHome.CmdCreate( ctx, Guid.NewGuid().ToString(), out groupId );
             }
             Assert.That( groupId, Is.GreaterThan( 1 ) );
             return groupId;
