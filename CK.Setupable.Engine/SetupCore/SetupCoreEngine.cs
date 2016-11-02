@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setupable.Engine\SetupCore\SetupEngine.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,7 +26,7 @@ namespace CK.Setup
 
         class DriverBaseList : IDriverBaseList
         {
-            Dictionary<object,DriverBase> _index;
+            Dictionary<object, DriverBase> _index;
             List<DriverBase> _drivers;
             SetupCoreEngine _center;
 
@@ -49,7 +42,7 @@ namespace CK.Setup
                 get { return fullName == null ? null : _index.GetValueWithDefault( fullName, null ); }
             }
 
-            public DriverBase this[ IDependentItem item ]
+            public DriverBase this[IDependentItem item]
             {
                 get { return item == null ? null : _index.GetValueWithDefault( item, null ); }
             }
@@ -78,7 +71,7 @@ namespace CK.Setup
             {
                 Debug.Assert( d != null && d.Engine == _center );
                 Debug.Assert( !_index.ContainsKey( d.FullName ) );
-                Debug.Assert( _drivers.Count == 0 || _drivers[_drivers.Count-1].SortedItem.Index < d.SortedItem.Index );
+                Debug.Assert( _drivers.Count == 0 || _drivers[_drivers.Count - 1].SortedItem.Index < d.SortedItem.Index );
                 _drivers.Add( d );
                 _index.Add( d.FullName, d );
                 if( !d.IsGroupHead ) _index.Add( d.Item, d );
@@ -97,13 +90,13 @@ namespace CK.Setup
                 _drivers = new List<SetupItemDriver>();
             }
 
-            public SetupItemDriver this[string fullName] =>  _baseList[fullName] as SetupItemDriver; 
+            public SetupItemDriver this[string fullName] => _baseList[fullName] as SetupItemDriver;
 
-            public SetupItemDriver this[IDependentItem item] => _baseList[item] as SetupItemDriver; 
+            public SetupItemDriver this[IDependentItem item] => _baseList[item] as SetupItemDriver;
 
-            public SetupItemDriver this[int index] => _drivers[index]; 
+            public SetupItemDriver this[int index] => _drivers[index];
 
-            public int Count => _drivers.Count; 
+            public int Count => _drivers.Count;
 
             public IEnumerator<SetupItemDriver> GetEnumerator() => _drivers.GetEnumerator();
 
@@ -151,7 +144,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets the <see cref="ISetupEngineAspect"/> that participate to setup.
         /// </summary>
-        public IReadOnlyList<ISetupEngineAspect> Aspects => _aspects; 
+        public IReadOnlyList<ISetupEngineAspect> Aspects => _aspects;
 
         /// <summary>
         /// Gets the first typed aspect that is assignable to <typeparamref name="T"/>. 
@@ -186,29 +179,28 @@ namespace CK.Setup
         /// Gets the <see cref="ISetupSessionMemory"/> service that is used to persist any state related to setup phasis.
         /// It is a simple key-value dictionary where key is a string not longer than 255 characters and value is a non null string.
         /// </summary>
-        public ISetupSessionMemory Memory => _memory; 
+        public ISetupSessionMemory Memory => _memory;
 
         /// <summary>
         /// Monitor that will be used during setup.
         /// </summary>
-        public IActivityMonitor Monitor => _monitor; 
+        public IActivityMonitor Monitor => _monitor;
 
         /// <summary>
         /// Gives access to the ordered list (also indexed by item fullname) of all the <see cref="DriverBase"/> that participate to Setup.
         /// DriverBase 
-        /// This list is filled after <see cref="RegisterSetupEvent"/> (and <see cref="SetupEvent"/> with <see cref="SetupStep.PreInit"/>) but before <see cref="SetupStep.Init"/>.
         /// </summary>
-        public IDriverBaseList AllDrivers => _allDrivers; 
+        public IDriverBaseList AllDrivers => _allDrivers;
 
         /// <summary>
         /// Gives access to the ordered list of the <see cref="SetupItemDriver"/>.
         /// </summary>
-        public IDriverList Drivers => _genDrivers; 
+        public IDriverList Drivers => _genDrivers;
 
         /// <summary>
         /// Gets the current state of the engine.
         /// </summary>
-        public SetupEngineState State => _state; 
+        public SetupEngineState State => _state;
 
         /// <summary>
         /// This is the very first step: registers any number of <see cref="IDependentItem"/> and/or <see cref="IDependentItemDiscoverer"/>.
@@ -264,7 +256,6 @@ namespace CK.Setup
                 result = new SetupCoreEngineRegisterResult( DependencySorter<ISetupItem>.OrderItems( items, discoverers, options ) );
                 if( result.IsValid )
                 {
-                    var reusableEvent = new DriverEventArgs( SetupStep.PreInit );
                     foreach( var item in result.SortResult.SortedItems )
                     {
                         SetupItemDriver setupItemDriver = null;
@@ -297,6 +288,16 @@ namespace CK.Setup
                         Debug.Assert( d != null, "Otherwise an exception is thrown by CreateSetupDriver that will be caught as the result.UnexpectedError." );
                         _allDrivers.Add( d );
                         if( setupItemDriver != null ) _genDrivers.Add( setupItemDriver );
+                    }
+                }
+                // Pre initialization phasis.
+                using( Monitor.OpenInfo().Send( $"Calling PreInit on {_allDrivers.Count} drivers." ) )
+                {
+                    var reusableEvent = new DriverEventArgs( SetupStep.PreInit );
+                    foreach( var d in _allDrivers )
+                    {
+                        Debug.Assert( (d is SetupItemDriver) == !d.IsGroupHead, "There is only 2 DriverBase specializations: GenericItemSetupDriver and GroupHeadSetupDriver." );
+                        // Raising PreInit global event.
                         var hE = DriverEvent;
                         if( hE != null )
                         {
@@ -304,38 +305,41 @@ namespace CK.Setup
                             hE( this, reusableEvent );
                             if( reusableEvent.CancelSetup )
                             {
-                                result.CanceledRegistrationCulprit = item;
+                                result.CanceledRegistrationCulprit = d.SortedItem;
                                 _allDrivers.Clear();
-                                break;
+                                return result;
                             }
                         }
-                    }
-                }
-                foreach( var d in _allDrivers )
-                {
-                    if( !d.IsGroupHead )
-                    {
-                        SetupItemDriver genDriver = (SetupItemDriver)d;
-                        IStObjSetupItem stObjIem  = d.Item as IStObjSetupItem;
-                        if( stObjIem != null && stObjIem.StObj != null )
+                        // Calling ExecutePreInit.
+                        if( !d.IsGroupHead )
                         {
-                            var all = stObjIem.StObj.Attributes.GetAllCustomAttributes<ISetupItemDriverAware>();
-                            foreach( var a in all )
+                            SetupItemDriver genDriver = (SetupItemDriver)d;
+                            if( !genDriver.ExecutePreInit() )
                             {
-                                if( !a.OnDriverCreated( genDriver ) )
+                                string msg = $"Canceled by '{d.Item.FullName}'.ExecutePreInit() method.";
+                                return new SetupCoreEngineRegisterResult( null ) { CancelReason = msg };
+                            }
+                            IStObjSetupItem stObjIem = d.Item as IStObjSetupItem;
+                            if( stObjIem != null && stObjIem.StObj != null )
+                            {
+                                var all = stObjIem.StObj.Attributes.GetAllCustomAttributes<ISetupItemDriverAware>();
+                                foreach( var a in all )
                                 {
-                                    string msg = String.Format( "Canceled by one Attribute of Item '{0}' during driver creation.", d.Item.FullName );
-                                    return new SetupCoreEngineRegisterResult( null ) { CancelReason = msg };
+                                    if( !a.OnDriverPreInitialized( genDriver ) )
+                                    {
+                                        string msg = $"Canceled by one Attribute of Item '{d.Item.FullName}' during driver creation.";
+                                        return new SetupCoreEngineRegisterResult( null ) { CancelReason = msg };
+                                    }
                                 }
                             }
-                        }
-                        ISetupItemDriverAware aware = d.Item as ISetupItemDriverAware;
-                        if( aware != null )
-                        {
-                            if( !aware.OnDriverCreated( genDriver ) )
+                            ISetupItemDriverAware aware = d.Item as ISetupItemDriverAware;
+                            if( aware != null )
                             {
-                                string msg = String.Format( "Canceled by Item '{0}' during driver creation.", d.Item.FullName );
-                                return new SetupCoreEngineRegisterResult( null ) { CancelReason = msg };
+                                if( !aware.OnDriverPreInitialized( genDriver ) )
+                                {
+                                    string msg = $"Canceled by Item '{d.Item.FullName}' during driver creation.";
+                                    return new SetupCoreEngineRegisterResult( null ) { CancelReason = msg };
+                                }
                             }
                         }
                     }

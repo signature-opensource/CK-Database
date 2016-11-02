@@ -17,7 +17,7 @@ namespace SqlActorPackage.Runtime
 
         protected new TestAutoHeaderSPMemberAttribute Attribute => (TestAutoHeaderSPMemberAttribute)base.Attribute; 
 
-        bool ISetupItemDriverAware.OnDriverCreated( SetupItemDriver driver )
+        bool ISetupItemDriverAware.OnDriverPreInitialized( SetupItemDriver driver )
         {
             new TestAutoHeaderSPHandler( driver.Engine.Drivers[SetupObjectItem], Attribute.HeaderComment );
             return true;

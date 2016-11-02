@@ -87,7 +87,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets whether this <see cref="SetupItemDriver"/> is associated to a group or a container.
         /// </summary>
-        public bool IsGroup => Head != null; 
+        public bool IsGroup => Head != null;
 
         /// <summary>
         /// Provides a way for this driver to load scripts (<see cref="ISetupScript"/> abstraction) from any storage 
@@ -95,14 +95,24 @@ namespace CK.Setup
         /// </summary>
         /// <param name="scripts">Collector for scripts.</param>
         /// <returns>True on success. False when an error occured that must stop the setup process.</returns>
+        [Obsolete]
         protected internal virtual bool LoadScripts( IScriptCollector scripts )
         {
             return true;
         }
 
+        /// <summary>
+        /// Very first method called after all driver have been created.
+        /// Any <see cref="ISetupItemDriverAware.OnDriverPreInitialized(SetupItemDriver)"/> on setup items
+        /// are called right after.
+        /// Does nothing by default (always return true).
+        /// </summary>
+        /// <returns>True on success, false to stop the process.</returns>
+        internal protected virtual bool ExecutePreInit() => true;
+
         internal bool ExecuteHeadInit()
         {
-            if( !Init( true ) ) return false;
+            if( !Init( true ) || !OnStep( SetupCallGroupStep.Init, true ) ) return false;
             if( _handlers != null )
             {
                 for( int i = 0; i < _handlers.Count; ++i )
@@ -110,14 +120,14 @@ namespace CK.Setup
                     if( !_handlers[i].Init( this ) ) return false;
                 }
             }
-            return Init( false );
+            return Init( false ) && OnStep( SetupCallGroupStep.Init, false );
         }
 
         internal override bool ExecuteInit()
         {
             if( !IsGroup ) return ExecuteHeadInit();
             // If the item is not a Group or a Container, InitContent is not called.
-            if( !InitContent( true ) ) return false;
+            if( !InitContent( true ) || !OnStep( SetupCallGroupStep.InitContent, true ) ) return false;
             if( _handlers != null )
             {
                 for( int i = 0; i < _handlers.Count; ++i )
@@ -125,12 +135,12 @@ namespace CK.Setup
                     if( !_handlers[i].InitContent( this ) ) return false;
                 }
             }
-            return InitContent( false );
+            return InitContent( false ) && OnStep( SetupCallGroupStep.InitContent, false );
         }
 
         internal bool ExecuteHeadInstall()
         {
-            if( !Install( true ) ) return false;
+            if( !Install( true ) || !OnStep( SetupCallGroupStep.Install, true ) ) return false;
             if( _handlers != null )
             {
                 for( int i = 0; i < _handlers.Count; ++i )
@@ -138,14 +148,14 @@ namespace CK.Setup
                     if( !_handlers[i].Install( this ) ) return false;
                 }
             }
-            return Install( false );
+            return Install( false ) && OnStep( SetupCallGroupStep.Install, false );
         }
 
         internal override bool ExecuteInstall()
         {
             if( !IsGroup ) return ExecuteHeadInstall();
             // If the item is not a Group or a Container, InstallContent is not called.
-            if( !InstallContent( true ) ) return false;
+            if( !InstallContent( true ) || !OnStep( SetupCallGroupStep.InstallContent, true ) ) return false;
             if( _handlers != null )
             {
                 for( int i = 0; i < _handlers.Count; ++i )
@@ -153,12 +163,12 @@ namespace CK.Setup
                     if( !_handlers[i].InstallContent( this ) ) return false;
                 }
             }
-            return InstallContent( false );
+            return InstallContent( false ) && OnStep( SetupCallGroupStep.InstallContent, false );
         }
 
         internal bool ExecuteHeadSettle()
         {
-            if( !Settle( true ) ) return false;
+            if( !Settle( true ) || !OnStep( SetupCallGroupStep.Settle, true ) ) return false;
             if( _handlers != null )
             {
                 for( int i = 0; i < _handlers.Count; ++i )
@@ -166,14 +176,14 @@ namespace CK.Setup
                     if( !_handlers[i].Settle( this ) ) return false;
                 }
             }
-            return Settle( false );
+            return Settle( false ) && OnStep( SetupCallGroupStep.Settle, false );
         }
 
         internal override bool ExecuteSettle()
         {
             if( !IsGroup ) return ExecuteHeadSettle();
             // If the item is not a Group or a Container, SettleContent is not called.
-            if( !SettleContent( true ) ) return false;
+            if( !SettleContent( true ) || !OnStep( SetupCallGroupStep.SettleContent, true ) ) return false;
             if( _handlers != null )
             {
                 for( int i = 0; i < _handlers.Count; ++i )
@@ -181,7 +191,7 @@ namespace CK.Setup
                     if( !_handlers[i].SettleContent( this ) ) return false;
                 }
             }
-            return SettleContent( false );
+            return SettleContent( false ) && OnStep( SetupCallGroupStep.SettleContent, false );
         }
 
         #region Handler management
@@ -318,5 +328,25 @@ namespace CK.Setup
         {
             return true;
         }
+
+
+        /// <summary>
+        /// This method is called right after its corresponding dedicated method.
+        /// This centralized step based method is easier to use then the different
+        /// available overrides when the step actions are structurally the same and
+        /// only their actual contents/data is step dependent.
+        /// Does nothing (always returns true).
+        /// </summary>
+        /// <param name="beforeHandlers">
+        /// True when handlers associated to this driver have not been called yet.
+        /// False when their associated step method have been called.
+        /// </param>
+        /// <returns>Always true.</returns>
+        protected virtual bool OnStep( SetupCallGroupStep step, bool beforeHandlers )
+        {
+            return true;
+        }
+
+
     }
 }

@@ -28,7 +28,7 @@ namespace CK.Setup
         /// </summary>
         protected SetupItemSelectorBaseAttribute Attribute => _attribute; 
 
-        bool ISetupItemDriverAware.OnDriverCreated( SetupItemDriver driver )
+        bool ISetupItemDriverAware.OnDriverPreInitialized( SetupItemDriver driver )
         {
             HashSet<string> already = new HashSet<string>();
             bool result = true;
