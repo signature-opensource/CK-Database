@@ -35,87 +35,65 @@ namespace CK.SqlServer.Setup
 
         protected override bool ExecutePreInit()
         {
-            int nbTotalScripts = 0;
-            ScriptsCollection scripts;
-            if( !LoadResourceScripts( Engine.Monitor, out scripts ) ) return false;
-            for( var step = SetupCallGroupStep.Init; step <= SetupCallGroupStep.SettleContent; ++step )
+            if( !CheckResourceLocator() ) return false;
+            if( !CreateScriptHandlerFor( this ) ) return false;
+            if( Item.Model != null && !CreateScriptHandlerFor( Engine.Drivers[Item.Model] ) ) return false;
+            if( Item.ObjectsPackage != null && !CreateScriptHandlerFor( Engine.Drivers[Item.ObjectsPackage] ) ) return false;
+            return true;
+        }
+
+        bool CheckResourceLocator()
+        {
+            if( Item.ResourceLocation?.Type == null )
             {
-                _scripts[(int)step - 1] = Util.Array.Empty<SqlPackageScript>();
-                ScriptVector v = scripts.GetScriptVector( step, ExternalVersion?.Version, ItemVersion );
-                if( v != null && v.Scripts.Count > 0 )
+                Engine.Monitor.Error().Send( "ResourceLocator for '{0}' has no Type defined. A ResourceType must be set in order to load resources.", FullName );
+                return false;
+            }
+            return true;
+        }
+        
+        bool CreateScriptHandlerFor( SetupItemDriver driver )
+        {
+            ScriptsCollection c = LoadResourceScriptsFor( driver.Item );
+            if( c.Count > 0 )
+            {
+                bool hasScripts = false;
+                var scripts = new IReadOnlyList<SqlPackageScript>[6];
+                for( var step = SetupCallGroupStep.Init; step <= SetupCallGroupStep.SettleContent; ++step )
                 {
-                    List<SqlPackageScript> collector = null;
-                    foreach( ISetupScript s in v.Scripts.Select( cs => cs.Script ) )
+                    scripts[(int)step - 1] = Util.Array.Empty<SqlPackageScript>();
+                    ScriptVector v = c.GetScriptVector( step, ExternalVersion?.Version, ItemVersion );
+                    if( v != null && v.Scripts.Count > 0 )
                     {
-                        if( !ProcessSetupScripts( s, ref collector ) ) return false;
-                    }
-                    if( collector != null )
-                    {
-                        _scripts[(int)step - 1] = collector;
-                        nbTotalScripts += collector.Count;
+                        List<SqlPackageScript> collector = null;
+                        foreach( ISetupScript s in v.Scripts.Select( cs => cs.Script ) )
+                        {
+                            if( !ProcessSetupScripts( s, ref collector ) ) return false;
+                        }
+                        if( collector != null )
+                        {
+                            scripts[(int)step - 1] = collector;
+                            hasScripts = true;
+                        }
                     }
                 }
-            }
-            if( nbTotalScripts > 0 )
-            {
-                Engine.Monitor.Info().Send( $"{nbTotalScripts} sql scripts must run for '{FullName}': {_scripts[0].Count} Init, {_scripts[1].Count} InitContent, {_scripts[2].Count} Install, {_scripts[3].Count} InstallContent, {_scripts[4].Count} Settle, {_scripts[5].Count} SettleContent." );
+                if( hasScripts ) new ScriptHandler( this, driver, scripts );
             }
             return true;
         }
 
-        bool LoadResourceScripts( IActivityMonitor monitor, out ScriptsCollection scripts )
+        ScriptsCollection LoadResourceScriptsFor( IContextLocNaming locName )
         {
-            scripts = null;
-            var r = Item.ResourceLocation;
-            if( r != null )
-            {
-                if( r.Type == null )
-                {
-                    monitor.Error().Send( "ResourceLocator for '{0}' has no Type defined. A ResourceType must be set in order to load resources.", FullName );
-                    return false;
-                }
-                else
-                {
-                    string context, location, name;
-#if DEBUG
-                    string targetName;
-                    Debug.Assert( DefaultContextLocNaming.TryParse( FullName, out context, out location, out name, out targetName ) );
-                    Debug.Assert( context == Item.Context );
-                    Debug.Assert( location == Item.Location );
-                    Debug.Assert( name == Item.Name );
-                    Debug.Assert( targetName == null );
-#endif
-                    scripts = new ScriptsCollection();
-                    context = Item.Context;
-                    location = Item.Location;
-                    name = Item.Name;
-                    int nbScripts = scripts.AddFromResources( monitor, "res-sql", r, context, location, name, ".sql" );
-                    if( Item.Model != null ) nbScripts += scripts.AddFromResources( monitor, "res-sql", r, context, location, "Model." + name, ".sql" );
-                    if( Item.ObjectsPackage != null ) nbScripts += scripts.AddFromResources( monitor, "res-sql", r, context, location, "Objects." + name, ".sql" );
-
-                    nbScripts += scripts.AddFromResources( monitor, "res-y4", r, context, location, name, ".y4" );
-                    if( Item.Model != null ) nbScripts += scripts.AddFromResources( monitor, "res-y4", r, context, location, "Model." + name, ".y4" );
-                    if( Item.ObjectsPackage != null ) nbScripts += scripts.AddFromResources( monitor, "res-y4", r, context, location, "Objects." + name, ".y4" );
-
-                    if( Item.Model != null )
-                    {
-                        if( Item.ObjectsPackage != null )
-                        {
-                            monitor.Info().Send( "{1} sql scripts in resource found for '{0}' and 'Model.{0}' and 'Objects.{0}' in '{2}'.", name, nbScripts, r );
-                        }
-                        else monitor.Info().Send( "{1} sql scripts in resource found for '{0}' and 'Model.{0}' in '{2}'.", name, nbScripts, r );
-                    }
-                    else if( Item.ObjectsPackage != null )
-                    {
-                        monitor.Info().Send( "{1} sql scripts in resource found for '{0}' and 'Objects.{0}' in '{2}'.", name, nbScripts, r );
-                    }
-                    else
-                    {
-                        monitor.Info().Send( "{1} sql scripts in resource found for '{0}' in '{2}.", name, nbScripts, r );
-                    }
-                }
-            }
-            return true;
+            string context, location, name;
+            var scripts = new ScriptsCollection();
+            context = locName.Context;
+            location = locName.Location;
+            name = locName.Name;
+            var monitor = Engine.Monitor;
+            int nbScripts = scripts.AddFromResources( monitor, "res-sql", Item.ResourceLocation, context, location, name, ".sql" );
+            nbScripts += scripts.AddFromResources( monitor, "res-y4", Item.ResourceLocation, context, location, name, ".y4" );
+            monitor.Info().Send( "{1} sql scripts in resource found for '{0}' in '{2}.", name, nbScripts, Item.ResourceLocation );
+            return scripts;
         }
 
         bool ProcessSetupScripts( ISetupScript s, ref List<SqlPackageScript> collector )
@@ -144,16 +122,26 @@ namespace CK.SqlServer.Setup
             return true;
         }
 
-        protected override bool OnStep( SetupCallGroupStep step, bool beforeHandlers )
+        class ScriptHandler : SetupHandler
         {
-            if( !beforeHandlers )
+            readonly SqlPackageBaseItemDriver _main;
+            readonly IReadOnlyList<SqlPackageScript>[] _scripts;
+
+            public ScriptHandler( SqlPackageBaseItemDriver main, SetupItemDriver d, IReadOnlyList<SqlPackageScript>[] scripts )
+                : base( d )
+            {
+                _main = main;
+                _scripts = scripts;
+            }
+
+            protected override bool OnStep( SetupCallGroupStep step )
             {
                 foreach( var s in _scripts[(int)step - 1] )
                 {
-                    if( !DatabaseDriver.InstallScript( s ) ) return false;
+                    if( !_main.DatabaseDriver.InstallScript( s ) ) return false;
                 }
+                return true;
             }
-            return true;
         }
 
     }

@@ -105,6 +105,7 @@ namespace CK.Setup
             {
                 for( int i = 0; i < _handlers.Count; ++i )
                 {
+                    if( !_handlers[i].OnStep( this, SetupCallGroupStep.Init ) ) return false;
                     if( !_handlers[i].Init( this ) ) return false;
                 }
             }
@@ -120,6 +121,7 @@ namespace CK.Setup
             {
                 for( int i = 0; i < _handlers.Count; ++i )
                 {
+                    if( !_handlers[i].OnStep( this, SetupCallGroupStep.InitContent ) ) return false;
                     if( !_handlers[i].InitContent( this ) ) return false;
                 }
             }
@@ -133,6 +135,7 @@ namespace CK.Setup
             {
                 for( int i = 0; i < _handlers.Count; ++i )
                 {
+                    if( !_handlers[i].OnStep( this, SetupCallGroupStep.Install ) ) return false;
                     if( !_handlers[i].Install( this ) ) return false;
                 }
             }
@@ -148,6 +151,7 @@ namespace CK.Setup
             {
                 for( int i = 0; i < _handlers.Count; ++i )
                 {
+                    if( !_handlers[i].OnStep( this, SetupCallGroupStep.InstallContent ) ) return false;
                     if( !_handlers[i].InstallContent( this ) ) return false;
                 }
             }
@@ -161,6 +165,7 @@ namespace CK.Setup
             {
                 for( int i = 0; i < _handlers.Count; ++i )
                 {
+                    if( !_handlers[i].OnStep( this, SetupCallGroupStep.Settle ) ) return false;
                     if( !_handlers[i].Settle( this ) ) return false;
                 }
             }
@@ -176,6 +181,7 @@ namespace CK.Setup
             {
                 for( int i = 0; i < _handlers.Count; ++i )
                 {
+                    if( !_handlers[i].OnStep( this, SetupCallGroupStep.SettleContent ) ) return false;
                     if( !_handlers[i].SettleContent( this ) ) return false;
                 }
             }

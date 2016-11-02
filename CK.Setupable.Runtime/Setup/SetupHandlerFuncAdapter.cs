@@ -26,35 +26,23 @@ namespace CK.Setup
             _step = step;
         }
 
-        public bool Init( SetupItemDriver d )
+        public bool OnStep( SetupItemDriver d, SetupCallGroupStep step )
         {
-            return _step == SetupCallGroupStep.Init ? _func( d ) : true;
+            return _step == step ? _func( d ) : true;
         }
 
-        public bool InitContent( SetupItemDriver d )
-        {
-            return _step == SetupCallGroupStep.InitContent ? _func( d ) : true;
-        }
+        public bool Init( SetupItemDriver d ) => true;
 
-        public bool Install( SetupItemDriver d )
-        {
-            return _step == SetupCallGroupStep.Install ? _func( d ) : true;
-        }
+        public bool InitContent( SetupItemDriver d ) => true;
+    
+        public bool Install( SetupItemDriver d ) => true;
 
-        public bool InstallContent( SetupItemDriver d )
-        {
-            return _step == SetupCallGroupStep.InstallContent ? _func( d ) : true;
-        }
+        public bool InstallContent( SetupItemDriver d ) => true;
 
-        public bool Settle( SetupItemDriver d )
-        {
-            return _step == SetupCallGroupStep.Settle ? _func( d ) : true;
-        }
+        public bool Settle( SetupItemDriver d ) => true;
 
-        public bool SettleContent( SetupItemDriver d )
-        {
-            return _step == SetupCallGroupStep.SettleContent ? _func( d ) : true;
-        }
+        public bool SettleContent( SetupItemDriver d ) => true;
+
     }
 
 }

@@ -42,40 +42,22 @@ namespace CK.Setup
             if( d != Driver ) throw new InvalidOperationException( String.Format( "Call mismatch: handler is bound to '{0}' but called from '{1}'.", Driver.FullName, d.FullName ) );
         }
 
-        bool ISetupHandler.Init( SetupItemDriver d )
-        {
-            CheckCall( d );
-            return Init();
-        }
+        bool ISetupHandler.Init( SetupItemDriver d ) => Init();
 
-        bool ISetupHandler.InitContent( SetupItemDriver d )
-        {
-            CheckCall( d );
-            return InitContent();
-        }
+        bool ISetupHandler.InitContent( SetupItemDriver d ) => InitContent();
 
-        bool ISetupHandler.Install( SetupItemDriver d )
-        {
-            CheckCall( d );
-            return Install();
-        }
+        bool ISetupHandler.Install( SetupItemDriver d ) => Install();
 
-        bool ISetupHandler.InstallContent( SetupItemDriver d )
-        {
-            CheckCall( d );
-            return InstallContent();
-        }
+        bool ISetupHandler.InstallContent( SetupItemDriver d ) => InstallContent();
 
-        bool ISetupHandler.Settle( SetupItemDriver d )
-        {
-            CheckCall( d );
-            return Settle();
-        }
+        bool ISetupHandler.Settle( SetupItemDriver d ) => Settle();
 
-        bool ISetupHandler.SettleContent( SetupItemDriver d )
+        bool ISetupHandler.SettleContent( SetupItemDriver d ) => SettleContent();
+
+        bool ISetupHandler.OnStep( SetupItemDriver d, SetupCallGroupStep step )
         {
             CheckCall( d );
-            return SettleContent();
+            return OnStep( step );
         }
 
         /// <summary>
@@ -128,6 +110,15 @@ namespace CK.Setup
         /// </summary>
         /// <returns>Always true.</returns>
         protected virtual bool SettleContent()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// This default implementation does nothing and returns true.
+        /// </summary>
+        /// <returns>Always true.</returns>
+        protected virtual bool OnStep( SetupCallGroupStep step )
         {
             return true;
         }

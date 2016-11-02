@@ -28,5 +28,7 @@ namespace CK.Setup
         bool InstallContent( SetupItemDriver d );
 
         bool SettleContent( SetupItemDriver d );
+
+        bool OnStep( SetupItemDriver d, SetupCallGroupStep step );
     }
 }

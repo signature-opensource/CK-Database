@@ -30,7 +30,7 @@ namespace CK.SqlServer.Setup
             ResourceLocation = (ResourceLocator)data.StObj.GetStObjProperty( "ResourceLocation" );
             // By default, a Sql package always has a an associated Model package.
             // If HasModel is not defined (ie. GetStObjProperty returned Type.Missing) or not a boolean or true, we do it.
-            // Only HasModel = false will prevent us to associated a model.
+            // Only HasModel = false will prevent us to associate a model.
             object hasModel = data.StObj.GetStObjProperty( "HasModel" );
             if( !(hasModel is bool) || (bool)hasModel ) EnsureModel();
             
