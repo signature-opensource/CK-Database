@@ -13,14 +13,14 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using CK.Core;
+using System.Runtime.CompilerServices;
 
 namespace CK.Setup
 {
     /// <summary>
-    /// Encapsulation of a file name associated to a setup object. It handles steps specific 
-    /// to Group specific steps (<see cref="SetupCallGroupStep.InitContent"/>, <see cref="SetupCallGroupStep.InstallContent"/> and <see cref="SetupCallGroupStep.SettleContent"/>)
+    /// Encapsulation of a file name associated to a setup object. It handles all the steps (<see cref="SetupCallGroupStep.InitContent"/>)
     /// and versions (for <see cref="IVersionedItem"/>) but can be used for simple <see cref="IDependentItem"/>.
-    /// Offers <see cref="Parse"/> and <see cref="TryParse"/> factory methods.
+    /// Offers <see cref="Parse"/>, <see cref="TryParse"/> and <see cref="CreateFromSource"/> factory methods.
     /// </summary>
     public class ParsedFileName : IContextLocNaming
     {
@@ -33,10 +33,9 @@ namespace CK.Setup
         string _fullName;
         Version _fromVersion;
         Version _version;
-        SetupStep _step;
-        bool _isContent;
+        SetupCallGroupStep _step;
 
-        private ParsedFileName( string fileName, object extraPath, string context, string location, string name, Version f, Version v, SetupStep step, bool isContent )
+        private ParsedFileName( string fileName, object extraPath, string context, string location, string name, Version f, Version v, SetupCallGroupStep step )
         {
             Debug.Assert( f == null || (v != null && f != v), "from ==> version && from != version" );
             _fileName = fileName;
@@ -48,7 +47,6 @@ namespace CK.Setup
             _fromVersion = f;
             _version = v;
             _step = step;
-            _isContent = isContent;
         }
 
         private ParsedFileName( string fileName, object extraPath, string context, string location, string name, string transformArg )
@@ -60,7 +58,7 @@ namespace CK.Setup
             _name = name;
             _transformArg = transformArg;
             _fullName = DefaultContextLocNaming.Format( _context, _loc, _name );
-            _step = SetupStep.PreInit;
+            _step = SetupCallGroupStep.None;
         }
 
         /// <summary>
@@ -134,29 +132,14 @@ namespace CK.Setup
         public Version Version => _version; 
 
         /// <summary>
-        /// Gets the <see cref="SetupStep"/>.
+        /// Gets the <see cref="SetupCallGroupStep"/>.
         /// </summary>
-        public SetupStep SetupStep => _step; 
-
-        /// <summary>
-        /// Gets whether the <see cref="FileName"/> applies to the content of a container (must be called after 
-        /// content elements setup).
-        /// </summary>
-        public bool IsContent => _isContent; 
+        public SetupCallGroupStep SetupStep => _step;
 
         /// <summary>
         /// Gets the combination of <see cref="P:SetupStep"/> and <see cref="IsContent"/> as a <see cref="SetupCallGroupStep"/>.
         /// </summary>
-        public SetupCallGroupStep CallContainerStep
-        {
-            get
-            {
-                if( _step == SetupStep.PreInit ) return SetupCallGroupStep.None;
-                if( _step == SetupStep.Init ) return _isContent ? SetupCallGroupStep.InitContent : SetupCallGroupStep.Init;
-                if( _step == SetupStep.Install ) return _isContent ? SetupCallGroupStep.InstallContent : SetupCallGroupStep.Install;
-                return _isContent ? SetupCallGroupStep.SettleContent : SetupCallGroupStep.Settle;
-            }
-        }
+        public SetupCallGroupStep CallContainerStep => _step;
 
         /// <summary>
         /// Checks if this file must be taken into account to upgrade from the given version.
@@ -178,6 +161,11 @@ namespace CK.Setup
             // The "no version" belongs to all upgrades.
             return includeNoVersionScript && _version == null;
         }
+
+        //public static ParsedFileName CreateFromSource( string extension, [CallerFilePath]string file = null, [CallerLineNumber] int line = 0 )
+        //{
+        //    string ext = Path.GetExtension( file )
+        //}
 
         /// <summary>
         /// Calls <see cref="TryParse"/> and throws a <see cref="FormatException"/> if it 
@@ -240,11 +228,9 @@ namespace CK.Setup
                 result = new ParsedFileName( fileName, extraPath, context, location, n, source );
                 return true;
             }
-
             Version f = null;
             Version v = null;
-            SetupStep step = SetupStep.PreInit;
-            bool isContent = false;
+            SetupCallGroupStep step = SetupCallGroupStep.None;
             Match m = _rVersion.Match( n );
             if( m.Success )
             {
@@ -257,39 +243,36 @@ namespace CK.Setup
             if( f != null && f == v ) return false;
             if( n.EndsWith( ".Init", StringComparison.OrdinalIgnoreCase ) )
             {
-                step = SetupStep.Init;
+                step = SetupCallGroupStep.Init;
                 n = n.Remove( n.Length - 5 );
             }
             else if( n.EndsWith( ".InitContent", StringComparison.OrdinalIgnoreCase ) )
             {
-                step = SetupStep.Init;
-                isContent = true;
+                step = SetupCallGroupStep.InitContent;
                 n = n.Remove( n.Length - 12 );
             }
             else if( n.EndsWith( ".Install", StringComparison.OrdinalIgnoreCase ) )
             {
-                step = SetupStep.Install;
+                step = SetupCallGroupStep.Install;
                 n = n.Remove( n.Length - 8 );
             }
             else if( n.EndsWith( ".InstallContent", StringComparison.OrdinalIgnoreCase ) )
             {
-                step = SetupStep.Install;
-                isContent = true;
+                step = SetupCallGroupStep.InstallContent;
                 n = n.Remove( n.Length - 15 );
             }
             else if( n.EndsWith( ".Settle", StringComparison.OrdinalIgnoreCase ) )
             {
-                step = SetupStep.Settle;
+                step = SetupCallGroupStep.Settle;
                 n = n.Remove( n.Length - 7 );
             }
             else if( n.EndsWith( ".SettleContent", StringComparison.OrdinalIgnoreCase ) )
             {
-                step = SetupStep.Settle;
-                isContent = true;
+                step = SetupCallGroupStep.SettleContent;
                 n = n.Remove( n.Length - 14 );
             }
             if( n.Length == 0 ) return false;
-            result = new ParsedFileName( fileName, extraPath, context, location, n, f, v, step, isContent );
+            result = new ParsedFileName( fileName, extraPath, context, location, n, f, v, step );
             return true; 
         }
 
