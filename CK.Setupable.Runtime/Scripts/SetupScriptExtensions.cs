@@ -19,7 +19,7 @@ namespace CK.Setup
     {
         /// <summary>
         /// Computes a key that identifies a <see cref="ISetupScript"/>: it is a combination
-        /// of the <see cref="ISetupScript.ScriptSource"/>, <see cref="ParsedFileName.FullName"/>, 
+        /// of the <see cref="ISetupScript.Extension"/>, <see cref="ParsedFileName.FullName"/>, 
         /// <see cref="ParsedFileName.CallContainerStep"/>, <see cref="ParsedFileName.FromVersion"/> 
         /// and <see cref="ParsedFileName.Version"/>.
         /// </summary>
@@ -28,7 +28,7 @@ namespace CK.Setup
         /// <returns>A key that identifies this script: two scripts with this same key can not both participate in a setup.</returns>
         public static string GetScriptKey( this ISetupScript @this, string suffix = null )
         {
-            return $"{@this.ScriptSource}|{@this.Name.FullName}|{@this.Name.CallContainerStep}|{@this.Name.FromVersion}|{@this.Name.Version}|{suffix}"; 
+            return $"{@this.Name.Extension}|{@this.Name.FullName}|{@this.Name.CallContainerStep}|{@this.Name.FromVersion}|{@this.Name.Version}|{suffix}"; 
         }
 
     }

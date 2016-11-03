@@ -18,16 +18,12 @@ namespace CK.Setup
     {
         string _cached;
 
-        public ResSetupScript( ParsedFileName n, string scriptSource )
+        public ResSetupScript( ParsedFileName n )
         {
             if( n == null ) throw new ArgumentNullException( "n" );
-            if( String.IsNullOrWhiteSpace(scriptSource) ) throw new ArgumentException( "Must be not null nor empty nor white space.", "scriptSource" );
             if( !(n.ExtraPath is ResourceLocator) ) throw new ArgumentException( "ParsedFileName.ExtraPath must be a ResourceLocator.", "n" );
             Name = n;
-            ScriptSource = scriptSource;
         }
-
-        public string ScriptSource { get; private set; }
 
         public ParsedFileName Name { get; private set; }
 
@@ -41,7 +37,7 @@ namespace CK.Setup
             return _cached;
         }
 
-        public override string ToString() => $@"{ScriptSource} script - {Name.ExtraPath}\\{Name.FileName}";
+        public override string ToString() => $@"Script - {Name.ExtraPath}\\{Name.FileName}";
 
     }
 }

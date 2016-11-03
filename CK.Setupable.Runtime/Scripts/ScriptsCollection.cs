@@ -68,15 +68,15 @@ namespace CK.Setup
                 if( result == script )
                 {
                     _scripts[script] = script;
-                    monitor.Info().Send( $"Script '{script.Name.FileName}' in '{script.Name.ExtraPath}' from source '{script.ScriptSource}' replaced script from source '{existing.ScriptSource}'." );
+                    monitor.Info().Send( $"Script '{script.Name.FileName}' in '{script.Name.ExtraPath}' replaced script from source '{existing.Name.FileName}' in '{existing.Name.ExtraPath}'." );
                 }
                 else if( result == existing || result == null )
                 {
-                    monitor.Warn().Send( $"Script '{script.Name.FileName}' in '{script.Name.ExtraPath}' from source '{script.ScriptSource}' is already registered (from source '{existing.ScriptSource}'). It is ignored." );
+                    monitor.Warn().Send( $"Script '{script.Name.FileName}' in '{script.Name.ExtraPath}' is already registered (from source '{existing.Name.FileName}' in '{existing.Name.ExtraPath}'). It is ignored." );
                 }
                 else
                 {
-                    monitor.Info().Send( $"Script '{script.Name.FileName}' in '{script.Name.ExtraPath}' from source '{script.ScriptSource}' and already registered '{existing.Name.FileName}' in '{existing.Name.ExtraPath}' from source '{existing.ScriptSource}' have given birth to a merged script." );
+                    monitor.Info().Send( $"Script '{script.Name.FileName}' in '{script.Name.ExtraPath}' and already registered '{existing.Name.FileName}' in '{existing.Name.ExtraPath}' have given birth to a merged script." );
                 }
                 return false;
             }
@@ -90,7 +90,6 @@ namespace CK.Setup
         /// Use the <paramref name="onExisting"/> optional conflict resolver to change the default behavior that is that the first wins.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
-        /// <param name="scriptSource">The script source name under which registering the <see cref="ISetupScript"/>.</param>
         /// <param name="resLoc">Resource locator.</param>
         /// <param name="context">Context identifier.</param>
         /// <param name="location">Location identifier.</param>
@@ -104,7 +103,6 @@ namespace CK.Setup
         /// <returns>The number of scripts that have been added.</returns>
         public int AddFromResources( 
             IActivityMonitor monitor, 
-            string scriptSource, 
             ResourceLocator resLoc, 
             string context, 
             string location, 
@@ -113,7 +111,6 @@ namespace CK.Setup
             Func<ISetupScript, ISetupScript, ISetupScript> onExisting = null )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
-            if( scriptSource == null ) throw new ArgumentNullException( "scriptSource" );
             if( resLoc == null ) throw new ArgumentNullException( "scriptSource" );
             if( name == null ) throw new ArgumentNullException( "name" );
             if( fileSuffix == null ) throw new ArgumentNullException( "fileSuffix" );
@@ -124,7 +121,7 @@ namespace CK.Setup
                 ParsedFileName rName;
                 if( ParsedFileName.TryParse( context, location, s, resLoc, out rName ) )
                 {
-                    if( Add( monitor, new ResSetupScript( rName, scriptSource ), onExisting ) ) ++count;
+                    if( Add( monitor, new ResSetupScript( rName ), onExisting ) ) ++count;
                 }
             }
             return count;

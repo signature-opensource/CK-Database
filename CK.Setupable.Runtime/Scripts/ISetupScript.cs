@@ -23,12 +23,6 @@ namespace CK.Setup
         ParsedFileName Name { get; }
 
         /// <summary>
-        /// Gets the source name.
-        /// Never be null nor empty.
-        /// </summary>
-        string ScriptSource { get; }
-
-        /// <summary>
         /// Gets the script itself.
         /// </summary>
         /// <returns>The script text.</returns>

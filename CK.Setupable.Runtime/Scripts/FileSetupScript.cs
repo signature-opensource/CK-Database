@@ -17,16 +17,12 @@ namespace CK.Setup
     {
         string _cached;
 
-        public FileSetupScript( ParsedFileName n, string scriptSource )
+        public FileSetupScript( ParsedFileName n )
         {
             if( n == null ) throw new ArgumentNullException( "n" );
-            if( string.IsNullOrWhiteSpace( scriptSource ) ) throw new ArgumentException( "Must be not null nor empty nor white space.", "scriptSource" );
             if( !(n.ExtraPath is string) || !Path.IsPathRooted( (string)n.ExtraPath ) ) throw new ArgumentException( "ParsedFileName.ExtraPath must be a rooted file path.", "n" );
             Name = n;
-            ScriptSource = scriptSource;
         }
-
-        public string ScriptSource { get; }
 
         public ParsedFileName Name { get; }
 
@@ -40,7 +36,7 @@ namespace CK.Setup
             return _cached;
         }
 
-        public override string ToString() => $@"{ScriptSource} script - {Name.ExtraPath}\\{Name.FileName}";
+        public override string ToString() => $@"Script - {Name.ExtraPath}\\{Name.FileName}";
 
     }
 }

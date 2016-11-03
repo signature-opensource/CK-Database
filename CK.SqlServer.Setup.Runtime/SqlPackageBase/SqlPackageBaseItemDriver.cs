@@ -101,6 +101,10 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Extension point that enables scripts to be found from file system or other locations.
         /// Scripts from resources are already loaded in the <param name="collector"/>.
+        /// Following code adds an init script with no version (always executed):
+        /// <code>
+        /// collector.Add( monitor, SourceCodeSetupScript.CreateFromSourceCode( locName, "insert into tTest( Col ) values (1);", "sql", SetupCallGroupStep.Init ) );
+        /// </code>
         /// By default, this method does nothing and returns true.
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
@@ -108,7 +112,6 @@ namespace CK.SqlServer.Setup
         /// <returns>True on success, false on error.</returns>
         protected virtual bool LoadExternalScriptsFor( IActivityMonitor monitor, IContextLocNaming locName, ScriptsCollection collector )
         {
-            collector.Add( monitor, SourceCodeSetupScript.CreateFromSourceCode( locName, "Hello!", "sql", SetupCallGroupStep.Init ) );
             return true;
         }
 
@@ -120,8 +123,8 @@ namespace CK.SqlServer.Setup
             location = locName.Location;
             name = locName.Name;
             var monitor = Engine.Monitor;
-            int nbScripts = scripts.AddFromResources( monitor, "res-sql", resLoc, context, location, name, ".sql" );
-            nbScripts += scripts.AddFromResources( monitor, "res-y4", resLoc, context, location, name, ".y4" );
+            int nbScripts = scripts.AddFromResources( monitor, resLoc, context, location, name, ".sql" );
+            nbScripts += scripts.AddFromResources( monitor, resLoc, context, location, name, ".y4" );
             monitor.Info().Send( "{1} sql scripts in resource found for '{0}' in '{2}.", name, nbScripts, resLoc );
             return scripts;
         }
@@ -129,7 +132,7 @@ namespace CK.SqlServer.Setup
         bool ProcessSetupScripts( ISetupScript s, ref List<SqlPackageScript> collector )
         {
             string body = s.GetScript();
-            if( s.ScriptSource.EndsWith( "-y4", StringComparison.Ordinal ) )
+            if( s.Name.Extension == "y4" )
             {
                 body = SqlPackageBaseItem.ProcessY4Template( Engine.Monitor, this, Item, Item.ActualObject, s.Name.FileName, body );
             }

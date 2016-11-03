@@ -36,7 +36,6 @@ namespace CK.Setup
         internal ScriptVector( ISetupScript maxScript, ISetupScript noVersion )
         {
             Debug.Assert( maxScript != null );
-            Debug.Assert( noVersion == null || (noVersion.ScriptSource == maxScript.ScriptSource) );
             if( noVersion != null ) Scripts = new[] { new CoveringScript( maxScript ), new CoveringScript( noVersion ) };
             else Scripts = new[] { new CoveringScript( maxScript ) };
             Final = maxScript.Name.Version;
@@ -48,7 +47,6 @@ namespace CK.Setup
         internal ScriptVector( ISetupScript startingScript, ISetupScript migrationScript, ISetupScript noVersion )
         {
             Debug.Assert( startingScript != null && migrationScript != null );
-            Debug.Assert( noVersion == null || (noVersion.ScriptSource == startingScript.ScriptSource) );
 
             var a = noVersion != null
                         ? new[] { new CoveringScript( startingScript ), new CoveringScript( migrationScript ), new CoveringScript( noVersion ) }
@@ -71,7 +69,6 @@ namespace CK.Setup
         /// </summary>
         internal ScriptVector( List<CoveringScript> scripts, ISetupScript noVersion )
         {
-            Debug.Assert( scripts.All( s => s.Script.ScriptSource == scripts[0].Script.ScriptSource ) );
             Final = scripts[scripts.Count - 1].Script.Name.Version;
             if( noVersion != null ) scripts.Add( new CoveringScript( noVersion ) );
             Scripts = scripts.ToArray();
