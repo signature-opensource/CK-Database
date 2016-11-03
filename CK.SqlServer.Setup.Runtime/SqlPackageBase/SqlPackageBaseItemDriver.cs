@@ -149,7 +149,7 @@ namespace CK.SqlServer.Setup
                     return false;
                 }
                 if( collector == null ) collector = new List<SqlPackageScript>();
-                collector.Add( new SqlPackageScript( this, s.Name.CallContainerStep, key, result.Result ) );
+                collector.Add( new SqlPackageScript( key, result.Result ) );
                 ++idx;
             }
             return true;

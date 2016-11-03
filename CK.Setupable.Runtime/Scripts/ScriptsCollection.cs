@@ -85,8 +85,8 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Registers a set of resources (multiple <see cref="ResSetupScript"/>) from a <see cref="ResourceLocator"/>, a full name prefix 
-        /// and a script source name.
+        /// Registers a set of resources (multiple <see cref="ResSetupScript"/>) from a <see cref="ResourceLocator"/>, a full name 
+        /// prefix and a suffix.
         /// Use the <paramref name="onExisting"/> optional conflict resolver to change the default behavior that is that the first wins.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>

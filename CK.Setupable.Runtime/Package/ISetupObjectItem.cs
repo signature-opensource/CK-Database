@@ -14,9 +14,9 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// A <see cref="ISetupItem"/> that exposes its related object model.
+    /// A <see cref="ISetupItem"/> that exposes its associate model object .
     /// This interface should be implemented by concrete classes when they are 
-    /// actually an associated object.
+    /// actually in charge of an associated object.
     /// </summary>
     public interface ISetupObjectItem : ISetupItem
     { 
