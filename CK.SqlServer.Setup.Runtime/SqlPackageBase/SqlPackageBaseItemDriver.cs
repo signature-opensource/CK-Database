@@ -35,26 +35,42 @@ namespace CK.SqlServer.Setup
 
         protected override bool ExecutePreInit()
         {
-            if( !CheckResourceLocator() ) return false;
-            if( !CreateScriptHandlerFor( this ) ) return false;
-            if( Item.Model != null && !CreateScriptHandlerFor( Engine.Drivers[Item.Model] ) ) return false;
-            if( Item.ObjectsPackage != null && !CreateScriptHandlerFor( Engine.Drivers[Item.ObjectsPackage] ) ) return false;
-            return true;
-        }
-
-        bool CheckResourceLocator()
-        {
             if( Item.ResourceLocation?.Type == null )
             {
                 Engine.Monitor.Error().Send( "ResourceLocator for '{0}' has no Type defined. A ResourceType must be set in order to load resources.", FullName );
                 return false;
             }
+            var externalVersion = ExternalVersion?.Version;
+            if( !CreateScriptHandlerFor( this, Item.ResourceLocation, ItemVersion, externalVersion ) ) return false;
+            if( Item.Model != null && !CreateScriptHandlerFor( Engine.Drivers[Item.Model], Item.ResourceLocation, ItemVersion, externalVersion ) ) return false;
+            if( Item.ObjectsPackage != null && !CreateScriptHandlerFor( Engine.Drivers[Item.ObjectsPackage], Item.ResourceLocation, ItemVersion, externalVersion ) ) return false;
             return true;
         }
-        
-        bool CreateScriptHandlerFor( SetupItemDriver driver )
+
+        /// <summary>
+        /// Loads the init/install/settle scripts, filters them thanks to the provided target version (the 
+        /// current, latest, one) and the currently installed version (that is null if no previous version has been 
+        /// installed yet). The selected scripts are then given to a <see cref="SetupHandler"/> that is registered
+        /// on the driver object: this SetupHandler will <see cref="SqlDatabaseItemDriver.InstallScript(SqlPackageScript)"/> 
+        /// the appropriate scripts into this <see cref="DatabaseDriver"/> for each <see cref="SetupCallGroupStep"/>.
+        /// </summary>
+        /// <param name="driver">The driver to which scripts must be associated.</param>
+        /// <param name="resLoc">The resource locator to use.</param>
+        /// <param name="target">The current version.</param>
+        /// <param name="externalVersion">The existing version if any.</param>
+        /// <returns>True on success, false otherwise.</returns>
+        protected bool CreateScriptHandlerFor( SetupItemDriver driver, ResourceLocator resLoc, Version target, Version externalVersion = null )
         {
-            ScriptsCollection c = LoadResourceScriptsFor( driver.Item );
+            ScriptsCollection c = LoadResourceScriptsFor( driver.Item, resLoc );
+            bool externalLoadError = false;
+            using( Engine.Monitor.OnError( () => externalLoadError = true ) )
+            {
+                if( !LoadExternalScriptsFor( Engine.Monitor, driver.Item, c ) )
+                {
+                    if( !externalLoadError ) Engine.Monitor.Error().Send( $"Error while loading external scripts for '{driver.Item.FullName}'." );
+                    return false;
+                }
+            }
             if( c.Count > 0 )
             {
                 bool hasScripts = false;
@@ -82,7 +98,20 @@ namespace CK.SqlServer.Setup
             return true;
         }
 
-        ScriptsCollection LoadResourceScriptsFor( IContextLocNaming locName )
+        /// <summary>
+        /// Extension point that enables scripts to be found from file system or other locations.
+        /// Scripts from resources are already loaded in the <param name="collector"/>.
+        /// By default, this method does nothing and returns true.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="locName">The context-location-name to find scripts for.</param>
+        /// <returns>True on success, false on error.</returns>
+        protected virtual bool LoadExternalScriptsFor( IActivityMonitor monitor, IContextLocNaming locName, ScriptsCollection collector )
+        {
+            return true;
+        }
+
+        ScriptsCollection LoadResourceScriptsFor( IContextLocNaming locName, ResourceLocator resLoc )
         {
             string context, location, name;
             var scripts = new ScriptsCollection();
@@ -90,9 +119,9 @@ namespace CK.SqlServer.Setup
             location = locName.Location;
             name = locName.Name;
             var monitor = Engine.Monitor;
-            int nbScripts = scripts.AddFromResources( monitor, "res-sql", Item.ResourceLocation, context, location, name, ".sql" );
-            nbScripts += scripts.AddFromResources( monitor, "res-y4", Item.ResourceLocation, context, location, name, ".y4" );
-            monitor.Info().Send( "{1} sql scripts in resource found for '{0}' in '{2}.", name, nbScripts, Item.ResourceLocation );
+            int nbScripts = scripts.AddFromResources( monitor, "res-sql", resLoc, context, location, name, ".sql" );
+            nbScripts += scripts.AddFromResources( monitor, "res-y4", resLoc, context, location, name, ".y4" );
+            monitor.Info().Send( "{1} sql scripts in resource found for '{0}' in '{2}.", name, nbScripts, resLoc );
             return scripts;
         }
 

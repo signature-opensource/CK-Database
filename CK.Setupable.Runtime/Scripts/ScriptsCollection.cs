@@ -54,7 +54,7 @@ namespace CK.Setup
         /// <param name="script">The script to add. Can not be null.</param>
         /// <param name="onExisting">
         /// Optional conflict resolver that takes the new <paramref name="script"/> and 
-        /// the existing one (in this order) and returns one of them (returning the second -exisiting- one is
+        /// the existing one (in this order) and returns one of them (returning the second -existing- one is
         /// the same as returning null).
         /// </param>
         /// <returns>True if the script has been added, false otherwise.</returns>
@@ -88,6 +88,7 @@ namespace CK.Setup
         /// <summary>
         /// Registers a set of resources (multiple <see cref="ResSetupScript"/>) from a <see cref="ResourceLocator"/>, a full name prefix 
         /// and a script source name.
+        /// Use the <paramref name="onExisting"/> optional conflict resolver to change the default behavior that is that the first wins.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="scriptSource">The script source name under which registering the <see cref="ISetupScript"/>.</param>
