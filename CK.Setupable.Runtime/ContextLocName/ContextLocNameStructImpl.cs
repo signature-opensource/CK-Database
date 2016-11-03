@@ -51,7 +51,10 @@ namespace CK.Core
             _context = context;
             _location = location;
             _name = name;
-            _transformArg = DefaultContextLocNaming.ExtractTransformArg( _name, 0, _name.Length );
+            int len = name.Length;
+            _transformArg = DefaultContextLocNaming.ExtractTransformArg( name, 0, ref len );
+            if( len != name.Length ) _name = name.Substring( 0, len );
+            else _name = name;
             _fullName = DefaultContextLocNaming.Format( _context, _location, _name );
         }
 
@@ -137,7 +140,9 @@ namespace CK.Core
                 if( _name != value )
                 {
                     _name = value;
-                    _transformArg = DefaultContextLocNaming.ExtractTransformArg( _name, 0, _name.Length );
+                    int len = _name.Length;
+                    _transformArg = DefaultContextLocNaming.ExtractTransformArg( _name, 0, ref len );
+                    if( len != _name.Length ) _name = _name.Substring( 0, len );
                     _fullName = DefaultContextLocNaming.Format( _context, _location, _name );
                 }
             }

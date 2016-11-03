@@ -20,40 +20,25 @@ namespace CK.Setup
     /// <summary>
     /// Encapsulation of a file name associated to a setup object. It handles all the steps (<see cref="SetupCallGroupStep.InitContent"/>)
     /// and versions (for <see cref="IVersionedItem"/>) but can be used for simple <see cref="IDependentItem"/>.
-    /// Offers <see cref="Parse"/>, <see cref="TryParse"/> and <see cref="CreateFromSource"/> factory methods.
+    /// Offers <see cref="Parse"/>, <see cref="TryParse"/> and <see cref="CreateFromSourceCode"/> factory methods.
     /// </summary>
     public class ParsedFileName : IContextLocNaming
     {
-        string _fileName;
-        object _extraPath;
-        string _context;
-        string _loc;
-        string _name;
-        string _extension;
-        string _transformArg;
-        string _fullName;
-        Version _fromVersion;
-        Version _version;
-        SetupCallGroupStep _step;
+        readonly string _fileName;
+        readonly object _extraPath;
+        readonly string _context;
+        readonly string _loc;
+        readonly string _name;
+        readonly string _extension;
+        readonly string _transformArg;
+        readonly string _fullName;
+        readonly Version _fromVersion;
+        readonly Version _version;
+        readonly SetupCallGroupStep _step;
 
-        private ParsedFileName( string fileName, object extraPath, string context, string location, string name, string extension, Version f, Version v, SetupCallGroupStep step )
+        ParsedFileName( string fileName, object extraPath, string context, string location, string name, string transformArg, string extension, Version f, Version v, SetupCallGroupStep step )
         {
             Debug.Assert( f == null || (v != null && f != v), "from ==> version && from != version" );
-            Debug.Assert( !string.IsNullOrEmpty( extension ) );
-            _fileName = fileName;
-            _extraPath = extraPath;
-            _context = context;
-            _loc = location;
-            _name = name;
-            _fullName = DefaultContextLocNaming.Format( _context, _loc, _name );
-            _fromVersion = f;
-            _version = v;
-            _extension = extension;
-            _step = step;
-        }
-
-        private ParsedFileName( string fileName, object extraPath, string context, string location, string name, string extension, string transformArg )
-        {
             Debug.Assert( !string.IsNullOrEmpty( extension ) );
             _fileName = fileName;
             _extraPath = extraPath;
@@ -63,11 +48,14 @@ namespace CK.Setup
             _transformArg = transformArg;
             _fullName = DefaultContextLocNaming.Format( _context, _loc, _name );
             _extension = extension;
-            _step = SetupCallGroupStep.None;
+            _fromVersion = f;
+            _version = v;
+            _step = step;
         }
 
-        private ParsedFileName( string fileName, object extraPath, IContextLocNaming locName, string extension )
+        ParsedFileName( string fileName, object extraPath, IContextLocNaming locName, string extension, SetupCallGroupStep step, Version f, Version v )
         {
+            Debug.Assert( f == null || (v != null && f != v), "from ==> version && from != version" );
             Debug.Assert( !string.IsNullOrEmpty( extension ) );
             _fileName = fileName;
             _extraPath = extraPath;
@@ -77,7 +65,9 @@ namespace CK.Setup
             _transformArg = locName.TransformArg;
             _fullName = locName.FullName;
             _extension = extension;
-            _step = SetupCallGroupStep.None;
+            _fromVersion = f;
+            _version = v;
+            _step = step;
         }
 
         /// <summary>
@@ -192,14 +182,32 @@ namespace CK.Setup
         /// </summary>
         /// <param name="locName">The context-location-name for which a a <see cref="ParsedFileName"/> must be created.</param>
         /// <param name="extension">The extension must not be null, empty or starts with a '.' dot.</param>
+        /// <param name="step">Optional step (when no <paramref name="version"/> is supplied, this is a "no version" script).</param>
+        /// <param name="fromVersion">
+        /// Optional starting version for a migration script. 
+        /// When not null, <paramref name="version"/> must be supplied.
+        /// </param>
+        /// <param name="version">Optional version of the script.</param>
         /// <param name="file">Automatically set the file source name. The path is ignored: only the filename with its extension is kept.</param>
         /// <param name="line">Automatically set the source line number.</param>
         /// <returns>A parsed file name.</returns>
-        public static ParsedFileName CreateFromSource( IContextLocNaming locName, string extension, [CallerFilePath]string file = null, [CallerLineNumber] int line = 0 )
+        public static ParsedFileName CreateFromSourceCode( 
+            IContextLocNaming locName, 
+            string extension, 
+            SetupCallGroupStep step = SetupCallGroupStep.None, 
+            Version fromVersion = null,
+            Version version = null,
+            [CallerFilePath]string file = null, 
+            [CallerLineNumber] int line = 0 )
         {
             if( locName == null ) throw new ArgumentNullException( nameof( locName ) );
             if( extension == null || extension.Length == 0 || extension[0] == '.' ) throw new ArgumentException();
-            return new ParsedFileName( $"{Path.GetFileName( file )}@{line}", "source:", locName, extension );
+            if( fromVersion != null && (version == null || fromVersion == version) ) throw new ArgumentException( "from ==> version && from != version" );
+            string fileName = $"{Path.GetFileName( file )}@{line}.{extension}";
+            if( step != SetupCallGroupStep.None ) fileName += '-' + step.ToString();
+            if( fromVersion != null ) fileName += $".{fromVersion}.to.{version}";
+            else if( version != null ) fileName += $".{version}";
+            return new ParsedFileName( fileName, "source:", locName, extension, step, fromVersion, version );
         }
 
         /// <summary>
@@ -219,7 +227,7 @@ namespace CK.Setup
             return r;
         }
 
-        static Regex _rVersion = new Regex( @"\.((?<2>\d+\.\d+\.\d+)\.to\.)?(?<1>\d+\.\d+\.\d+)$", RegexOptions.CultureInvariant | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase );
+        static Regex _rSuffix = new Regex( @"(\.(?<3>Init(Content)?|Install(Content)?|Settle(Content)?))?(\.((?<2>\d+\.\d+\.\d+)\.to\.)?(?<1>\d+\.\d+\.\d+))?$", RegexOptions.CultureInvariant | RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture );
 
         /// <summary>
         /// Attempts to parse the given path that can have an extension and may ends with
@@ -259,63 +267,47 @@ namespace CK.Setup
             }
             Debug.Assert( n.Length > 0 );
             
-            string context, location, source;
-            if( !DefaultContextLocNaming.TryParse( n, out context, out location, out n, out source ) ) return false;
+            string cleanName, context, location, transformArg;
+            if( !DefaultContextLocNaming.TryParse( n, out context, out location, out cleanName, out transformArg ) ) return false;
             if( !DefaultContextLocNaming.Combine( curContext, curLoc, ref context, ref location ) ) return false;
-            if( source != null )
+            if( transformArg != null )
             {
-                if( (source = DefaultContextLocNaming.Resolve( source, curContext, curLoc, throwError: false )) == null )
+                if( (transformArg = DefaultContextLocNaming.Resolve( transformArg, curContext, curLoc, throwError: false )) == null )
                 {
                     return false;
                 }
-                result = new ParsedFileName( fileName, extraPath, context, location, n, extension, source );
-                return true;
             }
+            if( cleanName.Length == 0 ) return false;
             Version f = null;
             Version v = null;
             SetupCallGroupStep step = SetupCallGroupStep.None;
-            Match m = _rVersion.Match( n );
-            if( m.Success )
+            Match m = _rSuffix.Match( n );
+            if( m.Length > 0 )
             {
-                if( !Version.TryParse( m.Groups[1].Value, out v ) ) return false;
-                if( m.Groups[2].Length > 0 && !Version.TryParse( m.Groups[2].Value, out f ) ) return false;
-                n = n.Remove( m.Index );
+                if( m.Groups[1].Value.Length > 0 )
+                {
+                    if( !Version.TryParse( m.Groups[1].Value, out v ) ) return false;
+                    if( m.Groups[2].Length > 0 && !Version.TryParse( m.Groups[2].Value, out f ) ) return false;
+                }
+                string strStep = m.Groups[3].Value;
+                if( strStep.Length > 0 )
+                {
+                    switch( strStep[2] )
+                    {
+                        case 'I': case 'i': step = SetupCallGroupStep.Init; break;
+                        case 'S': case 's': step = SetupCallGroupStep.Install; break;
+                        default:
+                            {
+                                Debug.Assert( strStep[2] == 't' || strStep[2] == 'T' );
+                                step = SetupCallGroupStep.Settle;
+                                break;
+                            }
+                    }
+                    if( strStep.Length > 7 ) step += 1;
+                }
+                if( transformArg == null ) cleanName = cleanName.Remove( cleanName.Length - m.Length );
             }
-            if( n.Length == 0 ) return false;
-            // from version to itself: rejects it.
-            if( f != null && f == v ) return false;
-            if( n.EndsWith( ".Init", StringComparison.OrdinalIgnoreCase ) )
-            {
-                step = SetupCallGroupStep.Init;
-                n = n.Remove( n.Length - 5 );
-            }
-            else if( n.EndsWith( ".InitContent", StringComparison.OrdinalIgnoreCase ) )
-            {
-                step = SetupCallGroupStep.InitContent;
-                n = n.Remove( n.Length - 12 );
-            }
-            else if( n.EndsWith( ".Install", StringComparison.OrdinalIgnoreCase ) )
-            {
-                step = SetupCallGroupStep.Install;
-                n = n.Remove( n.Length - 8 );
-            }
-            else if( n.EndsWith( ".InstallContent", StringComparison.OrdinalIgnoreCase ) )
-            {
-                step = SetupCallGroupStep.InstallContent;
-                n = n.Remove( n.Length - 15 );
-            }
-            else if( n.EndsWith( ".Settle", StringComparison.OrdinalIgnoreCase ) )
-            {
-                step = SetupCallGroupStep.Settle;
-                n = n.Remove( n.Length - 7 );
-            }
-            else if( n.EndsWith( ".SettleContent", StringComparison.OrdinalIgnoreCase ) )
-            {
-                step = SetupCallGroupStep.SettleContent;
-                n = n.Remove( n.Length - 14 );
-            }
-            if( n.Length == 0 ) return false;
-            result = new ParsedFileName( fileName, extraPath, context, location, n, extension, f, v, step );
+            result = new ParsedFileName( fileName, extraPath, context, location, cleanName, transformArg, extension, f, v, step );
             return true; 
         }
 

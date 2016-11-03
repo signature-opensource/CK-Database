@@ -54,17 +54,37 @@ namespace CK.Setupable.Engine.Tests
             Assert.That( result.Extension, Is.EqualTo( "sql" ) );
             Assert.That( result.SetupStep, Is.EqualTo( SetupCallGroupStep.SettleContent ) );
             Assert.That( result.FullName, Is.EqualTo( "Loc^Test" ) );
-
         }
 
         [Test]
-        public void ParsedFileName_Can_be_created_from_source()
+        public void ParsedFileName_can_be_created_from_source()
         {
             var locName = new ContextLocName( "[]db^Name" );
-            ParsedFileName result = ParsedFileName.CreateFromSource( locName, "sql" );
+            ParsedFileName result = ParsedFileName.CreateFromSourceCode( locName, "sql" );
             Assert.That( result.FullName, Is.EqualTo( "[]db^Name" ) );
-            Assert.That( result.FileName, Is.EqualTo( "ParsedFileNameTests.cs@64" ) );
+            Assert.That( result.FileName, Is.EqualTo( "ParsedFileNameTests.cs@63.sql" ) );
             Assert.That( result.Extension, Is.EqualTo( "sql" ) );
+        }
+
+        [Test]
+        public void ParsedFileName_when_created_from_source_with_step_and_versions_exposes_them_in_its_FileName()
+        {
+            var locName = new ContextLocName( "[]db^Name" );
+            ParsedFileName result = ParsedFileName.CreateFromSourceCode( locName, "sql", SetupCallGroupStep.Init, new Version( 1, 0, 0 ), new Version( 2, 0, 0 ), "HardCodedFile", 3712 );
+            Assert.That( result.FullName, Is.EqualTo( "[]db^Name" ) );
+            Assert.That( result.FileName, Is.EqualTo( "HardCodedFile@3712.sql-Init.1.0.0.to.2.0.0" ) );
+            Assert.That( result.Extension, Is.EqualTo( "sql" ) );
+        }
+
+        [TestCase( "[]db^Name(T(a(b))).sql", "T(a(b))", null )]
+        [TestCase( "[]db^Name(T(a)).1.0.0.sql", "T(a)", "1.0.0" )]
+        public void ParsedFileName_works_on_strange_names( string fName, string transformArg, string version )
+        {
+            ParsedFileName result;
+            Assert.That( ParsedFileName.TryParse( null, null, fName, null, out result ) );
+            Assert.That( result.Extension, Is.EqualTo( "sql" ) );
+            Assert.That( result.Version, Is.EqualTo( version != null ? Version.Parse( version ) : null ) );
+            Assert.That( result.TransformArg, Is.EqualTo( transformArg ) );
         }
 
 

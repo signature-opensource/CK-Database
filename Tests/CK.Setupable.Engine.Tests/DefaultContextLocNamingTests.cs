@@ -11,30 +11,32 @@ namespace CK.Setupable.Engine.Tests
     [CLSCompliant( false )]
     public class DefaultContextLocNamingTests
     {
-        [TestCase( "", null, null, "" )]
-        [TestCase( "^", null, "", "" )]
-        [TestCase( "[]^", "", "", "" )]
-        [TestCase( "[H]loc^", "H", "loc", "" )]
-        [TestCase( "[H]loc^N", "H", "loc", "N" )]
+        [TestCase( "", null, null, "", null )]
+        [TestCase( "^", null, "", "", null )]
+        [TestCase( "[]^", "", "", "", null )]
+        [TestCase( "[H]loc^", "H", "loc", "", null )]
+        [TestCase( "[H]loc^N", "H", "loc", "N", null )]
+        [TestCase( "[H]loc^N(T)", "H", "loc", "N(T)", "T" )]
+        [TestCase( "[H]loc^N(T(t))", "H", "loc", "N(T(t))", "T(t)" )]
 
-        [TestCase( "CK.fTest", null, null, "CK.fTest" )]
-        [TestCase( "[]CK.fTest", "", null, "CK.fTest" )]
-        [TestCase( "[]^CK.fTest", "", "", "CK.fTest" )]
-        [TestCase( "^CK.fTest", null, "", "CK.fTest" )]
-        [TestCase( "[H]^CK.fTest", "H", "", "CK.fTest" )]
+        [TestCase( "CK.fTest", null, null, "CK.fTest", null )]
+        [TestCase( "[]CK.fTest", "", null, "CK.fTest", null )]
+        [TestCase( "[]^CK.fTest", "", "", "CK.fTest", null )]
+        [TestCase( "^CK.fTest", null, "", "CK.fTest", null )]
+        [TestCase( "[H]^CK.fTest", "H", "", "CK.fTest", null )]
 
-        [TestCase( "[H]db^CK.fTest", "H", "db", "CK.fTest" )]
-        [TestCase( "[H]-db^CK.fTest", "H", "-db", "CK.fTest" )]
-        [TestCase( "[H]--db^CK.fTest", "H", "--db", "CK.fTest" )]
-        [TestCase( "[H]---srv-db^CK.fTest", "H", "---srv-db", "CK.fTest" )]
+        [TestCase( "[H]db^CK.fTest", "H", "db", "CK.fTest", null )]
+        [TestCase( "[H]-db^CK.fTest", "H", "-db", "CK.fTest", null )]
+        [TestCase( "[H]--db^CK.fTest", "H", "--db", "CK.fTest", null )]
+        [TestCase( "[H]---srv-db^CK.fTest", "H", "---srv-db", "CK.fTest", null )]
 
-        [TestCase( "srv-db^CK.fTest", null, "srv-db", "CK.fTest" )]
-        [TestCase( "[H]srvPrd-db^CK.fTest", "H", "srvPrd-db", "CK.fTest" )]
-        [TestCase( "[]srvPrd-db^CK.fTest", "", "srvPrd-db", "CK.fTest" )]
-        public void parsing_multiple_forms( string input, string expectedContext, string expectedLocation, string expectedName )
+        [TestCase( "srv-db^CK.fTest", null, "srv-db", "CK.fTest", null )]
+        [TestCase( "[H]srvPrd-db^CK.fTest", "H", "srvPrd-db", "CK.fTest", null )]
+        [TestCase( "[]srvPrd-db^CK.fTest", "", "srvPrd-db", "CK.fTest", null )]
+        public void parsing_multiple_forms( string input, string expectedContext, string expectedLocation, string expectedName, string expectedTransformArg )
         {
-            CheckParseWhole( input, expectedContext, expectedLocation, expectedName, null );
-            CheckParseSub( input, expectedContext, expectedLocation, expectedName, null );
+            CheckParseWhole( input, expectedContext, expectedLocation, expectedName, expectedTransformArg );
+            CheckParseSub( input, expectedContext, expectedLocation, expectedName, expectedTransformArg );
         }
 
         private static void CheckParseWhole( 
@@ -266,7 +268,8 @@ namespace CK.Setupable.Engine.Tests
         [TestCase( "x((B()(A)C)D)", "(B()(A)C)D" )]
         public void targetName_extraction( string s, string expected )
         {
-            Assert.That( DefaultContextLocNaming.ExtractTransformArg( s, 0, s.Length ), Is.EqualTo( expected ) );
+            int len = s.Length;
+            Assert.That( DefaultContextLocNaming.ExtractTransformArg( s, 0, ref len ), Is.EqualTo( expected ) );
         }
     }
 }

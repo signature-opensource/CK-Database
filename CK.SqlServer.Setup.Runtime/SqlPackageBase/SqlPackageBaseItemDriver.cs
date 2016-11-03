@@ -108,6 +108,7 @@ namespace CK.SqlServer.Setup
         /// <returns>True on success, false on error.</returns>
         protected virtual bool LoadExternalScriptsFor( IActivityMonitor monitor, IContextLocNaming locName, ScriptsCollection collector )
         {
+            collector.Add( monitor, SourceCodeSetupScript.CreateFromSourceCode( locName, "Hello!", "sql", SetupCallGroupStep.Init ) );
             return true;
         }
 

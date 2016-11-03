@@ -81,6 +81,7 @@
     <Compile Include="Package\ISetupObjectItem.cs" />
     <Compile Include="Package\IMutableSetupBaseItem.cs" />
     <Compile Include="Scripts\CoveringScript.cs" />
+    <Compile Include="Scripts\SourceCodeSetupScript.cs" />
     <Compile Include="Scripts\ScriptsCollection.cs" />
     <Compile Include="Scripts\ScriptVector.cs" />
     <Compile Include="Scripts\ScriptVectorConstraint.cs" />

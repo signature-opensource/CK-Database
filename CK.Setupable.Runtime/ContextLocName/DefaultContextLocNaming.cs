@@ -323,7 +323,7 @@ namespace CK.Core
                 }
                 if( count > 0 )
                 {
-                    target = ExtractTransformArg( input, startIndex, count );
+                    target = ExtractTransformArg( input, startIndex, ref count );
                     if( target != null && target.Length == 0 ) return false;
                 }
             }
@@ -337,35 +337,42 @@ namespace CK.Core
         /// </summary>
         /// <param name="input">The input string.</param>
         /// <param name="startIndex">Start of the sustring to consider in input.</param>
-        /// <param name="count">Number of characters to consider.</param>
+        /// <param name="count">
+        /// Number of characters to consider.
+        /// On output, it is updated to the end of the transform argument (the last balanced parenthesis found)
+        /// if there is a transform argument.
+        /// </param>
         /// <returns>The transformation argument without the enclosing parenthesis.</returns>
-        public static string ExtractTransformArg( string input, int startIndex, int count )
+        public static string ExtractTransformArg( string input, int startIndex, ref int count )
         {
-            int idx = IndexOfTransformArgOpenPar( input, startIndex, count );
-            return idx >= 0 ? input.Substring( idx + 1, count - idx - 2 ) : null;
+            int idx = IndexOfTransformArgOpenPar( input, startIndex, ref count );
+            return idx >= 0 ? input.Substring( idx + 1, count - idx + startIndex - 2 ) : null;
         }
 
         /// <summary>
-        /// Gets the starting index of '(...)' suffix if it exists and contains balanced opening/closing parenthesis.
+        /// Gets the starting index of '(...)' suffix and updates count accordingly if it exists and 
+        /// contains balanced opening/closing parenthesis.
         /// A positive index is returned even if the suffix is '()' (that is invalid).
         /// </summary>
         /// <param name="input">The input string.</param>
         /// <param name="startIndex">Start of the sustring to consider in input.</param>
         /// <param name="count">Number of characters to consider.</param>
-        /// <returns>The index of the opening parenthsis.</returns>
-        public static int IndexOfTransformArgOpenPar( string input, int startIndex, int count )
+        /// <returns>The index of the opening parenthesis.</returns>
+        static int IndexOfTransformArgOpenPar( string input, int startIndex, ref int count )
         {
-            int idx;
-            if( count > 0 && input[(idx = startIndex + count - 1)] == ')' )
+            int idxOpenPar = input.IndexOf( '(', startIndex, count );
+            if( idxOpenPar >= 0 )
             {
-                int nbClose = 1;
-                while( --idx > startIndex )
+                int max = startIndex + count;
+                int nbOpen = 0;
+                for( int i = idxOpenPar + 1; i < max; ++i )
                 {
-                    char c = input[idx];
-                    if( c == ')' ) ++nbClose;
-                    else if( c == '(' )
+                    char c = input[i];
+                    if( c == '(' ) ++nbOpen;
+                    else if( c == ')' && --nbOpen < 0 )
                     {
-                        if( --nbClose == 0 ) return idx;
+                        count = i + 1 - startIndex;
+                        return idxOpenPar;
                     }
                 }
             }
@@ -381,7 +388,7 @@ namespace CK.Core
         /// <returns>The input string without transformation argument if it exists.</returns>
         public static string RemoveTransformArg( string input, int startIndex, int count )
         {
-            int idx = IndexOfTransformArgOpenPar( input, startIndex, count );
+            int idx = IndexOfTransformArgOpenPar( input, startIndex, ref count );
             return idx >= 0 ? input.Substring( 0, idx ) : input;
         }
 
@@ -482,6 +489,7 @@ namespace CK.Core
                     return null;
                 }
                 target = Resolve( target, curContext, curLoc, throwError );
+                if( target == null ) return null;
                 name = AppendTransformArg( RemoveTransformArg( name, 0, name.Length ), target );
             }
             if( !DoCombine( curContext, curLoc, ref context, ref location, throwError ? () => input.Substring( startIndex, count ) : (Func<string>)null ) ) return null;
