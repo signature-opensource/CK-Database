@@ -122,7 +122,7 @@ namespace CK.Setup
             foreach( var s in candidates )
             {
                 ParsedFileName rName;
-                if( ParsedFileName.TryParse( context, location, s, resLoc, true, out rName ) )
+                if( ParsedFileName.TryParse( context, location, s, resLoc, out rName ) )
                 {
                     if( Add( monitor, new ResSetupScript( rName, scriptSource ), onExisting ) ) ++count;
                 }

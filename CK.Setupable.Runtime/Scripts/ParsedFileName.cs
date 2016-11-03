@@ -29,15 +29,17 @@ namespace CK.Setup
         string _context;
         string _loc;
         string _name;
+        string _extension;
         string _transformArg;
         string _fullName;
         Version _fromVersion;
         Version _version;
         SetupCallGroupStep _step;
 
-        private ParsedFileName( string fileName, object extraPath, string context, string location, string name, Version f, Version v, SetupCallGroupStep step )
+        private ParsedFileName( string fileName, object extraPath, string context, string location, string name, string extension, Version f, Version v, SetupCallGroupStep step )
         {
             Debug.Assert( f == null || (v != null && f != v), "from ==> version && from != version" );
+            Debug.Assert( !string.IsNullOrEmpty( extension ) );
             _fileName = fileName;
             _extraPath = extraPath;
             _context = context;
@@ -46,11 +48,13 @@ namespace CK.Setup
             _fullName = DefaultContextLocNaming.Format( _context, _loc, _name );
             _fromVersion = f;
             _version = v;
+            _extension = extension;
             _step = step;
         }
 
-        private ParsedFileName( string fileName, object extraPath, string context, string location, string name, string transformArg )
+        private ParsedFileName( string fileName, object extraPath, string context, string location, string name, string extension, string transformArg )
         {
+            Debug.Assert( !string.IsNullOrEmpty( extension ) );
             _fileName = fileName;
             _extraPath = extraPath;
             _context = context;
@@ -58,6 +62,21 @@ namespace CK.Setup
             _name = name;
             _transformArg = transformArg;
             _fullName = DefaultContextLocNaming.Format( _context, _loc, _name );
+            _extension = extension;
+            _step = SetupCallGroupStep.None;
+        }
+
+        private ParsedFileName( string fileName, object extraPath, IContextLocNaming locName, string extension )
+        {
+            Debug.Assert( !string.IsNullOrEmpty( extension ) );
+            _fileName = fileName;
+            _extraPath = extraPath;
+            _context = locName.Context;
+            _loc = locName.Location;
+            _name = locName.Name;
+            _transformArg = locName.TransformArg;
+            _fullName = locName.FullName;
+            _extension = extension;
             _step = SetupCallGroupStep.None;
         }
 
@@ -84,13 +103,19 @@ namespace CK.Setup
         /// <summary>
         /// Gets the name of the item with its context, location and name. Not null nor empty.
         /// </summary>
-        public string FullName => _fullName; 
+        public string FullName => _fullName;
 
         /// <summary>
         /// Gets the original file name (including its extension and [Context] prefix if any) without any normalization.
         /// Not null nor empty.
         /// </summary>
-        public string FileName => _fileName; 
+        public string FileName => _fileName;
+
+        /// <summary>
+        /// Gets the extension without dot prefix.
+        /// Never null nor empty: an extension must always exist.
+        /// </summary>
+        public string Extension => _extension;
 
         /// <summary>
         /// Gets the path (the prefix for a string or any contextual data that enables to locate the resource). 
@@ -162,10 +187,20 @@ namespace CK.Setup
             return includeNoVersionScript && _version == null;
         }
 
-        //public static ParsedFileName CreateFromSource( string extension, [CallerFilePath]string file = null, [CallerLineNumber] int line = 0 )
-        //{
-        //    string ext = Path.GetExtension( file )
-        //}
+        /// <summary>
+        /// Creates a <see cref="ParsedFileName"/> from source code.
+        /// </summary>
+        /// <param name="locName">The context-location-name for which a a <see cref="ParsedFileName"/> must be created.</param>
+        /// <param name="extension">The extension must not be null, empty or starts with a '.' dot.</param>
+        /// <param name="file">Automatically set the file source name. The path is ignored: only the filename with its extension is kept.</param>
+        /// <param name="line">Automatically set the source line number.</param>
+        /// <returns>A parsed file name.</returns>
+        public static ParsedFileName CreateFromSource( IContextLocNaming locName, string extension, [CallerFilePath]string file = null, [CallerLineNumber] int line = 0 )
+        {
+            if( locName == null ) throw new ArgumentNullException( nameof( locName ) );
+            if( extension == null || extension.Length == 0 || extension[0] == '.' ) throw new ArgumentException();
+            return new ParsedFileName( $"{Path.GetFileName( file )}@{line}", "source:", locName, extension );
+        }
 
         /// <summary>
         /// Calls <see cref="TryParse"/> and throws a <see cref="FormatException"/> if it 
@@ -175,12 +210,12 @@ namespace CK.Setup
         /// <param name="curLoc">Current location identifier. It will be used as the <see cref="Location"/> if <paramref name="fileName"/> does not contain a location. Null if no current location exist.</param>
         /// <param name="fileName">The file name. Should not start with a path.</param>
         /// <param name="extraPath">Path part (prefix) of the <paramref name="fileName"/>.</param>
-        /// <param name="hasExtension">True to ignore the trailing extension (.xxx). False if the <paramref name="fileName"/> does not end with an extension.</param>
+        /// <param name="extension">Explicit extension (without the dot prefix). Null extracts the extension from the fileName.</param>
         /// <returns>The parsed result.</returns>
-        static public ParsedFileName Parse( string curContext, string curLoc, string fileName, object extraPath, bool hasExtension )
+        static public ParsedFileName Parse( string curContext, string curLoc, string fileName, object extraPath, string extension = null )
         {
             ParsedFileName r;
-            if( !TryParse( curContext, curLoc, fileName, extraPath, hasExtension, out r ) ) throw new FormatException( "Invalid file name '" + fileName + "' in '" + extraPath + "'." );
+            if( !TryParse( curContext, curLoc, fileName, extraPath, out r, extension ) ) throw new FormatException( "Invalid file name '" + fileName + "' in '" + extraPath + "'." );
             return r;
         }
 
@@ -197,24 +232,32 @@ namespace CK.Setup
         /// <param name="curLoc">Current location identifier. It will be used as the <see cref="Location"/> if <paramref name="fileName"/> does not contain a location. Null if no current location exist.</param>
         /// <param name="fileName">The file name. Should not start with a path.</param>
         /// <param name="extraPath">Path part (context dependent data) of the <paramref name="fileName"/>.</param>
-        /// <param name="hasExtension">
-        /// True to ignore the trailing extension (.xxx). False if the <paramref name="fileName"/> does not end with an extension: the last .part is part of the name.
-        /// The <see cref="FileName"/> property will contain the extension.
-        /// </param>
         /// <param name="result">The parsed result or null.</param>
+        /// <param name="extension">Explicit extension (without the dot prefix). Null extracts the extension from the fileName.</param>
         /// <returns>True on success, false if the <paramref name="fileName"/> is not valid.</returns>
         /// <remarks>
         /// The context and location are optional since they can be given (<paramref name="curContext"/> and <paramref name="curLoc"/>). 
         /// If the <paramref name="fileName"/> contains such context or location, they take precedence over the 2 parameters.
         /// </remarks>
-        static public bool TryParse( string curContext, string curLoc, string fileName, object extraPath, bool hasExtension, out ParsedFileName result )
+        static public bool TryParse( string curContext, string curLoc, string fileName, object extraPath, out ParsedFileName result, string extension = null )
         {
             result = null;
-            if( String.IsNullOrEmpty( fileName ) ) return false;
-            
+            if( string.IsNullOrEmpty( fileName ) ) return false;
+
             // The n is the future Name.
-            string n = hasExtension ? fileName.Remove( fileName.LastIndexOf( '.' ) ) : fileName;
-            if( n.Length == 0 ) return false;
+            string n = fileName;
+            if( extension == null )
+            {
+                int idxExtension = fileName.LastIndexOf( '.' );
+                if( idxExtension <= 0 || idxExtension == fileName.Length - 1 ) return false;
+                extension = fileName.Substring( idxExtension + 1 );
+                n = fileName.Remove( idxExtension );
+            }
+            else
+            {
+                if( extension.Length == 0 || extension[0] == '.' ) return false;
+            }
+            Debug.Assert( n.Length > 0 );
             
             string context, location, source;
             if( !DefaultContextLocNaming.TryParse( n, out context, out location, out n, out source ) ) return false;
@@ -225,7 +268,7 @@ namespace CK.Setup
                 {
                     return false;
                 }
-                result = new ParsedFileName( fileName, extraPath, context, location, n, source );
+                result = new ParsedFileName( fileName, extraPath, context, location, n, extension, source );
                 return true;
             }
             Version f = null;
@@ -272,7 +315,7 @@ namespace CK.Setup
                 n = n.Remove( n.Length - 14 );
             }
             if( n.Length == 0 ) return false;
-            result = new ParsedFileName( fileName, extraPath, context, location, n, f, v, step );
+            result = new ParsedFileName( fileName, extraPath, context, location, n, extension, f, v, step );
             return true; 
         }
 

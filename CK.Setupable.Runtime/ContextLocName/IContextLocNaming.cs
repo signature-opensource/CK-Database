@@ -42,7 +42,7 @@ namespace CK.Core
         string FullName { get; }
 
         /// <summary>
-        /// Gets the source name: the suffix enclosed in parenthesis if it exists, null otherwise. 
+        /// Gets the transform argument name: the suffix enclosed in parenthesis if it exists, null otherwise. 
         /// This can be null (no target) or not empty: an empty transformation argument is not valid.
         /// </summary>
         string TransformArg { get; }
