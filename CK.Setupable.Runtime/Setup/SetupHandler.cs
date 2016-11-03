@@ -36,12 +36,6 @@ namespace CK.Setup
             if( !(Driver.Item is T) ) throw new ArgumentException( "Driver '{0}' has an item of type '{1}'. this handler work with items of type '{2}'.", String.Format( "", Driver.FullName, Driver.Item.GetType().Name, typeof( T ).Name ) );
         }
 
-
-        void CheckCall( SetupItemDriver d )
-        {
-            if( d != Driver ) throw new InvalidOperationException( String.Format( "Call mismatch: handler is bound to '{0}' but called from '{1}'.", Driver.FullName, d.FullName ) );
-        }
-
         bool ISetupHandler.Init( SetupItemDriver d ) => Init();
 
         bool ISetupHandler.InitContent( SetupItemDriver d ) => InitContent();
@@ -54,74 +48,53 @@ namespace CK.Setup
 
         bool ISetupHandler.SettleContent( SetupItemDriver d ) => SettleContent();
 
-        bool ISetupHandler.OnStep( SetupItemDriver d, SetupCallGroupStep step )
-        {
-            CheckCall( d );
-            return OnStep( step );
-        }
+        bool ISetupHandler.OnStep( SetupItemDriver d, SetupCallGroupStep step ) => OnStep( step );
 
         /// <summary>
         /// This default implementation does nothing and returns true.
         /// </summary>
         /// <returns>Always true.</returns>
-        protected virtual bool Init()
-        {
-            return true;
-        }
+        protected virtual bool Init() => true;
 
         /// <summary>
         /// This default implementation does nothing and returns true.
         /// </summary>
         /// <returns>Always true.</returns>
-        protected virtual bool InitContent()
-        {
-            return true;
-        }
+        protected virtual bool InitContent() => true;
 
         /// <summary>
         /// This default implementation does nothing and returns true.
         /// </summary>
         /// <returns>Always true.</returns>
-        protected virtual bool Install()
-        {
-            return true;
-        }
+        protected virtual bool Install() => true;
 
         /// <summary>
         /// This default implementation does nothing and returns true.
         /// </summary>
         /// <returns>Always true.</returns>
-        protected virtual bool InstallContent()
-        {
-            return true;
-        }
+        protected virtual bool InstallContent() => true;
 
         /// <summary>
         /// This default implementation does nothing and returns true.
         /// </summary>
         /// <returns>Always true.</returns>
-        protected virtual bool Settle()
-        {
-            return true;
-        }
+        protected virtual bool Settle() => true;
 
         /// <summary>
         /// This default implementation does nothing and returns true.
         /// </summary>
         /// <returns>Always true.</returns>
-        protected virtual bool SettleContent()
-        {
-            return true;
-        }
+        protected virtual bool SettleContent() => true;
 
         /// <summary>
-        /// This default implementation does nothing and returns true.
+        /// This method is called right after its corresponding dedicated method.
+        /// This centralized step based method is easier to use then the different
+        /// available overrides when the step actions are structurally the same and
+        /// only their actual contents/data is step dependent.
+        /// Does nothing (always returns true).
         /// </summary>
         /// <returns>Always true.</returns>
-        protected virtual bool OnStep( SetupCallGroupStep step )
-        {
-            return true;
-        }
+        protected virtual bool OnStep( SetupCallGroupStep step ) => true;
 
     }
 }

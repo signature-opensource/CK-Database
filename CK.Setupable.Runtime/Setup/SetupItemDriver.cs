@@ -103,10 +103,9 @@ namespace CK.Setup
             if( !Init( true ) || !OnStep( SetupCallGroupStep.Init, true ) ) return false;
             if( _handlers != null )
             {
-                for( int i = 0; i < _handlers.Count; ++i )
+                foreach( var h in _handlers )
                 {
-                    if( !_handlers[i].OnStep( this, SetupCallGroupStep.Init ) ) return false;
-                    if( !_handlers[i].Init( this ) ) return false;
+                    if( !h.OnStep( this, SetupCallGroupStep.Init ) || !h.Init( this ) ) return false;
                 }
             }
             return Init( false ) && OnStep( SetupCallGroupStep.Init, false );
@@ -119,10 +118,9 @@ namespace CK.Setup
             if( !InitContent( true ) || !OnStep( SetupCallGroupStep.InitContent, true ) ) return false;
             if( _handlers != null )
             {
-                for( int i = 0; i < _handlers.Count; ++i )
+                foreach( var h in _handlers )
                 {
-                    if( !_handlers[i].OnStep( this, SetupCallGroupStep.InitContent ) ) return false;
-                    if( !_handlers[i].InitContent( this ) ) return false;
+                    if( !h.InitContent( this ) || !h.OnStep( this, SetupCallGroupStep.InitContent ) ) return false;
                 }
             }
             return InitContent( false ) && OnStep( SetupCallGroupStep.InitContent, false );
@@ -133,10 +131,9 @@ namespace CK.Setup
             if( !Install( true ) || !OnStep( SetupCallGroupStep.Install, true ) ) return false;
             if( _handlers != null )
             {
-                for( int i = 0; i < _handlers.Count; ++i )
+                foreach( var h in _handlers )
                 {
-                    if( !_handlers[i].OnStep( this, SetupCallGroupStep.Install ) ) return false;
-                    if( !_handlers[i].Install( this ) ) return false;
+                    if( !h.Install( this ) || !h.OnStep( this, SetupCallGroupStep.Install ) ) return false;
                 }
             }
             return Install( false ) && OnStep( SetupCallGroupStep.Install, false );
@@ -149,10 +146,9 @@ namespace CK.Setup
             if( !InstallContent( true ) || !OnStep( SetupCallGroupStep.InstallContent, true ) ) return false;
             if( _handlers != null )
             {
-                for( int i = 0; i < _handlers.Count; ++i )
+                foreach( var h in _handlers )
                 {
-                    if( !_handlers[i].OnStep( this, SetupCallGroupStep.InstallContent ) ) return false;
-                    if( !_handlers[i].InstallContent( this ) ) return false;
+                    if( !h.InstallContent( this ) || !h.OnStep( this, SetupCallGroupStep.InstallContent ) ) return false;
                 }
             }
             return InstallContent( false ) && OnStep( SetupCallGroupStep.InstallContent, false );
@@ -163,10 +159,9 @@ namespace CK.Setup
             if( !Settle( true ) || !OnStep( SetupCallGroupStep.Settle, true ) ) return false;
             if( _handlers != null )
             {
-                for( int i = 0; i < _handlers.Count; ++i )
+                foreach( var h in _handlers )
                 {
-                    if( !_handlers[i].OnStep( this, SetupCallGroupStep.Settle ) ) return false;
-                    if( !_handlers[i].Settle( this ) ) return false;
+                    if( !h.Settle( this ) || !h.OnStep( this, SetupCallGroupStep.Settle ) ) return false;
                 }
             }
             return Settle( false ) && OnStep( SetupCallGroupStep.Settle, false );
@@ -179,10 +174,9 @@ namespace CK.Setup
             if( !SettleContent( true ) || !OnStep( SetupCallGroupStep.SettleContent, true ) ) return false;
             if( _handlers != null )
             {
-                for( int i = 0; i < _handlers.Count; ++i )
+                foreach( var h in _handlers )
                 {
-                    if( !_handlers[i].OnStep( this, SetupCallGroupStep.SettleContent ) ) return false;
-                    if( !_handlers[i].SettleContent( this ) ) return false;
+                    if( !h.SettleContent( this ) || !h.OnStep( this, SetupCallGroupStep.SettleContent ) ) return false;
                 }
             }
             return SettleContent( false ) && OnStep( SetupCallGroupStep.SettleContent, false );
@@ -249,10 +243,7 @@ namespace CK.Setup
         /// False when their <see cref="ISetupHandler.Init"/> method have been called.
         /// </param>
         /// <returns>Always true.</returns>
-        internal protected virtual bool Init( bool beforeHandlers )
-        {
-            return true;
-        }
+        internal protected virtual bool Init( bool beforeHandlers ) => true;
 
         /// <summary>
         /// Called, only if <see cref="IsGroup"/> is true, after <see cref="Init"/> (and <see cref="InitContent"/> for groups 
@@ -264,10 +255,7 @@ namespace CK.Setup
         /// False when their <see cref="ISetupHandler.InitContent"/> method have been called.
         /// </param>
         /// <returns>Always true.</returns>
-        protected virtual bool InitContent( bool beforeHandlers )
-        {
-            return true;
-        }
+        protected virtual bool InitContent( bool beforeHandlers ) => true;
 
         /// <summary>
         /// Does nothing (always returns true).
@@ -277,10 +265,7 @@ namespace CK.Setup
         /// False when their <see cref="ISetupHandler.Install"/> method have been called.
         /// </param>
         /// <returns>Always true.</returns>
-        internal protected virtual bool Install( bool beforeHandlers )
-        {
-            return true;
-        }
+        internal protected virtual bool Install( bool beforeHandlers ) => true;
 
         /// <summary>
         /// Called, only if <see cref="IsGroup"/> is true, after <see cref="Install"/> (and <see cref="InstallContent"/> for groups 
@@ -291,10 +276,7 @@ namespace CK.Setup
         /// True when handlers associated to this driver have not been called yet.
         /// False when their <see cref="ISetupHandler.InstallContent"/> method have been called.
         /// </param>
-        protected virtual bool InstallContent( bool beforeHandlers )
-        {
-            return true;
-        }
+        protected virtual bool InstallContent( bool beforeHandlers ) => true;
 
         /// <summary>
         /// Does nothing (always returns true).
@@ -304,10 +286,7 @@ namespace CK.Setup
         /// False when their <see cref="ISetupHandler.Settle"/> method have been called.
         /// </param>
         /// <returns>Always true.</returns>
-        internal protected virtual bool Settle( bool beforeHandlers )
-        {
-            return true;
-        }
+        internal protected virtual bool Settle( bool beforeHandlers ) => true;
 
         /// <summary>
         /// Called, only if <see cref="IsGroup"/> is true, after <see cref="Settle"/> (and <see cref="SettleContent"/> for groups 
@@ -318,11 +297,7 @@ namespace CK.Setup
         /// True when handlers associated to this driver have not been called yet.
         /// False when their <see cref="ISetupHandler.SettleContent"/> method have been called.
         /// </param>
-        protected virtual bool SettleContent( bool beforeHandlers )
-        {
-            return true;
-        }
-
+        protected virtual bool SettleContent( bool beforeHandlers ) => true;
 
         /// <summary>
         /// This method is called right after its corresponding dedicated method.
@@ -336,11 +311,7 @@ namespace CK.Setup
         /// False when their associated step method have been called.
         /// </param>
         /// <returns>Always true.</returns>
-        protected virtual bool OnStep( SetupCallGroupStep step, bool beforeHandlers )
-        {
-            return true;
-        }
-
+        protected virtual bool OnStep( SetupCallGroupStep step, bool beforeHandlers ) => true;
 
     }
 }
