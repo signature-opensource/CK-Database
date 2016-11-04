@@ -16,6 +16,7 @@ namespace CK.Setup
     public abstract class SetupObjectItemAttributeImplBase : SetupObjectItemAttributeImplBase.ISetupItemCreator
     {
         readonly SetupObjectItemAttributeBase _attribute;
+        readonly int _maxObjectCount;
         ISetupEngineAspectProvider _aspectProvider;
         List<BestCreator> _theBest;
 
@@ -246,9 +247,16 @@ namespace CK.Setup
 
         }
 
-        protected SetupObjectItemAttributeImplBase( SetupObjectItemAttributeBase a )
+        /// <summary>
+        /// Initializes a new SetupObjectItemAttributeBase, with an optional maximal number of
+        /// objects that can be defined by the attribute.
+        /// </summary>
+        /// <param name="a">The attribute.</param>
+        /// <param name="maxObjectCount">The maximal number of objects (by default multiple objects are allowed).</param>
+        protected SetupObjectItemAttributeImplBase( SetupObjectItemAttributeBase a, int maxObjectCount = 0 )
         {
             _attribute = a;
+            _maxObjectCount = maxObjectCount;
         }
 
         /// <summary>
@@ -265,29 +273,44 @@ namespace CK.Setup
         {
             _aspectProvider = state.AspectProvider;
             var r = new Registerer( state, item, stObj, this );
-            HashSet<string> already = new HashSet<string>();
-            foreach( var n in Attribute.CommaSeparatedObjectNames.Split( ',' ) )
+            if( _maxObjectCount == 1 ) Register( Attribute.NameOrCommaSeparatedObjectNames, r, item, state );
+            else
             {
-                string nTrimmed = n.Trim();
-                if( nTrimmed.Length > 0 )
+                var names = Attribute.NameOrCommaSeparatedObjectNames.Split( ',' );
+                if( _maxObjectCount != 0 && names.Length > _maxObjectCount )
                 {
-                    SetupObjectItemBehavior behavior;
-                    nTrimmed = ExtractBehavior( out behavior, nTrimmed );
-                    if( already.Add( nTrimmed ) )
-                    {
-                        var best = r.Register( behavior, nTrimmed );
-                        if( best != null )
-                        {
-                            if( _theBest == null ) _theBest = new List<BestCreator>();
-                            _theBest.Add( best );
-                        }
-                    }
-                    else state.Monitor.Warn().Send( "Duplicate name '{0}' in SqlObjectItem attribute of '{1}'.", nTrimmed, item.FullName );
+                    state.Monitor.Error().Send( $"At most {_maxObjectCount} names allowed:  '{GetDetailedName(r, Attribute.NameOrCommaSeparatedObjectNames)}'." );
+                    return;
+                }
+                HashSet<string> already = new HashSet<string>();
+                foreach( var n in Attribute.NameOrCommaSeparatedObjectNames.Split( ',' ) )
+                {
+                    Register( n, r, item, state, already );
                 }
             }
             if( !r.HasError && _theBest != null )
             {
                 state.PushAction( DynamicItemCreateAfterFollowing );
+            }
+        }
+
+        void Register( string n, Registerer r, IMutableSetupItem item, IStObjSetupDynamicInitializerState state, HashSet<string> already = null )
+        {
+            string nTrimmed = n.Trim();
+            if( nTrimmed.Length > 0 )
+            {
+                SetupObjectItemBehavior behavior;
+                nTrimmed = ExtractBehavior( out behavior, nTrimmed );
+                if( already == null || already.Add( nTrimmed ) )
+                {
+                    var best = r.Register( behavior, nTrimmed );
+                    if( best != null )
+                    {
+                        if( _theBest == null ) _theBest = new List<BestCreator>();
+                        _theBest.Add( best );
+                    }
+                }
+                else state.Monitor.Warn().Send( "Duplicate name '{0}' in SqlObjectItem attribute of '{1}'.", nTrimmed, item.FullName );
             }
         }
 
@@ -347,7 +370,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Must build the <see cref="IContextLocNaming"/> name of the future <see cref="SetupObjectItem"/> with the help of the owner object and the name in the attribute.
-        /// This is called for each name in <see cref="SetupObjectItemAttributeBase.CommaSeparatedObjectNames"/>.
+        /// This is called for each name in <see cref="SetupObjectItemAttributeBase.NameOrCommaSeparatedObjectNames"/>.
         /// </summary>
         /// <param name="Registerer">Registerer context object.</param>
         /// <param name="b">Registration behavior.</param>
@@ -357,7 +380,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Must create the <see cref="SetupObjectItem"/>.
-        /// This is called for each name in <see cref="SetupObjectItemAttributeBase.CommaSeparatedObjectNames"/>
+        /// This is called for each name in <see cref="SetupObjectItemAttributeBase.NameOrCommaSeparatedObjectNames"/>
         /// after <see cref="BuildFullName"/> has been called.
         /// </summary>
         /// <param name="Registerer">Registerer context object.</param>

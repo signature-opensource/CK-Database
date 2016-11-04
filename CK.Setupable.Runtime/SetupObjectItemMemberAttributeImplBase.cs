@@ -126,7 +126,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Must build the <see cref="IContextLocNaming"/> name of the future <see cref="SetupObjectItem"/> with the help of the owner object and the name in the attribute.
-        /// This is called for each name in <see cref="SetupObjectItemAttributeBase.CommaSeparatedObjectNames"/>.
+        /// This is called for each name in <see cref="SetupObjectItemAttributeBase.NameOrCommaSeparatedObjectNames"/>.
         /// </summary>
         /// <param name="Registerer">Registerer context object.</param>
         /// <param name="b">Registration behavior.</param>
@@ -136,7 +136,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Must create the <see cref="SetupObjectItem"/>.
-        /// This is called for each name in <see cref="SetupObjectItemAttributeBase.CommaSeparatedObjectNames"/>
+        /// This is called for each name in <see cref="SetupObjectItemAttributeBase.NameOrCommaSeparatedObjectNames"/>
         /// after <see cref="BuildFullName"/> has been called.
         /// </summary>
         /// <param name="Registerer">Registerer context object.</param>

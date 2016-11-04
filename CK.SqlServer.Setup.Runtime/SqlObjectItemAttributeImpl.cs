@@ -13,7 +13,7 @@ namespace CK.SqlServer.Setup
 
     /// <summary>
     /// Declares a resource that contains a Sql procedure, function or view associated to a type.
-    /// Multiples object names like "sUserCreate, sUserDestroy, sUserUpgrade" can be defined.
+    /// Multiples object names like "sUserCreate, sUserDestroy, sUserUpgrade" may be defined.
     /// </summary>
     public class SqlObjectItemAttributeImpl : SetupObjectItemAttributeImplBase
     {
