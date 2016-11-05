@@ -155,42 +155,80 @@ namespace CK.SqlServer
             return _typesMap.Any( m => m == t );
         }
 
+        /// <summary>
+        /// Gets the string returned by <see cref="SqlValue"/> whenever a conversion failed.
+        /// </summary>
+        static public readonly string SqlValueError = "<Unable to convert as string>";
 
         /// <summary>
         /// Express a value of a given <see cref="SqlDbType"/> into a syntaxically compatible string. 
         /// </summary>
         /// <param name="v">Object for which a string representation must be obtained.</param>
         /// <param name="dbType">Sql type.</param>
-        /// <returns>A sql string that represents the value.</returns>
-        static public string SqlValue( object v, SqlDbType dbType )
+        /// <param name="throwError">True to throw exception on error.</param>
+        /// <returns>
+        /// A sql string that represents the value or <see cref="SqlValueError"/> ("&lt;Unable to convert as string&gt;")
+        /// on error when <paramref name="throwError"/> is false.
+        /// </returns>
+        static public string SqlValue( object v, SqlDbType dbType, bool throwError = false )
         {
             if( v == null || v == DBNull.Value ) return "null";
-            switch( dbType )
+            try
             {
-                case SqlDbType.NVarChar: return String.Format( "N'{0}'", SqlEncodeStringContent( Convert.ToString( v, CultureInfo.InvariantCulture ) ) );
-                case SqlDbType.Int: return Convert.ToString( v, CultureInfo.InvariantCulture );
-                case SqlDbType.Bit: return Convert.ToBoolean( v ) ? "1" : "0";
-                case SqlDbType.Char: goto case SqlDbType.VarChar;
-                case SqlDbType.VarChar: return String.Format( "'{0}'", SqlEncodeStringContent( Convert.ToString( v, CultureInfo.InvariantCulture ) ) );
-                case SqlDbType.NChar: goto case SqlDbType.NVarChar;
-                case SqlDbType.DateTime: return String.Format( "convert( DateTime, '{0:s}', 126 )", v );
-                case SqlDbType.DateTime2: return String.Format( "'{0:O}'", v );
-                case SqlDbType.TinyInt: return Convert.ToString( v, CultureInfo.InvariantCulture );
-                case SqlDbType.UniqueIdentifier: return ((Guid)v).ToString( "B" );
-                case SqlDbType.SmallInt: return Convert.ToString( v, CultureInfo.InvariantCulture );
-                case SqlDbType.SmallDateTime: return String.Format( "convert( SmallDateTime, '{0:s}', 126 )", v );
-                case SqlDbType.BigInt: return Convert.ToString( v, CultureInfo.InvariantCulture );
-                case SqlDbType.NText: goto case SqlDbType.NVarChar;
-                case SqlDbType.Float: return Convert.ToString( v, CultureInfo.InvariantCulture );
-                case SqlDbType.Real: return Convert.ToString( v, CultureInfo.InvariantCulture );
-                case SqlDbType.Money: return Convert.ToString( v, CultureInfo.InvariantCulture );
-                case SqlDbType.Decimal: return Convert.ToString( v, CultureInfo.InvariantCulture );
-                case SqlDbType.Xml: return String.Format( "cast( '{0}' as xml )", SqlEncodeStringContent( Convert.ToString( v, CultureInfo.InvariantCulture ) ) );
-                case SqlDbType.Structured: return Convert.ToString( v, CultureInfo.InvariantCulture );
-
-                default: throw new Exception( "No sql string representation for:" + dbType.ToString() );
+                switch( dbType )
+                {
+                    case SqlDbType.NVarChar: return String.Format( "N'{0}'", SqlEncodeStringContent( Convert.ToString( v, CultureInfo.InvariantCulture ) ) );
+                    case SqlDbType.Int: return Convert.ToString( v, CultureInfo.InvariantCulture );
+                    case SqlDbType.Bit: return Convert.ToBoolean( v ) ? "1" : "0";
+                    case SqlDbType.Char: goto case SqlDbType.VarChar;
+                    case SqlDbType.VarChar: return String.Format( "'{0}'", SqlEncodeStringContent( Convert.ToString( v, CultureInfo.InvariantCulture ) ) );
+                    case SqlDbType.NChar: goto case SqlDbType.NVarChar;
+                    case SqlDbType.DateTime: return String.Format( "convert( DateTime, '{0:s}', 126 )", v );
+                    case SqlDbType.DateTime2: return String.Format( "'{0:O}'", v );
+                    case SqlDbType.TinyInt: return Convert.ToString( v, CultureInfo.InvariantCulture );
+                    case SqlDbType.UniqueIdentifier: return ((Guid)v).ToString( "B" );
+                    case SqlDbType.SmallInt: return Convert.ToString( v, CultureInfo.InvariantCulture );
+                    case SqlDbType.SmallDateTime: return String.Format( "convert( SmallDateTime, '{0:s}', 126 )", v );
+                    case SqlDbType.BigInt: return Convert.ToString( v, CultureInfo.InvariantCulture );
+                    case SqlDbType.NText: goto case SqlDbType.NVarChar;
+                    case SqlDbType.Float: return Convert.ToString( v, CultureInfo.InvariantCulture );
+                    case SqlDbType.Real: return Convert.ToString( v, CultureInfo.InvariantCulture );
+                    case SqlDbType.Money: return Convert.ToString( v, CultureInfo.InvariantCulture );
+                    case SqlDbType.Decimal: return Convert.ToString( v, CultureInfo.InvariantCulture );
+                    case SqlDbType.Xml: return string.Format( "cast( '{0}' as xml )", SqlEncodeStringContent( Convert.ToString( v, CultureInfo.InvariantCulture ) ) );
+                    case SqlDbType.Structured: return Convert.ToString( v, CultureInfo.InvariantCulture );
+                    case SqlDbType.Binary:
+                    case SqlDbType.VarBinary:
+                        {
+                            byte[] bytes = v as byte[];
+                            if( bytes == null )
+                            {
+                                if( throwError ) throw new Exception( $"Unable to convert '{v.GetType()}' to byte[] to compute sql string representation for {dbType}." );
+                                return SqlValueError;
+                            }
+                            StringBuilder b = new StringBuilder( "0x" );
+                            for( int i = 0; i < bytes.Length; i++ )
+                            {
+                                const string c = "0123456789ABCDEF";
+                                b.Append( c[bytes[i] >> 4] );
+                                b.Append( c[bytes[i] & 0x0F] );
+                            }
+                            return b.ToString();
+                        }
+                    default:
+                        {
+                            if( throwError ) throw new Exception( $"No sql string representation for: {dbType}" );
+                            return SqlValueError;
+                        }
+                }
+            }
+            catch( Exception )
+            {
+                if( throwError ) throw;
+                return SqlValueError;
             }
         }
+        
 
         /// <summary>
         /// Determines whether a <see cref="SqlDbType"/> usually requires a length. 

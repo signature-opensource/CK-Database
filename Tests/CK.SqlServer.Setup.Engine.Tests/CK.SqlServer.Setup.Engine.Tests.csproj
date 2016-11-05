@@ -96,6 +96,7 @@
     <Compile Include="Core\ErrorHandlingTests.cs" />
     <Compile Include="Core\MultiScriptTests.cs" />
     <Compile Include="Core\SimpleScriptTagHandlerTests.cs" />
+    <Compile Include="Core\SqlServerCoreTests.cs" />
     <Compile Include="Core\SqlManagerTests.cs" />
     <Compile Include="DBSetup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
