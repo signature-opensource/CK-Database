@@ -130,6 +130,78 @@ namespace CK.Core
         }
 
         /// <summary>
+        /// Reads the first row.
+        /// </summary>
+        /// <param name="this">This database.</param>
+        /// <param name="command">The command to execute.</param>
+        /// <returns>First row values or null if there is none.</returns>
+        public static object[] ReadFirstRow( this SqlDatabase @this, string command )
+        {
+            using( var cmd = new SqlCommand( command ) ) return @this.ReadFirstRow( cmd );
+        }
+
+        /// <summary>
+        /// Reads the first row.
+        /// </summary>
+        /// <param name="this">This database.</param>
+        /// <param name="command">The command to execute.</param>
+        /// <returns>First row values or null if there is none.</returns>
+        public static object[] ReadFirstRow( this SqlDatabase @this, SqlCommand command )
+        {
+            using( SqlDataReader r = command.ExecuteReader( System.Data.CommandBehavior.SingleRow ) )
+            {
+                if( !r.Read() ) return null;
+                object[] res = new object[r.FieldCount];
+                r.GetValues( res );
+                return res;
+            }
+        }
+
+        /// <summary>
+        /// Executes the <paramref name="command"/> and returns the scalar result.
+        /// </summary>
+        /// <param name="this">This database.</param>
+        /// <param name="command">The command to execute.</param>
+        /// <returns>The scalar.</returns>
+        public static object ExecuteScalar( this SqlDatabase @this, SqlCommand command )
+        {
+            using( var c = new SqlConnection( @this.ConnectionString ) )
+            {
+                c.Open();
+                command.Connection = c;
+                return command.ExecuteScalar();
+            }
+        }
+
+        /// <summary>
+        /// Executes the <paramref name="command"/> and returns the scalar result.
+        /// </summary>
+        /// <param name="this">This database.</param>
+        /// <param name="command">The command to execute.</param>
+        /// <returns>The typed scalar.</returns>
+        public static T ExecuteScalar<T>( this SqlDatabase @this, SqlCommand command ) => (T)@this.ExecuteScalar( command );
+
+
+        /// <summary>
+        /// Executes the <paramref name="command"/> and returns the scalar result.
+        /// </summary>
+        /// <param name="this">This database.</param>
+        /// <param name="command">The command to execute.</param>
+        /// <returns>The scalar.</returns>
+        public static object ExecuteScalar( this SqlDatabase @this, string command )
+        {
+            using( var c = new SqlCommand( command ) ) return @this.ExecuteScalar( c );
+        }
+
+        /// <summary>
+        /// Executes the <paramref name="command"/> and returns the scalar result.
+        /// </summary>
+        /// <param name="this">This database.</param>
+        /// <param name="command">The command to execute.</param>
+        /// <returns>The typed scalar.</returns>
+        public static T ExecuteScalar<T>( this SqlDatabase @this, string command ) => (T)@this.ExecuteScalar( command );
+
+        /// <summary>
         /// Checks that the <paramref name="selectClause"/> with its optional parameters @0, @1... returns no results.
         /// </summary>
         /// <param name="connectionString">The connection string.</param>
