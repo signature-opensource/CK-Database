@@ -81,6 +81,7 @@
     <Compile Include="Package\ISetupObjectItem.cs" />
     <Compile Include="Package\IMutableSetupBaseItem.cs" />
     <Compile Include="Scripts\CoveringScript.cs" />
+    <Compile Include="Scripts\SetupScript.cs" />
     <Compile Include="Scripts\SourceCodeSetupScript.cs" />
     <Compile Include="Scripts\ScriptsCollection.cs" />
     <Compile Include="Scripts\ScriptVector.cs" />
@@ -100,7 +101,6 @@
     <Compile Include="ISetupItem.cs" />
     <Compile Include="Setup\SetupItemCollector.cs" />
     <Compile Include="Scripts\FileSetupScript.cs" />
-    <Compile Include="Scripts\IScriptCollector.cs" />
     <Compile Include="Scripts\ISetupScript.cs" />
     <Compile Include="Scripts\ResSetupScript.cs" />
     <Compile Include="SetupObjectItemAttributeImplBase.cs" />

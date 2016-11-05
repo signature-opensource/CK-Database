@@ -28,6 +28,8 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets a object name (or multiple comma separated names if the implementation allows it).
+        /// Implementor should use the name of the required constructor parameter (and comments of course) to 
+        /// specify this i.e.: 'name' or 'commaSeparatedObjectNames'.
         /// </summary>
         public string NameOrCommaSeparatedObjectNames { get; }
     }

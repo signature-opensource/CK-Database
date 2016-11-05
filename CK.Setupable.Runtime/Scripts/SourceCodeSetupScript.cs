@@ -54,8 +54,6 @@ namespace CK.Setup
             return new SourceCodeSetupScript( name, script );
         }
 
-        public string ScriptSource { get; }
-
         public ParsedFileName Name { get; }
 
         public string GetScript() => _script;

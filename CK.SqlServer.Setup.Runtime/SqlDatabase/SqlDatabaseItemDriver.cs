@@ -18,6 +18,7 @@ namespace CK.SqlServer.Setup
         readonly SqlDatabaseConnectionItemDriver _connection;
         readonly List<ISqlServerObject> _sqlObjects;
         readonly Dictionary<object,object> _sharedState;
+        readonly ISqlSetupAspect _aspects;
 
         public SqlDatabaseItemDriver( BuildInfo info )
             : base( info )
@@ -25,6 +26,7 @@ namespace CK.SqlServer.Setup
             _connection = (SqlDatabaseConnectionItemDriver)Engine.Drivers[Item.ConnectionItem];
             _sqlObjects = new List<ISqlServerObject>();
             _sharedState = new Dictionary<object, object>();
+            _aspects = info.Engine.GetSetupEngineAspect<ISqlSetupAspect>();
         }
 
         /// <summary>
@@ -42,18 +44,39 @@ namespace CK.SqlServer.Setup
         /// </summary>
         /// <param name="script">The script to install.</param>
         /// <returns>True on succes, false on error.</returns>
-        public bool InstallScript( SqlPackageScript script )
+        public bool InstallScript( ISetupScript script )
         {
-            if( Engine.Memory.IsItemRegistered( script.ScriptKey ) )
+            string body = script.GetScript();
+            var tagHandler = new SimpleScriptTagHandler( body );
+            if( !tagHandler.Expand( Engine.Monitor, true ) ) return false;
+            int idx = 0;
+            foreach( var one in tagHandler.SplitScript() )
             {
-                Engine.Monitor.Trace().Send( $"Script '{script.ScriptKey}' has already been executed." );
+                string key = script.GetScriptKey( one.Label ?? "AutoLabel" + idx );
+                DoRun( one.Body, key );
+                ++idx;
+            }
+            return true;
+        }
+
+        bool DoRun( string script, string key = null )
+        {
+            //var result = _aspects.SqlParser.Parse( one.Body );
+            //if( result.IsError )
+            //{
+            //    result.LogOnError( Engine.Monitor );
+            //    return false;
+            //}
+            if( key != null && Engine.Memory.IsItemRegistered( key ) )
+            {
+                Engine.Monitor.Trace().Send( $"Script '{key}' has already been executed." );
                 return true;
             }
-            using( Engine.Monitor.OpenTrace().Send( $"Executing '{script.ScriptKey}'." ) )
+            using( Engine.Monitor.OpenTrace().Send( $"Executing '{key ?? "<no key>"}'." ) )
             {
-                if( SqlManager.ExecuteOneScript( script.Script.ToFullString(), Engine.Monitor ) )
+                if( SqlManager.ExecuteOneScript( script, Engine.Monitor ) )
                 {
-                    Engine.Memory.RegisterItem( script.ScriptKey );
+                    if( key != null ) Engine.Memory.RegisterItem( key );
                     return true;
                 }
             }

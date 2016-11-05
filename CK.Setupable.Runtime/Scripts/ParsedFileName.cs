@@ -157,6 +157,17 @@ namespace CK.Setup
         public SetupCallGroupStep CallContainerStep => _step;
 
         /// <summary>
+        /// Sets the extension. Not null nor empty and must not start with a '.'.
+        /// </summary>
+        /// <param name="newExtension">New extension.</param>
+        /// <returns>A <see cref="ParsedFileName"/> with the extension.</returns>
+        public ParsedFileName SetExtension( string newExtension )
+        {
+            if( _extension == newExtension ) return this;
+            return new ParsedFileName( _fileName, _extraPath, _context, _loc, _name, _transformArg, newExtension, _fromVersion, _version, _step );
+        }
+
+        /// <summary>
         /// Checks if this file must be taken into account to upgrade from the given version.
         /// </summary>
         /// <param name="from">The current version to start from.</param>

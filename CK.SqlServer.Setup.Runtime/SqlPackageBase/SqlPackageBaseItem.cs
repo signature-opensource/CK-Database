@@ -58,6 +58,20 @@ namespace CK.SqlServer.Setup
             return base.StartDependencySort();
         }
 
+        /// <summary>
+        /// Processes a Y4 template. Whenever <paramref name="driver"/>, <paramref name="setupItem"/> and <paramref name="model"/>
+        /// are not null they are published to the script as Driver, SetupItem and Model global objects.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="driver">The driver (can be null).</param>
+        /// <param name="setupItem">The setup item (can be null). </param>
+        /// <param name="model">
+        /// The model object. When null and if setupItem is a <see cref="ISetupObjectItem"/>, then the model 
+        /// is set to be the <see cref="ISetupObjectItem.ActualObject"/>.
+        /// </param>
+        /// <param name="fileName">The filename (for logging).</param>
+        /// <param name="text">The script text.</param>
+        /// <returns>The processed text or null if an error occurred and has been logged.</returns>
         public static string ProcessY4Template( 
             IActivityMonitor monitor, 
             SetupItemDriver driver,

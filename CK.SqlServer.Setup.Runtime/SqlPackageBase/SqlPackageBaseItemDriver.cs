@@ -11,8 +11,6 @@ namespace CK.SqlServer.Setup
 {
     public class SqlPackageBaseItemDriver : SetupItemDriver
     {
-        readonly ISqlSetupAspect _aspects;
-        readonly IReadOnlyList<SqlPackageScript>[] _scripts;
         SqlDatabaseItemDriver _dbDriver;
 
         public SqlPackageBaseItemDriver( BuildInfo info )
@@ -22,8 +20,6 @@ namespace CK.SqlServer.Setup
             string schema = p.Schema;
             if( schema != null && p.Database != null ) p.Database.EnsureSchema( schema );
             Debug.Assert( (int)SetupCallGroupStep.Init == 1 && (int)SetupCallGroupStep.SettleContent == 6 );
-            _aspects = info.Engine.GetSetupEngineAspect<ISqlSetupAspect>();
-            _scripts = new IReadOnlyList<SqlPackageScript>[6];
         }
 
         /// <summary>
@@ -51,7 +47,7 @@ namespace CK.SqlServer.Setup
         /// Loads the init/install/settle scripts, filters them thanks to the provided target version (the 
         /// current, latest, one) and the currently installed version (that is null if no previous version has been 
         /// installed yet). The selected scripts are then given to a <see cref="SetupHandler"/> that is registered
-        /// on the driver object: this SetupHandler will <see cref="SqlDatabaseItemDriver.InstallScript(SqlPackageScript)"/> 
+        /// on the driver object: this SetupHandler will <see cref="SqlDatabaseItemDriver.InstallScript(ISetupScript)"/> 
         /// the appropriate scripts into this <see cref="DatabaseDriver"/> for each <see cref="SetupCallGroupStep"/>.
         /// </summary>
         /// <param name="driver">The driver to which scripts must be associated.</param>
@@ -74,17 +70,26 @@ namespace CK.SqlServer.Setup
             if( c.Count > 0 )
             {
                 bool hasScripts = false;
-                var scripts = new IReadOnlyList<SqlPackageScript>[6];
+                var scripts = new IReadOnlyList<ISetupScript>[6];
                 for( var step = SetupCallGroupStep.Init; step <= SetupCallGroupStep.SettleContent; ++step )
                 {
-                    scripts[(int)step - 1] = Util.Array.Empty<SqlPackageScript>();
+                    scripts[(int)step - 1] = Util.Array.Empty<ISetupScript>();
                     ScriptVector v = c.GetScriptVector( step, ExternalVersion?.Version, ItemVersion );
                     if( v != null && v.Scripts.Count > 0 )
                     {
-                        List<SqlPackageScript> collector = null;
+                        List<ISetupScript> collector = null;
                         foreach( ISetupScript s in v.Scripts.Select( cs => cs.Script ) )
                         {
-                            if( !ProcessSetupScripts( s, ref collector ) ) return false;
+                            ISetupScript sToAdd = s;
+                            string body = s.GetScript();
+                            if( s.Name.Extension == "y4" )
+                            {
+                                body = SqlPackageBaseItem.ProcessY4Template( Engine.Monitor, this, Item, Item.ActualObject, s.Name.FileName, body );
+                                if( body == null ) return false;
+                                sToAdd = new SetupScript( s.Name, body );
+                            }
+                            if( collector == null ) collector = new List<ISetupScript>();
+                            collector.Add( sToAdd );
                         }
                         if( collector != null )
                         {
@@ -103,7 +108,7 @@ namespace CK.SqlServer.Setup
         /// Scripts from resources are already loaded in the <param name="collector"/>.
         /// Following code adds an init script with no version (always executed):
         /// <code>
-        /// collector.Add( monitor, SourceCodeSetupScript.CreateFromSourceCode( locName, "insert into tTest( Col ) values (1);", "sql", SetupCallGroupStep.Init ) );
+        /// collector.Add( monitor, SourceCodeSetupScript.CreateFromSourceCode( locName, "-- Hello!", "sql", SetupCallGroupStep.Init ) );
         /// </code>
         /// By default, this method does nothing and returns true.
         /// </summary>
@@ -129,38 +134,12 @@ namespace CK.SqlServer.Setup
             return scripts;
         }
 
-        bool ProcessSetupScripts( ISetupScript s, ref List<SqlPackageScript> collector )
-        {
-            string body = s.GetScript();
-            if( s.Name.Extension == "y4" )
-            {
-                body = SqlPackageBaseItem.ProcessY4Template( Engine.Monitor, this, Item, Item.ActualObject, s.Name.FileName, body );
-            }
-            var tagHandler = new SimpleScriptTagHandler( body );
-            if( !tagHandler.Expand( Engine.Monitor, true ) ) return false;
-            int idx = 0;
-            foreach( var one in tagHandler.SplitScript() )
-            {
-                string key = s.GetScriptKey( one.Label ?? "AutoLabel" + idx );
-                var result = _aspects.SqlParser.Parse( one.Body );
-                if( result.IsError )
-                {
-                    result.LogOnError( Engine.Monitor );
-                    return false;
-                }
-                if( collector == null ) collector = new List<SqlPackageScript>();
-                collector.Add( new SqlPackageScript( key, result.Result ) );
-                ++idx;
-            }
-            return true;
-        }
-
         class ScriptHandler : SetupHandler
         {
             readonly SqlPackageBaseItemDriver _main;
-            readonly IReadOnlyList<SqlPackageScript>[] _scripts;
+            readonly IReadOnlyList<ISetupScript>[] _scripts;
 
-            public ScriptHandler( SqlPackageBaseItemDriver main, SetupItemDriver d, IReadOnlyList<SqlPackageScript>[] scripts )
+            public ScriptHandler( SqlPackageBaseItemDriver main, SetupItemDriver d, IReadOnlyList<ISetupScript>[] scripts )
                 : base( d )
             {
                 _main = main;

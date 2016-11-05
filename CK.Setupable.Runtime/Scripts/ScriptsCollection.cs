@@ -23,11 +23,10 @@ namespace CK.Setup
             public bool Equals( ISetupScript xs, ISetupScript ys )
             {
                 Debug.Assert( xs.Name.FullName == ys.Name.FullName, "Internal use only, we are working on the same Container: names match." );
-                // ScriptSource is ignored since a ScriptSet "merges" same scripts from
-                // different sources.
                 var x = xs.Name;
                 var y = ys.Name;
-                return x.SetupStep == y.SetupStep
+                return x.Extension == y.Extension
+                    && x.SetupStep == y.SetupStep
                     && x.FromVersion == y.FromVersion
                     && x.Version == y.Version;
             }
@@ -35,7 +34,7 @@ namespace CK.Setup
             public int GetHashCode( ISetupScript xs )
             {
                 var x = xs.Name;
-                return Util.Hash.Combine( Util.Hash.StartValue, x.SetupStep, x.FromVersion, x.Version ).GetHashCode();
+                return Util.Hash.Combine( Util.Hash.StartValue, x.Extension, x.SetupStep, x.FromVersion, x.Version ).GetHashCode();
             }
         }
         static readonly CompareScript _cmp = new CompareScript();
@@ -94,7 +93,7 @@ namespace CK.Setup
         /// <param name="context">Context identifier.</param>
         /// <param name="location">Location identifier.</param>
         /// <param name="name">Name of the object. This is used as a prefix for the resource names.</param>
-        /// <param name="fileSuffix">Keeps only resources that ends with this suffix.</param>
+        /// <param name="fileSuffix">Keeps only resources that ends with this suffix. This is typically the extension: ".sql".</param>
         /// <param name="onExisting">
         /// Optional conflict resolver that takes the new <paramref name="script"/> and 
         /// the existing one (in this order) and returns one of them (returning the second -exisiting- one is
@@ -110,10 +109,10 @@ namespace CK.Setup
             string fileSuffix,
             Func<ISetupScript, ISetupScript, ISetupScript> onExisting = null )
         {
-            if( monitor == null ) throw new ArgumentNullException( "monitor" );
-            if( resLoc == null ) throw new ArgumentNullException( "scriptSource" );
-            if( name == null ) throw new ArgumentNullException( "name" );
-            if( fileSuffix == null ) throw new ArgumentNullException( "fileSuffix" );
+            if( monitor == null ) throw new ArgumentNullException( nameof(monitor) );
+            if( resLoc == null ) throw new ArgumentNullException( nameof(resLoc) );
+            if( name == null ) throw new ArgumentNullException( nameof(name) );
+            if( fileSuffix == null ) throw new ArgumentNullException( nameof(fileSuffix) );
             int count = 0;
             var candidates = resLoc.GetNames( name + '.' ).Where( n => n.EndsWith( fileSuffix, StringComparison.OrdinalIgnoreCase ) );
             foreach( var s in candidates )

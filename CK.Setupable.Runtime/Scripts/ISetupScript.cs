@@ -18,12 +18,12 @@ namespace CK.Setup
     public interface ISetupScript
     {
         /// <summary>
-        /// Gets the name of this script.
+        /// Gets the name of this script. Never null.
         /// </summary>
         ParsedFileName Name { get; }
 
         /// <summary>
-        /// Gets the script itself.
+        /// Gets the script itself. Never null.
         /// </summary>
         /// <returns>The script text.</returns>
         string GetScript();
