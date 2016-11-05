@@ -23,7 +23,7 @@ namespace CK.SqlServer.Setup
         /// and a <see cref="SqlObjectProtoItem.ItemType"/>.
         /// </summary>
         /// <param name="a">The attribute.</param>
-        /// <param name="expectedItemType">The type of the object.</param>
+        /// <param name="expectedItemType">The expected type of the object.</param>
         protected SqlObjectItemMethodAttributeImplBase( SqlObjectItemMemberAttributeBase a, string expectedItemType )
             : base( a )
         {
@@ -44,7 +44,31 @@ namespace CK.SqlServer.Setup
         protected override SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeImplBase.Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
         {
             ISqlSetupAspect sql = SetupEngineAspectProvider.GetSetupEngineAspect<ISqlSetupAspect>();
-            return SqlObjectItemAttributeImpl.SqlCreateSetupObjectItem( sql.SqlParser, r.Monitor, (SqlPackageBaseItem)r.Container, Attribute.MissingDependencyIsError, (SqlContextLocName)name, (SqlPackageBaseItem)firstContainer, (SqlBaseItem)transformArgument, new[] { _expectedItemType } );
+            return SqlObjectItemAttributeImpl.SqlCreateSetupObjectItem( 
+                sql.SqlParser, 
+                r.Monitor, 
+                (SqlPackageBaseItem)r.Container, 
+                Attribute.MissingDependencyIsError, 
+                (SqlContextLocName)name, 
+                (SqlPackageBaseItem)firstContainer, 
+                (SqlBaseItem)transformArgument, 
+                new[] { _expectedItemType },
+                CreateSqlBaseItem );
+        }
+
+        /// <summary>
+        /// Extension point to create specialized <see cref="SqlBaseItem"/> (other than the standard objects like <see cref="SqlViewItem"/>,
+        /// or <see cref="SqlProcedure"/>).
+        /// Returns null by default: returning null triggers the use of a default factory that handles the standard items.
+        /// This can also be used to inspect/validated the  error or fatal logged to the <paramref name="monitor"/> stops the process.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="name">The item name.</param>
+        /// <param name="text">The parsed text.</param>
+        /// <returns>A new <see cref="SqlBaseItem"/> or null (if an error occured or the default factory must be used).</returns>
+        protected virtual SqlBaseItem CreateSqlBaseItem( IActivityMonitor monitor, SqlContextLocName name, ISqlServerParsedText text )
+        {
+            return null;
         }
 
         bool IAutoImplementorMethod.Implement( IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, TypeBuilder tB, bool isVirtual )
@@ -75,6 +99,7 @@ namespace CK.SqlServer.Setup
                 return DoImplement( monitor, m, item, dynamicAssembly, tB, isVirtual );
             }
         }
+
 
         /// <summary>
         /// Implements the given method on the given <see cref="TypeBuilder"/> that targets the given <see cref="SqlObjectItem"/>.

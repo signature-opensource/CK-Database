@@ -60,7 +60,8 @@ namespace CK.SqlServer.Setup
             string fileName,
             IDependentItemContainer packageItem,
             SqlBaseItem transformArgument,
-            IEnumerable<string> expectedItemTypes )
+            IEnumerable<string> expectedItemTypes,
+            Func<IActivityMonitor, SqlContextLocName, ISqlServerParsedText,SqlBaseItem> factory = null )
         {
             try
             {
@@ -72,47 +73,23 @@ namespace CK.SqlServer.Setup
                 }
                 if( transformArgument != null ) expectedItemTypes = new[] { "Transformer" };
                 ISqlServerParsedText oText = r.Result;
-                SqlTransformerItem t = null;
+                bool factoryError = false;
                 SqlBaseItem result = null;
-                if( oText is ISqlServerObject )
+                using( monitor.OnError( () => factoryError = true ))
                 {
-                    if( oText is ISqlServerCallableObject )
-                    {
-                        if( oText is ISqlServerStoredProcedure )
-                        {
-                            result = new SqlProcedureItem( name, (ISqlServerStoredProcedure)oText );
-                        }
-                        else if( oText is ISqlServerFunctionScalar )
-                        {
-                            result = new SqlFunctionScalarItem( name, (ISqlServerFunctionScalar)oText );
-                        }
-                        else if( oText is ISqlServerFunctionInlineTable )
-                        {
-                            result = new SqlFunctionInlineTableItem( name, (ISqlServerFunctionInlineTable)oText );
-                        }
-                        else if( oText is ISqlServerFunctionTable )
-                        {
-                            result = new SqlFunctionTableItem( name, (ISqlServerFunctionTable)oText );
-                        }
-                    }
-                    else if( oText is ISqlServerView )
-                    {
-                        result = new SqlViewItem( name, (ISqlServerView)oText );
-                    }
-                }
-                else if( oText is ISqlServerTransformer )
-                {
-                    result = t = new SqlTransformerItem( name, (ISqlServerTransformer)oText );
+                    result = factory( monitor, name, oText );
                 }
                 if( result == null )
                 {
-                    throw new NotSupportedException( "Unhandled type of object: " + oText.ToString() );
+                    if( factoryError ) return null;
+                    result = DefaultFactory( name, oText );
                 }
                 if( expectedItemTypes != null && !expectedItemTypes.Contains( result.ItemType ) )
                 {
                     monitor.Error().Send( $"Resource '{fileName}' of '{packageItem?.FullName}' is a '{result.ItemType}' whereas '{expectedItemTypes.Concatenate( "' or '" )}' is expected." );
                     return null;
                 }
+                SqlTransformerItem t = result as SqlTransformerItem;
                 if( t != null )
                 {
                     if( transformArgument.AddTransformer( monitor, t ) == null ) return null;
@@ -129,5 +106,50 @@ namespace CK.SqlServer.Setup
             }
         }
 
+        /// <summary>
+        /// Factory for <see cref="SqlBaseItem"/>.
+        /// </summary>
+        /// <param name="name">The object name.</param>
+        /// <param name="oText">The parsed text.</param>
+        /// <returns>A Sql item.</returns>
+        public static SqlBaseItem DefaultFactory( SqlContextLocName name, ISqlServerParsedText oText )
+        {
+            SqlBaseItem result = null;
+            if( oText is ISqlServerObject )
+            {
+                if( oText is ISqlServerCallableObject )
+                {
+                    if( oText is ISqlServerStoredProcedure )
+                    {
+                        result = new SqlProcedureItem( name, (ISqlServerStoredProcedure)oText );
+                    }
+                    else if( oText is ISqlServerFunctionScalar )
+                    {
+                        result = new SqlFunctionScalarItem( name, (ISqlServerFunctionScalar)oText );
+                    }
+                    else if( oText is ISqlServerFunctionInlineTable )
+                    {
+                        result = new SqlFunctionInlineTableItem( name, (ISqlServerFunctionInlineTable)oText );
+                    }
+                    else if( oText is ISqlServerFunctionTable )
+                    {
+                        result = new SqlFunctionTableItem( name, (ISqlServerFunctionTable)oText );
+                    }
+                }
+                else if( oText is ISqlServerView )
+                {
+                    result = new SqlViewItem( name, (ISqlServerView)oText );
+                }
+            }
+            else if( oText is ISqlServerTransformer )
+            {
+                result = new SqlTransformerItem( name, (ISqlServerTransformer)oText );
+            }
+            if( result == null )
+            {
+                throw new NotSupportedException( "Unhandled type of object: " + oText.ToString() );
+            }
+            return result;
+        }
     }
 }

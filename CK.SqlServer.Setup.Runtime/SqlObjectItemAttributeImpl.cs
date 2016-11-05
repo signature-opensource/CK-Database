@@ -64,7 +64,31 @@ namespace CK.SqlServer.Setup
         protected override SetupObjectItem CreateSetupObjectItem( Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
         {
             ISqlSetupAspect sql = SetupEngineAspectProvider.GetSetupEngineAspect<ISqlSetupAspect>();
-            return SqlCreateSetupObjectItem( sql.SqlParser, r.Monitor, (SqlPackageBaseItem)r.Container, Attribute.MissingDependencyIsError, (SqlContextLocName)name, (SqlPackageBaseItem)firstContainer, (SqlBaseItem)transformArgument, ExpectedItemTypes );
+            return SqlCreateSetupObjectItem( 
+                sql.SqlParser, 
+                r.Monitor, 
+                (SqlPackageBaseItem)r.Container, 
+                Attribute.MissingDependencyIsError, 
+                (SqlContextLocName)name, 
+                (SqlPackageBaseItem)firstContainer, 
+                (SqlBaseItem)transformArgument, 
+                ExpectedItemTypes,
+                CreateSqlBaseItem );
+        }
+
+        /// <summary>
+        /// Extension point to create specialized <see cref="SqlBaseItem"/> (other than the standard objects like <see cref="SqlViewItem"/>,
+        /// or <see cref="SqlProcedure"/>).
+        /// Returns null by default: returning null triggers the use of a default factory that handles the standard items.
+        /// This can also be used to inspect/validated the  error or fatal logged to the <paramref name="monitor"/> stops the process.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="name">The item name.</param>
+        /// <param name="text">The parsed text.</param>
+        /// <returns>A new <see cref="SqlBaseItem"/> or null (if an error occured or the default factory must be used).</returns>
+        protected virtual SqlBaseItem CreateSqlBaseItem( IActivityMonitor monitor, SqlContextLocName name, ISqlServerParsedText text )
+        {
+            return null;
         }
 
         internal static IContextLocNaming SqlBuildFullName( SqlPackageBaseItem p, SetupObjectItemBehavior b, string attributeName )
@@ -99,13 +123,14 @@ namespace CK.SqlServer.Setup
                 SqlContextLocName name,
                 SqlPackageBaseItem firstContainer,
                 SqlBaseItem transformArgument,
-                IEnumerable<string> expectedItemTypes )
+                IEnumerable<string> expectedItemTypes,
+                Func<IActivityMonitor, SqlContextLocName, ISqlServerParsedText, SqlBaseItem> factory = null )
         {
             Debug.Assert( (transformArgument != null) == (name.TransformArg != null) );
             string fileName;
             string text = LoadTextResource( monitor, packageItem, name, out fileName );
             if( text == null ) return null;
-            SqlBaseItem result = SqlBaseItem.Parse( monitor, name, parser, text, fileName, packageItem, transformArgument, expectedItemTypes );
+            SqlBaseItem result = SqlBaseItem.Parse( monitor, name, parser, text, fileName, packageItem, transformArgument, expectedItemTypes, factory );
             if( result == null ) return null;
             firstContainer.Children.Add( result );
             monitor.Trace().Send( $"Loaded {result.ItemType} '{result.ContextLocName.Name}' of '{packageItem.FullName}'." );
