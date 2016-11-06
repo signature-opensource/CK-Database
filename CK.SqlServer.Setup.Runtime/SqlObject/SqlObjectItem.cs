@@ -86,17 +86,45 @@ namespace CK.SqlServer.Setup
             else SqlObject.Write( b );
         }
 
-        class ConfigReader : SetupConfigReader
+        /// <summary>
+        /// Configuration reader specializes <see cref="SetupConfigReader"/> so that <see cref="OnUnknownProperty"/>
+        /// handles <see cref="MissingDependencyIsError"/> that must be true or false if it appears in the SetupConfig: {} header.
+        /// </summary>
+        protected class ConfigReader : SetupConfigReader
         {
-            protected override void OnUnknownProperty( StringMatcher m, string propName, ISetupObjectTransformerItem transformer, IMutableSetupBaseItem target )
+            /// <summary>
+            /// Overridden and sealed to call <see cref="OnUnknownProperty(StringMatcher, string, ISetupObjectTransformerItem, SqlObjectItem)"/>.
+            /// </summary>
+            /// <param name="m">The string matcher.</param>
+            /// <param name="propName">The unknown property name.</param>
+            /// <param name="transformer">The transformer. Null when applying to actual target.</param>
+            /// <param name="target">The target of the apply call.</param>
+            protected override sealed void OnUnknownProperty( StringMatcher m, string propName, ISetupObjectTransformerItem transformer, IMutableSetupBaseItem target )
+            {
+                if( !OnUnknownProperty( m, propName, (SqlTransformerItem)transformer, (SqlObjectItem)target ) )
+                {
+                    base.OnUnknownProperty( m, propName, transformer, target );
+                }
+            }
+
+            /// <summary>
+            /// Handles <paramref name="propName"/> is MissingDependencyIsError and returns true, otherwise returns false.
+            /// </summary>
+            /// <param name="m">The string matcher.</param>
+            /// <param name="propName">The unknown property name.</param>
+            /// <param name="transformer">The transformer. Null when applying to actual target.</param>
+            /// <param name="target">The target of the apply call.</param>
+            /// <returns>True if the <paramref name="propName"/> has been handled, false otherwise.</returns>
+            protected virtual bool OnUnknownProperty( StringMatcher m, string propName, SqlTransformerItem transformer, SqlObjectItem target )
             {
                 if( propName == "MissingDependencyIsError" )
                 {
                     bool x = m.TryMatchText( "true" );
                     if( !x && !m.TryMatchText( "false" ) ) m.SetError( "true or false" );
-                    else ((SqlObjectItem)target).MissingDependencyIsError = x;
+                    else target.MissingDependencyIsError = x;
+                    return true;
                 }
-                else base.OnUnknownProperty( m, propName, transformer, target );
+                return false;
             }
         }
 
@@ -105,14 +133,28 @@ namespace CK.SqlServer.Setup
             if( !CheckSchemaAndObjectName( monitor, fileName, packageItem ) ) return false;
             bool foundConfig;
             string h = SqlObject.HeaderComments.Select( c => c.Text ).Concatenate( Environment.NewLine );
-            if( !new ConfigReader().Apply( monitor, h, this, out foundConfig ) ) return false;
+            var configReader = CreateConfigReader();
+            if( !configReader.Apply( monitor, h, this, out foundConfig ) ) return false;
             if( !foundConfig )
             {
                 monitor.Warn().Send( $"Resource '{fileName}' of '{packageItem?.FullName}' should define SetupConfig:{{}} (even an empty one)." );
                 if( !OBSOLETESetPropertiesFromHeader( monitor ) || !SetMissingIsDependencyIsErrorFromHeader( monitor ) ) return false;
             }
-            return true;
+            return OnInitialized( monitor );
         }
+
+        /// <summary>
+        /// Extension point that enables to substitute the default <see cref="ConfigReader"/> used to initialize this object.
+        /// </summary>
+        /// <returns>The configuration reader to use.</returns>
+        protected virtual ConfigReader CreateConfigReader() => new ConfigReader();
+
+        /// <summary>
+        /// Extension point called once object has been instanciated and configured.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <returns>True on success, false to stop the process.</returns>
+        protected virtual bool OnInitialized( IActivityMonitor monitor ) => true;
 
         #region Obsolete old header...
         static Regex _rMissingDep = new Regex( @"MissingDependencyIsError\s*=\s*(?<1>\w+)",
