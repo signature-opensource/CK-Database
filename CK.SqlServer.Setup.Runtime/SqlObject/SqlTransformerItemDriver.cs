@@ -13,6 +13,10 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
+    /// <summary>
+    /// Driver for <see cref="SqlTransformerItem"/> item: its <see cref="Install"/> applies the 
+    /// transformation to the target Sql object.
+    /// </summary>
     public class SqlTransformerItemDriver : SetupItemDriver
     {
         public SqlTransformerItemDriver( BuildInfo info )

@@ -112,7 +112,7 @@ namespace CK.SqlServer.Setup
         /// <param name="name">The object name.</param>
         /// <param name="oText">The parsed text.</param>
         /// <returns>A Sql item.</returns>
-        public static SqlBaseItem DefaultFactory( SqlContextLocName name, ISqlServerParsedText oText )
+        static SqlBaseItem DefaultFactory( SqlContextLocName name, ISqlServerParsedText oText )
         {
             SqlBaseItem result = null;
             if( oText is ISqlServerObject )

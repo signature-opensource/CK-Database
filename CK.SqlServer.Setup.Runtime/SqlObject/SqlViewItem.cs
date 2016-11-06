@@ -6,9 +6,18 @@ using CK.Core;
 
 namespace CK.SqlServer.Setup
 {
+    /// <summary>
+    /// A sql view item is a specialized <see cref="SqlObjectItem"/> whose <see cref="SqlObject"/> 
+    /// is a <see cref="ISqlServerView"/>.
+    /// </summary>
     public class SqlViewItem : SqlObjectItem
     {
-        internal SqlViewItem( SqlContextLocName name, ISqlServerView view )
+        /// <summary>
+        /// Initializes a view item with its name and code.
+        /// </summary>
+        /// <param name="name">Name of the view.</param>
+        /// <param name="view">Code of the view.</param>
+        public SqlViewItem( SqlContextLocName name, ISqlServerView view )
             : base( name, "View", view )
         {
         }
@@ -22,6 +31,9 @@ namespace CK.SqlServer.Setup
             set { base.SqlObject = value; }
         }
 
+        /// <summary>
+        /// Gets the transformed view for this original view if there are transformers registered.
+        /// </summary>
         public new SqlViewItem TransformTarget => (SqlViewItem)base.TransformTarget;
 
     }
