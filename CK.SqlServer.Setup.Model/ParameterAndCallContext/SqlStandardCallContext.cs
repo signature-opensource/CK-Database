@@ -97,11 +97,6 @@ namespace CK.SqlServer
             GetProvider( connectionString ).ExecuteNonQuery( cmd );
         }
 
-        Task ISqlCommandExecutor.ExecuteNonQueryAsync( string connectionString, SqlCommand cmd )
-        {
-            return ExecAsync<string>( connectionString, cmd, _ => null );
-        }
-
         Task ISqlCommandExecutor.ExecuteNonQueryAsyncCancellable( string connectionString, SqlCommand cmd, CancellationToken cancellationToken )
         {
             return ExecAsync<string>( connectionString, cmd, _ => null, cancellationToken );

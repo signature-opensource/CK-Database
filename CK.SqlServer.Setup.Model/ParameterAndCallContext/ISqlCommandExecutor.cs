@@ -29,14 +29,6 @@ namespace CK.SqlServer
 
         /// <summary>
         /// Executes a command asynchrously.
-        /// </summary>
-        /// <param name="connectionString">The connection string.</param>
-        /// <param name="cmd">The command to execute.</param>
-        /// <returns>A task.</returns>
-        Task ExecuteNonQueryAsync( string connectionString, SqlCommand cmd );
-
-        /// <summary>
-        /// Executes a command asynchrously.
         /// Can be interrupted thanks to a <see cref="CancellationToken"/>.
         /// </summary>
         /// <param name="connectionString">The connection string.</param>

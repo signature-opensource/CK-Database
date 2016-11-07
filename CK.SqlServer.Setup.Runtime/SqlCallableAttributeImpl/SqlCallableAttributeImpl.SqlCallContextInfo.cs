@@ -72,7 +72,7 @@ namespace CK.SqlServer.Setup
                     if( returnedType == typeof(Task) )
                     {
                         _cancellationTokenParam = methodParameters.FirstOrDefault( p => p.ParameterType == typeof( CancellationToken ) );
-                        _executorCallNonQuery = _cancellationTokenParam != null ? SqlObjectItem.MExecutorCallNonQueryAsyncCancellable : SqlObjectItem.MExecutorCallNonQueryAsync;
+                        _executorCallNonQuery = SqlObjectItem.MExecutorCallNonQueryAsyncCancellable; // _cancellationTokenParam != null ? SqlObjectItem.MExecutorCallNonQueryAsyncCancellable : SqlObjectItem.MExecutorCallNonQueryAsync;
                         _returnedType = typeof(void);
                     }
                     else if( returnedType.GetTypeInfo().IsGenericType && returnedType.GetGenericTypeDefinition() == typeof(Task<>) )
@@ -209,6 +209,13 @@ namespace CK.SqlServer.Setup
                 if( _cancellationTokenParam != null )
                 {
                     g.LdArg( _cancellationTokenParam.Position + 1 );
+                }
+                else if( _executorCallNonQuery == SqlObjectItem.MExecutorCallNonQueryAsyncCancellable )
+                {
+                    LocalBuilder tDef = g.DeclareLocal( typeof( CancellationToken ) );
+                    g.Emit( OpCodes.Ldloca_S, tDef );
+                    g.Emit( OpCodes.Initobj, typeof( CancellationToken ) );
+                    g.LdLoc( tDef );
                 }
                 g.Emit( OpCodes.Callvirt, toCall );
             }
