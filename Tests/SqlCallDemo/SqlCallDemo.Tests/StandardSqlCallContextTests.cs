@@ -61,7 +61,7 @@ namespace SqlCallDemo.Tests
                     CancellationTokenSource source = new CancellationTokenSource();
                     source.CancelAfter( connectionString == null ? 1000 : 20*1000 );
                     c.Executor
-                        .ExecuteNonQueryAsyncTypedCancellable( connectionString ?? TestHelper.DatabaseTestConnectionString, command, resultBuilder, source.Token )
+                        .ExecuteNonQueryAsyncTyped( connectionString ?? TestHelper.DatabaseTestConnectionString, command, resultBuilder, source.Token )
                         .Wait();
                 }
                 catch( AggregateException ex )

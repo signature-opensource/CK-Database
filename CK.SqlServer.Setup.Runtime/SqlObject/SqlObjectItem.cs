@@ -289,9 +289,8 @@ namespace CK.SqlServer.Setup
         internal readonly static FieldInfo FieldDBNullValue = typeof( DBNull ).GetField( "Value", BindingFlags.Public | BindingFlags.Static );
 
         internal readonly static MethodInfo MExecutorCallNonQuery = typeof( ISqlCommandExecutor ).GetMethod( "ExecuteNonQuery" );
-        internal readonly static MethodInfo MExecutorCallNonQueryAsyncCancellable = typeof( ISqlCommandExecutor ).GetMethod( "ExecuteNonQueryAsyncCancellable" );
+        internal readonly static MethodInfo MExecutorCallNonQueryAsync = typeof( ISqlCommandExecutor ).GetMethod( "ExecuteNonQueryAsync" );
         internal readonly static MethodInfo MExecutorCallNonQueryAsyncTyped = typeof( ISqlCommandExecutor ).GetMethod( "ExecuteNonQueryAsyncTyped" );
-        internal readonly static MethodInfo MExecutorCallNonQueryAsyncTypedCancellable = typeof( ISqlCommandExecutor ).GetMethod( "ExecuteNonQueryAsyncTypedCancellable" );
 
         internal readonly static ConstructorInfo CtorDecimalBits = typeof( decimal ).GetConstructor( new Type[] { typeof( int[] ) } );
         #endregion

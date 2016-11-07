@@ -83,7 +83,6 @@
     <Compile Include="GuidRefTestPackage.CallExecute.cs" />
     <Compile Include="GuidRefTestPackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TTTTTTTTTTTTTTT.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\CK.Setupable.Model\CK.Setupable.Model.csproj">

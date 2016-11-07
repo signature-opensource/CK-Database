@@ -35,26 +35,18 @@ namespace CK.SqlServer
         /// <param name="cmd">The command to execute.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>A task.</returns>
-        Task ExecuteNonQueryAsyncCancellable( string connectionString, SqlCommand cmd, CancellationToken cancellationToken );
+        Task ExecuteNonQueryAsync( string connectionString, SqlCommand cmd, CancellationToken cancellationToken );
 
         /// <summary>
-        /// Executes a command that returns a result asynchrously.
-        /// </summary>
-        /// <param name="connectionString">The connection string.</param>
-        /// <param name="cmd">The command to execute.</param>
-        /// <param name="resultBuilder">Result object builder.</param>
-        /// <returns>A task of the result.</returns>
-        Task<T> ExecuteNonQueryAsyncTyped<T>( string connectionString, SqlCommand cmd, Func<SqlCommand, T> resultBuilder );
-
-        /// <summary>
-        /// Executes the given command asynchrously. 
+        /// Executes a command that returns a result based on the output parameters asynchrously. 
         /// Can be interrupted thanks to a <see cref="CancellationToken"/>.
         /// </summary>
         /// <param name="connectionString">The connection string.</param>
         /// <param name="cmd">The command to execute.</param>
         /// <param name="resultBuilder">Result object builder.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        Task<T> ExecuteNonQueryAsyncTypedCancellable<T>( string connectionString, SqlCommand cmd, Func<SqlCommand, T> resultBuilder, CancellationToken cancellationToken );
+        /// <returns>The awaitable call result built from the output parameters.</returns>
+        Task<T> ExecuteNonQueryAsyncTyped<T>( string connectionString, SqlCommand cmd, Func<SqlCommand, T> resultBuilder, CancellationToken cancellationToken );
 
     }
 }

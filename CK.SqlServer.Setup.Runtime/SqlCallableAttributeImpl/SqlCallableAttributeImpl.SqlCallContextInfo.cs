@@ -72,13 +72,13 @@ namespace CK.SqlServer.Setup
                     if( returnedType == typeof(Task) )
                     {
                         _cancellationTokenParam = methodParameters.FirstOrDefault( p => p.ParameterType == typeof( CancellationToken ) );
-                        _executorCallNonQuery = SqlObjectItem.MExecutorCallNonQueryAsyncCancellable; // _cancellationTokenParam != null ? SqlObjectItem.MExecutorCallNonQueryAsyncCancellable : SqlObjectItem.MExecutorCallNonQueryAsync;
+                        _executorCallNonQuery = SqlObjectItem.MExecutorCallNonQueryAsync;
                         _returnedType = typeof(void);
                     }
                     else if( returnedType.GetTypeInfo().IsGenericType && returnedType.GetGenericTypeDefinition() == typeof(Task<>) )
                     {
                         _cancellationTokenParam = methodParameters.FirstOrDefault( p => p.ParameterType == typeof( CancellationToken ) );
-                        _executorCallNonQuery = _cancellationTokenParam != null ? SqlObjectItem.MExecutorCallNonQueryAsyncTypedCancellable : SqlObjectItem.MExecutorCallNonQueryAsyncTyped;
+                        _executorCallNonQuery = SqlObjectItem.MExecutorCallNonQueryAsyncTyped;
                         _returnedType = returnedType.GetGenericArguments()[0];
                     }
                     else
@@ -163,7 +163,7 @@ namespace CK.SqlServer.Setup
             /// </summary>
             public bool RequiresReturnTypeBuilder
             {
-                get { return _executorCallNonQuery == SqlObjectItem.MExecutorCallNonQueryAsyncTyped || _executorCallNonQuery == SqlObjectItem.MExecutorCallNonQueryAsyncTypedCancellable; }
+                get { return _executorCallNonQuery == SqlObjectItem.MExecutorCallNonQueryAsyncTyped; }
             }
 
             /// <summary>
@@ -208,9 +208,10 @@ namespace CK.SqlServer.Setup
                 }
                 if( _cancellationTokenParam != null )
                 {
+                    Debug.Assert( IsAsyncCall );
                     g.LdArg( _cancellationTokenParam.Position + 1 );
                 }
-                else if( _executorCallNonQuery == SqlObjectItem.MExecutorCallNonQueryAsyncCancellable )
+                else if( IsAsyncCall )
                 {
                     LocalBuilder tDef = g.DeclareLocal( typeof( CancellationToken ) );
                     g.Emit( OpCodes.Ldloca_S, tDef );
