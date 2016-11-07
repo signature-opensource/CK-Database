@@ -38,5 +38,15 @@ namespace SqlCallDemo.CommandDemo
         [SqlProcedure( "sCommandRun" )]
         public abstract Task<CmdDemo.ResultReadOnly> RunCommandROAsync( ISqlCallContext ctx, [ParameterSource]CmdDemo cmd );
 
+
+        /// <summary>
+        /// Real case example.
+        /// </summary>
+        /// <param name="ctx">The call context to use.</param>
+        /// <param name="actorId">The acting user.</param>
+        /// <param name="data">The payload.</param>
+        /// <returns></returns>
+        [SqlProcedure( "sProtoUserCreate" )]
+        public abstract int CreateProtoUser( ISqlCallContext ctx, int actorId, [ParameterSource]ProtoUserData data );
     }
 }

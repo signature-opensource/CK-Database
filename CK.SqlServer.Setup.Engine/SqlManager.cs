@@ -304,7 +304,7 @@ namespace CK.SqlServer.Setup
                 _command = new SqlCommand();
                 // 8 minutes timeout... should be enough!
                 _command.CommandTimeout = 8 * 60;
-                _command.Connection = _manager.Connection.InternalConnection;
+                _command.Connection = _manager.Connection.Connection;
                 _databaseName = autoRestoreDatabase ? _command.Connection.Database : null;
                 if( checkTransactionCount )
                 {
@@ -389,7 +389,7 @@ namespace CK.SqlServer.Setup
                                 else if( LastSucceed ) throw new Exception( msg );
                             }
                         }
-                        if( _databaseName != null && _databaseName != _manager.Connection.InternalConnection.Database )
+                        if( _databaseName != null && _databaseName != _manager.Connection.Connection.Database )
                         {
                             if( _monitor != null ) _monitor.Info().Send( "Current database automatically restored from {0} to {1}.", _manager.Connection.InternalConnection.Database, _databaseName );
                             _command.Connection.ChangeDatabase( _databaseName );

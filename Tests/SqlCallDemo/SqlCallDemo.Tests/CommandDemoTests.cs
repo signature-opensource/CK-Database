@@ -55,5 +55,17 @@ namespace SqlCallDemo.Tests
             }
         }
 
+
+        [Test]
+        public void calling_with_a_data_object()
+        {
+            var p = TestHelper.StObjMap.Default.Obtain<CmdDemoPackage>();
+            using( var ctx = new SqlStandardCallContext() )
+            {
+                int id = p.CreateProtoUser( ctx, 67893, new ProtoUserData() { UserName = "jj", Email = "@", Phone = "06" } );
+                Assert.That( id, Is.EqualTo( 67893 + 2 ) );
+            }
+        }
+
     }
 }

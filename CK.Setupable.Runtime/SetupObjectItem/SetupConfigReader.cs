@@ -116,7 +116,7 @@ namespace CK.Setup
                     }
                     else if( !ParseItemProperties( m, propName, target ) )
                     {
-                        OnUnknownProperty( m, propName, transformer, target );
+                        OnUnknownProperty( m, propName, null, target );
                     }
 
                 }

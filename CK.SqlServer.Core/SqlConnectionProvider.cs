@@ -26,16 +26,6 @@ namespace CK.SqlServer
         bool			        _autoClose;
 
         /// <summary>
-        /// Initializes a new unitialized instance. 
-        /// <see cref="KeepOpened"/> is true by default.
-        /// <see cref="ConnectionString"/> is null.
-        /// </summary>
-        public SqlConnectionProvider()
-            : this( null, true )
-        {
-        }
-
-        /// <summary>
         /// Initializes a new instance (do not automatically attempt to connect to the database).
         /// </summary>
         /// <param name="connectionString">The <see cref="SqlConnection.ConnectionString"/> to the
@@ -52,25 +42,28 @@ namespace CK.SqlServer
         }
 
         /// <summary>
-        /// Gets the main <see cref="SqlConnection"/> for this <see cref="SqlConnectionProvider"/>. 
-        /// This connection is not necessarily opened.
         /// </summary>
+        [Obsolete( "Use Connection property instead." )]
         public SqlConnection InternalConnection
         {
             get { return _oCon; }
         }
 
         /// <summary>
-        /// Gets or sets the connection string.
+        /// Gets the main <see cref="SqlConnection"/> for this <see cref="SqlConnectionProvider"/>. 
+        /// This connection is not necessarily opened.
         /// </summary>
-        public string ConnectionString
-        {
-            get { return _strConn; }
-        }
+        [Obsolete( "Use Connection property instead." )]
+        public SqlConnection Connection => _oCon;
+
+        /// <summary>
+        /// Gets the connection string.
+        /// </summary>
+        public string ConnectionString => _strConn; 
 
         /// <summary>
         /// Opens the main connection to the database if it were closed (only increments <see cref="ExplicitOpenCount"/> if the 
-        /// <see cref="SqlConnection"/> were already opened). Once directly opened with this method,
+        /// <see cref="Connection"/> were already opened). Once directly opened with this method,
         /// the <see cref="KeepOpened"/> parameter is ignored: the connection will remain opened
         /// until a corresponding explicit call to <see cref="ExplicitClose"/> is made.
         /// </summary>
@@ -89,10 +82,7 @@ namespace CK.SqlServer
         /// <summary>
         /// Gets the current number of <see cref="ExplicitOpen"/>.
         /// </summary>
-        public int ExplicitOpenCount
-        {
-            get { return _explicitOpen; }
-        }
+        public int ExplicitOpenCount => _explicitOpen; 
 
         /// <summary>
         /// Closes the connection to the database: decrements <see cref="ExplicitOpenCount"/> and closes the connection if it is zero
@@ -445,7 +435,7 @@ namespace CK.SqlServer
                 if( _cmd.Connection == _p._oCon )
                 {
                     _p._oConIsWorking = false;
-                    // August 2015: VS2015/Windows 10 -> this triggers a "Connection cannot be changed while asyn operation is in progress.".
+                    // August 2015: VS2015/Windows 10 -> this triggers a "Connection cannot be changed while async operation is in progress.".
                     // _cmd.Connection = null;
                 }
                 if( _mustClose ) _cmd.Connection = null;
