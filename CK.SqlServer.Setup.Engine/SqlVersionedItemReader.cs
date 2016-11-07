@@ -32,7 +32,7 @@ namespace CK.SqlServer.Setup
             var monitor = Manager.Monitor;
             using( monitor.OpenTrace().Send( "Installing SqlVersionedItemRepository store." ) )
             {
-                int ver = (int)Manager.Connection.ExecuteScalar( _scriptCreateAndGetVersion );
+                int ver = (int)Manager.ExecuteScalar( _scriptCreateAndGetVersion );
 
                 if( ver == CurrentVersion )
                 {

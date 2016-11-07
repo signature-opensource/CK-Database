@@ -51,7 +51,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.Core
             using( var removal = new SqlManager( TestHelper.Monitor ) )
             {
                 removal.OpenFromConnectionString( TestHelper.ConnectionStringMaster );
-                Assert.That( removal.Connection.ExecuteScalar(
+                Assert.That( removal.ExecuteScalar(
                                         @"if db_id('TEST_AUTOCREATE') is not null drop database TEST_AUTOCREATE; 
                                           select 'Done';" ), Is.EqualTo( "Done" ) );
             }
@@ -59,7 +59,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.Core
             using( var creator = new SqlManager( TestHelper.Monitor ) )
             {
                 Assert.That( creator.OpenFromConnectionString( autoTest, true ) );
-                Assert.That( creator.Connection.ExecuteScalar( @"select count(*) from sys.databases where name = 'TEST_AUTOCREATE';" ), Is.EqualTo( 1 ) );
+                Assert.That( creator.ExecuteScalar( @"select count(*) from sys.databases where name = 'TEST_AUTOCREATE';" ), Is.EqualTo( 1 ) );
             }
 
             using( var removal = new SqlManager( TestHelper.Monitor ) )
@@ -69,10 +69,10 @@ namespace CK.SqlServer.Setup.Engine.Tests.Core
                     SqlConnection.ClearPool( c );
                 }
                 removal.OpenFromConnectionString( TestHelper.ConnectionStringMaster );
-                Assert.That( removal.Connection.ExecuteScalar(
+                Assert.That( removal.ExecuteScalar(
                                         @"if db_id('TEST_AUTOCREATE') is not null drop database TEST_AUTOCREATE; 
                                           select 'Done';" ), Is.EqualTo( "Done" ) );
-                Assert.That( removal.Connection.ExecuteScalar( @"select count(*) from sys.databases where name = 'TEST_AUTOCREATE';" ), Is.EqualTo( 0 ) );
+                Assert.That( removal.ExecuteScalar( @"select count(*) from sys.databases where name = 'TEST_AUTOCREATE';" ), Is.EqualTo( 0 ) );
             }
 
         }

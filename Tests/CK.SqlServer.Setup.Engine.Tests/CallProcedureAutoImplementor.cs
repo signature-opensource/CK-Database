@@ -107,7 +107,8 @@ namespace CK.SqlServer.Setup.Engine.Tests
                     p.Value = z;
                     c.Add( p );
 
-                    ctx.Connection.ExecuteNonQuery( cmd );
+                    cmd.Connection = ctx.Connection.Connection;
+                    cmd.ExecuteNonQuery();
 
                     y = (int)pOut0.Value;
                     d = (DateTime)pOut1.Value;

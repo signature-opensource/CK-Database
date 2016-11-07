@@ -71,11 +71,11 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
             using( var db = SqlManager.OpenOrCreate( TestHelper.DatabaseTestConnectionString, TestHelper.Monitor ) )
             {
-                Assert.That( db.Connection.ExecuteScalar( "select count(*) from sys.tables where name in ('tActor','tItemVersionStore')" ), Is.EqualTo( 2 ) );
+                Assert.That( db.ExecuteScalar( "select count(*) from sys.tables where name in ('tActor','tItemVersionStore')" ), Is.EqualTo( 2 ) );
                 db.SchemaDropAllObjects( "bad schema name", true );
                 db.SchemaDropAllObjects( "CK", true );
                 db.SchemaDropAllObjects( "CKCore", false );
-                Assert.That( db.Connection.ExecuteScalar( "select count(*) from sys.tables where name in ('tSystem','tItemVersionStore')" ), Is.EqualTo( 0 ) );
+                Assert.That( db.ExecuteScalar( "select count(*) from sys.tables where name in ('tSystem','tItemVersionStore')" ), Is.EqualTo( 0 ) );
             }
             c.RunningMode = SetupEngineRunningMode.RevertNames;
             c.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = dllName + ".Reverted";
@@ -99,8 +99,8 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
         {
             using( TestHelper.Monitor.OpenTrace().Send( "CheckBasicOnly" ) )
             {
-                Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tActor where ActorId <= 1" ), Is.EqualTo( 2 ) );
-                Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tGroup where GroupName = 'Public'" ), Is.EqualTo( 1 ) );
+                Assert.That( c.ExecuteScalar( "select count(*) from CK.tActor where ActorId <= 1" ), Is.EqualTo( 2 ) );
+                Assert.That( c.ExecuteScalar( "select count(*) from CK.tGroup where GroupName = 'Public'" ), Is.EqualTo( 1 ) );
                 Assert.That( CallExistsUser( c, map, Guid.NewGuid().ToString() ), Is.False );
 
                 int idUInt = CallCreateUser( c, map, "1020" );
@@ -126,9 +126,9 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
         {
             using( TestHelper.Monitor.OpenTrace().Send( "CheckBasicAndZone" ) )
             {
-                Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tActor where ActorId <= 1" ), Is.EqualTo( 2 ) );
-                Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tSecurityZone where SecurityZoneId <= 1" ), Is.EqualTo( 2 ) );
-                Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.a_stupid_view" ), Is.GreaterThan( 1 ) );
+                Assert.That( c.ExecuteScalar( "select count(*) from CK.tActor where ActorId <= 1" ), Is.EqualTo( 2 ) );
+                Assert.That( c.ExecuteScalar( "select count(*) from CK.tSecurityZone where SecurityZoneId <= 1" ), Is.EqualTo( 2 ) );
+                Assert.That( c.ExecuteScalar( "select count(*) from CK.a_stupid_view" ), Is.GreaterThan( 1 ) );
                 CallCreateUser( c, map, Guid.NewGuid().ToString() );
                 CallCreateGroupZone( c, map, 0, "ZoneGroupIn0" );
                 CallCreateGroupZone( c, map, 1, "ZoneGroupIn1" );
@@ -149,7 +149,8 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             {
                 actorHome.CmdGuidRefTest( ref cmd, inOnly, ref inAndOut, out text );
             }
-            c.Connection.ExecuteNonQuery( cmd );
+            cmd.Connection = c.Connection.Connection;
+            cmd.ExecuteNonQuery();
 
             object o = cmd.Parameters["@InAndOut"].Value;
             inAndOut = o == DBNull.Value ? null : (Guid?)o;
@@ -165,7 +166,8 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             bool exists;
             SqlCommand cmd = null;
             userHome.CmdExists( ref cmd, name, out exists );
-            c.Connection.ExecuteNonQuery( cmd );
+            cmd.Connection = c.Connection.Connection;
+            cmd.ExecuteNonQuery();
             exists = (bool)cmd.Parameters["@ExistsResult"].Value;
             cmd.Dispose();
             return exists;
@@ -178,7 +180,8 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             SqlCommand cmd = null;
             //CmdExists2( ref cmd, userPart1, userPart2, out exists );
             userHome.CmdExists2( ref cmd, userPart1, userPart2, out exists );
-            c.Connection.ExecuteNonQuery( cmd );
+            cmd.Connection = c.Connection.Connection;
+            cmd.ExecuteNonQuery();
             exists = (bool)cmd.Parameters["@ExistsResult"].Value;
             cmd.Dispose();
             return exists;
@@ -228,7 +231,8 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             int userId;
             using( SqlCommand cmd = userHome.CmdCreate( name, out userId ) )
             {
-                c.Connection.ExecuteNonQuery( cmd );
+                cmd.Connection = c.Connection.Connection;
+                cmd.ExecuteNonQuery();
                 userId = (int)cmd.Parameters["@UserIdResult"].Value;
             }
             Assert.That( userId, Is.GreaterThan( 1 ) );
@@ -255,7 +259,8 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
             int groupId;
             groupHome.CmdDemoCreate( ref cmd, 1, groupName );
-            c.Connection.ExecuteNonQuery( cmd );
+            cmd.Connection = c.Connection.Connection;
+            cmd.ExecuteNonQuery();
             // The SqlParameter still exists in the command, even if it is not explicitly declared.
             groupId = (int)cmd.Parameters["@GroupIdResult"].Value;
             Assert.That( groupId, Is.GreaterThan( 1 ) );
@@ -263,7 +268,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
             int groupId2;
             groupHome.CmdDemoCreate( ref cmd, 1, groupName + "2" );
-            c.Connection.ExecuteNonQuery( cmd );
+            cmd.ExecuteNonQuery();
             // The SqlParameter still exists in the command, even if it is not explicitly declared.
             groupId2 = (int)cmd.Parameters["@GroupIdResult"].Value;
             Assert.That( groupId2, Is.GreaterThan( groupId ) );
@@ -279,7 +284,8 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             int groupId;
             using( SqlCommand cmd = groupHome.CmdCreate( securityZoneId, groupName.ToString(), out groupId ) )
             {
-                c.Connection.ExecuteNonQuery( cmd );
+                cmd.Connection = c.Connection.Connection;
+                cmd.ExecuteNonQuery();
                 groupId = (int)cmd.Parameters["@GroupIdResult"].Value;
             }
             Assert.That( groupId, Is.GreaterThan( 1 ) );

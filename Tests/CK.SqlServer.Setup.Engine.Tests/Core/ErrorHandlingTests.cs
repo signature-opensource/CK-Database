@@ -57,7 +57,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
                     {
                         Assert.That( () => m.ExecuteOneScript( s, null ), Throws.Nothing, s );
                     }
-                    string error = (string)m.Connection.ExecuteScalar( "select Error from CKCoreTests.tTestErrorLogTestResult" );
+                    string error = (string)m.ExecuteScalar( "select Error from CKCoreTests.tTestErrorLogTestResult" );
                     Assert.That( error, Is.EqualTo( String.Empty ), "No micro test should set an error." );
                 }
             }

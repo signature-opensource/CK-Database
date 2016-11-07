@@ -26,7 +26,8 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             string result;
             using( var cmd = package.SimpleProcedureNaked( 3712, "Test", out result ) )
             {
-                c.Connection.ExecuteNonQuery( cmd );
+                cmd.Connection = c.Connection.Connection;
+                cmd.ExecuteNonQuery();
                 Assert.That( cmd.Parameters["@Result"].Value, Is.EqualTo( "Test - 3712" ) );
             }
         }

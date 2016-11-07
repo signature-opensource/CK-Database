@@ -231,8 +231,9 @@ namespace CK.SqlServer.Setup
             CheckOpen();
             using( var cmd = new SqlCommand( "select OBJECT_DEFINITION(OBJECT_ID(@0))" ) )
             {
+                cmd.Connection = _oCon.Connection;
                 cmd.Parameters.AddWithValue( "@0", schemaName );
-                return (string)_oCon.ExecuteScalar( cmd );
+                return (string)cmd.ExecuteScalar();
             }
         }
 
@@ -252,14 +253,15 @@ namespace CK.SqlServer.Setup
             {
                 using( var c = new SqlCommand( "CKCore.sSchemaDropAllObjects" ) )
                 {
+                    c.Connection = _oCon.Connection;
                     c.CommandType = CommandType.StoredProcedure;
                     c.Parameters.AddWithValue( "@SchemaName", schema );
-                    _oCon.ExecuteNonQuery( c );
+                    c.ExecuteNonQuery();
                     if( dropSchema )
                     {
                         c.CommandType = CommandType.Text;
                         c.CommandText = $"if exists(select 1 from sys.schemas where name = '{schema}') drop schema [{schema.Replace( "]", "]]" )}];";
-                        _oCon.ExecuteNonQuery( c );
+                        c.ExecuteNonQuery();
                     }
                 }
                 if( schema == "CKCore" ) _ckCoreInstalled = false;
@@ -369,17 +371,17 @@ namespace CK.SqlServer.Setup
                     {
                         if( _tranCount >= 0 )
                         {
-                            int tranCountAfter = (int)_manager.Connection.ExecuteScalar( "select @@TranCount" );
+                            int tranCountAfter = (int)_manager.ExecuteScalar( "select @@TranCount" );
                             if( _tranCount != tranCountAfter )
                             {
-                                string msg = String.Format( "Transaction count differ: {0} before, {1} after.", _tranCount, tranCountAfter );
+                                string msg = $"Transaction count differ: {_tranCount} before, {tranCountAfter} after.";
                                 int nbRollbak = tranCountAfter - _tranCount;
                                 if( _tranCount == 0 && nbRollbak > 0 )
                                 {
                                     msg += " Attempting rollback: ";
                                     try
                                     {
-                                        _manager.Connection.ExecuteNonQuery( "rollback" );
+                                        _manager.ExecuteNonQuery( "rollback" );
                                         msg += "Succeed.";
                                     }
                                     catch( Exception ex )
@@ -467,6 +469,40 @@ namespace CK.SqlServer.Setup
                 return e.Execute( script );
             }
         }
+
+        /// <summary>
+        /// Simple execute scalar helper.
+        /// The connection must be opened.
+        /// </summary>
+        /// <param name="select">Select clause.</param>
+        /// <returns>The scalar (may be DBNull.Value) or null if no result has been returned.</returns>
+        public object ExecuteScalar( string select )
+        {
+            CheckOpen();
+            using( var cmd = _oCon.Connection.CreateCommand() )
+            {
+                cmd.CommandText = select;
+                return cmd.ExecuteScalar();
+            }
+        }
+
+        /// <summary>
+        /// Simple execute helper.
+        /// The connection must be opened.
+        /// </summary>
+        /// <param name="cmd">The command text.</param>
+        /// <returns>The number of rows.</returns>
+        public int ExecuteNonQuery( string cmd, int timeoutSecond = -1 )
+        {
+            CheckOpen();
+            using( var c = _oCon.Connection.CreateCommand() )
+            {
+                c.CommandText = cmd;
+                if( timeoutSecond >= 0 ) c.CommandTimeout = timeoutSecond;
+                return c.ExecuteNonQuery();
+            }
+        }
+
 
         #region Private
 

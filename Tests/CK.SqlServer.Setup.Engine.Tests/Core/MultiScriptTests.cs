@@ -120,11 +120,11 @@ end
                 if( s.Count > 2 ) Assert.That( e.Execute( s[2].Body ) );
                 if( expected == null )
                 {
-                    Assert.That( m.Connection.ExecuteScalar( "select Error from CKCoreTests.tTestErrorLogTestResult;" ), Is.Null );
+                    Assert.That( m.ExecuteScalar( "select Error from CKCoreTests.tTestErrorLogTestResult;" ), Is.Null );
                 }
                 else
                 {
-                    Assert.That( m.Connection.ExecuteScalar( "select Error from CKCoreTests.tTestErrorLogTestResult;" ), Is.EqualTo( expected ) );
+                    Assert.That( m.ExecuteScalar( "select Error from CKCoreTests.tTestErrorLogTestResult;" ), Is.EqualTo( expected ) );
                 }
             }
         }

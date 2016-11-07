@@ -153,19 +153,21 @@ on t.ItemKey = s.ItemKey
 when matched then update set ItemValue = @ItemValue
 when not matched then insert(ItemKey,ItemValue) values (@ItemKey, @ItemValue);" ) )
             {
+                c.Connection = _manager.Connection.Connection;
                 c.Parameters.AddWithValue( "@ItemKey", itemKey );
                 c.Parameters.AddWithValue( "@ItemValue", itemValue );
-                _manager.Connection.ExecuteNonQuery( c );
+                c.ExecuteNonQuery();
             }
         }
 
         string ISetupSessionMemory.FindRegisteredItem( string itemKey )
         {
-            if( String.IsNullOrWhiteSpace( itemKey ) || itemKey.Length > 255 ) throw new ArgumentException( "Must not be null or empty or longer than 255 characters.", "itemKey" );
+            if( string.IsNullOrWhiteSpace( itemKey ) || itemKey.Length > 255 ) throw new ArgumentException( "Must not be null or empty or longer than 255 characters.", "itemKey" );
             using( var c = new SqlCommand( @"select ItemValue from CKCore.tSetupMemoryItem where ItemKey=@ItemKey;" ) )
             {
+                c.Connection = _manager.Connection.Connection;
                 c.Parameters.AddWithValue( "@ItemKey", itemKey );
-                return (string)_manager.Connection.ExecuteScalar( c );
+                return (string)c.ExecuteScalar();
             }
         }
 
@@ -174,8 +176,9 @@ when not matched then insert(ItemKey,ItemValue) values (@ItemKey, @ItemValue);" 
             if( String.IsNullOrWhiteSpace( itemKey ) || itemKey.Length > 255 ) throw new ArgumentException( "Must not be null or empty or longer than 255 characters.", "itemKey" );
             using( var c = new SqlCommand( @"select 'a' from CKCore.tSetupMemoryItem where ItemKey=@ItemKey;" ) )
             {
+                c.Connection = _manager.Connection.Connection;
                 c.Parameters.AddWithValue( "@ItemKey", itemKey );
-                return (string)_manager.Connection.ExecuteScalar( c ) != null;
+                return (string)c.ExecuteScalar() != null;
             }
         }
         #endregion
