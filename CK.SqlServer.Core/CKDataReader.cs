@@ -37,7 +37,7 @@ namespace CK.SqlServer
         }
 
         /// <summary>
-        /// A <see cref="CKDataReader"/> can be explitely cast into its inner <see cref="SqlDataReader"/>.
+        /// A <see cref="CKDataReader"/> can be explicitly cast into its inner <see cref="SqlDataReader"/>.
         /// </summary>
         /// <param name="ckDataReader"></param>
         static public explicit operator SqlDataReader( CKDataReader ckDataReader )

@@ -29,7 +29,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
         static void SimplestScalar( SqlManager c, Package package )
         {
-            using( var cmd = package.SimplestScalar( c.Connection.InternalConnection, 3712, "Test" ) )
+            using( var cmd = package.SimplestScalar( c.Connection.Connection, 3712, "Test" ) )
             {
                 Assert.That( cmd.Execute(), Is.EqualTo( "Test - 3712" ) );
             }

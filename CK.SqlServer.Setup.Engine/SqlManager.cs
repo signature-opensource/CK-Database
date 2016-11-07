@@ -39,7 +39,9 @@ namespace CK.SqlServer.Setup
         /// Gets the <see cref="SqlConnectionProvider"/> of this <see cref="SqlManager"/>.
         /// Null when the connection is closed.
         /// </summary>
-        public SqlConnectionProvider Connection => _oCon; 
+        public SqlConnectionProvider Connection => _oCon;
+
+        public SqlConnection AConnection => _oCon.Connection;
 
         void IDisposable.Dispose() => Close();
 
@@ -51,8 +53,8 @@ namespace CK.SqlServer.Setup
         {
             if( _oCon != null )
             {
-                _oCon.InternalConnection.StateChange -= new StateChangeEventHandler( OnConnStateChange );
-                _oCon.InternalConnection.InfoMessage -= new SqlInfoMessageEventHandler( OnConnInfo );
+                _oCon.Connection.StateChange -= new StateChangeEventHandler( OnConnStateChange );
+                _oCon.Connection.InfoMessage -= new SqlInfoMessageEventHandler( OnConnInfo );
                 _oCon.Dispose();
                 _oCon = null;
             }
@@ -64,11 +66,11 @@ namespace CK.SqlServer.Setup
             try
             {
                 _oCon = new SqlConnectionProvider( connectionString );
-                if( clearPoolFirst ) SqlConnection.ClearPool( _oCon.InternalConnection );
+                if( clearPoolFirst ) SqlConnection.ClearPool( _oCon.Connection );
                 if( _monitor != null )
                 {
-                    _oCon.InternalConnection.StateChange += new StateChangeEventHandler( OnConnStateChange );
-                    _oCon.InternalConnection.InfoMessage += new SqlInfoMessageEventHandler( OnConnInfo );
+                    _oCon.Connection.StateChange += new StateChangeEventHandler( OnConnStateChange );
+                    _oCon.Connection.InfoMessage += new SqlInfoMessageEventHandler( OnConnInfo );
                 }
                 _oCon.ExplicitOpen();
             }
@@ -199,7 +201,7 @@ namespace CK.SqlServer.Setup
         /// <returns></returns>
         public bool IsOpen()
         {
-            return _oCon != null && _oCon.InternalConnection.State == System.Data.ConnectionState.Open;
+            return _oCon != null && _oCon.Connection.State == System.Data.ConnectionState.Open;
         }
 
 
@@ -391,7 +393,7 @@ namespace CK.SqlServer.Setup
                         }
                         if( _databaseName != null && _databaseName != _manager.Connection.Connection.Database )
                         {
-                            if( _monitor != null ) _monitor.Info().Send( "Current database automatically restored from {0} to {1}.", _manager.Connection.InternalConnection.Database, _databaseName );
+                            if( _monitor != null ) _monitor.Info().Send( "Current database automatically restored from {0} to {1}.", _manager.Connection.Connection.Database, _databaseName );
                             _command.Connection.ChangeDatabase( _databaseName );
                         }
                     }

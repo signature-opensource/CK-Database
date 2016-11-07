@@ -48,15 +48,9 @@ namespace CK.SqlServer
             }
         }
 
-        ISqlCommandExecutor ISqlCallContext.Executor
-        {
-            get { return this; }
-        }
+        ISqlCommandExecutor ISqlCallContext.Executor => this; 
 
-        SqlConnectionProvider ISqlCommandExecutor.GetProvider( string connectionString )
-        {
-            return GetProvider( connectionString );
-        }
+        SqlConnectionProvider ISqlCommandExecutor.GetProvider( string connectionString ) => GetProvider( connectionString );
 
         SqlConnectionProvider GetProvider( string connectionString )
         {
@@ -92,77 +86,59 @@ namespace CK.SqlServer
             return newC;
         }
 
+        /// <summary>
+        /// Gets the connection to use for a given connection string.
+        /// </summary>
+        /// <param name="connectionString">The connection string.</param>
+        /// <returns>The SqlConnection to use that may be already opened.</returns>
+        public SqlConnection this[string connectionString] => GetProvider( connectionString ).Connection;
+
+        /// <summary>
+        /// Gets the connection to use given a connection string provider.
+        /// </summary>
+        /// <param name="p">The provider of the connection string.</param>
+        /// <returns>The SqlConnection to use that may be already opened.</returns>
+        public SqlConnection this[ISqlConnectionStringProvider p] => GetProvider( p.ConnectionString ).Connection;
+
+        /// <summary>
+        /// Gets the contoller of a connection that can be use to pre open 
+        /// the connection instead of relying on local open/close.
+        /// </summary>
+        /// <param name="connectionString">The connection string.</param>
+        /// <returns>The controller for the connection.</returns>
+        public ISqlConnectionController GetConnectionController( string connectionString ) => GetProvider( connectionString );
+
         void ISqlCommandExecutor.ExecuteNonQuery( string connectionString, SqlCommand cmd )
         {
-            GetProvider( connectionString ).ExecuteNonQuery( cmd );
+            var c = GetProvider( connectionString ).Connection;
+            using( c.EnsureOpen() )
+            {
+                cmd.Connection = c;
+                cmd.ExecuteNonQuery();
+            }
         }
 
         Task ISqlCommandExecutor.ExecuteNonQueryAsync( string connectionString, SqlCommand cmd, CancellationToken cancellationToken )
         {
+            // Trick: Reuse ExecAsync with a string type and a fake result builder using the fact that Task<T> is a Task.
             return ExecAsync<string>( connectionString, cmd, _ => null, cancellationToken );
         }
 
         Task<T> ISqlCommandExecutor.ExecuteNonQueryAsyncTyped<T>( string connectionString, SqlCommand cmd, Func<SqlCommand, T> resultBuilder, CancellationToken cancellationToken )
         {
-            return ExecAsync<T>( connectionString, cmd, resultBuilder, cancellationToken );
+            return ExecAsync( connectionString, cmd, resultBuilder, cancellationToken );
         }
 
-        Task<T> ExecAsync<T>( string connectionString, SqlCommand cmd, Func<SqlCommand, T> resultBuilder, CancellationToken cancellationToken = default(CancellationToken) )
+        async Task<T> ExecAsync<T>( string connectionString, SqlCommand cmd, Func<SqlCommand, T> resultBuilder, CancellationToken cancellationToken = default( CancellationToken ) )
         {
-            var tcs = new TaskCompletionSource<T>();
-
-            SqlConnectionProvider p;
-            try
+            SqlConnection c = GetProvider( connectionString ).Connection;
+            using( await c.EnsureOpenAsync( cancellationToken ) )
             {
-                p = GetProvider( connectionString );
-                Task<IDisposable> openTask = p.AcquireConnectionAsync( cmd, cancellationToken );
-                openTask
-                    .ContinueWith( open =>
-                    {
-                        if( open.IsFaulted ) tcs.SetException( open.Exception.InnerExceptions );
-                        else if( open.IsCanceled ) tcs.SetCanceled();
-                        else
-                        {
-                            var execTask = cmd.ExecuteNonQueryAsync( cancellationToken );
-                            execTask.ContinueWith( exec =>
-                            {
-                                if( exec.IsFaulted ) tcs.SetException( exec.Exception.InnerExceptions );
-                                else if( exec.IsCanceled ) tcs.SetCanceled();
-                                else
-                                {
-                                    try
-                                    {
-                                        tcs.SetResult( resultBuilder( cmd ) );
-                                    }
-                                    catch( Exception exc ) { tcs.TrySetException( exc ); }
-                                }
-                            }, TaskContinuationOptions.ExecuteSynchronously );
-                        }
-                    } )
-                    .ContinueWith( _ =>
-                    {
-                        if( !openTask.IsFaulted ) openTask.Result.Dispose();
-                    }, TaskContinuationOptions.ExecuteSynchronously );
+                cmd.Connection = c;
+                await cmd.ExecuteNonQueryAsync( cancellationToken );
+                return resultBuilder( cmd );
             }
-            catch( Exception ex )
-            {
-                tcs.SetException( ex );
-            }
-            return tcs.Task;
         }
-        // Above code written with async/await. 
-        // Generated code is far more big and there is no TaskContinuationOptions.ExecuteSynchronously... 
-        // (see http://stackoverflow.com/questions/30919601/async-await-vs-hand-made-continuations-is-executesynchronously-cleverly-used)
-        //
-        //  async Task<T> ExecAsync<T>( string connectionString, SqlCommand cmd, Func<SqlCommand, T> resultBuilder, CancellationToken cancellationToken = default(CancellationToken) )
-        //  {
-        //      SqlConnectionProvider p = GetProvider( connectionString );
-        //      using( IDisposable openTask = await p.AcquireConnectionAsync( cmd, cancellationToken ) )
-        //      {
-        //          await cmd.ExecuteNonQueryAsync( cancellationToken );
-        //          return resultBuilder( cmd );
-        //      }
-        //  }
 
     }
 }

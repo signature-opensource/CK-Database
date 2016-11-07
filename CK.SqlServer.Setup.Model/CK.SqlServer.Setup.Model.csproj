@@ -82,6 +82,8 @@
     <Compile Include="Attributes\SqlProcedureAttribute.cs" />
     <Compile Include="Configuration\SqlDatabaseDescriptor.cs" />
     <Compile Include="Configuration\SqlSetupAspectConfiguration.cs" />
+    <Compile Include="SqlConnectionExtension.cs" />
+    <Compile Include="ParameterAndCallContext\ISqlConnectionStringProvider.cs" />
     <Compile Include="ParameterAndCallContext\ParameterSourceAttribute.cs" />
     <Compile Include="ParameterAndCallContext\SqlStandardCallContextProvider.cs" />
     <Compile Include="ParameterAndCallContext\SqlStandardCallContextProviderT.cs" />

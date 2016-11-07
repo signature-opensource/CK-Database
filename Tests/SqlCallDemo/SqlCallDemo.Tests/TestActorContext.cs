@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,19 +20,17 @@ namespace SqlCallDemo
             _exec = new SqlStandardCallContext();
         }
 
-        int IActorCallContext.ActorId
-        {
-            get { return _actorId; }
-        }
+        public SqlConnection this[ISqlConnectionStringProvider p] => _exec[p];
 
-        ISqlCommandExecutor ISqlCallContext.Executor
-        {
-            get { return _exec; }
-        }
+        public SqlConnection this[string connectionString] => _exec[connectionString];
 
-        void IDisposable.Dispose()
-        {
-            _exec.Dispose();
-        }
+        int IActorCallContext.ActorId => _actorId; 
+
+        ISqlCommandExecutor ISqlCallContext.Executor => _exec;
+
+        public ISqlConnectionController GetConnectionController( string connectionString ) => _exec.GetConnectionController( connectionString );
+
+        void IDisposable.Dispose() => _exec.Dispose();
+
     }
 }

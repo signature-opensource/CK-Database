@@ -69,6 +69,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="CKDataReader.cs" />
+    <Compile Include="ISqlConnectionController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleScriptTagHandler.cs" />
     <Compile Include="SqlConnectionProvider.Async.cs" />

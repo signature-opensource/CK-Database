@@ -11,9 +11,9 @@ namespace CK.SqlServer
     /// Offers methods such as ExecuteNonQuery and ExecuteScalar that safely reuse 
     /// one connection (see <see cref="KeepOpened"/> that is true by default) instead of creating new ones.
     /// This object is resilient to multiple dispose/<see cref="ExplicitClose"/> and <see cref="ExplicitOpen"/> calls: the 
-    /// <see cref="InternalConnection"/> is opened/closed as needed.
+    /// <see cref="Connection"/> is opened/closed as needed.
     /// </summary>
-    public partial class SqlConnectionProvider : IDisposable
+    public partial class SqlConnectionProvider : IDisposable, ISqlConnectionController
     {
         /// <summary>
         /// The connection string must be kept as is because <see cref="SqlConnection.ConnectionString"/>
@@ -53,7 +53,6 @@ namespace CK.SqlServer
         /// Gets the main <see cref="SqlConnection"/> for this <see cref="SqlConnectionProvider"/>. 
         /// This connection is not necessarily opened.
         /// </summary>
-        [Obsolete( "Use Connection property instead." )]
         public SqlConnection Connection => _oCon;
 
         /// <summary>
@@ -94,6 +93,8 @@ namespace CK.SqlServer
             if( _explicitOpen != 0 )
             {
                 if( --_explicitOpen == 0 && !_oConIsWorking ) _oCon.Close();
+                // Implements the ISqlConnectionStringController contract:
+                if( _explicitOpen < 0 ) _explicitOpen = 0;
             }
         }
 
@@ -170,34 +171,6 @@ namespace CK.SqlServer
                 }
             }
         }
-
-        /// <summary>
-        /// Creates a new connection to the database and calls <see cref="SqlCommand.ExecuteReader(CommandBehavior)"/>
-        /// with <see cref="CommandBehavior.CloseConnection"/> option.
-        /// </summary>
-        /// <param name="cmd">The <see cref="SqlCommand"/> to execute.</param>
-        /// <returns>The newly created <see cref="SqlDataReader"/>.</returns>
-        /// <remarks>
-        /// Since the <see cref="SqlDataReader"/> is out of control once returned, this
-        /// method does not try to share the main connection. Instead, it implements the most 
-        /// secure way of handling this case: the connection is autonomous and will be automatically
-        /// closed when the <see cref="SqlDataReader"/> will be closed.
-        /// </remarks>
-        [Obsolete( "Fixed spelling, use ExecuteIndependentReader", true )]
-        public SqlDataReader ExecuteIndependantReader( SqlCommand cmd )
-        {
-            try
-            {
-                cmd.Connection = new SqlConnection( _strConn );
-                cmd.Connection.Open();
-                return cmd.ExecuteReader( CommandBehavior.CloseConnection );
-            }
-            catch( SqlException ex )
-            {
-                throw SqlDetailedException.Create( cmd, ex );
-            }
-        }
-
 
         /// <summary>
         /// Creates a new connection to the database and calls <see cref="SqlCommand.ExecuteReader(CommandBehavior)"/>

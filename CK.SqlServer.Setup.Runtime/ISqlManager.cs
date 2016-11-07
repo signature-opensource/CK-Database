@@ -6,8 +6,7 @@ namespace CK.SqlServer.Setup
 {
 
     /// <summary>
-    /// Offers script execution facility and higher level database management (such as automatically 
-    /// creating a database) for Sql server databases.
+    /// Offers script execution facility.
     /// </summary>
     public interface ISqlManager : ISqlManagerBase
     {
