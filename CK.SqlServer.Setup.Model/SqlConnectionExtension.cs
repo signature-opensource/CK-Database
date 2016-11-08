@@ -14,9 +14,9 @@ namespace CK.SqlServer
     {
         sealed class AutoCloser : IDisposable
         {
-            readonly IDbConnection _c;
+            readonly DbConnection _c;
 
-            public AutoCloser( IDbConnection c )
+            public AutoCloser( DbConnection c )
             {
                 _c = c;   
             }
@@ -33,7 +33,7 @@ namespace CK.SqlServer
         /// </summary>
         /// <param name="this">This connection.</param>
         /// <returns>A IDisposable or null.</returns>
-        public static IDisposable EnsureOpen( this IDbConnection @this )
+        public static IDisposable EnsureOpen( this DbConnection @this )
         {
             if( @this.State == ConnectionState.Closed )
             {
@@ -49,11 +49,11 @@ namespace CK.SqlServer
         /// </summary>
         /// <param name="this">This connection.</param>
         /// <returns>A IDisposable or null.</returns>
-        public static async Task<IDisposable> EnsureOpenAsync( this IDbConnection @this, CancellationToken cancel = default(CancellationToken) )
+        public static async Task<IDisposable> EnsureOpenAsync( this DbConnection @this, CancellationToken cancel = default(CancellationToken) )
         {
             if( @this.State == ConnectionState.Closed )
             {
-                await ((DbConnection)@this).OpenAsync( cancel ).ConfigureAwait( false );
+                await @this.OpenAsync( cancel ).ConfigureAwait( false );
                 return new AutoCloser( @this );
             }
             return null;

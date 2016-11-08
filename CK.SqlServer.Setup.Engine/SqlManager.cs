@@ -142,12 +142,13 @@ namespace CK.SqlServer.Setup
                     {
                         _monitor.Warn().Send( ex );
                         string name;
-                        using( var master = new SqlConnectionProvider( GetMasterConnectionString( connectionString, out name ) ) )
+                        using( var master = new SqlConnection( GetMasterConnectionString( connectionString, out name ) ) )
                         {
                             try
                             {
-                                _monitor.Info().Send( "Creating database '{0}'.", name );
-                                master.ExecuteNonQuery( "create database " + name );
+                                _monitor.Info().Send( $"Creating database '{name}'." );
+                                master.Open();
+                                using( var cmd = new SqlCommand( $"create database {name}" ) { Connection = master } ) cmd.ExecuteNonQuery();
                             }
                             catch( Exception exCreate )
                             {
@@ -500,6 +501,23 @@ namespace CK.SqlServer.Setup
                 c.CommandText = cmd;
                 if( timeoutSecond >= 0 ) c.CommandTimeout = timeoutSecond;
                 return c.ExecuteNonQuery();
+            }
+        }
+
+        /// <summary>
+        /// Executes the command and returns the first row as an array of object values.
+        /// </summary>
+        /// <param name="cmd">The <see cref="SqlCommand"/> to execute.</param>
+        /// <returns>An array of objects or null if nothing has been returned from database.</returns>
+        public object[] ReadFirstRow( SqlCommand cmd )
+        {
+            cmd.Connection = _oCon.Connection;
+            using( SqlDataReader r = cmd.ExecuteReader( CommandBehavior.SingleRow ) )
+            {
+                if( !r.Read() ) return null;
+                object[] res = new object[r.FieldCount];
+                r.GetValues( res );
+                return res;
             }
         }
 

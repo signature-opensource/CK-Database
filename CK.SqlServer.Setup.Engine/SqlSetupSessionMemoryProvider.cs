@@ -55,7 +55,7 @@ namespace CK.SqlServer.Setup
             _manager.EnsureCKCoreIsInstalled( _manager.Monitor );
             using( var cRead = new SqlCommand( _initScript ) )
             {
-                var existing = _manager.Connection.ReadFirstRow( cRead );
+                var existing = _manager.ReadFirstRow( cRead );
                 LastStartDate = (DateTime)existing[0];
                 if( LastStartDate == Util.SqlServerEpoch ) LastStartDate = DateTime.MinValue;
                 StartCount = (int)existing[1];
@@ -101,7 +101,7 @@ select LastStartDate, StartCount, LastError from CKCore.tSetupMemory;
         {
             if( IsStarted ) throw new InvalidOperationException();
             if( !_initialized ) Initialize();
-            _manager.Connection.ExecuteNonQuery( "update CKCore.tSetupMemory set LastStartDate = getutcdate(), TotalStartCount = TotalStartCount+1, StartCount = StartCount+1, LastError=N'Started but not Stopped yet.'" );
+            _manager.ExecuteNonQuery( "update CKCore.tSetupMemory set LastStartDate = getutcdate(), TotalStartCount = TotalStartCount+1, StartCount = StartCount+1, LastError=N'Started but not Stopped yet.'" );
             IsStarted = true;
             return this;
         }
@@ -120,7 +120,7 @@ select LastStartDate, StartCount, LastError from CKCore.tSetupMemory;
             if( !IsStarted ) throw new InvalidOperationException();
             if( error == null )
             {
-                _manager.Connection.ExecuteNonQuery( "update CKCore.tSetupMemory set StartCount = 0, LastError=null; drop table CKCore.tSetupMemoryItem;" );
+                _manager.ExecuteNonQuery( "update CKCore.tSetupMemory set StartCount = 0, LastError=null; drop table CKCore.tSetupMemoryItem;" );
                 StartCount = 0;
                 LastError = null;
             }
@@ -131,7 +131,7 @@ select LastStartDate, StartCount, LastError from CKCore.tSetupMemory;
                 using( var c = new SqlCommand( @"update CKCore.tSetupMemory set LastError=@LastError; select LastStartDate, StartCount from CKCore.tSetupMemory;" ) )
                 {
                     c.Parameters.AddWithValue( "@LastError", error );
-                    var resync = _manager.Connection.ReadFirstRow( c );
+                    var resync = _manager.ReadFirstRow( c );
                     LastStartDate = (DateTime)resync[0];
                     StartCount = (int)resync[1];
                 }

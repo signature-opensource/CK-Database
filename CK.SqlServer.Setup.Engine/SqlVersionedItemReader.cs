@@ -49,10 +49,10 @@ namespace CK.SqlServer.Setup
                     {
                         using( monitor.OpenInfo().Send( $"Upgrading to Version = {ver}." ) )
                         {
-                            Manager.Connection.ExecuteNonQuery( _upgradeScripts[ver++] );
+                            Manager.ExecuteNonQuery( _upgradeScripts[ver++] );
                         }
                     }
-                    Manager.Connection.ExecuteNonQuery( $"update CKCore.tItemVersionStore set ItemVersion = '{CurrentVersion}' where FullName = N'CK.SqlVersionedItemRepository';" );
+                    Manager.ExecuteNonQuery( $"update CKCore.tItemVersionStore set ItemVersion = '{CurrentVersion}' where FullName = N'CK.SqlVersionedItemRepository';" );
                 }
                 _initialized = true;
             }
@@ -61,8 +61,8 @@ namespace CK.SqlServer.Setup
         public IEnumerable<VersionedTypedName> GetOriginalVersions( IActivityMonitor monitor )
         {
             if( !_initialized ) AutoInitialize();
-            using( var c = new SqlCommand( "select FullName, ItemType, ItemVersion from CKCore.tItemVersionStore where FullName <> N'CK.SqlVersionedItemRepository'" ) )
-            using( var r = Manager.Connection.AcquireReader( c ) )
+            using( var c = new SqlCommand( "select FullName, ItemType, ItemVersion from CKCore.tItemVersionStore where FullName <> N'CK.SqlVersionedItemRepository'" ) { Connection = Manager.Connection.Connection } )
+            using( var r = c.ExecuteReader() )
             {
                 while( r.Read() )
                 {

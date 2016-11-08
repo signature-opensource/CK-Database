@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using CK.Core;
+using System.Data.SqlClient;
 
 namespace CK.SqlServer.Setup
 {
@@ -46,5 +47,13 @@ namespace CK.SqlServer.Setup
         /// <param name="cmd">The command text.</param>
         /// <returns>The number of rows.</returns>
         int ExecuteNonQuery( string cmd, int timeoutSecond = -1 );
+
+        /// <summary>
+        /// Executes the command and returns the first row as an array of object values.
+        /// </summary>
+        /// <param name="cmd">The <see cref="SqlCommand"/> to execute.</param>
+        /// <returns>An array of objects or null if nothing has been returned from database.</returns>
+        object[] ReadFirstRow( SqlCommand cmd );
+
     }
 }
