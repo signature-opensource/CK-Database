@@ -83,9 +83,9 @@ namespace SqlCallDemo.Tests
                     }
                     catch( AggregateException ex )
                     {
-                        Assert.That( ex.InnerException is SqlException );
+                        Assert.That( ex.InnerException is SqlDetailedException );
                         // Does someone has a better (yet simple) solution?
-                        Assert.That( ex.InnerException.Message, 
+                        Assert.That( ex.InnerException.InnerException.Message, 
                                         Does.EndWith( "Operation cancelled by user." )
                                         .Or.EndWith( "Opération annulée par l'utilisateur." ) );
                         TestHelper.Monitor.Info().Send( ex, "Cancellation: the inner exception is a SqlException with a message that contains 'Operation cancelled by user.' suffix." );
