@@ -21,7 +21,7 @@ namespace CK.SqlServer
     /// <summary>
     /// Offers utility methods to deal with Sql Server objects and data.
     /// </summary>
-    public class SqlHelper
+    public static class SqlHelper
     {
         /// <summary>
         /// Standard name of the return value. Applied to functions and stored procedures.
@@ -38,9 +38,9 @@ namespace CK.SqlServer
         /// <returns>The writer.</returns>
         static public TextWriter CommandAsText( TextWriter w, SqlCommand cmd )
         {
-            if( cmd.CommandType == System.Data.CommandType.StoredProcedure )
+            if( cmd.CommandType == CommandType.StoredProcedure )
             {
-                w.Write( "exec {0} <= ", cmd.CommandText );
+                w.Write( $"exec {cmd.CommandText} <= " );
                 WriteCallParameters( w, cmd.Parameters );
             }
             else
@@ -53,7 +53,8 @@ namespace CK.SqlServer
         }
 
         /// <summary>
-        /// Returns a string the command its parameters. Handles stored procedure calls as well as simple text commands.
+        /// Returns a string with the command and its parameters. 
+        /// Handles stored procedure calls as well as simple text commands.
         /// </summary>
         /// <param name="cmd">The command to call.</param>
         /// <returns>A textual representation.</returns>
@@ -90,24 +91,24 @@ namespace CK.SqlServer
 
         static readonly Type[] _typesMap = new Type[] 
         {
-            typeof(Int64), // SqlDbType.BigInt
+            typeof(long), // SqlDbType.BigInt
             typeof(byte[]), // SqlDbType.Binary
             typeof(bool), // SqlDbType.Bit
             typeof(string), // SqlDbType.Char
             typeof(DateTime), // SqlDbType.DateTime
-            typeof(Decimal), // SqlDbType.Decimal
-            typeof(Double), // SqlDbType.Float
+            typeof(decimal), // SqlDbType.Decimal
+            typeof(double), // SqlDbType.Float
             typeof(byte[]), // SqlDbType.Image
-            typeof(Int32), // SqlDbType.Int
-            typeof(Decimal), // SqlDbType.Money
+            typeof(int), // SqlDbType.Int
+            typeof(decimal), // SqlDbType.Money
             typeof(string), // SqlDbType.NChar
             typeof(string), // SqlDbType.NText
             typeof(string), // SqlDbType.NVarChar
-            typeof(Single), // SqlDbType.Real
+            typeof(float), // SqlDbType.Real
             typeof(Guid), // SqlDbType.UniqueIdentifier
             typeof(DateTime), // SqlDbType.SmallDateTime
-            typeof(Int16), // SqlDbType.SmallInt
-            typeof(Decimal), // SqlDbType.SmallMoney
+            typeof(short), // SqlDbType.SmallInt
+            typeof(decimal), // SqlDbType.SmallMoney
             typeof(string), // SqlDbType.Text
             typeof(byte[]), // SqlDbType.Timestamp
             typeof(byte), // SqlDbType.TinyInt
@@ -126,7 +127,7 @@ namespace CK.SqlServer
         };
 
         /// <summary>
-        /// Simple association to a Type from a Sql type.
+        /// Simple association from <see cref="SqlDbType"/> to a <see cref="Type"/>.
         /// </summary>
         /// <param name="tSql">Sql type.</param>
         /// <returns>.net type to consider.</returns>
@@ -138,8 +139,8 @@ namespace CK.SqlServer
 
         /// <summary>
         /// Tests whether a type has a corresponding <see cref="SqlDbType"/>. 
-        /// It is all the types that are mapped by <see cref="FromSqlDbTypeToNetType"/> except <see cref="Object"/> 
-        /// plus <see cref="Char"/> and enum (provided their underlying type is mapped) and 
+        /// It is all the types that are mapped by <see cref="FromSqlDbTypeToNetType"/> except <see cref="object"/> 
+        /// plus <see cref="char"/> and enum (provided their underlying type is mapped) and 
         /// any <see cref="Nullable{T}"/> where T is mapped.
         /// </summary>
         /// <param name="t">Type to challenge.</param>
@@ -319,7 +320,7 @@ namespace CK.SqlServer
         /// </remarks>
         static public IEnumerable<string> SplitGoSeparator( string script )
         {
-            if( !String.IsNullOrWhiteSpace( script ) )
+            if( !string.IsNullOrWhiteSpace( script ) )
             {
                 int curBeg = 0;
                 for( Match goDelim = _rGo.Match( script ); goDelim.Success; goDelim = goDelim.NextMatch() )

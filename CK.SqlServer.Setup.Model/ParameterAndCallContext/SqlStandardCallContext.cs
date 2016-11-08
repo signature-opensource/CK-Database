@@ -114,11 +114,18 @@ namespace CK.SqlServer
 
         void ISqlCommandExecutor.ExecuteNonQuery( string connectionString, SqlCommand cmd )
         {
-            var c = GetConnectionController( connectionString ).Connection;
-            using( c.EnsureOpen() )
+            try
             {
-                cmd.Connection = c;
-                cmd.ExecuteNonQuery();
+                var c = GetConnectionController( connectionString ).Connection;
+                using( c.EnsureOpen() )
+                {
+                    cmd.Connection = c;
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch( SqlException ex )
+            {
+                throw SqlDetailedException.Create( cmd, ex );
             }
         }
 
@@ -135,12 +142,19 @@ namespace CK.SqlServer
 
         async Task<T> ExecAsync<T>( string connectionString, SqlCommand cmd, Func<SqlCommand, T> resultBuilder, CancellationToken cancellationToken = default( CancellationToken ) )
         {
-            SqlConnection c = GetProvider( connectionString ).Connection;
-            using( await c.EnsureOpenAsync( cancellationToken ) )
+            try
             {
-                cmd.Connection = c;
-                await cmd.ExecuteNonQueryAsync( cancellationToken );
-                return resultBuilder( cmd );
+                SqlConnection c = GetProvider( connectionString ).Connection;
+                using( await c.EnsureOpenAsync( cancellationToken ) )
+                {
+                    cmd.Connection = c;
+                    await cmd.ExecuteNonQueryAsync( cancellationToken );
+                    return resultBuilder( cmd );
+                }
+            }
+            catch( SqlException ex )
+            {
+                throw SqlDetailedException.Create( cmd, ex );
             }
         }
 

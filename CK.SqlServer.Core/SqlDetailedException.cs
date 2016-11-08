@@ -51,6 +51,24 @@ namespace CK.SqlServer
         }
 
         /// <summary>
+        /// Executes a lambda and transforms any <see cref="SqlException"/> into a <see cref="SqlDetailedException"/>
+        /// thrown by the action.
+        /// </summary>
+        /// <param name="cmd">The command to execute.</param>
+        /// <param name="action">The action that executes the command.</param>
+        static public void Catch( SqlCommand cmd, Action<SqlCommand> action )
+        {
+            try
+            {
+                action( cmd );
+            }
+            catch( SqlException ex )
+            {
+                throw Create( cmd, ex );
+            }
+        }
+
+        /// <summary>
         /// Gets the <see cref="SqlException.Number"/>.
         /// </summary>
         public int Number

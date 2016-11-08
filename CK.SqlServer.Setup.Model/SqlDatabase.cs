@@ -12,9 +12,11 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
-
+    /// <summary>
+    /// Database objects hold the <see cref="ConnectionString"/> and the schemas defined in it.
+    /// </summary>
     [Setup( ItemKind = DependentItemKindSpec.Group, TrackAmbientProperties = TrackAmbientPropertiesMode.AddPropertyHolderAsChildren, ItemTypeName = "CK.SqlServer.Setup.SqlDatabaseItem,CK.SqlServer.Setup.Runtime" )]
-    public class SqlDatabase
+    public class SqlDatabase: ISqlConnectionStringProvider
     {
         /// <summary>
         /// Default database name is "db": this is the name of the <see cref="SqlDefaultDatabase"/> type.
@@ -22,7 +24,7 @@ namespace CK.SqlServer.Setup
         public const string DefaultDatabaseName = "db";
 
         /// <summary>
-        /// Default schema name is "CK".
+        /// Default schema name is "CK": <see cref="SqlDefaultDatabase"/> registers it.
         /// </summary>
         public const string DefaultSchemaName = "CK";
 
@@ -30,6 +32,10 @@ namespace CK.SqlServer.Setup
         readonly Dictionary<string,string> _schemas;
         bool _installCore;
 
+        /// <summary>
+        /// Initializes a new <see cref="SqlDatabase"/>.
+        /// </summary>
+        /// <param name="name">Logical name of the database.</param>
         public SqlDatabase( string name )
         {
             if( String.IsNullOrWhiteSpace( name ) ) throw new ArgumentException( "Must be not null, empty, nor whitespace.", "name" );
@@ -79,7 +85,7 @@ namespace CK.SqlServer.Setup
         public IEnumerable<string> Schemas => _schemas.Keys; 
 
         /// <summary>
-        /// Gets or sets whether CK Core kernel support must be installed in the database.
+        /// Gets or sets whether CKCore kernel support must be installed in the database.
         /// Defaults to false.
         /// Always true if <see cref="IsDefaultDatabase"/> is true.
         /// </summary>
