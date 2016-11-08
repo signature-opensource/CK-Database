@@ -149,7 +149,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             {
                 actorHome.CmdGuidRefTest( ref cmd, inOnly, ref inAndOut, out text );
             }
-            cmd.Connection = c.Connection.Connection;
+            cmd.Connection = c.Connection;
             cmd.ExecuteNonQuery();
 
             object o = cmd.Parameters["@InAndOut"].Value;
@@ -166,7 +166,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             bool exists;
             SqlCommand cmd = null;
             userHome.CmdExists( ref cmd, name, out exists );
-            cmd.Connection = c.Connection.Connection;
+            cmd.Connection = c.Connection;
             cmd.ExecuteNonQuery();
             exists = (bool)cmd.Parameters["@ExistsResult"].Value;
             cmd.Dispose();
@@ -180,7 +180,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             SqlCommand cmd = null;
             //CmdExists2( ref cmd, userPart1, userPart2, out exists );
             userHome.CmdExists2( ref cmd, userPart1, userPart2, out exists );
-            cmd.Connection = c.Connection.Connection;
+            cmd.Connection = c.Connection;
             cmd.ExecuteNonQuery();
             exists = (bool)cmd.Parameters["@ExistsResult"].Value;
             cmd.Dispose();
@@ -231,7 +231,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             int userId;
             using( SqlCommand cmd = userHome.CmdCreate( name, out userId ) )
             {
-                cmd.Connection = c.Connection.Connection;
+                cmd.Connection = c.Connection;
                 cmd.ExecuteNonQuery();
                 userId = (int)cmd.Parameters["@UserIdResult"].Value;
             }
@@ -259,7 +259,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
             int groupId;
             groupHome.CmdDemoCreate( ref cmd, 1, groupName );
-            cmd.Connection = c.Connection.Connection;
+            cmd.Connection = c.Connection;
             cmd.ExecuteNonQuery();
             // The SqlParameter still exists in the command, even if it is not explicitly declared.
             groupId = (int)cmd.Parameters["@GroupIdResult"].Value;
@@ -284,7 +284,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             int groupId;
             using( SqlCommand cmd = groupHome.CmdCreate( securityZoneId, groupName.ToString(), out groupId ) )
             {
-                cmd.Connection = c.Connection.Connection;
+                cmd.Connection = c.Connection;
                 cmd.ExecuteNonQuery();
                 groupId = (int)cmd.Parameters["@GroupIdResult"].Value;
             }

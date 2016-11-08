@@ -15,7 +15,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
     {
         IActivityMonitor Logger { get; }
 
-        SqlConnectionProvider Connection { get; }
+        SqlConnection Connection { get; }
     }
 
     public class SqlCallContext : ISqlCallContext
@@ -32,7 +32,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
             get { return TestHelper.Monitor; }
         }
 
-        public SqlConnectionProvider Connection
+        public SqlConnection Connection
         {
             get { return _m.Connection; }
         }
@@ -107,7 +107,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
                     p.Value = z;
                     c.Add( p );
 
-                    cmd.Connection = ctx.Connection.Connection;
+                    cmd.Connection = ctx.Connection;
                     cmd.ExecuteNonQuery();
 
                     y = (int)pOut0.Value;

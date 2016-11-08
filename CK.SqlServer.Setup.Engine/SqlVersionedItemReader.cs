@@ -61,7 +61,7 @@ namespace CK.SqlServer.Setup
         public IEnumerable<VersionedTypedName> GetOriginalVersions( IActivityMonitor monitor )
         {
             if( !_initialized ) AutoInitialize();
-            using( var c = new SqlCommand( "select FullName, ItemType, ItemVersion from CKCore.tItemVersionStore where FullName <> N'CK.SqlVersionedItemRepository'" ) { Connection = Manager.Connection.Connection } )
+            using( var c = new SqlCommand( "select FullName, ItemType, ItemVersion from CKCore.tItemVersionStore where FullName <> N'CK.SqlVersionedItemRepository'" ) { Connection = Manager.Connection } )
             using( var r = c.ExecuteReader() )
             {
                 while( r.Read() )

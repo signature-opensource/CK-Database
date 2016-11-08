@@ -153,7 +153,7 @@ on t.ItemKey = s.ItemKey
 when matched then update set ItemValue = @ItemValue
 when not matched then insert(ItemKey,ItemValue) values (@ItemKey, @ItemValue);" ) )
             {
-                c.Connection = _manager.Connection.Connection;
+                c.Connection = _manager.Connection;
                 c.Parameters.AddWithValue( "@ItemKey", itemKey );
                 c.Parameters.AddWithValue( "@ItemValue", itemValue );
                 c.ExecuteNonQuery();
@@ -165,7 +165,7 @@ when not matched then insert(ItemKey,ItemValue) values (@ItemKey, @ItemValue);" 
             if( string.IsNullOrWhiteSpace( itemKey ) || itemKey.Length > 255 ) throw new ArgumentException( "Must not be null or empty or longer than 255 characters.", "itemKey" );
             using( var c = new SqlCommand( @"select ItemValue from CKCore.tSetupMemoryItem where ItemKey=@ItemKey;" ) )
             {
-                c.Connection = _manager.Connection.Connection;
+                c.Connection = _manager.Connection;
                 c.Parameters.AddWithValue( "@ItemKey", itemKey );
                 return (string)c.ExecuteScalar();
             }
@@ -176,7 +176,7 @@ when not matched then insert(ItemKey,ItemValue) values (@ItemKey, @ItemValue);" 
             if( String.IsNullOrWhiteSpace( itemKey ) || itemKey.Length > 255 ) throw new ArgumentException( "Must not be null or empty or longer than 255 characters.", "itemKey" );
             using( var c = new SqlCommand( @"select 'a' from CKCore.tSetupMemoryItem where ItemKey=@ItemKey;" ) )
             {
-                c.Connection = _manager.Connection.Connection;
+                c.Connection = _manager.Connection;
                 c.Parameters.AddWithValue( "@ItemKey", itemKey );
                 return (string)c.ExecuteScalar() != null;
             }

@@ -13,16 +13,10 @@ namespace CK.SqlServer.Setup
     public interface ISqlManager : ISqlManagerBase
     {
         /// <summary>
-        /// Gets the <see cref="SqlConnectionProvider"/> of this <see cref="ISqlManager"/>.
+        /// Gets the <see cref="SqlConnection"/> of this <see cref="ISqlManager"/>.
         /// </summary>
-        SqlConnectionProvider Connection { get; }
+        SqlConnection Connection { get; }
 
-        /// <summary>
-        /// True if the connection to the current database is opened. Can be called on a 
-        /// disposed <see cref="ISqlManager"/>.
-        /// </summary>
-        bool IsOpen();
-        
         /// <summary>
         /// Tries to remove all objects from a given schema.
         /// </summary>

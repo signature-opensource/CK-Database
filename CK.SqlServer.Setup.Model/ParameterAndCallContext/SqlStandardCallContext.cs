@@ -22,7 +22,7 @@ namespace CK.SqlServer
     /// when this object exposes parameter values.
     /// </para>
     /// <para>
-    /// The <see cref="SqlConnectionProvider"/> that are created by <see cref="ISqlCommandExecutor.GetProvider"/> are cached
+    /// The <see cref="ISqlConnectionController"/> that are created by <see cref="ISqlCommandExecutor.GetProvider"/> are cached
     /// and reused until <see cref="Dispose"/> is called.
     /// </para>
     /// </remarks>
@@ -30,28 +30,12 @@ namespace CK.SqlServer
     {
         object _cache;
 
-        /// <summary>
-        /// Disposes any cached <see cref="SqlConnectionProvider"/>: this <see cref="SqlStandardCallContext"/> instance can be reused once disposed.
-        /// </summary>
-        public virtual void Dispose()
-        {
-            if( _cache != null )
-            {
-                SqlConnectionProvider c = _cache as SqlConnectionProvider;
-                if( c != null ) c.Dispose();
-                else
-                {
-                    SqlConnectionProvider[] cache = _cache as SqlConnectionProvider[];
-                    for( int i = 0; i < cache.Length; ++i ) cache[i].Dispose();
-                }
-                _cache = null;
-            }
-        }
-
         ISqlCommandExecutor ISqlCallContext.Executor => this; 
 
+        [Obsolete()]
         SqlConnectionProvider ISqlCommandExecutor.GetProvider( string connectionString ) => GetProvider( connectionString );
 
+#pragma warning disable 0618
         SqlConnectionProvider GetProvider( string connectionString )
         {
             SqlConnectionProvider c;
@@ -87,6 +71,26 @@ namespace CK.SqlServer
         }
 
         /// <summary>
+        /// Disposes any cached <see cref="SqlConnection"/>: this <see cref="SqlStandardCallContext"/> instance can be reused once disposed.
+        /// </summary>
+        public virtual void Dispose()
+        {
+            if( _cache != null )
+            {
+                SqlConnectionProvider c = _cache as SqlConnectionProvider;
+                if( c != null ) c.Dispose();
+                else
+                {
+                    SqlConnectionProvider[] cache = _cache as SqlConnectionProvider[];
+                    for( int i = 0; i < cache.Length; ++i ) cache[i].Dispose();
+                }
+                _cache = null;
+            }
+        }
+
+#pragma warning restore 0618
+
+        /// <summary>
         /// Gets the connection to use for a given connection string.
         /// </summary>
         /// <param name="connectionString">The connection string.</param>
@@ -110,7 +114,7 @@ namespace CK.SqlServer
 
         void ISqlCommandExecutor.ExecuteNonQuery( string connectionString, SqlCommand cmd )
         {
-            var c = GetProvider( connectionString ).Connection;
+            var c = GetConnectionController( connectionString ).Connection;
             using( c.EnsureOpen() )
             {
                 cmd.Connection = c;

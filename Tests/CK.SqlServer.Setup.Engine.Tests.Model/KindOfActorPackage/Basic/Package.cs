@@ -242,7 +242,7 @@ namespace SqlActorPackage.Basic
 
         public interface IBasicAuthContext : IAmHereToTestPropertyMasking, IDisposable
         {
-            SqlConnectionProvider GetProvider( string connectionString );
+            ISqlConnectionController GetControllerConnection( string connectionString );
 
             new int ActorId { get; set; }
         }
@@ -262,6 +262,7 @@ namespace SqlActorPackage.Basic
 
             #region ISqlCallContext Members
 
+#pragma warning disable 0618
             public SqlConnectionProvider GetProvider( string connectionString )
             {
                 SqlConnectionProvider c;
@@ -310,7 +311,11 @@ namespace SqlActorPackage.Basic
                     _cache = null;
                 }
             }
-            
+
+#pragma warning restore 0618
+
+            public ISqlConnectionController GetControllerConnection( string connectionString ) => GetProvider( connectionString );
+
             #endregion
         }
 

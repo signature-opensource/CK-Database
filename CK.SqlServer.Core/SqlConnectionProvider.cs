@@ -13,6 +13,7 @@ namespace CK.SqlServer
     /// This object is resilient to multiple dispose/<see cref="ExplicitClose"/> and <see cref="ExplicitOpen"/> calls: the 
     /// <see cref="Connection"/> is opened/closed as needed.
     /// </summary>
+    [Obsolete("Do not use anymore this good old companion. Use directly the SqlConnection whenever needed with the pattern: Use it or Open & Close transparently.")]
     public partial class SqlConnectionProvider : IDisposable, ISqlConnectionController
     {
         /// <summary>

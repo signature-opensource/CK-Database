@@ -26,7 +26,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             string result;
             using( var cmd = package.SimpleProcedureNaked( 3712, "Test", out result ) )
             {
-                cmd.Connection = c.Connection.Connection;
+                cmd.Connection = c.Connection;
                 cmd.ExecuteNonQuery();
                 Assert.That( cmd.Parameters["@Result"].Value, Is.EqualTo( "Test - 3712" ) );
             }
@@ -35,7 +35,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
         private static void SimpleProcedureWithConnection( SqlManager c, Package package )
         {
             string result;
-            using( var cmd = package.SimpleProcedureWithConnection( c.Connection.Connection, 78, "Test2", out result ) )
+            using( var cmd = package.SimpleProcedureWithConnection( c.Connection, 78, "Test2", out result ) )
             {
                 cmd.ExecuteNonQuery();
                 Assert.That( cmd.Parameters["@Result"].Value, Is.EqualTo( "Test2 - 78" ) );
@@ -45,7 +45,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
         private static void SimpleProcedureWithTransaction( SqlManager c, Package package )
         {
             string result;
-            using( var t = c.Connection.Connection.BeginTransaction() )
+            using( var t = c.Connection.BeginTransaction() )
             using( var cmd = package.SimpleProcedureWithTransaction( t, 100, "Test3", out result ) )
             {
                 Assert.That( cmd.Transaction, Is.SameAs( t ) );
@@ -59,8 +59,8 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
         private static void SimpleProcedureWithTransactionAndConnection( SqlManager c, Package package )
         {
             string result;
-            using( var t = c.Connection.Connection.BeginTransaction() )
-            using( var cmd = package.SimpleProcedureWithConnectionAndTransaction( 100, t, "Test3", out result, c.Connection.Connection ) )
+            using( var t = c.Connection.BeginTransaction() )
+            using( var cmd = package.SimpleProcedureWithConnectionAndTransaction( 100, t, "Test3", out result, c.Connection ) )
             {
                 Assert.That( cmd.Transaction, Is.SameAs( t ) );
                 Assert.That( cmd.Connection, Is.SameAs( t.Connection ) );
@@ -73,7 +73,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
         private static void SimpleProcedureWithTransactionAndNullConnection( SqlManager c, Package package )
         {
             string result;
-            using( var t = c.Connection.Connection.BeginTransaction() )
+            using( var t = c.Connection.BeginTransaction() )
             using( var cmd = package.SimpleProcedureWithConnectionAndTransaction( 200, t, "Test4", out result, null ) )
             {
                 Assert.That( cmd.Transaction, Is.SameAs( t ) );
@@ -87,10 +87,10 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
         private static void SimpleProcedureWithNullTransactionAndConnection( SqlManager c, Package package )
         {
             string result;
-            using( var cmd = package.SimpleProcedureWithConnectionAndTransaction( 300, null, "Test5", out result, c.Connection.Connection ) )
+            using( var cmd = package.SimpleProcedureWithConnectionAndTransaction( 300, null, "Test5", out result, c.Connection ) )
             {
                 Assert.That( cmd.Transaction, Is.Null );
-                Assert.That( cmd.Connection, Is.SameAs( c.Connection.Connection ) );
+                Assert.That( cmd.Connection, Is.SameAs( c.Connection ) );
                 cmd.ExecuteNonQuery();
                 Assert.That( cmd.Parameters["@Result"].Value, Is.EqualTo( "Test5 - 300" ) );
             }
