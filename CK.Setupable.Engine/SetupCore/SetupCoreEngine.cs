@@ -256,93 +256,100 @@ namespace CK.Setup
                 result = new SetupCoreEngineRegisterResult( DependencySorter<ISetupItem>.OrderItems( Monitor, items, discoverers, options ) );
                 if( result.IsValid )
                 {
-                    foreach( var item in result.SortResult.SortedItems )
+                    #region Creating drivers
+                    using( Monitor.OpenInfo().Send( $"Instanciating drivers for {result.SortResult.SortedItems.Count} items." ) )
                     {
-                        SetupItemDriver setupItemDriver = null;
-                        DriverBase d;
-                        Type typeToCreate = null;
-                        if( item.IsGroup )
+                        foreach( var item in result.SortResult.SortedItems )
                         {
-                            var head = (GroupHeadSetupDriver)_allDrivers[item.HeadForGroup.FullName];
-                            typeToCreate = ResolveDriverType( item );
-                            setupItemDriver = CreateSetupDriver( typeToCreate, new SetupItemDriver.BuildInfo( head, item ) );
-                            d = head.Group = setupItemDriver;
-                        }
-                        else
-                        {
-                            VersionedName externalVersion;
-                            IVersionedItem versioned = item.Item as IVersionedItem;
-                            if( versioned != null ) externalVersion = _versionTracker.GetCurrent( versioned );
-                            else externalVersion = null;
-
-                            if( item.IsGroupHead )
+                            SetupItemDriver setupItemDriver = null;
+                            DriverBase d;
+                            Type typeToCreate = null;
+                            if( item.IsGroup )
                             {
-                                d = new GroupHeadSetupDriver( this, item, externalVersion );
+                                var head = (GroupHeadSetupDriver)_allDrivers[item.HeadForGroup.FullName];
+                                typeToCreate = ResolveDriverType( item );
+                                setupItemDriver = CreateSetupDriver( typeToCreate, new SetupItemDriver.BuildInfo( head, item ) );
+                                d = head.Group = setupItemDriver;
                             }
                             else
                             {
-                                typeToCreate = ResolveDriverType( item );
-                                d = setupItemDriver = CreateSetupDriver( typeToCreate, new SetupItemDriver.BuildInfo( this, item, externalVersion ) );
-                            }
-                        }
-                        Debug.Assert( d != null, "Otherwise an exception is thrown by CreateSetupDriver that will be caught as the result.UnexpectedError." );
-                        _allDrivers.Add( d );
-                        if( setupItemDriver != null ) _genDrivers.Add( setupItemDriver );
-                    }
-                }
-                // Pre initialization phasis.
-                using( Monitor.OpenInfo().Send( $"Calling PreInit on {_allDrivers.Count} drivers." ) )
-                {
-                    var reusableEvent = new DriverEventArgs( SetupStep.PreInit );
-                    foreach( var d in _allDrivers )
-                    {
-                        Debug.Assert( (d is SetupItemDriver) == !d.IsGroupHead, "There is only 2 DriverBase specializations: GenericItemSetupDriver and GroupHeadSetupDriver." );
-                        // Raising PreInit global event.
-                        var hE = DriverEvent;
-                        if( hE != null )
-                        {
-                            reusableEvent.Driver = d;
-                            hE( this, reusableEvent );
-                            if( reusableEvent.CancelSetup )
-                            {
-                                result.CanceledRegistrationCulprit = d.SortedItem;
-                                _allDrivers.Clear();
-                                return result;
-                            }
-                        }
-                        // Calling ExecutePreInit.
-                        if( !d.IsGroupHead )
-                        {
-                            SetupItemDriver genDriver = (SetupItemDriver)d;
-                            if( !genDriver.ExecutePreInit() )
-                            {
-                                string msg = $"Canceled by '{d.Item.FullName}'.ExecutePreInit() method.";
-                                return new SetupCoreEngineRegisterResult( null ) { CancelReason = msg };
-                            }
-                            IStObjSetupItem stObjIem = d.Item as IStObjSetupItem;
-                            if( stObjIem != null && stObjIem.StObj != null )
-                            {
-                                var all = stObjIem.StObj.Attributes.GetAllCustomAttributes<ISetupItemDriverAware>();
-                                foreach( var a in all )
+                                VersionedName externalVersion;
+                                IVersionedItem versioned = item.Item as IVersionedItem;
+                                if( versioned != null ) externalVersion = _versionTracker.GetCurrent( versioned );
+                                else externalVersion = null;
+
+                                if( item.IsGroupHead )
                                 {
-                                    if( !a.OnDriverPreInitialized( genDriver ) )
+                                    d = new GroupHeadSetupDriver( this, item, externalVersion );
+                                }
+                                else
+                                {
+                                    typeToCreate = ResolveDriverType( item );
+                                    d = setupItemDriver = CreateSetupDriver( typeToCreate, new SetupItemDriver.BuildInfo( this, item, externalVersion ) );
+                                }
+                            }
+                            Debug.Assert( d != null, "Otherwise an exception is thrown by CreateSetupDriver that will be caught as the result.UnexpectedError." );
+                            _allDrivers.Add( d );
+                            if( setupItemDriver != null ) _genDrivers.Add( setupItemDriver );
+                        }
+                    }
+                    #endregion
+
+                    #region Pre initialization phasis.
+                    using( Monitor.OpenInfo().Send( $"Calling PreInit on {_allDrivers.Count} drivers." ) )
+                    {
+                        var reusableEvent = new DriverEventArgs( SetupStep.PreInit );
+                        foreach( var d in _allDrivers )
+                        {
+                            Debug.Assert( (d is SetupItemDriver) == !d.IsGroupHead, "There is only 2 DriverBase specializations: GenericItemSetupDriver and GroupHeadSetupDriver." );
+                            // Raising PreInit global event.
+                            var hE = DriverEvent;
+                            if( hE != null )
+                            {
+                                reusableEvent.Driver = d;
+                                hE( this, reusableEvent );
+                                if( reusableEvent.CancelSetup )
+                                {
+                                    result.CanceledRegistrationCulprit = d.SortedItem;
+                                    _allDrivers.Clear();
+                                    return result;
+                                }
+                            }
+                            // Calling ExecutePreInit.
+                            if( !d.IsGroupHead )
+                            {
+                                SetupItemDriver genDriver = (SetupItemDriver)d;
+                                if( !genDriver.ExecutePreInit() )
+                                {
+                                    string msg = $"Canceled by '{d.Item.FullName}'.ExecutePreInit() method.";
+                                    return new SetupCoreEngineRegisterResult( null ) { CancelReason = msg };
+                                }
+                                IStObjSetupItem stObjIem = d.Item as IStObjSetupItem;
+                                if( stObjIem != null && stObjIem.StObj != null )
+                                {
+                                    var all = stObjIem.StObj.Attributes.GetAllCustomAttributes<ISetupItemDriverAware>();
+                                    foreach( var a in all )
                                     {
-                                        string msg = $"Canceled by one Attribute of Item '{d.Item.FullName}' during driver creation.";
+                                        if( !a.OnDriverPreInitialized( genDriver ) )
+                                        {
+                                            string msg = $"Canceled by one Attribute of Item '{d.Item.FullName}' during driver creation.";
+                                            return new SetupCoreEngineRegisterResult( null ) { CancelReason = msg };
+                                        }
+                                    }
+                                }
+                                ISetupItemDriverAware aware = d.Item as ISetupItemDriverAware;
+                                if( aware != null )
+                                {
+                                    if( !aware.OnDriverPreInitialized( genDriver ) )
+                                    {
+                                        string msg = $"Canceled by Item '{d.Item.FullName}' during driver creation.";
                                         return new SetupCoreEngineRegisterResult( null ) { CancelReason = msg };
                                     }
                                 }
                             }
-                            ISetupItemDriverAware aware = d.Item as ISetupItemDriverAware;
-                            if( aware != null )
-                            {
-                                if( !aware.OnDriverPreInitialized( genDriver ) )
-                                {
-                                    string msg = $"Canceled by Item '{d.Item.FullName}' during driver creation.";
-                                    return new SetupCoreEngineRegisterResult( null ) { CancelReason = msg };
-                                }
-                            }
                         }
                     }
+                    #endregion
                 }
             }
             catch( Exception ex )

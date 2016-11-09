@@ -22,7 +22,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Masked to formally be associated to <see cref="SqlTable"/>.
         /// </summary>
-        public new SqlTable ActualObject => (SqlTable)base.ActualObject; 
+        public new SqlTable ActualObject => (SqlTable)base.ActualObject;
 
     }
 }

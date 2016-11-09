@@ -192,6 +192,14 @@ namespace CK.Setup
             {
                 monitor.Error().Send( "Cycle detected: {0}.", CycleExplainedString );
             }
+            if( HasStartFatal )
+            {
+                monitor.Error().Send( "A fatal error has been raised during sort start." );
+            }
+            if( StartErrorCount > 0 )
+            {
+                monitor.Error().Send( $"{StartErrorCount} error(s) have been raised during sort start." );
+            }
         }
 
         private static bool IsGeneralizedBy( ISortedItem from, ISortedItem to )

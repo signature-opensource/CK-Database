@@ -18,7 +18,7 @@ namespace CK.SqlServer.Setup
         {
         }
 
-        protected new SqlTableAttribute Attribute { get { return (SqlTableAttribute)base.Attribute; } }
+        protected new SqlTableAttribute Attribute => (SqlTableAttribute)base.Attribute; 
 
         protected override void ConfigureMutableItem( IActivityMonitor monitor, IStObjMutableItem o )
         {
