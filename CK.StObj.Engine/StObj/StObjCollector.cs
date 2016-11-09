@@ -222,7 +222,7 @@ namespace CK.Setup
                         Debug.Assert( result.HasFatalError );
                         return result;
                     }
-                    sortResult = DependencySorter.OrderItems( result.AllMutableItems, null, new DependencySorterOptions()
+                    sortResult = DependencySorter.OrderItems( _monitor, result.AllMutableItems, null, new DependencySorterOptions()
                                                                                                     {
                                                                                                         SkipDependencyToContainer = true,
                                                                                                         HookInput = DependencySorterHookInput,

@@ -58,7 +58,7 @@ namespace CK.SqlServer.Setup
 
             public IEnumerable<IDependentItemRef> Children => null;
 
-            public object StartDependencySort() => null;
+            public object StartDependencySort( IActivityMonitor m ) => null;
         }
 
         public SqlDatabaseItem( IActivityMonitor monitor, IStObjSetupData data )

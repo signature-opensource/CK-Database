@@ -45,11 +45,24 @@ namespace CK.Setup
         bool HasStructureError { get; }
 
         /// <summary>
-        /// True only if no cycle has been detected, and no structure error (<see cref="HasStructureError"/>) 
-        /// exist: <see cref="SortedItems"/> can be exploited.
+        /// True only if no cycle has been detected, no structure error (<see cref="HasStructureError"/>) exist.
+        /// and no errors have been signaled (<see cref="HasStartFatal"/> must be false and <see cref="StartErrorCount"/> 
+        /// must be 0): <see cref="SortedItems"/> can be exploited.
         /// When IsComplete is false, <see cref="LogError"/> can be used to have a dump of the errors in a <see cref="IActivityMonitor"/>.
         /// </summary>
         bool IsComplete { get; }
+
+        /// <summary>
+        /// Gets the count of <see cref="IDependentItem.StartDependencySort(IActivityMonitor)"/> that signaled an 
+        /// error in the monitor.
+        /// </summary>
+        int StartErrorCount { get; }
+
+        /// <summary>
+        /// Gets whether a <see cref="IDependentItem.StartDependencySort(IActivityMonitor)"/> signaled a
+        /// fatal.
+        /// </summary>
+        bool HasStartFatal{ get; }
 
         /// <summary>
         /// Gets a description of the detected cycle. Null if <see cref="CycleDetected"/> is null.

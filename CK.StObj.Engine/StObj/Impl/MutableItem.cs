@@ -727,7 +727,7 @@ namespace CK.Setup
             }
         }
 
-        object IDependentItem.StartDependencySort() =>  null;
+        object IDependentItem.StartDependencySort( IActivityMonitor m ) =>  null;
 
         string IDependentItemRef.FullName => _dFullName; 
 

@@ -19,13 +19,17 @@ namespace CK.Setup
         /// Try to order items. First cycle encountered is detected, missing dependencies are 
         /// collected and resulting ordered items are initialized in the correct order.
         /// </summary>
+        /// <param name="monitor">
+        /// Monitor that enables <see cref="IDependentItem.StartDependencySort(IActivityMonitor)"/>
+        /// to signal error or fatal.
+        /// </param>
         /// <param name="items">Set of <see cref="IDependentItem"/> to order.</param>
         /// <param name="discoverers">An optional set of <see cref="IDependentItemDiscoverer"/> (can be null).</param>
         /// <param name="options">Options for advanced uses.</param>
         /// <returns>A <see cref="IDependencySorterResult"/>.</returns>
-        public static DependencySorterResult<T> OrderItems( IEnumerable<T> items, IEnumerable<IDependentItemDiscoverer<T>> discoverers, DependencySorterOptions options = null )
+        public static DependencySorterResult<T> OrderItems( IActivityMonitor monitor, IEnumerable<T> items, IEnumerable<IDependentItemDiscoverer<T>> discoverers, DependencySorterOptions options = null )
         {
-            var computer = new RankComputer( items, discoverers, options ?? _defaultOptions );
+            var computer = new RankComputer( monitor, items, discoverers, options ?? _defaultOptions );
             computer.Process();
             return computer.GetResult();
         }
@@ -34,35 +38,47 @@ namespace CK.Setup
         /// Try to order items. First cycle encountered is detected, missing dependencies are 
         /// collected and resulting ordered items are initialized in the correct order.
         /// </summary>
+        /// <param name="monitor">
+        /// Monitor that enables <see cref="IDependentItem.StartDependencySort(IActivityMonitor)"/>
+        /// to signal error or fatal.
+        /// </param>
         /// <param name="items">Set of <see cref="IDependentItem"/> to order.</param>
         /// <returns>A <see cref="DependencySorterResult{T}"/>.</returns>
-        public static DependencySorterResult<T> OrderItems( params T[] items )
+        public static DependencySorterResult<T> OrderItems( IActivityMonitor monitor,  params T[] items )
         {
-            return OrderItems( items, null, null );
+            return OrderItems( monitor, items, null, null );
         }
 
         /// <summary>
         /// Try to order items. First cycle encountered is detected, missing dependencies are 
         /// collected and resulting ordered items are initialized in the correct order.
         /// </summary>
+        /// <param name="monitor">
+        /// Monitor that enables <see cref="IDependentItem.StartDependencySort(IActivityMonitor)"/>
+        /// to signal error or fatal.
+        /// </param>
         /// <param name="reverseName">True to reverse lexicographic order for items that share the same rank.</param>
         /// <param name="items">Set of <see cref="IDependentItem"/> to order.</param>
         /// <returns>A <see cref="DependencySorterResult{T}"/>.</returns>
-        public static DependencySorterResult<T> OrderItems( bool reverseName, params T[] items )
+        public static DependencySorterResult<T> OrderItems( IActivityMonitor monitor, bool reverseName, params T[] items )
         {
-            return OrderItems( items, null, new DependencySorterOptions() { ReverseName = reverseName } );
+            return OrderItems( monitor, items, null, new DependencySorterOptions() { ReverseName = reverseName } );
         }
 
         /// <summary>
         /// Try to order items. First cycle encountered is detected, missing dependencies are 
         /// collected and resulting ordered items are initialized in the correct order.
         /// </summary>
+        /// <param name="monitor">
+        /// Monitor that enables <see cref="IDependentItem.StartDependencySort(IActivityMonitor)"/>
+        /// to signal error or fatal.
+        /// </param>
         /// <param name="options">Options for advanced uses.</param>
         /// <param name="items">Set of <see cref="IDependentItem"/> to order.</param>
         /// <returns>A <see cref="DependencySorterResult{T}"/>.</returns>
-        public static DependencySorterResult<T> OrderItems( DependencySorterOptions options, params T[] items )
+        public static DependencySorterResult<T> OrderItems( IActivityMonitor monitor, DependencySorterOptions options, params T[] items )
         {
-            return OrderItems( items, null, options );
+            return OrderItems( monitor, items, null, options );
         }
 
         internal class Entry : ISortedItem<T>
@@ -409,10 +425,14 @@ namespace CK.Setup
             readonly List<DependentItemIssue> _itemIssues;
             readonly Comparison<Entry> _comparer;
             readonly DependencySorterOptions _options;
+            readonly IActivityMonitor _monitor;
             List<CycleExplainedElement> _cycle;
+            int _startErrorCount;
+            bool _fatalError;
 
-            public RankComputer( IEnumerable<T> items, IEnumerable<IDependentItemDiscoverer<T>> discoverers, DependencySorterOptions options )
+            public RankComputer( IActivityMonitor m, IEnumerable<T> items, IEnumerable<IDependentItemDiscoverer<T>> discoverers, DependencySorterOptions options )
             {
+                _monitor = m;
                 _entries = new Dictionary<object, object>();
                 _result = new List<Entry>();
                 _itemIssues = new List<DependentItemIssue>();
@@ -420,18 +440,21 @@ namespace CK.Setup
                 if( _options.ReverseName ) _comparer = ReverseComparer;
                 else _comparer =  NormalComparer;
 
-                Registerer r = new Registerer( this );
-
-                if( items != null ) r.Register( items );
-                if( discoverers != null )
+                Registerer r;
+                using( m.OnError( () => _fatalError = true, () => ++_startErrorCount ) )
                 {
-                    foreach( var d in discoverers )
+                    r = new Registerer( this );
+                    if( items != null ) r.Register( items );
+                    if( discoverers != null )
                     {
-                        items = d.GetOtherItemsToRegister();
-                        if( items != null ) r.Register( items );
+                        foreach( var d in discoverers )
+                        {
+                            items = d.GetOtherItemsToRegister();
+                            if( items != null ) r.Register( items );
+                        }
                     }
+                    r.FinalizeRegister();
                 }
-                r.FinalizeRegister();
                 Debug.Assert( _entries.Values.All( o => o is Entry ), "No more start values in dictionary once registered done." );
             }
 
@@ -656,7 +679,7 @@ namespace CK.Setup
                             }
                         }
                         // Gives the item an opportunity to prepare its data (mainly its FullName).
-                        entryOrStartValue = e.StartDependencySort();
+                        entryOrStartValue = e.StartDependencySort( _computer._monitor );
                         if( memorizeStartValue && entryOrStartValue != null ) _entries[e] = entryOrStartValue;
                     }
                     return entryOrStartValue;
@@ -1027,6 +1050,10 @@ namespace CK.Setup
                 return issues;
             }
 
+            public int StartErrorCount => _startErrorCount;
+
+            public bool FatalError => _fatalError;
+
             #region Processing: Rank computing & Cycle detection.
 
             public void Process()
@@ -1300,9 +1327,9 @@ namespace CK.Setup
                     int i = 0;
                     foreach( var e in _result ) e.Index = i++;
                     if( _options.HookOutput != null ) _options.HookOutput( _result );
-                    return new DependencySorterResult<T>( _result, null, _itemIssues );
+                    return new DependencySorterResult<T>( _result, null, _itemIssues, _startErrorCount, _fatalError );
                 }
-                return new DependencySorterResult<T>( null, _cycle, _itemIssues );
+                return new DependencySorterResult<T>( null, _cycle, _itemIssues, _startErrorCount, _fatalError );
             }
 
             static int NormalComparer( Entry o1, Entry o2 )

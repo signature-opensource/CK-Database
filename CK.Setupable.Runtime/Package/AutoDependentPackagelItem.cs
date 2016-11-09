@@ -162,7 +162,7 @@ namespace CK.Setup
             }
         }
 
-        object IDependentItem.StartDependencySort() => typeof( SetupItemDriver );
+        object IDependentItem.StartDependencySort( IActivityMonitor m ) => typeof( SetupItemDriver );
 
         bool IDependentItemRef.Optional => false; 
 

@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using CK.Core;
 
 namespace CK.Setup
 {
@@ -82,8 +83,9 @@ namespace CK.Setup
         /// Allows the dependent item to prepare itself before ordering. The returned object (if any)
         /// is made available after the sort in <see cref="ISortedItem.StartValue"/>.
         /// </summary>
+        /// <param name="m">Monitor that can be use to signal error. Any error or fatal logged wil stop the process.</param>
         /// <returns>Any object that has to be associated to this item and a <see cref="G:DependencySorter.OrderItems"/> call.</returns>
-        object StartDependencySort();
+        object StartDependencySort( IActivityMonitor m );
     }
 }
 

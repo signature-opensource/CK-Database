@@ -49,13 +49,13 @@ namespace CK.SqlServer.Setup
         /// </summary>
         public ResourceLocator ResourceLocation { get; set; }
 
-        protected override object StartDependencySort()
+        protected override object StartDependencySort( IActivityMonitor m )
         {
             if( ObjectsPackage != null )
             {
                 ObjectsPackage.Groups.AddRange( Groups.OfType<SqlDatabaseItem>() );
             }
-            return base.StartDependencySort();
+            return base.StartDependencySort( m );
         }
 
         /// <summary>

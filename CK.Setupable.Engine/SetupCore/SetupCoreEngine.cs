@@ -253,7 +253,7 @@ namespace CK.Setup
             // the state remains set to SetupEngineState.None.
             try
             {
-                result = new SetupCoreEngineRegisterResult( DependencySorter<ISetupItem>.OrderItems( items, discoverers, options ) );
+                result = new SetupCoreEngineRegisterResult( DependencySorter<ISetupItem>.OrderItems( Monitor, items, discoverers, options ) );
                 if( result.IsValid )
                 {
                     foreach( var item in result.SortResult.SortedItems )

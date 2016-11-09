@@ -34,7 +34,7 @@ namespace CK.SqlServer.Setup
 
         public IEnumerable<IDependentItemRef> RequiredBy => null; 
 
-        public object StartDependencySort() => typeof( SqlDatabaseConnectionItemDriver );
+        public object StartDependencySort( IActivityMonitor m ) => typeof( SqlDatabaseConnectionItemDriver );
 
         bool IDependentItemRef.Optional => false; 
 

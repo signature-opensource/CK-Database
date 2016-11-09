@@ -22,12 +22,12 @@ namespace CK.Setup.Dependency.Tests
         {
             var c = new TestableContainer( "C" );
             {
-                var r = DependencySorter.OrderItems( c );
+                var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, c );
                 r.AssertOrdered( "C.Head", "C" );
                 ResultChecker.SimpleCheck( r );
             }
             {
-                var r = DependencySorter.OrderItems( true, c );
+                var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, true, c );
                 r.AssertOrdered( "C.Head", "C" );
                 ResultChecker.SimpleCheck( r );
             }
@@ -38,7 +38,7 @@ namespace CK.Setup.Dependency.Tests
         {
             var c = new TestableContainer( "C", new TestableItem( "A" ), new TestableItem( "B" ) );
 
-            var r = DependencySorter.OrderItems( c );
+            var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, c );
             Assert.That( r.SortedItems.Count, Is.EqualTo( 4 ) );
 
             Assert.That( r.SortedItems[0].IsGroupHead, "Head of Container." );
@@ -57,7 +57,7 @@ namespace CK.Setup.Dependency.Tests
             var e = new TestableItem( "E" );
             c.Add( e );
 
-            var r = DependencySorter.OrderItems( e );
+            var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, e );
             Assert.That( r.SortedItems.Count, Is.EqualTo( 5 ) );
 
             Assert.That( r.SortedItems[0].IsGroupHead, "Head of Container." );
@@ -79,9 +79,9 @@ namespace CK.Setup.Dependency.Tests
 
             Action test = () =>
                 { 
-                    var r = DependencySorter.OrderItems( pAModel, pA );
+                    var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, pAModel, pA );
                     ResultChecker.SimpleCheck( r );
-                    var rRevert = DependencySorter.OrderItems( true, pAModel, pA );
+                    var rRevert = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, true, pAModel, pA );
                     ResultChecker.SimpleCheck( rRevert );
             
                     r.AssertOrdered( "Model.A.Head", "Model.A", "A.Head", "A" );
@@ -106,9 +106,9 @@ namespace CK.Setup.Dependency.Tests
             
             Action testAndRestore = () =>
                 { 
-                    var r1 = DependencySorter.OrderItems( pAModel, pA, pBModel, pB );
+                    var r1 = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, pAModel, pA, pBModel, pB );
                     ResultChecker.SimpleCheck( r1 );
-                    var r2 = DependencySorter.OrderItems( true, pAModel, pA, pBModel, pB );
+                    var r2 = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, true, pAModel, pA, pBModel, pB );
                     ResultChecker.SimpleCheck( r2 );
             
                     // There is no constraint between A and Model.B: depending on the sort order this changes.
@@ -151,9 +151,9 @@ namespace CK.Setup.Dependency.Tests
 
             Action testAndRestore = () =>
             {
-                var r1 = DependencySorter.OrderItems( all );
+                var r1 = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, all );
                 ResultChecker.SimpleCheck( r1 );
-                var r2 = DependencySorter.OrderItems( true, all );
+                var r2 = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, true, all );
                 ResultChecker.SimpleCheck( r2 );
 
                 // There is no constraint between:
@@ -199,21 +199,21 @@ namespace CK.Setup.Dependency.Tests
             var c1 = new TestableContainer( "C1", new TestableItem( "X" ), "⇀C0" );
             var c2 = new TestableContainer( "C2", new TestableItem( "Y" ), "⇀C1" );
             {
-                var r = DependencySorter.OrderItems( c2, c0, c1 );
+                var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, c2, c0, c1 );
                 r.AssertOrdered( "C0.Head", "A", "B", "C", "C0", "C1.Head", "X", "C1", "C2.Head", "Y", "C2" );
                 new ResultChecker( r ).CheckRecurse( "C0", "C1", "C2" );
                 ResultChecker.SimpleCheck( r );
                 r.CheckChildren( "C0", "A,B,C" );
             }
             {
-                var r = DependencySorter.OrderItems( c0, c1, c2 );
+                var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, c0, c1, c2 );
                 r.AssertOrdered( "C0.Head", "A", "B", "C", "C0", "C1.Head", "X", "C1", "C2.Head", "Y", "C2" );
                 new ResultChecker( r ).CheckRecurse( "C0", "C1", "C2" );
                 ResultChecker.SimpleCheck( r );
                 r.CheckChildren( "C0", "A,B,C" );
             }
             {
-                var r = DependencySorter.OrderItems( c2, c1, c0 );
+                var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, c2, c1, c0 );
                 r.AssertOrdered( "C0.Head", "A", "B", "C", "C0", "C1.Head", "X", "C1", "C2.Head", "Y", "C2" );
                 new ResultChecker( r ).CheckRecurse( "C0", "C1", "C2" );
                 ResultChecker.SimpleCheck( r );
@@ -227,7 +227,7 @@ namespace CK.Setup.Dependency.Tests
             var c0 = new TestableContainer( "C0", new TestableItem( "A" ), new TestableItem( "B" ), new TestableItem( "C" ) );
             var c1 = new TestableContainer( "C1", new TestableItem( "X", "⇀C0" ) );
             var c2 = new TestableContainer( "C2", new TestableItem( "Y", "⇀C1" ) );
-            var r = DependencySorter.OrderItems( c2, c0, c1 );
+            var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, c2, c0, c1 );
             new ResultChecker( r ).CheckRecurse( "C0", "C1", "C2" );
             ResultChecker.SimpleCheck( r );
             r.CheckChildren( "C0", "A,B,C" );
@@ -249,7 +249,7 @@ namespace CK.Setup.Dependency.Tests
                             )
                 );
             {
-                var r = DependencySorter.OrderItems( c );
+                var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, c );
                 Assert.That( r.ItemIssues[0].Item.FullName, Is.EqualTo( "Root" ) );
                 Assert.That( r.ItemIssues[0].RequiredMissingCount, Is.EqualTo( 1 ) );
                 Assert.That( r.ItemIssues[0].MissingDependencies.Count(), Is.EqualTo( 1 ) );
@@ -268,7 +268,7 @@ namespace CK.Setup.Dependency.Tests
         public void CycleDetection0()
         {
             var c = new TestableContainer( "A", "⇀ A" );
-            var r = DependencySorter.OrderItems( c );
+            var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, c );
             Assert.That( r.CycleDetected, Is.Not.Null );
             Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ A ⇀ A" ) );
             ResultChecker.SimpleCheck( r );
@@ -286,7 +286,7 @@ namespace CK.Setup.Dependency.Tests
                             new TestableItem( "Stratus" )
                             )
                 );
-            var r = DependencySorter.OrderItems( c );
+            var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, c );
             Assert.That( r.CycleDetected, Is.Not.Null );
             Assert.That( r.SortedItems, Is.Null );
             // The detected cycle depends on the algorithm. 
@@ -309,7 +309,7 @@ namespace CK.Setup.Dependency.Tests
                             new TestableItem( "Stratus" )
                             )
                 );
-            var r = DependencySorter.OrderItems( c );
+            var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, c );
             Assert.That( r.CycleDetected, Is.Not.Null );
             Assert.That( r.SortedItems, Is.Null );
             // See remark in CycleDetection1.
@@ -329,7 +329,7 @@ namespace CK.Setup.Dependency.Tests
                             new TestableItem( "Stratus", "↽ Rubis" )
                             )
                 );
-            var r = DependencySorter.OrderItems( c );
+            var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, c );
             Assert.That( r.CycleDetected, Is.Not.Null );
             Assert.That( r.SortedItems, Is.Null );
             // See remark in CycleDetection1.
@@ -363,21 +363,21 @@ namespace CK.Setup.Dependency.Tests
                     )
                 );
             {
-                var r = DependencySorter.OrderItems( c );
+                var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, c );
                 Assert.That( r.ItemIssues.Any( m => m.MissingDependencies.Contains( "AMissingDependency" ) ) );
                 new ResultChecker( r ).CheckRecurse( "Root" );
                 ResultChecker.SimpleCheck( r );
             }
             {
                 // Ordering handles duplicates.
-                var r = DependencySorter.OrderItems( new IDependentItem[]{ c, c } );
+                var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, new IDependentItem[]{ c, c } );
                 Assert.That( r.ItemIssues.Any( m => m.MissingDependencies.Contains( "AMissingDependency" ) ) );
                 new ResultChecker( r ).CheckRecurse( "Root" );
                 ResultChecker.SimpleCheck( r );
             }
             {
                 // Ordering handles duplicates.
-                var r = DependencySorter.OrderItems( new IDependentItem[] { c, c }.Concat( c.Children.Cast<IDependentItem>() ).Concat( c.Children.Cast<IDependentItem>() ), null );
+                var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, new IDependentItem[] { c, c }.Concat( c.Children.Cast<IDependentItem>() ).Concat( c.Children.Cast<IDependentItem>() ), null );
                 Assert.That( r.ItemIssues.Any( m => m.MissingDependencies.Contains( "AMissingDependency" ) ) );
                 new ResultChecker( r ).CheckRecurse( "Root" );
                 ResultChecker.SimpleCheck( r );
@@ -399,7 +399,7 @@ namespace CK.Setup.Dependency.Tests
             oBLevel1.Container = pABLevel1;
             oBLevel1.Requires.Add( oA );
 
-            var r = DependencySorter.OrderItems( pAB, oA, oB, pABLevel1, oBLevel1 );
+            var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, pAB, oA, oB, pABLevel1, oBLevel1 );
             Assert.That( r.IsComplete );
             r.AssertOrdered( "PackageForAB.Head", "A", "B", "PackageForAB", "PackageForABLevel1.Head", "ObjectBLevel1", "PackageForABLevel1" );
             r.CheckChildren( "PackageForAB", "A,B" );

@@ -144,7 +144,7 @@ namespace CK.Setup.Dependency.Tests
             get { return false; }
         }
 
-        object IDependentItem.StartDependencySort()
+        object IDependentItem.StartDependencySort( IActivityMonitor m )
         {
             if( _startDependencySortCount != -1 )
             {

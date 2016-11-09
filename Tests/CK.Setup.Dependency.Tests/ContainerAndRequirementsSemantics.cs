@@ -40,7 +40,7 @@ namespace CK.Setup.Dependency.Tests
                 ASpec.Container = System;
 
                 {
-                    var r = DependencySorter.OrderItems( A, B, ASpec );
+                    var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, A, B, ASpec );
                     Assert.That( r.IsComplete );
                     r.AssertOrdered( "System.Head", "A.Head", "B.Head", "B", "A", "ASpec.Head", "ASpec", "System" );
                 }
@@ -51,7 +51,7 @@ namespace CK.Setup.Dependency.Tests
                 // Previous scenario is the same as:
                 ASpec.Generalization = A;
                 {
-                    var r = DependencySorter.OrderItems( A, B, ASpec );
+                    var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, A, B, ASpec );
                     Assert.That( r.IsComplete );
                     r.AssertOrdered( "System.Head", "A.Head", "B.Head", "B", "A", "ASpec.Head", "ASpec", "System" );
                 }
@@ -62,7 +62,7 @@ namespace CK.Setup.Dependency.Tests
                     ASpec.Generalization = null;
                     ASpec.Requires.Add( A );
                     {
-                        var r = DependencySorter.OrderItems( true, A, B, ASpec );
+                        var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, true, A, B, ASpec );
                         Assert.That( r.IsComplete );
                         r.AssertOrdered( "System.Head", "A.Head", "B.Head", "B", "A", "System", "ASpec.Head", "ASpec" );
                         // Here ASpec => A appears.
@@ -70,7 +70,7 @@ namespace CK.Setup.Dependency.Tests
                     }
                     ASpec.Generalization = A;
                     {
-                        var r = DependencySorter.OrderItems( true, A, B, ASpec );
+                        var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, true, A, B, ASpec );
                         Assert.That( r.IsComplete );
                         // Even with reverse naming, since ASpec is in System, System container closes the chain.
                         r.AssertOrdered( "System.Head", "A.Head", "B.Head", "B", "A", "ASpec.Head", "ASpec", "System" );
@@ -84,14 +84,14 @@ namespace CK.Setup.Dependency.Tests
                 ASpec.Container = A;
                 // It does not work: how a more specialized object can be "contained" in its "Generalization"?
                 {
-                    var r = DependencySorter.OrderItems( A, B, ASpec );
+                    var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, A, B, ASpec );
                     Assert.That( !r.IsComplete );
                     Assert.That( r.CycleDetected, Is.Not.Null );
                 }
                 // Of course, ASpec can not be inside B...
                 ASpec.Container = B;
                 {
-                    var r = DependencySorter.OrderItems( A, B, ASpec );
+                    var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, A, B, ASpec );
                     Assert.That( !r.IsComplete );
                     Assert.That( r.CycleDetected, Is.Not.Null );
                 }
@@ -113,13 +113,13 @@ namespace CK.Setup.Dependency.Tests
                 C.Children.Add( I );
                 I.Requires.Add( C );
                 {
-                    var r = DependencySorter.OrderItems( C );
+                    var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, C );
                     Assert.That( !r.IsComplete );
                     Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ C ⊐ I ⇀ C" ) );
                 }
                 // Under certain circumstances, one can consider that an item that is contained in a Container can require it.
                 {
-                    var r = DependencySorter.OrderItems( new DependencySorterOptions() { SkipDependencyToContainer = true }, C );
+                    var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, new DependencySorterOptions() { SkipDependencyToContainer = true }, C );
                     Assert.That( r.IsComplete );
                     Assert.That( r.IsOrdered( "C.Head", "I", "C" ) );
                     Assert.That( r.SortedItems[1].Requires, Is.Empty, "Requires have been cleaned up." );
@@ -128,7 +128,7 @@ namespace CK.Setup.Dependency.Tests
                 I.Generalization = C;
                 // Generalization is not concerned by this option.
                 {
-                    var r = DependencySorter.OrderItems( C );
+                    var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, C );
                     Assert.That( !r.IsComplete );
                     Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ C ⊐ I ↟ C" ) );
                 }
@@ -141,13 +141,13 @@ namespace CK.Setup.Dependency.Tests
                 // If ISpec requires SuperC, this creates a cycle without the option.
                 ISpec.Add( "⇀SuperC" );
                 {
-                    var r = DependencySorter.OrderItems( new DependencySorterOptions() { SkipDependencyToContainer = true }, C, ISpec );
+                    var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, new DependencySorterOptions() { SkipDependencyToContainer = true }, C, ISpec );
                     Assert.That( r.IsComplete );
                     Assert.That( r.IsOrdered( "SuperC.Head", "C.Head", "A", "I", "ISpec", "C", "SuperC" ) );
                     Assert.That( r.SortedItems[1].Requires, Is.Empty, "Requires have been cleaned up." );
                 }
                 {
-                    var r = DependencySorter.OrderItems( SuperC, ISpec );
+                    var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, SuperC, ISpec );
                     Assert.That( !r.IsComplete );
                     Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ SuperC ⊐ C ⊐ ISpec ⇀ SuperC" ) );
                 }

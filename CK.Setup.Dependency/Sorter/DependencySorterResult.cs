@@ -23,9 +23,16 @@ namespace CK.Setup
         int _itemIssueWithStructureErrorCount;
         bool _requiredMissingIsError;
 
-        internal DependencySorterResult( List<DependencySorter<T>.Entry> result, List<CycleExplainedElement> cycle, List<DependentItemIssue> itemIssues )
+        internal DependencySorterResult( 
+            List<DependencySorter<T>.Entry> result, 
+            List<CycleExplainedElement> cycle, 
+            List<DependentItemIssue> itemIssues,
+            int startErrorCount,
+            bool hasStartFatal )
         {
             Debug.Assert( (result == null) != (cycle == null), "cycle ^ result" );
+            HasStartFatal = hasStartFatal;
+            StartErrorCount = startErrorCount;
             if( result == null )
             {
                 SortedItems = null;
@@ -51,15 +58,24 @@ namespace CK.Setup
         /// </summary>
         public readonly IReadOnlyList<ISortedItem<T>> SortedItems;
 
-        IReadOnlyList<ISortedItem> IDependencySorterResult.SortedItems 
-        { 
-            get { return SortedItems; } 
-        }
+        IReadOnlyList<ISortedItem> IDependencySorterResult.SortedItems  => SortedItems; 
 
         /// <summary>
         /// List of <see cref="DependentItemIssue"/>. Never null.
         /// </summary>
-        public IReadOnlyList<DependentItemIssue> ItemIssues { get; private set; }
+        public IReadOnlyList<DependentItemIssue> ItemIssues { get; }
+
+        /// <summary>
+        /// Gets the count of <see cref="IDependentItem.StartDependencySort(IActivityMonitor)"/> that signaled an 
+        /// error in the monitor.
+        /// </summary>
+        public int StartErrorCount { get; }
+
+        /// <summary>
+        /// Gets whether a <see cref="IDependentItem.StartDependencySort(IActivityMonitor)"/> signaled a
+        /// fatal.
+        /// </summary>
+        public bool HasStartFatal { get; }
 
         /// <summary>
         /// Gets or sets whether any non optional missing requirement or generalization is a structure error (<see cref="HasStructureError"/> 
@@ -127,13 +143,14 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// True only if no cycle has been detected, and no structure error (<see cref="HasStructureError"/>) 
-        /// exist: <see cref="SortedItems"/> can be exploited.
+        /// True only if no cycle has been detected, no structure error (<see cref="HasStructureError"/>) exist.
+        /// and no errors have been signaled (<see cref="HasStartFatal"/> must be false and <see cref="StartErrorCount"/> 
+        /// must be 0): <see cref="SortedItems"/> can be exploited.
         /// When IsComplete is false, <see cref="LogError"/> can be used to have a dump of the errors in a <see cref="IActivityMonitor"/>.
         /// </summary>
         public bool IsComplete
         {
-            get { return CycleDetected == null && HasStructureError == false; }
+            get { return CycleDetected == null && !HasStructureError && !HasStartFatal && StartErrorCount == 0; }
         }
 
         /// <summary>

@@ -112,7 +112,7 @@ namespace CK.Setup
             set { base.ItemKind = value; }
         }
 
-        protected override object StartDependencySort()
+        protected override object StartDependencySort( IActivityMonitor m )
         {
             return _driverType;
         }

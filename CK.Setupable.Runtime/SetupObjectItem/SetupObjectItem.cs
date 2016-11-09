@@ -241,9 +241,9 @@ namespace CK.Setup
         /// Must return the <see cref="Type"/> or the Assembly qualified name of the 
         /// associated <see cref="SetupItemDriver"/> for this item.
         /// </returns>
-        protected virtual object StartDependencySort()
+        protected virtual object StartDependencySort( IActivityMonitor m )
         {
-            if( _driverType == null ) throw new InvalidOperationException( "SetDriverType must have been called before starting the topological sort." );
+            if( _driverType == null ) m.Error().Send( $"'{FullName}': SetDriverType must have been called before starting the topological sort." );
             return _driverType;
         }
 
@@ -284,7 +284,7 @@ namespace CK.Setup
 
         bool IDependentItemRef.Optional => false; 
 
-        object IDependentItem.StartDependencySort()
+        object IDependentItem.StartDependencySort( IActivityMonitor m )
         {
             if( _requires != null && ExplicitRequiresMustBeTransformed )
             {
@@ -294,7 +294,7 @@ namespace CK.Setup
                     if( transformed != null ) _requires[i] = transformed;
                 }
             }
-            return StartDependencySort();
+            return StartDependencySort( m );
         }
         /// <summary>
         /// This ensures that the transform target is registered if it exists

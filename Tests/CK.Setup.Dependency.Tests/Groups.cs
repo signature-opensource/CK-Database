@@ -28,15 +28,15 @@ namespace CK.Setup.Dependency.Tests
                 g.Add( i );
                 i.Container = c;
                 {
-                    var r = DependencySorter.OrderItems( i, c, g );
+                    var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, i, c, g );
                     r.AssertOrdered( "C.Head", "G.Head", "I", "C", "G" );
                 }
                 {
-                    var r = DependencySorter.OrderItems( c, i, g );
+                    var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, c, i, g );
                     r.AssertOrdered( "C.Head", "G.Head", "I", "C", "G" );
                 }
                 {
-                    var r = DependencySorter.OrderItems( g );
+                    var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, g );
                     r.AssertOrdered( "C.Head", "G.Head", "I", "C", "G" );
                 }
             }
@@ -53,32 +53,32 @@ namespace CK.Setup.Dependency.Tests
                 g3.Groups.Add( g2 );
                 g2.Groups.Add( g1 );
                 {
-                    var r = DependencySorter.OrderItems( g1, g2, g3 );
+                    var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, g1, g2, g3 );
                     CheckG1G2G3( r );
 
                 }
                 {
                     // Auto discovering by Groups.
-                    var r = DependencySorter.OrderItems( g3 );
+                    var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, g3 );
                     CheckG1G2G3( r );
                 }
                 g2.Children.Add( g3 );
                 {
                     // Auto discovering: G1 by Groups and G3 by Children.
-                    var r = DependencySorter.OrderItems( g2 );
+                    var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, g2 );
                     CheckG1G2G3( r );
                 }
                 g1.Children.Add( g2 );
                 {
                     // Auto discovering by Children.
-                    var r = DependencySorter.OrderItems( g1 );
+                    var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, g1 );
                     CheckG1G2G3( r );
                 }
                 g3.Groups.Remove( g2 );
                 g2.Groups.Remove( g1 );
                 {
                     // Auto discovering by Children (no redundant Groups relations).
-                    var r = DependencySorter.OrderItems( g1 );
+                    var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, g1 );
                     CheckG1G2G3( r );
                 }
             }
@@ -95,7 +95,7 @@ namespace CK.Setup.Dependency.Tests
                 g3.Add( "∈G2" );
                 g2.Add( "∈G1" );
                 {
-                    var r = DependencySorter<IDependentItem>.OrderItems( g1, g2, g3 );
+                    var r = DependencySorter<IDependentItem>.OrderItems( TestHelper.ConsoleMonitor, g1, g2, g3 );
                     CheckG1G2G3( r );
 
                 }
@@ -103,7 +103,7 @@ namespace CK.Setup.Dependency.Tests
                 g2.Groups.Add( g1 );
                 {
                     // Auto discovering by Groups (and no clashes with names).
-                    var r = DependencySorter<IDependentItem>.OrderItems( g3 );
+                    var r = DependencySorter<IDependentItem>.OrderItems( TestHelper.ConsoleMonitor, g3 );
                     CheckG1G2G3( r );
                 }
             }

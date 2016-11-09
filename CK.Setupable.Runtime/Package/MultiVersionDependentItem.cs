@@ -156,9 +156,9 @@ namespace CK.Setup
         /// Must return the <see cref="Type"/> of the setup driver (specialization of <see cref="SetupItemDriver"/>), or its assembly qualified name.
         /// By default, returns the type of <see cref="SetupItemDriver"/>.
         /// </returns>
-        protected virtual object StartDependencySort() => typeof( SetupItemDriver );
+        protected virtual object StartDependencySort( IActivityMonitor m ) => typeof( SetupItemDriver );
 
-        object IDependentItem.StartDependencySort() => StartDependencySort();
+        object IDependentItem.StartDependencySort( IActivityMonitor m ) => StartDependencySort( m );
 
         string IVersionedItem.ItemType => _itemType; 
 

@@ -149,13 +149,14 @@ namespace CK.Setup
         /// This start method has been already called on direct dependencies <see cref="Container"/>, <see cref="Generalization"/>
         /// and <see cref="Requires"/> if they are <see cref="IDependentItem"/> (and not strings).
         /// </summary>
+        /// <param name="m">Monitor to use to signal error or fatal.</param>
         /// <returns>
         /// Must return the <see cref="Type"/> of the setup driver (specialization of <see cref="SetupItemDriver"/>), or its assembly qualified name.
         /// By default, returns the type of <see cref="SetupItemDriver"/>.
         /// </returns>
-        protected virtual object StartDependencySort() => _driverType;
+        protected virtual object StartDependencySort( IActivityMonitor m ) => _driverType;
 
-        object IDependentItem.StartDependencySort() => StartDependencySort();
+        object IDependentItem.StartDependencySort( IActivityMonitor m ) => StartDependencySort( m );
 
         bool IDependentItemRef.Optional => false; 
 
