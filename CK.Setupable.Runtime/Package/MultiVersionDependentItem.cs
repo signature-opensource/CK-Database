@@ -160,13 +160,6 @@ namespace CK.Setup
 
         object IDependentItem.StartDependencySort() => StartDependencySort();
 
-        /// <summary>
-        /// Called once the associated driver has been instanciated.
-        /// </summary>
-        /// <param name="driver">Driver for this item.</param>
-        /// <returns>True on success. Returning false cancels the setup process.</returns>
-        protected virtual bool OnDriverCreated( SetupItemDriver driver ) => true;
-
         string IVersionedItem.ItemType => _itemType; 
 
         bool IDependentItemRef.Optional => false; 

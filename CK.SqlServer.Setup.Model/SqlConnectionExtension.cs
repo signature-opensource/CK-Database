@@ -1,3 +1,4 @@
+using CK.SqlServer.Setup;
 using System;
 using System.Data;
 using System.Data.Common;
@@ -57,6 +58,33 @@ namespace CK.SqlServer
                 return new AutoCloser( @this );
             }
             return null;
+        }
+
+        /// <summary>
+        /// Gets the connection for any <see cref="ISqlConnectionStringProvider"/> object (like <see cref="SqlTable"/>
+        /// or <see cref="SqlPackage"/>).
+        /// This is a simple extension method that makes explicit the indexer available (<see cref="ISqlCallContext"/>) 
+        /// of <see cref="ISqlCallContext"/>.
+        /// </summary>
+        /// <param name="this">This sql call context.</param>
+        /// <param name="connectionStringProvider">The connection string provider.</param>
+        /// <returns>The sql connection.</returns>
+        public static SqlConnection GetConnection( this ISqlCallContext @this, ISqlConnectionStringProvider connectionStringProvider )
+        {
+            return @this[connectionStringProvider];
+        }
+
+        /// <summary>
+        /// Gets the connection for a connection string.
+        /// This is a simple extension method that makes explicit the indexer available (<see cref="ISqlCallContext"/>) 
+        /// of <see cref="ISqlCallContext"/>.
+        /// </summary>
+        /// <param name="this">This sql call context.</param>
+        /// <param name="connectionString">The connection string.</param>
+        /// <returns>The sql connection.</returns>
+        public static SqlConnection GetConnection( this ISqlCallContext @this, string connectionString )
+        {
+            return @this[connectionString];
         }
 
 

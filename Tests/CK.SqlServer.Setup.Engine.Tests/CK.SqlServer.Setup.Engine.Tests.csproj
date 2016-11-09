@@ -152,10 +152,6 @@
       <Project>{c9bcbea7-e5e9-4685-b976-4a6e85af4453}</Project>
       <Name>CK.DB.Tests.NUnit</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CK.SqlServer.Setup.Engine.Tests.Model\CK.Authentication.Local\CK.Authentication.Local.csproj">
-      <Project>{346344C2-F522-4B69-914C-E911B3C3D92B}</Project>
-      <Name>CK.Authentication.Local</Name>
-    </ProjectReference>
     <ProjectReference Include="..\CK.SqlServer.Setup.Engine.Tests.Model\SqlActorPackage.Runtime\SqlActorPackage.Runtime.csproj">
       <Project>{e03b0333-1607-47c6-b6bf-d21e4489f659}</Project>
       <Name>SqlActorPackage.Runtime</Name>
