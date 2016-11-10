@@ -46,8 +46,7 @@ namespace CK.SqlServer.Setup
             ISqlSetupAspect sql = SetupEngineAspectProvider.GetSetupEngineAspect<ISqlSetupAspect>();
             return SqlObjectItemAttributeImpl.SqlCreateSetupObjectItem( 
                 sql.SqlParser, 
-                r.Monitor, 
-                (SqlPackageBaseItem)r.Container, 
+                r, 
                 Attribute.MissingDependencyIsError, 
                 (SqlContextLocName)name, 
                 (SqlPackageBaseItem)firstContainer, 
@@ -62,11 +61,11 @@ namespace CK.SqlServer.Setup
         /// Returns null by default: returning null triggers the use of a default factory that handles the standard items.
         /// This can also be used to inspect/validated the  error or fatal logged to the <paramref name="monitor"/> stops the process.
         /// </summary>
-        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="r">The registerer that gives access to the <see cref="IStObjSetupDynamicInitializerState"/>.</param>
         /// <param name="name">The item name.</param>
         /// <param name="text">The parsed text.</param>
         /// <returns>A new <see cref="SqlBaseItem"/> or null (if an error occured or the default factory must be used).</returns>
-        protected virtual SqlBaseItem CreateSqlBaseItem( IActivityMonitor monitor, SqlContextLocName name, ISqlServerParsedText text )
+        protected virtual SqlBaseItem CreateSqlBaseItem( SetupObjectItemAttributeImplBase.Registerer r, SqlContextLocName name, ISqlServerParsedText text )
         {
             return null;
         }

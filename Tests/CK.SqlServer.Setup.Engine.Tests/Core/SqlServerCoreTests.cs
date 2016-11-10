@@ -26,6 +26,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.Core
         [TestCase( new byte[] { }, SqlDbType.VarBinary, "0x" )]
         [TestCase( new byte[] { 16 }, SqlDbType.VarBinary, "0x10" )]
         [TestCase( new byte[] { 0x10, 0xFF, 0x01 }, SqlDbType.VarBinary, "0x10FF01" )]
+        [CLSCompliant(false)]
         public void SqlHelper_SqlValue_works( object value, SqlDbType dbType, string result )
         {
             Guid g = new Guid( "63F7FF58-3101-4099-A18F-6D749B1748C8" );

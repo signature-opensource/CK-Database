@@ -36,6 +36,7 @@ namespace CK.SqlServer.Setup
                 Engine.Monitor.Error().Send( "ResourceLocator for '{0}' has no Type defined. A ResourceType must be set in order to load resources.", FullName );
                 return false;
             }
+
             var externalVersion = ExternalVersion?.Version;
             if( !CreateScriptHandlerFor( this, Item.ResourceLocation, ItemVersion, externalVersion ) ) return false;
             if( Item.Model != null && !CreateScriptHandlerFor( Engine.Drivers[Item.Model], Item.ResourceLocation, ItemVersion, externalVersion ) ) return false;

@@ -66,8 +66,7 @@ namespace CK.SqlServer.Setup
             ISqlSetupAspect sql = SetupEngineAspectProvider.GetSetupEngineAspect<ISqlSetupAspect>();
             return SqlCreateSetupObjectItem( 
                 sql.SqlParser, 
-                r.Monitor, 
-                (SqlPackageBaseItem)r.Container, 
+                r, 
                 Attribute.MissingDependencyIsError, 
                 (SqlContextLocName)name, 
                 (SqlPackageBaseItem)firstContainer, 
@@ -82,11 +81,11 @@ namespace CK.SqlServer.Setup
         /// Returns null by default: returning null triggers the use of a default factory that handles the standard items.
         /// This can also be used to inspect/validated the  error or fatal logged to the <paramref name="monitor"/> stops the process.
         /// </summary>
-        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="r">The registerer that gives access to the <see cref="IStObjSetupDynamicInitializerState"/>.</param>
         /// <param name="name">The item name.</param>
         /// <param name="text">The parsed text.</param>
         /// <returns>A new <see cref="SqlBaseItem"/> or null (if an error occured or the default factory must be used).</returns>
-        protected virtual SqlBaseItem CreateSqlBaseItem( IActivityMonitor monitor, SqlContextLocName name, ISqlServerParsedText text )
+        protected virtual SqlBaseItem CreateSqlBaseItem( Registerer r, SqlContextLocName name, ISqlServerParsedText text )
         {
             return null;
         }
@@ -117,23 +116,23 @@ namespace CK.SqlServer.Setup
 
         static internal SetupObjectItem SqlCreateSetupObjectItem(
                 ISqlServerParser parser,
-                IActivityMonitor monitor,
-                SqlPackageBaseItem packageItem,
+                Registerer r,
                 bool missingDependencyIsError,
                 SqlContextLocName name,
                 SqlPackageBaseItem firstContainer,
                 SqlBaseItem transformArgument,
                 IEnumerable<string> expectedItemTypes,
-                Func<IActivityMonitor, SqlContextLocName, ISqlServerParsedText, SqlBaseItem> factory = null )
+                Func<Registerer, SqlContextLocName, ISqlServerParsedText, SqlBaseItem> factory = null )
         {
             Debug.Assert( (transformArgument != null) == (name.TransformArg != null) );
+            SqlPackageBaseItem packageItem = (SqlPackageBaseItem)r.Container;
             string fileName;
-            string text = LoadTextResource( monitor, packageItem, name, out fileName );
+            string text = LoadTextResource( r.Monitor, packageItem, name, out fileName );
             if( text == null ) return null;
-            SqlBaseItem result = SqlBaseItem.Parse( monitor, name, parser, text, fileName, packageItem, transformArgument, expectedItemTypes, factory );
+            SqlBaseItem result = SqlBaseItem.Parse( r, name, parser, text, fileName, packageItem, transformArgument, expectedItemTypes, factory );
             if( result == null ) return null;
             firstContainer.Children.Add( result );
-            monitor.Trace().Send( $"Loaded {result.ItemType} '{result.ContextLocName.Name}' of '{packageItem.FullName}'." );
+            r.Monitor.Trace().Send( $"Loaded {result.ItemType} '{result.ContextLocName.Name}' of '{r.Container.FullName}'." );
             return result;
         }
 

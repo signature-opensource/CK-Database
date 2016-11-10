@@ -53,7 +53,7 @@ namespace CK.SqlServer.Setup
         internal abstract bool Initialize( IActivityMonitor monitor, string fileName, IDependentItemContainer packageItem );
 
         internal static SqlBaseItem Parse(
-            IActivityMonitor monitor,
+            SqlObjectItemAttributeImpl.Registerer registerer,
             SqlContextLocName name,
             ISqlServerParser parser,
             string text,
@@ -61,23 +61,23 @@ namespace CK.SqlServer.Setup
             IDependentItemContainer packageItem,
             SqlBaseItem transformArgument,
             IEnumerable<string> expectedItemTypes,
-            Func<IActivityMonitor, SqlContextLocName, ISqlServerParsedText,SqlBaseItem> factory = null )
+            Func<SqlObjectItemAttributeImpl.Registerer, SqlContextLocName, ISqlServerParsedText,SqlBaseItem> factory = null )
         {
             try
             {
                 var r = parser.Parse( text );
                 if( r.IsError )
                 {
-                    r.LogOnError( monitor );
+                    r.LogOnError( registerer.Monitor );
                     return null;
                 }
                 if( transformArgument != null ) expectedItemTypes = new[] { "Transformer" };
                 ISqlServerParsedText oText = r.Result;
                 bool factoryError = false;
                 SqlBaseItem result = null;
-                using( monitor.OnError( () => factoryError = true ))
+                using( registerer.Monitor.OnError( () => factoryError = true ))
                 {
-                    result = factory( monitor, name, oText );
+                    result = factory( registerer, name, oText );
                 }
                 if( result == null )
                 {
@@ -86,21 +86,21 @@ namespace CK.SqlServer.Setup
                 }
                 if( expectedItemTypes != null && !expectedItemTypes.Contains( result.ItemType ) )
                 {
-                    monitor.Error().Send( $"Resource '{fileName}' of '{packageItem?.FullName}' is a '{result.ItemType}' whereas '{expectedItemTypes.Concatenate( "' or '" )}' is expected." );
+                    registerer.Monitor.Error().Send( $"Resource '{fileName}' of '{packageItem?.FullName}' is a '{result.ItemType}' whereas '{expectedItemTypes.Concatenate( "' or '" )}' is expected." );
                     return null;
                 }
                 SqlTransformerItem t = result as SqlTransformerItem;
                 if( t != null )
                 {
-                    if( transformArgument.AddTransformer( monitor, t ) == null ) return null;
+                    if( transformArgument.AddTransformer( registerer.Monitor, t ) == null ) return null;
                 }
-                return result.Initialize( monitor, fileName, packageItem ) ? result : null;
+                return result.Initialize( registerer.Monitor, fileName, packageItem ) ? result : null;
             }
             catch( Exception ex )
             {
-                using( monitor.OpenError().Send( ex, $"While parsing '{fileName}'." ) )
+                using( registerer.Monitor.OpenError().Send( ex, $"While parsing '{fileName}'." ) )
                 {
-                    monitor.Info().Send( text );
+                    registerer.Monitor.Info().Send( text );
                 }
                 return null;
             }
