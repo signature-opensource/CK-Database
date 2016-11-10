@@ -13,8 +13,8 @@
     </description>
     <language>en-US</language>
     <dependencies>
-      <dependency id="CK.Monitoring" version="5.0.0" />
-      <dependency id="CK.Reflection" version="5.0.0" />
+      <dependency id="CK.Monitoring" version="5.0.1" />
+      <dependency id="CK.Reflection" version="5.0.1" />
       <dependency id="CK.SqlServer.Transform" version="5.1.1" />
       <dependency id="NUnit" version="[2.6.4]" />
       <dependency id="NUnit.Runners.Net4" version="[2.6.4]" />

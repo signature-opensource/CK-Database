@@ -51,7 +51,6 @@ namespace CK.SqlServer.Setup
 
         protected override object StartDependencySort( IActivityMonitor m )
         {
-            if( string.IsNullOrEmpty( ActualObject.Schema ) ) m.Error().Send( $"Missing schema for {GetType().Name} '{FullName}'." );
             if( ObjectsPackage != null )
             {
                 ObjectsPackage.Groups.AddRange( Groups.OfType<SqlDatabaseItem>() );
