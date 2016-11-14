@@ -24,6 +24,7 @@ namespace CK.Setup
     /// </summary>
     public class ParsedFileName : IContextLocNaming
     {
+        readonly static string _extraPathForSourceCode = "source:";
         readonly string _fileName;
         readonly object _extraPath;
         readonly string _context;
@@ -112,7 +113,12 @@ namespace CK.Setup
         /// This information is not processed and is passed as-is from <see cref="TryParse"/> and <see cref="Parse"/> parameter.
         /// It can be null at this level. It is up to the <see cref="ISetupScript"/> that wraps it to exploit it.
         /// </summary>
-        public object ExtraPath => _extraPath; 
+        public object ExtraPath => _extraPath;
+
+        /// <summary>
+        /// Gets whether this <see cref="ParsedFileName"/> is from source code.
+        /// </summary>
+        public bool IsFromSourceCode => ReferenceEquals( _extraPath, _extraPathForSourceCode );
 
         /// <summary>
         /// Gets the initial version extracted from the <see cref="FileName"/> if it is a migration script.
@@ -155,6 +161,22 @@ namespace CK.Setup
         /// Gets the combination of <see cref="P:SetupStep"/> and <see cref="IsContent"/> as a <see cref="SetupCallGroupStep"/>.
         /// </summary>
         public SetupCallGroupStep CallContainerStep => _step;
+
+        /// <summary>
+        /// Computes a key that identifies this <see cref="ParsedFileName"/>: it is a combination
+        /// of the <see cref="Extension"/> (or <see cref="FileName"/> if <see cref="IsFromSourceCode"/> is true), 
+        /// <see cref="ParsedFileName.FullName"/>, <see cref="ParsedFileName.CallContainerStep"/>, 
+        /// <see cref="ParsedFileName.FromVersion"/> and <see cref="ParsedFileName.Version"/>.
+        /// </summary>
+        /// <param name="suffix">Optional suffix to append to the key (avoids another concatenation).</param>
+        /// <returns>
+        /// A key that identifies this parsed file name: two scripts with this same key can not both 
+        /// participate in a setup.
+        /// </returns>
+        public string GetScriptKey( string suffix = null )
+        {
+            return $"{(IsFromSourceCode ? FileName : Extension)}|{FullName}|{CallContainerStep}|{FromVersion}|{Version}|{suffix}";
+        }
 
         /// <summary>
         /// Sets the extension. Not null nor empty and must not start with a '.'.
@@ -218,7 +240,7 @@ namespace CK.Setup
             if( step != SetupCallGroupStep.None ) fileName += '-' + step.ToString();
             if( fromVersion != null ) fileName += $".{fromVersion}.to.{version}";
             else if( version != null ) fileName += $".{version}";
-            return new ParsedFileName( fileName, "source:", locName, extension, step, fromVersion, version );
+            return new ParsedFileName( fileName, _extraPathForSourceCode, locName, extension, step, fromVersion, version );
         }
 
         /// <summary>

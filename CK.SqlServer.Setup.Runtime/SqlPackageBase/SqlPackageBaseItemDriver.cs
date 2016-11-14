@@ -29,6 +29,11 @@ namespace CK.SqlServer.Setup
 
         public new SqlPackageBaseItem Item => (SqlPackageBaseItem)base.Item;
 
+        /// <summary>
+        /// Loads the scripts from resources: found scripts are registered in a <see cref="SetupHandler"/>
+        /// that will install the scripts.
+        /// </summary>
+        /// <returns>True on success, false otherwise.</returns>
         protected override bool ExecutePreInit()
         {
             if( Item.ResourceLocation?.Type == null )
