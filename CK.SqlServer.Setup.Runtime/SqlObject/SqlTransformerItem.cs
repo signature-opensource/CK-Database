@@ -38,7 +38,7 @@ namespace CK.SqlServer.Setup
 
         public SqlBaseItem Source => _source;
 
-        SetupObjectItem ISetupObjectTransformerItem.Source
+        IMutableSetupBaseItem ISetupObjectTransformerItem.Source
         {
             get { return _source; }
             set { _source = (SqlBaseItem)value; }
@@ -46,7 +46,7 @@ namespace CK.SqlServer.Setup
 
         public SqlBaseItem Target => _target;
 
-        SetupObjectItem ISetupObjectTransformerItem.Target
+        IMutableSetupBaseItem ISetupObjectTransformerItem.Target
         {
             get { return _target; }
             set { _target = (SqlBaseItem)value; }

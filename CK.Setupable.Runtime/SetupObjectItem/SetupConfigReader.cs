@@ -150,12 +150,16 @@ namespace CK.Setup
 
         void ApplyProperties( StringMatcher m, Action<string> a )
         {
-            if( m.MatchChar( '[' ) )
+            string content;
+            if( m.TryMatchJSONQuotedString( out content ) )
+            {
+                a( content );
+            }
+            else if( m.MatchChar( '[' ) )
             {
                 do
                 {
                     m.SkipWhiteSpacesAndJSComments();
-                    string content;
                     if( !m.TryMatchJSONQuotedString( out content ) ) m.SetError( @"Expected ""full name""." );
                     else
                     {
@@ -167,6 +171,7 @@ namespace CK.Setup
                 }
                 while( !m.IsEnd && !m.IsError && !m.TryMatchChar( ']' ) );
             }
+            else m.SetError( @"Expected ""full name"" or [""full name 1"", ...]." );
         }
 
         void ApplyProperty( StringMatcher m, Action<string> a )

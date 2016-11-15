@@ -68,9 +68,9 @@ namespace CK.Setupable.Engine.Tests
 
         class TransformerTest : SetupObjectItem, ISetupObjectTransformerItem
         {
-            public SetupObjectItem Source { get; set; }
+            public IMutableSetupBaseItem Source { get; set; }
 
-            public SetupObjectItem Target { get; set; }
+            public IMutableSetupBaseItem Target { get; set; }
         }
 
         [Test]
@@ -81,7 +81,7 @@ namespace CK.Setupable.Engine.Tests
                             ""TargetContainer"":""container"", 
                             ""RemoveRequires"": [""R""],
                             ""RemoveRequiredBy"": [""RBy""],
-                            ""RemoveGroups"": [""G""],
+                            ""RemoveGroups"": ""G"",
                             ""RemoveChildren"": [""C""]
                             ""AddRequires"": [""newR""],
                             ""AddRequiredBy"": [""newRBy""],
@@ -89,7 +89,7 @@ namespace CK.Setupable.Engine.Tests
                             ""AddChildren"": [""newC""],
 
                             ""TransformerContainer"": ""from config..."",
-                            ""TransformerRequires"": [""TR""],
+                            ""TransformerRequires"": ""TR"",
                             ""TransformerRequiredBy"": [""TRBy""],
                             ""TransformerGroups"": [""TG""],
 
@@ -109,6 +109,7 @@ namespace CK.Setupable.Engine.Tests
             o.Children.Add( "CX" );
             var t = new TransformerTest();
             t.Container = new NamedDependentItemContainerRef( "Will be removed by configuration." );
+            t.Target = o;
             var r = new Extended();
             bool foundConfig;
             Assert.That( r.Apply( TestHelper.ConsoleMonitor, text, t, o, out foundConfig ) );

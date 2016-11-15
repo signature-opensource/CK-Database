@@ -15,15 +15,15 @@ namespace CK.Setup
     {
         /// <summary>
         /// Gets the source object for this transformer.
-        /// This should be set only by <see cref="SetupObjectItem.AddTransformer(ISetupObjectTransformerItem)"/>.
+        /// This should be set only by dedicated methods like <see cref="SetupObjectItem.AddTransformer(ISetupObjectTransformerItem)"/>.
         /// </summary>
-        SetupObjectItem Source { get; set; }
+        IMutableSetupBaseItem Source { get; set; }
 
         /// <summary>
         /// Gets the target transformed object.
-        /// This should be set only by <see cref="SetupObjectItem.AddTransformer(ISetupObjectTransformerItem)"/>.
+        /// This should be set only by dedicated methods like <see cref="SetupObjectItem.AddTransformer(ISetupObjectTransformerItem)"/>.
         /// </summary>
-        SetupObjectItem Target { get; set; }
+        IMutableSetupBaseItem Target { get; set; }
 
     }
 }
