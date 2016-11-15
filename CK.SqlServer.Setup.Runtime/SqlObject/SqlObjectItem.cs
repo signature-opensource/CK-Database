@@ -134,7 +134,7 @@ namespace CK.SqlServer.Setup
             bool foundConfig;
             string h = SqlObject.HeaderComments.Select( c => c.Text ).Concatenate( Environment.NewLine );
             var configReader = CreateConfigReader();
-            if( !configReader.Apply( monitor, h, this, out foundConfig ) ) return false;
+            if( !configReader.Apply( monitor, h, null, this, out foundConfig ) ) return false;
             if( !foundConfig )
             {
                 monitor.Warn().Send( $"Resource '{fileName}' of '{packageItem?.FullName}' should define SetupConfig:{{}} (even an empty one)." );
@@ -144,10 +144,11 @@ namespace CK.SqlServer.Setup
         }
 
         /// <summary>
-        /// Extension point that enables to substitute the default <see cref="ConfigReader"/> used to initialize this object.
+        /// Returns the <see cref="ConfigReader"/> used to initialize this object.
+        /// This may be specialized.
         /// </summary>
         /// <returns>The configuration reader to use.</returns>
-        protected virtual ConfigReader CreateConfigReader() => new ConfigReader();
+         internal protected override SetupConfigReader CreateConfigReader() => new ConfigReader();
 
         /// <summary>
         /// Extension point called once object has been instanciated and configured.

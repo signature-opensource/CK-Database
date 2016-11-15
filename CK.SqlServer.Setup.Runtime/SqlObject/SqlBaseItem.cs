@@ -52,6 +52,12 @@ namespace CK.SqlServer.Setup
 
         internal abstract bool Initialize( IActivityMonitor monitor, string fileName, IDependentItemContainer packageItem );
 
+        /// <summary>
+        /// Extension point that enables to substitute the default <see cref="SetupConfigReader"/> used to initialize this object.
+        /// </summary>
+        /// <returns>The configuration reader to use.</returns>
+        internal protected abstract SetupConfigReader CreateConfigReader();
+
         internal static SqlBaseItem Parse(
             SqlObjectItemAttributeImpl.Registerer registerer,
             SqlContextLocName name,

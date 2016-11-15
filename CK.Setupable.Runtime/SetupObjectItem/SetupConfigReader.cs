@@ -20,42 +20,19 @@ namespace CK.Setup
 
         /// <summary>
         /// Applies a configuration parsed from a 'SetupConfig: {...}' object definition 
-        /// in the given string to a setup item. If this setup item is a transformer, its <see cref="ISetupObjectTransformerItem.Target"/>
-        /// must be set otherwise this is an error.
+        /// in the given string to a setup item or to a transformer and its target setup item.
         /// </summary>
         /// <param name="monitor">The monitor that will receive errors.</param>
-        /// <param name="text">The text to analyse.</param>
-        /// <param name="target">The target object. If it is a transformer, its target must be set.</param>
-        /// <returns>True on success, false if an error occurred.</returns>
-        public bool Apply( IActivityMonitor monitor, string text, IMutableSetupBaseItem target, out bool foundConfig )
-        {
-            if( target == null ) throw new ArgumentNullException( nameof( target ) );
-            var t = target as ISetupObjectTransformerItem;
-            if( t != null )
-            {
-                if( t.Target == null ) throw new ArgumentException( "Object is a transformer: its Target must be set", nameof( target ) );
-                return DoApply( monitor, text, t, t.Target, out foundConfig );
-            }
-            return DoApply( monitor, text, null, target, out foundConfig );
-        }
-
-        /// <summary>
-        /// Applies a configuration parsed from a 'SetupConfig: {...}' object definition 
-        /// in the given string to a transformer and a target setup item.
-        /// </summary>
-        /// <param name="monitor">The monitor that will receive errors.</param>
-        /// <param name="text">The text to analyse.</param>
-        /// <param name="target">The target object. Must not be a transformer.</param>
+        /// <param name="text">The text to analyse: this is the SetupConfig of the <paramref name="transformer"/> if it is not null.</param>
+        /// <param name="transformer">Transformer: when not null, the <paramref name="text"/> is the transformer's config.</param>
+        /// <param name="target">The target must never be null: it must be the <see cref="ISetupObjectTransformerItem.Target"/> if <paramref name="transformer"/> is not null.</param>
+        /// <param name="foundConfig">True if the SetupConfig has been found, false otherwise.</param>
         /// <returns>True on success, false if an error occurred.</returns>
         public bool Apply( IActivityMonitor monitor, string text, ISetupObjectTransformerItem transformer, IMutableSetupBaseItem target, out bool foundConfig )
         {
-            if( transformer == null ) throw new ArgumentNullException( nameof( transformer ) );
             if( target == null ) throw new ArgumentNullException( nameof( target ) );
-            return DoApply( monitor, text, transformer, target, out foundConfig );
-        }
+            if( transformer != null && transformer.Target != target ) throw new ArgumentException( $"{nameof(target)} must be {nameof( transformer )}'s Target." );
 
-        bool DoApply( IActivityMonitor monitor, string text, ISetupObjectTransformerItem transformer, IMutableSetupBaseItem target, out bool foundConfig )
-        {
             foundConfig = true;
             Match match = _ckConfig.Match( text );
             if( !match.Success )
@@ -77,14 +54,14 @@ namespace CK.Setup
         {
             while( !m.IsError
                     && !m.IsEnd
-                    && m.MatchWhiteSpaces( 0 )
+                    && m.SkipWhiteSpacesAndJSComments()
                     && !m.TryMatchChar( '}' ) )
             {
                 string propName;
                 if( !m.TryMatchJSONQuotedString( out propName )
-                    || !m.MatchWhiteSpaces( 0 )
+                    || !m.SkipWhiteSpacesAndJSComments()
                     || !m.TryMatchChar( ':' )
-                    || !m.MatchWhiteSpaces( 0 ) ) m.SetError( @"""Identifier"" : ..." );
+                    || !m.SkipWhiteSpacesAndJSComments() ) m.SetError( @"""Identifier"" : ..." );
                 else
                 {
                     if( transformer != null )
@@ -123,7 +100,7 @@ namespace CK.Setup
                 if( !m.IsError )
                 {
                     // Allow trailing comma.
-                    m.MatchWhiteSpaces( 0 );
+                    m.SkipWhiteSpacesAndJSComments();
                     m.TryMatchChar( ',' );
                 }
             }
@@ -132,7 +109,7 @@ namespace CK.Setup
         /// <summary>
         /// Extension point: called when an unknown property name is found with the matcher head on 
         /// the start of the property's content.
-        /// By default sets an error on the <see cref="StringMatcher"/>.
+        /// By default sets a "Unknown property" error on the <see cref="StringMatcher"/>.
         /// </summary>
         /// <param name="m">The string matcher.</param>
         /// <param name="propName">The unknown property name.</param>
@@ -177,14 +154,14 @@ namespace CK.Setup
             {
                 do
                 {
-                    m.MatchWhiteSpaces( 0 );
+                    m.SkipWhiteSpacesAndJSComments();
                     string content;
                     if( !m.TryMatchJSONQuotedString( out content ) ) m.SetError( @"Expected ""full name""." );
                     else
                     {
                         a( content );
                         // Allow trailing comma.
-                        m.MatchWhiteSpaces( 0 );
+                        m.SkipWhiteSpacesAndJSComments();
                         m.TryMatchChar( ',' );
                     }
                 }

@@ -56,13 +56,16 @@ namespace CK.SqlServer.Setup
         {
             bool foundConfig;
             string h = SqlObject.HeaderComments.Select( c => c.Text ).Concatenate( Environment.NewLine );
-            if( !new SetupConfigReader().Apply( monitor, h, this, out foundConfig ) ) return false;
+            var configReader = CreateConfigReader();
+            if( !configReader.Apply( monitor, h, this, _target, out foundConfig ) ) return false;
             if( !foundConfig )
             {
                 monitor.Warn().Send( $"Resource '{fileName}' of '{packageItem?.FullName}' should define SetupConfig:{{}} (even an empty one)." );
             }
             return true;
         }
+
+        protected internal override SetupConfigReader CreateConfigReader() => _target.CreateConfigReader();
 
     }
 }

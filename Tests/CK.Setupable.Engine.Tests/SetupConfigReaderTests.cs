@@ -30,7 +30,7 @@ namespace CK.Setupable.Engine.Tests
         {
             var o = new DynamicContainerItem( "Test" );
             bool foundConfig;
-            new SetupConfigReader().Apply( TestHelper.ConsoleMonitor, text, o, out foundConfig );
+            new SetupConfigReader().Apply( TestHelper.ConsoleMonitor, text, null, o, out foundConfig );
             Assert.That( o.Requires.Select( n => n.FullName ), Is.EquivalentTo( new[] { "n1", "[ctx]db^name" } ) );
             Assert.That( o.RequiredBy.Select( n => n.FullName ), Is.EquivalentTo( new[] { "d1" } ) );
             Assert.That( o.Groups.Select( n => n.FullName ), Is.EquivalentTo( new[] { "g1", "g2" } ) );
@@ -40,16 +40,16 @@ namespace CK.Setupable.Engine.Tests
 
         class Extended : SetupConfigReader
         {
-            public Dictionary<string, object> ExtendedProperyies;
+            public Dictionary<string, object> ExtendedProperties;
 
             protected override void OnUnknownProperty( StringMatcher m, string propName, ISetupObjectTransformerItem transformer, IMutableSetupBaseItem target )
             {
                 object o;
-                if( !m.TryMatchJSONValue( out o ) ) m.SetError( $"value for {propName}." );
+                if( !m.TryMatchJSONTerminalValue( out o ) ) m.SetError( $"value for {propName}." );
                 else
                 {
-                    if( ExtendedProperyies == null ) ExtendedProperyies = new Dictionary<string, object>();
-                    ExtendedProperyies.Add( propName, o );
+                    if( ExtendedProperties == null ) ExtendedProperties = new Dictionary<string, object>();
+                    ExtendedProperties.Add( propName, o );
                 }
             }
         }
@@ -61,9 +61,9 @@ namespace CK.Setupable.Engine.Tests
             var o = new DynamicContainerItem( "Test" );
             var r = new Extended();
             bool foundConfig;
-            Assert.That( r.Apply( TestHelper.ConsoleMonitor, text, o, out foundConfig ) );
+            Assert.That( r.Apply( TestHelper.ConsoleMonitor, text, null, o, out foundConfig ) );
             Assert.That( o.Requires.Select( n => n.FullName ), Is.EquivalentTo( new[] { "r" } ) );
-            Assert.That( r.ExtendedProperyies["K"], Is.EqualTo( 12.0 ) );
+            Assert.That( r.ExtendedProperties["K"], Is.EqualTo( 12.0 ) );
         }
 
         class TransformerTest : SetupObjectItem, ISetupObjectTransformerItem
@@ -124,9 +124,9 @@ namespace CK.Setupable.Engine.Tests
             Assert.That( t.RequiredBy.Select( n => n.FullName ), Is.EquivalentTo( new[] { "TRBy" } ) );
             Assert.That( t.Groups.Select( n => n.FullName ), Is.EquivalentTo( new[] { "TG" } ) );
 
-            Assert.That( r.ExtendedProperyies["Requires"], Is.EqualTo( "Will be an unknown property!" ) );
-            Assert.That( r.ExtendedProperyies["RequiredBy"], Is.EqualTo( "Will be an unknown property!" ) );
-            Assert.That( r.ExtendedProperyies["Murfn"], Is.EqualTo( "Will be an unknown property!" ) );
+            Assert.That( r.ExtendedProperties["Requires"], Is.EqualTo( "Will be an unknown property!" ) );
+            Assert.That( r.ExtendedProperties["RequiredBy"], Is.EqualTo( "Will be an unknown property!" ) );
+            Assert.That( r.ExtendedProperties["Murfn"], Is.EqualTo( "Will be an unknown property!" ) );
 
 
         }

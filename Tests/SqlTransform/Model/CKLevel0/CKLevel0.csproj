@@ -42,8 +42,8 @@
       <HintPath>..\..\..\..\packages\CK.Core.5.0.0\lib\net45\CK.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="CK.Text, Version=1.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\..\..\..\packages\CK.Text.5.0.0\lib\net45\CK.Text.dll</HintPath>
+    <Reference Include="CK.Text, Version=5.1.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\packages\CK.Text.5.1.0-a02\lib\net45\CK.Text.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -80,6 +80,7 @@
     <EmbeddedResource Include="Res\sSimpleTransformTest.sql" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
