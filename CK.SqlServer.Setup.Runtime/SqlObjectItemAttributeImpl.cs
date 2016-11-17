@@ -35,10 +35,9 @@ namespace CK.SqlServer.Setup
         /// <param name="b">The behavior (Define, Replace or Transform).</param>
         /// <param name="attributeName">The raw attribute name.</param>
         /// <returns>The context-location-name for the object.</returns>
-        protected override IContextLocNaming BuildFullName( Registerer r, SetupObjectItemBehavior b, string attributeName )
+        protected override IContextLocNaming BuildFullName( SetupObjectItemAttributeRegisterer r, SetupObjectItemBehavior b, string attributeName )
         {
-            SqlPackageBaseItem p = (SqlPackageBaseItem)r.Container;
-            return SqlBuildFullName( p, b, attributeName );
+            return r.SqlBuildFullName( b, attributeName );
         }
 
         /// <summary>
@@ -61,7 +60,7 @@ namespace CK.SqlServer.Setup
         /// <param name="name">Full name of the object to create.</param>
         /// <param name="transformArgument">Optional transform argument if this object is a transformer.</param>
         /// <returns>The created object or null if an error occurred and has been logged.</returns>
-        protected override SetupObjectItem CreateSetupObjectItem( Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
+        protected override SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeRegisterer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
         {
             ISqlSetupAspect sql = SetupEngineAspectProvider.GetSetupEngineAspect<ISqlSetupAspect>();
             return SqlCreateSetupObjectItem( 
@@ -79,113 +78,37 @@ namespace CK.SqlServer.Setup
         /// Extension point to create specialized <see cref="SqlBaseItem"/> (other than the standard objects like <see cref="SqlViewItem"/>,
         /// or <see cref="SqlProcedure"/>).
         /// Returns null by default: returning null triggers the use of a default factory that handles the standard items.
-        /// This can also be used to inspect/validated the  error or fatal logged to the <paramref name="monitor"/> stops the process.
+        /// This can also be used to inspect/validate the error or fatal logged to the <paramref name="monitor"/> stops the process.
         /// </summary>
         /// <param name="r">The registerer that gives access to the <see cref="IStObjSetupDynamicInitializerState"/>.</param>
         /// <param name="name">The item name.</param>
         /// <param name="text">The parsed text.</param>
         /// <returns>A new <see cref="SqlBaseItem"/> or null (if an error occured or the default factory must be used).</returns>
-        protected virtual SqlBaseItem CreateSqlBaseItem( Registerer r, SqlContextLocName name, ISqlServerParsedText text )
+        protected virtual SqlBaseItem CreateSqlBaseItem( SetupObjectItemAttributeRegisterer r, SqlContextLocName name, ISqlServerParsedText text )
         {
             return null;
         }
 
-        internal static IContextLocNaming SqlBuildFullName( SqlPackageBaseItem p, SetupObjectItemBehavior b, string attributeName )
-        {
-            var name = new SqlContextLocName( attributeName );
-            if( name.Context == null ) name.Context = p.Context;
-            if( name.Location == null ) name.Location = p.Location;
-            if( name.Schema == null ) name.Schema = p.ActualObject.Schema;
-            if( name.TransformArg != null )
-            {
-                var target = new SqlContextLocName( name.TransformArg );
-                if( target.Context == null ) target.Context = name.Context;
-                if( target.Location == null ) target.Location = name.Location;
-                if( target.Schema == null ) target.Schema = name.Schema;
-                name.TransformArg = target.FullName;
-            }
-            else
-            {
-                if( b == SetupObjectItemBehavior.Transform )
-                {
-                    name = new SqlContextLocName( p.Context, p.Location, p.Name + '(' + name.FullName + ')' );
-                }
-            }
-            return name;
-        }
-
         static internal SetupObjectItem SqlCreateSetupObjectItem(
                 ISqlServerParser parser,
-                Registerer r,
+                SetupObjectItemAttributeRegisterer r,
                 bool missingDependencyIsError,
                 SqlContextLocName name,
                 SqlPackageBaseItem firstContainer,
                 SqlBaseItem transformArgument,
                 IEnumerable<string> expectedItemTypes,
-                Func<Registerer, SqlContextLocName, ISqlServerParsedText, SqlBaseItem> factory = null )
+                Func<SetupObjectItemAttributeRegisterer, SqlContextLocName, ISqlServerParsedText, SqlBaseItem> factory = null )
         {
             Debug.Assert( (transformArgument != null) == (name.TransformArg != null) );
             SqlPackageBaseItem packageItem = (SqlPackageBaseItem)r.Container;
             string fileName;
-            string text = LoadTextResource( r.Monitor, packageItem, name, out fileName );
+            string text = name.LoadTextResource( r.Monitor, packageItem, out fileName );
             if( text == null ) return null;
             SqlBaseItem result = SqlBaseItem.Parse( r, name, parser, text, fileName, packageItem, transformArgument, expectedItemTypes, factory );
             if( result == null ) return null;
             firstContainer.Children.Add( result );
             r.Monitor.Trace().Send( $"Loaded {result.ItemType} '{result.ContextLocName.Name}' of '{r.Container.FullName}'." );
             return result;
-        }
-
-        static string LoadTextResource( IActivityMonitor monitor, SqlPackageBaseItem packageItem, SqlContextLocName name, out string fileName )
-        {
-            var candidates = GetResourceFileNameCandidates( packageItem, name );
-            fileName = null;
-            string text = null;
-            foreach( var fName in candidates )
-            {
-                fileName = fName;
-                if( (text = packageItem.ResourceLocation.GetString( fileName, false, _allowedResourcePrefixes )) != null ) break;
-            }
-            if( text == null )
-            {
-                monitor.Error().Send( $"Resource '{name.FullName}' of '{packageItem.FullName}' not found. Tried: '{candidates.Concatenate( "' ,'" )}'." );
-                return null;
-            }
-            if( fileName.EndsWith( ".y4" ) )
-            {
-                text = SqlPackageBaseItem.ProcessY4Template( monitor, null, packageItem, null, fileName, text );
-            }
-            return text;
-        }
-
-        static IEnumerable<string> GetResourceFileNameCandidates( IContextLocNaming containerName, SqlContextLocName name )
-        {
-            bool isTransform = name.TransformArg != null;
-            var y4 = GetResourceNameCandidates( containerName, name ).Select( r => r + ".y4" );
-            var sql = GetResourceNameCandidates( containerName, name ).Select( r => r + ".sql" );
-            if( isTransform )
-            {
-                var tql = GetResourceNameCandidates( containerName, name ).Select( r => r + ".tql" );
-                return tql.Concat( sql ).Concat( y4 );
-            }
-            return sql.Concat( y4 );
-        }
-
-        static IEnumerable<string> GetResourceNameCandidates( IContextLocNaming containerName, SqlContextLocName name )
-        {
-            yield return name.ObjectName;
-            yield return name.Name;
-            yield return name.FullName;
-            if( name.TransformArg != null )
-            {
-                if( name.FullName.StartsWith( containerName.FullName ) )
-                {
-                    SqlContextLocName t = new SqlContextLocName( name.TransformArg );
-                    yield return t.ObjectName;
-                    yield return t.Name;
-                    yield return t.FullName;
-                }
-            }
         }
 
     }

@@ -80,6 +80,7 @@
     <Compile Include="HelperExtensions.cs" />
     <Compile Include="Package\ISetupObjectItem.cs" />
     <Compile Include="Package\IMutableSetupBaseItem.cs" />
+    <Compile Include="SetupObjectItemAttributeRegisterer.cs" />
     <Compile Include="Scripts\CoveringScript.cs" />
     <Compile Include="Scripts\SetupScript.cs" />
     <Compile Include="Scripts\SourceCodeSetupScript.cs" />

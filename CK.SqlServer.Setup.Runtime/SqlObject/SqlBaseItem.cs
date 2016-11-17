@@ -59,7 +59,7 @@ namespace CK.SqlServer.Setup
         internal protected abstract SetupConfigReader CreateConfigReader();
 
         internal static SqlBaseItem Parse(
-            SqlObjectItemAttributeImpl.Registerer registerer,
+            SetupObjectItemAttributeRegisterer registerer,
             SqlContextLocName name,
             ISqlServerParser parser,
             string text,
@@ -67,7 +67,7 @@ namespace CK.SqlServer.Setup
             IDependentItemContainer packageItem,
             SqlBaseItem transformArgument,
             IEnumerable<string> expectedItemTypes,
-            Func<SqlObjectItemAttributeImpl.Registerer, SqlContextLocName, ISqlServerParsedText,SqlBaseItem> factory = null )
+            Func<SetupObjectItemAttributeRegisterer, SqlContextLocName, ISqlServerParsedText,SqlBaseItem> factory = null )
         {
             try
             {

@@ -22,7 +22,7 @@ namespace CK.Setup
 
         internal interface ISetupItemCreator : IStObjSetupDynamicInitializer
         {
-            IContextLocNaming BuildFullName( Registerer r, SetupObjectItemBehavior b, string name );
+            IContextLocNaming BuildFullName( SetupObjectItemAttributeRegisterer r, SetupObjectItemBehavior b, string name );
 
             /// <summary>
             /// Must create the object.
@@ -37,9 +37,9 @@ namespace CK.Setup
             /// The transformation target if this setup item is a transformer.
             /// </param>
             /// <returns>The newly created item.</returns>
-            SetupObjectItem CreateSetupObjectItem( Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument );
+            SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeRegisterer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument );
 
-            string GetDetailedName( Registerer r, string name );
+            string GetDetailedName( SetupObjectItemAttributeRegisterer r, string name );
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace CK.Setup
             public bool MustWaitForTransformArg => TransformTarget != null && TransformTarget.Item == null;
 
         }
-
+        /*
         /// <summary>
         /// Stateless object that handles object initialization across multiple 
         /// <see cref="IStObjSetupDynamicInitializer"/>.
@@ -246,7 +246,7 @@ namespace CK.Setup
             }
 
         }
-
+        */
         /// <summary>
         /// Initializes a new SetupObjectItemAttributeBase, with an optional maximal number of
         /// objects that can be defined by the attribute.
@@ -272,7 +272,7 @@ namespace CK.Setup
         void IStObjSetupDynamicInitializer.DynamicItemInitialize( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjResult stObj )
         {
             _aspectProvider = state.AspectProvider;
-            var r = new Registerer( state, item, stObj, this );
+            var r = new SetupObjectItemAttributeRegisterer( state, item, stObj, this );
             if( _maxObjectCount == 1 ) Register( Attribute.NameOrCommaSeparatedObjectNames, r, item, state );
             else
             {
@@ -294,7 +294,7 @@ namespace CK.Setup
             }
         }
 
-        void Register( string n, Registerer r, IMutableSetupItem item, IStObjSetupDynamicInitializerState state, HashSet<string> already = null )
+        void Register( string n, SetupObjectItemAttributeRegisterer r, IMutableSetupItem item, IStObjSetupDynamicInitializerState state, HashSet<string> already = null )
         {
             string nTrimmed = n.Trim();
             if( nTrimmed.Length > 0 )
@@ -333,7 +333,7 @@ namespace CK.Setup
         void DynamicItemCreateAfterFollowing( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjResult stObj )
         {
             Debug.Assert( _theBest != null && _theBest.Count > 0 );
-            var r = new Registerer( state, item, stObj, this );
+            var r = new SetupObjectItemAttributeRegisterer( state, item, stObj, this );
             for( int i = _theBest.Count - 1; i >= 0 && !r.HasError; --i )
             {
                 var best = _theBest[i];
@@ -342,14 +342,14 @@ namespace CK.Setup
             if( !r.HasError && _theBest.Count > 0 ) state.PushAction( DynamicItemCreateAfterFollowing );
         }
 
-        string ISetupItemCreator.GetDetailedName( Registerer r, string name ) => GetDetailedName( r, name );
+        string ISetupItemCreator.GetDetailedName( SetupObjectItemAttributeRegisterer r, string name ) => GetDetailedName( r, name );
 
-        IContextLocNaming ISetupItemCreator.BuildFullName( Registerer r, SetupObjectItemBehavior b, string name )
+        IContextLocNaming ISetupItemCreator.BuildFullName( SetupObjectItemAttributeRegisterer r, SetupObjectItemBehavior b, string name )
         {
             return BuildFullName( r, b, name );
         }
 
-        SetupObjectItem ISetupItemCreator.CreateSetupObjectItem( Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
+        SetupObjectItem ISetupItemCreator.CreateSetupObjectItem( SetupObjectItemAttributeRegisterer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
         {
             return CreateSetupObjectItem( r, firstContainer, name, transformArgument );
         }
@@ -363,7 +363,7 @@ namespace CK.Setup
         /// <param name="r">The current registerer.</param>
         /// <param name="name">The object's name that is processed.</param>
         /// <returns>Detailed information.</returns>
-        protected string GetDetailedName( Registerer r, string name )
+        protected string GetDetailedName( SetupObjectItemAttributeRegisterer r, string name )
         {
             return $"'{name}' in {Attribute.GetShortTypeName()} attribute of '{r.Container.FullName}'"; 
         }
@@ -372,18 +372,18 @@ namespace CK.Setup
         /// Must build the <see cref="IContextLocNaming"/> name of the future <see cref="SetupObjectItem"/> with the help of the owner object and the name in the attribute.
         /// This is called for each name in <see cref="SetupObjectItemAttributeBase.NameOrCommaSeparatedObjectNames"/>.
         /// </summary>
-        /// <param name="Registerer">Registerer context object.</param>
+        /// <param name="r">Registerer context object.</param>
         /// <param name="b">Registration behavior.</param>
         /// <param name="name">The raw name.</param>
         /// <returns>The name of the SetupObjectItem.</returns>
-        protected abstract IContextLocNaming BuildFullName( Registerer r, SetupObjectItemBehavior b, string name );
+        protected abstract IContextLocNaming BuildFullName( SetupObjectItemAttributeRegisterer r, SetupObjectItemBehavior b, string name );
 
         /// <summary>
         /// Must create the <see cref="SetupObjectItem"/>.
         /// This is called for each name in <see cref="SetupObjectItemAttributeBase.NameOrCommaSeparatedObjectNames"/>
         /// after <see cref="BuildFullName"/> has been called.
         /// </summary>
-        /// <param name="Registerer">Registerer context object.</param>
+        /// <param name="r">Registerer context object.</param>
         /// <param name="firstContainer">
         /// The first container in which the item has been defined.
         /// When there is no replacement, this is the same as <see cref="Registerer.Container"/>.
@@ -396,7 +396,7 @@ namespace CK.Setup
         /// A new SetupObject or null if it can not be created. If an errr occurred, it must 
         /// be logged to the monitor.
         /// </returns>
-        protected abstract SetupObjectItem CreateSetupObjectItem( Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument );
+        protected abstract SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeRegisterer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument );
 
 
     }

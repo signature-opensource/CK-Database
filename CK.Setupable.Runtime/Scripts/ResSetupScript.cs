@@ -25,7 +25,7 @@ namespace CK.Setup
             Name = n;
         }
 
-        public ParsedFileName Name { get; private set; }
+        public ParsedFileName Name { get; }
 
         public string GetScript()
         {

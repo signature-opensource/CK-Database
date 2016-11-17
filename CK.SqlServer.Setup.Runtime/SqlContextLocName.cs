@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CK.Core;
+using CK.Text;
 
 namespace CK.SqlServer.Setup
 {
@@ -11,7 +12,7 @@ namespace CK.SqlServer.Setup
     /// Extends <see cref="ContextLocName"/> to split <see cref="ContextLocName.Name"/> 
     /// into <see cref="Schema"/> and <see cref="ObjectName"/>.
     /// </summary>
-    public class SqlContextLocName : ContextLocName 
+    public class SqlContextLocName : ContextLocName
     {
         string _schema;
         string _objectName;
@@ -86,7 +87,7 @@ namespace CK.SqlServer.Setup
         public string ObjectName
         {
             get { return _objectName; }
-            set 
+            set
             {
                 if( value == null ) value = string.Empty;
                 if( _objectName != value )
@@ -103,8 +104,8 @@ namespace CK.SqlServer.Setup
         public string Schema
         {
             get { return _schema; }
-            set 
-            { 
+            set
+            {
                 if( _schema != value )
                 {
                     bool oldNoSchema = String.IsNullOrEmpty( _schema );
@@ -136,5 +137,76 @@ namespace CK.SqlServer.Setup
             _schema = newSchema;
         }
 
+        static readonly string[] _allowedResourcePrefixes = new string[] { "[Replace]", "[Transform]" };
+
+        /// <summary>
+        /// Lookups a resource based on <see cref="GetResourceFileNameCandidates"/>.
+        /// </summary>
+        /// <param name="monitor">Monitor to use.</param>
+        /// <param name="packageItem">The package.</param>
+        /// <param name="fileName">The file name found.</param>
+        /// <returns>The resource text on success, null otherwise.</returns>
+        public string LoadTextResource( IActivityMonitor monitor, SqlPackageBaseItem packageItem, out string fileName )
+        {
+            var candidates = GetResourceFileNameCandidates( packageItem );
+            fileName = null;
+            string text = null;
+            foreach( var fName in candidates )
+            {
+                fileName = fName;
+                if( (text = packageItem.ResourceLocation.GetString( fileName, false, _allowedResourcePrefixes )) != null ) break;
+            }
+            if( text == null )
+            {
+                monitor.Error().Send( $"Resource '{FullName}' of '{packageItem.FullName}' not found. Tried: '{candidates.Concatenate( "' ,'" )}'." );
+                return null;
+            }
+            if( fileName.EndsWith( ".y4" ) )
+            {
+                text = SqlPackageBaseItem.ProcessY4Template( monitor, null, packageItem, null, fileName, text );
+            }
+            return text;
+        }
+
+
+
+        /// <summary>
+        /// Generates '.sql', '.y4' and '.tql' candidate files based on <see cref="GetResourceNameCandidates"/>.
+        /// </summary>
+        /// <param name="containerName">Container name.</param>
+        /// <returns>Set of candidates.</returns>
+        public IEnumerable<string> GetResourceFileNameCandidates( IContextLocNaming containerName )
+        {
+            var y4 = GetResourceNameCandidates( containerName ).Select( r => r + ".y4" );
+            var sql = GetResourceNameCandidates( containerName ).Select( r => r + ".sql" );
+            if( TransformArg != null )
+            {
+                var tql = GetResourceNameCandidates( containerName ).Select( r => r + ".tql" );
+                return tql.Concat( sql ).Concat( y4 );
+            }
+            return sql.Concat( y4 );
+        }
+
+        /// <summary>
+        /// Generates candidate names to look up resources or files.
+        /// </summary>
+        /// <param name="containerName">The container's name.</param>
+        /// <returns>Set of candidates.</returns>
+        public IEnumerable<string> GetResourceNameCandidates( IContextLocNaming containerName )
+        {
+            yield return ObjectName;
+            yield return Name;
+            yield return FullName;
+            if( TransformArg != null )
+            {
+                if( FullName.StartsWith( containerName.FullName ) )
+                {
+                    SqlContextLocName t = new SqlContextLocName( TransformArg );
+                    yield return t.ObjectName;
+                    yield return t.Name;
+                    yield return t.FullName;
+                }
+            }
+        }
     }
 }

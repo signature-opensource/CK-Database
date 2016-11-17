@@ -35,13 +35,12 @@ namespace CK.SqlServer.Setup
         /// </summary>
         protected new SqlObjectItemMemberAttributeBase Attribute => (SqlObjectItemMemberAttributeBase)base.Attribute; 
 
-        protected override IContextLocNaming BuildFullName( SetupObjectItemAttributeImplBase.Registerer r, SetupObjectItemBehavior b, string attributeName )
+        protected override IContextLocNaming BuildFullName( SetupObjectItemAttributeRegisterer r, SetupObjectItemBehavior b, string attributeName )
         {
-            SqlPackageBaseItem p = (SqlPackageBaseItem)r.Container;
-            return SqlObjectItemAttributeImpl.SqlBuildFullName( p, b, attributeName );
+            return r.SqlBuildFullName( b, attributeName );
         }
 
-        protected override SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeImplBase.Registerer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
+        protected override SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeRegisterer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
         {
             ISqlSetupAspect sql = SetupEngineAspectProvider.GetSetupEngineAspect<ISqlSetupAspect>();
             return SqlObjectItemAttributeImpl.SqlCreateSetupObjectItem( 
@@ -65,7 +64,7 @@ namespace CK.SqlServer.Setup
         /// <param name="name">The item name.</param>
         /// <param name="text">The parsed text.</param>
         /// <returns>A new <see cref="SqlBaseItem"/> or null (if an error occured or the default factory must be used).</returns>
-        protected virtual SqlBaseItem CreateSqlBaseItem( SetupObjectItemAttributeImplBase.Registerer r, SqlContextLocName name, ISqlServerParsedText text )
+        protected virtual SqlBaseItem CreateSqlBaseItem( SetupObjectItemAttributeRegisterer r, SqlContextLocName name, ISqlServerParsedText text )
         {
             return null;
         }
