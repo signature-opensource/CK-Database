@@ -90,6 +90,7 @@
     <Compile Include="Scripts\SetupScriptExtensions.cs" />
     <Compile Include="SetupObjectItemBehavior.cs" />
     <Compile Include="SetupObjectItem\ISetupObjectTransformerItem.cs" />
+    <Compile Include="SetupObjectItem\TransformerSetupConfigReader.cs" />
     <Compile Include="SetupObjectItem\SetupConfigReader.cs" />
     <Compile Include="SetupObjectItem\SetupObjectItemV.cs" />
     <Compile Include="Setup\ISetupEngineAspect.cs" />

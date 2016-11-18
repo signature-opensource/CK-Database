@@ -17,8 +17,6 @@ namespace CK.SqlServer.Setup
     /// </summary>
     public class SqlObjectItemAttributeImpl : SetupObjectItemAttributeImplBase
     {
-        static readonly string[] _allowedResourcePrefixes = new string[] { "[Replace]", "[Transform]" };
-
         public SqlObjectItemAttributeImpl( SqlObjectItemAttribute a )
             : base( a )
         {
@@ -63,10 +61,9 @@ namespace CK.SqlServer.Setup
         protected override SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeRegisterer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
         {
             ISqlSetupAspect sql = SetupEngineAspectProvider.GetSetupEngineAspect<ISqlSetupAspect>();
-            return SqlCreateSetupObjectItem( 
+            return SqlBaseItem.Create( 
                 sql.SqlParser, 
                 r, 
-                Attribute.MissingDependencyIsError, 
                 (SqlContextLocName)name, 
                 (SqlPackageBaseItem)firstContainer, 
                 (SqlBaseItem)transformArgument, 
@@ -78,7 +75,7 @@ namespace CK.SqlServer.Setup
         /// Extension point to create specialized <see cref="SqlBaseItem"/> (other than the standard objects like <see cref="SqlViewItem"/>,
         /// or <see cref="SqlProcedure"/>).
         /// Returns null by default: returning null triggers the use of a default factory that handles the standard items.
-        /// This can also be used to inspect/validate the error or fatal logged to the <paramref name="monitor"/> stops the process.
+        /// This can also be used to inspect/validate the <paramref name="text"/> since error or fatal logged to the <paramref name="monitor"/> stops the process.
         /// </summary>
         /// <param name="r">The registerer that gives access to the <see cref="IStObjSetupDynamicInitializerState"/>.</param>
         /// <param name="name">The item name.</param>
@@ -88,29 +85,6 @@ namespace CK.SqlServer.Setup
         {
             return null;
         }
-
-        static internal SetupObjectItem SqlCreateSetupObjectItem(
-                ISqlServerParser parser,
-                SetupObjectItemAttributeRegisterer r,
-                bool missingDependencyIsError,
-                SqlContextLocName name,
-                SqlPackageBaseItem firstContainer,
-                SqlBaseItem transformArgument,
-                IEnumerable<string> expectedItemTypes,
-                Func<SetupObjectItemAttributeRegisterer, SqlContextLocName, ISqlServerParsedText, SqlBaseItem> factory = null )
-        {
-            Debug.Assert( (transformArgument != null) == (name.TransformArg != null) );
-            SqlPackageBaseItem packageItem = (SqlPackageBaseItem)r.Container;
-            string fileName;
-            string text = name.LoadTextResource( r.Monitor, packageItem, out fileName );
-            if( text == null ) return null;
-            SqlBaseItem result = SqlBaseItem.Parse( r, name, parser, text, fileName, packageItem, transformArgument, expectedItemTypes, factory );
-            if( result == null ) return null;
-            firstContainer.Children.Add( result );
-            r.Monitor.Trace().Send( $"Loaded {result.ItemType} '{result.ContextLocName.Name}' of '{r.Container.FullName}'." );
-            return result;
-        }
-
     }
 
 }

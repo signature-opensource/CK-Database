@@ -30,7 +30,7 @@ namespace CK.Setupable.Engine.Tests
         {
             var o = new DynamicContainerItem( "Test" );
             bool foundConfig;
-            new SetupConfigReader().Apply( TestHelper.ConsoleMonitor, text, null, o, out foundConfig );
+            new SetupConfigReader( o ).Apply( TestHelper.ConsoleMonitor, text, out foundConfig );
             Assert.That( o.Requires.Select( n => n.FullName ), Is.EquivalentTo( new[] { "n1", "[ctx]db^name" } ) );
             Assert.That( o.RequiredBy.Select( n => n.FullName ), Is.EquivalentTo( new[] { "d1" } ) );
             Assert.That( o.Groups.Select( n => n.FullName ), Is.EquivalentTo( new[] { "g1", "g2" } ) );
@@ -40,17 +40,27 @@ namespace CK.Setupable.Engine.Tests
 
         class Extended : SetupConfigReader
         {
-            public Dictionary<string, object> ExtendedProperties;
+            public Dictionary<string, object> ExtendedProperties = new Dictionary<string, object>();
 
-            protected override void OnUnknownProperty( StringMatcher m, string propName, ISetupObjectTransformerItem transformer, IMutableSetupBaseItem target )
+            public Extended( IMutableSetupBaseItem item )
+                : base( item )
             {
-                object o;
-                if( !m.TryMatchJSONTerminalValue( out o ) ) m.SetError( $"value for {propName}." );
-                else
+            }
+
+            protected override bool ApplyProperty( StringMatcher m, string propName )
+            {
+                if( base.ApplyProperty( m, propName ) ) return true;
+                if( !m.IsError )
                 {
-                    if( ExtendedProperties == null ) ExtendedProperties = new Dictionary<string, object>();
-                    ExtendedProperties.Add( propName, o );
+                    object o;
+                    if( m.TryMatchJSONTerminalValue( out o ) )
+                    {
+                        ExtendedProperties.Add( propName, o );
+                        return true;
+                    }
+                    m.SetError( $"value for {propName}." );
                 }
+                return false;
             }
         }
 
@@ -59,9 +69,9 @@ namespace CK.Setupable.Engine.Tests
         {
             string text = @"SetupConfig:{ ""K"":12, ""Requires"": [""r""] }";
             var o = new DynamicContainerItem( "Test" );
-            var r = new Extended();
+            var r = new Extended( o );
             bool foundConfig;
-            Assert.That( r.Apply( TestHelper.ConsoleMonitor, text, null, o, out foundConfig ) );
+            Assert.That( r.Apply( TestHelper.ConsoleMonitor, text, out foundConfig ) );
             Assert.That( o.Requires.Select( n => n.FullName ), Is.EquivalentTo( new[] { "r" } ) );
             Assert.That( r.ExtendedProperties["K"], Is.EqualTo( 12.0 ) );
         }
@@ -71,6 +81,32 @@ namespace CK.Setupable.Engine.Tests
             public IMutableSetupBaseItem Source { get; set; }
 
             public IMutableSetupBaseItem Target { get; set; }
+        }
+
+        class ExtendedTransformer : TransformerSetupConfigReader
+        {
+            public Dictionary<string, object> ExtendedProperties = new Dictionary<string, object>();
+
+            public ExtendedTransformer( ISetupObjectTransformerItem t, SetupConfigReader r )
+                : base( t, r )
+            {
+            }
+
+            protected override bool ApplyProperty( StringMatcher m, string propName )
+            {
+                if( base.ApplyProperty( m, propName ) ) return true;
+                if( !m.IsError )
+                {
+                    object o;
+                    if( m.TryMatchJSONTerminalValue( out o ) )
+                    {
+                        ExtendedProperties.Add( propName, o );
+                        return true;
+                    }
+                    m.SetError( $"value for {propName}." );
+                }
+                return false;
+            }
         }
 
         [Test]
@@ -110,9 +146,10 @@ namespace CK.Setupable.Engine.Tests
             var t = new TransformerTest();
             t.Container = new NamedDependentItemContainerRef( "Will be removed by configuration." );
             t.Target = o;
-            var r = new Extended();
+            var rItem = new Extended( o );
+            var r = new ExtendedTransformer( t, rItem );
             bool foundConfig;
-            Assert.That( r.Apply( TestHelper.ConsoleMonitor, text, t, o, out foundConfig ) );
+            Assert.That( r.Apply( TestHelper.ConsoleMonitor, text, out foundConfig ) );
 
             Assert.That( o.Container.FullName, Is.EqualTo( "container" ) );
             Assert.That( o.Requires.Select( n => n.FullName ), Is.EquivalentTo( new[] { "RX", "newR" } ) );
@@ -128,7 +165,7 @@ namespace CK.Setupable.Engine.Tests
             Assert.That( r.ExtendedProperties["Requires"], Is.EqualTo( "Will be an unknown property!" ) );
             Assert.That( r.ExtendedProperties["RequiredBy"], Is.EqualTo( "Will be an unknown property!" ) );
             Assert.That( r.ExtendedProperties["Murfn"], Is.EqualTo( "Will be an unknown property!" ) );
-
+            Assert.That( rItem.ExtendedProperties, Is.Empty );
 
         }
 

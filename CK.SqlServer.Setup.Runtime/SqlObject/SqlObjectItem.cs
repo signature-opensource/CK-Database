@@ -46,7 +46,7 @@ namespace CK.SqlServer.Setup
         /// Gets or sets whether when installing, the informational message 'The module 'X' depends 
         /// on the missing object 'Y'. The module will still be created; however, it cannot run successfully until the object exists.' 
         /// must be logged as a <see cref="LogLevel.Error"/>. When false, this is a <see cref="LogLevel.Info"/>.
-        /// Sets first by MissingDependencyIsError in text, otherwise an attribute (that should default to true should be applied).
+        /// Sets by MissingDependencyIsError in SetupConfig text.
         /// When not set, it is considered to be true.
         /// </summary>
         public bool? MissingDependencyIsError
@@ -86,158 +86,16 @@ namespace CK.SqlServer.Setup
             else SqlObject.Write( b );
         }
 
-        /// <summary>
-        /// Configuration reader specializes <see cref="SetupConfigReader"/> so that <see cref="OnUnknownProperty"/>
-        /// handles <see cref="MissingDependencyIsError"/> that must be true or false if it appears in the SetupConfig: {} header.
-        /// </summary>
-        protected class ConfigReader : SetupConfigReader
+        protected override bool Initialize( IActivityMonitor monitor, IDependentItemContainer firstContainer, IDependentItemContainer packageItem )
         {
-            /// <summary>
-            /// Overridden and sealed to call <see cref="OnUnknownProperty(StringMatcher, string, ISetupObjectTransformerItem, SqlObjectItem)"/>.
-            /// </summary>
-            /// <param name="m">The string matcher.</param>
-            /// <param name="propName">The unknown property name.</param>
-            /// <param name="transformer">The transformer. Null when applying to actual target.</param>
-            /// <param name="target">The target of the apply call.</param>
-            protected override sealed void OnUnknownProperty( StringMatcher m, string propName, ISetupObjectTransformerItem transformer, IMutableSetupBaseItem target )
-            {
-                if( !OnUnknownProperty( m, propName, (SqlTransformerItem)transformer, (SqlObjectItem)target ) )
-                {
-                    base.OnUnknownProperty( m, propName, transformer, target );
-                }
-            }
-
-            /// <summary>
-            /// Handles <paramref name="propName"/> is MissingDependencyIsError and returns true, otherwise returns false.
-            /// </summary>
-            /// <param name="m">The string matcher.</param>
-            /// <param name="propName">The unknown property name.</param>
-            /// <param name="transformer">The transformer. Null when applying to actual target.</param>
-            /// <param name="target">The target of the apply call.</param>
-            /// <returns>True if the <paramref name="propName"/> has been handled, false otherwise.</returns>
-            protected virtual bool OnUnknownProperty( StringMatcher m, string propName, SqlTransformerItem transformer, SqlObjectItem target )
-            {
-                if( propName == "MissingDependencyIsError" )
-                {
-                    bool x = m.TryMatchText( "true" );
-                    if( !x && !m.TryMatchText( "false" ) ) m.SetError( "true or false" );
-                    else target.MissingDependencyIsError = x;
-                    return true;
-                }
-                return false;
-            }
+            return CheckSchemaAndObjectName( monitor ) && base.Initialize( monitor, firstContainer, packageItem );
         }
 
-        internal override bool Initialize( IActivityMonitor monitor, string fileName, IDependentItemContainer packageItem )
-        {
-            if( !CheckSchemaAndObjectName( monitor, fileName, packageItem ) ) return false;
-            bool foundConfig;
-            string h = SqlObject.HeaderComments.Select( c => c.Text ).Concatenate( Environment.NewLine );
-            var configReader = CreateConfigReader();
-            if( !configReader.Apply( monitor, h, null, this, out foundConfig ) ) return false;
-            if( !foundConfig )
-            {
-                monitor.Warn().Send( $"Resource '{fileName}' of '{packageItem?.FullName}' should define SetupConfig:{{}} (even an empty one)." );
-                if( !OBSOLETESetPropertiesFromHeader( monitor ) || !SetMissingIsDependencyIsErrorFromHeader( monitor ) ) return false;
-            }
-            return OnInitialized( monitor );
-        }
-
-        /// <summary>
-        /// Returns the <see cref="ConfigReader"/> used to initialize this object.
-        /// This may be specialized.
-        /// </summary>
-        /// <returns>The configuration reader to use.</returns>
-         internal protected override SetupConfigReader CreateConfigReader() => new ConfigReader();
-
-        /// <summary>
-        /// Extension point called once object has been instanciated and configured.
-        /// </summary>
-        /// <param name="monitor">The monitor to use.</param>
-        /// <returns>True on success, false to stop the process.</returns>
-        protected virtual bool OnInitialized( IActivityMonitor monitor ) => true;
-
-        #region Obsolete old header...
-        static Regex _rMissingDep = new Regex( @"MissingDependencyIsError\s*=\s*(?<1>\w+)",
-                                            RegexOptions.CultureInvariant
-                                            | RegexOptions.IgnoreCase
-                                            | RegexOptions.ExplicitCapture );
-
-        static Regex _rHeader = new Regex( @"^\s*--\s*(Version\s*=\s*(?<1>\d+(\.\d+)*|\*))?\s*(,\s*(Package\s*=\s*(?<2>(\w|\.|-)+)|Requires\s*=\s*{\s*(?<3>\??(\w+|-|\^|\[|]|\.)+)\s*(,\s*(?<3>\??(\w+|-|\^|\[|]|\.)+)\s*)*}|Groups\s*=\s*{\s*(?<4>(\w+|-|\^|\[|]|\.)+)\s*(,\s*(?<4>(\w+|-|\^|\[|]|\.)+)\s*)*}|RequiredBy\s*=\s*{\s*(?<5>(\w+|-|\^|\[|]|\.)+)\s*(,\s*(?<5>(\w+|-|\^|\[|]|\.)+)\s*)*}|PreviousNames\s*=\s*{\s*((?<6>(\w+|-|\^|\[|]|\.)+)\s*=\s*(?<6>\d+\.\d+\.\d+(\.\d+)?))\s*(,\s*((?<6>(\w+|-|\^|\[|]|\.)+)\s*=\s*(?<6>\d+(\.\d+){1,3}))\s*)*})\s*)*",
-                                        RegexOptions.CultureInvariant
-                                        | RegexOptions.IgnoreCase
-                                        | RegexOptions.ExplicitCapture );
-
-        protected bool OBSOLETESetPropertiesFromHeader( IActivityMonitor monitor )
-        {
-            string header = SqlObject.HeaderComments.Select( h => h.ToString() ).Concatenate( string.Empty );
-            Match mHeader = _rHeader.Match( header );
-            if( !mHeader.Success )
-            {
-                monitor.Error().Send( "Invalid header: -- Version=X.Y.Z or Version=* must appear first in header." );
-                return false;
-            }
-            string packageName = null;
-            IEnumerable<string> requires = null;
-            IEnumerable<string> groups = null;
-            IEnumerable<string> requiredBy = null;
-            Version version = null;
-            IEnumerable<VersionedName> previousNames = null;
-
-            if( mHeader.Groups[2].Length > 0 ) packageName = mHeader.Groups[2].Value;
-            if( mHeader.Groups[3].Captures.Count > 0 ) requires = mHeader.Groups[3].Captures.Cast<Capture>().Select( m => m.Value );
-            if( mHeader.Groups[4].Captures.Count > 0 ) groups = mHeader.Groups[4].Captures.Cast<Capture>().Select( m => m.Value );
-            if( mHeader.Groups[5].Captures.Count > 0 ) requiredBy = mHeader.Groups[5].Captures.Cast<Capture>().Select( m => m.Value );
-            if( mHeader.Groups[6].Captures.Count > 0 )
-            {
-                var prevNames = mHeader.Groups[6].Captures.Cast<Capture>().Select( m => m.Value );
-                var prevVer = mHeader.Groups[6].Captures.Cast<Capture>().Select( m => Version.Parse( m.Value ) );
-                previousNames = prevNames.Zip( prevVer, ( n, v ) => new VersionedName( n, v ) );
-            }
-            if( mHeader.Groups[1].Length <= 1 ) version = null;
-            else if( !Version.TryParse( mHeader.Groups[1].Value, out version ) || version.Revision != -1 || version.Build == -1 )
-            {
-                monitor.Error().Send( "-- Version=X.Y.Z or Version=* must appear first in header." );
-                return false;
-            }
-            //if( version != null ) Version = version;
-            if( packageName != null ) Container = new NamedDependentItemContainerRef( packageName );
-            if( requires != null ) Requires.Add( requires );
-            if( requiredBy != null ) RequiredBy.Add( requiredBy );
-            if( groups != null ) Groups.Add( groups );
-            //if( previousNames != null ) PreviousNames.AddRange( previousNames );
-            return true;
-        }
-
-        bool SetMissingIsDependencyIsErrorFromHeader( IActivityMonitor monitor )
-        {
-            foreach( var h in SqlObject.HeaderComments )
-            {
-                Match missDep = _rMissingDep.Match( h.Text );
-                if( missDep.Success )
-                {
-                    bool m;
-                    if( bool.TryParse( missDep.Groups[1].Value, out m ) )
-                    {
-                        MissingDependencyIsError = m;
-                        break;
-                    }
-                    else
-                    {
-                        monitor.Error().Send( "Invalid syntax: it should be MissingDependencyIsError = true or MissingDependencyIsError = false." );
-                        return false;
-                    }
-                }
-            }
-            return true;
-        }
-        #endregion
-
-        bool CheckSchemaAndObjectName( IActivityMonitor monitor, string fileName, IDependentItemContainer packageItem )
+        bool CheckSchemaAndObjectName( IActivityMonitor monitor )
         {
             if( ContextLocName.ObjectName != SqlObject.Name )
             {
-                monitor.Error().Send( $"Resource '{fileName}' of '{packageItem?.FullName}' contains the definition of '{ContextLocName.Name}'. Names must match." );
+                monitor.Error().Send( $"Definition of '{ContextLocName.Name}' instead of '{SqlObject.Name}'. Names must match." );
                 return false;
             }
             if( SqlObject.Schema == null )
@@ -250,7 +108,7 @@ namespace CK.SqlServer.Setup
             }
             else if( SqlObject.Schema != ContextLocName.Schema )
             {
-                monitor.Error().Send( $"Resource '{fileName}' of '{packageItem?.FullName}' defines the {ItemType} in the schema '{SqlObject.Schema}' instead of '{ContextLocName.Schema}'." );
+                monitor.Error().Send( $"{ItemType} is defined in the schema '{SqlObject.Schema}' instead of '{ContextLocName.Schema}'." );
                 return false;
             }
             return true;

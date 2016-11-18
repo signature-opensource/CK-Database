@@ -52,20 +52,7 @@ namespace CK.SqlServer.Setup
             set { _target = (SqlBaseItem)value; }
         }
 
-        internal override bool Initialize( IActivityMonitor monitor, string fileName, IDependentItemContainer packageItem )
-        {
-            bool foundConfig;
-            string h = SqlObject.HeaderComments.Select( c => c.Text ).Concatenate( Environment.NewLine );
-            var configReader = CreateConfigReader();
-            if( !configReader.Apply( monitor, h, this, _target, out foundConfig ) ) return false;
-            if( !foundConfig )
-            {
-                monitor.Warn().Send( $"Resource '{fileName}' of '{packageItem?.FullName}' should define SetupConfig:{{}} (even an empty one)." );
-            }
-            return true;
-        }
-
-        protected internal override SetupConfigReader CreateConfigReader() => _target.CreateConfigReader();
+        public override SetupConfigReader CreateConfigReader() => _target.CreateConfigReader().CreateTransformerConfigReader( this );
 
     }
 }

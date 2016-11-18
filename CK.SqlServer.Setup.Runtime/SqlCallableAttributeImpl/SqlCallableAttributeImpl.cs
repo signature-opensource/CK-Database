@@ -25,13 +25,17 @@ namespace CK.SqlServer.Setup
         protected override bool DoImplement( IActivityMonitor monitor, MethodInfo m, SqlObjectItem objectItem, IDynamicAssembly dynamicAssembly, TypeBuilder tB, bool isVirtual )
         {
             ISqlCallableItem item = objectItem as ISqlCallableItem;
-            MethodInfo mCreateCommand = item != null ? item.AssumeCommandBuilder( monitor, dynamicAssembly ) : null;
+            if( item == null )
+            {
+                monitor.Fatal().Send( $"The item '{0}' must be a ISqlCallableItem object to be able to generate call implementation." );
+                return false;
+           }
+            MethodInfo mCreateCommand = item.AssumeCommandBuilder( monitor, dynamicAssembly );
             if( mCreateCommand == null )
             {
                 monitor.Error().Send( "Invalid low level SqlCommand creation method for '{0}'.", item.FullName );
                 return false;
             }
-
             ParameterInfo[] mParameters = m.GetParameters();
             GenerationType gType;
             ExecutionType execType = Attribute.ExecuteCall;

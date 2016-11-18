@@ -43,10 +43,9 @@ namespace CK.SqlServer.Setup
         protected override SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeRegisterer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
         {
             ISqlSetupAspect sql = SetupEngineAspectProvider.GetSetupEngineAspect<ISqlSetupAspect>();
-            return SqlObjectItemAttributeImpl.SqlCreateSetupObjectItem( 
+            return SqlBaseItem.Create( 
                 sql.SqlParser, 
                 r, 
-                Attribute.MissingDependencyIsError, 
                 (SqlContextLocName)name, 
                 (SqlPackageBaseItem)firstContainer, 
                 (SqlBaseItem)transformArgument, 
@@ -58,7 +57,7 @@ namespace CK.SqlServer.Setup
         /// Extension point to create specialized <see cref="SqlBaseItem"/> (other than the standard objects like <see cref="SqlViewItem"/>,
         /// or <see cref="SqlProcedure"/>).
         /// Returns null by default: returning null triggers the use of a default factory that handles the standard items.
-        /// This can also be used to inspect/validated the  error or fatal logged to the <paramref name="monitor"/> stops the process.
+        /// This can also be used to inspect/validate the <paramref name="text"/> since error or fatal logged to the <paramref name="monitor"/> stops the process.
         /// </summary>
         /// <param name="r">The registerer that gives access to the <see cref="IStObjSetupDynamicInitializerState"/>.</param>
         /// <param name="name">The item name.</param>
@@ -98,9 +97,8 @@ namespace CK.SqlServer.Setup
             }
         }
 
-
         /// <summary>
-        /// Implements the given method on the given <see cref="TypeBuilder"/> that targets the given <see cref="SqlObjectItem"/>.
+        /// Implements the given method on the given <see cref="TypeBuilder"/> that is bound to the given <see cref="SqlObjectItem"/>.
         /// Implementations can rely on the <paramref name="dynamicAssembly"/> to store shared information if needed.
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
@@ -111,7 +109,8 @@ namespace CK.SqlServer.Setup
         /// <param name="isVirtual">True if a virtual method must be implemented. False if it must be sealed.</param>
         /// <returns>
         /// True if the method is actually implemented, false if, for any reason, another implementation (empty for instance) must be generated 
-        /// (for instance, whenever the method is not ready to be implemented). Any error must be logged into the <paramref name="monitor"/>.
+        /// (for instance, whenever the method is not ready to be implemented). 
+        /// Any error must be logged into the <paramref name="monitor"/>.
         /// </returns>
         protected abstract bool DoImplement( IActivityMonitor monitor, MethodInfo m, SqlObjectItem sqlObjectItem, IDynamicAssembly dynamicAssembly, TypeBuilder tB, bool isVirtual );
 

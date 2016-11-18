@@ -11,6 +11,7 @@ using CK.SqlServer.Parser;
 using System.Text.RegularExpressions;
 using System.Linq;
 using CK.Text;
+using System.Diagnostics;
 
 namespace CK.SqlServer.Setup
 {
@@ -52,25 +53,98 @@ namespace CK.SqlServer.Setup
             set { _sqlObject = value; }
         }
 
-        internal abstract bool Initialize( IActivityMonitor monitor, string fileName, IDependentItemContainer packageItem );
+        /// <summary>
+        /// Initializes this item after its instanciation.
+        /// This default implementation reads the <see cref="SqlObject"/> header (the comments)
+        /// and uses <see cref="CreateConfigReader"/> to apply it.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="firstContainer">
+        /// The first container that defined this object: it is different than the <paramref name="packageItem"/>
+        /// if it is a replacement.
+        /// On success, this will be the package of the item if the item does not specify a container.
+        /// </param>
+        /// <param name="packageItem">
+        /// The package that defined the item.
+        /// </param>
+        /// <returns>True on success, false on error.</returns>
+        protected virtual bool Initialize( IActivityMonitor monitor, IDependentItemContainer firstContainer, IDependentItemContainer packageItem )
+        {
+            bool foundConfig;
+            string h = SqlObject.HeaderComments.Select( c => c.Text ).Concatenate( Environment.NewLine );
+            var configReader = CreateConfigReader();
+            if( !configReader.Apply( monitor, h, out foundConfig ) ) return false;
+            if( !foundConfig )
+            {
+                monitor.Warn().Send( "Missing SetupConfig:{}. At least an empty one should appear in the header." );
+            }
+            return true;
+        }
 
         /// <summary>
         /// Extension point that enables to substitute the default <see cref="SetupConfigReader"/> used 
         /// to initialize this object.
         /// </summary>
         /// <returns>The configuration reader to use.</returns>
-        internal protected abstract SetupConfigReader CreateConfigReader();
+        public virtual SetupConfigReader CreateConfigReader() => new SetupConfigReader( this );
 
-        internal static SqlBaseItem Parse(
+        /// <summary>
+        /// Factory method that handles resource loading (based on name and containing package of the object),
+        /// parsing of the resource text and creation of a <see cref="SqlBaseItem"/> either from an optional 
+        /// factory method or based on the resource text content and its initialization thanks to <see cref="Initialize"/>.
+        /// </summary>
+        /// <param name="parser">The Sql parser to use.</param>
+        /// <param name="r">The registerer that gives access to the <see cref="IStObjSetupDynamicInitializerState"/>.</param>
+        /// <param name="name">Full name of the object to create.</param>
+        /// <param name="firstContainer">
+        /// The first container that defined this object.
+        /// Actual container if the object has been replaced is provided by 
+        /// <see cref="SetupObjectItemAttributeImplBase.Registerer">Registerer</see>.Container.
+        /// </param>
+        /// <param name="transformArgument">Optional transform argument if this object is a transformer.</param>
+        /// <param name="expectedItemTypes">Optional expected item types (can be null).</param>
+        /// <param name="factory">
+        /// Factory function for result. When null, standard items (views, functions, etc.) are
+        /// created based on the actual resource text.
+        /// </param>
+        /// <returns>The created object or null if an error occurred and has been logged.</returns>
+        public static SqlBaseItem Create(
+                ISqlServerParser parser,
+                SetupObjectItemAttributeRegisterer r,
+                SqlContextLocName name,
+                SqlPackageBaseItem firstContainer,
+                SqlBaseItem transformArgument,
+                IEnumerable<string> expectedItemTypes,
+                Func<SetupObjectItemAttributeRegisterer, SqlContextLocName, ISqlServerParsedText, SqlBaseItem> factory = null )
+        {
+            Debug.Assert( (transformArgument != null) == (name.TransformArg != null) );
+            SqlPackageBaseItem packageItem = (SqlPackageBaseItem)r.Container;
+            using( r.Monitor.OpenTrace().Send( $"Loading '{name}' of '{r.Container.FullName}'." ) )
+            {
+                string fileName;
+                string text = name.LoadTextResource( r.Monitor, packageItem, out fileName );
+                if( text == null ) return null;
+                SqlBaseItem result = ParseAndInitialize( r, name, parser, text, firstContainer, packageItem, transformArgument, expectedItemTypes, factory );
+                if( result != null )
+                {
+                    if( result.Container == null ) firstContainer.Children.Add( result );
+                    r.Monitor.CloseGroup( $"Loaded {result.ItemType} from file '{fileName}'." );
+                }
+                else r.Monitor.CloseGroup( $"Error while loading file '{fileName}'." );
+                return result;
+            }
+        }
+
+        static SqlBaseItem ParseAndInitialize(
             SetupObjectItemAttributeRegisterer registerer,
             SqlContextLocName name,
             ISqlServerParser parser,
             string text,
-            string fileName,
+            IDependentItemContainer firstContainer,
             IDependentItemContainer packageItem,
             SqlBaseItem transformArgument,
             IEnumerable<string> expectedItemTypes,
-            Func<SetupObjectItemAttributeRegisterer, SqlContextLocName, ISqlServerParsedText,SqlBaseItem> factory = null )
+            Func<SetupObjectItemAttributeRegisterer, SqlContextLocName, ISqlServerParsedText, SqlBaseItem> factory = null )
         {
             try
             {
@@ -95,7 +169,7 @@ namespace CK.SqlServer.Setup
                 }
                 if( expectedItemTypes != null && !expectedItemTypes.Contains( result.ItemType ) )
                 {
-                    registerer.Monitor.Error().Send( $"Resource '{fileName}' of '{packageItem?.FullName}' is a '{result.ItemType}' whereas '{expectedItemTypes.Concatenate( "' or '" )}' is expected." );
+                    registerer.Monitor.Error().Send( $"Content is a '{result.ItemType}' whereas '{expectedItemTypes.Concatenate( "' or '" )}' is expected." );
                     return null;
                 }
                 SqlTransformerItem t = result as SqlTransformerItem;
@@ -103,11 +177,11 @@ namespace CK.SqlServer.Setup
                 {
                     if( transformArgument.AddTransformer( registerer.Monitor, t ) == null ) return null;
                 }
-                return result.Initialize( registerer.Monitor, fileName, packageItem ) ? result : null;
+                return result.Initialize( registerer.Monitor, firstContainer, packageItem ) ? result : null;
             }
             catch( Exception ex )
             {
-                using( registerer.Monitor.OpenError().Send( ex, $"While parsing '{fileName}'." ) )
+                using( registerer.Monitor.OpenError().Send( ex ) )
                 {
                     registerer.Monitor.Info().Send( text );
                 }
