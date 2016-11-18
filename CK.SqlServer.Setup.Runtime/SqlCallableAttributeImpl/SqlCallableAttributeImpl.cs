@@ -13,7 +13,7 @@ using CK.Reflection;
 namespace CK.SqlServer.Setup
 {
 
-    public partial class SqlCallableAttributeImpl : SqlObjectItemMethodAttributeImplBase
+    public partial class SqlCallableAttributeImpl : SqlBaseItemMethodAttributeImplBase
     {
         public SqlCallableAttributeImpl( SqlCallableAttributeBase a )
             : base( a, a.ObjectType )
@@ -22,9 +22,9 @@ namespace CK.SqlServer.Setup
 
         protected new SqlCallableAttributeBase Attribute => (SqlCallableAttributeBase)base.Attribute;
 
-        protected override bool DoImplement( IActivityMonitor monitor, MethodInfo m, SqlObjectItem objectItem, IDynamicAssembly dynamicAssembly, TypeBuilder tB, bool isVirtual )
+        protected override bool DoImplement( IActivityMonitor monitor, MethodInfo m, SqlBaseItem sqlItem, IDynamicAssembly dynamicAssembly, TypeBuilder tB, bool isVirtual )
         {
-            ISqlCallableItem item = objectItem as ISqlCallableItem;
+            ISqlCallableItem item = sqlItem as ISqlCallableItem;
             if( item == null )
             {
                 monitor.Fatal().Send( $"The item '{0}' must be a ISqlCallableItem object to be able to generate call implementation." );
@@ -69,7 +69,7 @@ namespace CK.SqlServer.Setup
                     {
                         if( executeCall )
                         {
-                            monitor.Error().Send( "When a Wrapper is returned, ExecuteCall must not be specified.", m.DeclaringType.FullName, m.Name );
+                            monitor.Error().Send( "When a Wrapper is returned, ExecuteNonQuery must not be specified.", m.DeclaringType.FullName, m.Name );
                             return false;
                         }
                         gType = GenerationType.ReturnWrapper;
@@ -81,7 +81,7 @@ namespace CK.SqlServer.Setup
                     }
                     else
                     {
-                        monitor.Error().Send( "Ctor '{0}.{1}' must return a SqlCommand -OR- a type that has at least one constructor with a non optional SqlCommand (among other parameters) -OR- accepts a SqlCommand by reference as its first argument -OR- use auto execution and exploit the execute return (can be void).", m.DeclaringType.FullName, m.Name );
+                        monitor.Error().Send( "Method '{0}.{1}' must return a SqlCommand -OR- a type that has at least one constructor with a non optional SqlCommand (among other parameters) -OR- accepts a SqlCommand by reference as its first argument -OR- use ExecuteNonQuery mode.", m.DeclaringType.FullName, m.Name );
                         return false;
                     }
                 }

@@ -17,12 +17,18 @@ namespace CK.SqlServer.Setup
     /// Base class for item type "Function": <see cref="SqlFunctionInlineTableItem"/>, <see cref="SqlFunctionScalarItem"/>, 
     /// <see cref="SqlFunctionTableItem"/>, and "Procedure": <see cref="SqlProcedureItem"/>.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">Type of the callable.</typeparam>
     public class SqlCallableItem<T> : SqlObjectItem, ISqlCallableItem where T : ISqlServerCallableObject
     {
         const string _builderTypeName = "CK.<CreatorForSqlCommand>";
 
-        internal SqlCallableItem( SqlContextLocName name, string itemType, T procOrFunc )
+        /// <summary>
+        /// Initializes a new <see cref="SqlObjectItem"/>.
+        /// </summary>
+        /// <param name="name">Name of this object.</param>
+        /// <param name="itemType">Item type ("Function" or "Procedure").</param>
+        /// <param name="parsed">The parsed callable object.</param>
+        public SqlCallableItem( SqlContextLocName name, string itemType, T procOrFunc )
             : base( name, itemType, procOrFunc )
         {
         }

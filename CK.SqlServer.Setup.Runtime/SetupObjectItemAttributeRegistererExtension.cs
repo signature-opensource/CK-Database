@@ -1,5 +1,4 @@
 ﻿using CK.Core;
-using CK.Setup;
 using CK.SqlServer.Setup;
 using System;
 using System.Collections.Generic;
@@ -7,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CK.SqlServer
+namespace CK.Setup
 {
     public static class SetupObjectItemAttributeRegistererExtension
     {

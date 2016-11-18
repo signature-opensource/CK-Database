@@ -16,14 +16,18 @@ namespace CK.SqlServer.Setup
 {
 
     /// <summary>
+    /// Specialized <see cref="SqlBaseItem"/>: its <see cref="SqlObject"/> is a <see cref="ISqlServerObject"/>.
     /// Base class for <see cref="SqlViewItem"/> and <see cref="SqlCallableItem{T}"/>.
     /// </summary>
     public abstract class SqlObjectItem : SqlBaseItem
     {
-        bool? _missingDependencyIsError;
-
-
-        internal SqlObjectItem( SqlContextLocName name, string itemType, ISqlServerObject parsed )
+        /// <summary>
+        /// Initializes a new <see cref="SqlObjectItem"/>.
+        /// </summary>
+        /// <param name="name">Name of this object.</param>
+        /// <param name="itemType">Item type ("Function", "Procedure", "View", etc.).</param>
+        /// <param name="parsed">The parsed object.</param>
+        protected SqlObjectItem( SqlContextLocName name, string itemType, ISqlServerObject parsed )
             : base( name, itemType, parsed )
         {
             ExplicitRequiresMustBeTransformed = parsed.Options.SchemaBinding;
@@ -41,19 +45,6 @@ namespace CK.SqlServer.Setup
         }
 
         public new SqlObjectItem TransformTarget => (SqlObjectItem)base.TransformTarget;
-
-        /// <summary>
-        /// Gets or sets whether when installing, the informational message 'The module 'X' depends 
-        /// on the missing object 'Y'. The module will still be created; however, it cannot run successfully until the object exists.' 
-        /// must be logged as a <see cref="LogLevel.Error"/>. When false, this is a <see cref="LogLevel.Info"/>.
-        /// Sets by MissingDependencyIsError in SetupConfig text.
-        /// When not set, it is considered to be true.
-        /// </summary>
-        public bool? MissingDependencyIsError
-        {
-            get { return _missingDependencyIsError; }
-            set { _missingDependencyIsError = value; }
-        }
 
         /// <summary>
         /// Writes the drop instruction.
@@ -86,12 +77,31 @@ namespace CK.SqlServer.Setup
             else SqlObject.Write( b );
         }
 
+        /// <summary>
+        /// Override the base <see cref="SqlBaseItem.Initialize"/> method to
+        /// call <see cref="CheckSchemaAndObjectName"/> before calling the base implementation.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="firstContainer">
+        /// The first container that defined this object: it is different than the <paramref name="packageItem"/>
+        /// if it is a replacement.
+        /// On success, this will be the package of the item if the item does not specify a container.
+        /// </param>
+        /// <param name="packageItem">
+        /// The package that defined the item.
+        /// </param>
+        /// <returns>True on success, false on error.</returns>
         protected override bool Initialize( IActivityMonitor monitor, IDependentItemContainer firstContainer, IDependentItemContainer packageItem )
         {
             return CheckSchemaAndObjectName( monitor ) && base.Initialize( monitor, firstContainer, packageItem );
         }
 
-        bool CheckSchemaAndObjectName( IActivityMonitor monitor )
+        /// <summary>
+        /// Checks and corrects when possible <see cref="SqlObject"/>'s <see cref="ISqlServerObject.Schema"/>.
+        /// </summary>
+        /// <param name="monitor">The monitor used to raise errors or warnings.</param>
+        /// <returns>True on success, false otherwise.</returns>
+        protected bool CheckSchemaAndObjectName( IActivityMonitor monitor )
         {
             if( ContextLocName.ObjectName != SqlObject.Name )
             {

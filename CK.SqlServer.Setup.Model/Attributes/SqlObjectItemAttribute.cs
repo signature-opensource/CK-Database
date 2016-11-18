@@ -10,8 +10,8 @@ namespace CK.SqlServer.Setup
 {
 
     /// <summary>
-    /// Declares a resource that contains a Sql procedure, function or view associated to a type.
-    /// Multiples object names like "sUserCreate, sUserDestroy, AnotherSchema.sUserUpgrade, CK.sUserRun" can be defined.
+    /// Declares a resource that contains a Sql procedure, function or view.
+    /// Multiples object names like "sUserCreate, sUserDestroy, AnotherSchema.sUserUpgrade, CK.vProduct" can be defined.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = false )]
     public class SqlObjectItemAttribute : SetupObjectItemAttributeBase
@@ -21,7 +21,7 @@ namespace CK.SqlServer.Setup
         /// </summary>
         /// <param name="commaSeparatedObjectNames">Name or multiple comma separated names.</param>
         public SqlObjectItemAttribute( string commaSeparatedObjectNames )
-            : this( commaSeparatedObjectNames, "CK.SqlServer.Setup.SqlObjectItemAttributeImpl, CK.SqlServer.Setup.Runtime" )
+            : this( commaSeparatedObjectNames, "CK.SqlServer.Setup.SqlBaseItemAttributeImpl, CK.SqlServer.Setup.Runtime" )
         {
         }
 

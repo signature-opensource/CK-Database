@@ -13,27 +13,29 @@ using CK.SqlServer.Parser;
 namespace CK.SqlServer.Setup
 {
 
-    public abstract class SqlObjectItemMethodAttributeImplBase : SetupObjectItemMemberAttributeImplBase, IAutoImplementorMethod
+    /// <summary>
+    /// Implementation for any specialization of <see cref="SetupObjectItemMemberAttributeBase"/>.
+    /// This attribute implementation associates a <see cref="SqlBaseItem"/> to an abstract method 
+    /// that is emitted thanks to <see cref="DoImplement"/>.
+    /// Any kind of SqlBaseItem can be handled by this base class thanks to the 
+    /// overridable <see cref="CreateSqlBaseItem"/> factory method.
+    /// </summary>
+    public abstract class SqlBaseItemMethodAttributeImplBase : SetupObjectItemMemberAttributeImplBase, IAutoImplementorMethod
     {
         readonly string _expectedItemType;
         bool _implementHasBeenAlreadyBeenCalled;
 
         /// <summary>
-        /// Initializes a new <see cref="SqlObjectItemMethodAttributeImplBase"/> bound to a <see cref="SqlObjectItemMemberAttributeBase"/> 
-        /// and a <see cref="SqlObjectProtoItem.ItemType"/>.
+        /// Initializes a new <see cref="SqlBaseItemMethodAttributeImplBase"/> bound to a <see cref="SetupObjectItemMemberAttributeBase"/> 
+        /// and a item type ("Function", "Procedure", etc.).
         /// </summary>
         /// <param name="a">The attribute.</param>
         /// <param name="expectedItemType">The expected type of the object.</param>
-        protected SqlObjectItemMethodAttributeImplBase( SqlObjectItemMemberAttributeBase a, string expectedItemType )
+        protected SqlBaseItemMethodAttributeImplBase( SetupObjectItemMemberAttributeBase a, string expectedItemType )
             : base( a )
         {
             _expectedItemType = expectedItemType;
         }
-
-        /// <summary>
-        /// Gets the attribute (covariant implementation).
-        /// </summary>
-        protected new SqlObjectItemMemberAttributeBase Attribute => (SqlObjectItemMemberAttributeBase)base.Attribute; 
 
         protected override IContextLocNaming BuildFullName( SetupObjectItemAttributeRegisterer r, SetupObjectItemBehavior b, string attributeName )
         {
@@ -103,7 +105,7 @@ namespace CK.SqlServer.Setup
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
         /// <param name="m">The method to implement.</param>
-        /// <param name="sqlObjectItem">The associated <see cref="SqlObjectItem"/> (target of the method).</param>
+        /// <param name="sqlItem">The associated <see cref="SqlBaseItem"/> (target of the method).</param>
         /// <param name="dynamicAssembly">Dynamic assembly being implemented.</param>
         /// <param name="tB">The type builder to use.</param>
         /// <param name="isVirtual">True if a virtual method must be implemented. False if it must be sealed.</param>
@@ -112,7 +114,7 @@ namespace CK.SqlServer.Setup
         /// (for instance, whenever the method is not ready to be implemented). 
         /// Any error must be logged into the <paramref name="monitor"/>.
         /// </returns>
-        protected abstract bool DoImplement( IActivityMonitor monitor, MethodInfo m, SqlObjectItem sqlObjectItem, IDynamicAssembly dynamicAssembly, TypeBuilder tB, bool isVirtual );
+        protected abstract bool DoImplement( IActivityMonitor monitor, MethodInfo m, SqlBaseItem sqlItem, IDynamicAssembly dynamicAssembly, TypeBuilder tB, bool isVirtual );
 
     }
 

@@ -95,7 +95,7 @@
     <Compile Include="ISqlSetupAspect.cs" />
     <Compile Include="SqlCallableAttributeImpl\ISqlCallableItem.cs" />
     <Compile Include="SqlContextLocName.cs" />
-    <Compile Include="SqlObjectItemMethodAttributeImplBase.cs" />
+    <Compile Include="SqlBaseItemMethodAttributeImplBase.cs" />
     <Compile Include="SqlObject\SqlCallableItem.cs" />
     <Compile Include="SqlObject\SqlFunctionTableItem.cs" />
     <Compile Include="SqlObject\SqlFunctionInlineTableItem.cs" />
@@ -109,7 +109,7 @@
     <Compile Include="SqlDatabase\SqlDatabaseConnectionItemDriver.cs" />
     <Compile Include="SqlDatabase\SqlDatabaseItem.cs" />
     <Compile Include="SqlDatabase\SqlDatabaseItemDriver.cs" />
-    <Compile Include="SqlObjectItemAttributeImpl.cs" />
+    <Compile Include="SqlBaseItemAttributeImpl.cs" />
     <Compile Include="SqlObject\SqlObjectItem.cs" />
     <Compile Include="SqlObject\SqlObjectItemDriver.cs" />
     <Compile Include="SqlObject\SqlProcedureItem.cs" />

@@ -75,7 +75,6 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Attributes\SqlObjectItemMemberAttributeBase.cs" />
     <Compile Include="Attributes\SqlObjectItemAttribute.cs" />
     <Compile Include="Attributes\SqlCallableAttribute.cs" />
     <Compile Include="Attributes\SqlScalarFunctionAttribute.cs" />

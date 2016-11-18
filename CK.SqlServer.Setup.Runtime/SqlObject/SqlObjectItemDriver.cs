@@ -56,48 +56,32 @@ namespace CK.SqlServer.Setup
             string s;
             StringBuilder b = new StringBuilder();
 
-            IDisposable configRestorer = null;
-            bool itemMissingDependencyIsError = Item.MissingDependencyIsError.HasValue ? Item.MissingDependencyIsError.Value : true;
-            if( m.MissingDependencyIsError != itemMissingDependencyIsError )
+            Item.WriteDrop( b );
+            Debug.Assert( Item.TransformTarget == null || Item.TransformSource == null, "Both can not be set on the same item." );
+            if( Item.TransformTarget != null )
             {
-                if( m.IgnoreMissingDependencyIsError )
-                {
-                    if( itemMissingDependencyIsError ) Engine.Monitor.Trace().Send( "SqlManager is configured to ignore MissingDependencyIsError." );
-                }
-                else
-                {
-                    m.MissingDependencyIsError = itemMissingDependencyIsError;
-                    configRestorer = Util.CreateDisposableAction( () => m.MissingDependencyIsError = !m.MissingDependencyIsError );
-                }
+                b.Append( $"-- This will be transformed by " )
+                    .AppendStrings( Item.Transformers.Select( t => (t.TransformTarget ?? t).FullName ) )
+                    .AppendLine();
             }
-            using( configRestorer )
+            else if( Item.TransformSource != null )
             {
-                Item.WriteDrop( b );
-                Debug.Assert( Item.TransformTarget == null || Item.TransformSource == null, "Both can not be set on the same item." );
-                if( Item.TransformTarget != null )
-                {
-                    b.Append( $"-- This will be transformed by " )
-                        .AppendStrings( Item.Transformers.Select( t => (t.TransformTarget ?? t).FullName ) )
-                        .AppendLine();
-                }
-                else if( Item.TransformSource != null )
-                {
-                    b.Append( $"-- This has been transformed by " )
-                        .AppendStrings( Item.TransformSource.Transformers.Select( t => (t.TransformTarget ?? t).FullName ) )
-                        .AppendLine();
-                }
-                s = b.ToString();
-                if( !m.ExecuteOneScript( s, Engine.Monitor ) ) return false;
-                b.Clear();
-
-                Item.WriteCreate( b );
-                s = b.ToString();
-
-                var tagHandler = new SimpleScriptTagHandler( s );
-                if( !tagHandler.Expand( Engine.Monitor, true ) ) return false;
-                var scripts = tagHandler.SplitScript();
-                if( !m.ExecuteScripts( scripts.Select( c => c.Body ), Engine.Monitor ) ) return false;
+                b.Append( $"-- This has been transformed by " )
+                    .AppendStrings( Item.TransformSource.Transformers.Select( t => (t.TransformTarget ?? t).FullName ) )
+                    .AppendLine();
             }
+            s = b.ToString();
+            if( !m.ExecuteOneScript( s, Engine.Monitor ) ) return false;
+            b.Clear();
+
+            Item.WriteCreate( b );
+            s = b.ToString();
+
+            var tagHandler = new SimpleScriptTagHandler( s );
+            if( !tagHandler.Expand( Engine.Monitor, true ) ) return false;
+            var scripts = tagHandler.SplitScript();
+            if( !m.ExecuteScripts( scripts.Select( c => c.Body ), Engine.Monitor ) ) return false;
+
             return true;
         }
     }

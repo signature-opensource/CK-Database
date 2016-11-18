@@ -1,28 +1,22 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using CK.Core;
 using CK.Setup;
 using CK.SqlServer.Parser;
-using CK.Text;
-using Yodii.Script;
+using System.Collections.Generic;
 
 namespace CK.SqlServer.Setup
 {
 
     /// <summary>
-    /// Declares a resource that contains a Sql procedure, function or view associated to a type.
-    /// Multiples object names like "sUserCreate, sUserDestroy, sUserUpgrade" may be defined.
+    /// Implementation for <see cref="SqlObjectItemAttribute"/> or other specialization of <see cref="SetupObjectItemAttributeImplBase"/>.
+    /// Any kind of <see cref="SqlBaseItem"/> can be handled by this base class thanks to the 
+    /// overridable <see cref="CreateSqlBaseItem"/> factory method.
     /// </summary>
-    public class SqlObjectItemAttributeImpl : SetupObjectItemAttributeImplBase
+    public class SqlBaseItemAttributeImpl : SetupObjectItemAttributeImplBase
     {
-        public SqlObjectItemAttributeImpl( SqlObjectItemAttribute a )
+        public SqlBaseItemAttributeImpl( SetupObjectItemAttributeBase a )
             : base( a )
         {
         }
-
-        protected new SqlObjectItemAttribute Attribute => (SqlObjectItemAttribute)base.Attribute;
 
         /// <summary>
         /// Must build the full name of the object based on the raw attribute name, whether this is
@@ -40,7 +34,7 @@ namespace CK.SqlServer.Setup
 
         /// <summary>
         /// When overridden, can return a non null list of item type names.
-        /// Item types can not be null nor longer than 16 characters. For Sql Server, this can be
+        /// Item types can not be null nor longer than 16 characters. For Sql Server, standard types are
         /// "Function" (covers ITVF, table and scalar function), "Procedure", "View" and "Transformer".
         /// </summary>
         protected virtual IEnumerable<string> ExpectedItemTypes => null;
