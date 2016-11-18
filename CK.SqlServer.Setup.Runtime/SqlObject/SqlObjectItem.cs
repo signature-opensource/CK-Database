@@ -200,12 +200,12 @@ namespace CK.SqlServer.Setup
                 monitor.Error().Send( "-- Version=X.Y.Z or Version=* must appear first in header." );
                 return false;
             }
-            if( version != null ) Version = version;
+            //if( version != null ) Version = version;
             if( packageName != null ) Container = new NamedDependentItemContainerRef( packageName );
             if( requires != null ) Requires.Add( requires );
             if( requiredBy != null ) RequiredBy.Add( requiredBy );
             if( groups != null ) Groups.Add( groups );
-            if( previousNames != null ) PreviousNames.AddRange( previousNames );
+            //if( previousNames != null ) PreviousNames.AddRange( previousNames );
             return true;
         }
 

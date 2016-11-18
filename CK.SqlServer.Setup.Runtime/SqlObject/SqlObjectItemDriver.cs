@@ -41,8 +41,6 @@ namespace CK.SqlServer.Setup
         {
             if( beforeHandlers ) return true;
 
-            if( ExternalVersion != null && ExternalVersion.Version == Item.Version ) return true;
-
             if( !_aspects.GlobalResolution ) return LegacyInstall();
 
             Debug.Assert( Item.TransformTarget == null || Item.TransformSource == null, "Both can not be set on the same item." );

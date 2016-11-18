@@ -18,16 +18,18 @@ namespace CK.SqlServer.Setup
     /// <summary>
     /// Base class for <see cref="SqlObjectItem"/> and <see cref="SqlTransformerItem"/>.
     /// </summary>
-    public abstract class SqlBaseItem : SetupObjectItemV
+    public abstract class SqlBaseItem : SetupObjectItem
     {
         ISqlServerParsedText _sqlObject;
         IReadOnlyList<SqlTransformerItem> _transformers;
 
-        internal SqlBaseItem()
-        {
-        }
-
-        internal SqlBaseItem( SqlContextLocName name, string itemType, ISqlServerParsedText parsed )
+        /// <summary>
+        /// Initializes a <see cref="SqlBaseItem"/>.
+        /// </summary>
+        /// <param name="name">The object name.</param>
+        /// <param name="itemType">The item type.</param>
+        /// <param name="parsed">The parsed text.</param>
+        protected SqlBaseItem( SqlContextLocName name, string itemType, ISqlServerParsedText parsed )
             : base( name, itemType )
         {
             _sqlObject = parsed;
@@ -53,7 +55,8 @@ namespace CK.SqlServer.Setup
         internal abstract bool Initialize( IActivityMonitor monitor, string fileName, IDependentItemContainer packageItem );
 
         /// <summary>
-        /// Extension point that enables to substitute the default <see cref="SetupConfigReader"/> used to initialize this object.
+        /// Extension point that enables to substitute the default <see cref="SetupConfigReader"/> used 
+        /// to initialize this object.
         /// </summary>
         /// <returns>The configuration reader to use.</returns>
         internal protected abstract SetupConfigReader CreateConfigReader();
