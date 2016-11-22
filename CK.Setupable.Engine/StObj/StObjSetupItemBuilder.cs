@@ -69,7 +69,6 @@ namespace CK.Setup
                     // Builds the StObjSetupData from the different attributes.
                     var data = new StObjSetupData( _monitor, r, fromAbove );
                     // Calls any attributes that is a IStObjSetupConfigurator with the StObjSetupData.
-                    // ApplyAttributesConfigurator
                     {
                         var all = data.StObj.Attributes.GetAllCustomAttributes<IStObjSetupConfigurator>();
                         foreach( IStObjSetupConfigurator c in all )

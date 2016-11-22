@@ -217,7 +217,7 @@ namespace CK.Setup
         public string FullName => _contextLocName.FullName;
 
         /// <summary>
-        /// Sets the assembly quelified name of the <see cref="SetupItemDriver"/> object
+        /// Sets the assembly qualified name of the <see cref="SetupItemDriver"/> object
         /// to use for setup.
         /// </summary>
         /// <param name="assemblyQualifiedName">Assembly qualified name.</param>
