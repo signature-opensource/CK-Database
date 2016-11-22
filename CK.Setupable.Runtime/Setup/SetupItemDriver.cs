@@ -105,7 +105,7 @@ namespace CK.Setup
             {
                 foreach( var h in _handlers )
                 {
-                    if( !h.OnStep( this, SetupCallGroupStep.Init ) || !h.Init( this ) ) return false;
+                    if( !h.Init( this ) || !h.OnStep( this, SetupCallGroupStep.Init ) ) return false;
                 }
             }
             return Init( false ) && OnStep( SetupCallGroupStep.Init, false );

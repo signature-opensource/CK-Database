@@ -53,7 +53,7 @@ namespace CK.SqlServer.Setup
             foreach( var one in tagHandler.SplitScript() )
             {
                 string key = script.Name.GetScriptKey( one.Label ?? "AutoLabel" + idx );
-                DoRun( one.Body, key );
+                if( !DoRun( one.Body, key ) ) return false;
                 ++idx;
             }
             return true;
