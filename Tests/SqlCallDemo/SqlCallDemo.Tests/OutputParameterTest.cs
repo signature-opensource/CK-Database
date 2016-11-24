@@ -71,16 +71,16 @@ namespace SqlCallDemo.Tests
         }
 
 
-        //[Test]
-        //public async Task async_calling_a_pure_output_with_default_parameter()
-        //{
-        //    var p = TestHelper.StObjMap.Default.Obtain<OutputParameterPackage>();
-        //    using( var ctx = new SqlStandardCallContext() )
-        //    {
-        //        string result = await p.OutputParameterWithDefaultAsync( ctx, null );
-        //        Assert.That( result, Is.EqualTo( "Return: NULL input for @TextResult!" ) );
-        //    }
-        //}
+        [Test]
+        public async Task async_calling_a_pure_output_with_default_parameter()
+        {
+            var p = TestHelper.StObjMap.Default.Obtain<OutputParameterPackage>();
+            using( var ctx = new SqlStandardCallContext() )
+            {
+                string result = await p.OutputParameterWithDefaultAsync( ctx, null ).ConfigureAwait( false );
+                Assert.That( result, Is.EqualTo( "Return: NULL input for @TextResult!" ) );
+            }
+        }
 
 
     }

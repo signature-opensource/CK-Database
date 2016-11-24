@@ -145,10 +145,10 @@ namespace CK.SqlServer
             try
             {
                 SqlConnection c = GetProvider( connectionString ).Connection;
-                using( await c.EnsureOpenAsync( cancellationToken ) )
+                using( await c.EnsureOpenAsync( cancellationToken ).ConfigureAwait( false ) )
                 {
                     cmd.Connection = c;
-                    await cmd.ExecuteNonQueryAsync( cancellationToken );
+                    await cmd.ExecuteNonQueryAsync( cancellationToken ).ConfigureAwait( false );
                     return resultBuilder( cmd );
                 }
             }

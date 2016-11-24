@@ -30,7 +30,7 @@ namespace SqlCallDemo.Tests
             var p = TestHelper.StObjMap.Default.Obtain<CmdDemoPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
-                CmdDemo.ResultPOCO r = await p.RunCommandAsync( ctx, cmd );
+                CmdDemo.ResultPOCO r = await p.RunCommandAsync( ctx, cmd ).ConfigureAwait( false );
                 Assert.That( r.Delay, Is.LessThan( 0 ) );
                 Assert.That( r.ActualCompanyName, Is.EqualTo( "INVENIETIS HOP!" ) );
             }
@@ -49,7 +49,7 @@ namespace SqlCallDemo.Tests
             var p = TestHelper.StObjMap.Default.Obtain<CmdDemoPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
-                CmdDemo.ResultReadOnly r = await p.RunCommandROAsync( ctx, cmd );
+                CmdDemo.ResultReadOnly r = await p.RunCommandROAsync( ctx, cmd ).ConfigureAwait( false );
                 Assert.That( r.Delay, Is.LessThan( 0 ) );
                 Assert.That( r.ActualCompanyName, Is.EqualTo( "INVENIETIS HOP!" ) );
             }

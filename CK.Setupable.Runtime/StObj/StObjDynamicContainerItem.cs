@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setupable.Runtime\StObj\StObjDynamicPackageItem.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,7 +24,7 @@ namespace CK.Setup
         /// <param name="data">Descriptive data that is used to configure this item.</param>
         /// <param name="defaultDriverType">Can be a string or a Type: if <see cref="IStObjSetupData.DriverType"/> and <see cref="IStObjSetupData.DriverTypeName"/> is null, this driver is used.</param>
         public StObjDynamicContainerItem( IActivityMonitor monitor, IStObjSetupData data, object defaultDriverType = null )
-            : base( (object)data.DriverType ?? (object)data.DriverTypeName ?? defaultDriverType )
+            : base( data.DriverType ?? data.DriverTypeName ?? defaultDriverType )
         {
             Debug.Assert( data.ItemType == null || typeof( StObjDynamicContainerItem ).IsAssignableFrom( data.ItemType ), "If we are using a StObjDynamicContainerItem, this is because no explicit ItemType (nor ItemTypeName) have been set, or it is a type that specializes this." );
             ItemKind = (DependentItemKind)data.StObj.ItemKind;

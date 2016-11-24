@@ -34,9 +34,9 @@ namespace SqlCallDemo.Tests
             var p = TestHelper.StObjMap.Default.Obtain<FunctionPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
-                string t1 = await p.StringFunctionAsync( ctx, 3712 );
-                string t2 = await p.StringFunctionAsync( ctx, 2173 );
-                string t3 = await p.StringFunctionAsync( ctx, null );
+                string t1 = await p.StringFunctionAsync( ctx, 3712 ).ConfigureAwait( false );
+                string t2 = await p.StringFunctionAsync( ctx, 2173 ).ConfigureAwait( false );
+                string t3 = await p.StringFunctionAsync( ctx, null ).ConfigureAwait( false );
                 Assert.That( t1, Is.EqualTo( "@V = 3712" ) );
                 Assert.That( t2, Is.EqualTo( "@V = 2173" ) );
                 Assert.That( t3, Is.EqualTo( "@V is null" ) );
@@ -64,7 +64,7 @@ namespace SqlCallDemo.Tests
             var p = TestHelper.StObjMap.Default.Obtain<FunctionPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
-                string shouldBeNull = await p.StringFunctionAsync( ctx, -1 );
+                string shouldBeNull = await p.StringFunctionAsync( ctx, -1 ).ConfigureAwait( false );
                 Assert.That( shouldBeNull, Is.Null );
             }
         }
@@ -86,8 +86,8 @@ namespace SqlCallDemo.Tests
             var p = TestHelper.StObjMap.Default.Obtain<FunctionPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
-                byte t1 = await p.ByteFunctionAsync( ctx, 2 );
-                byte t2 = await p.ByteFunctionAsync( ctx, 4 );
+                byte t1 = await p.ByteFunctionAsync( ctx, 2 ).ConfigureAwait( false );
+                byte t2 = await p.ByteFunctionAsync( ctx, 4 ).ConfigureAwait( false );
                 Assert.That( t1, Is.EqualTo( 4 ) );
                 Assert.That( t2, Is.EqualTo( 16 ) );
             }
@@ -112,7 +112,7 @@ namespace SqlCallDemo.Tests
             var p = TestHelper.StObjMap.Default.Obtain<FunctionPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
-                byte? b = await p.NullableByteFunctionAsync( ctx );
+                byte? b = await p.NullableByteFunctionAsync( ctx ).ConfigureAwait( false );
                 Assert.That( b, Is.Null );
             }
         }

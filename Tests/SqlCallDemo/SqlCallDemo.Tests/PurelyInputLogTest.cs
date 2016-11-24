@@ -23,7 +23,7 @@ namespace SqlCallDemo.Tests
             var p = TestHelper.StObjMap.Default.Obtain<PurelyInputLogPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
-                await p.SimpleLog( ctx, "First async test call ever." );
+                await p.SimpleLog( ctx, "First async test call ever." ).ConfigureAwait( false );
                 p.Database.AssertScalarEquals( "First async test call ever. - SimpleLog", "select top 1 LogText from CK.tPurelyInputLog order by Id desc" );
             }
         }
@@ -34,11 +34,11 @@ namespace SqlCallDemo.Tests
             var p = TestHelper.StObjMap.Default.Obtain<PurelyInputLogPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
-                await p.Log( ctx, false, "Second async test call ever." );
+                await p.Log( ctx, false, "Second async test call ever." ).ConfigureAwait( false );
                 p.Database.AssertScalarEquals( "Second async test call ever. - @OneMore = 0", "select top 1 LogText from CK.tPurelyInputLog order by Id desc" );
-                await p.Log( ctx, true, "Second n°2 async test call ever." );
+                await p.Log( ctx, true, "Second n°2 async test call ever." ).ConfigureAwait( false );
                 p.Database.AssertScalarEquals( "Second n°2 async test call ever. - @OneMore = 1", "select top 1 LogText from CK.tPurelyInputLog order by Id desc" );
-                await p.Log( ctx, null, "Second n°3 async test call ever." );
+                await p.Log( ctx, null, "Second n°3 async test call ever." ).ConfigureAwait( false );
                 p.Database.AssertScalarEquals( "Second n°3 async test call ever. - @OneMore is null", "select top 1 LogText from CK.tPurelyInputLog order by Id desc" );
             }
         }
@@ -49,7 +49,7 @@ namespace SqlCallDemo.Tests
             var p = TestHelper.StObjMap.Default.Obtain<PurelyInputLogPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
-                await p.LogWithDefaultBitValue( ctx, "Third async test call ever." );
+                await p.LogWithDefaultBitValue( ctx, "Third async test call ever." ).ConfigureAwait( false );
                 p.Database.AssertScalarEquals( "Third async test call ever. - @OneMore = 1", "select top 1 LogText from CK.tPurelyInputLog order by Id desc" );
             }
         }

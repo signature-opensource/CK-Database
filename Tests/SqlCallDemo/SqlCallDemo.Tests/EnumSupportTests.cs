@@ -22,9 +22,9 @@ namespace SqlCallDemo.Tests
             var p = TestHelper.StObjMap.Default.Obtain<FunctionPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
-                FunctionPackage.Power t1 = await p.ProcWithEnumIOAsync( ctx, FunctionPackage.BPower.One, FunctionPackage.Power.Max );
-                FunctionPackage.Power t2 = await p.ProcWithEnumIOAsync( ctx, FunctionPackage.BPower.Two, FunctionPackage.Power.Min );
-                FunctionPackage.Power t3 = await p.ProcWithEnumIOAsync( ctx, FunctionPackage.BPower.Zero, FunctionPackage.Power.Med );
+                FunctionPackage.Power t1 = await p.ProcWithEnumIOAsync( ctx, FunctionPackage.BPower.One, FunctionPackage.Power.Max ).ConfigureAwait( false );
+                FunctionPackage.Power t2 = await p.ProcWithEnumIOAsync( ctx, FunctionPackage.BPower.Two, FunctionPackage.Power.Min ).ConfigureAwait( false );
+                FunctionPackage.Power t3 = await p.ProcWithEnumIOAsync( ctx, FunctionPackage.BPower.Zero, FunctionPackage.Power.Med ).ConfigureAwait( false );
                 Assert.That( t1, Is.EqualTo( FunctionPackage.Power.Overheat ) );
                 Assert.That( t2, Is.EqualTo( FunctionPackage.Power.Max ) );
                 Assert.That( t3, Is.EqualTo( FunctionPackage.Power.Med ) );
@@ -52,9 +52,9 @@ namespace SqlCallDemo.Tests
             var p = TestHelper.StObjMap.Default.Obtain<FunctionPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
-                FunctionPackage.Power? t1 = await p.ProcWithNullableEnumIOAsync( ctx, FunctionPackage.BPower.One, FunctionPackage.Power.Max );
-                FunctionPackage.Power? t2 = await p.ProcWithNullableEnumIOAsync( ctx, null, FunctionPackage.Power.Min );
-                FunctionPackage.Power? t3 = await p.ProcWithNullableEnumIOAsync( ctx, FunctionPackage.BPower.Zero, null );
+                FunctionPackage.Power? t1 = await p.ProcWithNullableEnumIOAsync( ctx, FunctionPackage.BPower.One, FunctionPackage.Power.Max ).ConfigureAwait( false );
+                FunctionPackage.Power? t2 = await p.ProcWithNullableEnumIOAsync( ctx, null, FunctionPackage.Power.Min ).ConfigureAwait( false );
+                FunctionPackage.Power? t3 = await p.ProcWithNullableEnumIOAsync( ctx, FunctionPackage.BPower.Zero, null ).ConfigureAwait( false );
                 Assert.That( t1, Is.EqualTo( FunctionPackage.Power.Overheat ) );
                 Assert.That( t2, Is.Null );
                 Assert.That( t3, Is.Null );
