@@ -78,6 +78,7 @@
   <ItemGroup>
     <Compile Include="AllDefaultValuesTest.cs" />
     <Compile Include="ComplexTypeAsyncTests.cs" />
+    <Compile Include="ImplicitConversionTests.cs" />
     <Compile Include="ComplexTypeTests.cs" />
     <Compile Include="DBSetup.cs" />
     <Compile Include="EnumSupportTests.cs" />
