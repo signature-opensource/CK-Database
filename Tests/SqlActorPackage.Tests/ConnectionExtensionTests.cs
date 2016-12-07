@@ -101,6 +101,44 @@ namespace SqlActorPackage.Tests
                 }
             }
         }
+
+        [Test]
+        public void reading_big_text_with_execute_scalar_fails()
+        {
+            var con = new SqlConnection( TestHelper.ConnectionStringMaster );
+            string read;
+
+            SqlCommand cFailXml = new SqlCommand( "select * from sys.objects for xml path" );
+            read = cFailXml.ExecuteScalar<string>( con );
+            Assert.That( read.Length, Is.EqualTo( 2033 ), "2033 is the upper limit for ExecuteScalar." );
+
+            SqlCommand cFailJson = new SqlCommand( "select * from sys.objects for json auto" );
+            read = cFailJson.ExecuteScalar<string>( con );
+            Assert.That( read.Length, Is.EqualTo( 2033 ), "2033 is the upper limit for ExecuteScalar." );
+
+            // Using convert works for Json and Xml.
+            SqlCommand cConvJson = new SqlCommand( "select convert( nvarchar(max), (select * from sys.objects for json auto))" );
+            string readJsonConvert = cConvJson.ExecuteScalar<string>( con );
+            Assert.That( readJsonConvert.Length, Is.GreaterThan( 20 * 1024 ) );
+
+            SqlCommand cConvXml = new SqlCommand( "select convert( nvarchar(max), (select * from sys.objects for xml path))" );
+            string readXmlConvert = cConvXml.ExecuteScalar<string>( con );
+            Assert.That( readXmlConvert.Length, Is.GreaterThan( 20 * 1024 ) );
+
+            // Using the SqlDataReader works for Json and Xml.
+            SqlCommand cReaderJson = new SqlCommand( "select 1, Json = (select * from sys.objects for json auto)" );
+            string readJsonViaReader = cReaderJson.ExecuteRow( con, r => r.GetString( 1 ) );
+            Assert.That( readJsonViaReader.Length, Is.GreaterThan( 20 * 1024 ) );
+
+            Assert.That( readJsonViaReader, Is.EqualTo( readJsonConvert ) );
+
+            SqlCommand cReaderXml = new SqlCommand( "select Xml = (select * from sys.objects for xml path)" );
+            string readXmlViaReader = cReaderXml.ExecuteRow( con, r => r.GetString( 0 ) );
+            Assert.That( readXmlViaReader.Length, Is.GreaterThan( 20 * 1024 ) );
+
+            Assert.That( readXmlViaReader, Is.EqualTo( readXmlConvert ) );
+        }
+
     }
 
 }
