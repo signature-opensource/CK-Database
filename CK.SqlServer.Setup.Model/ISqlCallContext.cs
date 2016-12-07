@@ -5,6 +5,7 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
+using CK.Core;
 using System.Data.SqlClient;
 
 namespace CK.SqlServer
@@ -44,5 +45,10 @@ namespace CK.SqlServer
         /// <param name="connectionString">The connection string.</param>
         /// <returns>The controller for the connection.</returns>
         ISqlConnectionController GetConnectionController( string connectionString );
+
+        /// <summary>
+        /// Gets the monitor that can be used to log activities.
+        /// </summary>
+        IActivityMonitor Monitor { get; }
     }
 }

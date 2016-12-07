@@ -1,5 +1,6 @@
 using CK.SqlServer.Setup;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
@@ -87,6 +88,152 @@ namespace CK.SqlServer
             return @this[connectionString];
         }
 
+        /// <summary>
+        /// Executes the query and returns the first column of the first row in the result
+        /// set returned by the query on a closed or already opened connection. All other columns and rows are ignored.
+        /// </summary>
+        /// <typeparam name="T">Returned type.</typeparam>
+        /// <param name="this">This command.</param>
+        /// <param name="connection">The connection, it is automatically opened and closed if needed.</param>
+        /// <param name="defaultValue">Default value to use if no result is available.</param>
+        /// <returns>The read or default value.</returns>
+        public static async Task<T> ExecuteScalarAsync<T>( this SqlCommand @this, SqlConnection connection, T defaultValue = default( T ) )
+        {
+            using( await (@this.Connection = connection).EnsureOpenAsync().ConfigureAwait( false ) )
+            {
+                object o = await @this.ExecuteScalarAsync().ConfigureAwait( false );
+                return o != DBNull.Value ? (T)o : defaultValue;
+            }
+        }
+
+        /// <summary>
+        /// Executes a statement on an already opened or closed connection.
+        /// </summary>
+        /// <param name="this">This command.</param>
+        /// <param name="connection">The connection, it is automatically opened and closed if needed.</param>
+        /// <returns>The awaitable.</returns>
+        public static async Task ExecuteNonQueryAsync( this SqlCommand @this, SqlConnection connection )
+        {
+            using( await (@this.Connection = connection).EnsureOpenAsync().ConfigureAwait( false ) )
+            {
+                await @this.ExecuteNonQueryAsync().ConfigureAwait( false );
+            }
+        }
+
+        /// <summary>
+        /// Executes a on-row query (uses <see cref="CommandBehavior.SingleRow"/>) and builds an object based on
+        /// the row data.
+        /// </summary>
+        /// <typeparam name="T">The result object type.</typeparam>
+        /// <param name="this">This command.</param>
+        /// <param name="connection">The connection, it is automatically opened and closed if needed.</param>
+        /// <param name="builder">The function that builds an object: called with a null reader when there is no result.</param>
+        /// <returns>The build object.</returns>
+        public static async Task<T> ExecuteRowAsync<T>( this SqlCommand @this, SqlConnection connection, Func<SqlDataReader, T> builder )
+        {
+            using( await (@this.Connection = connection).EnsureOpenAsync().ConfigureAwait( false ) )
+            using( var r = await @this.ExecuteReaderAsync( CommandBehavior.SingleRow ).ConfigureAwait( false ) )
+            {
+                return await r.ReadAsync().ConfigureAwait( false )
+                        ? builder( r )
+                        : builder( null );
+            }
+        }
+
+        /// <summary>
+        /// Executes a query and builds a list of objects.
+        /// </summary>
+        /// <typeparam name="T">The result object type.</typeparam>
+        /// <param name="this">This command.</param>
+        /// <param name="connection">The connection, it is automatically opened and closed if needed.</param>
+        /// <param name="builder">The function that builds objects and add them to the collector.</param>
+        /// <returns>The list of objects.</returns>
+        public static async Task<List<T>> ExecuteReaderAsync<T>( this SqlCommand @this, SqlConnection connection, Action<SqlDataReader, List<T>> builder )
+        {
+            using( await (@this.Connection = connection).EnsureOpenAsync().ConfigureAwait( false ) )
+            using( var r = await @this.ExecuteReaderAsync().ConfigureAwait( false ) )
+            {
+                var collector = new List<T>();
+                while( await r.ReadAsync().ConfigureAwait( false ) )
+                {
+                    builder( r, collector );
+                }
+                return collector;
+            }
+        }
+
+        /// <summary>
+        /// Executes the query and returns the first column of the first row in the result
+        /// set returned by the query on a closed or already opened connection. All other columns and rows are ignored.
+        /// </summary>
+        /// <typeparam name="T">Returned type.</typeparam>
+        /// <param name="this">This command.</param>
+        /// <param name="connection">The connection, it is automatically opened and closed if needed.</param>
+        /// <param name="defaultValue">Default value to use if no result is available.</param>
+        /// <returns>The read or default value.</returns>
+        public static T ExecuteScalar<T>( this SqlCommand @this, SqlConnection connection, T defaultValue = default( T ) )
+        {
+            using( (@this.Connection = connection).EnsureOpen() )
+            {
+                object o = @this.ExecuteScalar();
+                return o != DBNull.Value ? (T)o : defaultValue;
+            }
+        }
+
+        /// <summary>
+        /// Executes a statement on an already opened or closed connection.
+        /// </summary>
+        /// <param name="this">This command.</param>
+        /// <param name="connection">The connection, it is automatically opened and closed if needed.</param>
+        public static void ExecuteNonQuery( this SqlCommand @this, SqlConnection connection )
+        {
+            using( (@this.Connection = connection).EnsureOpen() )
+            {
+                @this.ExecuteNonQuery();
+            }
+        }
+
+        /// <summary>
+        /// Executes a on-row query (uses <see cref="CommandBehavior.SingleRow"/>) and builds an object based on
+        /// the row data.
+        /// </summary>
+        /// <typeparam name="T">The result object type.</typeparam>
+        /// <param name="this">This command.</param>
+        /// <param name="connection">The connection, it is automatically opened and closed if needed.</param>
+        /// <param name="builder">The function that builds an object: called with a null reader when there is no result.</param>
+        /// <returns>The build object.</returns>
+        public static T ExecuteRow<T>( this SqlCommand @this, SqlConnection connection, Func<SqlDataReader, T> builder )
+        {
+            using( (@this.Connection = connection).EnsureOpen() )
+            using( var r = @this.ExecuteReader( CommandBehavior.SingleRow ) )
+            {
+                return r.Read()
+                        ? builder( r )
+                        : builder( null );
+            }
+        }
+
+        /// <summary>
+        /// Executes a query and builds a list of objects.
+        /// </summary>
+        /// <typeparam name="T">The result object type.</typeparam>
+        /// <param name="this">This command.</param>
+        /// <param name="connection">The connection, it is automatically opened and closed if needed.</param>
+        /// <param name="builder">The function that builds objects and add them to the collector.</param>
+        /// <returns>The list of objects.</returns>
+        public static List<T> ExecuteReader<T>( this SqlCommand @this, SqlConnection connection, Action<SqlDataReader, List<T>> builder )
+        {
+            using( (@this.Connection = connection).EnsureOpen() )
+            using( var r = @this.ExecuteReader() )
+            {
+                var collector = new List<T>();
+                while( r.Read() )
+                {
+                    builder( r, collector );
+                }
+                return collector;
+            }
+        }
 
     }
 }

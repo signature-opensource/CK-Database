@@ -8,7 +8,7 @@ namespace CK.SqlServer.Setup
 {
     internal class SqlCKCoreInstaller
     {
-        public readonly static short CurrentVersion = 14;
+        public readonly static short CurrentVersion = 15;
 
         /// <summary>
         /// Installs the kernel.
@@ -57,6 +57,10 @@ begin
     if object_id('CKCore.sErrorRethrow') is not null drop procedure CKCore.sErrorRethrow;
     if object_id('CKCore.sSchemaDropAllConstraints') is not null drop procedure CKCore.sSchemaDropAllConstraints;
     if object_id('CKCore.sSchemaDropAllObjects') is not null drop procedure CKCore.sSchemaDropAllObjects;
+
+    if object_id('CKCore.vForeignKeyDetail') is not null drop view CKCore.vForeignKeyDetail;
+    if object_id('CKCore.vConstraintColumns') is not null drop view CKCore.vConstraintColumns;
+
     if object_id('CKCore.sInvariantRegister') is not null drop procedure CKCore.sInvariantRegister;
     if object_id('CKCore.sInvariantRun') is not null drop procedure CKCore.sInvariantRun;
     if object_id('CKCore.sInvariantRunAll') is not null drop procedure CKCore.sInvariantRunAll;
@@ -318,7 +322,73 @@ runIt:
         end
     end
 end
-
+GO
+create view CKCore.vConstraintColumns
+as
+select distinct	TableSchema = uk.TABLE_SCHEMA, 
+				TableName = uk.TABLE_NAME, 
+				ConstraintName = uk.CONSTRAINT_NAME,
+				Columns = Stuff((select N',' + QuoteName(COLUMN_NAME)
+									from INFORMATION_SCHEMA.KEY_COLUMN_USAGE ukC
+									where ukC.CONSTRAINT_SCHEMA = uk.CONSTRAINT_SCHEMA and ukC.CONSTRAINT_NAME = uk.CONSTRAINT_NAME 
+									order by ORDINAL_POSITION
+									for xml path(''),TYPE).value('text()[1]','varchar(max)'),1,1,N'')
+			from INFORMATION_SCHEMA.KEY_COLUMN_USAGE uk
+GO
+create view CKCore.vForeignKeyDetail
+as
+	with sysfk( CONSTRAINT_SCHEMA,		
+				CONSTRAINT_NAME,			
+				TABLE_SCHEMA,			
+				TABLE_NAME,				
+				COLUMN_NAME,				
+				UNIQUE_CONSTRAINT_SCHEMA,
+				UNIQUE_CONSTRAINT_NAME,	
+				UNIQUE_TABLE_SCHEMA,	
+				UNIQUE_TABLE_NAME,		
+				UNIQUE_COLUMN_NAME )
+			as ( select CONSTRAINT_SCHEMA		 = source.CONSTRAINT_SCHEMA,
+						CONSTRAINT_NAME			 = source.CONSTRAINT_NAME, 
+						TABLE_SCHEMA			 = source.TABLE_SCHEMA,
+						TABLE_NAME				 = source.TABLE_NAME, 
+						COLUMN_NAME				 = source.COLUMN_NAME,
+						UNIQUE_CONSTRAINT_SCHEMA = dest.CONSTRAINT_SCHEMA,
+						UNIQUE_CONSTRAINT_NAME	 = dest.CONSTRAINT_NAME, 
+						UNIQUE_TABLE_SCHEMA		 = dest.TABLE_SCHEMA,
+						UNIQUE_TABLE_NAME		 = dest.TABLE_NAME,
+						UNIQUE_COLUMN_NAME		 = dest.COLUMN_NAME
+					from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS r
+					inner join INFORMATION_SCHEMA.KEY_COLUMN_USAGE source 
+						on source.CONSTRAINT_CATALOG = r.CONSTRAINT_CATALOG 
+							and source.CONSTRAINT_SCHEMA = r.CONSTRAINT_SCHEMA 
+							and source.CONSTRAINT_NAME = r.CONSTRAINT_NAME
+							and source.ORDINAL_POSITION = 1
+					inner join INFORMATION_SCHEMA.KEY_COLUMN_USAGE dest 
+						on dest.CONSTRAINT_CATALOG = r.UNIQUE_CONSTRAINT_CATALOG 
+							and dest.CONSTRAINT_SCHEMA = r.UNIQUE_CONSTRAINT_SCHEMA 
+							and dest.CONSTRAINT_NAME = r.UNIQUE_CONSTRAINT_NAME
+							and dest.ORDINAL_POSITION = 1
+   			)		
+	select
+		SourceConstraintName = f.CONSTRAINT_NAME,
+		CondensedSource      = QuoteName(f.TABLE_SCHEMA) + N'.' + QuoteName(f.TABLE_NAME) + N'(' + source.Columns + N')',
+		TargetConstraintName = f.UNIQUE_CONSTRAINT_NAME,
+		CondensedTarget      = QuoteName(f.UNIQUE_TABLE_SCHEMA) + N'.' + QuoteName(f.UNIQUE_TABLE_NAME) + N'(' + dest.Columns + N')',
+		SourceTableSchema    = f.TABLE_SCHEMA,
+		SourceTableName      = f.TABLE_NAME,
+		SourceColumns	     = source.Columns,
+		TargetTableSchema	 = f.UNIQUE_TABLE_SCHEMA,
+		TargetTableName		 = f.UNIQUE_TABLE_NAME,
+		TargetColumns	     = dest.Columns
+	from sysfk f
+		inner join CKCore.vConstraintColumns source 
+				on source.TableSchema = f.TABLE_SCHEMA 
+					and source.TableName = f.TABLE_NAME
+					and source.ConstraintName = f.CONSTRAINT_NAME
+		inner join CKCore.vConstraintColumns dest 
+				on dest.TableSchema = f.UNIQUE_TABLE_SCHEMA 
+					and dest.TableName = f.UNIQUE_TABLE_NAME
+					and dest.ConstraintName = f.UNIQUE_CONSTRAINT_NAME
 GO
 if object_id('CKCore.tInvariant') is null
 begin

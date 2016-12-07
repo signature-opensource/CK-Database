@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CK.SqlServer;
 using CK.SqlServer.Setup;
+using CK.Core;
 
 namespace SqlCallDemo
 {
@@ -30,7 +31,10 @@ namespace SqlCallDemo
 
         public ISqlConnectionController GetConnectionController( string connectionString ) => _exec.GetConnectionController( connectionString );
 
+        public IActivityMonitor Monitor => TestHelper.Monitor;
+
         void IDisposable.Dispose() => _exec.Dispose();
+
 
     }
 }

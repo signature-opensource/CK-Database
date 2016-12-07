@@ -29,6 +29,21 @@ namespace CK.SqlServer
     public class SqlStandardCallContext : IDisposableSqlCallContext, ISqlCommandExecutor
     {
         object _cache;
+        IActivityMonitor _monitor;
+
+        /// <summary>
+        /// Initializes a new <see cref="SqlStandardCallContext"/> that may be bound to an existing monitor.
+        /// </summary>
+        /// <param name="monitor">Optional monitor to use. When null, a new <see cref="ActivityMonitor"/> will be created when <see cref="Monitor"/> property is accessed.</param>
+        public SqlStandardCallContext( IActivityMonitor monitor = null )
+        {
+            _monitor = monitor;
+        }
+
+        /// <summary>
+        /// Gets the monitor that can be used to log activities.
+        /// </summary>
+        public IActivityMonitor Monitor => _monitor ?? (_monitor = new ActivityMonitor());
 
         ISqlCommandExecutor ISqlCallContext.Executor => this; 
 

@@ -81,6 +81,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DBSetup.cs" />
+    <Compile Include="ConnectionExtensionTests.cs" />
     <Compile Include="DBTestNUnitTests.cs" />
     <Compile Include="HandlerInjection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
