@@ -29,12 +29,16 @@ namespace CK.SqlServer.Setup
         protected override bool Install( bool beforeHandlers )
         {
             if( beforeHandlers ) return true;
-            Item.Target.SqlObject = Item.SqlObject.SafeTransform( Engine.Monitor, Item.Target.SqlObject );
-            if( Item.Target.SqlObject == null )
+            var transformed = Item.SqlObject.SafeTransform( Engine.Monitor, Item.Target.SqlObject );
+            if( transformed == null )
             {
-                Engine.Monitor.Error().Send( "Transformation failed." );
+                using( Engine.Monitor.OpenError().Send( "Transformation source:" ) )
+                {
+                    Engine.Monitor.Error().Send( Item.Target.SqlObject.ToFullString() );
+                }
                 return false;
             }
+            Item.Target.SqlObject = transformed;
             // If this is not the last transformer, we log the result of this intermediate transformation.
             if( Item != Item.Source.Transformers[Item.Source.Transformers.Count-1] )
             {
