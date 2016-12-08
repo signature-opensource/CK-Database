@@ -99,10 +99,17 @@ namespace CK.SqlServer
         /// <returns>The read or default value.</returns>
         public static async Task<T> ExecuteScalarAsync<T>( this SqlCommand @this, SqlConnection connection, T defaultValue = default( T ) )
         {
-            using( await (@this.Connection = connection).EnsureOpenAsync().ConfigureAwait( false ) )
+            try
             {
-                object o = await @this.ExecuteScalarAsync().ConfigureAwait( false );
-                return o != DBNull.Value ? (T)o : defaultValue;
+                using( await (@this.Connection = connection).EnsureOpenAsync().ConfigureAwait( false ) )
+                {
+                    object o = await @this.ExecuteScalarAsync().ConfigureAwait( false );
+                    return o != DBNull.Value ? (T)o : defaultValue;
+                }
+            }
+            catch( SqlException ex )
+            {
+                throw SqlDetailedException.Create( @this, ex );
             }
         }
 
@@ -114,9 +121,16 @@ namespace CK.SqlServer
         /// <returns>The awaitable.</returns>
         public static async Task ExecuteNonQueryAsync( this SqlCommand @this, SqlConnection connection )
         {
-            using( await (@this.Connection = connection).EnsureOpenAsync().ConfigureAwait( false ) )
+            try
             {
-                await @this.ExecuteNonQueryAsync().ConfigureAwait( false );
+                using( await (@this.Connection = connection).EnsureOpenAsync().ConfigureAwait( false ) )
+                {
+                    await @this.ExecuteNonQueryAsync().ConfigureAwait( false );
+                }
+            }
+            catch( SqlException ex )
+            {
+                throw SqlDetailedException.Create( @this, ex );
             }
         }
 
@@ -131,12 +145,19 @@ namespace CK.SqlServer
         /// <returns>The build object.</returns>
         public static async Task<T> ExecuteRowAsync<T>( this SqlCommand @this, SqlConnection connection, Func<SqlDataReader, T> builder )
         {
-            using( await (@this.Connection = connection).EnsureOpenAsync().ConfigureAwait( false ) )
-            using( var r = await @this.ExecuteReaderAsync( CommandBehavior.SingleRow ).ConfigureAwait( false ) )
+            try
             {
-                return await r.ReadAsync().ConfigureAwait( false )
-                        ? builder( r )
-                        : builder( null );
+                using( await (@this.Connection = connection).EnsureOpenAsync().ConfigureAwait( false ) )
+                using( var r = await @this.ExecuteReaderAsync( CommandBehavior.SingleRow ).ConfigureAwait( false ) )
+                {
+                    return await r.ReadAsync().ConfigureAwait( false )
+                            ? builder( r )
+                            : builder( null );
+                }
+            }
+            catch( SqlException ex )
+            {
+                throw SqlDetailedException.Create( @this, ex );
             }
         }
 
@@ -150,15 +171,22 @@ namespace CK.SqlServer
         /// <returns>The list of objects.</returns>
         public static async Task<List<T>> ExecuteReaderAsync<T>( this SqlCommand @this, SqlConnection connection, Action<SqlDataReader, List<T>> builder )
         {
-            using( await (@this.Connection = connection).EnsureOpenAsync().ConfigureAwait( false ) )
-            using( var r = await @this.ExecuteReaderAsync().ConfigureAwait( false ) )
+            try
             {
-                var collector = new List<T>();
-                while( await r.ReadAsync().ConfigureAwait( false ) )
+                using( await (@this.Connection = connection).EnsureOpenAsync().ConfigureAwait( false ) )
+                using( var r = await @this.ExecuteReaderAsync().ConfigureAwait( false ) )
                 {
-                    builder( r, collector );
+                    var collector = new List<T>();
+                    while( await r.ReadAsync().ConfigureAwait( false ) )
+                    {
+                        builder( r, collector );
+                    }
+                    return collector;
                 }
-                return collector;
+            }
+            catch( SqlException ex )
+            {
+                throw SqlDetailedException.Create( @this, ex );
             }
         }
 
@@ -173,10 +201,17 @@ namespace CK.SqlServer
         /// <returns>The read or default value.</returns>
         public static T ExecuteScalar<T>( this SqlCommand @this, SqlConnection connection, T defaultValue = default( T ) )
         {
-            using( (@this.Connection = connection).EnsureOpen() )
+            try
             {
-                object o = @this.ExecuteScalar();
-                return o != DBNull.Value ? (T)o : defaultValue;
+                using( (@this.Connection = connection).EnsureOpen() )
+                {
+                    object o = @this.ExecuteScalar();
+                    return o != DBNull.Value ? (T)o : defaultValue;
+                }
+            }
+            catch( SqlException ex )
+            {
+                throw SqlDetailedException.Create( @this, ex );
             }
         }
 
@@ -187,9 +222,16 @@ namespace CK.SqlServer
         /// <param name="connection">The connection, it is automatically opened and closed if needed.</param>
         public static void ExecuteNonQuery( this SqlCommand @this, SqlConnection connection )
         {
-            using( (@this.Connection = connection).EnsureOpen() )
+            try
             {
-                @this.ExecuteNonQuery();
+                using( (@this.Connection = connection).EnsureOpen() )
+                {
+                    @this.ExecuteNonQuery();
+                }
+            }
+            catch( SqlException ex )
+            {
+                throw SqlDetailedException.Create( @this, ex );
             }
         }
 
@@ -204,12 +246,19 @@ namespace CK.SqlServer
         /// <returns>The build object.</returns>
         public static T ExecuteRow<T>( this SqlCommand @this, SqlConnection connection, Func<SqlDataReader, T> builder )
         {
-            using( (@this.Connection = connection).EnsureOpen() )
-            using( var r = @this.ExecuteReader( CommandBehavior.SingleRow ) )
+            try
             {
-                return r.Read()
-                        ? builder( r )
-                        : builder( null );
+                using( (@this.Connection = connection).EnsureOpen() )
+                using( var r = @this.ExecuteReader( CommandBehavior.SingleRow ) )
+                {
+                    return r.Read()
+                            ? builder( r )
+                            : builder( null );
+                }
+            }
+            catch( SqlException ex )
+            {
+                throw SqlDetailedException.Create( @this, ex );
             }
         }
 
@@ -223,15 +272,22 @@ namespace CK.SqlServer
         /// <returns>The list of objects.</returns>
         public static List<T> ExecuteReader<T>( this SqlCommand @this, SqlConnection connection, Action<SqlDataReader, List<T>> builder )
         {
-            using( (@this.Connection = connection).EnsureOpen() )
-            using( var r = @this.ExecuteReader() )
+            try
             {
-                var collector = new List<T>();
-                while( r.Read() )
+                using( (@this.Connection = connection).EnsureOpen() )
+                using( var r = @this.ExecuteReader() )
                 {
-                    builder( r, collector );
+                    var collector = new List<T>();
+                    while( r.Read() )
+                    {
+                        builder( r, collector );
+                    }
+                    return collector;
                 }
-                return collector;
+            }
+            catch( SqlException ex )
+            {
+                throw SqlDetailedException.Create( @this, ex );
             }
         }
 

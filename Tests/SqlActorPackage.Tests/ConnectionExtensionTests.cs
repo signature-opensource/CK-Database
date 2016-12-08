@@ -103,6 +103,41 @@ namespace SqlActorPackage.Tests
         }
 
         [Test]
+        public void using_extension_methods_thows_a_SqlDetailedException()
+        {
+            var c = new SqlConnection( TestHelper.ConnectionStringMaster );
+            Assert.Throws<SqlDetailedException>( () => new SqlCommand( "bug" ).ExecuteNonQuery( c ) );
+            Assert.Throws<SqlDetailedException>( () => new SqlCommand( "bug" ).ExecuteScalar<int>( c ) );
+            Assert.Throws<SqlDetailedException>( () => new SqlCommand( "bug" ).ExecuteRow<int>( c, r => 0 ) );
+            Assert.Throws<SqlDetailedException>( () => new SqlCommand( "bug" ).ExecuteReader<int>( c, ( r, list ) => list.Add( 0 ) ) );
+        }
+
+        [Test]
+        public async Task using_extension_methods_async_thows_a_SqlDetailedException()
+        {
+            await AssertThrows( c => new SqlCommand( "bug" ).ExecuteNonQueryAsync( c ) );
+            await AssertThrows( c => new SqlCommand( "bug" ).ExecuteScalarAsync<int>( c ) );
+            await AssertThrows( c => new SqlCommand( "bug" ).ExecuteRowAsync<int>( c, r => 0 ) );
+            await AssertThrows( c => new SqlCommand( "bug" ).ExecuteReaderAsync<int>( c, (r,list) => list.Add(0) ) );
+        }
+
+        async Task AssertThrows( Func<SqlConnection,Task> run )
+        {
+            var c = new SqlConnection( TestHelper.ConnectionStringMaster );
+            try
+            {
+                await run( c );
+                Assert.Fail( "SqlDetailedException expected." );
+            }
+            catch( SqlDetailedException ex )
+            {
+                Assert.That( ex.Message, Does.Contain( "bug" ) );
+            }
+            Assert.That( c.State, Is.EqualTo( ConnectionState.Closed ) );
+        }
+
+
+        [Test]
         public void reading_big_text_with_execute_scalar_fails()
         {
             var con = new SqlConnection( TestHelper.ConnectionStringMaster );
