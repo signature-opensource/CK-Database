@@ -12,8 +12,16 @@ using System.Text;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Base class for handlers bound to a <see cref="SetupItemDriver"/>.
+    /// </summary>
     public class SetupHandler : ISetupHandler
     {
+        /// <summary>
+        /// Initializes a new <see cref="SetupHandler"/> bound to a <see cref="SetupItemDriver"/>.
+        /// This new handler is automatically added to the handlers of the item driver.
+        /// </summary>
+        /// <param name="d">The item driver. Can not be null.</param>
         protected SetupHandler( SetupItemDriver d )
         {
             if( d == null ) throw new ArgumentNullException();
