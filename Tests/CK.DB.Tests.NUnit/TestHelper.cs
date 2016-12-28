@@ -23,6 +23,7 @@ namespace CK.Core
         static string _binFolder;
         static string _projectFolder;
         static string _solutionFolder;
+        static string _repositoryFolder;
         static string _logFolder;
 
         static TestHelper()
@@ -97,6 +98,18 @@ namespace CK.Core
         }
 
         /// <summary>
+        /// Gets the path to the root folder: where the .git folder is.
+        /// </summary>
+        public static string RepositoryFolder
+        {
+            get
+            {
+                if( _repositoryFolder == null ) InitalizePaths();
+                return _repositoryFolder;
+            }
+        }
+
+        /// <summary>
         /// Gets the default IStObjMap after having executed a <see cref="RunDBSetup"/>.
         /// The setup is done only once.
         /// </summary>
@@ -113,8 +126,7 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Gets the solution folder. It must be a git working folder (a '.git' directory must exist) and
-        /// contain a 'Tests' folder.
+        /// Gets the solution folder. It is the parent directory of the 'Tests/' folder (that must exist).
         /// </summary>
         static public string SolutionFolder
         {
@@ -353,21 +365,21 @@ namespace CK.Core
                 _projectFolder = p = Path.GetDirectoryName( Path.GetDirectoryName( p ) );
             }
 
+            string testsFolder = null;
             bool hasGit = false;
             while( p != null && !(hasGit = Directory.Exists( Path.Combine( p, ".git" ) )) )
             {
+                if( Path.GetFileName( p ) == "Tests" ) testsFolder = p;
                 p = Path.GetDirectoryName( p );
             }
             if( !hasGit ) throw new InvalidOperationException( "The project must be in a git repository." );
 
-            _solutionFolder = p;
-            p = Path.Combine( p, "Tests" );
-            if( !Directory.Exists( p ) )
+            if( testsFolder == null )
             {
                 throw new InvalidOperationException( "The solution must contain a 'Tests' folder." );
             }
-
-            _logFolder = Path.Combine( p, "Logs" );
+            _solutionFolder = Path.GetDirectoryName( testsFolder );
+            _logFolder = Path.Combine( testsFolder, "Logs" );
         }
     }
 }
