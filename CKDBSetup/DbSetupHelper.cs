@@ -11,8 +11,9 @@ namespace CKDBSetup
     static class DbSetupHelper
     {
         public static SetupEngineConfiguration BuildSetupConfig( 
-            string connectionString, 
-            IEnumerable<string> assembliesToSetup, 
+            string connectionString,
+            IEnumerable<string> assembliesToSetup,
+            IEnumerable<string> recurseAssembliesToSetup,
             string dynamicAssemblyName, 
             string binPath,
             SetupEngineRunningMode runningMode )
@@ -23,6 +24,11 @@ namespace CKDBSetup
             foreach( var a in assembliesToSetup )
             {
                 config.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( a );
+            }
+
+            foreach( var a in recurseAssembliesToSetup )
+            {
+                config.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverRecurseAssemblyNames.Add( a );
             }
 
             config.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = dynamicAssemblyName;
@@ -38,6 +44,7 @@ namespace CKDBSetup
 
             return config;
         }
+
         public static bool ExecuteDbSetup( IActivityMonitor m, SetupEngineConfiguration config )
         {
             using( var r = StObjContextRoot.Build( config, null, m, true ) )

@@ -30,10 +30,16 @@ namespace CKDBSetup
                 false
                 );
 
-            var assembliesArg = c.Argument(
-                "AssemblyNames",
-                "Names of the assemblies to setup in the database.",
-                true
+            var assembliesOpt = c.Option(
+                "-a|--assemblies",
+                "Names of the assemblies to setup in the database, ignoring their dependencies.",
+                CommandOptionType.MultipleValue
+                );
+
+            var recurseAssembliesOpt = c.Option(
+                "-ra|--recurseAssemblies",
+                "Names of the assemblies to setup in the database including their dependencies.",
+                CommandOptionType.MultipleValue
                 );
 
             var binPathOpt = c.Option(
@@ -48,13 +54,7 @@ namespace CKDBSetup
                 CommandOptionType.SingleValue
                 );
 
-            var generateAssemblyOnlyOpt = c.Option(
-                "--generateAssemblyOnly",
-                @"Generates the structure assembly without setting up the database.",
-                CommandOptionType.NoValue
-                );
-
-            var sampleUsage = $"\nSample usage: {c.Parent.Name} {c.Name} \"Server=.;Database=MyDatabase;Integrated Security=true;\" CK.DB.Actor My.Assembly1\n";
+            var sampleUsage = $"\nSample usage: {c.Parent.Name} {c.Name} \"Server=.;Database=MyDatabase;Integrated Security=true;\" -recurseAssemblies CK.DB.Actor My.Assembly\n";
 
 
             c.OnExecute( () =>
@@ -69,14 +69,20 @@ namespace CKDBSetup
 
                 string connectionString;
                 List<string> assemblyNames;
+                List<string> recurseAssemblyNames;
                 string binPath = Environment.CurrentDirectory;
                 string generatedAssemblyName = BuilderFinalAssemblyConfiguration.DefaultAssemblyName;
                 SetupEngineRunningMode runningMode = SetupEngineRunningMode.Default;
 
                 connectionString = connectionStringArg.Value?.Trim();
 
-                assemblyNames = assembliesArg.Values
-                    .Where( x => !String.IsNullOrWhiteSpace( x ) )
+                assemblyNames = assembliesOpt.Values
+                    .Where( x => !string.IsNullOrWhiteSpace( x ) )
+                    .Select( x => x.Trim() )
+                    .ToList();
+
+                recurseAssemblyNames = recurseAssembliesOpt.Values
+                    .Where( x => !string.IsNullOrWhiteSpace( x ) )
                     .Select( x => x.Trim() )
                     .ToList();
 
@@ -95,27 +101,17 @@ namespace CKDBSetup
                 {
                     return DisplayErrorAndExit( c, sampleUsage, "A connection string is required." );
                 }
-                // No assembly name given
-                if( assemblyNames.Count < 1 )
-                {
-                    return DisplayErrorAndExit( c, sampleUsage, "One or more assembly names are required." );
-                }
-
-                // Handle running mode
-                if( generateAssemblyOnlyOpt.HasValue() )
-                {
-                    runningMode = SetupEngineRunningMode.StObjLayerOnly;
-                }
 
                 c.ShowRootCommandFullNameAndVersion();
 
                 monitor.Trace().Send( $"Connection string: {connectionString}" );
                 monitor.Trace().Send( $"Assembly names: {assemblyNames.Concatenate()}" );
+                monitor.Trace().Send( $"Recurse Assembly names: {recurseAssemblyNames.Concatenate()}" );
                 monitor.Trace().Send( $"Binaries path: {binPath}" );
                 monitor.Trace().Send( $"Generated assembly name: {generatedAssemblyName}" );
                 monitor.Trace().Send( $"Running mode: {runningMode}" );
 
-                var buildConfig = DbSetupHelper.BuildSetupConfig( connectionString, assemblyNames, generatedAssemblyName, binPath, runningMode );
+                var buildConfig = DbSetupHelper.BuildSetupConfig( connectionString, assemblyNames, recurseAssemblyNames, generatedAssemblyName, binPath, runningMode );
 
                 bool isSuccess = false;
 

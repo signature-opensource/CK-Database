@@ -23,14 +23,9 @@ namespace CK.Setup
         RevertNames = 1,
 
         /// <summary>
-        /// Only resolves and builds the StObj graph and generates the dynamic assembly (if <see cref="SetupEngineConfiguration.StObjEngineConfiguration"/> specifies it).
-        /// </summary>
-        StObjLayerOnly = 2,
-
-        /// <summary>
         /// Does nothing except initializing configured aspects.
         /// </summary>
-        InitializeEngineOnly = 3
+        InitializeEngineOnly = 2
 
     }
 }
