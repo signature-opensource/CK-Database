@@ -289,7 +289,22 @@ namespace CK.Core
             get
             {
                 var c = AppSettings.Default["AssembliesToSetup"];
-                if( c == null ) c = String.Empty;
+                if( c == null ) c = string.Empty;
+                return c.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
+                        .Select( s => s.Trim() ).ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Gets the assemblies to test from configuration file application settings (comma 
+        /// separated names from "RecurseAssembliesToSetup" key).
+        /// </summary>
+        public static IReadOnlyList<string> RecurseAssembliesToSetup
+        {
+            get
+            {
+                var c = AppSettings.Default["RecurseAssembliesToSetup"];
+                if( c == null ) c = string.Empty;
                 return c.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
                         .Select( s => s.Trim() ).ToArray();
             }
@@ -304,7 +319,7 @@ namespace CK.Core
             get
             {
                 var c = AppSettings.Default["UsedSchemas"];
-                if( c == null ) c = String.Empty;
+                if( c == null ) c = string.Empty;
                 return c.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
                         .Select( s => s.Trim() )
                         .Append( "CK" ).Append( "CKCore" )
@@ -334,6 +349,10 @@ namespace CK.Core
                     foreach( var a in AssembliesToSetup )
                     {
                         _config.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( a );
+                    }
+                    foreach( var a in RecurseAssembliesToSetup )
+                    {
+                        _config.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverRecurseAssemblyNames.Add( a );
                     }
                     _config.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = DynamicAssemblyName;
 

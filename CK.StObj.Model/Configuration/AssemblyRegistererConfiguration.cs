@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.StObj.Model\Configuration\AssemblyRegistererConfiguration.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,19 +12,26 @@ namespace CK.Core
     public class AssemblyRegistererConfiguration
     {
         readonly HashSet<string> _ignoredAssemblies;
+        readonly HashSet<string> _ignoredAssembliesByPrefix;
         readonly List<string> _whiteListNoRecurse;
         readonly List<string> _whiteList;
 
         readonly static string[] _defaultIgnored = new string[]
             {
-                "mscorlib", "System", "System.Core", "System.Data", "System.Xml", "System.Data.DataSetExtensions", "System.Data.Xml", "System.Data.Xml.Linq",
-                "CK.Core", "CK.Monitoring", "CK.Reflection", 
-                "CK.Setup.Dependency", 
-                "CK.StObj.Model", "CK.StObj.Runtime", "CK.StObj.Engine", 
-                "CK.Setupable.Model", "CK.Setupable.Runtime", "CK.Setupable.Engine", 
-                "CK.SqlServer.Core", "CK.SqlServer.Parser", 
-                "CK.SqlServer.Setup.Model", "CK.SqlServer.Setup.Runtime", "CK.SqlServer.Setup.Engine", 
-                "Microsoft.CSharp", "Microsoft.Practices.ServiceLocation", "Microsoft.Practices.Unity", "Microsoft.Practices.Unity.Configuration"
+                "mscorlib", "System",
+                "CK.Core", "CK.Monitoring", "CK.Reflection",
+                "CK.Setup.Dependency",
+                "Newtonsoft.Json"
+            };
+
+        readonly static string[] _defaultPrefixIgnored = new string[]
+            {
+                "CK.ActivityMonitor",
+                "CK.StObj.",
+                "CK.Setupable.",
+                "CK.SqlServer.",
+                "Microsoft.",
+                "System."
             };
 
         /// <summary>
@@ -39,7 +39,8 @@ namespace CK.Core
         /// </summary>
         public AssemblyRegistererConfiguration()
         {
-            _ignoredAssemblies = new HashSet<string>( _defaultIgnored );
+            _ignoredAssemblies = new HashSet<string>( _defaultIgnored, StringComparer.OrdinalIgnoreCase );
+            _ignoredAssembliesByPrefix = new HashSet<string>( _defaultPrefixIgnored, StringComparer.OrdinalIgnoreCase );
             _whiteListNoRecurse = new List<string>();
             _whiteList = new List<string>();
         }
@@ -59,14 +60,25 @@ namespace CK.Core
         /// Defaults to false.
         /// </summary>
         public bool AutomaticAssemblyDiscovering { get; set; }
-        
+
         /// <summary>
         /// Assembly names from this list are ignored wherever they come from.
-        /// Contains by default some names like "System" or "CK.Core".
+        /// Contains by default some names like "CK.Core" or "Newtonsoft.Json".
+        /// Match is case insensitive.
         /// </summary>
         public ISet<string> IgnoredAssemblyNames
         {
             get { return _ignoredAssemblies; }
+        }
+
+        /// <summary>
+        /// Assembly names prefix from this list are ignored wherever they come from.
+        /// Contains by default names like "System.", "Microsoft.", "CK.SqlServer.".
+        /// Match is case insensitive.
+        /// </summary>
+        public ISet<string> IgnoredAssemblyNamesByPrefix
+        {
+            get { return _ignoredAssembliesByPrefix; }
         }
 
         /// <summary>

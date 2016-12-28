@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using CK.Text;
 
 namespace CK.Core
 {
@@ -68,14 +69,16 @@ namespace CK.Core
             if( config == null ) throw new ArgumentNullException( "config" );
             using( _monitor.OpenInfo().Send( "Discovering assemblies & types from configuration." ) )
             {
+                Predicate<Assembly> accept = a => !config.IgnoredAssemblyNames.Contains( a.GetName().Name )
+                                                    && !config.IgnoredAssemblyNamesByPrefix.Any( p => a.GetName().Name.StartsWith( p ) );
                 var prevFilter = _assemblyFilter;
                 if( prevFilter != null )
                 {
-                    _assemblyFilter = a => prevFilter( a ) && !config.IgnoredAssemblyNames.Contains( a.GetName().Name );
+                    _assemblyFilter = a => prevFilter( a ) && accept( a );
                 }
                 else
                 {
-                    _assemblyFilter = a => !config.IgnoredAssemblyNames.Contains( a.GetName().Name );
+                    _assemblyFilter = accept;
                 }
                 try
                 {
@@ -243,17 +246,30 @@ namespace CK.Core
                         {
                             if( recurse )
                             {
+                                List<AssemblyName> skipped = new List<AssemblyName>();
                                 foreach( AssemblyName refName in assembly.GetReferencedAssemblies() )
                                 {
                                     Assembly refAssembly = Assembly.Load( refName );
-                                    if( refAssembly != null ) DiscoverRecurse( refAssembly );
+                                    if( refAssembly != null )
+                                    {
+                                        if( _assemblyFilter == null || _assemblyFilter( refAssembly ) )
+                                        {
+                                            DiscoverRecurse( refAssembly );
+                                        }
+                                        else skipped.Add( refName );
+                                    }
+                                    else _monitor.Warn().Send( $"Reference '{refName}' load: null assembly." );
+                                }
+                                if( skipped.Count > 0 )
+                                {
+                                    _monitor.Trace().Send( $"References '{skipped.Select( n => n.Name ).Concatenate( "', '" )}': skipped by filter." );
                                 }
                             }
                             IEnumerable<Type> types = _publicTypesOnly ? assembly.GetExportedTypes() : assembly.GetTypes();
                             if( _typeFilter != null ) types = types.Where( t => _typeFilter( t ) );
                             disco.Init( types, _list.Count );
                             _list.Add( disco );
-                            _monitor.CloseGroup( String.Format( "{0} types discovered.", disco.Types.Count ) );
+                            _monitor.CloseGroup( $"{disco.Types.Count} types discovered." );
                         }
                         else _monitor.CloseGroup( "Skipped by filter." );
                     }
