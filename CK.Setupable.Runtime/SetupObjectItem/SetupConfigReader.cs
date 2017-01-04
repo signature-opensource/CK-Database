@@ -165,7 +165,8 @@ namespace CK.Setup
                 do
                 {
                     m.SkipWhiteSpacesAndJSComments();
-                    if( !m.TryMatchJSONQuotedString( out content ) ) m.SetError( @"Expected ""full name""." );
+                    if( m.TryMatchChar( ']' ) ) break;
+                    if( !m.TryMatchJSONQuotedString( out content ) ) m.SetError( @"Expected ""full name"" in [""full name 1"", ...]." );
                     else
                     {
                         a( content );
@@ -174,9 +175,9 @@ namespace CK.Setup
                         m.TryMatchChar( ',' );
                     }
                 }
-                while( !m.IsEnd && !m.IsError && !m.TryMatchChar( ']' ) );
+                while( !m.IsEnd && !m.IsError );
             }
-            else m.SetError( @"Expected ""full name"" or [""full name 1"", ...]." );
+            else m.SetError( @"Expected ""full name"" in [""full name 1"", ...]." );
         }
 
         internal void ApplyProperty( StringMatcher m, Action<string> a )
