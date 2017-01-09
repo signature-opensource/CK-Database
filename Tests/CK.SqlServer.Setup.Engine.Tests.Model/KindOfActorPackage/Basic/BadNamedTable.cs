@@ -10,6 +10,7 @@ using System.Data;
 using System.Data.SqlClient;
 using CK.Setup;
 using CK.SqlServer.Setup;
+using CK.Text;
 
 namespace SqlActorPackage.Basic
 {
@@ -17,5 +18,10 @@ namespace SqlActorPackage.Basic
     [Versions( "1.0.0" )]
     public abstract class BadNameTable : SqlTable
     {
+
+        public string JustToForceKeeptingTheReferencedCKTextAssembly()
+        {
+            return new[] { "a", "b" }.Concatenate();
+        }
     }
 }

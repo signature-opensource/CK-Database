@@ -38,7 +38,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
         private static void InstallDropAndReverseInstall( bool resetFirst, bool withZone, string dllName, bool doRevert = true )
         {
             var c = new SetupEngineConfiguration();
-            c.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( "SqlActorPackage" );
+            c.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverRecurseAssemblyNames.Add( "SqlActorPackage" );
             if( withZone ) c.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( "SqlZonePackage" );
             c.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = dllName;
             c.TraceDependencySorterInput = true;

@@ -80,6 +80,7 @@
     <Compile Include="AmbientContract\Attribute\RemoveDefaultContext.cs" />
     <Compile Include="AmbientContract\IAmbientContract.cs" />
     <Compile Include="AmbientContract\IAmbientContractDefiner.cs" />
+    <Compile Include="Mixin\Mixin.cs" />
     <Compile Include="SimpleDeserializer.cs" />
     <Compile Include="Configuration\StObjEngineConfiguration.cs" />
     <Compile Include="IAttributeAmbientContextBound.cs" />
