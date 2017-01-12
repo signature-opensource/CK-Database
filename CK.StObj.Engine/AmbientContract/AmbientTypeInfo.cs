@@ -148,8 +148,8 @@ namespace CK.Core
         /// </summary>
         /// <typeparam name="T">This specialized AmbientTypeInfo.</typeparam>
         /// <typeparam name="TC">Type of associated contextualized specialization.</typeparam>
-        /// <param name="context">Context name for which the associated contextualized specialization must be instanciated.</param>
         /// <param name="generalization">Generalization if any (null for root of Types path).</param>
+        /// <param name="context">Context name for which the associated contextualized specialization must be instanciated.</param>
         /// <returns>Associated contextualized type information.</returns>
         internal virtual protected TC CreateContextTypeInfo<T, TC>( TC generalization, IContextualTypeMap context )
             where T : AmbientTypeInfo

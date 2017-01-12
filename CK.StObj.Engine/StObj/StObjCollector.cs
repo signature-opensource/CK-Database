@@ -14,6 +14,7 @@ using CK.Core;
 using System.Reflection;
 using System.Collections.Specialized;
 using System.Collections;
+using CK.Text;
 
 namespace CK.Setup
 {
@@ -30,6 +31,7 @@ namespace CK.Setup
         readonly IStObjValueResolver _valueResolver;
         readonly IActivityMonitor _monitor;
         readonly DynamicAssembly _tempAssembly;
+        readonly DynamicAssembly _finalAssembly;
         readonly IStObjRuntimeBuilder _runtimeBuilder;
         int _registerFatalOrErrorCount;
 
@@ -37,6 +39,7 @@ namespace CK.Setup
         /// Initializes a new <see cref="StObjCollector"/>.
         /// </summary>
         /// <param name="monitor">Logger to use. Can not be null.</param>
+        /// <param name="finalAssemblyConfig">Final assembly configuration.</param>
         /// <param name="traceDepencySorterInput">True to trace in <paramref name="monitor"/> the input of dependency graph.</param>
         /// <param name="traceDepencySorterOutput">True to trace in <paramref name="monitor"/> the sorted dependency graph.</param>
         /// <param name="runtimeBuilder">Runtime builder to use. A <see cref="BasicStObjBuilder"/> can be used.</param>
@@ -44,9 +47,10 @@ namespace CK.Setup
         /// <param name="configurator">Used to configure items. See <see cref="IStObjStructuralConfigurator"/>.</param>
         /// <param name="valueResolver">Used to explicitely resolve or alter Construct parameters and object ambient properties. See <see cref="IStObjValueResolver"/>.</param>
         public StObjCollector( 
-            IActivityMonitor monitor, 
+            IActivityMonitor monitor,
+            BuilderFinalAssemblyConfiguration finalAssemblyConfig = null,
             bool traceDepencySorterInput = false, 
-            bool traceDepencySorterOutput = false, 
+            bool traceDepencySorterOutput = false,
             IStObjRuntimeBuilder runtimeBuilder = null, 
             IAmbientContractDispatcher dispatcher = null, 
             IStObjStructuralConfigurator configurator = null,
@@ -56,6 +60,10 @@ namespace CK.Setup
             _runtimeBuilder = runtimeBuilder ?? StObjContextRoot.DefaultStObjRuntimeBuilder;
             _monitor = monitor;
             _tempAssembly = new DynamicAssembly();
+            if( finalAssemblyConfig != null && finalAssemblyConfig.GenerateFinalAssemblyOption != BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile )
+            {
+                _finalAssembly = CreateFinalAssembly( monitor, finalAssemblyConfig );
+            }
             _cc = new AmbientContractCollector<StObjContextualMapper,StObjTypeInfo, MutableItem>( _monitor, l => new StObjMapper(), ( l, p, t ) => new StObjTypeInfo( l, p, t ), _tempAssembly, dispatcher );
             _configurator = configurator;
             _valueResolver = valueResolver;
@@ -63,21 +71,42 @@ namespace CK.Setup
             if( traceDepencySorterOutput ) DependencySorterHookOutput = i => i.Trace( monitor );
         }
 
+        DynamicAssembly CreateFinalAssembly( IActivityMonitor monitor, BuilderFinalAssemblyConfiguration c )
+        {
+            Debug.Assert( c != null && c.GenerateFinalAssemblyOption != BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile );
+
+            string directory = c.Directory;
+            if( string.IsNullOrEmpty( directory ) )
+            {
+                directory = BuilderFinalAssemblyConfiguration.GetFinalDirectory( directory );
+                monitor.Info().Send( "No directory has been specified for final assembly. Trying to use the path of CK.StObj.Model assembly or dnx base path: {0}", directory );
+            }
+            string assemblyName = c.AssemblyName;
+            if( string.IsNullOrEmpty( assemblyName ) )
+            {
+                assemblyName = BuilderFinalAssemblyConfiguration.GetFinalAssemblyName( assemblyName );
+                monitor.Info().Send( "No assembly name has been specified for final assembly. Using default: {0}", assemblyName );
+            }
+            bool signAssembly = c.SignAssembly;
+            StrongNameKeyPair signKeyPair = c.SignKeyPair;
+            if( signAssembly )
+            {
+                if( signKeyPair == null ) signKeyPair = DynamicAssembly.DynamicKeyPair;
+            }
+            else if( signKeyPair != null ) throw new ArgumentException( "A StrongNameKeyPair has been provided but signAssembly flag is false. signKeyPair must be null in this case." );
+
+            return new DynamicAssembly( directory, assemblyName, c.ExternalVersionStamp, signKeyPair, doNotGenerateFile ? AssemblyBuilderAccess.Run : AssemblyBuilderAccess.RunAndSave );
+        }
+
         /// <summary>
         /// Gets the count of error or fatal that occurred during <see cref="RegisterTypes"/> or <see cref="RegisterClass"/> calls.
         /// </summary>
-        public int RegisteringFatalOrErrorCount
-        {
-            get { return _registerFatalOrErrorCount; }
-        }
+        public int RegisteringFatalOrErrorCount => _registerFatalOrErrorCount; 
 
         /// <summary>
         /// Sets <see cref="RegisteringFatalOrErrorCount"/> to 0.
         /// </summary>
-        public void ClearRegisteringErrors()
-        {
-            _registerFatalOrErrorCount = 0;
-        }
+        public void ClearRegisteringErrors() => _registerFatalOrErrorCount = 0;
 
         /// <summary>
         /// Gets ors sets whether the ordering of StObj that share the same rank in the dependency graph must be inverted.
@@ -180,7 +209,7 @@ namespace CK.Setup
             using( _monitor.OpenInfo().Send( "Collecting all StObj information." ) )
             {
                 AmbientContractCollectorResult<StObjContextualMapper,StObjTypeInfo,MutableItem> contracts;
-                using( _monitor.OpenInfo().Send( "Collecting Ambient Contracts and Type structure." ) )
+                using( _monitor.OpenInfo().Send( "Collecting Ambient Contracts, Type structure and Poco." ) )
                 {
                     contracts = _cc.GetResult();
                     contracts.LogErrorAndWarnings( _monitor );
@@ -189,6 +218,20 @@ namespace CK.Setup
                 var result = new StObjCollectorResult( stObjMapper, contracts );
                 if( result.HasFatalError ) return result;
 
+                //using( _monitor.OpenInfo().Send( "Creating Poco and PocoFactory types." ) )
+                //{
+                //    foreach( var interfaces in contracts.PocoSignatures )
+                //    {
+                //        PocoFactoryCreationResult p = _tempAssembly.CreatePocoFactoryType( _monitor, interfaces );
+                //        _monitor.Trace().Send( $"Poco factory for {interfaces.Select( i => i.Name ).Concatenate()} has been created." );
+                //        var stObjInfo = new StObjTypeInfo( _monitor, null, p.FactoryType );
+                //        var item = new MutableItem( stObjInfo, null, result.Default.AmbientContractResult.Mappings );
+                //        foreach( var factoryInterface in p.FactoryInterfaces )
+                //        {
+                //            result.Default.InternalMapper.RawMappings.Add( factoryInterface, item );
+                //        }
+                //    }
+                //}
                 using( _monitor.OpenInfo().Send( "Creating Structure Objects." ) )
                 {
                     int objectCount = 0;
@@ -198,12 +241,12 @@ namespace CK.Setup
                         using( _monitor.OpenInfo().Send( "Working on Context [{0}].", r.Context ) )
                         {
                             int nbItems = CreateMutableItems( r );
-                            _monitor.CloseGroup( String.Format( " {0} items created for {1} types.", nbItems, r.AmbientContractResult.ConcreteClasses.Count ) );
+                            _monitor.CloseGroup( $"{nbItems} items created for {r.AmbientContractResult.ConcreteClasses.Count} types." );
                             objectCount += nbItems;
                         }
                     }
                     if( result.HasFatalError ) return result;
-                    _monitor.CloseGroup( String.Format( "{0} items created.", objectCount ) );
+                    _monitor.CloseGroup( $"{objectCount} items created." );
                 }
 
                 IDependencySorterResult sortResult = null;
@@ -319,7 +362,7 @@ namespace CK.Setup
                 // should override more general ones.
                 // Note that this works because we do NOT offer any access to Specialization 
                 // in IStObjMutableItem. We actually could offer an access to the Generalization 
-                // since it is configured, but it seems useless and may block us later.
+                // since it is configured, but it seems useless and may annoy us later.
                 Debug.Assert( typeof( IStObjMutableItem ).GetProperty( "Generalization" ) == null );
                 Debug.Assert( typeof( IStObjMutableItem ).GetProperty( "Specialization" ) == null );
                 MutableItem generalization = pathTypes[0];

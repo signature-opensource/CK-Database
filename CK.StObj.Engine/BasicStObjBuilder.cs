@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.StObj.Engine\BasicStObjBuilder.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -54,7 +47,7 @@ namespace CK.Setup
             typeReg.Discover( c.BuildAndRegisterConfiguration.Assemblies );
 
             // Step 2: Collecting StObj (AmbientContracts) from assemblies and explicit classes.
-            StObjCollector collector = new StObjCollector( _monitor, c.TraceDependencySorterInput, c.TraceDependencySorterOutput );
+            StObjCollector collector = new StObjCollector( _monitor, c.TraceDependencySorterInput, c.TraceDependencySorterOutput, c.FinalAssemblyConfiguration );
             collector.RegisterTypes( typeReg );
             collector.RegisterClasses( c.BuildAndRegisterConfiguration.ExplicitClasses );
             if( collector.RegisteringFatalOrErrorCount > 0 ) return false;

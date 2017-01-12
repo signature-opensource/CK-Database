@@ -18,15 +18,18 @@ namespace CK.Core
         where TC : AmbientContextualTypeInfo<T,TC>
     {
         readonly AmbientTypeMap<CT> _mappings;
+        //private AmbientTypeMap<CT> mappings;
+        //private Dictionary<Type, T> _collector;
 
-        internal AmbientContractCollectorResult( AmbientTypeMap<CT> mappings, Dictionary<Type, T> typeInfo )
+        internal AmbientContractCollectorResult( AmbientTypeMap<CT> mappings, IPocoSupportResult pocoSupport, Dictionary<Type, T> typeInfo )
         {
             _mappings = mappings;
-           
+            PocoSupport = pocoSupport;
+
             #region Unused for the moment
             // readonly Dictionary<Type,T> _typeInfo;
             // readonly IReadOnlyUniqueKeyedCollection<T, Type> _typeInfoEx;
-            
+
             //      _typeInfo = typeInfo;
             //      _typeInfoEx = new ReadOnlyDictionaryOnDictionary<T, Type>( _typeInfo, a => a.Type );
             #endregion
@@ -94,14 +97,25 @@ namespace CK.Core
         #endregion
 
         /// <summary>
+        /// Gets all the registered Poco information.
+        /// </summary>
+        public IPocoSupportResult PocoSupport { get; }
+
+        public override bool HasFatalError => PocoSupport == null || base.HasFatalError;
+
+        /// <summary>
         /// Logs detailed information about discovered ambient contracts for all discovered contexts.
         /// </summary>
         /// <param name="monitor">Logger (must not be null).</param>
         public void LogErrorAndWarnings( IActivityMonitor monitor )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
-            using( monitor.OpenTrace().Send( "Ambient Contract discovering: {0} context(s).", Contexts.Count ) )
+            using( monitor.OpenTrace().Send( $"Ambient Contract discovering: {Contexts.Count} context(s)."  ) )
             {
+                if( PocoSupport == null )
+                {
+                    monitor.Fatal().Send( $"Poco support failed!" );
+                }
                 Foreach( r => r.LogErrorAndWarnings( monitor ) );
             }
         }
@@ -109,10 +123,7 @@ namespace CK.Core
         /// <summary>
         /// Gets the type mapper for the multiple existing contexts.
         /// </summary>
-        public IContextualRoot<IContextualTypeMap> Mappings
-        {
-            get { return _mappings; }
-        }
+        public IContextualRoot<IContextualTypeMap> Mappings => _mappings; 
 
     }
 }

@@ -48,34 +48,19 @@ namespace CK.Setup
         /// <summary>
         /// Gets the total number of of specializations.
         /// </summary>
-        public int TotalSpecializationCount
-        {
-            get { return _totalSpecializationCount; }
-        }
+        public int TotalSpecializationCount => _totalSpecializationCount; 
 
         /// <summary>
         /// Gets all the <see cref="IStObjResult"/> ordered by their dependencies.
         /// Empty if <see cref="HasFatalError"/> is true.
         /// </summary>
-        public IReadOnlyList<IStObjResult> OrderedStObjs
-        {
-            get { return _orderedStObjs; }
-        }
+        public IReadOnlyList<IStObjResult> OrderedStObjs => _orderedStObjs; 
 
-        internal BuildValueCollector BuildValueCollector
-        {
-            get { return _buildValueCollector; }
-        }
+        internal BuildValueCollector BuildValueCollector => _buildValueCollector; 
 
-        internal IEnumerable<MutableItem> AllMutableItems
-        {
-            get { return Contexts.SelectMany( r => r.InternalMapper.RawMappings.Values ); }
-        }
+        internal IEnumerable<MutableItem> AllMutableItems => Contexts.SelectMany( r => r.InternalMapper.RawMappings.Values ); 
 
-        internal IEnumerable<MutableItem> FindHighestImplFor( Type t )
-        {
-            return Contexts.Select( r => r.InternalMapper.ToHighestImpl( t ) ).Where( m => m != null );
-        }
+        internal IEnumerable<MutableItem> FindHighestImplFor( Type t ) => Contexts.Select( r => r.InternalMapper.ToHighestImpl( t ) ).Where( m => m != null );
 
         internal void SetFatal()
         {

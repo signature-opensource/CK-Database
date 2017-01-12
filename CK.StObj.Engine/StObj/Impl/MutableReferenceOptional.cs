@@ -50,7 +50,7 @@ namespace CK.Setup
             if( _resolved != UnresolvedMarker ) return _resolved;
             if( Type == null && !IsOptional )
             {
-                Error( monitor, String.Format( "Type can not be null since the {0} is not optional", KindName ) );
+                Error( monitor, $"Type can not be null since the {KindName} is not optional" );
                 return _resolved = null;
             }
             Debug.Assert( Type != null || IsOptional );
@@ -58,7 +58,7 @@ namespace CK.Setup
             {
                 if( !UnderlyingType.IsAssignableFrom( Type ) )
                 {
-                    Error( monitor, String.Format( "Type '{0}' is not compatible with the {1} type ('{2}')", Type.FullName, KindName, UnderlyingType.FullName ) );
+                    Error( monitor, $"Type '{Type.FullName}' is not compatible with the {KindName} type ('{UnderlyingType.FullName}')" );
                     return _resolved = null;
                 }
             }

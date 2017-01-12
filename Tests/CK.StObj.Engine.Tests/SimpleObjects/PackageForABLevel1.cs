@@ -16,7 +16,7 @@ namespace CK.StObj.Engine.Tests.SimpleObjects
         {
             Assert.That( ConstructCount, Is.EqualTo( 1 ), "PackageForAB.Construct has been called." );
 
-            SimpleObjectsTrace.LogMethod( MethodInfo.GetCurrentMethod() );
+            SimpleObjectsTrace.LogMethod( MethodBase.GetCurrentMethod() );
 
             ConstructCount = ConstructCount + 1;
         }

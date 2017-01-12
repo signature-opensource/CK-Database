@@ -13,7 +13,7 @@ using System.Text;
 namespace CK.Core
 {
     /// <summary>
-    /// Defines options related to Application Domain configuration used during setup phasis, and which assemblies and types must be discovered.
+    /// Defines which assemblies and types must be discovered.
     /// </summary>
     [Serializable]
     public class BuildAndRegisterConfiguration
@@ -31,12 +31,14 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Gets the <see cref="AssemblyRegistererConfiguration"/> that describes assemblies that must participate (or not) to setup.
+        /// Gets the <see cref="AssemblyRegistererConfiguration"/> that describes assemblies that must 
+        /// participate (or not) to setup.
         /// </summary>
         public AssemblyRegistererConfiguration Assemblies => _assemblyRegister;
 
         /// <summary>
-        /// List of assembly qualified type names that must be explicitely registered regardless of <see cref="Assemblies"/>.
+        /// List of assembly qualified type names that must be explicitely registered 
+        /// regardless of <see cref="Assemblies"/>.
         /// </summary>
         public List<string> ExplicitClasses => _explicitClasses;
 

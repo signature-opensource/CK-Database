@@ -196,7 +196,7 @@ namespace CK.Setup
 
             _leafData.RootGeneralization = rootGeneralization;
             ApplyTypeInformation( monitor );
-            AnalyseConstruct( monitor );
+            AnalyzeConstruct( monitor );
             ConfigureFromAttributes( monitor );
         }
 
@@ -237,7 +237,7 @@ namespace CK.Setup
             }
         }
 
-        void AnalyseConstruct( IActivityMonitor monitor )
+        void AnalyzeConstruct( IActivityMonitor monitor )
         {
             Debug.Assert( _constructParameterEx == null, "Called only once right after object instanciation..." );
             Debug.Assert( _container != null, "...and after ApplyTypeInformation." );
@@ -452,7 +452,7 @@ namespace CK.Setup
                         // For AmbientProperties, this can not be done the same way: Ambient Properties are "projected to the leaf": they 
                         // have to be managed at the most specialized level: this is done in the next preparation step.
                     }
-                    monitor.CloseGroup( String.Format( "ItemKind is {0}", _itemKind.ToString() ) );
+                    monitor.CloseGroup( $"ItemKind is {_itemKind}" );
                     return result;
 
                 }

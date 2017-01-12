@@ -66,25 +66,19 @@ namespace CK.Core
         /// <summary>
         /// Gets the result for the default context (<see cref="String.Empty"/>).
         /// </summary>
-        public T Default
-        {
-            get { return (T)_contextResults[String.Empty]; }
-        }
+        public T Default => (T)_contextResults[string.Empty]; 
 
         /// <summary>
         /// Gets the different contexts (including <see cref="Default"/>).
         /// </summary>
-        public IReadOnlyCollection<T> Contexts { get { return _contextsEx; } }
+        public IReadOnlyCollection<T> Contexts => _contextsEx; 
 
         /// <summary>
         /// Gets the result for any context or null if no such context exist.
         /// </summary>
         /// <param name="context">Type that identifies a context (null is the same as <see cref="String.Empty"/>).</param>
         /// <returns>The result for the given context.</returns>
-        public T FindContext( string context )
-        {
-            return (T)_contextResults[context ?? String.Empty];
-        }
+        public T FindContext( string context ) => (T)_contextResults[context ?? string.Empty];
 
         /// <summary>
         /// Gets whether at least one result has a fatal error. 

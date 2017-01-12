@@ -87,6 +87,8 @@
     <Compile Include="AmbientContract\Collector\IContextualResult.cs" />
     <Compile Include="AmbientContract\Collector\AmbientContractCollectorResult.cs" />
     <Compile Include="AmbientContract\Collector\MultiContextualResult.cs" />
+    <Compile Include="AmbientContract\Collector\IPocoSuportResult.cs" />
+    <Compile Include="AmbientContract\Collector\PocoRegisterer.cs" />
     <Compile Include="AssemblyRegisterer.cs" />
     <Compile Include="AutoImplementor\DynamicAssemblyExtension.cs" />
     <Compile Include="AutoImplementor\DynamicAssembly.cs" />

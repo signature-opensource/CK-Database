@@ -46,10 +46,11 @@ namespace CK.Setup
             }
         }
 
-        IStObj IStObjReference.Owner { get { return Owner; } }
-        IStObjMutableItem IStObjMutableReference.Owner { get { return Owner; } }
+        IStObj IStObjReference.Owner => Owner;
 
-        public StObjMutableReferenceKind Kind { get { return _kind; } }
+        IStObjMutableItem IStObjMutableReference.Owner => Owner;
+
+        public StObjMutableReferenceKind Kind => _kind;
 
         public StObjRequirementBehavior StObjRequirementBehavior { get; set; }
 
@@ -80,16 +81,18 @@ namespace CK.Setup
                 // Context is not null: search inside this exact context.
                 // Even if the context for this reference is the one of our Owner's context, since it is explicitly set,
                 // we expect the type to actually be in this context.
-                StObjCollectorContextualResult ctxResult = cachedCollector == null || cachedCollector.Context != _context ? collector.FindContext( _context ) : cachedCollector;
+                StObjCollectorContextualResult ctxResult = cachedCollector == null || cachedCollector.Context != _context 
+                                                                ? collector.FindContext( _context ) 
+                                                                : cachedCollector;
                 if( ctxResult == null ) 
                 {
-                    Error( monitor, String.Format( "Undefined Typed context '{0}'", _context ) );
+                    Error( monitor, $"Undefined Typed context '{_context}'" );
                     return null;
                 }
                 result = ctxResult.InternalMapper.ToHighestImpl( Type );
                 if( result == null )
                 {
-                    WarnOrErrorIfStObjRequired( monitor, String.Format( "{0} not found", AmbientContractCollector.FormatContextualFullName( _context, Type ) ) );
+                    WarnOrErrorIfStObjRequired( monitor, $"{AmbientContractCollector.FormatContextualFullName( _context, Type )} not found" );
                     return null;
                 }
             }
@@ -107,11 +110,14 @@ namespace CK.Setup
                         // Do not use WarnOrErrorIfStObjRequired since we want to handle optional value type or string not found without any warning.
                         if( StObjRequirementBehavior == Setup.StObjRequirementBehavior.ErrorIfNotStObj )
                         {
-                            Error( monitor, String.Format( "Type '{0}' not found in any context", Type.FullName ) );
+                            Error( monitor, $"Type '{Type.FullName}' not found in any context" );
                         }
                         else if( StObjRequirementBehavior == Setup.StObjRequirementBehavior.WarnIfNotStObj )
                         {
-                            if( !Type.IsValueType && Type != typeof(string) ) Warn( monitor, String.Format( "Type '{0}' not found in any context", Type.FullName ) );
+                            if( !Type.IsValueType && Type != typeof( string ) )
+                            {
+                                Warn( monitor, $"Type '{Type.FullName}' not found in any context" );
+                            }
                         }
                         return null;
                     }

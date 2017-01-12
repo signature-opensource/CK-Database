@@ -16,7 +16,7 @@ namespace CK.Core
 {
 
     /// <summary>
-    /// Concrete bse implementation for a <see cref="IContextualTypeMap"/>.
+    /// Concrete base implementation for a <see cref="IContextualTypeMap"/>.
     /// </summary>
     public class AmbientContextualTypeMap<T, TC> : IContextualTypeMap
         where T : AmbientTypeInfo
@@ -42,34 +42,22 @@ namespace CK.Core
         /// <summary>
         /// Gets all the contexts including this one.
         /// </summary>
-        public IContextualRoot<IContextualTypeMap> AllContexts
-        {
-            get { return _owner; }
-        }
+        public IContextualRoot<IContextualTypeMap> AllContexts => _owner; 
 
         /// <summary>
         /// Gets the mappings between types (base types as well as ambient contract interfaces) to objects. 
         /// </summary>
-        public Dictionary<object, TC> RawMappings 
-        { 
-            get { return _map; } 
-        }
+        public Dictionary<object, TC> RawMappings  => _map; 
 
         /// <summary>
         /// Gets this context name.
         /// </summary>
-        public string Context
-        {
-            get { return _context; }
-        }
+        public string Context => _context; 
 
         /// <summary>
         /// Gets the number of existing mappings.
         /// </summary>
-        public int MappedTypeCount 
-        { 
-            get { return _map.Count; } 
-        }
+        public int MappedTypeCount  => _map.Count; 
 
         /// <summary>
         /// Gets the final mapped type for any type that is mapped.
@@ -129,10 +117,7 @@ namespace CK.Core
         /// </summary>
         /// <param name="t">Any type.</param>
         /// <returns>True if the type is mapped.</returns>
-        public bool IsMapped( Type t )
-        {
-            return _map.ContainsKey( t );
-        }
+        public bool IsMapped( Type t ) => _map.ContainsKey( t );
 
         /// <summary>
         /// Gets all types mapped by this contextual map.

@@ -194,9 +194,6 @@ namespace CK.SqlServer.Setup
         /// <returns>Set of candidates.</returns>
         public IEnumerable<string> GetResourceNameCandidates( IContextLocNaming containerName )
         {
-            yield return ObjectName;
-            yield return Name;
-            yield return FullName;
             if( TransformArg != null )
             {
                 if( FullName.StartsWith( containerName.FullName ) )
@@ -204,9 +201,37 @@ namespace CK.SqlServer.Setup
                     SqlContextLocName t = new SqlContextLocName( TransformArg );
                     yield return t.ObjectName;
                     yield return t.Name;
+                    SqlContextLocName simpler = new SqlContextLocName( null, null, null, ObjectName );
+                    simpler.TransformArg = t.ObjectName; yield return simpler.FullName;
+                    simpler.TransformArg = t.Name; yield return simpler.FullName;
+                    simpler.TransformArg = t.FullName; yield return simpler.FullName;
+                    if( !string.IsNullOrEmpty( Schema ) )
+                    {
+                        simpler.Schema = Schema;
+                        simpler.TransformArg = t.ObjectName; yield return simpler.FullName;
+                        simpler.TransformArg = t.Name; yield return simpler.FullName;
+                        simpler.TransformArg = t.FullName; yield return simpler.FullName;
+                    }
+                    if( !string.IsNullOrEmpty( Location ) )
+                    {
+                        simpler.Location = Location;
+                        simpler.TransformArg = t.ObjectName; yield return simpler.FullName;
+                        simpler.TransformArg = t.Name; yield return simpler.FullName;
+                        simpler.TransformArg = t.FullName; yield return simpler.FullName;
+                    }
+                    if( !string.IsNullOrEmpty( Context ) )
+                    {
+                        simpler.Context = Context;
+                        simpler.TransformArg = t.ObjectName; yield return simpler.FullName;
+                        simpler.TransformArg = t.Name; yield return simpler.FullName;
+                        simpler.TransformArg = t.FullName; yield return simpler.FullName;
+                    }
                     yield return t.FullName;
                 }
             }
+            yield return ObjectName;
+            yield return Name;
+            yield return FullName;
         }
     }
 }

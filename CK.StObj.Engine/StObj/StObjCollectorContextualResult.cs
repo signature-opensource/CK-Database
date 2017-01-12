@@ -32,44 +32,29 @@ namespace CK.Setup
         /// <summary>
         /// Gets the context name. <see cref="String.Empty"/> for the default context.
         /// </summary>
-        public string Context
-        {
-            get { return _contractResult.Context; }
-        }
+        public string Context => _contractResult.Context; 
 
         /// <summary>
         /// Gets whether this result can be used or not.
         /// </summary>
-        public bool HasFatalError
-        {
-            get { return _fatalError || _contractResult.HasFatalError; }
-        }
+        public bool HasFatalError => _fatalError || _contractResult.HasFatalError; 
 
         /// <summary>
         /// Gets the <see cref="IContextualStObjMapRuntime"/> that exposes structured objects.
         /// </summary>
-        public IContextualStObjMapRuntime StObjMap
-        {
-            get { return (IContextualStObjMapRuntime)_contractResult.Mappings; }
-        }
+        public IContextualStObjMapRuntime StObjMap => _contractResult.Mappings; 
 
         /// <summary>
         /// Gets the <see cref="IContextualStObjMap"/> that exposes structured objects.
         /// </summary>
-        internal StObjContextualMapper InternalMapper
-        {
-            get { return _contractResult.Mappings; }
-        }
+        internal StObjContextualMapper InternalMapper => _contractResult.Mappings; 
 
         internal AmbientContractCollectorContextualResult<StObjContextualMapper,StObjTypeInfo, MutableItem> AmbientContractResult
         {
             get { return _contractResult; }
         }
 
-        internal void SetFatal()
-        {
-            _fatalError = true;
-        }
+        internal void SetFatal() => _fatalError = true;
 
     }
 }

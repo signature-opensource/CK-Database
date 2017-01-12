@@ -280,7 +280,7 @@ namespace CK.Setup
         {
         }
 
-        public new StObjTypeInfo Generalization { get { return (StObjTypeInfo)base.Generalization; } }
+        public new StObjTypeInfo Generalization => (StObjTypeInfo)base.Generalization;
 
         public IReadOnlyList<AmbientPropertyInfo> AmbientProperties { get; private set; }
 

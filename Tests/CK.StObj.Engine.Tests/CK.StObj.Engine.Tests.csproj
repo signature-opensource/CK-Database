@@ -86,7 +86,11 @@
     <Compile Include="AmbientPropertiesPropagationTests.cs" />
     <Compile Include="DifferentKindOfProperties.cs" />
     <Compile Include="DynamicGenerationTests.cs" />
+    <Compile Include="ConsoleToggle.cs" />
+    <Compile Include="Poco\PackageWithBasicPoco.cs" />
+    <Compile Include="Poco\SomePoco.cs" />
     <Compile Include="SchmurtzProperty.cs" />
+    <Compile Include="PocoTests.cs" />
     <Compile Include="SimpleSerializerDeserializerTests.cs" />
     <Compile Include="StObjPropertiesTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

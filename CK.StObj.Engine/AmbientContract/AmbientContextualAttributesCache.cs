@@ -92,13 +92,13 @@ namespace CK.Core
         /// Get the Type that is managed by this cache for specialized classes.
         /// They can use another name than 'Type' to expose it if they will.
         /// </summary>
-        protected Type Type { get { return _type; } }
+        protected Type Type => _type; 
 
         /// <summary>
         /// The Type property of the ICustomAttributeTypeMultiProvider is hidden here to enable specialized classes
         /// to expose it with a different name.
         /// </summary>
-        Type ICKCustomAttributeTypeMultiProvider.Type { get { return _type; } }
+        Type ICKCustomAttributeTypeMultiProvider.Type => _type; 
 
         /// <summary>
         /// Gets whether an attribute that is assignable to the given <paramref name="attributeType"/> 

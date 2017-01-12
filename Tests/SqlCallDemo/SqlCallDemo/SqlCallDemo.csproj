@@ -68,6 +68,13 @@
     <Compile Include="ComplexType\ComplexTypeSimple.cs" />
     <Compile Include="ComplexType\ComplexTypeSimpleWithCtor.cs" />
     <Compile Include="ComplexType\ComplexTypeStupidEmpty.cs" />
+    <Compile Include="PocoSupport\IThingWithAgeAndHeight.cs" />
+    <Compile Include="PocoSupport\IThingWithPower.cs" />
+    <Compile Include="PocoSupport\IThingWithAge.cs" />
+    <Compile Include="PocoSupport\IThing.cs" />
+    <Compile Include="PocoSupport\PocoPackageWithPower.cs" />
+    <Compile Include="PocoSupport\PocoPackageWithAgeAndHeight.cs" />
+    <Compile Include="PocoSupport\PocoPackage.cs" />
     <Compile Include="ProviderDemo\IActorCultureCallContext.cs" />
     <Compile Include="ProviderDemo\ICultureTenantCallContext.cs" />
     <Compile Include="ProviderDemo\IAllCallContext.cs" />
@@ -159,6 +166,7 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <EmbeddedResource Include="Res\Poco\SqlCallDemo.PocoPackageWithPower%28sPocoThingWrite%29.tql" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="CommandDemo\Res\sCommandRun.sql" />
@@ -171,6 +179,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Res\sWithImplicitConversionIO.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Res\Poco\sPocoThingWrite.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Res\Poco\SqlCallDemo.PocoPackageWithAgeAndHeight%28sPocoThingWrite%29.tql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

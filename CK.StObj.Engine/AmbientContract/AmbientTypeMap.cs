@@ -64,27 +64,21 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Gets the default type mapper, the one identified by <see cref="String.Empty"/>.
+        /// Gets the default type mapper, the one identified by <see cref="string.Empty"/>.
         /// </summary>
-        public CT Default
-        {
-            get { return (CT)_contextMappers[String.Empty]; }
-        }
+        public CT Default => (CT)_contextMappers[string.Empty]; 
 
         /// <summary>
         /// Gets the different contexts (including <see cref="Default"/>).
         /// </summary>
-        public IReadOnlyCollection<CT> Contexts { get { return _contextsEx; } }
+        public IReadOnlyCollection<CT> Contexts => _contextsEx;
 
         /// <summary>
         /// Gets the result for any context or null if no such context exist.
         /// </summary>
         /// <param name="context">Type that identifies a context (null is the same as <see cref="String.Empty"/>).</param>
         /// <returns>The result for the given context.</returns>
-        public CT FindContext( string context )
-        {
-            return (CT)_contextMappers[context ?? String.Empty];
-        }
+        public CT FindContext( string context ) => (CT)_contextMappers[context ?? string.Empty];
 
         internal CT CreateAndAddContext<T,TC>( IActivityMonitor monitor, string context )
             where T : AmbientTypeInfo
@@ -108,25 +102,16 @@ namespace CK.Core
             where T : AmbientTypeInfo
             where TC : AmbientContextualTypeInfo<T, TC>
         {
-            return (IContextualTypeMap)new AmbientContextualTypeMap<T, TC>( this, context );
+            return new AmbientContextualTypeMap<T, TC>( this, context );
         }
 
         #region IAmbientTypeMap Members
 
-        IContextualTypeMap IContextualRoot<IContextualTypeMap>.Default
-        {
-            get { return Default; }
-        }
+        IContextualTypeMap IContextualRoot<IContextualTypeMap>.Default => Default; 
 
-        IReadOnlyCollection<IContextualTypeMap> IContextualRoot<IContextualTypeMap>.Contexts
-        {
-            get { return Contexts; }
-        }
+        IReadOnlyCollection<IContextualTypeMap> IContextualRoot<IContextualTypeMap>.Contexts => Contexts; 
 
-        IContextualTypeMap IContextualRoot<IContextualTypeMap>.FindContext( string context )
-        {
-            return FindContext( context );
-        }
+        IContextualTypeMap IContextualRoot<IContextualTypeMap>.FindContext( string context ) => FindContext( context );
 
         #endregion
     }

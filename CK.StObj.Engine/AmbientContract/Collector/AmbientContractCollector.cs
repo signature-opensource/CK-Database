@@ -1,15 +1,9 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.StObj.Engine\AmbientContract\Collector\AmbientContractCollector.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using CK.Text;
 
 namespace CK.Core
 {
@@ -91,6 +85,7 @@ namespace CK.Core
         
         readonly IActivityMonitor _monitor;
         readonly DynamicAssembly _tempAssembly;
+        readonly PocoRegisterer _pocoRegisterer;
 
         /// <summary>
         /// Initializes a new <see cref="AmbientContractCollector{CT,T,TC}"/> instance.
@@ -114,6 +109,7 @@ namespace CK.Core
             _roots = new List<T>();
             _mapFactory = mapFactory;
             _typeInfoFactory = typeInfoFactory;
+            _pocoRegisterer = new PocoRegisterer();
         }
 
         /// <summary>
@@ -122,17 +118,27 @@ namespace CK.Core
         public int RegisteredTypeCount => _collector.Count; 
 
         /// <summary>
-        /// Registers multiple types. Only classes are actually registered (the enumearation 
-        /// can safely contain null references and interfaces).
+        /// Registers multiple types. Classes that are registered (the enumeration 
+        /// can safely contain null references).
         /// </summary>
         /// <param name="types"></param>
         public void Register( IEnumerable<Type> types )
         {
             if( types == null ) throw new ArgumentNullException( "types" );
-            foreach( var t in types.Where( c => c != null && c.IsClass && c != typeof(object) ) )
+            foreach( var t in types )
             {
-                T result;
-                Register( t, out result );
+                if( t != typeof( object ) )
+                {
+                    if( t.IsClass )
+                    {
+                        T result;
+                        DoRegisterClass( t, out result );
+                    }
+                    else if( t.IsInterface && typeof(IPoco).IsAssignableFrom( t ) )
+                    {
+                        _pocoRegisterer.Register( _monitor, t );
+                    }
+                }
             }
         }
 
@@ -146,10 +152,10 @@ namespace CK.Core
             if( c == null ) throw new ArgumentNullException( "c" );
             if( !c.IsClass ) throw new ArgumentException();
             T result;
-            return c != typeof(object) ? Register( c, out result ) : false;
+            return c != typeof(object) ? DoRegisterClass( c, out result ) : false;
         }
 
-        bool Register( Type t, out T result )
+        bool DoRegisterClass( Type t, out T result )
         {
             Debug.Assert( t != null && t != typeof( object ) && t.IsClass );
 
@@ -158,7 +164,7 @@ namespace CK.Core
 
             // Registers parent types whatever they are (null if not AmbientContract).
             T parent = null;
-            if( t.BaseType != typeof( object ) ) Register( t.BaseType, out parent );
+            if( t.BaseType != typeof( object ) ) DoRegisterClass( t.BaseType, out parent );
 
             // This is an Ambient contract if:
             // - its parent is an ambient contract 
@@ -294,19 +300,33 @@ namespace CK.Core
         /// <returns>The result object.</returns>
         public AmbientContractCollectorResult<CT,T,TC> GetResult()
         {
+            IPocoSupportResult pocoSupport;
+            using( _monitor.OpenInfo().Send( "Creating Poco Types and PocoFactory." ) )
+            {
+                pocoSupport = _pocoRegisterer.Finalize( _tempAssembly, _monitor );
+                if( pocoSupport != null ) RegisterClass( pocoSupport.FinalFactory );
+            }
             var mappings = _mapFactory( _monitor );
             var byContext = new Dictionary<string, PreResult>();
-            byContext.Add( String.Empty, new PreResult( _monitor, mappings.CreateAndAddContext<T,TC>( _monitor, String.Empty ), _tempAssembly ) );
+            byContext.Add( string.Empty, new PreResult( _monitor, mappings.CreateAndAddContext<T,TC>( _monitor, string.Empty ), _tempAssembly ) );
             foreach( AmbientTypeInfo m in _roots )
             {
                 HandleContexts( m, byContext, mappings.CreateAndAddContext<T,TC> );
             }
-            var r = new AmbientContractCollectorResult<CT,T,TC>( mappings, _collector );
+            var r = new AmbientContractCollectorResult<CT,T,TC>( mappings, pocoSupport, _collector );
             foreach( PreResult rCtx in byContext.Values )
             {
                 r.Add( rCtx.GetResult( mappings, IsAmbientInterface ) );
             }
             return r;
+        }
+
+        void CreatePoco()
+        {
+            using( _monitor.OpenInfo().Send( "Creating Poco and PocoFactory types." ) )
+            {
+                _pocoRegisterer.Finalize( _tempAssembly, _monitor );
+            }
         }
 
         bool IsAmbientInterface( Type t )

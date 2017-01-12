@@ -45,53 +45,35 @@ namespace CK.Core
 
 
         /// <summary>
-        /// Gets the context name. <see cref="String.Empty"/> for default context.
+        /// Gets the context name. <see cref="string.Empty"/> for default context.
         /// </summary>
-        public string Context
-        {
-            get { return _mappings.Context; }
-        }
+        public string Context => _mappings.Context; 
 
         /// <summary>
         /// Gets the type mapper for this context.
         /// </summary>
-        public CT Mappings
-        {
-            get { return _mappings; }
-        }
+        public CT Mappings => _mappings; 
 
         /// <summary>
         /// Gets all the paths from <see cref="IAmbientContract"/> base classes to their most specialized concrete classes 
         /// that this context contains.
         /// </summary>
-        public IReadOnlyList<IReadOnlyList<TC>> ConcreteClasses
-        {
-            get { return _concreteClassesPath; }
-        }
+        public IReadOnlyList<IReadOnlyList<TC>> ConcreteClasses => _concreteClassesPath; 
 
         /// <summary>
         /// Gets all the class ambiguities: the first type corresponds to more than one following concrete specializations.
         /// </summary>
-        public IReadOnlyList<IReadOnlyList<Type>> ClassAmbiguities
-        {
-            get { return _classAmbiguities; }
-        }
+        public IReadOnlyList<IReadOnlyList<Type>> ClassAmbiguities => _classAmbiguities; 
 
         /// <summary>
         /// Gets all the interfaces ambiguities: the first type is an interface that is implemented by more than one following concrete classes.
         /// </summary>
-        public IReadOnlyList<IReadOnlyList<Type>> InterfaceAmbiguities
-        {
-            get { return _interfaceAmbiguities; }
-        }
+        public IReadOnlyList<IReadOnlyList<Type>> InterfaceAmbiguities => _interfaceAmbiguities; 
 
         /// <summary>
         /// Gets the list of tails that are abstract types.
         /// </summary>
-        public IReadOnlyList<Type> AbstractTails
-        {
-            get { return _abstractTails; }
-        }
+        public IReadOnlyList<Type> AbstractTails => _abstractTails; 
 
         /// <summary>
         /// Gets whether an error exists that prevents the process to continue: currently if a class or an interface 
