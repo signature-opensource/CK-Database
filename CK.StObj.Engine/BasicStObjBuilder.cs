@@ -47,7 +47,7 @@ namespace CK.Setup
             typeReg.Discover( c.BuildAndRegisterConfiguration.Assemblies );
 
             // Step 2: Collecting StObj (AmbientContracts) from assemblies and explicit classes.
-            StObjCollector collector = new StObjCollector( _monitor, c.TraceDependencySorterInput, c.TraceDependencySorterOutput, c.FinalAssemblyConfiguration );
+            StObjCollector collector = new StObjCollector( _monitor, c.FinalAssemblyConfiguration, c.TraceDependencySorterInput, c.TraceDependencySorterOutput );
             collector.RegisterTypes( typeReg );
             collector.RegisterClasses( c.BuildAndRegisterConfiguration.ExplicitClasses );
             if( collector.RegisteringFatalOrErrorCount > 0 ) return false;
@@ -56,8 +56,14 @@ namespace CK.Setup
             var r = collector.GetResult();
             if( r.HasFatalError ) return false;
 
-            // Step 4: Generating final assembly.
-            return r.GenerateFinalAssembly( _monitor, _runtimeBuilder, c.FinalAssemblyConfiguration ) != null;
+            // Step 4: Generating final assembly if required.
+            if( c.FinalAssemblyConfiguration.GenerateFinalAssemblyOption != BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile )
+            {
+                bool peVerify = c.FinalAssemblyConfiguration.GenerateFinalAssemblyOption == BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFileAndPEVerify;
+                StObjContextRoot ctx = r.GenerateFinalAssembly( _monitor, _runtimeBuilder, peVerify );
+                return c != null;
+            }
+            return true;
         }
     }
 }

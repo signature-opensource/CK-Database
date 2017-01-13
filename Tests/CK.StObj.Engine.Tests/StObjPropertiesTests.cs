@@ -82,7 +82,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void SchmurtzPropagation()
         {
-            StObjCollector collector = new StObjCollector( TestHelper.Monitor, false, false, null, null, new SchmurtzConfigurator() );
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, configurator: new SchmurtzConfigurator() );
             collector.RegisterClass( typeof( SimpleContainer ) );
             collector.RegisterClass( typeof( SpecializedContainer ) );
             collector.RegisterClass( typeof( BaseObject ) );

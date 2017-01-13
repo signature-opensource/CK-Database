@@ -12,7 +12,7 @@ namespace CK.Setup
         /// <summary>
         /// Exposes the <see cref="OrderedStObjs"/> and the resulting <see cref="SetupItems"/> for them
         /// and captures required context (<see cref="StObjCollectorResult"/>, <see cref="IStObjRuntimeBuilder"/> and <see cref="BuilderFinalAssemblyConfiguration"/>)
-        /// to be able to <see cref="GenerateFinalAssembly"/>.
+        /// to be able to <see cref="GenerateFinalAssemblyIfRequired"/>.
         /// </summary>
         public class BuildStObjResult
         {
@@ -44,15 +44,17 @@ namespace CK.Setup
             /// <param name="monitor">Monitor to use.</param>
             /// <param name="injectFinalObjectAccessor">True to set the <see cref="IStObjResult.ObjectAccessor"/> to return the real final object.</param>
             /// <returns>True on success, false on error.</returns>
-            public bool GenerateFinalAssembly( IActivityMonitor monitor, bool injectFinalObjectAccessor = false )
+            public bool GenerateFinalAssemblyIfRequired( IActivityMonitor monitor, bool injectFinalObjectAccessor = false )
             {
+                if( _configuration.GenerateFinalAssemblyOption == BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile ) return true;
+                bool peVerify = _configuration.GenerateFinalAssemblyOption == BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFileAndPEVerify;
                 bool hasError = false;
                 using( monitor.OnError( () => hasError = true ) )
                 {
                     StObjContextRoot finalObjects;
                     using( monitor.OpenInfo().Send( "Generating StObj dynamic assembly." ) )
                     {
-                        finalObjects = _result.GenerateFinalAssembly( monitor, _runtimeBuilder, _configuration );
+                        finalObjects = _result.GenerateFinalAssembly( monitor, _runtimeBuilder, peVerify );
                         Debug.Assert( finalObjects != null || hasError, "finalObjects == null ==> An error has been logged." );
                     }
                     if( finalObjects == null ) return false;
@@ -82,7 +84,13 @@ namespace CK.Setup
                 StObjCollectorResult result;
                 AssemblyRegisterer typeReg = new AssemblyRegisterer( monitor );
                 typeReg.Discover( config.BuildAndRegisterConfiguration.Assemblies );
-                StObjCollector stObjC = new StObjCollector( monitor, config.TraceDependencySorterInput, config.TraceDependencySorterOutput, runtimeBuilder, configurator, configurator, configurator );
+                StObjCollector stObjC = new StObjCollector( 
+                    monitor, 
+                    config.FinalAssemblyConfiguration, 
+                    config.TraceDependencySorterInput, 
+                    config.TraceDependencySorterOutput, 
+                    runtimeBuilder, 
+                    configurator, configurator, configurator );
                 stObjC.DependencySorterHookInput += engine.StartConfiguration.StObjDependencySorterHookInput;
                 stObjC.DependencySorterHookOutput += engine.StartConfiguration.StObjDependencySorterHookOutput;
                 using( monitor.OpenInfo().Send( "Registering StObj types." ) )

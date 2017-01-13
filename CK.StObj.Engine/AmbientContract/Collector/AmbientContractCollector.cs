@@ -85,6 +85,7 @@ namespace CK.Core
         
         readonly IActivityMonitor _monitor;
         readonly DynamicAssembly _tempAssembly;
+        readonly DynamicAssembly _finalAssembly;
         readonly PocoRegisterer _pocoRegisterer;
 
         /// <summary>
@@ -93,18 +94,25 @@ namespace CK.Core
         /// <param name="monitor">The monitor to use.</param>
         /// <param name="mapFactory">Factory for <see cref="IContextualTypeMap"/> objects.</param>
         /// <param name="typeInfoFactory">Factory for <see cref="AmbientTypeInfo"/> objects.</param>
-        /// <param name="tempAssembly">The <see cref="DynamicAssembly"/>.</param>
+        /// <param name="tempAssembly">The temporary <see cref="DynamicAssembly"/>.</param>
+        /// <param name="finalAssembly">The optional final <see cref="DynamicAssembly"/>.</param>
         /// <param name="contextDispatcher">The strategy that will be used to alter type dispatching.</param>
         public AmbientContractCollector( 
             IActivityMonitor monitor,
             Func<IActivityMonitor, AmbientTypeMap<CT>> mapFactory,
             Func<IActivityMonitor, T, Type, T> typeInfoFactory,
-            DynamicAssembly tempAssembly = null, 
+            DynamicAssembly tempAssembly,
+            DynamicAssembly finalAssembly = null,
             IAmbientContractDispatcher contextDispatcher = null )
         {
+            if( monitor == null ) throw new ArgumentNullException( nameof( monitor ) );
+            if( mapFactory == null ) throw new ArgumentNullException( nameof( mapFactory ) );
+            if( typeInfoFactory == null ) throw new ArgumentNullException( nameof( typeInfoFactory ) );
+            if( tempAssembly == null ) throw new ArgumentNullException( nameof( tempAssembly ) );
             _monitor = monitor;
             _contextDispatcher = contextDispatcher;
             _tempAssembly = tempAssembly;
+            _finalAssembly = finalAssembly;
             _collector = new Dictionary<Type, T>();
             _roots = new List<T>();
             _mapFactory = mapFactory;
@@ -198,7 +206,7 @@ namespace CK.Core
         {
             public readonly CT Context;
             readonly IActivityMonitor _monitor;
-            readonly DynamicAssembly _assembly;
+            readonly DynamicAssembly _tempAssembly;
 
             Dictionary<object,TC> _mappings;
             List<List<TC>> _concreteClasses;
@@ -206,12 +214,12 @@ namespace CK.Core
             List<Type> _abstractTails;
             int _registeredCount;
 
-            public PreResult( IActivityMonitor monitor, CT c, DynamicAssembly assembly )
+            public PreResult( IActivityMonitor monitor, CT c, DynamicAssembly tempAssembly )
             {
                 Debug.Assert( c != null );
                 Context = c;
                 _monitor = monitor;
-                _assembly = assembly;
+                _tempAssembly = tempAssembly;
                 _mappings = c.RawMappings;
                 _concreteClasses = new List<List<TC>>();
                 _abstractTails = new List<Type>();
@@ -223,7 +231,7 @@ namespace CK.Core
                 if( newOne.Generalization == null )
                 {
                     var deepestConcretes = new List<Tuple<TC,object>>();
-                    newOne.CollectDeepestConcrete<T, TC>( _monitor, Context, null, _assembly, deepestConcretes, _abstractTails );
+                    newOne.CollectDeepestConcrete<T, TC>( _monitor, Context, null, _tempAssembly, deepestConcretes, _abstractTails );
                     if( deepestConcretes.Count == 1 )
                     {
                         var last = deepestConcretes[0].Item1;
@@ -303,7 +311,7 @@ namespace CK.Core
             IPocoSupportResult pocoSupport;
             using( _monitor.OpenInfo().Send( "Creating Poco Types and PocoFactory." ) )
             {
-                pocoSupport = _pocoRegisterer.Finalize( _tempAssembly, _monitor );
+                pocoSupport = _pocoRegisterer.Finalize( _finalAssembly ?? _tempAssembly, _monitor );
                 if( pocoSupport != null ) RegisterClass( pocoSupport.FinalFactory );
             }
             var mappings = _mapFactory( _monitor );
@@ -319,14 +327,6 @@ namespace CK.Core
                 r.Add( rCtx.GetResult( mappings, IsAmbientInterface ) );
             }
             return r;
-        }
-
-        void CreatePoco()
-        {
-            using( _monitor.OpenInfo().Send( "Creating Poco and PocoFactory types." ) )
-            {
-                _pocoRegisterer.Finalize( _tempAssembly, _monitor );
-            }
         }
 
         bool IsAmbientInterface( Type t )

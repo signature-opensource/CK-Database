@@ -89,16 +89,21 @@ namespace CK.SqlServer.Setup
                 }
             }
 
-            public bool AddParameterSourceAndSqlCommandExecutor( ParameterInfo param, IActivityMonitor monitor )
+            public bool AddParameterSourceAndSqlCommandExecutor( ParameterInfo param, IActivityMonitor monitor, IPocoSupportResult poco )
             {
                 TypeInfo paramTypeInfo = param.ParameterType.GetTypeInfo();
                 if( paramTypeInfo.IsValueType || typeof( string ).IsAssignableFrom( param.ParameterType ) ) return false;
 
                 bool isParameterSource = param.GetCustomAttribute<ParameterSourceAttribute>() != null;
-                bool needExecutor = (_gType & GenerationType.IsCall) != 0 && _sqlCommandExecutorParameter == null;
+                bool isParameterSourcePoco = isParameterSource && typeof( IPoco ).IsAssignableFrom( param.ParameterType );
+                bool needExecutor = !isParameterSourcePoco && ( _gType & GenerationType.IsCall) != 0 && _sqlCommandExecutorParameter == null;
                 if( isParameterSource || needExecutor )
                 {
-                    var rawProperties = paramTypeInfo.IsInterface ? ReflectionHelper.GetFlattenProperties( param.ParameterType ) : param.ParameterType.GetProperties();
+                    var rawProperties = isParameterSourcePoco
+                                            ? poco.Find( param.ParameterType ).Root.PocoClass.GetProperties()
+                                            : (paramTypeInfo.IsInterface
+                                                ? ReflectionHelper.GetFlattenProperties( param.ParameterType )
+                                                : param.ParameterType.GetProperties());
                     var allProperties = rawProperties.Select( p => new Property( param, p ) ).ToList();
                     if( isParameterSource )
                     {
@@ -121,7 +126,9 @@ namespace CK.SqlServer.Setup
                             monitor.Trace().Send( "Planning to use parameter '{0}.Executor' property {1} method.", param.Name, _executorCallNonQuery.Name );
                             return true;
                         }
-                        var methods = paramTypeInfo.IsInterface ? ReflectionHelper.GetFlattenMethods( param.ParameterType ) : param.ParameterType.GetMethods();
+                        var methods = paramTypeInfo.IsInterface 
+                                        ? ReflectionHelper.GetFlattenMethods( param.ParameterType ) 
+                                        : param.ParameterType.GetMethods();
                         MethodInfo mE = methods.FirstOrDefault( m => m.Name == "GetExecutor" && m.GetParameters().Length == 0 && typeof( ISqlCommandExecutor ).IsAssignableFrom( m.ReturnType ) );
                         if( mE != null )
                         {

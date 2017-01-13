@@ -109,7 +109,7 @@ namespace CK.Core
             }
         }
 
-        internal bool CollectDeepestConcrete<T, TC>( IActivityMonitor monitor, IContextualTypeMap context, TC generalization, DynamicAssembly assembly, List<Tuple<TC,object>> lastConcretes, List<Type> abstractTails )
+        internal bool CollectDeepestConcrete<T, TC>( IActivityMonitor monitor, IContextualTypeMap context, TC generalization, DynamicAssembly tempAssembly, List<Tuple<TC,object>> lastConcretes, List<Type> abstractTails )
             where T : AmbientTypeInfo
             where TC : AmbientContextualTypeInfo<T,TC>
         {
@@ -123,14 +123,14 @@ namespace CK.Core
             {
                 if( c.MutableFinalContexts.Contains( context.Context ) )
                 {
-                    concreteBelow |= c.CollectDeepestConcrete<T, TC>( monitor, context, ct, assembly, lastConcretes, abstractTails );
+                    concreteBelow |= c.CollectDeepestConcrete<T, TC>( monitor, context, ct, tempAssembly, lastConcretes, abstractTails );
                 }
                 c = c._nextSibling;
             }
             if( !concreteBelow )
             {
                 object abstractTypeInfo = null;
-                if( Type.IsAbstract && (assembly == null || !ct.AbstractTypeCanBeInstanciated( monitor, assembly, out abstractTypeInfo )) )
+                if( Type.IsAbstract && (tempAssembly == null || !ct.AbstractTypeCanBeInstanciated( monitor, tempAssembly, out abstractTypeInfo )) )
                 {
                     abstractTails.Add( Type );
                 }
