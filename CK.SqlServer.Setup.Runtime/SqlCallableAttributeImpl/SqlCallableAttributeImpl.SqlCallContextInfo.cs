@@ -42,11 +42,13 @@ namespace CK.SqlServer.Setup
             {
                 public readonly ParameterInfo Parameter;
                 public readonly PropertyInfo Prop;
+                public readonly Type PocoMappedType;
 
-                public Property( ParameterInfo param, PropertyInfo prop )
+                public Property( ParameterInfo param, PropertyInfo prop, Type pocoMappedType )
                 {
                     Parameter = param;
                     Prop = prop;
+                    PocoMappedType = pocoMappedType;
                 }
 
                 internal bool Match( ISqlServerParameter sqlP, IActivityMonitor monitor )
@@ -99,12 +101,21 @@ namespace CK.SqlServer.Setup
                 bool needExecutor = !isParameterSourcePoco && ( _gType & GenerationType.IsCall) != 0 && _sqlCommandExecutorParameter == null;
                 if( isParameterSource || needExecutor )
                 {
-                    var rawProperties = isParameterSourcePoco
-                                            ? poco.Find( param.ParameterType ).Root.PocoClass.GetProperties()
-                                            : (paramTypeInfo.IsInterface
+                    Type pocoMappedType = null;
+                    IEnumerable<PropertyInfo> rawProperties = null;
+                    if( isParameterSourcePoco )
+                    {
+                        pocoMappedType = poco.Find( param.ParameterType ).Root.PocoClass;
+                        if( pocoMappedType == null ) throw new Exception( $"Unmapped Poco for {param.ParameterType.FullName}." );
+                        rawProperties = pocoMappedType.GetProperties();
+                    }
+                    else
+                    {
+                        rawProperties = paramTypeInfo.IsInterface
                                                 ? ReflectionHelper.GetFlattenProperties( param.ParameterType )
-                                                : param.ParameterType.GetProperties());
-                    var allProperties = rawProperties.Select( p => new Property( param, p ) ).ToList();
+                                                : param.ParameterType.GetProperties();
+                    }
+                    var allProperties = rawProperties.Select( p => new Property( param, p, pocoMappedType ) ).ToList();
                     if( isParameterSource )
                     {
                         _props.AddRange( allProperties );
@@ -159,27 +170,18 @@ namespace CK.SqlServer.Setup
             /// Gets the parameter that must support the call (when GenerationType.IsCall is set).
             /// Null if not found or if we are not generating call.
             /// </summary>
-            public ParameterInfo SqlCommandExecutorParameter
-            {
-                get { return _sqlCommandExecutorParameter; }
-            }
+            public ParameterInfo SqlCommandExecutorParameter => _sqlCommandExecutorParameter; 
 
             /// <summary>
             /// Gets whether a Func{SqlCommand,T} is required to call the procedure.
             /// It is necessarily an async call (for synchronous calls, the return code is inlined).
             /// </summary>
-            public bool RequiresReturnTypeBuilder
-            {
-                get { return _executorCallNonQuery == SqlObjectItem.MExecutorCallNonQueryAsyncTyped; }
-            }
+            public bool RequiresReturnTypeBuilder => _executorCallNonQuery == SqlObjectItem.MExecutorCallNonQueryAsyncTyped; 
 
             /// <summary>
             /// Gets whether this is an asynchronous call.
             /// </summary>
-            public bool IsAsyncCall
-            {
-                get { return _executorCallNonQuery != null && _executorCallNonQuery != SqlObjectItem.MExecutorCallNonQuery; }
-            }
+            public bool IsAsyncCall => _executorCallNonQuery != null && _executorCallNonQuery != SqlObjectItem.MExecutorCallNonQuery; 
 
             /// <summary>
             /// Emits call to SqlCommandExecutorParameter.ExecuteNonQuery( string, SqlCommand ) method.

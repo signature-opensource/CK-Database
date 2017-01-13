@@ -185,7 +185,7 @@ namespace CK.Core
             {
                 Type tPoco = CreatePocoType( a, monitor, signature );
                 if( tPoco == null ) return null;
-                MethodBuilder realMB = tB.DefineMethod( "DoC" + r.Roots.Count.ToString(), MethodAttributes.Private | MethodAttributes.HideBySig | MethodAttributes.Static | MethodAttributes.Final, tPoco, Type.EmptyTypes );
+                MethodBuilder realMB = tB.DefineMethod( "DoC" + r.Roots.Count.ToString(), MethodAttributes.Private | MethodAttributes.HideBySig | MethodAttributes.Static, tPoco, Type.EmptyTypes );
                 var cInfo = new ClassInfo( tPoco, realMB );
                 r.Roots.Add( cInfo );
                 foreach( var i in signature )
