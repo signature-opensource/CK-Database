@@ -109,7 +109,13 @@ namespace CK.Setup.Tests
     public class DefaultAmbientContractCollector : AmbientContractCollector<ContextForTypes,TypeInfo,TypeInsideContext>
     {
         public DefaultAmbientContractCollector( IActivityMonitor monitor = null, IAmbientContractDispatcher contextDispatcher = null )
-            : base( monitor ?? new ActivityMonitor(), l => new AmbientRoot(), ( l, p, t ) => new TypeInfo( p, t ), null, contextDispatcher )
+            : base( 
+                  monitor ?? new ActivityMonitor(), 
+                  l => new AmbientRoot(), 
+                  ( l, p, t ) => new TypeInfo( p, t ), 
+                  new DynamicAssembly(), 
+                  null, 
+                  contextDispatcher )
         {
         }
     }

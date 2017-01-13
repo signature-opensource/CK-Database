@@ -72,6 +72,10 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="DynamicAssemblyExtension.cs" />
+    <Compile Include="Poco\IPocoInterfaceInfo.cs" />
+    <Compile Include="Poco\IPocoRootInfo.cs" />
+    <Compile Include="Poco\IPocoSuportResult.cs" />
     <Compile Include="StObjRuntimeExtensions.cs" />
     <Compile Include="CustomAttributeProviderComposite.cs" />
     <Compile Include="IAmbientContractDispatcher.cs" />

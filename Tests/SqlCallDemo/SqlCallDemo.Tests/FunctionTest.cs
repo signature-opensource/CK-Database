@@ -16,21 +16,9 @@ namespace SqlCallDemo.Tests
     [TestFixture]
     public class FunctionTest
     {
-        FunctionPackage.Power? MMMMMMMMM( int i )
-        {
-            return (FunctionPackage.Power)i + 2;
-        }
-
-        FunctionPackage.Power? MMMMMMMMM2( int i )
-        {
-            var x = (FunctionPackage.Power)i + 2;
-            return x;
-        }
-
         [Test]
         public async Task async_call_returns_string_with_nullable_parameter()
         {
-            MMMMMMMMM( 6 );
             var p = TestHelper.StObjMap.Default.Obtain<FunctionPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {

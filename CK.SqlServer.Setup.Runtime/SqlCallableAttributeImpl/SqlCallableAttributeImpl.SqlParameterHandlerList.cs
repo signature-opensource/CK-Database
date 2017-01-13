@@ -258,6 +258,10 @@ namespace CK.SqlServer.Setup
                     {
                         Debug.Assert( _ctxProp != null );
                         g.LdArg( _ctxProp.Parameter.Position + 1 );
+                        if( _ctxProp.PocoMappedType != null )
+                        {
+                            g.Emit( OpCodes.Castclass, _ctxProp.PocoMappedType );
+                        }
                         g.Emit( OpCodes.Callvirt, _ctxProp.Prop.GetGetMethod() );
                         typeToSet = _ctxProp.Prop.PropertyType;
                         typeToSetInfo = typeToSet.GetTypeInfo();
@@ -405,10 +409,7 @@ namespace CK.SqlServer.Setup
                 _funcResultBuilderSignature = new StringBuilder();
             }
 
-            public IReadOnlyList<SqlParamHandler> Handlers
-            {
-                get { return _params; }
-            }
+            public IReadOnlyList<SqlParamHandler> Handlers => _params; 
 
             public int IndexOf( int iStart, ParameterInfo mP )
             {
@@ -420,15 +421,9 @@ namespace CK.SqlServer.Setup
                 return -1;
             }
 
-            public bool IsAsyncCall
-            {
-                get { return _isAsyncCall; }
-            }
+            public bool IsAsyncCall => _isAsyncCall; 
 
-            public ComplexTypeMapperModel ComplexReturnType
-            {
-                get { return _complexReturnType; }
-            }
+            public ComplexTypeMapperModel ComplexReturnType => _complexReturnType; 
 
             internal bool HandleNonVoidCallingReturnedType( IActivityMonitor monitor, Type returnType )
             {

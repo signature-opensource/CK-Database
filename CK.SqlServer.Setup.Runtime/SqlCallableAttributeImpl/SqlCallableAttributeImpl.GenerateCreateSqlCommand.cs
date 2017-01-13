@@ -139,7 +139,7 @@ namespace CK.SqlServer.Setup
                             extraMethodParameters.Add( mP );
                         }
                         // If the parameter is a parameter source, we register it.
-                        bool isParameterSourceOrCommandExecutor = sqlCallContexts.AddParameterSourceAndSqlCommandExecutor( mP, monitor );
+                        bool isParameterSourceOrCommandExecutor = sqlCallContexts.AddParameterSourceAndSqlCommandExecutor( mP, monitor, dynamicAssembly.GetPocoInfo() );
 
                         if( mP.ParameterType.IsByRef && sqlParamHandlers.IsAsyncCall )
                         {

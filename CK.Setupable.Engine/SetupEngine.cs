@@ -135,7 +135,7 @@ namespace CK.Setup
                         setupSuccess &= versionTracker.ConcludeWithFatalOnError( _monitor, _startConfiguration.VersionedItemWriter, setupSuccess );
                         if( setupSuccess )
                         {
-                            if( buildResult.GenerateFinalAssembly( _monitor ) )
+                            if( buildResult.GenerateFinalAssemblyIfRequired( _monitor ) )
                             {
                                 _startConfiguration.SetupSessionMemoryProvider.StopSetup( null );
                                 return true;

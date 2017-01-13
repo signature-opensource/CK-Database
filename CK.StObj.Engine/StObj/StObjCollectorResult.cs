@@ -22,13 +22,18 @@ namespace CK.Setup
         readonly AmbientContractCollectorResult<StObjContextualMapper,StObjTypeInfo,MutableItem> _contractResult;
         readonly int _totalSpecializationCount;
         readonly BuildValueCollector _buildValueCollector;
+        readonly DynamicAssembly _finalAssembly;
         IReadOnlyList<MutableItem> _orderedStObjs;
         bool _fatal;
 
-        internal StObjCollectorResult( StObjMapper owner, AmbientContractCollectorResult<StObjContextualMapper,StObjTypeInfo, MutableItem> contractResult )
+        internal StObjCollectorResult( 
+            StObjMapper owner, 
+            AmbientContractCollectorResult<StObjContextualMapper,StObjTypeInfo, MutableItem> contractResult,
+            DynamicAssembly finalAssembly )
         {
             Debug.Assert( contractResult != null );
             _contractResult = contractResult;
+            _finalAssembly = finalAssembly;
             foreach( var r in contractResult.Contexts )
             {
                 var c = Add( new StObjCollectorContextualResult( r ) );

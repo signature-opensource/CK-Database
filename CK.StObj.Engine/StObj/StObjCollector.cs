@@ -15,6 +15,7 @@ using System.Reflection;
 using System.Collections.Specialized;
 using System.Collections;
 using CK.Text;
+using System.Reflection.Emit;
 
 namespace CK.Setup
 {
@@ -64,7 +65,7 @@ namespace CK.Setup
             {
                 _finalAssembly = CreateFinalAssembly( monitor, finalAssemblyConfig );
             }
-            _cc = new AmbientContractCollector<StObjContextualMapper,StObjTypeInfo, MutableItem>( _monitor, l => new StObjMapper(), ( l, p, t ) => new StObjTypeInfo( l, p, t ), _tempAssembly, dispatcher );
+            _cc = new AmbientContractCollector<StObjContextualMapper,StObjTypeInfo, MutableItem>( _monitor, l => new StObjMapper(), ( l, p, t ) => new StObjTypeInfo( l, p, t ), _tempAssembly, _finalAssembly, dispatcher );
             _configurator = configurator;
             _valueResolver = valueResolver;
             if( traceDepencySorterInput ) DependencySorterHookInput = i => i.Trace( monitor );
@@ -95,7 +96,7 @@ namespace CK.Setup
             }
             else if( signKeyPair != null ) throw new ArgumentException( "A StrongNameKeyPair has been provided but signAssembly flag is false. signKeyPair must be null in this case." );
 
-            return new DynamicAssembly( directory, assemblyName, c.ExternalVersionStamp, signKeyPair, doNotGenerateFile ? AssemblyBuilderAccess.Run : AssemblyBuilderAccess.RunAndSave );
+            return new DynamicAssembly( directory, assemblyName, c.ExternalVersionStamp, signKeyPair, AssemblyBuilderAccess.RunAndSave );
         }
 
         /// <summary>
@@ -215,23 +216,8 @@ namespace CK.Setup
                     contracts.LogErrorAndWarnings( _monitor );
                 }
                 var stObjMapper = new StObjMapper();
-                var result = new StObjCollectorResult( stObjMapper, contracts );
+                var result = new StObjCollectorResult( stObjMapper, contracts, _finalAssembly );
                 if( result.HasFatalError ) return result;
-
-                //using( _monitor.OpenInfo().Send( "Creating Poco and PocoFactory types." ) )
-                //{
-                //    foreach( var interfaces in contracts.PocoSignatures )
-                //    {
-                //        PocoFactoryCreationResult p = _tempAssembly.CreatePocoFactoryType( _monitor, interfaces );
-                //        _monitor.Trace().Send( $"Poco factory for {interfaces.Select( i => i.Name ).Concatenate()} has been created." );
-                //        var stObjInfo = new StObjTypeInfo( _monitor, null, p.FactoryType );
-                //        var item = new MutableItem( stObjInfo, null, result.Default.AmbientContractResult.Mappings );
-                //        foreach( var factoryInterface in p.FactoryInterfaces )
-                //        {
-                //            result.Default.InternalMapper.RawMappings.Add( factoryInterface, item );
-                //        }
-                //    }
-                //}
                 using( _monitor.OpenInfo().Send( "Creating Structure Objects." ) )
                 {
                     int objectCount = 0;

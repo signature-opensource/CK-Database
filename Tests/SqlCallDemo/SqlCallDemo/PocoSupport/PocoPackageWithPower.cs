@@ -16,7 +16,7 @@ namespace SqlCallDemo
     [SqlObjectItem( "transform:sPocoThingWrite" )]
     public class PocoPackageWithPower : SqlPackage
     {
-        void Construct( PocoPackage p )
+        void Construct( PocoPackage p, PocoPackageWithAgeAndHeight pAgeHeight )
         {
         }
     }

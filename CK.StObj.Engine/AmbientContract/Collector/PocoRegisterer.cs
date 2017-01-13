@@ -100,20 +100,25 @@ namespace CK.Core
         {
             public readonly List<ClassInfo> Roots;
             public readonly Dictionary<Type, InterfaceInfo> Interfaces;
-            IReadOnlyList<IPocoRootInfo> IPocoSupportResult.Roots => Roots;
             public Type FinalFactory { get; internal set; }
-
+            IReadOnlyCollection<InterfaceInfo> _exportedInterfaces;
 
             public Result()
             {
                 Roots = new List<ClassInfo>();
                 Interfaces = new Dictionary<Type, InterfaceInfo>();
+                _exportedInterfaces = new CKReadOnlyCollectionOnICollection<InterfaceInfo>( Interfaces.Values );
             }
 
-            public IPocoInterfaceInfo Find( Type pocoInterface )
+            IReadOnlyList<IPocoRootInfo> IPocoSupportResult.Roots => Roots;
+
+            IPocoInterfaceInfo IPocoSupportResult.Find( Type pocoInterface )
             {
                 return Interfaces.GetValueWithDefault( pocoInterface, null );
             }
+
+            IReadOnlyCollection<IPocoInterfaceInfo> IPocoSupportResult.AllInterfaces => _exportedInterfaces;
+
         }
 
         class ClassInfo : IPocoRootInfo
@@ -149,16 +154,15 @@ namespace CK.Core
 
         public IPocoSupportResult Finalize( DynamicAssembly a, IActivityMonitor monitor )
         {
-            const string name = "CK.PocoFactory";
-            IPocoSupportResult result = (IPocoSupportResult)a.Memory[name];
+            IPocoSupportResult result = (IPocoSupportResult)a.Memory[typeof( IPocoSupportResult )];
             if( result == null )
             {
-                var tB = a.ModuleBuilder.DefineType( name );
+                var tB = a.ModuleBuilder.DefineType( "CK.PocoFactory" );
                 Result r = CreateResult( a, monitor, tB );
                 if( r == null ) return null;
                 ImplementFactories( a, monitor, tB, r );
                 r.FinalFactory = tB.CreateType();
-                a.Memory.Add( name, result = r );
+                a.Memory.Add( typeof( IPocoSupportResult ), result = r );
             }
             return result;
         }
@@ -181,7 +185,7 @@ namespace CK.Core
             {
                 Type tPoco = CreatePocoType( a, monitor, signature );
                 if( tPoco == null ) return null;
-                MethodBuilder realMB = tB.DefineMethod( "DoC" + r.Roots.Count.ToString(), MethodAttributes.Private | MethodAttributes.HideBySig | MethodAttributes.Static | MethodAttributes.Final, tPoco, Type.EmptyTypes );
+                MethodBuilder realMB = tB.DefineMethod( "DoC" + r.Roots.Count.ToString(), MethodAttributes.Private | MethodAttributes.HideBySig | MethodAttributes.Static, tPoco, Type.EmptyTypes );
                 var cInfo = new ClassInfo( tPoco, realMB );
                 r.Roots.Add( cInfo );
                 foreach( var i in signature )
@@ -192,7 +196,9 @@ namespace CK.Core
                     ILGenerator g = mB.GetILGenerator();
                     g.Emit( OpCodes.Call, realMB );
                     g.Emit( OpCodes.Ret );
-                    cInfo.Interfaces.Add( new InterfaceInfo( cInfo, i, iCreate ) );
+                    var iInfo = new InterfaceInfo( cInfo, i, iCreate );
+                    cInfo.Interfaces.Add( iInfo );
+                    r.Interfaces.Add( i, iInfo );
                     tB.DefineMethodOverride( mB, iCreate.GetMethod( "Create" ) );
                 }
             }
