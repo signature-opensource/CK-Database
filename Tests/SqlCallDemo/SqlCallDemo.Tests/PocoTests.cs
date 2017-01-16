@@ -24,13 +24,14 @@ namespace SqlCallDemo.Tests
             var p = TestHelper.StObjMap.Default.Obtain<PocoPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
-                var t = factoryThing.Create();
-                t.Name = "a thing";
+                var t = factoryThing.Create( o => o.Name = "a thing" );
                 Assert.That( p.Write( ctx, t ), Is.EqualTo( "a thing P=0 A,H=0,0" ) );
-                var tAH = factoryThingAH.Create();
-                tAH.Name = "aged thing";
-                tAH.Age = 12;
-                tAH.Height = 170;
+                var tAH = factoryThingAH.Create( o =>
+                {
+                    o.Name = "aged thing";
+                    o.Age = 12;
+                    o.Height = 170;
+                } );
                 Assert.That( p.Write( ctx, tAH ), Is.EqualTo( "aged thing P=0 A,H=12,170" ) );
             }
         }
