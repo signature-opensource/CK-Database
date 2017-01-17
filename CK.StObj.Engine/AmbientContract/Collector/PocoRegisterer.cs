@@ -179,6 +179,8 @@ namespace CK.Core
 
         Result CreateResult( DynamicAssembly a, IActivityMonitor monitor, TypeBuilder tB )
         {
+            MethodInfo typeFromToken = typeof( Type ).GetMethod( nameof( Type.GetTypeFromHandle ), BindingFlags.Static | BindingFlags.Public );
+
             Result r = new Result();
             int idMethod = 0;
             foreach( var signature in _result )
@@ -203,6 +205,7 @@ namespace CK.Core
                         MethodBuilder mB = tB.DefineMethod( "get_T" + (idMethod++).ToString(), MethodAttributes.Virtual | MethodAttributes.Private | MethodAttributes.SpecialName | MethodAttributes.HideBySig | MethodAttributes.Final, typeof(Type), Type.EmptyTypes );
                         ILGenerator g = mB.GetILGenerator();
                         g.Emit( OpCodes.Ldtoken, tPoco );
+                        g.Emit( OpCodes.Call, typeFromToken );
                         g.Emit( OpCodes.Ret );
                         tB.DefineMethodOverride( mB, iCreate.GetProperty( nameof( IPocoFactory<IPoco>.PocoClassType ) ).GetGetMethod() );
                     }

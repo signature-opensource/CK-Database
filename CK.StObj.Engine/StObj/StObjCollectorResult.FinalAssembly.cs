@@ -404,7 +404,7 @@ namespace CK.Setup
             g.Emit( OpCodes.Newarr, typeof( Type ) );
             g.StLoc( allTypes );
 
-            MethodInfo typeFromToken = typeof( Type ).GetMethod( "GetTypeFromHandle", BindingFlags.Static | BindingFlags.Public );
+            MethodInfo typeFromToken = typeof( Type ).GetMethod( nameof( Type.GetTypeFromHandle ), BindingFlags.Static | BindingFlags.Public );
 
             typeCreatedCount = typeErrorCount = 0;
             foreach( var m in _orderedStObjs )
