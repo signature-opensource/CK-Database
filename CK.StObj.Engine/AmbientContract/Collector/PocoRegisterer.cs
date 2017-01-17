@@ -192,14 +192,23 @@ namespace CK.Core
                 {
                     Type iCreate = typeof( IPocoFactory<> ).MakeGenericType( i );
                     tB.AddInterfaceImplementation( iCreate );
-                    MethodBuilder mB = tB.DefineMethod( "C" + (idMethod++).ToString(), MethodAttributes.Private | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual | MethodAttributes.Final, i, Type.EmptyTypes );
-                    ILGenerator g = mB.GetILGenerator();
-                    g.Emit( OpCodes.Call, realMB );
-                    g.Emit( OpCodes.Ret );
+                    {
+                        MethodBuilder mB = tB.DefineMethod( "C" + (idMethod++).ToString(), MethodAttributes.Private | MethodAttributes.Virtual | MethodAttributes.HideBySig | MethodAttributes.Final, i, Type.EmptyTypes );
+                        ILGenerator g = mB.GetILGenerator();
+                        g.Emit( OpCodes.Call, realMB );
+                        g.Emit( OpCodes.Ret );
+                        tB.DefineMethodOverride( mB, iCreate.GetMethod( nameof( IPocoFactory<IPoco>.Create ) ) );
+                    }
+                    {
+                        MethodBuilder mB = tB.DefineMethod( "get_T" + (idMethod++).ToString(), MethodAttributes.Virtual | MethodAttributes.Private | MethodAttributes.SpecialName | MethodAttributes.HideBySig | MethodAttributes.Final, typeof(Type), Type.EmptyTypes );
+                        ILGenerator g = mB.GetILGenerator();
+                        g.Emit( OpCodes.Ldtoken, tPoco );
+                        g.Emit( OpCodes.Ret );
+                        tB.DefineMethodOverride( mB, iCreate.GetProperty( nameof( IPocoFactory<IPoco>.PocoClassType ) ).GetGetMethod() );
+                    }
                     var iInfo = new InterfaceInfo( cInfo, i, iCreate );
                     cInfo.Interfaces.Add( iInfo );
                     r.Interfaces.Add( i, iInfo );
-                    tB.DefineMethodOverride( mB, iCreate.GetMethod( "Create" ) );
                 }
             }
             return r;

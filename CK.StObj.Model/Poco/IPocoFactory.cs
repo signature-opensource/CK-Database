@@ -17,5 +17,10 @@ namespace CK.Core
         /// </summary>
         /// <returns></returns>
         T Create();
+
+        /// <summary>
+        /// Gets the type of the final, unified, poco.
+        /// </summary>
+        Type PocoClassType { get; }
     }
 }

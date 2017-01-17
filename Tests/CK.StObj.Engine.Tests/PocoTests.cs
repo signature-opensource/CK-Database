@@ -14,15 +14,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void simple_poco_resolution_and_injection()
         {
-            AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
-            disco.TypeFilter = t => t.Namespace == "CK.StObj.Engine.Tests.Poco";
-            disco.Discover( Assembly.GetExecutingAssembly() );
-
-            StObjCollector collector = new StObjCollector( TestHelper.Monitor );
-            collector.RegisterTypes( disco );
-            
-            var result = collector.GetResult();
-            Assert.That( result.HasFatalError, Is.False );
+            StObjCollectorResult result = BuildPocoSample();
 
             IStObjResult p = result.Default.StObjMap.ToStObj( typeof( PackageWithBasicPoco ) );
             var package = (PackageWithBasicPoco)p.ObjectAccessor();
@@ -38,5 +30,33 @@ namespace CK.StObj.Engine.Tests
             ei.IndependentProperty = 9;
         }
 
+        static StObjCollectorResult BuildPocoSample()
+        {
+            AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
+            disco.TypeFilter = t => t.Namespace == "CK.StObj.Engine.Tests.Poco";
+            disco.Discover( Assembly.GetExecutingAssembly() );
+
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor );
+            collector.RegisterTypes( disco );
+
+            var result = collector.GetResult();
+            Assert.That( result.HasFatalError, Is.False );
+            return result;
+        }
+
+        [Test]
+        public void poco_factory_exposes_the_final_type()
+        {
+            StObjCollectorResult result = BuildPocoSample();
+            var p = result.Default.StObjMap.Obtain<IPocoFactory<IBasicPoco>>();
+
+            Type pocoType = p.PocoClassType;
+            Assert.That( typeof( IBasicPoco ).IsAssignableFrom( pocoType ) );
+            Assert.That( typeof( IEAlternateBasicPoco ).IsAssignableFrom( pocoType ) );
+            Assert.That( typeof( IEBasicPoco ).IsAssignableFrom( pocoType ) );
+            Assert.That( typeof( IECombineBasicPoco ).IsAssignableFrom( pocoType ) );
+            Assert.That( typeof( IEIndependentBasicPoco ).IsAssignableFrom( pocoType ) );
+
+        }
     }
 }
