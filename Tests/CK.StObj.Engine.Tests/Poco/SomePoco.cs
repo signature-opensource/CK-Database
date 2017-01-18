@@ -16,6 +16,11 @@ namespace CK.StObj.Engine.Tests.Poco
         int ExtendProperty { get; set; }
     }
 
+    public interface IEBasicPocoWithReadOnly : IEBasicPoco
+    {
+        int ReadOnlyProperty { get; }
+    }
+
     public interface IEAlternateBasicPoco : IBasicPoco
     {
         int AlternateProperty { get; set; }

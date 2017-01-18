@@ -58,5 +58,20 @@ namespace CK.StObj.Engine.Tests
             Assert.That( typeof( IEIndependentBasicPoco ).IsAssignableFrom( pocoType ) );
 
         }
+
+        [Test]
+        public void poco_support_read_only_properties()
+        {
+            StObjCollectorResult result = BuildPocoSample();
+            var p = result.Default.StObjMap.Obtain<IPocoFactory<IEBasicPocoWithReadOnly>>();
+            var o = p.Create();
+
+            Assert.That( o.ReadOnlyProperty, Is.EqualTo( 0 ) );
+            p.PocoClassType.GetProperty( nameof(IEBasicPocoWithReadOnly.ReadOnlyProperty) )
+                .SetValue( o, 3712 );
+            Assert.That( o.ReadOnlyProperty, Is.EqualTo( 3712 ) );
+        }
+
+
     }
 }

@@ -8,9 +8,9 @@ namespace CK.Core
 {
     /// <summary>
     /// Poco factory.
-    /// These interface are automaticaaly implemented.
+    /// These interfaces are automatically implemented.
     /// </summary>
-    public interface IPocoFactory<T> : IPoco, IAmbientContract
+    public interface IPocoFactory<T> : IAmbientContract where T : IPoco
     {
         /// <summary>
         /// Creates a new Poco instance.

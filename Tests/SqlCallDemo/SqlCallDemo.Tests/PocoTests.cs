@@ -36,5 +36,15 @@ namespace SqlCallDemo.Tests
             }
         }
 
+        [Test]
+        public void reading_Poco_Thing()
+        {
+            var p = TestHelper.StObjMap.Default.Obtain<PocoPackage>();
+            using( var ctx = new SqlStandardCallContext() )
+            {
+                var thing = p.Read( ctx );
+                Assert.That( thing, Is.Not.Null );
+            }
+        }
     }
 }

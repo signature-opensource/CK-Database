@@ -68,6 +68,7 @@
     <Compile Include="ComplexType\ComplexTypeSimple.cs" />
     <Compile Include="ComplexType\ComplexTypeSimpleWithCtor.cs" />
     <Compile Include="ComplexType\ComplexTypeStupidEmpty.cs" />
+    <Compile Include="PocoSupport\IThingReadOnlyProp.cs" />
     <Compile Include="PocoSupport\IThingWithAgeAndHeight.cs" />
     <Compile Include="PocoSupport\IThingWithPower.cs" />
     <Compile Include="PocoSupport\IThingWithAge.cs" />

@@ -16,11 +16,12 @@ namespace CK.Core
         /// <param name="this">This poco factory.</param>
         /// <param name="configure">Configuration action.</param>
         /// <returns>The configured instance.</returns>
-        public static T Create<T>( this IPocoFactory<T> @this, Action<T> configure )
+        public static T Create<T>( this IPocoFactory<T> @this, Action<T> configure ) where T : IPoco
         {
             T p = @this.Create();
             configure( p );
             return p;
         }
+
     }
 }
