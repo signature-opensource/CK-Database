@@ -1,0 +1,24 @@
+﻿{
+  "version": "0.0.0",
+
+  "buildOptions": {
+    "keyFile": "../SharedKey.snk"
+  },
+
+  "dependencies": {
+    "CK.ActivityMonitor.StandardSender": "6.0.0-a01"
+  },
+
+  "frameworks": {
+    "netstandard1.6": {
+      "dependencies": {
+        "NETStandard.Library": "1.6.1",
+        "System.Reflection.Emit": "4.3.0"
+      }
+    },
+    "net451": {
+      "dependencies": {
+      }
+    }
+  }
+}

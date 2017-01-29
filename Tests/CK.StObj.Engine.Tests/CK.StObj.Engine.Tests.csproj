@@ -43,28 +43,28 @@
     <StartArguments>CK.StObj.Engine.Tests.dll</StartArguments>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CK.ActivityMonitor, Version=5.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\CK.ActivityMonitor.5.0.1\lib\net45\CK.ActivityMonitor.dll</HintPath>
+    <Reference Include="CK.ActivityMonitor, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\CK.ActivityMonitor.6.0.0-a01\lib\net451\CK.ActivityMonitor.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="CK.ActivityMonitor.StandardSender, Version=0.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\CK.ActivityMonitor.StandardSender.5.0.1\lib\net45\CK.ActivityMonitor.StandardSender.dll</HintPath>
+    <Reference Include="CK.ActivityMonitor.StandardSender, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\CK.ActivityMonitor.StandardSender.6.0.0-a01\lib\net451\CK.ActivityMonitor.StandardSender.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="CK.Core, Version=5.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\CK.Core.5.0.1\lib\net45\CK.Core.dll</HintPath>
+    <Reference Include="CK.Core, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\CK.Core.6.0.0-a01\lib\net451\CK.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="CK.Reflection, Version=5.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\CK.Reflection.5.0.1\lib\net45\CK.Reflection.dll</HintPath>
+    <Reference Include="CK.Reflection, Version=5.1.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\CK.Reflection.5.1.0-p\lib\net451\CK.Reflection.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="CK.SqlServer.Parser.Model, Version=3.2.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\CK.SqlServer.Parser.Model.3.2.1\lib\net45\CK.SqlServer.Parser.Model.dll</HintPath>
+    <Reference Include="CK.SqlServer.Parser.Model, Version=3.2.2.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\CK.SqlServer.Parser.Model.3.2.2-a\lib\net451\CK.SqlServer.Parser.Model.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="CK.Text, Version=5.1.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\CK.Text.5.1.0-a02\lib\net45\CK.Text.dll</HintPath>
+      <HintPath>..\..\packages\CK.Text.5.1.0-p02\lib\net451\CK.Text.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
@@ -73,6 +73,9 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\SharedAssemblyInfo.cs">
@@ -117,17 +120,9 @@
     <Compile Include="TestHelper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">
-      <Project>{87F54185-5226-4EEE-8D59-5D03E6C1AB7C}</Project>
-      <Name>CK.Setup.Dependency</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\CK.StObj.Engine\CK.StObj.Engine.csproj">
       <Project>{DF7A0B05-4B48-44C2-B6C8-6FCFD66DF8F8}</Project>
       <Name>CK.StObj.Engine</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\CK.StObj.Model\CK.StObj.Model.csproj">
-      <Project>{96DEDEEE-DE7D-4B14-8FDE-BC4D8D9CCB78}</Project>
-      <Name>CK.StObj.Model</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\CK.StObj.Runtime\CK.StObj.Runtime.csproj">
       <Project>{DB108FF8-42A4-4787-92C2-2D5A4DAAB85E}</Project>

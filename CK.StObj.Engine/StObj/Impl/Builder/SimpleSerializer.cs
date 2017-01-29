@@ -130,7 +130,6 @@ namespace CK.Core
         /// </summary>
         /// <param name="value">The value to write.</param>
 
-        [CLSCompliant( false )]
         public void Write( sbyte value )
         {
             _writer.Write( (byte)SimpleDeserializer.KnownTypes.Int8 );
@@ -181,7 +180,6 @@ namespace CK.Core
         /// Writes an unsigned short.
         /// </summary>
         /// <param name="value">The value to write.</param>
-        [CLSCompliant(false)]
         public void Write( ushort value )
         {
             _writer.Write( (byte)SimpleDeserializer.KnownTypes.UInt16 );
@@ -192,7 +190,6 @@ namespace CK.Core
         /// Writes an unsigned integer.
         /// </summary>
         /// <param name="value">The value to write.</param>
-        [CLSCompliant( false )]
         public void Write( uint value )
         {
             _writer.Write( (byte)SimpleDeserializer.KnownTypes.UInt32 );
@@ -203,7 +200,6 @@ namespace CK.Core
         /// Writes an unsigned long.
         /// </summary>
         /// <param name="value">The value to write.</param>
-        [CLSCompliant( false )]
         public void Write( ulong value )
         {
             _writer.Write( (byte)SimpleDeserializer.KnownTypes.UInt64 );

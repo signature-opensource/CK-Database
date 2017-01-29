@@ -95,7 +95,7 @@ namespace CK.Core
             using( loaded ? null : monitor.OpenInfo().Send( "Loading dynamic '{0}'", a.FullName ) )
             {
                 if( a == null ) throw new ArgumentNullException( "a" );
-                Type t = a.GetType( RootContextTypeName, true );
+                Type t = a.GetType( RootContextTypeName, true, false );
                 return (StObjContextRoot)Activator.CreateInstance( t, new object[] { monitor, runtimeBuilder ?? DefaultStObjRuntimeBuilder } );
             }
         }

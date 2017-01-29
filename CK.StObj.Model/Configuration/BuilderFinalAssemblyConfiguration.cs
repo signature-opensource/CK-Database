@@ -97,7 +97,7 @@ namespace CK.Core
         /// an embedded key pair is automatically used with a public key of:
         /// "00240000048000009400000006020000002400005253413100040000010001009fbf2868f04bdf33df4c8c0517bb4c3d743b5b27fcd94009d42d6607446c1887a837e66545221788ecfff8786e85564c839ff56267fe1a3225cd9d8d9caa5aae3ba5d8f67f86ff9dbc5d66f16ba95bacde6d0e02f452fae20022edaea26d31e52870358d0dda69e592ea5cef609a054dac4dbbaa02edc32fb7652df9c0e8e9cd"
         /// </summary>
-        public StrongNameKeyPair SignKeyPair { get; set; }
+//        public StrongNameKeyPair SignKeyPair { get; set; }
 
         /// <summary>
         /// Uses <see paramref="directory"/> if it is not null nor empty, otherwise when in DNX environment, uses 
@@ -112,7 +112,7 @@ namespace CK.Core
                 Type tDNX = Type.GetType( "Microsoft.Extensions.PlatformAbstractions.PlatformServices, Microsoft.Extensions.PlatformAbstractions", false );
                 if( tDNX != null )
                 {
-                    dynamic s = tDNX.InvokeMember( "Default", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.Static, null, null, null );
+                    dynamic s = tDNX.InvokeMember( "Default", BindingFlags.Public | BindingFlags.GetProperty | BindingFlags.Static, null, null, null );
                     directory = s.Application.ApplicationBasePath;
                 }
                 else directory = Path.GetDirectoryName( new Uri( typeof( StObjContextRoot ).Assembly.CodeBase ).LocalPath );

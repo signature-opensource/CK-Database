@@ -30,32 +30,32 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CK.ActivityMonitor, Version=5.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\CK.ActivityMonitor.5.0.1\lib\net45\CK.ActivityMonitor.dll</HintPath>
+    <Reference Include="CK.ActivityMonitor, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\CK.ActivityMonitor.6.0.0-a01\lib\net451\CK.ActivityMonitor.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="CK.ActivityMonitor.StandardSender, Version=0.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\CK.ActivityMonitor.StandardSender.5.0.1\lib\net45\CK.ActivityMonitor.StandardSender.dll</HintPath>
+    <Reference Include="CK.ActivityMonitor.StandardSender, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\CK.ActivityMonitor.StandardSender.6.0.0-a01\lib\net451\CK.ActivityMonitor.StandardSender.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="CK.Core, Version=5.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\CK.Core.5.0.1\lib\net45\CK.Core.dll</HintPath>
+    <Reference Include="CK.Core, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\CK.Core.6.0.0-a01\lib\net451\CK.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="CK.SqlServer.Parser, Version=5.3.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\CK.SqlServer.Parser.5.3.1\lib\net45\CK.SqlServer.Parser.dll</HintPath>
+    <Reference Include="CK.SqlServer.Parser, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\CK.SqlServer.Parser.6.0.0-a\lib\net451\CK.SqlServer.Parser.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="CK.SqlServer.Parser.Model, Version=3.2.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\CK.SqlServer.Parser.Model.3.2.1\lib\net45\CK.SqlServer.Parser.Model.dll</HintPath>
+    <Reference Include="CK.SqlServer.Parser.Model, Version=3.2.2.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\CK.SqlServer.Parser.Model.3.2.2-a\lib\net451\CK.SqlServer.Parser.Model.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="CK.SqlServer.Transform, Version=5.3.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\CK.SqlServer.Transform.5.3.1\lib\net45\CK.SqlServer.Transform.dll</HintPath>
+    <Reference Include="CK.SqlServer.Transform, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\CK.SqlServer.Transform.6.0.0-a\lib\net451\CK.SqlServer.Transform.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="CK.Text, Version=5.1.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\CK.Text.5.1.0-a02\lib\net45\CK.Text.dll</HintPath>
+      <HintPath>..\..\..\packages\CK.Text.5.1.0-p02\lib\net451\CK.Text.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -67,6 +67,8 @@
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GroupHome.cs" />
