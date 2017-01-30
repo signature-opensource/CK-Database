@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using CK.Core;
 using NUnit.Framework;
 using CK.SqlServer.Setup;
-using System.Diagnostics;
 
 namespace CK.DB.Tests
 {
@@ -31,15 +30,7 @@ namespace CK.DB.Tests
         [Explicit]
         public void db_setup()
         {
-            Assert.That(TestHelper.RunDBSetup(), "DBSetup failed.");
-        }
-
-        [Test]
-        [Explicit]
-        public void attach_debugger()
-        {
-            if (!Debugger.IsAttached) Debugger.Launch();
-            else TestHelper.Monitor.Info().Send( "Debugger is already attached." );
+            Assert.That( TestHelper.RunDBSetup(), "DBSetup failed." );
         }
 
         [Test]

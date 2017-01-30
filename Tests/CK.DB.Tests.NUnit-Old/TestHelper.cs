@@ -6,7 +6,6 @@ using CK.Setup;
 using CK.SqlServer.Setup;
 using NUnit.Framework;
 using System.Data.SqlClient;
-using System.Diagnostics;
 
 namespace CK.Core
 {
@@ -26,8 +25,6 @@ namespace CK.Core
         static string _solutionFolder;
         static string _repositoryFolder;
         static string _logFolder;
-        static string _currentTestProjectName;
-        static string _buildConfiguration;
 
         static TestHelper()
         {
@@ -43,6 +40,7 @@ namespace CK.Core
                 if( _monitor == null )
                 {
                     SystemActivityMonitor.RootLogPath = LogFolder;
+                    CK.Monitoring.GrandOutput.EnsureActiveDefaultWithDefaultSettings();
                     _monitor = new ActivityMonitor();
                     _console = new ActivityMonitorConsoleClient();
                 }
@@ -336,18 +334,6 @@ namespace CK.Core
         public static string DynamicAssemblyName => AppSettings.Default["DynamicAssemblyName"];
 
         /// <summary>
-        /// Gets the build configuration (Debug/Release).
-        /// </summary>
-        public static string BuildConfiguration
-        {
-            get
-            {
-                if (_solutionFolder == null) InitalizePaths();
-                return _buildConfiguration;
-            }
-        }
-
-        /// <summary>
         /// Gets the configuration that <see cref="StObjMap"/> will use.
         /// This configuration uses <see cref="DynamicAssemblyName"/>, <see cref="AssembliesToSetup"/>
         /// and <see cref="DatabaseTestConnectionString"/> by default.
@@ -382,40 +368,21 @@ namespace CK.Core
 
         static void InitalizePaths()
         {
-#if DEBUG
-            _buildConfiguration = "Debug";
-#else
-            _buildConfiguration = "Release";
-#endif
-
-            string origin = new Uri(System.Reflection.Assembly.GetExecutingAssembly().CodeBase).LocalPath;
-            string p = origin;
-
-            // Code base is like "...HumanSide\Tests\CK.ActorModel.Tests\Debug\bin\CK.ActorModel.Tests.dll"
-            _binFolder = p = Path.GetDirectoryName( p );
-            string name;
-            while( (name = Path.GetFileName(p)) != _buildConfiguration )
+            string p;
+            Type tDNX = Type.GetType( "Microsoft.Extensions.PlatformAbstractions.PlatformServices, Microsoft.Extensions.PlatformAbstractions", false );
+            if( tDNX != null )
             {
-                p = Path.GetDirectoryName(p);
-                if( p == null ) throw new InvalidOperationException($"Unable to find parent folder named '{_buildConfiguration}' above '{origin}'.");
+                dynamic s = tDNX.InvokeMember( "Default", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.Static, null, null, null );
+                p = s.Application.ApplicationBasePath;
+                _projectFolder = _binFolder = p;
             }
-            p = Path.GetDirectoryName(p);
-            if( Path.GetFileName(p) != "bin" )
+            else
             {
-                throw new InvalidOperationException($"Folder '{_buildConfiguration}' MUST be in 'bin' folder (above '{origin}').");
+                p = new Uri( System.Reflection.Assembly.GetExecutingAssembly().CodeBase ).LocalPath;
+                // Code base is like "...HumanSide\Tests\CK.ActorModel.Tests\Debug\bin\CK.ActorModel.Tests.dll"
+                _binFolder = p = Path.GetDirectoryName( p );
+                _projectFolder = p = Path.GetDirectoryName( Path.GetDirectoryName( p ) );
             }
-            _projectFolder = p = Path.GetDirectoryName( p );
-            _currentTestProjectName = Path.GetFileName(p);
-            System.Reflection.Assembly entry = System.Reflection.Assembly.GetEntryAssembly();
-            if( entry != null )
-            {
-                string assemblyName = entry.GetName().Name;
-                if (_currentTestProjectName != assemblyName)
-                {
-                    throw new InvalidOperationException($"Current test project assembly is '{assemblyName}' but folder is '{_currentTestProjectName}' (above '{_buildConfiguration}' in '{origin}').");
-                }
-            }
-            p = Path.GetDirectoryName(p);
 
             string testsFolder = null;
             bool hasGit = false;
@@ -424,21 +391,14 @@ namespace CK.Core
                 if( Path.GetFileName( p ) == "Tests" ) testsFolder = p;
                 p = Path.GetDirectoryName( p );
             }
-            if( !hasGit ) throw new InvalidOperationException( $"The project must be in a git repository (above '{origin}')." );
-            _repositoryFolder = p;
+            if( !hasGit ) throw new InvalidOperationException( "The project must be in a git repository." );
+
             if( testsFolder == null )
             {
-                throw new InvalidOperationException( $"A parent 'Tests' folder must exist above '{_projectFolder}'." );
+                throw new InvalidOperationException( "The solution must contain a 'Tests' folder." );
             }
             _solutionFolder = Path.GetDirectoryName( testsFolder );
             _logFolder = Path.Combine( testsFolder, "Logs" );
-        }
-
-        public static void StandardMain( string[] args )
-        {
-            string nunit = Path.Combine(RepositoryFolder, "packages", "NUnit.Runners.Net4.2.6.4", "tools", "nunit.exe");
-            string arg = Path.Combine(BinFolder, _currentTestProjectName +  ".exe");
-            Process.Start(nunit, '"' + arg + '"');
         }
     }
 }

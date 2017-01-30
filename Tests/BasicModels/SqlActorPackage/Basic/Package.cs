@@ -262,59 +262,97 @@ namespace SqlActorPackage.Basic
 
             #region ISqlCallContext Members
 
-#pragma warning disable 0618
-            public SqlConnectionProvider GetProvider( string connectionString )
+            class Controller : ISqlConnectionController
             {
-                SqlConnectionProvider c;
-                if( _cache == null )
+                internal readonly string ConnectionString;
+                readonly SqlConnection _connection;
+                int _openCount;
+
+                public Controller(string connectionString)
                 {
-                    c = new SqlConnectionProvider( connectionString );
+                    ConnectionString = connectionString;
+                    _connection = new SqlConnection(connectionString);
+                }
+
+                public SqlConnection Connection => _connection;
+
+                public int ExplicitOpenCount => _openCount;
+
+                public void ExplicitClose()
+                {
+                    if (_openCount > 0)
+                    {
+                        if (--_openCount == 0)
+                        {
+                            _connection.Close();
+                        }
+                    }
+                }
+
+                public void ExplicitOpen()
+                {
+                    if (++_openCount == 1)
+                    {
+                        _connection.Open();
+                    }
+                }
+
+                public void Dispose()
+                {
+                    _connection.Dispose();
+                }
+            }
+
+            Controller GetProvider(string connectionString)
+            {
+                Controller c;
+                if (_cache == null)
+                {
+                    c = new Controller(connectionString);
                     _cache = c;
                     return c;
                 }
-                SqlConnectionProvider newC;
-                c = _cache as SqlConnectionProvider;
-                if( c != null )
+                Controller newC;
+                c = _cache as Controller;
+                if (c != null)
                 {
-                    if( c.ConnectionString == connectionString ) return c;
-                    newC = new SqlConnectionProvider( connectionString );
-                    _cache = new SqlConnectionProvider[] { c, newC };
+                    if (c.ConnectionString == connectionString) return c;
+                    newC = new Controller(connectionString);
+                    _cache = new Controller[] { c, newC };
                 }
                 else
                 {
-                    SqlConnectionProvider[] cache = (SqlConnectionProvider[])_cache;
-                    for( int i = 0; i < cache.Length; i++ )
+                    Controller[] cache = (Controller[])_cache;
+                    for (int i = 0; i < cache.Length; i++)
                     {
                         c = cache[i];
-                        if( c.ConnectionString == connectionString ) return c;
+                        if (c.ConnectionString == connectionString) return c;
                     }
-                    SqlConnectionProvider[] newCache = new SqlConnectionProvider[cache.Length + 1];
-                    Array.Copy( cache, newCache, cache.Length );
-                    newC = new SqlConnectionProvider( connectionString );
+                    Controller[] newCache = new Controller[cache.Length + 1];
+                    Array.Copy(cache, newCache, cache.Length);
+                    newC = new Controller(connectionString);
                     newCache[cache.Length] = newC;
                     _cache = newCache;
                 }
                 return newC;
             }
 
+            public ISqlConnectionController GetControllerConnection( string connectionString ) => GetProvider( connectionString );
+
             public void Dispose()
             {
-                if( _cache != null )
+                if (_cache != null)
                 {
-                    SqlConnectionProvider c = _cache as SqlConnectionProvider;
-                    if( c != null ) c.Dispose();
+                    Controller c = _cache as Controller;
+                    if (c != null) c.Dispose();
                     else
                     {
-                        SqlConnectionProvider[] cache = _cache as SqlConnectionProvider[];
-                        for( int i = 0; i < cache.Length; ++i ) cache[i].Dispose();
+                        Controller[] cache = _cache as Controller[];
+                        for (int i = 0; i < cache.Length; ++i) cache[i].Dispose();
                     }
                     _cache = null;
                 }
             }
-
-#pragma warning restore 0618
-
-            public ISqlConnectionController GetControllerConnection( string connectionString ) => GetProvider( connectionString );
 
             #endregion
         }

@@ -3,7 +3,11 @@
 
   "buildOptions": {
     "keyFile": "../SharedKey.snk",
-    "embed": { "include": "AutoImplementor/DynamicKeyPair.snk" }
+    "embed": [
+      "AutoImplementor/DynamicKeyPair.snk",
+      "PEVerify/PEVerify.exe",
+      "PEVerify/pevrfyrc.dll"
+    ]
   },
 
   "dependencies": {

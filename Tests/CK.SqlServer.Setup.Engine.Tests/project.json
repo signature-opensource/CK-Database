@@ -1,0 +1,23 @@
+﻿{
+  "version": "0.0.0",
+
+  "buildOptions": {
+    "keyFile": "../../SharedKey.snk",
+    "emitEntryPoint": true
+  },
+
+  "dependencies": {
+    "CK.SqlServer.Setup.Engine": { "target": "project" },
+    "CK.DB.Tests.NUnit": { "target": "project" },
+    "SqlActorPackage": { "target": "project" },
+    "SqlZonePackage": { "target": "project" }
+  },
+
+  "frameworks": {
+    "net451": {
+      "dependencies": {
+        "NUnit": "[2.6.4]"
+      }
+    }
+  }
+}
