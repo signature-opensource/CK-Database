@@ -14,14 +14,6 @@ namespace CK.SqlServer
     public interface ISqlCommandExecutor
     {
         /// <summary>
-        /// Gets a <see cref="SqlConnectionProvider"/> for the given connection string. 
-        /// </summary>
-        /// <param name="connectionString">The connection string.</param>
-        /// <returns>A <see cref="SqlConnectionProvider"/>.</returns>
-        [Obsolete( "Please use ISqlConnectionController and SqlConnection instead of SqlConnectionProvider." )]
-        SqlConnectionProvider GetProvider( string connectionString );
-
-        /// <summary>
         /// Gets a <see cref="ISqlConnectionController"/> for the given connection string. 
         /// </summary>
         /// <param name="connectionString">The connection string.</param>

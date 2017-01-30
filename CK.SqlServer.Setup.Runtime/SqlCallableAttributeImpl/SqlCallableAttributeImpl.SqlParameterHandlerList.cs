@@ -574,7 +574,7 @@ namespace CK.SqlServer.Setup
 
             static bool IsSimpleReturnType( Type returnType )
             {
-                return SqlHelper.IsNetTypeMapped( returnType );
+                return IsNetTypeMapped( returnType );
             }
 
             #region Result builders functions (AssumeResultBuilder)

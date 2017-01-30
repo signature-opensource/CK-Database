@@ -14,7 +14,6 @@ using NUnit.Framework;
 
 namespace CK.StObj.Engine.Tests
 {
-    [CLSCompliant( false )]
     [TestFixture]
     public class SimpleObjectsTests
     {

@@ -40,7 +40,7 @@ namespace CK.SqlServer.Setup
         {
             if( String.IsNullOrWhiteSpace( name ) ) throw new ArgumentException( "Must be not null, empty, nor whitespace.", "name" );
             _name = name;
-            _schemas = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
+            _schemas = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
         }
 
         /// <summary>

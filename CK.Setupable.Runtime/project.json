@@ -6,14 +6,15 @@
   },
 
   "dependencies": {
-    "CK.ActivityMonitor.StandardSender": "6.0.0-a01"
+    "CK.Setupable.Model": { "target": "project" },
+    "CK.StObj.Runtime": { "target": "project" },
+    "CK.Setup.Dependency": "6.0.0-a01"
   },
 
   "frameworks": {
     "netstandard1.3": {
       "dependencies": {
-        "NETStandard.Library": "1.6.1",
-        "System.Reflection.Emit": "4.3.0"
+        "NETStandard.Library": "1.6.1"
       }
     },
     "net451": {

@@ -161,7 +161,7 @@ namespace CK.Core
                 Result r = CreateResult( a, monitor, tB );
                 if( r == null ) return null;
                 ImplementFactories( a, monitor, tB, r );
-                r.FinalFactory = tB.CreateType();
+                r.FinalFactory = tB.CreateTypeInfo().AsType();
                 a.Memory.Add( typeof( IPocoSupportResult ), result = r );
             }
             return result;
@@ -237,17 +237,12 @@ namespace CK.Core
                     }
                     else
                     {
-                        Debug.Assert( typeof( EmitHelper )
-                                        .GetMethod( nameof( EmitHelper.ImplementStubProperty ) )
-                                        .GetParameters()
-                                        .Length == 3,
-                            "Time to remove the locally defined ImplementStubProperty and to use the EmitHelper method." );
-                        ImplementStubProperty( tB, p, false, true );
+                        EmitHelper.ImplementStubProperty( tB, p, false, true );
                         properties.Add( p.Name, p );
                     }
                 }
             }
-            return tB.CreateType();
+            return tB.CreateTypeInfo().AsType();
         }
 
         static PropertyBuilder ImplementStubProperty( TypeBuilder tB, PropertyInfo property, bool isVirtual = false, bool alwaysImplementSetter = false )

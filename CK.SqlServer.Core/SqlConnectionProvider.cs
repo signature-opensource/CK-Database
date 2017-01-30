@@ -322,7 +322,7 @@ namespace CK.SqlServer
                 }
                 finally
                 {
-                    if( r != null ) r.Close();
+                    if( r != null ) r.Dispose();
                 }
             }
         }

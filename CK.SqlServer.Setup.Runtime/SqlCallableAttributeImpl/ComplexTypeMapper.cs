@@ -29,7 +29,7 @@ namespace CK.SqlServer.Setup
                 Type = type;
                 Index = index;
                 InputIndex = -1;
-                IsSimpleType = SqlHelper.IsNetTypeMapped( type );
+                IsSimpleType = SqlCallableAttributeImpl.IsNetTypeMapped( type );
             }
 
             public void EmitGetValue( ILGenerator g, Action<int, Type> getValueGenerator )

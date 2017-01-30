@@ -114,7 +114,7 @@ namespace CK.Core
         public IEnumerable<string> GetNames( string namePrefix )
         {
             if( Type == null ) return Util.Array.Empty<string>();
-            IReadOnlyList<string> a = Type.Assembly.GetSortedResourceNames();
+            IReadOnlyList<string> a = Type.GetTypeInfo().Assembly.GetSortedResourceNames();
             
             string p = ResourceName( "." );
             namePrefix = p + namePrefix;
@@ -208,7 +208,7 @@ namespace CK.Core
         /// <returns>The assembly:path string.</returns>
         public override string ToString()
         {
-            return String.Format( "{0}:{1}", Type != null ? Type.Assembly.GetName().Name : "(no assembly)", ResourceName( "*" ) );
+            return String.Format( "{0}:{1}", Type != null ? Type.GetTypeInfo().Assembly.GetName().Name : "(no assembly)", ResourceName( "*" ) );
         }
 
         /// <summary>

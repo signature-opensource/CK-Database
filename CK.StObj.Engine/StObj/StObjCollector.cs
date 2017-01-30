@@ -89,12 +89,7 @@ namespace CK.Setup
                 monitor.Info().Send( "No assembly name has been specified for final assembly. Using default: {0}", assemblyName );
             }
             bool signAssembly = c.SignAssembly;
-            StrongNameKeyPair signKeyPair = c.SignKeyPair;
-            if( signAssembly )
-            {
-                if( signKeyPair == null ) signKeyPair = DynamicAssembly.DynamicKeyPair;
-            }
-            else if( signKeyPair != null ) throw new ArgumentException( "A StrongNameKeyPair has been provided but signAssembly flag is false. signKeyPair must be null in this case." );
+            StrongNameKeyPair signKeyPair = signAssembly ? DynamicAssembly.DynamicKeyPair : null;
 
             return new DynamicAssembly( directory, assemblyName, c.ExternalVersionStamp, signKeyPair, AssemblyBuilderAccess.RunAndSave );
         }
