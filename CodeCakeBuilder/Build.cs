@@ -91,7 +91,8 @@ namespace CodeCake
                 .Does( () =>
                 {
                     Cake.DotNetCoreRestore();
-                } );
+                    Cake.NuGetRestore("CK-Database.sln");
+                });
 
             Task( "Clean" )
                 .IsDependentOn( "Check-Repository" )
