@@ -46,7 +46,7 @@ namespace CK.Core
 
         static DynamicAssembly()
         {
-            using( Stream stream = Assembly.GetAssembly( typeof( DynamicAssembly ) ).GetManifestResourceStream( "CK.Setup.AutoImplementor.DynamicKeyPair.snk" ) )
+            using( Stream stream = Assembly.GetAssembly( typeof( DynamicAssembly ) ).GetManifestResourceStream("CK.StObj.Engine.AutoImplementor.DynamicKeyPair.snk") )
             {
                 byte[] result = new byte[stream.Length];
                 stream.Read( result, 0, (int)stream.Length );
@@ -59,7 +59,7 @@ namespace CK.Core
         /// that can only <see cref="AssemblyBuilderAccess.Run"/>.
         /// </summary>
         public DynamicAssembly()
-            : this( null, BuilderFinalAssemblyConfiguration.DefaultAssemblyName + ".Memory", null, null, AssemblyBuilderAccess.Run )
+            : this( null, BuilderFinalAssemblyConfiguration.DefaultAssemblyName + ".Memory", null, DynamicKeyPair, AssemblyBuilderAccess.Run )
         {
         }
 

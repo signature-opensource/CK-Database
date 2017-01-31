@@ -1,0 +1,20 @@
+﻿{
+  "version": "0.0.0",
+
+  "buildOptions": {
+    "keyFile": "../../SharedKey.snk",
+    "emitEntryPoint": true
+  },
+
+  "dependencies": {
+    "CK.StObj.Engine": { "target": "project" }
+  },
+
+  "frameworks": {
+    "net451": {
+      "dependencies": {
+        "NUnit": "[2.6.4]"
+      }
+    }
+  }
+}

@@ -41,32 +41,59 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CK.ActivityMonitor, Version=5.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.ActivityMonitor.5.0.1\lib\net45\CK.ActivityMonitor.dll</HintPath>
+    <Reference Include="CK.ActivityMonitor, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\packages\CK.ActivityMonitor.6.0.0-a01\lib\net451\CK.ActivityMonitor.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="CK.ActivityMonitor.StandardSender, Version=0.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.ActivityMonitor.StandardSender.5.0.1\lib\net45\CK.ActivityMonitor.StandardSender.dll</HintPath>
+    <Reference Include="CK.ActivityMonitor.StandardSender, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\packages\CK.ActivityMonitor.StandardSender.6.0.0-a01\lib\net451\CK.ActivityMonitor.StandardSender.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="CK.Core, Version=5.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.Core.5.0.1\lib\net45\CK.Core.dll</HintPath>
+    <Reference Include="CK.Core, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\packages\CK.Core.6.0.0-a01\lib\net451\CK.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="CK.SqlServer.Parser, Version=5.3.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.SqlServer.Parser.5.3.1\lib\net45\CK.SqlServer.Parser.dll</HintPath>
+    <Reference Include="CK.Setupable.Engine">
+      <HintPath>Imports\CK.Setupable.Engine.dll</HintPath>
+    </Reference>
+    <Reference Include="CK.Setupable.Model">
+      <HintPath>Imports\CK.Setupable.Model.dll</HintPath>
+    </Reference>
+    <Reference Include="CK.Setupable.Runtime">
+      <HintPath>Imports\CK.Setupable.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="CK.SqlServer.Parser, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\packages\CK.SqlServer.Parser.6.0.0-a\lib\net451\CK.SqlServer.Parser.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="CK.SqlServer.Parser.Model, Version=3.2.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.SqlServer.Parser.Model.3.2.1\lib\net45\CK.SqlServer.Parser.Model.dll</HintPath>
+    <Reference Include="CK.SqlServer.Parser.Model, Version=3.2.2.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\packages\CK.SqlServer.Parser.Model.3.2.2-a\lib\net451\CK.SqlServer.Parser.Model.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="CK.SqlServer.Transform, Version=5.3.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.SqlServer.Transform.5.3.1\lib\net45\CK.SqlServer.Transform.dll</HintPath>
+    <Reference Include="CK.SqlServer.Setup.Engine">
+      <HintPath>Imports\CK.SqlServer.Setup.Engine.dll</HintPath>
+    </Reference>
+    <Reference Include="CK.SqlServer.Setup.Model">
+      <HintPath>Imports\CK.SqlServer.Setup.Model.dll</HintPath>
+    </Reference>
+    <Reference Include="CK.SqlServer.Setup.Runtime">
+      <HintPath>Imports\CK.SqlServer.Setup.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="CK.SqlServer.Transform, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\packages\CK.SqlServer.Transform.6.0.0-a\lib\net451\CK.SqlServer.Transform.dll</HintPath>
       <Private>True</Private>
+    </Reference>
+    <Reference Include="CK.StObj.Engine">
+      <HintPath>Imports\CK.StObj.Engine.dll</HintPath>
+    </Reference>
+    <Reference Include="CK.StObj.Model">
+      <HintPath>Imports\CK.StObj.Model.dll</HintPath>
+    </Reference>
+    <Reference Include="CK.StObj.Runtime">
+      <HintPath>Imports\CK.StObj.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="CK.Text, Version=5.1.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.Text.5.1.0-a02\lib\net45\CK.Text.dll</HintPath>
+      <HintPath>..\packages\CK.Text.5.1.0-p02\lib\net451\CK.Text.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Extensions.CommandLineUtils, Version=1.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
@@ -88,9 +115,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\SharedAssemblyInfo.cs">
-      <Link>Properties\SharedAssemblyInfo.cs</Link>
-    </Compile>
     <Compile Include="DbSetupHelper.cs" />
     <Compile Include="Program.DBAnalyseCommand.cs" />
     <Compile Include="Program.SqlServer.cs" />
@@ -101,6 +125,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ColoredActivityMonitorConsoleClient.cs" />
+    <Compile Include="Properties\SharedAssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
@@ -109,52 +134,6 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">
-      <Project>{87f54185-5226-4eee-8d59-5d03e6c1ab7c}</Project>
-      <Name>CK.Setup.Dependency</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.Setupable.Engine\CK.Setupable.Engine.csproj">
-      <Project>{d3c700e1-3546-437c-9b96-1f867a539b6a}</Project>
-      <Name>CK.Setupable.Engine</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.Setupable.Model\CK.Setupable.Model.csproj">
-      <Project>{64da8104-2c71-4d52-8f44-d34738f6d564}</Project>
-      <Name>CK.Setupable.Model</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.Setupable.Runtime\CK.Setupable.Runtime.csproj">
-      <Project>{a5380f73-7050-4090-8e75-4cfc7afa5b7b}</Project>
-      <Name>CK.Setupable.Runtime</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.SqlServer.Core\CK.SqlServer.Core.csproj">
-      <Project>{f2977613-731a-4efa-9703-cd6b92f00558}</Project>
-      <Name>CK.SqlServer.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.SqlServer.Setup.Engine\CK.SqlServer.Setup.Engine.csproj">
-      <Project>{9a0bce15-00ef-411b-8283-68aed047fce5}</Project>
-      <Name>CK.SqlServer.Setup.Engine</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj">
-      <Project>{b64d3d2a-fd2b-4731-8559-8a52c3a45351}</Project>
-      <Name>CK.SqlServer.Setup.Model</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.SqlServer.Setup.Runtime\CK.SqlServer.Setup.Runtime.csproj">
-      <Project>{14e253cb-f606-4228-8860-fd04880df379}</Project>
-      <Name>CK.SqlServer.Setup.Runtime</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.StObj.Engine\CK.StObj.Engine.csproj">
-      <Project>{df7a0b05-4b48-44c2-b6c8-6fcfd66df8f8}</Project>
-      <Name>CK.StObj.Engine</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.StObj.Model\CK.StObj.Model.csproj">
-      <Project>{96dedeee-de7d-4b14-8fde-bc4d8d9ccb78}</Project>
-      <Name>CK.StObj.Model</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.StObj.Runtime\CK.StObj.Runtime.csproj">
-      <Project>{db108ff8-42a4-4787-92c2-2d5a4daab85e}</Project>
-      <Name>CK.StObj.Runtime</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="FodyWeavers.xml" />
@@ -166,11 +145,17 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Fody.1.30.0-beta01\build\dotnet\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.1.30.0-beta01\build\dotnet\Fody.targets'))" />
     <Error Condition="!Exists('..\packages\Costura.Fody.2.0.0-beta0018\build\Costura.Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Costura.Fody.2.0.0-beta0018\build\Costura.Fody.targets'))" />
-    <Error Condition="!Exists('..\packages\SimpleGitVersionTask.0.21.0\build\SimpleGitVersionTask.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SimpleGitVersionTask.0.21.0\build\SimpleGitVersionTask.targets'))" />
+    <Error Condition="!Exists('..\packages\SimpleGitVersionTask.0.22.0-r\build\SimpleGitVersionTask.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SimpleGitVersionTask.0.22.0-r\build\SimpleGitVersionTask.targets'))" />
   </Target>
   <Import Project="..\packages\Fody.1.30.0-beta01\build\dotnet\Fody.targets" Condition="Exists('..\packages\Fody.1.30.0-beta01\build\dotnet\Fody.targets')" />
   <Import Project="..\packages\Costura.Fody.2.0.0-beta0018\build\Costura.Fody.targets" Condition="Exists('..\packages\Costura.Fody.2.0.0-beta0018\build\Costura.Fody.targets')" />
-  <Import Project="..\packages\SimpleGitVersionTask.0.21.0\build\SimpleGitVersionTask.targets" Condition="Exists('..\packages\SimpleGitVersionTask.0.21.0\build\SimpleGitVersionTask.targets')" />
+  <Import Project="..\packages\SimpleGitVersionTask.0.22.0-r\build\SimpleGitVersionTask.targets" Condition="Exists('..\packages\SimpleGitVersionTask.0.22.0-r\build\SimpleGitVersionTask.targets')" />
+  <PropertyGroup>
+    <PreBuildEvent>xcopy /y $(SolutionDir)CK.SqlServer.Setup.Engine\bin\$(ConfigurationName)\net451\CK.StObj.*.dll $(ProjectDir)Imports\
+xcopy /y $(SolutionDir)CK.SqlServer.Setup.Engine\bin\$(ConfigurationName)\net451\CK.SqlServer.Setup.*.dll $(ProjectDir)Imports\
+xcopy /y $(SolutionDir)CK.SqlServer.Setup.Engine\bin\$(ConfigurationName)\net451\CK.Setupable.*.dll $(ProjectDir)Imports\
+</PreBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

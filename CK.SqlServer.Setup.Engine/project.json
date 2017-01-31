@@ -1,0 +1,19 @@
+﻿{
+  "version": "0.0.0",
+
+  "buildOptions": {
+    "keyFile": "../SharedKey.snk"
+  },
+
+  "dependencies": {
+    "CK.Setupable.Engine": { "target": "project" },
+    "CK.SqlServer.Setup.Runtime": { "target": "project" }
+  },
+
+  "frameworks": {
+    "net451": {
+      "dependencies": {
+      }
+    }
+  }
+}

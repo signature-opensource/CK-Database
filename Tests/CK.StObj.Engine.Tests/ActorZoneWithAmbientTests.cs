@@ -6,7 +6,6 @@ using NUnit.Framework;
 namespace CK.StObj.Engine.Tests
 {
     [TestFixture]
-    [CLSCompliant(false)]
     public class ActorZoneWithAmbientTests
     {
         public class AmbientPropertySetAttribute : Attribute, IStObjStructuralConfigurator

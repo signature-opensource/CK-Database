@@ -1,0 +1,21 @@
+﻿{
+  "version": "0.0.0",
+
+  "buildOptions": {
+    "keyFile": "../../SharedKey.snk",
+    "emitEntryPoint": true,
+    "embed": [ "Res/TextFile.txt", "Another/Namespace/TextFile.txt", "SubNamespace/**/*.txt" ]
+  },
+
+  "dependencies": {
+    "CK.Setupable.Engine": { "target": "project" }
+  },
+
+  "frameworks": {
+    "net451": {
+      "dependencies": {
+        "NUnit": "[2.6.4]"
+      }
+    }
+  }
+}

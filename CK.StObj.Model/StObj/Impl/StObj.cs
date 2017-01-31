@@ -71,7 +71,7 @@ namespace CK.Core
                 {
                     _constructParametersIndex[i] = r.ReadInt32();
                 }
-                Type actualType = _type.Namespace != "<CK>" ? _type : _type.BaseType;
+                Type actualType = _type.Namespace != "<CK>" ? _type : _type.GetTypeInfo().BaseType;
                 _construct = actualType.GetMethod( "Construct", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly );
             }
             _preConstruct = ReadPropertySetters( r );

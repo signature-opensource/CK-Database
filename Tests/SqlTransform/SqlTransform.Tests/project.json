@@ -1,0 +1,19 @@
+﻿{
+  "version": "0.0.0",
+
+  "buildOptions": {
+    "emitEntryPoint": true
+  },
+
+  "dependencies": {
+    "CK.DB.Tests.NUnit": { "target": "project" },
+    "CKLevel0": { "target": "project" },
+    "CKLevel2": { "target": "project" }
+  },
+
+  "frameworks": {
+    "net451": {
+    }
+  }
+
+}

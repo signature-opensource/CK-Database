@@ -7,7 +7,6 @@ using CK.StObj.Engine.Tests.Poco;
 
 namespace CK.StObj.Engine.Tests
 {
-    [CLSCompliant( false )]
     [TestFixture]
     public class PocoTests
     {

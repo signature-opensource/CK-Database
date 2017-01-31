@@ -39,7 +39,7 @@ namespace CK.Core
         /// <returns>A <see cref="IStObjMap"/> that provides access to the objects graph.</returns>
         public static IStObjMap Load( string assemblyName, IStObjRuntimeBuilder runtimeBuilder = null, IActivityMonitor monitor = null )
         {
-            return Load( Assembly.Load( assemblyName ), runtimeBuilder, monitor );
+            return Load( Assembly.Load( new AssemblyName( assemblyName ) ), runtimeBuilder, monitor );
         }
 
         /// <summary>
@@ -51,29 +51,17 @@ namespace CK.Core
         /// <returns>A <see cref="IStObjMap"/> that provides access to the objects graph.</returns>
         public static IStObjMap Load( StObjEngineConfiguration config, IStObjRuntimeBuilder runtimeBuilder = null, IActivityMonitor monitor = null )
         {
+            string name = BuilderFinalAssemblyConfiguration.GetFinalAssemblyName(config.FinalAssemblyConfiguration.AssemblyName);
             Assembly a = null;
             try
             {
-                a = Assembly.Load( BuilderFinalAssemblyConfiguration.GetFinalAssemblyName( config.FinalAssemblyConfiguration.AssemblyName ) );
+                a = Assembly.Load(new AssemblyName(name));
             }
             catch( Exception ex )
             {
-                if( monitor != null ) monitor.Warn().Send( ex, "Unable to load assembly by its name. Trying a LoadFrom its path." );
+                if( monitor != null ) monitor.Warn().Send( ex, $"Unable to load assembly '{name}'." );
             }
-            if( a == null ) a = Assembly.LoadFrom( config.FinalAssemblyConfiguration.GeneratedAssemblyPath );
             return Load( a, runtimeBuilder, monitor );
-        }
-
-        /// <summary>
-        /// Loads a previously generated assembly by its assembly name.
-        /// </summary>
-        /// <param name="assemblyPath">Assembly path that will be loaded (uses <see cref="Assembly.LoadFrom(string)"/>).</param>
-        /// <param name="runtimeBuilder">Runtime builder to use. When null, <see cref="DefaultStObjRuntimeBuilder"/> is used.</param>
-        /// <param name="monitor">Optional monitor for loading operation.</param>
-        /// <returns>A <see cref="IStObjMap"/> that provides access to the objects graph.</returns>
-        public static IStObjMap LoadFrom( string assemblyPath, IStObjRuntimeBuilder runtimeBuilder = null, IActivityMonitor monitor = null )
-        {
-            return Load( Assembly.LoadFrom( assemblyPath ), runtimeBuilder, monitor );
         }
 
         /// <summary>
@@ -95,7 +83,7 @@ namespace CK.Core
             using( loaded ? null : monitor.OpenInfo().Send( "Loading dynamic '{0}'", a.FullName ) )
             {
                 if( a == null ) throw new ArgumentNullException( "a" );
-                Type t = a.GetType( RootContextTypeName, true );
+                Type t = a.GetType( RootContextTypeName, true, false );
                 return (StObjContextRoot)Activator.CreateInstance( t, new object[] { monitor, runtimeBuilder ?? DefaultStObjRuntimeBuilder } );
             }
         }
@@ -122,8 +110,8 @@ namespace CK.Core
                 {
                     throw new ArgumentException( "Must be a public static method of a public class.", "builderFactoryStaticMethod" );
                 }
-                typeName = builderFactoryStaticMethod.Method.DeclaringType.AssemblyQualifiedName;
-                methodName = builderFactoryStaticMethod.Method.Name;
+                typeName = method.DeclaringType.AssemblyQualifiedName;
+                methodName = method.Name;
             }
             return DoBuild( config, builderFactoryStaticMethod, typeName, methodName, monitor, forceBuild );
         }

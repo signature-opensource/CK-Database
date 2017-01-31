@@ -138,12 +138,12 @@ namespace CK.Setup
                     {
                         using( monitor.OpenWarn().Send( "PEVerify.exe not found in directory '{0}': extracting a self-embedded version.", directory ) )
                         {
-                            using( var source = Assembly.GetExecutingAssembly().GetManifestResourceStream( "CK.Setup.PEVerify.PEVerify.exe" ) )
+                            using( var source = Assembly.GetExecutingAssembly().GetManifestResourceStream( "CK.StObj.Engine.PEVerify.PEVerify.exe" ) )
                             using( var target = File.Create( peVerfiyPath ) )
                             {
                                 source.CopyTo( target );
                             }
-                            using( var source = Assembly.GetExecutingAssembly().GetManifestResourceStream( "CK.Setup.PEVerify.pevrfyrc.dll" ) )
+                            using( var source = Assembly.GetExecutingAssembly().GetManifestResourceStream("CK.StObj.Engine.PEVerify.pevrfyrc.dll") )
                             using( var target = File.Create( Path.Combine( directory, "pevrfyrc.dll" ) ) )
                             {
                                 source.CopyTo( target );

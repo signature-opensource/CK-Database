@@ -17,9 +17,9 @@ namespace CK.StObj.Engine.Tests
 {
     static class TestHelper
     {
-        static string _scriptFolder;
+        static string _solutionFolder;
+        static string _configuration;
         static string _binFolder;
-        static string _tempFolder;
 
         static IActivityMonitor _monitor;
         static ActivityMonitorConsoleClient _console;
@@ -128,48 +128,37 @@ namespace CK.StObj.Engine.Tests
         }
         #endregion
 
-        public static string FolderScript
-        {
-            get { if( _scriptFolder == null ) InitalizePaths(); return _scriptFolder; }
-        }
-
         public static string BinFolder
         {
-            get { if( _binFolder == null ) InitalizePaths(); return _binFolder; }
+            get { if (_binFolder == null) InitalizePaths(); return _binFolder; }
         }
 
-        public static string TempFolder
+        public static string SolutionFolder
         {
-            get { if( _tempFolder == null ) InitalizePaths(); return _tempFolder; }
-        }
-
-        public static string GetScriptsFolder( string testName )
-        {
-            return Path.Combine( FolderScript, testName );
+            get { if (_solutionFolder == null) InitalizePaths(); return _solutionFolder; }
         }
 
         private static void InitalizePaths()
         {
-            string p = System.Reflection.Assembly.GetExecutingAssembly().CodeBase;
-            // Code base is like "file:///C:/Users/Spi/Documents/Dev4/CK-Database/Output/Tests/Debug/CK.StObj.Engine.Tests.DLL"
-            StringAssert.StartsWith( "file:///", p, "Code base must start with file:/// protocol." );
-
-            p = p.Substring( 8 ).Replace( '/', System.IO.Path.DirectorySeparatorChar );
-
-            // => Debug/
-            _binFolder = p = Path.GetDirectoryName( p );
-            
-            // => Tests/
-            p = Path.GetDirectoryName( p );
-            _tempFolder = Path.Combine( p, "Temp" ); // => Output/Tests/Temp
-            
-            // => Output/
-            p = Path.GetDirectoryName( p );
-            
-            // => CK-Database/
-            p = Path.GetDirectoryName( p );
-            // ==> Tests/CK.StObj.Engine.Tests/Scripts
-            _scriptFolder = Path.Combine( p, "Tests", "CK.StObj.Engine.Tests", "Scripts" );
+#if NET451
+            string p = new Uri(System.Reflection.Assembly.GetExecutingAssembly().CodeBase).LocalPath;
+            p = Path.GetDirectoryName(p);
+#else
+            string p = Directory.GetCurrentDirectory();
+#endif
+#if DEBUG
+            _configuration = "Debug";
+#else
+            _configuration = "Release";
+#endif
+            while (!Directory.EnumerateFiles(p).Where(f => f.EndsWith(".sln")).Any())
+            {
+                p = Path.GetDirectoryName(p);
+            }
+            _solutionFolder = p;
+            _binFolder = Path.Combine(_solutionFolder, "Tests", "CK.StObj.Engine.Tests", "bin", _configuration, "net451", "win7-x64");
+            Console.WriteLine($"SolutionFolder is: {_solutionFolder}.");
+            Console.WriteLine($"Core path: {typeof(string).GetType().Assembly.CodeBase}.");
         }
 
         public static void CheckChildren<T>( this StObjCollectorContextualResult @this, string childrenTypeNames )

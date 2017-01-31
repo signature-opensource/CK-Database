@@ -8,7 +8,6 @@ using CK.Core;
 namespace CK.Setupable.Engine.Tests
 {
     [TestFixture]
-    [CLSCompliant( false )]
     public class DefaultContextLocNamingTests
     {
         [TestCase( "", null, null, "", null )]
