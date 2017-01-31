@@ -2,5 +2,12 @@
   "sdk": {
     "version": "1.0.0-preview2-1-003177"
   },
-  "projects": [ "." ]
+  "projects": [
+    ".",
+    "Tests",
+    "Tests/SqlTransform",
+    "Tests/SqlTransform/Model",
+    "Tests/BasicModels",
+    "Tests/SqlCallDemo"
+  ]
 }

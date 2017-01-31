@@ -5,21 +5,17 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{6E913090-EA34-4A90-8DBB-1501F9981F53}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BasicModel", "BasicModel", "{BC5282AF-0E6A-41FF-B4C3-07D44A55E0BE}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BasicModels", "BasicModels", "{BC5282AF-0E6A-41FF-B4C3-07D44A55E0BE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9DEAD117-3101-4DED-9FCC-8AA28CF4F34C}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
 		appveyor.yml = appveyor.yml
 		Conception.docx = Conception.docx
+		global.json = global.json
 		nuget.config = nuget.config
 		RepositoryInfo.xml = RepositoryInfo.xml
 		SharedAssemblyInfo.cs = SharedAssemblyInfo.cs
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{532E9E9D-1943-4F98-9245-CC95FA2B6A30}"
-	ProjectSection(SolutionItems) = preProject
-		.nuget\packages.config = .nuget\packages.config
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SqlCallDemo", "SqlCallDemo", "{5EC943B9-9907-4B3B-A5CD-9155F23E2D6A}"
