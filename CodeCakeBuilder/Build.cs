@@ -103,7 +103,7 @@ namespace CodeCake
                     Cake.DeleteFiles( "Tests/**/TestResult.xml" );
                 } );
 
-            Task( "Build-Base" )
+            Task( "Build" )
                 .IsDependentOn( "Clean" )
                 .IsDependentOn( "Restore-NuGet-Packages" )
                 .IsDependentOn( "Check-Repository" )
@@ -112,7 +112,6 @@ namespace CodeCake
                     using( var tempSln = Cake.CreateTemporarySolutionFile( solutionFileName ) )
                     {
                         tempSln.ExcludeProjectsFromBuild( "CodeCakeBuilder" );
-                        tempSln.ExcludeProjectsFromBuild( "CKDBSetup" );
                         Cake.MSBuild( tempSln.FullPath, settings =>
                         {
                             settings.Configuration = configuration;
@@ -122,7 +121,7 @@ namespace CodeCake
                 } );
 
             Task( "Unit-Testing" )
-                .IsDependentOn("Build-Base")
+                .IsDependentOn("Build")
                 .Does( () =>
                 {
                     Cake.CreateDirectory( releasesDir );
@@ -151,7 +150,7 @@ namespace CodeCake
                     }
                 } );
 
-            Task("Create-NuGet-Packages-Base")
+            Task("Create-NuGet-Packages")
                 .IsDependentOn("Unit-Testing")
                 .WithCriteria(() => gitInfo.IsValid)
                 .Does(() =>
@@ -170,29 +169,8 @@ namespace CodeCake
                     }
                 });
 
-            Task("Build-And-Package-CKDBSetup")
-                .IsDependentOn("Create-NuGet-Packages-Base")
-                .WithCriteria(() => gitInfo.IsValid)
-                .Does(() =>
-                {
-                    SolutionProject p = projectsToPublish.Single(e => e.Name == "CKDBSetup");
-                    Cake.Information(p.Path.GetDirectory().FullPath);
-                    Cake.MSBuild(p.Path, new MSBuildSettings()
-                    {
-                        Configuration = configuration,
-                        Verbosity = Verbosity.Normal
-                    });
-                    //Cake.DotNetCorePack(p.Path.GetDirectory().FullPath, new DotNetCorePackSettings()
-                    //{
-                    //    Verbose = true,
-                    //    NoBuild = true,
-                    //    Configuration = configuration,
-                    //    OutputDirectory = releasesDir
-                    //});
-                });
-
             Task( "Push-NuGet-Packages" )
-                .IsDependentOn("Build-And-Package-CKDBSetup")
+                .IsDependentOn("Create-NuGet-Packages")
                 .WithCriteria( () => gitInfo.IsValid )
                 .Does( () =>
                 {
