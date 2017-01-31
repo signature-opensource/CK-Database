@@ -167,6 +167,20 @@ namespace CodeCake
                             OutputDirectory = releasesDir
                         });
                     }
+                    var settings = new NuGetPackSettings()
+                    {
+                        Version = gitInfo.NuGetVersion,
+                        BasePath = Cake.Environment.WorkingDirectory,
+                        OutputDirectory = releasesDir
+                    };
+                    Cake.CopyFiles("CodeCakeBuilder/NuSpec/CKDBSetup.nuspec", releasesDir);
+                    foreach (var nuspec in Cake.GetFiles(releasesDir.Path + "/*.nuspec"))
+                    {
+                        TransformText(nuspec, configuration, gitInfo);
+                        Cake.NuGetPack(nuspec, settings);
+                    }
+                    Cake.DeleteFiles(releasesDir.Path + "/*.nuspec");
+
                 });
 
             Task( "Push-NuGet-Packages" )
@@ -217,6 +231,15 @@ namespace CodeCake
             Task( "Default" )
                 .IsDependentOn( "Push-NuGet-Packages" );
 
+        }
+
+        void TransformText(FilePath textFilePath, string configuration, SimpleRepositoryInfo gitInfo)
+        {
+            Cake.TransformTextFile(textFilePath, "{{", "}}")
+                    .WithToken("configuration", configuration)
+                    .WithToken("NuGetVersion", gitInfo.NuGetVersion)
+                    .WithToken("CSemVer", gitInfo.SemVer)
+                    .Save(textFilePath);
         }
 
         void PushNuGetPackages( string apiKeyName, string pushUrl, IEnumerable<FilePath> nugetPackages )
