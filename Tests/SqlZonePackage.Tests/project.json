@@ -6,8 +6,8 @@
     "emitEntryPoint": true
   },
 
+
   "dependencies": {
-    "CK.SqlServer.Setup.Engine": { "target": "project" },
     "CK.DB.Tests.NUnit": { "target": "project" },
     "SqlActorPackage.Runtime": { "target": "project" },
     "SqlZonePackage.Runtime": { "target": "project" }
@@ -15,8 +15,6 @@
 
   "frameworks": {
     "net451": {
-      "dependencies": {
-      }
     }
   }
 }

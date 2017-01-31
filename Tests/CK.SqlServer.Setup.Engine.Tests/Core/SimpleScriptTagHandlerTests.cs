@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (Tests\CK.SqlServer.Setup.Engine.Tests\Core\SimpleScriptTagHandlerTests.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +8,7 @@ using System.Data.SqlClient;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using CK.Core;
+using CK.Text;
 
 namespace CK.SqlServer.Setup.Engine.Tests
 {
@@ -282,24 +276,24 @@ n°1
                 Assert.That( p.Expand( TestHelper.Monitor, true ), Is.False );
             }
             {
-                var p = new SimpleScriptTagHandler( @"
---[beginscript s1]
+                var p = new SimpleScriptTagHandler( 
+@"--[beginscript s1]
 nested will be skipped.
 --[beginscript s1]
 inner nested.
 --[endscript s1]
 it should work.
 --[endscript s1]
-" );
+".NormalizeEOL() );
                 Assert.That( p.Expand( TestHelper.Monitor, true ), Is.True );
                 var s = p.SplitScript();
                 Assert.That( p.ScriptCount, Is.EqualTo( 1 ) );
-                Assert.That( s[0].Body, Does.Contain( @"
-nested will be skipped.
+                Assert.That( s[0].Body, Does.Contain( 
+@"nested will be skipped.
 --[beginscript s1]
 inner nested.
 --[endscript s1]
-it should work." ) );
+it should work.".NormalizeEOL() ) );
                 DumpScripts( "Nested labeled scripts", p, s );
             }
             {

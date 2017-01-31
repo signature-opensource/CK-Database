@@ -2,7 +2,8 @@
   "version": "0.0.0",
 
   "buildOptions": {
-    "keyFile": "../../../SharedKey.snk"
+    "keyFile": "../../../SharedKey.snk",
+    "embed": [ "Res/**/*.sql" ]
   },
 
   "dependencies": {

@@ -2,8 +2,7 @@
   "version": "0.0.0",
 
   "buildOptions": {
-    "keyFile": "../../../SharedKey.snk",
-    "embed": ["Basic/Res/**/*.sql","**/*.tql"]
+    "embed": [ "**/*.sql", "**/*.tql" ]
   },
 
   "dependencies": {
@@ -16,9 +15,7 @@
         "NETStandard.Library": "1.6.1"
       }
     },
-    "net451": {
-      "dependencies": {
-      }
+    "net451":{
     }
   }
 }

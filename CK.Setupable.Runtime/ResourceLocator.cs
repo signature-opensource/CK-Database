@@ -336,10 +336,9 @@ namespace CK.Core
             {
                 var resNames = a.GetSortedResourceNames();
                 string shouldBe = null;
-                string sEnd = '.' + name;
                 foreach( string s in resNames )
                 {
-                    if( s.EndsWith( sEnd, StringComparison.OrdinalIgnoreCase ) )
+                    if( s.IndexOf(name, StringComparison.OrdinalIgnoreCase ) >= 0 )
                     {
                         shouldBe = s;
                         break;
