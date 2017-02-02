@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if NET451
+using NUnit.Framework;
 using NUnit.Framework.Constraints;
 using System;
 using System.Collections;
@@ -37,3 +38,4 @@ namespace NUnit.Framework
         }
     }
 }
+#endif

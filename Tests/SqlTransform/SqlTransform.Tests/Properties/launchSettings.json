@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SqlTransform.Tests": {
+      "commandName": "Project",
+      "commandLineArgs": "-pause"
+    }
+  }
+}
