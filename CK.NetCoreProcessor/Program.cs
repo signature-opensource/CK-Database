@@ -39,7 +39,7 @@ namespace CK.NetCoreProcessor
             var r1 = toChange.MainModule.AssemblyReferences.Single(a => a.Name == "System.Data");
             toChange.MainModule.AssemblyReferences.Remove(r1);
 
-            toChange.Write(@"C:\Dev\CK-Database\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\netcoreapp1.0\Transform.Tests.Generated.dll");               
+            toChange.Write(@"C:\Dev\CK-Database\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\netcoreapp1.1\Transform.Tests.Generated.dll");               
         }
 
         static int SwapTypes(ModuleDefinition module, string search, TypeReference replace)
