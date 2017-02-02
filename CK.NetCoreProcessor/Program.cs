@@ -13,27 +13,35 @@ namespace CK.NetCoreProcessor
         {
             var change = @"C:\Dev\CK-Database\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\net451\win7-x64\Transform.Tests.Generated.dll";
 
-            var target1 = @"C:\Users\olivi\.nuget\packages\System.Data.Common\4.3.0\ref\netstandard1.2\System.Data.Common.dll";
+            var target1 = @"C:\Users\olivi\.nuget\packages\System.Data.Common\4.3.0\lib\netstandard1.2\System.Data.Common.dll";
             var target2 = @"C:\Users\olivi\.nuget\packages\System.Data.SqlClient\4.3.0\runtimes\win\lib\netstandard1.3\System.Data.SqlClient.dll";
+            var target3 = @"C:\Dev\CK-Database\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\netcoreapp1.1\CK.SqlServer.Setup.Model.dll";
 
             var resolver = new DefaultAssemblyResolver();
             resolver.AddSearchDirectory(@"C:\Users\olivi\.nuget\packages\System.Data.SqlClient\4.3.0\runtimes\win\lib\netstandard1.3\");
-            resolver.AddSearchDirectory(@"C:\Users\olivi\.nuget\packages\System.Data.Common\4.3.0\ref\netstandard1.2\");
+            resolver.AddSearchDirectory(@"C:\Users\olivi\.nuget\packages\System.Data.Common\4.3.0\lib\netstandard1.2\");
+            resolver.AddSearchDirectory(@"C:\Dev\CK-Database\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\netcoreapp1.1\");
             var readerParameters = new ReaderParameters() { AssemblyResolver = resolver };
             var toChange = AssemblyDefinition.ReadAssembly(change, readerParameters);
 
             var systemData = AssemblyDefinition.ReadAssembly(target1, readerParameters);
             var systemDataClient = AssemblyDefinition.ReadAssembly(target2, readerParameters);
+            var ckSqlServerSetupModel = AssemblyDefinition.ReadAssembly(target3, readerParameters);
 
             foreach ( var targetType in systemData.MainModule.Types )
             {
-                var refTarget = toChange.MainModule.Import(targetType);
+                var refTarget = toChange.MainModule.ImportReference(targetType);
                 SwapTypes(toChange.MainModule, targetType.FullName, refTarget);
             }
 
             foreach (var targetType in systemDataClient.MainModule.Types)
             {
-                var refTarget = toChange.MainModule.Import(targetType);
+                var refTarget = toChange.MainModule.ImportReference(targetType);
+                SwapTypes(toChange.MainModule, targetType.FullName, refTarget);
+            }
+            foreach (var targetType in ckSqlServerSetupModel.MainModule.Types)
+            {
+                var refTarget = toChange.MainModule.ImportReference(targetType);
                 SwapTypes(toChange.MainModule, targetType.FullName, refTarget);
             }
             var r1 = toChange.MainModule.AssemblyReferences.Single(a => a.Name == "System.Data");
@@ -100,7 +108,7 @@ namespace CK.NetCoreProcessor
                                         instruction,
                                         p.Create(
                                             instruction.OpCode,
-                                            module.Import(GetMethod(replace.Resolve(), mRef))));
+                                            module.ImportReference(GetMethod(replace.Resolve(), mRef))));
                                     ++changeCount;
                                 }
                                 else
@@ -113,7 +121,7 @@ namespace CK.NetCoreProcessor
                                             instruction,
                                             p.Create(
                                                 instruction.OpCode,
-                                                module.Import(GetField(replace.Resolve(), fRef))));
+                                                module.ImportReference(GetField(replace.Resolve(), fRef))));
                                         ++changeCount;
                                     }
                                 }

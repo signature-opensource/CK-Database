@@ -49,19 +49,27 @@ namespace SqlTransform.Tests
             var p = TestHelper.StObjMap.Default.Obtain<CKLevel0.Package>();
             using( var ctx = new SqlStandardCallContext() )
             {
-                Console.WriteLine($"SqlCommand type => {typeof(System.Data.SqlClient.SqlCommand).GetTypeInfo().Assembly.FullName}");
+                /*
+                var aFromType = typeof(System.Data.SqlClient.SqlCommand).GetTypeInfo().Assembly;
+                string path = aFromType.Location;
+                Console.WriteLine($"SqlCommand assembly from SqlTransform.Tests => {typeof(SqlCommand).GetTypeInfo().Assembly.Location}");
+
+                var aFromType2 = typeof(System.Data.DbType).GetTypeInfo().Assembly;
+                Console.WriteLine($"DbType assembly from SqlTransform.Tests => => {aFromType2.FullName}");
+                string path2 = aFromType2.Location;
 
                 ISqlCommandExecutor e = (ISqlCommandExecutor)ctx;
                 MethodInfo m = e.GetType().GetTypeInfo().DeclaredMethods.Single(xx => xx.Name == "CK.SqlServer.ISqlCommandExecutor.ExecuteNonQuery");
                 Type tC = m.GetParameters()[1].ParameterType;
-                Console.WriteLine($"SqlCommand param => {tC.GetTypeInfo().Assembly.FullName}");
+                Console.WriteLine($"SqlCommand parameter of ISqlCommandExecutor.ExecuteNonQuery => => {tC.GetTypeInfo().Assembly.Location}");
 
-                var cmd = new System.Data.SqlClient.SqlCommand();
-                var a = cmd.GetType().GetTypeInfo().Assembly;
-                Console.WriteLine($"SqlCommand instance => {a.FullName}");
+                Assembly genDll = Assembly.Load(new AssemblyName("Transform.Tests.Generated"));
+                Type tCommandCreator = genDll.GetTypes().Single( t => t.FullName == "CK.<CreatorForSqlCommand>" );
+                MethodInfo mSimpleCreate = tCommandCreator.GetRuntimeMethods().Single(x => x.Name == "[]db^CK.sSimpleReplaceTest");
+                string utimatePathOfSqlClientAssembly = mSimpleCreate.ReturnType.GetTypeInfo().Assembly.Location;
 
                 SimpleReplaceTestGenerated(ctx, "Pouf!", p.Database.ConnectionString);
-
+                */
                 string s = p.SimpleReplaceTest( ctx, "Hello!" );
                 Assert.That( s, Is.EqualTo( "Return: Hello! 0" ) );
             }
