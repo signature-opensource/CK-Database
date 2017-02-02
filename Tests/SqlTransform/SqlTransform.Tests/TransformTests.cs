@@ -62,14 +62,22 @@ namespace SqlTransform.Tests
                 MethodInfo m = e.GetType().GetTypeInfo().DeclaredMethods.Single(xx => xx.Name == "CK.SqlServer.ISqlCommandExecutor.ExecuteNonQuery");
                 Type tC = m.GetParameters()[1].ParameterType;
                 Console.WriteLine($"SqlCommand parameter of ISqlCommandExecutor.ExecuteNonQuery => => {tC.GetTypeInfo().Assembly.Location}");
-
-                Assembly genDll = Assembly.Load(new AssemblyName("Transform.Tests.Generated"));
-                Type tCommandCreator = genDll.GetTypes().Single( t => t.FullName == "CK.<CreatorForSqlCommand>" );
-                MethodInfo mSimpleCreate = tCommandCreator.GetRuntimeMethods().Single(x => x.Name == "[]db^CK.sSimpleReplaceTest");
-                string utimatePathOfSqlClientAssembly = mSimpleCreate.ReturnType.GetTypeInfo().Assembly.Location;
-
-                SimpleReplaceTestGenerated(ctx, "Pouf!", p.Database.ConnectionString);
                 */
+                Assembly genDll = Assembly.Load(new AssemblyName("Transform.Tests.Generated"));
+                {
+                    Type tCommandCreator = genDll.GetTypes().Single(t => t.FullName == "CK.<CreatorForSqlCommand>");
+                    MethodInfo mSimpleCreate = tCommandCreator.GetRuntimeMethods().Single(x => x.Name == "[]db^CK.sSimpleReplaceTest");
+                    string utimatePathOfSqlClientAssembly = mSimpleCreate.ReturnType.GetTypeInfo().Assembly.Location;
+                }
+                {
+                    Type tCommandCreator = genDll.GetTypes().Single(t => t.FullName == "<CK>.Package1");
+                    MethodInfo mSimpleReplace = tCommandCreator.GetRuntimeMethods().Single(x => x.Name == "SimpleReplaceTest");
+                    string strA = mSimpleReplace.GetParameters()[1].ParameterType.GetTypeInfo().Assembly.Location;
+                }
+                SimpleReplaceTestGenerated(ctx, "Pouf!", p.Database.ConnectionString);
+                
+                var aFromType = typeof(string).GetTypeInfo().Assembly;
+
                 string s = p.SimpleReplaceTest( ctx, "Hello!" );
                 Assert.That( s, Is.EqualTo( "Return: Hello! 0" ) );
             }

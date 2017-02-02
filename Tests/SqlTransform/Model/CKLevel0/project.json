@@ -15,7 +15,10 @@
         "NETStandard.Library": "1.6.1"
       }
     },
-    "net451":{
+    "net451": {
+      "frameworkAssemblies": {
+        "Microsoft.JScript": "10.0.0.0"
+      }
     }
   }
 }

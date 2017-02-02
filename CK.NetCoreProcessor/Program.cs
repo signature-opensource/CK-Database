@@ -13,39 +13,50 @@ namespace CK.NetCoreProcessor
         {
             var change = @"C:\Dev\CK-Database\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\net451\win7-x64\Transform.Tests.Generated.dll";
 
-            var target1 = @"C:\Users\olivi\.nuget\packages\System.Data.Common\4.3.0\lib\netstandard1.2\System.Data.Common.dll";
-            var target2 = @"C:\Users\olivi\.nuget\packages\System.Data.SqlClient\4.3.0\runtimes\win\lib\netstandard1.3\System.Data.SqlClient.dll";
-            var target3 = @"C:\Dev\CK-Database\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\netcoreapp1.1\CK.SqlServer.Setup.Model.dll";
+            string[] targetAssemblies = new[]
+            {
+                @"C:\Users\olivi\.nuget\packages\System.Data.Common\4.3.0\lib\netstandard1.2\System.Data.Common.dll",
+                @"C:\Users\olivi\.nuget\packages\System.Data.SqlClient\4.3.0\runtimes\win\lib\netstandard1.3\System.Data.SqlClient.dll",
+                @"C:\Dev\CK-Database\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\netcoreapp1.1\CK.SqlServer.Setup.Model.dll",
+                //@"C:\Dev\CK-Database\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\netcoreapp1.1\CK.StObj.Model.dll",
+                //@"C:\Dev\CK-Database\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\netcoreapp1.1\CK.Setupable.Model.dll",
+                //@"C:\Program Files\dotnet\shared\Microsoft.NETCore.App\1.1.0\System.Runtime.dll",
+                //@"C:\Dev\CK-Database\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\netcoreapp1.1\CKLevel0.dll",
+            };
 
             var resolver = new DefaultAssemblyResolver();
             resolver.AddSearchDirectory(@"C:\Users\olivi\.nuget\packages\System.Data.SqlClient\4.3.0\runtimes\win\lib\netstandard1.3\");
             resolver.AddSearchDirectory(@"C:\Users\olivi\.nuget\packages\System.Data.Common\4.3.0\lib\netstandard1.2\");
             resolver.AddSearchDirectory(@"C:\Dev\CK-Database\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\netcoreapp1.1\");
+            //resolver.AddSearchDirectory(@"C:\Program Files\dotnet\shared\Microsoft.NETCore.App\1.1.0\");
             var readerParameters = new ReaderParameters() { AssemblyResolver = resolver };
             var toChange = AssemblyDefinition.ReadAssembly(change, readerParameters);
 
-            var systemData = AssemblyDefinition.ReadAssembly(target1, readerParameters);
-            var systemDataClient = AssemblyDefinition.ReadAssembly(target2, readerParameters);
-            var ckSqlServerSetupModel = AssemblyDefinition.ReadAssembly(target3, readerParameters);
 
-            foreach ( var targetType in systemData.MainModule.Types )
+            // Load all assembles.
+            List<AssemblyDefinition> defAssemblies = new List<AssemblyDefinition>();
+            foreach (var a in targetAssemblies)
             {
-                var refTarget = toChange.MainModule.ImportReference(targetType);
-                SwapTypes(toChange.MainModule, targetType.FullName, refTarget);
+                defAssemblies.Add(AssemblyDefinition.ReadAssembly(a, readerParameters));
             }
-
-            foreach (var targetType in systemDataClient.MainModule.Types)
+            foreach( var a in defAssemblies )
             {
-                var refTarget = toChange.MainModule.ImportReference(targetType);
-                SwapTypes(toChange.MainModule, targetType.FullName, refTarget);
+                foreach (var targetType in a.MainModule.Types)
+                {
+                    var refTarget = toChange.MainModule.ImportReference(targetType);
+                    SwapTypes(toChange.MainModule, targetType.FullName, refTarget);
+                }
             }
-            foreach (var targetType in ckSqlServerSetupModel.MainModule.Types)
-            {
-                var refTarget = toChange.MainModule.ImportReference(targetType);
-                SwapTypes(toChange.MainModule, targetType.FullName, refTarget);
-            }
-            var r1 = toChange.MainModule.AssemblyReferences.Single(a => a.Name == "System.Data");
-            toChange.MainModule.AssemblyReferences.Remove(r1);
+            //var systemData = toChange.MainModule.AssemblyReferences.Single(a => a.Name == "System.Data");
+            //toChange.MainModule.AssemblyReferences.Remove(systemData);
+            var keep = toChange.MainModule
+                        .AssemblyReferences
+                        .Where(a => a.Name != "System.Data")
+                        //.GroupBy(a => a.Name)
+                        //.Select(g => g.OrderByDescending(a => a.Version).First())
+                        .ToArray();
+            toChange.MainModule.AssemblyReferences.Clear();
+            foreach (var a in keep) toChange.MainModule.AssemblyReferences.Add(a);
 
             toChange.Write(@"C:\Dev\CK-Database\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\netcoreapp1.1\Transform.Tests.Generated.dll");               
         }
