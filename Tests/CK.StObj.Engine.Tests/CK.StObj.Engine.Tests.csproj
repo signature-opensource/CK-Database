@@ -1,16 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\..\Common\Shared.props" />
+
   <PropertyGroup>
-    <VersionPrefix>0.0.0</VersionPrefix>
     <TargetFramework>net451</TargetFramework>
-    <AssemblyName>CK.StObj.Engine.Tests</AssemblyName>
     <OutputType>Exe</OutputType>
-    <AssemblyOriginatorKeyFile>../../SharedKey.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
-    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
-    <PackageId>CK.StObj.Engine.Tests</PackageId>
-    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
-    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
   </PropertyGroup>
 
   <ItemGroup>

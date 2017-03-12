@@ -1,15 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\Common\Shared.props" />
+
   <PropertyGroup>
-    <VersionPrefix>0.0.0</VersionPrefix>
     <TargetFramework>net451</TargetFramework>
-    <AssemblyName>CK.SqlServer.Setup.Engine</AssemblyName>
-    <AssemblyOriginatorKeyFile>../SharedKey.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
-    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
-    <PackageId>CK.SqlServer.Setup.Engine</PackageId>
-    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
-    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <Description>
+      CK-Database helps to setup, construct, manages and build modular relationnal databases upon SqlServer.
+      CK.SqlServer.Setup.Engine provides full Sql Server setup support.
+    </Description>
   </PropertyGroup>
 
   <ItemGroup>

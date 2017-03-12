@@ -1,19 +1,7 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (Tests\CK.StObj.Engine.Tests\Properties\AssemblyInfo.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
 
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-
-[assembly: AssemblyTitle( "CK.StObj.Engine.Tests" )]
-[assembly: AssemblyDescription( "" )]
-[assembly: AssemblyCulture( "" )]
-[assembly: ComVisible( false )]
-[assembly: Guid( "502c9f9b-5a03-4735-ba00-f557b76ed7cd" )]
 
 // InternalsVisibleTo for  signed dynamic assembly.
 // This enables internal test classes from this asssemblies to be specialized (auto implemented).

@@ -131,13 +131,13 @@ namespace CK.Setup
                 _finalAssembly.Save();
                 if (callPEVrify && !ExecutePEVerify(monitor) ) return null;
 
-                var config = new OtherPlatformSupportConfiguration();
-                config.BinFolder = "netcoreapp1.1";
-                config.AssemblyNamesToRedirect.Add("System.Data.Common");
-                config.AssemblyNamesToRedirect.Add("System.Data.SqlClient");
-                config.AssemblyNamesToRemove.Add("System.Data");
+                //var config = new OtherPlatformSupportConfiguration();
+                //config.BinFolder = "netcoreapp1.1";
+                //config.AssemblyNamesToRedirect.Add("System.Data.Common");
+                //config.AssemblyNamesToRedirect.Add("System.Data.SqlClient");
+                //config.AssemblyNamesToRemove.Add("System.Data");
 
-                GenerateForOtherPlatforms(_finalAssembly.Dir, config);
+                //GenerateForOtherPlatforms(_finalAssembly.Dir, config);
                 
                     
                 // Time to instanciate the final mapper.

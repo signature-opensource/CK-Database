@@ -1,15 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\Common\Shared.props" />
+
   <PropertyGroup>
-    <VersionPrefix>0.0.0</VersionPrefix>
     <TargetFramework>net451</TargetFramework>
-    <AssemblyName>CK.SqlServer.Setup.Runtime</AssemblyName>
-    <AssemblyOriginatorKeyFile>../SharedKey.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
-    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
-    <PackageId>CK.SqlServer.Setup.Runtime</PackageId>
-    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
-    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <Description>
+      CK-Database helps to setup, construct, manages and build modular relationnal databases upon SqlServer.
+      CK.SqlServer.Setup.Runtime contains objects that generate StObj (like SqlTable or SqlPackage) implementations.
+    </Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,6 +24,10 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
 
 </Project>
