@@ -42,16 +42,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CK.ActivityMonitor, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.ActivityMonitor.6.0.0-a02\lib\net451\CK.ActivityMonitor.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\CK.ActivityMonitor.6.0.0\lib\net451\CK.ActivityMonitor.dll</HintPath>
     </Reference>
     <Reference Include="CK.ActivityMonitor.StandardSender, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.ActivityMonitor.StandardSender.6.0.0-a02\lib\net451\CK.ActivityMonitor.StandardSender.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\CK.ActivityMonitor.StandardSender.6.0.0\lib\net451\CK.ActivityMonitor.StandardSender.dll</HintPath>
     </Reference>
     <Reference Include="CK.Core, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.Core.6.0.0-a02\lib\net451\CK.Core.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\CK.Core.6.0.0\lib\net451\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="CK.Setupable.Engine">
       <HintPath>Imports\CK.Setupable.Engine.dll</HintPath>
@@ -63,12 +60,10 @@
       <HintPath>Imports\CK.Setupable.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="CK.SqlServer.Parser, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.SqlServer.Parser.6.0.0-a\lib\net451\CK.SqlServer.Parser.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\CK.SqlServer.Parser.6.0.0-b\lib\net451\CK.SqlServer.Parser.dll</HintPath>
     </Reference>
-    <Reference Include="CK.SqlServer.Parser.Model, Version=3.2.2.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.SqlServer.Parser.Model.3.2.2-a\lib\net451\CK.SqlServer.Parser.Model.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="CK.SqlServer.Parser.Model, Version=3.2.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\packages\CK.SqlServer.Parser.Model.3.2.2\lib\net451\CK.SqlServer.Parser.Model.dll</HintPath>
     </Reference>
     <Reference Include="CK.SqlServer.Setup.Engine">
       <HintPath>Imports\CK.SqlServer.Setup.Engine.dll</HintPath>
@@ -80,8 +75,7 @@
       <HintPath>Imports\CK.SqlServer.Setup.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="CK.SqlServer.Transform, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.SqlServer.Transform.6.0.0-a\lib\net451\CK.SqlServer.Transform.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\CK.SqlServer.Transform.6.0.0-b\lib\net451\CK.SqlServer.Transform.dll</HintPath>
     </Reference>
     <Reference Include="CK.StObj.Engine">
       <HintPath>Imports\CK.StObj.Engine.dll</HintPath>
@@ -93,8 +87,7 @@
       <HintPath>Imports\CK.StObj.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="CK.Text, Version=5.1.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.Text.5.1.0-p02\lib\net451\CK.Text.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\CK.Text.5.1.0\lib\net451\CK.Text.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Extensions.CommandLineUtils, Version=1.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.CommandLineUtils.1.1.0\lib\net451\Microsoft.Extensions.CommandLineUtils.dll</HintPath>

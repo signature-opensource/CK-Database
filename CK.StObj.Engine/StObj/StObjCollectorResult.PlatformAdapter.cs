@@ -1,40 +1,52 @@
-﻿using Mono.Cecil;
-using Mono.Cecil.Cil;
+#region Proprietary License
+/*----------------------------------------------------------------------------
+* This file (CK.StObj.Engine\StObj\StObjCollectorResult.FinalAssembly.cs) is part of CK-Database. 
+* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
+using CK.Core;
+using System.Diagnostics;
+using System.Reflection.Emit;
+using System.Reflection;
+using CK.Reflection;
+using System.Resources;
+using System.Collections;
+using System.IO;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
 
-namespace CK.NetCoreProcessor
+namespace CK.Setup
 {
-    public class Program
+    public partial class StObjCollectorResult
     {
-        public static void Main(string[] args)
+        bool GenerateForOtherPlatforms(string baseDirectory, OtherPlatformSupportConfiguration config)
         {
-            var change = @"C:\Dev\CK-Database\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\net451\win7-x64\Transform.Tests.Generated.dll";
-
-            string[] targetAssemblies = new[]
+            baseDirectory = FileUtil.NormalizePathSeparator(baseDirectory, false);
+            string p = config.BinFolder;
+            if (!Path.IsPathRooted(p))
             {
-                //@"C:\Users\olivi\.nuget\packages\System.Data.Common\4.3.0\lib\netstandard1.2\System.Data.Common.dll",
-                @"C:\Users\olivi\.nuget\packages\System.Data.SqlClient\4.3.0\runtimes\win\lib\netstandard1.3\System.Data.SqlClient.dll",
-                @"C:\Dev\CK-Database\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\netcoreapp1.1\CK.SqlServer.Setup.Model.dll",
-                //@"C:\Dev\CK-Database\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\netcoreapp1.1\CK.StObj.Model.dll",
-                //@"C:\Dev\CK-Database\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\netcoreapp1.1\CK.Setupable.Model.dll",
-                //@"C:\Program Files\dotnet\shared\Microsoft.NETCore.App\1.1.0\System.Runtime.dll",
-                //@"C:\Dev\CK-Database\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\netcoreapp1.1\CKLevel0.dll",
-            };
-
+                p = Path.Combine(baseDirectory, config.BinFolder);
+                while (!Directory.Exists(p))
+                {
+                    baseDirectory = Path.GetDirectoryName(baseDirectory);
+                    if (baseDirectory == null) return false;
+                }
+            }
+            IEnumerable<string> assemblyPaths = GetAssemblyPaths(config.AssemblyNamesToRedirect);
             var resolver = new DefaultAssemblyResolver();
-            resolver.AddSearchDirectory(@"C:\Users\olivi\.nuget\packages\System.Data.SqlClient\4.3.0\runtimes\win\lib\netstandard1.3\");
-            //resolver.AddSearchDirectory(@"C:\Users\olivi\.nuget\packages\System.Data.Common\4.3.0\lib\netstandard1.2\");
-            resolver.AddSearchDirectory(@"C:\Dev\CK-Database\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\netcoreapp1.1\");
-            //resolver.AddSearchDirectory(@"C:\Program Files\dotnet\shared\Microsoft.NETCore.App\1.1.0\");
+            foreach( var aPath in assemblyPaths.Append(baseDirectory).Select( a => Path.GetDirectoryName( a ) ).Distinct() )
+            {
+                resolver.AddSearchDirectory( aPath );
+            }
             var readerParameters = new ReaderParameters() { AssemblyResolver = resolver };
-            var toChange = AssemblyDefinition.ReadAssembly(change, readerParameters);
-
-            // Load all assembles.
-            List<AssemblyDefinition> defAssemblies = new List<AssemblyDefinition>();
-            foreach (var path in targetAssemblies)
+            var toChange = AssemblyDefinition.ReadAssembly(_finalAssembly.SaveFilePath, readerParameters);
+            // Loads assemblies for which calls must be redirected and processes their types.
+            foreach (var path in assemblyPaths)
             {
                 var a = AssemblyDefinition.ReadAssembly(path, readerParameters);
                 foreach (var targetType in a.MainModule.Types)
@@ -43,26 +55,26 @@ namespace CK.NetCoreProcessor
                     SwapTypes(toChange.MainModule, targetType.FullName, refTarget);
                 }
             }
-            //foreach ( var a in defAssemblies )
-            //{
-            //    foreach (var targetType in a.MainModule.Types)
-            //    {
-            //        var refTarget = toChange.MainModule.ImportReference(targetType);
-            //        SwapTypes(toChange.MainModule, targetType.FullName, refTarget);
-            //    }
-            //}
-            //var systemData = toChange.MainModule.AssemblyReferences.Single(a => a.Name == "System.Data");
-            //toChange.MainModule.AssemblyReferences.Remove(systemData);
             var keep = toChange.MainModule
                         .AssemblyReferences
+                        .Except(config.AssemblyNamesToRemove)
                         .Where(a => a.Name != "System.Data")
                         //.GroupBy(a => a.Name)
                         //.Select(g => g.OrderByDescending(a => a.Version).First())
                         .ToArray();
             toChange.MainModule.AssemblyReferences.Clear();
             foreach (var a in keep) toChange.MainModule.AssemblyReferences.Add(a);
+            toChange.Write( Path.Combine( baseDirectory, _finalAssembly.SaveFileName) );
+            return true;
+        }
 
-            toChange.Write(@"C:\Dev\CK-Database\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\netcoreapp1.1\Transform.Tests.Generated.dll");               
+        IEnumerable<string> GetAssemblyPaths(IList<string> assemblyNamesToRedirect)
+        {
+            return new string[] {
+                @"C:\Users\olivi\.nuget\packages\System.Data.Common\4.3.0\lib\netstandard1.2\System.Data.Common.dll",
+                @"C:\Users\olivi\.nuget\packages\System.Data.SqlClient\4.3.0\runtimes\win\lib\netstandard1.3\System.Data.SqlClient.dll",
+                @"C:\Dev\CK-Database\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\netcoreapp1.1\CK.SqlServer.Setup.Model.dll"
+            };
         }
 
         static int SwapTypes(ModuleDefinition module, string search, TypeReference replace)
@@ -152,8 +164,8 @@ namespace CK.NetCoreProcessor
         {
             var newM = t.Methods.FirstOrDefault(m => m.Name == old.Name
                                                      && m.Parameters.Count == old.Parameters.Count
-                                                     && m.Parameters.Select( p => p.ParameterType.FullName ).SequenceEqual(old.Parameters.Select(p => p.ParameterType.FullName)) );
-            if (newM == null) throw new Exception( $"Method {old.Name}( {string.Join( ", ", old.Parameters.Select( p => p.ParameterType.Name ) )} ) not found on target type." );
+                                                     && m.Parameters.Select(p => p.ParameterType.FullName).SequenceEqual(old.Parameters.Select(p => p.ParameterType.FullName)));
+            if (newM == null) throw new CKException($"Method {old.Name}( {string.Join(", ", old.Parameters.Select(p => p.ParameterType.Name))} ) not found on target type.");
             return newM;
         }
 
@@ -161,6 +173,7 @@ namespace CK.NetCoreProcessor
         {
             return t.Fields.Single(f => f.Name == old.Name);
         }
+
 
     }
 }
