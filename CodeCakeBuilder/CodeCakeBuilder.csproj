@@ -70,23 +70,6 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="Bootstrap.ps1" />
-    <None Include="NuSpec\CK.Setupable.Engine.nuspec" />
-    <None Include="NuSpec\CK.Setupable.Model.nuspec" />
-    <None Include="NuSpec\CK.Setupable.Runtime.nuspec" />
-    <None Include="NuSpec\CK.DB.Tests.NUnit.nuspec" />
-    <None Include="NuSpec\CK.SqlServer.Core.nuspec" />
-    <None Include="NuSpec\CK.SqlServer.Setup.Engine.nuspec" />
-    <None Include="NuSpec\CK.SqlServer.Setup.Model.nuspec" />
-    <None Include="NuSpec\CK.SqlServer.Setup.Runtime.nuspec" />
-    <None Include="NuSpec\CK.StObj.Engine.nuspec" />
-    <None Include="NuSpec\CK.StObj.Model.nuspec" />
-    <None Include="NuSpec\CK.StObj.Runtime.nuspec" />
-    <None Include="NuSpec\CKDBSetup.nuspec">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="NuSpec\nuspec.xsd">
-      <SubType>Designer</SubType>
-    </None>
     <None Include="packages.config" />
     <None Include="RepositoryInfo.xsd">
       <SubType>Designer</SubType>

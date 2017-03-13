@@ -1,9 +1,9 @@
 {
   "profiles": {
-    "CK.StObj.Engine.Tests": {
+    "CK.Text.Tests": {
       "commandName": "Executable",
       "executablePath": "..\\..\\packages\\NUnit.Runners.Net4.2.6.4\\tools\\nunit.exe",
-      "commandLineArgs": "bin\\Debug\\net451\\CK.StObj.Engine.Tests.exe"
+      "commandLineArgs": "bin\\Debug\\net451\\CK.SqlServer.Setup.Engine.Tests.exe"
     }
   }
 }
