@@ -1,0 +1,12 @@
+<Project ToolsVersion="15.0">
+ 
+  <ItemGroup>
+    <CoreProj Include="..\**\*.csproj" />
+    <CoreProj Remove="..\CKDBSetup\CKDBSetup.csproj" />
+  </ItemGroup>
+  
+  <Target Name="Build">
+    <MSBuild Targets="Build" Projects="@(CoreProj)" Properties="@(Properties)" />
+  </Target>
+	
+</Project>

@@ -6,6 +6,7 @@ using Cake.Common.Tools.DotNetCore;
 using Cake.Common.Tools.DotNetCore.Build;
 using Cake.Common.Tools.DotNetCore.Pack;
 using Cake.Common.Tools.DotNetCore.Restore;
+using Cake.Common.Tools.MSBuild;
 using Cake.Common.Tools.NuGet;
 using Cake.Common.Tools.NuGet.Push;
 using Cake.Common.Tools.NUnit;
@@ -23,6 +24,21 @@ namespace CodeCake
     public static class DotNetCoreRestoreSettingsExtension
     {
         public static T AddVersionArguments<T>(this T @this, SimpleRepositoryInfo info, Action<T> conf = null) where T : DotNetCoreSettings
+        {
+            if (info.IsValid)
+            {
+                var prev = @this.ArgumentCustomization;
+                @this.ArgumentCustomization = args => (prev?.Invoke(args) ?? args)
+                        .Append($@"/p:CakeBuild=""true""")
+                        .Append($@"/p:Version=""{info.NuGetVersion}""")
+                        .Append($@"/p:AssemblyVersion=""{info.MajorMinor}.0""")
+                        .Append($@"/p:FileVersion=""{info.FileVersion}""")
+                        .Append($@"/p:InformationalVersion=""{info.SemVer} ({info.NuGetVersion}) - SHA1: {info.CommitSha} - CommitDate: {info.CommitDateUtc.ToString("u")}""");
+            }
+            conf?.Invoke(@this);
+            return @this;
+        }
+        public static MSBuildSettings AddVersionArguments(this MSBuildSettings @this, SimpleRepositoryInfo info, Action<MSBuildSettings> conf = null)
         {
             if (info.IsValid)
             {
@@ -118,14 +134,17 @@ namespace CodeCake
                 .IsDependentOn("Restore-NuGet-Packages")
                 .Does(() =>
                 {
-                    foreach (var p in projects)
-                    {
-                        Cake.DotNetCoreBuild(p.Path.GetDirectory().FullPath,
-                            new DotNetCoreBuildSettings().AddVersionArguments(gitInfo, s =>
-                            {
-                                s.Configuration = configuration;
-                            }));
-                    }
+                    Cake.DotNetCoreBuild("CodeCakeBuilder/CoreBuild.proj",
+                        new DotNetCoreBuildSettings().AddVersionArguments(gitInfo, s =>
+                        {
+                            s.Configuration = configuration;
+                        }));
+
+                    Cake.MSBuild("CKDBSetup/CKDBSetup.csproj", new MSBuildSettings().AddVersionArguments( gitInfo, s =>
+                   {
+                       s.Configuration = configuration;
+                       s.ToolVersion = MSBuildToolVersion.VS2015;
+                   }) );
                 });
 
             Task("Unit-Testing")
