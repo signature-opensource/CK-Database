@@ -2,12 +2,14 @@
 using Cake.Common.Diagnostics;
 using Cake.Common.IO;
 using Cake.Common.Solution;
+using Cake.Common.Text;
 using Cake.Common.Tools.DotNetCore;
 using Cake.Common.Tools.DotNetCore.Build;
 using Cake.Common.Tools.DotNetCore.Pack;
 using Cake.Common.Tools.DotNetCore.Restore;
 using Cake.Common.Tools.MSBuild;
 using Cake.Common.Tools.NuGet;
+using Cake.Common.Tools.NuGet.Pack;
 using Cake.Common.Tools.NuGet.Push;
 using Cake.Common.Tools.NUnit;
 using Cake.Core;
@@ -185,28 +187,48 @@ namespace CodeCake
                     }
                 });
 
-            Task("Create-NuGet-Packages")
+            Task("Create-NuGet-Package-For-CKDBSetup")
                 .WithCriteria(() => gitInfo.IsValid)
                 .IsDependentOn("Unit-Testing")
                 .Does(() =>
                 {
                     Cake.CreateDirectory(releasesDir);
-                    foreach (SolutionProject p in projectsToPublish)
+                    var settings = new NuGetPackSettings()
                     {
-                        Cake.Warning(p.Path.GetDirectory().FullPath);
-                        var s = new DotNetCorePackSettings();
-                        s.ArgumentCustomization = args => args.Append("--include-symbols");
-                        s.NoBuild = true;
-                        s.Configuration = configuration;
-                        s.OutputDirectory = releasesDir;
-                        s.AddVersionArguments(gitInfo);
-                        Cake.DotNetCorePack(p.Path.GetDirectory().FullPath, s);
-                    }
+                        Version = gitInfo.NuGetVersion,
+                        BasePath = Cake.Environment.WorkingDirectory,
+                        OutputDirectory = releasesDir
+                    };
+                    var tempNuspec = releasesDir.Path.CombineWithFilePath("CKDBSetup.nuspec");
+                    Cake.CopyFile("CodeCakeBuilder/NuSpec/CKDBSetup.nuspec", tempNuspec);
+                    Cake.TransformTextFile(tempNuspec, "{{", "}}")
+                            .WithToken("configuration", configuration)
+                            .WithToken("NuGetVersion", gitInfo.NuGetVersion)
+                            .WithToken("CSemVer", gitInfo.SemVer)
+                            .Save(tempNuspec);
+                    Cake.NuGetPack(tempNuspec, settings);
+                    Cake.DeleteFile(tempNuspec);
+                });
+
+            Task("Create-All-NuGet-Packages")
+                .WithCriteria(() => gitInfo.IsValid)
+                .IsDependentOn("Unit-Testing")
+                .IsDependentOn("Create-NuGet-Package-For-CKDBSetup")
+                .Does(() =>
+                {
+                    Cake.CreateDirectory(releasesDir);
+                    var settings = new DotNetCorePackSettings();
+                    settings.ArgumentCustomization = args => args.Append("--include-symbols");
+                    settings.NoBuild = true;
+                    settings.Configuration = configuration;
+                    settings.OutputDirectory = releasesDir;
+                    settings.AddVersionArguments(gitInfo);
+                    Cake.DotNetCorePack("CodeCakeBuilder/CoreBuild.proj", settings);
                 });
 
 
             Task("Push-NuGet-Packages")
-                .IsDependentOn("Create-NuGet-Packages")
+                .IsDependentOn("Create-All-NuGet-Packages")
                 .WithCriteria(() => gitInfo.IsValid)
                 .Does(() =>
                 {
