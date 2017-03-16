@@ -25,11 +25,14 @@ namespace CodeCake
     {
         public static T AddVersionArguments<T>(this T @this, SimpleRepositoryInfo info, Action<T> conf = null) where T : DotNetCoreSettings
         {
-            if (info.IsValid)
+            var prev = @this.ArgumentCustomization;
+            @this.ArgumentCustomization = args => (prev?.Invoke(args) ?? args)
+                    .Append($@"/p:CakeBuild=""true""");
+
+           if (info.IsValid)
             {
-                var prev = @this.ArgumentCustomization;
-                @this.ArgumentCustomization = args => (prev?.Invoke(args) ?? args)
-                        .Append($@"/p:CakeBuild=""true""")
+                var prev2 = @this.ArgumentCustomization;
+                @this.ArgumentCustomization = args => (prev2?.Invoke(args) ?? args)
                         .Append($@"/p:Version=""{info.NuGetVersion}""")
                         .Append($@"/p:AssemblyVersion=""{info.MajorMinor}.0""")
                         .Append($@"/p:FileVersion=""{info.FileVersion}""")
@@ -40,11 +43,14 @@ namespace CodeCake
         }
         public static MSBuildSettings AddVersionArguments(this MSBuildSettings @this, SimpleRepositoryInfo info, Action<MSBuildSettings> conf = null)
         {
+            var prev = @this.ArgumentCustomization;
+            @this.ArgumentCustomization = args => (prev?.Invoke(args) ?? args)
+                    .Append($@"/p:CakeBuild=""true""");
+
             if (info.IsValid)
             {
-                var prev = @this.ArgumentCustomization;
-                @this.ArgumentCustomization = args => (prev?.Invoke(args) ?? args)
-                        .Append($@"/p:CakeBuild=""true""")
+                var prev2 = @this.ArgumentCustomization;
+                @this.ArgumentCustomization = args => (prev2?.Invoke(args) ?? args)
                         .Append($@"/p:Version=""{info.NuGetVersion}""")
                         .Append($@"/p:AssemblyVersion=""{info.MajorMinor}.0""")
                         .Append($@"/p:FileVersion=""{info.FileVersion}""")
@@ -170,8 +176,11 @@ namespace CodeCake
                                 Framework = "v4.5",
                                 ResultsFile = test.ProjectPath.CombineWithFilePath("TestResult.Net451.xml")
                             });
-                            Cake.Information("Testing: {0}", test.NetCoreAppDll);
-                            Cake.DotNetCoreExecute(test.NetCoreAppDll);
+                            if(System.IO.File.Exists( test.NetCoreAppDll.FullPath ) )
+                            {
+                                Cake.Information("Testing: {0}", test.NetCoreAppDll);
+                                Cake.DotNetCoreExecute(test.NetCoreAppDll);
+                            }
                         }
                     }
                 });
