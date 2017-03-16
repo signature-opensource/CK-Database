@@ -165,7 +165,6 @@ namespace CK.StObj.Engine.Tests
                 var config = new BuilderFinalAssemblyConfiguration()
                 {
                     GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFile,
-                    Directory = TestHelper.BinFolder,
                     AssemblyName = "TEST_ConstructCalled"
                 };
 

@@ -1,5 +1,9 @@
 {
   "profiles": {
+    "GUI-SqlTransform.Tests": {
+      "commandName": "Project",
+      "commandLineArgs": "-gui"
+    },
     "SqlTransform.Tests": {
       "commandName": "Project",
       "commandLineArgs": "-pause"

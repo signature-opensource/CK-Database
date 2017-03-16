@@ -15,7 +15,7 @@ namespace CK.NetCoreProcessor
 
             string[] targetAssemblies = new[]
             {
-                @"C:\Users\olivi\.nuget\packages\System.Data.Common\4.3.0\lib\netstandard1.2\System.Data.Common.dll",
+                //@"C:\Users\olivi\.nuget\packages\System.Data.Common\4.3.0\lib\netstandard1.2\System.Data.Common.dll",
                 @"C:\Users\olivi\.nuget\packages\System.Data.SqlClient\4.3.0\runtimes\win\lib\netstandard1.3\System.Data.SqlClient.dll",
                 @"C:\Dev\CK-Database\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\netcoreapp1.1\CK.SqlServer.Setup.Model.dll",
                 //@"C:\Dev\CK-Database\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\netcoreapp1.1\CK.StObj.Model.dll",
@@ -26,27 +26,31 @@ namespace CK.NetCoreProcessor
 
             var resolver = new DefaultAssemblyResolver();
             resolver.AddSearchDirectory(@"C:\Users\olivi\.nuget\packages\System.Data.SqlClient\4.3.0\runtimes\win\lib\netstandard1.3\");
-            resolver.AddSearchDirectory(@"C:\Users\olivi\.nuget\packages\System.Data.Common\4.3.0\lib\netstandard1.2\");
+            //resolver.AddSearchDirectory(@"C:\Users\olivi\.nuget\packages\System.Data.Common\4.3.0\lib\netstandard1.2\");
             resolver.AddSearchDirectory(@"C:\Dev\CK-Database\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\netcoreapp1.1\");
             //resolver.AddSearchDirectory(@"C:\Program Files\dotnet\shared\Microsoft.NETCore.App\1.1.0\");
             var readerParameters = new ReaderParameters() { AssemblyResolver = resolver };
             var toChange = AssemblyDefinition.ReadAssembly(change, readerParameters);
 
-
             // Load all assembles.
             List<AssemblyDefinition> defAssemblies = new List<AssemblyDefinition>();
-            foreach (var a in targetAssemblies)
+            foreach (var path in targetAssemblies)
             {
-                defAssemblies.Add(AssemblyDefinition.ReadAssembly(a, readerParameters));
-            }
-            foreach( var a in defAssemblies )
-            {
+                var a = AssemblyDefinition.ReadAssembly(path, readerParameters);
                 foreach (var targetType in a.MainModule.Types)
                 {
                     var refTarget = toChange.MainModule.ImportReference(targetType);
                     SwapTypes(toChange.MainModule, targetType.FullName, refTarget);
                 }
             }
+            //foreach ( var a in defAssemblies )
+            //{
+            //    foreach (var targetType in a.MainModule.Types)
+            //    {
+            //        var refTarget = toChange.MainModule.ImportReference(targetType);
+            //        SwapTypes(toChange.MainModule, targetType.FullName, refTarget);
+            //    }
+            //}
             //var systemData = toChange.MainModule.AssemblyReferences.Single(a => a.Name == "System.Data");
             //toChange.MainModule.AssemblyReferences.Remove(systemData);
             var keep = toChange.MainModule

@@ -26,7 +26,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>..\SharedKey.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\Common\SharedKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -40,18 +40,23 @@
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(CakeBuild)' == 'true' ">
+    <SolutionDir>$([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName($(MSBuildThisFileDirectory)))))\</SolutionDir>
+    <BaseIntermediateOutputPath>$(SolutionDir)CodeCakeBuilder\Releases\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+  </PropertyGroup>
+  <!-- When not building from the CI, assemblies do not have any AssemblyInfo attributes. -->
+  <PropertyGroup Condition=" '$(CakeBuild)' != 'true' ">
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="CK.ActivityMonitor, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.ActivityMonitor.6.0.0-a02\lib\net451\CK.ActivityMonitor.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\CK.ActivityMonitor.6.0.0\lib\net451\CK.ActivityMonitor.dll</HintPath>
     </Reference>
     <Reference Include="CK.ActivityMonitor.StandardSender, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.ActivityMonitor.StandardSender.6.0.0-a02\lib\net451\CK.ActivityMonitor.StandardSender.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\CK.ActivityMonitor.StandardSender.6.0.0\lib\net451\CK.ActivityMonitor.StandardSender.dll</HintPath>
     </Reference>
     <Reference Include="CK.Core, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.Core.6.0.0-a02\lib\net451\CK.Core.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\CK.Core.6.0.0\lib\net451\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="CK.Setupable.Engine">
       <HintPath>Imports\CK.Setupable.Engine.dll</HintPath>
@@ -63,12 +68,10 @@
       <HintPath>Imports\CK.Setupable.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="CK.SqlServer.Parser, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.SqlServer.Parser.6.0.0-a\lib\net451\CK.SqlServer.Parser.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\CK.SqlServer.Parser.6.0.0-b\lib\net451\CK.SqlServer.Parser.dll</HintPath>
     </Reference>
-    <Reference Include="CK.SqlServer.Parser.Model, Version=3.2.2.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.SqlServer.Parser.Model.3.2.2-a\lib\net451\CK.SqlServer.Parser.Model.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="CK.SqlServer.Parser.Model, Version=3.2.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\packages\CK.SqlServer.Parser.Model.3.2.2\lib\net451\CK.SqlServer.Parser.Model.dll</HintPath>
     </Reference>
     <Reference Include="CK.SqlServer.Setup.Engine">
       <HintPath>Imports\CK.SqlServer.Setup.Engine.dll</HintPath>
@@ -80,8 +83,7 @@
       <HintPath>Imports\CK.SqlServer.Setup.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="CK.SqlServer.Transform, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.SqlServer.Transform.6.0.0-a\lib\net451\CK.SqlServer.Transform.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\CK.SqlServer.Transform.6.0.0-b\lib\net451\CK.SqlServer.Transform.dll</HintPath>
     </Reference>
     <Reference Include="CK.StObj.Engine">
       <HintPath>Imports\CK.StObj.Engine.dll</HintPath>
@@ -93,8 +95,7 @@
       <HintPath>Imports\CK.StObj.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="CK.Text, Version=5.1.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.Text.5.1.0-p02\lib\net451\CK.Text.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\CK.Text.5.1.0\lib\net451\CK.Text.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Extensions.CommandLineUtils, Version=1.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.CommandLineUtils.1.1.0\lib\net451\Microsoft.Extensions.CommandLineUtils.dll</HintPath>
@@ -149,13 +150,13 @@
   </Target>
   <Import Project="..\packages\Fody.1.30.0-beta01\build\dotnet\Fody.targets" Condition="Exists('..\packages\Fody.1.30.0-beta01\build\dotnet\Fody.targets')" />
   <Import Project="..\packages\Costura.Fody.2.0.0-beta0018\build\Costura.Fody.targets" Condition="Exists('..\packages\Costura.Fody.2.0.0-beta0018\build\Costura.Fody.targets')" />
-  <Import Project="..\packages\SimpleGitVersionTask.0.22.0-r\build\SimpleGitVersionTask.targets" Condition="Exists('..\packages\SimpleGitVersionTask.0.22.0-r\build\SimpleGitVersionTask.targets')" />
   <PropertyGroup>
     <PreBuildEvent>xcopy /y $(SolutionDir)CK.SqlServer.Setup.Engine\bin\$(ConfigurationName)\net451\CK.StObj.*.dll $(ProjectDir)Imports\
 xcopy /y $(SolutionDir)CK.SqlServer.Setup.Engine\bin\$(ConfigurationName)\net451\CK.SqlServer.Setup.*.dll $(ProjectDir)Imports\
 xcopy /y $(SolutionDir)CK.SqlServer.Setup.Engine\bin\$(ConfigurationName)\net451\CK.Setupable.*.dll $(ProjectDir)Imports\
 </PreBuildEvent>
   </PropertyGroup>
+  <Import Project="..\packages\SimpleGitVersionTask.0.22.0-r\build\SimpleGitVersionTask.targets" Condition="Exists('..\packages\SimpleGitVersionTask.0.22.0-r\build\SimpleGitVersionTask.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

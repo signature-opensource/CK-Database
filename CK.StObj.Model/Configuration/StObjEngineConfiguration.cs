@@ -28,12 +28,12 @@ namespace CK.Core
         /// Gets the configuration that describes how Application Domain must be used during build and
         /// which assemlies and types must be discovered.
         /// </summary>
-        public BuildAndRegisterConfiguration BuildAndRegisterConfiguration { get { return _buildConfig; } }
+        public BuildAndRegisterConfiguration BuildAndRegisterConfiguration => _buildConfig;
 
         /// <summary>
         /// Gets the configuration related to final assembly generation.
         /// </summary>
-        public BuilderFinalAssemblyConfiguration FinalAssemblyConfiguration { get { return _finalConfig; } }
+        public BuilderFinalAssemblyConfiguration FinalAssemblyConfiguration => _finalConfig;
 
         /// <summary>
         /// Gets or sets whether the dependency graph (the set of IDependentItem) must be send to the monitor before sorting.

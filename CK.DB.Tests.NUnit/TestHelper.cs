@@ -473,7 +473,7 @@ namespace CK.Core
             if (idxGui >= 0)
             {
                 var nunit = Path.Combine(SolutionFolder, "packages", "NUnit.Runners.Net4.2.6.4", "tools", "nunit.exe");
-                var toTest = Path.Combine(ProjectFolder, "bin", BuildConfiguration, "net451", "win7-x64", CurrentTestProjectName + ".exe");
+                var toTest = Path.Combine(ProjectFolder, "bin", BuildConfiguration, "net451", CurrentTestProjectName + ".exe");
                 var p = Process.Start(nunit, "\"" + toTest + "\" " + string.Join(" ", args));
                 return 0;
             }
@@ -481,7 +481,7 @@ namespace CK.Core
             int idxPause = HandleArgument(ref args, "-pause");
             if (idxPause >= 0) LogToConsole = true;
             // Copy the net451 generated assembly to bin folder.
-            var generated = Path.Combine(ProjectFolder, "bin", BuildConfiguration, "net451", "win7-x64", DynamicAssemblyName + ".dll");
+            var generated = Path.Combine(ProjectFolder, "bin", BuildConfiguration, "net451", DynamicAssemblyName + ".dll");
             if (!File.Exists(generated)) Console.WriteLine($"Generated assembly '{generated}' does not exist.");
             else
             {

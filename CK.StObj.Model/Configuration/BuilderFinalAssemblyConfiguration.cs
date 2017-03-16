@@ -8,6 +8,25 @@ using System.IO;
 namespace CK.Core
 {
 
+    public class OtherPlatformSupportConfiguration
+    {
+        /// <summary>
+        /// Gets or sets the folder where the assemblies that target another
+        /// framework resides. Must not be null.
+        /// </summary>
+        public string BinFolder { get; set; }
+
+        /// <summary>
+        /// Gets the list of assembly names for which calls must be redirected.
+        /// </summary>
+        public IList<string> AssemblyNamesToRedirect { get; } = new List<string>();
+
+        /// <summary>
+        /// Gets the list of assembly names that must be removed from the transformed assembly.
+        /// </summary>
+        public IList<string> AssemblyNamesToRemove { get; } = new List<string>();
+    }
+
     /// <summary>
     /// Defines options related to final assembly generation.
     /// </summary>
@@ -40,10 +59,11 @@ namespace CK.Core
             DoNotGenerateFile = 1,
 
             /// <summary>
-            /// Saves the generated assembly and call PEVerify on it.
+            /// Saves the generated assembly and calls PEVerify on it.
             /// </summary>
             GenerateFileAndPEVerify = 2
         }
+
 
         /// <summary>
         /// Options that may prevent final assembly generation: the final asembly is always
@@ -54,9 +74,8 @@ namespace CK.Core
 
         /// <summary>
         /// Gets or set the directory where the final assembly must be saved.
-        /// When null (the default) and when in DNX environment, uses 
-        /// Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationBasePath
-        /// otherwise, uses the current path of CK.StObj.Model assembly.
+        /// When null (the default) the current path of CK.StObj.Model assembly is used
+        /// (thanks to <see cref="GetFinalDirectory(string)"/>).
         /// </summary>
         public string Directory { get; set; }
 
@@ -93,15 +112,15 @@ namespace CK.Core
 
         /// <summary>
         /// Uses <see paramref="directory"/> if it is not null nor empty, otherwise 
-        /// uses the current directory.
+        /// uses the directory where CK.StObj.Model.dll is.
         /// </summary>
         /// <returns>The directory into which the final assembly must be saved.</returns>
         static public string GetFinalDirectory( string directory )
         {
             if( string.IsNullOrEmpty( directory ) )
             {
-                //directory = Path.GetDirectoryName( new Uri( typeof( StObjContextRoot ).GetTypeInfo().Assembly.CodeBase ).LocalPath );
-                directory = System.IO.Directory.GetCurrentDirectory();
+                // netstandard1.6 handles this:
+                directory = Path.GetDirectoryName( new Uri( typeof( StObjContextRoot ).GetTypeInfo().Assembly.CodeBase ).LocalPath );
             }
             return directory;
         }

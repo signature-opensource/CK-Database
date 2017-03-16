@@ -3,5 +3,6 @@
 	<StartingVersionForCSemVer>v3.0.21-alpha</StartingVersionForCSemVer>
   <Branches>
     <Branch Name="develop" CIVersionMode="LastReleaseBased" />
+    <Branch Name="netxore-processor-vs2017-attempt" VersionName="build" CIVersionMode="LastReleaseBased" />
   </Branches>
 </RepositoryInfo>
