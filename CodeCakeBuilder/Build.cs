@@ -11,6 +11,7 @@ using Cake.Common.Tools.MSBuild;
 using Cake.Common.Tools.NuGet;
 using Cake.Common.Tools.NuGet.Pack;
 using Cake.Common.Tools.NuGet.Push;
+using Cake.Common.Tools.NuGet.Restore;
 using Cake.Common.Tools.NUnit;
 using Cake.Core;
 using Cake.Core.Diagnostics;
@@ -134,6 +135,10 @@ namespace CodeCake
                 {
                     // https://docs.microsoft.com/en-us/nuget/schema/msbuild-targets
                     Cake.DotNetCoreRestore(new DotNetCoreRestoreSettings().AddVersionArguments(gitInfo));
+                    Cake.NuGetRestore("CKDBSetup/packages.config", new NuGetRestoreSettings()
+                    {
+                        PackagesDirectory = "packages"
+                    });
                 });
 
             Task("Build")
