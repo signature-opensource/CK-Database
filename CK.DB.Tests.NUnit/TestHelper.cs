@@ -457,51 +457,6 @@ namespace CK.Core
             _logFolder = Path.Combine( testsFolder, "Logs" );
         }
 
-#if NET451
-        public static int StandardMain(string[] args)
-        {
-            int idxGui = HandleArgument(ref args, "-gui");
-            var nunit = Path.Combine(SolutionFolder, "packages", "NUnit.Runners.Net4.2.6.4", "tools", "nunit.exe");
-            var toTest = Path.Combine(ProjectFolder, "bin", BuildConfiguration, "net451", "win7-x64", CurrentTestProjectName + ".exe");
-            var p = Process.Start(nunit, "\"" + toTest + "\" " + string.Join(" ", args));
-            return 0;
-        }
-#else
-        public static int StandardMain(string[] args)
-        {
-            int idxGui = HandleArgument(ref args, "-gui");
-            if (idxGui >= 0)
-            {
-                var nunit = Path.Combine(SolutionFolder, "packages", "NUnit.Runners.Net4.2.6.4", "tools", "nunit.exe");
-                var toTest = Path.Combine(ProjectFolder, "bin", BuildConfiguration, "net451", CurrentTestProjectName + ".exe");
-                var p = Process.Start(nunit, "\"" + toTest + "\" " + string.Join(" ", args));
-                return 0;
-            }
-            int result = -1;
-            int idxPause = HandleArgument(ref args, "-pause");
-            if (idxPause >= 0) LogToConsole = true;
-            // Copy the net451 generated assembly to bin folder.
-            var generated = Path.Combine(ProjectFolder, "bin", BuildConfiguration, "net451", DynamicAssemblyName + ".dll");
-            if (!File.Exists(generated)) Console.WriteLine($"Generated assembly '{generated}' does not exist.");
-            else
-            {
-                string dest = Path.Combine(BinFolder, DynamicAssemblyName + ".dll");
-                //File.Copy(generated, dest, true);
-                // Loads the test assembly and AutoRun the tests.
-                System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath(dest);
-                Assembly testing = Assembly.Load(new AssemblyName(CurrentTestProjectName));
-                result = new NUnitLite.AutoRun(testing)
-                    .Execute(args, new NUnit.Common.ExtendedTextWrapper(Console.Out), Console.In);
-            }
-            if (idxPause >= 0)
-            {
-                Console.Write($"Result: {result}. Hit a key.");
-                Console.ReadKey();
-            }
-            return result;
-        }
-
-#endif
         static int HandleArgument(ref string[] args, string argument)
         {
             int idxArg = Array.IndexOf(args, argument);
