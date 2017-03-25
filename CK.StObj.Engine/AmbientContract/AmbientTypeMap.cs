@@ -1,16 +1,10 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.StObj.Engine\AmbientContract\AmbientTypeMap.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using CK.Core;
 
 namespace CK.Core
 {
@@ -20,7 +14,7 @@ namespace CK.Core
     public class AmbientTypeMap<CT> : IContextualRoot<IContextualTypeMap>
         where CT : class, IContextualTypeMap
     {
-        readonly ListDictionary _contextMappers;
+        readonly Dictionary<object,object> _contextMappers;
         readonly ContextCollection _contextsEx;
 
         class ContextCollection : IReadOnlyCollection<CT>
@@ -59,7 +53,7 @@ namespace CK.Core
         /// </summary>
         public AmbientTypeMap()
         {
-            _contextMappers = new ListDictionary();
+            _contextMappers = new Dictionary<object,object>();
             _contextsEx = new ContextCollection( this );
         }
 
@@ -78,7 +72,10 @@ namespace CK.Core
         /// </summary>
         /// <param name="context">Type that identifies a context (null is the same as <see cref="String.Empty"/>).</param>
         /// <returns>The result for the given context.</returns>
-        public CT FindContext( string context ) => (CT)_contextMappers[context ?? string.Empty];
+        public CT FindContext(string context)
+        {
+            return (CT)_contextMappers.GetValueWithDefault(context ?? string.Empty, null);
+        }
 
         internal CT CreateAndAddContext<T,TC>( IActivityMonitor monitor, string context )
             where T : AmbientTypeInfo

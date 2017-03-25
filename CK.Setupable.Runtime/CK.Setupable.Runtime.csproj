@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CK.Setup.Dependency" Version="6.0.0-a01" />
+    <PackageReference Include="CK.Setup.Dependency" Version="6.0.0-r" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">

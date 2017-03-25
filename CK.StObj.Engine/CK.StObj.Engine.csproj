@@ -19,8 +19,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CK.Setup.Dependency" Version="6.0.0-a01" />
-    <PackageReference Include="CK.Reflection" Version="5.1.0-p01" />
+    <PackageReference Include="CK.Core" Version="6.0.0" />
+    <PackageReference Include="CK.Setup.Dependency" Version="6.0.0-r" />
+    <PackageReference Include="CK.Reflection" Version="5.1.0-r" />
     <PackageReference Include="Mono.Cecil" Version="0.10.0-beta4" />
   </ItemGroup>
 
