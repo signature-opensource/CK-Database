@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\Common\Shared.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard1.6;net451</TargetFrameworks>
+    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.6' ">1.6.1</NetStandardImplicitPackageVersion>
+    <Description>
+      CK-Database helps to setup, construct, manages and build modular relationnal databases upon SqlServer.
+      CK.SqlServer.Setup.Model contains base objects (like SqlTable) and attributes (like SqlProcedure) used to
+      define setupable StObj for Sql Server databases.
+    </Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CK.Setupable.Model\CK.Setupable.Model.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <Reference Include="System" />
+  </ItemGroup>
+
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
+    <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\Common\Shared.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net451</TargetFramework>
+    <Description>
+      CK-Database helps to setup, construct, manages and build modular relationnal databases upon SqlServer.
+      CK.SqlServer.Setup.Runtime contains objects that generate StObj (like SqlTable or SqlPackage) implementations.
+    </Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj" />
+    <ProjectReference Include="..\CK.Setupable.Runtime\CK.Setupable.Runtime.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CK.Reflection" Version="5.1.0-r" />
+    <PackageReference Include="CK.SqlServer.Parser.Model" Version="3.2.2" />
+    <PackageReference Include="Yodii.Script" Version="0.4.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
+</Project>

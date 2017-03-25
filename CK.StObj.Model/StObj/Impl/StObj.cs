@@ -97,22 +97,33 @@ namespace CK.Core
 
         internal void CallConstruct( IActivityMonitor monitor, Func<int, object> itemResolver, object instance )
         {
-            if( _preConstruct != null )
+            string step = "Setting properties.";
+            try
             {
-                foreach( var p in _preConstruct )
+                if (_preConstruct != null)
                 {
-                    p.Property.SetValue( instance, GetValueFromIndex( itemResolver, p.Index ), null );
+                    foreach (var p in _preConstruct)
+                    {
+                        p.Property.SetValue(instance, GetValueFromIndex(itemResolver, p.Index), null);
+                    }
                 }
+                if (_construct == null) return;
+                step = "Resolving Construct parameters.";
+                object[] parameters = new object[_constructParametersIndex.Length];
+                for (int i = 0; i < _constructParametersIndex.Length; ++i)
+                {
+                    int idx = _constructParametersIndex[i];
+                    if (idx == Int32.MaxValue) parameters[i] = monitor;
+                    else parameters[i] = GetValueFromIndex(itemResolver, idx);
+                }
+                step = "Calling Construct.";
+                _construct.Invoke(instance, parameters);
             }
-            if( _construct == null ) return;
-            object[] parameters = new object[_constructParametersIndex.Length];
-            for( int i = 0; i < _constructParametersIndex.Length; ++i )
+            catch ( Exception ex )
             {
-                int idx = _constructParametersIndex[i];
-                if( idx == Int32.MaxValue ) parameters[i] = monitor;
-                else parameters[i] = GetValueFromIndex( itemResolver, idx );
+                monitor.Error().Send(ex, "Step: " + step);
+                throw;
             }
-            _construct.Invoke( instance, parameters );
         }
 
         internal void SetPostBuilProperties( Func<int, object> itemResolver, object instance )

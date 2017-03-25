@@ -15,23 +15,9 @@ namespace CK.DB.Tests
     {
         [Test]
         [Explicit]
-        public void reset_database_by_clearing_all_used_schemas()
-        {
-            TestHelper.ClearDatabaseUsedSchemas();
-        }
-
-        [Test]
-        [Explicit]
         public void toggle_logging_to_console()
         {
             TestHelper.LogToConsole = !TestHelper.LogToConsole;
-        }
-
-        [Test]
-        [Explicit]
-        public void db_setup()
-        {
-            Assert.That(TestHelper.RunDBSetup(), "DBSetup failed.");
         }
 
         [Test]
@@ -40,6 +26,21 @@ namespace CK.DB.Tests
         {
             if (!Debugger.IsAttached) Debugger.Launch();
             else TestHelper.Monitor.Info().Send( "Debugger is already attached." );
+        }
+
+#if NET451
+        [Test]
+        [Explicit]
+        public void reset_database_by_clearing_all_used_schemas()
+        {
+            TestHelper.ClearDatabaseUsedSchemas();
+        }
+
+        [Test]
+        [Explicit]
+        public void db_setup()
+        {
+            Assert.That(TestHelper.RunDBSetup(), "DBSetup failed.");
         }
 
         [Test]
@@ -55,5 +56,7 @@ namespace CK.DB.Tests
         {
             Assert.That( TestHelper.RunDBSetup( true, true, true ), "DBSetup failed." );
         }
+#endif
+
     }
 }

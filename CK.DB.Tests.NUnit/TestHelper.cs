@@ -7,6 +7,7 @@ using CK.SqlServer.Setup;
 using NUnit.Framework;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace CK.Core
 {
@@ -112,7 +113,7 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Gets the default IStObjMap after having executed a <see cref="RunDBSetup"/>.
+        /// Gets the default IStObjMap (after having executed a db setup via RunDBSetup() in .net framework only).
         /// The setup is done only once.
         /// </summary>
         public static IStObjMap StObjMap
@@ -121,7 +122,12 @@ namespace CK.Core
             {
                 if( _map == null )
                 {
-                    Assert.That( RunDBSetup() );
+#if NET451
+                    Assert.That(RunDBSetup());
+#else
+                    _map = StObjContextRoot.Load(Config.StObjEngineConfiguration, StObjContextRoot.DefaultStObjRuntimeBuilder, Monitor);
+                    Assert.That(_map, Is.Not.Null, "Unable to load generated assembly.");
+#endif
                 }
                 return _map;
             }
@@ -150,6 +156,8 @@ namespace CK.Core
                 return _binFolder;
             }
         }
+
+#if NET451
 
         /// <summary>
         /// Runs the database setup based on <see cref="Config"/> and updates <see cref="StObjMap"/>.
@@ -220,6 +228,7 @@ namespace CK.Core
             }
             _map = null;
         }
+#endif
 
         /// <summary>
         /// Gets the connection string to the master database.
@@ -347,6 +356,16 @@ namespace CK.Core
             }
         }
 
+        public static string CurrentTestProjectName
+        {
+            get
+            {
+                if (_solutionFolder == null) InitalizePaths();
+                return _currentTestProjectName;
+            }
+        }
+
+
         /// <summary>
         /// Gets the configuration that <see cref="StObjMap"/> will use.
         /// This configuration uses <see cref="DynamicAssemblyName"/>, <see cref="AssembliesToSetup"/>
@@ -387,12 +406,16 @@ namespace CK.Core
 #else
             _buildConfiguration = "Release";
 #endif
-
-            string origin = new Uri(System.Reflection.Assembly.GetExecutingAssembly().CodeBase).LocalPath;
-            string p = origin;
-
+            string p, origin;
+#if NET451
+            origin = new Uri(System.Reflection.Assembly.GetExecutingAssembly().CodeBase).LocalPath;
             // Code base is like "...HumanSide\Tests\CK.ActorModel.Tests\Debug\bin\CK.ActorModel.Tests.dll"
-            _binFolder = p = Path.GetDirectoryName( p );
+            _binFolder = p = Path.GetDirectoryName( origin );
+#else
+            origin = Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationBasePath;
+            _binFolder = p = origin;
+#endif
+
             string name;
             while( (name = Path.GetFileName(p)) != _buildConfiguration )
             {
@@ -406,7 +429,7 @@ namespace CK.Core
             }
             _projectFolder = p = Path.GetDirectoryName( p );
             _currentTestProjectName = Path.GetFileName(p);
-            System.Reflection.Assembly entry = System.Reflection.Assembly.GetEntryAssembly();
+            Assembly entry = Assembly.GetEntryAssembly();
             if( entry != null )
             {
                 string assemblyName = entry.GetName().Name;
@@ -434,11 +457,61 @@ namespace CK.Core
             _logFolder = Path.Combine( testsFolder, "Logs" );
         }
 
-        public static void StandardMain( string[] args )
+#if NET451
+        public static int StandardMain(string[] args)
         {
-            string nunit = Path.Combine(RepositoryFolder, "packages", "NUnit.Runners.Net4.2.6.4", "tools", "nunit.exe");
-            string arg = Path.Combine(BinFolder, _currentTestProjectName +  ".exe");
-            Process.Start(nunit, '"' + arg + '"');
+            int idxGui = HandleArgument(ref args, "-gui");
+            var nunit = Path.Combine(SolutionFolder, "packages", "NUnit.Runners.Net4.2.6.4", "tools", "nunit.exe");
+            var toTest = Path.Combine(ProjectFolder, "bin", BuildConfiguration, "net451", "win7-x64", CurrentTestProjectName + ".exe");
+            var p = Process.Start(nunit, "\"" + toTest + "\" " + string.Join(" ", args));
+            return 0;
+        }
+#else
+        public static int StandardMain(string[] args)
+        {
+            int idxGui = HandleArgument(ref args, "-gui");
+            if (idxGui >= 0)
+            {
+                var nunit = Path.Combine(SolutionFolder, "packages", "NUnit.Runners.Net4.2.6.4", "tools", "nunit.exe");
+                var toTest = Path.Combine(ProjectFolder, "bin", BuildConfiguration, "net451", CurrentTestProjectName + ".exe");
+                var p = Process.Start(nunit, "\"" + toTest + "\" " + string.Join(" ", args));
+                return 0;
+            }
+            int result = -1;
+            int idxPause = HandleArgument(ref args, "-pause");
+            if (idxPause >= 0) LogToConsole = true;
+            // Copy the net451 generated assembly to bin folder.
+            var generated = Path.Combine(ProjectFolder, "bin", BuildConfiguration, "net451", DynamicAssemblyName + ".dll");
+            if (!File.Exists(generated)) Console.WriteLine($"Generated assembly '{generated}' does not exist.");
+            else
+            {
+                string dest = Path.Combine(BinFolder, DynamicAssemblyName + ".dll");
+                //File.Copy(generated, dest, true);
+                // Loads the test assembly and AutoRun the tests.
+                System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath(dest);
+                Assembly testing = Assembly.Load(new AssemblyName(CurrentTestProjectName));
+                result = new NUnitLite.AutoRun(testing)
+                    .Execute(args, new NUnit.Common.ExtendedTextWrapper(Console.Out), Console.In);
+            }
+            if (idxPause >= 0)
+            {
+                Console.Write($"Result: {result}. Hit a key.");
+                Console.ReadKey();
+            }
+            return result;
+        }
+
+#endif
+        static int HandleArgument(ref string[] args, string argument)
+        {
+            int idxArg = Array.IndexOf(args, argument);
+            if (idxArg >= 0)
+            {
+                var l = new List<string>(args);
+                l.RemoveAt(idxArg);
+                args = l.ToArray();
+            }
+            return idxArg;
         }
     }
 }

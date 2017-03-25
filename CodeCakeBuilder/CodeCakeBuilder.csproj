@@ -35,13 +35,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Cake.Common, Version=0.17.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Cake.Common.0.17.0\lib\net45\Cake.Common.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Cake.Common, Version=0.18.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Cake.Common.0.18.0\lib\net45\Cake.Common.dll</HintPath>
     </Reference>
-    <Reference Include="Cake.Core, Version=0.17.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Cake.Core.0.17.0\lib\net45\Cake.Core.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Cake.Core, Version=0.18.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Cake.Core.0.18.0\lib\net45\Cake.Core.dll</HintPath>
     </Reference>
     <Reference Include="Code.Cake, Version=0.15.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Code.Cake.0.15.0\lib\net45\Code.Cake.dll</HintPath>
@@ -72,23 +70,8 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="Bootstrap.ps1" />
-    <None Include="NuSpec\CK.Setupable.Engine.nuspec" />
-    <None Include="NuSpec\CK.Setupable.Model.nuspec" />
-    <None Include="NuSpec\CK.Setupable.Runtime.nuspec" />
-    <None Include="NuSpec\CK.DB.Tests.NUnit.nuspec" />
-    <None Include="NuSpec\CK.SqlServer.Core.nuspec" />
-    <None Include="NuSpec\CK.SqlServer.Setup.Engine.nuspec" />
-    <None Include="NuSpec\CK.SqlServer.Setup.Model.nuspec" />
-    <None Include="NuSpec\CK.SqlServer.Setup.Runtime.nuspec" />
-    <None Include="NuSpec\CK.StObj.Engine.nuspec" />
-    <None Include="NuSpec\CK.StObj.Model.nuspec" />
-    <None Include="NuSpec\CK.StObj.Runtime.nuspec" />
-    <None Include="NuSpec\CKDBSetup.nuspec">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="NuSpec\nuspec.xsd">
-      <SubType>Designer</SubType>
-    </None>
+    <None Include="NuSpec\CKDBSetup.nuspec" />
+    <None Include="CoreBuild.proj" />
     <None Include="packages.config" />
     <None Include="RepositoryInfo.xsd">
       <SubType>Designer</SubType>

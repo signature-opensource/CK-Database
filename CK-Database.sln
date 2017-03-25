@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{6E913090-EA34-4A90-8DBB-1501F9981F53}"
 EndProject
@@ -12,67 +12,67 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 		appveyor.yml = appveyor.yml
 		Conception.docx = Conception.docx
-		global.json = global.json
 		nuget.config = nuget.config
 		RepositoryInfo.xml = RepositoryInfo.xml
-		SharedAssemblyInfo.cs = SharedAssemblyInfo.cs
+		Common\Shared.props = Common\Shared.props
+		Common\SharedKey.snk = Common\SharedKey.snk
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SqlCallDemo", "SqlCallDemo", "{5EC943B9-9907-4B3B-A5CD-9155F23E2D6A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeCakeBuilder", "CodeCakeBuilder\CodeCakeBuilder.csproj", "{FD4817B6-3CD7-4E74-AA10-7CA95FDFCF2D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SqlTransform", "SqlTransform", "{CBCECF22-8C57-45FB-BD64-93C2E23331F8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Model", "Model", "{68CE5112-727D-4462-9359-3557B8A8A7F6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CK.StObj.Model", "CK.StObj.Model\CK.StObj.Model.xproj", "{D5F0D049-EF52-48A3-B8B1-DB9A0B641327}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeCakeBuilder", "CodeCakeBuilder\CodeCakeBuilder.csproj", "{FD4817B6-3CD7-4E74-AA10-7CA95FDFCF2D}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CK.StObj.Runtime", "CK.StObj.Runtime\CK.StObj.Runtime.xproj", "{1B487A5E-8893-4679-81DA-393EFC9DC60E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.StObj.Model", "CK.StObj.Model\CK.StObj.Model.csproj", "{D5F0D049-EF52-48A3-B8B1-DB9A0B641327}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CK.StObj.Engine", "CK.StObj.Engine\CK.StObj.Engine.xproj", "{F4BB03DB-A496-4233-AFCD-219E845CE8BF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.StObj.Runtime", "CK.StObj.Runtime\CK.StObj.Runtime.csproj", "{1B487A5E-8893-4679-81DA-393EFC9DC60E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CK.Setupable.Model", "CK.Setupable.Model\CK.Setupable.Model.xproj", "{BD8232CB-B23B-4C69-9F2C-90692314A915}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.StObj.Engine", "CK.StObj.Engine\CK.StObj.Engine.csproj", "{F4BB03DB-A496-4233-AFCD-219E845CE8BF}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CK.Setupable.Runtime", "CK.Setupable.Runtime\CK.Setupable.Runtime.xproj", "{D9A1C87B-3B98-49E5-95F4-BC51B132B026}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.Setupable.Model", "CK.Setupable.Model\CK.Setupable.Model.csproj", "{BD8232CB-B23B-4C69-9F2C-90692314A915}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CK.SqlServer.Setup.Model", "CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.xproj", "{8C25680A-D6B9-484C-908A-257508A80924}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.Setupable.Runtime", "CK.Setupable.Runtime\CK.Setupable.Runtime.csproj", "{D9A1C87B-3B98-49E5-95F4-BC51B132B026}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CK.SqlServer.Setup.Runtime", "CK.SqlServer.Setup.Runtime\CK.SqlServer.Setup.Runtime.xproj", "{4D3FFEEA-F748-4E46-9EBC-7D18D9848212}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.SqlServer.Setup.Model", "CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj", "{8C25680A-D6B9-484C-908A-257508A80924}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CK.Setupable.Engine", "CK.Setupable.Engine\CK.Setupable.Engine.xproj", "{12B31300-88B5-4568-A971-1FDBA65CBD02}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.SqlServer.Setup.Runtime", "CK.SqlServer.Setup.Runtime\CK.SqlServer.Setup.Runtime.csproj", "{4D3FFEEA-F748-4E46-9EBC-7D18D9848212}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CK.SqlServer.Setup.Engine", "CK.SqlServer.Setup.Engine\CK.SqlServer.Setup.Engine.xproj", "{A96F9CCB-8BBC-4724-B1EE-2FAF92588014}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.Setupable.Engine", "CK.Setupable.Engine\CK.Setupable.Engine.csproj", "{12B31300-88B5-4568-A971-1FDBA65CBD02}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CK.StObj.Engine.Tests", "Tests\CK.StObj.Engine.Tests\CK.StObj.Engine.Tests.xproj", "{789F2105-8344-46EC-82D6-60B64C8EEBBA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.SqlServer.Setup.Engine", "CK.SqlServer.Setup.Engine\CK.SqlServer.Setup.Engine.csproj", "{A96F9CCB-8BBC-4724-B1EE-2FAF92588014}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CK.Setupable.Engine.Tests", "Tests\CK.Setupable.Engine.Tests\CK.Setupable.Engine.Tests.xproj", "{9C00DFEF-3926-4E8A-9DC7-87130C7F8E28}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.StObj.Engine.Tests", "Tests\CK.StObj.Engine.Tests\CK.StObj.Engine.Tests.csproj", "{789F2105-8344-46EC-82D6-60B64C8EEBBA}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SqlActorPackage", "Tests\BasicModels\SqlActorPackage\SqlActorPackage.xproj", "{6740E01C-134A-4B70-B2BB-2E4EA7D116F4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.Setupable.Engine.Tests", "Tests\CK.Setupable.Engine.Tests\CK.Setupable.Engine.Tests.csproj", "{9C00DFEF-3926-4E8A-9DC7-87130C7F8E28}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SqlActorPackage.Runtime", "Tests\BasicModels\SqlActorPackage.Runtime\SqlActorPackage.Runtime.xproj", "{84611C82-6D97-4D51-B690-E818EDD54957}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlActorPackage", "Tests\BasicModels\SqlActorPackage\SqlActorPackage.csproj", "{6740E01C-134A-4B70-B2BB-2E4EA7D116F4}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SqlZonePackage", "Tests\BasicModels\SqlZonePackage\SqlZonePackage.xproj", "{6E375E33-0333-418C-A425-DF65D310278C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlActorPackage.Runtime", "Tests\BasicModels\SqlActorPackage.Runtime\SqlActorPackage.Runtime.csproj", "{84611C82-6D97-4D51-B690-E818EDD54957}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SqlZonePackage.Runtime", "Tests\BasicModels\SqlZonePackage.Runtime\SqlZonePackage.Runtime.xproj", "{16336B59-7D68-4742-B5F7-2A4EB392C3BD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlZonePackage", "Tests\BasicModels\SqlZonePackage\SqlZonePackage.csproj", "{6E375E33-0333-418C-A425-DF65D310278C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CK.SqlServer.Setup.Engine.Tests", "Tests\CK.SqlServer.Setup.Engine.Tests\CK.SqlServer.Setup.Engine.Tests.xproj", "{BF604471-BF24-4B4F-815B-578BD8CE4A87}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlZonePackage.Runtime", "Tests\BasicModels\SqlZonePackage.Runtime\SqlZonePackage.Runtime.csproj", "{16336B59-7D68-4742-B5F7-2A4EB392C3BD}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SqlActorPackage.Tests", "Tests\SqlActorPackage.Tests\SqlActorPackage.Tests.xproj", "{65667F9D-0251-4FEF-AB5D-44E3AB26AEA6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.SqlServer.Setup.Engine.Tests", "Tests\CK.SqlServer.Setup.Engine.Tests\CK.SqlServer.Setup.Engine.Tests.csproj", "{BF604471-BF24-4B4F-815B-578BD8CE4A87}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SqlZonePackage.Tests", "Tests\SqlZonePackage.Tests\SqlZonePackage.Tests.xproj", "{199840A1-C8C2-4FC6-B870-1F65B8BD16F6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlActorPackage.Tests", "Tests\SqlActorPackage.Tests\SqlActorPackage.Tests.csproj", "{65667F9D-0251-4FEF-AB5D-44E3AB26AEA6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SqlCallDemo", "Tests\SqlCallDemo\SqlCallDemo\SqlCallDemo.xproj", "{5D11B3DD-E4A7-410C-BA71-3B24E18B53A4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlZonePackage.Tests", "Tests\SqlZonePackage.Tests\SqlZonePackage.Tests.csproj", "{199840A1-C8C2-4FC6-B870-1F65B8BD16F6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CK.DB.Tests.NUnit", "CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.xproj", "{746561D3-227F-426C-9E0D-91A7A73170EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlCallDemo", "Tests\SqlCallDemo\SqlCallDemo\SqlCallDemo.csproj", "{5D11B3DD-E4A7-410C-BA71-3B24E18B53A4}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SqlCallDemo.Tests", "Tests\SqlCallDemo\SqlCallDemo.Tests\SqlCallDemo.Tests.xproj", "{2A00037B-4310-423D-BF21-7BE7CA23EAAB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.DB.Tests.NUnit", "CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj", "{746561D3-227F-426C-9E0D-91A7A73170EF}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CKLevel0", "Tests\SqlTransform\Model\CKLevel0\CKLevel0.xproj", "{8E280315-D75C-4BB2-AB1D-9D4C8B645116}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlCallDemo.Tests", "Tests\SqlCallDemo\SqlCallDemo.Tests\SqlCallDemo.Tests.csproj", "{2A00037B-4310-423D-BF21-7BE7CA23EAAB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CKLevel2", "Tests\SqlTransform\Model\CKLevel2\CKLevel2.xproj", "{527CE148-9DE3-4967-AAEB-F17F7133ED13}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CKLevel0", "Tests\SqlTransform\Model\CKLevel0\CKLevel0.csproj", "{8E280315-D75C-4BB2-AB1D-9D4C8B645116}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SqlTransform.Tests", "Tests\SqlTransform\SqlTransform.Tests\SqlTransform.Tests.xproj", "{3D213367-C497-497F-9F08-C73CCE4E87AB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CKLevel2", "Tests\SqlTransform\Model\CKLevel2\CKLevel2.csproj", "{527CE148-9DE3-4967-AAEB-F17F7133ED13}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlTransform.Tests", "Tests\SqlTransform\SqlTransform.Tests\SqlTransform.Tests.csproj", "{3D213367-C497-497F-9F08-C73CCE4E87AB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CKDBSetup", "CKDBSetup\CKDBSetup.csproj", "{7C935FE7-758F-47E3-908D-9DDB76D80AC6}"
 	ProjectSection(ProjectDependencies) = postProject

@@ -51,6 +51,7 @@ namespace CK.Core
         /// <returns>A <see cref="IStObjMap"/> that provides access to the objects graph.</returns>
         public static IStObjMap Load( StObjEngineConfiguration config, IStObjRuntimeBuilder runtimeBuilder = null, IActivityMonitor monitor = null )
         {
+            if (config == null) throw new ArgumentNullException(nameof(config));
             string name = BuilderFinalAssemblyConfiguration.GetFinalAssemblyName(config.FinalAssemblyConfiguration.AssemblyName);
             Assembly a = null;
             try
@@ -60,6 +61,7 @@ namespace CK.Core
             catch( Exception ex )
             {
                 if( monitor != null ) monitor.Warn().Send( ex, $"Unable to load assembly '{name}'." );
+                return null;
             }
             return Load( a, runtimeBuilder, monitor );
         }
@@ -73,6 +75,7 @@ namespace CK.Core
         /// <returns>A <see cref="IStObjMap"/> that provides access to the objects graph.</returns>
         public static IStObjMap Load( Assembly a, IStObjRuntimeBuilder runtimeBuilder = null, IActivityMonitor monitor = null )
         {
+            if (a == null) throw new ArgumentNullException(nameof(a));
             if( monitor == null ) monitor = new ActivityMonitor( "CK.Core.StObjContextRoot.Load" );
             bool loaded;
             lock( _alreadyLoaded ) 
@@ -82,9 +85,16 @@ namespace CK.Core
             }
             using( loaded ? null : monitor.OpenInfo().Send( "Loading dynamic '{0}'", a.FullName ) )
             {
-                if( a == null ) throw new ArgumentNullException( "a" );
-                Type t = a.GetType( RootContextTypeName, true, false );
-                return (StObjContextRoot)Activator.CreateInstance( t, new object[] { monitor, runtimeBuilder ?? DefaultStObjRuntimeBuilder } );
+                try
+                {
+                    Type t = a.GetType(RootContextTypeName, true, false);
+                    return (StObjContextRoot)Activator.CreateInstance(t, new object[] { monitor, runtimeBuilder ?? DefaultStObjRuntimeBuilder });
+                }
+                catch( Exception ex )
+                {
+                    monitor.Error().Send(ex, "Unable to instanciate StObjMap.");
+                    return null;
+                }
             }
         }
 

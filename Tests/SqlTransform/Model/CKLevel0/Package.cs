@@ -9,6 +9,17 @@ using System.Threading.Tasks;
 
 namespace CKLevel0
 {
+#if NET451
+    public class UseJScript
+    {
+        public object LockUse()
+        {
+            var p = new Microsoft.JScript.Expando();
+            return p;
+        }
+    }
+#endif
+
     [SqlPackage( ResourcePath ="Res", Schema = "CK")]
     [Versions("0.0.0")]
     public abstract class Package : SqlPackage

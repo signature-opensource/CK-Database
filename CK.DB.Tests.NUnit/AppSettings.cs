@@ -1,6 +1,9 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Xml.Linq;
 
 namespace CK.Core
 {
@@ -12,7 +15,7 @@ namespace CK.Core
     /// through late binding. However, it supports multiple overriding and reverting to the original configuration. 
     /// (Override support and restoration is mainly designed for tests but the override functionality alone can be a useful feature in real life application.)
     /// </summary>
-    class AppSettings
+    partial class AppSettings
     {
         readonly object _lock = new object();
         Func<string, object> _initializedGetObject;
@@ -169,29 +172,25 @@ namespace CK.Core
             }
         }
 
-
+#if !NET451
         void DoDefaultInitialize()
         {
-            const string _defType = "System.Configuration.ConfigurationManager, System.Configuration, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-            Type configMananger = SimpleTypeFinder.WeakResolver(_defType, false);
-            // Type op_equality is not portable: use ReferenceEquals.
-            if (!ReferenceEquals(configMananger, null))
+            string origin = Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationBasePath;
+            string p = origin;
+            while( !File.Exists( Path.Combine( p, "App.config") ) )
             {
-                Type[] stringParams = new Type[] { typeof(string) };
-                MethodInfo getAppSettings = configMananger.GetProperty("AppSettings", BindingFlags.Public | BindingFlags.Static).GetGetMethod();
-                MethodInfo indexer = getAppSettings.ReturnType.GetProperty("Item", typeof(string), stringParams).GetGetMethod();
-
-                DynamicMethod getter = new DynamicMethod("CK-ReadConfigurationManagerAppSettings", typeof(string), stringParams, true);
-                ILGenerator g = getter.GetILGenerator();
-                g.EmitCall(OpCodes.Call, getAppSettings, null);
-                g.Emit(OpCodes.Ldarg_0);
-                g.EmitCall(OpCodes.Call, indexer, null);
-                g.Emit(OpCodes.Ret);
-                _initializedGetObject = _getObject = (Func<string, object>)getter.CreateDelegate(typeof(Func<string, object>));
-                _initialized = true;
+                p = Path.GetDirectoryName(p);
+                if( p == null )
+                {
+                    throw new CKException($"Unable to find an 'App.config' file above '{origin}'.");
+                }
             }
-            else throw new CKException(Impl.CoreResources.AppSettingsDefaultInitializationFailed);
+            XDocument doc = XDocument.Load(Path.Combine(p, "App.config"));
+            var appSettings = doc.Root.Descendants("appSettings")
+                                        .Elements("add")
+                                        .ToDictionary(e => (string)e.AttributeRequired("key"), e => (string)e.AttributeRequired("value"));
+            _initializedGetObject = _getObject = key => appSettings.GetValueWithDefault(key, null);
         }
-
+#endif
     }
 }

@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\Common\Shared.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net451</TargetFramework>
+    <Description>
+      CK-Database helps to setup, construct, manages and build modular relationnal databases upon SqlServer.
+      CK.SqlServer.Setup.Engine provides full Sql Server setup support.
+    </Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CK.Setupable.Engine\CK.Setupable.Engine.csproj" />
+    <ProjectReference Include="..\CK.SqlServer.Setup.Runtime\CK.SqlServer.Setup.Runtime.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+</Project>

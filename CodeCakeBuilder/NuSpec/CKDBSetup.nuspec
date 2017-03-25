@@ -12,8 +12,8 @@
       Command line tool for CK-Database code.
     </summary>
     <description>
-      CK-Database helps to setup, construct, manages and build modular relational databases upon SqlServer.
-      CKDBSetup contains an executable command-line utility to set up the database, and generate a structure assembly.
+      CK-Database helps to setup, construct, manage and build modular relational databases upon SqlServer.
+      CKDBSetup contains an executable command-line utility to set up a database, and generate a dynamic assembly.
     </description>
     <language>en-US</language>
     <dependencies>
