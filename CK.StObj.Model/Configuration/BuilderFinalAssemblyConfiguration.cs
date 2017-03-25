@@ -8,25 +8,6 @@ using System.IO;
 namespace CK.Core
 {
 
-    public class OtherPlatformSupportConfiguration
-    {
-        /// <summary>
-        /// Gets or sets the folder where the assemblies that target another
-        /// framework resides. Must not be null.
-        /// </summary>
-        public string BinFolder { get; set; }
-
-        /// <summary>
-        /// Gets the list of assembly names for which calls must be redirected.
-        /// </summary>
-        public IList<string> AssemblyNamesToRedirect { get; } = new List<string>();
-
-        /// <summary>
-        /// Gets the list of assembly names that must be removed from the transformed assembly.
-        /// </summary>
-        public IList<string> AssemblyNamesToRemove { get; } = new List<string>();
-    }
-
     /// <summary>
     /// Defines options related to final assembly generation.
     /// </summary>

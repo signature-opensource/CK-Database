@@ -1,12 +1,9 @@
 {
   "profiles": {
-    "GUI-SqlTransform.Tests": {
-      "commandName": "Project",
-      "commandLineArgs": "-gui"
-    },
     "SqlTransform.Tests": {
-      "commandName": "Project",
-      "commandLineArgs": "-pause"
+      "commandName": "Executable",
+      "executablePath": "..\\..\\..\\packages\\NUnit.Runners.Net4.2.6.4\\tools\\nunit.exe",
+      "commandLineArgs": "bin\\Debug\\net451\\SqlTransform.Tests.dll"
     }
   }
 }

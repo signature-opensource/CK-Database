@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.StObj.Engine\StObj\StObjCollectorResult.FinalAssembly.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -130,16 +123,7 @@ namespace CK.Setup
                 _finalAssembly.ModuleBuilder.DefineManifestResource( StObjContextRoot.RootContextTypeName + ".Data", outS.Memory, ResourceAttributes.Private );
                 _finalAssembly.Save();
                 if (callPEVrify && !ExecutePEVerify(monitor) ) return null;
-
-                //var config = new OtherPlatformSupportConfiguration();
-                //config.BinFolder = "netcoreapp1.1";
-                //config.AssemblyNamesToRedirect.Add("System.Data.Common");
-                //config.AssemblyNamesToRedirect.Add("System.Data.SqlClient");
-                //config.AssemblyNamesToRemove.Add("System.Data");
-
-                //GenerateForOtherPlatforms(_finalAssembly.Dir, config);
-                
-                    
+                   
                 // Time to instanciate the final mapper.
                 // Injects the resource stream explicitely: GetManifestResourceStream raises "The invoked member is not supported in a dynamic assembly." exception 
                 // when called on a dynamic assembly.
