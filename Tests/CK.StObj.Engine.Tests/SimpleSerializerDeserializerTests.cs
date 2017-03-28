@@ -42,6 +42,7 @@ namespace CK.StObj.Engine.Tests
             s.Write( tD );
             s.Write( tO );
             s.Write( tT );
+            s.Write( Type.Missing );
             s.Write( GetType() );
 
             mem.Position = 0;
@@ -85,7 +86,8 @@ namespace CK.StObj.Engine.Tests
             CheckSimpleValue( d, SimpleDeserializer.KnownTypes.Datetime, tD, types, allValues );
             CheckSimpleValue( d, SimpleDeserializer.KnownTypes.DatetimeOffset, tO, types, allValues );
             CheckSimpleValue( d, SimpleDeserializer.KnownTypes.TimeSpan, tT, types, allValues );
-            CheckSimpleValue( d, SimpleDeserializer.KnownTypes.Type, GetType(), types, allValues );
+            CheckSimpleValue(d, SimpleDeserializer.KnownTypes.TypeMissing, Type.Missing, types, allValues);
+            CheckSimpleValue(d, SimpleDeserializer.KnownTypes.Type, GetType(), types, allValues);
         }
 
         void CheckSimpleValue( 
