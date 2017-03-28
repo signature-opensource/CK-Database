@@ -107,6 +107,10 @@ namespace CK.Core
             /// (since length is known), any ICollection.
             /// </summary>
             ObjectList = 20,
+             /// <summary>
+            /// The <see cref="Type.Missing"/> marker.
+            /// </summary>
+            TypeMissing = 21
         }
 
         /// <summary>
@@ -179,6 +183,7 @@ namespace CK.Core
                 case KnownTypes.TimeSpan: return new ReadValue( m, TimeSpan.FromTicks( _reader.ReadInt64() ) );
                 case KnownTypes.DatetimeOffset: return new ReadValue( m, new DateTimeOffset( _reader.ReadInt64(), TimeSpan.FromTicks( _reader.ReadInt64() ) ) );
                 case KnownTypes.Type: return new ReadValue( m, SimpleTypeFinder.WeakResolver( _reader.ReadString(), true ) );
+                case KnownTypes.TypeMissing: return new ReadValue(m, Type.Missing);
                 case KnownTypes.ObjectList:
                     {
                         int len = _reader.ReadInt32();

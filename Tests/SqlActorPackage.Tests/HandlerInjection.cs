@@ -31,8 +31,22 @@ namespace SqlActorPackage.Tests
         {
             var a = TestHelper.StObjMap.Default.Obtain<ActorHome>();
 
-            var text = a.Database.GetObjectDefinition( "CK.sActorGuidRefTest" );
-            Assert.That( text, Does.Contain( "--Injected From CmdGuidRefTest - TestAutoHeaderSPMember." ) );
+            var text = a.Database.GetObjectDefinition("CK.sActorGuidRefTest");
+            Assert.That(text, Does.Contain("--Injected From CmdGuidRefTest - TestAutoHeaderSPMember."));
+        }
+
+        [Test]
+        public void construct_injection_of_unresolved_AmbientContract_is_null()
+        {
+            var a = TestHelper.StObjMap.Default.Obtain<Package>();
+            Assert.That(a.Unexisting, Is.Null);
+        }
+
+        [Test]
+        public void optional_property_InjectContract_of_unresolved_AmbientContract_is_null()
+        {
+            var a = TestHelper.StObjMap.Default.Obtain<Package>();
+            Assert.That(a.ZoneHome, Is.Null);
         }
     }
 

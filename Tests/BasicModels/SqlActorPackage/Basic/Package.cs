@@ -13,6 +13,7 @@ using CK.Core;
 using CK.Setup;
 using CK.SqlServer;
 using CK.SqlServer.Setup;
+using System.Runtime.InteropServices;
 
 namespace SqlActorPackage.Basic
 {
@@ -22,6 +23,18 @@ namespace SqlActorPackage.Basic
     [SqlObjectItem( "fUserIsInGroup" )]
     public abstract class Package : SqlPackage, IKnowTheConnectionString
     {
+        IUnknownAbstraction _unexisting;
+
+        void Construct(IUnknownAbstraction zone = null)
+        {
+            _unexisting = zone;
+        }
+
+        [InjectContract(IsOptional = true )]
+        public ISecurityZoneAbstraction ZoneHome { get; protected set; }
+
+        public IUnknownAbstraction Unexisting => _unexisting;
+
         [InjectContract]
         public UserHome UserHome { get; protected set; }
         

@@ -3,7 +3,7 @@
     "SqlZonePackage.Tests": {
       "commandName": "Executable",
       "executablePath": "..\\..\\packages\\NUnit.Runners.Net4.2.6.4\\tools\\nunit.exe",
-      "commandLineArgs": "bin\\Debug\\net451\\SqlZonePackage.Tests.exe"
+      "commandLineArgs": "bin\\Debug\\net451\\SqlZonePackage.Tests.dll"
     }
   }
 }

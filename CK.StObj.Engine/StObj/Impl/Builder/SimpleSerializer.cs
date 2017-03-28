@@ -39,9 +39,14 @@ namespace CK.Core
         /// <param name="o">The object to write.</param>
         public void Write( object o )
         {
-            if( o == null )
+            if (o == null)
             {
                 WriteNull();
+                return;
+            }
+            if (o == Type.Missing)
+            {
+                WriteTypeMissing();
                 return;
             }
             Type oT = o.GetType();
@@ -98,7 +103,15 @@ namespace CK.Core
         /// </summary>
         public void WriteNull()
         {
-            _writer.Write( (byte)SimpleDeserializer.KnownTypes.Null );
+            _writer.Write((byte)SimpleDeserializer.KnownTypes.Null);
+        }
+
+        /// <summary>
+        /// Writes a <see cref="Type.Missing"/> marker.
+        /// </summary>
+        public void WriteTypeMissing()
+        {
+            _writer.Write((byte)SimpleDeserializer.KnownTypes.TypeMissing);
         }
 
         /// <summary>

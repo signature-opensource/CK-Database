@@ -31,5 +31,18 @@ namespace SqlZonePackage.Tests
 
         }
 
+        [Test]
+        public void construct_injection_of_unresolved_AmbientContract_is_null()
+        {
+            var a = TestHelper.StObjMap.Default.Obtain<Package>();
+            Assert.That(a.Unexisting, Is.Null);
+        }
+
+        [Test]
+        public void optional_property_InjectContract_of_resolved_AmbientContract()
+        {
+            var a = TestHelper.StObjMap.Default.Obtain<Package>();
+            Assert.That(a.ZoneHome, Is.SameAs(TestHelper.StObjMap.Default.Obtain<Zone.SecurityZoneHome>()));
+        }
     }
 }
