@@ -30,16 +30,13 @@ namespace CK.Setup
             IsOptional = AmbientContractInfo.IsOptional;
         }
 
-        public override string Name { get { return AmbientContractInfo.Name; } }
+        public override string Name => AmbientContractInfo.Name;
 
-        internal override string KindName { get { return "AmbientContract"; } }
+        internal override string KindName => "AmbientContract";
 
-        internal override Type UnderlyingType { get { return AmbientContractInfo.PropertyType; } }
+        internal override Type UnderlyingType => AmbientContractInfo.PropertyType;
 
-        public override string ToString()
-        {
-            return String.Format( "Ambient Contract '{0}' of '{1}'", Name, Owner.ToString() );
-        }
+        public override string ToString() => $"Ambient Contract '{Name}' of '{Owner}'";
 
     }
 }

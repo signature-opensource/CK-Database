@@ -31,7 +31,10 @@ namespace CK.Setup
         {
             Owner = owner;
             _kind = kind;
-            if( _kind == StObjMutableReferenceKind.Requires || _kind == StObjMutableReferenceKind.Group || _kind == StObjMutableReferenceKind.AmbientContract || (_kind & StObjMutableReferenceKind.Container) != 0 )
+            if( _kind == StObjMutableReferenceKind.Requires 
+                || _kind == StObjMutableReferenceKind.Group 
+                || _kind == StObjMutableReferenceKind.AmbientContract 
+                || (_kind & StObjMutableReferenceKind.Container) != 0 )
             {
                 StObjRequirementBehavior = StObjRequirementBehavior.ErrorIfNotStObj;
             }
@@ -92,7 +95,7 @@ namespace CK.Setup
                 result = ctxResult.InternalMapper.ToHighestImpl( Type );
                 if( result == null )
                 {
-                    WarnOrErrorIfStObjRequired( monitor, $"{AmbientContractCollector.FormatContextualFullName( _context, Type )} not found" );
+                    WarnOrErrorIfStObjRequired( monitor, false, $"{AmbientContractCollector.FormatContextualFullName( _context, Type )} not found" );
                     return null;
                 }
             }
@@ -107,25 +110,13 @@ namespace CK.Setup
                     var all = collector.FindHighestImplFor( Type ).ToList();
                     if( all.Count == 0 )
                     {
-                        // Do not use WarnOrErrorIfStObjRequired since we want to handle optional value type or string not found without any warning.
-                        if( StObjRequirementBehavior == Setup.StObjRequirementBehavior.ErrorIfNotStObj )
-                        {
-                            Error( monitor, $"Type '{Type.FullName}' not found in any context" );
-                        }
-                        else if( StObjRequirementBehavior == Setup.StObjRequirementBehavior.WarnIfNotStObj )
-                        {
-                            if( !Type.IsValueType && Type != typeof( string ) )
-                            {
-                                Warn( monitor, $"Type '{Type.FullName}' not found in any context" );
-                            }
-                        }
+                        // Do not when value type or string not found.
+                        WarnOrErrorIfStObjRequired(monitor, true, $"{AmbientContractCollector.FormatContextualFullName(_context, Type)} not found");
                         return null;
                     }
                     if( all.Count > 1 )
                     {
-                        Error( monitor, String.Format( "Type '{0}' exists in more than one context: '{1}'. A context for this relation must be specified", 
-                                                        Type.FullName, 
-                                                        String.Join( "', '", all.Select( m => m.Context ) ) ) );
+                        Error( monitor, $"Type '{Type.FullName}' exists in more than one context: '{String.Join("', '", all.Select(m => m.Context))}'. A context for this relation must be specified" );
                         return null;
                     }
                     result = all[0];
@@ -134,7 +125,7 @@ namespace CK.Setup
             return result;
         }
 
-        private void WarnOrErrorIfStObjRequired( IActivityMonitor monitor, string text )
+        protected virtual void WarnOrErrorIfStObjRequired( IActivityMonitor monitor, bool skipWarnOnValueType, string text )
         {
             if( StObjRequirementBehavior == Setup.StObjRequirementBehavior.ErrorIfNotStObj )
             {
@@ -142,7 +133,10 @@ namespace CK.Setup
             }
             else if( StObjRequirementBehavior == Setup.StObjRequirementBehavior.WarnIfNotStObj )
             {
-                Warn( monitor, text );
+                if( !skipWarnOnValueType || !(Type.IsValueType || Type == typeof(string)))
+                {
+                    Warn(monitor, text);
+                }
             }
         }
 
@@ -156,9 +150,6 @@ namespace CK.Setup
             monitor.Error().Send( "{0}: {1}.", ToString(), text );
         }
 
-        public override string ToString()
-        {
-            return String.Format( "{0} reference for '{1}'", _kind.ToString(), Owner.ToString() );
-        }
+        public override string ToString() => $"{_kind.ToString()} reference for '{Owner}'";
     }
 }

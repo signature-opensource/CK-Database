@@ -31,20 +31,17 @@ namespace CK.Setup
             if( IsSetupLogger ) StObjRequirementBehavior = Setup.StObjRequirementBehavior.None;
         }
 
-        public int Index { get { return _param.Position; } }
+        public int Index => _param.Position;
 
-        public override string Name { get { return _param.Name; } }
+        public override string Name => _param.Name;
 
-        public bool IsRealParameterOptional { get { return _param.IsOptional; } }
+        public bool IsRealParameterOptional => _param.IsOptional;
 
-        internal override string KindName { get { return "Parameter"; } }
+        internal override string KindName => "Parameter";
 
-        internal override Type UnderlyingType { get { return _param.ParameterType; } }
+        internal override Type UnderlyingType => _param.ParameterType;
 
-        internal bool IsSetupLogger
-        {
-            get { return _param.ParameterType == typeof( IActivityMonitor ) && _param.Name == "monitor"; }
-        }
+        internal bool IsSetupLogger => _param.ParameterType == typeof( IActivityMonitor ) && _param.Name == "monitor";
 
         /// <summary>
         /// Stores the index of the runtime value to use. 0 for null, Positive for objects collected in BuildValueCollector, the negative IndexOrdered+1 for StObj
@@ -54,7 +51,7 @@ namespace CK.Setup
 
         public override string ToString()
         {
-            string s = String.Format( "Construct parameter '{0}' (n°{1}) for '{2}'", Name, Index+1, Owner.ToString() );
+            string s = $"Construct parameter '{Name}' (n°{Index+1}) for '{Owner}'";
             if( (Kind & StObjMutableReferenceKind.Container) != 0 ) s += " (Container)";
             return s;
         }
@@ -64,9 +61,6 @@ namespace CK.Setup
             Value = value;
         }
 
-        IStObjResult IStObjFinalParameter.Owner
-        {
-            get { return Owner; }
-        }
+        IStObjResult IStObjFinalParameter.Owner => Owner; 
     }
 }

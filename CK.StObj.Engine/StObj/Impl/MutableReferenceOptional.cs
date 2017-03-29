@@ -54,15 +54,17 @@ namespace CK.Setup
                 return _resolved = null;
             }
             Debug.Assert( Type != null || IsOptional );
-            if( Type != null )
+            if( Type != null && !UnderlyingType.IsAssignableFrom( Type ) )
             {
-                if( !UnderlyingType.IsAssignableFrom( Type ) )
-                {
-                    Error( monitor, $"Type '{Type.FullName}' is not compatible with the {KindName} type ('{UnderlyingType.FullName}')" );
-                    return _resolved = null;
-                }
+                Error( monitor, $"Type '{Type.FullName}' is not compatible with the {KindName} type ('{UnderlyingType.FullName}')" );
+                return _resolved = null;
             }
             return _resolved = base.ResolveToStObj( monitor, collector, cachedCollector );
+        }
+
+        protected override void WarnOrErrorIfStObjRequired(IActivityMonitor monitor, bool skipWarnOnValueType, string text)
+        {
+            if( !IsOptional ) base.WarnOrErrorIfStObjRequired(monitor, skipWarnOnValueType, text);
         }
     }
 }

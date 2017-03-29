@@ -36,7 +36,7 @@ namespace CK.Setup
         /// </summary>
         public string Context { get; private set; }
 
-        public bool IsOptional { get { return _isOptional; } private set { _isOptional = value; } }
+        public bool IsOptional => _isOptional; 
 
         protected override void SetGeneralizationInfo( IActivityMonitor monitor, CovariantPropertyInfo g )
         {
@@ -47,7 +47,7 @@ namespace CK.Setup
             {
                 if( _isOptionalDefined )
                 {
-                    monitor.Error().Send( "Ambient property '{0}.{1}' states that it is optional but base property '{2}.{1}' is required.", DeclaringType.FullName, Name, gen.DeclaringType.FullName );
+                    monitor.Error().Send($"{Kind}: Property '{DeclaringType.FullName}.{Name}' states that it is optional but base property '{gen.DeclaringType.FullName}.{Name}' is required." );
                 }
                 _isOptional = false;
             }
