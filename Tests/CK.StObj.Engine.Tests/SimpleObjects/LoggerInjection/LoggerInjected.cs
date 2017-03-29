@@ -16,11 +16,11 @@ namespace CK.StObj.Engine.Tests.SimpleObjects.LoggerInjection
 {
     public class LoggerInjected : IAmbientContract
     {
-        void Construct( IActivityMonitor monitor, IActivityMonitor anotherLogger = null )
+        void StObjConstruct( IActivityMonitor monitor, IActivityMonitor anotherLogger = null )
         {
             Assert.That( monitor, Is.Not.Null, "This is the Setup monitor. Parameter must be exactly 'IActivityMonitor monitor'." );
             Assert.That( anotherLogger, Is.Null, "This is NOT the Setup monitor. Since it is optional, it works." );
-            monitor.Trace().Send( "Setup monitor can be used by Construct method." );
+            monitor.Trace().Send("Setup monitor can be used by StObjConstruct method.");
         }
     }
 }

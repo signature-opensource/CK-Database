@@ -19,7 +19,7 @@ namespace SqlCallDemo
     {
         IPocoFactory<IThing> _factory;
 
-        void Construct( IPocoFactory<IThing> factory )
+        void StObjConstruct( IPocoFactory<IThing> factory )
         {
             _factory = factory;
         }

@@ -190,7 +190,7 @@ namespace CK.StObj.Engine.Tests
 
         class C3InC2SpecializeC1 : C1
         {
-            void Construct( [Container]C2InC1 c2 )
+            void StObjConstruct( [Container]C2InC1 c2 )
             {
             }
         }
@@ -247,7 +247,7 @@ namespace CK.StObj.Engine.Tests
 
         class C3RequiresC2SpecializeC1 : C1
         {
-            void Construct( C2InC1 c2 )
+            void StObjConstruct( C2InC1 c2 )
             {
             }
         }

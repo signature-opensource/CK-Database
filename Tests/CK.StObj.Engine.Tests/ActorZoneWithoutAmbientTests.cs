@@ -48,7 +48,7 @@ namespace CK.StObj.Engine.Tests
         [StObj( Container = typeof( BasicPackage ), ItemKind = DependentItemKindSpec.Item )]
         class BasicGroup : IAmbientContract
         {
-            void Construct( BasicActor actor )
+            void StObjConstruct( BasicActor actor )
             {
             }
         }
@@ -64,7 +64,7 @@ namespace CK.StObj.Engine.Tests
         [StObj( Container = typeof( ZonePackage ), ItemKind = DependentItemKindSpec.Item )]
         class ZoneGroup : BasicGroup
         {
-            void Construct( SecurityZone zone )
+            void StObjConstruct( SecurityZone zone )
             {
             }
         }
@@ -72,7 +72,7 @@ namespace CK.StObj.Engine.Tests
         [StObj( Container = typeof( ZonePackage ), ItemKind = DependentItemKindSpec.Item )]
         class SecurityZone : IAmbientContract
         {
-            void Construct( BasicGroup group )
+            void StObjConstruct( BasicGroup group )
             {
             }
         }

@@ -15,7 +15,7 @@ namespace CK.StObj.Engine.Tests.Poco
     [StObj( ItemKind = DependentItemKindSpec.Container )]
     public class PackageWithBasicPoco : IAmbientContract
     {
-        void Construct( IPocoFactory<IBasicPoco> f )
+        void StObjConstruct( IPocoFactory<IBasicPoco> f )
         {
             Factory = f;
         }

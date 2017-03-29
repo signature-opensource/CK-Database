@@ -121,7 +121,7 @@ namespace CK.StObj.Engine.Tests
                 [StObjProperty]
                 public string StObjPower { get; set; }
 
-                void Construct( IActivityMonitor monitor )
+                void StObjConstruct( IActivityMonitor monitor )
                 {
                     monitor.Trace().Send( "At A level: StObjPower = '{0}'.", StObjPower );
                 }
@@ -132,7 +132,7 @@ namespace CK.StObj.Engine.Tests
                 [StObjProperty]
                 new public string StObjPower { get; set; }
 
-                void Construct( IActivityMonitor monitor, B b )
+                void StObjConstruct( IActivityMonitor monitor, B b )
                 {
                     monitor.Trace().Send( "At ASpec level: StObjPower = '{0}'.", StObjPower );
                     TheB = b;
@@ -143,7 +143,7 @@ namespace CK.StObj.Engine.Tests
 
             public class B : IAmbientContract
             {
-                void Construct( A a )
+                void StObjConstruct( A a )
                 {
                     TheA = a;
                 }

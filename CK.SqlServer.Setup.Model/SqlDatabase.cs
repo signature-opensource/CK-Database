@@ -48,11 +48,11 @@ namespace CK.SqlServer.Setup
         /// This name, which is strongly associated to this SqlDatabase object and can not be changed (set only in the constructor), 
         /// defines the location of objects that are bound to it and drives the actual connection string to use.
         /// </summary>
-        public string Name => _name; 
+        public string Name => _name;
 
         /// <summary>
         /// Gets or sets the connection string.
-        /// This can be automatically configured during setup (if the specialized class implements a Construct method with a connectionString parameter
+        /// This can be automatically configured during setup (if the specialized class implements a StObjConstruct method with a connectionString parameter
         /// and sets this property).
         /// </summary>
         public string ConnectionString { get; set; }

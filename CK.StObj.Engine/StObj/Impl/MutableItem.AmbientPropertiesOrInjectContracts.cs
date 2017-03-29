@@ -137,10 +137,10 @@ namespace CK.Setup
 
         /// <summary>
         /// Works on leaf only. 
-        /// Registers all the DirectProperties values by calling RootGeneralization.AddPreConstructProperty: they will be set right before the call to Construct of the root of the inheritance chain.
+        /// Registers all the DirectProperties values by calling RootGeneralization.AddPreConstructProperty: they will be set right before the call to StObjConstruct of the root of the inheritance chain.
         /// Registers all the AmbientContracts (resolves the MutableItem) by calling AddPostBuildProperty on the most specialized leaf: these properties will be set after the whole graph
         /// will be created.
-        /// For AmbientProperties, it is slightly more complicated: depending of the property, we will be able to set it before Construct (like DirectProperties) or only after the whole graph
+        /// For AmbientProperties, it is slightly more complicated: depending of the property, we will be able to set it before StObjConstruct (like DirectProperties) or only after the whole graph
         /// is created.
         /// - When the AmbientProperty is a mere value (not a StObj), we can call RootGeneralization.AddPreConstructProperty.
         /// - When the AmbientProperty is a StObj, depending on the resolved StObj's TrackAmbientPropertyMode, we call RootGeneralization.AddPreConstructProperty only if 

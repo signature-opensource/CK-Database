@@ -17,9 +17,9 @@ namespace CK.StObj.Engine.Tests.SimpleObjects
     {
         public int ConstructCount { get; protected set; }
 
-        void Construct()
+        void StObjConstruct()
         { 
-            Assert.That( ConstructCount, Is.EqualTo( 0 ), "First Construct." );
+            Assert.That( ConstructCount, Is.EqualTo( 0 ), "First StObjConstruct.");
             SimpleObjectsTrace.LogMethod( MethodInfo.GetCurrentMethod() );
             ConstructCount = ConstructCount + 1;
         }

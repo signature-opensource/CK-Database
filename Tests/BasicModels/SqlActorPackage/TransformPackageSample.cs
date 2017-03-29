@@ -12,7 +12,7 @@ namespace SqlActorPackage
     [SqlObjectItem( "transform:sGroupDestroy" )]
     public class TransformPackageSample : SqlPackage
     {
-        void Construct( SqlActorPackage.Basic.Package actorPackage )
+        void StObjConstruct( SqlActorPackage.Basic.Package actorPackage )
         {
         }
     }

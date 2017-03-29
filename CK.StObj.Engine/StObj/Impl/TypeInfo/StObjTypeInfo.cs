@@ -215,17 +215,26 @@ namespace CK.Setup
             // so that IStObjStructuralConfigurator objects can alter them).
             #endregion
 
-            #region Construct method & parameters
-            Construct = t.GetMethod( StObjContextRoot.ConstructMethodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly );
-            if( Construct != null )
+            #region StObjConstruct method & parameters
+            StObjConstruct = t.GetMethod( StObjContextRoot.ConstructMethodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly );
+            // From Construct to StObjConstruct...
+            if( StObjConstruct == null )
             {
-                if( Construct.IsVirtual )
+                StObjConstruct = t.GetMethod("Construct", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+                if( StObjConstruct != null )
+                {
+                    monitor.Warn().Send($"Deprecated: Method '{t.FullName}.Construct' must be named '{StObjContextRoot.ConstructMethodName}' instead." );
+                }
+            }
+            if ( StObjConstruct != null )
+            {
+                if( StObjConstruct.IsVirtual )
                 {
                     monitor.Error().Send($"Method '{t.FullName}.{StObjContextRoot.ConstructMethodName}' must NOT be virtual.");
                 }
                 else
                 {
-                    ConstructParameters = Construct.GetParameters();
+                    ConstructParameters = StObjConstruct.GetParameters();
                     ConstructParameterTypedContext = ConstructParameters.Length > 0 ? new string[ConstructParameters.Length] : Util.Array.Empty<string>();
                     ContainerConstructParameterIndex = -1;
                     for( int i = 0; i < ConstructParameters.Length; ++i )
@@ -268,7 +277,7 @@ namespace CK.Setup
             }
             #endregion
 
-            #region Initialize method checks: (non virtual) void Initialize( IActivityMonitor, IContextualStObjMap)
+            #region StObjInitialize method checks: (non virtual) void Initialize( IActivityMonitor, IContextualStObjMap)
             var initialize = t.GetMethod(StObjContextRoot.InitializeMethodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
             if (initialize != null)
             {
@@ -325,7 +334,7 @@ namespace CK.Setup
 
         public readonly Type[] Groups;
 
-        public readonly MethodInfo Construct;
+        public readonly MethodInfo StObjConstruct;
 
         public readonly ParameterInfo[] ConstructParameters;
 

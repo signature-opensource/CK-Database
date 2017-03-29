@@ -46,7 +46,7 @@ namespace CK.Setup
         /// <param name="runtimeBuilder">Runtime builder to use. A <see cref="BasicStObjBuilder"/> can be used.</param>
         /// <param name="dispatcher">Used to dispatch Types betwenn contexts or hide them. See <see cref="IAmbientContractDispatcher"/>.</param>
         /// <param name="configurator">Used to configure items. See <see cref="IStObjStructuralConfigurator"/>.</param>
-        /// <param name="valueResolver">Used to explicitely resolve or alter Construct parameters and object ambient properties. See <see cref="IStObjValueResolver"/>.</param>
+        /// <param name="valueResolver">Used to explicitely resolve or alter StObjConstruct parameters and object ambient properties. See <see cref="IStObjValueResolver"/>.</param>
         public StObjCollector( 
             IActivityMonitor monitor,
             BuilderFinalAssemblyConfiguration finalAssemblyConfig = null,
@@ -269,7 +269,7 @@ namespace CK.Setup
                 // The structure objects have been ordered by their dependencies (and optionally
                 // by the IStObjStructuralConfigurator). 
                 // Their instance has been set during the first step (CreateMutableItems).
-                // We can now call the Construct methods and returns an ordered list of IStObj.
+                // We can now call the StObjConstruct methods and returns an ordered list of IStObj.
                 //
                 using( _monitor.OnError( () => result.SetFatal() ) )
                 using( _monitor.OpenInfo().Send( "Initializing object graph." ) )
@@ -279,7 +279,7 @@ namespace CK.Setup
                     foreach( ISortedItem sorted in sortResult.SortedItems )
                     {
                         var m = (MutableItem)sorted.Item;
-                        // Calls Construct on Head for Groups.
+                        // Calls StObjConstruct on Head for Groups.
                         if( m.ItemKind == DependentItemKindSpec.Item || sorted.IsGroupHead )
                         {
                             m.SetSorterData( ordered.Count, ref idxSpecialization, sorted.Requires, sorted.Children, sorted.Groups );

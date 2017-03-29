@@ -86,7 +86,7 @@ namespace CK.Setup
         IStObjMutableReferenceList Groups { get; }
 
         /// <summary>
-        /// Gets a list of mutable Construct parameters.
+        /// Gets a list of mutable StObjConstruct parameters.
         /// </summary>
         IReadOnlyList<IStObjMutableParameter> ConstructParameters { get; }
 

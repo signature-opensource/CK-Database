@@ -106,7 +106,7 @@ namespace CK.Core
                 }
                 MethodInfo construct = GetDeclaredMethod(StObjContextRoot.ConstructMethodName);
                 if (construct == null) return;
-                step = "Resolving Construct parameters.";
+                step = "Resolving StObjConstruct parameters.";
                 object[] parameters = new object[_constructParametersIndex.Length];
                 for (int i = 0; i < _constructParametersIndex.Length; ++i)
                 {
@@ -114,7 +114,7 @@ namespace CK.Core
                     if (idx == Int32.MaxValue) parameters[i] = monitor;
                     else parameters[i] = GetValueFromIndex(itemResolver, idx);
                 }
-                step = "Calling Construct.";
+                step = "Calling StObjConstruct.";
                 construct.Invoke(instance, parameters);
             }
             catch( Exception ex )

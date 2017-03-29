@@ -26,7 +26,7 @@ namespace SqlActorPackage.Basic
         IUnknownAbstraction _unexistingByConstructParam;
         IReadOnlyList<IAnyService> _allServices;
         
-        void Construct(IUnknownAbstraction zone = null)
+        void StObjConstruct(IUnknownAbstraction zone = null)
         {
             _unexistingByConstructParam = zone;
         }
@@ -46,7 +46,7 @@ namespace SqlActorPackage.Basic
         /// </summary>
         public IReadOnlyList<IAnyService> AllServices => _allServices;
 
-        void Initialize( IActivityMonitor m, IContextualStObjMap map )
+        void StObjInitialize( IActivityMonitor m, IContextualStObjMap map )
         {
             _allServices = map.Implementations.OfType<IAnyService>().ToArray();
         }

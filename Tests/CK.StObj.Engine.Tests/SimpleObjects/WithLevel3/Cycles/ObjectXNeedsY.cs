@@ -13,7 +13,7 @@ namespace CK.StObj.Engine.Tests.SimpleObjects.WithLevel3.Cycles
 
     public class ObjectXNeedsY : IAmbientContract
     {
-        void Construct( ObjectYNeedsX other )
+        void StObjConstruct( ObjectYNeedsX other )
         {
             Assert.Fail( "Cycle: no object graph initialization." );
         }

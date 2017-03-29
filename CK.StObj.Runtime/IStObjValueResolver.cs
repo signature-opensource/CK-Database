@@ -14,7 +14,7 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// Enables explicit configuration of Construct method parameters as well as manual resolution for ambient 
+    /// Enables explicit configuration of StObjConstruct method parameters as well as manual resolution for ambient 
     /// properties that are not bound to <see cref="IStObjResult"/> objects. 
     /// Must be passed as a parameter to the constructor of StObjCollector.
     /// </summary>
@@ -33,7 +33,7 @@ namespace CK.Setup
         /// The <see cref="IStObjFinalParameter.SetParameterValue"/> can be used to set or alter the parameter value.
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
-        /// <param name="parameter">Parameter of a Construct method.</param>
+        /// <param name="parameter">Parameter of a StObjConstruct method.</param>
         void ResolveParameterValue( IActivityMonitor monitor, IStObjFinalParameter parameter );
         
     }

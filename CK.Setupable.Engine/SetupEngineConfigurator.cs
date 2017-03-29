@@ -70,7 +70,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Step n°3 - Once most specialized objects are created, the configuration for each "slice" (StObj) from top to bottom of the inheritance chain 
-        /// can be altered: properties can be set, dependencies like Container, Requires, Children, etc. but also parameters' value of the Construct method can be changed.
+        /// can be altered: properties can be set, dependencies like Container, Requires, Children, etc. but also parameters' value of the StObjConstruct method can be changed.
         /// This empty implementation of <see cref="IStObjStructuralConfigurator.Configure"/> calls <see cref="Previous"/> if it is not null.
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
@@ -92,13 +92,13 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Step n°5 - StObj dependency graph has been ordered, properties that was settable before initialization have been set, the Construct method
+        /// Step n°5 - StObj dependency graph has been ordered, properties that was settable before initialization have been set, the StObjConstruct method
         /// is called and for each of their parameters, this enable the parameter value to be set or changed.
         /// This is the last step of the pure StObj level work: after this one, object graph dependencies have been resolved, objects are configured.
         /// This empty implementation of <see cref="IStObjValueResolver.ResolveParameterValue"/> (calls <see cref="Previous"/> if it is not null.
         /// </summary>
         /// <param name="monitor">The _monitor to use.</param>
-        /// <param name="parameter">Parameter of a Construct method.</param>
+        /// <param name="parameter">Parameter of a StObjConstruct method.</param>
         public virtual void ResolveParameterValue( IActivityMonitor monitor, IStObjFinalParameter parameter )
         {
             if( _previous != null ) _previous.ResolveParameterValue( monitor, parameter );

@@ -16,7 +16,7 @@ using System.Reflection;
 namespace CK.Setup
 {
     /// <summary>
-    /// Describes a parameter of a Construct method.
+    /// Describes a parameter of a StObjConstruct method.
     /// </summary>
     internal class MutableParameter : MutableReferenceWithValue, IStObjMutableParameter, IStObjFinalParameter
     {
@@ -51,7 +51,7 @@ namespace CK.Setup
 
         public override string ToString()
         {
-            string s = $"Construct parameter '{Name}' (n°{Index+1}) for '{Owner}'";
+            string s = $"{StObjContextRoot.ConstructMethodName} parameter '{Name}' (n°{Index+1}) for '{Owner}'";
             if( (Kind & StObjMutableReferenceKind.Container) != 0 ) s += " (Container)";
             return s;
         }

@@ -13,7 +13,7 @@ namespace CK.StObj.Engine.Tests.SimpleObjects
     // ObjectALevel2 is by default in the container of its parent: ObjectALevel1 is in PackageForABLevel1.
     public class ObjectALevel2 : ObjectALevel1
     {
-        void Construct()
+        void StObjConstruct()
         {
             Assert.That( ConstructCount, Is.EqualTo( 2 ), "ObjectA and ObjectALevel1 construct has been called." );
             SimpleObjectsTrace.LogMethod( MethodInfo.GetCurrentMethod() );

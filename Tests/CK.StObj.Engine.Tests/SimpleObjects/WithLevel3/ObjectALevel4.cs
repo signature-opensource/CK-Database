@@ -12,7 +12,7 @@ namespace CK.StObj.Engine.Tests.SimpleObjects.WithLevel3
 {
     public class ObjectALevel4 : ObjectALevel3
     {
-        void Construct( IAbstractionBOnLevel2 oB )
+        void StObjConstruct( IAbstractionBOnLevel2 oB )
         {
             Assert.That( ConstructCount, Is.EqualTo( 4 ), "ObjectA, ObjectALevel1ObjectALevel2 and ObjectALevel3 construct have been called." );
             Assert.That( oB.ConstructCount, Is.GreaterThanOrEqualTo( 3 ), "ObjectB, ObjectBLevel1 and ObjectBLevel2 construct have been called." );

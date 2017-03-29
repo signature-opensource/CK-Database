@@ -28,7 +28,7 @@ namespace CK.SqlServer.Setup
             EnsureSchema( DefaultSchemaName );
         }
 
-        void Construct( string connectionString )
+        void StObjConstruct( string connectionString )
         {
             ConnectionString = connectionString;
         }

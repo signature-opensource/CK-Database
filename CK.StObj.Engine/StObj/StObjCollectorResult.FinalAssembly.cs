@@ -101,7 +101,7 @@ namespace CK.Setup
                         outS.Writer.Write( m.LeafSpecialization.IndexOrdered );
                         outS.Writer.Write( m.SpecializationIndexOrdered );
 
-                        if( m.AmbientTypeInfo.Construct != null )
+                        if( m.AmbientTypeInfo.StObjConstruct != null )
                         {
                             outS.Writer.Write( m.ConstructParameters.Count );
                             foreach( MutableParameter p in m.ConstructParameters )

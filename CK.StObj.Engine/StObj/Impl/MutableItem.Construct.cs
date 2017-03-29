@@ -35,7 +35,7 @@ namespace CK.Setup
                 }
             }
 
-            if( AmbientTypeInfo.Construct == null ) return;
+            if( AmbientTypeInfo.StObjConstruct == null ) return;
 
             object[] parameters = new object[_constructParameterEx.Count];
             int i = 0;
@@ -85,7 +85,7 @@ namespace CK.Setup
                 }
                 parameters[i++] = t.Value;
             }
-            AmbientTypeInfo.Construct.Invoke( _leafData.StructuredObject, parameters );
+            AmbientTypeInfo.StObjConstruct.Invoke( _leafData.StructuredObject, parameters );
         }
 
         internal void SetPostBuildProperties( IActivityMonitor monitor, StObjCollectorResult collector, StObjCollectorContextualResult cachedContext )

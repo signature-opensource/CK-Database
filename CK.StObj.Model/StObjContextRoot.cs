@@ -30,12 +30,12 @@ namespace CK.Core
         /// <summary>
         /// Holds the name of 'Construct' method.
         /// </summary>
-        public static readonly string ConstructMethodName = "Construct";
+        public static readonly string ConstructMethodName = "StObjConstruct";
 
         /// <summary>
         /// Holds the name of 'Initialize' method.
         /// </summary>
-        public static readonly string InitializeMethodName = "Initialize";
+        public static readonly string InitializeMethodName = "StObjInitialize";
 
         static readonly HashSet<Assembly> _alreadyLoaded = new HashSet<Assembly>();
 

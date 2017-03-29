@@ -10,7 +10,7 @@ namespace SqlActorPackage.Basic
     [SqlObjectItem("a_stupid_view")]
     public abstract class GroupHome : SqlTable, IAnyService
     {
-        void Construct( ActorHome actor )
+        void StObjConstruct( ActorHome actor )
         {
         }
 

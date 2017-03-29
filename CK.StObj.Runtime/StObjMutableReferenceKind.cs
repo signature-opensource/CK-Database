@@ -49,7 +49,7 @@ namespace CK.Setup
         Child = 16,
 
         /// <summary>
-        /// Parameter from Construct method. It is a considered as a Requires.
+        /// Parameter from StObjConstruct method. It is a considered as a Requires.
         /// </summary>
         ConstructParameter = 32,
 

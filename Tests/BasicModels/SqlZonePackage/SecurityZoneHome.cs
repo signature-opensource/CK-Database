@@ -17,7 +17,7 @@ namespace SqlZonePackage.Zone
     {
         bool SqlActorPackage.ISecurityZoneAbstraction.IAmHere() => true;
 
-        void Construct( SqlActorPackage.Basic.GroupHome group )
+        void StObjConstruct( SqlActorPackage.Basic.GroupHome group )
         {
         }
     }

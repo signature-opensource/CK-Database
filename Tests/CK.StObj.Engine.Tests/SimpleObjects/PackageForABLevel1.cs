@@ -12,9 +12,9 @@ namespace CK.StObj.Engine.Tests.SimpleObjects
 {
     public class PackageForABLevel1 : PackageForAB
     {
-        void Construct()
+        void StObjConstruct()
         {
-            Assert.That( ConstructCount, Is.EqualTo( 1 ), "PackageForAB.Construct has been called." );
+            Assert.That( ConstructCount, Is.EqualTo( 1 ), "PackageForAB.StObjConstruct has been called.");
 
             SimpleObjectsTrace.LogMethod( MethodBase.GetCurrentMethod() );
 

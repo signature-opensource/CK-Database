@@ -29,7 +29,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Consider Ambient Properties holder object as a child of this Group.
-        /// This triggers the setting of the property before the call to the Construct method.
+        /// This triggers the setting of the property before the call to the StObjConstruct method.
         /// </summary>
         AddPropertyHolderAsChildren = 2,
 
@@ -40,7 +40,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Consider Ambient Properties holder object as a requirement for this item.
-        /// This triggers the setting of the property before the call to the Construct method.
+        /// This triggers the setting of the property before the call to the StObjConstruct method.
         /// </summary>
         PropertyHolderRequiresThis = 4,
 

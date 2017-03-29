@@ -13,13 +13,13 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
-    /// Exposes the parameter of a Construct method that <see cref="IStObjValueResolver.ResolveParameterValue"/> sees.
+    /// Exposes the parameter of a StObjConstruct method that <see cref="IStObjValueResolver.ResolveParameterValue"/> sees.
     /// </summary>
     public interface IStObjFinalParameter : IStObjReference
     {
         /// <summary>
         /// Gets the StObj that owns this reference as a <see cref="IStObjResult"/> (since the dependency graph is resolved).
-        /// This owner corresponds to the exact type of the object that has the Construct method for parameters.
+        /// This owner corresponds to the exact type of the object that has the StObjConstruct method for parameters.
         /// </summary>
         new IStObjResult Owner { get; }
         
@@ -60,7 +60,7 @@ namespace CK.Setup
         /// The <see cref="IStObjMutableParameter"/> also exposes this method: by using <see cref="IStObjMutableParameter.SetParameterValue"/> method from <see cref="IStObjStructuralConfigurator.Configure"/>, 
         /// the explicit value is injected and breaks (suppress) the potential dependency to this [<see cref="IStObjReference.Context"/>]<see cref="IStObjReference.Type"/>.
         /// </remarks>
-        /// <param name="value">Value to set. Type must be compatible otherwise an exception will be thrown when calling the actual Construct method.</param>
+        /// <param name="value">Value to set. Type must be compatible otherwise an exception will be thrown when calling the actual StObjConstruct method.</param>
         void SetParameterValue( object value );
 
     }

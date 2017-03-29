@@ -242,7 +242,7 @@ namespace CK.Setup
             Debug.Assert( _constructParameterEx == null, "Called only once right after object instanciation..." );
             Debug.Assert( _container != null, "...and after ApplyTypeInformation." );
 
-            if( AmbientTypeInfo.Construct != null && AmbientTypeInfo.ConstructParameters.Length > 0 )
+            if( AmbientTypeInfo.StObjConstruct != null && AmbientTypeInfo.ConstructParameters.Length > 0 )
             {
                 var parameters = new MutableParameter[AmbientTypeInfo.ConstructParameters.Length];
                 for( int idx = 0; idx < parameters.Length; ++idx )
@@ -477,14 +477,14 @@ namespace CK.Setup
                 {
                     if( dep != null ) req.Add( dep );
                 }
-                // Construct parameters are Required... except:
+                // StObjConstruct parameters are Required... except:
                 // - If they are one of our Container but this is handled
                 //   at the DependencySorter level by using the SkipDependencyToContainer option.
                 //   See the commented old code (to be kept) below for more detail on this option.
                 // - If IStObjMutableParameter.SetParameterValue has been called by a IStObjStructuralConfigurator, then this 
                 //   breaks the potential dependency.
                 // 
-                if( _constructParameterEx.Count > 0 )
+                if ( _constructParameterEx.Count > 0 )
                 {
                     foreach( MutableParameter t in _constructParameterEx )
                     {
