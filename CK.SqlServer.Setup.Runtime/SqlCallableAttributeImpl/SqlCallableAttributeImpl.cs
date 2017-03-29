@@ -27,13 +27,13 @@ namespace CK.SqlServer.Setup
             ISqlCallableItem item = sqlItem as ISqlCallableItem;
             if( item == null )
             {
-                monitor.Fatal().Send( $"The item '{0}' must be a ISqlCallableItem object to be able to generate call implementation." );
+                monitor.Fatal().Send( $"The item '{item.FullName}' must be a ISqlCallableItem object to be able to generate call implementation." );
                 return false;
            }
             MethodInfo mCreateCommand = item.AssumeCommandBuilder( monitor, dynamicAssembly );
             if( mCreateCommand == null )
             {
-                monitor.Error().Send( "Invalid low level SqlCommand creation method for '{0}'.", item.FullName );
+                monitor.Error().Send( $"Invalid low level SqlCommand creation method for '{item.FullName}'." );
                 return false;
             }
             ParameterInfo[] mParameters = m.GetParameters();

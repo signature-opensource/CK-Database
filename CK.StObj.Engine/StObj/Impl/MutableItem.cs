@@ -84,7 +84,7 @@ namespace CK.Setup
 
             internal object CreateStructuredObject( IStObjRuntimeBuilder runtimeBuilder, Type typeIfNotImplementable )
             {
-                Type toInstanciate = ImplementableTypeInfo != null ? ImplementableTypeInfo.LastGeneratedType : typeIfNotImplementable;
+                Type toInstanciate = ImplementableTypeInfo != null ? ImplementableTypeInfo.StubType : typeIfNotImplementable;
                 StructuredObject = runtimeBuilder.CreateInstance( toInstanciate );
                 StructuredObjectFunc = () => StructuredObject;
                 return StructuredObject;

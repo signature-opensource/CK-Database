@@ -14,19 +14,14 @@ using System.Reflection;
 namespace CK.Core
 {
     /// <summary>
-    /// Associates an <see cref="IAutoImplementorMethod"/> to use and keeps the last one used 
-    /// for a <see cref="Method"/>.
+    /// Associates an <see cref="IAutoImplementorMethod"/> to use for a <see cref="Method"/>.
     /// </summary>
-    public class ImplementableAbstractMethodInfo
+    public struct ImplementableAbstractMethodInfo
     {
-        IAutoImplementorMethod _toUse;
-        internal ImplementableTypeInfo _type;
-        internal IAutoImplementorMethod _last;
-
         internal ImplementableAbstractMethodInfo( MethodInfo m, IAutoImplementorMethod impl )
         {
             Method = m;
-            _toUse = impl;
+            ImplementorToUse = impl;
         }
 
         /// <summary>
@@ -35,33 +30,9 @@ namespace CK.Core
         public readonly MethodInfo Method;
 
         /// <summary>
-        /// Gets or sets the current <see cref="IAutoImplementorMethod"/> to use.
-        /// When null or same as <see cref="LastImplementor"/>, method is considered as having already been implemented.
+        /// The <see cref="IAutoImplementorMethod"/> to use.
         /// </summary>
-        public IAutoImplementorMethod ImplementorToUse
-        {
-            get { return _toUse; }
-            set
-            {
-                if( _toUse != value && _toUse != _last )
-                {
-                    _toUse = value;
-                    _type.ImplementorChanged( this );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the last <see cref="IAutoImplementorMethod"/> that has been used to 
-        /// generate the <see cref="ImplementableTypeInfo.LastGeneratedType"/>.
-        /// </summary>
-        public IAutoImplementorMethod LastImplementor => _last; 
-
-        /// <summary>
-        /// Gets wether this property is waiting for an implementation: its <see cref="ImplementorToUse"/> is not null 
-        /// and differs from <see cref="LastImplementor"/>.
-        /// </summary>
-        public bool ExpectImplementation => ImplementorToUse != null && ImplementorToUse != _last; 
+        public readonly IAutoImplementorMethod ImplementorToUse;
 
     }
 
