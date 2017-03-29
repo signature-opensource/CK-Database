@@ -21,27 +21,17 @@ namespace CK.Setup
         {
         }
 
-        IStObj IContextualStObjMap.ToLeaf( Type t )
-        {
-            return (IStObj)base.ToLeaf( t );
-        }
+        IStObj IContextualStObjMap.ToLeaf( Type t ) => (IStObj)base.ToLeaf( t );
 
-        IStObjMap IContextualStObjMap.AllContexts
-        {
-            get { return (IStObjMap)base.AllContexts; }
-        }
+        IStObjMap IContextualStObjMap.AllContexts =>  (IStObjMap)base.AllContexts;
 
+        IEnumerable<object> IContextualStObjMap.Implementations => throw new NotImplementedException( "This internal is not used on the Engine." );
 
-        IStObjResult IContextualStObjMapRuntime.ToLeaf( Type t )
-        {
-            return (IStObjResult)base.ToLeaf( t );
-        }
+        IEnumerable<StObjImplementation> IContextualStObjMap.StObjs => throw new NotImplementedException("This internal is not used on the Engine.");
 
-        public object Obtain( Type t )
-        {
-            IStObjResult m = ToLeaf( t );
-            return m != null ? m.ObjectAccessor() : null;
-        }
+        IStObjResult IContextualStObjMapRuntime.ToLeaf( Type t ) => (IStObjResult)base.ToLeaf( t );
+
+        public object Obtain(Type t) => ToLeaf(t)?.ObjectAccessor();
         
         IStObjResult IContextualStObjMapRuntime.ToStObj( Type t )
         {

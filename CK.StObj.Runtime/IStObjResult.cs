@@ -15,7 +15,8 @@ namespace CK.Setup
 {
     /// <summary>
     /// A StObj "slices" a Structured Object (that is an <see cref="IAmbientContract"/>) by types in its inheritance chain.
-    /// The <see cref="InitialObject">Structured Object</see> itself is built based on already built dependencies from top to bottom thanks to its "Construct" methods. 
+    /// The <see cref="InitialObject">Structured Object</see> itself is built based on already built dependencies from top 
+    /// to bottom thanks to its "Construct" (<see cref="StObjContextRoot.ConstructMethodName"/>) methods. 
     /// This interface is available after the dependency graph ordering (this is the Owner exposed by <see cref="IStObjFinalParameter"/> for construct parameters for instance).
     /// It is the final interface that is exposed for each StObj at the end of the StObjCollector.GetResults work.
     /// </summary>

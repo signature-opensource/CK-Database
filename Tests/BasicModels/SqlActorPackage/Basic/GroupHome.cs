@@ -2,12 +2,13 @@ using System.Data.SqlClient;
 using CK.Setup;
 using CK.SqlServer.Setup;
 using CK.SqlServer;
+using System;
 
 namespace SqlActorPackage.Basic
 {
     [SqlTable( "tGroup", Package = typeof( Package ) ), Versions( "CK.tGroup=2.12.9, 2.12.10" )]
     [SqlObjectItem("a_stupid_view")]
-    public abstract class GroupHome : SqlTable
+    public abstract class GroupHome : SqlTable, IAnyService
     {
         void Construct( ActorHome actor )
         {
@@ -29,5 +30,9 @@ namespace SqlActorPackage.Basic
         [SqlProcedure( "sGroupCreate" )]
         public abstract void CmdCreate( ISqlCallContext ctx, string groupName, out int groupIdResult );
 
+        public virtual string CallService()
+        {
+            return GetType().FullName;
+        }
     }
 }

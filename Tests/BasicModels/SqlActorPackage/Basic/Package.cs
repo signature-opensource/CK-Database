@@ -23,17 +23,33 @@ namespace SqlActorPackage.Basic
     [SqlObjectItem( "fUserIsInGroup" )]
     public abstract class Package : SqlPackage, IKnowTheConnectionString
     {
-        IUnknownAbstraction _unexisting;
-
+        IUnknownAbstraction _unexistingByConstructParam;
+        IReadOnlyList<IAnyService> _allServices;
+        
         void Construct(IUnknownAbstraction zone = null)
         {
-            _unexisting = zone;
+            _unexistingByConstructParam = zone;
         }
+
+        public IUnknownAbstraction UnexistingByConstructParam => _unexistingByConstructParam;
+
+
+        [InjectContract(IsOptional = true)]
+        public IUnknownAbstraction UnexistingByInjectContract { get; protected set; }
 
         [InjectContract(IsOptional = true )]
         public ISecurityZoneAbstraction ZoneHome { get; protected set; }
 
-        public IUnknownAbstraction Unexisting => _unexisting;
+        /// <summary>
+        /// Interface IAnyService is supported by SqlActorPackage.GroupHome 
+        /// and SqlZonePackage.Zone.Package.
+        /// </summary>
+        public IReadOnlyList<IAnyService> AllServices => _allServices;
+
+        void Initialize( IActivityMonitor m, IContextualStObjMap map )
+        {
+            _allServices = map.Implementations.OfType<IAnyService>().ToArray();
+        }
 
         [InjectContract]
         public UserHome UserHome { get; protected set; }

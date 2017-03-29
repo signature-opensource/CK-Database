@@ -27,6 +27,15 @@ namespace CK.Core
         /// Holds the name of the root class.
         /// </summary>
         public static readonly string RootContextTypeName = "CK.StObj.GeneratedRootContext";
+        /// <summary>
+        /// Holds the name of 'Construct' method.
+        /// </summary>
+        public static readonly string ConstructMethodName = "Construct";
+
+        /// <summary>
+        /// Holds the name of 'Initialize' method.
+        /// </summary>
+        public static readonly string InitializeMethodName = "Initialize";
 
         static readonly HashSet<Assembly> _alreadyLoaded = new HashSet<Assembly>();
 

@@ -25,7 +25,6 @@ namespace CK.Core
         readonly StObjContextRoot _root;
         readonly Type _type;
         int[] _constructParametersIndex;
-        MethodInfo _construct;
 
         struct PropertySetter
         {
@@ -71,8 +70,6 @@ namespace CK.Core
                 {
                     _constructParametersIndex[i] = r.ReadInt32();
                 }
-                Type actualType = _type.Namespace != "<CK>" ? _type : _type.GetTypeInfo().BaseType;
-                _construct = actualType.GetMethod( "Construct", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly );
             }
             _preConstruct = ReadPropertySetters( r );
             if( _specialization == null ) _postBuild = ReadPropertySetters( r );
@@ -107,7 +104,8 @@ namespace CK.Core
                         p.Property.SetValue(instance, GetValueFromIndex(itemResolver, p.Index), null);
                     }
                 }
-                if (_construct == null) return;
+                MethodInfo construct = GetDeclaredMethod(StObjContextRoot.ConstructMethodName);
+                if (construct == null) return;
                 step = "Resolving Construct parameters.";
                 object[] parameters = new object[_constructParametersIndex.Length];
                 for (int i = 0; i < _constructParametersIndex.Length; ++i)
@@ -117,13 +115,19 @@ namespace CK.Core
                     else parameters[i] = GetValueFromIndex(itemResolver, idx);
                 }
                 step = "Calling Construct.";
-                _construct.Invoke(instance, parameters);
+                construct.Invoke(instance, parameters);
             }
-            catch ( Exception ex )
+            catch( Exception ex )
             {
                 monitor.Error().Send(ex, "Step: " + step);
                 throw;
             }
+        }
+
+        MethodInfo GetDeclaredMethod( string methodName )
+        {
+            Type actualType = _type.Namespace != "<CK>" ? _type : _type.GetTypeInfo().BaseType;
+            return actualType.GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
         }
 
         internal void SetPostBuilProperties( Func<int, object> itemResolver, object instance )
@@ -135,6 +139,13 @@ namespace CK.Core
                     p.Property.SetValue( instance, GetValueFromIndex( itemResolver, p.Index ), null );
                 }
             }
+        }
+
+        internal void CallInitialize(IActivityMonitor monitor, object instance)
+        {
+            MethodInfo init = GetDeclaredMethod(StObjContextRoot.InitializeMethodName);
+            if (init == null) return;
+            init.Invoke(instance, new object[] { monitor, _context });
         }
 
         object GetValueFromIndex( Func<int, object> itemResolver, int idx )

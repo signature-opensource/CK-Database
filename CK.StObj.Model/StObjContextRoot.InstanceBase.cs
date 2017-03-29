@@ -41,7 +41,7 @@ namespace CK.Core
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
         /// <param name="runtimeBuilder">The object builder.</param>
-        /// <param name="allTypes">All concrete types in the context.</param>
+        /// <param name="allTypes">All StObj types in the context.</param>
         /// <param name="resources">Resources stream when building.</param>
         protected StObjContextRoot( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, Type[] allTypes, Stream resources )
         {
@@ -81,13 +81,18 @@ namespace CK.Core
                     o.CallConstruct( monitor, idx => SingletonCache.Get( StObjs[idx].CacheIndex ), instance );
                 }
                 // Setting post build properties.
-                foreach( var o in StObjs )
+                foreach (var o in StObjs)
                 {
-                    if( o.Specialization == null )
+                    if (o.Specialization == null)
                     {
-                        object instance = SingletonCache.Get( o.CacheIndex );
-                        o.SetPostBuilProperties( idx => SingletonCache.Get( StObjs[idx].CacheIndex ), instance );
+                        object instance = SingletonCache.Get(o.CacheIndex);
+                        o.SetPostBuilProperties(idx => SingletonCache.Get(StObjs[idx].CacheIndex), instance);
                     }
+                }
+                // Calling Initialize method.
+                foreach (var o in StObjs)
+                {
+                    o.CallInitialize(monitor, SingletonCache.Get(o.CacheIndex));
                 }
             }
         }
@@ -123,10 +128,7 @@ namespace CK.Core
         /// <summary>
         /// Gets the default context.
         /// </summary>
-        public IContextualStObjMap Default
-        {
-            get { return _defaultContext; }
-        }
+        public IContextualStObjMap Default => _defaultContext; 
 
         /// <summary>
         /// Gets all the contexts.
@@ -144,11 +146,9 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Gets all type to object mappings.
+        /// Gets all the mappings (<see cref="IStObj"/> and their final implementation) this 
+        /// StObjMap contains regardless of <see cref="IStObj.Context"/>.
         /// </summary>
-        public IEnumerable<StObjMapMapping> AllMappings
-        {
-            get { return _contexts.SelectMany( c => c.Types, (c, t) => new StObjMapMapping( t, c.Context, c.Obtain( t ) ) ); }
-        }
+        public IEnumerable<StObjImplementation> AllStObjs => StObjs.Select(s => new StObjImplementation(s, SingletonCache.Get(s.CacheIndex)));
     }
 }

@@ -7,30 +7,24 @@ using System.Threading.Tasks;
 namespace CK.Core
 {
     /// <summary>
-    /// Captures mapping in a <see cref="IStObjMap"/>: in a <see cref="Context"/>, the final <see cref="Implementation"/>
-    /// for a <see cref="Type"/>.
+    /// Captures mapping in a <see cref="IStObjMap"/> and <see cref="IContextualStObjMap"/>: 
+    /// associates a <see cref="IStObj"/> to its final implementation.
     /// </summary>
-    public struct StObjMapMapping
+    public struct StObjImplementation
     {
         /// <summary>
         /// The type mapped.
         /// </summary>
-        public readonly Type Type;
-
-        /// <summary>
-        /// The context name.
-        /// </summary>
-        public readonly string Context;
+        public readonly IStObj StObj;
 
         /// <summary>
         /// The final implementation instance.
         /// </summary>
         public readonly object Implementation;
 
-        internal StObjMapMapping( Type t, string c, object i )
+        internal StObjImplementation( IStObj o, object i )
         {
-            Type = t;
-            Context = c;
+            StObj = o;
             Implementation = i;
         }
     }

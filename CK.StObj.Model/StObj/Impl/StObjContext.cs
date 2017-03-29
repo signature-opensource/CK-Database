@@ -27,30 +27,15 @@ namespace CK.Core
             _mappings = mappings;
         }
 
-        public string Context
-        {
-            get { return _name; }
-        }
+        public string Context => _name; 
 
-        IContextualRoot<IContextualTypeMap> IContextualTypeMap.AllContexts
-        {
-            get { return _root; }
-        }
+        IContextualRoot<IContextualTypeMap> IContextualTypeMap.AllContexts => _root; 
 
-        public IEnumerable<Type> Types 
-        { 
-            get { return _mappings.Keys; } 
-        }
+        public IEnumerable<Type> Types => _mappings.Keys; 
 
-        public IStObjMap AllContexts
-        {
-            get { return _root; }
-        }
+        public IStObjMap AllContexts => _root; 
 
-        public int MappedTypeCount
-        {
-            get { return _mappings.Count; }
-        }
+        public int MappedTypeCount => _mappings.Count; 
 
         public Type ToLeafType( Type t )
         {
@@ -69,10 +54,7 @@ namespace CK.Core
             return null;
         }
 
-        public bool IsMapped( Type t )
-        {
-            return _mappings.ContainsKey( t );
-        }
+        public bool IsMapped( Type t ) => _mappings.ContainsKey( t );
 
         public object Obtain( Type t )
         {
@@ -83,5 +65,16 @@ namespace CK.Core
             }
             return null;
         }
+
+        public IEnumerable<object> Implementations 
+            => _root.StObjs
+                    .Where(s => ReferenceEquals(s.Context, this) && s.Specialization == null )
+                    .Select(s => _root.SingletonCache.Get(s.CacheIndex));
+
+        public IEnumerable<StObjImplementation> StObjs 
+            => _root.StObjs
+                    .Where(s => ReferenceEquals(s.Context, this) )
+                    .Select(s => new StObjImplementation( s, _root.SingletonCache.Get(s.CacheIndex)));
+
     }
 }

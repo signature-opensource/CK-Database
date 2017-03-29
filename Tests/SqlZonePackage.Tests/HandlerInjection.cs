@@ -35,7 +35,7 @@ namespace SqlZonePackage.Tests
         public void construct_injection_of_unresolved_AmbientContract_is_null()
         {
             var a = TestHelper.StObjMap.Default.Obtain<Package>();
-            Assert.That(a.Unexisting, Is.Null);
+            Assert.That(a.UnexistingByConstructParam, Is.Null);
         }
 
         [Test]
@@ -43,6 +43,20 @@ namespace SqlZonePackage.Tests
         {
             var a = TestHelper.StObjMap.Default.Obtain<Package>();
             Assert.That(a.ZoneHome, Is.SameAs(TestHelper.StObjMap.Default.Obtain<Zone.SecurityZoneHome>()));
+            Assert.That(a.UnexistingByInjectContract, Is.Null, "Remains null.");
         }
+
+        [Test]
+        public void Initialize_method_provides_a_way_to_register_multiple_services()
+        {
+            var a = TestHelper.StObjMap.Default.Obtain<Package>();
+            Assert.That(a.AllServices.Count, Is.EqualTo(2));
+            CollectionAssert.AreEquivalent(new object[] 
+            {
+                TestHelper.StObjMap.Default.Obtain<Zone.GroupHome>(),
+                TestHelper.StObjMap.Default.Obtain<Zone.Package>()
+            }, a.AllServices );
+        }
+
     }
 }

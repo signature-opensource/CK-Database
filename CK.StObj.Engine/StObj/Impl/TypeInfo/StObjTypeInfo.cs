@@ -216,12 +216,12 @@ namespace CK.Setup
             #endregion
 
             #region Construct method & parameters
-            Construct = t.GetMethod( "Construct", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly );
+            Construct = t.GetMethod( StObjContextRoot.ConstructMethodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly );
             if( Construct != null )
             {
                 if( Construct.IsVirtual )
                 {
-                    monitor.Error().Send( "Method '{0}.Construct' must NOT be virtual.", t.FullName );
+                    monitor.Error().Send($"Method '{t.FullName}.{StObjContextRoot.ConstructMethodName}' must NOT be virtual.");
                 }
                 else
                 {
@@ -245,20 +245,18 @@ namespace CK.Setup
                         {
                             if( ContainerConstructParameterIndex >= 0 )
                             {
-                                monitor.Error().Send( "Construct method of class '{0}' has more than one parameter marked with [Container] attribute.", t.FullName );
+                                monitor.Error().Send($"'{t.FullName}.{StObjContextRoot.ConstructMethodName}' method has more than one parameter marked with [Container] attribute.");
                             }
                             else
                             {
                                 // The Parameter is the Container.
                                 if( Container != null && Container != p.ParameterType )
                                 {
-                                    monitor.Error().Send( "Construct parameter '{0}' for class '{1}' defines the Container as '{2}' but an attribute on the class declares the Container as '{3}'.",
-                                                                    p.Name, t.FullName, p.ParameterType.FullName, Container.FullName );
+                                    monitor.Error().Send($"'{t.FullName}.{StObjContextRoot.ConstructMethodName}' method parameter '{p.Name}' defines the Container as '{p.ParameterType.FullName}' but an attribute on the class declares the Container as '{Container.FullName}'." );
                                 }
                                 else if( ContainerContext != null && ContainerContext != parameterContext )
                                 {
-                                    monitor.Error().Send( "Construct parameter '{0}' for class '{1}' targets the Container in '{2}' but an attribute on the class declares the Container context as '{3}'.",
-                                                                    p.Name, t.FullName, parameterContext, ContainerContext );
+                                    monitor.Error().Send($"'{t.FullName}.{StObjContextRoot.ConstructMethodName}' method parameter '{p.Name}' targets the Container in '{parameterContext}' but an attribute on the class declares the Container context as '{ContainerContext}'.");
                                 }
                                 ContainerConstructParameterIndex = i;
                                 Container = p.ParameterType;
@@ -270,7 +268,28 @@ namespace CK.Setup
             }
             #endregion
 
-        }
+            #region Initialize method checks: (non virtual) void Initialize( IActivityMonitor, IContextualStObjMap)
+            var initialize = t.GetMethod(StObjContextRoot.InitializeMethodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+            if (initialize != null)
+            {
+                if (initialize.IsVirtual)
+                {
+                    monitor.Error().Send($"'{t.FullName}.{StObjContextRoot.InitializeMethodName}' method must NOT be virtual.");
+                }
+                else
+                {
+                    var parameters = initialize.GetParameters();
+                    if (parameters.Length != 2
+                        || parameters[0].ParameterType != typeof(IActivityMonitor)
+                        || parameters[1].ParameterType != typeof(IContextualStObjMap))
+                    {
+                        monitor.Error().Send($"'{t.FullName}.{StObjContextRoot.InitializeMethodName}' method parameters must be (IActivityMonitor, IContextualStObjMap).");
+                    }
+                }
+            }
+            #endregion
+
+            }
 
         /// <summary>
         /// Used only for Empty Item Pattern implementations.

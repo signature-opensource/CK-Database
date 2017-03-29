@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace CK.Core
 {
@@ -15,15 +16,27 @@ namespace CK.Core
         IStObj ToLeaf( Type t );
 
         /// <summary>
-        /// Gets the structured object or null if no mapping exists.
+        /// Gets the structured object final implementation or null if no mapping exists.
         /// </summary>
         /// <param name="t">Key type (that must be an Ambient Contract).</param>
         /// <returns>Structured object instance or null if the type has not been mapped.</returns>
         object Obtain( Type t );
 
         /// <summary>
+        /// Gets all the structured object final implementations that exist in this context.
+        /// </summary>
+        IEnumerable<object> Implementations { get; }
+
+        /// <summary>
+        /// Gets all the mappings (<see cref="IStObj"/> and their final implementation) that exist in this context. 
+        /// </summary>
+        IEnumerable<StObjImplementation> StObjs { get; }
+
+        /// <summary>
         /// Access to all contexts.
         /// </summary>
         new IStObjMap AllContexts { get; }
+
+
     }
 }
