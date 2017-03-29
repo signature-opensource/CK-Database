@@ -93,6 +93,12 @@ namespace CodeCake
 
             // Configuration is either "Debug" or "Release".
             string configuration = null;
+            bool buildDone = false;
+
+            Teardown( c =>
+            {
+                if( buildDone ) c.CleanDirectories(projects.Select(p => p.Path.GetDirectory().Combine("bin")));
+            });
 
             Task("Check-Repository")
                 .Does(() =>
@@ -147,6 +153,7 @@ namespace CodeCake
                 .IsDependentOn("Restore-NuGet-Packages")
                 .Does(() =>
                 {
+                    buildDone = true;
                     Cake.DotNetCoreBuild("CodeCakeBuilder/CoreBuild.proj",
                         new DotNetCoreBuildSettings().AddVersionArguments(gitInfo, s =>
                         {
