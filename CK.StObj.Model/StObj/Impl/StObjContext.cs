@@ -71,10 +71,13 @@ namespace CK.Core
                     .Where(s => ReferenceEquals(s.Context, this) && s.Specialization == null )
                     .Select(s => _root.SingletonCache.Get(s.CacheIndex));
 
-        public IEnumerable<StObjImplementation> StObjs 
+        public IEnumerable<StObjImplementation> StObjs
             => _root.StObjs
-                    .Where(s => ReferenceEquals(s.Context, this) )
-                    .Select(s => new StObjImplementation( s, _root.SingletonCache.Get(s.CacheIndex)));
+                    .Where(s => ReferenceEquals(s.Context, this))
+                    .Select(s => new StObjImplementation(s, _root.SingletonCache.Get(s.CacheIndex)));
+
+        public IEnumerable<KeyValuePair<Type, object>> Mappings
+            => _mappings.Select(kv => new KeyValuePair<Type, object>( kv.Key, _root.SingletonCache.Get(_root.StObjs[kv.Value].CacheIndex)));
 
     }
 }

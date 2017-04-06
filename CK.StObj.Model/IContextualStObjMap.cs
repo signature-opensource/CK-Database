@@ -28,9 +28,17 @@ namespace CK.Core
         IEnumerable<object> Implementations { get; }
 
         /// <summary>
-        /// Gets all the mappings (<see cref="IStObj"/> and their final implementation) that exist in this context. 
+        /// Gets all the <see cref="IStObj"/> and their final implementation that exist in this context.
+        /// This contains only classes, not <see cref="IAmbientContract"/> interfaces. 
+        /// Use <see cref="Mappings"/> to dump all the types to implementation mappings.
         /// </summary>
         IEnumerable<StObjImplementation> StObjs { get; }
+
+        /// <summary>
+        /// Gets all the types to implementation objects that this context contains.
+        /// The types are interfaces (<see cref="IAmbientContract"/>) as well as classes.
+        /// </summary>
+        IEnumerable<KeyValuePair<Type, object>> Mappings { get; }
 
         /// <summary>
         /// Access to all contexts.

@@ -29,14 +29,13 @@ namespace CK.Setup
 
         IEnumerable<StObjImplementation> IContextualStObjMap.StObjs => throw new NotImplementedException("This internal is not used on the Engine.");
 
+        IEnumerable<KeyValuePair<Type, object>> IContextualStObjMap.Mappings => throw new NotImplementedException("This internal is not used on the Engine.");
+
         IStObjResult IContextualStObjMapRuntime.ToLeaf( Type t ) => (IStObjResult)base.ToLeaf( t );
 
         public object Obtain(Type t) => ToLeaf(t)?.ObjectAccessor();
         
-        IStObjResult IContextualStObjMapRuntime.ToStObj( Type t )
-        {
-            return (IStObjResult)base.ToHighestImpl( t );
-        }
+        IStObjResult IContextualStObjMapRuntime.ToStObj( Type t ) => (IStObjResult)base.ToHighestImpl( t );
 
     }
 }

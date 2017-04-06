@@ -64,8 +64,7 @@ namespace SqlZonePackage.Tests
             IContextualStObjMap map = TestHelper.StObjMap.Default;
             var mappings = new List<KeyValuePair<Type, object>>();
             foreach (var t in map.Types) mappings.Add(new KeyValuePair<Type, object>(t,map.Obtain(t)));
-            var mappings2 = map.StObjs.Select(d => new KeyValuePair<Type, object>(d.StObj.ObjectType, d.Implementation)).ToList();
-            CollectionAssert.AreEquivalent(mappings, mappings2);
+            CollectionAssert.AreEquivalent(mappings, map.Mappings);
         }
 
     }
