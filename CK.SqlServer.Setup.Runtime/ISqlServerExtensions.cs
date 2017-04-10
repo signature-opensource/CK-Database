@@ -35,6 +35,12 @@ namespace CK.SqlServer.Parser
                 }
                 if( t == typeof( string ) ) return true;
             }
+            else if( sql == SqlDbType.Udt )
+            {
+                string sqlSimpleTypeName = @this.ToStringClean();
+                return (StringComparer.OrdinalIgnoreCase.Equals(sqlSimpleTypeName, "Geography") && t.Name == "SqlGeography")
+                        || (StringComparer.OrdinalIgnoreCase.Equals(sqlSimpleTypeName, "Geometry") && t.Name == "SqlGeometry");
+            }
             else
             {
                 Type tSql = SqlHelper.FromSqlDbTypeToNetType( sql );
