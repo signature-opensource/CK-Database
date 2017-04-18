@@ -151,6 +151,8 @@ namespace CK.SqlServer.Setup
         internal readonly static MethodInfo MParameterCollectionGetParameter = TypeParameterCollection.GetProperty( "Item", TypeParameter, new Type[] { typeof( Int32 ) } ).GetGetMethod();
 
         internal readonly static MethodInfo MParameterSetDirection = TypeParameter.GetProperty( "Direction" ).GetSetMethod();
+        internal readonly static MethodInfo MParameterSetSqlDbType = TypeParameter.GetProperty("SqlDbType").GetSetMethod();
+        internal readonly static MethodInfo MParameterSetUdtTypeName = TypeParameter.GetProperty("UdtTypeName").GetSetMethod();
         internal readonly static MethodInfo MParameterSetPrecision = TypeParameter.GetProperty( "Precision" ).GetSetMethod();
         internal readonly static MethodInfo MParameterSetScale = TypeParameter.GetProperty( "Scale" ).GetSetMethod();
         internal readonly static MethodInfo MParameterSetValue = TypeParameter.GetProperty( "Value" ).GetSetMethod();

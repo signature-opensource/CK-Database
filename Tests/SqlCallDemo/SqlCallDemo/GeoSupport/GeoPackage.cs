@@ -11,6 +11,7 @@ using CK.SqlServer.Setup;
 using CK.Core;
 using System.Reflection;
 using Microsoft.SqlServer.Types;
+using System.IO;
 
 namespace SqlCallDemo
 {
@@ -20,6 +21,12 @@ namespace SqlCallDemo
     {
         void StObjConstruct()
         {
+        }
+
+        void StObjInitialize( IActivityMonitor m, IContextualStObjMap map )
+        {
+            var path = Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath);
+            SqlServerTypes.Utilities.LoadNativeAssemblies(path);
         }
 
         [SqlScalarFunction("fAreaFunction")]

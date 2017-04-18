@@ -359,10 +359,23 @@ namespace CK.SqlServer.Setup
                         g.Emit( OpCodes.Dup );
                         g.LdInt32( (int)ParameterDirection.InputOutput );
                         g.Emit( OpCodes.Callvirt, SqlObjectItem.MParameterSetDirection );
-
                     }
+                    string sqlType = SqlExprParam.SqlType.ToStringClean();
+                    if (StringComparer.OrdinalIgnoreCase.Equals(sqlType, "Geometry")
+                        || StringComparer.OrdinalIgnoreCase.Equals(sqlType, "Geography")
+                        || StringComparer.OrdinalIgnoreCase.Equals(sqlType, "HierarchyId"))
+                    {
+                        g.Emit(OpCodes.Dup);
+                        g.LdInt32((int)SqlDbType.Udt);
+                        g.Emit(OpCodes.Callvirt, SqlObjectItem.MParameterSetSqlDbType);
+
+                        g.Emit(OpCodes.Dup);
+                        g.Emit(OpCodes.Ldstr, sqlType.ToLowerInvariant());
+                        g.Emit(OpCodes.Callvirt, SqlObjectItem.MParameterSetUdtTypeName);
+                    }
+
                     // Load object on the stack.
-                    if( !valueLoader( monitor, g ) ) return false;
+                    if ( !valueLoader( monitor, g ) ) return false;
                     g.Emit( OpCodes.Call, SqlObjectItem.MParameterSetValue );
                     return true;
                 }

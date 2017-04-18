@@ -39,7 +39,8 @@ namespace CK.SqlServer.Parser
             {
                 string sqlSimpleTypeName = @this.ToStringClean();
                 return (StringComparer.OrdinalIgnoreCase.Equals(sqlSimpleTypeName, "Geography") && t.Name == "SqlGeography")
-                        || (StringComparer.OrdinalIgnoreCase.Equals(sqlSimpleTypeName, "Geometry") && t.Name == "SqlGeometry");
+                        || (StringComparer.OrdinalIgnoreCase.Equals(sqlSimpleTypeName, "Geometry") && t.Name == "SqlGeometry")
+                        || (StringComparer.OrdinalIgnoreCase.Equals(sqlSimpleTypeName, "HierarchyId") && t.Name == "SqlHierarchyId");
             }
             else
             {
