@@ -28,7 +28,7 @@ namespace CK.Core
         /// <returns>A unique type name.</returns>
         public static string AutoNextTypeName( this IDynamicAssembly @this, string name = null )
         {
-            return "<CK>." + (name != null ? name + @this.NextUniqueNumber() : Guid.NewGuid().ToString());
+            return "CK._g." + (name != null ? name + @this.NextUniqueNumber() : Guid.NewGuid().ToString());
         }
 
         /// <summary>

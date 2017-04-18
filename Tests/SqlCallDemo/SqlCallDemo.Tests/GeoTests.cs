@@ -26,7 +26,7 @@ namespace SqlCallDemo.Tests
             {
                 var g = SqlGeography.Parse(new SqlString("POINT(-77.010996 38.890358)"));
                 double area = geo.Area(ctx, g);
-                Assert.That(g.STArea(), Is.EqualTo(area));
+                Assert.That(g.STArea().Value, Is.EqualTo(area));
             }
         }
 

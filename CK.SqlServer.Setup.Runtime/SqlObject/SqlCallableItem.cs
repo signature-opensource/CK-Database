@@ -20,7 +20,7 @@ namespace CK.SqlServer.Setup
     /// <typeparam name="T">Type of the callable.</typeparam>
     public class SqlCallableItem<T> : SqlObjectItem, ISqlCallableItem where T : ISqlServerCallableObject
     {
-        const string _builderTypeName = "CK.<CreatorForSqlCommand>";
+        const string _builderTypeName = "CK._g.CreatorForSqlCommand";
 
         /// <summary>
         /// Initializes a new <see cref="SqlObjectItem"/>.

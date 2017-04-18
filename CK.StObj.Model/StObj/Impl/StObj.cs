@@ -126,7 +126,7 @@ namespace CK.Core
 
         MethodInfo GetDeclaredMethod( string methodName )
         {
-            Type actualType = _type.Namespace != "<CK>" ? _type : _type.GetTypeInfo().BaseType;
+            Type actualType = _type.Namespace != "CK._g" ? _type : _type.GetTypeInfo().BaseType;
             return actualType.GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
         }
 

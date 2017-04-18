@@ -65,12 +65,12 @@ namespace SqlTransform.Tests
                 */
                 Assembly genDll = Assembly.Load(new AssemblyName("Transform.Tests.Generated"));
                 {
-                    Type tCommandCreator = genDll.GetTypes().Single(t => t.FullName == "CK.<CreatorForSqlCommand>");
+                    Type tCommandCreator = genDll.GetTypes().Single(t => t.FullName == "CK._g.CreatorForSqlCommand");
                     MethodInfo mSimpleCreate = tCommandCreator.GetRuntimeMethods().Single(x => x.Name == "[]db^CK.sSimpleReplaceTest");
                     string utimatePathOfSqlClientAssembly = mSimpleCreate.ReturnType.GetTypeInfo().Assembly.Location;
                 }
                 {
-                    Type tCommandCreator = genDll.GetTypes().Single(t => t.FullName == "<CK>.Package1");
+                    Type tCommandCreator = genDll.GetTypes().Single(t => t.FullName == "CK._g.Package1");
                     MethodInfo mSimpleReplace = tCommandCreator.GetRuntimeMethods().Single(x => x.Name == "SimpleReplaceTest");
                     string strA = mSimpleReplace.GetParameters()[1].ParameterType.GetTypeInfo().Assembly.Location;
                 }
