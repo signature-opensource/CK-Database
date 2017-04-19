@@ -145,11 +145,10 @@ namespace CodeCake
                     {
                         PackagesDirectory = "packages"
                     });
-
-                    string txt = System.IO.File.ReadAllText(@"CodeCakeBuilder\Releases\obj\SqlCallDemo.Tests\SqlCallDemo.Tests.csproj.nuget.g.props");
-                    Console.WriteLine("------------nuget.g.props------------------");
-                    Console.WriteLine(txt);
-                    Console.WriteLine("-------------------------------------------");
+                    //string txt = System.IO.File.ReadAllText(@"CodeCakeBuilder\Releases\obj\SqlCallDemo.Tests\SqlCallDemo.Tests.csproj.nuget.g.props");
+                    //Console.WriteLine("------------nuget.g.props------------------");
+                    //Console.WriteLine(txt);
+                    //Console.WriteLine("-------------------------------------------");
                 });
 
             Task("Build")
@@ -163,6 +162,17 @@ namespace CodeCake
                         new DotNetCoreBuildSettings().AddVersionArguments(gitInfo, s =>
                         {
                             s.Configuration = configuration;
+                            // WHY? It works on local, but not on Appveyor :(
+                            // The NuGetPackageFolders is not set (from the obj/g.props).
+                            if ( Cake.AppVeyor().IsRunningOnAppVeyor )
+                            {
+                                s.ArgumentCustomization = c =>
+                                {
+                                    s.ArgumentCustomization(c);
+                                    c.Append(@"/p:NuGetPackageFolders=""C:\Users\appveyor\.nuget\packages\""");
+                                    return c;
+                                };
+                            }
                         }));
 
                     Cake.MSBuild("CKDBSetup/CKDBSetup.csproj", new MSBuildSettings().AddVersionArguments(gitInfo, s =>
