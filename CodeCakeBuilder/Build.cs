@@ -145,6 +145,11 @@ namespace CodeCake
                     {
                         PackagesDirectory = "packages"
                     });
+
+                    string txt = System.IO.File.ReadAllText(@"CodeCakeBuilder\Releases\obj\SqlCallDemo.Tests\SqlCallDemo.Tests.csproj.nuget.g.props");
+                    Console.WriteLine("------------nuget.g.props------------------");
+                    Console.WriteLine(txt);
+                    Console.WriteLine("-------------------------------------------");
                 });
 
             Task("Build")
@@ -160,11 +165,11 @@ namespace CodeCake
                             s.Configuration = configuration;
                         }));
 
-                    Cake.MSBuild("CKDBSetup/CKDBSetup.csproj", new MSBuildSettings().AddVersionArguments( gitInfo, s =>
-                   {
-                       s.Configuration = configuration;
-                       s.ToolVersion = MSBuildToolVersion.VS2015;
-                   }) );
+                    Cake.MSBuild("CKDBSetup/CKDBSetup.csproj", new MSBuildSettings().AddVersionArguments(gitInfo, s =>
+                        {
+                            s.Configuration = configuration;
+                            s.ToolVersion = MSBuildToolVersion.VS2015;
+                        }));
                 });
 
             Task("Unit-Testing")
