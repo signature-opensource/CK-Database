@@ -166,9 +166,10 @@ namespace CodeCake
                             // The NuGetPackageFolders is not set (from the obj/g.props).
                             if ( Cake.AppVeyor().IsRunningOnAppVeyor )
                             {
+                                var prev = s.ArgumentCustomization;
                                 s.ArgumentCustomization = c =>
                                 {
-                                    s.ArgumentCustomization(c);
+                                    prev?.Invoke(c);
                                     c.Append(@"/p:NuGetPackageFolders=""C:\Users\appveyor\.nuget\packages\""");
                                     return c;
                                 };
