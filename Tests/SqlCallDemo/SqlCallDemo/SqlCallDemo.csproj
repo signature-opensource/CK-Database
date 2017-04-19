@@ -19,11 +19,12 @@
     <PackageReference Include="Microsoft.SqlServer.Types" Version="14.0.314.76" />
   </ItemGroup>
 
-  <Target Name="CopyNative" AfterTargets="Build">
+  <Target Name="CopyNativeFiles" AfterTargets="Build">
+    <Message Importance="High" Text="Copying native files from '$(NuGetPackageFolders)' to '$(OutputPath)'." />
     <ItemGroup>
-      <NativeSqlTypes Include="$(NuGetPackageFolders)microsoft.sqlserver.types\14.0.314.76\nativeBinaries\**\*.*" />
+      <NativeSqlTypesFiles Include="$(NuGetPackageFolders)microsoft.sqlserver.types\14.0.314.76\nativeBinaries\**\*.*" />
     </ItemGroup>
-    <Copy SkipUnchangedFiles="true" SourceFiles="@(NativeSqlTypes)" DestinationFolder="$(OutputPath)\SqlServerTypes\%(RecursiveDir)" />
+    <Copy SkipUnchangedFiles="true" SourceFiles="@(NativeSqlTypesFiles)" DestinationFolder="$(OutputPath)SqlServerTypes\%(RecursiveDir)" />
   </Target>
   
   <ItemGroup>
