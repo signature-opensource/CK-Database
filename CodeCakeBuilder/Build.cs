@@ -71,6 +71,31 @@ namespace CodeCake
     [AddPath("packages/**/tools*")]
     public class Build : CodeCakeHost
     {
+
+        static Tuple<string,string>[] AppVeyorProblematicFiles = new[]
+        {
+            Tuple.Create(
+                @"C:\Users\appveyor\.nuget\packages\microsoft.sqlserver.types\nativeBinaries\x86\msvcr120.dll",
+                @"C:\projects\ck-database\Tests\SqlCallDemo\SqlCallDemo.Tests\bin\Debug\net451\SqlServerTypes\x86\msvcr120.dll" ),
+            Tuple.Create(
+                @"C:\Users\appveyor\.nuget\packages\microsoft.sqlserver.types\nativeBinaries\x86\SqlServerSpatial140.dll",
+                @"C:\projects\ck-database\Tests\SqlCallDemo\SqlCallDemo.Tests\bin\Debug\net451\SqlServerTypes\x86\SqlServerSpatial140.dll" ),
+            Tuple.Create(
+                @"C:\Users\appveyor\.nuget\packages\microsoft.sqlserver.types\nativeBinaries\x64\msvcr120.dll",
+                @"C:\projects\ck-database\Tests\SqlCallDemo\SqlCallDemo.Tests\bin\Debug\net451\SqlServerTypes\x64\msvcr120.dll" ),
+            Tuple.Create(
+                @"C:\Users\appveyor\.nuget\packages\microsoft.sqlserver.types\nativeBinaries\x64\SqlServerSpatial140.dll",
+                @"C:\projects\ck-database\Tests\SqlCallDemo\SqlCallDemo.Tests\bin\Debug\net451\SqlServerTypes\x64\SqlServerSpatial140.dll" ),
+        };
+
+        static IEnumerable<string> AppVeyorProblematicFilesTarget()
+        {
+            yield return @"C:\Users\appveyor\.nuget\packages\microsoft.sqlserver.types\nativeBinaries\x86\msvcr120.dll";
+            yield return @"C:\Users\appveyor\.nuget\packages\microsoft.sqlserver.types\nativeBinaries\x86\SqlServerSpatial140.dll";
+            yield return @"C:\Users\appveyor\.nuget\packages\microsoft.sqlserver.types\nativeBinaries\x64\msvcr120.dll";
+            yield return @"C:\Users\appveyor\.nuget\packages\microsoft.sqlserver.types\nativeBinaries\x64\SqlServerSpatial140.dll";
+        }
+
         public Build()
         {
             Cake.Log.Verbosity = Verbosity.Diagnostic;
@@ -149,6 +174,14 @@ namespace CodeCake
                     //Console.WriteLine("------------nuget.g.props------------------");
                     //Console.WriteLine(txt);
                     //Console.WriteLine("-------------------------------------------");
+                    if( Cake.AppVeyor().IsRunningOnAppVeyor)
+                    {
+                        Cake.Log.Information(@"Checking Appveyor problematic files.");
+                        foreach( var p in AppVeyorProblematicFiles)
+                        {
+                            if (!System.IO.File.Exists(p.Item1)) throw new Exception($"File '{p.Item1}' does not exist.");
+                        }
+                    }
                 });
 
             Task("Build")
@@ -162,19 +195,16 @@ namespace CodeCake
                         new DotNetCoreBuildSettings().AddVersionArguments(gitInfo, s =>
                         {
                             s.Configuration = configuration;
-                            // WHY? It works on local, but not on Appveyor :(
-                            // The NuGetPackageFolders is not set (from the obj/g.props).
-                            if ( Cake.AppVeyor().IsRunningOnAppVeyor )
-                            {
-                                var prev = s.ArgumentCustomization;
-                                s.ArgumentCustomization = c =>
-                                {
-                                    prev?.Invoke(c);
-                                    c.Append(@"/p:NuGetPackageFolders=""C:\Users\appveyor\.nuget\packages\""");
-                                    return c;
-                                };
-                            }
                         }));
+
+                    if (Cake.AppVeyor().IsRunningOnAppVeyor)
+                    {
+                        Cake.Log.Information(@"Explicit copy of Appveyor problematic files.");
+                        foreach (var p in AppVeyorProblematicFiles)
+                        {
+                            System.IO.File.Copy(p.Item1, p.Item2);
+                        }
+                    }
 
                     Cake.MSBuild("CKDBSetup/CKDBSetup.csproj", new MSBuildSettings().AddVersionArguments(gitInfo, s =>
                         {
