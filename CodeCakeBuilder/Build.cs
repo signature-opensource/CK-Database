@@ -182,10 +182,6 @@ namespace CodeCake
                             if (!System.IO.File.Exists(p.Item1)) throw new Exception($"File '{p.Item1}' does not exist.");
                         }
                     }
-                    path += @"\x86";
-                    if (!System.IO.Directory.Exists(path)) throw new Exception($"{path} does not exist.");
-                    path += @"\msvcr120.dll";
-                    if (!System.IO.File.Exists(path)) throw new Exception($"{path} does not exist.");
                 });
 
             Task("Build")
