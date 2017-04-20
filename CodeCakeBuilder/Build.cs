@@ -149,6 +149,18 @@ namespace CodeCake
                     //Console.WriteLine("------------nuget.g.props------------------");
                     //Console.WriteLine(txt);
                     //Console.WriteLine("-------------------------------------------");
+                    string path = @"C:\Users\appveyor\.nuget\packages";
+                    if (!System.IO.Directory.Exists(path)) throw new Exception($"{path} does not exist.");
+                    path += @"\microsoft.sqlserver.types";
+                    if (!System.IO.Directory.Exists(path)) throw new Exception($"{path} does not exist.");
+                    path += @"\14.0.314.76";
+                    if (!System.IO.Directory.Exists(path)) throw new Exception($"{path} does not exist.");
+                    path += @"\nativeBinaries";
+                    if (!System.IO.Directory.Exists(path)) throw new Exception($"{path} does not exist.");
+                    path += @"\x86";
+                    if (!System.IO.Directory.Exists(path)) throw new Exception($"{path} does not exist.");
+                    path += @"\msvcr120.dll";
+                    if (!System.IO.File.Exists(path)) throw new Exception($"{path} does not exist.");
                 });
 
             Task("Build")
