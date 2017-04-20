@@ -5,11 +5,12 @@
   <PropertyGroup>
     <SharedDir>$(MSBuildThisFileDirectory)</SharedDir>
     <IsTestProject Condition="$(MSBuildProjectName.EndsWith('.Tests'))">true</IsTestProject>
+    <IsInTestsFolder Condition="$(MSBuildProjectDirectoryNoRoot.Contains('\Tests\'))">true</IsInTestsFolder>
   </PropertyGroup>
 
 
   <!-- Xml documentation is generated in Release or during Cake builds (except for tests projects). -->
-  <PropertyGroup Condition=" '$(IsTestProject)' != 'true' And ('$(CakeBuild)' == 'true' Or '$(Configuration)' == 'Release') ">
+  <PropertyGroup Condition=" '$(IsInTestsFolder)' != 'true' And ('$(CakeBuild)' == 'true' Or '$(Configuration)' == 'Release') ">
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   

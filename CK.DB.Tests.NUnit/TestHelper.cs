@@ -122,12 +122,15 @@ namespace CK.Core
             {
                 if( _map == null )
                 {
+                    bool prev = LogToConsole;
+                    LogToConsole = true;
 #if NET451
                     Assert.That(RunDBSetup());
 #else
                     _map = StObjContextRoot.Load(Config.StObjEngineConfiguration, StObjContextRoot.DefaultStObjRuntimeBuilder, Monitor);
                     Assert.That(_map, Is.Not.Null, "Unable to load generated assembly.");
 #endif
+                    LogToConsole = prev;
                 }
                 return _map;
             }
