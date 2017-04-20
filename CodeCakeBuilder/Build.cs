@@ -174,14 +174,14 @@ namespace CodeCake
                     //Console.WriteLine("------------nuget.g.props------------------");
                     //Console.WriteLine(txt);
                     //Console.WriteLine("-------------------------------------------");
-                    if( Cake.AppVeyor().IsRunningOnAppVeyor)
-                    {
-                        Cake.Log.Information(@"Checking Appveyor problematic files.");
-                        foreach( var p in AppVeyorProblematicFiles)
-                        {
-                            if (!System.IO.File.Exists(p.Item1)) throw new Exception($"File '{p.Item1}' does not exist.");
-                        }
-                    }
+                    //if( Cake.AppVeyor().IsRunningOnAppVeyor)
+                    //{
+                    //    Cake.Log.Information(@"Checking Appveyor problematic files.");
+                    //    foreach( var p in AppVeyorProblematicFiles)
+                    //    {
+                    //        if (!System.IO.File.Exists(p.Item1)) throw new Exception($"File '{p.Item1}' does not exist.");
+                    //    }
+                    //}
                 });
 
             Task("Build")
@@ -197,14 +197,14 @@ namespace CodeCake
                             s.Configuration = configuration;
                         }));
 
-                    if (Cake.AppVeyor().IsRunningOnAppVeyor)
-                    {
-                        Cake.Log.Information(@"Explicit copy of Appveyor problematic files.");
-                        foreach (var p in AppVeyorProblematicFiles)
-                        {
-                            System.IO.File.Copy(p.Item1, p.Item2);
-                        }
-                    }
+                    //if (Cake.AppVeyor().IsRunningOnAppVeyor)
+                    //{
+                    //    Cake.Log.Information(@"Explicit copy of Appveyor problematic files.");
+                    //    foreach (var p in AppVeyorProblematicFiles)
+                    //    {
+                    //        System.IO.File.Copy(p.Item1, p.Item2);
+                    //    }
+                    //}
 
                     Cake.MSBuild("CKDBSetup/CKDBSetup.csproj", new MSBuildSettings().AddVersionArguments(gitInfo, s =>
                         {
