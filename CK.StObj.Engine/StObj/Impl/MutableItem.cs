@@ -58,13 +58,6 @@ namespace CK.Setup
             public object StructuredObject;
 
             /// <summary>
-            /// Available only at the leaf level.
-            /// This function returns the StructureObject until InjectFinalObjectFunc has been called.
-            /// Storing it here avoids creating multiple function delegates.
-            /// </summary>
-            public Func<object> StructuredObjectFunc;
-
-            /// <summary>
             /// Concerns the specialization.
             /// </summary>
             public ImplementableTypeInfo ImplementableTypeInfo;
@@ -86,7 +79,6 @@ namespace CK.Setup
             {
                 Type toInstanciate = ImplementableTypeInfo != null ? ImplementableTypeInfo.StubType : typeIfNotImplementable;
                 StructuredObject = runtimeBuilder.CreateInstance( toInstanciate );
-                StructuredObjectFunc = () => StructuredObject;
                 return StructuredObject;
             }
         }
@@ -738,7 +730,6 @@ namespace CK.Setup
 
         public object InitialObject => _leafData.StructuredObject; 
 
-        public Func<object> ObjectAccessor => _leafData.StructuredObjectFunc; 
 
         /// <summary>
         /// Gets the type of the structure object.

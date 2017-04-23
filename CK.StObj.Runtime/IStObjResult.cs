@@ -32,22 +32,6 @@ namespace CK.Setup
         object InitialObject { get; }
 
         /// <summary>
-        /// Gets a function that returns the associated object instance (the final, most specialized, structured object).
-        /// The <see cref="InitialObject"/> instance is built at the beginning of the process and remains the same until the dynamic assembly has been 
-        /// generated and StObjCollector.InjectFinalObjectAccessor has been called: at this point, the object obtained by this accessor will be a "real" object
-        /// from the dynamic assembly with all its auto-implemented methods available.
-        /// <para>
-        /// Once the final assembly has been generated, this function is updated with <see cref="IContextualStObjMap.Obtain"/>: during the setup phasis, the actual 
-        /// objects that are associated to items are "real" objects produced/managed by the final <see cref="StObjContextRoot"/>.
-        /// </para>
-        /// <para>
-        /// In order to honor potential transient lifetime (one day), these object should not be aggressively cached, this is why this is a function 
-        /// and not a simple 'Object' or 'FinalObject' property. 
-        /// </para>
-        /// </summary>
-        Func<object> ObjectAccessor { get; }
-
-        /// <summary>
         /// Gets the provider for attributes. Attributes that are marked with <see cref="IAttributeAmbientContextBound"/> are cached
         /// and can keep an internal state if needed.
         /// </summary>

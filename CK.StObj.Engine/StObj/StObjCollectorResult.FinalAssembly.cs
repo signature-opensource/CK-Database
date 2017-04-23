@@ -16,49 +16,21 @@ namespace CK.Setup
     public partial class StObjCollectorResult : MultiContextualResult<StObjCollectorContextualResult>
     {
         /// <summary>
-        /// Makes each <see cref="IStObjResult.ObjectAccessor"/> a function that obtains its object from the <see cref="StObjContextRoot"/>.
-        /// The <see cref="IStObjResult.InitialObject"/> remains the same: this is useful if the object itself implements interfaces (such
-        /// as <see cref="IStObjStructuralConfigurator"/>) that configures the setup process to be able to keep some context across calls.
-        /// </summary>
-        /// <param name="monitor">Monitor to use.</param>
-        /// <param name="finalObjects">The final mapper.</param>
-        /// <returns>True on success, false on error.</returns>
-        public bool InjectFinalObjectAccessor( IActivityMonitor monitor, StObjContextRoot finalObjects )
-        {
-            try
-            {
-                foreach( MutableItem o in _orderedStObjs )
-                {
-                    if( o.Specialization == null )
-                    {
-                        o.InjectFinalObjectAccessor( finalObjects );
-                    }
-                }
-                return true;
-            }
-            catch( Exception ex )
-            {
-                monitor.Error().Send( ex );
-                return false;
-            }
-        }
-
-        /// <summary>
         /// Generates final assembly must be called only when <see cref="BuilderFinalAssemblyConfiguration.GenerateFinalAssemblyOption"/>
         /// is not <see cref="BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile"/>.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="runtimeBuilder">Runtime builder to use to create final mapper object.</param>
         /// <param name="callPEVrify">True to call PEVerify on the generated assembly.</param>
-        /// <returns>The final objects map, null if any error occured (logged into <paramref name="monitor"/>).</returns>
-        public StObjContextRoot GenerateFinalAssembly( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, bool callPEVrify )
+        /// <returns>False if any error occured (logged into <paramref name="monitor"/>).</returns>
+        public bool GenerateFinalAssembly( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, bool callPEVrify )
         {
             if( _finalAssembly == null ) throw new InvalidOperationException( "Using GenerateOption.DoNotGenerateFile." );
             try
             {
                 TypeBuilder root = _finalAssembly.ModuleBuilder.DefineType( StObjContextRoot.RootContextTypeName, TypeAttributes.Class | TypeAttributes.Sealed, typeof( StObjContextRoot ) );
 
-                if( !FinalizeTypesCreationAndCreateCtor( monitor, _finalAssembly, root ) ) return null;
+                if( !FinalizeTypesCreationAndCreateCtor( monitor, _finalAssembly, root ) ) return false;
                 // Concretize the actual StObjContextRoot type to detect any error before generating the embedded resource.
                 Type stobjContectRootType = root.CreateType();
 
@@ -122,18 +94,14 @@ namespace CK.Setup
                 outS.Memory.Position = 0;
                 _finalAssembly.ModuleBuilder.DefineManifestResource( StObjContextRoot.RootContextTypeName + ".Data", outS.Memory, ResourceAttributes.Private );
                 _finalAssembly.Save();
-                if (callPEVrify && !ExecutePEVerify(monitor) ) return null;
+                if (callPEVrify && !ExecutePEVerify(monitor) ) return false;
                    
-                // Time to instanciate the final mapper.
-                // Injects the resource stream explicitely: GetManifestResourceStream raises "The invoked member is not supported in a dynamic assembly." exception 
-                // when called on a dynamic assembly.
-                outS.Memory.Position = 0;
-                return (StObjContextRoot)Activator.CreateInstance( stobjContectRootType, new object[] { monitor, runtimeBuilder ?? StObjContextRoot.DefaultStObjRuntimeBuilder, outS.Memory } );
+                return true;
             }
             catch( Exception ex )
             {
                 monitor.Error().Send( ex, "While generating final assembly '{0}'.", _finalAssembly.SaveFileName );
-                return null;
+                return false;
             }
         }
 
@@ -191,7 +159,6 @@ namespace CK.Setup
             {
                 FieldBuilder types = DefineTypeInitializer( monitor, a, root, out typeCreatedCount, out typeErrorCount );
 
-                DefineConstructorWithStreamArgument( root, types );
                 DefineConstructorWithoutStreamArgument( root, types );
 
                 if( typeErrorCount > 0 ) monitor.CloseGroup( String.Format( "Failed to generate {0} types out of {1}.", typeErrorCount, typeCreatedCount ) );
@@ -240,23 +207,6 @@ namespace CK.Setup
             g.Emit( OpCodes.Stsfld, types );
             g.Emit( OpCodes.Ret );
             return types;
-        }
-
-        static void DefineConstructorWithStreamArgument( TypeBuilder root, FieldBuilder types )
-        {
-            var baseCtor = root.BaseType.GetConstructor( BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof( IActivityMonitor ), typeof( IStObjRuntimeBuilder ), typeof( Type[] ), typeof( Stream ) }, null );
-            Debug.Assert( baseCtor != null, "StObjContextRoot ctor signature is: ( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, Type[] allTypes, Stream resources )" );
-
-            var ctor = root.DefineConstructor( MethodAttributes.Public, CallingConventions.Standard, new Type[] { typeof( IActivityMonitor ), typeof( IStObjRuntimeBuilder ), typeof( Stream ) } );
-            var g = ctor.GetILGenerator();
-            g.LdArg( 0 );
-            g.LdArg( 1 );
-            g.LdArg( 2 );
-            g.Emit( OpCodes.Ldsfld, types );
-            g.LdArg( 3 );
-            g.Emit( OpCodes.Call, baseCtor );
-
-            g.Emit( OpCodes.Ret );
         }
 
         static void DefineConstructorWithoutStreamArgument( TypeBuilder root, FieldBuilder types )

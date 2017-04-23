@@ -60,11 +60,5 @@ namespace CK.Setup
                         : _leafData.ImplementableTypeInfo.CreateFinalType( monitor, a );
         }
 
-        public void InjectFinalObjectAccessor( StObjContextRoot finalMapper )
-        {
-            Debug.Assert( Specialization == null );
-            var ctx = finalMapper.FindContext( Context.Context );
-            _leafData.StructuredObjectFunc = () => ctx.Obtain( Type );
-        }
     }
 }

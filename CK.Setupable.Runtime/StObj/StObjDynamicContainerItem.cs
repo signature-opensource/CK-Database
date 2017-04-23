@@ -45,7 +45,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets the associated object instance (the final, most specialized, structured object).
         /// </summary>
-        public object ActualObject => _stObj.ObjectAccessor(); 
+        public object ActualObject => _stObj.InitialObject; 
 
     }
 }

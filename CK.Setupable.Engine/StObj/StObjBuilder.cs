@@ -42,33 +42,20 @@ namespace CK.Setup
             /// Generates the final assembly.
             /// </summary>
             /// <param name="monitor">Monitor to use.</param>
-            /// <param name="injectFinalObjectAccessor">True to set the <see cref="IStObjResult.ObjectAccessor"/> to return the real final object.</param>
             /// <returns>True on success, false on error.</returns>
-            public bool GenerateFinalAssemblyIfRequired( IActivityMonitor monitor, bool injectFinalObjectAccessor = false )
+            public bool GenerateFinalAssemblyIfRequired( IActivityMonitor monitor )
             {
                 if( _configuration.GenerateFinalAssemblyOption == BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile ) return true;
                 bool peVerify = _configuration.GenerateFinalAssemblyOption == BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFileAndPEVerify;
                 bool hasError = false;
                 using( monitor.OnError( () => hasError = true ) )
                 {
-                    StObjContextRoot finalObjects;
                     using( monitor.OpenInfo().Send( "Generating StObj dynamic assembly." ) )
                     {
-                        finalObjects = _result.GenerateFinalAssembly( monitor, _runtimeBuilder, peVerify );
-                        Debug.Assert( finalObjects != null || hasError, "finalObjects == null ==> An error has been logged." );
+                        bool success = _result.GenerateFinalAssembly( monitor, _runtimeBuilder, peVerify );
+                        Debug.Assert(success || hasError, "!success ==> An error has been logged.");
+                        return success;
                     }
-                    if( finalObjects == null ) return false;
-                    if( injectFinalObjectAccessor )
-                    {
-                        bool injectDone;
-                        using( monitor.OpenInfo().Send( "Injecting final objects mapper." ) )
-                        {
-                            injectDone = _result.InjectFinalObjectAccessor( monitor, finalObjects );
-                            Debug.Assert( injectDone || hasError, "inject failed ==> An error has been logged." );
-                        }
-                        return injectDone;
-                    }
-                    return true;
                 }
             }
         }

@@ -341,7 +341,7 @@ namespace CK.Setup
                                 }
                             }
                             initSource = "Structured Item itself";
-                            IStObjSetupDynamicInitializer objectItself = o.ObjectAccessor() as IStObjSetupDynamicInitializer;
+                            IStObjSetupDynamicInitializer objectItself = o.InitialObject as IStObjSetupDynamicInitializer;
                             if( objectItself != null ) objectItself.DynamicItemInitialize( state, item, o );
                             initSource = "Setup Item itself";
                             if( item is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)item).DynamicItemInitialize( state, item, o );

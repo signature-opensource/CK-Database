@@ -33,7 +33,7 @@ namespace CK.Setup
 
         IStObjResult IContextualStObjMapRuntime.ToLeaf( Type t ) => (IStObjResult)base.ToLeaf( t );
 
-        public object Obtain(Type t) => ToLeaf(t)?.ObjectAccessor();
+        public object Obtain(Type t) => ToLeaf(t)?.InitialObject;
         
         IStObjResult IContextualStObjMapRuntime.ToStObj( Type t ) => (IStObjResult)base.ToHighestImpl( t );
 
