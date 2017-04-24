@@ -8,10 +8,17 @@
     <IsInTestsFolder Condition="$(MSBuildProjectDirectoryNoRoot.Contains('\Tests\'))">true</IsInTestsFolder>
   </PropertyGroup>
 
-
   <!-- Xml documentation is generated in Release or during Cake builds (except for tests projects). -->
   <PropertyGroup Condition=" '$(IsInTestsFolder)' != 'true' And ('$(CakeBuild)' == 'true' Or '$(Configuration)' == 'Release') ">
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Centralized version dependencies. -->
+    <CKCoreVersion>7.0.0-a</CKCoreVersion>
+    <CKSetupDependencyVersion>6.0.0-r01</CKSetupDependencyVersion>
+    <CKSqlServerParserVersion>6.0.0-b02</CKSqlServerParserVersion>
+    <CKSqlServerParserModelVersion>3.2.3</CKSqlServerParserModelVersion>
   </PropertyGroup>
   
   <!-- 

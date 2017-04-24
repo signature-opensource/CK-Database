@@ -13,7 +13,7 @@
     <ProjectReference Include="..\CK.SqlServer.Setup.Runtime\CK.SqlServer.Setup.Runtime.csproj" />
     <ProjectReference Include="..\CK.SqlServer.Setup.Engine\CK.SqlServer.Setup.Engine.csproj" />
 
-    <PackageReference Include="CK.SqlServer.Transform" Version="6.0.0-b" />
+    <PackageReference Include="CK.SqlServer.Transform" Version="$(CKSqlServerParserVersion)" />
     <PackageReference Include="NUnit" Version="[2.6.4]" />
     <Reference Include="System.Configuration" />
     <Reference Include="System" />
