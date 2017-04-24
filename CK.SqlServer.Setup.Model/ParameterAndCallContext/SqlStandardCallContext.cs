@@ -30,6 +30,7 @@ namespace CK.SqlServer
     {
         object _cache;
         IActivityMonitor _monitor;
+        bool _externalMonitor;
 
         /// <summary>
         /// Initializes a new <see cref="SqlStandardCallContext"/> that may be bound to an existing monitor.
@@ -37,6 +38,7 @@ namespace CK.SqlServer
         /// <param name="monitor">Optional monitor to use. When null, a new <see cref="ActivityMonitor"/> will be created when <see cref="Monitor"/> property is accessed.</param>
         public SqlStandardCallContext( IActivityMonitor monitor = null )
         {
+            _externalMonitor = monitor != null;
             _monitor = monitor;
         }
 
@@ -45,7 +47,7 @@ namespace CK.SqlServer
         /// </summary>
         public IActivityMonitor Monitor => _monitor ?? (_monitor = new ActivityMonitor());
 
-        ISqlCommandExecutor ISqlCallContext.Executor => this; 
+        ISqlCommandExecutor ISqlCallContext.Executor => this;
 
         /// <summary>
         /// Disposes any cached <see cref="SqlConnection"/>. 
@@ -53,16 +55,21 @@ namespace CK.SqlServer
         /// </summary>
         public virtual void Dispose()
         {
-            if( _cache != null )
+            if (_cache != null)
             {
                 Controller c = _cache as Controller;
-                if( c != null ) c.Dispose();
+                if (c != null) c.Dispose();
                 else
                 {
                     Controller[] cache = _cache as Controller[];
-                    for( int i = 0; i < cache.Length; ++i ) cache[i].Dispose();
+                    for (int i = 0; i < cache.Length; ++i) cache[i].Dispose();
                 }
                 _cache = null;
+                if (_monitor != null && _externalMonitor)
+                {
+                    _monitor.End();
+                    _monitor = null;
+                }
             }
         }
 
