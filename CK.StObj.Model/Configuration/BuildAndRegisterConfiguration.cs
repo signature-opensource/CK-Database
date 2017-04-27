@@ -15,7 +15,6 @@ namespace CK.Core
     /// <summary>
     /// Defines which assemblies and types must be discovered.
     /// </summary>
-    [Serializable]
     public class BuildAndRegisterConfiguration
     {
         readonly AssemblyRegistererConfiguration _assemblyRegister;

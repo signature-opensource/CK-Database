@@ -9,7 +9,6 @@ namespace CK.Core
     /// <summary>
     /// Encapsulates configuration for the StObj layer itself.
     /// </summary>
-    [Serializable]
     public sealed class StObjEngineConfiguration
     {
         readonly BuildAndRegisterConfiguration _buildConfig;

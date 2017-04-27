@@ -11,7 +11,6 @@ namespace CK.Core
     /// <summary>
     /// Defines options related to final assembly generation.
     /// </summary>
-    [Serializable]
     public class BuilderFinalAssemblyConfiguration
     {
         /// <summary>

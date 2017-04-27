@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CK.ActivityMonitor.StandardSender" Version="$(CKCoreVersion)" />
+    <PackageReference Include="CK.ActivityMonitor.StandardSender" Version="$(CKActivityMonitorVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">

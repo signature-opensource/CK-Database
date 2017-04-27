@@ -19,7 +19,7 @@ namespace CK.Core
         readonly static string[] _defaultIgnored = new string[]
             {
                 "mscorlib", "System",
-                "CK.Core", "CK.Text", "CK.Monitoring", "CK.Reflection",
+                "CK.Core", "CK.Text", "CK.Reflection",
                 "CK.Setup.Dependency",
                 "Newtonsoft.Json", "Dapper"
             };

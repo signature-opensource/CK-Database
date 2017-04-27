@@ -30,7 +30,7 @@ namespace CK.SqlServer
     {
         object _cache;
         IActivityMonitor _monitor;
-        bool _externalMonitor;
+        readonly bool _ownedMonitor;
 
         /// <summary>
         /// Initializes a new <see cref="SqlStandardCallContext"/> that may be bound to an existing monitor.
@@ -38,7 +38,7 @@ namespace CK.SqlServer
         /// <param name="monitor">Optional monitor to use. When null, a new <see cref="ActivityMonitor"/> will be created when <see cref="Monitor"/> property is accessed.</param>
         public SqlStandardCallContext( IActivityMonitor monitor = null )
         {
-            _externalMonitor = monitor != null;
+            _ownedMonitor = monitor == null;
             _monitor = monitor;
         }
 
@@ -65,9 +65,9 @@ namespace CK.SqlServer
                     for (int i = 0; i < cache.Length; ++i) cache[i].Dispose();
                 }
                 _cache = null;
-                if (_monitor != null && _externalMonitor)
+                if (_monitor != null && _ownedMonitor)
                 {
-                    _monitor.End();
+                    _monitor.MonitorEnd();
                     _monitor = null;
                 }
             }
@@ -75,12 +75,14 @@ namespace CK.SqlServer
 
         class Controller : ISqlConnectionController
         {
+            readonly SqlStandardCallContext _ctx;
             internal readonly string ConnectionString;
             readonly SqlConnection _connection;
             int _openCount;
 
-            public Controller( string connectionString )
+            public Controller(SqlStandardCallContext ctx, string connectionString )
             {
+                _ctx = ctx;
                 ConnectionString = connectionString;
                 _connection = new SqlConnection(connectionString);
             }
@@ -119,7 +121,7 @@ namespace CK.SqlServer
             Controller c;
             if (_cache == null)
             {
-                c = new Controller(connectionString);
+                c = new Controller(this,connectionString);
                 _cache = c;
                 return c;
             }
@@ -128,7 +130,7 @@ namespace CK.SqlServer
             if (c != null)
             {
                 if (c.ConnectionString == connectionString) return c;
-                newC = new Controller(connectionString);
+                newC = new Controller(this,connectionString);
                 _cache = new Controller[] { c, newC };
             }
             else
@@ -141,7 +143,7 @@ namespace CK.SqlServer
                 }
                 Controller[] newCache = new Controller[cache.Length + 1];
                 Array.Copy(cache, newCache, cache.Length);
-                newC = new Controller(connectionString);
+                newC = new Controller(this,connectionString);
                 newCache[cache.Length] = newC;
                 _cache = newCache;
             }
