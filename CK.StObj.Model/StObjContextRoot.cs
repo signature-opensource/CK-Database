@@ -61,6 +61,7 @@ namespace CK.Core
         public static IStObjMap Load( StObjEngineConfiguration config, IStObjRuntimeBuilder runtimeBuilder = null, IActivityMonitor monitor = null )
         {
             if (config == null) throw new ArgumentNullException(nameof(config));
+            IActivityMonitor m = monitor ?? new ActivityMonitor("CK.Core.StObjContextRoot.Load");
             string name = BuilderFinalAssemblyConfiguration.GetFinalAssemblyName(config.FinalAssemblyConfiguration.AssemblyName);
             Assembly a = null;
             try
@@ -69,10 +70,12 @@ namespace CK.Core
             }
             catch( Exception ex )
             {
-                if( monitor != null ) monitor.Warn().Send( ex, $"Unable to load assembly '{name}'." );
+                m.Error().Send( ex, $"Unable to load assembly '{name}'." );
                 return null;
             }
-            return Load( a, runtimeBuilder, monitor );
+            IStObjMap map = Load( a, runtimeBuilder, m );
+            if (monitor == null) m.MonitorEnd();
+            return map;
         }
 
         /// <summary>
@@ -85,24 +88,29 @@ namespace CK.Core
         public static IStObjMap Load( Assembly a, IStObjRuntimeBuilder runtimeBuilder = null, IActivityMonitor monitor = null )
         {
             if (a == null) throw new ArgumentNullException(nameof(a));
-            if( monitor == null ) monitor = new ActivityMonitor( "CK.Core.StObjContextRoot.Load" );
+            IActivityMonitor m = monitor ?? new ActivityMonitor("CK.Core.StObjContextRoot.Load");
             bool loaded;
             lock( _alreadyLoaded ) 
             {
                 loaded = _alreadyLoaded.Contains( a );
                 if( !loaded ) _alreadyLoaded.Add( a );
             }
-            using( loaded ? null : monitor.OpenInfo().Send( "Loading dynamic '{0}'", a.FullName ) )
+            using( loaded ? null : m.OpenInfo().Send( "Loading dynamic '{0}'", a.FullName ) )
             {
                 try
                 {
                     Type t = a.GetType(RootContextTypeName, true, false);
-                    return (StObjContextRoot)Activator.CreateInstance(t, new object[] { monitor, runtimeBuilder ?? DefaultStObjRuntimeBuilder });
+                    return (StObjContextRoot)Activator.CreateInstance(t, new object[] { m, runtimeBuilder ?? DefaultStObjRuntimeBuilder });
                 }
                 catch( Exception ex )
                 {
-                    monitor.Error().Send(ex, "Unable to instanciate StObjMap.");
+                    m.Error().Send(ex, "Unable to instanciate StObjMap.");
                     return null;
+                }
+                finally
+                {
+                    m.CloseGroup();
+                    if (monitor == null) m.MonitorEnd();
                 }
             }
         }
