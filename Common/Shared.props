@@ -16,7 +16,7 @@
   <PropertyGroup>
     <!-- Centralized version dependencies. -->
     <CKCoreVersion>7.0.0</CKCoreVersion>
-    <CKActivityMonitorVersion>7.0.0</CKActivityMonitorVersion>
+    <CKActivityMonitorVersion>7.0.1</CKActivityMonitorVersion>
     <CKSetupDependencyVersion>6.0.0</CKSetupDependencyVersion>
     <CKSqlServerParserVersion>6.0.0-b03</CKSqlServerParserVersion>
     <CKSqlServerParserModelVersion>3.2.4</CKSqlServerParserModelVersion>
