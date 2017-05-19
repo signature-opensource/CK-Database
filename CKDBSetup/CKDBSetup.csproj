@@ -9,11 +9,12 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CKDBSetup</RootNamespace>
     <AssemblyName>CKDBSetup</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -103,9 +104,8 @@
     <Reference Include="CK.Text, Version=5.2.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
       <HintPath>..\packages\CK.Text.5.2.0\lib\net451\CK.Text.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Extensions.CommandLineUtils, Version=1.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.CommandLineUtils.1.1.0\lib\net451\Microsoft.Extensions.CommandLineUtils.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Microsoft.Extensions.CommandLineUtils, Version=1.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.CommandLineUtils.1.1.1\lib\net451\Microsoft.Extensions.CommandLineUtils.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Collections.Immutable, Version=1.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -151,16 +151,16 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\SimpleGitVersionTask.0.22.0-r\build\SimpleGitVersionTask.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SimpleGitVersionTask.0.22.0-r\build\SimpleGitVersionTask.targets'))" />
-    <Error Condition="!Exists('..\packages\Fody.2.0.8\build\dotnet\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.2.0.8\build\dotnet\Fody.targets'))" />
+    <Error Condition="!Exists('..\packages\Fody.2.0.9\build\netstandard1.4\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.2.0.9\build\netstandard1.4\Fody.targets'))" />
   </Target>
   <PropertyGroup>
-    <PreBuildEvent>xcopy /y $(SolutionDir)CK.SqlServer.Setup.Engine\bin\$(ConfigurationName)\net451\CK.StObj.*.dll $(ProjectDir)Imports\
-xcopy /y $(SolutionDir)CK.SqlServer.Setup.Engine\bin\$(ConfigurationName)\net451\CK.SqlServer.Setup.*.dll $(ProjectDir)Imports\
-xcopy /y $(SolutionDir)CK.SqlServer.Setup.Engine\bin\$(ConfigurationName)\net451\CK.Setupable.*.dll $(ProjectDir)Imports\
+    <PreBuildEvent>xcopy /y $(SolutionDir)CK.SqlServer.Setup.Engine\bin\$(ConfigurationName)\net461\CK.StObj.*.dll $(ProjectDir)Imports\
+xcopy /y $(SolutionDir)CK.SqlServer.Setup.Engine\bin\$(ConfigurationName)\net461\CK.SqlServer.Setup.*.dll $(ProjectDir)Imports\
+xcopy /y $(SolutionDir)CK.SqlServer.Setup.Engine\bin\$(ConfigurationName)\net461\CK.Setupable.*.dll $(ProjectDir)Imports\
 </PreBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\SimpleGitVersionTask.0.22.0-r\build\SimpleGitVersionTask.targets" Condition="Exists('..\packages\SimpleGitVersionTask.0.22.0-r\build\SimpleGitVersionTask.targets')" />
-  <Import Project="..\packages\Fody.2.0.8\build\dotnet\Fody.targets" Condition="Exists('..\packages\Fody.2.0.8\build\dotnet\Fody.targets')" />
+  <Import Project="..\packages\Fody.2.0.9\build\netstandard1.4\Fody.targets" Condition="Exists('..\packages\Fody.2.0.9\build\netstandard1.4\Fody.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

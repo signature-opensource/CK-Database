@@ -59,7 +59,7 @@ namespace CK.Core
         /// that can only <see cref="AssemblyBuilderAccess.Run"/>.
         /// </summary>
         public DynamicAssembly()
-            : this( null, BuilderFinalAssemblyConfiguration.DefaultAssemblyName + ".Memory", null, DynamicKeyPair, AssemblyBuilderAccess.Run )
+            : this( null, BuilderFinalAssemblyConfiguration.DefaultAssemblyName + ".Memory", DynamicKeyPair, AssemblyBuilderAccess.Run )
         {
         }
 
@@ -68,10 +68,9 @@ namespace CK.Core
         /// </summary>
         /// <param name="directory">Directory where the assembly must be saved. Must not be null if the assembly must be saved.</param>
         /// <param name="assemblyName">Name to use. If access has <see cref="AssemblyBuilderAccess.Save"/> bit set, the name of the dll will be with ".dll" suffix.</param>
-        /// <param name="externalVersionStamp">Embedded stamp. Used to detect the need to rebuild the assembly.</param>
         /// <param name="signature">Key pair to use to sign the dll.</param>
         /// <param name="access">Typical accesses are Run and RunAndSave (the default).</param>
-        public DynamicAssembly( string directory, string assemblyName = BuilderFinalAssemblyConfiguration.DefaultAssemblyName, string externalVersionStamp = null, StrongNameKeyPair signature = null, AssemblyBuilderAccess access = AssemblyBuilderAccess.RunAndSave )
+        public DynamicAssembly( string directory, string assemblyName = BuilderFinalAssemblyConfiguration.DefaultAssemblyName, StrongNameKeyPair signature = null, AssemblyBuilderAccess access = AssemblyBuilderAccess.RunAndSave )
         {
             bool mustSave = (access & AssemblyBuilderAccess.Save) == AssemblyBuilderAccess.Save;
 
@@ -83,12 +82,6 @@ namespace CK.Core
             aName.Version = new Version( 1, 0, 0, 0 );
             if( signature != null ) aName.KeyPair = signature;
             _assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly( aName, access, directory );
-            if( externalVersionStamp != null )
-            {
-                var ctor = typeof(AssemblyInformationalVersionAttribute).GetConstructor( new Type[] { typeof( string ) } );
-                CustomAttributeBuilder attr = new CustomAttributeBuilder( ctor, new object[] { externalVersionStamp } );
-                _assemblyBuilder.SetCustomAttribute( attr );
-            }
             if( mustSave )
             {
                 _saveFileName = aName.Name + ".dll";

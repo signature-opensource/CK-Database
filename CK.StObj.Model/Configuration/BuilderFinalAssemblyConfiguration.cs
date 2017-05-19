@@ -54,8 +54,7 @@ namespace CK.Core
 
         /// <summary>
         /// Gets or set the directory where the final assembly must be saved.
-        /// When null (the default) the current path of CK.StObj.Model assembly is used
-        /// (thanks to <see cref="GetFinalDirectory(string)"/>).
+        /// When null (the default) the current path of CK.StObj.Model assembly is used.
         /// </summary>
         public string Directory { get; set; }
 
@@ -66,44 +65,9 @@ namespace CK.Core
         public string AssemblyName { get; set; }
 
         /// <summary>
-        /// Gets the full path of the generated assembly (that may not exist) based on <see cref="Directory"/>, 
-        /// <see cref="AssemblyName"/> and <see cref="GetFinalDirectory"/> and <see cref="GetFinalAssemblyName"/>
-        /// helpers. The returned path ends with a ".dll".
-        /// </summary>
-        public string GeneratedAssemblyPath
-        {
-            get
-            {
-                return Path.Combine( GetFinalDirectory( Directory ), GetFinalAssemblyName( AssemblyName ) + ".dll" );
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a string (that can have any value) that will be stored inside the final assembly.
-        /// The <see cref="G:StObjContextRoot.Build"/> method use this key to automatically trigger a build 
-        /// and a new generation of the final assembly if the string do not match.
-        /// </summary>
-        public string ExternalVersionStamp { get; set; }
-
-        /// <summary>
         /// True to sign the final assembly.
         /// </summary>
         public bool SignAssembly { get; set; }
-
-        /// <summary>
-        /// Uses <see paramref="directory"/> if it is not null nor empty, otherwise 
-        /// uses the directory where CK.StObj.Model.dll is.
-        /// </summary>
-        /// <returns>The directory into which the final assembly must be saved.</returns>
-        static public string GetFinalDirectory( string directory )
-        {
-            if( string.IsNullOrEmpty( directory ) )
-            {
-                // netstandard1.6 handles this:
-                directory = Path.GetDirectoryName( new Uri( typeof( StObjContextRoot ).GetTypeInfo().Assembly.CodeBase ).LocalPath );
-            }
-            return directory;
-        }
 
         /// <summary>
         /// Uses <paramref name="assemblyName"/> if it is not null nor empty or <see cref="DefaultAssemblyName"/>.

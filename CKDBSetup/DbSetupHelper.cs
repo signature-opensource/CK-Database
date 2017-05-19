@@ -47,10 +47,7 @@ namespace CKDBSetup
 
         public static bool ExecuteDbSetup( IActivityMonitor m, SetupEngineConfiguration config )
         {
-            using( var r = StObjContextRoot.Build( config, null, m, true ) )
-            {
-                return r.Success;
-            }
+            return StObjContextRoot.Build(config, null, m);
         }
     }
 }

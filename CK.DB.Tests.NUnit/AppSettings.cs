@@ -172,7 +172,7 @@ namespace CK.Core
             }
         }
 
-#if !NET451
+#if !NET461
         void DoDefaultInitialize()
         {
             string origin = Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationBasePath;

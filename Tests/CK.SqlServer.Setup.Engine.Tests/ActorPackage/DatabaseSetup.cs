@@ -56,10 +56,8 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
                     db.SchemaDropAllObjects( "CKCore", false );
                 }
             }
-            using( var result = StObjContextRoot.Build( c, null, TestHelper.Monitor ) )
-            {
-                Assert.That( result.Success );
-            }
+            Assert.That(StObjContextRoot.Build(c, null, TestHelper.Monitor));
+
             using( var db = SqlManager.OpenOrCreate( TestHelper.DatabaseTestConnectionString, TestHelper.Monitor ) )
             {
                 IStObjMap m = StObjContextRoot.Load( dllName, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
@@ -81,10 +79,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             c.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = dllName + ".Reverted";
             using( TestHelper.Monitor.OpenTrace().Send( "Second setup (reverse order)" ) )
             {
-                using( var result = StObjContextRoot.Build( c, null, TestHelper.Monitor ) )
-                {
-                    Assert.That( result.Success );
-                }
+                Assert.That(StObjContextRoot.Build(c, null, TestHelper.Monitor));
             }
 
             using( var db = SqlManager.OpenOrCreate( TestHelper.DatabaseTestConnectionString, TestHelper.Monitor ) )

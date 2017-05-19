@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using System.Data.SqlClient;
-#if NET451
+#if NET461
 using System.Runtime.Serialization;
 #endif
 
@@ -24,7 +24,7 @@ namespace CK.SqlServer
         {
         }
 
-#if NET451
+#if NET461
         /// <summary>
         /// Serialization support.
         /// </summary>

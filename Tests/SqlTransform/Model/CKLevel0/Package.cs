@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace CKLevel0
 {
-#if NET451
+#if NET461
     public class UseJScript
     {
         public object LockUse()

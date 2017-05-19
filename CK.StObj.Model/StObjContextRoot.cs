@@ -124,9 +124,8 @@ namespace CK.Core
         /// Must be a static method that returns a <see cref="IStObjRuntimeBuilder"/> or null to use the <see cref="StObjContextRoot.DefaultStObjRuntimeBuilder"/>.
         /// </param>
         /// <param name="monitor">Optional monitor.</param>
-        /// <param name="forceBuild">True to force the build regardless of the stamp.</param>
-        /// <returns>A disposable result.</returns>
-        public static StObjBuildResult Build( IStObjBuilderConfiguration config, Func<IStObjRuntimeBuilder> builderFactoryStaticMethod = null, IActivityMonitor monitor = null, bool forceBuild = false )
+        /// <returns>True on success, false if build has failed.</returns>
+        public static bool Build( IStObjBuilderConfiguration config, Func<IStObjRuntimeBuilder> builderFactoryStaticMethod = null, IActivityMonitor monitor = null )
         {
             string typeName = null;
             string methodName = null;
@@ -140,12 +139,11 @@ namespace CK.Core
                 typeName = method.DeclaringType.AssemblyQualifiedName;
                 methodName = method.Name;
             }
-            return DoBuild( config, builderFactoryStaticMethod, typeName, methodName, monitor, forceBuild );
+            return DoBuild( config, builderFactoryStaticMethod, typeName, methodName, monitor );
         }
 
         /// <summary>
         /// Runs a build based on the given <paramref name="config"/> object. 
-        /// The returned <see cref="StObjBuildResult"/> must be disposed once done with it.
         /// </summary>
         /// <param name="config">Configuration object. It must be serializable.</param>
         /// <param name="stObjRuntimeBuilderFactoryTypeName">
@@ -154,42 +152,30 @@ namespace CK.Core
         /// </param>
         /// <param name="stObjRuntimeBuilderFactoryMethodName">Name of the method to call (defaults to "CreateStObjRuntimeBuilder").</param>
         /// <param name="monitor">Optional monitor.</param>
-        /// <param name="forceBuild">True to force the build regardless of the stamp.</param>
-        /// <returns>A disposable result.</returns>
-        public static StObjBuildResult Build(
+        /// <returns>True on success, false if the build faield.</returns>
+        public static bool Build(
             IStObjBuilderConfiguration config,
             string stObjRuntimeBuilderFactoryTypeName = null,
             string stObjRuntimeBuilderFactoryMethodName = "CreateStObjRuntimeBuilder",
-            IActivityMonitor monitor = null,
-            bool forceBuild = false )
+            IActivityMonitor monitor = null )
         {
-            return DoBuild( config, null, stObjRuntimeBuilderFactoryTypeName, stObjRuntimeBuilderFactoryMethodName, monitor, forceBuild );
+            return DoBuild( config, null, stObjRuntimeBuilderFactoryTypeName, stObjRuntimeBuilderFactoryMethodName, monitor );
         }
 
-        static StObjBuildResult DoBuild( 
+        static bool DoBuild( 
             IStObjBuilderConfiguration config,
             Func<IStObjRuntimeBuilder> builderMethod,
             string stObjRuntimeBuilderFactoryTypeName, 
             string stObjRuntimeBuilderFactoryMethodName, 
-            IActivityMonitor monitor,
-            bool forceBuild )
+            IActivityMonitor monitor )
         {
             if( config == null ) throw new ArgumentNullException( "config" );
             if( monitor == null ) monitor = new ActivityMonitor( "CK.Core.StObjContextRoot.Build" );
 
             var stObjConfig = config.StObjEngineConfiguration;
-            string stamp = stObjConfig.FinalAssemblyConfiguration.ExternalVersionStamp;
-            if( !forceBuild && !string.IsNullOrEmpty( stamp ) )
-            {
-                string path = stObjConfig.FinalAssemblyConfiguration.GeneratedAssemblyPath;
-                if( File.Exists( path ) )
-                {
-                    //TODO: use Mono.Cecil to load the InformalVersionAttribute, compare it to the stamp
-                    //      and sucessfully returns if they are equal.
-                }
-            }
             IStObjRuntimeBuilder runtimeBuilder = ResolveRuntimeBuilder( builderMethod, stObjRuntimeBuilderFactoryTypeName, stObjRuntimeBuilderFactoryMethodName, monitor );
-            return new StObjBuildResult( LaunchRun( monitor, config, runtimeBuilder ), stObjConfig.FinalAssemblyConfiguration.ExternalVersionStamp, false, null );
+            IStObjBuilder runner = (IStObjBuilder)Activator.CreateInstance(SimpleTypeFinder.WeakResolver(config.BuilderAssemblyQualifiedName, true), monitor, config, runtimeBuilder);
+            return runner.Run();
         }
 
         static IStObjRuntimeBuilder ResolveRuntimeBuilder( Func<IStObjRuntimeBuilder> builderMethod, string stObjRuntimeBuilderFactoryTypeName, string stObjRuntimeBuilderFactoryMethodName, IActivityMonitor monitor )
@@ -213,10 +199,5 @@ namespace CK.Core
             return runtimeBuilder;
         }
 
-        static bool LaunchRun( IActivityMonitor monitor, IStObjBuilderConfiguration config, IStObjRuntimeBuilder runtimeBuilder )
-        {
-            IStObjBuilder runner = (IStObjBuilder)Activator.CreateInstance( SimpleTypeFinder.WeakResolver( config.BuilderAssemblyQualifiedName, true ), monitor, config, runtimeBuilder );
-            return runner.Run();
-        }
     }
 }

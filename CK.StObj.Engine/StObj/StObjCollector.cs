@@ -72,8 +72,8 @@ namespace CK.Setup
             string directory = c.Directory;
             if( string.IsNullOrEmpty( directory ) )
             {
-                directory = BuilderFinalAssemblyConfiguration.GetFinalDirectory( directory );
-                monitor.Info().Send( "No directory has been specified for final assembly. Trying to use the path of CK.StObj.Model assembly or dnx base path: {0}", directory );
+                directory = typeof(StObjContextRoot).Assembly.Location;
+                monitor.Info().Send( $"No directory has been specified for final assembly. Trying to use the path of CK.StObj.Model assembly: {directory}" );
             }
             string assemblyName = c.AssemblyName;
             if( string.IsNullOrEmpty( assemblyName ) )
@@ -84,7 +84,7 @@ namespace CK.Setup
             bool signAssembly = c.SignAssembly;
             StrongNameKeyPair signKeyPair = signAssembly ? DynamicAssembly.DynamicKeyPair : null;
 
-            return new DynamicAssembly( directory, assemblyName, c.ExternalVersionStamp, signKeyPair, AssemblyBuilderAccess.RunAndSave );
+            return new DynamicAssembly( directory, assemblyName, signKeyPair, AssemblyBuilderAccess.RunAndSave );
         }
 
         /// <summary>

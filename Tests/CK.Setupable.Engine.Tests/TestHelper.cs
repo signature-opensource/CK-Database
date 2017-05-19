@@ -48,7 +48,7 @@ namespace CK.Setupable.Engine.Tests
 
         private static void InitalizePaths()
         {
-#if NET451
+#if NET461
             string p = new Uri(System.Reflection.Assembly.GetExecutingAssembly().CodeBase).LocalPath;
             p = Path.GetDirectoryName(p);
 #else

@@ -122,7 +122,7 @@ namespace CK.Core
             {
                 if( _map == null )
                 {
-#if NET451
+#if NET461
                     Assert.That(RunDBSetup());
 #else
                     _map = StObjContextRoot.Load(Config.StObjEngineConfiguration, StObjContextRoot.DefaultStObjRuntimeBuilder, Monitor);
@@ -157,7 +157,7 @@ namespace CK.Core
             }
         }
 
-#if NET451
+#if NET461
 
         /// <summary>
         /// Runs the database setup based on <see cref="Config"/> and updates <see cref="StObjMap"/>.
@@ -177,11 +177,12 @@ namespace CK.Core
                     Config.StObjEngineConfiguration.TraceDependencySorterOutput = traceStObjGraphOrdering;
                     Config.TraceDependencySorterInput = traceSetupGraphOrdering;
                     Config.TraceDependencySorterOutput = traceSetupGraphOrdering;
-                    using( var r = StObjContextRoot.Build( Config, null, TestHelper.Monitor ) )
+                    bool success = StObjContextRoot.Build(Config, null, TestHelper.Monitor);
+                    if(success)
                     {
                         _map = StObjContextRoot.Load( Config.StObjEngineConfiguration, StObjContextRoot.DefaultStObjRuntimeBuilder, Monitor );
-                        return r.Success;
                     }
+                    return success;
                 }
                 catch( Exception ex )
                 {
@@ -407,7 +408,7 @@ namespace CK.Core
             _buildConfiguration = "Release";
 #endif
             string p, origin;
-#if NET451
+#if NET461
             origin = new Uri(System.Reflection.Assembly.GetExecutingAssembly().CodeBase).LocalPath;
             // Code base is like "...HumanSide\Tests\CK.ActorModel.Tests\Debug\bin\CK.ActorModel.Tests.dll"
             _binFolder = p = Path.GetDirectoryName( origin );

@@ -1,4 +1,4 @@
-#region Proprietary License
+﻿#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (Tests\CK.StObj.Engine.Tests\TestHelper.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -140,7 +140,7 @@ namespace CK.StObj.Engine.Tests
 
         private static void InitalizePaths()
         {
-#if NET451
+#if NET461
             string p = new Uri(System.Reflection.Assembly.GetExecutingAssembly().CodeBase).LocalPath;
             p = Path.GetDirectoryName(p);
 #else

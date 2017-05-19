@@ -34,10 +34,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.Core
             c.Aspects.Add( config );
             config.DefaultDatabaseConnectionString = ConnectionString;
 
-            using( var r = StObjContextRoot.Build( c, null, TestHelper.Monitor ) )
-            {
-                Assert.That( r.Success, Is.False );
-            }
+            Assert.That(StObjContextRoot.Build(c, null, TestHelper.Monitor), Is.False );
 
             SqlDatabaseExtensions.AssertScalar( TestHelper.ConnectionStringMaster, Is.EqualTo( "master" ), "select DB_Name()" );
             SqlDatabaseExtensions.AssertScalar( TestHelper.ConnectionStringMaster, Is.EqualTo( 0 ), "select count(*) from sys.tables where name = 'tSystem';" );

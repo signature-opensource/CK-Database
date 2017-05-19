@@ -28,7 +28,7 @@ namespace CK.DB.Tests
             else TestHelper.Monitor.Info().Send( "Debugger is already attached." );
         }
 
-#if NET451
+#if NET461
         [Test]
         [Explicit]
         public void reset_database_by_clearing_all_used_schemas()
