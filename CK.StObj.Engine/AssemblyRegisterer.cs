@@ -82,9 +82,8 @@ namespace CK.Core
                 }
                 try
                 {
-                    if( config.AutomaticAssemblyDiscovering ) DiscoverCurrenlyLoadedAssemblies();
-                    DiscoverRecurse( config.DiscoverRecurseAssemblyNames.Select( a => Assembly.Load( a ) ) );
-                    foreach( string a in config.DiscoverAssemblyNames ) Discover( Assembly.Load( a ) );
+                    DiscoverRecurse( config.DiscoverRecurseAssemblyNames.Select( a => Assembly.Load( new AssemblyName(a) ) ) );
+                    foreach( string a in config.DiscoverAssemblyNames ) Discover( Assembly.Load(new AssemblyName(a)) );
                 }
                 finally
                 {
@@ -168,15 +167,6 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Discover assemblies currently loaded and all their 
-        /// dependencies (even if they are not already loaded).
-        /// </summary>
-        public void DiscoverCurrenlyLoadedAssemblies()
-        {
-            DiscoverRecurse( AppDomain.CurrentDomain.GetAssemblies() );
-        }
-
-        /// <summary>
         /// Discovers one assembly without automatically discover assemblies referenced by it.
         /// </summary>
         /// <param name="assembly">The <see cref="Assembly"/> to discover.</param>
@@ -218,16 +208,7 @@ namespace CK.Core
         {
             if( assemblies != null && assemblies.Any() )
             {
-                var onLoad = recurse ? new AssemblyLoadEventHandler( AssemblyLoadHandler ) : null;
-                AppDomain.CurrentDomain.AssemblyLoad += onLoad;
-                try
-                {
-                    foreach( var a in assemblies ) DoDiscover( a, recurse );
-                }
-                finally
-                {
-                    if( onLoad != null ) AppDomain.CurrentDomain.AssemblyLoad -= onLoad;
-                }
+                foreach( var a in assemblies ) DoDiscover( a, recurse );
             }
         }
 
@@ -279,11 +260,6 @@ namespace CK.Core
                     }
                 }
             }
-        }
-
-        void AssemblyLoadHandler( object o, AssemblyLoadEventArgs e )
-        {
-            DoDiscover( e.LoadedAssembly, true );
         }
 
     }

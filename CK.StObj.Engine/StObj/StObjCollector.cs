@@ -72,7 +72,7 @@ namespace CK.Setup
             string directory = c.Directory;
             if( string.IsNullOrEmpty( directory ) )
             {
-                directory = typeof(StObjContextRoot).Assembly.Location;
+                directory = System.IO.Path.GetDirectoryName( new Uri(typeof(StObjContextRoot).Assembly.CodeBase).LocalPath );
                 monitor.Info().Send( $"No directory has been specified for final assembly. Trying to use the path of CK.StObj.Model assembly: {directory}" );
             }
             string assemblyName = c.AssemblyName;
