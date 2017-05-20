@@ -39,7 +39,7 @@ namespace CK.Core
         /// is done bottom-up through <see cref="InitializeBottomUp"/>.
         /// </remarks>
         internal protected AmbientContextualTypeInfo( T t, TC generalization, IContextualTypeMap context )
-            : base( t.Type, generalization == null )
+            : base( t.Type.GetTypeInfo(), generalization == null )
         {
             AmbientTypeInfo = t;
             Context = context;
@@ -88,7 +88,7 @@ namespace CK.Core
         /// <param name="abstractTypeInfo">Optional object that could be associated to concretize an abstract type.</param>
         internal protected virtual bool AbstractTypeCanBeInstanciated( IActivityMonitor monitor, DynamicAssembly assembly, out object abstractTypeInfo )
         {
-            Debug.Assert( AmbientTypeInfo.Type.IsAbstract && assembly != null );
+            Debug.Assert( AmbientTypeInfo.Type.GetTypeInfo().IsAbstract && assembly != null );
             abstractTypeInfo = null;
             return false;
         }
@@ -99,7 +99,7 @@ namespace CK.Core
         /// <returns>Formatted name.</returns>
         public override string ToString()
         {
-            return AmbientContractCollector.FormatContextualFullName( Context.Context, Type );
+            return AmbientContractCollector.FormatContextualFullName( Context.Context, Type.AsType() );
         }
     }
 

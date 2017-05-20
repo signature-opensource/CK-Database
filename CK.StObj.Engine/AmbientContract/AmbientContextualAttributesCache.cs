@@ -35,7 +35,7 @@ namespace CK.Core
         readonly Entry[] _all;
         readonly MemberInfo[] _typeMembers;
         readonly bool _includeBaseClasses;
-        readonly Type _type;
+        readonly TypeInfo _type;
 
         /// <summary>
         /// Initializes a new <see cref="AmbientContextualAttributesCache"/> that considers only members explicitely 
@@ -43,9 +43,9 @@ namespace CK.Core
         /// </summary>
         /// <param name="type">Type for which attributes must be cached.</param>
         /// <param name="includeBaseClasses">True to include attributes of base classes and attributes on members of the base classes.</param>
-        public AmbientContextualAttributesCache( Type type, bool includeBaseClasses )
+        public AmbientContextualAttributesCache( TypeInfo type, bool includeBaseClasses )
         {
-            if( type == null ) throw new ArgumentNullException( "t" );
+            if( type == null ) throw new ArgumentNullException( nameof(type) );
             _type = type;
             var all = new List<Entry>();
             int initializerCount = Register( all, type, includeBaseClasses );
@@ -92,13 +92,13 @@ namespace CK.Core
         /// Get the Type that is managed by this cache for specialized classes.
         /// They can use another name than 'Type' to expose it if they will.
         /// </summary>
-        protected Type Type => _type; 
+        protected TypeInfo Type => _type; 
 
         /// <summary>
         /// The Type property of the ICustomAttributeTypeMultiProvider is hidden here to enable specialized classes
         /// to expose it with a different name.
         /// </summary>
-        Type ICKCustomAttributeTypeMultiProvider.Type => _type; 
+        TypeInfo ICKCustomAttributeTypeMultiProvider.Type => _type; 
 
         /// <summary>
         /// Gets whether an attribute that is assignable to the given <paramref name="attributeType"/> 
@@ -112,7 +112,7 @@ namespace CK.Core
             if( m == null ) throw new ArgumentNullException( "m" );
             if( attributeType == null ) throw new ArgumentNullException( "attributeType" );
             return _all.Any( e => CK.Reflection.MemberInfoEqualityComparer.Default.Equals( e.M, m ) && attributeType.IsAssignableFrom( e.Attr.GetType() ) )
-                    || ( (m.DeclaringType == Type || (_includeBaseClasses && m.DeclaringType.IsAssignableFrom( Type ))) && m.IsDefined( attributeType, false ) );
+                    || ( (m.DeclaringType == Type.AsType() || (_includeBaseClasses && m.DeclaringType.IsAssignableFrom( Type.AsType() ))) && m.IsDefined( attributeType, false ) );
         }
 
         /// <summary>
@@ -128,7 +128,7 @@ namespace CK.Core
             if( m == null ) throw new ArgumentNullException( "m" );
             if( attributeType == null ) throw new ArgumentNullException( "attributeType" );
             var fromCache = _all.Where( e => CK.Reflection.MemberInfoEqualityComparer.Default.Equals( e.M, m ) && attributeType.IsAssignableFrom( e.Attr.GetType() ) ).Select( e => e.Attr );
-            if( m.DeclaringType == Type || (_includeBaseClasses && m.DeclaringType.IsAssignableFrom( Type )) )
+            if( m.DeclaringType == Type.AsType() || (_includeBaseClasses && m.DeclaringType.IsAssignableFrom( Type.AsType())) )
             {
                 return fromCache
                         .Concat( m.GetCustomAttributes( attributeType, false ).Where( a => !(a is IAttributeAmbientContextBound) ) );
@@ -148,10 +148,10 @@ namespace CK.Core
         {
             if( m == null ) throw new ArgumentNullException( "m" );
             var fromCache = _all.Where( e => CK.Reflection.MemberInfoEqualityComparer.Default.Equals( e.M, m ) && e.Attr is T ).Select( e => (T)e.Attr );
-            if( m.DeclaringType == Type || (_includeBaseClasses && m.DeclaringType.IsAssignableFrom( Type )) )
+            if( m.DeclaringType == Type.AsType() || (_includeBaseClasses && m.DeclaringType.IsAssignableFrom( Type.AsType())) )
             {
                 return fromCache
-                        .Concat( m.GetCustomAttributes( typeof( T ), false ).Where( a => !(a is IAttributeAmbientContextBound) ).Select( a => (T)a ) );
+                        .Concat( m.GetCustomAttributes( typeof( T ), false ).Where( a => !(a is IAttributeAmbientContextBound) ).Select( a => (T)(object)a ) );
             }
             return fromCache;
         }
@@ -189,14 +189,15 @@ namespace CK.Core
         /// <typeparam name="T">Type of the attributes.</typeparam>
         /// <param name="memberOnly">True to ignore attributes of the type itself.</param>
         /// <returns>Enumeration of attributes (possibly empty).</returns>
-        public IEnumerable<T> GetAllCustomAttributes<T>( bool memberOnly = false )
+        public IEnumerable<T> GetAllCustomAttributes<T>( bool memberOnly = false)
         {
             var fromCache = _all.Where( e => e.Attr is T && (!memberOnly || e.M != Type) ).Select( e => (T)e.Attr );
             var fromMembers = _typeMembers.SelectMany( m => m.GetCustomAttributes( typeof( T ), false )
                                             .Where( a => !(a is IAttributeAmbientContextBound) ) )
-                                            .Select( a => (T)a );
+                                            .Select( a => (T)(object)a );
             if( memberOnly ) return fromCache.Concat( fromMembers );
-            var fromType = Type.GetCustomAttributes( typeof( T ), _includeBaseClasses ).Where( a => !(a is IAttributeAmbientContextBound) ).Select( a => (T)a );
+            var fromType = Type.GetCustomAttributes( typeof( T ), _includeBaseClasses )
+                                .Where( a => !(a is IAttributeAmbientContextBound) ).Select( a => (T)(object)a );
             return fromCache.Concat( fromType ).Concat( fromMembers );
         }
 

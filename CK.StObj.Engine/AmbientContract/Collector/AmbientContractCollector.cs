@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using CK.Text;
+using System.Reflection;
 
 namespace CK.Core
 {
@@ -29,9 +30,9 @@ namespace CK.Core
             return
                 t != null
                 && t != typeof( object )
-                && (typeof( IAmbientContract ).IsAssignableFrom( t )
+                && (typeof( IAmbientContract ).GetTypeInfo().IsAssignableFrom( t )
                     ||
-                   (t.IsClass && typeof( IAmbientContractDefiner ).IsAssignableFrom( t.BaseType )));
+                   (t.GetTypeInfo().IsClass && typeof( IAmbientContractDefiner ).IsAssignableFrom( t.GetTypeInfo().BaseType )));
         }
 
         /// <summary>
@@ -137,12 +138,12 @@ namespace CK.Core
             {
                 if( t != typeof( object ) )
                 {
-                    if( t.IsClass )
+                    if( t.GetTypeInfo().IsClass )
                     {
                         T result;
                         DoRegisterClass( t, out result );
                     }
-                    else if( t.IsInterface && typeof(IPoco).IsAssignableFrom( t ) )
+                    else if( t.GetTypeInfo().IsInterface && typeof(IPoco).IsAssignableFrom( t ) )
                     {
                         _pocoRegisterer.Register( _monitor, t );
                     }
@@ -158,28 +159,28 @@ namespace CK.Core
         public bool RegisterClass( Type c )
         {
             if( c == null ) throw new ArgumentNullException( "c" );
-            if( !c.IsClass ) throw new ArgumentException();
+            if( !c.GetTypeInfo().IsClass ) throw new ArgumentException();
             T result;
             return c != typeof(object) ? DoRegisterClass( c, out result ) : false;
         }
 
         bool DoRegisterClass( Type t, out T result )
         {
-            Debug.Assert( t != null && t != typeof( object ) && t.IsClass );
+            Debug.Assert( t != null && t != typeof( object ) && t.GetTypeInfo().IsClass );
 
             // Skips already processed types.
             if( _collector.TryGetValue( t, out result ) ) return false;
 
             // Registers parent types whatever they are (null if not AmbientContract).
             T parent = null;
-            if( t.BaseType != typeof( object ) ) DoRegisterClass( t.BaseType, out parent );
+            if( t.GetTypeInfo().BaseType != typeof( object ) ) DoRegisterClass( t.GetTypeInfo().BaseType, out parent );
 
             // This is an Ambient contract if:
             // - its parent is an ambient contract 
             // - or it is statically an ambient contract (via IAmbientContract support or IAmbientContractDefiner on base class)
             // - or the IAmbientContractDispatcher wants to consider it as one.
             if( parent != null
-                || typeof( IAmbientContract ).IsAssignableFrom( t ) || typeof( IAmbientContractDefiner ).IsAssignableFrom( t.BaseType )
+                || typeof( IAmbientContract ).IsAssignableFrom( t ) || typeof( IAmbientContractDefiner ).IsAssignableFrom( t.GetTypeInfo().BaseType )
                 || (_contextDispatcher != null && _contextDispatcher.IsAmbientContractClass( t )) )
             {
                 result = CreateTypeInfo( t, parent );
@@ -331,7 +332,7 @@ namespace CK.Core
 
         bool IsAmbientInterface( Type t )
         {
-            Debug.Assert( t.IsInterface );
+            Debug.Assert( t.GetTypeInfo().IsInterface );
             return t != typeof( IAmbientContract ) && typeof( IAmbientContract ).IsAssignableFrom( t );
         }
 

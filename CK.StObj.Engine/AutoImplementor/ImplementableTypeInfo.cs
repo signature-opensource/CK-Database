@@ -90,10 +90,10 @@ namespace CK.Core
         {
             if( monitor == null ) throw new ArgumentNullException( nameof(monitor) );
             if( abstractType == null ) throw new ArgumentNullException( nameof(abstractType) );
-            if( !abstractType.IsAbstract ) throw new ArgumentException( "Type must be abstract.", nameof(abstractType) );
+            if( !abstractType.GetTypeInfo().IsAbstract ) throw new ArgumentException( "Type must be abstract.", nameof(abstractType) );
             if( attributeProvider == null ) throw new ArgumentNullException( nameof(attributeProvider) );
 
-            if( abstractType.IsDefined( typeof( PreventAutoImplementationAttribute ), false ) ) return null;
+            if( abstractType.GetTypeInfo().IsDefined( typeof( PreventAutoImplementationAttribute ), false ) ) return null;
 
             var candidates = abstractType.GetMethods( BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public ).Where( m => !m.IsSpecialName && m.IsAbstract );
             int nbUncovered = 0;
@@ -164,7 +164,7 @@ namespace CK.Core
                 {
                     CK.Reflection.EmitHelper.ImplementStubProperty(b, ap.Property, false);
                 }
-                return _stubType = b.CreateType();
+                return _stubType = b.CreateTypeInfo().AsType();
             }
             catch (Exception ex)
             {
@@ -173,6 +173,7 @@ namespace CK.Core
             }
         }
 
+#if NET461
         /// <summary>
         /// Implements a final Type in a dynamic assembly that specializes <see cref="AbstractType"/> and returns it.
         /// All current or last <see cref="IAutoImplementorMethod"/> and <see cref="IAutoImplementorProperty"/> are used.
@@ -233,5 +234,6 @@ namespace CK.Core
                 return null;
             }
         }
+#endif
     }
 }

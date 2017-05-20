@@ -54,10 +54,14 @@ namespace CK.Setup
             _runtimeBuilder = runtimeBuilder ?? StObjContextRoot.DefaultStObjRuntimeBuilder;
             _monitor = monitor;
             _tempAssembly = new DynamicAssembly();
+#if NET461
             if( finalAssemblyConfig != null && finalAssemblyConfig.GenerateFinalAssemblyOption != BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile )
             {
                 _finalAssembly = CreateFinalAssembly( monitor, finalAssemblyConfig );
             }
+#else
+            _finalAssembly = null;
+#endif
             _cc = new AmbientContractCollector<StObjContextualMapper,StObjTypeInfo, MutableItem>( _monitor, l => new StObjMapper(), ( l, p, t ) => new StObjTypeInfo( l, p, t ), _tempAssembly, _finalAssembly, dispatcher );
             _configurator = configurator;
             _valueResolver = valueResolver;
@@ -65,6 +69,7 @@ namespace CK.Setup
             if( traceDepencySorterOutput ) DependencySorterHookOutput = i => i.Trace( monitor );
         }
 
+#if NET461
         DynamicAssembly CreateFinalAssembly( IActivityMonitor monitor, BuilderFinalAssemblyConfiguration c )
         {
             Debug.Assert( c != null && c.GenerateFinalAssemblyOption != BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile );
@@ -86,6 +91,7 @@ namespace CK.Setup
 
             return new DynamicAssembly( directory, assemblyName, signKeyPair, AssemblyBuilderAccess.RunAndSave );
         }
+#endif
 
         /// <summary>
         /// Gets the count of error or fatal that occurred during <see cref="RegisterTypes"/> or <see cref="RegisterClass"/> calls.

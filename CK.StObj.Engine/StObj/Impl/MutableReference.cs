@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using CK.Core;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace CK.Setup
 {
@@ -133,7 +134,7 @@ namespace CK.Setup
             }
             else if( StObjRequirementBehavior == Setup.StObjRequirementBehavior.WarnIfNotStObj )
             {
-                if( !skipWarnOnValueType || !(Type.IsValueType || Type == typeof(string)))
+                if( !skipWarnOnValueType || !(Type.GetTypeInfo().IsValueType || Type == typeof(string)))
                 {
                     Warn(monitor, text);
                 }

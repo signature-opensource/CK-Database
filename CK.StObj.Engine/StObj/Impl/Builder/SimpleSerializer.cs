@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -44,13 +45,13 @@ namespace CK.Core
                 WriteNull();
                 return;
             }
-            if (o == Type.Missing)
+            if (o == System.Type.Missing)
             {
                 WriteTypeMissing();
                 return;
             }
             Type oT = o.GetType();
-            if( oT.IsValueType )
+            if( oT.GetTypeInfo().IsValueType )
             {
                 if( o is bool ) Write( (bool)o );
                 else if( o is int ) Write( (int)o );
@@ -107,7 +108,7 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Writes a <see cref="Type.Missing"/> marker.
+        /// Writes a <see cref="System.Type.Missing"/> marker.
         /// </summary>
         public void WriteTypeMissing()
         {

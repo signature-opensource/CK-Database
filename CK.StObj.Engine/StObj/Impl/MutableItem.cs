@@ -314,7 +314,7 @@ namespace CK.Setup
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor", "Source:" + sourceDescription );
             if( String.IsNullOrEmpty( propertyName ) ) throw new ArgumentException( "Can not be null nor empty. Source:" + sourceDescription, "propertyName" );
-            if( value == Type.Missing ) throw new ArgumentException( "Setting property to Type.Missing is not allowed. Source:" + sourceDescription, "value" );
+            if( value == System.Type.Missing ) throw new ArgumentException( "Setting property to System.Type.Missing is not allowed. Source:" + sourceDescription, "value" );
 
             // Is it an Ambient property?
             // If yes, it is an error... 
@@ -346,7 +346,7 @@ namespace CK.Setup
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor", "Source:" + sourceDescription );
             if( String.IsNullOrEmpty( propertyName ) ) throw new ArgumentException( "Can not be null nor empty. Source:" + sourceDescription, "propertyName" );
-            if( value == Type.Missing ) throw new ArgumentException( "Setting property to Type.Missing is not allowed. Source:" + sourceDescription, "value" );
+            if( value == System.Type.Missing ) throw new ArgumentException( "Setting property to System.Type.Missing is not allowed. Source:" + sourceDescription, "value" );
 
             // Is it an Ambient property?
             // If yes, set the value onto the property.
@@ -377,7 +377,7 @@ namespace CK.Setup
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor", "Source:" + sourceDescription );
             if( String.IsNullOrEmpty( propertyName ) ) throw new ArgumentException( "Can not be null nor empty. Source:" + sourceDescription, "propertyName" );
-            if( value == Type.Missing ) throw new ArgumentException( "Setting property to Type.Missing is not allowed. Source:" + sourceDescription, "value" );
+            if( value == System.Type.Missing ) throw new ArgumentException( "Setting property to System.Type.Missing is not allowed. Source:" + sourceDescription, "value" );
 
             MutableAmbientProperty mp = _leafData.AllAmbientProperties.FirstOrDefault( a => a.Name == propertyName );
             if( mp != null )
@@ -459,7 +459,7 @@ namespace CK.Setup
         {
             Debug.Assert( _container != null && _constructParameterEx != null );
             bool result = true;
-            _dFullName = AmbientContractCollector.FormatContextualFullName( Context.Context, Type );
+            _dFullName = AmbientContractCollector.FormatContextualFullName( Context.Context, Type.AsType() );
             _dContainer = _container.ResolveToStObj( monitor, collector, cachedCollector );
             // Requirement initialization.
             HashSet<MutableItem> req = new HashSet<MutableItem>();
@@ -480,7 +480,7 @@ namespace CK.Setup
                 {
                     foreach( MutableParameter t in _constructParameterEx )
                     {
-                        if( t.Value == Type.Missing )
+                        if( t.Value == System.Type.Missing )
                         {
                             MutableItem dep = t.ResolveToStObj( monitor, collector, cachedCollector );
                             if( dep != null ) req.Add( dep );
@@ -734,7 +734,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets the type of the structure object.
         /// </summary>
-        public Type ObjectType => Type; 
+        public Type ObjectType => Type.AsType(); 
 
         IStObj IStObj.Generalization => Generalization; 
 
@@ -763,7 +763,7 @@ namespace CK.Setup
         object IStObjResult.GetStObjProperty( string propertyName )
         {
             StObjProperty p = GetStObjProperty( propertyName );
-            return p != null ? p.Value : Type.Missing;
+            return p != null ? p.Value : System.Type.Missing;
         }
 
         #endregion

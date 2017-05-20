@@ -95,7 +95,7 @@ namespace CK.Setup
                 return false;
             }
             _maxSpecializationDepthSet = setterSpecializationDepth;
-            Value = Type.Missing;
+            Value = System.Type.Missing;
             Context = context;
             Type = type;
             StObjRequirementBehavior = behavior;

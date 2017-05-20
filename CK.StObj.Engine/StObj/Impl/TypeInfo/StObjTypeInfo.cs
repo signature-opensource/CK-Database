@@ -65,7 +65,7 @@ namespace CK.Setup
                                 result.ItemKind = (DependentItemKind)a.ItemKind;
                                 result.TrackAmbientProperties = a.TrackAmbientProperties;
                             }
-                            Type tAbove = t.BaseType;
+                            Type tAbove = t.GetTypeInfo().BaseType;
                             while( tAbove != typeof( object ) )
                             {
                                 result.SpecializationDepth = result.SpecializationDepth + 1;
@@ -79,7 +79,7 @@ namespace CK.Setup
                                         if( result.TrackAmbientProperties == TrackAmbientPropertiesMode.Unknown ) result.TrackAmbientProperties = aAbove.TrackAmbientProperties;
                                     }
                                 }
-                                tAbove = tAbove.BaseType;
+                                tAbove = tAbove.GetTypeInfo().BaseType;
                             }
                             // Ambient, Contracts & StObj Properties (uses a recursive function).
                             List<StObjPropertyInfo> stObjProperties = new List<StObjPropertyInfo>();
@@ -119,7 +119,7 @@ namespace CK.Setup
                     IList<InjectContractInfo> acCollector;
                     AmbientPropertyOrInjectContractInfo.CreateAmbientPropertyListForExactType( monitor, type, specializationLevel, stObjProperties, out apCollector, out acCollector );
 
-                    CreateAllAmbientPropertyList( monitor, type.BaseType, specializationLevel - 1, stObjProperties, out apListResult, out acListResult );
+                    CreateAllAmbientPropertyList( monitor, type.GetTypeInfo().BaseType, specializationLevel - 1, stObjProperties, out apListResult, out acListResult );
 
                     apListResult = AmbientPropertyOrInjectContractInfo.MergeWithAboveProperties( monitor, apListResult, apCollector );
                     acListResult = AmbientPropertyOrInjectContractInfo.MergeWithAboveProperties( monitor, acListResult, acCollector );
@@ -132,14 +132,14 @@ namespace CK.Setup
         internal StObjTypeInfo( IActivityMonitor monitor, AmbientTypeInfo parent, Type t )
             : base( parent, t )
         {
-            IStObjTypeInfoFromParent infoFromParent = Generalization ?? TypeInfoForBaseClasses.GetFor( monitor, t.BaseType );
+            IStObjTypeInfoFromParent infoFromParent = Generalization ?? TypeInfoForBaseClasses.GetFor( monitor, t.GetTypeInfo().BaseType );
             SpecializationDepth = infoFromParent.SpecializationDepth + 1;
 
             // StObj properties are initialized with inherited (non Ambient Contract ones).
             List<StObjPropertyInfo> stObjProperties = new List<StObjPropertyInfo>();
             if( Generalization == null ) stObjProperties.AddRange( infoFromParent.StObjProperties );
             // StObj properties are then read from StObjPropertyAttribute on class
-            foreach( StObjPropertyAttribute p in t.GetCustomAttributes( typeof( StObjPropertyAttribute ), Generalization == null ) )
+            foreach( StObjPropertyAttribute p in t.GetTypeInfo().GetCustomAttributes( typeof( StObjPropertyAttribute ), Generalization == null ) )
             {
                 if( String.IsNullOrWhiteSpace( p.PropertyName ) )
                 {
@@ -243,14 +243,14 @@ namespace CK.Setup
 
                         // Finds the Context.
                         string parameterContext;
-                        ContextAttribute ctx = (ContextAttribute)Attribute.GetCustomAttribute( p, typeof( ContextAttribute ) );
+                        ContextAttribute ctx = p.GetCustomAttribute<ContextAttribute>();
                         if( ctx != null ) parameterContext = ctx.Context;
                         else parameterContext = FindContextFromMapAttributes( p.ParameterType );
                         ConstructParameterTypedContext[i] = parameterContext;
 
                         // Is it marked with ContainerAttribute?
-                        bool isContainerParameter = Attribute.GetCustomAttribute( p, typeof( ContainerAttribute ) ) != null;
-                        if( Attribute.GetCustomAttribute( p, typeof( ContainerAttribute ) ) != null )
+                        bool isContainerParameter = p.GetCustomAttribute<ContainerAttribute>() != null;
+                        if(isContainerParameter)
                         {
                             if( ContainerConstructParameterIndex >= 0 )
                             {

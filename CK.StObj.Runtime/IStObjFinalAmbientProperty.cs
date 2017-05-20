@@ -18,7 +18,7 @@ namespace CK.Setup
     public interface IStObjFinalAmbientProperty : IStObjAmbientProperty
     {
         /// <summary>
-        /// Gets the current value (<see cref="Type.Missing"/> as long as <see cref="SetValue"/> has not been called).
+        /// Gets the current value (<see cref="System.Type.Missing"/> as long as <see cref="SetValue"/> has not been called).
         /// </summary>
         object Value { get; }
 

@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using System.Collections;
+using System.Reflection;
 
 namespace CK.Core
 {
@@ -96,7 +97,7 @@ namespace CK.Core
             {
                 if( c.AmbientTypeInfo.Type != t )
                 {
-                    if( t.IsInterface )
+                    if( t.GetTypeInfo().IsInterface )
                     {
                         _map.TryGetValue( new AmbientContractInterfaceKey( t ), out c );
                     }

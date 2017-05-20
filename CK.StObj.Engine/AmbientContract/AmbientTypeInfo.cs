@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 
 namespace CK.Core
 {
@@ -84,7 +85,7 @@ namespace CK.Core
 
         Type[] EnsureAllAmbientInterfaces( Func<Type,bool> ambientInterfacePredicate )
         {
-            return _ambientInterfaces ?? (_ambientInterfaces = Type.GetInterfaces().Where( ambientInterfacePredicate ).ToArray());
+            return _ambientInterfaces ?? (_ambientInterfaces = Type.GetTypeInfo().GetInterfaces().Where( ambientInterfacePredicate ).ToArray());
         }
 
         internal Type[] EnsureThisAmbientInterfaces( Func<Type, bool> ambientInterfacePredicate )
@@ -130,7 +131,7 @@ namespace CK.Core
             if( !concreteBelow )
             {
                 object abstractTypeInfo = null;
-                if( Type.IsAbstract && (tempAssembly == null || !ct.AbstractTypeCanBeInstanciated( monitor, tempAssembly, out abstractTypeInfo )) )
+                if( Type.GetTypeInfo().IsAbstract && (tempAssembly == null || !ct.AbstractTypeCanBeInstanciated( monitor, tempAssembly, out abstractTypeInfo )) )
                 {
                     abstractTails.Add( Type );
                 }
@@ -160,7 +161,7 @@ namespace CK.Core
 
         static void ProcessContextAttributes<T>( Type t, Func<string, bool> action ) where T : IAddOrRemoveContextAttribute
         {
-            object[] attrs = t.GetCustomAttributes( typeof( T ), false );
+            var attrs = t.GetTypeInfo().GetCustomAttributes( typeof( T ), false );
             foreach( var a in attrs ) action( ((IAddOrRemoveContextAttribute)a).Context );
         }
     }

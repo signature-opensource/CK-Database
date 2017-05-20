@@ -26,7 +26,7 @@ namespace CK.Setup
         {
             _isOptionalDefined = isOptionalDefined;
             _isOptional = isOptional;
-            ContextAttribute c = (ContextAttribute)Attribute.GetCustomAttribute( p, typeof( ContextAttribute ), false );
+            ContextAttribute c = p.GetCustomAttribute<ContextAttribute>(false);
             if( c != null ) Context = c.Context;
         }
 
@@ -79,7 +79,7 @@ namespace CK.Setup
             acListResult = null;
             foreach( var p in properties )
             {
-                StObjPropertyAttribute stObjAttr = (StObjPropertyAttribute)Attribute.GetCustomAttribute( p, typeof( StObjPropertyAttribute ), false );
+                StObjPropertyAttribute stObjAttr = p.GetCustomAttribute<StObjPropertyAttribute>(false);
                 if( stObjAttr != null )
                 {
                     string nP = String.IsNullOrEmpty( stObjAttr.PropertyName ) ? p.Name : stObjAttr.PropertyName;
@@ -92,8 +92,8 @@ namespace CK.Setup
                     stObjProperties.Add( new StObjPropertyInfo( t, stObjAttr.ResolutionSource, nP, tP, p ) );
                     // Continue to detect Ambient properties. Properties that are both Ambient and StObj must be detected.
                 }
-                AmbientPropertyAttribute ap = (AmbientPropertyAttribute)Attribute.GetCustomAttribute( p, typeof( AmbientPropertyAttribute ), false );
-                IAmbientPropertyOrInjectContractAttribute ac = (InjectContractAttribute)Attribute.GetCustomAttribute( p, typeof( InjectContractAttribute ), false );
+                AmbientPropertyAttribute ap = p.GetCustomAttribute<AmbientPropertyAttribute>( false );
+                IAmbientPropertyOrInjectContractAttribute ac = p.GetCustomAttribute<InjectContractAttribute>( false );
                 if( ac != null || ap != null )
                 {
                     if( stObjAttr != null || (ac != null && ap != null) )

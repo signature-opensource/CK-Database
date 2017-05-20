@@ -34,21 +34,21 @@ namespace CK.Setup
         int Index { get; }
 
         /// <summary>
-        /// Gets whether this reference can be considered as optional. When true, <see cref="Value"/> can be <see cref="Type.Missing"/>:
+        /// Gets whether this reference can be considered as optional. When true, <see cref="Value"/> can be <see cref="System.Type.Missing"/>:
         /// if automatic resolution fails then, for a property it is simply not set and, for a parameter, behavior depends on <see cref="IStObjFinalParameter.IsRealParameterOptional"/>.
         /// </summary>
         bool IsOptional { get; }
 
         /// <summary>
         /// Gets whether the formal parameter is actually optional. 
-        /// When both this and <see cref="IsOptional"/> are true and <see cref="Value"/> has not been resolved, <see cref="Type.Missing"/> will be 
+        /// When both this and <see cref="IsOptional"/> are true and <see cref="Value"/> has not been resolved, <see cref="System.Type.Missing"/> will be 
         /// used as the parameter value at invocation time. When this is false, the default value for the expected type is used.
         /// </summary>
         bool IsRealParameterOptional { get; }
 
         /// <summary>
         /// Gets the current value that will be used. 
-        /// If it has not been resolved to a <see cref="IStObjResult.InitialObject"/> instance or "structurally" set by one <see cref="IStObjStructuralConfigurator"/>, it is <see cref="Type.Missing"/>. 
+        /// If it has not been resolved to a <see cref="IStObjResult.InitialObject"/> instance or "structurally" set by one <see cref="IStObjStructuralConfigurator"/>, it is <see cref="System.Type.Missing"/>. 
         /// Use <see cref="SetParameterValue"/> to set it.
         /// </summary>
         object Value { get; }

@@ -13,6 +13,7 @@ using System.IO;
 
 namespace CK.Setup
 {
+#if NET461
     public partial class StObjCollectorResult : MultiContextualResult<StObjCollectorContextualResult>
     {
         /// <summary>
@@ -225,4 +226,5 @@ namespace CK.Setup
             g.Emit( OpCodes.Ret );
         }
     }
+#endif
 }

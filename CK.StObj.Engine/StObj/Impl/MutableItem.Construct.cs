@@ -51,19 +51,19 @@ namespace CK.Setup
                 else
                 {
                     MutableItem resolved = null;
-                    if( t.Value == Type.Missing )
+                    if( t.Value == System.Type.Missing )
                     {
                         // Parameter reference have already been resolved as dependencies for graph construction since 
                         // no Value has been explicitely set for the parameter.
                         resolved = t.CachedResolvedStObj;
                         if( resolved != null )
                         {
-                            Debug.Assert( resolved.InitialObject != Type.Missing );
+                            Debug.Assert( resolved.InitialObject != System.Type.Missing );
                             t.SetParameterValue( resolved.InitialObject );
                         }
                     }
                     if( valueResolver != null ) valueResolver.ResolveParameterValue( monitor, t );
-                    if( t.Value == Type.Missing && !t.IsRealParameterOptional )
+                    if( t.Value == System.Type.Missing && !t.IsRealParameterOptional )
                     {
                         if( !t.IsOptional )
                         {
@@ -72,7 +72,7 @@ namespace CK.Setup
                             // This behavior (FailFastOnFailureToResolve) may be an option once. For the moment: log the error.
                             monitor.Fatal().Send( $"{t}: Unable to resolve non optional. Attempting to use a default value to continue the setup process in order to detect other errors." );
                         }
-                        t.SetParameterValue( t.Type.IsValueType ? Activator.CreateInstance( t.Type ) : null );
+                        t.SetParameterValue( t.Type.GetTypeInfo().IsValueType ? Activator.CreateInstance( t.Type ) : null );
                     }
                     if( resolved != null && t.Value == resolved.InitialObject )
                     {

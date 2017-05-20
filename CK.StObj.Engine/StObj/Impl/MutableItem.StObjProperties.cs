@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using CK.Core;
+using System.Reflection;
 
 namespace CK.Setup
 {
@@ -52,7 +53,7 @@ namespace CK.Setup
 
             public object Value
             {
-                get { return _value == _unsetValue ? Type.Missing : _value; }
+                get { return _value == _unsetValue ? System.Type.Missing : _value; }
                 set { _value = value; }
             }
 
@@ -97,14 +98,14 @@ namespace CK.Setup
                 // If the value is missing (it has never been set or has been explicitly "removed"), we have nothing to do.
                 // If the type is not constrained, we have nothing to do.
                 object v = p.Value;
-                if( v != Type.Missing )
+                if( v != System.Type.Missing )
                 {
                     bool setIt = p.HasStructuredObjectProperty;
                     if( p.Type != typeof( object ) )
                     {
                         if( v == null )
                         {
-                            if( p.Type.IsValueType && !(p.Type.IsGenericType && p.Type.GetGenericTypeDefinition() == typeof( Nullable<> )) )
+                            if( p.Type.GetTypeInfo().IsValueType && !(p.Type.GetTypeInfo().IsGenericType && p.Type.GetGenericTypeDefinition() == typeof( Nullable<> )) )
                             {
                                 monitor.Error().Send( "StObjProperty '{0}.{1}' has been set to null but its type '{2}' is not nullable.", ToString(), p.Name, p.Type.Name );
                                 setIt = false;
@@ -146,8 +147,8 @@ namespace CK.Setup
                 }
                 if( doSetOrMerge )
                 {
-                    // The source value must have been set and not explicitly "removed" with a Type.Missing value.
-                    if( c.Value != Type.Missing )
+                    // The source value must have been set and not explicitly "removed" with a System.Type.Missing value.
+                    if( c.Value != System.Type.Missing )
                     {
                         // We "Set" the value from this source.
                         if( !p.ValueHasBeenSet ) p.Value = c.Value;

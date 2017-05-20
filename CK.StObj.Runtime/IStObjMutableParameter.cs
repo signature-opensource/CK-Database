@@ -40,7 +40,7 @@ namespace CK.Setup
         int Index { get; }
 
         /// <summary>
-        /// Gets whether the formal parameter is optional (<see cref="Type.Missing"/> can be used as the parameter value 
+        /// Gets whether the formal parameter is optional (<see cref="System.Type.Missing"/> can be used as the parameter value 
         /// at invocation time, see <see cref="ParameterInfo.IsOptional"/>).
         /// </summary>
         bool IsRealParameterOptional { get; }

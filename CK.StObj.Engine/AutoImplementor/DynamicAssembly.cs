@@ -107,9 +107,9 @@ namespace CK.Core
         /// that can only <see cref="AssemblyBuilderAccess.Run"/>.
         /// </summary>
         public DynamicAssembly()
-            : this( null, BuilderFinalAssemblyConfiguration.DefaultAssemblyName + ".Memory" )
+            : base( null, BuilderFinalAssemblyConfiguration.DefaultAssemblyName + ".Memory" )
         {
-            _assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(AssemblyName);
+            _assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(AssemblyName, AssemblyBuilderAccess.Run);
             ModuleBuilder = _assemblyBuilder.DefineDynamicModule(AssemblyName.Name);
         }
     }

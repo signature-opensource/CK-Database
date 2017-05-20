@@ -20,10 +20,10 @@ namespace CK.Core
     public interface ICKCustomAttributeTypeMultiProvider : ICKCustomAttributeMultiProvider
     {
         /// <summary>
-        /// Gets the type to which this provider is bound.
+        /// Gets the type info to which this provider is bound.
         /// The attributes of this type are available (recall that a Type is a MemberInfo).
         /// </summary>
-        Type Type { get; }
+        TypeInfo Type { get; }
 
         /// <summary>
         /// Gets all attributes that are assignable to the given <paramref name="attributeType"/>, regardless of the <see cref="MemberInfo"/>
@@ -41,7 +41,7 @@ namespace CK.Core
         /// <typeparam name="T">Type of the attributes.</typeparam>
         /// <param name="memberOnly">True to ignore attributes of the type itself.</param>
         /// <returns>Enumeration of attributes (possibly empty).</returns>
-        IEnumerable<T> GetAllCustomAttributes<T>( bool memberOnly = false );
+        IEnumerable<T> GetAllCustomAttributes<T>( bool memberOnly = false);
 
     }
 }

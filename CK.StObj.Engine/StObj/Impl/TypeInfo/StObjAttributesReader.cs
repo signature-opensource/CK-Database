@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using CK.Core;
+using System.Reflection;
 
 namespace CK.Setup
 {
@@ -32,9 +33,9 @@ namespace CK.Setup
             if( objectType == null ) throw new ArgumentNullException( "objectType" );
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
 
-            var a = (IStObjAttribute[])objectType.GetCustomAttributes( typeof( IStObjAttribute ), false );
+            var a = (IStObjAttribute[])objectType.GetTypeInfo().GetCustomAttributes( typeof( IStObjAttribute ), false );
             if( a.Length == 0 ) return null;
-            if( a.Length == 1 ) return (IStObjAttribute)a[0];
+            if( a.Length == 1 ) return a[0];
             IList<Type> requires = null;
             IList<Type> requiredBy = null;
             IList<Type> children = null;

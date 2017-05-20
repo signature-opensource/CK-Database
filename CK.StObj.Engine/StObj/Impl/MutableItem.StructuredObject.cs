@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using CK.Core;
+using System.Reflection;
 
 namespace CK.Setup
 {
@@ -26,7 +27,7 @@ namespace CK.Setup
             var p = this;
             do { combined.Add( p ); p = p.Generalization; } while( p != null );
 
-            ImplementableTypeInfo autoImpl = ImplementableTypeInfo.CreateImplementableTypeInfo( monitor, Type, new CustomAttributeProviderComposite( combined ) );
+            ImplementableTypeInfo autoImpl = ImplementableTypeInfo.CreateImplementableTypeInfo( monitor, Type.AsType(), new CustomAttributeProviderComposite( combined ) );
             if( autoImpl != null && autoImpl.CreateStubType( monitor, assembly ) != null )
             {
                 abstractTypeInfo = autoImpl;
@@ -43,7 +44,7 @@ namespace CK.Setup
             Debug.Assert( _leafData.StructuredObject == null, "Called once and only once." );
             try
             {
-                return _leafData.CreateStructuredObject( runtimeBuilder, Type );
+                return _leafData.CreateStructuredObject( runtimeBuilder, Type.AsType() );
             }
             catch( Exception ex )
             {
@@ -51,7 +52,7 @@ namespace CK.Setup
                 return null;
             }
         }
-
+#if NET461
         public Type CreateFinalType( IActivityMonitor monitor, DynamicAssembly a )
         {
             Debug.Assert( Specialization == null );
@@ -59,6 +60,6 @@ namespace CK.Setup
                         ? Type 
                         : _leafData.ImplementableTypeInfo.CreateFinalType( monitor, a );
         }
-
+#endif
     }
 }
