@@ -4,6 +4,7 @@ using System.Linq;
 using CK.Core;
 using CK.Setup;
 using Yodii.Script;
+using System.Reflection;
 
 namespace CK.SqlServer.Setup
 {
@@ -27,7 +28,7 @@ namespace CK.SqlServer.Setup
             object hasModel = data.StObj.GetStObjProperty( "HasModel" );
             if( !(hasModel is bool) || (bool)hasModel ) EnsureModel();
             
-            Debug.Assert( typeof( SqlPackageBaseItemDriver ).IsAssignableFrom( data.DriverType ) );
+            Debug.Assert( typeof( SqlPackageBaseItemDriver ).GetTypeInfo().IsAssignableFrom( data.DriverType ) );
             Name = data.FullNameWithoutContext;
         }
 

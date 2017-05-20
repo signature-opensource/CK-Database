@@ -88,7 +88,7 @@ namespace CK.SqlServer.Setup
         static void FinalizeSqlCreator( IDynamicAssembly dynamicAssembly )
         {
             TypeBuilder tB = (TypeBuilder)dynamicAssembly.Memory[_builderTypeName];
-            tB.CreateType();
+            tB.CreateTypeInfo();
         }
 
         private static MethodBuilder GenerateCreateSqlCommand( TypeBuilder tB, string methodName, ISqlServerCallableObject sqlObject )

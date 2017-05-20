@@ -9,6 +9,7 @@ using CK.Core;
 using CK.Setup;
 using CK.SqlServer.Parser;
 using CK.Reflection;
+using CK.CodeGen;
 
 namespace CK.SqlServer.Setup
 {
@@ -22,7 +23,7 @@ namespace CK.SqlServer.Setup
 
         protected new SqlCallableAttributeBase Attribute => (SqlCallableAttributeBase)base.Attribute;
 
-        protected override bool DoImplement( IActivityMonitor monitor, MethodInfo m, SqlBaseItem sqlItem, IDynamicAssembly dynamicAssembly, TypeBuilder tB, bool isVirtual )
+        protected override bool DoImplement( IActivityMonitor monitor, MethodInfo m, SqlBaseItem sqlItem, IDynamicAssembly dynamicAssembly, System.Reflection.Emit.TypeBuilder tB, bool isVirtual )
         {
             ISqlCallableItem item = sqlItem as ISqlCallableItem;
             if( item == null )
@@ -104,10 +105,13 @@ namespace CK.SqlServer.Setup
             var nT = Nullable.GetUnderlyingType(t);
             if (nT != null) t = nT;
             if (t == typeof(char)) return true;
-            if (t.IsEnum) t = t.GetEnumUnderlyingType();
+            if (t.GetTypeInfo().IsEnum) t = t.GetTypeInfo().GetEnumUnderlyingType();
             return SqlHelper.HasDirectMapping(t);
         }
 
-
+        protected override bool DoImplement(IActivityMonitor monitor, MethodInfo m, SqlObjectItem item, IDynamicAssembly dynamicAssembly, ClassBuilder b)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

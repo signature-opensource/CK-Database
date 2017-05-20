@@ -9,6 +9,7 @@ using System.IO;
 using System.CodeDom.Compiler;
 using System.Reflection;
 using System.Collections;
+using CK.CodeGen;
 
 namespace CK.StObj.Engine.Tests
 {
@@ -24,6 +25,12 @@ namespace CK.StObj.Engine.Tests
                 public bool Implement( IActivityMonitor monitor, System.Reflection.MethodInfo m, IDynamicAssembly dynamicAssembly, System.Reflection.Emit.TypeBuilder b, bool isVirtual )
                 {
                     CK.Reflection.EmitHelper.ImplementEmptyStubMethod( b, m, isVirtual );
+                    return true;
+                }
+
+                public bool Implement(IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, ClassBuilder b)
+                {
+                    b.Build().DefineOverrideMethod(m, body => body.Append( $"=> default({m.ReturnType.FullName});" ));
                     return true;
                 }
             }

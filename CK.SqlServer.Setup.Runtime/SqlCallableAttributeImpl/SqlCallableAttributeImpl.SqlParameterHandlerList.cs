@@ -549,7 +549,7 @@ namespace CK.SqlServer.Setup
                         g.Emit( OpCodes.Ldsfld, SqlObjectItem.FieldDBNullValue );
                         g.Emit( OpCodes.Ceq );
                         g.Emit( OpCodes.Brtrue_S, isNull );
-                        if( actualType.IsEnum )
+                        if( actualType.GetTypeInfo().IsEnum )
                         {
                             g.Emit( OpCodes.Unbox_Any, actualType );
                             g.Emit( OpCodes.Newobj, targetType.GetConstructor( new[] { actualType } ) );
@@ -657,7 +657,7 @@ namespace CK.SqlServer.Setup
                     f = f.Next;
                 }
                 g.Emit( OpCodes.Ret );
-                fB.TypeBuilder.CreateType();
+                fB.TypeBuilder.CreateTypeInfo();
             }
 
             #endregion
