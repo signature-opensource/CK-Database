@@ -20,6 +20,7 @@
     <CKSetupDependencyVersion>6.0.0</CKSetupDependencyVersion>
     <CKSqlServerParserVersion>6.0.0-b03</CKSqlServerParserVersion>
     <CKSqlServerParserModelVersion>3.2.4</CKSqlServerParserModelVersion>
+    <CKReflectionVersion>5.1.0</CKReflectionVersion>
   </PropertyGroup>
   
   <!-- 

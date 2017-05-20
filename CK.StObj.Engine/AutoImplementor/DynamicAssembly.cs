@@ -10,19 +10,15 @@ using System.Collections;
 
 namespace CK.Core
 {
+#if NET461
+    
     /// <summary>
     /// Manages dynamic assembly creation with one <see cref="ModuleBuilder"/>.
     /// Resulting assembly can have a strong name and can be in memory and/or saved to disk.
     /// </summary>
-    public class DynamicAssembly : IDynamicAssembly
+    public class DynamicAssembly : DynamicAssemblyBase
     {
-        int _typeID;
-        readonly ModuleBuilder _moduleBuilder;
         readonly AssemblyBuilder _assemblyBuilder;
-        readonly IDictionary _memory;
-        readonly List<Action<IDynamicAssembly>> _postActions;
-        readonly string _saveFileName;
-        readonly string _saveFilePath;
 
         /// <summary>
         /// This is the public key of the generated assembly.
@@ -71,83 +67,52 @@ namespace CK.Core
         /// <param name="signature">Key pair to use to sign the dll.</param>
         /// <param name="access">Typical accesses are Run and RunAndSave (the default).</param>
         public DynamicAssembly( string directory, string assemblyName = BuilderFinalAssemblyConfiguration.DefaultAssemblyName, StrongNameKeyPair signature = null, AssemblyBuilderAccess access = AssemblyBuilderAccess.RunAndSave )
+            : base( directory, assemblyName )
         {
             bool mustSave = (access & AssemblyBuilderAccess.Save) == AssemblyBuilderAccess.Save;
 
             // Default behavior of .Net DefineDynamicAssembly is to use the current directory (horrible).
             if( mustSave && directory == null ) throw new ArgumentNullException( "directory" );
-            if( String.IsNullOrWhiteSpace( assemblyName ) ) throw new ArgumentException( "Name is invalid.", "assemblyName." );
 
-            AssemblyName aName = new AssemblyName( assemblyName );
-            aName.Version = new Version( 1, 0, 0, 0 );
-            if( signature != null ) aName.KeyPair = signature;
-            _assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly( aName, access, directory );
-            if( mustSave )
+            if( signature != null ) AssemblyName.KeyPair = signature;
+            _assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(AssemblyName, access, directory);
+            if ( mustSave )
             {
-                _saveFileName = aName.Name + ".dll";
-                _moduleBuilder = _assemblyBuilder.DefineDynamicModule( aName.Name, _saveFileName );
-                _saveFilePath = Path.Combine( directory, _saveFileName );
+                ModuleBuilder = _assemblyBuilder.DefineDynamicModule(AssemblyName.Name, SaveFileName);
             }
-            else _moduleBuilder = _assemblyBuilder.DefineDynamicModule( aName.Name );
-            _memory = new Hashtable();
-            _postActions = new List<Action<IDynamicAssembly>>();
-        }
-
-        /// <summary>
-        /// Gets the name of the dll (ends with '.dll') if it must be eventually saved, otherwise null.
-        /// </summary>
-        public string SaveFileName => _saveFileName; 
-
-        /// <summary>
-        /// Gets the full path of the dll if it must be eventually saved, otherwise null.
-        /// </summary>
-        public string SaveFilePath => _saveFilePath; 
-            
-        /// <summary>
-        /// Gets the <see cref="ModuleBuilder"/> for this <see cref="DynamicAssembly"/>.
-        /// </summary>
-        public ModuleBuilder ModuleBuilder => _moduleBuilder; 
-
-        /// <summary>
-        /// Provides a new unique number that can be used for generating unique names inside this dynamic assembly.
-        /// </summary>
-        /// <returns>A unique number.</returns>
-        public string NextUniqueNumber() => Interlocked.Increment( ref _typeID ).ToString();
-
-        /// <summary>
-        /// Gets a shared dictionary associated to the dynamic assembly. 
-        /// Methods that generate code can rely on this to store shared information as required by their generation process.
-        /// </summary>
-        public IDictionary Memory => _memory;
-
-        /// <summary>
-        /// Pushes an action that will be executed before the generation of the final assembly: use this to 
-        /// create final type from a <see cref="TypeBuilder"/> or to execute any action that must be done at the end 
-        /// of the generation process.
-        /// An action can be pushed at any moment and a pushed action can push another action.
-        /// </summary>
-        /// <param name="postAction">Action to execute.</param>
-        public void PushFinalAction( Action<IDynamicAssembly> postAction )
-        {
-            if( postAction == null ) throw new ArgumentNullException( "postAction" );
-            _postActions.Add( postAction );
+            else ModuleBuilder = _assemblyBuilder.DefineDynamicModule(AssemblyName.Name);
         }
 
         /// <summary>
         /// Saves the dynamic assembly as a ".dll".
         /// This <see cref="DynamicAssembly"/> must have been constructed with an AssemblyBuilderAccess that has <see cref="AssemblyBuilderAccess.Save"/> bit set.
         /// </summary>
-        public void Save()
+        public override void Save()
         {
-            int i = 0;
-            while( i < _postActions.Count )
-            {
-                var a = _postActions[i];
-                _postActions[i++] = null;
-                a( this );
-            }
+            base.Save();
             _assemblyBuilder.Save( _assemblyBuilder.GetName().Name + ".dll" );
         }
     }
+#else
 
+    /// <summary>
+    /// Manages dynamic assembly creation with one <see cref="ModuleBuilder"/>.
+    /// </summary>
+    public class DynamicAssembly : DynamicAssemblyBase
+    {
+        readonly AssemblyBuilder _assemblyBuilder;
+
+        /// <summary>
+        /// Initializes a new temporary <see cref="DynamicAssembly"/> with a name set to <see cref="BuilderFinalAssemblyConfiguration.DefaultAssemblyName"/>+".Memory" and 
+        /// that can only <see cref="AssemblyBuilderAccess.Run"/>.
+        /// </summary>
+        public DynamicAssembly()
+            : this( null, BuilderFinalAssemblyConfiguration.DefaultAssemblyName + ".Memory" )
+        {
+            _assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(AssemblyName);
+            ModuleBuilder = _assemblyBuilder.DefineDynamicModule(AssemblyName.Name);
+        }
+    }
+
+#endif
 }

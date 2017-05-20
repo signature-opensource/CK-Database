@@ -20,8 +20,8 @@ namespace CK.Core
     public static class DynamicAssemblyExtension
     {
         /// <summary>
-        /// Gets a type name with a "&lt;CK&gt;" namespace and a <see cref="NextUniqueNumber"/> suffix
-        /// or a guid when the <paramref name="baseName"/> is null.
+        /// Gets a type name with a "CK._g." namespace and a <see cref="NextUniqueNumber"/> suffix
+        /// or a guid when the <paramref name="name"/> is null.
         /// </summary>
         /// <param name="this">This Dynamic assembly.</param>
         /// <param name="name">Base type name.</param>

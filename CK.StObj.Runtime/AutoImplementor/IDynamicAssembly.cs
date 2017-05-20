@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.StObj.Model\AutoImplementor\IDynamicAssembly.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections;
 using System.Reflection.Emit;
@@ -12,15 +5,12 @@ using System.Reflection.Emit;
 namespace CK.Core
 {
     /// <summary>
-    /// Manages dynamic assembly creation with one <see cref="ModuleBuilder"/>.
+    /// Supports assembly generation.
+    /// Actual support is not required by the model layer: runtime and engine are in charge of
+    /// extending this abstraction in any required way.
     /// </summary>
     public interface IDynamicAssembly
     {
-        /// <summary>
-        /// Gets the <see cref="ModuleBuilder"/> for this <see cref="IDynamicAssembly"/>.
-        /// </summary>
-        ModuleBuilder ModuleBuilder { get; }
-
         /// <summary>
         /// Provides a new unique number that can be used for generating unique names inside this dynamic assembly.
         /// </summary>
@@ -32,6 +22,11 @@ namespace CK.Core
         /// Methods that generate code can rely on this to store shared information as required by their generation process.
         /// </summary>
         IDictionary Memory { get; }
+
+        /// <summary>
+        /// Gets the <see cref="ModuleBuilder"/> for this <see cref="IDynamicAssembly"/>.
+        /// </summary>
+        ModuleBuilder ModuleBuilder { get; }
 
         /// <summary>
         /// Pushes an action that will be executed before the generation of the final assembly: use this to 

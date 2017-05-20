@@ -10,7 +10,7 @@
     </Description>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
     <EmbeddedResource Include="AutoImplementor\DynamicKeyPair.snk;PEVerify\PEVerify.exe;PEVerify\pevrfyrc.dll" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
   </ItemGroup>
 
@@ -21,7 +21,7 @@
   <ItemGroup>
     <PackageReference Include="CK.Core" Version="$(CKCoreVersion)" />
     <PackageReference Include="CK.Setup.Dependency" Version="$(CKSetupDependencyVersion)" />
-    <PackageReference Include="CK.Reflection" Version="5.1.0-r" />
+    <PackageReference Include="CK.Reflection" Version="$(CKReflectionVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
