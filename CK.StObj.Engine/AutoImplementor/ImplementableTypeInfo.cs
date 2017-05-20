@@ -13,23 +13,32 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Collections;
 using CK.Reflection;
+using CK.CodeGen;
 
 namespace CK.Core
 {
     public class ImplementableTypeInfo
     {
-        public class StubImplementor : IAutoImplementorMethod, IAutoImplementorProperty
+        public class NoImplementationMarker : IAutoImplementorMethod, IAutoImplementorProperty
         {
-            public bool Implement( IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, TypeBuilder b, bool isVirtual )
+            public bool Implement( IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, System.Reflection.Emit.TypeBuilder b, bool isVirtual )
             {
-                CK.Reflection.EmitHelper.ImplementEmptyStubMethod( b, m, isVirtual );
-                return true;
+                throw new NotSupportedException();
             }
 
-            public bool Implement( IActivityMonitor monitor, PropertyInfo p, IDynamicAssembly dynamicAssembly, TypeBuilder b, bool isVirtual )
+            public bool Implement( IActivityMonitor monitor, PropertyInfo p, IDynamicAssembly dynamicAssembly, System.Reflection.Emit.TypeBuilder b, bool isVirtual )
             {
-                CK.Reflection.EmitHelper.ImplementStubProperty( b, p, isVirtual );
-                return true;
+                throw new NotSupportedException();
+            }
+
+            public bool Implement(IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, ClassBuilder b)
+            {
+                throw new NotSupportedException();
+            }
+
+            public bool Implement(IActivityMonitor monitor, PropertyInfo p, IDynamicAssembly dynamicAssembly, ClassBuilder b)
+            {
+                throw new NotSupportedException();
             }
         }
 
@@ -37,7 +46,7 @@ namespace CK.Core
         /// Exposes <see cref="IAutoImplementorMethod"/> and <see cref="IAutoImplementorProperty"/> that implement
         /// empty behavior.
         /// </summary>
-        public static readonly StubImplementor EmptyImplementor = new StubImplementor();
+        public static readonly NoImplementationMarker UnimplementedMarker = new NoImplementationMarker();
 
         Type _stubType;
 
@@ -93,7 +102,7 @@ namespace CK.Core
             {
                 ++nbUncovered;
                 IAutoImplementorMethod impl = attributeProvider.GetCustomAttributes<IAutoImplementorMethod>( m ).SingleOrDefault();
-                if( impl == null && attributeProvider.IsDefined( m, typeof( IAttributeAutoImplemented ) ) ) impl = EmptyImplementor;
+                if( impl == null && attributeProvider.IsDefined( m, typeof( IAttributeAutoImplemented ) ) ) impl = UnimplementedMarker;
                 if( impl != null )
                 {
                     --nbUncovered;
@@ -117,7 +126,7 @@ namespace CK.Core
                     else
                     {
                         IAutoImplementorProperty impl = attributeProvider.GetCustomAttributes<IAutoImplementorProperty>( p ).SingleOrDefault();
-                        if( impl == null && attributeProvider.IsDefined( p, typeof( IAttributeAutoImplemented ) ) ) impl = EmptyImplementor;
+                        if( impl == null && attributeProvider.IsDefined( p, typeof( IAttributeAutoImplemented ) ) ) impl = UnimplementedMarker;
                         if( impl != null )
                         {
                             --nbUncovered;
@@ -143,17 +152,17 @@ namespace CK.Core
             try
             {
                 TypeAttributes tA = TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed;
-                TypeBuilder b = assembly.ModuleBuilder.DefineType(assembly.AutoNextTypeName(AbstractType.Name), tA, AbstractType);
+                System.Reflection.Emit.TypeBuilder b = assembly.ModuleBuilder.DefineType(assembly.AutoNextTypeName(AbstractType.Name), tA, AbstractType);
                 // Relayed constructors replicates all their potential attributes (included attributes on parameters).
                 // We do not replicate attributes on parameters here. 
                 b.DefinePassThroughConstructors(c => c.Attributes | MethodAttributes.Public, null, (parameter, CustomAttributeData) => false);
                 foreach (var am in MethodsToImplement)
                 {
-                    EmptyImplementor.Implement(monitor, am.Method, assembly, b, false);
+                    CK.Reflection.EmitHelper.ImplementEmptyStubMethod(b, am.Method, false);
                 }
                 foreach (var ap in PropertiesToImplement)
                 {
-                    EmptyImplementor.Implement(monitor, ap.Property, assembly, b, false);
+                    CK.Reflection.EmitHelper.ImplementStubProperty(b, ap.Property, false);
                 }
                 return _stubType = b.CreateType();
             }
@@ -177,14 +186,14 @@ namespace CK.Core
             try
             {
                 TypeAttributes tA = TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed;
-                TypeBuilder b = assembly.ModuleBuilder.DefineType(assembly.AutoNextTypeName(AbstractType.Name), tA, AbstractType);
+                System.Reflection.Emit.TypeBuilder b = assembly.ModuleBuilder.DefineType(assembly.AutoNextTypeName(AbstractType.Name), tA, AbstractType);
                 // Relayed constructors replicates all their potential attributes (included attributes on parameters).
                 b.DefinePassThroughConstructors(c => c.Attributes | MethodAttributes.Public);
                 bool hasFatal = false;
                 foreach (var am in MethodsToImplement)
                 {
                     IAutoImplementorMethod m = am.ImplementorToUse;
-                    if (m == null || m == EmptyImplementor)
+                    if (m == null || m == UnimplementedMarker)
                     {
                         monitor.Fatal().Send("Method '{0}.{1}' has no valid associated IAutoImplementorMethod.", AbstractType.FullName, am.Method.Name);
                         hasFatal = true;
@@ -201,7 +210,7 @@ namespace CK.Core
                 foreach (var ap in PropertiesToImplement)
                 {
                     IAutoImplementorProperty p = ap.ImplementorToUse;
-                    if (p == null || p == EmptyImplementor)
+                    if (p == null || p == UnimplementedMarker)
                     {
                         monitor.Fatal().Send($"Property '{AbstractType.FullName}.{ap.Property.Name}' has no valid associated IAutoImplementorProperty.");
                         hasFatal = true;
