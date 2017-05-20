@@ -20,7 +20,7 @@ namespace CK.Core
     public static class DynamicAssemblyExtension
     {
         /// <summary>
-        /// Gets a type name with a "CK._g." namespace and a <see cref="NextUniqueNumber"/> suffix
+        /// Gets a type name in <see cref="SourceBuilder"/>'s namespace and a <see cref="NextUniqueNumber"/> suffix
         /// or a guid when the <paramref name="name"/> is null.
         /// </summary>
         /// <param name="this">This Dynamic assembly.</param>
@@ -28,7 +28,7 @@ namespace CK.Core
         /// <returns>A unique type name.</returns>
         public static string AutoNextTypeName( this IDynamicAssembly @this, string name = null )
         {
-            return "CK._g." + (name != null ? name + @this.NextUniqueNumber() : Guid.NewGuid().ToString());
+            return @this.SourceBuilder.Name + '.' + (name != null ? name + @this.NextUniqueNumber() : Guid.NewGuid().ToString());
         }
 
         /// <summary>

@@ -1,3 +1,4 @@
+using CK.CodeGen;
 using System;
 using System.Collections;
 using System.Reflection.Emit;
@@ -27,6 +28,11 @@ namespace CK.Core
         /// Gets the <see cref="ModuleBuilder"/> for this <see cref="IDynamicAssembly"/>.
         /// </summary>
         ModuleBuilder ModuleBuilder { get; }
+
+        /// <summary>
+        /// Gets the source builder for this <see cref="IDynamicAssembly"/>.
+        /// </summary>
+        NamespaceBuilder SourceBuilder { get; }
 
         /// <summary>
         /// Pushes an action that will be executed before the generation of the final assembly: use this to 

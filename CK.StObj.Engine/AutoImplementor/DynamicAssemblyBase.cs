@@ -8,6 +8,7 @@ using System.Reflection.Emit;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CK.CodeGen;
 
 namespace CK.Core
 {
@@ -37,6 +38,7 @@ namespace CK.Core
             }
             _memory = new Dictionary<object, object>();
             _postActions = new List<Action<IDynamicAssembly>>();
+            SourceBuilder = new NamespaceBuilder("CK._g");
         }
 
         protected AssemblyName AssemblyName { get; }
@@ -55,6 +57,11 @@ namespace CK.Core
         /// Gets the <see cref="ModuleBuilder"/> for this <see cref="DynamicAssembly"/>.
         /// </summary>
         public ModuleBuilder ModuleBuilder { get; protected set; }
+
+        /// <summary>
+        /// Gets the source builder for this <see cref="IDynamicAssembly"/>.
+        /// </summary>
+        public NamespaceBuilder SourceBuilder { get; }
 
         /// <summary>
         /// Provides a new unique number that can be used for generating unique names inside this dynamic assembly.

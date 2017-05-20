@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CK.StObj.Model\CK.StObj.Model.csproj" />
+    <PackageReference Include="CK.CodeGen" Version="$(CKCodeGenVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
