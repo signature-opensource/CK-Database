@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using CK.Core;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace CK.Setup
 {
@@ -110,7 +111,7 @@ namespace CK.Setup
         internal static StObjSetupDataRootClass CreateRootData( IActivityMonitor monitor, Type t )
         {
             if( t == typeof( object ) ) return null;
-            StObjSetupDataRootClass b = CreateRootData( monitor, t.BaseType );
+            StObjSetupDataRootClass b = CreateRootData( monitor, t.GetTypeInfo().BaseType );
             return new StObjSetupDataRootClass( monitor, t, b ); 
         }
     }

@@ -12,6 +12,7 @@ using System.Text;
 using CK.Core;
 using System.Diagnostics;
 using System.Collections;
+using System.Reflection;
 
 namespace CK.Setup
 {
@@ -64,7 +65,7 @@ namespace CK.Setup
                     StObjSetupData generalizationData = null;
                     StObjSetupDataRootClass fromAbove;
                     if( r.Generalization != null ) fromAbove = generalizationData = setupableItems[r.Generalization];
-                    else fromAbove = StObjSetupDataRootClass.CreateRootData( _monitor, r.ObjectType.BaseType );
+                    else fromAbove = StObjSetupDataRootClass.CreateRootData( _monitor, r.ObjectType.GetTypeInfo().BaseType );
 
                     // Builds the StObjSetupData from the different attributes.
                     var data = new StObjSetupData( _monitor, r, fromAbove );
@@ -242,7 +243,7 @@ namespace CK.Setup
             internal DynamicInitializerState( StObjSetupItemBuilder builder )
             {
                 _builder = builder;
-                _memory = new Hashtable();
+                _memory = new Dictionary<object,object>();
                 _actions = new List<PushedAction>();
             }
 

@@ -46,16 +46,19 @@ namespace CK.Setup
             public bool GenerateFinalAssemblyIfRequired( IActivityMonitor monitor )
             {
                 if( _configuration.GenerateFinalAssemblyOption == BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile ) return true;
-                bool peVerify = _configuration.GenerateFinalAssemblyOption == BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFileAndPEVerify;
                 bool hasError = false;
                 using( monitor.OnError( () => hasError = true ) )
                 {
-                    using( monitor.OpenInfo().Send( "Generating StObj dynamic assembly." ) )
+                    bool success = true;
+#if NET461
+                    using ( monitor.OpenInfo().Send( "Generating StObj dynamic assembly." ) )
                     {
-                        bool success = _result.GenerateFinalAssembly( monitor, _runtimeBuilder, peVerify );
+                        bool peVerify = _configuration.GenerateFinalAssemblyOption == BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFileAndPEVerify;
+                        success &= _result.GenerateFinalAssembly( monitor, _runtimeBuilder, peVerify );
                         Debug.Assert(success || hasError, "!success ==> An error has been logged.");
-                        return success;
                     }
+#endif
+                    return success;
                 }
             }
         }

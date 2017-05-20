@@ -206,7 +206,7 @@ namespace CK.Setup
 
         class Flattennifier
         {
-            Stack _stack;
+            Stack<object> _stack;
 
             public IEnumerable<T> Flatten<T>( IEnumerable e )
             {
@@ -223,7 +223,7 @@ namespace CK.Setup
                         // the composition.
                         if( o is IEnumerable && o != e )
                         {
-                            if( _stack == null ) _stack = new Stack();
+                            if( _stack == null ) _stack = new Stack<object>();
                             else if( _stack.Contains( o ) ) break;
                             _stack.Push( e );
                             foreach( T o2 in Flatten<T>( (IEnumerable)o )) if( o2 != null ) yield return o2;
