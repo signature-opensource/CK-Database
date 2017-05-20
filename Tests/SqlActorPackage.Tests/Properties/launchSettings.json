@@ -3,7 +3,7 @@
     "SqlActorPackage.Tests": {
       "commandName": "Executable",
       "executablePath": "..\\..\\packages\\NUnit.Runners.Net4.2.6.4\\tools\\nunit.exe",
-      "commandLineArgs": "bin\\Debug\\net451\\SqlActorPackage.Tests.dll"
+      "commandLineArgs": "bin\\Debug\\net461\\SqlActorPackage.Tests.dll"
     }
   }
 }
