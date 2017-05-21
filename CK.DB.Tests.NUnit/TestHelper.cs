@@ -407,26 +407,17 @@ namespace CK.Core
 #else
             _buildConfiguration = "Release";
 #endif
-            string p, origin;
-#if NET461
-            origin = new Uri(System.Reflection.Assembly.GetExecutingAssembly().CodeBase).LocalPath;
-            // Code base is like "...HumanSide\Tests\CK.ActorModel.Tests\Debug\bin\CK.ActorModel.Tests.dll"
-            _binFolder = p = Path.GetDirectoryName( origin );
-#else
-            origin = Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationBasePath;
-            _binFolder = p = origin;
-#endif
-
+            string p = _binFolder = AppContext.BaseDirectory;
             string name;
             while( (name = Path.GetFileName(p)) != _buildConfiguration )
             {
                 p = Path.GetDirectoryName(p);
-                if( p == null ) throw new InvalidOperationException($"Unable to find parent folder named '{_buildConfiguration}' above '{origin}'.");
+                if( p == null ) throw new InvalidOperationException($"Unable to find parent folder named '{_buildConfiguration}' above '{_binFolder}'.");
             }
             p = Path.GetDirectoryName(p);
             if( Path.GetFileName(p) != "bin" )
             {
-                throw new InvalidOperationException($"Folder '{_buildConfiguration}' MUST be in 'bin' folder (above '{origin}').");
+                throw new InvalidOperationException($"Folder '{_buildConfiguration}' MUST be in 'bin' folder (above '{_binFolder}').");
             }
             _projectFolder = p = Path.GetDirectoryName( p );
             _currentTestProjectName = Path.GetFileName(p);
@@ -436,7 +427,7 @@ namespace CK.Core
                 string assemblyName = entry.GetName().Name;
                 if (_currentTestProjectName != assemblyName)
                 {
-                    throw new InvalidOperationException($"Current test project assembly is '{assemblyName}' but folder is '{_currentTestProjectName}' (above '{_buildConfiguration}' in '{origin}').");
+                    throw new InvalidOperationException($"Current test project assembly is '{assemblyName}' but folder is '{_currentTestProjectName}' (above '{_buildConfiguration}' in '{_binFolder}').");
                 }
             }
             p = Path.GetDirectoryName(p);
@@ -448,7 +439,7 @@ namespace CK.Core
                 if( Path.GetFileName( p ) == "Tests" ) testsFolder = p;
                 p = Path.GetDirectoryName( p );
             }
-            if( !hasGit ) throw new InvalidOperationException( $"The project must be in a git repository (above '{origin}')." );
+            if( !hasGit ) throw new InvalidOperationException( $"The project must be in a git repository (above '{_binFolder}')." );
             _repositoryFolder = p;
             if( testsFolder == null )
             {
@@ -458,16 +449,5 @@ namespace CK.Core
             _logFolder = Path.Combine( testsFolder, "Logs" );
         }
 
-        static int HandleArgument(ref string[] args, string argument)
-        {
-            int idxArg = Array.IndexOf(args, argument);
-            if (idxArg >= 0)
-            {
-                var l = new List<string>(args);
-                l.RemoveAt(idxArg);
-                args = l.ToArray();
-            }
-            return idxArg;
-        }
     }
 }

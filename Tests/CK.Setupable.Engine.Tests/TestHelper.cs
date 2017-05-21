@@ -5,6 +5,7 @@ using System.Linq;
 using CK.Core;
 using CK.Setup;
 using NUnit.Framework;
+using System.Reflection;
 
 namespace CK.Setupable.Engine.Tests
 {
@@ -66,7 +67,7 @@ namespace CK.Setupable.Engine.Tests
             _solutionFolder = p;
             _binFolder = Path.Combine(_solutionFolder, "Tests", "CK.Setupable.Engine.Tests", "bin", _configuration, "net451", "win7-x64");
             Console.WriteLine($"SolutionFolder is: {_solutionFolder}.");
-            Console.WriteLine($"Core path: {typeof(string).GetType().Assembly.CodeBase}.");
+            Console.WriteLine($"Core path: {typeof(string).GetTypeInfo().Assembly.CodeBase}.");
         }
 
     }

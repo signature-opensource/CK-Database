@@ -172,10 +172,15 @@ namespace CK.Core
             }
         }
 
-#if !NET461
+#if NET461
         void DoDefaultInitialize()
         {
-            string origin = Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationBasePath;
+            _initializedGetObject = _getObject = key => System.Configuration.ConfigurationManager.AppSettings[key];
+        }
+#else
+        void DoDefaultInitialize()
+        {
+            string origin = AppContext.BaseDirectory;
             string p = origin;
             while( !File.Exists( Path.Combine( p, "App.config") ) )
             {

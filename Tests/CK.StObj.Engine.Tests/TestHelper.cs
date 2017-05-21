@@ -17,10 +17,6 @@ namespace CK.StObj.Engine.Tests
 {
     static class TestHelper
     {
-        static string _solutionFolder;
-        static string _configuration;
-        static string _binFolder;
-
         static IActivityMonitor _monitor;
         static ActivityMonitorConsoleClient _console;
 
@@ -127,39 +123,6 @@ namespace CK.StObj.Engine.Tests
             return ee != null ? String.Join( ", ", ee.Select( o => o.FullName ) ) : String.Empty;
         }
         #endregion
-
-        public static string BinFolder
-        {
-            get { if (_binFolder == null) InitalizePaths(); return _binFolder; }
-        }
-
-        public static string SolutionFolder
-        {
-            get { if (_solutionFolder == null) InitalizePaths(); return _solutionFolder; }
-        }
-
-        private static void InitalizePaths()
-        {
-#if NET461
-            string p = new Uri(System.Reflection.Assembly.GetExecutingAssembly().CodeBase).LocalPath;
-            p = Path.GetDirectoryName(p);
-#else
-            string p = Directory.GetCurrentDirectory();
-#endif
-#if DEBUG
-            _configuration = "Debug";
-#else
-            _configuration = "Release";
-#endif
-            while (!Directory.EnumerateFiles(p).Where(f => f.EndsWith(".sln")).Any())
-            {
-                p = Path.GetDirectoryName(p);
-            }
-            _solutionFolder = p;
-            _binFolder = Path.Combine(_solutionFolder, "Tests", "CK.StObj.Engine.Tests", "bin", _configuration, "net451", "win7-x64");
-            Console.WriteLine($"SolutionFolder is: {_solutionFolder}.");
-            Console.WriteLine($"Core path: {typeof(string).GetType().Assembly.CodeBase}.");
-        }
 
         public static void CheckChildren<T>( this StObjCollectorContextualResult @this, string childrenTypeNames )
         {
