@@ -30,7 +30,7 @@ namespace CK.SqlServer.Setup
             {
                 monitor.Fatal().Send( $"The item '{item.FullName}' must be a ISqlCallableItem object to be able to generate call implementation." );
                 return false;
-           }
+            }
             MethodInfo mCreateCommand = item.AssumeCommandBuilder( monitor, dynamicAssembly );
             if( mCreateCommand == null )
             {
@@ -109,9 +109,5 @@ namespace CK.SqlServer.Setup
             return SqlHelper.HasDirectMapping(t);
         }
 
-        protected override bool DoImplement(IActivityMonitor monitor, MethodInfo m, SqlObjectItem item, IDynamicAssembly dynamicAssembly, ClassBuilder b)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

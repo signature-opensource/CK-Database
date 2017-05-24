@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -51,13 +51,16 @@ namespace CK.Setup
                 {
                     bool success = true;
 #if NET461
-                    using ( monitor.OpenInfo().Send( "Generating StObj dynamic assembly." ) )
+                    using ( monitor.OpenInfo().Send( "Generating StObj dynamic assembly (ILGenerator)." ) )
                     {
                         bool peVerify = _configuration.GenerateFinalAssemblyOption == BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFileAndPEVerify;
                         success &= _result.GenerateFinalAssembly( monitor, _runtimeBuilder, peVerify );
                         Debug.Assert(success || hasError, "!success ==> An error has been logged.");
                     }
 #endif
+                    using( monitor.OpenInfo().Send( "Generating dynamic assembly (source code)." ) )
+                    {
+                    }
                     return success;
                 }
             }

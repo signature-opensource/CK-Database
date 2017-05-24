@@ -1,4 +1,4 @@
-#region Proprietary License
+﻿#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.SqlServer.Setup.Runtime\SqlProcedureAttributeImpl.SqlCallContextInfo.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -33,6 +33,7 @@ namespace CK.SqlServer.Setup
             readonly Type _returnedType;
             readonly ParameterInfo _cancellationTokenParam;
             readonly MethodInfo _executorCallNonQuery;
+            readonly string _sourceExecutorCallNonQuery;
 
             // Only the first one that supports ISqlCommandExecutor interests us. 
             ParameterInfo _sqlCommandExecutorParameter;
@@ -76,17 +77,20 @@ namespace CK.SqlServer.Setup
                         _cancellationTokenParam = methodParameters.FirstOrDefault( p => p.ParameterType == typeof( CancellationToken ) );
                         _executorCallNonQuery = SqlObjectItem.MExecutorCallNonQueryAsync;
                         _returnedType = typeof(void);
+                        _sourceExecutorCallNonQuery = "ExecuteNonQueryAsync";
                     }
                     else if( returnedType.GetTypeInfo().IsGenericType && returnedType.GetGenericTypeDefinition() == typeof(Task<>) )
                     {
                         _cancellationTokenParam = methodParameters.FirstOrDefault( p => p.ParameterType == typeof( CancellationToken ) );
                         _executorCallNonQuery = SqlObjectItem.MExecutorCallNonQueryAsyncTyped;
                         _returnedType = returnedType.GetGenericArguments()[0];
+                        _sourceExecutorCallNonQuery = $"ExecuteNonQueryAsyncTyped<{_returnedType.FullName}>";
                     }
                     else
                     {
                         _executorCallNonQuery = SqlObjectItem.MExecutorCallNonQuery;
                         _returnedType = returnedType;
+                        _sourceExecutorCallNonQuery = "ExecuteNonQuery";
                     }
                 }
             }
@@ -228,6 +232,30 @@ namespace CK.SqlServer.Setup
                     g.LdLoc( tDef );
                 }
                 g.Emit( OpCodes.Callvirt, toCall );
+            }
+
+            public void GenerateExecuteNonQueryCall( StringBuilder b, string varCommandName, string resultBuilderName, ParameterInfo[] callingParameters )
+            {
+                if( _sqlCommandExecutorMethodGetter != null )
+                {
+                    b.Append( _sqlCommandExecutorParameter.Name ).Append( '.' ).Append( _sqlCommandExecutorMethodGetter.Name );
+                }
+                else
+                {
+                    b.Append("((ISqlCommandExecutor)").Append( _sqlCommandExecutorParameter.Name ).Append( ')' );
+                }
+
+                b.Append( $"{_sourceExecutorCallNonQuery}( Database.ConnectionString, {varCommandName}, {resultBuilderName ?? "null"}" );
+                if( IsAsyncCall )
+                {
+                    b.Append( ", " );
+                    if( _cancellationTokenParam != null )
+                    {
+                        b.Append( callingParameters[_cancellationTokenParam.Position + 1].Name );
+                    }
+                    else b.Append( "new CancellationToken()" );
+                }
+                b.Append( ");" );
             }
 
             /// <summary>

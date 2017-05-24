@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -312,7 +312,7 @@ namespace CK.Core
             IPocoSupportResult pocoSupport;
             using( _monitor.OpenInfo().Send( "Creating Poco Types and PocoFactory." ) )
             {
-                pocoSupport = _pocoRegisterer.Finalize( _finalAssembly ?? _tempAssembly, _monitor );
+                pocoSupport = _pocoRegisterer.Finalize( _finalAssembly?.ModuleBuilder ?? _tempAssembly.ModuleBuilder, _monitor );
                 if( pocoSupport != null ) RegisterClass( pocoSupport.FinalFactory );
             }
             var mappings = _mapFactory( _monitor );

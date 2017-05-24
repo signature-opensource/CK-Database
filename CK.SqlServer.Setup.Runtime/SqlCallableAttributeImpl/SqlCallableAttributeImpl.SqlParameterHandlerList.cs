@@ -1,4 +1,4 @@
-#region Proprietary License
+﻿#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.SqlServer.Setup.Runtime\SqlProcedureAttributeImpl.SqlParameterHandlerList.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using CK.Core;
 using CK.Reflection;
 using CK.SqlServer.Parser;
+using CK.CodeGen;
 
 namespace CK.SqlServer.Setup
 {
@@ -380,6 +381,61 @@ namespace CK.SqlServer.Setup
                     return true;
                 }
 
+                internal bool EmitSetSqlParameterValue(IActivityMonitor monitor, StringBuilder b, string varParameterName)
+                {
+                    if (_isIgnoredOutputParameter) return true;
+                    // We must correct its default configuration if the Sql parameter is output in order 
+                    // for Sql Server to take into account the input value.
+                    if (SqlExprParam.IsPureOutput)
+                    {
+                        b.AppendLine($"{varParameterName}.Direction = ParameterDirection.InputOutput;");
+                    }
+                    string sqlType = SqlExprParam.SqlType.ToStringClean();
+                    if (StringComparer.OrdinalIgnoreCase.Equals(sqlType, "Geometry")
+                        || StringComparer.OrdinalIgnoreCase.Equals(sqlType, "Geography")
+                        || StringComparer.OrdinalIgnoreCase.Equals(sqlType, "HierarchyId"))
+                    {
+                        b.AppendLine($"{varParameterName}.SqlDbType = SqlDbType.Udt;");
+                        b.AppendLine($"{varParameterName}.UdtTypeName = {sqlType.ToLowerInvariant().ToSourceString()};");
+                    }
+                    // Do not set any Value if the C# parameter is out.
+                    if (!_isUseDefaultSqlValue && _methodParam != null && _methodParam.IsOut) return true;
+
+                    b.Append($"{varParameterName}.Value = ");
+                    if (_isUseDefaultSqlValue)
+                    {
+                        if (SqlExprParam.DefaultValue.IsVariable)
+                        {
+                            monitor.Error().Send($"Parameter '{SqlExprParam.ToStringClean()}' has default value '{SqlExprParam.DefaultValue}' that is a variable. This not supported.");
+                            return false;
+                        }
+                        monitor.Info().Send($"Parameter '{SqlExprParam.ToStringClean()}' will use its default sql value '{SqlExprParam.DefaultValue}'.");
+                        object o = SqlExprParam.DefaultValue.NullOrLitteralDotNetValue;
+                        if (o == DBNull.Value) b.Append("DBNull.Value");
+                        else if (o is string) b.Append(((string)o).ToSourceString());
+                        else if (o is Int32 || o is Decimal || o is Double) b.Append(o);
+                        else
+                        {
+                            monitor.Error().Send($"Emit for type  '{SqlExprParam.ToStringClean()}' (Parameter '{o.GetType().Name}') is not supported.");
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        Debug.Assert(IsMappedToMethodParameterOrParameterSourceProperty);
+                        b.Append(_methodParam.Name);
+                        if (_methodParam == null)
+                        {
+                            Debug.Assert(_ctxProp != null);
+                            b.Append(_methodParam.Name);
+                            b.Append('.').Append(_ctxProp.Prop.Name);
+                        }
+                        b.Append(" ?? DBNull.Value");
+                    }
+                    b.AppendLine(";");
+                    return true;
+                }
+
                 #endregion
 
                 internal void EmitSetRefOrOutParameter( ILGenerator g, LocalBuilder locParameterCollection )
@@ -402,6 +458,11 @@ namespace CK.SqlServer.Setup
                         g.Emit( OpCodes.Castclass, t );
                         g.Emit( OpCodes.Stind_Ref );
                     }
+                }
+                internal void EmitSetRefOrOutParameter(StringBuilder b, string varParametersName )
+                {
+                    if( _methodParam == null || !_methodParam.ParameterType.IsByRef ) return;
+                    b.AppendLine($"{_methodParam.Name} = ({_methodParam.ParameterType.GetElementType()}){varParametersName}[{_index}].Value;");
                 }
             }
 
@@ -515,20 +576,42 @@ namespace CK.SqlServer.Setup
                 p.SetUsedByReturnedType();
             }
 
-            internal void EmitInlineReturn( ILGenerator g, LocalBuilder locParameterCollection )
+            internal void EmitInlineReturn(ILGenerator g, LocalBuilder locParameterCollection)
             {
-                if( _simpleReturnType != null )
+                if (_simpleReturnType != null)
                 {
-                    EmitGetSqlCommandParameterValue( g, locParameterCollection, _simpleReturnType.Index, _unwrappedReturnedType );
+                    EmitGetSqlCommandParameterValue(g, locParameterCollection, _simpleReturnType.Index, _unwrappedReturnedType);
                 }
                 else
                 {
-                    Debug.Assert( _complexReturnType != null );
-                    _complexReturnType.EmitFullInitialization( g, ( idxValue, targetType ) => 
-                        {
-                            EmitGetSqlCommandParameterValue( g, locParameterCollection, idxValue, targetType );
-                        } );
+                    Debug.Assert(_complexReturnType != null);
+                    _complexReturnType.EmitFullInitialization(g, (idxValue, targetType) =>
+                    {
+                        EmitGetSqlCommandParameterValue(g, locParameterCollection, idxValue, targetType);
+                    });
                 }
+            }
+
+            internal string EmitInlineReturn(StringBuilder b, string nameParameters, string tempObjectName)
+            {
+                if (_simpleReturnType != null)
+                {
+                    return EmitGetSqlCommandParameterValue(b, nameParameters, tempObjectName, _simpleReturnType.Index, _unwrappedReturnedType);
+                }
+                Debug.Assert(_complexReturnType != null);
+                return _complexReturnType.EmitFullInitialization(b, (idxValue, targetType) =>
+                {
+                    return EmitGetSqlCommandParameterValue(b, nameParameters, tempObjectName, idxValue, targetType);
+                });
+            }
+
+            static string EmitGetSqlCommandParameterValue(StringBuilder b, string nameParameters, string tempObjectName, int sqlParameterIndex, Type targetType)
+            {
+                b.AppendLine($"{tempObjectName} = {nameParameters}[{sqlParameterIndex}].Value;");
+                b.AppendLine($"if( {tempObjectName} == DBNull.Value ) {tempObjectName} = null;");
+                string resultName = "getR" + sqlParameterIndex;
+                b.AppendLine($"{resultName} = ({targetType.FullName}){tempObjectName};");
+                return resultName;
             }
 
             static void EmitGetSqlCommandParameterValue( ILGenerator g, LocalBuilder locParameterCollection, int sqlParameterIndex, Type targetType )
@@ -599,9 +682,14 @@ namespace CK.SqlServer.Setup
 
             class FuncTypeHolder
             {
-                public readonly TypeBuilder TypeBuilder;
+                public readonly ClassBuilder ClassBuilder;
+                public readonly System.Reflection.Emit.TypeBuilder TypeBuilder;
                 public FuncImpl FirstFuncImpl;
-                public FuncTypeHolder( TypeBuilder b ) { TypeBuilder = b; }
+                public FuncTypeHolder(System.Reflection.Emit.TypeBuilder b, ClassBuilder classBuilder)
+                {
+                    TypeBuilder = b;
+                    ClassBuilder = classBuilder;
+                }
             }
 
             class FuncImpl
@@ -612,40 +700,74 @@ namespace CK.SqlServer.Setup
                 public FuncImpl( FieldInfo field, MethodInfo func, FuncImpl next ) { Field = field; Func = func; Next = next; }
             }
 
-            internal FieldInfo AssumeResultBuilder( IDynamicAssembly dynamicAssembly )
+            FuncTypeHolder AssumeFuncTypeHolder(IDynamicAssembly dynamicAssembly)
             {
                 FuncTypeHolder fB = (FuncTypeHolder)dynamicAssembly.Memory[_funcHolderTypeName];
-                if( fB == null )
+                if (fB == null)
                 {
-                    TypeBuilder tB = dynamicAssembly.ModuleBuilder.DefineType( _funcHolderTypeName, TypeAttributes.Class | TypeAttributes.Sealed | TypeAttributes.NotPublic );
-                    dynamicAssembly.Memory.Add( _funcHolderTypeName, (fB = new FuncTypeHolder( tB )) );
-                    dynamicAssembly.PushFinalAction( FinalizeFuncHolderType );
+                    System.Reflection.Emit.TypeBuilder tB = dynamicAssembly.ModuleBuilder.DefineType(_funcHolderTypeName, TypeAttributes.Class | TypeAttributes.Sealed | TypeAttributes.NotPublic);
+                    ClassBuilder cB = dynamicAssembly.SourceBuilder.DefineClass("_build_func_");
+                    cB.FrontModifiers.Add("static");
+                    dynamicAssembly.Memory.Add(_funcHolderTypeName, (fB = new FuncTypeHolder(tB, cB)));
+                    dynamicAssembly.PushFinalAction(FinalizeFuncHolderType);
                 }
+                return fB;
+            }
+
+            internal FieldInfo AssumeResultBuilder( IDynamicAssembly dynamicAssembly )
+            {
                 string funcKey = _funcHolderTypeName + ':' + _funcResultBuilderSignature.ToString();
                 FuncImpl f = (FuncImpl)dynamicAssembly.Memory[funcKey];
-                if( f == null )
+                if (f == null)
                 {
+                    FuncTypeHolder fB = AssumeFuncTypeHolder(dynamicAssembly);
                     string funcName = 'f' + dynamicAssembly.NextUniqueNumber();
                     string fieldName = "_" + funcName;
-                    Type tFunc = typeof( Func<,> ).MakeGenericType( SqlObjectItem.TypeCommand, _unwrappedReturnedType );
-                    var field = fB.TypeBuilder.DefineField( fieldName, tFunc, FieldAttributes.Assembly | FieldAttributes.Static | FieldAttributes.InitOnly );
-                    var func = fB.TypeBuilder.DefineMethod( funcName, MethodAttributes.Private | MethodAttributes.Static, _unwrappedReturnedType, new Type[]{ SqlObjectItem.TypeCommand } );
+                    Type tFunc = typeof(Func<,>).MakeGenericType(SqlObjectItem.TypeCommand, _unwrappedReturnedType);
+                    var field = fB.TypeBuilder.DefineField(fieldName, tFunc, FieldAttributes.Assembly | FieldAttributes.Static | FieldAttributes.InitOnly);
+                    var func = fB.TypeBuilder.DefineMethod(funcName, MethodAttributes.Private | MethodAttributes.Static, _unwrappedReturnedType, new Type[] { SqlObjectItem.TypeCommand });
                     ILGenerator g = func.GetILGenerator();
-                    LocalBuilder locParams = g.DeclareLocal( SqlObjectItem.TypeParameterCollection );
-                    g.LdArg( 0 );
-                    g.Emit( OpCodes.Callvirt, SqlObjectItem.MCommandGetParameters );
-                    g.StLoc( locParams );
-                    EmitInlineReturn( g, locParams );
-                    g.Emit( OpCodes.Ret );
-                    dynamicAssembly.Memory[funcKey] = (fB.FirstFuncImpl = f = new FuncImpl( field, func, fB.FirstFuncImpl ));
+                    LocalBuilder locParams = g.DeclareLocal(SqlObjectItem.TypeParameterCollection);
+                    g.LdArg(0);
+                    g.Emit(OpCodes.Callvirt, SqlObjectItem.MCommandGetParameters);
+                    g.StLoc(locParams);
+                    EmitInlineReturn(g, locParams);
+                    g.Emit(OpCodes.Ret);
+                    dynamicAssembly.Memory[funcKey] = (fB.FirstFuncImpl = f = new FuncImpl(field, func, fB.FirstFuncImpl));
                 }
                 return f.Field;
+            }
+
+            internal string AssumeSourceFuncResultBuilder(IDynamicAssembly dynamicAssembly, string tempObjectName)
+            {
+                string funcKey = "S:" + _funcHolderTypeName + ':' + _funcResultBuilderSignature.ToString();
+                string fullName = (string)dynamicAssembly.Memory[funcKey];
+                if (fullName == null)
+                {
+                    FuncTypeHolder fB = AssumeFuncTypeHolder(dynamicAssembly);
+                    string funcName = 'f' + dynamicAssembly.NextUniqueNumber();
+                    string fieldName = "_" + funcName;
+                    string tFunc = $"Func<{SqlObjectItem.TypeCommand.FullName},{_unwrappedReturnedType.FullName}>";
+                    var fieldDef = fB.ClassBuilder.DefineField(tFunc, fieldName);
+                    fieldDef.FrontModifiers.Add("internal static");
+                    fieldDef.InitialValue = funcName;
+                    var func = fB.ClassBuilder.DefineMethod(funcName);
+                    func.FrontModifiers.Add("private");
+                    func.Parameters.Add(new CodeGen.ParameterBuilder() { Name = "c" });
+                    func.Body.AppendLine("var parameters = c.Parameters;");
+                    string varName = EmitInlineReturn(func.Body, "parameters", tempObjectName);
+                    func.Body.AppendLine($"return {varName};");
+
+                    fullName = fB.ClassBuilder.FullName + '.' + fieldName;
+                    dynamicAssembly.Memory[funcKey] = fullName;
+                }
+                return fullName;
             }
 
             void FinalizeFuncHolderType( IDynamicAssembly dynamicAssembly )
             {
                 FuncTypeHolder fB = (FuncTypeHolder)dynamicAssembly.Memory[_funcHolderTypeName];
-                ConstructorBuilder cB = fB.TypeBuilder.DefineTypeInitializer();
+                System.Reflection.Emit.ConstructorBuilder cB = fB.TypeBuilder.DefineTypeInitializer();
                 ILGenerator g = cB.GetILGenerator();
                 FuncImpl f = fB.FirstFuncImpl;
                 while( f != null )

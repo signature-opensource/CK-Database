@@ -113,7 +113,7 @@ namespace CK.Setup
         /// <summary>
         /// Helper method used by the kernel that generates a clear string that gives  
         /// detailed information about the location of the object beeing processed like
-        /// '{ObjectName} in {member} {Attribute] attribute of {holding class}'.
+        /// '{ObjectName} in {member} [Attribute] attribute of {holding class}'.
         /// This is exposed as a protected method so that specialized classes can easily emit log messages.
         /// </summary>
         /// <param name="r">The current registerer.</param>

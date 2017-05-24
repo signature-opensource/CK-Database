@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,7 +14,6 @@ namespace CK.Core
     {
         readonly StObjContext _defaultContext;
         readonly StObjContext[] _contexts;
-        readonly IStObjRuntimeBuilder _runtimeBuilder;
 
         internal readonly StructuredObjectCache SingletonCache;
         internal readonly IActivityMonitor Logger;
@@ -51,7 +50,6 @@ namespace CK.Core
             using (monitor.OpenInfo().Send($"Loading {allTypes.Length} types."))
             {
                 Logger = monitor;
-                _runtimeBuilder = runtimeBuilder;
                 StObjs = new StObj[allTypes.Length];
                 for (int i = 0; i < allTypes.Length; ++i)
                 {
@@ -79,7 +77,7 @@ namespace CK.Core
                     foreach (var o in StObjs)
                     {
                         object instance = SingletonCache.Get(o.CacheIndex);
-                        if (instance == null) SingletonCache.Set(o.CacheIndex, instance = _runtimeBuilder.CreateInstance(o.LeafSpecialization.ObjectType));
+                        if (instance == null) SingletonCache.Set(o.CacheIndex, instance = runtimeBuilder.CreateInstance(o.LeafSpecialization.ObjectType));
                         o.CallConstruct(monitor, idx => SingletonCache.Get(StObjs[idx].CacheIndex), instance);
                     }
                     // Setting post build properties.

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -210,7 +210,7 @@ namespace CK.Setup
                     contracts.LogErrorAndWarnings( _monitor );
                 }
                 var stObjMapper = new StObjMapper();
-                var result = new StObjCollectorResult( stObjMapper, contracts, _finalAssembly );
+                var result = new StObjCollectorResult( stObjMapper, contracts, _tempAssembly.SourceBuilder, _finalAssembly );
                 if( result.HasFatalError ) return result;
                 using( _monitor.OpenInfo().Send( "Creating Structure Objects." ) )
                 {

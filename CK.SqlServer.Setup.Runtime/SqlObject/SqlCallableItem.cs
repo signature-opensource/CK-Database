@@ -18,7 +18,7 @@ namespace CK.SqlServer.Setup
     /// <see cref="SqlFunctionTableItem"/>, and "Procedure": <see cref="SqlProcedureItem"/>.
     /// </summary>
     /// <typeparam name="T">Type of the callable.</typeparam>
-    public class SqlCallableItem<T> : SqlObjectItem, ISqlCallableItem where T : ISqlServerCallableObject
+    public partial class SqlCallableItem<T> : SqlObjectItem, ISqlCallableItem where T : ISqlServerCallableObject
     {
         const string _builderTypeName = "CK._g.CreatorForSqlCommand";
 

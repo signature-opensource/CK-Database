@@ -39,12 +39,16 @@ namespace CK.Core
         }
         readonly Dictionary<Type, PocoType> _all;
         readonly List<List<Type>> _result;
+        readonly string _namespace;
+        int _uniqueNumber;
 
         /// <summary>
         /// Initializes a new <see cref="PocoRegisterer"/>.
         /// </summary>
-        public PocoRegisterer()
+        /// <param name="namespace">Namespace into which dynamic types will be cerated.</param>
+        public PocoRegisterer( string @namespace = "CK._g.poco" )
         {
+            _namespace = @namespace ?? "CK._g.poco";
             _all = new Dictionary<Type, PocoType>();
             _result = new List<List<Type>>();
         }
@@ -152,22 +156,18 @@ namespace CK.Core
             }
         }
 
-        public IPocoSupportResult Finalize( DynamicAssembly a, IActivityMonitor monitor )
+        public IPocoSupportResult Finalize( ModuleBuilder moduleB, IActivityMonitor monitor )
         {
-            IPocoSupportResult result = (IPocoSupportResult)a.Memory[typeof( IPocoSupportResult )];
-            if( result == null )
-            {
-                var tB = a.ModuleBuilder.DefineType( "CK.PocoFactory" );
-                Result r = CreateResult( a, monitor, tB );
-                if( r == null ) return null;
-                ImplementFactories( a, monitor, tB, r );
-                r.FinalFactory = tB.CreateTypeInfo().AsType();
-                a.Memory.Add( typeof( IPocoSupportResult ), result = r );
-            }
-            return result;
+            _uniqueNumber = 0;
+            var tB = moduleB.DefineType( _namespace + ".Factory" );
+            Result r = CreateResult( moduleB, monitor, tB );
+            if( r == null ) return null;
+            ImplementFactories( monitor, tB, r );
+            r.FinalFactory = tB.CreateTypeInfo().AsType();
+            return r;
         }
 
-        void ImplementFactories( DynamicAssembly a, IActivityMonitor monitor, TypeBuilder tB, Result r )
+        void ImplementFactories( IActivityMonitor monitor, TypeBuilder tB, Result r )
         {
             foreach( var cInfo in r.Roots )
             {
@@ -177,7 +177,7 @@ namespace CK.Core
             }
         }
 
-        Result CreateResult( DynamicAssembly a, IActivityMonitor monitor, TypeBuilder tB )
+        Result CreateResult( ModuleBuilder moduleB, IActivityMonitor monitor, TypeBuilder tB )
         {
             MethodInfo typeFromToken = typeof( Type ).GetMethod( nameof( Type.GetTypeFromHandle ), BindingFlags.Static | BindingFlags.Public );
 
@@ -185,7 +185,7 @@ namespace CK.Core
             int idMethod = 0;
             foreach( var signature in _result )
             {
-                Type tPoco = CreatePocoType( a, monitor, signature );
+                Type tPoco = CreatePocoType( moduleB, monitor, signature );
                 if( tPoco == null ) return null;
                 MethodBuilder realMB = tB.DefineMethod( "DoC" + r.Roots.Count.ToString(), MethodAttributes.Private | MethodAttributes.HideBySig | MethodAttributes.Static, tPoco, Type.EmptyTypes );
                 var cInfo = new ClassInfo( tPoco, realMB );
@@ -217,9 +217,9 @@ namespace CK.Core
             return r;
         }
 
-        static Type CreatePocoType( DynamicAssembly a, IActivityMonitor monitor, IReadOnlyList<Type> interfaces )
+        Type CreatePocoType( ModuleBuilder moduleB, IActivityMonitor monitor, IReadOnlyList<Type> interfaces )
         {
-            var tB = a.ModuleBuilder.DefineType( $"Poco<{a.NextUniqueNumber()}>" );
+            var tB = moduleB.DefineType( $"{_namespace}.Poco{_uniqueNumber++}" );
             Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
             foreach( var i in interfaces )
             {
@@ -243,49 +243,6 @@ namespace CK.Core
                 }
             }
             return tB.CreateTypeInfo().AsType();
-        }
-
-        static PropertyBuilder ImplementStubProperty( TypeBuilder tB, PropertyInfo property, bool isVirtual = false, bool alwaysImplementSetter = false )
-        {
-            if( tB == null ) throw new ArgumentNullException( "tB" );
-            if( property == null ) throw new ArgumentNullException( "property" );
-
-            FieldBuilder backField = tB.DefineField( "_" + property.Name + property.GetHashCode(), property.PropertyType, FieldAttributes.Private );
-
-            MethodInfo getMethod = property.GetMethod;
-            MethodBuilder mGet = null;
-            if( getMethod != null )
-            {
-                MethodAttributes mA = getMethod.Attributes & ~(MethodAttributes.Abstract | MethodAttributes.VtableLayoutMask);
-                if( isVirtual ) mA |= MethodAttributes.Virtual;
-                mGet = tB.DefineMethod( getMethod.Name, mA, property.PropertyType, Type.EmptyTypes );
-                ILGenerator g = mGet.GetILGenerator();
-                g.LdArg( 0 );
-                g.Emit( OpCodes.Ldfld, backField );
-                g.Emit( OpCodes.Ret );
-            }
-            MethodInfo setMethod = property.SetMethod;
-            if( setMethod == null && alwaysImplementSetter )
-            {
-                setMethod = getMethod;
-            }
-            MethodBuilder mSet = null;
-            if( setMethod != null )
-            {
-                MethodAttributes mA = setMethod.Attributes & ~(MethodAttributes.Abstract | MethodAttributes.VtableLayoutMask);
-                if( isVirtual ) mA |= MethodAttributes.Virtual;
-                mSet = tB.DefineMethod( setMethod.Name, mA, typeof( void ), new[] { property.PropertyType } );
-                ILGenerator g = mSet.GetILGenerator();
-                g.LdArg( 0 );
-                g.LdArg( 1 );
-                g.Emit( OpCodes.Stfld, backField );
-                g.Emit( OpCodes.Ret );
-            }
-
-            PropertyBuilder p = tB.DefineProperty( property.Name, property.Attributes, property.PropertyType, Type.EmptyTypes );
-            if( mGet != null ) p.SetGetMethod( mGet );
-            if( mSet != null ) p.SetSetMethod( mSet );
-            return p;
         }
     }
 }

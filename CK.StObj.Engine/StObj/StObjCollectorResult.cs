@@ -1,4 +1,4 @@
-#region Proprietary License
+﻿#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.StObj.Engine\StObj\StObjCollectorResult.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using CK.Core;
 using System.Diagnostics;
+using CK.CodeGen;
 
 namespace CK.Setup
 {
@@ -22,6 +23,7 @@ namespace CK.Setup
         readonly AmbientContractCollectorResult<StObjContextualMapper,StObjTypeInfo,MutableItem> _contractResult;
         readonly int _totalSpecializationCount;
         readonly BuildValueCollector _buildValueCollector;
+        readonly DynamicAssembly _tempAssembly;
         readonly DynamicAssembly _finalAssembly;
         IReadOnlyList<MutableItem> _orderedStObjs;
         bool _fatal;
@@ -29,10 +31,12 @@ namespace CK.Setup
         internal StObjCollectorResult( 
             StObjMapper owner, 
             AmbientContractCollectorResult<StObjContextualMapper,StObjTypeInfo, MutableItem> contractResult,
+            DynamicAssembly tempAssembly,
             DynamicAssembly finalAssembly )
         {
             Debug.Assert( contractResult != null );
             _contractResult = contractResult;
+            _tempAssembly = tempAssembly;
             _finalAssembly = finalAssembly;
             foreach( var r in contractResult.Contexts )
             {

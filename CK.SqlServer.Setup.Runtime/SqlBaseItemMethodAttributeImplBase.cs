@@ -161,7 +161,7 @@ namespace CK.SqlServer.Setup
         /// (for instance, whenever the method is not ready to be implemented). 
         /// Any error must be logged into the <paramref name="monitor"/>.
         /// </returns>
-        protected abstract bool DoImplement(IActivityMonitor monitor, MethodInfo m, SqlObjectItem item, IDynamicAssembly dynamicAssembly, ClassBuilder b);
+        protected abstract bool DoImplement(IActivityMonitor monitor, MethodInfo m, SqlBaseItem sqlItem, IDynamicAssembly dynamicAssembly, ClassBuilder b);
     }
 
 }

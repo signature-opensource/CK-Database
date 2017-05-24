@@ -1,4 +1,4 @@
-#region Proprietary License
+﻿#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.SqlServer.Setup.Runtime\SqlProcedureAttributeImpl.WrapperCtorMatcher.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -96,7 +96,7 @@ namespace CK.SqlServer.Setup
                         else if( IsValidDefaultValue( toMatch ) ) _mappedParameters[i] = toMatch;
                     }
                 }
-                return _methodParameters.All( p => p.IdxTarget >= 0 || SqlCallContextInfo.IsSqlParameterSource( p.Parameter ) ) 
+                return _methodParameters.All( p => p.IdxTarget >= 0 || SqlCallContextInfo.IsSqlParameterSource( p.Parameter ) )
                         && !_mappedParameters.Where( ( p, idx ) => idx != _idxSqlCommand && p == null ).Any();
             }
 
@@ -160,7 +160,7 @@ namespace CK.SqlServer.Setup
                         Debug.Assert( IsValidDefaultValue( mP ) );
                         Debug.Assert( mP.Position == i, "This is the ParameterInfo of the constructor." );
 
-                        object d =  mP.DefaultValue;
+                        object d = mP.DefaultValue;
                         if( d == null )
                         {
                             g.Emit( OpCodes.Ldnull );
@@ -189,6 +189,36 @@ namespace CK.SqlServer.Setup
                     else
                     {
                         g.LdArg( mP.Position + 1 );
+                    }
+                    ++i;
+                }
+            }
+
+            internal void LdParameters( StringBuilder b, string varCmdName, ParameterInfo[] callingParameters )
+            {
+                bool already = false;
+                int i = 0;
+                foreach( var mP in _mappedParameters )
+                {
+                    if( already ) b.Append( ", " );
+                    else already = false;
+                    if( i == _idxSqlCommand )
+                    {
+                        b.Append( varCmdName );
+                    }
+                    else if( mP == _declaringTypeMarker )
+                    {
+                        b.Append( $"({Parameters[i].ParameterType.FullName})this" );
+                    }
+                    else if( mP.Member == Ctor )
+                    {
+                        Debug.Assert( IsValidDefaultValue( mP ) );
+                        Debug.Assert( mP.Position == i, "This is the ParameterInfo of the constructor." );
+                        b.Append( mP.DefaultValue ?? "null" );
+                    }
+                    else
+                    {
+                        b.Append( callingParameters[mP.Position + 1].Name );
                     }
                     ++i;
                 }

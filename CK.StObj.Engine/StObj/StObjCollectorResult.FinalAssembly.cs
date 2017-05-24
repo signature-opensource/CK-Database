@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,7 +14,7 @@ using System.IO;
 namespace CK.Setup
 {
 #if NET461
-    public partial class StObjCollectorResult : MultiContextualResult<StObjCollectorContextualResult>
+    public partial class StObjCollectorResult
     {
         /// <summary>
         /// Generates final assembly must be called only when <see cref="BuilderFinalAssemblyConfiguration.GenerateFinalAssemblyOption"/>

@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CK.Core;
 using CK.Reflection;
+using CK.Text;
 
 namespace CK.SqlServer.Setup
 {
@@ -243,7 +244,7 @@ namespace CK.SqlServer.Setup
             }
             g.Emit( OpCodes.Newobj, _selectedCtor.Ctor );
         }
-        
+
         public void EmitPropertiesSet( ILGenerator g, Action<int, Type> getValueGenerator )
         {
             foreach( var pProp in _props )
@@ -261,6 +262,40 @@ namespace CK.SqlServer.Setup
         {
             EmitNewObj( g, getValueGenerator );
             EmitPropertiesSet( g, getValueGenerator );
+        }
+
+        public string EmitNewObj( StringBuilder b, Func<int, Type, string> getValueGenerator )
+        {
+            Debug.Assert( _selectedCtor != null && _selectedCtor.IsInputSatisfied );
+
+            var ctorVariableNames = _selectedCtor.Parameters.Select( pCtor => getValueGenerator( pCtor.InputIndex, pCtor.Type ) );
+
+            b.Append( $"var oR = new {this.CreatedType.FullName}(" )
+                .AppendStrings( ctorVariableNames)
+                .AppendLine(");");
+
+            return "oR";
+        }
+
+        public void EmitPropertiesSet( StringBuilder b, Func<int, Type, string> getValueGenerator, string objName )
+        {
+            foreach( var pProp in _props )
+            {
+                if( pProp.IsInputSatisfied && !_mappedInputIsSelectedCtor.Contains( pProp.Parameters[0].InputIndex ) )
+                {
+                    var param = pProp.Parameters[0];
+                    string varName = getValueGenerator( param.InputIndex, param.Type );
+                    b.Append( $"{objName}.{pProp.Property.Name} = {varName};" );
+                }
+            }
+        }
+
+
+        public string EmitFullInitialization( StringBuilder b, Func<int, Type, string> getValueGenerator )
+        {
+            string varName = EmitNewObj( b, getValueGenerator );
+            EmitPropertiesSet( b, getValueGenerator, varName );
+            return varName;
         }
 
     }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace CK.Core
@@ -8,6 +8,11 @@ namespace CK.Core
     /// </summary>
     public interface IContextualStObjMap : IContextualTypeMap
     {
+        /// <summary>
+        /// Access to all contexts.
+        /// </summary>
+        new IStObjMap AllContexts { get; }
+
         /// <summary>
         /// Gets the most specialized <see cref="IStObj"/> or null if no mapping exists.
         /// </summary>
@@ -39,11 +44,6 @@ namespace CK.Core
         /// The types are interfaces (<see cref="IAmbientContract"/>) as well as classes.
         /// </summary>
         IEnumerable<KeyValuePair<Type, object>> Mappings { get; }
-
-        /// <summary>
-        /// Access to all contexts.
-        /// </summary>
-        new IStObjMap AllContexts { get; }
 
 
     }

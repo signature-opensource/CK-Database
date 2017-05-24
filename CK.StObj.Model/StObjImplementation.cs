@@ -13,7 +13,7 @@ namespace CK.Core
     public struct StObjImplementation
     {
         /// <summary>
-        /// The type mapped.
+        /// The StObj slice.
         /// </summary>
         public readonly IStObj StObj;
 
