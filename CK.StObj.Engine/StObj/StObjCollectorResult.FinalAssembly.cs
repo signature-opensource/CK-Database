@@ -13,7 +13,6 @@ using System.IO;
 
 namespace CK.Setup
 {
-#if NET461
     public partial class StObjCollectorResult
     {
         /// <summary>
@@ -26,84 +25,96 @@ namespace CK.Setup
         /// <returns>False if any error occured (logged into <paramref name="monitor"/>).</returns>
         public bool GenerateFinalAssembly( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, bool callPEVrify )
         {
-            if( _finalAssembly == null ) throw new InvalidOperationException( "Using GenerateOption.DoNotGenerateFile." );
             try
             {
-                TypeBuilder root = _finalAssembly.ModuleBuilder.DefineType( StObjContextRoot.RootContextTypeName, TypeAttributes.Class | TypeAttributes.Sealed, typeof( StObjContextRoot ) );
-
-                if( !FinalizeTypesCreationAndCreateCtor( monitor, _finalAssembly, root ) ) return false;
-                // Concretize the actual StObjContextRoot type to detect any error before generating the embedded resource.
-                Type stobjContectRootType = root.CreateType();
-
-                RawOutStream outS = new RawOutStream();
-                using( monitor.OpenTrace().Send( "Generating resource informations." ) )
-                {
-                    outS.Writer.Write( Contexts.Count );
-                    foreach( var c in Contexts )
-                    {
-                        outS.Writer.Write( c.Context );
-                        IDictionary all = c.InternalMapper.RawMappings;
-                        var typeMapping = all.Cast<KeyValuePair<object, MutableItem>>().Where( e => e.Key is Type );
-                        int typeMappingCount = typeMapping.Count();
-                        // Serializes multiple ...,Type.AssemblyQualifiedName,int,... for Type to final Type/Item mappings (where index is the IndexOrdered in allTypes).
-                        // We skip highest implementation Type mappings - AmbientContractInterfaceKey keys - since there is no ToStObj mapping on final (runtime) IContextualStObjMap.
-                        outS.Writer.Write( typeMappingCount );
-                        foreach( var e in typeMapping )
-                        {
-                            outS.Writer.Write( ((Type)e.Key).AssemblyQualifiedName );
-                            outS.Writer.Write( e.Value.IndexOrdered );
-                        }
-                    }
-                    outS.Writer.Flush();
-
-                    long typeMappingSize = outS.Memory.Length;
-                    monitor.Trace().Send( "Type mappings require {0} bytes in resource.", typeMappingSize );
-
-                    // Once Contexts are serialized, we serialize the values that have been injected during graph construction.
-                    outS.Formatter.Write( _buildValueCollector.Values, _buildValueCollector.Values.Count );
-
-                    long valuesSize = outS.Memory.Length - typeMappingSize;
-                    monitor.Trace().Send( "Configured properties and parameter require {0} bytes in resource.", valuesSize );
-
-                    outS.Writer.Write( _totalSpecializationCount );
-                    foreach( var m in _orderedStObjs )
-                    {
-                        outS.Writer.Write( m.Context.Context );
-                        outS.Writer.Write( m.Generalization != null ? m.Generalization.IndexOrdered : -1 );
-                        outS.Writer.Write( m.Specialization != null ? m.Specialization.IndexOrdered : -1 );
-                        outS.Writer.Write( m.LeafSpecialization.IndexOrdered );
-                        outS.Writer.Write( m.SpecializationIndexOrdered );
-
-                        if( m.AmbientTypeInfo.StObjConstruct != null )
-                        {
-                            outS.Writer.Write( m.ConstructParameters.Count );
-                            foreach( MutableParameter p in m.ConstructParameters )
-                            {
-                                outS.Writer.Write( p.BuilderValueIndex );
-                            }
-                        }
-                        else outS.Writer.Write( -1 );
-                        m.WritePreConstructProperties( outS.Writer );
-                        if( m.Specialization == null ) m.WritePostBuildProperties( outS.Writer );
-                    }
-
-                    long graphDescSize = outS.Memory.Length - valuesSize - typeMappingSize;
-                    monitor.Trace().Send( "Graph description requires {0} bytes in resource.", graphDescSize );
-
-                }
-                // Generates the Resource BLOB now.
-                outS.Memory.Position = 0;
-                _finalAssembly.ModuleBuilder.DefineManifestResource( StObjContextRoot.RootContextTypeName + ".Data", outS.Memory, ResourceAttributes.Private );
-                _finalAssembly.Save();
-                if (callPEVrify && !ExecutePEVerify(monitor) ) return false;
-                   
-                return true;
+#if NET461
+                if( _finalAssembly == null ) throw new InvalidOperationException( "Using GenerateOption.DoNotGenerateFile." );
+                if( !DoGenerateFinalAssembly( monitor, runtimeBuilder, callPEVrify ) ) return false;
+#endif
+                return GenerateSourceCode( monitor, runtimeBuilder );
             }
             catch( Exception ex )
             {
                 monitor.Error().Send( ex, "While generating final assembly '{0}'.", _finalAssembly.SaveFileName );
                 return false;
             }
+        }
+
+
+
+#if NET461
+
+        bool DoGenerateFinalAssembly(IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, bool callPEVrify)
+        {
+            TypeBuilder root = _finalAssembly.ModuleBuilder.DefineType( StObjContextRoot.RootContextTypeName, TypeAttributes.Class | TypeAttributes.Sealed, typeof( StObjContextRoot ) );
+
+            if( !FinalizeTypesCreationAndCreateCtor( monitor, _finalAssembly, root ) ) return false;
+            // Concretize the actual StObjContextRoot type to detect any error before generating the embedded resource.
+            Type stobjContectRootType = root.CreateType();
+
+            RawOutStream outS = new RawOutStream();
+            using( monitor.OpenTrace().Send( "Generating resource informations." ) )
+            {
+                outS.Writer.Write( Contexts.Count );
+                foreach( var c in Contexts )
+                {
+                    outS.Writer.Write( c.Context );
+                    IDictionary all = c.InternalMapper.RawMappings;
+                    var typeMapping = all.Cast<KeyValuePair<object, MutableItem>>().Where( e => e.Key is Type );
+                    int typeMappingCount = typeMapping.Count();
+                    // Serializes multiple ...,Type.AssemblyQualifiedName,int,... for Type to final Type/Item mappings (where index is the IndexOrdered in allTypes).
+                    // We skip highest implementation Type mappings - AmbientContractInterfaceKey keys - since there is no ToStObj mapping on final (runtime) IContextualStObjMap.
+                    outS.Writer.Write( typeMappingCount );
+                    foreach( var e in typeMapping )
+                    {
+                        outS.Writer.Write( ((Type)e.Key).AssemblyQualifiedName );
+                        outS.Writer.Write( e.Value.IndexOrdered );
+                    }
+                }
+                outS.Writer.Flush();
+
+                long typeMappingSize = outS.Memory.Length;
+                monitor.Trace().Send( "Type mappings require {0} bytes in resource.", typeMappingSize );
+
+                // Once Contexts are serialized, we serialize the values that have been injected during graph construction.
+                outS.Formatter.Write( _buildValueCollector.Values, _buildValueCollector.Values.Count );
+
+                long valuesSize = outS.Memory.Length - typeMappingSize;
+                monitor.Trace().Send( "Configured properties and parameter require {0} bytes in resource.", valuesSize );
+
+                outS.Writer.Write( _totalSpecializationCount );
+                foreach( var m in _orderedStObjs )
+                {
+                    outS.Writer.Write( m.Context.Context );
+                    outS.Writer.Write( m.Generalization != null ? m.Generalization.IndexOrdered : -1 );
+                    outS.Writer.Write( m.Specialization != null ? m.Specialization.IndexOrdered : -1 );
+                    outS.Writer.Write( m.LeafSpecialization.IndexOrdered );
+                    outS.Writer.Write( m.SpecializationIndexOrdered );
+
+                    if( m.AmbientTypeInfo.StObjConstruct != null )
+                    {
+                        outS.Writer.Write( m.ConstructParameters.Count );
+                        foreach( MutableParameter p in m.ConstructParameters )
+                        {
+                            outS.Writer.Write( p.BuilderValueIndex );
+                        }
+                    }
+                    else outS.Writer.Write( -1 );
+                    m.WritePreConstructProperties( outS.Writer );
+                    if( m.Specialization == null ) m.WritePostBuildProperties( outS.Writer );
+                }
+
+                long graphDescSize = outS.Memory.Length - valuesSize - typeMappingSize;
+                monitor.Trace().Send( "Graph description requires {0} bytes in resource.", graphDescSize );
+
+            }
+            // Generates the Resource BLOB now.
+            outS.Memory.Position = 0;
+            _finalAssembly.ModuleBuilder.DefineManifestResource( StObjContextRoot.RootContextTypeName + ".Data", outS.Memory, ResourceAttributes.Private );
+            _finalAssembly.Save();
+            if (callPEVrify && !ExecutePEVerify(monitor) ) return false;
+                   
+            return true;
         }
 
         bool ExecutePEVerify(IActivityMonitor monitor)
@@ -225,6 +236,7 @@ namespace CK.Setup
 
             g.Emit( OpCodes.Ret );
         }
-    }
 #endif
+    }
 }
+

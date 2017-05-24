@@ -1,4 +1,4 @@
-#region Proprietary License
+﻿#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.StObj.Engine\StObj\Impl\TypeInfo\StObjAttributesReader.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -33,9 +33,14 @@ namespace CK.Setup
             if( objectType == null ) throw new ArgumentNullException( "objectType" );
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
 
-            var a = (IStObjAttribute[])objectType.GetTypeInfo().GetCustomAttributes( typeof( IStObjAttribute ), false );
+#if NET461
+            var a = (IStObjAttribute[])objectType.GetCustomAttributes( typeof( IStObjAttribute ), false );
+#else
+            var a = objectType.GetTypeInfo().GetCustomAttributes( false ).OfType<IStObjAttribute>().ToArray();
+#endif
             if( a.Length == 0 ) return null;
             if( a.Length == 1 ) return a[0];
+
             IList<Type> requires = null;
             IList<Type> requiredBy = null;
             IList<Type> children = null;

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -55,14 +55,13 @@ namespace CK.Setup
             // Step 3: Resolving dependencies and building ordered graph.
             var r = collector.GetResult();
             if( r.HasFatalError ) return false;
-#if NET461
+
             // Step 4: Generating final assembly if required.
             if( c.FinalAssemblyConfiguration.GenerateFinalAssemblyOption != BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile )
             {
                 bool peVerify = c.FinalAssemblyConfiguration.GenerateFinalAssemblyOption == BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFileAndPEVerify;
                 return r.GenerateFinalAssembly( _monitor, _runtimeBuilder, peVerify );
             }
-#endif
             return true;
         }
     }

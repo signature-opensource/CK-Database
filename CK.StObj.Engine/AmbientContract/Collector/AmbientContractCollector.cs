@@ -313,7 +313,12 @@ namespace CK.Core
             using( _monitor.OpenInfo().Send( "Creating Poco Types and PocoFactory." ) )
             {
                 pocoSupport = _pocoRegisterer.Finalize( _finalAssembly?.ModuleBuilder ?? _tempAssembly.ModuleBuilder, _monitor );
-                if( pocoSupport != null ) RegisterClass( pocoSupport.FinalFactory );
+                if( pocoSupport != null )
+                {
+                    _tempAssembly.Memory.Add( typeof( IPocoSupportResult ), pocoSupport );
+                    if( _finalAssembly != null ) _finalAssembly.Memory.Add( typeof( IPocoSupportResult ), pocoSupport );
+                    RegisterClass( pocoSupport.FinalFactory );
+                }
             }
             var mappings = _mapFactory( _monitor );
             var byContext = new Dictionary<string, PreResult>();

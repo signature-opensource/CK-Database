@@ -1,4 +1,4 @@
-#region Proprietary License
+﻿#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.StObj.Engine\StObj\Impl\MutableItem.StructuredObject.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 

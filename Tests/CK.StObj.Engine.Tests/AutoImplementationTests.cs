@@ -1,4 +1,4 @@
-#region Proprietary License
+﻿#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (Tests\CK.StObj.Engine.Tests\AutoImplementationTests.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -9,6 +9,7 @@ using System;
 using CK.Core;
 using CK.Setup;
 using NUnit.Framework;
+using System.Diagnostics;
 
 namespace CK.StObj.Engine.Tests
 {
@@ -22,19 +23,19 @@ namespace CK.StObj.Engine.Tests
         {
         }
 
-        internal abstract class ABase
+        public abstract class ABase
         {
             [AutoImplementMethod]
             protected abstract int FirstMethod( int i );
         }
 
-        internal abstract class A : ABase, IAmbientContract
+        public abstract class A : ABase, IAmbientContract
         {
             [AutoImplementMethod]
             public abstract string SecondMethod( int i );
         }
 
-        internal abstract class A2 : A
+        public abstract class A2 : A
         {
             [AutoImplementMethod]
             public abstract A ThirdMethod( int i, string s );

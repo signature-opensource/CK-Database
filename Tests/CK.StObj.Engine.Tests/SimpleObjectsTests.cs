@@ -1,4 +1,4 @@
-#region Proprietary License
+﻿#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (Tests\CK.StObj.Engine.Tests\SimpleObjectsTests.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -21,10 +21,10 @@ namespace CK.StObj.Engine.Tests
         public void DiscoverSimpleObjects()
         {
             AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
-            disco.AssemblyFilter = a => a == Assembly.GetExecutingAssembly();
+            disco.AssemblyFilter = a => a == TestHelper.Assembly;
             disco.TypeFilter = t => t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects";
             
-            disco.DiscoverRecurse( Assembly.GetExecutingAssembly() );
+            disco.DiscoverRecurse( TestHelper.Assembly );
 
             StObjCollector collector = new StObjCollector( TestHelper.Monitor );
             collector.RegisterTypes( disco );
@@ -59,12 +59,12 @@ namespace CK.StObj.Engine.Tests
                 
                 AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
 
-                disco.AssemblyFilter = a => a == Assembly.GetExecutingAssembly();
+                disco.AssemblyFilter = a => a == TestHelper.Assembly;
                 disco.TypeFilter = t =>
                     (t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects" || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects.WithLevel3")
                     && t.Name != "ObjectALevel4";
 
-                disco.DiscoverRecurse( Assembly.GetExecutingAssembly() );
+                disco.DiscoverRecurse( TestHelper.Assembly );
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
                 collector.RegisterTypes( disco );
@@ -77,10 +77,10 @@ namespace CK.StObj.Engine.Tests
             {
                 AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
 
-                disco.AssemblyFilter = a => a == Assembly.GetExecutingAssembly();
+                disco.AssemblyFilter = a => a == TestHelper.Assembly;
                 disco.TypeFilter = t => t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects" || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects.WithLevel3";
 
-                disco.DiscoverRecurse( Assembly.GetExecutingAssembly() );
+                disco.DiscoverRecurse( TestHelper.Assembly );
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
                 collector.RegisterTypes( disco );
@@ -97,13 +97,13 @@ namespace CK.StObj.Engine.Tests
             {
                 // ↳ PackageForAB ∋ ObjectBLevel3_InPackageForAB ⇒ ObjectBLevel2 ⇒ ObjectBLevel1 ∈ PackageForABLevel1 ⇒ PackageForAB.
                 AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
-                disco.AssemblyFilter = a => a == Assembly.GetExecutingAssembly();
+                disco.AssemblyFilter = a => a == TestHelper.Assembly;
                 disco.TypeFilter = t =>
                     t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects"
                     || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects.WithLevel3"
                     || t.Name == "ObjectBLevel3_InPackageForAB";
 
-                disco.DiscoverRecurse( Assembly.GetExecutingAssembly() );
+                disco.DiscoverRecurse( TestHelper.Assembly );
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
                 collector.RegisterTypes( disco );
@@ -119,12 +119,12 @@ namespace CK.StObj.Engine.Tests
             using( TestHelper.Monitor.OpenInfo().Send( "ObjectXNeedsY and ObjectYNeedsX." ) )
             {
                 AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
-                disco.AssemblyFilter = a => a == Assembly.GetExecutingAssembly();
+                disco.AssemblyFilter = a => a == TestHelper.Assembly;
                 disco.TypeFilter = t =>
                     t.Name == "ObjectXNeedsY" || t.Name == "ObjectYNeedsX"
                     || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects";
 
-                disco.DiscoverRecurse( Assembly.GetExecutingAssembly() );
+                disco.DiscoverRecurse( TestHelper.Assembly );
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
                 collector.RegisterTypes( disco );
@@ -140,12 +140,12 @@ namespace CK.StObj.Engine.Tests
             using( TestHelper.Monitor.OpenInfo().Send( "ObjectXNeedsY without ObjectYNeedsX." ) )
             {
                 AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
-                disco.AssemblyFilter = a => a == Assembly.GetExecutingAssembly();
+                disco.AssemblyFilter = a => a == TestHelper.Assembly;
                 disco.TypeFilter = 
                     t => t.Name == "ObjectXNeedsY"
                     || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects";
 
-                disco.DiscoverRecurse( Assembly.GetExecutingAssembly() );
+                disco.DiscoverRecurse( TestHelper.Assembly );
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
                 collector.RegisterTypes( disco );
@@ -160,10 +160,10 @@ namespace CK.StObj.Engine.Tests
             using( TestHelper.Monitor.OpenInfo().Send( "ConsoleMonitor injection (and optional parameter)." ) )
             {
                 AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
-                disco.AssemblyFilter = a => a == Assembly.GetExecutingAssembly();
+                disco.AssemblyFilter = a => a == TestHelper.Assembly;
                 disco.TypeFilter = t => t.Name == "LoggerInjected";
 
-                disco.DiscoverRecurse( Assembly.GetExecutingAssembly() );
+                disco.DiscoverRecurse( TestHelper.Assembly );
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
                 collector.RegisterTypes( disco );
@@ -209,7 +209,7 @@ namespace CK.StObj.Engine.Tests
                 || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C2InC1"
                 || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C3InC2SpecializeC1";
 
-            disco.Discover( Assembly.GetExecutingAssembly() );
+            disco.Discover( TestHelper.Assembly );
 
             StObjCollector collector = new StObjCollector( TestHelper.Monitor );
             collector.RegisterTypes( disco );
@@ -236,7 +236,7 @@ namespace CK.StObj.Engine.Tests
                 || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C2InC1"
                 || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C3ContainsC1";
 
-            disco.Discover( Assembly.GetExecutingAssembly() );
+            disco.Discover( TestHelper.Assembly );
 
             StObjCollector collector = new StObjCollector( TestHelper.Monitor );
             collector.RegisterTypes( disco );
@@ -261,7 +261,7 @@ namespace CK.StObj.Engine.Tests
                 || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C2InC1"
                 || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C3RequiresC2SpecializeC1";
 
-            disco.Discover( Assembly.GetExecutingAssembly() );
+            disco.Discover( TestHelper.Assembly );
 
             StObjCollector collector = new StObjCollector( TestHelper.Monitor );
             collector.RegisterTypes( disco );

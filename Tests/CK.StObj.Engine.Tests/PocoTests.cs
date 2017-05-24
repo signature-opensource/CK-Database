@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Reflection;
 using CK.Core;
 using CK.Setup;
@@ -33,7 +33,7 @@ namespace CK.StObj.Engine.Tests
         {
             AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
             disco.TypeFilter = t => t.Namespace == "CK.StObj.Engine.Tests.Poco";
-            disco.Discover( Assembly.GetExecutingAssembly() );
+            disco.Discover( TestHelper.Assembly );
 
             StObjCollector collector = new StObjCollector( TestHelper.Monitor );
             collector.RegisterTypes( disco );

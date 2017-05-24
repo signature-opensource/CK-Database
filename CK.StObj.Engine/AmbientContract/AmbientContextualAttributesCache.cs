@@ -1,11 +1,4 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.StObj.Engine\AmbientContract\AmbientContextualAttributesCache.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -72,7 +65,11 @@ namespace CK.Core
         static int Register( List<Entry> all, MemberInfo m, bool inherit = false )
         {
             int initializerCount = 0;
+#if NET461
             var attr = (IAttributeAmbientContextBound[])m.GetCustomAttributes( typeof( IAttributeAmbientContextBound ), inherit );
+#else
+            var attr = m.GetCustomAttributes(inherit).OfType<IAttributeAmbientContextBound>();
+#endif
             foreach( var a in attr )
             {
                 AmbientContextBoundDelegationAttribute delegated = a as AmbientContextBoundDelegationAttribute;
@@ -111,8 +108,10 @@ namespace CK.Core
         {
             if( m == null ) throw new ArgumentNullException( "m" );
             if( attributeType == null ) throw new ArgumentNullException( "attributeType" );
-            return _all.Any( e => CK.Reflection.MemberInfoEqualityComparer.Default.Equals( e.M, m ) && attributeType.IsAssignableFrom( e.Attr.GetType() ) )
-                    || ( (m.DeclaringType == Type.AsType() || (_includeBaseClasses && m.DeclaringType.IsAssignableFrom( Type.AsType() ))) && m.IsDefined( attributeType, false ) );
+            return _all.Any( e => CK.Reflection.MemberInfoEqualityComparer.Default.Equals( e.M, m ) 
+                                  && attributeType.IsAssignableFrom( e.Attr.GetType() ) )
+                    || ( (m.DeclaringType == Type.AsType() || (_includeBaseClasses && m.DeclaringType.IsAssignableFrom( Type.AsType() ))) 
+                         && m.GetCustomAttributes(false).Any( a => attributeType.IsAssignableFrom( a.GetType()) ) );
         }
 
         /// <summary>
@@ -131,7 +130,7 @@ namespace CK.Core
             if( m.DeclaringType == Type.AsType() || (_includeBaseClasses && m.DeclaringType.IsAssignableFrom( Type.AsType())) )
             {
                 return fromCache
-                        .Concat( m.GetCustomAttributes( attributeType, false ).Where( a => !(a is IAttributeAmbientContextBound) ) );
+                        .Concat( m.GetCustomAttributes( false ).Where( a => !(a is IAttributeAmbientContextBound) && attributeType.IsAssignableFrom( a.GetType() ) ) );
             }
             return fromCache;
         }
@@ -151,7 +150,7 @@ namespace CK.Core
             if( m.DeclaringType == Type.AsType() || (_includeBaseClasses && m.DeclaringType.IsAssignableFrom( Type.AsType())) )
             {
                 return fromCache
-                        .Concat( m.GetCustomAttributes( typeof( T ), false ).Where( a => !(a is IAttributeAmbientContextBound) ).Select( a => (T)(object)a ) );
+                        .Concat( m.GetCustomAttributes( false ).Where( a => !(a is IAttributeAmbientContextBound) && a is T).Select( a => (T)(object)a ) );
             }
             return fromCache;
         }
@@ -171,9 +170,9 @@ namespace CK.Core
         public IEnumerable<object> GetAllCustomAttributes( Type attributeType, bool memberOnly = false )
         {
             var fromCache = _all.Where( e => (!memberOnly || e.M != Type) && attributeType.IsAssignableFrom( e.Attr.GetType() ) ).Select( e => e.Attr );
-            var fromMembers = _typeMembers.SelectMany( m => m.GetCustomAttributes( attributeType, false ).Where( a => !(a is IAttributeAmbientContextBound) ) );
+            var fromMembers = _typeMembers.SelectMany( m => m.GetCustomAttributes( false ).Where( a => !(a is IAttributeAmbientContextBound) && attributeType.IsAssignableFrom( a.GetType() ) ) );
             if( memberOnly ) return fromCache.Concat( fromMembers );
-            var fromType = Type.GetCustomAttributes( attributeType, _includeBaseClasses ).Where( a => !(a is IAttributeAmbientContextBound) );
+            var fromType = Type.GetCustomAttributes( _includeBaseClasses ).Where( a => !(a is IAttributeAmbientContextBound) && attributeType.IsAssignableFrom( a.GetType() ) );
             return fromCache.Concat( fromType ).Concat( fromMembers );
         }
 
@@ -192,12 +191,12 @@ namespace CK.Core
         public IEnumerable<T> GetAllCustomAttributes<T>( bool memberOnly = false)
         {
             var fromCache = _all.Where( e => e.Attr is T && (!memberOnly || e.M != Type) ).Select( e => (T)e.Attr );
-            var fromMembers = _typeMembers.SelectMany( m => m.GetCustomAttributes( typeof( T ), false )
-                                            .Where( a => !(a is IAttributeAmbientContextBound) ) )
+            var fromMembers = _typeMembers.SelectMany( m => m.GetCustomAttributes( false ) )
+                                            .Where( a => !(a is IAttributeAmbientContextBound) && a is T )
                                             .Select( a => (T)(object)a );
             if( memberOnly ) return fromCache.Concat( fromMembers );
-            var fromType = Type.GetCustomAttributes( typeof( T ), _includeBaseClasses )
-                                .Where( a => !(a is IAttributeAmbientContextBound) ).Select( a => (T)(object)a );
+            var fromType = Type.GetCustomAttributes( _includeBaseClasses )
+                                .Where( a => !(a is IAttributeAmbientContextBound) && a is T ).Select( a => (T)(object)a );
             return fromCache.Concat( fromType ).Concat( fromMembers );
         }
 

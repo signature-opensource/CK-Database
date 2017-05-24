@@ -1,4 +1,4 @@
-#region Proprietary License
+﻿#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (Tests\CK.StObj.Engine.Tests\SimpleObjects\ObjectALevel3.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -16,13 +16,13 @@ namespace CK.StObj.Engine.Tests.SimpleObjects
         void StObjConstruct()
         {
             Assert.That( ConstructCount, Is.EqualTo( 3 ), "ObjectA, ObjectALevel1 and ObjectALevel2 construct have been called." );
-            SimpleObjectsTrace.LogMethod( MethodInfo.GetCurrentMethod() );
+            SimpleObjectsTrace.LogMethod( GetType().GetMethod( "StObjConstruct", BindingFlags.Instance | BindingFlags.NonPublic ) );
             ConstructCount = ConstructCount + 1;
         }
 
         public virtual void MethofOfALevel3()
         {
-            SimpleObjectsTrace.LogMethod( MethodInfo.GetCurrentMethod() );
+            SimpleObjectsTrace.LogMethod( GetType().GetMethod( "MethofOfALevel3", BindingFlags.Instance | BindingFlags.Public ) );
         }
 
     }

@@ -30,10 +30,11 @@ namespace CK.StObj
         readonly IStObjMap _allContexts;
         readonly string _context;
         readonly Dictionary<Type, object> _mappings;
+        readonly StObjImplementation[] _stObjs;
 
         public IEnumerable<object> Implementations => _mappings.Values;
 
-        public IEnumerable<StObjImplementation> StObjs => throw new NotImplementedException();
+        public IEnumerable<StObjImplementation> StObjs => _stObjs;
 
         public IEnumerable<KeyValuePair<Type, object>> Mappings => _mappings;
 
@@ -41,31 +42,23 @@ namespace CK.StObj
 
         public string Context => _context;
 
-        public int MappedTypeCount => throw new NotImplementedException();
+        public int MappedTypeCount => _mappings.Count;
 
-        public IEnumerable<Type> Types => throw new NotImplementedException();
+        public IEnumerable<Type> Types => _mappings.Keys;
 
-        IContextualRoot<IContextualTypeMap> IContextualTypeMap.AllContexts => throw new NotImplementedException();
+        IContextualRoot<IContextualTypeMap> IContextualTypeMap.AllContexts => _allContexts;
 
-        public bool IsMapped( Type t )
-        {
-            throw new NotImplementedException();
-        }
+        public bool IsMapped( Type t ) => _mappings.ContainsKey( t );
 
-        public object Obtain( Type t )
-        {
-            throw new NotImplementedException();
-        }
+        public object Obtain( Type t ) => _mappings.GetValueWithDefault( t, null );
 
         public IStObj ToLeaf( Type t )
         {
             if( t == null ) throw new ArgumentNullException( "t" );
+            return null;
         }
 
-        public Type ToLeafType( Type t )
-        {
-            throw new NotImplementedException();
-        }
+        public Type ToLeafType( Type t ) => ToLeaf( t )?.ObjectType;
     }
 
 

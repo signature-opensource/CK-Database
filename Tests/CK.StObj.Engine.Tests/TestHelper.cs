@@ -12,6 +12,7 @@ using System.Linq;
 using CK.Core;
 using CK.Setup;
 using NUnit.Framework;
+using System.Reflection;
 
 namespace CK.StObj.Engine.Tests
 {
@@ -31,6 +32,8 @@ namespace CK.StObj.Engine.Tests
         {
             get { return _monitor; }
         }
+
+        public static Assembly Assembly => typeof( TestHelper ).GetTypeInfo().Assembly;
 
         public static bool LogsToConsole
         {
