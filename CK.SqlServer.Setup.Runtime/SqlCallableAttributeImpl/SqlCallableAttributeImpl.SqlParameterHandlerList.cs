@@ -321,9 +321,22 @@ namespace CK.SqlServer.Setup
                         g.Emit( OpCodes.Ldc_R8, (double)o );
                         g.Emit( OpCodes.Box, typeof( Double ) );
                     }
-                    else if( o is string )
+                    else if (o is string)
                     {
-                        g.Emit( OpCodes.Ldstr, (string)o );
+                        g.Emit(OpCodes.Ldstr, (string)o);
+                    }
+                    else if (o is byte[])
+                    {
+                        var t = (byte[])o;
+                        g.LdInt32(t.Length);
+                        g.Emit(OpCodes.Newarr, typeof(byte));
+                        for (int i = 0; i < t.Length; ++i)
+                        {
+                            g.Emit(OpCodes.Dup);
+                            g.LdInt32(i);
+                            g.LdInt32(t[i]);
+                            g.Emit(OpCodes.Stelem_I1);
+                        }
                     }
                     else
                     {
