@@ -1,4 +1,4 @@
-#region Proprietary License
+﻿#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (Tests\CK.StObj.Engine.Tests\AmbiantContractTests.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -113,7 +113,7 @@ namespace CK.Setup.Tests
                   monitor ?? new ActivityMonitor(), 
                   l => new AmbientRoot(), 
                   ( l, p, t ) => new TypeInfo( p, t ), 
-                  new DynamicAssembly(), 
+                  new DynamicAssembly(null,BuilderFinalAssemblyConfiguration.DefaultAssemblyName), 
                   null, 
                   contextDispatcher )
         {

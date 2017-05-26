@@ -25,7 +25,7 @@ namespace CK.Core
         /// </summary>
         /// <param name="directory">Directory where the assembly must be saved. Must not be null if the assembly must be saved.</param>
         /// <param name="assemblyName">Assembly name to use.</param>
-        protected DynamicAssemblyBase(string directory, string assemblyName = BuilderFinalAssemblyConfiguration.DefaultAssemblyName)
+        protected DynamicAssemblyBase(string directory, string assemblyName )
         {
             if (String.IsNullOrWhiteSpace(assemblyName)) throw new ArgumentException("Name is invalid.", nameof(assemblyName));
 
@@ -89,9 +89,9 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Saves the dynamic assembly.
+        /// Executes registered post actions and clears them.
         /// </summary>
-        public virtual void Save()
+        protected void ExecutePostActions()
         {
             int i = 0;
             while (i < _postActions.Count)
@@ -100,6 +100,7 @@ namespace CK.Core
                 _postActions[i++] = null;
                 a(this);
             }
+            _postActions.Clear();
         }
     }
 

@@ -6,51 +6,65 @@ using System.Text;
 
 namespace CK.StObj
 {
-    class SourceStObj : IStObj
+    class GStObj : IStObj
     {
-        public SourceStObj( IContextualStObjMap c, Type objectType, IStObj g )
+        public GStObj( Type t, IStObj g )
         {
-            Context = c;
-            ObjectType = objectType;
+            ObjectType = t;
             Generalization = g;
         }
 
         public Type ObjectType { get; }
 
-        public IContextualStObjMap Context { get; }
+        public IContextualStObjMap Context { get; internal set; }
 
         public IStObj Generalization { get; }
 
         public IStObj Specialization { get; internal set; }
+
+        internal object Instance;
+
+        internal StObjImplementation AsStObjImplementation => new StObjImplementation( this, Instance );
     }
 
 
-    class SourceContextualStObjMap : IContextualStObjMap
+    class GContext : IContextualStObjMap
     {
-        readonly IStObjMap _allContexts;
-        readonly string _context;
-        readonly Dictionary<Type, object> _mappings;
-        readonly StObjImplementation[] _stObjs;
+        readonly Dictionary<Type, GStObj> _mappings;
 
-        public IEnumerable<object> Implementations => _mappings.Values;
+        public GContext( IStObjMap allContexts, Dictionary<Type, GStObj> map, string name)
+        {
+            AllContexts = allContexts;
+            Context = name;
+            Implementations = _mappings.Values.Distinct().ToArray();
+        }
 
-        public IEnumerable<StObjImplementation> StObjs => _stObjs;
+        public IEnumerable<object> Implementations { get; }
 
-        public IEnumerable<KeyValuePair<Type, object>> Mappings => _mappings;
+        public IEnumerable<StObjImplementation> StObjs => _mappings.Values.Select( v => v.AsStObjImplementation );
 
-        public IStObjMap AllContexts => _allContexts;
+        public IEnumerable<KeyValuePair<Type, object>> Mappings => _mappings.Select( v => new KeyValuePair<Type, object>( v.Key, v.Value.Instance ) );
 
-        public string Context => _context;
+        public IStObjMap AllContexts { get; }
+
+        public string Context { get; }
 
         public int MappedTypeCount => _mappings.Count;
 
         public IEnumerable<Type> Types => _mappings.Keys;
 
-        IContextualRoot<IContextualTypeMap> IContextualTypeMap.AllContexts => _allContexts;
+        IContextualRoot<IContextualTypeMap> IContextualTypeMap.AllContexts => AllContexts;
 
         public bool IsMapped( Type t ) => _mappings.ContainsKey( t );
 
-        public object Obtain( Type t ) => _mappings.GetValueWithDefault( t, null );
+        public object Obtain( Type t )
+        {
+            GStObj s;
+            if( _mappings.TryGetValue( t, out s) )
+            {
+
+            }
+        }
 
         public IStObj ToLeaf( Type t )
         {
@@ -64,9 +78,8 @@ namespace CK.StObj
 
     class SourceStObjMap : IStObjMap
     {
-        public SourceStObjMap()
+        public SourceStObjMap( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder )
         {
-
         }
 
         public IEnumerable<StObjImplementation> AllStObjs => Contexts.SelectMany( c => c.StObjs );

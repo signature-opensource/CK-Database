@@ -44,7 +44,7 @@ namespace CK.Setup
             Debug.Assert( _leafData.StructuredObject == null, "Called once and only once." );
             try
             {
-                return _leafData.CreateStructuredObject( runtimeBuilder, Type.AsType() );
+                return _leafData.CreateStructuredObject( runtimeBuilder, ObjectType );
             }
             catch( Exception ex )
             {
@@ -61,5 +61,13 @@ namespace CK.Setup
                         : _leafData.ImplementableTypeInfo.CreateFinalType( monitor, a );
         }
 #endif
+
+        public string GetFinalTypeFullName( IActivityMonitor monitor, IDynamicAssembly a )
+        {
+            Debug.Assert( Specialization == null );
+            return _leafData.ImplementableTypeInfo == null
+                        ? ObjectType.AssemblyQualifiedName 
+                        : _leafData.ImplementableTypeInfo.GenerateType( monitor, a );
+        }
     }
 }

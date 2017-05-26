@@ -31,11 +31,11 @@ namespace CK.Setup
                 if( _finalAssembly == null ) throw new InvalidOperationException( "Using GenerateOption.DoNotGenerateFile." );
                 if( !DoGenerateFinalAssembly( monitor, runtimeBuilder, callPEVrify ) ) return false;
 #endif
-                return GenerateSourceCode( monitor, runtimeBuilder );
+                return GenerateSourceCode( monitor, runtimeBuilder, true );
             }
             catch( Exception ex )
             {
-                monitor.Error().Send( ex, "While generating final assembly '{0}'.", _finalAssembly.SaveFileName );
+                monitor.Error().Send( ex, "While generating final assembly '{0}'.", _tempAssembly.SaveFileName );
                 return false;
             }
         }
@@ -204,9 +204,10 @@ namespace CK.Setup
                 }
                 else
                 {
-                    t = m.AmbientTypeInfo.Type;
+                    t = m.ObjectType;
+                    Debug.Assert( t == m.AmbientTypeInfo.Type );
                 }
-                if( t != null )
+               if( t != null )
                 {
                     g.LdLoc( allTypes );
                     g.LdInt32( m.IndexOrdered );

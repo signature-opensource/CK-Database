@@ -18,6 +18,7 @@ namespace CK.Core
     /// </remarks>
     public class AmbientContractCollector
     {
+
         /// <summary>
         /// Tests whether a Type is an <see cref="IAmbientContract"/>.
         /// It applies to interfaces and classes (for a class <see cref="IAmbientContractDefiner"/> is 
@@ -51,7 +52,13 @@ namespace CK.Core
             if( type == null ) throw new ArgumentNullException( "type" );
             return context == null ? type.FullName : '[' + context + ']' + type.FullName;
         }
-        
+
+        protected void RegisterAssembly( Type t ) => Assemblies.Add( t.GetTypeInfo().Assembly );
+
+        /// <summary>
+        /// The set of assemblies for which at least one type has been registered.
+        /// </summary>
+        protected HashSet<Assembly> Assemblies = new HashSet<Assembly>();
     }
 
     /// <summary>
@@ -145,6 +152,7 @@ namespace CK.Core
                     }
                     else if( t.GetTypeInfo().IsInterface && typeof(IPoco).IsAssignableFrom( t ) )
                     {
+                        RegisterAssembly( t );
                         _pocoRegisterer.Register( _monitor, t );
                     }
                 }
@@ -196,6 +204,7 @@ namespace CK.Core
 
         T CreateTypeInfo( Type t, T parent )
         {
+            RegisterAssembly( t );
             T result = _typeInfoFactory( _monitor, parent, t );
             if( parent == null ) _roots.Add( result );
             _collector.Add( t, result );
@@ -327,7 +336,7 @@ namespace CK.Core
             {
                 HandleContexts( m, byContext, mappings.CreateAndAddContext<T,TC> );
             }
-            var r = new AmbientContractCollectorResult<CT,T,TC>( mappings, pocoSupport, _collector );
+            var r = new AmbientContractCollectorResult<CT,T,TC>( mappings, pocoSupport, _collector, Assemblies );
             foreach( PreResult rCtx in byContext.Values )
             {
                 r.Add( rCtx.GetResult( mappings, IsAmbientInterface ) );

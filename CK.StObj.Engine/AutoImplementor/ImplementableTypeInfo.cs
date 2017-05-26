@@ -1,4 +1,4 @@
-#region Proprietary License
+﻿#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.StObj.Engine\AutoImplementor\ImplementableTypeInfo.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -31,12 +31,12 @@ namespace CK.Core
                 throw new NotSupportedException();
             }
 
-            public bool Implement(IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, ClassBuilder b)
+            public bool Implement( IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, ClassBuilder b )
             {
                 throw new NotSupportedException();
             }
 
-            public bool Implement(IActivityMonitor monitor, PropertyInfo p, IDynamicAssembly dynamicAssembly, ClassBuilder b)
+            public bool Implement( IActivityMonitor monitor, PropertyInfo p, IDynamicAssembly dynamicAssembly, ClassBuilder b )
             {
                 throw new NotSupportedException();
             }
@@ -68,7 +68,7 @@ namespace CK.Core
         /// <summary>
         /// Gets the stub type. Null if <see cref="CreateStubType"/> has not been called yet.
         /// </summary>
-        public Type StubType => _stubType; 
+        public Type StubType => _stubType;
 
         ImplementableTypeInfo( Type t, IReadOnlyList<ImplementableAbstractPropertyInfo> p, IReadOnlyList<ImplementableAbstractMethodInfo> m )
         {
@@ -88,10 +88,10 @@ namespace CK.Core
         /// <returns>An instance of <see cref="ImplementableTypeInfo"/> or null if the type is not automatically implementable.</returns>
         static public ImplementableTypeInfo CreateImplementableTypeInfo( IActivityMonitor monitor, Type abstractType, ICKCustomAttributeProvider attributeProvider )
         {
-            if( monitor == null ) throw new ArgumentNullException( nameof(monitor) );
-            if( abstractType == null ) throw new ArgumentNullException( nameof(abstractType) );
-            if( !abstractType.GetTypeInfo().IsAbstract ) throw new ArgumentException( "Type must be abstract.", nameof(abstractType) );
-            if( attributeProvider == null ) throw new ArgumentNullException( nameof(attributeProvider) );
+            if( monitor == null ) throw new ArgumentNullException( nameof( monitor ) );
+            if( abstractType == null ) throw new ArgumentNullException( nameof( abstractType ) );
+            if( !abstractType.GetTypeInfo().IsAbstract ) throw new ArgumentException( "Type must be abstract.", nameof( abstractType ) );
+            if( attributeProvider == null ) throw new ArgumentNullException( nameof( attributeProvider ) );
 
             if( abstractType.GetTypeInfo().IsDefined( typeof( PreventAutoImplementationAttribute ), false ) ) return null;
 
@@ -117,11 +117,11 @@ namespace CK.Core
                 MethodInfo mSet = p.GetSetMethod( true );
                 bool isAbstract = (mGet != null && mGet.IsAbstract) || (mSet != null && mSet.IsAbstract);
                 if( isAbstract )
-                { 
+                {
                     ++nbUncovered;
                     if( mGet == null || mSet == null || !mGet.IsAbstract || !mSet.IsAbstract )
                     {
-                        monitor.Error().Send($"Property {p.DeclaringType.FullName}.{p.Name} is not a valid abstract property (both getter and setter must exist and be abstract).");
+                        monitor.Error().Send( $"Property {p.DeclaringType.FullName}.{p.Name} is not a valid abstract property (both getter and setter must exist and be abstract)." );
                     }
                     else
                     {
@@ -148,27 +148,27 @@ namespace CK.Core
         /// <returns>The newly created type in the dynamic assembly. Null if an error occurred.</returns>
         public Type CreateStubType( IActivityMonitor monitor, IDynamicAssembly assembly )
         {
-            if (_stubType != null) throw new InvalidOperationException("Must be called only if StubType is null.");
+            if( _stubType != null ) throw new InvalidOperationException( "Must be called only if StubType is null." );
             try
             {
                 TypeAttributes tA = TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed;
-                System.Reflection.Emit.TypeBuilder b = assembly.ModuleBuilder.DefineType(assembly.AutoNextTypeName(AbstractType.Name), tA, AbstractType);
+                System.Reflection.Emit.TypeBuilder b = assembly.ModuleBuilder.DefineType( assembly.AutoNextTypeName( AbstractType.Name ), tA, AbstractType );
                 // Relayed constructors replicates all their potential attributes (included attributes on parameters).
                 // We do not replicate attributes on parameters here. 
-                b.DefinePassThroughConstructors(c => c.Attributes | MethodAttributes.Public, null, (parameter, CustomAttributeData) => false);
-                foreach (var am in MethodsToImplement)
+                b.DefinePassThroughConstructors( c => c.Attributes | MethodAttributes.Public, null, ( parameter, CustomAttributeData ) => false );
+                foreach( var am in MethodsToImplement )
                 {
-                    CK.Reflection.EmitHelper.ImplementEmptyStubMethod(b, am.Method, false);
+                    CK.Reflection.EmitHelper.ImplementEmptyStubMethod( b, am.Method, false );
                 }
-                foreach (var ap in PropertiesToImplement)
+                foreach( var ap in PropertiesToImplement )
                 {
-                    CK.Reflection.EmitHelper.ImplementStubProperty(b, ap.Property, false);
+                    CK.Reflection.EmitHelper.ImplementStubProperty( b, ap.Property, false );
                 }
                 return _stubType = b.CreateTypeInfo().AsType();
             }
-            catch (Exception ex)
+            catch( Exception ex )
             {
-                monitor.Fatal().Send(ex, $"While implementing Stub for '{AbstractType.FullName}'.");
+                monitor.Fatal().Send( ex, $"While implementing Stub for '{AbstractType.FullName}'." );
                 return null;
             }
         }
@@ -235,5 +235,40 @@ namespace CK.Core
             }
         }
 #endif
+        public string GenerateType( IActivityMonitor monitor, IDynamicAssembly a )
+        {
+            var cB = a.SourceBuilder.DefineClassWithPublicPassThroughConstructors( "public", _stubType.Name, AbstractType );
+            foreach( var am in MethodsToImplement )
+            {
+                IAutoImplementorMethod m = am.ImplementorToUse;
+                if( m == null || m == UnimplementedMarker )
+                {
+                    monitor.Fatal().Send( $"Method '{AbstractType.FullName}.{am.Method.Name}' has no valid associated IAutoImplementorMethod." );
+                }
+                else
+                {
+                    if( !m.Implement( monitor, am.Method, a, cB ) )
+                    {
+                        monitor.Fatal().Send( $"Method '{AbstractType.FullName}.{am.Method.Name}' can not be implemented by its IAutoImplementorMethod." );
+                    }
+                }
+            }
+            foreach( var ap in PropertiesToImplement )
+            {
+                IAutoImplementorProperty p = ap.ImplementorToUse;
+                if( p == null || p == UnimplementedMarker )
+                {
+                    monitor.Fatal().Send( $"Property '{AbstractType.FullName}.{ap.Property.Name}' has no valid associated IAutoImplementorProperty." );
+                }
+                else
+                {
+                    if( !p.Implement( monitor, ap.Property, a, cB ) )
+                    {
+                        monitor.Fatal().Send( $"Property '{AbstractType.FullName}.{ap.Property.Name}' can not be implemented by its IAutoImplementorProperty." );
+                    }
+                }
+            }
+            return cB.FullName;
+        }
     }
 }

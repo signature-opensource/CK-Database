@@ -22,7 +22,7 @@ namespace CK.Core
         /// </summary>
         public readonly object Implementation;
 
-        internal StObjImplementation( IStObj o, object i )
+        public StObjImplementation( IStObj o, object i )
         {
             StObj = o;
             Implementation = i;

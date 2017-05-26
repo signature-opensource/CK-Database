@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -50,13 +50,11 @@ namespace CK.Core
             }
         }
 
-        /// <summary>
-        /// Initializes a new temporary <see cref="DynamicAssembly"/> with a name set to <see cref="BuilderFinalAssemblyConfiguration.DefaultAssemblyName"/>+".Memory" and 
-        /// that can only <see cref="AssemblyBuilderAccess.Run"/>.
-        /// </summary>
-        public DynamicAssembly()
-            : this( null, BuilderFinalAssemblyConfiguration.DefaultAssemblyName + ".Memory", DynamicKeyPair, AssemblyBuilderAccess.Run )
+        public DynamicAssembly( string directory, string assemblyName )
+            : base( directory, assemblyName+"Src" )
         {
+            _assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(AssemblyName, AssemblyBuilderAccess.Run);
+            ModuleBuilder = _assemblyBuilder.DefineDynamicModule(AssemblyName.Name);
         }
 
         /// <summary>
@@ -66,7 +64,7 @@ namespace CK.Core
         /// <param name="assemblyName">Name to use. If access has <see cref="AssemblyBuilderAccess.Save"/> bit set, the name of the dll will be with ".dll" suffix.</param>
         /// <param name="signature">Key pair to use to sign the dll.</param>
         /// <param name="access">Typical accesses are Run and RunAndSave (the default).</param>
-        public DynamicAssembly( string directory, string assemblyName = BuilderFinalAssemblyConfiguration.DefaultAssemblyName, StrongNameKeyPair signature = null, AssemblyBuilderAccess access = AssemblyBuilderAccess.RunAndSave )
+        public DynamicAssembly( string directory, string assemblyName, StrongNameKeyPair signature, AssemblyBuilderAccess access )
             : base( directory, assemblyName )
         {
             bool mustSave = (access & AssemblyBuilderAccess.Save) == AssemblyBuilderAccess.Save;
@@ -87,9 +85,9 @@ namespace CK.Core
         /// Saves the dynamic assembly as a ".dll".
         /// This <see cref="DynamicAssembly"/> must have been constructed with an AssemblyBuilderAccess that has <see cref="AssemblyBuilderAccess.Save"/> bit set.
         /// </summary>
-        public override void Save()
+        public void Save()
         {
-            base.Save();
+            ExecutePostActions();
             _assemblyBuilder.Save( _assemblyBuilder.GetName().Name + ".dll" );
         }
     }
@@ -106,8 +104,8 @@ namespace CK.Core
         /// Initializes a new temporary <see cref="DynamicAssembly"/> with a name set to <see cref="BuilderFinalAssemblyConfiguration.DefaultAssemblyName"/>+".Memory" and 
         /// that can only <see cref="AssemblyBuilderAccess.Run"/>.
         /// </summary>
-        public DynamicAssembly()
-            : base( null, BuilderFinalAssemblyConfiguration.DefaultAssemblyName + ".Memory" )
+        public DynamicAssembly( string directory, string assemblyName )
+            : base( directory, assemblyName )
         {
             _assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(AssemblyName, AssemblyBuilderAccess.Run);
             ModuleBuilder = _assemblyBuilder.DefineDynamicModule(AssemblyName.Name);

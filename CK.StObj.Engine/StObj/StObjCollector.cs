@@ -53,15 +53,17 @@ namespace CK.Setup
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
             _runtimeBuilder = runtimeBuilder ?? StObjContextRoot.DefaultStObjRuntimeBuilder;
             _monitor = monitor;
-            _tempAssembly = new DynamicAssembly();
-#if NET461
+
             if( finalAssemblyConfig != null && finalAssemblyConfig.GenerateFinalAssemblyOption != BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile )
             {
+                _tempAssembly = CreateTempAssembly( monitor, finalAssemblyConfig );
+#if NET461
                 _finalAssembly = CreateFinalAssembly( monitor, finalAssemblyConfig );
-            }
 #else
-            _finalAssembly = null;
+                _finalAssembly = null;
 #endif
+            }
+            else _tempAssembly = new DynamicAssembly(null, BuilderFinalAssemblyConfiguration.DefaultAssemblyName);
             _cc = new AmbientContractCollector<StObjContextualMapper,StObjTypeInfo, MutableItem>( _monitor, l => new StObjMapper(), ( l, p, t ) => new StObjTypeInfo( l, p, t ), _tempAssembly, _finalAssembly, dispatcher );
             _configurator = configurator;
             _valueResolver = valueResolver;
@@ -92,6 +94,26 @@ namespace CK.Setup
             return new DynamicAssembly( directory, assemblyName, signKeyPair, AssemblyBuilderAccess.RunAndSave );
         }
 #endif
+
+        DynamicAssembly CreateTempAssembly( IActivityMonitor monitor, BuilderFinalAssemblyConfiguration c )
+        {
+            Debug.Assert( c != null && c.GenerateFinalAssemblyOption != BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile );
+
+            string directory = c.Directory;
+            if( string.IsNullOrEmpty( directory ) )
+            {
+                directory = System.IO.Path.GetDirectoryName( AppContext.BaseDirectory );
+                monitor.Info().Send( $"No directory has been specified for final assembly. Trying to use the AppContext.BaseDirectory path: {directory}" );
+            }
+            string assemblyName = c.AssemblyName;
+            if( string.IsNullOrEmpty( assemblyName ) )
+            {
+                assemblyName = BuilderFinalAssemblyConfiguration.GetFinalAssemblyName( assemblyName );
+                monitor.Info().Send( "No assembly name has been specified for final assembly. Using default: {0}", assemblyName );
+            }
+            return new DynamicAssembly( directory, assemblyName );
+        }
+
 
         /// <summary>
         /// Gets the count of error or fatal that occurred during <see cref="RegisterTypes"/> or <see cref="RegisterClass"/> calls.
