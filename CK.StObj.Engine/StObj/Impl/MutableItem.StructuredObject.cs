@@ -62,6 +62,13 @@ namespace CK.Setup
         }
 #endif
 
+        /// <summary>
+        /// Gets the properties to set right before the call to StObjConstruct.
+        /// Properties are registered at the root object, the Property.DeclaringType can be used to
+        /// target the correct type in the inheritance chain.
+        /// </summary>
+        public IReadOnlyList<PropertySetter> PreConstructProperties => _preConstruct;
+
         public string GetFinalTypeFullName( IActivityMonitor monitor, IDynamicAssembly a )
         {
             Debug.Assert( Specialization == null );
@@ -69,5 +76,12 @@ namespace CK.Setup
                         ? ObjectType.AssemblyQualifiedName 
                         : _leafData.ImplementableTypeInfo.GenerateType( monitor, a );
         }
+
+        /// <summary>
+        /// Gets the post build properties to set. Potentially not null only on leaves.
+        /// </summary>
+        public IReadOnlyList<PropertySetter> PostBuildProperties => _leafData?.PostBuildProperties;
+
+
     }
 }

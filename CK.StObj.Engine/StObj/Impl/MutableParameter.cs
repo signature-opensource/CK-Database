@@ -1,4 +1,4 @@
-#region Proprietary License
+﻿#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.StObj.Engine\StObj\Impl\MutableParameter.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -45,7 +45,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Stores the index of the runtime value to use. 0 for null, Positive for objects collected in BuildValueCollector, the negative IndexOrdered+1 for StObj
-        /// and Int32.MaxValue for the setup Logger.
+        /// Int32.MaxValue for the setup Logger and negative values with an offset of 1 for MutableItem.IndexOrdered.
         /// </summary>
         internal int BuilderValueIndex;
 

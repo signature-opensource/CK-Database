@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -100,13 +100,13 @@ namespace CK.Setup
             }
         }
 
-        struct PropertySetter
+        public struct PropertySetter
         {
             public readonly PropertyInfo Property;
             public readonly object Value;
-            public readonly int IndexValue;
+            internal readonly int IndexValue;
 
-            public PropertySetter( PropertyInfo p, object o, BuildValueCollector valueCollector )
+            internal PropertySetter( PropertyInfo p, object o, BuildValueCollector valueCollector )
             {
                 Property = p;
                 Value = o;

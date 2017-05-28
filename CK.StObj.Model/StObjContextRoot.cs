@@ -95,7 +95,7 @@ namespace CK.Core
                 loaded = _alreadyLoaded.Contains( a );
                 if( !loaded ) _alreadyLoaded.Add( a );
             }
-            using( loaded ? null : m.OpenInfo().Send( "Loading dynamic '{0}'", a.FullName ) )
+            using( m.OpenInfo().Send( loaded ? $"'{a.FullName}' is already loaded." : $"Loading dynamic '{a.FullName}'." ) )
             {
                 try
                 {

@@ -9,6 +9,7 @@ using System.Resources;
 using System.Collections;
 using System.IO;
 using CK.CodeGen;
+using CK.Text;
 
 namespace CK.Setup
 {
@@ -55,16 +56,20 @@ namespace CK.Setup
                         }
                         if( result.EmitResult != null )
                         {
-                            if( !result.EmitResult.Success && !result.EmitResult.Diagnostics.IsEmpty )
+                            if( !result.EmitResult.Success )
                             {
-                                using( monitor.OpenError().Send( "Compilation diagnostics." ) )
+                                using( monitor.OpenError().Send( $"{result.EmitResult.Diagnostics.Count()} Compilation diagnostics & Source code." ) )
                                 {
                                     foreach( var diag in result.EmitResult.Diagnostics )
                                     {
                                         monitor.Trace().Send( diag.ToString() );
                                     }
                                 }
-                                monitor.Trace().Send( sourceCode );
+                                var withNumber = sourceCode
+                                                    .Split( new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries )
+                                                    .Select( (line,i) => $"{i+1,4} - {line}" )
+                                                    .Concatenate(Environment.NewLine);
+                                monitor.Trace().Send( withNumber );
                             }
                         }
                     }
@@ -92,7 +97,9 @@ namespace CK.Setup
                 var src = b.ToString();
                 if( saveSource ) File.WriteAllText( _tempAssembly.SaveFilePath + ".cs", src );
                 var g = new CodeGenerator();
-                var result = g.Generate( src, _tempAssembly.SaveFilePath, _contractResult.Assemblies.Where( a => !a.IsDynamic ), new DefaultAssemblyResolver(), GetAssemblyLoader() );
+                var assemblies = _contractResult.Assemblies.Where( a => !a.IsDynamic )
+                                    .Append( typeof( System.Reflection.BindingFlags ).GetTypeInfo().Assembly );
+                var result = g.Generate( src, _tempAssembly.SaveFilePath, assemblies, new DefaultAssemblyResolver(), GetAssemblyLoader() );
                 return HandleCreateResult( monitor, src, result );
             }
             catch( Exception ex )
@@ -104,67 +111,244 @@ namespace CK.Setup
 
         void GenerateContextSource(StringBuilder b, IActivityMonitor monitor, IDynamicAssembly a)
         {
-            var allTypes = _orderedStObjs
-                            .Select( m => m.Specialization == null
-                                            ? m.GetFinalTypeFullName( monitor, a )
-                                            : m.ObjectType.AssemblyQualifiedName )
-                            .ToList();
-            b.AppendLine( "using CK.Core; using System; using System.Collections.Generic; using System.Linq; using System.Text;" );
+            b.AppendLine( "using CK.Core;" );
+            b.AppendLine( "using System;" );
+            b.AppendLine( "using System.Collections.Generic;" );
+            b.AppendLine( "using System.Linq;" );
+            b.AppendLine( "using System.Text;" );
+            b.AppendLine( "using System.Reflection;" );
             b.AppendLine( "namespace CK.StObj {" );
+
+            #region GStObj & GContext
+            const string sourceGStObj = @"
+class GStObj : IStObj
+{
+    public GStObj( IStObjRuntimeBuilder rb, string t, IStObj g, string actualType )
+    {
+        ObjectType = Type.GetType(t);
+        Generalization = g;
+        if( actualType != null ) 
+        {
+            Instance = rb.CreateInstance( actualType == t ? ObjectType : Type.GetType(actualType) );
+            Leaf = this;
+        }
+    }
+
+    public Type ObjectType { get; }
+
+    public IContextualStObjMap Context { get; internal set; }
+
+    public IStObj Generalization { get; }
+
+    public IStObj Specialization { get; internal set; }
+
+    internal object Instance;
+    
+    internal GStObj Leaf;
+
+    internal StObjImplementation AsStObjImplementation => new StObjImplementation( this, Instance );
+}";
+            b.AppendLine( sourceGStObj );
+
+            const string sourceGContext = @"
+class GContext : IContextualStObjMap
+{
+    readonly Dictionary<Type, GStObj> _mappings;
+
+    public GContext( IStObjMap allContexts, Dictionary<Type, GStObj> map, string name)
+    {
+        AllContexts = allContexts;
+        _mappings = map;
+        Context = name;
+        foreach( var gs in map.Values ) gs.Context = this;
+    }
+
+    public IEnumerable<object> Implementations => _mappings.Values.Where( s => s.Specialization == null ).Select( s => s.Instance );
+
+    public IEnumerable<StObjImplementation> StObjs => _mappings.Values.Select( v => v.AsStObjImplementation );
+
+    public IEnumerable<KeyValuePair<Type, object>> Mappings => _mappings.Select( v => new KeyValuePair<Type, object>( v.Key, v.Value.Instance ) );
+
+    public IStObjMap AllContexts { get; }
+
+    public string Context { get; }
+
+    public int MappedTypeCount => _mappings.Count;
+
+    public IEnumerable<Type> Types => _mappings.Keys;
+
+    IContextualRoot<IContextualTypeMap> IContextualTypeMap.AllContexts => AllContexts;
+
+    public bool IsMapped( Type t ) => _mappings.ContainsKey( t );
+
+    public object Obtain( Type t ) => GToLeaf( t )?.Instance;
+
+    public IStObj ToLeaf( Type t ) => GToLeaf( t );
+
+    public Type ToLeafType( Type t ) => GToLeaf( t )?.ObjectType;
+
+    GStObj GToLeaf( Type t )
+    {
+        GStObj s;
+        if( _mappings.TryGetValue( t, out s ) )
+        {
+            return s.Leaf;
+        }
+        return null;
+    }
+}";
+            b.AppendLine( sourceGContext );
+            #endregion
+
             b.AppendLine( "public class GeneratedRootContext : IStObjMap {" );
             b.AppendLine( "readonly GContext[] _contexts;" );
             b.AppendLine( "readonly GStObj[] _stObjs;" );
-            b.AppendLine( "readonly GStObjImpl[] _stObjsImpl;" );
             b.AppendLine( "public GeneratedRootContext(IActivityMonitor monitor, IStObjRuntimeBuilder rb) {" );
 
             b.AppendLine( $"_stObjs = new GStObj[{_orderedStObjs.Count}];" );
-            b.AppendLine( $"_stObjsImpl = new GStObjImpl[{TotalSpecializationCount}];" );
             int iStObj = 0;
-            int iStObjImpl = 0;
             foreach( var m in _orderedStObjs )
             {
                 string generalization = m.Generalization == null ? "null" : $"_stObjs[{m.Generalization.IndexOrdered}]";
-                if( m.Specialization == null )
-                {
-                    string typeName = m.GetFinalTypeFullName( monitor, a );
-                    b.AppendLine( $"_stObjs[{iStObj++}] = _stObjsImpl[{iStObjImpl++}] = new GStObjImpl(" );
-                    b.AppendLine( $"{typeName.ToSourceString()},{generalization},rb);" );
-                }
-                else
-                {
-                    string typeName = m.ObjectType.AssemblyQualifiedName;
-                    b.AppendLine( $"_stObjs[{iStObj++}] = new GStObj(" );
-                    b.AppendLine( $"{typeName.ToSourceString()},{generalization});" );
-                }
+                string typeName = m.ObjectType.AssemblyQualifiedName;
+                string actualTypeName = m.Specialization == null 
+                                            ? m.GetFinalTypeFullName( monitor, a ).ToSourceString()
+                                            : "null";
+                b.Append( $"_stObjs[{iStObj++}] = new GStObj(" );
+                b.AppendLine( $"rb,{typeName.ToSourceString()},{generalization},{actualTypeName});" );
             }
 
             b.AppendLine( $"_contexts = new GContext[{Contexts.Count}];" );
-            iStObj = 0;
+            int iContext = 0;
             foreach( var ctx in Contexts )
             {
+                b.AppendLine( $"Dictionary<Type,GStObj> map = new Dictionary<Type,GStObj>();" );
                 IDictionary all = ctx.InternalMapper.RawMappings;
                 // We skip highest implementation Type mappings (ie. AmbientContractInterfaceKey keys) since 
-                // there is no ToStObj mapping on final (runtime) IContextualStObjMap.
+                // there is no ToStObj mapping (to root generalization) on final (runtime) IContextualStObjMap.
                 var typeMapping = all.Cast<KeyValuePair<object, MutableItem>>().Where( e => e.Key is Type );
-                b.AppendLine( "{" );
-                b.AppendLine( "var map = new Dictionary<Type,GStObjImpl>();" );
                 foreach( var e in typeMapping )
                 {
                     string typeName = ((Type)e.Key).AssemblyQualifiedName;
-                    b.AppendLine( $"map.Add( Type.GetType({typeName.ToSourceString()}), _stObjsImpl[{e.Value.SpecializationIndexOrdered}] );" );
+                    b.AppendLine( $"map.Add( Type.GetType({typeName.ToSourceString()}), _stObjs[{e.Value.IndexOrdered}] );" );
                 }
-                b.AppendLine( $"_contexts[{iStObj++}] = new GContext( this, map, {ctx.Context.ToSourceString()} );" );
-                b.AppendLine( "}" );
+                b.AppendLine( $"_contexts[{iContext++}] = new GContext( this, map, {ctx.Context.ToSourceString()} );" );
             }
-            b.AppendLine( "" );
+            b.AppendLine( "Default = _contexts[0];" );
 
+            b.AppendLine( $"int iStObj = {_orderedStObjs.Count};" );
+            b.AppendLine( "while( --iStObj >= 0 ) {" );
+            b.AppendLine( " var o = _stObjs[iStObj];" );
+            b.AppendLine( " if( o.Specialization == null ) {" );
+            b.AppendLine( "  GStObj g = (GStObj)o.Generalization;" );
+            b.AppendLine( "  while( g != null ) {" );
+            b.AppendLine( "   g.Specialization = o;" );
+            b.AppendLine( "   g.Instance = o.Instance;" );
+            b.AppendLine( "   g.Context = o.Context;" );
+            b.AppendLine( "   g.Leaf = o.Leaf;" );
+            b.AppendLine( "   o = g;" );
+            b.AppendLine( "   g = (GStObj)o.Generalization;" );
+            b.AppendLine( "  }" );
+            b.AppendLine( " }" );
+            b.AppendLine( "}" );
+            foreach( var m in _orderedStObjs )
+            {
+                if( m.PreConstructProperties != null )
+                {
+                    foreach( var setter in m.PreConstructProperties )
+                    {
+                        Type decl = setter.Property.DeclaringType;
+                        MutableItem propTarget = m;
+                        while( propTarget.ObjectType != decl ) propTarget = propTarget.Specialization;
+                        b.Append( $"_stObjs[{propTarget.IndexOrdered}].ObjectType.GetProperty( \"{setter.Property.Name}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic )" );
+                        b.Append( $".SetValue(_stObjs[{m.IndexOrdered}].Instance," );
+                        GenerateValue( b, setter.Value );
+                        b.AppendLine( ");" );
+                    }
+                }
+                var mConstruct = m.AmbientTypeInfo.StObjConstruct;
+                if( mConstruct != null )
+                {
+                    CheckNotNullObject( $"_stObjs[{m.IndexOrdered}].ObjectType.GetMethod( \"{mConstruct.Name}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic )", b );
+
+                    b.Append( $"_stObjs[{m.IndexOrdered}].ObjectType.GetMethod( \"{mConstruct.Name}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic )" );
+                    b.Append( $".Invoke( _stObjs[{m.IndexOrdered}].Instance, " );
+                    if( m.ConstructParameters.Count == 0 ) b.Append( "Array.Empty<object>()" );
+                    else
+                    {
+                        b.Append( "new object[] {" );
+                        // Missing Value {get;} on IStObjMutableParameter. We cast for the moment.
+                        foreach( var p in m.ConstructParameters.Cast<MutableParameter>() )
+                        {
+                            if( p.BuilderValueIndex < 0 )
+                            {
+                                b.Append( $"_stObjs[{-(p.BuilderValueIndex + 1)}].Instance" );
+                            }
+                            else GenerateValue( b, p.Value );
+                            b.Append( ',' );
+                        }
+                        b.Append( "}" );
+                    }
+                    b.AppendLine( ");" );
+                }
+            }
+            foreach( var m in _orderedStObjs )
+            {
+                if( m.PostBuildProperties != null )
+                {
+                    foreach( var p in m.PostBuildProperties )
+                    {
+                        Type decl = p.Property.DeclaringType;
+                        MutableItem propTarget = m;
+                        while( propTarget.ObjectType != decl ) propTarget = propTarget.Generalization;
+                        b.Append( $"_stObjs[{propTarget.IndexOrdered}].ObjectType.GetProperty( \"{p.Property.Name}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic )" );
+                        b.Append( $".SetValue(_stObjs[{m.IndexOrdered}].Instance, " );
+                        GenerateValue( b, p.Value );
+                        b.AppendLine( ");" );
+                    }
+                }
+            }
+            foreach( var m in _orderedStObjs )
+            {
+                MethodInfo init = m.ObjectType.GetMethod( StObjContextRoot.InitializeMethodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic ); 
+                if( init != null )
+                {
+                    b.Append( $"_stObjs[{m.IndexOrdered}].ObjectType.GetMethod( \"{StObjContextRoot.InitializeMethodName}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic )" );
+                    b.Append( $".Invoke( _stObjs[{m.IndexOrdered}].Instance, new object[]{{ monitor, _stObjs[{m.IndexOrdered}].Context }} );" );
+                }
+            }
             b.AppendLine( "}" );
             b.AppendLine( "public IEnumerable<StObjImplementation> AllStObjs => Contexts.SelectMany( c => c.StObjs );" );
             b.AppendLine( "public IContextualStObjMap Default { get; }" );
-            b.AppendLine( "public IReadOnlyCollection<IContextualStObjMap> Contexts { get; }" );
+            b.AppendLine( "public IReadOnlyCollection<IContextualStObjMap> Contexts => _contexts;" );
             b.AppendLine( "public IContextualStObjMap FindContext( string context ) => Contexts.FirstOrDefault( c => ReferenceEquals( c.Context, context ?? String.Empty ) );" );
             b.AppendLine( "}}" );
         }
 
+        static void CheckNotNullObject( string t, StringBuilder b )
+        {
+            b.AppendLine( $"if( {t} == null ) throw new Exception( \"NULL: \" + {t.ToSourceString()} );" );
+        }
+
+        static void GenerateValue( StringBuilder b, object o )
+        {
+            if( o is IActivityMonitor )
+            {
+                b.Append( "monitor" );
+            }
+            else if( o is MutableItem )
+            {
+                b.Append( $"_stObjs[{((MutableItem)o).IndexOrdered}].Instance" );
+            }
+            else
+            {
+                o.ToSourceString( b );
+            }
+        }
+
     }
 }
+
+
+
+
