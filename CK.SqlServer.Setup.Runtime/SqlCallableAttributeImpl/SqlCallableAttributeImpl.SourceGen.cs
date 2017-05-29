@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Data.SqlClient;
 using System.Diagnostics;
@@ -159,7 +159,7 @@ namespace CK.SqlServer.Setup
                     b.AppendLine($"cmd_loc = {sqlCommandRefName};");
                 }
                 else b.AppendLine($"cmd_loc = {mCreateCommand.TypeBuilder.FullName}.{mCreateCommand.Name}();");
-                b.AppendLine($"SqlCommandParameters cmd_parameters = cmd_loc.Parameters;");
+                b.AppendLine($"SqlParameterCollection cmd_parameters = cmd_loc.Parameters;" );
                 // SqlCommand is created.
                 // Analyses parameters and generate removing of optional parameters if C# does not use them.
 
@@ -301,11 +301,11 @@ namespace CK.SqlServer.Setup
                                 eb => eb.Append("cmd_loc.Connection = null;") );
                         }
                     }
-                    b.AppendLine($"SqlParameter the_param;");
+                    b.AppendLine($"SqlParameter tP;");
                     foreach (var setter in sqlParamHandlers.Handlers)
                     {
-                        b.AppendLine($"the_param = cmd_parameters[{setter.Index}];");
-                        if (!setter.EmitSetSqlParameterValue(monitor, b, "the_param")) ++nbError;
+                        b.AppendLine($"tP = cmd_parameters[{setter.Index}];");
+                        if (!setter.EmitSetSqlParameterValue(monitor, b, "tP")) ++nbError;
                     }
                 }
 
@@ -339,7 +339,7 @@ namespace CK.SqlServer.Setup
                         else
                         {
                             matcher.LogWarnings(monitor);
-                            b.Append($"return new {matcher.Ctor.DeclaringType.FullName}( ");
+                            b.Append("return new " ).AppendCSharpName( matcher.Ctor.DeclaringType ).Append( '(' );
                             matcher.LdParameters(b, "cmd_loc", mParameters);
                             b.Append(" );");
                         }
@@ -374,7 +374,8 @@ namespace CK.SqlServer.Setup
                                 }
                                 if (m.ReturnType != typeof(void))
                                 {
-                                    sqlParamHandlers.EmitInlineReturn(b, "cmd_parameters", GetTempObjectName());
+                                    string resultVarName = sqlParamHandlers.EmitInlineReturn(b, "cmd_parameters", GetTempObjectName());
+                                    b.Append( "return " ).Append( resultVarName ).AppendLine( ";" );
                                 }
                             }
                         }

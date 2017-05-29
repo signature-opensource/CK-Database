@@ -218,7 +218,7 @@ namespace CK.SqlServer.Setup
                     }
                     else
                     {
-                        b.Append( callingParameters[mP.Position + 1].Name );
+                        b.Append( callingParameters[mP.Position].Name );
                     }
                     ++i;
                 }

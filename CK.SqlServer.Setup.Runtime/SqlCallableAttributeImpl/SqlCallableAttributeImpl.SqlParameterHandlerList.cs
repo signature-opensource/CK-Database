@@ -425,25 +425,33 @@ namespace CK.SqlServer.Setup
                         monitor.Info().Send($"Parameter '{SqlExprParam.ToStringClean()}' will use its default sql value '{SqlExprParam.DefaultValue}'.");
                         object o = SqlExprParam.DefaultValue.NullOrLitteralDotNetValue;
                         if (o == DBNull.Value) b.Append("DBNull.Value");
-                        else if (o is string) b.Append(((string)o).ToSourceString());
-                        else if (o is Int32 || o is Decimal || o is Double) b.Append(o);
                         else
                         {
-                            monitor.Error().Send($"Emit for type  '{SqlExprParam.ToStringClean()}' (Parameter '{o.GetType().Name}') is not supported.");
-                            return false;
+                            try
+                            {
+                                b.AppendSourceString( o );
+                            }
+                            catch(Exception ex)
+                            {
+                                monitor.Error().Send( ex, $"Emit for type  '{SqlExprParam.ToStringClean()}' (Parameter '{o.GetType().Name}') is not supported." );
+                                return false;
+                            }
                         }
                     }
                     else
                     {
                         Debug.Assert(IsMappedToMethodParameterOrParameterSourceProperty);
-                        b.Append(_methodParam.Name);
-                        if (_methodParam == null)
+                        b.Append( "(object)" );
+                        if( _methodParam != null )
                         {
-                            Debug.Assert(_ctxProp != null);
-                            b.Append(_methodParam.Name);
-                            b.Append('.').Append(_ctxProp.Prop.Name);
+                            b.Append( _methodParam.Name );
                         }
-                        b.Append(" ?? DBNull.Value");
+                        else
+                        {
+                            Debug.Assert( _ctxProp != null );
+                            b.Append(_ctxProp.Parameter.Name).Append('.').Append( _ctxProp.Prop.Name );
+                        }
+                        b.Append( " ?? DBNull.Value" );
                     }
                     b.AppendLine(";");
                     return true;
@@ -623,7 +631,7 @@ namespace CK.SqlServer.Setup
                 b.AppendLine($"{tempObjectName} = {nameParameters}[{sqlParameterIndex}].Value;");
                 b.AppendLine($"if( {tempObjectName} == DBNull.Value ) {tempObjectName} = null;");
                 string resultName = "getR" + sqlParameterIndex;
-                b.AppendLine($"{resultName} = ({targetType.FullName}){tempObjectName};");
+                b.AppendLine($"var {resultName} = ({targetType.FullName}){tempObjectName};");
                 return resultName;
             }
 

@@ -94,9 +94,9 @@ namespace CK.StObj
             _stObjs[3] = new GStObj( rb, @"CK.StObj.Engine.Tests.DynamicGenerationTests+PostBuildSet+ASpec, CK.StObj.Engine.Tests, Version=0.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27", _stObjs[2], @"CK._g.ASpec2" );
             _contexts = new GContext[1];
             Dictionary<Type, GStObj> map = new Dictionary<Type, GStObj>();
-            map.Add( Type.GetType( @"CK.StObj.Engine.Tests.DynamicGenerationTests+PostBuildSet+B, CK.StObj.Engine.Tests, Version=0.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27" ), _stObjs[1] );
+            map.Add( Type.GetType( @"CK.StObj.Engine.Tests.DynamicGenerationTests+PostBuildSet+B, CK.StObj.Engine.Tests, Version=0.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27" ), _stObjs[0] );
             map.Add( Type.GetType( @"CK.StObj.Engine.Tests.DynamicGenerationTests+PostBuildSet+BSpec, CK.StObj.Engine.Tests, Version=0.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27" ), _stObjs[1] );
-            map.Add( Type.GetType( @"CK.StObj.Engine.Tests.DynamicGenerationTests+PostBuildSet+A, CK.StObj.Engine.Tests, Version=0.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27" ), _stObjs[3] );
+            map.Add( Type.GetType( @"CK.StObj.Engine.Tests.DynamicGenerationTests+PostBuildSet+A, CK.StObj.Engine.Tests, Version=0.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27" ), _stObjs[2] );
             map.Add( Type.GetType( @"CK.StObj.Engine.Tests.DynamicGenerationTests+PostBuildSet+ASpec, CK.StObj.Engine.Tests, Version=0.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27" ), _stObjs[3] );
             _contexts[0] = new GContext( this, map, @"" );
             Default = _contexts[0];
@@ -120,10 +120,10 @@ namespace CK.StObj
             }
             if( _stObjs[1].ObjectType.GetMethod( "StObjConstruct", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic ) == null ) throw new Exception( "NULL: " + @"_stObjs[1].ObjectType.GetMethod( ""StObjConstruct"", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic )" );
             _stObjs[1].ObjectType.GetMethod( "StObjConstruct", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic ).Invoke( _stObjs[1].Instance, Array.Empty<object>() );
-            _stObjs[2].ObjectType.GetProperty( "StObjPower", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic ).SetValue( _stObjs[2].Instance, @"This is the A property." );
+            Type.GetType( @"CK.StObj.Engine.Tests.DynamicGenerationTests+PostBuildSet+A, CK.StObj.Engine.Tests, Version=0.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27" ).GetProperty( "StObjPower", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic ).SetValue( _stObjs[2].Instance, @"This is the A property." );
             if( _stObjs[2].ObjectType.GetMethod( "StObjConstruct", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic ) == null ) throw new Exception( "NULL: " + @"_stObjs[2].ObjectType.GetMethod( ""StObjConstruct"", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic )" );
             _stObjs[2].ObjectType.GetMethod( "StObjConstruct", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic ).Invoke( _stObjs[2].Instance, new object[] { monitor, _stObjs[1].Instance, } );
-            _stObjs[3].ObjectType.GetProperty( "StObjPower", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic ).SetValue( _stObjs[3].Instance, @"ASpec level property." );
+            Type.GetType( @"CK.StObj.Engine.Tests.DynamicGenerationTests+PostBuildSet+ASpec, CK.StObj.Engine.Tests, Version=0.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27" ).GetProperty( "StObjPower", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic ).SetValue( _stObjs[3].Instance, @"ASpec level property." );
             if( _stObjs[3].ObjectType.GetMethod( "StObjConstruct", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic ) == null ) throw new Exception( "NULL: " + @"_stObjs[3].ObjectType.GetMethod( ""StObjConstruct"", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic )" );
             _stObjs[3].ObjectType.GetMethod( "StObjConstruct", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic ).Invoke( _stObjs[3].Instance, new object[] { monitor, } );
             _stObjs[0].ObjectType.GetProperty( "TheA", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic ).SetValue( _stObjs[0].Instance, _stObjs[2].Instance );

@@ -48,34 +48,7 @@ namespace CK.Core
         /// <returns>A <see cref="IStObjMap"/> that provides access to the objects graph.</returns>
         public static IStObjMap Load( string assemblyName, IStObjRuntimeBuilder runtimeBuilder = null, IActivityMonitor monitor = null )
         {
-            return Load( Assembly.Load( new AssemblyName( assemblyName ) ), runtimeBuilder, monitor );
-        }
-
-        /// <summary>
-        /// Loads a generated assembly according to the configuration.
-        /// </summary>
-        /// <param name="config">Cofiguration that provides path and name of the assembly to load.</param>
-        /// <param name="runtimeBuilder">Runtime builder to use. When null, <see cref="DefaultStObjRuntimeBuilder"/> is used.</param>
-        /// <param name="monitor">Optional monitor for loading operation.</param>
-        /// <returns>A <see cref="IStObjMap"/> that provides access to the objects graph.</returns>
-        public static IStObjMap Load( StObjEngineConfiguration config, IStObjRuntimeBuilder runtimeBuilder = null, IActivityMonitor monitor = null )
-        {
-            if (config == null) throw new ArgumentNullException(nameof(config));
-            IActivityMonitor m = monitor ?? new ActivityMonitor("CK.Core.StObjContextRoot.Load");
-            string name = BuilderFinalAssemblyConfiguration.GetFinalAssemblyName(config.FinalAssemblyConfiguration.AssemblyName);
-            Assembly a = null;
-            try
-            {
-                a = Assembly.Load(new AssemblyName(name));
-            }
-            catch( Exception ex )
-            {
-                m.Error().Send( ex, $"Unable to load assembly '{name}'." );
-                return null;
-            }
-            IStObjMap map = Load( a, runtimeBuilder, m );
-            if (monitor == null) m.MonitorEnd();
-            return map;
+            return Load( Assembly.Load( new AssemblyName( BuilderFinalAssemblyConfiguration.GetFinalAssemblyName( assemblyName ) ) ), runtimeBuilder, monitor );
         }
 
         /// <summary>
@@ -117,7 +90,6 @@ namespace CK.Core
 
         /// <summary>
         /// Runs a build based on the given <paramref name="config"/> object. 
-        /// The returned <see cref="StObjBuildResult"/> must be disposed once done with it.
         /// </summary>
         /// <param name="config">Configuration object. It must be serializable.</param>
         /// <param name="builderFactoryStaticMethod">

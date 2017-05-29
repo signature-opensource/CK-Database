@@ -41,7 +41,7 @@ namespace CK.Core
         public bool TraceDependencySorterInput { get; set; }
 
         /// <summary>
-        /// Gets whether the dependency graph (the set of ISortedItem) must be send to the monitor once the graph is sorted.
+        /// Gets or sets whether the dependency graph (the set of ISortedItem) must be send to the monitor once the graph is sorted.
         /// Defaults to false.
         /// </summary>
         public bool TraceDependencySorterOutput { get; set; }

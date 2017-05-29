@@ -53,7 +53,6 @@ namespace CK.Setup
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
             _runtimeBuilder = runtimeBuilder ?? StObjContextRoot.DefaultStObjRuntimeBuilder;
             _monitor = monitor;
-
             if( finalAssemblyConfig != null && finalAssemblyConfig.GenerateFinalAssemblyOption != BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile )
             {
                 _tempAssembly = CreateTempAssembly( monitor, finalAssemblyConfig );

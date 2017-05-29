@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using CK.Core;
 using CK.Setup;
@@ -45,22 +45,13 @@ namespace CK.Setup
         /// <summary>
         /// Gets the <see cref="StObjEngineConfiguration"/> object.
         /// </summary>
-        public StObjEngineConfiguration StObjEngineConfiguration
-        {
-            get { return _stObjConfig; }
-        }
+        public StObjEngineConfiguration StObjEngineConfiguration => _stObjConfig; 
 
         /// <summary>
         /// Gets the list of all configuration aspects that must participate to setup.
         /// </summary>
-        public List<ISetupEngineAspectConfiguration> Aspects 
-        {
-            get { return _aspects; } 
-        }
+        public List<ISetupEngineAspectConfiguration> Aspects  => _aspects; 
 
-        string IStObjBuilderConfiguration.BuilderAssemblyQualifiedName
-        {
-            get { return "CK.Setup.SetupEngine, CK.Setupable.Engine"; }
-        }
+        string IStObjBuilderConfiguration.BuilderAssemblyQualifiedName => "CK.Setup.SetupEngine, CK.Setupable.Engine"; 
     }
 }

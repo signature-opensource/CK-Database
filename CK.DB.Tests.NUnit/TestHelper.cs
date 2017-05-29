@@ -122,12 +122,7 @@ namespace CK.Core
             {
                 if( _map == null )
                 {
-#if NET461
                     Assert.That(RunDBSetup());
-#else
-                    _map = StObjContextRoot.Load(Config.StObjEngineConfiguration, StObjContextRoot.DefaultStObjRuntimeBuilder, Monitor);
-                    Assert.That(_map, Is.Not.Null, "Unable to load generated assembly.");
-#endif
                 }
                 return _map;
             }
@@ -157,8 +152,6 @@ namespace CK.Core
             }
         }
 
-#if NET461
-
         /// <summary>
         /// Runs the database setup based on <see cref="Config"/> and updates <see cref="StObjMap"/>.
         /// Automatically called by StObjMap when the StObjMap is not yet intialized.
@@ -177,10 +170,13 @@ namespace CK.Core
                     Config.StObjEngineConfiguration.TraceDependencySorterOutput = traceStObjGraphOrdering;
                     Config.TraceDependencySorterInput = traceSetupGraphOrdering;
                     Config.TraceDependencySorterOutput = traceSetupGraphOrdering;
+                    Config.StObjEngineConfiguration.FinalAssemblyConfiguration.TemporaryGenerateSrc = UseGeneratedSrc;
                     bool success = StObjContextRoot.Build(Config, null, TestHelper.Monitor);
                     if(success)
                     {
-                        _map = StObjContextRoot.Load( Config.StObjEngineConfiguration, StObjContextRoot.DefaultStObjRuntimeBuilder, Monitor );
+                        string assemblyName = BuilderFinalAssemblyConfiguration.GetFinalAssemblyName( Config.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName );
+                        if( UseGeneratedSrc ) assemblyName = assemblyName + "Src";
+                        _map = StObjContextRoot.Load( assemblyName, StObjContextRoot.DefaultStObjRuntimeBuilder, Monitor );
                     }
                     return success;
                 }
@@ -229,7 +225,6 @@ namespace CK.Core
             }
             _map = null;
         }
-#endif
 
         /// <summary>
         /// Gets the connection string to the master database.
@@ -253,6 +248,32 @@ namespace CK.Core
                 _masterConnectionString = new SqlConnectionStringBuilder( c );
             }
             return _masterConnectionString;
+        }
+
+        /// <summary>
+        /// Gets the AppSettings.Default[\"UseGeneratedSrc\"] value.
+        /// </summary>
+        public static bool DefaultUseGeneratedSrc
+        {
+            get
+            {
+                var u = AppSettings.Default["UseGeneratedSrc"];
+                if( u == null || u.Equals( "false", StringComparison.OrdinalIgnoreCase ) ) return false;
+                if( u.Equals( "true", StringComparison.OrdinalIgnoreCase ) ) return true;
+                throw new Exception( "AppSettings.Default[\"UseGeneratedSrc\"] must be not define, false or true." );
+            }
+        }
+
+        static bool? _useGeneratedSrc;
+
+        public static bool UseGeneratedSrc
+        {
+            get
+            {
+                if( !_useGeneratedSrc.HasValue ) _useGeneratedSrc = DefaultUseGeneratedSrc;
+                return _useGeneratedSrc.Value;
+            }
+            set => _useGeneratedSrc = value;
         }
 
         /// <summary>

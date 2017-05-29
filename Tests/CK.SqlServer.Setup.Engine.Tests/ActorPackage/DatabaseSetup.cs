@@ -1,9 +1,10 @@
-using System;
+﻿using System;
 using System.Data;
 using System.Data.SqlClient;
 using CK.Core;
 using CK.Setup;
 using NUnit.Framework;
+using System.Diagnostics;
 
 namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 {

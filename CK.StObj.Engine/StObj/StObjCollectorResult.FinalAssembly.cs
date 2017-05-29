@@ -23,7 +23,7 @@ namespace CK.Setup
         /// <param name="runtimeBuilder">Runtime builder to use to create final mapper object.</param>
         /// <param name="callPEVrify">True to call PEVerify on the generated assembly.</param>
         /// <returns>False if any error occured (logged into <paramref name="monitor"/>).</returns>
-        public bool GenerateFinalAssembly( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, bool callPEVrify )
+        public bool GenerateFinalAssembly( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, bool callPEVrify, bool withSrc )
         {
             try
             {
@@ -31,7 +31,7 @@ namespace CK.Setup
                 if( _finalAssembly == null ) throw new InvalidOperationException( "Using GenerateOption.DoNotGenerateFile." );
                 if( !DoGenerateFinalAssembly( monitor, runtimeBuilder, callPEVrify ) ) return false;
 #endif
-                return GenerateSourceCode( monitor, runtimeBuilder, true );
+                return withSrc ? GenerateSourceCode( monitor, runtimeBuilder, true ) : true;
             }
             catch( Exception ex )
             {

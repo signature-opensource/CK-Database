@@ -16,8 +16,11 @@ namespace CK.SqlServer.Setup
             ClassBuilder tB = (ClassBuilder)dynamicAssembly.Memory["CreatorForSqlCommand"];
             if (tB == null)
             {
+                if( !dynamicAssembly.SourceBuilder.Usings.Contains( "System.Data" ) ) dynamicAssembly.SourceBuilder.Usings.Add( "System.Data" );
+                if( !dynamicAssembly.SourceBuilder.Usings.Contains( "System.Data.SqlClient" ) ) dynamicAssembly.SourceBuilder.Usings.Add( "System.Data.SqlClient" );
+
                 tB = dynamicAssembly.SourceBuilder.DefineClass("CreatorForSqlCommand");
-                tB.FrontModifiers.Build().Add("static").Add("sealed");
+                tB.FrontModifiers.Build().Add("static");
                 dynamicAssembly.Memory.Add("CreatorForSqlCommand", tB);
             }
             string methodKey = "CreatorForSqlCommand" + '.' + FullName;
@@ -34,7 +37,7 @@ namespace CK.SqlServer.Setup
                         {
                             if (p.IsPureOutput && p.DefaultValue != null)
                             {
-                                monitor.Warn().Send("Sql parameter '{0}' is an output parameter but has a default value: if it is used as an input parameter it should be marked as /*input*/output.", p.Name);
+                                monitor.Warn().Send($"Sql parameter '{p.Name}' is an output parameter but has a default value: if it is used as an input parameter it should be marked as /*input*/output.");
                             }
                         }
                     }
@@ -50,6 +53,7 @@ namespace CK.SqlServer.Setup
         private MethodBuilder GenerateCreateSqlCommand(ClassBuilder tB, string fullName, string name, T sqlObject)
         {
             MethodBuilder mB = tB.DefineMethod("public static", name);
+            mB.ReturnType = "SqlCommand";
             mB.Body
                 .AppendLine($"var cmd = new SqlCommand({sqlObject.SchemaName.ToSourceString()});")
                 .AppendLine("cmd.CommandType = CommandType.StoredProcedure;")
@@ -63,10 +67,10 @@ namespace CK.SqlServer.Setup
             int idxP = 0;
             foreach (ISqlServerParameter p in sqlObject.Parameters)
             {
-                var pName = GenerateCreateSqlParameter(mB.Body, $"p{idxP}", p);
+                var pName = GenerateCreateSqlParameter(mB.Body, $"p{++idxP}", p);
                 if (p.IsOutput)
                 {
-                    mB.Body.AppendLine($"{pName}.ParameterDirection = {(p.IsInputOutput ? ParameterDirection.InputOutput : ParameterDirection.Output)};");
+                    mB.Body.AppendLine($"{pName}.Direction = ParameterDirection.{(p.IsInputOutput ? ParameterDirection.InputOutput : ParameterDirection.Output)};");
                 }
                 mB.Body.AppendLine($"p.Add({pName});");
             }
@@ -77,7 +81,7 @@ namespace CK.SqlServer.Setup
         static string GenerateCreateSqlParameter(StringBuilder b, string name, ISqlServerParameter p)
         {
             int size = p.SqlType.SyntaxSize;
-            b.Append($"var {name} = new SqlParamter( {p.Name.ToSourceString()}, {p.SqlType.DbType}");
+            b.Append($"var {name} = new SqlParameter( {p.Name.ToSourceString()}, SqlDbType.{p.SqlType.DbType}");
             if (size != 0 && size != -2)
             {
                 b.Append($", {size}");

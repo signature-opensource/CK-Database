@@ -24,17 +24,6 @@ namespace CK.Setup
             public Assembly LoadByName( AssemblyName n ) => Assembly.Load( n );
         }
 
-        private static Func<string, Assembly> GetAssemblyLoader()
-        {
-            Func<string, Assembly> loader;
-#if NET461
-            loader = Assembly.LoadFrom;
-#else
-            loader = System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath;
-#endif
-            return loader;
-        }
-
         static bool HandleCreateResult( IActivityMonitor monitor, string sourceCode, GenerateResult result )
         {
             using( monitor.OpenInfo().Send( "Code Generation information." ) )
@@ -46,7 +35,8 @@ namespace CK.Setup
                             if( e.SuccessfulWeakFallback != null ) monitor.Warn().Send( $"'{e.Name}' load failed, used '{e.SuccessfulWeakFallback}' instead." );
                             else monitor.Error().Send( $"'{e.Name}' load failed." );
                 }
-                if( !result.Success )
+                if( result.Success ) monitor.Trace().Send( "Source code generation and compilation succeeded." );
+                else
                 {
                     using( monitor.OpenError().Send( "Generation failed." ) )
                     {
@@ -99,7 +89,7 @@ namespace CK.Setup
                 var g = new CodeGenerator();
                 var assemblies = _contractResult.Assemblies.Where( a => !a.IsDynamic )
                                     .Append( typeof( System.Reflection.BindingFlags ).GetTypeInfo().Assembly );
-                var result = g.Generate( src, _tempAssembly.SaveFilePath, assemblies, new DefaultAssemblyResolver(), GetAssemblyLoader() );
+                var result = g.Generate( src, _tempAssembly.SaveFilePath, assemblies, new DefaultAssemblyResolver(), null );
                 return HandleCreateResult( monitor, src, result );
             }
             catch( Exception ex )
@@ -155,21 +145,29 @@ class GContext : IContextualStObjMap
 {
     readonly Dictionary<Type, GStObj> _mappings;
 
-    public GContext( IStObjMap allContexts, Dictionary<Type, GStObj> map, string name)
+    public GContext( GeneratedRootContext allContexts, Dictionary<Type, GStObj> map, string name)
     {
         AllContexts = allContexts;
         _mappings = map;
         Context = name;
-        foreach( var gs in map.Values ) gs.Context = this;
+        var distinct = new HashSet<object>();
+        foreach( var gs in map.Values ) 
+        { 
+            gs.Context = this;
+            distinct.Add( gs.Instance ); 
+        }
+        Implementations = distinct.ToArray();
     }
 
-    public IEnumerable<object> Implementations => _mappings.Values.Where( s => s.Specialization == null ).Select( s => s.Instance );
+    public IEnumerable<object> Implementations { get; }
 
-    public IEnumerable<StObjImplementation> StObjs => _mappings.Values.Select( v => v.AsStObjImplementation );
+    public IEnumerable<StObjImplementation> StObjs => AllContexts._stObjs.Where( s => s.Context == this ).Select( s => s.AsStObjImplementation );
 
     public IEnumerable<KeyValuePair<Type, object>> Mappings => _mappings.Select( v => new KeyValuePair<Type, object>( v.Key, v.Value.Instance ) );
 
-    public IStObjMap AllContexts { get; }
+    internal GeneratedRootContext AllContexts { get; } 
+
+    IStObjMap IContextualStObjMap.AllContexts => AllContexts;
 
     public string Context { get; }
 
@@ -202,7 +200,7 @@ class GContext : IContextualStObjMap
 
             b.AppendLine( "public class GeneratedRootContext : IStObjMap {" );
             b.AppendLine( "readonly GContext[] _contexts;" );
-            b.AppendLine( "readonly GStObj[] _stObjs;" );
+            b.AppendLine( "internal readonly GStObj[] _stObjs;" );
             b.AppendLine( "public GeneratedRootContext(IActivityMonitor monitor, IStObjRuntimeBuilder rb) {" );
 
             b.AppendLine( $"_stObjs = new GStObj[{_orderedStObjs.Count}];" );
@@ -258,9 +256,18 @@ class GContext : IContextualStObjMap
                     foreach( var setter in m.PreConstructProperties )
                     {
                         Type decl = setter.Property.DeclaringType;
-                        MutableItem propTarget = m;
-                        while( propTarget.ObjectType != decl ) propTarget = propTarget.Specialization;
-                        b.Append( $"_stObjs[{propTarget.IndexOrdered}].ObjectType.GetProperty( \"{setter.Property.Name}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic )" );
+                        if( decl.IsAssignableFrom( m.ObjectType ) )
+                        {
+                            // The property is declared on a base class of the root StObj.
+                            b.Append( "Type.GetType(" ).Append( decl.AssemblyQualifiedName.ToSourceString() ).Append(')');
+                        }
+                        else
+                        {
+                            MutableItem propTarget = m;
+                            while( propTarget.ObjectType != decl ) propTarget = propTarget.Specialization;
+                            b.Append( $"_stObjs[{propTarget.IndexOrdered}].ObjectType" );
+                        }
+                        b.Append( $".GetProperty( \"{setter.Property.Name}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic )" );
                         b.Append( $".SetValue(_stObjs[{m.IndexOrdered}].Instance," );
                         GenerateValue( b, setter.Value );
                         b.AppendLine( ");" );
@@ -342,7 +349,7 @@ class GContext : IContextualStObjMap
             }
             else
             {
-                o.ToSourceString( b );
+                b.AppendSourceString( o );
             }
         }
 

@@ -38,7 +38,8 @@ namespace CK.SqlServer.Setup
             // Only the first one that supports ISqlCommandExecutor interests us. 
             ParameterInfo _sqlCommandExecutorParameter;
             MethodInfo _sqlCommandExecutorMethodGetter;
-            
+            string _sourceExecutor;
+
             public class Property
             {
                 public readonly ParameterInfo Parameter;
@@ -130,7 +131,8 @@ namespace CK.SqlServer.Setup
                         if( typeof( ISqlCommandExecutor ).IsAssignableFrom( param.ParameterType ) )
                         {
                             _sqlCommandExecutorParameter = param;
-                            monitor.Trace().Send( "Planning to use parameter '{0}' {1} method.", param.Name, _executorCallNonQuery.Name );
+                            monitor.Trace().Send( $"Planning to use parameter '{param.Name}' {_executorCallNonQuery.Name} method." );
+                            _sourceExecutor = $"((ISqlCommandExecutor){param.Name})";
                             return true;
                         }
                         PropertyInfo pE = allProperties.Select( p => p.Prop ).FirstOrDefault( p => p.Name == "Executor" && typeof( ISqlCommandExecutor ).IsAssignableFrom( p.PropertyType ) );
@@ -138,7 +140,8 @@ namespace CK.SqlServer.Setup
                         {
                             _sqlCommandExecutorParameter = param;
                             _sqlCommandExecutorMethodGetter = pE.GetGetMethod();
-                            monitor.Trace().Send( "Planning to use parameter '{0}.Executor' property {1} method.", param.Name, _executorCallNonQuery.Name );
+                            monitor.Trace().Send( $"Planning to use parameter '{param.Name}.Executor' property {_executorCallNonQuery.Name} method." );
+                            _sourceExecutor = $"{param.Name}.Executor";
                             return true;
                         }
                         var methods = paramTypeInfo.IsInterface 
@@ -149,7 +152,8 @@ namespace CK.SqlServer.Setup
                         {
                             _sqlCommandExecutorParameter = param;
                             _sqlCommandExecutorMethodGetter = mE;
-                            monitor.Trace().Send( "Planning to use parameter '{0}.GetExecutor()' method {1} method.", param.Name, _executorCallNonQuery.Name );
+                            monitor.Trace().Send( $"Planning to use parameter '{param.Name}.GetExecutor()' method {_executorCallNonQuery.Name} method." );
+                            _sourceExecutor = $"{param.Name}.GetExecutor()";
                             return true;
                         }
                     }
@@ -236,26 +240,25 @@ namespace CK.SqlServer.Setup
 
             public void GenerateExecuteNonQueryCall( StringBuilder b, string varCommandName, string resultBuilderName, ParameterInfo[] callingParameters )
             {
-                if( _sqlCommandExecutorMethodGetter != null )
+                b.Append( _sourceExecutor )
+                    .Append( '.' )
+                    .Append( _sourceExecutorCallNonQuery )
+                    .Append( "(Database.ConnectionString," )
+                    .Append( varCommandName );
+                if( resultBuilderName != null || IsAsyncCall )
                 {
-                    b.Append( _sqlCommandExecutorParameter.Name ).Append( '.' ).Append( _sqlCommandExecutorMethodGetter.Name );
+                    b.Append( ',' ).Append( resultBuilderName ?? "null" );
                 }
-                else
-                {
-                    b.Append("((ISqlCommandExecutor)").Append( _sqlCommandExecutorParameter.Name ).Append( ')' );
-                }
-
-                b.Append( $"{_sourceExecutorCallNonQuery}( Database.ConnectionString, {varCommandName}, {resultBuilderName ?? "null"}" );
                 if( IsAsyncCall )
                 {
-                    b.Append( ", " );
+                    b.Append( ',' );
                     if( _cancellationTokenParam != null )
                     {
                         b.Append( callingParameters[_cancellationTokenParam.Position + 1].Name );
                     }
                     else b.Append( "new CancellationToken()" );
                 }
-                b.Append( ");" );
+                b.AppendLine( ");" );
             }
 
             /// <summary>

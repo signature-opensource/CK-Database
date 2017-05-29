@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -54,7 +54,7 @@ namespace CK.Core
 
         /// <summary>
         /// Gets or set the directory where the final assembly must be saved.
-        /// When null (the default) the current path of CK.StObj.Model assembly is used.
+        /// When null (the default) the <see cref="AppContext.BaseDirectory"/> is used.
         /// </summary>
         public string Directory { get; set; }
 
@@ -69,6 +69,17 @@ namespace CK.Core
         /// </summary>
         public bool SignAssembly { get; set; }
 
+#if NET461
+        /// <summary>
+        /// Gets or sets whether source code generation is also done.
+        /// </summary>
+        public bool TemporaryGenerateSrc { get; set; }
+#else
+        /// <summary>
+        /// Always true since on .Net core this is the only way...
+        /// </summary>
+        public bool TemporaryGenerateSrc { get => true; set { } }
+#endif
         /// <summary>
         /// Uses <paramref name="assemblyName"/> if it is not null nor empty or <see cref="DefaultAssemblyName"/>.
         /// </summary>

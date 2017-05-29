@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -49,12 +49,7 @@ namespace CK.Setupable.Engine.Tests
 
         private static void InitalizePaths()
         {
-#if NET461
-            string p = new Uri(System.Reflection.Assembly.GetExecutingAssembly().CodeBase).LocalPath;
-            p = Path.GetDirectoryName(p);
-#else
-            string p = Directory.GetCurrentDirectory();
-#endif
+            string p = _binFolder = AppContext.BaseDirectory;
 #if DEBUG
             _configuration = "Debug";
 #else
@@ -65,7 +60,6 @@ namespace CK.Setupable.Engine.Tests
                 p = Path.GetDirectoryName(p);
             }
             _solutionFolder = p;
-            _binFolder = Path.Combine(_solutionFolder, "Tests", "CK.Setupable.Engine.Tests", "bin", _configuration, "net451", "win7-x64");
             Console.WriteLine($"SolutionFolder is: {_solutionFolder}.");
             Console.WriteLine($"Core path: {typeof(string).GetTypeInfo().Assembly.CodeBase}.");
         }
