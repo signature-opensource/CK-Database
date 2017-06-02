@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -185,8 +185,7 @@ namespace CK.SqlServer.Setup
                                 // If it is a pure output parameters then we don't care setting a value for it.
                                 if( sqlP.IsPureOutput )
                                 {
-                                    // Pure output. If it is the RETURN_VALUE of a function, we do not warn.
-                                    if( !(sqlP is SqlParameterReturnedValue) )
+                                    if( !setter.IsUsedByReturnType )
                                     {
                                         monitor.Info().Send( "Method '{0}' does not declare the Sql Parameter '{1}'. Since it is a pure output parameter, it will be ignored.", m.Name, sqlP.ToStringClean() );
                                     }
@@ -455,20 +454,10 @@ namespace CK.SqlServer.Setup
             return atLeastOne;
         }
 
-        int IndexOf( ISqlServerParameterList parameters, int iStart, string name )
-        {
-            while( iStart < parameters.Count )
-            {
-                if( StringComparer.OrdinalIgnoreCase.Equals( parameters[iStart].Name, name ) ) return iStart;
-                ++iStart;
-            }
-            return -1;
-        }
-
         static bool CheckParameterType( Type t, ISqlServerParameter p, IActivityMonitor monitor )
         {
             if( p.SqlType.IsTypeCompatible( t ) ) return true;
-            monitor.Error().Send( "Sql parameter '{0}' is not compliant with Type {1}.", p.ToStringClean(), t.Name );
+            monitor.Error().Send( $"Sql parameter '{p.ToStringClean()}' is not compliant with Type {t.Name}." );
             return false;
         }
 

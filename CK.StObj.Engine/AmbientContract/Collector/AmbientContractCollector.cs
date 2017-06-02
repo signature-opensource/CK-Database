@@ -325,6 +325,7 @@ namespace CK.Core
                 if( pocoSupport != null )
                 {
                     _tempAssembly.Memory.Add( typeof( IPocoSupportResult ), pocoSupport );
+                    _tempAssembly.SourceModules.Add( PocoSourceGenerator.CreateModule( pocoSupport ) );
                     if( _finalAssembly != null ) _finalAssembly.Memory.Add( typeof( IPocoSupportResult ), pocoSupport );
                     RegisterClass( pocoSupport.FinalFactory );
                 }

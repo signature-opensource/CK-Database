@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using CK.Core;
 using CK.Reflection;
 using CK.SqlServer.Parser;
+using CK.CodeGen;
 
 namespace CK.SqlServer.Setup
 {
@@ -59,7 +60,7 @@ namespace CK.SqlServer.Setup
                     {
                         if( sqlP.SqlType.IsTypeCompatible( Prop.PropertyType ) )
                         {
-                            monitor.Info().Send( "Sql Parameter '{0}' will take its value from the [ParameterSource] '{1}' property '{2}'.", sqlP.ToStringClean(), Parameter.Name, Prop.Name );
+                            monitor.Info().Send( $"Sql Parameter '{sqlP.ToStringClean()}' will take its value from the [ParameterSource] '{Parameter.Name}.{Prop.Name}' property." );
                             return true;
                         }
                     }
@@ -85,7 +86,7 @@ namespace CK.SqlServer.Setup
                         _cancellationTokenParam = methodParameters.FirstOrDefault( p => p.ParameterType == typeof( CancellationToken ) );
                         _executorCallNonQuery = SqlObjectItem.MExecutorCallNonQueryAsyncTyped;
                         _returnedType = returnedType.GetGenericArguments()[0];
-                        _sourceExecutorCallNonQuery = $"ExecuteNonQueryAsyncTyped<{_returnedType.FullName}>";
+                        _sourceExecutorCallNonQuery = $"ExecuteNonQueryAsyncTyped<{_returnedType.ToCSharpName(true)}>";
                     }
                     else
                     {
@@ -132,7 +133,7 @@ namespace CK.SqlServer.Setup
                         {
                             _sqlCommandExecutorParameter = param;
                             monitor.Trace().Send( $"Planning to use parameter '{param.Name}' {_executorCallNonQuery.Name} method." );
-                            _sourceExecutor = $"((ISqlCommandExecutor){param.Name})";
+                            _sourceExecutor = $"((CK.SqlServer.ISqlCommandExecutor){param.Name})";
                             return true;
                         }
                         PropertyInfo pE = allProperties.Select( p => p.Prop ).FirstOrDefault( p => p.Name == "Executor" && typeof( ISqlCommandExecutor ).IsAssignableFrom( p.PropertyType ) );
@@ -245,18 +246,18 @@ namespace CK.SqlServer.Setup
                     .Append( _sourceExecutorCallNonQuery )
                     .Append( "(Database.ConnectionString," )
                     .Append( varCommandName );
-                if( resultBuilderName != null || IsAsyncCall )
+                if( resultBuilderName != null )
                 {
-                    b.Append( ',' ).Append( resultBuilderName ?? "null" );
+                    b.Append( ',' ).Append( resultBuilderName );
                 }
                 if( IsAsyncCall )
                 {
                     b.Append( ',' );
                     if( _cancellationTokenParam != null )
                     {
-                        b.Append( callingParameters[_cancellationTokenParam.Position + 1].Name );
+                        b.Append( callingParameters[_cancellationTokenParam.Position].Name );
                     }
-                    else b.Append( "new CancellationToken()" );
+                    else b.Append( "default(System.Threading.CancellationToken)" );
                 }
                 b.AppendLine( ");" );
             }

@@ -1,11 +1,4 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setupable.Engine\StObj\Impl\AttributesReader.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -53,19 +46,26 @@ namespace CK.Setup
         {
             Debug.Assert( monitor != null );
             Debug.Assert( t != null );
-            var all = (IAttributeSetupName[])t.GetTypeInfo().GetCustomAttributes( typeof( IAttributeSetupName ), false );
+#if NET461
+            var all = (IAttributeSetupName[])t.GetCustomAttributes( typeof( IAttributeSetupName ), false );
+#else
+            var all = t.GetTypeInfo().GetCustomAttributes( false ).OfType<IAttributeSetupName>().ToArray();
+#endif
             string name = alreadyNamed;
             foreach( var n in all )
             {
                 if( name == null ) name = n.FullName;
-                else if( n.FullName != null && String.CompareOrdinal( name, n.FullName ) != 0 ) monitor.Warn().Send( "FullName '{0}' is already associated to type '{1}'. Extraneous name '{2}' is ignored.", name, t.FullName, n.FullName );
+                else if( n.FullName != null && String.CompareOrdinal( name, n.FullName ) != 0 )
+                {
+                    monitor.Warn().Send( $"FullName '{name}' is already associated to type '{t.FullName}'. Extraneous name '{n.FullName}' is ignored." );
+                }
             }
             if( name == null )
             {
                 name = t.FullName;
                 if( warnWhenDefaultToTypeFullName )
                 {
-                    monitor.Warn().Send( "Type '{0}' has no explicit associated Setup Name. Using the Type's full name.", t.FullName );
+                    monitor.Warn().Send( $"Type '{t.FullName}' has no explicit associated Setup Name. Using the Type's full name." );
                 }
             }
             return name;

@@ -40,18 +40,6 @@ namespace CK.Core
         static readonly HashSet<Assembly> _alreadyLoaded = new HashSet<Assembly>();
 
         /// <summary>
-        /// Loads a previously generated assembly by its assembly name.
-        /// </summary>
-        /// <param name="assemblyName">Assembly name that will be loaded.</param>
-        /// <param name="runtimeBuilder">Runtime builder to use. When null, <see cref="DefaultStObjRuntimeBuilder"/> is used.</param>
-        /// <param name="monitor">Optional monitor for loading operation.</param>
-        /// <returns>A <see cref="IStObjMap"/> that provides access to the objects graph.</returns>
-        public static IStObjMap Load( string assemblyName, IStObjRuntimeBuilder runtimeBuilder = null, IActivityMonitor monitor = null )
-        {
-            return Load( Assembly.Load( new AssemblyName( BuilderFinalAssemblyConfiguration.GetFinalAssemblyName( assemblyName ) ) ), runtimeBuilder, monitor );
-        }
-
-        /// <summary>
         /// Loads a previously generated assembly.
         /// </summary>
         /// <param name="a">Already generated assembly.</param>

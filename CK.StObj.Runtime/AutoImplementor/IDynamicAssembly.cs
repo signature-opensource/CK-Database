@@ -1,6 +1,7 @@
-using CK.CodeGen;
+﻿using CK.CodeGen;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Reflection.Emit;
 
 namespace CK.Core
@@ -33,6 +34,11 @@ namespace CK.Core
         /// Gets the source builder for this <see cref="IDynamicAssembly"/>.
         /// </summary>
         NamespaceBuilder SourceBuilder { get; }
+
+        /// <summary>
+        /// Gets the source modules for this <see cref="IDynamicAssembly"/>.
+        /// </summary>
+        IList<ICodeGeneratorModule> SourceModules { get; }
 
         /// <summary>
         /// Pushes an action that will be executed before the generation of the final assembly: use this to 

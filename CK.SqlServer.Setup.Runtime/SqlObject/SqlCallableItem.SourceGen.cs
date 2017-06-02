@@ -55,14 +55,13 @@ namespace CK.SqlServer.Setup
             MethodBuilder mB = tB.DefineMethod("public static", name);
             mB.ReturnType = "SqlCommand";
             mB.Body
-                .AppendLine($"var cmd = new SqlCommand({sqlObject.SchemaName.ToSourceString()});")
-                .AppendLine("cmd.CommandType = CommandType.StoredProcedure;")
-                .AppendLine("var p = cmd.Parameters;");
+                .AppendLine( $"var cmd = new SqlCommand({sqlObject.SchemaName.ToSourceString()});" )
+                .AppendLine( "cmd.CommandType = CommandType.StoredProcedure;" );
             ISqlServerFunctionScalar func = sqlObject as ISqlServerFunctionScalar;
             if (func != null)
             {
                 GenerateCreateSqlParameter(mB.Body, "pR", new SqlParameterReturnedValue(func.ReturnType));
-                mB.Body.AppendLine("p.Add( pR ).ParameterDirection = ParameterDirection.ReturnValue;");
+                mB.Body.AppendLine( "cmd.Parameters.Add( pR ).Direction = ParameterDirection.ReturnValue;" );
             }
             int idxP = 0;
             foreach (ISqlServerParameter p in sqlObject.Parameters)
@@ -72,7 +71,7 @@ namespace CK.SqlServer.Setup
                 {
                     mB.Body.AppendLine($"{pName}.Direction = ParameterDirection.{(p.IsInputOutput ? ParameterDirection.InputOutput : ParameterDirection.Output)};");
                 }
-                mB.Body.AppendLine($"p.Add({pName});");
+                mB.Body.AppendLine($"cmd.Parameters.Add({pName});");
             }
             mB.Body.AppendLine("return cmd;");
             return mB;

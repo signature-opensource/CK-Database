@@ -28,7 +28,6 @@ namespace CK.DB.Tests
             else TestHelper.Monitor.Info().Send( "Debugger is already attached." );
         }
 
-#if NET461
         [Test]
         [Explicit]
         public void reset_database_by_clearing_all_used_schemas()
@@ -56,7 +55,6 @@ namespace CK.DB.Tests
         {
             Assert.That( TestHelper.RunDBSetup( true, true, true ), "DBSetup failed." );
         }
-#endif
 
     }
 }

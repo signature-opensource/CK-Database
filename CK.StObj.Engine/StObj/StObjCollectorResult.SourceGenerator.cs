@@ -82,15 +82,19 @@ namespace CK.Setup
             try
             {
                 var b = new StringBuilder();
-                GenerateContextSource(b, monitor, _tempAssembly);
+                GenerateContextSource( b, monitor, _tempAssembly );
                 _tempAssembly.SourceBuilder.CreateSource( b );
-                var src = b.ToString();
-                if( saveSource ) File.WriteAllText( _tempAssembly.SaveFilePath + ".cs", src );
                 var g = new CodeGenerator();
+                g.Modules.AddRange( _tempAssembly.SourceModules );
                 var assemblies = _contractResult.Assemblies.Where( a => !a.IsDynamic )
-                                    .Append( typeof( System.Reflection.BindingFlags ).GetTypeInfo().Assembly );
-                var result = g.Generate( src, _tempAssembly.SaveFilePath, assemblies, new DefaultAssemblyResolver(), null );
-                return HandleCreateResult( monitor, src, result );
+                                    .Append( typeof( BindingFlags ).GetTypeInfo().Assembly );
+                var result = g.Generate( b.ToString(), _tempAssembly.SaveFilePath, assemblies, new DefaultAssemblyResolver(), null );
+                if( saveSource && result.Sources != null )
+                {
+                    File.WriteAllText( _tempAssembly.SaveFilePath + ".cs", result.Sources.Select( t => t.ToString() ).Concatenate( Environment.NewLine ) );
+                }
+                result.LogResult( monitor );
+                return result.Success;
             }
             catch( Exception ex )
             {
@@ -113,13 +117,13 @@ namespace CK.Setup
             const string sourceGStObj = @"
 class GStObj : IStObj
 {
-    public GStObj( IStObjRuntimeBuilder rb, string t, IStObj g, string actualType )
+    public GStObj( IStObjRuntimeBuilder rb, Type t, IStObj g, Type actualType )
     {
-        ObjectType = Type.GetType(t);
+        ObjectType = t;
         Generalization = g;
         if( actualType != null ) 
         {
-            Instance = rb.CreateInstance( actualType == t ? ObjectType : Type.GetType(actualType) );
+            Instance = rb.CreateInstance( actualType );
             Leaf = this;
         }
     }
@@ -208,12 +212,12 @@ class GContext : IContextualStObjMap
             foreach( var m in _orderedStObjs )
             {
                 string generalization = m.Generalization == null ? "null" : $"_stObjs[{m.Generalization.IndexOrdered}]";
-                string typeName = m.ObjectType.AssemblyQualifiedName;
+                string typeName = m.ObjectType.ToCSharpName();
                 string actualTypeName = m.Specialization == null 
-                                            ? m.GetFinalTypeFullName( monitor, a ).ToSourceString()
+                                            ? "typeof("+m.GetFinalTypeCSharpName( monitor, a )+")"
                                             : "null";
                 b.Append( $"_stObjs[{iStObj++}] = new GStObj(" );
-                b.AppendLine( $"rb,{typeName.ToSourceString()},{generalization},{actualTypeName});" );
+                b.AppendLine( $"rb,typeof({typeName}),{generalization},{actualTypeName});" );
             }
 
             b.AppendLine( $"_contexts = new GContext[{Contexts.Count}];" );
@@ -227,8 +231,7 @@ class GContext : IContextualStObjMap
                 var typeMapping = all.Cast<KeyValuePair<object, MutableItem>>().Where( e => e.Key is Type );
                 foreach( var e in typeMapping )
                 {
-                    string typeName = ((Type)e.Key).AssemblyQualifiedName;
-                    b.AppendLine( $"map.Add( Type.GetType({typeName.ToSourceString()}), _stObjs[{e.Value.IndexOrdered}] );" );
+                    b.AppendLine( $"map.Add( typeof({((Type)e.Key).ToCSharpName()}), _stObjs[{e.Value.IndexOrdered}] );" );
                 }
                 b.AppendLine( $"_contexts[{iContext++}] = new GContext( this, map, {ctx.Context.ToSourceString()} );" );
             }
@@ -249,6 +252,7 @@ class GContext : IContextualStObjMap
             b.AppendLine( "  }" );
             b.AppendLine( " }" );
             b.AppendLine( "}" );
+            var propertyCache = new Dictionary<ValueTuple<Type, string>, string>();
             foreach( var m in _orderedStObjs )
             {
                 if( m.PreConstructProperties != null )
@@ -256,19 +260,23 @@ class GContext : IContextualStObjMap
                     foreach( var setter in m.PreConstructProperties )
                     {
                         Type decl = setter.Property.DeclaringType;
-                        if( decl.IsAssignableFrom( m.ObjectType ) )
+                        string varName;
+                        var key = ValueTuple.Create( decl, setter.Property.Name );
+                        if(!propertyCache.TryGetValue( key, out varName ))
                         {
-                            // The property is declared on a base class of the root StObj.
-                            b.Append( "Type.GetType(" ).Append( decl.AssemblyQualifiedName.ToSourceString() ).Append(')');
+                            varName = "pI" + propertyCache.Count.ToString();
+                            b.Append( "PropertyInfo " )
+                                .Append( varName )
+                                .Append( "=" )
+                                .Append( "typeof(" )
+                                .AppendCSharpName( decl )
+                                .Append( ").GetProperty(" )
+                                .AppendSourceString( setter.Property.Name )
+                                .AppendLine( ",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic);" );
+                            propertyCache.Add( key, varName );
+
                         }
-                        else
-                        {
-                            MutableItem propTarget = m;
-                            while( propTarget.ObjectType != decl ) propTarget = propTarget.Specialization;
-                            b.Append( $"_stObjs[{propTarget.IndexOrdered}].ObjectType" );
-                        }
-                        b.Append( $".GetProperty( \"{setter.Property.Name}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic )" );
-                        b.Append( $".SetValue(_stObjs[{m.IndexOrdered}].Instance," );
+                        b.Append(varName).Append( ".SetValue(_stObjs[" ).Append( m.IndexOrdered).Append( "].Instance," );
                         GenerateValue( b, setter.Value );
                         b.AppendLine( ");" );
                     }
@@ -276,8 +284,6 @@ class GContext : IContextualStObjMap
                 var mConstruct = m.AmbientTypeInfo.StObjConstruct;
                 if( mConstruct != null )
                 {
-                    CheckNotNullObject( $"_stObjs[{m.IndexOrdered}].ObjectType.GetMethod( \"{mConstruct.Name}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic )", b );
-
                     b.Append( $"_stObjs[{m.IndexOrdered}].ObjectType.GetMethod( \"{mConstruct.Name}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic )" );
                     b.Append( $".Invoke( _stObjs[{m.IndexOrdered}].Instance, " );
                     if( m.ConstructParameters.Count == 0 ) b.Append( "Array.Empty<object>()" );

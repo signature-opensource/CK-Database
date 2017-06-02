@@ -56,10 +56,9 @@ namespace CK.Setup
             if( finalAssemblyConfig != null && finalAssemblyConfig.GenerateFinalAssemblyOption != BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile )
             {
                 _tempAssembly = CreateTempAssembly( monitor, finalAssemblyConfig );
+                _finalAssembly = null;
 #if NET461
                 _finalAssembly = CreateFinalAssembly( monitor, finalAssemblyConfig );
-#else
-                _finalAssembly = null;
 #endif
             }
             else _tempAssembly = new DynamicAssembly(null, BuilderFinalAssemblyConfiguration.DefaultAssemblyName);
@@ -101,14 +100,14 @@ namespace CK.Setup
             string directory = c.Directory;
             if( string.IsNullOrEmpty( directory ) )
             {
-                directory = System.IO.Path.GetDirectoryName( AppContext.BaseDirectory );
+                directory = AppContext.BaseDirectory;
                 monitor.Info().Send( $"No directory has been specified for final assembly. Trying to use the AppContext.BaseDirectory path: {directory}" );
             }
             string assemblyName = c.AssemblyName;
             if( string.IsNullOrEmpty( assemblyName ) )
             {
                 assemblyName = BuilderFinalAssemblyConfiguration.GetFinalAssemblyName( assemblyName );
-                monitor.Info().Send( "No assembly name has been specified for final assembly. Using default: {0}", assemblyName );
+                monitor.Info().Send( $"No assembly name has been specified for final assembly. Using default: {assemblyName}" );
             }
             return new DynamicAssembly( directory, assemblyName );
         }

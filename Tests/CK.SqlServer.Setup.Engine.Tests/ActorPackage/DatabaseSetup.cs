@@ -5,6 +5,7 @@ using CK.Core;
 using CK.Setup;
 using NUnit.Framework;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 {
@@ -61,7 +62,8 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
             using( var db = SqlManager.OpenOrCreate( TestHelper.DatabaseTestConnectionString, TestHelper.Monitor ) )
             {
-                IStObjMap m = StObjContextRoot.Load( dllName, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
+                var a = Assembly.Load( new AssemblyName( dllName ) );
+                IStObjMap m = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
                 if( withZone ) CheckBasicAndZone( db, m );
                 else CheckBasicOnly( db, m );
             }
@@ -85,7 +87,8 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
             using( var db = SqlManager.OpenOrCreate( TestHelper.DatabaseTestConnectionString, TestHelper.Monitor ) )
             {
-                IStObjMap m = StObjContextRoot.Load( dllName, null, TestHelper.Monitor );
+                var a = Assembly.Load( new AssemblyName( dllName + ".Reverted" ) );
+                IStObjMap m = StObjContextRoot.Load( a, null, TestHelper.Monitor );
                 if( withZone ) CheckBasicAndZone( db, m );
                 else CheckBasicOnly( db, m );
             }

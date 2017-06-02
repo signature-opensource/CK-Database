@@ -39,7 +39,12 @@ namespace CK.Setupable.Engine.Tests
 
         public static string BinFolder
         {
-            get { if (_binFolder == null) InitalizePaths(); return _binFolder; }
+            get { if( _binFolder == null ) InitalizePaths(); return _binFolder; }
+        }
+
+        public static string Configuration
+        {
+            get { if( _binFolder == null ) InitalizePaths(); return _configuration; }
         }
 
         public static string SolutionFolder

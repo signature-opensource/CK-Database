@@ -11,8 +11,8 @@ namespace CK.Setup
     {
         /// <summary>
         /// Exposes the <see cref="OrderedStObjs"/> and the resulting <see cref="SetupItems"/> for them
-        /// and captures required context (<see cref="StObjCollectorResult"/>, <see cref="IStObjRuntimeBuilder"/> and <see cref="BuilderFinalAssemblyConfiguration"/>)
-        /// to be able to <see cref="GenerateFinalAssemblyIfRequired"/>.
+        /// and captures required context (<see cref="StObjCollectorResult"/>, <see cref="IStObjRuntimeBuilder"/> 
+        /// and <see cref="BuilderFinalAssemblyConfiguration"/>) to be able to <see cref="GenerateFinalAssembly"/>.
         /// </summary>
         public class BuildStObjResult
         {
@@ -43,10 +43,9 @@ namespace CK.Setup
             /// </summary>
             /// <param name="monitor">Monitor to use.</param>
             /// <returns>True on success, false on error.</returns>
-            public bool GenerateFinalAssemblyIfRequired( IActivityMonitor monitor )
+            public bool GenerateFinalAssembly( IActivityMonitor monitor )
             {
-                if( _configuration.GenerateFinalAssemblyOption == BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile ) return true;
-
+                Debug.Assert( _configuration.GenerateFinalAssemblyOption != BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile );
                 bool hasError = false;
                 using( monitor.OnError( () => hasError = true ) )
                 {

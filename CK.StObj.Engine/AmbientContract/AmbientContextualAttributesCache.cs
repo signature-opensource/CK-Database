@@ -146,7 +146,7 @@ namespace CK.Core
         public IEnumerable<T> GetCustomAttributes<T>( MemberInfo m )
         {
             if( m == null ) throw new ArgumentNullException( "m" );
-            var fromCache = _all.Where( e => CK.Reflection.MemberInfoEqualityComparer.Default.Equals( e.M, m ) && e.Attr is T ).Select( e => (T)e.Attr );
+            var fromCache = _all.Where( e => CK.Core.MemberInfoEqualityComparer.Default.Equals( e.M, m ) && e.Attr is T ).Select( e => (T)e.Attr );
             if( m.DeclaringType == Type.AsType() || (_includeBaseClasses && m.DeclaringType.IsAssignableFrom( Type.AsType())) )
             {
                 return fromCache

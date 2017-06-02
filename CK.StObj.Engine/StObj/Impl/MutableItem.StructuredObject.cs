@@ -12,6 +12,7 @@ using System.Text;
 using System.Diagnostics;
 using CK.Core;
 using System.Reflection;
+using CK.CodeGen;
 
 namespace CK.Setup
 {
@@ -69,11 +70,11 @@ namespace CK.Setup
         /// </summary>
         public IReadOnlyList<PropertySetter> PreConstructProperties => _preConstruct;
 
-        public string GetFinalTypeFullName( IActivityMonitor monitor, IDynamicAssembly a )
+        public string GetFinalTypeCSharpName( IActivityMonitor monitor, IDynamicAssembly a )
         {
             Debug.Assert( Specialization == null );
             return _leafData.ImplementableTypeInfo == null
-                        ? ObjectType.AssemblyQualifiedName 
+                        ? ObjectType.ToCSharpName() 
                         : _leafData.ImplementableTypeInfo.GenerateType( monitor, a );
         }
 

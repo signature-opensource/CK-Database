@@ -2,18 +2,18 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
-    <OriginProjectName>CK.StObj.Engine.Tests</OriginProjectName>
+    <OriginProjectName>SqlCallDemo.Tests</OriginProjectName>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\CK.StObj.Engine\CK.StObj.Engine.csproj" />
+    <ProjectReference Include="..\..\..\CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj" />
+    <ProjectReference Include="..\SqlCallDemo\SqlCallDemo.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="NUnit" Version="3.6.1" />
     <PackageReference Include="NUnitLite" Version="3.6.1" />
-    <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,6 +21,10 @@
       <Link>Include\%(RecursiveDir)%(Filename)%(Extension)</Link>
       <Visible>true</Visible>
     </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="..\SqlCallDemo.Tests\SqlCallDemo.Tests.GeneratedSrc.dll.cs" />
   </ItemGroup>
 
 

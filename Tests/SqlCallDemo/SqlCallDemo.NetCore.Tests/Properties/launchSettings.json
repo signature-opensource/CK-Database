@@ -1,0 +1,8 @@
+﻿{
+  "profiles": {
+    "SqlCallDemo.NetCore.Tests": {
+      "commandName": "Project",
+      "commandLineArgs": "--wait"
+    }
+  }
+}

@@ -161,7 +161,7 @@ namespace CK.Core
         /// <param name="revertNames">True to revert names in ordering.</param>
         public static bool RunDBSetup( bool traceStObjGraphOrdering = false, bool traceSetupGraphOrdering = false, bool revertNames = false )
         {
-            using( Monitor.OpenTrace().Send( "Running Setup on {0}.", TestHelper.DatabaseTestConnectionString ) )
+            using( Monitor.OpenTrace().Send( $"Running Setup on {TestHelper.DatabaseTestConnectionString}." ) )
             {
                 try
                 {
@@ -174,9 +174,15 @@ namespace CK.Core
                     bool success = StObjContextRoot.Build(Config, null, TestHelper.Monitor);
                     if(success)
                     {
-                        string assemblyName = BuilderFinalAssemblyConfiguration.GetFinalAssemblyName( Config.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName );
-                        if( UseGeneratedSrc ) assemblyName = assemblyName + "Src";
-                        _map = StObjContextRoot.Load( assemblyName, StObjContextRoot.DefaultStObjRuntimeBuilder, Monitor );
+                        string assemblyName = Config.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName;
+                        assemblyName = BuilderFinalAssemblyConfiguration.GetFinalAssemblyName( assemblyName );
+                        if( Config.StObjEngineConfiguration.FinalAssemblyConfiguration.TemporaryGenerateSrc )
+                        {
+                            assemblyName = assemblyName + "Src";
+                        }
+                        var a = LoadAssemblyFromAppContextBaseDirectory( assemblyName );
+                        _map = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, Monitor );
+                        success = _map != null;
                     }
                     return success;
                 }
@@ -187,6 +193,22 @@ namespace CK.Core
                 }
             }
         }
+
+        /// <summary>
+        /// Loads an assembly that must be in probe paths in .Net framework and in
+        /// AppContext.BaseDirectory in .Net Core.
+        /// </summary>
+        /// <param name="assemblyName">Name of the assembly to load (without any .dll suffix).</param>
+        /// <returns>The loaded assembly.</returns>
+        static public Assembly LoadAssemblyFromAppContextBaseDirectory( string assemblyName )
+        {
+#if NET461
+            return Assembly.Load( new AssemblyName( assemblyName ) );
+#else
+            return System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath( Path.Combine( AppContext.BaseDirectory, assemblyName + ".dll" ) );
+#endif
+        }
+
 
         /// <summary>
         /// Clears all <see cref="UsedSchemas"/> and resets <see cref="StObjMap"/> (using <see cref="DatabaseTestConnectionString"/>

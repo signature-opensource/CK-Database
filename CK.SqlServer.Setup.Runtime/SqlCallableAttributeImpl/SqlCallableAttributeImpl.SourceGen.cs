@@ -12,6 +12,9 @@ using CK.CodeGen;
 using System.Collections.Generic;
 using System.Threading;
 using System.Text;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace CK.SqlServer.Setup
 {
@@ -37,6 +40,43 @@ namespace CK.SqlServer.Setup
         }
     }
 
+#if !NET461
+    class FixDBNull : ICodeGeneratorModule
+    {
+        class DBNullToCKFixRewriter : CSharpSyntaxRewriter
+        {
+            public override SyntaxNode VisitIdentifierName( IdentifierNameSyntax node )
+            {
+                if( node.Identifier.Text == "DBNull" )
+                {
+                    return node.WithIdentifier( SyntaxFactory.Identifier( "CKFixDBNull" ) );
+                }
+                return node;
+            }
+
+            public static SyntaxTree Run( SyntaxTree t )
+            {
+                return t.WithRootAndOptions( new DBNullToCKFixRewriter().Visit( t.GetRoot() ), t.Options );
+            }
+        }
+
+        public IEnumerable<Assembly> RequiredAssemblies => new[] { typeof( System.Reflection.TypeInfo ).GetTypeInfo().Assembly };
+
+        public void AppendSource( StringBuilder b )
+        {
+            b.AppendLine( @"namespace System 
+                { 
+                    using System.Reflection; 
+                    public static class CKFixDBNull
+                    { 
+                        public static object Value = typeof( System.Data.Common.DbConnection ).GetTypeInfo().Assembly.GetType( ""System.DBNull"" ).GetField(""Value"").GetValue(null);
+                    }
+                }" );
+        }
+
+        public SyntaxTree PostProcess( SyntaxTree t ) => DBNullToCKFixRewriter.Run( t );
+    }
+#endif
     public partial class SqlCallableAttributeImpl
     {
         protected override bool DoImplement(
@@ -46,6 +86,14 @@ namespace CK.SqlServer.Setup
             IDynamicAssembly dynamicAssembly, 
             ClassBuilder cB)
         {
+            // This code MUST be in the SqlAspect !!!
+#if !NET461
+            if( !dynamicAssembly.SourceModules.Any( module => module is FixDBNull ) )
+            {
+                dynamicAssembly.SourceModules.Add( new FixDBNull() );
+            }
+#endif
+
             ISqlCallableItem item = sqlItem as ISqlCallableItem;
             if (item == null)
             {
@@ -148,7 +196,7 @@ namespace CK.SqlServer.Setup
                     if (mP.IsOut)
                     {
                         Debug.Assert(mP.ParameterType.IsByRef);
-                        b.AppendLine($"{mP.Name} = default({mP.ParameterType.GetElementType()});");
+                        b.AppendLine($"{mP.Name} = default({mP.ParameterType.GetElementType().ToCSharpName()});");
                     }
                 }
                 b.AppendLine($"SqlCommand cmd_loc;");
@@ -187,40 +235,40 @@ namespace CK.SqlServer.Setup
                 {
                     ParameterInfo mP = mParameters[iM];
                     int iSFound = sqlParamHandlers.IndexOf(iS, mP);
-                    if (iSFound < 0)
+                    if( iSFound < 0 )
                     {
-                        Debug.Assert(SqlObjectItem.TypeConnection.GetTypeInfo().IsSealed && SqlObjectItem.TypeTransaction.GetTypeInfo().IsSealed);
+                        Debug.Assert( SqlObjectItem.TypeConnection.GetTypeInfo().IsSealed && SqlObjectItem.TypeTransaction.GetTypeInfo().IsSealed );
                         // Catches first Connection and Transaction parameters.
-                        if (firstSqlConnectionParameter == null && mP.ParameterType == SqlObjectItem.TypeConnection && !mP.ParameterType.IsByRef)
+                        if( firstSqlConnectionParameter == null && mP.ParameterType == SqlObjectItem.TypeConnection && !mP.ParameterType.IsByRef )
                         {
                             firstSqlConnectionParameter = mP;
                         }
-                        else if (firstSqlTransactionParameter == null && mP.ParameterType == SqlObjectItem.TypeTransaction && !mP.ParameterType.IsByRef)
+                        else if( firstSqlTransactionParameter == null && mP.ParameterType == SqlObjectItem.TypeTransaction && !mP.ParameterType.IsByRef )
                         {
                             firstSqlTransactionParameter = mP;
                         }
                         else
                         {
                             // When we return a wrapper, we keep any extra parameters for wrappers.
-                            if (gType == GenerationType.ReturnWrapper)
+                            if( gType == GenerationType.ReturnWrapper )
                             {
-                                extraMethodParameters.Add(mP);
+                                extraMethodParameters.Add( mP );
                             }
                             // If the parameter is a parameter source, we register it.
-                            bool isParameterSourceOrCommandExecutor = sqlCallContexts.AddParameterSourceAndSqlCommandExecutor(mP, monitor, dynamicAssembly.GetPocoInfo());
+                            bool isParameterSourceOrCommandExecutor = sqlCallContexts.AddParameterSourceAndSqlCommandExecutor( mP, monitor, dynamicAssembly.GetPocoInfo() );
 
-                            if (mP.ParameterType.IsByRef && sqlParamHandlers.IsAsyncCall)
+                            if( mP.ParameterType.IsByRef && sqlParamHandlers.IsAsyncCall )
                             {
-                                monitor.Error().Send("Parameter '{0}' is ref or out: ref or out are not compatible with an asynchronous execution (the returned type of the method is a Task).", mP.Name);
+                                monitor.Error().Send( $"Parameter '{mP.Name}' is ref or out: ref or out are not compatible with an asynchronous execution (the returned type of the method is a Task)." );
                                 ++nbError;
                             }
-                            else if (!isParameterSourceOrCommandExecutor
-                                     && !(sqlParamHandlers.IsAsyncCall && mP.ParameterType == typeof(CancellationToken))
-                                     && gType != GenerationType.ReturnWrapper)
+                            else if( !isParameterSourceOrCommandExecutor
+                                     && !(sqlParamHandlers.IsAsyncCall && mP.ParameterType == typeof( CancellationToken ))
+                                     && gType != GenerationType.ReturnWrapper )
                             {
                                 // When direct parameters can not be mapped to Sql parameters, this is an error.
-                                Debug.Assert(extraMethodParameters == null);
-                                monitor.Error().Send("Parameter '{0}' not found in procedure parameters. Defined C# parameters must respect the actual stored procedure order.", mP.Name);
+                                Debug.Assert( extraMethodParameters == null );
+                                monitor.Error().Send( $"Parameter '{mP.Name}' not found in procedure parameters. Defined C# parameters must respect the actual stored procedure order." );
                                 ++nbError;
                             }
                         }
@@ -228,7 +276,7 @@ namespace CK.SqlServer.Setup
                     else
                     {
                         var set = sqlParamHandlers.Handlers[iSFound];
-                        if (!set.SetParameterMapping(mP, monitor)) ++nbError;
+                        if( !set.SetParameterMapping( mP, monitor ) ) ++nbError;
                         iS = iSFound + 1;
                     }
                 }
@@ -239,29 +287,28 @@ namespace CK.SqlServer.Setup
                     // - OR specify a default value,
                     // - OR be purely output.
                     // Otherwise,  have a default value.
-                    foreach (var setter in sqlParamHandlers.Handlers)
+                    foreach (var handler in sqlParamHandlers.Handlers)
                     {
-                        if (!setter.IsMappedToMethodParameterOrParameterSourceProperty)
+                        if (!handler.IsMappedToMethodParameterOrParameterSourceProperty )
                         {
-                            var sqlP = setter.SqlExprParam;
+                            var sqlP = handler.SqlExprParam;
                             if (sqlCallContexts == null
-                                || !sqlCallContexts.MatchPropertyToSqlParameter(setter, monitor))
+                                || !sqlCallContexts.MatchPropertyToSqlParameter(handler, monitor))
                             {
                                 if (sqlP.DefaultValue == null)
                                 {
                                     // If it is a pure output parameters then we don't care setting a value for it.
                                     if (sqlP.IsPureOutput)
                                     {
-                                        // Pure output. If it is the RETURN_VALUE of a function, we do not warn.
-                                        if (!(sqlP is SqlParameterReturnedValue))
+                                        if( !handler.IsUsedByReturnType )
                                         {
-                                            monitor.Info().Send("Method '{0}' does not declare the Sql Parameter '{1}'. Since it is a pure output parameter, it will be ignored.", m.Name, sqlP.ToStringClean());
+                                            monitor.Info().Send($"Method '{m.Name}' does not declare the Sql Parameter '{sqlP.ToStringClean()}'. Since it is a pure output parameter, it will be ignored." );
                                         }
-                                        setter.SetMappingToIgnoredOutput();
+                                        handler.SetMappingToIgnoredOutput();
                                     }
                                     else
                                     {
-                                        monitor.Error().Send("Sql parameter '{0}' in procedure parameters has no default value. The method '{1}' must declare it (or a property must exist in one of the [ParameterSource] parameters) or the procedure must specify the default value.", sqlP.Name, m.Name);
+                                        monitor.Error().Send( $"Sql parameter '{sqlP.Name}' in procedure parameters has no default value. The method '{m.Name}' must declare it (or a property must exist in one of the [ParameterSource] parameters) or the procedure must specify the default value." );
                                         ++nbError;
                                     }
                                 }
@@ -270,9 +317,9 @@ namespace CK.SqlServer.Setup
                                     // The parameter has a default value.
                                     if (sqlP.IsPureOutput)
                                     {
-                                        monitor.Warn().Send("Sql parameter '{0}' in procedure is a pure output parameter that has a default value. If the input matters, it should be marked /*input*/output.", sqlP.Name);
+                                        monitor.Warn().Send($"Sql parameter '{sqlP.Name}' in procedure is a pure output parameter that has a default value. If the input matters, it should be marked /*input*/output.");
                                     }
-                                    setter.SetMappingToSqlDefaultValue();
+                                    handler.SetMappingToSqlDefaultValue();
                                 }
                             }
                         }
@@ -301,11 +348,14 @@ namespace CK.SqlServer.Setup
                                 eb => eb.Append("cmd_loc.Connection = null;") );
                         }
                     }
-                    b.AppendLine($"SqlParameter tP;");
-                    foreach (var setter in sqlParamHandlers.Handlers)
+                    if( sqlParamHandlers.Handlers.Count > 0 )
                     {
-                        b.AppendLine($"tP = cmd_parameters[{setter.Index}];");
-                        if (!setter.EmitSetSqlParameterValue(monitor, b, "tP")) ++nbError;
+                        b.AppendLine( $"SqlParameter tP;" );
+                        foreach( var setter in sqlParamHandlers.Handlers )
+                        {
+                            b.AppendLine( $"tP = cmd_parameters[{setter.Index}];" );
+                            if( !setter.EmitSetSqlParameterValue( monitor, b, "tP" ) ) ++nbError;
+                        }
                     }
                 }
 
@@ -358,7 +408,7 @@ namespace CK.SqlServer.Setup
                         if (sqlCallContexts.RequiresReturnTypeBuilder)
                         {
                             Debug.Assert(sqlCallContexts.IsAsyncCall);
-                            string funcName = sqlParamHandlers.AssumeSourceFuncResultBuilder(dynamicAssembly, GetTempObjectName() );
+                            string funcName = sqlParamHandlers.AssumeSourceFuncResultBuilder( dynamicAssembly );
                             b.Append("return ");
                             sqlCallContexts.GenerateExecuteNonQueryCall(b, "cmd_loc", funcName, mParameters );
                         }
@@ -370,11 +420,11 @@ namespace CK.SqlServer.Setup
                             {
                                 foreach (var h in sqlParamHandlers.Handlers)
                                 {
-                                    h.EmitSetRefOrOutParameter(b, "cmd_parameters");
+                                    h.EmitSetRefOrOutParameter(b, "cmd_parameters", GetTempObjectName );
                                 }
                                 if (m.ReturnType != typeof(void))
                                 {
-                                    string resultVarName = sqlParamHandlers.EmitInlineReturn(b, "cmd_parameters", GetTempObjectName());
+                                    string resultVarName = sqlParamHandlers.EmitInlineReturn(b, "cmd_parameters", GetTempObjectName);
                                     b.Append( "return " ).Append( resultVarName ).AppendLine( ";" );
                                 }
                             }

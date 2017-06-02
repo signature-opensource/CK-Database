@@ -51,6 +51,7 @@ namespace CK.SqlServer.Setup
 
                 ParameterInfo _methodParam;
                 SqlCallContextInfo.Property _ctxProp;
+                TypeInfo _actualParameterType;
                 bool _isIgnoredOutputParameter;
                 bool _isUseDefaultSqlValue;
                 bool _isUsedByReturnedType;
@@ -65,13 +66,14 @@ namespace CK.SqlServer.Setup
                 }
 
                 /// <summary>
-                /// Gets whether this Sql parameter has a corresponding method parameter or a property in one of the ParameterSource objects 
-                /// or is an ignored output.
+                /// Gets whether this Sql parameter has a corresponding method parameter or a property in one of the ParameterSource objects.
                 /// </summary>
                 public bool IsMappedToMethodParameterOrParameterSourceProperty
                 {
                     get { return _methodParam != null || _ctxProp != null; }
                 }
+
+                public bool IsUsedByReturnType => _isUsedByReturnedType;
 
                 public int Index => _index; 
 
@@ -90,6 +92,8 @@ namespace CK.SqlServer.Setup
                 {
                     Debug.Assert( !IsMappedToMethodParameterOrParameterSourceProperty );
                     _methodParam = mP;
+                    _actualParameterType = mP.ParameterType.GetTypeInfo();
+                    if( _actualParameterType.IsByRef ) _actualParameterType = _actualParameterType.GetElementType().GetTypeInfo();
                     if( !CheckParameter( mP, SqlExprParam, monitor ) ) return false;
                     return true;
                 }
@@ -165,7 +169,7 @@ namespace CK.SqlServer.Setup
                         if( sqlIsPureOutput )
                         {
                             // By value method parameter with a pure output Sql parameter: it should be /*input*/output in sql.
-                            monitor.Warn().Send( "Sql parameter '{0}' is an output parameter. Setting its value is useless. Should it be marked /*input*/output?.", p.Name );
+                            monitor.Warn().Send( $"Sql parameter '{p.Name}' is an output parameter. Setting its value is useless. Should it be marked /*input*/output?." );
                         }
                         // Whenever the sql parameter is output but it is not ref nor out, we warn the user: it is an ignored return from the database.
                         // When using specialization, this should NOT occur if we succeed to reroute the call to the most specialized, covariant, method.
@@ -180,16 +184,11 @@ namespace CK.SqlServer.Setup
                         {
                             if( isComplexReturnedType )
                             {
-                                monitor.Warn().Send( "Sql parameter '{0}' is an /*input*/output parameter and this parameter is not returned in '{2} {1}' method.", 
-                                                            p.Name, 
-                                                            mP.Member.Name,
-                                                            _holder.ComplexReturnType.CreatedType.Name );
+                                monitor.Warn().Send( $"Sql parameter '{p.Name}' is an /*input*/output parameter and this parameter is not returned in '{_holder.ComplexReturnType.CreatedType.Name} {mP.Member.Name}' method." );
                             }
                             else
                             {
-                                monitor.Warn().Send( "Sql parameter '{0}' is an /*input*/output parameter and this parameter is not returned. The method '{1}' may use 'ref' to retrieve the new value after the call.", 
-                                                            p.Name, 
-                                                            mP.Member.Name );
+                                monitor.Warn().Send( $"Sql parameter '{p.Name}' is an /*input*/output parameter and this parameter is not returned. The method '{mP.Member.Name}' may use 'ref' to retrieve the new value after the call." );
                             }
                         }
                         #endregion
@@ -205,6 +204,7 @@ namespace CK.SqlServer.Setup
                 {
                     Debug.Assert( !IsMappedToMethodParameterOrParameterSourceProperty );
                     _ctxProp = prop;
+                    _actualParameterType = _ctxProp.Prop.PropertyType.GetTypeInfo();
                 }
 
                 /// <summary>
@@ -288,7 +288,7 @@ namespace CK.SqlServer.Setup
                 {
                     if( SqlExprParam.DefaultValue.IsVariable )
                     {
-                        monitor.Error().Send( "Parameter '{0}' has default value '{1}' that is a variable. This not supported.", SqlExprParam.ToStringClean(), SqlExprParam.DefaultValue.ToString() );
+                        monitor.Error().Send( $"Parameter '{SqlExprParam.ToStringClean()}' has default value '{SqlExprParam.DefaultValue.ToString()}' that is a variable. This not supported." );
                         return false;
                     }
                     object o = SqlExprParam.DefaultValue.NullOrLitteralDotNetValue;
@@ -363,6 +363,7 @@ namespace CK.SqlServer.Setup
 
                 bool EmitSetParameterCode( IActivityMonitor monitor, ILGenerator g, LocalBuilder locParameterCollection, Func<IActivityMonitor,ILGenerator,bool> valueLoader )
                 {
+#if NET461
                     g.LdLoc( locParameterCollection );
                     g.LdInt32( _index );
                     g.Emit( OpCodes.Call, SqlObjectItem.MParameterCollectionGetParameter );
@@ -391,47 +392,48 @@ namespace CK.SqlServer.Setup
                     // Load object on the stack.
                     if ( !valueLoader( monitor, g ) ) return false;
                     g.Emit( OpCodes.Call, SqlObjectItem.MParameterSetValue );
+#endif
                     return true;
                 }
 
-                internal bool EmitSetSqlParameterValue(IActivityMonitor monitor, StringBuilder b, string varParameterName)
+                internal bool EmitSetSqlParameterValue( IActivityMonitor monitor, StringBuilder b, string varParameterName )
                 {
-                    if (_isIgnoredOutputParameter) return true;
-                    // We must correct its default configuration if the Sql parameter is output in order 
-                    // for Sql Server to take into account the input value.
-                    if (SqlExprParam.IsPureOutput)
-                    {
-                        b.AppendLine($"{varParameterName}.Direction = ParameterDirection.InputOutput;");
-                    }
+                    if( _isIgnoredOutputParameter ) return true;
                     string sqlType = SqlExprParam.SqlType.ToStringClean();
-                    if (StringComparer.OrdinalIgnoreCase.Equals(sqlType, "Geometry")
-                        || StringComparer.OrdinalIgnoreCase.Equals(sqlType, "Geography")
-                        || StringComparer.OrdinalIgnoreCase.Equals(sqlType, "HierarchyId"))
+                    if( StringComparer.OrdinalIgnoreCase.Equals( sqlType, "Geometry" )
+                        || StringComparer.OrdinalIgnoreCase.Equals( sqlType, "Geography" )
+                        || StringComparer.OrdinalIgnoreCase.Equals( sqlType, "HierarchyId" ) )
                     {
-                        b.AppendLine($"{varParameterName}.SqlDbType = SqlDbType.Udt;");
-                        b.AppendLine($"{varParameterName}.UdtTypeName = {sqlType.ToLowerInvariant().ToSourceString()};");
+                        b.AppendLine( $"{varParameterName}.SqlDbType = SqlDbType.Udt;" );
+                        b.AppendLine( $"{varParameterName}.UdtTypeName = {sqlType.ToLowerInvariant().ToSourceString()};" );
                     }
                     // Do not set any Value if the C# parameter is out.
-                    if (!_isUseDefaultSqlValue && _methodParam != null && _methodParam.IsOut) return true;
+                    if( !_isUseDefaultSqlValue && _methodParam != null && _methodParam.IsOut ) return true;
 
-                    b.Append($"{varParameterName}.Value = ");
-                    if (_isUseDefaultSqlValue)
+                    // We must correct its default configuration if the Sql parameter is output in order 
+                    // for Sql Server to take into account the input value.
+                    if( SqlExprParam.IsPureOutput )
                     {
-                        if (SqlExprParam.DefaultValue.IsVariable)
+                        b.AppendLine( $"{varParameterName}.Direction = ParameterDirection.InputOutput;" );
+                    }
+                    b.Append( $"{varParameterName}.Value = " );
+                    if( _isUseDefaultSqlValue )
+                    {
+                        if( SqlExprParam.DefaultValue.IsVariable )
                         {
-                            monitor.Error().Send($"Parameter '{SqlExprParam.ToStringClean()}' has default value '{SqlExprParam.DefaultValue}' that is a variable. This not supported.");
+                            monitor.Error().Send( $"Parameter '{SqlExprParam.ToStringClean()}' has default value '{SqlExprParam.DefaultValue}' that is a variable. This not supported." );
                             return false;
                         }
-                        monitor.Info().Send($"Parameter '{SqlExprParam.ToStringClean()}' will use its default sql value '{SqlExprParam.DefaultValue}'.");
+                        monitor.Info().Send( $"Parameter '{SqlExprParam.ToStringClean()}' will use its default sql value '{SqlExprParam.DefaultValue}'." );
                         object o = SqlExprParam.DefaultValue.NullOrLitteralDotNetValue;
-                        if (o == DBNull.Value) b.Append("DBNull.Value");
+                        if( o == DBNull.Value ) b.Append( "DBNull.Value" );
                         else
                         {
                             try
                             {
                                 b.AppendSourceString( o );
                             }
-                            catch(Exception ex)
+                            catch( Exception ex )
                             {
                                 monitor.Error().Send( ex, $"Emit for type  '{SqlExprParam.ToStringClean()}' (Parameter '{o.GetType().Name}') is not supported." );
                                 return false;
@@ -440,24 +442,34 @@ namespace CK.SqlServer.Setup
                     }
                     else
                     {
-                        Debug.Assert(IsMappedToMethodParameterOrParameterSourceProperty);
-                        b.Append( "(object)" );
+                        Debug.Assert( IsMappedToMethodParameterOrParameterSourceProperty );
+                        Debug.Assert( (_methodParam == null) != (_ctxProp == null) );
+                        Debug.Assert( _actualParameterType != null );
+                        bool isNullable = true;
+                        if( _actualParameterType.IsValueType )
+                        {
+                            isNullable = _actualParameterType.IsGenericType && _actualParameterType.GetGenericTypeDefinition() == typeof( Nullable<> );
+                        }
+                        if( isNullable ) b.Append( "(object)" );
                         if( _methodParam != null )
                         {
                             b.Append( _methodParam.Name );
                         }
                         else
                         {
-                            Debug.Assert( _ctxProp != null );
-                            b.Append(_ctxProp.Parameter.Name).Append('.').Append( _ctxProp.Prop.Name );
+                            if( _ctxProp.PocoMappedType != null )
+                            {
+                                b.Append( "((" ).AppendCSharpName( _ctxProp.PocoMappedType ).Append( ')' ).Append( _ctxProp.Parameter.Name ).Append( ")." ).Append( _ctxProp.Prop.Name );
+                            }
+                            else b.Append( _ctxProp.Parameter.Name ).Append( '.' ).Append( _ctxProp.Prop.Name );
                         }
-                        b.Append( " ?? DBNull.Value" );
+                        if( isNullable ) b.Append( " ?? DBNull.Value" );
                     }
-                    b.AppendLine(";");
+                    b.AppendLine( ";" );
                     return true;
                 }
 
-                #endregion
+#endregion
 
                 internal void EmitSetRefOrOutParameter( ILGenerator g, LocalBuilder locParameterCollection )
                 {
@@ -480,10 +492,12 @@ namespace CK.SqlServer.Setup
                         g.Emit( OpCodes.Stind_Ref );
                     }
                 }
-                internal void EmitSetRefOrOutParameter(StringBuilder b, string varParametersName )
+                internal void EmitSetRefOrOutParameter( StringBuilder b, string varCmdParameters, Func<string> tempObjName )
                 {
                     if( _methodParam == null || !_methodParam.ParameterType.IsByRef ) return;
-                    b.AppendLine($"{_methodParam.Name} = ({_methodParam.ParameterType.GetElementType()}){varParametersName}[{_index}].Value;");
+
+                    string resultName = EmitGetSqlCommandParameterValue( b, varCmdParameters, tempObjName, _index, _actualParameterType.AsType() );
+                    b.Append( _methodParam.Name ).Append( "=" ).Append( resultName ).AppendLine( ";" );
                 }
             }
 
@@ -543,7 +557,7 @@ namespace CK.SqlServer.Setup
                     }
                     else
                     {
-                        monitor.Error().Send( "Type mismatch for function returned type '{0}' / '{1}'.", returnType.Name, _funcReturnParameter.SqlType.ToStringClean() );
+                        monitor.Error().Send( $"Type mismatch for function returned type '{returnType.Name}' / '{_funcReturnParameter.SqlType.ToStringClean()}'." );
                         return false;
                     }
                 }
@@ -564,7 +578,7 @@ namespace CK.SqlServer.Setup
                 {
                     if( returnType.GetTypeInfo().IsInterface )
                     {
-                        monitor.Error().Send( "Return type '{0}' is an interface. This is not yet supported.", returnType.Name );
+                        monitor.Error().Send( $"Return type '{returnType.Name}' is an interface. This is not yet supported." );
                         return false;
                     }
                     _unwrappedReturnedType = returnType;
@@ -583,9 +597,7 @@ namespace CK.SqlServer.Setup
                         return true;
                     }
                 }
-                // TODO: Type.Name for byte? is "Nullable'1"... 
-                // A simple extension method Type.GetDisplayName() should be available with a nice string (Nullable<byte>).
-                monitor.Error().Send( "Unable to find a way to return the required return type '{0}'.", returnType.Name );
+                monitor.Error().Send( $"Unable to find a way to return the required return type '{returnType.ToCSharpName()}'." );
                 return false;
             }
 
@@ -613,7 +625,7 @@ namespace CK.SqlServer.Setup
                 }
             }
 
-            internal string EmitInlineReturn(StringBuilder b, string nameParameters, string tempObjectName)
+            internal string EmitInlineReturn(StringBuilder b, string nameParameters, Func<string> tempObjectName )
             {
                 if (_simpleReturnType != null)
                 {
@@ -626,12 +638,47 @@ namespace CK.SqlServer.Setup
                 });
             }
 
-            static string EmitGetSqlCommandParameterValue(StringBuilder b, string nameParameters, string tempObjectName, int sqlParameterIndex, Type targetType)
+            static string EmitGetSqlCommandParameterValue(StringBuilder b, string varCmdParameters, Func<string> tempObjName, int sqlParameterIndex, Type targetType)
             {
-                b.AppendLine($"{tempObjectName} = {nameParameters}[{sqlParameterIndex}].Value;");
-                b.AppendLine($"if( {tempObjectName} == DBNull.Value ) {tempObjectName} = null;");
+                Debug.Assert( !targetType.IsByRef );
                 string resultName = "getR" + sqlParameterIndex;
-                b.AppendLine($"var {resultName} = ({targetType.FullName}){tempObjectName};");
+                b.AppendLine($"{tempObjName()} = {varCmdParameters}[{sqlParameterIndex}].Value;");
+                bool isNullable = true;
+                Type enumUnderlyingType = null;
+                if( targetType.GetTypeInfo().IsValueType )
+                {
+                    isNullable = false;
+                    Type actualType = Nullable.GetUnderlyingType( targetType );
+                    if( actualType != null )
+                    {
+                        isNullable = true;
+                        if( actualType.GetTypeInfo().IsEnum ) enumUnderlyingType = Enum.GetUnderlyingType( actualType );
+                    }
+                    else
+                    {
+                        //Debugger.Break();
+                        //if( targetType.GetTypeInfo().IsEnum ) enumUnderlyingType = Enum.GetUnderlyingType( targetType );
+                    }
+                }
+                b.Append( "var " ).Append( resultName ).Append( '=' );
+                if( isNullable )
+                {
+                    b.Append( "DBNull.Value == " )
+                        .Append( tempObjName() )
+                        .Append( "? default(" ).AppendCSharpName( targetType ).Append( ')' )
+                        .Append( ": (" ).AppendCSharpName( targetType ).Append( ')' );
+                    if( enumUnderlyingType != null )
+                    {
+                        b.Append( '(' ).AppendCSharpName( enumUnderlyingType ).Append( ')' );
+                    }
+                }
+                else
+                {
+                    b.Append( '(' )
+                        .AppendCSharpName( targetType )
+                        .Append( ')' );
+                }
+                b.Append( tempObjName() ).AppendLine( ";" );
                 return resultName;
             }
 
@@ -759,30 +806,43 @@ namespace CK.SqlServer.Setup
                 return f.Field;
             }
 
-            internal string AssumeSourceFuncResultBuilder(IDynamicAssembly dynamicAssembly, string tempObjectName)
+            internal string AssumeSourceFuncResultBuilder(IDynamicAssembly dynamicAssembly)
             {
                 string funcKey = "S:" + _funcHolderTypeName + ':' + _funcResultBuilderSignature.ToString();
-                string fullName = (string)dynamicAssembly.Memory[funcKey];
-                if (fullName == null)
+                string fieldFullName = (string)dynamicAssembly.Memory[funcKey];
+                if (fieldFullName == null)
                 {
                     FuncTypeHolder fB = AssumeFuncTypeHolder(dynamicAssembly);
                     string funcName = 'f' + dynamicAssembly.NextUniqueNumber();
                     string fieldName = "_" + funcName;
-                    string tFunc = $"Func<{SqlObjectItem.TypeCommand.FullName},{_unwrappedReturnedType.FullName}>";
+                    string tFuncReturnType = _unwrappedReturnedType.ToCSharpName();
+                    string tFunc = $"Func<{SqlObjectItem.TypeCommand.FullName},{tFuncReturnType}>";
                     var fieldDef = fB.ClassBuilder.DefineField(tFunc, fieldName);
-                    fieldDef.FrontModifiers.Add("internal static");
+                    fieldDef.FrontModifiers.Add("internal static readonly");
                     fieldDef.InitialValue = funcName;
                     var func = fB.ClassBuilder.DefineMethod(funcName);
-                    func.FrontModifiers.Add("private");
-                    func.Parameters.Add(new CodeGen.ParameterBuilder() { Name = "c" });
+                    func.FrontModifiers.Add("private static");
+                    func.ReturnType = tFuncReturnType;
+                    func.Parameters.Add(new CodeGen.ParameterBuilder() { Name = "c", ParameterType = SqlObjectItem.TypeCommand.FullName } );
+                    // We may use a temporary object.
+                    string tempObjectName = null;
+                    Func<string> GetTempObjectName = () =>
+                    {
+                        if( tempObjectName == null )
+                        {
+                            func.Body.AppendLine( "object tempObj;" );
+                            tempObjectName = "tempObj";
+                        }
+                        return tempObjectName;
+                    };
                     func.Body.AppendLine("var parameters = c.Parameters;");
-                    string varName = EmitInlineReturn(func.Body, "parameters", tempObjectName);
+                    string varName = EmitInlineReturn(func.Body, "parameters", GetTempObjectName );
                     func.Body.AppendLine($"return {varName};");
 
-                    fullName = fB.ClassBuilder.FullName + '.' + fieldName;
-                    dynamicAssembly.Memory[funcKey] = fullName;
+                    fieldFullName = fB.ClassBuilder.FullName + '.' + fieldName;
+                    dynamicAssembly.Memory[funcKey] = fieldFullName;
                 }
-                return fullName;
+                return fieldFullName;
             }
 
             void FinalizeFuncHolderType( IDynamicAssembly dynamicAssembly )

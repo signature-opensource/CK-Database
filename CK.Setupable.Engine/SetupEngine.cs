@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -135,7 +135,9 @@ namespace CK.Setup
                         setupSuccess &= versionTracker.ConcludeWithFatalOnError( _monitor, _startConfiguration.VersionedItemWriter, setupSuccess );
                         if( setupSuccess )
                         {
-                            if( buildResult.GenerateFinalAssemblyIfRequired( _monitor ) )
+                            bool doNotGenerate = _config.StObjEngineConfiguration.FinalAssemblyConfiguration.GenerateFinalAssemblyOption == BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile;
+
+                            if( doNotGenerate || buildResult.GenerateFinalAssembly( _monitor ) )
                             {
                                 _startConfiguration.SetupSessionMemoryProvider.StopSetup( null );
                                 return true;

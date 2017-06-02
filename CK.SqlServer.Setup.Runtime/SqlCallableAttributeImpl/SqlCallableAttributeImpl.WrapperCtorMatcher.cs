@@ -15,6 +15,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CK.Core;
 using CK.Reflection;
+using CK.CodeGen;
 
 namespace CK.SqlServer.Setup
 {
@@ -196,25 +197,23 @@ namespace CK.SqlServer.Setup
 
             internal void LdParameters( StringBuilder b, string varCmdName, ParameterInfo[] callingParameters )
             {
-                bool already = false;
                 int i = 0;
                 foreach( var mP in _mappedParameters )
                 {
-                    if( already ) b.Append( ", " );
-                    else already = false;
+                    if( i > 0 ) b.Append( ", " );
                     if( i == _idxSqlCommand )
                     {
                         b.Append( varCmdName );
                     }
                     else if( mP == _declaringTypeMarker )
                     {
-                        b.Append( $"({Parameters[i].ParameterType.FullName})this" );
+                        b.Append('(').AppendCSharpName( Parameters[i].ParameterType ).Append(")this" );
                     }
                     else if( mP.Member == Ctor )
                     {
                         Debug.Assert( IsValidDefaultValue( mP ) );
                         Debug.Assert( mP.Position == i, "This is the ParameterInfo of the constructor." );
-                        b.Append( mP.DefaultValue ?? "null" );
+                        b.AppendSourceString( mP.DefaultValue );
                     }
                     else
                     {

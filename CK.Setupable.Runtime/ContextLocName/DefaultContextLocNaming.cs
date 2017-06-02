@@ -1,4 +1,4 @@
-#region Proprietary License
+﻿#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.Setupable.Runtime\ContextLocName\DefaultContextLocNaming.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -592,7 +592,7 @@ namespace CK.Core
                     idxEnd = curLoc.LastIndexOf( _locPathChar, idxEnd - 1 );
                     if( idxEnd < 0 )
                     {
-                        if( fullNameToThrowError != null ) throw new CKException( "Invalid relative location in '{2}': '{0}' is above the root given '{1}'.", location, curLoc, fullNameToThrowError() );
+                        if( fullNameToThrowError != null ) throw new CKException( $"Invalid relative location in '{fullNameToThrowError()}': '{location}' is above the root given '{curLoc}'." );
                         return false;
                     }
                     ++iSep;

@@ -42,6 +42,7 @@ namespace SqlTransform.Tests
             return parameters[0].Value == DBNull.Value ? (string)null : (string)parameters[0].Value;
         }
 
+#if NET461
 
         [Test]
         public void calling_SimpleReplaceTest_method()
@@ -63,7 +64,7 @@ namespace SqlTransform.Tests
                 Type tC = m.GetParameters()[1].ParameterType;
                 Console.WriteLine($"SqlCommand parameter of ISqlCommandExecutor.ExecuteNonQuery => => {tC.GetTypeInfo().Assembly.Location}");
                 */
-                Assembly genDll = Assembly.Load(new AssemblyName("Transform.Tests.Generated"));
+                Assembly genDll = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "Transform.Tests.Generated" );
                 {
                     Type tCommandCreator = genDll.GetTypes().Single(t => t.FullName == "CK._g.CreatorForSqlCommand");
                     MethodInfo mSimpleCreate = tCommandCreator.GetRuntimeMethods().Single(x => x.Name == "[]db^CK.sSimpleReplaceTest");
@@ -82,6 +83,7 @@ namespace SqlTransform.Tests
                 Assert.That( s, Is.EqualTo( "Return: Hello! 0" ) );
             }
         }
+#endif
 
         [Test]
         public void calling_SimpleTransformTest_method()

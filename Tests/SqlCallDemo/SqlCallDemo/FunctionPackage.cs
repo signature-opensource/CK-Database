@@ -60,5 +60,9 @@ namespace SqlCallDemo
 
         [SqlProcedure( "sWithEnumIO" )]
         public abstract Task<Power?> ProcWithNullableEnumIOAsync( ISqlCallContext ctx, BPower? bytePower, Power? power );
+
+        [SqlProcedure( "sWithEnumIO" )]
+        public abstract void ProcWithNullableEnumIOByRef( ISqlCallContext ctx, BPower? bytePower, ref Power? power );
+
     }
 }

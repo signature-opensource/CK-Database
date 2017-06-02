@@ -38,6 +38,7 @@ namespace CK.Core
             }
             _memory = new Dictionary<object, object>();
             _postActions = new List<Action<IDynamicAssembly>>();
+            SourceModules = new List<ICodeGeneratorModule>();
             SourceBuilder = new NamespaceBuilder("CK._g");
         }
 
@@ -64,10 +65,15 @@ namespace CK.Core
         public NamespaceBuilder SourceBuilder { get; }
 
         /// <summary>
+        /// Gets the source modules for this <see cref="IDynamicAssembly"/>.
+        /// </summary>
+        public IList<ICodeGeneratorModule> SourceModules { get; } 
+
+        /// <summary>
         /// Provides a new unique number that can be used for generating unique names inside this dynamic assembly.
         /// </summary>
         /// <returns>A unique number.</returns>
-        public string NextUniqueNumber() => Interlocked.Increment(ref _typeID).ToString();
+        public string NextUniqueNumber() => (++_typeID).ToString();
 
         /// <summary>
         /// Gets a shared dictionary associated to the dynamic assembly. 

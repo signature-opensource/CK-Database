@@ -28,8 +28,8 @@ namespace CK.Setup
             try
             {
 #if NET461
-                if( _finalAssembly == null ) throw new InvalidOperationException( "Using GenerateOption.DoNotGenerateFile." );
-                if( !DoGenerateFinalAssembly( monitor, runtimeBuilder, callPEVrify ) ) return false;
+             if( _finalAssembly == null ) throw new InvalidOperationException( "Using GenerateOption.DoNotGenerateFile." );
+             if( !withSrc && !DoGenerateFinalAssembly( monitor, runtimeBuilder, callPEVrify ) ) return false;
 #endif
                 return withSrc ? GenerateSourceCode( monitor, runtimeBuilder, true ) : true;
             }

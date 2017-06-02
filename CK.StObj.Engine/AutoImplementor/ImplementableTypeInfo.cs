@@ -44,7 +44,7 @@ namespace CK.Core
 
         /// <summary>
         /// Exposes <see cref="IAutoImplementorMethod"/> and <see cref="IAutoImplementorProperty"/> that implement
-        /// empty behavior.
+        /// <see cref="NotSupportedException"/>) behaviors since this marker is not intended to be used.
         /// </summary>
         public static readonly NoImplementationMarker UnimplementedMarker = new NoImplementationMarker();
 

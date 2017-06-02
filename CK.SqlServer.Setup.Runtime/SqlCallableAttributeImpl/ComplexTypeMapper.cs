@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using CK.Core;
 using CK.Reflection;
 using CK.Text;
+using CK.CodeGen;
 
 namespace CK.SqlServer.Setup
 {
@@ -145,7 +146,9 @@ namespace CK.SqlServer.Setup
         /// <returns>True if the input has been mapped at least once.</returns>
         public bool AddInput( int index, string name, Type type, bool shouldBeMapped = true )
         {
-            Func<Type,bool> matcher = type != null ? delegate( Type t ) { return t.IsAssignableFrom( type ); } : (Func<Type,bool>)null;
+            Func<Type,bool> matcher = type != null 
+                                        ? delegate( Type t ) { return t.IsAssignableFrom( type ); }
+                                        : (Func<Type,bool>)null;
             return AddInput( index, name, matcher, type != null ? type.Name : null, shouldBeMapped );
         }
 
@@ -186,7 +189,7 @@ namespace CK.SqlServer.Setup
                         }
                         else if( _selectedCtor.Parameters.Count == c.Parameters.Count )
                         {
-                            monitor.Error().Send( "Ambiguous constructors: both '{0}' and '{1}' are statisfied.",
+                            monitor.Error().Send( "Ambiguous constructors: both '{0}' and '{1}' are satisfied.",
                                                         SqlCallableAttributeImpl.DumpParameters( _selectedCtor.CtorParameters, true ),
                                                         SqlCallableAttributeImpl.DumpParameters( c.CtorParameters, true ) );
                             return false;
@@ -210,24 +213,24 @@ namespace CK.SqlServer.Setup
         public bool CheckValidity( IActivityMonitor monitor )
         {
             if( !ChooseCtor( monitor ) ) return false;
-            var unmappedProperties = _props.Where( p => !p.IsInputSatisfied ).ToArray();
-            if( unmappedProperties.Length != 0 &&_unmappedInputs != null )
+            var unmappedProperties = _props.Where( p => !p.IsInputSatisfied ).ToList();
+            if( unmappedProperties.Count != 0 &&_unmappedInputs != null )
             {
-                using( monitor.OpenWarn().Send( "There are {0} unmapped property(ie)s and {1} unmapped input(s).", unmappedProperties.Length, _unmappedInputs.Count ) )
+                using( monitor.OpenWarn().Send( $"There are {unmappedProperties.Count} unmapped property(ie)s and {_unmappedInputs.Count} unmapped input(s)." ) )
                 {
                     foreach( var p in unmappedProperties )
                     {
-                        monitor.Info().Send( "Property {0} {1} is not mapped.", p.Property.Name, p.Property.PropertyType.Name );
+                        monitor.Info().Send( $"Property '{p.Property.Name}.{p.Property.PropertyType.Name}' is not mapped." );
                     }
                     foreach( var i in _unmappedInputs )
                     {
                         if( i.Type == null )
                         {
-                            monitor.Info().Send( "Input n°{0} named '{1}' is not mapped.", i.Index, i.Name );
+                            monitor.Info().Send( $"Input n°{i.Index} named '{i.Name}' is not mapped." );
                         }
                         else
                         {
-                            monitor.Info().Send( "Input n°{0} named '{1}' of type '{2}' is not mapped.", i.Index, i.Name, i.Type );
+                            monitor.Info().Send( $"Input n°{i.Index} named '{i.Name}' of type '{i.Type}' is not mapped." );
                         }
                     }
                 }
@@ -264,38 +267,29 @@ namespace CK.SqlServer.Setup
             EmitPropertiesSet( g, getValueGenerator );
         }
 
-        public string EmitNewObj( StringBuilder b, Func<int, Type, string> getValueGenerator )
+
+
+        public string EmitFullInitialization( StringBuilder b, Func<int, Type, string> getValueGenerator )
         {
             Debug.Assert( _selectedCtor != null && _selectedCtor.IsInputSatisfied );
 
-            var ctorVariableNames = _selectedCtor.Parameters.Select( pCtor => getValueGenerator( pCtor.InputIndex, pCtor.Type ) );
+            var ctorVariableNames = _selectedCtor.Parameters
+                                                    .Select( pCtor => getValueGenerator( pCtor.InputIndex, pCtor.Type ) )
+                                                    .ToArray();
 
-            b.Append( $"var oR = new {this.CreatedType.FullName}(" )
-                .AppendStrings( ctorVariableNames)
-                .AppendLine(");");
-
-            return "oR";
-        }
-
-        public void EmitPropertiesSet( StringBuilder b, Func<int, Type, string> getValueGenerator, string objName )
-        {
+            b.Append( $"var oR = new {CreatedType.ToCSharpName()}(" )
+                .AppendStrings( ctorVariableNames )
+                .AppendLine( ");" );
             foreach( var pProp in _props )
             {
                 if( pProp.IsInputSatisfied && !_mappedInputIsSelectedCtor.Contains( pProp.Parameters[0].InputIndex ) )
                 {
                     var param = pProp.Parameters[0];
                     string varName = getValueGenerator( param.InputIndex, param.Type );
-                    b.Append( $"{objName}.{pProp.Property.Name} = {varName};" );
+                    b.Append( $"oR.{pProp.Property.Name} = {varName};" );
                 }
             }
-        }
-
-
-        public string EmitFullInitialization( StringBuilder b, Func<int, Type, string> getValueGenerator )
-        {
-            string varName = EmitNewObj( b, getValueGenerator );
-            EmitPropertiesSet( b, getValueGenerator, varName );
-            return varName;
+            return "oR";
         }
 
     }

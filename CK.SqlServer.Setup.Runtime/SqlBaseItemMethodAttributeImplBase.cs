@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -74,7 +74,6 @@ namespace CK.SqlServer.Setup
         bool IAutoImplementorMethod.Implement( IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, System.Reflection.Emit.TypeBuilder tB, bool isVirtual )
         {
             // 1 - Not ready to implement anything (no body yet): 
-            //     - Checks that the MethodInfo is the Member (Debug only).
             //     - returns false to implement a stub.
             if( SetupObjectItem == null )
             {
@@ -84,7 +83,8 @@ namespace CK.SqlServer.Setup
                 }
                 else
                 {
-                    Debug.Assert( CK.Reflection.MemberInfoEqualityComparer.Default.Equals( m, Member ), "IAutoImplementorMethod called with a method that differs from the IAttributeAmbientContextBoundInitializer initilaized member." );
+                    //Debug.Assert( CK.Reflection.MemberInfoEqualityComparer.Default.Equals( m, Member ), "IAutoImplementorMethod called with a method that differs from the IAttributeAmbientContextBoundInitializer initilaized member." );
+                    Debug.Assert( m == Member, "IAutoImplementorMethod called with a method that differs from the IAttributeAmbientContextBoundInitializer initilaized member." );
                     _implementHasBeenAlreadyBeenCalled = true;
                 }
                 return false;

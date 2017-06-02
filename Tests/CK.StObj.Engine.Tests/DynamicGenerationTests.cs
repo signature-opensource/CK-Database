@@ -92,7 +92,8 @@ namespace CK.StObj.Engine.Tests
                 var config = new BuilderFinalAssemblyConfiguration()
                 {
                     AssemblyName = "TEST_SimpleEmit",
-                    GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFile
+                    GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFile,
+                    TemporaryGenerateSrc = true
                 }; 
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor, config, runtimeBuilder: runtimeBuilder );
@@ -105,7 +106,8 @@ namespace CK.StObj.Engine.Tests
 
                 r.GenerateFinalAssembly( TestHelper.Monitor, StObjContextRoot.DefaultStObjRuntimeBuilder, false, true );
                 {
-                    IStObjMap c = StObjContextRoot.Load( "TEST_SimpleEmitSrc", runtimeBuilder, TestHelper.Monitor );
+                    var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_SimpleEmitSrc" );
+                    IStObjMap c = StObjContextRoot.Load( a, runtimeBuilder, TestHelper.Monitor );
                     Assert.That( typeof( B ).IsAssignableFrom( c.Default.ToLeafType( typeof( A ) ) ) );
                     Assert.That( c.Default.ToLeafType( typeof( IC ) ), Is.SameAs( typeof( D ) ) );
                     Assert.That( c.Default.Obtain<B>().Auto( 3 ), Is.EqualTo( 0 ) );
@@ -113,7 +115,8 @@ namespace CK.StObj.Engine.Tests
                 }
 #if NET461
                 {
-                    IStObjMap c = StObjContextRoot.Load( "TEST_SimpleEmit", runtimeBuilder, TestHelper.Monitor );
+                    var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_SimpleEmit" );
+                    IStObjMap c = StObjContextRoot.Load( a, runtimeBuilder, TestHelper.Monitor );
                     Assert.That( typeof( B ).IsAssignableFrom( c.Default.ToLeafType( typeof( A ) ) ) );
                     Assert.That( c.Default.ToLeafType( typeof( IC ) ), Is.SameAs( typeof( D ) ) );
                     Assert.That( c.Default.Obtain<B>().Auto( 3 ), Is.EqualTo( 0 ) );
@@ -182,7 +185,8 @@ namespace CK.StObj.Engine.Tests
                 var config = new BuilderFinalAssemblyConfiguration()
                 {
                     GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFile,
-                    AssemblyName = "TEST_ConstructCalled"
+                    AssemblyName = "TEST_ConstructCalled",
+                    TemporaryGenerateSrc = true
                 };
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor, finalAssemblyConfig: config, configurator: new StObjPropertyConfigurator() );
@@ -207,7 +211,8 @@ namespace CK.StObj.Engine.Tests
                 r.GenerateFinalAssembly( TestHelper.Monitor, StObjContextRoot.DefaultStObjRuntimeBuilder, false, true );
 
                 {
-                    IStObjMap c = StObjContextRoot.Load( "TEST_ConstructCalledSrc", StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
+                    var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_ConstructCalledSrc" );
+                    IStObjMap c = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
                     Assert.That( c.Default.Obtain<B>().TheA, Is.SameAs( c.Default.Obtain<A>() ).And.SameAs( c.Default.Obtain<ASpec>() ) );
                     Assert.That( c.Default.Obtain<ASpec>().TheB, Is.SameAs( c.Default.Obtain<B>() ) );
 
@@ -217,7 +222,8 @@ namespace CK.StObj.Engine.Tests
                 }
 #if NET461
                 {
-                    IStObjMap c = StObjContextRoot.Load( "TEST_ConstructCalled", StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
+                    var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_ConstructCalled" );
+                    IStObjMap c = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
                     Assert.That( c.Default.Obtain<B>().TheA, Is.SameAs( c.Default.Obtain<A>() ).And.SameAs( c.Default.Obtain<ASpec>() ) );
                     Assert.That( c.Default.Obtain<ASpec>().TheB, Is.SameAs( c.Default.Obtain<B>() ) );
 
@@ -314,7 +320,8 @@ namespace CK.StObj.Engine.Tests
                 var config = new BuilderFinalAssemblyConfiguration()
                 {
                     GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFile,
-                    AssemblyName = "TEST_PostBuildSet"
+                    AssemblyName = "TEST_PostBuildSet",
+                    TemporaryGenerateSrc = true
                 };
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor, finalAssemblyConfig: config, configurator: new StObjPropertyConfigurator() );
@@ -340,7 +347,8 @@ namespace CK.StObj.Engine.Tests
                 r.GenerateFinalAssembly( TestHelper.Monitor, StObjContextRoot.DefaultStObjRuntimeBuilder, false, true );
 
                 {
-                    IStObjMap c = StObjContextRoot.Load( "TEST_PostBuildSetSrc", StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
+                    var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_PostBuildSetSrc" );
+                    IStObjMap c = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
                     Assert.That( c.Default.Obtain<B>().TheA, Is.SameAs( c.Default.Obtain<A>() ).And.SameAs( c.Default.Obtain<ASpec>() ) );
                     Assert.That( c.Default.Obtain<ASpec>().TheB, Is.SameAs( c.Default.Obtain<B>() ) );
 
@@ -356,7 +364,8 @@ namespace CK.StObj.Engine.Tests
                 }
 #if NET461
                 {
-                    IStObjMap c = StObjContextRoot.Load( "TEST_PostBuildSet", StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
+                    var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_PostBuildSet" );
+                    IStObjMap c = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
                     Assert.That( c.Default.Obtain<B>().TheA, Is.SameAs( c.Default.Obtain<A>() ).And.SameAs( c.Default.Obtain<ASpec>() ) );
                     Assert.That( c.Default.Obtain<ASpec>().TheB, Is.SameAs( c.Default.Obtain<B>() ) );
 
