@@ -224,6 +224,17 @@ namespace CK.Core
         /// </summary>
         /// <param name="assemblyName">Name of the assembly to load (without any .dll suffix).</param>
         /// <returns>The loaded assembly.</returns>
+        static public Assembly LoadAssemblyFromAppContextBaseDirectory(string assemblyName)
+        {
+            return Assembly.LoadFrom( assemblyName+".dll" );
+        }
+
+        /// <summary>
+        /// Loads an assembly that must be in probe paths in .Net framework and in
+        /// AppContext.BaseDirectory in .Net Core.
+        /// </summary>
+        /// <param name="assemblyName">Name of the assembly to load (without any .dll suffix).</param>
+        /// <returns>The loaded assembly.</returns>
         static public Assembly LoadAssemblyFromAppContextBaseDirectory( string assemblyName )
         {
 #if NET461

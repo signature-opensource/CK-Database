@@ -104,7 +104,7 @@ namespace CK.SqlServer
                 using( await (@this.Connection = connection).EnsureOpenAsync().ConfigureAwait( false ) )
                 {
                     object o = await @this.ExecuteScalarAsync().ConfigureAwait( false );
-                    return o != DBNull.Value ? (T)o : defaultValue;
+                    return o != null && o != DBNull.Value ? (T)o : defaultValue;
                 }
             }
             catch( SqlException ex )
@@ -206,7 +206,7 @@ namespace CK.SqlServer
                 using( (@this.Connection = connection).EnsureOpen() )
                 {
                     object o = @this.ExecuteScalar();
-                    return o != DBNull.Value ? (T)o : defaultValue;
+                    return o != null && o != DBNull.Value ? (T)o : defaultValue;
                 }
             }
             catch( SqlException ex )
