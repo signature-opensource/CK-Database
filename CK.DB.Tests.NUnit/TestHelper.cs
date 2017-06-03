@@ -134,6 +134,35 @@ namespace CK.Core
         }
 
         /// <summary>
+        /// Loads the <see cref="StObjMap"/> from existing generated assembly.
+        /// Loading is done only if StObjMap is not already available.
+        /// </summary>
+        /// <returns>The map or null if an error occurred.</returns>
+        public static IStObjMap LoadStObjMapFromExistingGeneratedAssembly()
+        {
+            if (_map == null)
+            {
+                using (Monitor.OpenInfo().Send("Loading StObj map from generated assembly."))
+                {
+                    try
+                    {
+                        string assemblyName = Config.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName;
+                        if (assemblyName == null) assemblyName = BuilderFinalAssemblyConfiguration.DefaultAssemblyName;
+                        var a = LoadAssemblyFromAppContextBaseDirectory(assemblyName);
+                        _map = StObjContextRoot.Load(a, StObjContextRoot.DefaultStObjRuntimeBuilder, Monitor);
+                    }
+                    catch (Exception ex)
+                    {
+                        Monitor.Error().Send(ex);
+                    }
+                }
+            }
+            return _map;
+        }
+
+
+
+        /// <summary>
         /// Gets the solution folder. It is the parent directory of the 'Tests/' folder (that must exist).
         /// </summary>
         static public string SolutionFolder
@@ -179,8 +208,8 @@ namespace CK.Core
                     Config.TraceDependencySorterOutput = traceSetupGraphOrdering;
                     using( var r = StObjContextRoot.Build( Config, null, TestHelper.Monitor ) )
                     {
-                        _map = StObjContextRoot.Load( Config.StObjEngineConfiguration, StObjContextRoot.DefaultStObjRuntimeBuilder, Monitor );
-                        return r.Success;
+                        if (!r.Success) return false;
+                        return LoadStObjMapFromExistingGeneratedAssembly() != null;
                     }
                 }
                 catch( Exception ex )
@@ -189,6 +218,17 @@ namespace CK.Core
                     throw;
                 }
             }
+        }
+
+        /// <summary>
+        /// Loads an assembly that must be in probe paths in .Net framework and in
+        /// AppContext.BaseDirectory in .Net Core.
+        /// </summary>
+        /// <param name="assemblyName">Name of the assembly to load (without any .dll suffix).</param>
+        /// <returns>The loaded assembly.</returns>
+        static public Assembly LoadAssemblyFromAppContextBaseDirectory(string assemblyName)
+        {
+            return Assembly.LoadFrom( assemblyName+".dll" );
         }
 
         /// <summary>
