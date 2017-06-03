@@ -8,8 +8,8 @@ namespace CK.StObj.Engine.Tests.NetCore
     {
         public static int Main( string[] args )
         {
-            Core.TestHelper.LogToConsole = true;
-            Core.TestHelper.Monitor.MinimalFilter = LogFilter.Debug;
+            //Core.TestHelper.LogToConsole = true;
+            //Core.TestHelper.Monitor.MinimalFilter = LogFilter.Debug;
             return new AutoRun( Assembly.GetEntryAssembly() ).Execute( args );
         }
     }

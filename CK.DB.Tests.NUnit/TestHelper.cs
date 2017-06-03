@@ -113,8 +113,8 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Gets the default IStObjMap (after having executed a db setup via RunDBSetup() in .net framework only).
-        /// The setup is done only once.
+        /// Gets the default IStObjMap (after having executed a db setup via RunDBSetup() 
+        /// if it is not already available: the setup is done only once).
         /// </summary>
         public static IStObjMap StObjMap
         {
@@ -127,6 +127,39 @@ namespace CK.Core
                 return _map;
             }
         }
+
+        /// <summary>
+        /// Loads the <see cref="StObjMap"/> from existing generated assembly.
+        /// Loading is done only if StObjMap is not already available.
+        /// </summary>
+        /// <returns>The map or null if an error occurred.</returns>
+        public static IStObjMap LoadStObjMapFromExistingGeneratedAssembly()
+        {
+            if( _map == null )
+            {
+                using( Monitor.OpenInfo().Send( "Loading StObj map from generated assembly." ) )
+                {
+                    try
+                    {
+                        string assemblyName = Config.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName;
+                        if( assemblyName == null ) assemblyName = BuilderFinalAssemblyConfiguration.DefaultAssemblyName;
+                        if( Config.StObjEngineConfiguration.FinalAssemblyConfiguration.TemporaryGenerateSrc )
+                        {
+                            assemblyName = assemblyName + "Src";
+                        }
+                        var a = LoadAssemblyFromAppContextBaseDirectory( assemblyName );
+                        _map = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, Monitor );
+                    }
+                    catch( Exception ex )
+                    {
+                        Monitor.Error().Send( ex );
+                    }
+                }
+            }
+            return _map;
+        }
+
+
 
         /// <summary>
         /// Gets the solution folder. It is the parent directory of the 'Tests/' folder (that must exist).
@@ -170,19 +203,10 @@ namespace CK.Core
                     Config.StObjEngineConfiguration.TraceDependencySorterOutput = traceStObjGraphOrdering;
                     Config.TraceDependencySorterInput = traceSetupGraphOrdering;
                     Config.TraceDependencySorterOutput = traceSetupGraphOrdering;
-                    Config.StObjEngineConfiguration.FinalAssemblyConfiguration.TemporaryGenerateSrc = UseGeneratedSrc;
                     bool success = StObjContextRoot.Build(Config, null, TestHelper.Monitor);
                     if(success)
                     {
-                        string assemblyName = Config.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName;
-                        assemblyName = BuilderFinalAssemblyConfiguration.GetFinalAssemblyName( assemblyName );
-                        if( Config.StObjEngineConfiguration.FinalAssemblyConfiguration.TemporaryGenerateSrc )
-                        {
-                            assemblyName = assemblyName + "Src";
-                        }
-                        var a = LoadAssemblyFromAppContextBaseDirectory( assemblyName );
-                        _map = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, Monitor );
-                        success = _map != null;
+                        success = LoadStObjMapFromExistingGeneratedAssembly() != null;
                     }
                     return success;
                 }
@@ -284,18 +308,6 @@ namespace CK.Core
                 if( u.Equals( "true", StringComparison.OrdinalIgnoreCase ) ) return true;
                 throw new Exception( "AppSettings.Default[\"UseGeneratedSrc\"] must be not define, false or true." );
             }
-        }
-
-        static bool? _useGeneratedSrc;
-
-        public static bool UseGeneratedSrc
-        {
-            get
-            {
-                if( !_useGeneratedSrc.HasValue ) _useGeneratedSrc = DefaultUseGeneratedSrc;
-                return _useGeneratedSrc.Value;
-            }
-            set => _useGeneratedSrc = value;
         }
 
         /// <summary>
@@ -432,6 +444,7 @@ namespace CK.Core
                         _config.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverRecurseAssemblyNames.Add( a );
                     }
                     _config.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = DynamicAssemblyName;
+                    _config.StObjEngineConfiguration.FinalAssemblyConfiguration.TemporaryGenerateSrc = DefaultUseGeneratedSrc;
 
                     var c = new SqlSetupAspectConfiguration();
                     c.DefaultDatabaseConnectionString = DatabaseTestConnectionString;
