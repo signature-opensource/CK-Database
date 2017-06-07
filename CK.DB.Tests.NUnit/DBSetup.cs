@@ -32,7 +32,8 @@ namespace CK.DB.Tests
         [Explicit]
         public void attach_debugger()
         {
-            if (!Debugger.IsAttached) Debugger.Launch();
+            TestHelper.LogToConsole = true;
+            if( !Debugger.IsAttached) Debugger.Launch();
             else TestHelper.Monitor.Info().Send( "Debugger is already attached." );
         }
 
@@ -40,6 +41,7 @@ namespace CK.DB.Tests
         [Explicit]
         public void reset_database_by_clearing_all_used_schemas()
         {
+            TestHelper.LogToConsole = true;
             TestHelper.ClearDatabaseUsedSchemas();
         }
 
@@ -47,6 +49,7 @@ namespace CK.DB.Tests
         [Explicit]
         public void db_setup()
         {
+            TestHelper.LogToConsole = true;
             Assert.That(TestHelper.RunDBSetup(), "DBSetup failed.");
         }
 
@@ -54,6 +57,7 @@ namespace CK.DB.Tests
         [Explicit]
         public void db_setup_with_StObj_and_Setup_graph_ordering_trace()
         {
+            TestHelper.LogToConsole = true;
             Assert.That( TestHelper.RunDBSetup( true, true ), "DBSetup failed." );
         }
 
@@ -61,6 +65,7 @@ namespace CK.DB.Tests
         [Explicit]
         public void reverse_db_setup_with_StObj_and_Setup_graph_ordering_trace()
         {
+            TestHelper.LogToConsole = true;
             Assert.That( TestHelper.RunDBSetup( true, true, true ), "DBSetup failed." );
         }
 
