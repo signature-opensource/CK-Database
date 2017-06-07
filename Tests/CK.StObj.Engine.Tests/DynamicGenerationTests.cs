@@ -104,7 +104,7 @@ namespace CK.StObj.Engine.Tests
                 var r = collector.GetResult();
                 Assert.That( r.HasFatalError, Is.False );
 
-                r.GenerateFinalAssembly( TestHelper.Monitor, StObjContextRoot.DefaultStObjRuntimeBuilder, false, true );
+                r.GenerateFinalAssembly( TestHelper.Monitor, StObjContextRoot.DefaultStObjRuntimeBuilder, false, true, true );
                 {
                     var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_SimpleEmitSrc" );
                     IStObjMap c = StObjContextRoot.Load( a, runtimeBuilder, TestHelper.Monitor );
@@ -208,7 +208,7 @@ namespace CK.StObj.Engine.Tests
                     Assert.That( typeof( A ).GetProperty( "StObjPower" ).GetValue( theA, null ), Is.EqualTo( "This is the A property." ) );
                 }
 
-                r.GenerateFinalAssembly( TestHelper.Monitor, StObjContextRoot.DefaultStObjRuntimeBuilder, false, true );
+                r.GenerateFinalAssembly( TestHelper.Monitor, StObjContextRoot.DefaultStObjRuntimeBuilder, false, true, true );
 
                 {
                     var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_ConstructCalledSrc" );
@@ -344,7 +344,7 @@ namespace CK.StObj.Engine.Tests
                     Assert.That( theA.StObjInitializeOnACalled, Is.False, "StObjInitialize is NOT called on temporary instances." );
                 }
 
-                r.GenerateFinalAssembly( TestHelper.Monitor, StObjContextRoot.DefaultStObjRuntimeBuilder, false, true );
+                r.GenerateFinalAssembly( TestHelper.Monitor, StObjContextRoot.DefaultStObjRuntimeBuilder, false, true, true );
 
                 {
                     var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_PostBuildSetSrc" );

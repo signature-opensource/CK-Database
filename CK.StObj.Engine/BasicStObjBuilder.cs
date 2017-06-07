@@ -60,7 +60,8 @@ namespace CK.Setup
             if( c.FinalAssemblyConfiguration.GenerateFinalAssemblyOption != BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile )
             {
                 bool peVerify = c.FinalAssemblyConfiguration.GenerateFinalAssemblyOption == BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFileAndPEVerify;
-                return r.GenerateFinalAssembly( _monitor, _runtimeBuilder, peVerify, c.FinalAssemblyConfiguration.TemporaryGenerateSrc );
+                bool genSrc = c.FinalAssemblyConfiguration.TemporaryGenerateSrc;
+                return r.GenerateFinalAssembly( _monitor, _runtimeBuilder, peVerify, !genSrc, genSrc );
             }
             return true;
         }
