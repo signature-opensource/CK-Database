@@ -22,8 +22,6 @@ namespace CKDBSetup
             var logLevelOpt = PrepareLogLevelOption(c);
             var logFileOpt = PrepareLogFileOption(c);
 
-            // Sample usage: CKDBSetup setup "Server=.;Database=MyDatabase;Integrated Security=true;" My.Assembly1 My.Assembly2
-
             var connectionStringArg = c.Argument(
                 "ConnectionString",
                 "SQL Server connection string used, pointing to the target database. The database will be created if it does not exist.",
@@ -44,17 +42,23 @@ namespace CKDBSetup
 
             var binPathOpt = c.Option(
                 "-p|--binPath",
-                "Path to the directory containing the assembly files, and in which the generated structure assembly will be saved. Defaults to the current working directory.",
+                "Path to the directory containing the assembly files, and in which the generated assembly will be saved. Defaults to the current working directory.",
                 CommandOptionType.SingleValue
                 );
 
             var generatedAssemblyNameOpt = c.Option(
                 "-n|--generatedAssemblyName",
-                $"Assembly name, and file name (without the .dll suffix) of the generated structure assembly. Defaults to {BuilderFinalAssemblyConfiguration.DefaultAssemblyName}.",
+                $"Assembly name, and file name (without the .dll suffix) of the generated assembly. Defaults to {BuilderFinalAssemblyConfiguration.DefaultAssemblyName}.",
                 CommandOptionType.SingleValue
                 );
 
-            var sampleUsage = $"\nSample usage: {c.Parent.Name} {c.Name} \"Server=.;Database=MyDatabase;Integrated Security=true;\" -recurseAssemblies CK.DB.Actor My.Assembly\n";
+            var sourceGenerationOpt = c.Option(
+                "-sg|--sourceGeneration",
+                $"Use the new code source generation (instead of IL emit).",
+                CommandOptionType.NoValue
+                );
+
+            var sampleUsage = $@"Sample usage: {c.Parent.Name} {c.Name} ""Server=.;Database=Test;Integrated Security=true;"" -ra ""Super.Data"" -r ""Another.Model"" -p ""C:\App\Prod\SuperApp\bin""  -n ""Super.Generated"" -sg ";
 
 
             c.OnExecute( () =>
@@ -73,6 +77,7 @@ namespace CKDBSetup
                 string binPath = Environment.CurrentDirectory;
                 string generatedAssemblyName = BuilderFinalAssemblyConfiguration.DefaultAssemblyName;
                 SetupEngineRunningMode runningMode = SetupEngineRunningMode.Default;
+                bool sourceGeneration;
 
                 connectionString = connectionStringArg.Value?.Trim();
 
@@ -96,6 +101,8 @@ namespace CKDBSetup
                     generatedAssemblyName = generatedAssemblyNameOpt.Value().Trim();
                 }
 
+                sourceGeneration = sourceGenerationOpt.HasValue(); 
+
                 // No connectionString given
                 if( string.IsNullOrEmpty( connectionString ) )
                 {
@@ -109,9 +116,9 @@ namespace CKDBSetup
                 monitor.Trace().Send( $"Recurse Assembly names: {recurseAssemblyNames.Concatenate()}" );
                 monitor.Trace().Send( $"Binaries path: {binPath}" );
                 monitor.Trace().Send( $"Generated assembly name: {generatedAssemblyName}" );
-                monitor.Trace().Send( $"Running mode: {runningMode}" );
+                monitor.Trace().Send( $"Source Generation: {sourceGeneration}" );
 
-                var buildConfig = DbSetupHelper.BuildSetupConfig( connectionString, assemblyNames, recurseAssemblyNames, generatedAssemblyName, binPath, runningMode );
+                var buildConfig = DbSetupHelper.BuildSetupConfig( connectionString, assemblyNames, recurseAssemblyNames, generatedAssemblyName, binPath, runningMode, sourceGeneration );
 
                 bool isSuccess = false;
 
@@ -130,7 +137,7 @@ namespace CKDBSetup
                 {
                     try
                     {
-                        isSuccess = DbSetupHelper.ExecuteDbSetup( monitor, buildConfig );
+                        isSuccess = StObjContextRoot.Build( buildConfig, null, monitor );
                     }
                     catch( Exception e )
                     {

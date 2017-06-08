@@ -31,7 +31,7 @@ namespace CK.Setup
              if( _finalAssembly == null ) throw new InvalidOperationException( "Using GenerateOption.DoNotGenerateFile." );
              if( withIL && !DoGenerateFinalAssembly( monitor, runtimeBuilder, callPEVrify ) ) return false;
 #endif
-                return withSrc ? GenerateSourceCode( monitor, runtimeBuilder, true ) : true;
+                return withSrc ? GenerateSourceCode( monitor, runtimeBuilder, true, withIL ) : true;
             }
             catch( Exception ex )
             {

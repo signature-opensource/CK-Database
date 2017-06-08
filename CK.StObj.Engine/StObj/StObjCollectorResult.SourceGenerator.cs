@@ -77,7 +77,7 @@ namespace CK.Setup
         }
 
 
-        public bool GenerateSourceCode( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, bool saveSource )
+        public bool GenerateSourceCode( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, bool saveSource, bool withSrcSuffix )
         {
             try
             {
@@ -88,6 +88,11 @@ namespace CK.Setup
                 g.Modules.AddRange( _tempAssembly.SourceModules );
                 var assemblies = _contractResult.Assemblies.Where( a => !a.IsDynamic )
                                     .Append( typeof( BindingFlags ).GetTypeInfo().Assembly );
+
+                Debug.Assert( _tempAssembly.SaveFilePath.EndsWith( "Src.dll" ) );
+                string fileName = _tempAssembly.SaveFilePath;
+                if( !withSrcSuffix ) fileName = fileName.Substring( 0, fileName.Length - 7 ) + ".dll";
+
                 var result = g.Generate( b.ToString(), _tempAssembly.SaveFilePath, assemblies, new DefaultAssemblyResolver(), null );
                 if( saveSource && result.Sources != null )
                 {

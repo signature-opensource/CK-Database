@@ -52,7 +52,7 @@ namespace CK.Setup
                     using( monitor.OpenInfo().Send( "Generating StObj dynamic assembly." ) )
                     {
                         bool peVerify = _configuration.GenerateFinalAssemblyOption == BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFileAndPEVerify;
-                        bool success = _result.GenerateFinalAssembly( monitor, _runtimeBuilder, peVerify, !_configuration.TemporaryGenerateSrc, _configuration.TemporaryGenerateSrc );
+                        bool success = _result.GenerateFinalAssembly( monitor, _runtimeBuilder, peVerify, !_configuration.SourceGeneration, _configuration.SourceGeneration );
                         Debug.Assert( success || hasError, "!success ==> An error has been logged." );
                         return success;
                     }

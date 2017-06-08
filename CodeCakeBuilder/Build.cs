@@ -104,7 +104,7 @@ namespace CodeCake
             SimpleRepositoryInfo gitInfo = Cake.GetSimpleRepositoryInfo();
 
             // Configuration is either "Debug" or "Release".
-            string configuration = null;
+            string configuration = "Debug";
             bool buildDone = false;
 
             Teardown( c =>
@@ -215,7 +215,7 @@ namespace CodeCake
                 .IsDependentOn( "Build" )
                 .Does( () =>
                 {
-                    var exe = Cake.File( $@"CKDBSetup\bin\{configuration}\CKDBSetup.exe" );
+                    var exe = Cake.File( $@"CKDBSetup\bin\{configuration}\CKDBSetup.exe" ).Path.MakeAbsolute( Cake.Environment );
                     var callDemoPath = Cake.Directory( $@"Tests\SqlCallDemo\SqlCallDemo\bin\{configuration}\net461" );
 
                     string c = Environment.GetEnvironmentVariable( "CK_DB_TEST_MASTER_CONNECTION_STRING" );
@@ -225,10 +225,12 @@ namespace CodeCake
                     csB.InitialCatalog = "CKDB_TEST_SqlCallDemo";
                     var dbCon = csB.ToString();
 
-                    var cmdLine = $@"{exe.Path.FullPath} setup ""{dbCon}"" -n ""GenByCKDBSetup"" -p ""{callDemoPath}""";
+                    var cmdLineIL = $@"{exe.FullPath} setup ""{dbCon}"" -ra ""SqlCallDemo"" -n ""GenByCKDBSetup"" -p ""{callDemoPath}""";
+                    int result = Cake.RunCmd( cmdLineIL );
+                    if( result != 0 ) throw new Exception( "CKDSetup.exe failed for IL generation." );
 
-                    int result = Cake.RunCmd( cmdLine, output => Cake.Information( output ) );
-                    if( result != 0 ) throw new Exception( "CKDSetup.exe failed." );
+                    result = Cake.RunCmd( cmdLineIL + " -sg" );
+                    if( result != 0 ) throw new Exception( "CKDSetup.exe failed for Source Code generation." );
                 } );
 
             Task( "Create-NuGet-Package-For-CKDBSetup" )

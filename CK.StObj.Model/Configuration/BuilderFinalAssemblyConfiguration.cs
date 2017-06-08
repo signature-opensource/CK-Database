@@ -73,12 +73,12 @@ namespace CK.Core
         /// <summary>
         /// Gets or sets whether source code generation is also done.
         /// </summary>
-        public bool TemporaryGenerateSrc { get; set; }
+        public bool SourceGeneration { get; set; }
 #else
         /// <summary>
         /// Always true since on .Net core this is the only way...
         /// </summary>
-        public bool TemporaryGenerateSrc { get => true; set { } }
+        public bool SourceGeneration { get => true; set { } }
 #endif
         /// <summary>
         /// Uses <paramref name="assemblyName"/> if it is not null nor empty or <see cref="DefaultAssemblyName"/>.

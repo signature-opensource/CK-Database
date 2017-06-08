@@ -143,10 +143,6 @@ namespace CK.Core
                     {
                         string assemblyName = Config.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName;
                         if( assemblyName == null ) assemblyName = BuilderFinalAssemblyConfiguration.DefaultAssemblyName;
-                        if( Config.StObjEngineConfiguration.FinalAssemblyConfiguration.TemporaryGenerateSrc )
-                        {
-                            assemblyName = assemblyName + "Src";
-                        }
                         var a = LoadAssemblyFromAppContextBaseDirectory( assemblyName );
                         _map = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, Monitor );
                     }
@@ -297,16 +293,16 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Gets the AppSettings.Default[\"UseGeneratedSrc\"] value.
+        /// Gets the AppSettings.Default[\"SourceGeneration\"] value.
         /// </summary>
-        public static bool DefaultUseGeneratedSrc
+        public static bool DefaultSourceGeneration
         {
             get
             {
-                var u = AppSettings.Default["UseGeneratedSrc"];
+                var u = AppSettings.Default["SourceGeneration"];
                 if( u == null || u.Equals( "false", StringComparison.OrdinalIgnoreCase ) ) return false;
                 if( u.Equals( "true", StringComparison.OrdinalIgnoreCase ) ) return true;
-                throw new Exception( "AppSettings.Default[\"UseGeneratedSrc\"] must be not define, false or true." );
+                throw new Exception( "AppSettings.Default[\"SourceGeneration\"] must be not define, false or true." );
             }
         }
 
@@ -444,7 +440,7 @@ namespace CK.Core
                         _config.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverRecurseAssemblyNames.Add( a );
                     }
                     _config.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = DynamicAssemblyName;
-                    _config.StObjEngineConfiguration.FinalAssemblyConfiguration.TemporaryGenerateSrc = DefaultUseGeneratedSrc;
+                    _config.StObjEngineConfiguration.FinalAssemblyConfiguration.SourceGeneration = DefaultSourceGeneration;
 
                     var c = new SqlSetupAspectConfiguration();
                     c.DefaultDatabaseConnectionString = DatabaseTestConnectionString;

@@ -16,38 +16,25 @@ namespace CKDBSetup
             IEnumerable<string> recurseAssembliesToSetup,
             string dynamicAssemblyName, 
             string binPath,
-            SetupEngineRunningMode runningMode )
+            SetupEngineRunningMode runningMode,
+            bool sourceGeneration )
         {
             var config = new SetupEngineConfiguration();
             config.RunningMode = runningMode;
-
-            foreach( var a in assembliesToSetup )
-            {
-                config.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( a );
-            }
-
-            foreach( var a in recurseAssembliesToSetup )
-            {
-                config.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverRecurseAssemblyNames.Add( a );
-            }
-
+            config.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.AddRange( assembliesToSetup );
+            config.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverRecurseAssemblyNames.AddRange( recurseAssembliesToSetup );
             config.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = dynamicAssemblyName;
             config.StObjEngineConfiguration.FinalAssemblyConfiguration.Directory = binPath;
-
+            config.StObjEngineConfiguration.FinalAssemblyConfiguration.SourceGeneration = sourceGeneration;
             var c = new SqlSetupAspectConfiguration
             {
                 DefaultDatabaseConnectionString = connectionString,
                 IgnoreMissingDependencyIsError = true // Set to true while we don't have SqlFragment support.
             };
-
             config.Aspects.Add( c );
 
             return config;
         }
 
-        public static bool ExecuteDbSetup( IActivityMonitor m, SetupEngineConfiguration config )
-        {
-            return StObjContextRoot.Build(config, null, m);
-        }
     }
 }

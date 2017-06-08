@@ -93,7 +93,7 @@ namespace CK.StObj.Engine.Tests
                 {
                     AssemblyName = "TEST_SimpleEmit",
                     GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFile,
-                    TemporaryGenerateSrc = true
+                    SourceGeneration = true
                 }; 
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor, config, runtimeBuilder: runtimeBuilder );
@@ -186,7 +186,7 @@ namespace CK.StObj.Engine.Tests
                 {
                     GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFile,
                     AssemblyName = "TEST_ConstructCalled",
-                    TemporaryGenerateSrc = true
+                    SourceGeneration = true
                 };
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor, finalAssemblyConfig: config, configurator: new StObjPropertyConfigurator() );
@@ -321,7 +321,7 @@ namespace CK.StObj.Engine.Tests
                 {
                     GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFile,
                     AssemblyName = "TEST_PostBuildSet",
-                    TemporaryGenerateSrc = true
+                    SourceGeneration = true
                 };
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor, finalAssemblyConfig: config, configurator: new StObjPropertyConfigurator() );
