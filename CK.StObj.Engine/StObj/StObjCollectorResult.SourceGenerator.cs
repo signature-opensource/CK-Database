@@ -312,10 +312,10 @@ class GContext : IContextualStObjMap
                     foreach( var p in m.PostBuildProperties )
                     {
                         Type decl = p.Property.DeclaringType;
-                        MutableItem propTarget = m;
-                        while( propTarget.ObjectType != decl ) propTarget = propTarget.Generalization;
-                        b.Append( $"_stObjs[{propTarget.IndexOrdered}].ObjectType.GetProperty( \"{p.Property.Name}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic )" );
-                        b.Append( $".SetValue(_stObjs[{m.IndexOrdered}].Instance, " );
+                        b.Append( "typeof(" )
+                         .AppendCSharpName( decl )
+                         .Append( $").GetProperty( \"{p.Property.Name}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic )" )
+                         .Append( $".SetValue(_stObjs[{m.IndexOrdered}].Instance, " );
                         GenerateValue( b, p.Value );
                         b.AppendLine( ");" );
                     }
