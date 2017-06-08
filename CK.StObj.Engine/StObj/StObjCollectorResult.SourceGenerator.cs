@@ -93,10 +93,10 @@ namespace CK.Setup
                 string fileName = _tempAssembly.SaveFilePath;
                 if( !withSrcSuffix ) fileName = fileName.Substring( 0, fileName.Length - 7 ) + ".dll";
 
-                var result = g.Generate( b.ToString(), _tempAssembly.SaveFilePath, assemblies, new DefaultAssemblyResolver(), null );
+                var result = g.Generate( b.ToString(), fileName, assemblies, new DefaultAssemblyResolver(), null );
                 if( saveSource && result.Sources != null )
                 {
-                    File.WriteAllText( _tempAssembly.SaveFilePath + ".cs", result.Sources.Select( t => t.ToString() ).Concatenate( Environment.NewLine ) );
+                    File.WriteAllText( fileName + ".cs", result.Sources.Select( t => t.ToString() ).Concatenate( Environment.NewLine ) );
                 }
                 result.LogResult( monitor );
                 return result.Success;

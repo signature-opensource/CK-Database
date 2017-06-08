@@ -1,4 +1,4 @@
-#region Proprietary License
+﻿#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.SqlServer.Setup.Runtime\SqlDatabase\SqlDatabaseConnectionSetupDriver.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -43,7 +43,31 @@ namespace CK.SqlServer.Setup
                 {
                     string sqlName = name.Replace( "]", "]]" );
                     _connection.ExecuteOneScript( $"if not exists(select 1 from sys.schemas where name = '{name}') begin exec( 'create schema [{sqlName}]' ); end", Engine.Monitor );
-                }
+                }               
+                _connection.ExecuteOneScript( @"
+-- Ensure that snapshot_isolation and read_committed_snapshot are on for this db.
+declare @dbName sysname = DB_NAME();
+declare @dbNameQ sysname = QUOTENAME(@dbName);
+declare @isSingleUser bit = 0;
+declare @isRCSEnabled int;
+select @isRCSEnabled = is_read_committed_snapshot_on from sys.databases where name = @dbName;
+if @isRCSEnabled = 0
+begin
+    exec( 'alter database '+@dbNameQ+' set single_user with rollback immediate;' );
+    set @isSingleUser = 1;
+    exec( 'alter database '+@dbNameQ+' set read_committed_snapshot on;' );
+end;
+ 
+declare @isSIEnabled int;
+select @isSIEnabled = snapshot_isolation_state from sys.databases where name = @dbName;
+if @isSIEnabled = 0
+begin
+    if @isSingleUser = 0 exec ('alter database ' + @dbNameQ + ' set single_user with rollback immediate;');
+    exec( 'alter database '+@dbNameQ+' set allow_snapshot_isolation on;' );
+end;
+ 
+if @isSingleUser = 1 exec( 'alter database '+@dbNameQ+' set multi_user;' );
+", Engine.Monitor );
             }
             return true;
         }
