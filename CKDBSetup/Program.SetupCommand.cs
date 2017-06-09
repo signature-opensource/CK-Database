@@ -10,6 +10,60 @@ using CK.Text;
 
 namespace CKDBSetup
 {
+    public static class WeakAssemblyNameResolver
+    {
+        static int _installCount;
+
+        public static bool IsInstalled => _installCount >= 0;
+
+        public static void Install()
+        {
+            if( Interlocked.Increment( ref _installCount ) == 1 )
+            {
+                AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+            }
+        }
+
+        public static void Uninstall()
+        {
+            if( Interlocked.Decrement( ref _installCount ) == 0 )
+            {
+                AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
+            }
+        }
+
+        class Auto : IDisposable
+        {
+            bool _done;
+
+            public void Dispose()
+            {
+                if( !_done )
+                {
+                    _done = true;
+                    Uninstall();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Temporary installs the hook that will be uninstalled when the returned object will be disposed.
+        /// </summary>
+        /// <returns>The dispoable to dispose when done.</returns>
+        public static IDisposable TempInstall()
+        {
+            Install();
+            return new Auto();
+        }
+
+        static Assembly CurrentDomain_AssemblyResolve( object sender, ResolveEventArgs args )
+        {
+            var failed = new AssemblyName( args.Name );
+            return failed.Version != null && failed.CultureName == null
+                    ? Assembly.Load( new AssemblyName( failed.Name ) )
+                    : null;
+        }
+    }
     static partial class Program
     {
         private static void SetupCommand( CommandLineApplication c )
@@ -124,28 +178,32 @@ namespace CKDBSetup
 
                 List<ActivityMonitorSimpleCollector.Entry> errorEntries = new List<ActivityMonitorSimpleCollector.Entry>();
 
-                // We need to manually hook Assembly resolution to allow DbSetup to probe the correct one.
-                ResolveEventHandler reh = (s, a) =>
+                using( WeakAssemblyNameResolver.TempInstall() )
                 {
-                    monitor.Trace().Send( $"AssemblyResolve: {a.Name}" );
-                    return LoadAssembly( monitor, binPath, a.Name );
-                };
-                AppDomain.CurrentDomain.AssemblyResolve += reh;
-
-                // Execution
-                using( monitor.CollectEntries( errorEntries.AddRange, LogLevelFilter.Error ) )
-                {
-                    try
+                    using( monitor.CollectEntries( errorEntries.AddRange, LogLevelFilter.Error ) )
                     {
-                        isSuccess = StObjContextRoot.Build( buildConfig, null, monitor );
-                    }
-                    catch( Exception e )
-                    {
-                        monitor.Fatal().Send( e );
+                        try
+                        {
+                            isSuccess = StObjContextRoot.Build( buildConfig, null, monitor );
+                        }
+                        catch( Exception e )
+                        {
+                            monitor.Fatal().Send( e );
+                        }
                     }
                 }
+                        //// We need to manually hook Assembly resolution to allow DbSetup to probe the correct one.
+                        //ResolveEventHandler reh = ( s, a ) =>
+                        //{
+                        //monitor.Trace().Send( $"AssemblyResolve: {a.Name}" );
+                        //return LoadAssembly( monitor, binPath, a.Name );
+                        //};
+                        //AppDomain.CurrentDomain.AssemblyResolve += reh;
 
-                AppDomain.CurrentDomain.AssemblyResolve -= reh;
+                // Execution
+
+
+                        //AppDomain.CurrentDomain.AssemblyResolve -= reh;
 
                 // Summary log entry
                 if( !isSuccess )
