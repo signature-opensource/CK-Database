@@ -7,6 +7,7 @@ using CK.Core;
 using CK.Setup;
 using Microsoft.Extensions.CommandLineUtils;
 using CK.Text;
+using System.Threading;
 
 namespace CKDBSetup
 {
