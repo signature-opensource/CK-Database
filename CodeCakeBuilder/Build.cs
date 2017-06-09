@@ -105,8 +105,9 @@ namespace CodeCake
 
             // Configuration is either "Debug" or "Release".
             string configuration = "Debug";
-            bool buildDone = false;
 
+
+            bool buildDone = false;
             Teardown( c =>
             {
                 if( buildDone ) c.CleanDirectories( projects.Select( p => p.Path.GetDirectory().Combine( "bin" ) ) );
@@ -226,11 +227,14 @@ namespace CodeCake
                     var dbCon = csB.ToString();
 
                     var cmdLineIL = $@"{exe.FullPath} setup ""{dbCon}"" -ra ""SqlCallDemo"" -n ""GenByCKDBSetup"" -p ""{callDemoPath}""";
-                    int result = Cake.RunCmd( cmdLineIL );
-                    if( result != 0 ) throw new Exception( "CKDSetup.exe failed for IL generation." );
-
-                    result = Cake.RunCmd( cmdLineIL + " -sg" );
-                    if( result != 0 ) throw new Exception( "CKDSetup.exe failed for Source Code generation." );
+                    {
+                        int result = Cake.RunCmd( cmdLineIL );
+                        if( result != 0 ) throw new Exception( "CKDSetup.exe failed for IL generation." );
+                    }
+                    {
+                        int result = Cake.RunCmd( cmdLineIL + " -sg" );
+                        if( result != 0 ) throw new Exception( "CKDSetup.exe failed for Source Code generation." );
+                    }
                 } );
 
             Task( "Create-NuGet-Package-For-CKDBSetup" )

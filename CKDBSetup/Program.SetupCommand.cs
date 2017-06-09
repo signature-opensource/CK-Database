@@ -193,7 +193,7 @@ namespace CKDBSetup
                 }
                 else
                 {
-                    m.Error().Send( $"Failed to resolve assembly {assemblyName.Name} (File not found: {dllPath})" );
+                    m.Warn().Send( $"Failed to resolve assembly {assemblyName.Name} (File not found: {dllPath})" );
                     return null;
                 }
             }
