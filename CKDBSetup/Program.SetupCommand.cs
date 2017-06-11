@@ -7,64 +7,9 @@ using CK.Core;
 using CK.Setup;
 using Microsoft.Extensions.CommandLineUtils;
 using CK.Text;
-using System.Threading;
 
 namespace CKDBSetup
 {
-    public static class WeakAssemblyNameResolver
-    {
-        static int _installCount;
-
-        public static bool IsInstalled => _installCount >= 0;
-
-        public static void Install()
-        {
-            if( Interlocked.Increment( ref _installCount ) == 1 )
-            {
-                AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-            }
-        }
-
-        public static void Uninstall()
-        {
-            if( Interlocked.Decrement( ref _installCount ) == 0 )
-            {
-                AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
-            }
-        }
-
-        class Auto : IDisposable
-        {
-            bool _done;
-
-            public void Dispose()
-            {
-                if( !_done )
-                {
-                    _done = true;
-                    Uninstall();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Temporary installs the hook that will be uninstalled when the returned object will be disposed.
-        /// </summary>
-        /// <returns>The dispoable to dispose when done.</returns>
-        public static IDisposable TempInstall()
-        {
-            Install();
-            return new Auto();
-        }
-
-        static Assembly CurrentDomain_AssemblyResolve( object sender, ResolveEventArgs args )
-        {
-            var failed = new AssemblyName( args.Name );
-            return failed.Version != null && failed.CultureName == null
-                    ? Assembly.Load( new AssemblyName( failed.Name ) )
-                    : null;
-        }
-    }
     static partial class Program
     {
         private static void SetupCommand( CommandLineApplication c )
@@ -107,13 +52,13 @@ namespace CKDBSetup
                 CommandOptionType.SingleValue
                 );
 
-            var sourceGenerationOpt = c.Option(
-                "-sg|--sourceGeneration",
-                $"Use the new code source generation (instead of IL emit).",
-                CommandOptionType.NoValue
-                );
+            //var sourceGenerationOpt = c.Option(
+            //    "-sg|--sourceGeneration",
+            //    $"Use the new code source generation (instead of IL emit).",
+            //    CommandOptionType.NoValue
+            //    );
 
-            var sampleUsage = $@"Sample usage: {c.Parent.Name} {c.Name} ""Server=.;Database=Test;Integrated Security=true;"" -ra ""Super.Data"" -r ""Another.Model"" -p ""C:\App\Prod\SuperApp\bin""  -n ""Super.Generated"" -sg ";
+            var sampleUsage = $@"Sample usage: {c.Parent.Name} {c.Name} ""Server=.;Database=Test;Integrated Security=true;"" -ra ""Super.Data"" -r ""Another.Model"" -p ""C:\App\Prod\SuperApp\bin""  -n ""Super.Generated"" ";
 
 
             c.OnExecute( () =>
@@ -156,7 +101,7 @@ namespace CKDBSetup
                     generatedAssemblyName = generatedAssemblyNameOpt.Value().Trim();
                 }
 
-                sourceGeneration = sourceGenerationOpt.HasValue(); 
+                sourceGeneration = false; // sourceGenerationOpt.HasValue(); 
 
                 // No connectionString given
                 if( string.IsNullOrEmpty( connectionString ) )
@@ -171,7 +116,7 @@ namespace CKDBSetup
                 monitor.Trace().Send( $"Recurse Assembly names: {recurseAssemblyNames.Concatenate()}" );
                 monitor.Trace().Send( $"Binaries path: {binPath}" );
                 monitor.Trace().Send( $"Generated assembly name: {generatedAssemblyName}" );
-                monitor.Trace().Send( $"Source Generation: {sourceGeneration}" );
+                //monitor.Trace().Send( $"Source Generation: {sourceGeneration}" );
 
                 var buildConfig = DbSetupHelper.BuildSetupConfig( connectionString, assemblyNames, recurseAssemblyNames, generatedAssemblyName, binPath, runningMode, sourceGeneration );
 
@@ -179,32 +124,28 @@ namespace CKDBSetup
 
                 List<ActivityMonitorSimpleCollector.Entry> errorEntries = new List<ActivityMonitorSimpleCollector.Entry>();
 
-                using( WeakAssemblyNameResolver.TempInstall() )
+                // We need to manually hook Assembly resolution to allow DbSetup to probe the correct one.
+                ResolveEventHandler reh = (s, a) =>
                 {
-                    using( monitor.CollectEntries( errorEntries.AddRange, LogLevelFilter.Error ) )
-                    {
-                        try
-                        {
-                            isSuccess = StObjContextRoot.Build( buildConfig, null, monitor );
-                        }
-                        catch( Exception e )
-                        {
-                            monitor.Fatal().Send( e );
-                        }
-                    }
-                }
-                        //// We need to manually hook Assembly resolution to allow DbSetup to probe the correct one.
-                        //ResolveEventHandler reh = ( s, a ) =>
-                        //{
-                        //monitor.Trace().Send( $"AssemblyResolve: {a.Name}" );
-                        //return LoadAssembly( monitor, binPath, a.Name );
-                        //};
-                        //AppDomain.CurrentDomain.AssemblyResolve += reh;
+                    monitor.Trace().Send( $"AssemblyResolve: {a.Name}" );
+                    return LoadAssembly( monitor, binPath, a.Name );
+                };
+                AppDomain.CurrentDomain.AssemblyResolve += reh;
 
                 // Execution
+                using( monitor.CollectEntries( errorEntries.AddRange, LogLevelFilter.Error ) )
+                {
+                    try
+                    {
+                        isSuccess = StObjContextRoot.Build( buildConfig, null, monitor );
+                    }
+                    catch( Exception e )
+                    {
+                        monitor.Fatal().Send( e );
+                    }
+                }
 
-
-                        //AppDomain.CurrentDomain.AssemblyResolve -= reh;
+                AppDomain.CurrentDomain.AssemblyResolve -= reh;
 
                 // Summary log entry
                 if( !isSuccess )

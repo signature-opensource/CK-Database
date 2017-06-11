@@ -231,10 +231,10 @@ namespace CodeCake
                         int result = Cake.RunCmd( cmdLineIL );
                         if( result != 0 ) throw new Exception( "CKDSetup.exe failed for IL generation." );
                     }
-                    {
-                        int result = Cake.RunCmd( cmdLineIL + " -sg" );
-                        if( result != 0 ) throw new Exception( "CKDSetup.exe failed for Source Code generation." );
-                    }
+                    //{
+                    //    int result = Cake.RunCmd( cmdLineIL + " -sg" );
+                    //    if( result != 0 ) throw new Exception( "CKDSetup.exe failed for Source Code generation." );
+                    //}
                 } );
 
             Task( "Create-NuGet-Package-For-CKDBSetup" )
