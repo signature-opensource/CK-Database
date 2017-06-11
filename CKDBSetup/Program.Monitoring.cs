@@ -8,7 +8,7 @@ namespace CKDBSetup
 {
     static partial class Program
     {
-        static readonly string LogFilterDesc = "Valid log filters: \"Off\", \"Release\", \"Monitor\", \"Terse\", \"Verbose\", \"Debug\", or any \"{Group,Line}\" format where Group and Line can be: \"Trace\", \"Info\", \"Warn\", \"Error\", \"Fatal\", or \"Off\".";
+        static readonly string LogFilterDesc = "Valid log filters: \"Off\", \"Release\", \"Monitor\", \"Terse\", \"Verbose\", \"Debug\", or any \"{Group,Line}\" format where Group and Line can be: \"Debug\", \"Trace\", \"Info\", \"Warn\", \"Error\", \"Fatal\", or \"Off\".";
         static readonly string LogFilterErrorDesc = $"\nError: The given log filter is not valid. {LogFilterDesc}";
 
         static CommandOption PrepareLogLevelOption( CommandLineApplication c )
