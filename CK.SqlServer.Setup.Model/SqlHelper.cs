@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -248,9 +248,7 @@ namespace CK.SqlServer
         /// <returns>An encoded string.</returns>
         static public string SqlEncodeStringContent( string s )
         {
-            if( s == null ) return string.Empty;
-            s = s.Replace( "'", "''" );
-            return s;
+            return s == null ? string.Empty : s.Replace( "'", "''" );
         }
 
         /// <summary>

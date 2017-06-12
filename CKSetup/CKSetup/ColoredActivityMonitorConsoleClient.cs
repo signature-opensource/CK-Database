@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using CK.Core;
 using CK.Core.Impl;
 
-namespace CKDBSetup
+namespace CKSetup
 {
     /// <summary>
     /// Colored console client 

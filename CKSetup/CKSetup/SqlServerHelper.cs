@@ -1,27 +1,40 @@
-﻿using System;
+﻿using CK.Core;
+using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
-using CK.Core;
+using System.Threading.Tasks;
 
-namespace CKDBSetup
+namespace CKSetup
 {
-    static partial class Program
+    class SqlServerHelper
     {
+        private static readonly Regex SqlServerIdentifierRegex = new Regex( @"^[\p{L}_][\p{L}\p{N}@$#_]{0,127}$" );
 
-        private static string GetDefaultServerBackupPath( IActivityMonitor m, SqlConnection c )
+        public static bool IsValidIdentifier( string name ) => SqlServerIdentifierRegex.IsMatch( name );
+
+        static public string EncodeStringContent( string s )
+        {
+            return s == null ? string.Empty : s.Replace( "'", "''" );
+        }
+
+        public static string GetDefaultServerBackupPath( IActivityMonitor m, SqlConnection c )
         {
             return ExecXpInstanceRegread( m, c, "HKEY_LOCAL_MACHINE", @"Software\Microsoft\MSSQLServer\MSSQLServer", "BackupDirectory" );
         }
 
-        private static string GetDefaultServerDataPath( IActivityMonitor m, SqlConnection c )
+        public static string GetDefaultServerDataPath( IActivityMonitor m, SqlConnection c )
         {
             using( SqlCommand cmd = new SqlCommand( "select serverproperty('InstanceDefaultDataPath')", c ) )
             {
                 return (string)cmd.ExecuteScalar();
             }
         }
-        private static string GetDefaultServerLogPath( IActivityMonitor m, SqlConnection c )
+
+        public static string GetDefaultServerLogPath( IActivityMonitor m, SqlConnection c )
         {
             using( SqlCommand cmd = new SqlCommand( "select serverproperty('InstanceDefaultLogPath')", c ) )
             {
@@ -63,8 +76,5 @@ namespace CKDBSetup
             }
         }
 
-        private static readonly Regex SqlServerIdentifierRegex = new Regex(@"^[\p{L}_][\p{L}\p{N}@$#_]{0,127}$");
-
-        private static bool ValidateIdentifier( string name ) => SqlServerIdentifierRegex.IsMatch( name );
     }
 }
