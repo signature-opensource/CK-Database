@@ -26,53 +26,45 @@ using System.Linq;
 
 namespace CodeCake
 {
-    public static class DotNetCoreRestoreSettingsExtension
+    public static class ToolSettingsSettingsVersionExtension
     {
-        public const string versionWhenInvalid = "0.0.0-AbsolutelyInvalid";
+        public const string VersionWhenInvalid = "0.0.0-0";
 
         public static T AddVersionArguments<T>(this T @this, SimpleRepositoryInfo info, Action<T> conf = null) where T : DotNetCoreSettings
         {
-            string version = versionWhenInvalid, assemblyVersion = "0.0", fileVersion = "0.0.0.0", informationalVersion = "";
-            if (info.IsValid)
-            {
-                version = info.NuGetVersion;
-                assemblyVersion = info.MajorMinor;
-                fileVersion = info.FileVersion;
-                informationalVersion = $"{info.SemVer} ({info.NuGetVersion}) - SHA1: {info.CommitSha} - CommitDate: {info.CommitDateUtc.ToString("u")}";
-            }
-            var prev2 = @this.ArgumentCustomization;
-            @this.ArgumentCustomization = args => (prev2?.Invoke(args) ?? args)
-                    .Append($@"/p:CakeBuild=""true""")
-                    .Append($@"/p:Version=""{version}""")
-                    .Append($@"/p:AssemblyVersion=""{assemblyVersion}.0""")
-                    .Append($@"/p:FileVersion=""{fileVersion}""")
-                    .Append($@"/p:InformationalVersion=""{informationalVersion}""");
-
-            conf?.Invoke(@this);
+            AddVersionToolArguments(@this, info);
+            conf?.Invoke( @this );
             return @this;
         }
 
         public static MSBuildSettings AddVersionArguments(this MSBuildSettings @this, SimpleRepositoryInfo info, Action<MSBuildSettings> conf = null)
         {
-            string version = versionWhenInvalid, assemblyVersion = "0.0", fileVersion = "0.0.0.0", informationalVersion = "";
-            if (info.IsValid)
+            AddVersionToolArguments(@this, info);
+            conf?.Invoke(@this);
+            return @this;
+        }
+        static void AddVersionToolArguments(Cake.Core.Tooling.ToolSettings t, SimpleRepositoryInfo info)
+        {
+            string version = VersionWhenInvalid, 
+                   assemblyVersion = "0.0", 
+                   fileVersion = "0.0.0.0", 
+                   informationalVersion = "0.0.0-0 (0.0.0-0) - SHA1: 0000000000000000000000000000000000000000 - CommitDate: 0001-01-01 00:00:00Z";
+            if( info.IsValid )
             {
                 version = info.NuGetVersion;
                 assemblyVersion = info.MajorMinor;
                 fileVersion = info.FileVersion;
-                informationalVersion = $"{info.SemVer} ({info.NuGetVersion}) - SHA1: {info.CommitSha} - CommitDate: {info.CommitDateUtc.ToString("u")}";
+                informationalVersion = $"{info.SemVer} ({info.NuGetVersion}) - SHA1: {info.CommitSha} - CommitDate: {info.CommitDateUtc.ToString( "u" )}";
             }
-            var prev2 = @this.ArgumentCustomization;
-            @this.ArgumentCustomization = args => (prev2?.Invoke(args) ?? args)
-                    .Append($@"/p:CakeBuild=""true""")
-                    .Append($@"/p:Version=""{version}""")
-                    .Append($@"/p:AssemblyVersion=""{assemblyVersion}.0""")
-                    .Append($@"/p:FileVersion=""{fileVersion}""")
-                    .Append($@"/p:InformationalVersion=""{informationalVersion}""");
-
-            conf?.Invoke(@this);
-            return @this;
+            var prev = t.ArgumentCustomization;
+            t.ArgumentCustomization = args => (prev?.Invoke( args ) ?? args)
+                            .Append( $@"/p:CakeBuild=""true""" )
+                            .Append( $@"/p:Version=""{version}""" )
+                            .Append( $@"/p:AssemblyVersion=""{assemblyVersion}.0""" )
+                            .Append( $@"/p:FileVersion=""{fileVersion}""" )
+                            .Append( $@"/p:InformationalVersion=""{informationalVersion}""" );
         }
+
     }
 
     /// <summary>
@@ -152,8 +144,8 @@ namespace CodeCake
                 .IsDependentOn( "Clean" )
                 .Does( () =>
                  {
-                    // https://docs.microsoft.com/en-us/nuget/schema/msbuild-targets
-                    Cake.DotNetCoreRestore( new DotNetCoreRestoreSettings().AddVersionArguments( gitInfo ) );
+                     // https://docs.microsoft.com/en-us/nuget/schema/msbuild-targets
+                     Cake.DotNetCoreRestore( new DotNetCoreRestoreSettings().AddVersionArguments( gitInfo ) );
                      Cake.NuGetRestore( "CKDBSetup/packages.config", new NuGetRestoreSettings()
                      {
                          PackagesDirectory = "packages"

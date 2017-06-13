@@ -87,6 +87,12 @@ namespace CKSetup
             _c.ShowHelp();
             return Program.RetCodeError;
         }
+
+        public int SendError( string msg )
+        {
+            _m.Error().Send( msg );
+            return Program.RetCodeError;
+        }
     }
 
 }

@@ -18,16 +18,16 @@ namespace CKSetup
         public const string LogFileOptionName = "logFile";
         public const string LogFilterDesc = "Valid log filters: \"Off\", \"Release\", \"Monitor\", \"Terse\", \"Verbose\", \"Debug\", or any \"{Group,Line}\" format where Group and Line can be: \"Debug\", \"Trace\", \"Info\", \"Warn\", \"Error\", \"Fatal\", or \"Off\".";
 
+        static readonly CKVersionInfo _thisVersion;
         static readonly string _longVersion;
         static readonly string _shortVersion;
 
         static CommandLineApplicationExtension()
         {
             var a = (AssemblyInformationalVersionAttribute)Attribute.GetCustomAttribute( Assembly.GetExecutingAssembly(), typeof( AssemblyInformationalVersionAttribute ) );
-            _longVersion = a != null ? a.InformationalVersion : "Not a valid version";
-            _shortVersion = a != null
-                               ? Regex.Match( a.InformationalVersion, @".*?\(?<1>.*?\)" ).Groups[1].Value
-                               : "Not a valid version";
+            _thisVersion = new CKVersionInfo( a?.InformationalVersion );
+            _longVersion = _thisVersion.ToString();
+            _shortVersion = _thisVersion.NuGetVersion ?? "<No valid version>";
         }
 
         static public void StandardConfiguration( this CommandLineApplication @this, bool withMonitor )
@@ -59,7 +59,30 @@ namespace CKSetup
         {
             return new BackupPathArgument( @this.Argument( "BackupFilePath",
                                            description,
-                                            false ) );
+                                           false ) );
+        }
+
+        static public ZipRuntimeFilesArgument AddZipRuntimeFilesArgument( this CommandLineApplication @this, string description )
+        {
+            return new ZipRuntimeFilesArgument( @this.Argument( "ZipRunTimeFile",
+                                           description,
+                                           true ) );
+        }
+
+        static public BinPathsOption AddBinPathsOption( this CommandLineApplication @this, string description )
+        {
+            return new BinPathsOption( @this.Option(
+                                      "-p|--binPath",
+                                      description,
+                                      CommandOptionType.MultipleValue ) );
+        }
+
+        static public ZipRuntimeFileOption AddZipRuntimeFileOption( this CommandLineApplication @this )
+        {
+            return new ZipRuntimeFileOption( @this.Option(
+                                         "-z|--zipRuntimeFile",
+                                         "Full ",
+                                         CommandOptionType.SingleValue ) );
         }
 
         static public ConsoleMonitor CreateConsoleMonitor( this CommandLineApplication @this )

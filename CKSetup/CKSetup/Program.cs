@@ -11,9 +11,6 @@ namespace CKSetup
         public const int RetCodeError = 1;
         public const int RetCodeHelp = 2;
 
-        static readonly AnsiConsole Output = AnsiConsole.GetOutput( true );
-        static readonly AnsiConsole Error = AnsiConsole.GetError( true );
-
         static int Main(string[] args)
         {
             var app = new CommandLineApplication
@@ -27,6 +24,7 @@ namespace CKSetup
 
             app.Command( "backup", BackupCommand.Define );
             app.Command( "restore", RestoreCommand.Define );
+            app.Command( "setup", SetupCommand.Define );
 
             return app.Execute( args );
         }
