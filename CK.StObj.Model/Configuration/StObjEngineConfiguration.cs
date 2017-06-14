@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace CK.Core
 {
@@ -21,6 +22,15 @@ namespace CK.Core
         {
             _buildConfig = new BuildAndRegisterConfiguration();
             _finalConfig = new BuilderFinalAssemblyConfiguration();
+        }
+
+        static readonly XName xBuildAndRegisterConfiguration = XNamespace.None + "BuildAndRegisterConfiguration";
+        static readonly XName xBuilderFinalAssemblyConfiguration = XNamespace.None + "BuilderFinalAssemblyConfiguration";
+
+        public StObjEngineConfiguration( XElement e )
+        {
+            _buildConfig = new BuildAndRegisterConfiguration( e.Element( xBuildAndRegisterConfiguration ) );
+            _finalConfig = new BuilderFinalAssemblyConfiguration( e.Element( xBuilderFinalAssemblyConfiguration ) );
         }
 
         /// <summary>

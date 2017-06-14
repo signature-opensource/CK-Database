@@ -1,4 +1,4 @@
-#region Proprietary License
+﻿#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.SqlServer.Setup.Model\Configuration\SqlSetupAspectConfiguration.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using CK.Core;
 using CK.Setup;
 using CK.SqlServer.Setup;
+using System.Xml.Linq;
+using System.Linq;
 
 namespace CK.Setup
 {
@@ -17,10 +19,6 @@ namespace CK.Setup
     public class SqlSetupAspectConfiguration : ISetupEngineAspectConfiguration
     {
         readonly List<SqlDatabaseDescriptor> _databases;
-        readonly List<string> _ckPackageDirectories;
-        readonly List<string> _sqlFileDirectories;
-        string _defaultDatabaseConnectionString;
-        bool _ignoreMissingDependencyIsError;
 
         /// <summary>
         /// Initializes a new <see cref="SqlSetupAspectConfiguration"/>.
@@ -28,18 +26,29 @@ namespace CK.Setup
         public SqlSetupAspectConfiguration()
         {
             _databases = new List<SqlDatabaseDescriptor>();
-            _ckPackageDirectories = new List<string>();
-            _sqlFileDirectories = new List<string>();
+        }
+
+        /// <summary>
+        /// Initializes a new <see cref="SqlSetupAspectConfiguration"/> from its xml representation.
+        /// </summary>
+        /// <param name="e">The element.</param>
+        public SqlSetupAspectConfiguration( XElement e )
+        {
+            XName xDatabases = XNamespace.None + "Databases";
+            XName xDefaultDatabaseConnectionString = XNamespace.None + "DefaultDatabaseConnectionString";
+            XName xGlobalResolution = XNamespace.None + "GlobalResolution";
+            XName xIgnoreMissingDependencyIsError = XNamespace.None + "IgnoreMissingDependencyIsError";
+
+            _databases = e.Elements( xDatabases ).Select( d => new SqlDatabaseDescriptor( d ) ).ToList();
+            DefaultDatabaseConnectionString = e.Element( xDefaultDatabaseConnectionString )?.Value;
+            GlobalResolution = string.Equals( e.Element( xGlobalResolution )?.Value, "true", StringComparison.OrdinalIgnoreCase );
+            IgnoreMissingDependencyIsError = string.Equals( e.Element( xIgnoreMissingDependencyIsError )?.Value, "true", StringComparison.OrdinalIgnoreCase );
         }
 
         /// <summary>
         /// Gets or sets the default database connection string.
         /// </summary>
-        public string DefaultDatabaseConnectionString
-        {
-            get { return _defaultDatabaseConnectionString; }
-            set { _defaultDatabaseConnectionString = value; }
-        }
+        public string DefaultDatabaseConnectionString { get; set; }
 
         /// <summary>
         /// Gets the list of available <see cref="SqlDatabaseDescriptor"/>.
@@ -55,7 +64,7 @@ namespace CK.Setup
         public string FindConnectionStringByName( string name )
         {
             if( name == SqlDatabase.DefaultDatabaseName ) return DefaultDatabaseConnectionString;
-            foreach( var desc in Databases ) if( desc.DatabaseName == name ) return desc.ConnectionString;
+            foreach( var desc in Databases ) if( desc.LogicalDatabaseName == name ) return desc.ConnectionString;
             return null;
         }
 
@@ -75,20 +84,7 @@ namespace CK.Setup
         /// Defaults to false.
         /// This applies to all <see cref="Databases"/>.
         /// </summary>
-        public bool IgnoreMissingDependencyIsError
-        {
-            get { return _ignoreMissingDependencyIsError; }
-            set { _ignoreMissingDependencyIsError = value; }
-        }
+        public bool IgnoreMissingDependencyIsError { get; set; }
 
-        /// <summary>
-        /// Gets the list of root directories (lookup is recursive) into which file packages (*.ck xml files) must be registered.
-        /// </summary>
-        public List<string> FilePackageDirectories => _ckPackageDirectories; 
-
-        /// <summary>
-        /// Gets the list of root directories (lookup is recursive) into which sql files (*.sql files) must be registered.
-        /// </summary>
-        public List<string> SqlFileDirectories =>_sqlFileDirectories; 
     }
 }

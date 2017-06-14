@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.IO;
+using System.Xml.Linq;
 
 namespace CK.Core
 {
@@ -44,6 +45,22 @@ namespace CK.Core
             GenerateFileAndPEVerify = 2
         }
 
+        public BuilderFinalAssemblyConfiguration()
+        {
+        }
+
+        static readonly XName xDirectory = XNamespace.None + "Directory";
+        static readonly XName xAssemblyName = XNamespace.None + "AssemblyName";
+        static readonly XName xSourceGeneration = XNamespace.None + "SourceGeneration";
+        static readonly XName xSignAssembly = XNamespace.None + "SignAssembly";
+
+        public BuilderFinalAssemblyConfiguration( XElement e )
+        {
+            Directory = e.Element( xDirectory )?.Value;
+            AssemblyName = e.Element( xAssemblyName )?.Value;
+            SourceGeneration = string.Equals( e.Element( xSourceGeneration )?.Value, "true", StringComparison.OrdinalIgnoreCase );
+            SignAssembly = string.Equals( e.Element( xSignAssembly )?.Value, "true", StringComparison.OrdinalIgnoreCase );
+        }
 
         /// <summary>
         /// Options that may prevent final assembly generation: the final asembly is always

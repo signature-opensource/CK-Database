@@ -1,4 +1,4 @@
-#region Proprietary License
+﻿#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.Setupable.Runtime\Version\IVersionedItemRepository.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -25,7 +25,7 @@ namespace CK.Setup
         /// </summary>
         /// <param name="monitor">Monitor to use for warnings or informations. Exceptions should be thrown an any serious error.</param>
         /// <param name="reader">
-        /// The reader that has been used to read the original versions: this can be used to enable *
+        /// The reader that has been used to read the original versions: this can be used to enable 
         /// checks and/or optimizations.
         /// </param>
         /// <param name="trackedItems">The set of <see cref="VersionedNameTracked"/> objects.</param>

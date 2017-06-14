@@ -1,4 +1,4 @@
-#region Proprietary License
+﻿#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.StObj.Model\Configuration\IStObjEngineConfiguration.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -17,7 +17,6 @@ namespace CK.Core
     /// Provides minimal configuration required to produce a final (compiled) assembly.
     /// Thanks to this abstraction, <see cref="StObjContextRoot"/> is able to handle build/setup phases 
     /// that involve any higher level APIs than StObj itself.
-    /// Objects that supports this interface must be serializable.
     /// </summary>
     public interface IStObjBuilderConfiguration
     {

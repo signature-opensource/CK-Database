@@ -1,4 +1,4 @@
-#region Proprietary License
+﻿#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.StObj.Model\Configuration\BuilderAppDomainConfiguration.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 
 namespace CK.Core
 {
@@ -27,6 +28,15 @@ namespace CK.Core
         {
             _assemblyRegister = new AssemblyRegistererConfiguration();
             _explicitClasses = new List<string>();
+        }
+
+        static readonly XName xAssemblyRegistererConfiguration = XNamespace.None + "AssemblyRegistererConfiguration";
+        static readonly XName xExplicitClass = XNamespace.None + "ExplicitClass";
+
+        public BuildAndRegisterConfiguration( XElement e )
+        {
+            _assemblyRegister = new AssemblyRegistererConfiguration( e.Element( xAssemblyRegistererConfiguration ) );
+            _explicitClasses = e.Elements( xExplicitClass ).Select( c => c.Value ).ToList();
         }
 
         /// <summary>

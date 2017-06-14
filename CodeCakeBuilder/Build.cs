@@ -25,51 +25,7 @@ using System.Diagnostics;
 using System.Linq;
 
 namespace CodeCake
-{
-    public static class ToolSettingsSettingsVersionExtension
-    {
-        public const string VersionWhenInvalid = "0.0.0-0";
-
-        public static T AddVersionArguments<T>(this T @this, SimpleRepositoryInfo info, Action<T> conf = null) where T : DotNetCoreSettings
-        {
-            AddVersionToolArguments(@this, info);
-            conf?.Invoke( @this );
-            return @this;
-        }
-
-        public static MSBuildSettings AddVersionArguments(this MSBuildSettings @this, SimpleRepositoryInfo info, Action<MSBuildSettings> conf = null)
-        {
-            AddVersionToolArguments(@this, info);
-            conf?.Invoke(@this);
-            return @this;
-        }
-        static void AddVersionToolArguments(Cake.Core.Tooling.ToolSettings t, SimpleRepositoryInfo info)
-        {
-            string version = VersionWhenInvalid, 
-                   assemblyVersion = "0.0", 
-                   fileVersion = "0.0.0.0", 
-                   informationalVersion = "0.0.0-0 (0.0.0-0) - SHA1: 0000000000000000000000000000000000000000 - CommitDate: 0001-01-01 00:00:00Z";
-            if( info.IsValid )
-            {
-                version = info.NuGetVersion;
-                assemblyVersion = info.MajorMinor;
-                fileVersion = info.FileVersion;
-                informationalVersion = $"{info.SemVer} ({info.NuGetVersion}) - SHA1: {info.CommitSha} - CommitDate: {info.CommitDateUtc.ToString( "u" )}";
-            }
-            var prev = t.ArgumentCustomization;
-            t.ArgumentCustomization = args => (prev?.Invoke( args ) ?? args)
-                            .Append( $@"/p:CakeBuild=""true""" )
-                            .Append( $@"/p:Version=""{version}""" )
-                            .Append( $@"/p:AssemblyVersion=""{assemblyVersion}.0""" )
-                            .Append( $@"/p:FileVersion=""{fileVersion}""" )
-                            .Append( $@"/p:InformationalVersion=""{informationalVersion}""" );
-        }
-
-    }
-
-    /// <summary>
-    /// Standard build "script".
-    /// </summary>
+{ 
     [AddPath("CodeCakeBuilder/Tools")]
     [AddPath("packages/**/tools*")]
     public class Build : CodeCakeHost

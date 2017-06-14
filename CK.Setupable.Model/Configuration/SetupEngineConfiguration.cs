@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using CK.Core;
 using CK.Setup;
+using System.Xml.Linq;
 
 namespace CK.Setup
 {
@@ -9,7 +10,6 @@ namespace CK.Setup
     /// Fundamental configuration objects. It holds the configuration related to StObj (<see cref="P:StObjEngineConfiguration"/>)
     /// and configuration for the <see cref="Aspects"/> that are needed.
     /// </summary>
-    [Serializable]
     public class SetupEngineConfiguration : IStObjBuilderConfiguration
     {
         readonly StObjEngineConfiguration _stObjConfig;
@@ -22,6 +22,23 @@ namespace CK.Setup
         {
             _stObjConfig = new StObjEngineConfiguration();
             _aspects = new List<ISetupEngineAspectConfiguration>();
+        }
+
+        static readonly XName xStObjEngineConfiguration = XNamespace.None + "StObjEngineConfiguration";
+        static readonly XName xAspect = XNamespace.None + "Aspect";
+        static readonly XName xType = XNamespace.None + "Type";
+
+        public SetupEngineConfiguration( XElement e )
+        {
+            _stObjConfig = new StObjEngineConfiguration( e.Element( xStObjEngineConfiguration ) );
+            _aspects = new List<ISetupEngineAspectConfiguration>();
+            foreach( var a in e.Elements( xAspect ) )
+            {
+                string type = (string)e.AttributeRequired( xType );
+                Type tAspect = SimpleTypeFinder.WeakResolver( type, true );
+                ISetupEngineAspectConfiguration aspect = (ISetupEngineAspectConfiguration)Activator.CreateInstance( tAspect, e );
+                _aspects.Add( aspect );
+            }
         }
 
         /// <summary>

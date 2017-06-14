@@ -8,7 +8,8 @@ namespace CK.Setup
 {
     /// <summary>
     /// All configuration of a Setup engine Aspect must implement this interface.
-    /// Such objects must be serializable and should avoid any <see cref="Type"/> or delegates of any kind.
+    /// Such objects must have a deserialization constructor from a XElement and should 
+    /// avoid any <see cref="Type"/> or delegates of any kind.
     /// </summary>
     public interface ISetupEngineAspectConfiguration
     {
