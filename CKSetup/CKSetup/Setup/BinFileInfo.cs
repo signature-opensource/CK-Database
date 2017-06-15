@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace CKSetup
 {
 
-    class BinFileInfo
+    public class BinFileInfo
     {
         HashSet<BinFileInfo> _localDependencies;
 
@@ -125,6 +125,11 @@ namespace CKSetup
                 }
             }
             return _localDependencies;
+        }
+
+        public override string ToString()
+        {
+            return $"{Name.FullName}{(IsRuntimeDependencyDependent ? " -D" : "")}";
         }
 
         static public IReadOnlyList<BinFileInfo> ReadBinFolder( IActivityMonitor m, string binPath )

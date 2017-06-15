@@ -1,18 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\Common\Shared.props" />
-
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\CK.StObj.Engine\CK.StObj.Engine.csproj" />
+    <ProjectReference Include="..\..\CKSetup\CKSetup\CKSetup.csproj" />
   </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
+  
+  <ItemGroup>
     <Reference Include="System" />
     <PackageReference Include="NUnit" Version="[2.6.4]" />
+    <PackageReference Include="FluentAssertions" Version="4.19.2" />
   </ItemGroup>
 
-</Project>
+
+  </Project>

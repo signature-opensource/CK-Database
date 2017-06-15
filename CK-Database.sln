@@ -91,15 +91,20 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.Setupable.Engine.NetCore
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.StObj.Engine.NetCore.Tests", "Tests\CK.StObj.Engine.NetCore.Tests\CK.StObj.Engine.NetCore.Tests.csproj", "{48C4DF13-76BC-4714-A58B-A9427FD439E9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlTransform.NetCore.Tests", "Tests\SqlTransform\SqlTransform.NetCore.Tests\SqlTransform.NetCore.Tests.csproj", "{6547E8D0-6BF9-4FB4-AC78-D1BC54A816FE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlTransform.NetCore.Tests", "Tests\SqlTransform\SqlTransform.NetCore.Tests\SqlTransform.NetCore.Tests.csproj", "{6547E8D0-6BF9-4FB4-AC78-D1BC54A816FE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlCallDemo.NetCore.Tests", "Tests\SqlCallDemo\SqlCallDemo.NetCore.Tests\SqlCallDemo.NetCore.Tests.csproj", "{7B7BF017-1943-47AE-AE8A-BEF9983C88F3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlCallDemo.NetCore.Tests", "Tests\SqlCallDemo\SqlCallDemo.NetCore.Tests\SqlCallDemo.NetCore.Tests.csproj", "{7B7BF017-1943-47AE-AE8A-BEF9983C88F3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CKSetup", "CKSetup", "{AB0123E6-4EC2-455C-B7B4-CBC9E55AC9DF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CKSetup", "CKSetup\CKSetup\CKSetup.csproj", "{1EE076A9-08E3-4A07-8DAA-5A18508A45A5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CKSetup", "CKSetup\CKSetup\CKSetup.csproj", "{1EE076A9-08E3-4A07-8DAA-5A18508A45A5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CKSetup.Runner", "CKSetup\CKSetup.Runner\CKSetup.Runner.csproj", "{8B1A34C8-E0BB-4104-B01F-451C1DB13BA8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CKSetup.Runner", "CKSetup\CKSetup.Runner\CKSetup.Runner.csproj", "{8B1A34C8-E0BB-4104-B01F-451C1DB13BA8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CKSetup.Tests", "Tests\CKSetup.Tests\CKSetup.Tests.csproj", "{D29B730E-853F-49F7-9EB9-144A9287FC3F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D9A1C87B-3B98-49E5-95F4-BC51B132B026} = {D9A1C87B-3B98-49E5-95F4-BC51B132B026}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -495,6 +500,18 @@ Global
 		{8B1A34C8-E0BB-4104-B01F-451C1DB13BA8}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{8B1A34C8-E0BB-4104-B01F-451C1DB13BA8}.Release|x86.ActiveCfg = Release|Any CPU
 		{8B1A34C8-E0BB-4104-B01F-451C1DB13BA8}.Release|x86.Build.0 = Release|Any CPU
+		{D29B730E-853F-49F7-9EB9-144A9287FC3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D29B730E-853F-49F7-9EB9-144A9287FC3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D29B730E-853F-49F7-9EB9-144A9287FC3F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{D29B730E-853F-49F7-9EB9-144A9287FC3F}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{D29B730E-853F-49F7-9EB9-144A9287FC3F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D29B730E-853F-49F7-9EB9-144A9287FC3F}.Debug|x86.Build.0 = Debug|Any CPU
+		{D29B730E-853F-49F7-9EB9-144A9287FC3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D29B730E-853F-49F7-9EB9-144A9287FC3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D29B730E-853F-49F7-9EB9-144A9287FC3F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{D29B730E-853F-49F7-9EB9-144A9287FC3F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{D29B730E-853F-49F7-9EB9-144A9287FC3F}.Release|x86.ActiveCfg = Release|Any CPU
+		{D29B730E-853F-49F7-9EB9-144A9287FC3F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -524,6 +541,7 @@ Global
 		{7B7BF017-1943-47AE-AE8A-BEF9983C88F3} = {5EC943B9-9907-4B3B-A5CD-9155F23E2D6A}
 		{1EE076A9-08E3-4A07-8DAA-5A18508A45A5} = {AB0123E6-4EC2-455C-B7B4-CBC9E55AC9DF}
 		{8B1A34C8-E0BB-4104-B01F-451C1DB13BA8} = {AB0123E6-4EC2-455C-B7B4-CBC9E55AC9DF}
+		{D29B730E-853F-49F7-9EB9-144A9287FC3F} = {6E913090-EA34-4A90-8DBB-1501F9981F53}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.0\lib\NET35;packages\Unity.2.1.505.2\lib\NET35

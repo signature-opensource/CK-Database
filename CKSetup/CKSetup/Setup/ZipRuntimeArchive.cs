@@ -2,24 +2,22 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace CKSetup
 {
-    class ZipRuntimeArchive : IDisposable
+    public class ZipRuntimeArchive : IDisposable
     {
-        readonly ZipArchive _archive;
+        readonly string _path;
         readonly HashSet<string> _binPathsAlreadyExtracted;
         readonly List<string> _cleanupFiles;
         readonly IActivityMonitor _monitor;
 
         ZipRuntimeArchive( IActivityMonitor monitor, string path )
         {
-            // Uses FileMode.OpenOrCreate.
-            _archive = ZipFile.Open( path, ZipArchiveMode.Update );
+            _path = path;
             _binPathsAlreadyExtracted = new HashSet<string>();
             _cleanupFiles = new List<string>();
             _monitor = monitor;
@@ -32,11 +30,11 @@ namespace CKSetup
                 try
                 {
                     int count = 0;
-                    foreach( var e in _archive.Entries )
-                    {
-                        e.Delete();
-                        ++count;
-                    }
+                    //foreach( var e in _archive.Entries )
+                    //{
+                    //    e.Delete();
+                    //    ++count;
+                    //}
                     _monitor.CloseGroup( $"{count} entries removed." );
                     return true;
                 }
@@ -57,12 +55,12 @@ namespace CKSetup
         {
             using( _monitor.OpenInfo().Send( $"Adding runtime for {f.FullPath}." ) )
             {
-                if( !AddOrUpdateAssembly( f ) ) return false;
-                foreach( var dep in f.LocalDependencies )
-                {
-                    if( !AddOrUpdateAssembly( dep ) ) return false;
-                }
-                if( !AddOrUpdateRuntimeDependenciesInfo( f ) ) return false;
+                //if( !AddOrUpdateAssembly( f ) ) return false;
+                //foreach( var dep in f.LocalDependencies )
+                //{
+                //    if( !AddOrUpdateAssembly( dep ) ) return false;
+                //}
+                //if( !AddOrUpdateRuntimeDependenciesInfo( f ) ) return false;
             }
             return true;
         }
@@ -71,13 +69,13 @@ namespace CKSetup
         {
             try
             {
-                string entryName = f.ZipEntryName;
-                var e = _archive.GetEntry( entryName ) ?? _archive.CreateEntry( entryName, CompressionLevel.Optimal );
-                using( var source = new FileStream( f.FullPath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.SequentialScan ) )
-                using( var content = e.Open() )
-                {
-                    source.CopyTo( content );
-                }
+                //string entryName = f.ZipEntryName;
+                //var e = _archive.GetEntry( entryName ) ?? _archive.CreateEntry( entryName, CompressionLevel.Optimal );
+                //using( var source = new FileStream( f.FullPath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.SequentialScan ) )
+                //using( var content = e.Open() )
+                //{
+                //    source.CopyTo( content );
+                //}
                 return true;
             }
             catch( Exception ex )
@@ -93,81 +91,81 @@ namespace CKSetup
             using( _monitor.OpenInfo().Send( $"Extracting runtime support into '{binPath}'." ) )
             {
                 _binPathsAlreadyExtracted.Add( binPath );
-                var entryDedup = new Dictionary<string,ZipArchiveEntry>();
-                foreach( var dep in setupDependencies )
-                {
-                    string path = $@"{dep.Name}\{dep.Referencer.RawTargetFramework}\{dep.Version}";
-                    var e = _archive.GetEntry( $@"{path}\deps.txt" );
-                    if( e == null )
-                    {
-                        _monitor.Error().Send( $"Runtime dependency '{path}' for '{dep.Referencer.Name}' is not registered." );
-                        return false;
-                    }
-                    using( var content = e.Open() )
-                    using( var reader = new StreamReader( content ) )
-                    {
-                        string line;
-                        while( (line = reader.ReadLine()) != null )
-                        {
-                            if( !entryDedup.ContainsKey(line) )
-                            {
-                                var depEntry = _archive.GetEntry( line );
-                                if( depEntry == null )
-                                {
-                                    _monitor.Error().Send( $"Entry '{line}' for dependency of '{dep.Referencer.Name}' not found." );
-                                    return false;
-                                }
-                                entryDedup.Add( line, depEntry );
-                            }
-                        }
-                    }
+                //var entryDedup = new Dictionary<string,ZipArchiveEntry>();
+                //foreach( var dep in setupDependencies )
+                //{
+                //    string path = $@"{dep.Name}\{dep.Referencer.RawTargetFramework}\{dep.Version}";
+                //    var e = _archive.GetEntry( $@"{path}\deps.txt" );
+                //    if( e == null )
+                //    {
+                //        _monitor.Error().Send( $"Runtime dependency '{path}' for '{dep.Referencer.Name}' is not registered." );
+                //        return false;
+                //    }
+                //    using( var content = e.Open() )
+                //    using( var reader = new StreamReader( content ) )
+                //    {
+                //        string line;
+                //        while( (line = reader.ReadLine()) != null )
+                //        {
+                //            if( !entryDedup.ContainsKey(line) )
+                //            {
+                //                var depEntry = _archive.GetEntry( line );
+                //                if( depEntry == null )
+                //                {
+                //                    _monitor.Error().Send( $"Entry '{line}' for dependency of '{dep.Referencer.Name}' not found." );
+                //                    return false;
+                //                }
+                //                entryDedup.Add( line, depEntry );
+                //            }
+                //        }
+                //    }
 
-                }
-                foreach( var e in entryDedup.Values )
-                {
-                    if( !ExtractToBin( e, binPath ) ) return false;
-                }
+                //}
+                //foreach( var e in entryDedup.Values )
+                //{
+                //    if( !ExtractToBin( e, binPath ) ) return false;
+                //}
             }
             return true;
         }
 
-        bool ExtractToBin( ZipArchiveEntry e, string binPath )
-        {
-            string targetFile = Path.Combine( binPath, e.Name );
-            if( !File.Exists( targetFile ) )
-            {
-                try
-                {
-                    e.ExtractToFile( targetFile );
-                    _cleanupFiles.Add( targetFile );
-                    _monitor.Info().Send( $"Extracted {e.Name}." );
-                }
-                catch( Exception ex )
-                {
-                    _monitor.Error().Send( ex, $"While extracting '{e.FullName}'." );
-                    return false;
-                }
-            }
-            else _monitor.Info().Send( $"Skipped '{e.Name}' since it already exists." );
-            return true;
-        }
+        //bool ExtractToBin( ZipArchiveEntry e, string binPath )
+        //{
+        //    string targetFile = Path.Combine( binPath, e.Name );
+        //    if( !File.Exists( targetFile ) )
+        //    {
+        //        try
+        //        {
+        //            e.ExtractToFile( targetFile );
+        //            _cleanupFiles.Add( targetFile );
+        //            _monitor.Info().Send( $"Extracted {e.Name}." );
+        //        }
+        //        catch( Exception ex )
+        //        {
+        //            _monitor.Error().Send( ex, $"While extracting '{e.FullName}'." );
+        //            return false;
+        //        }
+        //    }
+        //    else _monitor.Info().Send( $"Skipped '{e.Name}' since it already exists." );
+        //    return true;
+        //}
 
         bool AddOrUpdateRuntimeDependenciesInfo( BinFileInfo f )
         {
             try
             {
-                string entryName = f.ZipEntryPath + "\\deps.txt";
-                var e = _archive.GetEntry( entryName ) ?? _archive.CreateEntry( entryName, CompressionLevel.Optimal );
-                using( var content = e.Open() )
-                using( var w = new StreamWriter( content ) )
-                {
-                    w.WriteLine( f.ZipEntryName );
-                    foreach( var dep in f.LocalDependencies )
-                    {
-                        w.WriteLine( dep.ZipEntryName );
-                    }
-                    w.Flush();
-                }
+                //string entryName = f.ZipEntryPath + "\\deps.txt";
+                //var e = _archive.GetEntry( entryName ) ?? _archive.CreateEntry( entryName, CompressionLevel.Optimal );
+                //using( var content = e.Open() )
+                //using( var w = new StreamWriter( content ) )
+                //{
+                //    w.WriteLine( f.ZipEntryName );
+                //    foreach( var dep in f.LocalDependencies )
+                //    {
+                //        w.WriteLine( dep.ZipEntryName );
+                //    }
+                //    w.Flush();
+                //}
                 return true;
             }
             catch( Exception ex )
@@ -210,7 +208,6 @@ namespace CKSetup
                     _cleanupFiles.Clear();
                 }
             }
-            _archive.Dispose();
         }
     }
 }

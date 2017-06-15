@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace CKSetup
 {
 
-    class SetupDependency
+    public class SetupDependency
     {
         public SetupDependency( IList<CustomAttributeArgument> ctorArgs, BinFileInfo referencer )
         {
