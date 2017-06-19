@@ -45,13 +45,14 @@ namespace CKSetup
                 else
                 {
                     string binPath = binPaths.BinPaths[0];
-                    var binFiles = BinFileInfo.ReadBinFolder( monitor, binPath );
-                    var setupDependencies = binFiles.SelectMany( b => b.SetupDependencies );
+                    var binFolder = BinFolder.ReadBinFolder( monitor, binPath );
+                    if( binFolder == null ) return Program.RetCodeError;
                     using( ZipRuntimeArchive zip = ZipRuntimeArchive.OpenOrCreate( monitor, zipFile.ZipRuntimeFile ) )
                     {
                         if( zip == null ) return Program.RetCodeError;
-                        if( !zip.ExtractRuntimeDependencies( setupDependencies, binPath ) ) return Program.RetCodeError;
-                        var toSetup = binFiles.Where( b => b.IsRuntimeDependencyDependent ).Select( b => b.Name.Name );
+                        if( !zip.ExtractRuntimeDependencies( binFolder ) ) return Program.RetCodeError;
+                        var toSetup = binFolder.Files.Where( b => b.LocalDependencies.Any( dep => dep.IsModel ) )
+                                                     .Select( b => b.Name.Name );
                     }
                 }
 

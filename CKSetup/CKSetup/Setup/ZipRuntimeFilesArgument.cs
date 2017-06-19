@@ -57,11 +57,11 @@ namespace CKSetup
                         IReadOnlyList<BinFileInfo> files;
                         if( !directories.TryGetValue( binPath, out files ) )
                         {
-                            files = BinFileInfo.ReadBinFolder( m, binPath );
+                            files = BinFileInfo.ReadFiles( m, binPath );
                             directories.Add( binPath, files );
                         }
                         var theOne = files.FirstOrDefault( x => x.FullPath == fullPath );
-                        if( theOne?.CKVersion?.Version?.IsValid != true )
+                        if( theOne?.CKVersion?.Version != null )
                         {
                             return m.SendError( $"'{f}' must have a standard informational version." ) == Program.RetCodeSuccess;
                         }

@@ -16,7 +16,7 @@ namespace CKSetup
     {
         public static void Define( CommandLineApplication c )
         {
-            c.FullName = c.Parent.FullName+".Zip";
+            c.FullName = c.Parent.FullName + ".Zip";
             c.Description = "Manages the runtime zip file.";
             c.StandardConfiguration( withMonitor: false );
             c.OnExecute( () => { c.ShowHelp(); return Program.RetCodeHelp; } );
@@ -24,12 +24,21 @@ namespace CKSetup
             c.Command( "clear", DefineClear );
         }
 
-        static void DefineAdd( CommandLineApplication c )
+        public static void DefineAdd( CommandLineApplication c )
         {
-            c.FullName = c.Parent.FullName;
-            c.Description = "Adds a runtime file and its local dependencies to the zip runtime file.";
+            c.FullName = c.Parent.FullName + ".Add";
+            c.Description = "Adds an Engine or Runtime to the zip file.";
+            c.StandardConfiguration( withMonitor: false );
+            c.OnExecute( () => { c.ShowHelp(); return Program.RetCodeHelp; } );
+            c.Command( "engine", DefineAddEngine );
+        }
+
+        static void DefineAddEngine( CommandLineApplication c )
+        {
+            c.FullName = c.Parent.FullName+".Engine";
+            c.Description = "Adds an engine file and its dependencies to the zip runtime file.";
             c.StandardConfiguration( true );
-            ZipRuntimeFilesArgument toAdd = c.AddZipRuntimeFilesArgument( "Runtime files to add to the runtime zip." );
+            ZipRuntimeFilesArgument toAdd = c.AddZipRuntimeFilesArgument( "Engine files to add to the runtime zip." );
             ZipRuntimeFileOption zipFile = c.AddZipRuntimeFileOption();
 
             c.OnExecute( monitor =>
@@ -41,7 +50,7 @@ namespace CKSetup
                     if( zip == null ) return Program.RetCodeError;
                     foreach( var f in toAdd.Files )
                     {
-                        if( !zip.AddOrUpdateRuntime( f.File ) ) return Program.RetCodeError;
+                        if( !zip.AddOrUpdateEngine( f.File ) ) return Program.RetCodeError;
                     }
                 }
                 return Program.RetCodeSuccess;

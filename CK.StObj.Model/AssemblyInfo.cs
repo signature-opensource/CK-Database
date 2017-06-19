@@ -1,4 +1,3 @@
 ﻿
-// Defines the runtime companions.
-[assembly: CK.Setup.SetupDependency( "CK.StObj.Runtime" )]
-[assembly: CK.Setup.SetupDependency( "CK.StObj.Engine" )]
+// Defines the runtime assembly.
+//[assembly: CK.Setup.IsModeThatUsesRuntime( "CK.StObj.Runtime" )]

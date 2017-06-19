@@ -1,4 +1,3 @@
 ﻿
-// Defines the runtime companions.
-[assembly: CK.Setup.SetupDependency( "CK.SqlServer.Setup.Runtime" )]
-[assembly: CK.Setup.SetupDependency( "CK.SqlServer.Setup.Engine" )]
+// Defines the runtime assembly.
+[assembly: CK.Setup.IsModelThatUsesRuntime( "CK.SqlServer.Setup.Runtime" )]

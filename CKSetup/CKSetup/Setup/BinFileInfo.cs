@@ -2,6 +2,7 @@
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -12,7 +13,9 @@ namespace CKSetup
 
     public class BinFileInfo
     {
+        BinFolder _binFolder;
         HashSet<BinFileInfo> _localDependencies;
+        ComponentRef _cRef;
 
         BinFileInfo( string p, AssemblyDefinition a )
         {
@@ -27,12 +30,55 @@ namespace CKSetup
             AssemblyReferences = a.MainModule.AssemblyReferences.ToArray();
             // SetupDependencies may need VersionName or RawTargetFramework.
             SetupDependencies = a.CustomAttributes
-                                    .Where( x => x.AttributeType.FullName == "CK.Setup.SetupDependencyAttribute" && x.HasConstructorArguments )
-                                    .Select( x => new SetupDependency( x.ConstructorArguments, this ) )
-                                    .Where( x => x.IsValid )
+                                    .Select( x => (x.AttributeType.FullName == "CK.Setup.IsEngineAttribute"
+                                                    ? new SetupDependency( this )
+                                                    : ( x.AttributeType.FullName == "CK.Setup.IsModelAttribute"
+                                                        ? new SetupDependency( true, x.ConstructorArguments, this )
+                                                        : (x.AttributeType.FullName == "CK.Setup.IsRuntimeAttribute")
+                                                            ? new SetupDependency( false, x.ConstructorArguments, this )
+                                                            : null)) )
+                                    .Where( x => x != null )
                                     .ToArray();
-
+            bool multiple = false;
+            if( SetupDependencies.Any( d => d.IsModel ) ) ComponentKind = ComponentKind.Model;
+            if( SetupDependencies.Any( d => d.IsRuntime ) )
+            {
+                if( ComponentKind != ComponentKind.None ) multiple = true;
+                ComponentKind = ComponentKind.Runtime;
+            }
+            if( SetupDependencies.Any( d => d.IsEngine ))
+            {
+                if( ComponentKind != ComponentKind.None ) multiple = true;
+                ComponentKind = ComponentKind.Engine;
+            }
+            if( multiple )
+            {
+                throw new CKException( $"File '{p}' cannot be marked with more that one kind ot attributes (Engine, Runtime or Model)." );
+            }
+            if( ComponentKind != ComponentKind.None )
+            {
+               TargetFramework t;
+               switch( RawTargetFramework )
+                {
+                    case null: throw new CKException( $"Component '{p}' must be marked with a TargetFrameworkAttribute." );
+                    case ".NETFramework,Version=v4.6.1": t = TargetFramework.Net461; break;
+                    case ".NETStandard,Version=v1.3": t = TargetFramework.NetStandard13; break;
+                    case ".NETStandard,Version=v1.6": t = TargetFramework.NetStandard16; break;
+                    default: throw new CKException( $"Component '{p}' has TargetFrameworkAttribute {RawTargetFramework} that is not currently handled." );
+                }
+                if( CKVersion?.Version == null )
+                {
+                    throw new CKException( $"Component '{p}' must have standard CSemVer version in its InformationalVersion." );
+                }
+                _cRef = new ComponentRef( t, Name.Name, CKVersion?.Version );
+            }
         }
+
+        /// <summary>
+        /// Gets the folder with all its binaries.
+        /// The <see cref="LocalDependencies"/> is a subset of the <see cref="BinFolder.Files"/> set.
+        /// </summary>
+        public BinFolder BinFolder => _binFolder;
 
         /// <summary>
         /// Gets the full path of this BinFileInfo.
@@ -40,12 +86,12 @@ namespace CKSetup
         public string FullPath { get; }
 
         /// <summary>
-        /// Gets the filaName of this BinFileInfo.
+        /// Gets the local fileName of this BinFileInfo.
         /// </summary>
-        public string FileName => Path.GetFileName( FullPath );
+        public string LocalFileName => FullPath.Substring( _binFolder.BinPath.Length );
 
         /// <summary>
-        /// Gets the assembly name.
+        /// Gets the assembly <see cref="AssemblyNameDefinition"/>.
         /// </summary>
         public AssemblyNameDefinition Name { get; }
 
@@ -59,6 +105,16 @@ namespace CKSetup
         /// exists on the assembly.
         /// </summary>
         public string RawTargetFramework { get; }
+
+        /// <summary>
+        /// Gets the <see cref="ComponentKind"/>.
+        /// </summary>
+        public ComponentKind ComponentKind { get; }
+
+        /// <summary>
+        /// Gets the corresponding <see cref="ComponentRef"/> if this is a Component.
+        /// </summary>
+        public ComponentRef ComponentRef => _cRef;
 
         /// <summary>
         /// Gets the setup dependencies (from attributes named CK.Setup.SetupDependencyAttribute).
@@ -76,15 +132,9 @@ namespace CKSetup
         public IReadOnlyCollection<BinFileInfo> LocalDependencies => _localDependencies;
 
         /// <summary>
-        /// Gets whether at least one of the <see cref="LocalDependencies"/> depends on an assembly
-        /// that has one or more associated <see cref="SetupDependency"/>: this is a "Model".
-        /// </summary>
-        public bool IsRuntimeDependencyDependent { get; private set; }
-
-        /// <summary>
         /// Gets the best version name: "P&lt;CSemVer NuGetV2&gt;" first else fallbacks to "V&lt;Assembly version&gt;"
         /// </summary>
-        public string VersionName
+        public string GenericVersionName
         {
             get
             {
@@ -94,33 +144,19 @@ namespace CKSetup
             }
         }
 
-        /// <summary>
-        /// Gets the zip entry path: the assembly name\target framework\<see cref="VersionName"/>.
-        /// </summary>
-        public string ZipEntryPath => Name.Name + '\\' + RawTargetFramework + "\\" + VersionName;
-
-        /// <summary>
-        /// Gets the zip entry name: the <see cref="ZipEntryPath"/>\<see cref="FileName"/>.
-        /// </summary>
-        public string ZipEntryName => ZipEntryPath + "\\" + FileName;
-
-        HashSet<BinFileInfo> UpdateLocalDependencies( IEnumerable<BinFileInfo> binFolder )
+        internal HashSet<BinFileInfo> SetBinFolderAndUpdateLocalDependencies( BinFolder binFolder )
         {
-            if( _localDependencies == null )
+            if( _binFolder == null )
             {
+                _binFolder = binFolder;
                 _localDependencies = new HashSet<BinFileInfo>();
                 foreach( var dep in AssemblyReferences
-                                     .Select( n => binFolder.FirstOrDefault( b => b.Name.Name == n.Name ) )
-                                     .Where( b => b != null ) )
+                                        .Select( n => binFolder.Files.FirstOrDefault( b => b.Name.Name == n.Name ) )
+                                        .Where( b => b != null ) )
                 {
                     if( _localDependencies.Add( dep ) )
                     {
-                        _localDependencies.UnionWith( dep.UpdateLocalDependencies( binFolder ) );
-                    }
-                    IsRuntimeDependencyDependent |= dep.IsRuntimeDependencyDependent;
-                    if( !IsRuntimeDependencyDependent )
-                    {
-                        IsRuntimeDependencyDependent = dep.SetupDependencies.Count > 0;
+                        _localDependencies.UnionWith( dep.SetBinFolderAndUpdateLocalDependencies( binFolder ) );
                     }
                 }
             }
@@ -129,10 +165,12 @@ namespace CKSetup
 
         public override string ToString()
         {
-            return $"{Name.FullName}{(IsRuntimeDependencyDependent ? " -D" : "")}";
+            string s = Name.FullName;
+            if( ComponentKind != ComponentKind.None ) s += $" ({ComponentKind})";
+            return s;
         }
 
-        static public IReadOnlyList<BinFileInfo> ReadBinFolder( IActivityMonitor m, string binPath )
+        static internal IReadOnlyList<BinFileInfo> ReadFiles( IActivityMonitor m, string binPath )
         {
             var result = new List<BinFileInfo>();
             ReaderParameters r = new ReaderParameters();
@@ -141,10 +179,6 @@ namespace CKSetup
             {
                 BinFileInfo info = TryRead( m, r, f );
                 if( info != null ) result.Add( info );
-            }
-            foreach( var b in result )
-            {
-                b.UpdateLocalDependencies( result );
             }
             return result;
         }

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,15 +11,13 @@ namespace CKSetup
 {
     public class ZipRuntimeArchive : IDisposable
     {
-        readonly string _path;
-        readonly HashSet<string> _binPathsAlreadyExtracted;
+        readonly ZipArchive _archive;
         readonly List<string> _cleanupFiles;
         readonly IActivityMonitor _monitor;
 
         ZipRuntimeArchive( IActivityMonitor monitor, string path )
         {
-            _path = path;
-            _binPathsAlreadyExtracted = new HashSet<string>();
+            _archive = ZipFile.Open( path, ZipArchiveMode.Update );
             _cleanupFiles = new List<string>();
             _monitor = monitor;
         }
@@ -47,13 +46,13 @@ namespace CKSetup
         }
 
         /// <summary>
-        /// Adds or updates a runtime assembly.
+        /// Adds or updates an engine.
         /// </summary>
         /// <param name="f">The runtime file.</param>
         /// <returns>True on success, false on failure.</returns>
-        public bool AddOrUpdateRuntime( BinFileInfo f )
+        public bool AddOrUpdateEngine( BinFileInfo f )
         {
-            using( _monitor.OpenInfo().Send( $"Adding runtime for {f.FullPath}." ) )
+            using( _monitor.OpenInfo().Send( $"Adding engine '{f.Name}'." ) )
             {
                 //if( !AddOrUpdateAssembly( f ) ) return false;
                 //foreach( var dep in f.LocalDependencies )
@@ -85,12 +84,10 @@ namespace CKSetup
             }
         }
 
-        public bool ExtractRuntimeDependencies( IEnumerable<SetupDependency> setupDependencies, string binPath )
+        public bool ExtractRuntimeDependencies( BinFolder target )
         {
-            if( _binPathsAlreadyExtracted.Contains( binPath ) ) throw new InvalidOperationException( $"Already extracted to {binPath}." );
-            using( _monitor.OpenInfo().Send( $"Extracting runtime support into '{binPath}'." ) )
+            using( _monitor.OpenInfo().Send( $"Extracting runtime support into '{target.BinPath}'." ) )
             {
-                _binPathsAlreadyExtracted.Add( binPath );
                 //var entryDedup = new Dictionary<string,ZipArchiveEntry>();
                 //foreach( var dep in setupDependencies )
                 //{
