@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace CKSetup
 {
@@ -14,13 +15,47 @@ namespace CKSetup
         readonly ZipArchive _archive;
         readonly List<string> _cleanupFiles;
         readonly IActivityMonitor _monitor;
+        readonly ComponentDB _dbOrigin;
+        readonly ZipArchiveEntry _dbEntry;
+        ComponentDB _dbCurrent;
 
         ZipRuntimeArchive( IActivityMonitor monitor, string path )
         {
             _archive = ZipFile.Open( path, ZipArchiveMode.Update );
             _cleanupFiles = new List<string>();
             _monitor = monitor;
+            if( _archive.Entries.Count == 0 )
+            {
+                _dbCurrent = new ComponentDB();
+                _dbEntry = _archive.CreateEntry( "db.xml" );
+            }
+            else
+            {
+                _dbEntry = _archive.GetEntry( "db.xml" );
+                if( _dbEntry != null )
+                {
+                    try
+                    {
+                        using( var content = _dbEntry.Open() )
+                        {
+                            _dbOrigin = _dbCurrent = new ComponentDB( XDocument.Load( content ).Root );
+                        }
+                    }
+                    catch( Exception ex )
+                    {
+                        _dbEntry = null;
+                        monitor.Fatal().Send( ex, "Invalid db.xml manifest." );
+                    }
+                }
+                else
+                {
+                    monitor.Error().Send( "File is not a valid runtime zip (db.xml manifest not found)." );
+                }
+            }
+            if( _dbEntry == null ) _archive.Dispose();
         }
+
+        public bool IsValid => _dbEntry != null;
 
         public bool Clear()
         {
@@ -176,7 +211,8 @@ namespace CKSetup
         {
             try
             {
-                return new ZipRuntimeArchive( m, path );
+                var z = new ZipRuntimeArchive( m, path );
+                return z.IsValid ? z : null;
             }
             catch( Exception ex )
             {
@@ -187,6 +223,7 @@ namespace CKSetup
 
         public void Dispose()
         {
+            if( _dbEntry == null ) return;
             if( _cleanupFiles.Count > 0 )
             {
                 using( _monitor.OpenTrace().Send( $"Cleaning {_cleanupFiles.Count} runtime files." ) )
@@ -203,6 +240,14 @@ namespace CKSetup
                         }
                     }
                     _cleanupFiles.Clear();
+                }
+            }
+            if( _dbCurrent != _dbOrigin )
+            {
+                _dbCurrent = _dbOrigin;
+                using( var content = _dbEntry.Open() )
+                {
+                    new XDocument( _dbCurrent.ToXml() ).Save( content );
                 }
             }
         }

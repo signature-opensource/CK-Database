@@ -27,18 +27,10 @@ namespace CKSetup
         public static void DefineAdd( CommandLineApplication c )
         {
             c.FullName = c.Parent.FullName + ".Add";
-            c.Description = "Adds an Engine or Runtime to the zip file.";
-            c.StandardConfiguration( withMonitor: false );
-            c.OnExecute( () => { c.ShowHelp(); return Program.RetCodeHelp; } );
-            c.Command( "engine", DefineAddEngine );
-        }
-
-        static void DefineAddEngine( CommandLineApplication c )
-        {
-            c.FullName = c.Parent.FullName+".Engine";
-            c.Description = "Adds an engine file and its dependencies to the zip runtime file.";
+            c.Description = "Adds a Coponent (Engine, Runtime or Model) to the zip file.";
             c.StandardConfiguration( true );
-            ZipRuntimeFilesArgument toAdd = c.AddZipRuntimeFilesArgument( "Engine files to add to the runtime zip." );
+
+            ZipRuntimeDirArguments toAdd = c.AddZipRuntimeDirArguments( "Components to add to the runtime zip." );
             ZipRuntimeFileOption zipFile = c.AddZipRuntimeFileOption();
 
             c.OnExecute( monitor =>
@@ -48,9 +40,9 @@ namespace CKSetup
                 using( ZipRuntimeArchive zip = ZipRuntimeArchive.OpenOrCreate( monitor, zipFile.ZipRuntimeFile ) )
                 {
                     if( zip == null ) return Program.RetCodeError;
-                    foreach( var f in toAdd.Files )
+                    foreach( var f in toAdd.Folders )
                     {
-                        if( !zip.AddOrUpdateEngine( f.File ) ) return Program.RetCodeError;
+                        if( !zip.AddComponent( f ) ) return Program.RetCodeError;
                     }
                 }
                 return Program.RetCodeSuccess;

@@ -13,15 +13,25 @@ namespace CK.Setup
     public class IsModelThatUsesRuntimeAttribute : Attribute
     {
         /// <summary>
+        /// Default <see cref="MinRuntimeversion"/> value is to consider that the Runtime version
+        /// is synchronized with the Model version.
+        /// </summary>
+        public const string MinRuntimeVersionIsModelVersion = "UseModelVersion";
+
+        /// <summary>
         /// Initializes a new setup runtime attribute that declares a required runtime
         /// (this must be declared on a Model assembly).
         /// </summary>
         /// <param name="assemblyName">Name of the runtime assembly.</param>
-        /// <param name="version">Optional version.</param>
-        public IsModelThatUsesRuntimeAttribute( string assemblyName, string version = null )
+        /// <param name="minRuntimeversion">
+        /// Optional version. By default, the Runtime must have at least the version of the Model.
+        /// Setting it to null removes all version constraints and setting it to a specific version
+        /// states that subsequent version of the Runtime should continue to be able to handle this Model.
+        /// </param>
+        public IsModelThatUsesRuntimeAttribute( string assemblyName, string minRuntimeversion = MinRuntimeVersionIsModelVersion )
         {
             AssemblyName = assemblyName;
-            Version = version;
+            MinRuntimeversion = minRuntimeversion;
         }
 
         /// <summary>
@@ -31,7 +41,11 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets an optional version for the runtime assembly.
+        /// Optional version. By default, the Runtime must have at least the version of the Model
+        /// (via the special string <see cref="MinRuntimeVersionIsModelVersion"/>).
+        /// Setting it to null removes all version constraints and setting it to a specific version
+        /// states that subsequent version of the Runtime should continue to be able to handle this Model.
         /// </summary>
-        public string Version { get; }
+        public string MinRuntimeversion { get; }
     }
 }

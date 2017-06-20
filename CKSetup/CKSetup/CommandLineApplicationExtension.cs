@@ -69,6 +69,13 @@ namespace CKSetup
                                            true ) );
         }
 
+        static public ZipRuntimeDirArguments AddZipRuntimeDirArguments( this CommandLineApplication @this, string description )
+        {
+            return new ZipRuntimeDirArguments( @this.Argument( "ZipRunTimeDir",
+                                               description,
+                                               true ) );
+        }
+
         static public BinPathsOption AddBinPathsOption( this CommandLineApplication @this, string description )
         {
             return new BinPathsOption( @this.Option(

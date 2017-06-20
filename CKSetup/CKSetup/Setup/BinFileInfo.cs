@@ -88,7 +88,7 @@ namespace CKSetup
         /// <summary>
         /// Gets the local fileName of this BinFileInfo.
         /// </summary>
-        public string LocalFileName => FullPath.Substring( _binFolder.BinPath.Length );
+        public string LocalFileName { get; private set; }
 
         /// <summary>
         /// Gets the assembly <see cref="AssemblyNameDefinition"/>.
@@ -149,6 +149,7 @@ namespace CKSetup
             if( _binFolder == null )
             {
                 _binFolder = binFolder;
+                LocalFileName = FullPath.Substring( _binFolder.BinPath.Length );
                 _localDependencies = new HashSet<BinFileInfo>();
                 foreach( var dep in AssemblyReferences
                                         .Select( n => binFolder.Files.FirstOrDefault( b => b.Name.Name == n.Name ) )

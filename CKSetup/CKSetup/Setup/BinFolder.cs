@@ -44,8 +44,17 @@ namespace CKSetup
             return true;
         }
 
+        /// <summary>
+        /// Reads the content of a folder.
+        /// Returns null on error.
+        /// </summary>
+        /// <param name="m">The monitor to use. Can not be null.</param>
+        /// <param name="binPath"></param>
+        /// <returns>The bin folder or null on error.</returns>
         static public BinFolder ReadBinFolder( IActivityMonitor m, string binPath )
         {
+            if( m == null ) throw new ArgumentNullException( nameof( m ) );
+            if( binPath == null ) throw new ArgumentNullException( nameof( binPath ) );
             try
             {
                 binPath = FileUtil.NormalizePathSeparator( Path.GetFullPath( binPath ), true );
