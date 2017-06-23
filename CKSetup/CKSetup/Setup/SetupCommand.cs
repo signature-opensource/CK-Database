@@ -51,7 +51,7 @@ namespace CKSetup
                     {
                         if( zip == null ) return Program.RetCodeError;
                         if( !zip.ExtractRuntimeDependencies( binFolder ) ) return Program.RetCodeError;
-                        var toSetup = binFolder.Files.Where( b => b.LocalDependencies.Any( dep => dep.IsModel ) )
+                        var toSetup = binFolder.Files.Where( b => b.LocalDependencies.Any( dep => dep.ComponentKind == ComponentKind.Model ) )
                                                      .Select( b => b.Name.Name );
                     }
                 }

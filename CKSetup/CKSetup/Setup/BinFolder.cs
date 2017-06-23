@@ -27,6 +27,7 @@ namespace CKSetup
             {
                 foreach( var dep in c.LocalDependencies ) heads.Remove( dep );
             }
+            Heads = heads.ToArray();
         }
 
         bool Initialize( IActivityMonitor m )

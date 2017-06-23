@@ -1,4 +1,5 @@
 ﻿using CK.Core;
+using CSemVer;
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
@@ -17,10 +18,10 @@ namespace CKSetup
         HashSet<BinFileInfo> _localDependencies;
         ComponentRef _cRef;
 
-        BinFileInfo( string p, AssemblyDefinition a )
+        BinFileInfo( string p, AssemblyDefinition a, IActivityMonitor m )
         {
             FullPath = p;
-            CKVersion = a.GetCKVersion();
+            InfoVersion = a.GetInformationalVersion();
             Name = a.Name;
             RawTargetFramework = a.CustomAttributes
                                         .Where( x => x.AttributeType.FullName == "System.Runtime.Versioning.TargetFrameworkAttribute" && x.HasConstructorArguments )
@@ -32,9 +33,9 @@ namespace CKSetup
             SetupDependencies = a.CustomAttributes
                                     .Select( x => (x.AttributeType.FullName == "CK.Setup.IsEngineAttribute"
                                                     ? new SetupDependency( this )
-                                                    : ( x.AttributeType.FullName == "CK.Setup.IsModelAttribute"
+                                                    : ( x.AttributeType.FullName == "CK.Setup.IsModelThatUsesRuntimeAttribute"
                                                         ? new SetupDependency( true, x.ConstructorArguments, this )
-                                                        : (x.AttributeType.FullName == "CK.Setup.IsRuntimeAttribute")
+                                                        : (x.AttributeType.FullName == "CK.Setup.IsRuntimeThatUsesEngineAttribute")
                                                             ? new SetupDependency( false, x.ConstructorArguments, this )
                                                             : null)) )
                                     .Where( x => x != null )
@@ -66,11 +67,16 @@ namespace CKSetup
                     case ".NETStandard,Version=v1.6": t = TargetFramework.NetStandard16; break;
                     default: throw new CKException( $"Component '{p}' has TargetFrameworkAttribute {RawTargetFramework} that is not currently handled." );
                 }
-                if( CKVersion?.Version == null )
+                if( InfoVersion.OriginalInformationalVersion == null )
                 {
-                    throw new CKException( $"Component '{p}' must have standard CSemVer version in its InformationalVersion." );
+                    InfoVersion = InformationalVersion.Invalid;
+                    m.Warn().Send( $"Component '{p}' does not have a standard CSemVer version in its InformationalVersion. Using the ZeroVersion." );
                 }
-                _cRef = new ComponentRef( t, Name.Name, CKVersion?.Version );
+                else if( !InfoVersion.NuGetVersion.IsValidSyntax /*Should be !InfoVersion.IsValidSyntax */)
+                {
+                    throw new CKException( $"Component '{p}' standard CSemVer version error: {InfoVersion.NuGetVersion.ParseErrorMessage}." );
+                }
+                _cRef = new ComponentRef( t, Name.Name, InfoVersion.NuGetVersion );
             }
         }
 
@@ -98,7 +104,7 @@ namespace CKSetup
         /// <summary>
         /// Gets the CKVersion info if found.
         /// </summary>
-        public CKVersionInfo CKVersion { get; }
+        public InformationalVersion InfoVersion { get; }
 
         /// <summary>
         /// Gets the TargetFramework if <see cref="System.Runtime.Versioning.TargetFrameworkAttribute"/>
@@ -138,8 +144,8 @@ namespace CKSetup
         {
             get
             {
-                return CKVersion?.Version?.IsValid == true
-                        ? "P" + CKVersion.Version.ToString( CSemVer.CSVersionFormat.NugetPackageV2 )
+                return InfoVersion?.NuGetVersion?.IsValidSyntax == true
+                        ? "P" + InfoVersion.NuGetVersion.Text
                         : "V" + Name.Version;
             }
         }
@@ -191,7 +197,7 @@ namespace CKSetup
             {
                 using( AssemblyDefinition a = AssemblyDefinition.ReadAssembly( fullPath, r ) )
                 {
-                    info = new BinFileInfo( fullPath, a );
+                    info = new BinFileInfo( fullPath, a, m );
                 }
             }
             catch( BadImageFormatException ex )

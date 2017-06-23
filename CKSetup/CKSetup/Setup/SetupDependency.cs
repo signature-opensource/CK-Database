@@ -50,12 +50,12 @@ namespace CKSetup
                     // If this is null, this means thet the Source
                     // is not a valid Component and this will be detected from the 
                     // BinFileInfo constructor.
-                    UseMinVersion = Source?.CKVersion?.Version;
+                    UseMinVersion = Source?.InfoVersion?.NuGetVersion;
                 }
                 else if( !string.IsNullOrWhiteSpace( v ) )
                 {
-                    UseMinVersion = CSVersion.TryParse( v );
-                    if( UseMinVersion == null )
+                    UseMinVersion = SVersion.TryParse( v );
+                    if( !UseMinVersion.IsValidSyntax )
                     {
                         throw new ArgumentException( $"{modelOrRuntime.Name.Name} has an invalid version '{v}' in its {(IsModel ? "IsModelThatUsesRuntime" : "IsRuntimeThatUsesEngine")} attribute." );
                     }
@@ -74,6 +74,6 @@ namespace CKSetup
 
         public string UseName { get; }
 
-        public CSVersion UseMinVersion { get; }
+        public SVersion UseMinVersion { get; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Mono.Cecil;
+﻿using CSemVer;
+using Mono.Cecil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +20,7 @@ namespace CKSetup
             return null;
         }
 
-        static public CKVersionInfo GetCKVersion( this AssemblyDefinition @this ) => new CKVersionInfo( @this.GetAssemblyInformationalVersion() );
+        static public InformationalVersion GetInformationalVersion( this AssemblyDefinition @this ) => new InformationalVersion( @this.GetAssemblyInformationalVersion() );
 
     }
 }

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using CK.Core;
 using System.Runtime.CompilerServices;
 using System.IO;
+using CSemVer;
 
 namespace CKSetup
 {
@@ -18,16 +19,16 @@ namespace CKSetup
         public const string LogFileOptionName = "logFile";
         public const string LogFilterDesc = "Valid log filters: \"Off\", \"Release\", \"Monitor\", \"Terse\", \"Verbose\", \"Debug\", or any \"{Group,Line}\" format where Group and Line can be: \"Debug\", \"Trace\", \"Info\", \"Warn\", \"Error\", \"Fatal\", or \"Off\".";
 
-        static readonly CKVersionInfo _thisVersion;
+        static readonly InformationalVersion _thisVersion;
         static readonly string _longVersion;
         static readonly string _shortVersion;
 
         static CommandLineApplicationExtension()
         {
             var a = (AssemblyInformationalVersionAttribute)Attribute.GetCustomAttribute( Assembly.GetExecutingAssembly(), typeof( AssemblyInformationalVersionAttribute ) );
-            _thisVersion = new CKVersionInfo( a?.InformationalVersion );
+            _thisVersion = new InformationalVersion( a?.InformationalVersion );
             _longVersion = _thisVersion.ToString();
-            _shortVersion = _thisVersion.NuGetVersion ?? "<No valid version>";
+            _shortVersion = _thisVersion.NuGetVersion?.Text ?? "<No valid version>";
         }
 
         static public void StandardConfiguration( this CommandLineApplication @this, bool withMonitor )
@@ -60,13 +61,6 @@ namespace CKSetup
             return new BackupPathArgument( @this.Argument( "BackupFilePath",
                                            description,
                                            false ) );
-        }
-
-        static public ZipRuntimeFilesArgument AddZipRuntimeFilesArgument( this CommandLineApplication @this, string description )
-        {
-            return new ZipRuntimeFilesArgument( @this.Argument( "ZipRunTimeFile",
-                                           description,
-                                           true ) );
         }
 
         static public ZipRuntimeDirArguments AddZipRuntimeDirArguments( this CommandLineApplication @this, string description )

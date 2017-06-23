@@ -11,7 +11,7 @@
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
     <PackageReference Include="CK.ActivityMonitor.StandardSender" Version="$(CKActivityMonitorVersion)" />
     <PackageReference Include="Mono.Cecil" Version="0.10.0-beta6" />
-    <PackageReference Include="CSemVer" Version="0.23.0-b01" />
+    <PackageReference Include="CSemVer" Version="0.30.0-p" />
   </ItemGroup>
 
   <ItemGroup>

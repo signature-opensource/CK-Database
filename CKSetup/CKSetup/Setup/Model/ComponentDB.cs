@@ -11,23 +11,31 @@ using System.Xml.Linq;
 
 namespace CKSetup
 {
+    /// <summary>
+    /// Immutable collection of <see cref="Component"/>.
+    /// </summary>
     public class ComponentDB
     {
-        public ComponentDB()
+        readonly IComponentDBEventSink _sink;
+
+        public ComponentDB( IComponentDBEventSink c )
         {
+            _sink = c;
             Components = Array.Empty<Component>();
         }
 
-        ComponentDB( IEnumerable<Component> components )
+        ComponentDB( IComponentDBEventSink sink, IEnumerable<Component> components )
         {
+            _sink = sink;
             Components = components.ToArray();
         }
 
-        public ComponentDB( XElement e )
+        public ComponentDB( IComponentDBEventSink sink, XElement e )
         {
+            _sink = sink;
             var comps = new List<Component>();
             Components = comps;
-            foreach( var c in e.Elements( Component.nComponent ) )
+            foreach( var c in e.Elements( XmlNames.nComponent ) )
             {
                 comps.Add( new Component( c, FindRequired ) );
             }
@@ -35,7 +43,7 @@ namespace CKSetup
 
         public XElement ToXml()
         {
-            return new XElement( "DB", Components.Select( c => c.ToXml() ) );
+            return new XElement( XmlNames.nDB, Components.Select( c => c.ToXml() ) );
         }
 
         public IReadOnlyList<Component> Components { get; }
@@ -49,36 +57,36 @@ namespace CKSetup
             return c;
         }
 
-        public Component FindMaxVersion( TargetFramework t, string name ) => Components.Where( c => c.TargetFramework == t && c.Name == name ).OrderByDescending( c => v.OrderedVersion ).FirstOrDefault();
+        //public Component FindMaxVersion( TargetFramework t, string name ) => Components.Where( c => c.TargetFramework == t && c.Name == name ).OrderByDescending( c => c.Version.OrderedVersion ).FirstOrDefault();
 
-        Component FindDependency( IActivityMonitor m, TargetFramework t, string name, CSVersion v, bool required )
-        {
-            Debug.Assert( t != TargetFramework.None );
-            Debug.Assert( !string.IsNullOrWhiteSpace( name ) );
-            Component found;
-            if( v != null )
-            {
-                var cRef = new ComponentRef( t, name, v );
-                found = Components.FirstOrDefault( c => c.Is( cRef ) );
-                if( found != null ) return found;
-                if( t == TargetFramework.NetStandard16 )
-                {
-                    found = Components.FirstOrDefault( c => c.Is( cRef.WithTargetFramework( TargetFramework.NetStandard13 ) ) );
-                    if( found != null ) return found;
-                }
-                if( required ) m.Error().Send( $"Unable to find the dependency '{cRef}'. It must be registered first." );
-                return null;
-            }
-            found = FindMaxVersion( t, name );
-            if( found != null ) return found;
-            if( t == TargetFramework.NetStandard16 )
-            {
-                found = FindMaxVersion( TargetFramework.NetStandard13, name );
-                if( found != null ) return found;
-            }
-            if( required ) m.Error().Send( $"Unable to find the dependency '{name}'. It must be registered first." );
-            return null;
-        }
+        //Component FindDependency( IActivityMonitor m, TargetFramework t, string name, CSVersion v, bool required )
+        //{
+        //    Debug.Assert( t != TargetFramework.None );
+        //    Debug.Assert( !string.IsNullOrWhiteSpace( name ) );
+        //    Component found;
+        //    if( v != null )
+        //    {
+        //        var cRef = new ComponentRef( t, name, v );
+        //        found = Components.FirstOrDefault( c => c.Is( cRef ) );
+        //        if( found != null ) return found;
+        //        if( t == TargetFramework.NetStandard16 )
+        //        {
+        //            found = Components.FirstOrDefault( c => c.Is( cRef.WithTargetFramework( TargetFramework.NetStandard13 ) ) );
+        //            if( found != null ) return found;
+        //        }
+        //        if( required ) m.Error().Send( $"Unable to find the dependency '{cRef}'. It must be registered first." );
+        //        return null;
+        //    }
+        //    found = FindMaxVersion( t, name );
+        //    if( found != null ) return found;
+        //    if( t == TargetFramework.NetStandard16 )
+        //    {
+        //        found = FindMaxVersion( TargetFramework.NetStandard13, name );
+        //        if( found != null ) return found;
+        //    }
+        //    if( required ) m.Error().Send( $"Unable to find the dependency '{name}'. It must be registered first." );
+        //    return null;
+        //}
 
         public ComponentDB Add( IActivityMonitor m, BinFolder folder )
         {
@@ -97,9 +105,7 @@ namespace CKSetup
             }
             BinFileInfo toAdd = freeHeads.Single();
 
-            List<KeyValuePair<string, CSVersion>> dependencies = CollectSetupDependencies( m, toAdd, false );
-            var depComponents = dependencies.Select( x => FindDependency( m, toAdd.ComponentRef.TargetFramework, x.Key, x.Value, required: true ) );
-            if( depComponents.Any( d => d == null ) ) return null;
+            List<ComponenDependency> dependencies = CollectSetupDependencies( m, new[] { toAdd } );
 
             var embeddedComponents = new List<ComponentRef>();
             var files = folder.Files.Select( f => f.LocalFileName );
@@ -109,12 +115,12 @@ namespace CKSetup
                 var cSub = Find( sub.ComponentRef );
                 if( cSub != null )
                 {
-                    if( depComponents.Any( d => d.Name == cSub.Name ) )
+                    if( dependencies.Any( d => d.UseName == cSub.Name ) )
                     {
                         m.Error().Send( $"{cSub.Name} is declared as a Setup dependency but exists as an embedded component." );
                         return null;
                     }
-                    depComponents = depComponents.Append( cSub );
+                    dependencies.Add( new ComponenDependency( cSub.Name, cSub.Version ) );
                     m.Info().Send( $"Removing {cSub.Files.Count} files thanks to already registered '{cSub.GetRef()}'." );
                     files = files.Where( f => !cSub.Files.Contains( f ) );
                 }
@@ -124,15 +130,15 @@ namespace CKSetup
                     embeddedComponents.Add( sub.ComponentRef );
                 }
             }
-            var newC = new Component( toAdd.ComponentKind, toAdd.ComponentRef, depComponents, embeddedComponents, files );
-            return new ComponentDB( Components.Select( c => c.WithNewComponent( m, newC ) ).Append( newC ) );
+            var newC = new Component( toAdd.ComponentKind, toAdd.ComponentRef, dependencies, embeddedComponents, files );
+            _sink?.ComponentAdded( newC, folder );
+            return new ComponentDB( _sink, Components.Select( c => c.WithNewComponent( _sink, m, newC ) ).Append( newC ) );
         }
 
-        static List<KeyValuePair<string, CSVersion>> CollectSetupDependencies( IActivityMonitor m, BinFileInfo start, bool mergeLocalDependencies )
+        static List<ComponenDependency> CollectSetupDependencies( IActivityMonitor m, IEnumerable<BinFileInfo> starts )
         {
-            var dependencies = new List<KeyValuePair<string, CSVersion>>();
-            var gDep = start.SetupDependencies;
-            if( mergeLocalDependencies ) gDep = gDep.Concat( start.LocalDependencies.SelectMany( dep => dep.SetupDependencies );
+            var dependencies = new List<ComponenDependency>();
+            IEnumerable<SetupDependency> gDep = starts.SelectMany( b => b.SetupDependencies );
 
             foreach( var dep in gDep.GroupBy( d => d.UseName ) )
             {
@@ -140,27 +146,26 @@ namespace CKSetup
                 var versions = dep.Where( d => d.UseMinVersion != null ).Select( d => d.UseMinVersion ).Distinct().ToList();
                 if( versions.Count == 0 )
                 {
-                    dependencies.Add( new KeyValuePair<string, CSVersion>( name, null ) );
+                    dependencies.Add( new ComponenDependency( name, null ) );
                 }
                 else if( versions.Count == 1 )
                 {
-                    dependencies.Add( new KeyValuePair<string, CSVersion>( name, versions[0] ) );
+                    dependencies.Add( new ComponenDependency( name, versions[0] ) );
                 }
                 else
                 {
                     var max = versions.Max();
-                    var culprits = dep.Where( d => versions.Contains( d.UseMinVersion ) );
-                    using( m.OpenWarn().Send( $"Version conflict for '{name}'. Using: {max}." ) )
+                    var culprits = dep.Where( d => d.UseName == name );
+                    using( m.OpenWarn().Send( $"Version upgrade for '{name}'. Using: {max}." ) )
                     {
                         foreach( var c in culprits )
                         {
                             m.Warn().Send( $"'{c.Source.Name.Name}' declares to use the version {c.UseMinVersion}." );
                         }
                     }
-                    dependencies.Add( new KeyValuePair<string, CSVersion>( name, max ) );
+                    dependencies.Add( new ComponenDependency( name, max ) );
                 }
             }
-
             return dependencies;
         }
     }

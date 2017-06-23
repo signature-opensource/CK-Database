@@ -253,3 +253,4 @@ paket-files/
 *.sln.iml
 CodeCakeBuilder/Tools/
 CKDBSetup/Imports/
+Tests/CKSetup.Tests/TestOutput/

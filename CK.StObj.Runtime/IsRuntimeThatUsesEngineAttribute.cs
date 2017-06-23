@@ -25,7 +25,7 @@ namespace CK.Setup
         /// <param name="minRuntimeversion">
         /// The minimal Version for the Engine.
         /// Setting it to null removes all version constraints and setting it to the special
-        /// value <see cref="UseRuntimeVersion"/> should be used only when the Runtime is the default, 
+        /// value "UseRuntimeVersion" should be used only when the Runtime is the default, 
         /// primary one of the Engine.
         /// </param>
         public IsRuntimeThatUsesEngineAttribute( string assemblyName, string minRuntimeversion )
@@ -42,8 +42,8 @@ namespace CK.Setup
         /// <summary>
         /// Gets the minimal version for the engine assembly.
         /// When null, it removes all version constraints.
-        /// Use the special value <see cref="UseRuntimeVersion"/> when the Runtime is the default, 
-        /// primary one of the Engine.
+        /// The special value "UseRuntimeVersion" can be used when the Runtime is the default, 
+        /// primary one of the Engine and that both projects share the same repository.
         /// </summary>
         public string MinRuntimeversion { get; }
     }

@@ -13,9 +13,9 @@ namespace CKSetup
     {
         readonly TargetFramework _targetFramework;
         readonly string _name;
-        readonly CSVersion _version;
+        readonly SVersion _version;
 
-        public ComponentRef( TargetFramework t, string n, CSVersion v )
+        public ComponentRef( TargetFramework t, string n, SVersion v )
         {
             _targetFramework = t;
             _name = n;
@@ -25,9 +25,9 @@ namespace CKSetup
 
         public ComponentRef( XElement e )
         {
-            _targetFramework = e.AttributeEnum( nTargetFramework, TargetFramework.None );
-            _name = (string)e.AttributeRequired( nName );
-            _version = CSVersion.TryParse( (string)e.AttributeRequired( nVersion ) );
+            _targetFramework = e.AttributeEnum( XmlNames.nTargetFramework, TargetFramework.None );
+            _name = (string)e.AttributeRequired( XmlNames.nName );
+            _version = SVersion.Parse( (string)e.AttributeRequired( XmlNames.nVersion ) );
             CheckValid();
         }
 
@@ -35,13 +35,8 @@ namespace CKSetup
         {
             if( _targetFramework == TargetFramework.None ) throw new ArgumentException( "Invalid TargetFramework." );
             if( string.IsNullOrWhiteSpace( _name ) ) throw new ArgumentException( "Invalid Name." );
-            if( _version == null ) throw new ArgumentException( "Invalid Version." );
+            if( _version == null || !_version.IsValidSyntax ) throw new ArgumentException( "Invalid Version." );
         }
-
-        internal static readonly XName nRef = XNamespace.None + "Ref";
-        static readonly XName nTargetFramework = XNamespace.None + "TargetFramework";
-        static readonly XName nName = XNamespace.None + "Name";
-        static readonly XName nVersion = XNamespace.None + "Version";
 
         public TargetFramework TargetFramework => _targetFramework;
 
@@ -49,18 +44,23 @@ namespace CKSetup
 
         public ComponentRef WithTargetFramework( TargetFramework t ) => new ComponentRef( t, _name, _version );
 
-        public CSVersion Version => _version;
+        public SVersion Version => _version;
 
-        public XElement ToXml() => new XElement( nRef, XmlContent() );
+        public XElement ToXml() => new XElement( XmlNames.nRef, XmlContent() );
 
         internal IEnumerable<XObject> XmlContent()
         {
-            yield return new XAttribute( nTargetFramework, _targetFramework );
-            yield return new XAttribute( nName, _name );
-            yield return new XAttribute( nVersion, _version.ToString( CSVersionFormat.SemVer ) );
+            yield return new XAttribute( XmlNames.nTargetFramework, _targetFramework );
+            yield return new XAttribute( XmlNames.nName, _name );
+            yield return new XAttribute( XmlNames.nVersion, _version.Text );
         }
 
-        public override string ToString() => $"{TargetFramework}/{Name}/{Version.ToString( CSVersionFormat.SemVer )}";
+        /// <summary>
+        /// Gets the entry path prefix (ends with a /).
+        /// </summary>
+        public string EntryPathPrefix => $"{Name}/{Version.Text}/{TargetFramework}/";
+
+        public override string ToString() => EntryPathPrefix;
 
         public bool Equals( ComponentRef other ) => _targetFramework == other._targetFramework && _name == other._name && _version == other._version;
 

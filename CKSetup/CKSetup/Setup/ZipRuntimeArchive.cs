@@ -17,16 +17,49 @@ namespace CKSetup
         readonly IActivityMonitor _monitor;
         readonly ComponentDB _dbOrigin;
         readonly ZipArchiveEntry _dbEntry;
+        readonly EventSink _sink;
         ComponentDB _dbCurrent;
+
+        class EventSink : IComponentDBEventSink
+        {
+            readonly Queue<Tuple<ComponentRef, object>> _events = new Queue<Tuple<ComponentRef, object>>();
+
+            public void ComponentAdded( Component c, BinFolder f )
+            {
+                if( c.ComponentKind != ComponentKind.Model )
+                {
+                    Events.Enqueue( Tuple.Create( c.GetRef(), (object)f ) );
+                }
+            }
+
+            public void ComponentRemoved( Component c )
+            {
+                if( c.ComponentKind != ComponentKind.Model )
+                {
+                    Events.Enqueue( Tuple.Create( c.GetRef(), (object)null ) );
+                }
+            }
+
+            public void FilesRemoved( Component c, IReadOnlyList<string> files )
+            {
+                if( c.ComponentKind != ComponentKind.Model )
+                {
+                    Events.Enqueue( Tuple.Create( c.GetRef(), (object)files ) );
+                }
+            }
+
+            public Queue<Tuple<ComponentRef, object>> Events => _events;
+        }
 
         ZipRuntimeArchive( IActivityMonitor monitor, string path )
         {
+            _sink = new EventSink();
             _archive = ZipFile.Open( path, ZipArchiveMode.Update );
             _cleanupFiles = new List<string>();
             _monitor = monitor;
             if( _archive.Entries.Count == 0 )
             {
-                _dbCurrent = new ComponentDB();
+                _dbCurrent = new ComponentDB( _sink );
                 _dbEntry = _archive.CreateEntry( "db.xml" );
             }
             else
@@ -38,7 +71,7 @@ namespace CKSetup
                     {
                         using( var content = _dbEntry.Open() )
                         {
-                            _dbOrigin = _dbCurrent = new ComponentDB( XDocument.Load( content ).Root );
+                            _dbOrigin = _dbCurrent = new ComponentDB( _sink, XDocument.Load( content ).Root );
                         }
                     }
                     catch( Exception ex )
@@ -85,40 +118,17 @@ namespace CKSetup
         /// </summary>
         /// <param name="f">The runtime file.</param>
         /// <returns>True on success, false on failure.</returns>
-        public bool AddOrUpdateEngine( BinFileInfo f )
+        public bool AddComponent( BinFolder f )
         {
-            using( _monitor.OpenInfo().Send( $"Adding engine '{f.Name}'." ) )
+            if( !IsValid ) throw new InvalidOperationException();
+            using( _monitor.OpenInfo().Send( $"Adding components from '{f.BinPath}'." ) )
             {
-                //if( !AddOrUpdateAssembly( f ) ) return false;
-                //foreach( var dep in f.LocalDependencies )
-                //{
-                //    if( !AddOrUpdateAssembly( dep ) ) return false;
-                //}
-                //if( !AddOrUpdateRuntimeDependenciesInfo( f ) ) return false;
+                var n = _dbCurrent.Add( _monitor, f );
+                if( n == null ) return false;
+                _dbCurrent = n;
             }
             return true;
         }
-
-        bool AddOrUpdateAssembly( BinFileInfo f )
-        {
-            try
-            {
-                //string entryName = f.ZipEntryName;
-                //var e = _archive.GetEntry( entryName ) ?? _archive.CreateEntry( entryName, CompressionLevel.Optimal );
-                //using( var source = new FileStream( f.FullPath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.SequentialScan ) )
-                //using( var content = e.Open() )
-                //{
-                //    source.CopyTo( content );
-                //}
-                return true;
-            }
-            catch( Exception ex )
-            {
-                _monitor.Error().Send( ex, $"While adding '{f.FullPath}'." );
-                return false;
-            }
-        }
-
         public bool ExtractRuntimeDependencies( BinFolder target )
         {
             using( _monitor.OpenInfo().Send( $"Extracting runtime support into '{target.BinPath}'." ) )
@@ -182,31 +192,6 @@ namespace CKSetup
         //    return true;
         //}
 
-        bool AddOrUpdateRuntimeDependenciesInfo( BinFileInfo f )
-        {
-            try
-            {
-                //string entryName = f.ZipEntryPath + "\\deps.txt";
-                //var e = _archive.GetEntry( entryName ) ?? _archive.CreateEntry( entryName, CompressionLevel.Optimal );
-                //using( var content = e.Open() )
-                //using( var w = new StreamWriter( content ) )
-                //{
-                //    w.WriteLine( f.ZipEntryName );
-                //    foreach( var dep in f.LocalDependencies )
-                //    {
-                //        w.WriteLine( dep.ZipEntryName );
-                //    }
-                //    w.Flush();
-                //}
-                return true;
-            }
-            catch( Exception ex )
-            {
-                _monitor.Error().Send( ex, $"While adding dependencies of '{f.FullPath}'." );
-                return false;
-            }
-        }
-
         static public ZipRuntimeArchive OpenOrCreate( IActivityMonitor m, string path )
         {
             try
@@ -242,14 +227,49 @@ namespace CKSetup
                     _cleanupFiles.Clear();
                 }
             }
+            while( _sink.Events.Count > 0 )
+            {
+                var e = _sink.Events.Dequeue();
+                if( e.Item2 == null )
+                {
+                    foreach( var toDel in _archive.Entries.Where( x => x.FullName.StartsWith( e.Item1.EntryPathPrefix ) ) )
+                    {
+                        toDel.Delete();
+                    }
+                }
+                else
+                {
+                    var filesToRemove = e.Item2 as IReadOnlyList<string>;
+                    if( filesToRemove != null )
+                    {
+                        var rem = new HashSet<string>( filesToRemove.Select( f => e.Item1.EntryPathPrefix + f ) );
+                        foreach( var toDel in _archive.Entries.Where( x => rem.Contains( x.FullName ) ) )
+                        {
+                            toDel.Delete();
+                        }
+                    }
+                    else
+                    {
+                        var newC = _dbCurrent.Find( e.Item1 );
+                        var zipPathPrefix = newC.GetRef().EntryPathPrefix;
+                        var folder = (BinFolder)e.Item2;
+                        foreach( var f in newC.Files )
+                        {
+                            string source = folder.BinPath + f;
+                            _archive.CreateEntryFromFile( source, zipPathPrefix + f );
+                        }
+                    }
+                }
+            }
             if( _dbCurrent != _dbOrigin )
             {
-                _dbCurrent = _dbOrigin;
                 using( var content = _dbEntry.Open() )
                 {
                     new XDocument( _dbCurrent.ToXml() ).Save( content );
                 }
+                _dbCurrent = _dbOrigin;
             }
+            _archive.Dispose();
         }
     }
 }

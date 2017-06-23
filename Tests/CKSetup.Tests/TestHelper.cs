@@ -5,6 +5,7 @@ using System.Linq;
 using CK.Core;
 using NUnit.Framework;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace CKSetup.Tests
 {
@@ -57,6 +58,15 @@ namespace CKSetup.Tests
             get { if( _testOutputPath == null ) InitalizePaths(); return _testOutputPath; }
         }
 
+        public static string SetupableRuntime461Path => Path.Combine( SolutionFolder, "CK.Setupable.Runtime", "bin", "Debug", "net461" );
+
+        public static string SetupableModel461Path => Path.Combine( SolutionFolder, "CK.Setupable.Model", "bin", "Debug", "net461" );
+
+        public static string GetTestZipPath( string suffix = null, [CallerMemberName]string name = null )
+        {
+            return Path.Combine( TestFolder, name + suffix + ".zip" );
+        }
+
         private static void InitalizePaths()
         {
             string p = _binFolder = AppContext.BaseDirectory;
@@ -70,7 +80,7 @@ namespace CKSetup.Tests
                 p = Path.GetDirectoryName( p );
             }
             _solutionFolder = p;
-            _testOutputPath = Path.Combine( SolutionFolder, "Tests", "TestOutput" );
+            _testOutputPath = Path.Combine( SolutionFolder, "Tests", "CKSetup.Tests", "TestOutput" );
             if( Directory.Exists( _testOutputPath ) ) Directory.Delete( _testOutputPath, true );
             Directory.CreateDirectory( _testOutputPath );
             Console.WriteLine( $"SolutionFolder is: {_solutionFolder}." );
