@@ -16,7 +16,7 @@ namespace CKSetup
         public Component(
             ComponentKind k, 
             ComponentRef cRef,
-            IEnumerable<ComponenDependency> dependencies,
+            IEnumerable<ComponentDependency> dependencies,
             IEnumerable<ComponentRef> embedded,
             IEnumerable<string> files)
         {
@@ -31,15 +31,15 @@ namespace CKSetup
         public Component( XElement e, Func<ComponentRef,Component> find )
         {
             _ref = new ComponentRef( e );
-            ComponentKind = e.AttributeEnum( XmlNames.nKind, ComponentKind.None );
-            Dependencies = e.Elements( XmlNames.nDependencies )
-                                .Elements( XmlNames.nDependency )
-                                .Select( d => new ComponenDependency( d ) ).ToArray();
-            Embedded = e.Elements( XmlNames.nEmbeddedComponents )
-                                .Elements( XmlNames.nRef )
+            ComponentKind = e.AttributeEnum( DBXmlNames.Kind, ComponentKind.None );
+            Dependencies = e.Elements( DBXmlNames.Dependencies )
+                                .Elements( DBXmlNames.Dependency )
+                                .Select( d => new ComponentDependency( d ) ).ToArray();
+            Embedded = e.Elements( DBXmlNames.EmbeddedComponents )
+                                .Elements( DBXmlNames.Ref )
                                 .Select( d => new ComponentRef( d ) ).ToArray();
-            Files = e.Elements( XmlNames.nFiles )
-                                .Elements( XmlNames.nFile )
+            Files = e.Elements( DBXmlNames.Files )
+                                .Elements( DBXmlNames.File )
                                 .Select( f => f.Value ).ToArray();
             CheckValid();
         }
@@ -53,12 +53,12 @@ namespace CKSetup
 
         public XElement ToXml()
         {
-            return new XElement( XmlNames.nComponent,
-                                    new XAttribute( XmlNames.nKind, ComponentKind ),
+            return new XElement( DBXmlNames.Component,
+                                    new XAttribute( DBXmlNames.Kind, ComponentKind ),
                                     _ref.XmlContent(),
-                                    new XElement( XmlNames.nDependencies, Dependencies.Select( c => c.ToXml() ) ),
-                                    new XElement( XmlNames.nEmbeddedComponents, Embedded.Select( c => c.ToXml() ) ),
-                                    new XElement( XmlNames.nFiles, Files.Select( f => new XElement( XmlNames.nFile, f ) ) ) );
+                                    new XElement( DBXmlNames.Dependencies, Dependencies.Select( c => c.ToXml() ) ),
+                                    new XElement( DBXmlNames.EmbeddedComponents, Embedded.Select( c => c.ToXml() ) ),
+                                    new XElement( DBXmlNames.Files, Files.Select( f => new XElement( DBXmlNames.File, f ) ) ) );
         }
 
         public ComponentKind ComponentKind { get; }
@@ -73,7 +73,7 @@ namespace CKSetup
 
         public ComponentRef GetRef() => _ref;
 
-        public IReadOnlyList<ComponenDependency> Dependencies { get; }
+        public IReadOnlyList<ComponentDependency> Dependencies { get; }
 
         public IReadOnlyList<ComponentRef> Embedded { get; }
 
@@ -84,7 +84,7 @@ namespace CKSetup
             var uselessEmbedded = Embedded.Where( e => e.Equals( newC.GetRef() ) ).SingleOrDefault();
             if( uselessEmbedded.Name == null ) return this;
             var newEmbedded = Embedded.Where( e => !e.Equals( uselessEmbedded ) );
-            var newDependecies = Dependencies.Append( new ComponenDependency( newC.Name, newC.Version ) );
+            var newDependecies = Dependencies.Append( new ComponentDependency( newC.Name, newC.Version ) );
             var newFiles = Files.Where( f => !newC.Files.Contains( f ) ).ToList();
             int delta = Files.Count - newFiles.Count;
             if( delta > 0 )

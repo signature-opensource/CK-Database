@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Reflection;
-using System.IO;
 using System.Xml.Linq;
 
 namespace CK.Core
@@ -54,7 +49,11 @@ namespace CK.Core
         static readonly XName xSourceGeneration = XNamespace.None + "SourceGeneration";
         static readonly XName xSignAssembly = XNamespace.None + "SignAssembly";
 
-        public BuilderFinalAssemblyConfiguration( XElement e )
+        /// <summary>
+        /// Initializes a new <see cref="BuilderFinalAssemblyConfiguration"/> from a <see cref="XElement"/>.
+        /// </summary>
+        /// <param name="e">The xml element.</param>
+        public BuilderFinalAssemblyConfiguration( XElement e, int currentXmlVersion )
         {
             Directory = e.Element( xDirectory )?.Value;
             AssemblyName = e.Element( xAssemblyName )?.Value;
@@ -62,6 +61,20 @@ namespace CK.Core
             SignAssembly = string.Equals( e.Element( xSignAssembly )?.Value, "true", StringComparison.OrdinalIgnoreCase );
         }
 
+        /// <summary>
+        /// Serializes its content in the provided <see cref="XElement"/> and returns it.
+        /// The <see cref="AssemblyRegistererConfiguration(XElement)"/> constructor will be able to read this element back.
+        /// </summary>
+        /// <param name="e">The element to populate.</param>
+        /// <returns>The <paramref name="e"/> element.</returns>
+        public XElement SerializeXml( XElement e )
+        {
+            e.Add( string.IsNullOrWhiteSpace( Directory ) ? null : new XElement( xDirectory, Directory ),
+                   string.IsNullOrWhiteSpace( AssemblyName ) ? null : new XElement( xAssemblyName, AssemblyName ),
+                   SourceGeneration ? new XElement( xSourceGeneration, "true" ) : null,
+                   SignAssembly ? new XElement( xSignAssembly, "true" ) : null );
+            return e;
+        }
         /// <summary>
         /// Options that may prevent final assembly generation: the final asembly is always
         /// created to be able to interact with eventually implemented StObj, this option can 

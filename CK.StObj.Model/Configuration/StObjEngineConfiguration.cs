@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 
 namespace CK.Core
 {
@@ -16,6 +11,13 @@ namespace CK.Core
         readonly BuilderFinalAssemblyConfiguration _finalConfig;
 
         /// <summary>
+        /// This current Xml schema version applies to <see cref="CK.Core.StObjEngineConfiguration"/> and
+        /// its 2 parts: <see cref="CK.Core.BuildAndRegisterConfiguration"/> 
+        /// and <see cref="CK.Core.BuilderFinalAssemblyConfiguration"/>.
+        /// </summary>
+        public const int CurrentXmlVersion = 1;
+
+        /// <summary>
         /// Initializes a new empty configuration.
         /// </summary>
         public StObjEngineConfiguration()
@@ -26,11 +28,32 @@ namespace CK.Core
 
         static readonly XName xBuildAndRegisterConfiguration = XNamespace.None + "BuildAndRegisterConfiguration";
         static readonly XName xBuilderFinalAssemblyConfiguration = XNamespace.None + "BuilderFinalAssemblyConfiguration";
+        public static readonly XName xVersion = XNamespace.None + "Version";
 
+        /// <summary>
+        /// Initializes a new <see cref="StObjEngineConfiguration"/> from a <see cref="XElement"/>.
+        /// </summary>
+        /// <param name="e">The xml element.</param>
         public StObjEngineConfiguration( XElement e )
         {
-            _buildConfig = new BuildAndRegisterConfiguration( e.Element( xBuildAndRegisterConfiguration ) );
-            _finalConfig = new BuilderFinalAssemblyConfiguration( e.Element( xBuilderFinalAssemblyConfiguration ) );
+            int? nv = (int?)e.Attribute( xVersion );
+            int v = nv.HasValue ? nv.Value : CurrentXmlVersion;
+            _buildConfig = new BuildAndRegisterConfiguration( e.Element( xBuildAndRegisterConfiguration ), v );
+            _finalConfig = new BuilderFinalAssemblyConfiguration( e.Element( xBuilderFinalAssemblyConfiguration ), v );
+        }
+
+        /// <summary>
+        /// Serializes its content in the provided <see cref="XElement"/> and returns it.
+        /// The <see cref="StObjEngineConfiguration(XElement)"/> constructor will be able to read this element back.
+        /// </summary>
+        /// <param name="e">The element to populate.</param>
+        /// <returns>The <paramref name="e"/> element.</returns>
+        public XElement SerializeXml( XElement e )
+        {
+            e.Add( new XAttribute( xVersion, CurrentXmlVersion ),
+                   _buildConfig.SerializeXml( new XElement( xBuildAndRegisterConfiguration ) ),
+                   _finalConfig.SerializeXml( new XElement( xBuilderFinalAssemblyConfiguration ) ) );
+            return e;
         }
 
         /// <summary>

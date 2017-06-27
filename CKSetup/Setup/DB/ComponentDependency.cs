@@ -10,27 +10,27 @@ using System.Xml.Linq;
 
 namespace CKSetup
 {
-    public class ComponenDependency
+    public class ComponentDependency
     {
-        internal ComponenDependency( string name, SVersion version )
+        internal ComponentDependency( string name, SVersion version )
         {
             Debug.Assert( !string.IsNullOrWhiteSpace( name ) );
             UseName = name;
             UseMinVersion = version;
         }
 
-        public ComponenDependency( XElement e )
+        public ComponentDependency( XElement e )
         {
-            UseName = (string)e.AttributeRequired( XmlNames.nName );
-            var sV = (string)e.Attribute( XmlNames.nVersion );
+            UseName = (string)e.AttributeRequired( DBXmlNames.Name );
+            var sV = (string)e.Attribute( DBXmlNames.Version );
             if( sV != null ) UseMinVersion = SVersion.Parse( sV );
         }
 
         public XElement ToXml()
         {
-            return new XElement( XmlNames.nDependency, 
-                                    new XAttribute( XmlNames.nName, UseName ),
-                                    UseMinVersion != null ? new XAttribute( XmlNames.nVersion, UseMinVersion ) : null );
+            return new XElement( DBXmlNames.Dependency, 
+                                    new XAttribute( DBXmlNames.Name, UseName ),
+                                    UseMinVersion != null ? new XAttribute( DBXmlNames.Version, UseMinVersion ) : null );
         }
 
         public string UseName { get; }

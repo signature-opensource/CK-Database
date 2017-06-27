@@ -88,8 +88,26 @@ namespace CKSetup
             if( _dbEntry == null ) _archive.Dispose();
         }
 
+        /// <summary>
+        /// Gets whether this database is has been successfully opened.
+        /// </summary>
         public bool IsValid => _dbEntry != null;
 
+
+        /// <summary>
+        /// Registers a file that will be automatically deleted when this <see cref="ZipRuntimeArchive"/>
+        /// will be disposed.
+        /// </summary>
+        /// <param name="fullPath"></param>
+        public void RegisterFileToDelete( string fullPath )
+        {
+            _cleanupFiles.Add( fullPath );
+        }
+
+        /// <summary>
+        /// Removes all registered components.
+        /// </summary>
+        /// <returns>True on success, false on error.</returns>
         public bool Clear()
         {
             using( _monitor.OpenInfo().Send( $"Removing entries in runtime zip." ) )
@@ -97,11 +115,13 @@ namespace CKSetup
                 try
                 {
                     int count = 0;
-                    //foreach( var e in _archive.Entries )
-                    //{
-                    //    e.Delete();
-                    //    ++count;
-                    //}
+                    foreach( var e in _archive.Entries )
+                    {
+                        if( e == _dbEntry ) continue;
+                        e.Delete();
+                        ++count;
+                    }
+                    _dbCurrent = new ComponentDB( _sink );
                     _monitor.CloseGroup( $"{count} entries removed." );
                     return true;
                 }
@@ -114,83 +134,65 @@ namespace CKSetup
         }
 
         /// <summary>
-        /// Adds or updates an engine.
+        /// Adds a component. Ignores it if it already registered.
         /// </summary>
-        /// <param name="f">The runtime file.</param>
+        /// <param name="folder">The component folder.</param>
         /// <returns>True on success, false on failure.</returns>
-        public bool AddComponent( BinFolder f )
+        public bool AddComponent( BinFolder folder )
         {
+            if( folder == null ) throw new ArgumentNullException( nameof( folder ) );
             if( !IsValid ) throw new InvalidOperationException();
-            using( _monitor.OpenInfo().Send( $"Adding components from '{f.BinPath}'." ) )
+            using( _monitor.OpenInfo().Send( $"Adding components from '{folder.BinPath}'." ) )
             {
-                var n = _dbCurrent.Add( _monitor, f );
+                var n = _dbCurrent.Add( _monitor, folder );
                 if( n == null ) return false;
                 _dbCurrent = n;
             }
             return true;
         }
+
+        /// <summary>
+        /// Extracts required runtime support for Models in a target path.
+        /// </summary>
+        /// <param name="target">The target folder.</param>
+        /// <returns>True on success, false on error.</returns>
         public bool ExtractRuntimeDependencies( BinFolder target )
         {
             using( _monitor.OpenInfo().Send( $"Extracting runtime support into '{target.BinPath}'." ) )
             {
-                //var entryDedup = new Dictionary<string,ZipArchiveEntry>();
-                //foreach( var dep in setupDependencies )
-                //{
-                //    string path = $@"{dep.Name}\{dep.Referencer.RawTargetFramework}\{dep.Version}";
-                //    var e = _archive.GetEntry( $@"{path}\deps.txt" );
-                //    if( e == null )
-                //    {
-                //        _monitor.Error().Send( $"Runtime dependency '{path}' for '{dep.Referencer.Name}' is not registered." );
-                //        return false;
-                //    }
-                //    using( var content = e.Open() )
-                //    using( var reader = new StreamReader( content ) )
-                //    {
-                //        string line;
-                //        while( (line = reader.ReadLine()) != null )
-                //        {
-                //            if( !entryDedup.ContainsKey(line) )
-                //            {
-                //                var depEntry = _archive.GetEntry( line );
-                //                if( depEntry == null )
-                //                {
-                //                    _monitor.Error().Send( $"Entry '{line}' for dependency of '{dep.Referencer.Name}' not found." );
-                //                    return false;
-                //                }
-                //                entryDedup.Add( line, depEntry );
-                //            }
-                //        }
-                //    }
-
-                //}
-                //foreach( var e in entryDedup.Values )
-                //{
-                //    if( !ExtractToBin( e, binPath ) ) return false;
-                //}
+                var components = _dbCurrent.ResolveRuntimeDependencies( _monitor, target );
+                if( components.Count != 0 )
+                {
+                    int count = 0;
+                    foreach( var c in components )
+                    {
+                        foreach( var f in c.Files )
+                        {
+                            string targetPath = target.BinPath + f;
+                            if( !File.Exists( targetPath ) )
+                            {
+                                try
+                                {
+                                    var e = _archive.GetEntry( c.GetRef().EntryPathPrefix + f );
+                                    e.ExtractToFile( targetPath );
+                                    _monitor.Trace().Send( $"Extracted {e.Name}." );
+                                    _cleanupFiles.Add( targetPath );
+                                    ++count;
+                                }
+                                catch( Exception ex )
+                                {
+                                    _monitor.Error().Send( ex, $"While extracting '{targetPath}'." );
+                                    return false;
+                                }
+                            }
+                            else _monitor.Trace().Send( $"Skipped '{targetPath}' since it already exists." );
+                        }
+                    }
+                    _monitor.Info().Send( $"{count} files extracted." );
+                }
             }
             return true;
         }
-
-        //bool ExtractToBin( ZipArchiveEntry e, string binPath )
-        //{
-        //    string targetFile = Path.Combine( binPath, e.Name );
-        //    if( !File.Exists( targetFile ) )
-        //    {
-        //        try
-        //        {
-        //            e.ExtractToFile( targetFile );
-        //            _cleanupFiles.Add( targetFile );
-        //            _monitor.Info().Send( $"Extracted {e.Name}." );
-        //        }
-        //        catch( Exception ex )
-        //        {
-        //            _monitor.Error().Send( ex, $"While extracting '{e.FullName}'." );
-        //            return false;
-        //        }
-        //    }
-        //    else _monitor.Info().Send( $"Skipped '{e.Name}' since it already exists." );
-        //    return true;
-        //}
 
         static public ZipRuntimeArchive OpenOrCreate( IActivityMonitor m, string path )
         {

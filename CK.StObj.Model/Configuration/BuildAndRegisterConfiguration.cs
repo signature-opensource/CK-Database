@@ -1,14 +1,5 @@
-﻿#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.StObj.Model\Configuration\BuilderAppDomainConfiguration.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Xml.Linq;
 
 namespace CK.Core
@@ -33,10 +24,27 @@ namespace CK.Core
         static readonly XName xAssemblyRegistererConfiguration = XNamespace.None + "AssemblyRegistererConfiguration";
         static readonly XName xExplicitClass = XNamespace.None + "ExplicitClass";
 
-        public BuildAndRegisterConfiguration( XElement e )
+        /// <summary>
+        /// Initializes a new <see cref="BuildAndRegisterConfiguration"/> from a <see cref="XElement"/>.
+        /// </summary>
+        /// <param name="e">The xml element.</param>
+        public BuildAndRegisterConfiguration( XElement e, int currentXmlVersion )
         {
             _assemblyRegister = new AssemblyRegistererConfiguration( e.Element( xAssemblyRegistererConfiguration ) );
             _explicitClasses = e.Elements( xExplicitClass ).Select( c => c.Value ).ToList();
+        }
+
+        /// <summary>
+        /// Serializes its content in the provided <see cref="XElement"/> and returns it.
+        /// The <see cref="BuildAndRegisterConfiguration(XElement)"/> constructor will be able to read this element back.
+        /// </summary>
+        /// <param name="e">The element to populate.</param>
+        /// <returns>The <paramref name="e"/> element.</returns>
+        public XElement SerializeXml( XElement e )
+        {
+            e.Add( _assemblyRegister.SerializeXml( new XElement( xAssemblyRegistererConfiguration ) ),
+                   _explicitClasses.Select( c => new XElement( xExplicitClass, c ) ) );
+            return e;
         }
 
         /// <summary>

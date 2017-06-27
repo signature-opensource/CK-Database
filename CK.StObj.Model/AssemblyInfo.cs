@@ -1,3 +1,3 @@
 ﻿
 // Defines the runtime assembly.
-//[assembly: CK.Setup.IsModeThatUsesRuntime( "CK.StObj.Runtime" )]
+[assembly: CK.Setup.IsModelThatUsesRuntime( "CK.StObj.Runtime" )]

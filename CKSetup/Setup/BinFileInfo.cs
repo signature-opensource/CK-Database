@@ -30,29 +30,31 @@ namespace CKSetup
 
             AssemblyReferences = a.MainModule.AssemblyReferences.ToArray();
             // SetupDependencies may need VersionName or RawTargetFramework.
-            SetupDependencies = a.CustomAttributes
-                                    .Select( x => (x.AttributeType.FullName == "CK.Setup.IsEngineAttribute"
-                                                    ? new SetupDependency( this )
-                                                    : ( x.AttributeType.FullName == "CK.Setup.IsModelThatUsesRuntimeAttribute"
-                                                        ? new SetupDependency( true, x.ConstructorArguments, this )
-                                                        : (x.AttributeType.FullName == "CK.Setup.IsRuntimeThatUsesEngineAttribute")
-                                                            ? new SetupDependency( false, x.ConstructorArguments, this )
-                                                            : null)) )
-                                    .Where( x => x != null )
-                                    .ToArray();
-            bool multiple = false;
-            if( SetupDependencies.Any( d => d.IsModel ) ) ComponentKind = ComponentKind.Model;
-            if( SetupDependencies.Any( d => d.IsRuntime ) )
+            bool isEngine = a.CustomAttributes.Any( x => x.AttributeType.FullName == "CK.Setup.IsEngineAttribute" );
+            if( isEngine )
             {
-                if( ComponentKind != ComponentKind.None ) multiple = true;
-                ComponentKind = ComponentKind.Runtime;
-            }
-            if( SetupDependencies.Any( d => d.IsEngine ))
-            {
-                if( ComponentKind != ComponentKind.None ) multiple = true;
                 ComponentKind = ComponentKind.Engine;
             }
-            if( multiple )
+            SetupDependencies = a.CustomAttributes
+                                    .Select( x => (x.AttributeType.FullName == "CK.Setup.IsModelThatUsesRuntimeAttribute"
+                                                        ? new SetupDependency( true, x.ConstructorArguments, this )
+                                                        : (x.AttributeType.FullName == "CK.Setup.IsRuntimeThatUsesEngineAttribute")
+                                                              ? new SetupDependency( false, x.ConstructorArguments, this )
+                                                              : null) )
+                                    .Where( x => x != null )
+                                    .ToArray();
+            bool tooMuchKind = false;
+            if( SetupDependencies.Any( d => d.IsModel ) )
+            {
+                if( ComponentKind != ComponentKind.None ) tooMuchKind = true;
+                ComponentKind = ComponentKind.Model;
+            }
+            if( SetupDependencies.Any( d => d.IsRuntime ) )
+            {
+                if( ComponentKind != ComponentKind.None ) tooMuchKind = true;
+                ComponentKind = ComponentKind.Runtime;
+            }
+            if( tooMuchKind )
             {
                 throw new CKException( $"File '{p}' cannot be marked with more that one kind ot attributes (Engine, Runtime or Model)." );
             }
@@ -69,12 +71,12 @@ namespace CKSetup
                 }
                 if( InfoVersion.OriginalInformationalVersion == null )
                 {
-                    InfoVersion = InformationalVersion.Invalid;
+                    InfoVersion = InformationalVersion.Zero;
                     m.Warn().Send( $"Component '{p}' does not have a standard CSemVer version in its InformationalVersion. Using the ZeroVersion." );
                 }
-                else if( !InfoVersion.NuGetVersion.IsValidSyntax /*Should be !InfoVersion.IsValidSyntax */)
+                else if( !InfoVersion.IsValidSyntax )
                 {
-                    throw new CKException( $"Component '{p}' standard CSemVer version error: {InfoVersion.NuGetVersion.ParseErrorMessage}." );
+                    throw new CKException( $"Component '{p}' standard CSemVer version error: {InfoVersion.ParseErrorMessage}." );
                 }
                 _cRef = new ComponentRef( t, Name.Name, InfoVersion.NuGetVersion );
             }
@@ -182,7 +184,8 @@ namespace CKSetup
             var result = new List<BinFileInfo>();
             ReaderParameters r = new ReaderParameters();
             foreach( var f in Directory.EnumerateFiles( binPath )
-                                .Where( p => p.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase ) ) )
+                                .Where( p => p.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase ) 
+                                             || p.EndsWith( ".exe", StringComparison.OrdinalIgnoreCase ) ) )
             {
                 BinFileInfo info = TryRead( m, r, f );
                 if( info != null ) result.Add( info );

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Xml.Linq;
 
 namespace CK.Core
@@ -9,7 +8,6 @@ namespace CK.Core
     /// <summary>
     /// Holds a configuration that describes which assemblies must be processed.
     /// </summary>
-    [Serializable]
     public class AssemblyRegistererConfiguration
     {
         readonly HashSet<string> _ignoredAssemblies;
@@ -51,6 +49,10 @@ namespace CK.Core
         static readonly XName xDiscoverAssemblyName = XNamespace.None + "DiscoverAssemblyName";
         static readonly XName xDiscoverRecurseAssemblyName = XNamespace.None + "DiscoverRecurseAssemblyName";
 
+        /// <summary>
+        /// Initializes a new <see cref="AssemblyRegistererConfiguration"/> from a <see cref="XElement"/>.
+        /// </summary>
+        /// <param name="e">The xml element.</param>
         public AssemblyRegistererConfiguration( XElement e )
         {
             _ignoredAssemblies = new HashSet<string>( _defaultIgnored, StringComparer.OrdinalIgnoreCase );
@@ -59,6 +61,21 @@ namespace CK.Core
             _ignoredAssembliesByPrefix.AddRange( e.Elements( xIgnoredAssembyByPrefix ).Select( i => i.Value ) );
             _discoverAssemblyNames = e.Elements( xDiscoverAssemblyName ).Select( i => i.Value ).ToList();
             _discoverRecurseAssemblyNames = e.Elements( xDiscoverRecurseAssemblyName ).Select( i => i.Value ).ToList();
+        }
+
+        /// <summary>
+        /// Serializes its content in the provided <see cref="XElement"/> and returns it.
+        /// The <see cref="AssemblyRegistererConfiguration(XElement)"/> constructor will be able to read this element back.
+        /// </summary>
+        /// <param name="e">The element to populate.</param>
+        /// <returns>The <paramref name="e"/> element.</returns>
+        public XElement SerializeXml( XElement e )
+        {
+            e.Add( _ignoredAssemblies.Select( n => new XElement( xIgnoredAssemby, n ) ),
+                   _ignoredAssembliesByPrefix.Select( n => new XElement( xIgnoredAssembyByPrefix, n ) ),
+                   _discoverAssemblyNames.Select( n => new XElement( xDiscoverAssemblyName, n ) ),
+                   _discoverRecurseAssemblyNames.Select( n => new XElement( xDiscoverRecurseAssemblyName, n ) ));
+            return e;
         }
 
         /// <summary>

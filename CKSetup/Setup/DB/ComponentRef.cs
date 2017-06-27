@@ -25,9 +25,9 @@ namespace CKSetup
 
         public ComponentRef( XElement e )
         {
-            _targetFramework = e.AttributeEnum( XmlNames.nTargetFramework, TargetFramework.None );
-            _name = (string)e.AttributeRequired( XmlNames.nName );
-            _version = SVersion.Parse( (string)e.AttributeRequired( XmlNames.nVersion ) );
+            _targetFramework = e.AttributeEnum( DBXmlNames.TargetFramework, TargetFramework.None );
+            _name = (string)e.AttributeRequired( DBXmlNames.Name );
+            _version = SVersion.Parse( (string)e.AttributeRequired( DBXmlNames.Version ) );
             CheckValid();
         }
 
@@ -46,13 +46,13 @@ namespace CKSetup
 
         public SVersion Version => _version;
 
-        public XElement ToXml() => new XElement( XmlNames.nRef, XmlContent() );
+        public XElement ToXml() => new XElement( DBXmlNames.Ref, XmlContent() );
 
         internal IEnumerable<XObject> XmlContent()
         {
-            yield return new XAttribute( XmlNames.nTargetFramework, _targetFramework );
-            yield return new XAttribute( XmlNames.nName, _name );
-            yield return new XAttribute( XmlNames.nVersion, _version.Text );
+            yield return new XAttribute( DBXmlNames.TargetFramework, _targetFramework );
+            yield return new XAttribute( DBXmlNames.Name, _name );
+            yield return new XAttribute( DBXmlNames.Version, _version.Text );
         }
 
         /// <summary>

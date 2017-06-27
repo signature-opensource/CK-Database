@@ -12,16 +12,6 @@ namespace CKSetup
     public class SetupDependency 
     {
         /// <summary>
-        /// Called by the BnFileInfo constructor for IsEngine attribute.
-        /// </summary>
-        /// <param name="engine">The source engine.</param>
-        internal SetupDependency( BinFileInfo engine )
-        {
-            Source = engine;
-            IsEngine = true;
-        }
-
-        /// <summary>
         /// Called by the BnFileInfo constructor for IsModelThatUsesRuntime or IsRuntimeThatUsesEngine attributes.
         /// </summary>
         /// <param name="isModel">True for IsModelThatUsesRuntime attribute.</param>
@@ -37,7 +27,8 @@ namespace CKSetup
                 {
                     throw new ArgumentException( $"{modelOrRuntime.Name.Name} has an empty name in its {(IsModel ? "IsModelThatUsesRuntime" : "IsRuntimeThatUsesEngine")} attribute." );
                 }
-                if( UseName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase ))
+                if( UseName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase )
+                    || UseName.EndsWith( ".exe", StringComparison.OrdinalIgnoreCase ) )
                 {
                     UseName = UseName.Substring( 0, UseName.Length - 4 );
                 }
@@ -47,7 +38,7 @@ namespace CKSetup
                 string v = (string)ctorArgs[1].Value;
                 if( v == "UseModelVersion" || v == "UseRuntimeVersion" )
                 {
-                    // If this is null, this means thet the Source
+                    // If this is null, this means that the Source
                     // is not a valid Component and this will be detected from the 
                     // BinFileInfo constructor.
                     UseMinVersion = Source?.InfoVersion?.NuGetVersion;
@@ -63,8 +54,6 @@ namespace CKSetup
             }
             Source = modelOrRuntime;
         }
-
-        public bool IsEngine { get; }
 
         public bool IsRuntime => !IsModel;
 

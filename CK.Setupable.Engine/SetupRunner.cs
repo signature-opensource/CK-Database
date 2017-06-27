@@ -5,12 +5,13 @@ using System.Reflection;
 using CK.Setup;
 using CK.Core;
 
-namespace CKSetup.Runner
+namespace CK.Setup
 {
-    class Program
+    public static partial class SetupRunner
     {
-        static int Main( string[] args )
+        static public int Main( string[] args )
         {
+#if NET461
             AppDomain.CurrentDomain.AssemblyResolve += ( object sender, ResolveEventArgs a ) =>
             {
                 var failed = new AssemblyName( a.Name );
@@ -18,13 +19,9 @@ namespace CKSetup.Runner
                         ? Assembly.Load( new AssemblyName( failed.Name ) )
                         : null;
             };
-
+#endif
             return Run() ? 0 : 1;
         }
-
-        static readonly XName xRunner = XNamespace.None + "Runner";
-        static readonly XName xLogFiler = XNamespace.None + "LogFilter";
-        static readonly XName xSetup = XNamespace.None + "Setup";
 
         static bool Run()
         {
@@ -34,7 +31,7 @@ namespace CKSetup.Runner
             {
                 try
                 {
-                    XElement root = XDocument.Load( Path.Combine( AppContext.BaseDirectory, "SetupConf.xml" ) ).Root;
+                    XElement root = XDocument.Load( Path.Combine( AppContext.BaseDirectory, XmlFileName ) ).Root;
                     XElement runner = root.Element( xRunner );
                     m.MinimalFilter = LogFilter.Parse( runner.Element( xLogFiler ).Value );
                     var config = new SetupEngineConfiguration( root.Element( xSetup ) );

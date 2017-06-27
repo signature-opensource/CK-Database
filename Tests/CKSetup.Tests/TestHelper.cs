@@ -6,6 +6,7 @@ using CK.Core;
 using NUnit.Framework;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using FluentAssertions;
 
 namespace CKSetup.Tests
 {
@@ -21,6 +22,7 @@ namespace CKSetup.Tests
         static TestHelper()
         {
             _monitor = new ActivityMonitor();
+            _monitor.MinimalFilter = LogFilter.Debug;
             _monitor.Output.BridgeTarget.HonorMonitorFilter = false;
             _console = new ActivityMonitorConsoleClient();
             LogsToConsole = true;
@@ -58,13 +60,46 @@ namespace CKSetup.Tests
             get { if( _testOutputPath == null ) InitalizePaths(); return _testOutputPath; }
         }
 
-        public static string SetupableRuntime461Path => Path.Combine( SolutionFolder, "CK.Setupable.Runtime", "bin", "Debug", "net461" );
+        public static string StObjModel461Path => Path.Combine( SolutionFolder, "CK.StObj.Model", "bin", "Debug", "net461" );
+        public static string StObjRuntime461Path => Path.Combine( SolutionFolder, "CK.StObj.Runtime", "bin", "Debug", "net461" );
+        public static string StObjEngine461Path => Path.Combine( SolutionFolder, "CK.StObj.Engine", "bin", "Debug", "net461" );
 
         public static string SetupableModel461Path => Path.Combine( SolutionFolder, "CK.Setupable.Model", "bin", "Debug", "net461" );
+        public static string SetupableRuntime461Path => Path.Combine( SolutionFolder, "CK.Setupable.Runtime", "bin", "Debug", "net461" );
+        public static string SetupableEngine461Path => Path.Combine( SolutionFolder, "CK.Setupable.Engine", "bin", "Debug", "net461" );
+
+        public static string SqlServerSetupModel461Path => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Model", "bin", "Debug", "net461" );
+        public static string SqlServerSetupRuntime461Path => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Runtime", "bin", "Debug", "net461" );
+        public static string SqlServerSetupEngine461Path => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Engine", "bin", "Debug", "net461" );
+
+        public static string SqlCallDemoModel461Path => Path.Combine( SolutionFolder, "Tests", "SqlCallDemo", "SqlCallDemo", "bin", "Debug", "net461" );
+
+        public static string SqlActorPackageModel461Path => Path.Combine( SolutionFolder, "Tests", "BasicModels", "SqlActorPackage", "bin", "Debug", "net461" );
+        public static string SqlActorPackageRuntime461Path => Path.Combine( SolutionFolder, "Tests", "BasicModels", "SqlActorPackage.Runtime", "bin", "Debug", "net461" );
 
         public static string GetTestZipPath( string suffix = null, [CallerMemberName]string name = null )
         {
             return Path.Combine( TestFolder, name + suffix + ".zip" );
+        }
+
+        public static ZipRuntimeArchive OpenCKDatabaseZip()
+        {
+            string zipPath = GetTestZipPath( null, "Standard" );
+            bool alreadyHere = File.Exists( zipPath );
+            ZipRuntimeArchive zip = ZipRuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath );
+            if( !alreadyHere )
+            {
+                zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjModel461Path ) ).Should().BeTrue();
+                zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjRuntime461Path ) ).Should().BeTrue();
+                zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjEngine461Path ) ).Should().BeTrue();
+                zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableModel461Path ) ).Should().BeTrue();
+                zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableRuntime461Path ) ).Should().BeTrue();
+                zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableEngine461Path ) ).Should().BeTrue();
+                zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupModel461Path ) ).Should().BeTrue();
+                zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupRuntime461Path ) ).Should().BeTrue();
+                zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupEngine461Path ) ).Should().BeTrue();
+            }
+            return zip;
         }
 
         private static void InitalizePaths()
