@@ -30,38 +30,47 @@ namespace CKSetup
 
             AssemblyReferences = a.MainModule.AssemblyReferences.ToArray();
             // SetupDependencies may need VersionName or RawTargetFramework.
-            bool isEngine = a.CustomAttributes.Any( x => x.AttributeType.FullName == "CK.Setup.IsEngineAttribute" );
-            if( isEngine )
+            IsExcludedFromSetup = a.CustomAttributes.Any( x => x.AttributeType.FullName == "CK.Setup.ExcludeFromSetupAttribute" );
+            if( IsExcludedFromSetup )
             {
-                ComponentKind = ComponentKind.Engine;
+                SetupDependencies = Array.Empty<SetupDependency>();
+                m.Debug().Send( $"'{Name.Name}' has ExcludeFromSetup attribute." );
             }
-            SetupDependencies = a.CustomAttributes
-                                    .Select( x => (x.AttributeType.FullName == "CK.Setup.IsModelThatUsesRuntimeAttribute"
-                                                        ? new SetupDependency( true, x.ConstructorArguments, this )
-                                                        : (x.AttributeType.FullName == "CK.Setup.IsRuntimeThatUsesEngineAttribute")
-                                                              ? new SetupDependency( false, x.ConstructorArguments, this )
-                                                              : null) )
-                                    .Where( x => x != null )
-                                    .ToArray();
-            bool tooMuchKind = false;
-            if( SetupDependencies.Any( d => d.IsModel ) )
+            else 
             {
-                if( ComponentKind != ComponentKind.None ) tooMuchKind = true;
-                ComponentKind = ComponentKind.Model;
-            }
-            if( SetupDependencies.Any( d => d.IsRuntime ) )
-            {
-                if( ComponentKind != ComponentKind.None ) tooMuchKind = true;
-                ComponentKind = ComponentKind.Runtime;
-            }
-            if( tooMuchKind )
-            {
-                throw new CKException( $"File '{p}' cannot be marked with more that one kind ot attributes (Engine, Runtime or Model)." );
+                bool isEngine = a.CustomAttributes.Any( x => x.AttributeType.FullName == "CK.Setup.IsEngineAttribute" );
+                if( isEngine )
+                {
+                    ComponentKind = ComponentKind.Engine;
+                }
+                SetupDependencies = a.CustomAttributes
+                                        .Select( x => (x.AttributeType.FullName == "CK.Setup.IsModelThatUsesRuntimeAttribute"
+                                                            ? new SetupDependency( true, x.ConstructorArguments, this )
+                                                            : (x.AttributeType.FullName == "CK.Setup.IsRuntimeThatUsesEngineAttribute")
+                                                                  ? new SetupDependency( false, x.ConstructorArguments, this )
+                                                                  : null) )
+                                        .Where( x => x != null )
+                                        .ToArray();
+                bool tooMuchKind = false;
+                if( SetupDependencies.Any( d => d.IsModel ) )
+                {
+                    if( ComponentKind != ComponentKind.None ) tooMuchKind = true;
+                    ComponentKind = ComponentKind.Model;
+                }
+                if( SetupDependencies.Any( d => d.IsRuntime ) )
+                {
+                    if( ComponentKind != ComponentKind.None ) tooMuchKind = true;
+                    ComponentKind = ComponentKind.Runtime;
+                }
+                if( tooMuchKind )
+                {
+                    throw new CKException( $"File '{p}' cannot be marked with more that one kind ot attributes (Engine, Runtime or Model)." );
+                }
             }
             if( ComponentKind != ComponentKind.None )
             {
-               TargetFramework t;
-               switch( RawTargetFramework )
+                TargetFramework t;
+                switch( RawTargetFramework )
                 {
                     case null: throw new CKException( $"Component '{p}' must be marked with a TargetFrameworkAttribute." );
                     case ".NETFramework,Version=v4.6.1": t = TargetFramework.Net461; break;
@@ -78,9 +87,15 @@ namespace CKSetup
                 {
                     throw new CKException( $"Component '{p}' standard CSemVer version error: {InfoVersion.ParseErrorMessage}." );
                 }
+                foreach( var d in SetupDependencies ) d.OnSourceVersionKnown( InfoVersion.NuGetVersion );
                 _cRef = new ComponentRef( t, Name.Name, InfoVersion.NuGetVersion );
             }
         }
+
+        /// <summary>
+        /// Gets whether this file is marked with CK.Setup.ExcludeFromSetupAttribute.
+        /// </summary>
+        public bool IsExcludedFromSetup { get; }
 
         /// <summary>
         /// Gets the folder with all its binaries.

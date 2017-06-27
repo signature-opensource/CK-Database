@@ -11,12 +11,20 @@ namespace CKSetup.Tests
     [TestFixture]
     public class SetupTests
     {
-        [Test]
-        public void setup_SqlCallDemo()
+        [TestCase( true )]
+        [TestCase( false )]
+        public void setup_SqlCallDemo( bool sourceGeneration )
         {
             using( var zip = TestHelper.OpenCKDatabaseZip() )
             {
-
+                CKSetup.SetupCommand.DoSetup(
+                    TestHelper.ConsoleMonitor,
+                    TestHelper.SqlCallDemoModel461Path,
+                    zip,
+                    TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
+                    "SqlCallDemo.Generated.ByCKSetup",
+                    sourceGeneration
+                    );
             }
         }
 

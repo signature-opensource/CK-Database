@@ -15,7 +15,10 @@ using System.Diagnostics;
 
 namespace CKSetup
 {
-    static partial class SetupCommand
+    /// <summary>
+    /// Setup command implementation.
+    /// </summary>
+    static public class SetupCommand
     {
         public static void Define( CommandLineApplication c )
         {
@@ -45,32 +48,53 @@ namespace CKSetup
                 {
                     throw new NotImplementedException( "Multi Bin path Setup is not yet implemented." );
                 }
-                string binPath = binPaths.BinPaths[0];
-                var binFolder = BinFolder.ReadBinFolder( monitor, binPath );
-                if( binFolder == null ) return Program.RetCodeError;
                 using( ZipRuntimeArchive zip = ZipRuntimeArchive.OpenOrCreate( monitor, zipFile.ZipRuntimeFile ) )
                 {
                     if( zip == null ) return Program.RetCodeError;
-                    if( !zip.ExtractRuntimeDependencies( binFolder ) ) return Program.RetCodeError;
-                    var toSetup = binFolder.Files.Where( b => b.LocalDependencies.Any( dep => dep.ComponentKind == ComponentKind.Model ) )
-                                                    .Select( b => b.Name.Name );
-                    using( monitor.OpenTrace().Send( "Creating setup configuration xml file." ) )
-                    {
-                        var config = BuildSetupConfig(
-                                        connectionArg.TargetConnectionString,
-                                        toSetup,
-                                        generatedAssemblyNameOpt.Value(),
-                                        sourceGenerationOpt.HasValue() );
-                        var configPath = WritDBSetupConfig( monitor, config, binPath );
-                        zip.RegisterFileToDelete( configPath );
-                    }
-                    using( monitor.OpenInfo().Send( "Launching setup." ) )
-                    {
-                        string exePath = Path.Combine( binPath, "CK.Setupable.Engine.exe" );
-                        return RunSetup( monitor, exePath );
-                    }
+                    return DoSetup(
+                            monitor,
+                            binPaths.BinPaths[0],
+                            zip,
+                            connectionArg.TargetConnectionString,
+                            generatedAssemblyNameOpt.Value(),
+                            sourceGenerationOpt.HasValue() );
                 }
             } );
+        }
+
+        /// <summary>
+        /// This is static in order to ease tests.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="binPath">The bin path to setup.</param>
+        /// <param name="zip">The opened, valid, Zip runtime.</param>
+        /// <param name="targetConnectionString">The default connection string.</param>
+        /// <param name="generatedAssemblyName">Name of the assembly to generate.</param>
+        /// <param name="sourceGeneration">True to generate source code.</param>
+        /// <returns>Program return code (0 for success).</returns>
+        public static int DoSetup( IActivityMonitor monitor, string binPath, ZipRuntimeArchive zip, string targetConnectionString, string generatedAssemblyName, bool sourceGeneration )
+        {
+            var binFolder = BinFolder.ReadBinFolder( monitor, binPath );
+            if( binFolder == null ) return Program.RetCodeError;
+            if( !zip.ExtractRuntimeDependencies( binFolder ) ) return Program.RetCodeError;
+            var toSetup = binFolder.Files.Where( b => !b.IsExcludedFromSetup 
+                                                        && b.LocalDependencies.Any( dep => dep.ComponentKind == ComponentKind.Model ) )
+                                            .Select( b => b.Name.Name );
+            using( monitor.OpenTrace().Send( "Creating setup configuration xml file." ) )
+            {
+                var config = BuildSetupConfig(
+                                targetConnectionString,
+                                toSetup,
+                                generatedAssemblyName,
+                                sourceGeneration );
+                var configPath = WritDBSetupConfig( monitor, config, binPath );
+                zip.RegisterFileToDelete( configPath );
+            }
+            using( monitor.OpenInfo().Send( "Launching setup." ) )
+            {
+                string exePath = Path.Combine( binPath, "CK.Setupable.Engine.exe" );
+                return RunSetup( monitor, exePath );
+            }
         }
 
         static int RunSetup( IActivityMonitor m, string exePath )
@@ -102,15 +126,18 @@ namespace CKSetup
             }
         }
 
-
         static string WritDBSetupConfig( IActivityMonitor m, SetupEngineConfiguration conf, string binPath )
         {
+            // We have only one aspect to handle: the SqlSetupAspectConfiguration.
+            Func<Type, string> typeWriter = t => "CK.Setup.SqlSetupAspectConfiguration, CK.SqlServer.Setup.Model";
             var doc = new XDocument(
                             new XElement( SetupRunner.xRunner,
-                                new XElement( SetupRunner.xLogFiler, SetupRunner.xLogFiler, m.MinimalFilter.ToString() ) ),
-                            conf.SerializeXml( new XElement( SetupRunner.xSetup ) ) );
+                                new XElement( SetupRunner.xLogFiler, m.MinimalFilter.ToString() ),
+                                conf.SerializeXml( new XElement( SetupRunner.xSetup ), typeWriter ) ) );
             string filePath = Path.Combine( binPath, SetupRunner.XmlFileName );
-            doc.Save( filePath );
+            string text = doc.ToString();
+            m.Debug().Send( text );
+            File.WriteAllText( filePath, text );
             return filePath;
         }
 

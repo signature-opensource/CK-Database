@@ -161,37 +161,103 @@ namespace CKSetup
             using( _monitor.OpenInfo().Send( $"Extracting runtime support into '{target.BinPath}'." ) )
             {
                 var components = _dbCurrent.ResolveRuntimeDependencies( _monitor, target );
+                if( components == null ) return false;
                 if( components.Count != 0 )
                 {
                     int count = 0;
                     foreach( var c in components )
                     {
-                        foreach( var f in c.Files )
+                        using( _monitor.OpenInfo().Send( $"{c.Files.Count} files from '{c}'." ) )
                         {
-                            string targetPath = target.BinPath + f;
-                            if( !File.Exists( targetPath ) )
+                            foreach( var f in c.Files )
                             {
-                                try
+                                string targetPath = target.BinPath + f;
+                                if( !File.Exists( targetPath ) )
                                 {
-                                    var e = _archive.GetEntry( c.GetRef().EntryPathPrefix + f );
-                                    e.ExtractToFile( targetPath );
-                                    _monitor.Trace().Send( $"Extracted {e.Name}." );
-                                    _cleanupFiles.Add( targetPath );
-                                    ++count;
+                                    try
+                                    {
+                                        var e = _archive.GetEntry( c.GetRef().EntryPathPrefix + f );
+                                        e.ExtractToFile( targetPath );
+                                        _monitor.Debug().Send( $"Extracted {e.Name}." );
+                                        _cleanupFiles.Add( targetPath );
+                                        ++count;
+                                    }
+                                    catch( Exception ex )
+                                    {
+                                        _monitor.Error().Send( ex, $"While extracting '{targetPath}'." );
+                                        return false;
+                                    }
                                 }
-                                catch( Exception ex )
-                                {
-                                    _monitor.Error().Send( ex, $"While extracting '{targetPath}'." );
-                                    return false;
-                                }
+                                else _monitor.Trace().Send( $"Skipped '{targetPath}' since it already exists." );
                             }
-                            else _monitor.Trace().Send( $"Skipped '{targetPath}' since it already exists." );
                         }
                     }
                     _monitor.Info().Send( $"{count} files extracted." );
                 }
             }
             return true;
+        }
+
+        /// <summary>
+        /// Gets whether changes are pending.
+        /// Note that <see cref="CommitChanges"/> is automatically called by <see cref="Dispose"/>.
+        /// </summary>
+        public bool HasChanges => _sink.Events.Count > 0;
+
+        /// <summary>
+        /// Commit current changes to this archive.
+        /// </summary>
+        public void CommitChanges()
+        {
+            if( !HasChanges ) return;
+            using( _monitor.OpenInfo().Send( $"Committing {_sink.Events.Count} changes." ) )
+            {
+                while( _sink.Events.Count > 0 )
+                {
+                    var e = _sink.Events.Dequeue();
+                    if( e.Item2 == null )
+                    {
+                        int nbDeleted = 0;
+                        foreach( var toDel in _archive.Entries.Where( x => x.FullName.StartsWith( e.Item1.EntryPathPrefix ) ) )
+                        {
+                            _monitor.Debug().Send( "Deleting: " + toDel.FullName );
+                            toDel.Delete();
+                            ++nbDeleted;
+                        }
+                        _monitor.Info().Send( $"Component '{e.Item1}' has been removed ({nbDeleted} files removed)." );
+                    }
+                    else
+                    {
+                        var filesToRemove = e.Item2 as IReadOnlyList<string>;
+                        if( filesToRemove != null )
+                        {
+                            int nbDeleted = 0;
+                            var rem = new HashSet<string>( filesToRemove.Select( f => e.Item1.EntryPathPrefix + f ) );
+                            foreach( var toDel in _archive.Entries.Where( x => rem.Contains( x.FullName ) ) )
+                            {
+                                _monitor.Debug().Send( "Deleting: " + toDel.FullName );
+                                toDel.Delete();
+                                ++nbDeleted;
+                            }
+                            _monitor.Info().Send( $"{nbDeleted} files removed for '{e.Item1}'." );
+                        }
+                        else
+                        {
+                            var newC = _dbCurrent.Find( e.Item1 );
+                            var zipPathPrefix = newC.GetRef().EntryPathPrefix;
+                            var folder = (BinFolder)e.Item2;
+                            foreach( var f in newC.Files )
+                            {
+                                string source = folder.BinPath + f;
+                                string entryPath = zipPathPrefix + f;
+                                _monitor.Debug().Send( "Archiving: " + entryPath );
+                                _archive.CreateEntryFromFile( source, entryPath );
+                            }
+                            _monitor.Info().Send( $"Created '{e.Item1}' (registered {newC.Files.Count} files)." );
+                        }
+                    }
+                }
+            }
         }
 
         static public ZipRuntimeArchive OpenOrCreate( IActivityMonitor m, string path )
@@ -211,67 +277,37 @@ namespace CKSetup
         public void Dispose()
         {
             if( _dbEntry == null ) return;
-            if( _cleanupFiles.Count > 0 )
+            using( _monitor.OpenInfo().Send( "Closing Zip archive." ) )
             {
-                using( _monitor.OpenTrace().Send( $"Cleaning {_cleanupFiles.Count} runtime files." ) )
+                CommitChanges();
+                if( _cleanupFiles.Count > 0 )
                 {
-                    foreach( var f in _cleanupFiles )
+                    using( _monitor.OpenTrace().Send( $"Cleaning {_cleanupFiles.Count} runtime files." ) )
                     {
-                        try
+                        foreach( var f in _cleanupFiles )
                         {
-                            File.Delete( f );
+                            try
+                            {
+                                File.Delete( f );
+                            }
+                            catch( Exception ex )
+                            {
+                                _monitor.Warn().Send( ex );
+                            }
                         }
-                        catch( Exception ex )
-                        {
-                            _monitor.Warn().Send( ex );
-                        }
+                        _cleanupFiles.Clear();
                     }
-                    _cleanupFiles.Clear();
                 }
+                if( _dbCurrent != _dbOrigin )
+                {
+                    using( var content = _dbEntry.Open() )
+                    {
+                        new XDocument( _dbCurrent.ToXml() ).Save( content );
+                    }
+                    _dbCurrent = _dbOrigin;
+                }
+                _archive.Dispose();
             }
-            while( _sink.Events.Count > 0 )
-            {
-                var e = _sink.Events.Dequeue();
-                if( e.Item2 == null )
-                {
-                    foreach( var toDel in _archive.Entries.Where( x => x.FullName.StartsWith( e.Item1.EntryPathPrefix ) ) )
-                    {
-                        toDel.Delete();
-                    }
-                }
-                else
-                {
-                    var filesToRemove = e.Item2 as IReadOnlyList<string>;
-                    if( filesToRemove != null )
-                    {
-                        var rem = new HashSet<string>( filesToRemove.Select( f => e.Item1.EntryPathPrefix + f ) );
-                        foreach( var toDel in _archive.Entries.Where( x => rem.Contains( x.FullName ) ) )
-                        {
-                            toDel.Delete();
-                        }
-                    }
-                    else
-                    {
-                        var newC = _dbCurrent.Find( e.Item1 );
-                        var zipPathPrefix = newC.GetRef().EntryPathPrefix;
-                        var folder = (BinFolder)e.Item2;
-                        foreach( var f in newC.Files )
-                        {
-                            string source = folder.BinPath + f;
-                            _archive.CreateEntryFromFile( source, zipPathPrefix + f );
-                        }
-                    }
-                }
-            }
-            if( _dbCurrent != _dbOrigin )
-            {
-                using( var content = _dbEntry.Open() )
-                {
-                    new XDocument( _dbCurrent.ToXml() ).Save( content );
-                }
-                _dbCurrent = _dbOrigin;
-            }
-            _archive.Dispose();
         }
     }
 }

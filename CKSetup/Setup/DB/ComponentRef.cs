@@ -60,6 +60,10 @@ namespace CKSetup
         /// </summary>
         public string EntryPathPrefix => $"{Name}/{Version.Text}/{TargetFramework}/";
 
+        /// <summary>
+        /// Overridden to return the <see cref="EntryPathPrefix"/>.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString() => EntryPathPrefix;
 
         public bool Equals( ComponentRef other ) => _targetFramework == other._targetFramework && _name == other._name && _version == other._version;

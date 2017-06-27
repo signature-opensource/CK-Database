@@ -56,22 +56,25 @@ namespace CKSetup
         {
             if( m == null ) throw new ArgumentNullException( nameof( m ) );
             if( binPath == null ) throw new ArgumentNullException( nameof( binPath ) );
-            try
+            using( m.OpenInfo().Send( $"Reading files from '{binPath}'." ) )
             {
-                binPath = FileUtil.NormalizePathSeparator( Path.GetFullPath( binPath ), true );
-                if( !Directory.Exists( binPath ) )
+                try
                 {
-                    m.Error().Send( "Directory not found: " + binPath );
+                    binPath = FileUtil.NormalizePathSeparator( Path.GetFullPath( binPath ), true );
+                    if( !Directory.Exists( binPath ) )
+                    {
+                        m.Error().Send( "Directory not found: " + binPath );
+                        return null;
+                    }
+                    var b = new BinFolder( binPath, BinFileInfo.ReadFiles( m, binPath ) );
+                    return b.Initialize( m ) ? b : null;
+
+                }
+                catch( Exception ex )
+                {
+                    m.Error().Send( ex );
                     return null;
                 }
-                var b = new BinFolder( binPath, BinFileInfo.ReadFiles( m, binPath ) );
-                return b.Initialize( m ) ? b : null;
-
-            }
-            catch( Exception ex )
-            {
-                m.Error().Send( ex );
-                return null;
             }
         }
 

@@ -32,8 +32,7 @@ namespace CK.Setup
                 try
                 {
                     XElement root = XDocument.Load( Path.Combine( AppContext.BaseDirectory, XmlFileName ) ).Root;
-                    XElement runner = root.Element( xRunner );
-                    m.MinimalFilter = LogFilter.Parse( runner.Element( xLogFiler ).Value );
+                    m.MinimalFilter = LogFilter.Parse( root.Element( xLogFiler ).Value );
                     var config = new SetupEngineConfiguration( root.Element( xSetup ) );
                     return StObjContextRoot.Build( config, null, m );
                 }

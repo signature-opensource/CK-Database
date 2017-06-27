@@ -16,13 +16,13 @@ namespace CKSetup
         public Component(
             ComponentKind k, 
             ComponentRef cRef,
-            IEnumerable<ComponentDependency> dependencies,
+            IReadOnlyList<ComponentDependency> dependencies,
             IEnumerable<ComponentRef> embedded,
             IEnumerable<string> files)
         {
             _ref = cRef;
             ComponentKind = k;
-            Dependencies = dependencies.ToArray();
+            Dependencies = dependencies;
             Embedded = embedded.ToArray();
             Files = files.ToArray();
             CheckValid();
@@ -79,12 +79,18 @@ namespace CKSetup
 
         public IReadOnlyList<string> Files { get; }
 
+        /// <summary>
+        /// Overridden to return this <see cref="ComponentRef.EntryPathPrefix"/>.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString() => _ref.ToString();
+
         public Component WithNewComponent( IComponentDBEventSink sink, IActivityMonitor m, Component newC )
         {
             var uselessEmbedded = Embedded.Where( e => e.Equals( newC.GetRef() ) ).SingleOrDefault();
             if( uselessEmbedded.Name == null ) return this;
+
             var newEmbedded = Embedded.Where( e => !e.Equals( uselessEmbedded ) );
-            var newDependecies = Dependencies.Append( new ComponentDependency( newC.Name, newC.Version ) );
             var newFiles = Files.Where( f => !newC.Files.Contains( f ) ).ToList();
             int delta = Files.Count - newFiles.Count;
             if( delta > 0 )
@@ -92,8 +98,8 @@ namespace CKSetup
                 m.Info().Send( $"Removing {delta} files from '{_ref}' thanks to newly registered '{newC.Name}'." );
             }
             sink?.FilesRemoved( this, newC.Files );
-            m.Info().Send( $"Component '{_ref}' now depends on '{newC.GetRef()}' instead of embedding it." );
-            return new Component( ComponentKind, _ref, newDependecies, newEmbedded, newFiles );
+            m.Info().Send( $"Component '{_ref}' does not embedd '{newC.GetRef()}' anymore." );
+            return new Component( ComponentKind, _ref, Dependencies, newEmbedded, newFiles );
         }
 
     }

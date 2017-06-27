@@ -12,6 +12,16 @@ namespace CKSetup
     public class SetupDependency 
     {
         /// <summary>
+        /// Egg and chicken issue: to resolve the UseModel/RuntimeVersion the source
+        /// version must be known. Checking InformationalVersion (and may be use the Zero one) is 
+        /// done only in the source when we know that the source is actually a component
+        /// ... because it has SetupDependencies.
+        /// We use a static special SVersion (reference equality) to mark UseModel/RuntimeVersion and the 
+        /// BinFileInfo ctor will mutate the UseMinVersion property.
+        /// </summary>
+        static SVersion UseMinVersionMarker = new SVersion( 0, 0, 0 );
+
+        /// <summary>
         /// Called by the BnFileInfo constructor for IsModelThatUsesRuntime or IsRuntimeThatUsesEngine attributes.
         /// </summary>
         /// <param name="isModel">True for IsModelThatUsesRuntime attribute.</param>
@@ -20,36 +30,34 @@ namespace CKSetup
         internal SetupDependency( bool isModel, IList<CustomAttributeArgument> ctorArgs, BinFileInfo modelOrRuntime )
         {
             IsModel = isModel;
-            if( ctorArgs.Count > 0 )
+            string attributeName = isModel ? "IsModelThatUsesRuntime" : "IsRuntimeThatUsesEngine";
+            if( ctorArgs.Count != 2
+                || !(ctorArgs[0].Value is string) 
+                || !(ctorArgs[1].Value is string) )
             {
-                UseName = ctorArgs[0].Value as string;
-                if( string.IsNullOrWhiteSpace( UseName ) )
-                {
-                    throw new ArgumentException( $"{modelOrRuntime.Name.Name} has an empty name in its {(IsModel ? "IsModelThatUsesRuntime" : "IsRuntimeThatUsesEngine")} attribute." );
-                }
-                if( UseName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase )
-                    || UseName.EndsWith( ".exe", StringComparison.OrdinalIgnoreCase ) )
-                {
-                    UseName = UseName.Substring( 0, UseName.Length - 4 );
-                }
+                throw new ArgumentException( $"{modelOrRuntime.Name.Name} has an invalid {attributeName} attribute: there must be exactly 2 string arguments." );
             }
-            if( ctorArgs.Count > 1 )
+            UseName = (string)ctorArgs[0].Value;
+            if( string.IsNullOrWhiteSpace( UseName ) )
             {
-                string v = (string)ctorArgs[1].Value;
-                if( v == "UseModelVersion" || v == "UseRuntimeVersion" )
+                throw new ArgumentException( $"{modelOrRuntime.Name.Name} has an empty name in its {(IsModel ? "IsModelThatUsesRuntime" : "IsRuntimeThatUsesEngine")} attribute." );
+            }
+            if( UseName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase )
+                || UseName.EndsWith( ".exe", StringComparison.OrdinalIgnoreCase ) )
+            {
+                UseName = UseName.Substring( 0, UseName.Length - 4 );
+            }
+            string v = (string)ctorArgs[1].Value;
+            if( v == "UseModelVersion" || v == "UseRuntimeVersion" )
+            {
+                UseMinVersion = UseMinVersionMarker;
+            }
+            else if( !string.IsNullOrWhiteSpace( v ) )
+            {
+                UseMinVersion = SVersion.TryParse( v );
+                if( !UseMinVersion.IsValidSyntax )
                 {
-                    // If this is null, this means that the Source
-                    // is not a valid Component and this will be detected from the 
-                    // BinFileInfo constructor.
-                    UseMinVersion = Source?.InfoVersion?.NuGetVersion;
-                }
-                else if( !string.IsNullOrWhiteSpace( v ) )
-                {
-                    UseMinVersion = SVersion.TryParse( v );
-                    if( !UseMinVersion.IsValidSyntax )
-                    {
-                        throw new ArgumentException( $"{modelOrRuntime.Name.Name} has an invalid version '{v}' in its {(IsModel ? "IsModelThatUsesRuntime" : "IsRuntimeThatUsesEngine")} attribute." );
-                    }
+                    throw new ArgumentException( $"{modelOrRuntime.Name.Name} has an invalid version '{v}' in its {(IsModel ? "IsModelThatUsesRuntime" : "IsRuntimeThatUsesEngine")} attribute." );
                 }
             }
             Source = modelOrRuntime;
@@ -63,6 +71,14 @@ namespace CKSetup
 
         public string UseName { get; }
 
-        public SVersion UseMinVersion { get; }
+        public SVersion UseMinVersion { get; private set; }
+
+        internal void OnSourceVersionKnown( SVersion v )
+        {
+            if( ReferenceEquals( UseMinVersion, UseMinVersionMarker ) )
+            {
+                UseMinVersion = v;
+            }
+        }
     }
 }

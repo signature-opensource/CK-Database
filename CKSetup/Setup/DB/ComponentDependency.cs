@@ -39,5 +39,7 @@ namespace CKSetup
         /// Gets the minimal version. Can be null.
         /// </summary>
         public SVersion UseMinVersion { get; }
+
+        public override string ToString() => $"-> {UseName}/{UseMinVersion.Text}";
     }
 }

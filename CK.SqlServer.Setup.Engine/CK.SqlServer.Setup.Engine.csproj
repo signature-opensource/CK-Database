@@ -15,6 +15,10 @@
     <ProjectReference Include="..\CK.SqlServer.Setup.Runtime\CK.SqlServer.Setup.Runtime.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="CK.SqlServer.Transform" Version="$(CKSqlServerParserVersion)" />
+  </ItemGroup>
+
   <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
     <Reference Include="System" />
   </ItemGroup>

@@ -7,6 +7,7 @@ using NUnit.Framework;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using FluentAssertions;
+using System.Data.SqlClient;
 
 namespace CKSetup.Tests
 {
@@ -18,6 +19,7 @@ namespace CKSetup.Tests
         static string _testOutputPath;
         static IActivityMonitor _monitor;
         static ActivityMonitorConsoleClient _console;
+        static SqlConnectionStringBuilder _masterConnectionString;
 
         static TestHelper()
         {
@@ -38,6 +40,45 @@ namespace CKSetup.Tests
                 if( value ) _monitor.Output.RegisterUniqueClient( c => c == _console, () => _console );
                 else _monitor.Output.UnregisterClient( _console );
             }
+        }
+
+        /// <summary>
+        /// Gets the connection string to the master database.
+        /// It is first the environment variable named "CK_DB_TEST_MASTER_CONNECTION_STRING", then 
+        /// the <see cref="AppSettings.Default"/>["CK_DB_TEST_MASTER_CONNECTION_STRING"] in configuration 
+        /// file end then, if none are defined, this defaults to "Server=.;Database=master;Integrated Security=SSPI".
+        /// </summary>
+        public static string ConnectionStringMaster => EnsureMasterConnection().ToString();
+
+        static SqlConnectionStringBuilder EnsureMasterConnection()
+        {
+            if( _masterConnectionString == null )
+            {
+                string c = Environment.GetEnvironmentVariable( "CK_DB_TEST_MASTER_CONNECTION_STRING" );
+                if( c == null ) c = AppSettings.Default["CK_DB_TEST_MASTER_CONNECTION_STRING"];
+                if( c == null )
+                {
+                    c = "Server=.;Database=master;Integrated Security=SSPI";
+                    ConsoleMonitor.Info().Send( "Using default connection string: {0}", c );
+                }
+                _masterConnectionString = new SqlConnectionStringBuilder( c );
+            }
+            return _masterConnectionString;
+        }
+
+        /// <summary>
+        /// Gets the connection string based on <see cref="ConnectionStringMaster"/> to the given database.
+        /// </summary>
+        /// <param name="dbName">Name of the database.</param>
+        /// <returns>The connection string to the database.</returns>
+        public static string GetConnectionString( string dbName )
+        {
+            var c = EnsureMasterConnection();
+            string savedMaster = c.InitialCatalog;
+            c.InitialCatalog = dbName;
+            string result = c.ToString();
+            c.InitialCatalog = savedMaster;
+            return result;
         }
 
         public static string BinFolder
@@ -98,6 +139,7 @@ namespace CKSetup.Tests
                 zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupModel461Path ) ).Should().BeTrue();
                 zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupRuntime461Path ) ).Should().BeTrue();
                 zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupEngine461Path ) ).Should().BeTrue();
+                zip.CommitChanges();
             }
             return zip;
         }

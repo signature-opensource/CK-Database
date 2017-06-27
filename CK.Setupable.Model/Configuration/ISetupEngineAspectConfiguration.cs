@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
 
@@ -6,9 +7,9 @@ namespace CK.Setup
 {
     /// <summary>
     /// All configuration of a Setup engine Aspect must implement this interface.
-    /// Such objects must have a deserialization constructor from a XElement and should 
-    /// avoid any <see cref="Type"/> or delegates of any kind (ie. any kind of stuff that can 
-    /// not be serialized).
+    /// Aspect configuration must have a deserialization constructor that take a XElement.
+    /// Any <see cref="Type"/> or delegates of any kind should be avoided (ie. any kind 
+    /// of stuff that can not be serialized).
     /// </summary>
     public interface ISetupEngineAspectConfiguration
     {

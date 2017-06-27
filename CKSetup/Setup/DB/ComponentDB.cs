@@ -56,7 +56,11 @@ namespace CKSetup
 
         public ComponentDB Add( IActivityMonitor m, BinFolder folder )
         {
-            if( !folder.Heads.Any() ) throw new ArgumentException();
+            if( !folder.Heads.Any() )
+            {
+                m.Error().Send( "No components found." );
+                return null;
+            }
             var freeHeads = folder.Heads.Where( h => Find( h.ComponentRef ) == null );
             int freeHeadsCount = freeHeads.Count();
             if( freeHeadsCount > 1 )
@@ -70,39 +74,41 @@ namespace CKSetup
                 return this;
             }
             BinFileInfo toAdd = freeHeads.Single();
-
-            List<ComponentDependency> dependencies = CollectSetupDependencies( m, new[] { toAdd } );
-
-            var embeddedComponents = new List<ComponentRef>();
-            var files = folder.Files.Select( f => f.LocalFileName );
-            foreach( var sub in folder.Components )
+            using( m.OpenInfo().Send( $"Found '{toAdd.ComponentRef.EntryPathPrefix}' to register." ) )
             {
-                if( sub == toAdd ) continue;
-                var cSub = Find( sub.ComponentRef );
-                if( cSub != null )
+                List<ComponentDependency> dependencies = CollectSetupDependencies( m, new[] { toAdd } );
+
+                var embeddedComponents = new List<ComponentRef>();
+                var files = folder.Files.Select( f => f.LocalFileName );
+                foreach( var sub in folder.Components )
                 {
-                    if( dependencies.Any( d => d.UseName == cSub.Name ) )
+                    if( sub == toAdd ) continue;
+                    var cSub = Find( sub.ComponentRef );
+                    if( cSub != null )
                     {
-                        m.Error().Send( $"{cSub.Name} is declared as a Setup dependency but exists as an embedded component." );
-                        return null;
+                        if( dependencies.Any( d => d.UseName == cSub.Name ) )
+                        {
+                            m.Error().Send( $"{cSub.Name} is declared as a Setup dependency but exists as an embedded component." );
+                            return null;
+                        }
+                        m.Info().Send( $"Removing {cSub.Files.Count} files thanks to already registered '{cSub.GetRef()}'." );
+                        files = files.Where( f => !cSub.Files.Contains( f ) );
                     }
-                    dependencies.Add( new ComponentDependency( cSub.Name, cSub.Version ) );
-                    m.Info().Send( $"Removing {cSub.Files.Count} files thanks to already registered '{cSub.GetRef()}'." );
-                    files = files.Where( f => !cSub.Files.Contains( f ) );
+                    else
+                    {
+                        m.Warn().Send( $"Embedded component '{sub.ComponentRef}' will be included. It should be registered individually." );
+                        embeddedComponents.Add( sub.ComponentRef );
+                    }
                 }
-                else
-                {
-                    m.Warn().Send( $"Sub component '{sub.ComponentRef}' will be included. It should be registered individually." );
-                    embeddedComponents.Add( sub.ComponentRef );
-                }
+                var newC = new Component( toAdd.ComponentKind, toAdd.ComponentRef, dependencies, embeddedComponents, files );
+                _sink?.ComponentAdded( newC, folder );
+                return new ComponentDB( _sink, Components.Select( c => c.WithNewComponent( _sink, m, newC ) ).Append( newC ) );
             }
-            var newC = new Component( toAdd.ComponentKind, toAdd.ComponentRef, dependencies, embeddedComponents, files );
-            _sink?.ComponentAdded( newC, folder );
-            return new ComponentDB( _sink, Components.Select( c => c.WithNewComponent( _sink, m, newC ) ).Append( newC ) );
         }
 
         /// <summary>
-        /// Resolves required components for a target <see cref="BinFolder"/>.
+        /// Resolves required runtime components for a target <see cref="BinFolder"/>.
+        /// Models are skipped here.
         /// </summary>
         /// <param name="m">The monitor to use.</param>
         /// <param name="target">The target for which required components must be found.</param>
@@ -129,7 +135,9 @@ namespace CKSetup
                 var installableComponents = GetInstallableComponents( m, rootDeps, targetFramework );
                 if( installableComponents == null ) return null;
 
-                var toInstall = installableComponents.ResolveMinimalVersions();
+                var toInstall = installableComponents.ResolveMinimalVersions( m );
+                if( toInstall == null ) return null;
+
                 m.CloseGroup( toInstall.Count == 0 ? "No component found." : $"{toInstall.Count} components fond." );
                 return toInstall;
             }
@@ -150,19 +158,36 @@ namespace CKSetup
                 _initialCount = _components.Count;
             }
 
-            public List<Component> ResolveMinimalVersions()
+            public List<Component> ResolveMinimalVersions( IActivityMonitor m )
             {
                 int idx = 0;
                 do
                 {
                     foreach( var dep in _components[idx].Dependencies )
                     {
+                        Component registered;
+                        Component exactRegistered = _db.Components.SingleOrDefault( c => c.Name == dep.UseName && c.TargetFramework == _targetFramework && c.Version == dep.UseMinVersion );
+                        if( exactRegistered != null ) registered = exactRegistered;
+                        else
+                        {
+                            Component best = _db.Components.Where( c => c.Name == dep.UseName && c.TargetFramework == _targetFramework && c.Version > dep.UseMinVersion )
+                                                .OrderByDescending( c => c.Version )
+                                                .FirstOrDefault();
+                            if( best == null )
+                            {
+                                m.Error().Send( $"Component {dep.UseName} in version at least {dep.UseMinVersion} is required." );
+                                return null;
+                            }
+                            registered = best;
+                            m.Warn().Send( $"Component {dep.UseName}/{dep.UseMinVersion} is not registered, upgrading to {best.GetRef()}." );
+                        }
+                        Debug.Assert( registered.ComponentKind != ComponentKind.Model );
+
                         int alreadyHereIdx = _components.IndexOf( c => c.Name == dep.UseName );
-                        Debug.Assert( _db.Components.Single( c => c.Name == dep.UseName && c.TargetFramework == _targetFramework && c.Version == dep.UseMinVersion ) != null );
                         if( alreadyHereIdx < 0 )
                         {
                             // This is a new Component.
-                            _components.Add( _db.Components.First( c => c.Name == dep.UseName && c.TargetFramework == _targetFramework && c.Version == dep.UseMinVersion ) );
+                            _components.Add( registered );
                         }
                         else 
                         {
@@ -171,7 +196,7 @@ namespace CKSetup
                             if( dep.UseMinVersion > _components[alreadyHereIdx].Version )
                             {
                                 // We always update the list with the new (greater) version of the component.
-                                _components[idx] = _db.Components.First( c => c.Name == dep.UseName && c.TargetFramework == _targetFramework && c.Version == dep.UseMinVersion );
+                                _components[idx] = registered;
                                 // Did we already processed the depependencies of this component?
                                 if( alreadyHereIdx > idx )
                                 {
@@ -180,7 +205,7 @@ namespace CKSetup
                                     // the current successfuly processed set.
                                     int succesfulIndex = Math.Max( idx+1, _initialCount );
                                     var r = new InstallableComponents( _db, _targetFramework, _components.Take( succesfulIndex ) );
-                                    return r.ResolveMinimalVersions();
+                                    return r.ResolveMinimalVersions( m );
                                 }
                             }
                         }
