@@ -1,4 +1,5 @@
 ﻿using CK.Core;
+using CSemVer;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -59,6 +60,7 @@ namespace CKSetup
             _monitor = monitor;
             if( _archive.Entries.Count == 0 )
             {
+                monitor.Info().Send( $"Creating new zip file." );
                 _dbCurrent = new ComponentDB( _sink );
                 _dbEntry = _archive.CreateEntry( "db.xml" );
             }
@@ -72,6 +74,7 @@ namespace CKSetup
                         using( var content = _dbEntry.Open() )
                         {
                             _dbOrigin = _dbCurrent = new ComponentDB( _sink, XDocument.Load( content ).Root );
+                            monitor.Trace().Send( $"Opened zip: {_dbOrigin.Components.Count} components, {_archive.Entries.Count} files." );
                         }
                     }
                     catch( Exception ex )
@@ -93,6 +96,25 @@ namespace CKSetup
         /// </summary>
         public bool IsValid => _dbEntry != null;
 
+
+        /// <summary>
+        /// Gets a set of name, targetFramework and version that should be added.
+        /// </summary>
+        public List<Tuple<string, TargetFramework, SVersion>> GetMissingRegistrations( bool strictVersion = false )
+        {
+            List<Tuple<string, TargetFramework, SVersion>> result = _dbCurrent.GetMissingDependencies( strictVersion );
+            // The embedded reference must be rgistered in their exact version.
+            foreach( var e in _dbCurrent.EmbeddedComponents )
+            {
+                if( !result.Any( x => x.Item1 == e.Name 
+                                                 && e.TargetFramework == x.Item2
+                                                 && e.Version == x.Item3 ) )
+                {
+                    result.Add( Tuple.Create( e.Name, e.TargetFramework, e.Version ) );
+                }
+            }
+            return result;
+        }
 
         /// <summary>
         /// Registers a file that will be automatically deleted when this <see cref="ZipRuntimeArchive"/>
@@ -131,6 +153,17 @@ namespace CKSetup
                     return false;
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines whether a component is registered.
+        /// </summary>
+        /// <param name="n">Component name.</param>
+        /// <param name="t">Target framework of the component.</param>
+        /// <param name="v">Version of the component.</param>
+        public bool Contains( string n, TargetFramework t, SVersion v )
+        {
+            return _dbCurrent.Find( new ComponentRef( n, t, v ) ) != null;
         }
 
         /// <summary>
@@ -176,7 +209,12 @@ namespace CKSetup
                                 {
                                     try
                                     {
-                                        var e = _archive.GetEntry( c.GetRef().EntryPathPrefix + f );
+                                        string entry = c.GetRef().EntryPathPrefix + f;
+                                        var e = _archive.GetEntry( entry );
+                                        if( e == null )
+                                        {
+                                            throw new InvalidOperationException( $"'{entry}' file not found: CommitChanges must be called firt." );
+                                        }
                                         e.ExtractToFile( targetPath );
                                         _monitor.Debug().Send( $"Extracted {e.Name}." );
                                         _cleanupFiles.Add( targetPath );

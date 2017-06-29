@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CK.Text;
+using System;
 using System.Collections.Generic;
 using System.IO.Compression;
 using System.Linq;
@@ -44,11 +45,39 @@ namespace CKSetup.Tests
                 {
                     using( var content = e.Open() )
                     {
-                        Db = XDocument.Load( content ).Root;
+                        Db = NormalizeWithoutAnyOrder( XDocument.Load( content ).Root );
                     }
                 }
                 Files = z.Entries.Where( x => x.FullName != "db.xml" ).Select( x => new FileEntry( x ) ).ToArray();
             }
         }
+
+    static XElement NormalizeWithoutAnyOrder( XElement element )
+    {
+        if( element.HasElements )
+        {
+            return new XElement(
+                element.Name,
+                element.Attributes().OrderBy( a => a.Name.ToString() ),
+                element.Elements()
+                    .OrderBy( a => a.Name.ToString() )
+                    .Select( e => NormalizeWithoutAnyOrder( e ) )
+                    .OrderBy( e => e.Attributes().Count() )
+                    .OrderBy( e => e.Attributes()
+                                    .Select( a => a.Value )
+                                    .Concatenate("\u0001") )
+                    .ThenBy( e => e.Value ) );
+        }
+        if( element.IsEmpty || string.IsNullOrEmpty( element.Value ) )
+        {
+            return new XElement( element.Name,
+                                 element.Attributes()
+                                        .OrderBy( a => a.Name.ToString() ) );
+        }
+        return new XElement( element.Name, 
+                             element.Attributes()
+                                    .OrderBy( a => a.Name.ToString() ), 
+                             element.Value );
+    }
     }
 }

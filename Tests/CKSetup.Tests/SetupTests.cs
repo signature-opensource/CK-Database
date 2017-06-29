@@ -11,9 +11,8 @@ namespace CKSetup.Tests
     [TestFixture]
     public class SetupTests
     {
-        [TestCase( true )]
-        [TestCase( false )]
-        public void setup_SqlCallDemo( bool sourceGeneration )
+        [Test]
+        public void setup_SqlCallDemo()
         {
             using( var zip = TestHelper.OpenCKDatabaseZip() )
             {
@@ -23,8 +22,8 @@ namespace CKSetup.Tests
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",
-                    sourceGeneration
-                    );
+                    true
+                    ).Should().Be( 0 );
             }
         }
 
@@ -35,6 +34,15 @@ namespace CKSetup.Tests
             {
                 zip.AddComponent( BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SqlActorPackageModel461Path ) ).Should().BeTrue();
                 zip.AddComponent( BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SqlActorPackageRuntime461Path ) ).Should().BeTrue();
+                zip.CommitChanges();
+                CKSetup.SetupCommand.DoSetup(
+                    TestHelper.ConsoleMonitor,
+                    TestHelper.SqlActorPackageModel461Path,
+                    zip,
+                    TestHelper.GetConnectionString( "CKDB_TEST_SqlActorPackage" ),
+                    "SqlActorPackage.Generated.ByCKSetup",
+                    true
+                    ).Should().Be( 0 );
             }
         }
    }

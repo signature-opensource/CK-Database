@@ -38,10 +38,17 @@ namespace CKSetup
             }
             else 
             {
+                bool tooMuchKind = false;
                 bool isEngine = a.CustomAttributes.Any( x => x.AttributeType.FullName == "CK.Setup.IsEngineAttribute" );
                 if( isEngine )
                 {
                     ComponentKind = ComponentKind.Engine;
+                }
+                bool isRuntime = a.CustomAttributes.Any( x => x.AttributeType.FullName == "CK.Setup.IsRuntimeAttribute" );
+                if( isRuntime )
+                {
+                    if( ComponentKind != ComponentKind.None ) tooMuchKind = true;
+                    ComponentKind = ComponentKind.Runtime;
                 }
                 SetupDependencies = a.CustomAttributes
                                         .Select( x => (x.AttributeType.FullName == "CK.Setup.IsModelThatUsesRuntimeAttribute"
@@ -51,15 +58,14 @@ namespace CKSetup
                                                                   : null) )
                                         .Where( x => x != null )
                                         .ToArray();
-                bool tooMuchKind = false;
-                if( SetupDependencies.Any( d => d.IsModel ) )
+                if( !tooMuchKind && SetupDependencies.Any( d => d.IsModel ) )
                 {
                     if( ComponentKind != ComponentKind.None ) tooMuchKind = true;
                     ComponentKind = ComponentKind.Model;
                 }
-                if( SetupDependencies.Any( d => d.IsRuntime ) )
+                if( !tooMuchKind && SetupDependencies.Any( d => d.IsRuntime ) )
                 {
-                    if( ComponentKind != ComponentKind.None ) tooMuchKind = true;
+                    if( ComponentKind != ComponentKind.None && ComponentKind != ComponentKind.Runtime ) tooMuchKind = true;
                     ComponentKind = ComponentKind.Runtime;
                 }
                 if( tooMuchKind )
@@ -69,14 +75,14 @@ namespace CKSetup
             }
             if( ComponentKind != ComponentKind.None )
             {
-                TargetFramework t;
-                switch( RawTargetFramework )
+                TargetFramework t = TargetFrameworkExtension.TryParse( RawTargetFramework );
+                if( t == TargetFramework.None )
                 {
-                    case null: throw new CKException( $"Component '{p}' must be marked with a TargetFrameworkAttribute." );
-                    case ".NETFramework,Version=v4.6.1": t = TargetFramework.Net461; break;
-                    case ".NETStandard,Version=v1.3": t = TargetFramework.NetStandard13; break;
-                    case ".NETStandard,Version=v1.6": t = TargetFramework.NetStandard16; break;
-                    default: throw new CKException( $"Component '{p}' has TargetFrameworkAttribute {RawTargetFramework} that is not currently handled." );
+                    if( RawTargetFramework == null )
+                    {
+                        throw new CKException( $"Component '{p}' must be marked with a TargetFrameworkAttribute." );
+                    }
+                    throw new CKException( $"Component '{p}' has TargetFrameworkAttribute {RawTargetFramework} that is invalid or not currently handled." );
                 }
                 if( InfoVersion.OriginalInformationalVersion == null )
                 {
@@ -88,7 +94,7 @@ namespace CKSetup
                     throw new CKException( $"Component '{p}' standard CSemVer version error: {InfoVersion.ParseErrorMessage}." );
                 }
                 foreach( var d in SetupDependencies ) d.OnSourceVersionKnown( InfoVersion.NuGetVersion );
-                _cRef = new ComponentRef( t, Name.Name, InfoVersion.NuGetVersion );
+                _cRef = new ComponentRef(Name.Name, t, InfoVersion.NuGetVersion);
             }
         }
 

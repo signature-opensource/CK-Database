@@ -118,17 +118,44 @@ namespace CKSetup.Tests
         public static string SqlActorPackageModel461Path => Path.Combine( SolutionFolder, "Tests", "BasicModels", "SqlActorPackage", "bin", "Debug", "net461" );
         public static string SqlActorPackageRuntime461Path => Path.Combine( SolutionFolder, "Tests", "BasicModels", "SqlActorPackage.Runtime", "bin", "Debug", "net461" );
 
+
+        #region Net standard component Paths
+        public static string StObjModelNet13Path => Path.Combine( SolutionFolder, "CK.StObj.Model", "bin", "Debug", "netstandard1.3" );
+        public static string StObjRuntimeNet16Path => Path.Combine( SolutionFolder, "CK.StObj.Runtime", "bin", "Debug", "netstandard1.6" );
+        public static string StObjEngineNet16Path => Path.Combine( SolutionFolder, "CK.StObj.Engine", "bin", "Debug", "netstandard1.6" );
+
+        public static string SetupableModelNet13Path => Path.Combine( SolutionFolder, "CK.Setupable.Model", "bin", "Debug", "netstandard1.3" );
+        public static string SetupableRuntimeNet16Path => Path.Combine( SolutionFolder, "CK.Setupable.Runtime", "bin", "Debug", "netstandard1.6" );
+        public static string SetupableEngineNet16Path => Path.Combine( SolutionFolder, "CK.Setupable.Engine", "bin", "Debug", "netstandard1.6" );
+
+        public static string SqlServerSetupModelNet13Path => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Model", "bin", "Debug", "netstandard1.3" );
+        public static string SqlServerSetupRuntimeNet16Path => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Runtime", "bin", "Debug", "netstandard1.6" );
+        public static string SqlServerSetupEngineNet16Path => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Engine", "bin", "Debug", "netstandard1.6" );
+
+        public static string SqlCallDemoModelNet13Path => Path.Combine( SolutionFolder, "Tests", "SqlCallDemo", "SqlCallDemo", "bin", "Debug", "netstandard1.3" );
+
+
+        #endregion
+
         public static string GetTestZipPath( string suffix = null, [CallerMemberName]string name = null )
         {
             return Path.Combine( TestFolder, name + suffix + ".zip" );
         }
 
+        public static string GetCleanTestZipPath( string suffix = null, [CallerMemberName]string name = null )
+        {
+            var p = GetTestZipPath( suffix, name );
+            File.Delete( p );
+            return p;
+        }
+
+        static bool _standardDbHasNet461;
+
         public static ZipRuntimeArchive OpenCKDatabaseZip()
         {
             string zipPath = GetTestZipPath( null, "Standard" );
-            bool alreadyHere = File.Exists( zipPath );
             ZipRuntimeArchive zip = ZipRuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath );
-            if( !alreadyHere )
+            if( !_standardDbHasNet461 )
             {
                 zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjModel461Path ) ).Should().BeTrue();
                 zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjRuntime461Path ) ).Should().BeTrue();
@@ -139,8 +166,26 @@ namespace CKSetup.Tests
                 zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupModel461Path ) ).Should().BeTrue();
                 zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupRuntime461Path ) ).Should().BeTrue();
                 zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupEngine461Path ) ).Should().BeTrue();
-                zip.CommitChanges();
+                _standardDbHasNet461 = true;
             }
+            #region NetStandard
+            //// Net standard
+            //if( !_standardDbHasNetStandard && netStandard )
+            //{
+            //    zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjModelNet13Path ) ).Should().BeTrue();
+            //    zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjRuntimeNet16Path ) ).Should().BeTrue();
+            //    zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjEngineNet16Path ) ).Should().BeTrue();
+            //    zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableModelNet13Path ) ).Should().BeTrue();
+            //    zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableRuntimeNet16Path ) ).Should().BeTrue();
+            //    zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableEngineNet16Path ) ).Should().BeTrue();
+            //    zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupModelNet13Path ) ).Should().BeTrue();
+            //    zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupRuntimeNet16Path ) ).Should().BeTrue();
+            //    zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupEngineNet16Path ) ).Should().BeTrue();
+            //    _standardDbHasNetStandard = true;
+            //}
+
+            #endregion
+            zip.CommitChanges();
             return zip;
         }
 

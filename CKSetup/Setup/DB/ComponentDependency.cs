@@ -10,7 +10,7 @@ using System.Xml.Linq;
 
 namespace CKSetup
 {
-    public class ComponentDependency
+    public class ComponentDependency 
     {
         internal ComponentDependency( string name, SVersion version )
         {
@@ -19,20 +19,23 @@ namespace CKSetup
             UseMinVersion = version;
         }
 
-        public ComponentDependency( XElement e )
+        internal ComponentDependency( XElement e )
         {
             UseName = (string)e.AttributeRequired( DBXmlNames.Name );
             var sV = (string)e.Attribute( DBXmlNames.Version );
             if( sV != null ) UseMinVersion = SVersion.Parse( sV );
         }
 
-        public XElement ToXml()
+        internal XElement ToXml()
         {
             return new XElement( DBXmlNames.Dependency, 
                                     new XAttribute( DBXmlNames.Name, UseName ),
                                     UseMinVersion != null ? new XAttribute( DBXmlNames.Version, UseMinVersion ) : null );
         }
 
+        /// <summary>
+        /// Gets the name of the referenced component.
+        /// </summary>
         public string UseName { get; }
 
         /// <summary>

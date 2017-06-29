@@ -91,6 +91,9 @@ namespace CKSetup
             if( uselessEmbedded.Name == null ) return this;
 
             var newEmbedded = Embedded.Where( e => !e.Equals( uselessEmbedded ) );
+            var newDependencies = ComponentKind != ComponentKind.Model && newC.ComponentKind != ComponentKind.Model
+                                    ? Dependencies.Append( new ComponentDependency( uselessEmbedded.Name, uselessEmbedded.Version ) ).ToList()
+                                    : Dependencies;
             var newFiles = Files.Where( f => !newC.Files.Contains( f ) ).ToList();
             int delta = Files.Count - newFiles.Count;
             if( delta > 0 )
@@ -99,7 +102,7 @@ namespace CKSetup
             }
             sink?.FilesRemoved( this, newC.Files );
             m.Info().Send( $"Component '{_ref}' does not embedd '{newC.GetRef()}' anymore." );
-            return new Component( ComponentKind, _ref, Dependencies, newEmbedded, newFiles );
+            return new Component( ComponentKind, _ref, newDependencies, newEmbedded, newFiles );
         }
 
     }

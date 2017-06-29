@@ -7,10 +7,10 @@ namespace CK.Setup
 {
 
     /// <summary>
-    /// Marks an assembly as an Engine. 
+    /// Marks an assembly as being a Runtime. 
     /// </summary>
     [AttributeUsage( AttributeTargets.Assembly, AllowMultiple = false )]
-    public class IsEngineAttribute : Attribute
+    public class IsRuntimeAttribute : Attribute
     {
     }
 }

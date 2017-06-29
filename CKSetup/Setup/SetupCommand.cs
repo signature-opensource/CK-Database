@@ -90,39 +90,45 @@ namespace CKSetup
                 var configPath = WritDBSetupConfig( monitor, config, binPath );
                 zip.RegisterFileToDelete( configPath );
             }
-            using( monitor.OpenInfo().Send( "Launching setup." ) )
-            {
-                string exePath = Path.Combine( binPath, "CK.Setupable.Engine.exe" );
-                return RunSetup( monitor, exePath );
-            }
+            return RunSetup( monitor, binPath );
         }
 
-        static int RunSetup( IActivityMonitor m, string exePath )
+        static int RunSetup( IActivityMonitor m, string binPath )
         {
-            ProcessStartInfo cmdStartInfo = new ProcessStartInfo();
-            cmdStartInfo.FileName = exePath;
-            cmdStartInfo.RedirectStandardOutput = true;
-            cmdStartInfo.RedirectStandardError = true;
-            cmdStartInfo.RedirectStandardInput = true;
-            cmdStartInfo.UseShellExecute = false;
-            cmdStartInfo.CreateNoWindow = true;
-
-            using( Process cmdProcess = new Process() )
+            using( m.OpenInfo().Send( "Launching setup." ) )
             {
-                cmdProcess.StartInfo = cmdStartInfo;
-                cmdProcess.ErrorDataReceived += ( o, e ) => { if( !string.IsNullOrEmpty( e.Data ) ) m.Error().Send( e.Data ); };
-                cmdProcess.OutputDataReceived += ( o, e ) =>
+                string exe = Path.Combine( binPath, "CK.Setupable.Engine.exe" );
+                if( !File.Exists( exe ) )
                 {
-                    if( e.Data != null )
+                    m.Error().Send( "Unable to find CK.Setupable.Engine.exe runner in folder." );
+                    return Program.RetCodeError;
+                }
+                ProcessStartInfo cmdStartInfo = new ProcessStartInfo();
+                cmdStartInfo.WorkingDirectory = binPath;
+                cmdStartInfo.FileName = exe;
+                cmdStartInfo.RedirectStandardOutput = true;
+                cmdStartInfo.RedirectStandardError = true;
+                cmdStartInfo.RedirectStandardInput = true;
+                cmdStartInfo.UseShellExecute = false;
+                cmdStartInfo.CreateNoWindow = true;
+
+                using( Process cmdProcess = new Process() )
+                {
+                    cmdProcess.StartInfo = cmdStartInfo;
+                    cmdProcess.ErrorDataReceived += ( o, e ) => { if( !string.IsNullOrEmpty( e.Data ) ) m.Error().Send( e.Data ); };
+                    cmdProcess.OutputDataReceived += ( o, e ) =>
                     {
-                        m.Info().Send( e.Data );
-                    }
-                };
-                cmdProcess.Start();
-                cmdProcess.BeginErrorReadLine();
-                cmdProcess.BeginOutputReadLine();
-                cmdProcess.WaitForExit();
-                return cmdProcess.ExitCode;
+                        if( e.Data != null )
+                        {
+                            m.Info().Send( e.Data );
+                        }
+                    };
+                    cmdProcess.Start();
+                    cmdProcess.BeginErrorReadLine();
+                    cmdProcess.BeginOutputReadLine();
+                    cmdProcess.WaitForExit();
+                    return cmdProcess.ExitCode;
+                }
             }
         }
 

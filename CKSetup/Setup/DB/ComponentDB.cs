@@ -1,5 +1,6 @@
 ﻿using CK.Core;
 using CK.Text;
+using CSemVer;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -15,18 +16,21 @@ namespace CKSetup
     {
         readonly IComponentDBEventSink _sink;
 
+        /// <summary>
+        /// Initializes a new mpty <see cref="ComponentDB"/>.
+        /// </summary>
+        /// <param name="sink">The sink for the events. Can be null if changes don't need to be tracked.</param>
         public ComponentDB( IComponentDBEventSink c )
         {
             _sink = c;
             Components = Array.Empty<Component>();
         }
 
-        ComponentDB( IComponentDBEventSink sink, IEnumerable<Component> components )
-        {
-            _sink = sink;
-            Components = components.ToArray();
-        }
-
+        /// <summary>
+        /// Initializes a new <see cref="ComponentDB"/> from its <see cref="XElement"/> representation.
+        /// </summary>
+        /// <param name="sink">The sink for the events. Can be null if changes don't need to be tracked.</param>
+        /// <param name="e">The xml element.</param>
         public ComponentDB( IComponentDBEventSink sink, XElement e )
         {
             _sink = sink;
@@ -38,15 +42,83 @@ namespace CKSetup
             }
         }
 
+        ComponentDB( IComponentDBEventSink sink, IEnumerable<Component> components )
+        {
+            _sink = sink;
+            Components = components.ToArray();
+        }
+
+        /// <summary>
+        /// Creates a <see cref="XElement"/> representation of this database.
+        /// </summary>
+        /// <returns>The Xml element.</returns>
         public XElement ToXml()
         {
             return new XElement( DBXmlNames.DB, Components.Select( c => c.ToXml() ) );
         }
 
+        /// <summary>
+        /// Gets the list of registered components.
+        /// </summary>
         public IReadOnlyList<Component> Components { get; }
 
+        /// <summary>
+        /// Gets a set of <see cref="ComponentDependency"/> that should be added.
+        /// </summary>
+        /// <param name="strictVersion">
+        /// True to require the exact version of <see cref="ComponentDependency.UseMinVersion"/> instead of
+        /// accepting also greater version.
+        /// </param>
+        public List<Tuple<string,TargetFramework,SVersion>> GetMissingDependencies( bool strictVersion = false )
+        {
+            var result = new List<Tuple<string, TargetFramework, SVersion>>();
+            foreach( var c in Components )
+            {
+                foreach( var dep in c.Dependencies )
+                {
+                    var cDep = Components.FirstOrDefault( cD => cD.Name == dep.UseName
+                                                            && c.TargetFramework.CanWorkWith( cD.TargetFramework )
+                                                            && (dep.UseMinVersion == null
+                                                                || (strictVersion && cD.Version == dep.UseMinVersion)
+                                                                || (!strictVersion && cD.Version >= dep.UseMinVersion)) );
+                    if( cDep == null )
+                    {
+                        int idx = result.FindIndex( x => x.Item1 == dep.UseName && c.TargetFramework.CanWorkWith( x.Item2 ) );
+                        if( idx >= 0 )
+                        {
+                            var exists = result[idx];
+                            // We consider the lowest framework (inside its range Net framework/net standard).
+                            if( exists.Item2 > c.TargetFramework || exists.Item3 < dep.UseMinVersion )
+                            {
+                                result[idx] = Tuple.Create( dep.UseName, c.TargetFramework, dep.UseMinVersion );
+                            }
+                        }
+                        else result.Add( Tuple.Create( dep.UseName, c.TargetFramework, dep.UseMinVersion ) );
+                    }
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Gets a set of <see cref="ComponentRef"/> that should be added since they are
+        /// currently discovered as embedded inside other ones.
+        /// </summary>
+        public IEnumerable<ComponentRef> EmbeddedComponents => Components.SelectMany( c => c.Embedded );
+
+        /// <summary>
+        /// Finds a <see cref="ComponentRef"/>, returning null if not found.
+        /// </summary>
+        /// <param name="r">The component reference to find.</param>
+        /// <returns>The registered component or null.</returns>
         public Component Find( ComponentRef r ) => Components.FirstOrDefault( c => c.Is( r ) );
 
+        /// <summary>
+        /// Finds a <see cref="ComponentRef"/> or throws a <see cref="InvalidOperationException"/>
+        /// stating that the component is not registered.
+        /// </summary>
+        /// <param name="r">The component reference to find.</param>
+        /// <returns>The registered component.</returns>
         public Component FindRequired( ComponentRef r )
         {
             Component c = Find( r );
@@ -54,6 +126,12 @@ namespace CKSetup
             return c;
         }
 
+        /// <summary>
+        /// Registers a bin folder. 
+        /// </summary>
+        /// <param name="m">The monitor to use.</param>
+        /// <param name="folder">The folder to register.</param>
+        /// <returns>Null on error, this <see cref="ComponentDB"/> if no changes occured or a new database.</returns>
         public ComponentDB Add( IActivityMonitor m, BinFolder folder )
         {
             if( !folder.Heads.Any() )
@@ -70,13 +148,13 @@ namespace CKSetup
             }
             if( freeHeadsCount == 0 )
             {
-                m.Warn().Send( $"Components '{folder.Heads.Select( h => h.Name.Name ).Concatenate( "', '" )}' are already registered." );
+                m.Warn().Send( $"No component added (found already registered Components: '{folder.Heads.Select( h => h.Name.Name ).Concatenate( "', '" )}')" );
                 return this;
             }
             BinFileInfo toAdd = freeHeads.Single();
             using( m.OpenInfo().Send( $"Found '{toAdd.ComponentRef.EntryPathPrefix}' to register." ) )
             {
-                List<ComponentDependency> dependencies = CollectSetupDependencies( m, new[] { toAdd } );
+                List<ComponentDependency> dependencies = CollectSetupDependencies( m, toAdd.SetupDependencies );
 
                 var embeddedComponents = new List<ComponentRef>();
                 var files = folder.Files.Select( f => f.LocalFileName );
@@ -90,6 +168,10 @@ namespace CKSetup
                         {
                             m.Error().Send( $"{cSub.Name} is declared as a Setup dependency but exists as an embedded component." );
                             return null;
+                        }
+                        if( toAdd.ComponentKind != ComponentKind.Model && cSub.ComponentKind != ComponentKind.Model )
+                        {
+                            dependencies.Add( new ComponentDependency( cSub.Name, cSub.Version ) );
                         }
                         m.Info().Send( $"Removing {cSub.Files.Count} files thanks to already registered '{cSub.GetRef()}'." );
                         files = files.Where( f => !cSub.Files.Contains( f ) );
@@ -130,7 +212,7 @@ namespace CKSetup
                 var targetFramework = GetSingleTargetFramework( m, models );
                 if( targetFramework == TargetFramework.None ) return null;
 
-                List<ComponentDependency> rootDeps = CollectSetupDependencies( m, models );
+                List<ComponentDependency> rootDeps = CollectSetupDependencies( m, models.SelectMany( b => b.SetupDependencies ) );
 
                 var installableComponents = GetInstallableComponents( m, rootDeps, targetFramework );
                 if( installableComponents == null ) return null;
@@ -170,7 +252,7 @@ namespace CKSetup
                         if( exactRegistered != null ) registered = exactRegistered;
                         else
                         {
-                            Component best = _db.Components.Where( c => c.Name == dep.UseName && c.TargetFramework == _targetFramework && c.Version > dep.UseMinVersion )
+                            Component best = _db.Components.Where( c => c.Name == dep.UseName && _targetFramework.CanWorkWith( c.TargetFramework ) && c.Version >= dep.UseMinVersion )
                                                 .OrderByDescending( c => c.Version )
                                                 .FirstOrDefault();
                             if( best == null )
@@ -222,7 +304,7 @@ namespace CKSetup
             {
                 Root = d,
                 Component = Components
-                                .Where( c => c.TargetFramework == targetFramework && c.Name == d.UseName && c.Version >= d.UseMinVersion )
+                                .Where( c => targetFramework.CanWorkWith( c.TargetFramework ) && c.Name == d.UseName && c.Version >= d.UseMinVersion )
                                 .OrderByDescending( c => c.Version )
                                 .FirstOrDefault()
             } );
@@ -233,8 +315,8 @@ namespace CKSetup
                 {
                     var c = missed.Root;
                     if( c.UseMinVersion != null )
-                        m.Error().Send( $"Unable to find component {c.UseName}/{targetFramework} with version at least {c.UseMinVersion}." );
-                    else m.Error().Send( $"Unable to find component {c.UseName}/{targetFramework} (any version)." );
+                        m.Error().Send( $"Unable to find component {c.UseName} compatible with {targetFramework} with version at least {c.UseMinVersion}." );
+                    else m.Error().Send( $"Unable to find component {c.UseName} compatible with {targetFramework} (any version)." );
                     return null;
                 }
             }
@@ -246,24 +328,30 @@ namespace CKSetup
             var random = models.First();
             var targetFramework = random.ComponentRef.TargetFramework;
             m.Info().Send( $"Using framework {targetFramework} based on '{random.LocalFileName}'." );
-            var conflicts = models.Where( model => model.ComponentRef.TargetFramework != targetFramework );
-            if( conflicts.Any() )
+            var differences = models.Where( model => model.ComponentRef.TargetFramework != targetFramework );
+            bool incompatbility = false;
+            if( differences.Any() )
             {
-                foreach( var conflict in conflicts )
+                foreach( var diff in differences )
                 {
-                    m.Error().Send( $"Model {conflict.ComponentRef} does not target the framework {targetFramework}." );
+                    if( targetFramework.CanWorkWith( diff.ComponentRef.TargetFramework ) )
+                    {
+                        m.Info().Send( $"Model {diff.ComponentRef}: framework is compatible with {targetFramework}." );
+                    }
+                    else
+                    {
+                        incompatbility = true;
+                        m.Error().Send( $"Model {diff.ComponentRef}: framework is not compatible with {targetFramework}." );
+                    }
                 }
-                return TargetFramework.None;
             }
-            return targetFramework;
+            return incompatbility ? TargetFramework.None : targetFramework;
         }
 
-        static List<ComponentDependency> CollectSetupDependencies( IActivityMonitor m, IEnumerable<BinFileInfo> starts )
+        static List<ComponentDependency> CollectSetupDependencies(IActivityMonitor m, IEnumerable<SetupDependency> deps)
         {
             var dependencies = new List<ComponentDependency>();
-            IEnumerable<SetupDependency> gDep = starts.SelectMany( b => b.SetupDependencies );
-
-            foreach( var dep in gDep.GroupBy( d => d.UseName ) )
+            foreach( var dep in deps.GroupBy( d => d.UseName ) )
             {
                 string name = dep.Key;
                 var versions = dep.Where( d => d.UseMinVersion != null ).Select( d => d.UseMinVersion ).Distinct().ToList();
@@ -279,11 +367,11 @@ namespace CKSetup
                 {
                     var max = versions.Max();
                     var culprits = dep.Where( d => d.UseName == name );
-                    using( m.OpenWarn().Send( $"Version upgrade for '{name}'. Using: {max}." ) )
+                    using( m?.OpenWarn().Send( $"Version upgrade for '{name}'. Using: {max}." ) )
                     {
                         foreach( var c in culprits )
                         {
-                            m.Warn().Send( $"'{c.Source.Name.Name}' declares to use the version {c.UseMinVersion}." );
+                            m?.Warn().Send( $"'{c.Source.Name.Name}' declares to use the version {c.UseMinVersion}." );
                         }
                     }
                     dependencies.Add( new ComponentDependency( name, max ) );
