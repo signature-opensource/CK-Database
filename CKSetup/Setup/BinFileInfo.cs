@@ -75,7 +75,7 @@ namespace CKSetup
             }
             if( ComponentKind != ComponentKind.None )
             {
-                TargetFramework t = TargetFrameworkExtension.TryParse( RawTargetFramework );
+                TargetFramework t = TargetRuntimeOrFrameworkExtension.TryParse( RawTargetFramework );
                 if( t == TargetFramework.None )
                 {
                     if( RawTargetFramework == null )

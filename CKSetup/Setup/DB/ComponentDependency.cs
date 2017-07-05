@@ -10,7 +10,7 @@ using System.Xml.Linq;
 
 namespace CKSetup
 {
-    public class ComponentDependency 
+    public class ComponentDependency : IEquatable<ComponentDependency>
     {
         internal ComponentDependency( string name, SVersion version )
         {
@@ -30,7 +30,9 @@ namespace CKSetup
         {
             return new XElement( DBXmlNames.Dependency, 
                                     new XAttribute( DBXmlNames.Name, UseName ),
-                                    UseMinVersion != null ? new XAttribute( DBXmlNames.Version, UseMinVersion ) : null );
+                                    UseMinVersion != null 
+                                        ? new XAttribute( DBXmlNames.Version, UseMinVersion ) 
+                                        : null );
         }
 
         /// <summary>
@@ -44,5 +46,12 @@ namespace CKSetup
         public SVersion UseMinVersion { get; }
 
         public override string ToString() => $"-> {UseName}/{UseMinVersion.Text}";
+
+        public bool Equals( ComponentDependency other ) => other != null && other.UseName == UseName && other.UseMinVersion == UseMinVersion;
+
+        public override int GetHashCode() => UseMinVersion.GetHashCode() ^ UseName.GetHashCode();
+
+        public override bool Equals( object obj ) => Equals( obj as ComponentDependency );
+
     }
 }

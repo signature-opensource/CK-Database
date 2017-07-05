@@ -76,7 +76,7 @@ namespace CKSetup
         {
             var binFolder = BinFolder.ReadBinFolder( monitor, binPath );
             if( binFolder == null ) return Program.RetCodeError;
-            if( !zip.ExtractRuntimeDependencies( binFolder ) ) return Program.RetCodeError;
+            if( !zip.ExtractRuntimeDependencies( new[] { binFolder } ) ) return Program.RetCodeError;
             var toSetup = binFolder.Files.Where( b => !b.IsExcludedFromSetup 
                                                         && b.LocalDependencies.Any( dep => dep.ComponentKind == ComponentKind.Model ) )
                                             .Select( b => b.Name.Name );

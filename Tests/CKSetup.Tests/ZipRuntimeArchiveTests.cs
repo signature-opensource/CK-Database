@@ -73,10 +73,10 @@ namespace CKSetup.Tests
             string zipPath = TestHelper.GetCleanTestZipPath();
             using( ZipRuntimeArchive zip = ZipRuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
             {
-                zip.GetMissingRegistrations().Should().BeEmpty();
+                zip.SimpleMissingRegistrations.Should().BeEmpty();
                 // Add the terminal model: SqlActorPackage
                 zip.AddComponent( BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SqlActorPackageModel461Path ) ).Should().BeTrue();
-                zip.GetMissingRegistrations().Select( m => m.Item1 ).ShouldBeEquivalentTo( new[]
+                zip.SimpleMissingRegistrations.Select( m => m.UseName ).ShouldBeEquivalentTo( new[]
                     {
                         "SqlActorPackage.Runtime",
                         "CK.StObj.Model",
@@ -85,7 +85,7 @@ namespace CKSetup.Tests
                     } );
                 // Adds the CK.StObj.Model: it requires now its Runtime.
                 zip.AddComponent( BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjModel461Path ) ).Should().BeTrue();
-                zip.GetMissingRegistrations().Select( m => m.Item1 ).ShouldBeEquivalentTo( new[]
+                zip.SimpleMissingRegistrations.Select( m => m.UseName ).ShouldBeEquivalentTo( new[]
                     {
                         "SqlActorPackage.Runtime",
                         "CK.StObj.Runtime",
@@ -94,7 +94,7 @@ namespace CKSetup.Tests
                     } );
                 // Adds the CK.StObj.Runtime: it requires now its Engine.
                 zip.AddComponent( BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjRuntime461Path ) ).Should().BeTrue();
-                zip.GetMissingRegistrations().Select( m => m.Item1 ).ShouldBeEquivalentTo( new[]
+                zip.SimpleMissingRegistrations.Select( m => m.UseName ).ShouldBeEquivalentTo( new[]
                     {
                         "SqlActorPackage.Runtime",
                         "CK.StObj.Engine",
@@ -104,7 +104,7 @@ namespace CKSetup.Tests
                 // Adds the CK.SqlServer.Setup.Engine: it embeds its Runtime that should now be registered
                 // as well as the CK.Setupable.Engine and Runtime and CK.StObj.Runtime.
                 zip.AddComponent( BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SqlServerSetupEngine461Path ) ).Should().BeTrue();
-                zip.GetMissingRegistrations().Select( m => m.Item1 ).ShouldBeEquivalentTo( new[]
+                zip.SimpleMissingRegistrations.Select( m => m.UseName ).ShouldBeEquivalentTo( new[]
                     {
                         "SqlActorPackage.Runtime",
                         "CK.StObj.Engine",
@@ -116,7 +116,7 @@ namespace CKSetup.Tests
                     } );
                 // Adds the SqlActorPackage.Runtime.
                 zip.AddComponent( BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SqlActorPackageRuntime461Path ) ).Should().BeTrue();
-                zip.GetMissingRegistrations().Select( m => m.Item1 ).ShouldBeEquivalentTo( new[]
+                zip.SimpleMissingRegistrations.Select( m => m.UseName ).ShouldBeEquivalentTo( new[]
                     {
                         "CK.StObj.Engine",
                         "CK.SqlServer.Setup.Runtime",
@@ -127,7 +127,7 @@ namespace CKSetup.Tests
                     } );
                 // Adds the CK.SqlServer.Setup.Runtime.
                 zip.AddComponent( BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SqlServerSetupRuntime461Path ) ).Should().BeTrue();
-                zip.GetMissingRegistrations().Select( m => m.Item1 ).ShouldBeEquivalentTo( new[]
+                zip.SimpleMissingRegistrations.Select( m => m.UseName ).ShouldBeEquivalentTo( new[]
                     {
                         "CK.StObj.Engine",
                         "CK.Setupable.Engine",
@@ -137,7 +137,7 @@ namespace CKSetup.Tests
                     } );
                 // Adds the CK.StObj.Engine.
                 zip.AddComponent( BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjEngine461Path ) ).Should().BeTrue();
-                zip.GetMissingRegistrations().Select( m => m.Item1 ).ShouldBeEquivalentTo( new[]
+                zip.SimpleMissingRegistrations.Select( m => m.UseName ).ShouldBeEquivalentTo( new[]
                     {
                         "CK.Setupable.Engine",
                         "CK.Setupable.Runtime",
@@ -146,7 +146,7 @@ namespace CKSetup.Tests
                     } );
                 // Adds the CK.Setupable.Engine.
                 zip.AddComponent( BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SetupableEngine461Path ) ).Should().BeTrue();
-                zip.GetMissingRegistrations().Select( m => m.Item1 ).ShouldBeEquivalentTo( new[]
+                zip.SimpleMissingRegistrations.Select( m => m.UseName ).ShouldBeEquivalentTo( new[]
                     {
                         "CK.Setupable.Runtime",
                         "CK.Setupable.Model",
@@ -154,20 +154,20 @@ namespace CKSetup.Tests
                     } );
                 // Adds the CK.Setupable.Model.
                 zip.AddComponent( BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SetupableModel461Path ) ).Should().BeTrue();
-                zip.GetMissingRegistrations().Select( m => m.Item1 ).ShouldBeEquivalentTo( new[]
+                zip.SimpleMissingRegistrations.Select( m => m.UseName ).ShouldBeEquivalentTo( new[]
                     {
                         "CK.Setupable.Runtime",
                         "CK.SqlServer.Setup.Model"
                     } );
                 // Adds the CK.Setupable.Runtime.
                 zip.AddComponent( BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SetupableRuntime461Path ) ).Should().BeTrue();
-                zip.GetMissingRegistrations().Select( m => m.Item1 ).ShouldBeEquivalentTo( new[]
+                zip.SimpleMissingRegistrations.Select( m => m.UseName ).ShouldBeEquivalentTo( new[]
                     {
                         "CK.SqlServer.Setup.Model"
                     } );
                 // Adds the CK.SqlServer.Setup.Model.
                 zip.AddComponent( BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SqlServerSetupModel461Path ) ).Should().BeTrue();
-                zip.GetMissingRegistrations().Should().BeEmpty();
+                zip.SimpleMissingRegistrations.Should().BeEmpty();
             }
             string zipPathRev = TestHelper.GetCleanTestZipPath( "Reversed" );
             using( ZipRuntimeArchive zip = ZipRuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPathRev ) )

@@ -28,7 +28,7 @@ namespace CKSetup
             CheckValid();
         }
 
-        public Component( XElement e, Func<ComponentRef,Component> find )
+        public Component( XElement e )
         {
             _ref = new ComponentRef( e );
             ComponentKind = e.AttributeEnum( DBXmlNames.Kind, ComponentKind.None );

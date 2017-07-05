@@ -23,7 +23,7 @@ namespace CKSetup
         /// </summary>
         /// <param name="c">The new Component.</param>
         /// <param name="f">Origin folder.</param>
-        void ComponentAdded( Component c, BinFolder f );
+        void ComponentLocallyAdded( Component c, BinFolder f );
 
         /// <summary>
         /// Called whenever a Component has been removed.

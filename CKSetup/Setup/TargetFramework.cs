@@ -9,45 +9,22 @@ namespace CKSetup
     public enum TargetFramework
     {
         None = 0,
-        NetFramework = 10000,
-        Net451 = 10451,
-        Net46 = 10460,
-        Net461 = 10461,
-        Net462 = 10462,
-        NetStandard = 1,
-        NetStandard10 = 100,
-        NetStandard12 = 120,
-        NetStandard13 = 130,
-        NetStandard14 = 140,
-        NetStandard15 = 150,
-        NetStandard16 = 160
+        Net451 = TargetRuntime.NetFramework461 | 451,
+        Net46 = TargetRuntime.NetFramework461 | 460,
+        Net461 = TargetRuntime.NetFramework461 | 461,
+        Net462 = TargetRuntime.NetFramework462 | 462,
+        Net47 = TargetRuntime.NetFramework47 | 470,
+        NetStandard10 = 10,
+        NetStandard11 = 11,
+        NetStandard12 = 12,
+        NetStandard13 = 13,
+        NetStandard14 = 14,
+        NetStandard15 = 15,
+        NetStandard16 = 16,
+        NetStandard20 = 20,
+        NetCoreApp10 = TargetRuntime.NetCoreApp10,
+        NetCoreApp11 = TargetRuntime.NetCoreApp11,
+        NetCoreApp20 = TargetRuntime.NetCoreApp20,
     }
 
-    public static class TargetFrameworkExtension
-    {
-        static public TargetFramework BestAmong( this TargetFramework @this, IEnumerable<TargetFramework> frameworks )
-        {
-            var min = @this >= TargetFramework.NetFramework ? TargetFramework.NetFramework : TargetFramework.NetStandard;
-            return frameworks.Where( f => f >= min ).OrderByDescending( f => f ).FirstOrDefault();
-        }
-
-        static public bool CanWorkWith( this TargetFramework @this, TargetFramework f )
-        {
-            return @this != TargetFramework.None && f != TargetFramework.None
-                    && (@this < TargetFramework.NetFramework) == (f <= TargetFramework.NetFramework);
-        }
-
-        static public TargetFramework TryParse( string rawTargetFramework )
-        {
-            switch( rawTargetFramework )
-            {
-                case ".NETFramework,Version=v4.6.1": return TargetFramework.Net461;
-                case ".NETStandard,Version=v1.3": return TargetFramework.NetStandard13;
-                case ".NETStandard,Version=v1.6": return TargetFramework.NetStandard16;
-            }
-            return TargetFramework.None;
-        }
-
-
-    }
 }
