@@ -429,7 +429,7 @@ namespace CKSetup
                     m.Error().Send( $"Unable to determine at least one common allowed runtime." );
                     return TargetRuntime.None;
                 }
-                var theOnlyOne = runtimes.SingleOrDefault();
+                var theOnlyOne = runtimes.Count() == 1 ? runtimes.First() : TargetRuntime.None;
                 if( theOnlyOne != TargetRuntime.None )
                 {
                     m.CloseGroup( $"Single selected runtime: {theOnlyOne}." );
