@@ -183,24 +183,29 @@ namespace CKSetup
         /// <param name="output">Output stream.</param>
         /// <param name="cancellation">Optional cancellation token.</param>
         public async Task Export(
-            Func<Component, bool> filter,
+            Func<Component, ComponentExportType> filter,
             Func<ComponentRef, string, Stream, CancellationToken, Task> fileWriter,
             Stream output,
             CancellationToken cancellation = default( CancellationToken ) )
         {
             CKBinaryWriter writer = new CKBinaryWriter( output );
             writer.WriteNonNegativeSmallInt32( 0 );
-            foreach( var c in Components.Where( filter ) )
+            foreach( var c in Components )
             {
-                writer.Write( true );
+                var type = filter( c );
+                if( type == ComponentExportType.None ) continue;
+                writer.Write( (byte)type );
                 writer.Write( c.ToXml().ToString( SaveOptions.DisableFormatting ) );
-                foreach( var f in c.Files )
+                if( type == ComponentExportType.DescriptionAndFiles )
                 {
-                    await fileWriter( c.GetRef(), f, output, cancellation );
-                    cancellation.ThrowIfCancellationRequested();
+                    foreach( var f in c.Files )
+                    {
+                        await fileWriter( c.GetRef(), f, output, cancellation );
+                        cancellation.ThrowIfCancellationRequested();
+                    }
                 }
             }
-            writer.Write( false );
+            writer.Write( (byte)ComponentExportType.None );
         }
 
         /// <summary>
@@ -225,25 +230,33 @@ namespace CKSetup
                     CKBinaryReader reader = new CKBinaryReader( input );
                     var v = reader.ReadNonNegativeSmallInt32();
                     monitor.Debug().Send( $"Stream version: {v}" );
-                    while( reader.ReadBoolean() )
+                    ComponentExportType type;
+                    while( (type = (ComponentExportType)reader.ReadByte()) != ComponentExportType.None )
                     {
                         var newC = new Component( XElement.Parse( reader.ReadString() ) );
-                        bool skip = Find( newC.GetRef() ) != null;
-                        if( skip )
+                        if( type == ComponentExportType.DescriptionAndFiles )
                         {
-                            monitor.Trace().Send( $"Skipping '{newC}' since it already exists." );
-                        }
-                        else
-                        {
-                            monitor.Trace().Send( $"Importing Component '{newC}' ({newC.Files.Count} files)." );
-                        }
-                        foreach( var f in newC.Files )
-                        {
-                            await fileReader( newC.GetRef(), f, skip, input, cancellation );
-                            cancellation.ThrowIfCancellationRequested();
+                            bool skip = Find( newC.GetRef() ) != null;
+                            if( skip )
+                            {
+                                monitor.Trace().Send( $"Skipping '{newC}' since it already exists." );
+                            }
+                            else
+                            {
+                                monitor.Trace().Send( $"Importing Component '{newC}' ({newC.Files.Count} files)." );
+                            }
+                            foreach( var f in newC.Files )
+                            {
+                                await fileReader( newC.GetRef(), f, skip, input, cancellation );
+                                cancellation.ThrowIfCancellationRequested();
+                            }
                         }
                         currentDb = DoAdd( monitor, newC );
                     }
+                }
+                catch( OperationCanceledException )
+                {
+                    throw;
                 }
                 catch( Exception ex )
                 {

@@ -44,9 +44,9 @@ namespace CK.Core
         /// <param name="resources">Resources stream when building.</param>
         protected StObjContextRoot( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, Type[] allTypes, Stream resources )
         {
-            if( monitor == null ) throw new ArgumentNullException( "monitor" );
-            if( runtimeBuilder == null ) throw new ArgumentNullException( "runtimeBuilder" );
-            if( allTypes == null ) throw new ArgumentNullException( "allTypes" );
+            if( monitor == null ) throw new ArgumentNullException( nameof(monitor) );
+            if( runtimeBuilder == null ) throw new ArgumentNullException( nameof(runtimeBuilder) );
+            if( allTypes == null ) throw new ArgumentNullException( nameof(allTypes) );
             using (monitor.OpenInfo().Send($"Loading {allTypes.Length} types."))
             {
                 Logger = monitor;
