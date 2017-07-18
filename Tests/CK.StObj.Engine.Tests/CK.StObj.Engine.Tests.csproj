@@ -11,9 +11,8 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
-    <PackageReference Include="NUnit" Version="[2.6.4]" />
     <Reference Include="System" />
-    <Reference Include="Microsoft.CSharp" />
+    <PackageReference Include="NUnit" Version="[2.6.4]" />
   </ItemGroup>
 
 </Project>

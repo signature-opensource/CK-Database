@@ -50,23 +50,26 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CK.ActivityMonitor, Version=7.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.ActivityMonitor.7.0.1\lib\net451\CK.ActivityMonitor.dll</HintPath>
+    <Reference Include="CK.ActivityMonitor, Version=8.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\packages\CK.ActivityMonitor.8.0.0\lib\net451\CK.ActivityMonitor.dll</HintPath>
     </Reference>
-    <Reference Include="CK.ActivityMonitor.StandardSender, Version=7.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.ActivityMonitor.StandardSender.7.0.1\lib\net451\CK.ActivityMonitor.StandardSender.dll</HintPath>
+    <Reference Include="CK.ActivityMonitor.SimpleSender, Version=8.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\packages\CK.ActivityMonitor.SimpleSender.8.0.0\lib\net451\CK.ActivityMonitor.SimpleSender.dll</HintPath>
+    </Reference>
+    <Reference Include="CK.ActivityMonitor.StandardSender, Version=8.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\packages\CK.ActivityMonitor.StandardSender.8.0.0\lib\net451\CK.ActivityMonitor.StandardSender.dll</HintPath>
     </Reference>
     <Reference Include="CK.CodeGen, Version=0.1.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
       <HintPath>..\packages\CK.CodeGen.0.1.0-a15\lib\net461\CK.CodeGen.dll</HintPath>
     </Reference>
-    <Reference Include="CK.Core, Version=7.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.Core.7.0.0\lib\net451\CK.Core.dll</HintPath>
+    <Reference Include="CK.Core, Version=7.0.1.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\packages\CK.Core.7.0.1\lib\net451\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="CK.Reflection, Version=5.1.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
       <HintPath>..\packages\CK.Reflection.5.1.0\lib\net451\CK.Reflection.dll</HintPath>
     </Reference>
-    <Reference Include="CK.Setup.Dependency, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.Setup.Dependency.6.0.0\lib\net451\CK.Setup.Dependency.dll</HintPath>
+    <Reference Include="CK.Setup.Dependency, Version=6.0.1.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\packages\CK.Setup.Dependency.6.0.1\lib\net461\CK.Setup.Dependency.dll</HintPath>
     </Reference>
     <Reference Include="CK.Setupable.Engine">
       <HintPath>Imports\CK.Setupable.Engine.dll</HintPath>
@@ -80,8 +83,8 @@
     <Reference Include="CK.SqlServer.Parser, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
       <HintPath>..\packages\CK.SqlServer.Parser.6.0.0-b04\lib\net451\CK.SqlServer.Parser.dll</HintPath>
     </Reference>
-    <Reference Include="CK.SqlServer.Parser.Model, Version=3.2.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.SqlServer.Parser.Model.3.2.4\lib\net451\CK.SqlServer.Parser.Model.dll</HintPath>
+    <Reference Include="CK.SqlServer.Parser.Model, Version=3.2.5.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\packages\CK.SqlServer.Parser.Model.3.2.5\lib\net451\CK.SqlServer.Parser.Model.dll</HintPath>
     </Reference>
     <Reference Include="CK.SqlServer.Setup.Engine">
       <HintPath>Imports\CK.SqlServer.Setup.Engine.dll</HintPath>
@@ -104,14 +107,14 @@
     <Reference Include="CK.StObj.Runtime">
       <HintPath>Imports\CK.StObj.Runtime.dll</HintPath>
     </Reference>
-    <Reference Include="CK.Text, Version=5.2.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.Text.5.2.0\lib\net451\CK.Text.dll</HintPath>
+    <Reference Include="CK.Text, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\packages\CK.Text.6.0.0\lib\net451\CK.Text.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.CodeAnalysis, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.CodeAnalysis.Common.2.1.0\lib\netstandard1.3\Microsoft.CodeAnalysis.dll</HintPath>
+    <Reference Include="Microsoft.CodeAnalysis, Version=2.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.CodeAnalysis.Common.2.3.0\lib\netstandard1.3\Microsoft.CodeAnalysis.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.CodeAnalysis.CSharp, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.CodeAnalysis.CSharp.2.1.0\lib\netstandard1.3\Microsoft.CodeAnalysis.CSharp.dll</HintPath>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.CodeAnalysis.CSharp.2.3.0\lib\netstandard1.3\Microsoft.CodeAnalysis.CSharp.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Extensions.CommandLineUtils, Version=1.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.CommandLineUtils.1.1.1\lib\net451\Microsoft.Extensions.CommandLineUtils.dll</HintPath>
@@ -227,8 +230,8 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\SimpleGitVersionTask.0.22.0-r\build\SimpleGitVersionTask.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SimpleGitVersionTask.0.22.0-r\build\SimpleGitVersionTask.targets'))" />
     <Error Condition="!Exists('..\packages\Fody.2.0.9\build\netstandard1.4\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.2.0.9\build\netstandard1.4\Fody.targets'))" />
+    <Error Condition="!Exists('..\packages\SimpleGitVersionTask.0.28.0\build\SimpleGitVersionTask.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SimpleGitVersionTask.0.28.0\build\SimpleGitVersionTask.targets'))" />
   </Target>
   <PropertyGroup>
     <PreBuildEvent>xcopy /y $(SolutionDir)CK.SqlServer.Setup.Engine\bin\$(ConfigurationName)\net461\CK.StObj.*.dll $(ProjectDir)Imports\
@@ -236,8 +239,8 @@ xcopy /y $(SolutionDir)CK.SqlServer.Setup.Engine\bin\$(ConfigurationName)\net461
 xcopy /y $(SolutionDir)CK.SqlServer.Setup.Engine\bin\$(ConfigurationName)\net461\CK.Setupable.*.dll $(ProjectDir)Imports\
 </PreBuildEvent>
   </PropertyGroup>
-  <Import Project="..\packages\SimpleGitVersionTask.0.22.0-r\build\SimpleGitVersionTask.targets" Condition="Exists('..\packages\SimpleGitVersionTask.0.22.0-r\build\SimpleGitVersionTask.targets')" />
   <Import Project="..\packages\Fody.2.0.9\build\netstandard1.4\Fody.targets" Condition="Exists('..\packages\Fody.2.0.9\build\netstandard1.4\Fody.targets')" />
+  <Import Project="..\packages\SimpleGitVersionTask.0.28.0\build\SimpleGitVersionTask.targets" Condition="Exists('..\packages\SimpleGitVersionTask.0.28.0\build\SimpleGitVersionTask.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

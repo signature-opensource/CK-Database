@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" Version="4.19.2" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
+    <PackageReference Include="NUnit" Version="[2.6.4]" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\CKSetup\CKSetup.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\CK.DB.Tests.NUnit\AppSettings.cs">
+      <Link>Includes\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <Visible>true</Visible>
+    </Compile>
+  </ItemGroup>
+
+
+</Project>

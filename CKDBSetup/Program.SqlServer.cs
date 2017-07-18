@@ -13,6 +13,7 @@ namespace CKDBSetup
         {
             return ExecXpInstanceRegread( m, c, "HKEY_LOCAL_MACHINE", @"Software\Microsoft\MSSQLServer\MSSQLServer", "BackupDirectory" );
         }
+
         private static string GetDefaultServerDataPath( IActivityMonitor m, SqlConnection c )
         {
             using( SqlCommand cmd = new SqlCommand( "select serverproperty('InstanceDefaultDataPath')", c ) )

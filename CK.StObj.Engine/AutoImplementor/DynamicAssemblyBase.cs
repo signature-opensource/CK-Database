@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CK.CodeGen;
+using Microsoft.CodeAnalysis;
 
 namespace CK.Core
 {
@@ -39,7 +40,20 @@ namespace CK.Core
             _memory = new Dictionary<object, object>();
             _postActions = new List<Action<IDynamicAssembly>>();
             SourceModules = new List<ICodeGeneratorModule>();
+            SourceModules.Add( new ExcludeFromSetupModule() );
             SourceBuilder = new NamespaceBuilder("CK._g");
+        }
+
+        class ExcludeFromSetupModule : ICodeGeneratorModule
+        {
+            public IEnumerable<Assembly> RequiredAssemblies => Enumerable.Empty<Assembly>();
+
+            public void AppendSource( StringBuilder b )
+            {
+                b.AppendLine( "[assembly:CK.Setup.ExcludeFromSetup()]" );
+            }
+
+            public SyntaxTree PostProcess( SyntaxTree t ) => t;
         }
 
         protected AssemblyName AssemblyName { get; }

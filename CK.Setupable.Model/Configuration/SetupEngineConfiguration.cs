@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using CK.Core;
-using CK.Setup;
+using System.Xml.Linq;
+using System.Linq;
+using System.Diagnostics;
 
 namespace CK.Setup
 {
@@ -9,7 +11,6 @@ namespace CK.Setup
     /// Fundamental configuration objects. It holds the configuration related to StObj (<see cref="P:StObjEngineConfiguration"/>)
     /// and configuration for the <see cref="Aspects"/> that are needed.
     /// </summary>
-    [Serializable]
     public class SetupEngineConfiguration : IStObjBuilderConfiguration
     {
         readonly StObjEngineConfiguration _stObjConfig;
@@ -22,6 +23,78 @@ namespace CK.Setup
         {
             _stObjConfig = new StObjEngineConfiguration();
             _aspects = new List<ISetupEngineAspectConfiguration>();
+        }
+
+        /// <summary>
+        /// The current Xml schema version.
+        /// </summary>
+        public const int CurrentXmlVersion = 1;
+
+        /// <summary>
+        /// Defines Xml centralized names.
+        /// </summary>
+        public static class XmlNames
+        {
+            static public readonly XName Version = CK.Core.StObjEngineConfiguration.xVersion;
+            static public readonly XName StObjEngineConfiguration = XNamespace.None + "StObjEngineConfiguration";
+            static public readonly XName Aspect = XNamespace.None + "Aspect";
+            static public readonly XName Type = XNamespace.None + "Type";
+            static public readonly XName TraceDependencySorterInput = XNamespace.None + "TraceDependencySorterInput";
+            static public readonly XName TraceDependencySorterOutput = XNamespace.None + "TraceDependencySorterOutput";
+        }
+
+        /// <summary>
+        /// Reads a <see cref="XElement"/> content (typically created by <see cref="SerializeXml(XElement, Func{Type, string})"/>).
+        /// </summary>
+        /// <param name="e">The element to read.</param>
+        /// <param name="typeResolver">
+        /// Resolver for types.
+        /// Defaults to a function that calls <see cref="SimpleTypeFinder.WeakResolver"/>.
+        /// </param>
+        public SetupEngineConfiguration( XElement e, Func<string,Type> typeResolver = null )
+        {
+            if( typeResolver == null )
+            {
+                typeResolver = aqn => SimpleTypeFinder.WeakResolver( aqn, true );
+            }
+            int? nv = (int?)e.Attribute( XmlNames.Version );
+            int v = nv.HasValue ? nv.Value : CurrentXmlVersion;
+
+            _stObjConfig = new StObjEngineConfiguration( e.Element( XmlNames.StObjEngineConfiguration ) );
+            _aspects = new List<ISetupEngineAspectConfiguration>();
+            foreach( var a in e.Elements( XmlNames.Aspect ) )
+            {
+                string type = (string)a.AttributeRequired( XmlNames.Type );
+                Type tAspect = SimpleTypeFinder.WeakResolver( type, true );
+                ISetupEngineAspectConfiguration aspect = (ISetupEngineAspectConfiguration)Activator.CreateInstance( tAspect, a );
+                _aspects.Add( aspect );
+            }
+            TraceDependencySorterInput = string.Equals( e.Element( XmlNames.TraceDependencySorterInput )?.Value, "true", StringComparison.OrdinalIgnoreCase );
+            TraceDependencySorterOutput = string.Equals( e.Element( XmlNames.TraceDependencySorterOutput )?.Value, "true", StringComparison.OrdinalIgnoreCase );
+        }
+
+        /// <summary>
+        /// Serializes its content in the provided <see cref="XElement"/> and returns it.
+        /// The <see cref="SetupEngineConfiguration(XElement)"/> constructor will be able to read this element back.
+        /// </summary>
+        /// <param name="e">The element to populate.</param>
+        /// <param name="typeNameWriter">
+        /// Writer for aspects type names. 
+        /// Defaults to a function that returns <see cref="Type.AssemblyQualifiedName"/>.
+        /// </param>
+        /// <returns>The <paramref name="e"/> element.</returns>
+        public XElement SerializeXml( XElement e, Func<Type,string> typeNameWriter = null )
+        {
+            if( typeNameWriter == null )
+            {
+                typeNameWriter = t => t.AssemblyQualifiedName;
+            }
+            e.Add( new XAttribute( XmlNames.Version, CurrentXmlVersion ),
+                   _stObjConfig.SerializeXml( new XElement( XmlNames.StObjEngineConfiguration ) ),
+                   _aspects.Select( a => a.SerializeXml( new XElement( XmlNames.Aspect, new XAttribute( XmlNames.Type, typeNameWriter( a.GetType() ) ) ) ) ),
+                   TraceDependencySorterInput ? new XElement( XmlNames.TraceDependencySorterInput, "true" ) : null,
+                   TraceDependencySorterOutput ? new XElement( XmlNames.TraceDependencySorterOutput, "true" ) : null );
+            return e;
         }
 
         /// <summary>

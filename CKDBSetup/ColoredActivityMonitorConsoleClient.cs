@@ -19,7 +19,7 @@ namespace CKDBSetup
         readonly bool _noColor;
 
         /// <summary>
-        /// Creates a new instance of <see cref="StupidFlatActivityMonitorConsoleClient"/> with a filter initially set.
+        /// Creates a new instance of <see cref="ColoredActivityMonitorConsoleClient"/> with a filter initially set.
         /// </summary>
         /// <param name="filter"><see cref="LogFilter"/> to set on this monitor</param>
         /// <param name="useErrorStream">When true, the client output will be sent to the error stream (stderr). Otherwise, output will be sent to the standard stream (stdout).</param>
@@ -31,15 +31,10 @@ namespace CKDBSetup
             _noColor = noColor;
         }
 
-        private static Action<string> GetWriter( bool useErrorStream )
+        static Action<string> GetWriter( bool useErrorStream )
         {
-            if( useErrorStream )
-            {
-                return ( s ) => Console.Error.Write( s );
-            } else
-            {
-                return ( s ) => Console.Out.Write( s );
-            }
+            if( useErrorStream ) return s => Console.Error.Write( s );
+            return s => Console.Out.Write( s );
         }
 
         public ColoredActivityMonitorConsoleClient( bool useErrorOutput = false, bool noColor = false )

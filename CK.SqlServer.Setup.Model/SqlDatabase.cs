@@ -1,4 +1,4 @@
-#region Proprietary License
+﻿#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.SqlServer.Setup.Model\SqlDatabase.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -21,7 +21,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Default database name is "db": this is the name of the <see cref="SqlDefaultDatabase"/> type.
         /// </summary>
-        public const string DefaultDatabaseName = "db";
+        public const string DefaultDatabaseName = SqlSetupAspectConfiguration.DefaultDatabaseName;
 
         /// <summary>
         /// Default schema name is "CK": <see cref="SqlDefaultDatabase"/> registers it.

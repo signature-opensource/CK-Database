@@ -56,7 +56,7 @@ namespace CK.SqlServer.Setup
             _databases.Add( SqlDatabase.DefaultDatabaseName, _config.DefaultDatabaseConnectionString, autoCreate:true );
             foreach( var db in _config.Databases )
             {
-                _databases.Add( db.DatabaseName, db.ConnectionString, db.AutoCreate );
+                _databases.Add( db.LogicalDatabaseName, db.ConnectionString, db.AutoCreate );
             }
         }
 
