@@ -254,11 +254,7 @@ namespace CKSetup
                         currentDb = DoAdd( monitor, newC );
                     }
                 }
-                catch( OperationCanceledException )
-                {
-                    throw;
-                }
-                catch( Exception ex )
+                catch( Exception ex ) when (!(ex is OperationCanceledException))
                 {
                     monitor.Error().Send( ex );
                     return null;
