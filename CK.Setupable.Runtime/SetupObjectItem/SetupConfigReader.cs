@@ -53,7 +53,10 @@ namespace CK.Setup
             if( m.MatchChar( '{' ) ) ParseContent( m );
             if( m.IsError )
             {
-                monitor.Error().Send( m.ErrorMessage );
+                using( monitor.OpenError().Send( "Invalid SetupConfig (expected JSON syntax): " + m.ErrorMessage ) )
+                {
+                    monitor.Trace().Send( text );
+                }
                 return false;
             }
             return true;

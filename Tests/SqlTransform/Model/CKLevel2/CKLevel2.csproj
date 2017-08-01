@@ -8,7 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="**\*.sql;**\*.tql" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
+    <EmbeddedResource Include="IntermediateTransformation\Res\Package3%28vBase%29.tql" />
+    <EmbeddedResource Include="IntermediateTransformation\Res\vDependent.sql" />
+    <EmbeddedResource Include="IntermediateTransformation\Res\vBase.sql" />
+    <EmbeddedResource Include="Res\[Replace]sSimpleReplaceTest.sql" />
+    <EmbeddedResource Include="IntermediateTransformation\Res\Package2%28vBase%29.tql" />
+    <EmbeddedResource Include="Res\sSimpleTransformTest.tql" />
   </ItemGroup>
 
   <ItemGroup>

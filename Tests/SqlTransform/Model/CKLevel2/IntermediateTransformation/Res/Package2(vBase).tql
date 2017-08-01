@@ -1,0 +1,6 @@
+﻿-- SetupConfig: {}
+create transformer on ITrans.vBase
+as
+begin
+    add column name;
+end
