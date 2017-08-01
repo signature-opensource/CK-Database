@@ -122,7 +122,7 @@ namespace CK.Core
             {
                 if( _map == null )
                 {
-                    Assert.That(RunDBSetup());
+                    Assert.That( RunDBSetup() );
                 }
                 return _map;
             }
@@ -199,8 +199,8 @@ namespace CK.Core
                     Config.StObjEngineConfiguration.TraceDependencySorterOutput = traceStObjGraphOrdering;
                     Config.TraceDependencySorterInput = traceSetupGraphOrdering;
                     Config.TraceDependencySorterOutput = traceSetupGraphOrdering;
-                    bool success = StObjContextRoot.Build(Config, null, TestHelper.Monitor);
-                    if(success)
+                    bool success = StObjContextRoot.Build( Config, null, TestHelper.Monitor );
+                    if( success )
                     {
                         success = LoadStObjMapFromExistingGeneratedAssembly() != null;
                     }
@@ -397,13 +397,17 @@ namespace CK.Core
         public static string DynamicAssemblyName => AppSettings.Default["DynamicAssemblyName"];
 
         /// <summary>
-        /// Gets the build configuration (Debug/Release).
+        /// Gets or sets the build configuration (Debug/Release).
+        /// Default to the this CK.DB.Tests.NUnit configuration build.
         /// </summary>
         public static string BuildConfiguration
         {
             get
             {
-                if (_solutionFolder == null) InitalizePaths();
+                if( _solutionFolder == null )
+                {
+                    InitalizePaths();
+                }
                 return _buildConfiguration;
             }
         }
@@ -412,7 +416,7 @@ namespace CK.Core
         {
             get
             {
-                if (_solutionFolder == null) InitalizePaths();
+                if( _solutionFolder == null ) InitalizePaths();
                 return _currentTestProjectName;
             }
         }
@@ -460,29 +464,29 @@ namespace CK.Core
             _buildConfiguration = "Release";
 #endif
             string p = _binFolder = AppContext.BaseDirectory;
-            string name;
-            while( (name = Path.GetFileName(p)) != _buildConfiguration )
+            string altConfDir = _buildConfiguration == "Release" ? "Debug" : "Release";
+            string buildConfDir = FindAbove( p, _buildConfiguration ) ?? FindAbove( p, altConfDir );
+            if( buildConfDir == null )
             {
-                p = Path.GetDirectoryName(p);
-                if( p == null ) throw new InvalidOperationException($"Unable to find parent folder named '{_buildConfiguration}' above '{_binFolder}'.");
+                throw new InvalidOperationException( $"Unable to find parent folder named '{_buildConfiguration}' or '{altConfDir}' above '{_binFolder}'. Please explicitly set TestHelper.BuildConfiguration property." );
             }
-            p = Path.GetDirectoryName(p);
-            if( Path.GetFileName(p) != "bin" )
+            p = Path.GetDirectoryName( buildConfDir );
+            if( Path.GetFileName( p ) != "bin" )
             {
-                throw new InvalidOperationException($"Folder '{_buildConfiguration}' MUST be in 'bin' folder (above '{_binFolder}').");
+                throw new InvalidOperationException( $"Folder '{_buildConfiguration}' MUST be in 'bin' folder (above '{_binFolder}')." );
             }
             _projectFolder = p = Path.GetDirectoryName( p );
-            _currentTestProjectName = Path.GetFileName(p);
+            _currentTestProjectName = Path.GetFileName( p );
             Assembly entry = Assembly.GetEntryAssembly();
             if( entry != null )
             {
                 string assemblyName = entry.GetName().Name;
-                if (_currentTestProjectName != assemblyName)
+                if( _currentTestProjectName != assemblyName )
                 {
-                    throw new InvalidOperationException($"Current test project assembly is '{assemblyName}' but folder is '{_currentTestProjectName}' (above '{_buildConfiguration}' in '{_binFolder}').");
+                    throw new InvalidOperationException( $"Current test project assembly is '{assemblyName}' but folder is '{_currentTestProjectName}' (above '{_buildConfiguration}' in '{_binFolder}')." );
                 }
             }
-            p = Path.GetDirectoryName(p);
+            p = Path.GetDirectoryName( p );
 
             string testsFolder = null;
             bool hasGit = false;
@@ -499,6 +503,15 @@ namespace CK.Core
             }
             _solutionFolder = Path.GetDirectoryName( testsFolder );
             _logFolder = Path.Combine( testsFolder, "Logs" );
+        }
+
+        static string FindAbove( string path, string folderName )
+        {
+            while( path != null && Path.GetFileName( path ) != folderName )
+            {
+                path = Path.GetDirectoryName( path );
+            }
+            return path;
         }
 
     }
