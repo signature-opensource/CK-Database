@@ -1,4 +1,4 @@
-#region Proprietary License
+﻿#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.SqlServer.Setup.Runtime\SqlObject\SqlObjectSetupDriver.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -13,6 +13,7 @@ using CK.Setup;
 using System.Text;
 using CK.Text;
 using System.Diagnostics;
+using CK.SqlServer.Parser;
 
 namespace CK.SqlServer.Setup
 {
@@ -40,48 +41,58 @@ namespace CK.SqlServer.Setup
         protected override bool Install( bool beforeHandlers )
         {
             if( beforeHandlers ) return true;
-
-            if( !_aspects.GlobalResolution ) return LegacyInstall();
-
-            Debug.Assert( Item.TransformTarget == null || Item.TransformSource == null, "Both can not be set on the same item." );
-
             return LegacyInstall();
+        }
 
+        internal bool OnTargetTransformed( SqlTransformerItemDriver transformerDriver, ISqlServerObject transformed )
+        {
+            Debug.Assert( Item.TransformTarget != null, "We are a transformation source." );
+            // Updates the target with the current transformed object.
+            Item.TransformTarget.SqlObject = transformed;
+            // Systematically updates the object.
+            StringBuilder b = new StringBuilder();
+            Item.TransformTarget.WriteCreate( b, alreadyExists: true );
+            if( transformerDriver.Item.IsLastTransformer )
+            {
+                b.AppendLine()
+                    .Append( $"-- This has been transformed by " )
+                    .AppendStrings( Item.Transformers.Select( t => (t.TransformTarget ?? t).FullName ) )
+                    .AppendLine();
+            }
+            return ExpandAndExecuteScript( b.ToString() );
         }
 
         bool LegacyInstall()
         {
-            ISqlManagerBase m = DatabaseDriver.SqlManager;
-
-            string s;
-            StringBuilder b = new StringBuilder();
-
-            Item.WriteDrop( b );
             Debug.Assert( Item.TransformTarget == null || Item.TransformSource == null, "Both can not be set on the same item." );
+
+            // A target item is not installed: its last transformer did the job.
+            if( Item.TransformSource != null ) return true;
+
+            StringBuilder b = new StringBuilder();
+            // If this is the first occurrence of a transformed item OR the only one (no transformation).
+            Item.WriteSafeDrop( b );
+            if( !DatabaseDriver.SqlManager.ExecuteOneScript( b.ToString(), Engine.Monitor ) ) return false;
+            b.Clear();
             if( Item.TransformTarget != null )
             {
                 b.Append( $"-- This will be transformed by " )
                     .AppendStrings( Item.Transformers.Select( t => (t.TransformTarget ?? t).FullName ) )
                     .AppendLine();
             }
-            else if( Item.TransformSource != null )
-            {
-                b.Append( $"-- This has been transformed by " )
-                    .AppendStrings( Item.TransformSource.Transformers.Select( t => (t.TransformTarget ?? t).FullName ) )
-                    .AppendLine();
-            }
-            s = b.ToString();
-            if( !m.ExecuteOneScript( s, Engine.Monitor ) ) return false;
-            b.Clear();
+            Item.WriteCreate( b, alreadyExists: false );
+            return ExpandAndExecuteScript( b.ToString() );
+        }
 
-            Item.WriteCreate( b );
-            s = b.ToString();
-
+        private bool ExpandAndExecuteScript( string s )
+        {
             var tagHandler = new SimpleScriptTagHandler( s );
             if( !tagHandler.Expand( Engine.Monitor, true ) ) return false;
             var scripts = tagHandler.SplitScript();
-            if( !m.ExecuteScripts( scripts.Select( c => c.Body ), Engine.Monitor ) ) return false;
-
+            if( !DatabaseDriver.SqlManager.ExecuteScripts( scripts.Select( c => c.Body ), Engine.Monitor ) )
+            {
+                return false;
+            }
             return true;
         }
     }

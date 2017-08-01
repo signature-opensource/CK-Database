@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
@@ -44,6 +44,14 @@ namespace CK.SqlServer.Setup
             set { _source = (SqlBaseItem)value; }
         }
 
+        /// <summary>
+        /// Gets whether this is the last transformer of the <see cref="Source"/>.
+        /// </summary>
+        public bool IsLastTransformer => Source.Transformers[Source.Transformers.Count - 1] == this; 
+
+        /// <summary>
+        /// Gets the target item (the final #transform item).
+        /// </summary>
         public SqlBaseItem Target => _target;
 
         IMutableSetupBaseItem ISetupObjectTransformerItem.Target

@@ -44,13 +44,18 @@ namespace CK.SqlServer.Setup
             set { base.SqlObject = value; }
         }
 
+        /// <summary>
+        /// Gets the transform target item if this item has associated <see cref="SqlBaseItem.Transformers">Transformers</see>.
+        /// This object is created as a clone of this object by the first call 
+        /// to this <see cref="SetupObjectItem.AddTransformer"/> method.
+        /// </summary>
         public new SqlObjectItem TransformTarget => (SqlObjectItem)base.TransformTarget;
 
         /// <summary>
-        /// Writes the drop instruction.
+        /// Writes the drop instruction protected by a if object_id(...) is not null.
         /// </summary>
         /// <param name="b">The target <see cref="StringBuilder"/>.</param>
-        public void WriteDrop( StringBuilder b )
+        public void WriteSafeDrop( StringBuilder b )
         {
             b.Append( "if OBJECT_ID('" )
                 .Append( SqlObject.SchemaName )
@@ -63,18 +68,28 @@ namespace CK.SqlServer.Setup
         }
 
         /// <summary>
-        /// Writes the whole object.
+        /// Writes the creation or alteration of the object.
         /// </summary>
         /// <param name="b">The target <see cref="StringBuilder"/>.</param>
-        public void WriteCreate( StringBuilder b )
+        /// <param name="alreadyExists">
+        /// True if the object is known to exist (an alter should be emitted if possible).
+        /// </param>
+        public void WriteCreate( StringBuilder b, bool alreadyExists )
         {
             var alterOrCreate = SqlObject as ISqlServerAlterOrCreateStatement;
             if( alterOrCreate != null )
             {
-                if( alterOrCreate.IsAlterKeyword ) alterOrCreate = alterOrCreate.ToggleAlterKeyword();
+                if( alreadyExists != alterOrCreate.IsAlterKeyword )
+                {
+                    alterOrCreate = alterOrCreate.ToggleAlterKeyword();
+                }
                 alterOrCreate.Write( b );
             }
-            else SqlObject.Write( b );
+            else
+            {
+                if( alreadyExists ) WriteSafeDrop( b );
+                SqlObject.Write( b );
+            }
         }
 
         /// <summary>

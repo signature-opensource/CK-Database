@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -36,12 +36,27 @@ namespace CK.SqlServer.Setup
             _sqlObject = parsed;
         }
 
+        /// <summary>
+        /// Gets the transform target item if this item has associated <see cref="Transformers"/>.
+        /// This object is created as a clone of this object by the first call 
+        /// to this <see cref="SetupObjectItem.AddTransformer"/> method.
+        /// </summary>
         public new SqlBaseItem TransformTarget => (SqlBaseItem)base.TransformTarget;
 
+        /// <summary>
+        /// Gets the source item if this item is a target, null otherwise.
+        /// </summary>
         public new SqlBaseItem TransformSource => (SqlBaseItem)base.TransformSource;
 
+        /// <summary>
+        /// Gets the transformers that have been registered with <see cref="SetupObjectItem.AddTransformer">AddTransformer</see>.
+        /// Never null (empty when no transformers have been added yet).
+        /// </summary>
         public new IReadOnlyList<SqlTransformerItem> Transformers => _transformers ?? (_transformers = CreateTypedTransformersWrapper<SqlTransformerItem>());
 
+        /// <summary>
+        /// Gets the <see cref="SqlContextLocName"/> name of this object.
+        /// </summary>
         public new SqlContextLocName ContextLocName => (SqlContextLocName)base.ContextLocName; 
 
         /// <summary>

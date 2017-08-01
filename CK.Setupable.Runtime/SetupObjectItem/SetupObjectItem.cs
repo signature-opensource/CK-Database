@@ -45,7 +45,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets the transform target item if this item has associated <see cref="Transformers"/>.
         /// This object is created as a clone of this object by the first call 
-        /// to this <see cref="AddTransformer"/> method.
+        /// to this <see cref="SetupObjectItem.AddTransformer"/> method.
         /// </summary>
         public SetupObjectItem TransformTarget => _transformTarget;
 
@@ -86,7 +86,7 @@ namespace CK.Setup
         /// <summary>
         /// Helper for specialized class that helps covariant interface implementation.
         /// </summary>
-        /// <typeparam name="T">The actual type of the trasformer to expose.</typeparam>
+        /// <typeparam name="T">The actual type of the transformer to expose.</typeparam>
         /// <returns>A wrapper around <see cref="Transformers"/> that downcasts its items.</returns>
         protected IReadOnlyList<T> CreateTypedTransformersWrapper<T>() => new DownCastList<T>( this ); 
 

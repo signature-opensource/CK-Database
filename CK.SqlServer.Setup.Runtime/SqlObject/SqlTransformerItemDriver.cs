@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
@@ -38,14 +38,17 @@ namespace CK.SqlServer.Setup
                 }
                 return false;
             }
-            Item.Target.SqlObject = transformed;
-            // If this is not the last transformer, we log the result of this intermediate transformation.
-            if( Item != Item.Source.Transformers[Item.Source.Transformers.Count-1] )
+            var objectDriver = Engine.Drivers[Item.Source] as SqlObjectItemDriver;
+            if( objectDriver != null )
             {
-                using( Engine.Monitor.OpenTrace().Send( "Intermediate transform result:" ) )
-                {
-                    Engine.Monitor.Trace().Send( Item.Target.SqlObject.ToFullString() );
-                }
+                return objectDriver.OnTargetTransformed( this, (ISqlServerObject)transformed );
+            }
+            // We are transforming... a transformer!
+            Debug.Assert( Engine.Drivers[Item.Target] is SqlTransformerItemDriver );
+            Item.Target.SqlObject = transformed;
+            using( Engine.Monitor.OpenTrace().Send( "Transformation of the Transformer:" ) )
+            {
+                Engine.Monitor.Trace().Send( Item.Target.SqlObject.ToFullString() );
             }
             return true;
         }

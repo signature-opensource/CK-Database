@@ -26,7 +26,7 @@ namespace SqlTransform.Tests
                 Assert.That( idAndNames.FindIndex( kv => kv.Value == "tSystem" ) >= 0 );
                 var idNameAndTypes = p3.ReadViewBase( ctx );
                 Assert.That( idNameAndTypes.Count, Is.GreaterThan( 0 ) );
-                Assert.That( idNameAndTypes.FindIndex( t => t.Item2 == "tSystem" && t.Item3 == "U" ) >= 0 );
+                Assert.That( idNameAndTypes.FindIndex( t => t.Item2 == "tSystem" && t.Item3 == "USER_TABLE" ) >= 0 );
             }
         }
     }
