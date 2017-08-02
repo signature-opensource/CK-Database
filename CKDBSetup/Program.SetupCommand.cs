@@ -183,17 +183,23 @@ namespace CKDBSetup
             {
                 AssemblyName assemblyName = new AssemblyName(name);
                 string dllPath = Path.Combine( binPath, assemblyName.Name + ".dll" );
+                string exePath = Path.Combine( binPath, assemblyName.Name + ".exe" );
 
-                m.Trace().Send( $"Manually resolving assembly {assemblyName.Name} in: {dllPath}" );
+                m.Trace().Send( $"Manually resolving assembly {assemblyName.Name} in: {binPath}" );
 
                 if( File.Exists( dllPath ) )
                 {
                     // Don't use LoadFrom(), as it will fork into its own assembly load context.
                     return Assembly.LoadFile( dllPath );
                 }
+                else if( File.Exists( exePath ) )
+                {
+                    // Don't use LoadFrom(), as it will fork into its own assembly load context.
+                    return Assembly.LoadFile( exePath );
+                }
                 else
                 {
-                    m.Warn().Send( $"Failed to resolve assembly {assemblyName.Name} (File not found: {dllPath})" );
+                    m.Warn().Send( $"Failed to resolve assembly {assemblyName.Name} (File not found: {dllPath} or {exePath})" );
                     return null;
                 }
             }
