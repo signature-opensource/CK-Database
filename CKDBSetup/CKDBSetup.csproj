@@ -72,7 +72,7 @@
       <HintPath>..\packages\CK.Setup.Dependency.6.0.1\lib\net461\CK.Setup.Dependency.dll</HintPath>
     </Reference>
     <Reference Include="CK.Setupable.Engine">
-      <HintPath>Imports\CK.Setupable.Engine.dll</HintPath>
+      <HintPath>Imports\CK.Setupable.Engine.exe</HintPath>
     </Reference>
     <Reference Include="CK.Setupable.Model">
       <HintPath>Imports\CK.Setupable.Model.dll</HintPath>
