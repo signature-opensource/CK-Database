@@ -8,8 +8,13 @@
     <IsInTestsFolder Condition="$(MSBuildProjectDirectoryNoRoot.Contains('\Tests\'))">true</IsInTestsFolder>
   </PropertyGroup>
 
-  <!-- Xml documentation is generated in Release or during Cake builds (except for tests projects). -->
+  <!-- Xml documentation is generated in Release or during Cake builds (except for tests projects). --><!--
   <PropertyGroup Condition=" '$(IsInTestsFolder)' != 'true' And ('$(CakeBuild)' == 'true' Or '$(Configuration)' == 'Release') ">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>-->
+
+  <!-- TEMPORARY: Enable Xml documentation only for .Model assemblies. -->
+  <PropertyGroup Condition=" '$(IsInTestsFolder)' != 'true' And ('$(CakeBuild)' == 'true' Or '$(Configuration)' == 'Release') And $(MSBuildProjectName.EndsWith('.Model'))">
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
