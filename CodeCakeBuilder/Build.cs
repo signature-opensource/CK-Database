@@ -101,7 +101,7 @@ namespace CodeCake
                 .Does( () =>
                  {
                      // https://docs.microsoft.com/en-us/nuget/schema/msbuild-targets
-                     Cake.DotNetCoreRestore( new DotNetCoreRestoreSettings().AddVersionArguments( gitInfo ) );
+                     Cake.MSBuild( "CodeCakeBuilder/CoreBuild.proj", new MSBuildSettings().AddVersionArguments( gitInfo ) );
                      Cake.NuGetRestore( "CKDBSetup/packages.config", new NuGetRestoreSettings()
                      {
                          PackagesDirectory = "packages"
