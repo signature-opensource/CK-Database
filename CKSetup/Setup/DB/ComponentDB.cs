@@ -14,6 +14,7 @@ namespace CKSetup
 {
     /// <summary>
     /// Immutable collection of <see cref="Component"/>.
+    /// Files are handled externally thanks to <see cref="IComponentDBEventSink"/>.
     /// </summary>
     public class ComponentDB
     {
@@ -213,7 +214,7 @@ namespace CKSetup
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="fileReader">Async file reader function.</param>
-        /// <param name="input">Output stream.</param>
+        /// <param name="input">Input stream.</param>
         /// <param name="cancellation">Optional cancellation token.</param>
         /// <returns>The new ComponentDB with imported components.</returns>
         public async Task<ComponentDB> Import(
@@ -248,13 +249,14 @@ namespace CKSetup
                             foreach( var f in newC.Files )
                             {
                                 await fileReader( newC.GetRef(), f, skip, input, cancellation );
+                                _sink?.FileImported( newC, f );
                                 cancellation.ThrowIfCancellationRequested();
                             }
                         }
                         currentDb = DoAdd( monitor, newC );
                     }
                 }
-                catch( Exception ex ) when (!(ex is OperationCanceledException))
+                catch( Exception ex )
                 {
                     monitor.Error().Send( ex );
                     return null;
@@ -289,6 +291,11 @@ namespace CKSetup
                 var rootDeps = CollectSetupDependencies( m, models.SelectMany( b => b.SetupDependencies ) );
                 return new DependencyResolver( this, targetRuntime, rootDeps );
             }
+        }
+
+        internal Task<ComponentDB> Import( object fileReader, Stream input, CancellationToken cancellation )
+        {
+            throw new NotImplementedException();
         }
 
         ///// <summary>

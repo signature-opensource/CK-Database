@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace CKSetup.Tests
@@ -189,6 +190,34 @@ namespace CKSetup.Tests
 
             XNode.EqualityComparer.Equals( c1.Db, c2.Db ).Should().BeTrue();
             c1.Files.ShouldBeEquivalentTo( c2.Files );
+        }
+
+
+        [Test]
+        public async Task importing_exporting_components()
+        {
+            string zipPath = TestHelper.GetCleanTestZipPath();
+            using( ZipRuntimeArchive zip = ZipRuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
+            using( ZipRuntimeArchive realZip = TestHelper.OpenCKDatabaseZip() )
+            using( Stream buffer = new MemoryStream() )
+            {
+                await zip.Export( c => ComponentExportType.DescriptionAndFiles, buffer );
+                buffer.Position.Should().BeLessThan( 100, "Only marker contents." );
+
+                buffer.Position = 0;
+                await realZip.Export( c => c.Name == "CK.Setupable.Engine" 
+                                            ? ComponentExportType.DescriptionAndFiles 
+                                            : ComponentExportType.None, 
+                                           buffer );
+                buffer.Position.Should().BeGreaterThan( 100 );
+                buffer.WriteByte( 251 );
+                buffer.Position = 0;
+                (await zip.Import( TestHelper.ConsoleMonitor, buffer )).Should().BeTrue();
+                buffer.ReadByte().Should().Be( 251 );
+            }
+            ZipContent content = new ZipContent( zipPath );
+            content.Db.Elements( "Component" ).Single().Attribute( "Name" ).Value.Should().Be( "CK.Setupable.Engine" );
+            content.Files.Count.Should().Be( 1 );
         }
 
 

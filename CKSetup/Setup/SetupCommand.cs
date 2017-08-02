@@ -97,20 +97,34 @@ namespace CKSetup
         {
             using( m.OpenInfo().Send( "Launching setup." ) )
             {
+                bool useDotNet = false;
                 string exe = Path.Combine( binPath, "CK.Setupable.Engine.exe" );
+                string dll = Path.Combine( binPath, "CK.Setupable.Engine.dll" );
                 if( !File.Exists( exe ) )
                 {
-                    m.Error().Send( "Unable to find CK.Setupable.Engine.exe runner in folder." );
-                    return Program.RetCodeError;
+                    if( !File.Exists( dll ) )
+                    {
+                        m.Error().Send( "Unable to find CK.Setupable.Engine.exe runner in folder." );
+                        return Program.RetCodeError;
+                    }
+                    useDotNet = true;
                 }
                 ProcessStartInfo cmdStartInfo = new ProcessStartInfo();
                 cmdStartInfo.WorkingDirectory = binPath;
-                cmdStartInfo.FileName = exe;
                 cmdStartInfo.RedirectStandardOutput = true;
                 cmdStartInfo.RedirectStandardError = true;
                 cmdStartInfo.RedirectStandardInput = true;
                 cmdStartInfo.UseShellExecute = false;
                 cmdStartInfo.CreateNoWindow = true;
+                if( useDotNet )
+                {
+                    cmdStartInfo.FileName = "dotnet";
+                    cmdStartInfo.Arguments = "CK.Setupable.Engine.dll";
+                }
+                else
+                {
+                    cmdStartInfo.FileName = exe;
+                }
 
                 using( Process cmdProcess = new Process() )
                 {

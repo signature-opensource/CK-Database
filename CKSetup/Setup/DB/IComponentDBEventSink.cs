@@ -30,5 +30,12 @@ namespace CKSetup
         /// </summary>
         /// <param name="c">Component removed.</param>
         void ComponentRemoved( Component c );
+
+        /// <summary>
+        /// Called whenever a file has been imported.
+        /// </summary>
+        /// <param name="c">The component.</param>
+        /// <param name="fileName">The file name without entry path.</param>
+        void FileImported( Component c, string fileName );
     }
 }

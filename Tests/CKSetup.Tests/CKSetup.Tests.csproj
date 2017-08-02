@@ -25,5 +25,9 @@
     </Compile>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="TestOutput\" />
+  </ItemGroup>
+
 
 </Project>

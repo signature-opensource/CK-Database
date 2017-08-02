@@ -3,29 +3,40 @@ using CK.Text;
 using CSemVer;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace CKSetup
 {
+    /// <summary>
+    /// Wraps (and hides) a <see cref="ComponentDB"/> in a zip archive.
+    /// </summary>
     public class ZipRuntimeArchive : IDisposable
     {
-        readonly ZipArchive _archive;
+        readonly string _path;
         readonly List<string> _cleanupFiles;
         readonly IActivityMonitor _monitor;
-        readonly ComponentDB _dbOrigin;
-        readonly ZipArchiveEntry _dbEntry;
         readonly EventSink _sink;
         readonly IComponentDBRemote _remote;
         ComponentDB _dbCurrent;
+        ComponentDB _dbOrigin;
+        ZipArchive _archive;
+        ZipArchiveEntry _dbEntry;
 
         class EventSink : IComponentDBEventSink
         {
+            readonly ZipRuntimeArchive _archive;
             readonly Queue<Tuple<ComponentRef, object>> _events = new Queue<Tuple<ComponentRef, object>>();
+            public EventSink( ZipRuntimeArchive archive )
+            {
+                _archive = archive;
+            }
 
             public void ComponentLocallyAdded( Component c, BinFolder f )
             {
@@ -51,11 +62,26 @@ namespace CKSetup
                 }
             }
 
+            public void FileImported( Component c, string fileName )
+            {
+                Debug.Assert( c.ComponentKind != ComponentKind.Model );
+                Events.Enqueue( Tuple.Create( c.GetRef(), (object)fileName ) );
+            }
+
             public int GetSavePoint() => Events.Count;
 
             public void Cancel( int savedPoint )
             {
-                while( Events.Count > savedPoint ) Events.Dequeue();
+                while( Events.Count > savedPoint )
+                {
+                    var e = Events.Dequeue();
+                    if( e.Item2 is string )
+                    {
+                        ComponentRef c = e.Item1;
+                        string fileName = (string)e.Item2;
+                        _archive._archive.GetEntry( c.EntryPathPrefix + fileName ).Delete();
+                    }
+                }
             }
 
             public Queue<Tuple<ComponentRef, object>> Events => _events;
@@ -63,7 +89,8 @@ namespace CKSetup
 
         ZipRuntimeArchive( IActivityMonitor monitor, string path, IComponentDBRemote remote = null )
         {
-            _sink = new EventSink();
+            _path = path;
+            _sink = new EventSink( this );
             _archive = ZipFile.Open( path, ZipArchiveMode.Update );
             _cleanupFiles = new List<string>();
             _remote = remote;
@@ -259,7 +286,7 @@ namespace CKSetup
         /// Gets whether changes are pending.
         /// Note that <see cref="CommitChanges"/> is automatically called by <see cref="Dispose"/>.
         /// </summary>
-        public bool HasChanges => _sink.Events.Count > 0;
+        public bool HasChanges => _sink.Events.Count > 0 || _dbCurrent != _dbOrigin;
 
         /// <summary>
         /// Commit current changes to this archive.
@@ -300,23 +327,126 @@ namespace CKSetup
                         }
                         else
                         {
-                            var newC = _dbCurrent.Find( e.Item1 );
-                            var zipPathPrefix = newC.GetRef().EntryPathPrefix;
-                            var folder = (BinFolder)e.Item2;
-                            foreach( var f in newC.Files )
+                            var folder = e.Item2 as BinFolder;
+                            if( folder != null )
                             {
-                                string source = folder.BinPath + f;
-                                string entryPath = zipPathPrefix + f;
-                                _monitor.Debug().Send( "Archiving: " + entryPath );
-                                _archive.CreateEntryFromFile( source, entryPath );
+                                var newC = _dbCurrent.Find( e.Item1 );
+                                var zipPathPrefix = newC.GetRef().EntryPathPrefix;
+                                foreach( var f in newC.Files )
+                                {
+                                    string source = folder.BinPath + f;
+                                    string entryPath = zipPathPrefix + f;
+                                    _monitor.Debug().Send( "Archiving: " + entryPath );
+                                    _archive.CreateEntryFromFile( source, entryPath );
+                                }
+                                _monitor.Info().Send( $"Created '{e.Item1}' (registered {newC.Files.Count} files)." );
+
                             }
-                            _monitor.Info().Send( $"Created '{e.Item1}' (registered {newC.Files.Count} files)." );
+                            else
+                            {
+                                // Nothing to do.
+                                // It is the Cancel that must remove the entry.
+                                Debug.Assert( e.Item2 is string );
+                            }
                         }
                     }
                 }
             }
+            if( _dbCurrent != _dbOrigin )
+            {
+                using( var content = _dbEntry.Open() )
+                {
+                    new XDocument( _dbCurrent.ToXml() ).Save( content );
+                }
+                _dbOrigin = _dbCurrent;
+            }
+            _archive.Dispose();
+            _archive = ZipFile.Open( _path, ZipArchiveMode.Update );
+            _dbEntry = _archive.GetEntry( "db.xml" );
         }
 
+        /// <summary>
+        /// Exports a filtered set of components to a <see cref="Stream"/>.
+        /// </summary>
+        /// <param name="filter">Filter for components to export.</param>
+        /// <param name="fileWriter">Async file writer function.</param>
+        /// <param name="output">Output stream.</param>
+        /// <param name="cancellation">Optional cancellation token.</param>
+        public Task Export(
+            Func<Component, ComponentExportType> filter,
+            Stream output,
+            CancellationToken cancellation = default( CancellationToken ) )
+        {
+            return _dbCurrent.Export( filter, FileWriter, output, cancellation );
+        }
+
+        async Task FileWriter( ComponentRef component, string name, Stream output, CancellationToken cancel )
+        {
+            var e = _archive.GetEntry( component.EntryPathPrefix + name );
+            long sz = e.Length;
+            using( var s = e.Open() )
+            {
+                await output.WriteAsync( BitConverter.GetBytes( sz ), 0, 8, cancel );
+                await s.CopyToAsync( output, 81920, cancel );
+            }
+        }
+
+        /// <summary>
+        /// Imports a set of components from a <see cref="Stream"/>.
+        /// </summary>
+        /// <param name="monitor">Monitor to use.</param>
+        /// <param name="input">Input stream.</param>
+        /// <param name="cancellation">Optional cancellation token.</param>
+        /// <returns>True on success, false on error.</returns>
+        public async Task<bool> Import(
+            IActivityMonitor monitor,
+            Stream input,
+            CancellationToken cancellation = default( CancellationToken ) )
+        {
+            int save = _sink.GetSavePoint();
+            var n = await _dbCurrent.Import( monitor, FileReader, input, cancellation );
+            if( n == null )
+            {
+                _sink.Cancel( save );
+                return false;
+            }
+            _dbCurrent = n;
+            return true;
+        }
+
+        async Task FileReader( ComponentRef component, string name, bool skip, Stream input, CancellationToken cancel )
+        {
+            byte[] b = new byte[8];
+            int read = await input.ReadAsync( b, 0, 8 );
+            if( read == 0 ) throw new InvalidDataException( $"Expecting file length of {name}." );
+            long sz = BitConverter.ToInt64( b, 0 );
+            if( skip && input.CanSeek ) input.Seek( sz, SeekOrigin.Current );
+            else
+            {
+                var buffer = new byte[81920];
+                using( var output = skip ? null : _archive.CreateEntry( component.EntryPathPrefix + name ).Open() )
+                {
+                    long left = sz;
+                    do
+                    {
+                        var toRead = (int)Math.Min( left, buffer.Length );
+                        var lenRead = await input.ReadAsync( buffer, 0, toRead, cancel );
+                        if( lenRead == 0 ) throw new InvalidDataException( $"File of {name}: expected {sz} bytes, only got {sz - left}." );
+                        if( !skip ) await output.WriteAsync( buffer, 0, lenRead, cancel );
+                        left -= lenRead;
+                    }
+                    while( left > 0 );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Opens an existing archive or creates a new one.
+        /// </summary>
+        /// <param name="m">Monitor to use. Can not be null.</param>
+        /// <param name="path">Path to the file to open or create.</param>
+        /// <param name="remote">Optional remote component provider.</param>
+        /// <returns>An archive or null on error.</returns>
         static public ZipRuntimeArchive OpenOrCreate( IActivityMonitor m, string path, IComponentDBRemote remote = null )
         {
             try
@@ -331,6 +461,11 @@ namespace CKSetup
             }
         }
 
+        /// <summary>
+        /// Closes this archive. <see cref="CommitChanges"/> is called if necessary, 
+        /// files registered by <see cref="RegisterFileToDelete"/> are deleted and 
+        /// updated component database is written in the zip.
+        /// </summary>
         public void Dispose()
         {
             if( _dbEntry == null ) return;
@@ -355,15 +490,8 @@ namespace CKSetup
                         _cleanupFiles.Clear();
                     }
                 }
-                if( _dbCurrent != _dbOrigin )
-                {
-                    using( var content = _dbEntry.Open() )
-                    {
-                        new XDocument( _dbCurrent.ToXml() ).Save( content );
-                    }
-                    _dbCurrent = _dbOrigin;
-                }
                 _archive.Dispose();
+                _dbEntry = null;
             }
         }
     }

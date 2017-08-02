@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CK.Core;
 
 namespace CKSetup.Tests
 {
@@ -22,7 +23,32 @@ namespace CKSetup.Tests
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",
-                    true
+                    sourceGeneration: true
+                    ).Should().Be( 0 );
+            }
+        }
+
+        class FakeRemote : IComponentDBRemote
+        {
+            public ComponentDB Download( IActivityMonitor monitor, TargetRuntime targetRuntime, IReadOnlyCollection<ComponentDependency> missingDependencies, IReadOnlyCollection<ComponentRef> missingEmbedded, ComponentDB db )
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        [Test]
+        public void setup_SqlCallDemo_for_netstandard13()
+        {
+            Assume.That( false, "Support for netstandard/netcore has yet to be implemented." );
+            using( var zip = TestHelper.OpenCKDatabaseZip( withNetStandard: true ) )
+            {
+                CKSetup.SetupCommand.DoSetup(
+                    TestHelper.ConsoleMonitor,
+                    TestHelper.SqlCallDemoModelNet13Path,
+                    zip,
+                    TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
+                    "SqlCallDemo.Generated.ByCKSetup",
+                    sourceGeneration: true
                     ).Should().Be( 0 );
             }
         }
@@ -41,7 +67,7 @@ namespace CKSetup.Tests
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlActorPackage" ),
                     "SqlActorPackage.Generated.ByCKSetup",
-                    true
+                    sourceGeneration: true
                     ).Should().Be( 0 );
             }
         }
