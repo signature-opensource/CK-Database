@@ -81,7 +81,7 @@ namespace CodeCake
 
                      Cake.Information( "Publishing {0} projects with version={1} and configuration={2}: {3}",
                          projectsToPublish.Count(),
-                         gitInfo.SemVer,
+                         gitInfo.SafeSemVersion,
                          configuration,
                          string.Join( ", ", projectsToPublish.Select( p => p.Name ) ) );
                  } );
@@ -101,7 +101,7 @@ namespace CodeCake
                 .Does( () =>
                  {
                      // https://docs.microsoft.com/en-us/nuget/schema/msbuild-targets
-                     Cake.MSBuild( "CodeCakeBuilder/CoreBuild.proj", new MSBuildSettings().AddVersionArguments( gitInfo ) );
+                     Cake.DotNetCoreRestore( "CodeCakeBuilder/CoreBuild.proj", new DotNetCoreRestoreSettings().AddVersionArguments( gitInfo ) );
                      Cake.NuGetRestore( "CKDBSetup/packages.config", new NuGetRestoreSettings()
                      {
                          PackagesDirectory = "packages"
@@ -194,7 +194,7 @@ namespace CodeCake
                      Cake.CreateDirectory( releasesDir );
                      var settings = new NuGetPackSettings()
                      {
-                         Version = gitInfo.NuGetVersion,
+                         Version = gitInfo.SafeNuGetVersion,
                          BasePath = Cake.Environment.WorkingDirectory,
                          OutputDirectory = releasesDir
                      };
@@ -202,8 +202,8 @@ namespace CodeCake
                      Cake.CopyFile( "CodeCakeBuilder/NuSpec/CKDBSetup.nuspec", tempNuspec );
                      Cake.TransformTextFile( tempNuspec, "{{", "}}" )
                              .WithToken( "configuration", configuration )
-                             .WithToken( "NuGetVersion", gitInfo.NuGetVersion )
-                             .WithToken( "CSemVer", gitInfo.SemVer )
+                             .WithToken( "NuGetVersion", gitInfo.SafeNuGetVersion )
+                             .WithToken( "CSemVer", gitInfo.SafeSemVersion )
                              .Save( tempNuspec );
                      Cake.NuGetPack( tempNuspec, settings );
                      Cake.DeleteFile( tempNuspec );
@@ -265,7 +265,7 @@ namespace CodeCake
                      }
                      if( Cake.AppVeyor().IsRunningOnAppVeyor )
                      {
-                         Cake.AppVeyor().UpdateBuildVersion( gitInfo.NuGetVersion );
+                         Cake.AppVeyor().UpdateBuildVersion( gitInfo.SafeNuGetVersion );
                      }
                  } );
 
