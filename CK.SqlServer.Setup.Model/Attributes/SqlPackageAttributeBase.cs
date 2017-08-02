@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,8 +6,15 @@ using CK.Core;
 
 namespace CK.SqlServer.Setup
 {
+    /// <summary>
+    /// Base attribute for <see cref="SqlTableAttribute"/> and <see cref="SqlPackageAttribute"/>.
+    /// </summary>
     public abstract class SqlPackageAttributeBase : AmbientContextBoundDelegationAttribute
     {
+        /// <summary>
+        /// Initializes a new <see cref="SqlPackageAttributeBase"/>.
+        /// </summary>
+        /// <param name="actualAttributeTypeAssemblyQualifiedName">Assembly Qualified Name of the object that will replace this attribute during setup.</param>
         protected SqlPackageAttributeBase( string actualAttributeTypeAssemblyQualifiedName )
             : base( actualAttributeTypeAssemblyQualifiedName )
         {

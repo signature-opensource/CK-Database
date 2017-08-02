@@ -28,7 +28,11 @@ namespace CK.Core
 
         static readonly XName xBuildAndRegisterConfiguration = XNamespace.None + "BuildAndRegisterConfiguration";
         static readonly XName xBuilderFinalAssemblyConfiguration = XNamespace.None + "BuilderFinalAssemblyConfiguration";
-        public static readonly XName xVersion = XNamespace.None + "Version";
+        
+        /// <summary>
+        /// The version attribute name.
+        /// </summary>
+        static public readonly XName xVersion = XNamespace.None + "Version";
 
         /// <summary>
         /// Initializes a new <see cref="StObjEngineConfiguration"/> from a <see cref="XElement"/>.
@@ -37,9 +41,9 @@ namespace CK.Core
         public StObjEngineConfiguration( XElement e )
         {
             int? nv = (int?)e.Attribute( xVersion );
-            int v = nv.HasValue ? nv.Value : CurrentXmlVersion;
-            _buildConfig = new BuildAndRegisterConfiguration( e.Element( xBuildAndRegisterConfiguration ), v );
-            _finalConfig = new BuilderFinalAssemblyConfiguration( e.Element( xBuilderFinalAssemblyConfiguration ), v );
+            int version = nv.HasValue ? nv.Value : CurrentXmlVersion;
+            _buildConfig = new BuildAndRegisterConfiguration( e.Element( xBuildAndRegisterConfiguration ), version );
+            _finalConfig = new BuilderFinalAssemblyConfiguration( e.Element( xBuilderFinalAssemblyConfiguration ), version );
         }
 
         /// <summary>

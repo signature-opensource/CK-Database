@@ -1,4 +1,6 @@
-﻿namespace CK.Core
+﻿using System;
+
+namespace CK.Core
 {
     /// <summary>
     /// Provides minimal configuration required to produce a final (compiled) assembly.

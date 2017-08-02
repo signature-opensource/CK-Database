@@ -17,7 +17,7 @@ namespace CK.Setup
         readonly List<ISetupEngineAspectConfiguration> _aspects;
 
         /// <summary>
-        /// Initializes a new <see cref="SetupEngineConfiguration"/>.
+        /// Initializes a new empty <see cref="SetupEngineConfiguration"/>.
         /// </summary>
         public SetupEngineConfiguration()
         {
@@ -35,11 +35,34 @@ namespace CK.Setup
         /// </summary>
         public static class XmlNames
         {
+            /// <summary>
+            /// The version attribute name.
+            /// </summary>
             static public readonly XName Version = CK.Core.StObjEngineConfiguration.xVersion;
+
+            /// <summary>
+            /// The StObjEngineConfiguration element name.
+            /// </summary>
             static public readonly XName StObjEngineConfiguration = XNamespace.None + "StObjEngineConfiguration";
+
+            /// <summary>
+            /// The Aspect element name.
+            /// </summary>
             static public readonly XName Aspect = XNamespace.None + "Aspect";
+
+            /// <summary>
+            /// The Type element name.
+            /// </summary>
             static public readonly XName Type = XNamespace.None + "Type";
+
+            /// <summary>
+            /// The TraceDependencySorterInput element name.
+            /// </summary>
             static public readonly XName TraceDependencySorterInput = XNamespace.None + "TraceDependencySorterInput";
+
+            /// <summary>
+            /// The TraceDependencySorterOutput element name.
+            /// </summary>
             static public readonly XName TraceDependencySorterOutput = XNamespace.None + "TraceDependencySorterOutput";
         }
 
@@ -75,7 +98,6 @@ namespace CK.Setup
 
         /// <summary>
         /// Serializes its content in the provided <see cref="XElement"/> and returns it.
-        /// The <see cref="SetupEngineConfiguration(XElement)"/> constructor will be able to read this element back.
         /// </summary>
         /// <param name="e">The element to populate.</param>
         /// <param name="typeNameWriter">

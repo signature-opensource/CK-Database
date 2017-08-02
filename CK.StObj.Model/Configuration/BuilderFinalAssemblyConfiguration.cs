@@ -40,6 +40,9 @@ namespace CK.Core
             GenerateFileAndPEVerify = 2
         }
 
+        /// <summary>
+        /// Initializes a new default <see cref="BuilderFinalAssemblyConfiguration"/>.
+        /// </summary>
         public BuilderFinalAssemblyConfiguration()
         {
         }
@@ -53,7 +56,8 @@ namespace CK.Core
         /// Initializes a new <see cref="BuilderFinalAssemblyConfiguration"/> from a <see cref="XElement"/>.
         /// </summary>
         /// <param name="e">The xml element.</param>
-        public BuilderFinalAssemblyConfiguration( XElement e, int currentXmlVersion )
+        /// <param name="version">The element format version.</param>
+        public BuilderFinalAssemblyConfiguration( XElement e, int version )
         {
             Directory = e.Element( xDirectory )?.Value;
             AssemblyName = e.Element( xAssemblyName )?.Value;
@@ -63,7 +67,7 @@ namespace CK.Core
 
         /// <summary>
         /// Serializes its content in the provided <see cref="XElement"/> and returns it.
-        /// The <see cref="AssemblyRegistererConfiguration(XElement)"/> constructor will be able to read this element back.
+        /// The <see cref="BuilderFinalAssemblyConfiguration(XElement,int)"/> constructor will be able to read this element back.
         /// </summary>
         /// <param name="e">The element to populate.</param>
         /// <returns>The <paramref name="e"/> element.</returns>

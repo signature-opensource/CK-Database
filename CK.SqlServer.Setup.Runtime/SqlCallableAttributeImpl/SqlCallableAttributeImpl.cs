@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Data.SqlClient;
 using System.Diagnostics;
@@ -39,10 +39,9 @@ namespace CK.SqlServer.Setup
             }
             ParameterInfo[] mParameters = m.GetParameters();
             GenerationType gType;
-            ExecutionType execType = Attribute.ExecuteCall;
 
             // ExecuteCall parameter on the attribute.
-            bool executeCall = execType != ExecutionType.Unknown;
+            bool executeCall = !Attribute.NoCall;
             bool hasRefSqlCommand = mParameters.Length >= 1
                                     && mParameters[0].ParameterType.IsByRef
                                     && !mParameters[0].IsOut
@@ -77,7 +76,6 @@ namespace CK.SqlServer.Setup
                     }
                     else if( executeCall )
                     {
-                        Debug.Assert( execType == ExecutionType.ExecuteNonQuery, "For the moment only ExecuteNonQuery is supported. Other modes will lead to new CallXXX generation types." );
                         gType = GenerationType.ExecuteNonQuery;
                     }
                     else

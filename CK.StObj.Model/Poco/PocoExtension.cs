@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 
 namespace CK.Core
 {
+    /// <summary>
+    /// Extends <see cref="IPoco"/> objects.
+    /// </summary>
     public static class PocoExtension
     {
-
         /// <summary>
         /// Creates and configures a <see cref="IPoco"/> instance.
         /// </summary>

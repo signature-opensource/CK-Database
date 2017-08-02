@@ -1,4 +1,4 @@
-using CK.SqlServer.Setup;
+﻿using CK.SqlServer.Setup;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -50,6 +50,7 @@ namespace CK.SqlServer
         /// Returns either a IDisposable that will close it or null it the connection was already opened.
         /// </summary>
         /// <param name="this">This connection.</param>
+        /// <param name="cancel">Optional cancellation token.</param>
         /// <returns>A IDisposable or null.</returns>
         public static async Task<IDisposable> EnsureOpenAsync( this DbConnection @this, CancellationToken cancel = default(CancellationToken) )
         {

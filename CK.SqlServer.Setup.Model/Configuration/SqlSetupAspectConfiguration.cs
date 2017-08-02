@@ -5,6 +5,9 @@ using System.Xml.Linq;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Aspect configuration object.
+    /// </summary>
     public class SqlSetupAspectConfiguration : ISetupEngineAspectConfiguration
     {
         /// <summary>
@@ -89,7 +92,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets or sets whether when installing, the informational message 'The module 'X' depends 
         /// on the missing object 'Y'. The module will still be created; however, it cannot run successfully until the object exists.' 
-        /// must always be logged as a <see cref="LogLevel.Info"/>.
+        /// must always be logged as a LogLevel.Info.
         /// Defaults to false.
         /// This applies to all <see cref="Databases"/>.
         /// </summary>

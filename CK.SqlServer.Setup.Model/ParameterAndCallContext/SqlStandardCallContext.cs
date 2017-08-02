@@ -22,7 +22,7 @@ namespace CK.SqlServer
     /// when this object exposes parameter values.
     /// </para>
     /// <para>
-    /// The <see cref="ISqlConnectionController"/> that are created by <see cref="ISqlCommandExecutor.GetProvider"/> are cached
+    /// The <see cref="ISqlConnectionController"/> that are created by <see cref="ISqlCommandExecutor.GetConnectionController(string)"/> are cached
     /// and reused until <see cref="Dispose"/> is called.
     /// </para>
     /// </remarks>
