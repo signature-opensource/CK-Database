@@ -40,7 +40,7 @@ namespace CKSetup.Tests
         {
             using( var z = ZipFile.Open( path, ZipArchiveMode.Read ) )
             {
-                var e = z.GetEntry( "db.xml" );
+                var e = z.GetEntry( ZipRuntimeArchive.DbXmlFileName );
                 if( e != null )
                 {
                     using( var content = e.Open() )
@@ -48,10 +48,9 @@ namespace CKSetup.Tests
                         Db = NormalizeWithoutAnyOrder( XDocument.Load( content ).Root );
                     }
                 }
-                Files = z.Entries.Where( x => x.FullName != "db.xml" ).Select( x => new FileEntry( x ) ).ToArray();
+                Files = z.Entries.Where( x => x.FullName != ZipRuntimeArchive.DbXmlFileName ).Select( x => new FileEntry( x ) ).ToArray();
             }
         }
-
     static XElement NormalizeWithoutAnyOrder( XElement element )
     {
         if( element.HasElements )

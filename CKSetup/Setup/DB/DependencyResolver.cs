@@ -3,6 +3,7 @@ using CK.Text;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ namespace CKSetup
 {
     public class DependencyResolver
     {
-        readonly DependencyEngine _engine; 
+        readonly DependencyEngine _engine;
         ComponentDB _db;
 
         internal DependencyResolver( ComponentDB db, TargetRuntime t, IEnumerable<ComponentDependency> roots )
@@ -32,41 +33,54 @@ namespace CKSetup
         /// Runs this resolver.
         /// </summary>
         /// <param name="monitor">The monitor.</param>
-        /// <param name="remote">
-        /// Optional remote interface that allows download of missing components.
-        /// </param>
-        /// <returns>
-        /// On success, the potentially updated component database and resolved dependencies or a default (null,null) pair on error.
+        /// <param name="downloader">Optional downloader of missing components.</param>
+        /// <returns>Resolved dependencies on success, null on error.
         /// </returns>
-        public KeyValuePair<ComponentDB,IReadOnlyList<Component>> Run( IActivityMonitor monitor, IComponentDBRemote remote )
+        public IReadOnlyList<Component> Run( IActivityMonitor monitor, IComponentDownloader downloader )
         {
-            var error = new KeyValuePair<ComponentDB, IReadOnlyList<Component>>();
-
             using( monitor.OpenInfo().Send( "Initializing root dependencies." ) )
             {
                 if( !_engine.Initialize( monitor, Roots )
-                    || !UpdateDBIfNeeded( monitor, remote ) ) return error;
+                    || !UpdateDBIfNeeded( monitor, downloader ) ) return null;
             }
             using( monitor.OpenInfo().Send( "Resolving dependencies." ) )
             {
                 while( !_engine.ExpandDependencies( monitor ) )
                 {
-                    if( !UpdateDBIfNeeded( monitor, remote ) ) return error;
+                    if( !UpdateDBIfNeeded( monitor, downloader ) ) return null;
                 }
             }
-            return new KeyValuePair<ComponentDB, IReadOnlyList<Component>>( _db, _engine.Resolved );
+            return _engine.Resolved;
         }
 
-        bool UpdateDBIfNeeded( IActivityMonitor monitor, IComponentDBRemote remote )
+        bool UpdateDBIfNeeded( IActivityMonitor monitor, IComponentDownloader downloader )
         {
             if( _engine.HasMissing )
             {
-                if( remote != null )
+                if( downloader != null )
                 {
-                    var newDb = remote.Download( monitor, TargetRuntime, _engine.MissingDependencies, _engine.MissingEmbedded, _db );
-                    if( newDb == null ) return false;
-                    _db = newDb;
-                    return _engine.OnDatabaseUpdated( monitor, newDb );
+                    using( monitor.OpenInfo().Send( $"Using donwloader." ) )
+                    {
+                        monitor.Debug().Send( $"Requesting: TargetRuntime = {TargetRuntime}" );
+                        monitor.Debug().Send( $"Requesting: Dependencies = {_engine.MissingDependencies.Select( d => d.ToString() ).Concatenate()}" );
+                        monitor.Debug().Send( $"Requesting: Components = {_engine.MissingEmbedded.Select( d => d.ToString() ).Concatenate()}" );
+                        try
+                        {
+                            var missing = new ComponentMissingDescription( TargetRuntime, _engine.MissingDependencies, _engine.MissingEmbedded );
+                            var newDb = downloader.Download( monitor, missing );
+                            if( newDb == null ) return false;
+                            if( _db != newDb )
+                            {
+                                _db = newDb;
+                                return _engine.OnDatabaseUpdated( monitor, newDb );
+                            }
+                        }
+                        catch( Exception ex )
+                        {
+                            monitor.Error().Send( ex );
+                            return false;
+                        }
+                    }
                 }
                 if( _engine.MissingEmbedded.Count > 0 )
                 {

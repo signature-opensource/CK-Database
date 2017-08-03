@@ -137,11 +137,23 @@ namespace CKSetup.Tests
 
         #endregion
 
+        /// <summary>
+        /// Gets a path to a zip.
+        /// </summary>
+        /// <param name="suffix">Optional suffix (will appear before the .zip extension).</param>
+        /// <param name="name">Name (automatically sets from the caller method name).</param>
+        /// <returns>Path to a zip file that may already exists.</returns>
         public static string GetTestZipPath( string suffix = null, [CallerMemberName]string name = null )
         {
             return Path.Combine( TestFolder, name + suffix + ".zip" );
         }
 
+        /// <summary>
+        /// Gets a free path to zip (if the zip exists it is deleted).
+        /// </summary>
+        /// <param name="suffix">Optional suffix (will appear before the .zip extension).</param>
+        /// <param name="name">Name (automatically sets from the caller method name).</param>
+        /// <returns>Path to a zip file that does not exist.</returns>
         public static string GetCleanTestZipPath( string suffix = null, [CallerMemberName]string name = null )
         {
             var p = GetTestZipPath( suffix, name );

@@ -1,4 +1,5 @@
 ﻿using CK.Core;
+using CK.Text;
 using CSemVer;
 using System;
 using System.Collections.Generic;
@@ -100,18 +101,23 @@ namespace CKSetup
 
         public bool OnDatabaseUpdated( IActivityMonitor monitor, ComponentDB db )
         {
-            var unified = _resolved.Select( r => new ComponentDependency( r.Name, r.Version ) )
-                                .Concat( _deps )
-                                .Concat( _embeddeds.Select( d => new ComponentDependency( d.Name, d.Version ) ) )
-                                .GroupBy( d => d.UseName )
-                                .Select( g => g.MaxBy( d => d.UseMinVersion ) );
-            _resolved.Clear();
-            _deps.Clear();
-            _embeddeds.Clear();
-            _resolved.AddRange( unified.Select( d => db.FindBest( _target, d.UseName, d.UseMinVersion ) ) );
-            _db = db;
-            Debug.Assert( _resolved.Select( r => r.Name ).SequenceEqual( Roots.Select( r => r.UseName ) ) );
-            return true;
+            using( monitor.OpenInfo().Send( "Updating DependencyEngine state." ) )
+            {
+                var unified = _resolved.Select( r => new ComponentDependency( r.Name, r.Version ) )
+                                    .Concat( _deps )
+                                    .Concat( _embeddeds.Select( d => new ComponentDependency( d.Name, d.Version ) ) )
+                                    .GroupBy( d => d.UseName )
+                                    .Select( g => g.MaxBy( d => d.UseMinVersion ) )
+                                    .ToList();
+                _resolved.Clear();
+                _deps.Clear();
+                _embeddeds.Clear();
+                _resolved.AddRange( unified.Select( d => db.FindBest( _target, d.UseName, d.UseMinVersion ) ) );
+                _db = db;
+                monitor.Trace().Send( $"Resolved is now: {_resolved.Select( d => d.ToString() ).Concatenate()}." );
+                Debug.Assert( _resolved.Take( Roots.Count ).Select( r => r.Name ).SequenceEqual( Roots.Select( r => r.UseName ) ) );
+                return true;
+            }
         }
 
         /// <summary>

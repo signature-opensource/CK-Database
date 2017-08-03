@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -76,6 +77,8 @@ namespace CKSetup
         /// <summary>
         /// Tries to finds the best available component for the given runtime, and a 
         /// minimal version.
+        /// This method elects the lowest available version first and then the lowest target
+        /// framework for this version.
         /// </summary>
         /// <param name="runtime">The runtime to consider.</param>
         /// <param name="name">The component name.</param>
@@ -189,24 +192,26 @@ namespace CKSetup
             Stream output,
             CancellationToken cancellation = default( CancellationToken ) )
         {
-            CKBinaryWriter writer = new CKBinaryWriter( output );
-            writer.WriteNonNegativeSmallInt32( 0 );
-            foreach( var c in Components )
+            using( CKBinaryWriter writer = new CKBinaryWriter( output, Encoding.UTF8, true ) )
             {
-                var type = filter( c );
-                if( type == ComponentExportType.None ) continue;
-                writer.Write( (byte)type );
-                writer.Write( c.ToXml().ToString( SaveOptions.DisableFormatting ) );
-                if( type == ComponentExportType.DescriptionAndFiles )
+                writer.WriteNonNegativeSmallInt32( 0 );
+                foreach( var c in Components )
                 {
-                    foreach( var f in c.Files )
+                    var type = filter( c );
+                    if( type == ComponentExportType.None ) continue;
+                    writer.Write( (byte)type );
+                    writer.Write( c.ToXml().ToString( SaveOptions.DisableFormatting ) );
+                    if( type == ComponentExportType.DescriptionAndFiles )
                     {
-                        await fileWriter( c.GetRef(), f, output, cancellation );
-                        cancellation.ThrowIfCancellationRequested();
+                        foreach( var f in c.Files )
+                        {
+                            await fileWriter( c.GetRef(), f, output, cancellation );
+                            cancellation.ThrowIfCancellationRequested();
+                        }
                     }
                 }
+                writer.Write( (byte)ComponentExportType.None );
             }
-            writer.Write( (byte)ComponentExportType.None );
         }
 
         /// <summary>
@@ -224,11 +229,11 @@ namespace CKSetup
             CancellationToken cancellation = default( CancellationToken ) )
         {
             using( monitor.OpenInfo().Send( "Starting components import." ) )
+            using( CKBinaryReader reader = new CKBinaryReader( input, Encoding.UTF8, true ) )
             {
                 ComponentDB currentDb = this;
                 try
                 {
-                    CKBinaryReader reader = new CKBinaryReader( input );
                     var v = reader.ReadNonNegativeSmallInt32();
                     monitor.Debug().Send( $"Stream version: {v}" );
                     ComponentExportType type;
@@ -237,7 +242,7 @@ namespace CKSetup
                         var newC = new Component( XElement.Parse( reader.ReadString() ) );
                         if( type == ComponentExportType.DescriptionAndFiles )
                         {
-                            bool skip = Find( newC.GetRef() ) != null;
+                            bool skip = currentDb.Find( newC.GetRef() ) != null;
                             if( skip )
                             {
                                 monitor.Trace().Send( $"Skipping '{newC}' since it already exists." );
@@ -253,7 +258,7 @@ namespace CKSetup
                                 cancellation.ThrowIfCancellationRequested();
                             }
                         }
-                        currentDb = DoAdd( monitor, newC );
+                        currentDb = currentDb.DoAdd( monitor, newC );
                     }
                 }
                 catch( Exception ex )
@@ -263,6 +268,68 @@ namespace CKSetup
                 }
                 return currentDb;
             }
+        }
+
+        /// <summary>
+        /// Gets a list of available components.
+        /// </summary>
+        /// <param name="what">Required description.</param>
+        /// <param name="monitor">Optional monitor to use.</param>
+        /// <returns>Available components (can be empty).</returns>
+        public ISet<Component> FindAvailable( ComponentMissingDescription what, IActivityMonitor monitor = null )
+        {
+            var result = new HashSet<Component>();
+            using( monitor?.OpenInfo().Send( $"Finding available components." ) )
+            {
+                if( what.Components.Count > 0 )
+                {
+                    foreach( var cRef in what.Components )
+                    {
+                        Component c = Components.FirstOrDefault( x => x.GetRef().Equals( cRef ) );
+                        if( c.ComponentKind != ComponentKind.None )
+                        {
+                            result.Add( c );
+                        }
+                        else monitor?.Warn().Send( $"Component {cRef} not found." );
+                    }
+                    if( result.Count == 0 )
+                    {
+                        monitor?.Warn().Send( "No component found." );
+                    }
+                    else
+                    {
+                        monitor?.Info().Send( $"Found: {result.Select( c => c.GetRef().ToString() ).Concatenate()}." );
+                    }
+                }
+                if( what.Dependencies.Count > 0 )
+                {
+                    using( monitor?.OpenInfo().Send( $"Resolving dependencies for {what.TargetRuntime}: {what.Dependencies.Select( d => d.ToString() ).Concatenate()}." ) )
+                    {
+                        int embeddedCount = result.Count;
+                        foreach( var dep in what.Dependencies )
+                        {
+                            var c = FindBest( what.TargetRuntime, dep.UseName, dep.UseMinVersion );
+                            if( c != null )
+                            {
+                                result.Add( c );
+                            }
+                            else
+                            {
+                                monitor?.Warn().Send( $"Unresolved dependency: {dep}" );
+                            }
+                        }
+                        if( result.Count == embeddedCount )
+                        {
+                            monitor?.Warn().Send( "No dependency resolved." );
+                        }
+                        else
+                        {
+                            monitor?.Info().Send( $"Resolved components: {result.Skip(embeddedCount).Select( c => c.GetRef().ToString() ).Concatenate()}." );
+                        }
+                    }
+                }
+            }
+            return result;
         }
 
         /// <summary>
@@ -292,148 +359,6 @@ namespace CKSetup
                 return new DependencyResolver( this, targetRuntime, rootDeps );
             }
         }
-
-        internal Task<ComponentDB> Import( object fileReader, Stream input, CancellationToken cancellation )
-        {
-            throw new NotImplementedException();
-        }
-
-        ///// <summary>
-        ///// Resolves required runtime components for a target <see cref="BinFolder"/>.
-        ///// Models are skipped here.
-        ///// </summary>
-        ///// <param name="m">The monitor to use.</param>
-        ///// <param name="target">The target for which required components must be found.</param>
-        ///// <returns>Null on error, otherwise the components to install (may be empty).</returns>
-        //public IReadOnlyList<Component> ResolveRuntimeDependencies( IActivityMonitor m, BinFolder target )
-        //{
-        //    using( m.OpenInfo().Send( $"Resolving runtime dependencies for {target.BinPath}." ) )
-        //    {
-        //        var models = target.Components.Where( c => c.ComponentKind == ComponentKind.Model );
-        //        if( !models.Any() )
-        //        {
-        //            m.Warn().Send( "No Model component found." );
-        //            return Array.Empty<Component>();
-        //        }
-        //        foreach( var eOrR in target.Components.Where( c => c.ComponentKind != ComponentKind.Model ) )
-        //        {
-        //            m.Warn().Send( $"{eOrR.ComponentKind} '{eOrR.ComponentRef}' found. It will be ignored." );
-        //        }
-        //        var targetRuntime = SelectTargetRuntime( m, models );
-        //        if( targetRuntime == TargetRuntime.None ) return null;
-
-        //        List<ComponentDependency> rootDeps = CollectSetupDependencies( m, models.SelectMany( b => b.SetupDependencies ) );
-
-        //        var installableComponents = GetInstallableComponents( m, rootDeps, targetRuntime );
-        //        if( installableComponents == null ) return null;
-
-        //        var toInstall = installableComponents.ResolveMinimalVersions( m );
-        //        if( toInstall == null ) return null;
-
-        //        m.CloseGroup( toInstall.Count == 0 ? "No component found." : $"{toInstall.Count} components fond." );
-        //        return toInstall;
-        //    }
-        //}
-
-        //class InstallableComponents
-        //{
-        //    readonly ComponentDB _db;
-        //    readonly TargetFramework _targetFramework;
-        //    readonly List<Component> _components;
-        //    readonly int _initialCount;
-
-        //    public InstallableComponents( ComponentDB db, TargetFramework targetFramework, IEnumerable<Component> c )
-        //    {
-        //        _db = db;
-        //        _targetFramework = targetFramework;
-        //        _components = c.ToList();
-        //        _initialCount = _components.Count;
-        //    }
-
-        //    public List<Component> ResolveMinimalVersions( IActivityMonitor m )
-        //    {
-        //        int idx = 0;
-        //        do
-        //        {
-        //            foreach( var dep in _components[idx].Dependencies )
-        //            {
-        //                Component registered;
-        //                Component exactRegistered = _db.Components.SingleOrDefault( c => c.Name == dep.UseName && c.TargetFramework == _targetFramework && c.Version == dep.UseMinVersion );
-        //                if( exactRegistered != null ) registered = exactRegistered;
-        //                else
-        //                {
-        //                    Component best = _db.Components.Where( c => c.Name == dep.UseName && _targetFramework.CanWorkWith( c.TargetFramework ) && c.Version >= dep.UseMinVersion )
-        //                                        .OrderByDescending( c => c.Version )
-        //                                        .FirstOrDefault();
-        //                    if( best == null )
-        //                    {
-        //                        m.Error().Send( $"Component {dep.UseName} in version at least {dep.UseMinVersion} is required." );
-        //                        return null;
-        //                    }
-        //                    registered = best;
-        //                    m.Warn().Send( $"Component {dep.UseName}/{dep.UseMinVersion} is not registered, upgrading to {best.GetRef()}." );
-        //                }
-        //                Debug.Assert( registered.ComponentKind != ComponentKind.Model );
-
-        //                int alreadyHereIdx = _components.IndexOf( c => c.Name == dep.UseName );
-        //                if( alreadyHereIdx < 0 )
-        //                {
-        //                    // This is a new Component.
-        //                    _components.Add( registered );
-        //                }
-        //                else 
-        //                {
-        //                    // If the required version is lower or equal to the already choosen component,
-        //                    // we have nothing to do.
-        //                    if( dep.UseMinVersion > _components[alreadyHereIdx].Version )
-        //                    {
-        //                        // We always update the list with the new (greater) version of the component.
-        //                        _components[idx] = registered;
-        //                        // Did we already processed the depependencies of this component?
-        //                        if( alreadyHereIdx > idx )
-        //                        {
-        //                            // Yes: we have to restart the whole process.
-        //                            // We keep at least our initial count or, if we made progress,
-        //                            // the current successfuly processed set.
-        //                            int succesfulIndex = Math.Max( idx+1, _initialCount );
-        //                            var r = new InstallableComponents( _db, _targetFramework, _components.Take( succesfulIndex ) );
-        //                            return r.ResolveMinimalVersions( m );
-        //                        }
-        //                    }
-        //                }
-        //            }
-        //        }
-        //        while( ++idx < _components.Count );
-        //        return _components;
-        //    }
-        //}
-
-        //private InstallableComponents GetInstallableComponents( IActivityMonitor m, IEnumerable<ComponentDependency> rootDeps, TargetFramework targetFramework )
-        //{
-        //    var resolved = rootDeps.Select( d => new RequiredDependency(
-        //                        d,
-        //                        Components
-        //                            .Where( c => targetFramework.CanWorkWith( c.TargetFramework ) 
-        //                                            && c.Name == d.UseName 
-        //                                            && c.Version >= d.UseMinVersion )
-        //                            .OrderByDescending( c => c.Version )
-        //                            .ThenBy( c => c.TargetFramework )
-        //                            .FirstOrDefault()
-        //                        ) );
-        //    var missing = resolved.Where( r => r.Component == null );
-        //    if( missing.Any() )
-        //    {
-        //        foreach( var missed in missing )
-        //        {
-        //            var dep = missed.Dependency;
-        //            if( dep.UseMinVersion != null )
-        //                m.Error().Send( $"Unable to find component {dep.UseName} compatible with {targetFramework} with version at least {dep.UseMinVersion}." );
-        //            else m.Error().Send( $"Unable to find component {dep.UseName} compatible with {targetFramework} (any version)." );
-        //            return null;
-        //        }
-        //    }
-        //    return new InstallableComponents( this, targetFramework, resolved.Select( r => r.Component ) );
-        //}
 
         static TargetRuntime SelectTargetRuntime( IActivityMonitor m, IEnumerable<BinFileInfo> models )
         {

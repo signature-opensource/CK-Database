@@ -15,19 +15,20 @@ using System.Xml.Linq;
 namespace CKSetup
 {
     /// <summary>
-    /// Wraps (and hides) a <see cref="ComponentDB"/> in a zip archive.
+    /// Wraps (and hides) a <see cref="ComponentDB"/> in a zip archive
+    /// where the files are managed.
     /// </summary>
     public class ZipRuntimeArchive : IDisposable
     {
+        public const string DbXmlFileName = "db.xml";
+
         readonly string _path;
         readonly List<string> _cleanupFiles;
         readonly IActivityMonitor _monitor;
         readonly EventSink _sink;
-        readonly IComponentDBRemote _remote;
         ComponentDB _dbCurrent;
         ComponentDB _dbOrigin;
         ZipArchive _archive;
-        ZipArchiveEntry _dbEntry;
 
         class EventSink : IComponentDBEventSink
         {
@@ -87,28 +88,28 @@ namespace CKSetup
             public Queue<Tuple<ComponentRef, object>> Events => _events;
         }
 
-        ZipRuntimeArchive( IActivityMonitor monitor, string path, IComponentDBRemote remote = null )
+        ZipRuntimeArchive( IActivityMonitor monitor, string path )
         {
             _path = path;
             _sink = new EventSink( this );
             _archive = ZipFile.Open( path, ZipArchiveMode.Update );
             _cleanupFiles = new List<string>();
-            _remote = remote;
             _monitor = monitor;
+            bool success = true;
             if( _archive.Entries.Count == 0 )
             {
                 monitor.Info().Send( $"Creating new zip file." );
                 _dbCurrent = new ComponentDB( _sink );
-                _dbEntry = _archive.CreateEntry( "db.xml" );
+                _archive.CreateEntry( DbXmlFileName );
             }
             else
             {
-                _dbEntry = _archive.GetEntry( "db.xml" );
-                if( _dbEntry != null )
+                var dbEntry = _archive.GetEntry( DbXmlFileName );
+                if( dbEntry != null )
                 {
                     try
                     {
-                        using( var content = _dbEntry.Open() )
+                        using( var content = dbEntry.Open() )
                         {
                             _dbOrigin = _dbCurrent = new ComponentDB( _sink, XDocument.Load( content ).Root );
                             monitor.Trace().Send( $"Opened zip: {_dbOrigin.Components.Count} components, {_archive.Entries.Count} files." );
@@ -116,22 +117,27 @@ namespace CKSetup
                     }
                     catch( Exception ex )
                     {
-                        _dbEntry = null;
-                        monitor.Fatal().Send( ex, "Invalid db.xml manifest." );
+                        monitor.Fatal().Send( ex, $"Invalid {DbXmlFileName} manifest." );
+                        success = false;
                     }
                 }
                 else
                 {
-                    monitor.Error().Send( "File is not a valid runtime zip (db.xml manifest not found)." );
+                    monitor.Error().Send( $"File is not a valid runtime zip ({DbXmlFileName} manifest not found)." );
+                    success = false;
                 }
             }
-            if( _dbEntry == null ) _archive.Dispose();
+            if( !success )
+            {
+                _archive.Dispose();
+                _archive = null;
+            }
         }
 
         /// <summary>
         /// Gets whether this database is has been successfully opened.
         /// </summary>
-        public bool IsValid => _dbEntry != null;
+        public bool IsValid => _archive != null;
 
         /// <summary>
         /// Registers a file that will be automatically deleted when this <see cref="ZipRuntimeArchive"/>
@@ -174,7 +180,7 @@ namespace CKSetup
                     int count = 0;
                     foreach( var e in _archive.Entries )
                     {
-                        if( e == _dbEntry ) continue;
+                        if( e.Name == DbXmlFileName ) continue;
                         e.Delete();
                         ++count;
                     }
@@ -219,13 +225,34 @@ namespace CKSetup
             return true;
         }
 
+        class ComponentDownloader : IComponentDownloader
+        {
+            readonly ZipRuntimeArchive _archive;
+            readonly IComponentImporter _importer;
+
+            public ComponentDownloader( ZipRuntimeArchive a, IComponentImporter importer )
+            {
+                _archive = a;
+                _importer = importer;
+            }
+
+            public ComponentDB Download( IActivityMonitor monitor, ComponentMissingDescription missing )
+            {
+                using( var s = _importer.OpenImportStream( monitor, missing ) )
+                {
+                    if( s == null || !_archive.ImportComponents( monitor, s ).Result ) return null;
+                    return _archive._dbCurrent;
+                }
+            }
+        }
+
         /// <summary>
         /// Extracts required runtime support for Models in a targets.
         /// </summary>
         /// <param name="targets">The target folders.</param>
         /// <param name="runPath">Optional run path: the first target <see cref="BinFolder.BinPath"/> is the default.</param>
         /// <returns>True on success, false on error.</returns>
-        public bool ExtractRuntimeDependencies( IEnumerable<BinFolder> targets, string runPath = null )
+        public bool ExtractRuntimeDependencies( IEnumerable<BinFolder> targets, string runPath = null, IComponentImporter missingImporter = null )
         {
             if( !targets.Any() ) throw new ArgumentException( "At least one target is required.", nameof( targets ) );
             using( _monitor.OpenInfo().Send( $"Extracting runtime support for '{targets.Select( t => t.BinPath ).Concatenate()}'." ) )
@@ -234,16 +261,12 @@ namespace CKSetup
                 _monitor.Info().Send( $"Extracting to {runPath}." );
                 var resolver = _dbCurrent.GetRuntimeDependenciesResolver( _monitor, targets );
                 if( resolver == null ) return false;
-                var savedPoint = _sink.GetSavePoint();
-                var r = resolver.Run( _monitor, _remote );
-                if( r.Key == null )
-                {
-                    _sink.Cancel( savedPoint );
-                    return false;
-                }
-                if( HasChanges ) CommitChanges();
-                _dbCurrent = r.Key;
-                var components = r.Value;
+                IComponentDownloader downloader = missingImporter != null 
+                                                    ? new ComponentDownloader( this, missingImporter ) 
+                                                    : null;
+                IReadOnlyList<Component> components = resolver.Run( _monitor, downloader );
+                if( components == null ) return false;
+                Debug.Assert( HasChanges == false, "Any imported changes have been committed." );
                 int count = 0;
                 foreach( var c in components )
                 {
@@ -258,10 +281,7 @@ namespace CKSetup
                                 {
                                     string entry = c.GetRef().EntryPathPrefix + f;
                                     var e = _archive.GetEntry( entry );
-                                    if( e == null )
-                                    {
-                                        throw new InvalidOperationException( $"'{entry}' file not found: CommitChanges must be called firt." );
-                                    }
+                                    Debug.Assert( e != null, "Since CommitChanges has been called." );
                                     e.ExtractToFile( targetPath );
                                     _monitor.Debug().Send( $"Extracted {e.Name}." );
                                     _cleanupFiles.Add( targetPath );
@@ -354,7 +374,7 @@ namespace CKSetup
             }
             if( _dbCurrent != _dbOrigin )
             {
-                using( var content = _dbEntry.Open() )
+                using( var content = _archive.GetEntry( DbXmlFileName ).Open() )
                 {
                     new XDocument( _dbCurrent.ToXml() ).Save( content );
                 }
@@ -362,7 +382,6 @@ namespace CKSetup
             }
             _archive.Dispose();
             _archive = ZipFile.Open( _path, ZipArchiveMode.Update );
-            _dbEntry = _archive.GetEntry( "db.xml" );
         }
 
         /// <summary>
@@ -372,6 +391,7 @@ namespace CKSetup
         /// <param name="fileWriter">Async file writer function.</param>
         /// <param name="output">Output stream.</param>
         /// <param name="cancellation">Optional cancellation token.</param>
+        /// <returns>The awaitable.</returns>
         public Task Export(
             Func<Component, ComponentExportType> filter,
             Stream output,
@@ -392,13 +412,35 @@ namespace CKSetup
         }
 
         /// <summary>
+        /// Exports available components.
+        /// </summary>
+        /// <param name="what">Required description.</param>
+        /// <param name="output">Output stream.</param>
+        /// <param name="monitor">Optional monitor to use.</param>
+        /// <param name="cancellation">Optional cancellation token.</param>
+        /// <returns>The awaitable.</returns>
+        public Task ExportComponents(
+            ComponentMissingDescription what,
+            Stream output,
+            IActivityMonitor monitor = null,
+            CancellationToken cancellation = default( CancellationToken ) )
+        {
+            var content = _dbCurrent.FindAvailable( what, monitor );
+            return Export( c => content.Contains( c )
+                                ? ComponentExportType.DescriptionAndFiles
+                                : ComponentExportType.None,
+                           output,
+                           cancellation );
+        }
+
+        /// <summary>
         /// Imports a set of components from a <see cref="Stream"/>.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="input">Input stream.</param>
         /// <param name="cancellation">Optional cancellation token.</param>
         /// <returns>True on success, false on error.</returns>
-        public async Task<bool> Import(
+        public async Task<bool> ImportComponents(
             IActivityMonitor monitor,
             Stream input,
             CancellationToken cancellation = default( CancellationToken ) )
@@ -411,6 +453,7 @@ namespace CKSetup
                 return false;
             }
             _dbCurrent = n;
+            CommitChanges();
             return true;
         }
 
@@ -445,13 +488,12 @@ namespace CKSetup
         /// </summary>
         /// <param name="m">Monitor to use. Can not be null.</param>
         /// <param name="path">Path to the file to open or create.</param>
-        /// <param name="remote">Optional remote component provider.</param>
         /// <returns>An archive or null on error.</returns>
-        static public ZipRuntimeArchive OpenOrCreate( IActivityMonitor m, string path, IComponentDBRemote remote = null )
+        static public ZipRuntimeArchive OpenOrCreate( IActivityMonitor m, string path )
         {
             try
             {
-                var z = new ZipRuntimeArchive( m, path, remote );
+                var z = new ZipRuntimeArchive( m, path );
                 return z.IsValid ? z : null;
             }
             catch( Exception ex )
@@ -468,7 +510,7 @@ namespace CKSetup
         /// </summary>
         public void Dispose()
         {
-            if( _dbEntry == null ) return;
+            if( _archive == null ) return;
             using( _monitor.OpenInfo().Send( "Closing Zip archive." ) )
             {
                 CommitChanges();
@@ -491,7 +533,7 @@ namespace CKSetup
                     }
                 }
                 _archive.Dispose();
-                _dbEntry = null;
+                _archive = null;
             }
         }
     }

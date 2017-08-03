@@ -21,7 +21,7 @@ namespace CKSetup
         /// <param name="n">Component name.</param>
         /// <param name="t">Target framework of the component.</param>
         /// <param name="v">Version of the component.</param>
-        public ComponentRef(string n, TargetFramework t, SVersion v)
+        public ComponentRef( string n, TargetFramework t, SVersion v )
         {
             _targetFramework = t;
             _name = n;
@@ -48,7 +48,7 @@ namespace CKSetup
 
         public string Name => _name;
 
-        public ComponentRef WithTargetFramework( TargetFramework t ) => new ComponentRef(_name, t, _version);
+        public ComponentRef WithTargetFramework( TargetFramework t ) => new ComponentRef( _name, t, _version );
 
         public SVersion Version => _version;
 

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CK.Core;
+using System.IO;
 
 namespace CKSetup.Tests
 {
@@ -28,11 +29,41 @@ namespace CKSetup.Tests
             }
         }
 
-        class FakeRemote : IComponentDBRemote
+
+        [Test]
+        public void setup_SqlCallDemo_with_remote_imports()
         {
-            public ComponentDB Download( IActivityMonitor monitor, TargetRuntime targetRuntime, IReadOnlyCollection<ComponentDependency> missingDependencies, IReadOnlyCollection<ComponentRef> missingEmbedded, ComponentDB db )
+            string zipPath = TestHelper.GetCleanTestZipPath();
+            using( var zip = ZipRuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
+            using( var remoteZip = TestHelper.OpenCKDatabaseZip() )
             {
-                throw new NotImplementedException();
+                CKSetup.SetupCommand.DoSetup(
+                    TestHelper.ConsoleMonitor,
+                    TestHelper.SqlCallDemoModel461Path,
+                    zip,
+                    TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
+                    "SqlCallDemo.Generated.ByCKSetup",
+                    sourceGeneration: true,
+                    missingImporter: new FakeRemote( remoteZip )
+                    ).Should().Be( 0 );
+            }
+        }
+
+        class FakeRemote : IComponentImporter
+        {
+            readonly ZipRuntimeArchive _remote;
+
+            public FakeRemote( ZipRuntimeArchive remote )
+            {
+                _remote = remote;
+            }
+
+            public Stream OpenImportStream( IActivityMonitor monitor, ComponentMissingDescription missing )
+            {
+                var buffer = new MemoryStream();
+                _remote.ExportComponents( missing, buffer, monitor ).Wait();
+                buffer.Position = 0;
+                return buffer;
             }
         }
 
