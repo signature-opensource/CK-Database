@@ -20,6 +20,8 @@ namespace CKSetup
         static public readonly XName Ref = XNamespace.None + "Ref";
         static public readonly XName TargetFramework = XNamespace.None + "TargetFramework";
         static public readonly XName Name = XNamespace.None + "Name";
+        static public readonly XName Length = XNamespace.None + "Length";
+        static public readonly XName SHA1 = XNamespace.None + "SHA1";
         static public readonly XName Version = XNamespace.None + "Version";
 
 

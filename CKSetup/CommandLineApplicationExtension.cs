@@ -63,9 +63,9 @@ namespace CKSetup
                                            false ) );
         }
 
-        static public ZipRuntimeDirArguments AddZipRuntimeDirArguments( this CommandLineApplication @this, string description )
+        static public StoreDirArguments AddStoreDirArguments( this CommandLineApplication @this, string description )
         {
-            return new ZipRuntimeDirArguments( @this.Argument( "ZipRunTimeDir",
+            return new StoreDirArguments( @this.Argument( "ZipRunTimeDir",
                                                description,
                                                true ) );
         }
@@ -78,9 +78,9 @@ namespace CKSetup
                                       CommandOptionType.MultipleValue ) );
         }
 
-        static public ZipRuntimeFileOption AddZipRuntimeFileOption( this CommandLineApplication @this )
+        static public StoreFileOption AddZipRuntimeFileOption( this CommandLineApplication @this )
         {
-            return new ZipRuntimeFileOption( @this.Option(
+            return new StoreFileOption( @this.Option(
                                          "-z|--zipRuntimeFile",
                                          "Full ",
                                          CommandOptionType.SingleValue ) );

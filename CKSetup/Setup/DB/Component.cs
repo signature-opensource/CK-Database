@@ -9,6 +9,9 @@ using CK.Core;
 
 namespace CKSetup
 {
+    /// <summary>
+    /// Immputable component description.
+    /// </summary>
     public class Component
     {
         readonly ComponentRef _ref;
@@ -18,7 +21,7 @@ namespace CKSetup
             ComponentRef cRef,
             IReadOnlyList<ComponentDependency> dependencies,
             IEnumerable<ComponentRef> embedded,
-            IEnumerable<string> files)
+            IEnumerable<ComponentFile> files)
         {
             _ref = cRef;
             ComponentKind = k;
@@ -40,11 +43,11 @@ namespace CKSetup
                                 .Select( d => new ComponentRef( d ) ).ToArray();
             Files = e.Elements( DBXmlNames.Files )
                                 .Elements( DBXmlNames.File )
-                                .Select( f => f.Value ).ToArray();
+                                .Select( f => new ComponentFile( f ) ).ToArray();
             CheckValid();
         }
 
-        private void CheckValid()
+        void CheckValid()
         {
             if( ComponentKind == ComponentKind.None ) throw new ArgumentException( "Invalid ComponentKind." );
             if( Dependencies.Contains( null ) ) throw new ArgumentException( "A dependency can not ne null." );
@@ -58,7 +61,7 @@ namespace CKSetup
                                     _ref.XmlContent(),
                                     new XElement( DBXmlNames.Dependencies, Dependencies.Select( c => c.ToXml() ) ),
                                     new XElement( DBXmlNames.EmbeddedComponents, Embedded.Select( c => c.ToXml() ) ),
-                                    new XElement( DBXmlNames.Files, Files.Select( f => new XElement( DBXmlNames.File, f ) ) ) );
+                                    new XElement( DBXmlNames.Files, Files.Select( f => f.ToXml() ) ) );
         }
 
         public ComponentKind ComponentKind { get; }
@@ -77,7 +80,7 @@ namespace CKSetup
 
         public IReadOnlyList<ComponentRef> Embedded { get; }
 
-        public IReadOnlyList<string> Files { get; }
+        public IReadOnlyList<ComponentFile> Files { get; }
 
         /// <summary>
         /// Overridden to return this <see cref="ComponentRef.EntryPathPrefix"/>.
@@ -85,7 +88,7 @@ namespace CKSetup
         /// <returns></returns>
         public override string ToString() => _ref.ToString();
 
-        public Component WithNewComponent( IComponentDBEventSink sink, IActivityMonitor m, Component newC )
+        public Component WithNewComponent( IActivityMonitor m, Component newC )
         {
             var uselessEmbedded = Embedded.Where( e => e.Equals( newC.GetRef() ) ).SingleOrDefault();
             if( uselessEmbedded.Name == null ) return this;
@@ -94,13 +97,12 @@ namespace CKSetup
             var newDependencies = ComponentKind != ComponentKind.Model && newC.ComponentKind != ComponentKind.Model
                                     ? Dependencies.Append( new ComponentDependency( uselessEmbedded.Name, uselessEmbedded.Version ) ).ToList()
                                     : Dependencies;
-            var newFiles = Files.Where( f => !newC.Files.Contains( f ) ).ToList();
+            var newFiles = Files.Where( f => !newC.Files.Any( cf => cf.Name == f.Name ) ).ToList();
             int delta = Files.Count - newFiles.Count;
             if( delta > 0 )
             {
                 m.Info().Send( $"Removing {delta} files from '{_ref}' thanks to newly registered '{newC.Name}'." );
             }
-            sink?.FilesRemoved( this, newC.Files );
             m.Info().Send( $"Component '{_ref}' does not embedd '{newC.GetRef()}' anymore." );
             return new Component( ComponentKind, _ref, newDependencies, newEmbedded, newFiles );
         }

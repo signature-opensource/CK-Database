@@ -17,10 +17,13 @@ namespace CKSetup
         BinFolder _binFolder;
         HashSet<BinFileInfo> _localDependencies;
         ComponentRef _cRef;
+        SHA1Value _sha1;
 
-        BinFileInfo( string p, AssemblyDefinition a, IActivityMonitor m )
+        BinFileInfo( string p, int len, AssemblyDefinition a, IActivityMonitor m )
         {
             FullPath = p;
+            FileLength = len;
+            _sha1 = SHA1Value.ZeroSHA1;
             InfoVersion = a.GetInformationalVersion();
             Name = a.Name;
             RawTargetFramework = a.CustomAttributes
@@ -130,6 +133,17 @@ namespace CKSetup
         public InformationalVersion InfoVersion { get; }
 
         /// <summary>
+        /// Gets the file length in bytes.
+        /// There is no need/interest to handle files bigger than 2GB here.
+        /// </summary>
+        public int FileLength { get; }
+
+        /// <summary>
+        /// Get the SHA1 of the file (file is loaded the first time and only once).
+        /// </summary>
+        public SHA1Value ContentSHA1 => _sha1.IsZero ? (_sha1 = SHA1Value.ComputeFileSHA1( FullPath )) : _sha1;
+
+        /// <summary>
         /// Gets the TargetFramework if <see cref="System.Runtime.Versioning.TargetFrameworkAttribute"/>
         /// exists on the assembly.
         /// </summary>
@@ -217,16 +231,34 @@ namespace CKSetup
         static BinFileInfo TryRead( IActivityMonitor m, ReaderParameters r, string fullPath )
         {
             BinFileInfo info = null;
-            try
+
+            var fi = new FileInfo( fullPath );
+            long len = fi.Length;
+            if( len > Int32.MaxValue )
             {
-                using( AssemblyDefinition a = AssemblyDefinition.ReadAssembly( fullPath, r ) )
-                {
-                    info = new BinFileInfo( fullPath, a, m );
-                }
+                m.Warn().Send( $"'{fullPath}' is bigger than 2 GiB. It will be ignored." );
             }
-            catch( BadImageFormatException ex )
+            else if( len == 0 )
             {
-                m.Warn().Send( ex, $"While analysing '{fullPath}'." );
+                m.Warn().Send( $"'{fullPath}' is an empty file. It will be ignored." );
+            }
+            else
+            {
+                try
+                {
+                    // Mono.Cecil requires the stream to be seekable. Pity :)
+                    //   using( var file = new FileStream( fullPath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.SequentialScan ) )
+                    //   using( var shaCompute = new SHA1Stream( file, true, true ) )
+                    //   using( AssemblyDefinition a = AssemblyDefinition.ReadAssembly( shaCompute, r ) )
+                    using( AssemblyDefinition a = AssemblyDefinition.ReadAssembly( fullPath, r ) )
+                    {
+                        info = new BinFileInfo( fullPath, (int)len, a, m );
+                    }
+                }
+                catch( BadImageFormatException ex )
+                {
+                    m.Warn().Send( ex, $"While analysing '{fullPath}'." );
+                }
             }
             return info;
         }

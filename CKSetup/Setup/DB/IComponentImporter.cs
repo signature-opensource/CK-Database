@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 namespace CKSetup
 {
     /// <summary>
-    /// Provides an importable stream of components.
+    /// Provides an importable stream of components and a file downloader.
     /// </summary>
-    public interface IComponentImporter
+    public interface IComponentImporter : IComponentFileDownloader
     {
         /// <summary>
         /// Opens a readable stream with available components.

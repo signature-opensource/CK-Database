@@ -27,7 +27,7 @@ namespace CKSetup
             c.StandardConfiguration( true );
             ConnectionStringArgument connectionArg = c.AddConnectionStringArgument();
             BinPathsOption binPaths = c.AddBinPathsOption( "Path to the directory containing the assembly files, and in which the generated assembly will be saved. Defaults to the current working directory." );
-            ZipRuntimeFileOption zipFile = c.AddZipRuntimeFileOption();
+            StoreFileOption zipFile = c.AddZipRuntimeFileOption();
 
             var generatedAssemblyNameOpt = c.Option( "-n|--generatedAssemblyName",
                                                      $"Assembly name, and file name (without the .dll suffix) of the generated assembly. Defaults to 'CK.StObj.AutoAssembly'.",
@@ -48,7 +48,7 @@ namespace CKSetup
                 {
                     throw new NotImplementedException( "Multi Bin path Setup is not yet implemented." );
                 }
-                using( ZipRuntimeArchive zip = ZipRuntimeArchive.OpenOrCreate( monitor, zipFile.ZipRuntimeFile ) )
+                using( RuntimeArchive zip = RuntimeArchive.OpenOrCreate( monitor, zipFile.StorePath ) )
                 {
                     if( zip == null ) return Program.RetCodeError;
                     return DoSetup(
@@ -73,7 +73,7 @@ namespace CKSetup
         /// <param name="sourceGeneration">True to generate source code.</param>
         /// <param name="missingImporter">Optional component importer.</param>
         /// <returns>Program return code (0 for success).</returns>
-        public static int DoSetup( IActivityMonitor monitor, string binPath, ZipRuntimeArchive zip, string targetConnectionString, string generatedAssemblyName, bool sourceGeneration, IComponentImporter missingImporter = null )
+        public static int DoSetup( IActivityMonitor monitor, string binPath, RuntimeArchive zip, string targetConnectionString, string generatedAssemblyName, bool sourceGeneration, IComponentImporter missingImporter = null )
         {
             var binFolder = BinFolder.ReadBinFolder( monitor, binPath );
             if( binFolder == null ) return Program.RetCodeError;

@@ -7,6 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 using CK.Core;
 using System.IO;
+using CKSetup.StreamStore;
+using System.Reflection;
 
 namespace CKSetup.Tests
 {
@@ -34,7 +36,7 @@ namespace CKSetup.Tests
         public void setup_SqlCallDemo_with_remote_imports()
         {
             string zipPath = TestHelper.GetCleanTestZipPath();
-            using( var zip = ZipRuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
+            using( var zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
             using( var remoteZip = TestHelper.OpenCKDatabaseZip() )
             {
                 CKSetup.SetupCommand.DoSetup(
@@ -49,23 +51,6 @@ namespace CKSetup.Tests
             }
         }
 
-        class FakeRemote : IComponentImporter
-        {
-            readonly ZipRuntimeArchive _remote;
-
-            public FakeRemote( ZipRuntimeArchive remote )
-            {
-                _remote = remote;
-            }
-
-            public Stream OpenImportStream( IActivityMonitor monitor, ComponentMissingDescription missing )
-            {
-                var buffer = new MemoryStream();
-                _remote.ExportComponents( missing, buffer, monitor ).Wait();
-                buffer.Position = 0;
-                return buffer;
-            }
-        }
 
         [Test]
         public void setup_SqlCallDemo_for_netstandard13()
@@ -91,7 +76,6 @@ namespace CKSetup.Tests
             {
                 zip.AddComponent( BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SqlActorPackageModel461Path ) ).Should().BeTrue();
                 zip.AddComponent( BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SqlActorPackageRuntime461Path ) ).Should().BeTrue();
-                zip.CommitChanges();
                 CKSetup.SetupCommand.DoSetup(
                     TestHelper.ConsoleMonitor,
                     TestHelper.SqlActorPackageModel461Path,

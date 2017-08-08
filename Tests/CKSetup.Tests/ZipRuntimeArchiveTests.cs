@@ -16,8 +16,8 @@ namespace CKSetup.Tests
         [Test]
         public void adding_setupable_runtimes_files_to_zip()
         {
-            string zipPath = TestHelper.GetTestZipPath();
-            using( ZipRuntimeArchive zip = ZipRuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
+            string zipPath = TestHelper.GetCleanTestZipPath();
+            using( RuntimeArchive zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
             {
                 zip.Should().NotBeNull();
                 var folder = BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SetupableRuntime461Path );
@@ -26,12 +26,18 @@ namespace CKSetup.Tests
             }
             ZipContent c = new ZipContent( zipPath );
             c.Db.Should().NotBeNull();
-            var setupableRuntimeFiles = c.Files.Where( e => e.ComponentName == "CK.Setupable.Runtime" && e.Framework == "Net461" );
-            setupableRuntimeFiles.Should().Contain( f => f.FilePath == "CK.StObj.Model.dll" );
-            setupableRuntimeFiles.Should().Contain( f => f.FilePath == "CK.StObj.Runtime.dll" );
-            setupableRuntimeFiles.Should().Contain( f => f.FilePath == "CK.Setupable.Model.dll" );
-            setupableRuntimeFiles.Should().Contain( f => f.FilePath == "CK.Setupable.Runtime.dll" );
-            setupableRuntimeFiles.Should().Contain( f => f.FilePath == "CK.ActivityMonitor.dll" );
+
+            var setupableRuntime = c.ComponentDB
+                                    .Components
+                                    .Single( x => x.Name == "CK.Setupable.Runtime"
+                                                  && x.TargetFramework == TargetFramework.Net461 );
+            c.AllComponentFilesShouldBeStored( setupableRuntime );
+            c.ComponentShouldContainFiles( setupableRuntime, 
+                "CK.StObj.Model.dll",
+                "CK.StObj.Runtime.dll",
+                "CK.Setupable.Model.dll",
+                "CK.Setupable.Runtime.dll",
+                "CK.ActivityMonitor.dll" );
         }
 
         [TestCase( true )]
@@ -39,7 +45,7 @@ namespace CKSetup.Tests
         public void adding_both_setupable_runtime_and_setupable_model( bool runtimeFirst )
         {
             string zipPath = TestHelper.GetTestZipPath( runtimeFirst ? ".runtimeFirst" : ".modelFirst" );
-            using( ZipRuntimeArchive zip = ZipRuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
+            using( RuntimeArchive zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
             {
                 if( runtimeFirst )
                 {
@@ -54,25 +60,27 @@ namespace CKSetup.Tests
             }
             ZipContent c = new ZipContent( zipPath );
             c.Db.Should().NotBeNull();
-            var setupableRuntimeFiles = c.Files.Where( e => e.ComponentName == "CK.Setupable.Runtime" && e.Framework == "Net461" );
-            var setupableModelFiles = c.Files.Where( e => e.ComponentName == "CK.Setupable.Model" && e.Framework == "Net461" );
+            var setupableRuntime = c.ComponentDB.Components.Single( e => e.Name == "CK.Setupable.Runtime" && e.TargetFramework == TargetFramework.Net461 );
+            var setupableModel = c.ComponentDB.Components.Single( e => e.Name == "CK.Setupable.Model" && e.TargetFramework == TargetFramework.Net461 );
 
             // Model files are not stored.
-            setupableModelFiles.Should().BeEmpty();
+            setupableModel.Files.Should().BeEmpty();
 
             // Only runtimes files remains: Model files are removed.
-            setupableRuntimeFiles.Should().Contain( f => f.FilePath == "CK.StObj.Runtime.dll" );
-            setupableRuntimeFiles.Should().Contain( f => f.FilePath == "CK.Setupable.Runtime.dll" );
-            setupableModelFiles.Should().NotContain( f => f.FilePath == "CK.Setupable.Model.dll" );
-            setupableModelFiles.Should().NotContain( f => f.FilePath == "CK.StObj.Model.dll" );
-            setupableModelFiles.Should().NotContain( f => f.FilePath == "CK.ActivityMonitor.dll" );
+            c.ComponentShouldContainFiles( setupableRuntime,
+                "CK.StObj.Runtime.dll",
+                "CK.Setupable.Runtime.dll" );
+            c.ComponentShouldNotContainFiles( setupableRuntime,
+                "CK.Setupable.Model.dll", 
+                "CK.StObj.Model.dll", 
+                "CK.ActivityMonitor.dll" );
         }
 
         [Test]
         public void ComponentDB_maintains_a_MissingRegistrations_set_of_ComponentRef()
         {
             string zipPath = TestHelper.GetCleanTestZipPath();
-            using( ZipRuntimeArchive zip = ZipRuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
+            using( RuntimeArchive zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
             {
                 zip.SimpleMissingRegistrations.Should().BeEmpty();
                 // Add the terminal model: SqlActorPackage
@@ -171,7 +179,7 @@ namespace CKSetup.Tests
                 zip.SimpleMissingRegistrations.Should().BeEmpty();
             }
             string zipPathRev = TestHelper.GetCleanTestZipPath( "Reversed" );
-            using( ZipRuntimeArchive zip = ZipRuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPathRev ) )
+            using( RuntimeArchive zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPathRev ) )
             {
                 zip.AddComponent( BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SqlServerSetupModel461Path ) ).Should().BeTrue();
                 zip.AddComponent( BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SetupableRuntime461Path ) ).Should().BeTrue();
@@ -194,25 +202,22 @@ namespace CKSetup.Tests
 
 
         [Test]
-        public async Task importing_exporting_components()
+        public void importing_exporting_components()
         {
             string zipPath = TestHelper.GetCleanTestZipPath();
-            using( ZipRuntimeArchive zip = ZipRuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
-            using( ZipRuntimeArchive realZip = TestHelper.OpenCKDatabaseZip() )
+            using( RuntimeArchive zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
+            using( RuntimeArchive realZip = TestHelper.OpenCKDatabaseZip() )
             using( Stream buffer = new MemoryStream() )
             {
-                await zip.Export( c => ComponentExportType.DescriptionAndFiles, buffer );
+                zip.Export( c => true, buffer );
                 buffer.Position.Should().BeLessThan( 100, "Only marker contents." );
 
                 buffer.Position = 0;
-                await realZip.Export( c => c.Name == "CK.Setupable.Engine" 
-                                            ? ComponentExportType.DescriptionAndFiles 
-                                            : ComponentExportType.None, 
-                                           buffer );
+                realZip.Export( c => c.Name == "CK.Setupable.Engine", buffer );
                 buffer.Position.Should().BeGreaterThan( 100 );
                 buffer.WriteByte( 251 );
                 buffer.Position = 0;
-                (await zip.ImportComponents( TestHelper.ConsoleMonitor, buffer )).Should().BeTrue();
+                zip.ImportComponents( TestHelper.ConsoleMonitor, buffer, new FakeRemote( realZip ) ).Should().BeTrue();
                 buffer.ReadByte().Should().Be( 251 );
             }
             ZipContent content = new ZipContent( zipPath );

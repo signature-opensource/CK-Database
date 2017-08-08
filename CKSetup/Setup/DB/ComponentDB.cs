@@ -15,19 +15,14 @@ namespace CKSetup
 {
     /// <summary>
     /// Immutable collection of <see cref="Component"/>.
-    /// Files are handled externally thanks to <see cref="IComponentDBEventSink"/>.
     /// </summary>
     public class ComponentDB
     {
-        readonly IComponentDBEventSink _sink;
-
         /// <summary>
         /// Initializes a new mpty <see cref="ComponentDB"/>.
         /// </summary>
-        /// <param name="sink">The sink for the events. Can be null if changes don't need to be tracked.</param>
-        public ComponentDB( IComponentDBEventSink c )
+        public ComponentDB()
         {
-            _sink = c;
             Components = Array.Empty<Component>();
         }
 
@@ -36,9 +31,8 @@ namespace CKSetup
         /// </summary>
         /// <param name="sink">The sink for the events. Can be null if changes don't need to be tracked.</param>
         /// <param name="e">The xml element.</param>
-        public ComponentDB( IComponentDBEventSink sink, XElement e )
+        public ComponentDB( XElement e )
         {
-            _sink = sink;
             var comps = new List<Component>();
             Components = comps;
             foreach( var c in e.Elements( DBXmlNames.Component ) )
@@ -47,9 +41,8 @@ namespace CKSetup
             }
         }
 
-        ComponentDB( IComponentDBEventSink sink, IEnumerable<Component> components )
+        ComponentDB( IEnumerable<Component> components )
         {
-            _sink = sink;
             Components = components.ToArray();
         }
 
@@ -72,7 +65,6 @@ namespace CKSetup
         /// currently discovered as embedded inside other ones.
         /// </summary>
         public IEnumerable<ComponentRef> EmbeddedComponents => Components.SelectMany( c => c.Embedded ).Distinct();
-
 
         /// <summary>
         /// Tries to finds the best available component for the given runtime, and a 
@@ -115,30 +107,50 @@ namespace CKSetup
             return c;
         }
 
+        public struct AddResult
+        {
+            public readonly ComponentDB NewDB;
+            public readonly Component NewComponent;
+            public readonly bool Error;
+
+            public AddResult( ComponentDB db, Component c )
+            {
+                NewDB = db;
+                NewComponent = c;
+                Error = false;
+            }
+            public AddResult( bool error )
+            {
+                NewDB = null;
+                NewComponent = null;
+                Error = error;
+            }
+        }
+
         /// <summary>
         /// Registers a bin folder. 
         /// </summary>
         /// <param name="m">The monitor to use.</param>
         /// <param name="folder">The folder to register.</param>
         /// <returns>Null on error, this <see cref="ComponentDB"/> if no changes occured or a new database.</returns>
-        public ComponentDB Add( IActivityMonitor m, BinFolder folder )
+        public AddResult Add( IActivityMonitor m, BinFolder folder )
         {
             if( !folder.Heads.Any() )
             {
                 m.Error().Send( "No components found." );
-                return null;
+                return new AddResult( true );
             }
             var freeHeads = folder.Heads.Where( h => Find( h.ComponentRef ) == null );
             int freeHeadsCount = freeHeads.Count();
             if( freeHeadsCount > 1 )
             {
                 m.Error().Send( $"Cannot register '{freeHeads.Select( h => h.Name.Name ).Concatenate( "', '" )}' at the same time. They must be registered individually." );
-                return null;
+                return new AddResult( true );
             }
             if( freeHeadsCount == 0 )
             {
                 m.Warn().Send( $"No component added (found already registered Components: '{folder.Heads.Select( h => h.Name.Name ).Concatenate( "', '" )}')" );
-                return this;
+                return new AddResult( this, null );
             }
             BinFileInfo toAdd = freeHeads.Single();
             using( m.OpenInfo().Send( $"Found '{toAdd.ComponentRef.EntryPathPrefix}' to register." ) )
@@ -146,7 +158,7 @@ namespace CKSetup
                 List<ComponentDependency> dependencies = CollectSetupDependencies( m, toAdd.SetupDependencies );
 
                 var embeddedComponents = new List<ComponentRef>();
-                var files = folder.Files.Select( f => f.LocalFileName );
+                IEnumerable<BinFileInfo> binFiles = folder.Files;
                 foreach( var sub in folder.Components )
                 {
                     if( sub == toAdd ) continue;
@@ -156,14 +168,14 @@ namespace CKSetup
                         if( dependencies.Any( d => d.UseName == cSub.Name ) )
                         {
                             m.Error().Send( $"{cSub.Name} is declared as a Setup dependency but exists as an embedded component." );
-                            return null;
+                            return new AddResult( true );
                         }
                         if( toAdd.ComponentKind != ComponentKind.Model && cSub.ComponentKind != ComponentKind.Model )
                         {
                             dependencies.Add( new ComponentDependency( cSub.Name, cSub.Version ) );
                         }
                         m.Info().Send( $"Removing {cSub.Files.Count} files thanks to already registered '{cSub.GetRef()}'." );
-                        files = files.Where( f => !cSub.Files.Contains( f ) );
+                        binFiles = binFiles.Where( f => !cSub.Files.Any( fc => fc.Name == f.LocalFileName ) );
                     }
                     else
                     {
@@ -171,46 +183,34 @@ namespace CKSetup
                         embeddedComponents.Add( sub.ComponentRef );
                     }
                 }
+                var files = binFiles.Select( bf => new ComponentFile( bf.LocalFileName, bf.FileLength, bf.ContentSHA1 ) );
                 var newC = new Component( toAdd.ComponentKind, toAdd.ComponentRef, dependencies, embeddedComponents, files );
-                _sink?.ComponentLocallyAdded( newC, folder );
-                return DoAdd( m, newC );
+                return new AddResult( DoAdd( m, newC ), newC );
             }
         }
 
-        ComponentDB DoAdd( IActivityMonitor m, Component newC ) => new ComponentDB( _sink, Components.Select( c => c.WithNewComponent( _sink, m, newC ) ).Append( newC ) );
+        ComponentDB DoAdd( IActivityMonitor m, Component newC ) => new ComponentDB( Components.Select( c => c.WithNewComponent( m, newC ) ).Append( newC ) );
 
         /// <summary>
         /// Exports a filtered set of components to a <see cref="Stream"/>.
         /// </summary>
         /// <param name="filter">Filter for components to export.</param>
-        /// <param name="fileWriter">Async file writer function.</param>
         /// <param name="output">Output stream.</param>
-        /// <param name="cancellation">Optional cancellation token.</param>
-        public async Task Export(
-            Func<Component, ComponentExportType> filter,
-            Func<ComponentRef, string, Stream, CancellationToken, Task> fileWriter,
-            Stream output,
-            CancellationToken cancellation = default( CancellationToken ) )
+        public void Export( Func<Component, bool> filter, Stream output )
         {
             using( CKBinaryWriter writer = new CKBinaryWriter( output, Encoding.UTF8, true ) )
             {
+                // Version is currently 0.
                 writer.WriteNonNegativeSmallInt32( 0 );
                 foreach( var c in Components )
                 {
-                    var type = filter( c );
-                    if( type == ComponentExportType.None ) continue;
-                    writer.Write( (byte)type );
-                    writer.Write( c.ToXml().ToString( SaveOptions.DisableFormatting ) );
-                    if( type == ComponentExportType.DescriptionAndFiles )
+                    if( filter( c ) )
                     {
-                        foreach( var f in c.Files )
-                        {
-                            await fileWriter( c.GetRef(), f, output, cancellation );
-                            cancellation.ThrowIfCancellationRequested();
-                        }
+                        writer.Write( true );
+                        writer.Write( c.ToXml().ToString( SaveOptions.DisableFormatting ) );
                     }
                 }
-                writer.Write( (byte)ComponentExportType.None );
+                writer.Write( false );
             }
         }
 
@@ -218,15 +218,10 @@ namespace CKSetup
         /// Imports a set of components from a <see cref="Stream"/>.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
-        /// <param name="fileReader">Async file reader function.</param>
         /// <param name="input">Input stream.</param>
         /// <param name="cancellation">Optional cancellation token.</param>
         /// <returns>The new ComponentDB with imported components.</returns>
-        public async Task<ComponentDB> Import(
-            IActivityMonitor monitor,
-            Func<ComponentRef, string, bool, Stream, CancellationToken, Task> fileReader,
-            Stream input,
-            CancellationToken cancellation = default( CancellationToken ) )
+        public ComponentDB Import( IActivityMonitor monitor, Stream input )
         {
             using( monitor.OpenInfo().Send( "Starting components import." ) )
             using( CKBinaryReader reader = new CKBinaryReader( input, Encoding.UTF8, true ) )
@@ -236,29 +231,19 @@ namespace CKSetup
                 {
                     var v = reader.ReadNonNegativeSmallInt32();
                     monitor.Debug().Send( $"Stream version: {v}" );
-                    ComponentExportType type;
-                    while( (type = (ComponentExportType)reader.ReadByte()) != ComponentExportType.None )
+                    while( reader.ReadBoolean() )
                     {
                         var newC = new Component( XElement.Parse( reader.ReadString() ) );
-                        if( type == ComponentExportType.DescriptionAndFiles )
+                        bool skip = currentDb.Find( newC.GetRef() ) != null;
+                        if( skip )
                         {
-                            bool skip = currentDb.Find( newC.GetRef() ) != null;
-                            if( skip )
-                            {
-                                monitor.Trace().Send( $"Skipping '{newC}' since it already exists." );
-                            }
-                            else
-                            {
-                                monitor.Trace().Send( $"Importing Component '{newC}' ({newC.Files.Count} files)." );
-                            }
-                            foreach( var f in newC.Files )
-                            {
-                                await fileReader( newC.GetRef(), f, skip, input, cancellation );
-                                _sink?.FileImported( newC, f );
-                                cancellation.ThrowIfCancellationRequested();
-                            }
+                            monitor.Warn().Send( $"Skipping '{newC}' since it already exists." );
                         }
-                        currentDb = currentDb.DoAdd( monitor, newC );
+                        else
+                        {
+                            monitor.Trace().Send( $"Importing Component '{newC}' ({newC.Files.Count} files)." );
+                            currentDb = currentDb.DoAdd( monitor, newC );
+                        }
                     }
                 }
                 catch( Exception ex )

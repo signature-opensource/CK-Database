@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace CKSetup
 {
-    class ZipRuntimeDirArguments
+    class StoreDirArguments
     {
-        public ZipRuntimeDirArguments( CommandArgument arg )
+        public StoreDirArguments( CommandArgument arg )
         {
             CommandArgument = arg;
         }

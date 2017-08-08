@@ -164,10 +164,10 @@ namespace CKSetup.Tests
         static bool _standardDbHasNet461;
         static bool _standardDbHasNetStandard;
 
-        public static ZipRuntimeArchive OpenCKDatabaseZip( bool withNetStandard = false )
+        public static RuntimeArchive OpenCKDatabaseZip( bool withNetStandard = false )
         {
             string zipPath = GetTestZipPath( null, "Standard" );
-            ZipRuntimeArchive zip = ZipRuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath );
+            RuntimeArchive zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath );
             if( !_standardDbHasNet461 )
             {
                 zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjModel461Path ) ).Should().BeTrue();
@@ -198,7 +198,6 @@ namespace CKSetup.Tests
             }
 
             #endregion
-            zip.CommitChanges();
             return zip;
         }
 
