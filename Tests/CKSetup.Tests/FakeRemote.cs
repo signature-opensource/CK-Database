@@ -28,10 +28,10 @@ namespace CKSetup.Tests
             buffer.Position = 0;
             return buffer;
         }
-        public Task<StoredStream> GetDownloadStreamAsync( IActivityMonitor monitor, SHA1Value file, CompressionKind preferred )
+
+        public StoredStream GetDownloadStream( IActivityMonitor monitor, SHA1Value file, CompressionKind preferred )
         {
-            var s = _privateStore.OpenRead( file.ToString(), preferred );
-            return Task.FromResult( s );
+            return _privateStore.OpenRead( file.ToString(), preferred );
         }
 
     }

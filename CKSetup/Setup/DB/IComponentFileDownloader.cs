@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace CKSetup
 {
     /// <summary>
-    /// Asynchronous file downloader.
+    /// File downloader.
     /// </summary>
     public interface IComponentFileDownloader
     {
@@ -21,6 +21,6 @@ namespace CKSetup
         /// <param name="file">SHA1 of the required file.</param>
         /// <param name="kind">The compression format of the returned stream.</param>
         /// <returns>An opened readable stream along with its compression kind (or a null <see cref="StoredStream.Stream"/> if it does not exist).</returns>
-        Task<StoredStream> GetDownloadStreamAsync( IActivityMonitor monitor, SHA1Value file, CompressionKind kind );
+        StoredStream GetDownloadStream( IActivityMonitor monitor, SHA1Value file, CompressionKind kind );
     }
 }

@@ -217,7 +217,7 @@ namespace CKSetup.Tests
                 buffer.Position.Should().BeGreaterThan( 100 );
                 buffer.WriteByte( 251 );
                 buffer.Position = 0;
-                zip.ImportComponents( TestHelper.ConsoleMonitor, buffer, new FakeRemote( realZip ) ).Should().BeTrue();
+                zip.ImportComponents( buffer, new FakeRemote( realZip ) ).Should().BeTrue();
                 buffer.ReadByte().Should().Be( 251 );
             }
             ZipContent content = new ZipContent( zipPath );

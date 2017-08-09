@@ -144,9 +144,11 @@ namespace CKSetup
             if( !IsValid ) throw new InvalidOperationException();
             using( _monitor.OpenInfo().Send( $"Adding components from '{folder.BinPath}'." ) )
             {
-                var result = _dbCurrent.Add( _monitor, folder );
+                var result = _dbCurrent.AddLocal( _monitor, folder );
                 if( result.Error ) return false;
-                if( result.NewComponent != null )
+                // We do not store files for models: they are necessarily in 
+                // any target folders that has the model!
+                if( result.NewComponent != null && result.NewComponent.ComponentKind != ComponentKind.Model )
                 {
                     var newFileKeys = new List<string>();
                     foreach( var f in folder.Files )
@@ -190,7 +192,7 @@ namespace CKSetup
             {
                 using( var s = _importer.OpenImportStream( monitor, missing ) )
                 {
-                    if( s == null || !_archive.ImportComponents( monitor, s, _importer ) ) return null;
+                    if( s == null || !_archive.ImportComponents( s, _importer ) ) return null;
                     return _archive._dbCurrent;
                 }
             }
@@ -228,7 +230,17 @@ namespace CKSetup
                             {
                                 try
                                 {
-                                    _store.ExtractToFile( f.SHA1.ToString(), targetPath );
+                                    string fileKey = f.SHA1.ToString();
+                                    if( !_store.Exists(fileKey) )
+                                    {
+                                        if( missingImporter == null )
+                                        {
+                                            _monitor.Error().Send( $"Missing file '{f}' in local store." );
+                                            return false;
+                                        }
+                                        if( !Download( missingImporter, f ) ) return false;
+                                    }
+                                    _store.ExtractToFile( fileKey, targetPath );
                                     _monitor.Debug().Send( $"Extracted {f.Name}." );
                                     _cleanupFiles.Add( targetPath );
                                     ++count;
@@ -274,20 +286,70 @@ namespace CKSetup
         }
 
         /// <summary>
-        /// Imports a set of components from a <see cref="Stream"/>.
+        /// Imports a set of components from a <see cref="Stream"/> and a downloader.
         /// </summary>
-        /// <param name="monitor">Monitor to use.</param>
         /// <param name="input">Input stream.</param>
+        /// <param name="downloader">Missing files downloader.</param>
         /// <returns>True on success, false on error.</returns>
-        public bool ImportComponents( IActivityMonitor monitor, Stream input, IComponentFileDownloader downloader = null )
+        public bool ImportComponents( Stream input, IComponentFileDownloader downloader = null )
         {
-            var n = _dbCurrent.Import( monitor, input );
-            if( n == null )
+            var n = _dbCurrent.Import( _monitor, input );
+            if( n.Error ) return false;
+            if( downloader != null && n.NewComponents != null && n.NewComponents.Count > 0 )
             {
-                return false;
+                using( _monitor.OpenInfo().Send( $"Downloading missing files." ) )
+                {
+                    var newFiles = n.NewComponents
+                                    .SelectMany( c => c.Files )
+                                    .ToLookup( f => f.SHA1 )
+                                    .Where( g => !_store.Exists( g.Key.ToString() ) )
+                                    .ToList();
+                    if( newFiles.Count == 0 )
+                    {
+                        _monitor.CloseGroup( "All files are already in the store." );
+                    }
+                    else
+                    {
+                        int failedCount = 0;
+                        _monitor.Info().Send( $"{newFiles.Count} files missing." );
+                        foreach( var f in newFiles.Select( g => g.First() ) )
+                        {
+                            if( !Download( downloader, f ) ) failedCount++;
+                        }
+                        if( failedCount > 0 )
+                        {
+                            _monitor.Error().Send( $"{failedCount} download errors. Import canceled." );
+                            return false;
+                        }
+                    }
+                }
             }
-            _dbCurrent = n;
+            _dbCurrent = n.NewDB;
             return true;
+        }
+
+        bool Download( IComponentFileDownloader downloader, ComponentFile f )
+        {
+            using( _monitor.OpenInfo().Send( $"Downloading {f}." ) )
+            {
+                var storedStream = downloader.GetDownloadStream( _monitor, f.SHA1, _storageKind );
+                if( storedStream.Stream == null )
+                {
+                    _monitor.Error().Send( $"Unable to obtain file from its SHA1 from downloader." );
+                    return false;
+                }
+                try
+                {
+                    _store.Create( f.SHA1.ToString(), storedStream.Stream, storedStream.Kind, _storageKind );
+                    _monitor.CloseGroup( "Successfully downloaded." );
+                    return true;
+                }
+                catch( Exception ex )
+                {
+                    _monitor.Error().Send( ex );
+                    return false;
+                }
+            }
         }
 
         void SaveDbCurrent()

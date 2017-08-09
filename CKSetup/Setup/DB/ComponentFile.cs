@@ -56,6 +56,9 @@ namespace CKSetup
             if( Length <= 0 ) throw new ArgumentOutOfRangeException( nameof( Length ) );
         }
 
-
+        public override string ToString()
+        {
+            return $"{Name} ({Length}), sha1: {SHA1}";
+        }
     }
 }

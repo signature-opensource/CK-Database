@@ -107,23 +107,29 @@ namespace CKSetup
             return c;
         }
 
-        public struct AddResult
+        /// <summary>
+        /// Captures the result of <see cref="ComponentDB.AddLocal"/>.
+        /// </summary>
+        public struct AddLocalResult
         {
+            /// <summary>
+            /// The new db. Null on error.
+            /// </summary>
             public readonly ComponentDB NewDB;
+            /// <summary>
+            /// The added component. Can be null if the added component
+            /// was already registered.
+            /// </summary>
             public readonly Component NewComponent;
-            public readonly bool Error;
+            /// <summary>
+            /// True on error, otherwise false.
+            /// </summary>
+            public bool Error => NewDB == null;
 
-            public AddResult( ComponentDB db, Component c )
+            internal AddLocalResult( ComponentDB db, Component c = null )
             {
                 NewDB = db;
                 NewComponent = c;
-                Error = false;
-            }
-            public AddResult( bool error )
-            {
-                NewDB = null;
-                NewComponent = null;
-                Error = error;
             }
         }
 
@@ -132,25 +138,25 @@ namespace CKSetup
         /// </summary>
         /// <param name="m">The monitor to use.</param>
         /// <param name="folder">The folder to register.</param>
-        /// <returns>Null on error, this <see cref="ComponentDB"/> if no changes occured or a new database.</returns>
-        public AddResult Add( IActivityMonitor m, BinFolder folder )
+        /// <returns>The new ComponentDB with added component.</returns>
+        public AddLocalResult AddLocal( IActivityMonitor m, BinFolder folder )
         {
             if( !folder.Heads.Any() )
             {
                 m.Error().Send( "No components found." );
-                return new AddResult( true );
+                return new AddLocalResult( null );
             }
             var freeHeads = folder.Heads.Where( h => Find( h.ComponentRef ) == null );
             int freeHeadsCount = freeHeads.Count();
             if( freeHeadsCount > 1 )
             {
                 m.Error().Send( $"Cannot register '{freeHeads.Select( h => h.Name.Name ).Concatenate( "', '" )}' at the same time. They must be registered individually." );
-                return new AddResult( true );
+                return new AddLocalResult( null );
             }
             if( freeHeadsCount == 0 )
             {
                 m.Warn().Send( $"No component added (found already registered Components: '{folder.Heads.Select( h => h.Name.Name ).Concatenate( "', '" )}')" );
-                return new AddResult( this, null );
+                return new AddLocalResult( this );
             }
             BinFileInfo toAdd = freeHeads.Single();
             using( m.OpenInfo().Send( $"Found '{toAdd.ComponentRef.EntryPathPrefix}' to register." ) )
@@ -168,7 +174,7 @@ namespace CKSetup
                         if( dependencies.Any( d => d.UseName == cSub.Name ) )
                         {
                             m.Error().Send( $"{cSub.Name} is declared as a Setup dependency but exists as an embedded component." );
-                            return new AddResult( true );
+                            return new AddLocalResult( null );
                         }
                         if( toAdd.ComponentKind != ComponentKind.Model && cSub.ComponentKind != ComponentKind.Model )
                         {
@@ -185,7 +191,7 @@ namespace CKSetup
                 }
                 var files = binFiles.Select( bf => new ComponentFile( bf.LocalFileName, bf.FileLength, bf.ContentSHA1 ) );
                 var newC = new Component( toAdd.ComponentKind, toAdd.ComponentRef, dependencies, embeddedComponents, files );
-                return new AddResult( DoAdd( m, newC ), newC );
+                return new AddLocalResult( DoAdd( m, newC ), newC );
             }
         }
 
@@ -214,6 +220,19 @@ namespace CKSetup
             }
         }
 
+        public struct ImportResult
+        {
+            public readonly ComponentDB NewDB;
+            public readonly IReadOnlyList<Component> NewComponents;
+            public bool Error => NewDB == null;
+
+            public ImportResult( ComponentDB db, IReadOnlyList<Component> n = null )
+            {
+                NewDB = db;
+                NewComponents = n;
+            }
+        }
+
         /// <summary>
         /// Imports a set of components from a <see cref="Stream"/>.
         /// </summary>
@@ -221,11 +240,12 @@ namespace CKSetup
         /// <param name="input">Input stream.</param>
         /// <param name="cancellation">Optional cancellation token.</param>
         /// <returns>The new ComponentDB with imported components.</returns>
-        public ComponentDB Import( IActivityMonitor monitor, Stream input )
+        public ImportResult Import( IActivityMonitor monitor, Stream input )
         {
             using( monitor.OpenInfo().Send( "Starting components import." ) )
             using( CKBinaryReader reader = new CKBinaryReader( input, Encoding.UTF8, true ) )
             {
+                var newOnes = new List<ComponentRef>();
                 ComponentDB currentDb = this;
                 try
                 {
@@ -243,15 +263,16 @@ namespace CKSetup
                         {
                             monitor.Trace().Send( $"Importing Component '{newC}' ({newC.Files.Count} files)." );
                             currentDb = currentDb.DoAdd( monitor, newC );
+                            newOnes.Add( newC.GetRef() );
                         }
                     }
                 }
                 catch( Exception ex )
                 {
                     monitor.Error().Send( ex );
-                    return null;
+                    return new ImportResult( null );
                 }
-                return currentDb;
+                return new ImportResult( currentDb, newOnes.Select( n => currentDb.Components.Single( c => c.GetRef().Equals( n ) ) ).ToList() );
             }
         }
 

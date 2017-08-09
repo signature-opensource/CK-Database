@@ -57,9 +57,17 @@ namespace CKSetup.StreamStore
         {
             Debug.Assert( Enum.GetNames( typeof( CompressionKind ) ).SequenceEqual( new[] { "None", "GZiped" } ) );
             fullName = Path.Combine( _path, storageKind.ToString(), fullName.ToLowerInvariant() );
-            using( var output = new FileStream( fullName, FileMode.CreateNew, FileAccess.Write, FileShare.None, 4096, FileOptions.SequentialScan ) )
+            try
             {
-                writer( output );
+                using( var output = new FileStream( fullName, FileMode.CreateNew, FileAccess.Write, FileShare.None, 4096, FileOptions.SequentialScan ) )
+                {
+                    writer( output );
+                }
+            }
+            catch( Exception )
+            {
+                File.Delete( fullName );
+                throw;
             }
         }
 

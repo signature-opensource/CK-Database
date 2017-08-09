@@ -59,9 +59,17 @@ namespace CKSetup.StreamStore
             if( Find( fullName ).Entry != null ) throw new ArgumentException( $"{fullName} already exists.", nameof( fullName ) );
             fullName = storageKind.ToString() + '/' + fullName.ToLowerInvariant();
             var e = _archive.CreateEntry( fullName );
-            using( var output = e.Open() )
+            try
             {
-                writer( output );
+                using( var output = e.Open() )
+                {
+                    writer( output );
+                }
+            }
+            catch( Exception )
+            {
+                e.Delete();
+                throw;
             }
         }
 
