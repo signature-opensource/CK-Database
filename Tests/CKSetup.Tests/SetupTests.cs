@@ -15,10 +15,11 @@ namespace CKSetup.Tests
     [TestFixture]
     public class SetupTests
     {
-        [Test]
-        public void setup_SqlCallDemo()
+        [TestCase( TestStoreType.Zip )]
+        [TestCase( TestStoreType.Directory )]
+        public void setup_SqlCallDemo( TestStoreType type )
         {
-            using( var zip = TestHelper.OpenCKDatabaseZip() )
+            using( var zip = TestHelper.OpenCKDatabaseZip( type ) )
             {
                 CKSetup.SetupCommand.DoSetup(
                     TestHelper.ConsoleMonitor,
@@ -32,12 +33,13 @@ namespace CKSetup.Tests
         }
 
 
-        [Test]
-        public void setup_SqlCallDemo_with_remote_imports()
+        [TestCase( TestStoreType.Zip )]
+        [TestCase( TestStoreType.Directory )]
+        public void setup_SqlCallDemo_with_remote_imports(TestStoreType type)
         {
-            string zipPath = TestHelper.GetCleanTestZipPath();
+            string zipPath = TestHelper.GetCleanTestZipPath( type );
             using( var zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
-            using( var remoteZip = TestHelper.OpenCKDatabaseZip() )
+            using( var remoteZip = TestHelper.OpenCKDatabaseZip( type ) )
             {
                 CKSetup.SetupCommand.DoSetup(
                     TestHelper.ConsoleMonitor,
@@ -52,11 +54,12 @@ namespace CKSetup.Tests
         }
 
 
-        [Test]
-        public void setup_SqlCallDemo_for_netstandard13()
+        [TestCase( TestStoreType.Zip )]
+        [TestCase( TestStoreType.Directory )]
+        public void setup_SqlCallDemo_for_netstandard13( TestStoreType type )
         {
             Assume.That( false, "Support for netstandard/netcore has yet to be implemented." );
-            using( var zip = TestHelper.OpenCKDatabaseZip( withNetStandard: true ) )
+            using( var zip = TestHelper.OpenCKDatabaseZip( type, withNetStandard: true ) )
             {
                 CKSetup.SetupCommand.DoSetup(
                     TestHelper.ConsoleMonitor,
@@ -69,20 +72,28 @@ namespace CKSetup.Tests
             }
         }
 
-        [Test]
-        public void setup_SqlActorPackage()
+        [TestCase( TestStoreType.Zip )]
+        [TestCase( TestStoreType.Directory )]
+        public void setup_SqlActorPackage( TestStoreType type )
         {
-            using( var zip = TestHelper.OpenCKDatabaseZip() )
+            string zipPath = TestHelper.GetCleanTestZipPath( type );
+            using( var zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
+            using( var remoteZip = TestHelper.OpenCKDatabaseZip( type ) )
             {
-                zip.AddComponent( BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SqlActorPackageModel461Path ) ).Should().BeTrue();
-                zip.AddComponent( BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SqlActorPackageRuntime461Path ) ).Should().BeTrue();
+                var missingImporter = new FakeRemote( remoteZip );
+                zip.CreateLocalImporter( missingImporter ).AddComponent( 
+                    BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SqlActorPackageModel461Path ),
+                    BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SqlActorPackageRuntime461Path ) )
+                    .Import()
+                    .Should().BeTrue();
                 CKSetup.SetupCommand.DoSetup(
                     TestHelper.ConsoleMonitor,
                     TestHelper.SqlActorPackageModel461Path,
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlActorPackage" ),
                     "SqlActorPackage.Generated.ByCKSetup",
-                    sourceGeneration: true
+                    sourceGeneration: true,
+                    missingImporter: missingImporter
                     ).Should().Be( 0 );
             }
         }

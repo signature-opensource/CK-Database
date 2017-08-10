@@ -13,6 +13,9 @@ namespace CKSetup.StreamStore
     public class DirectoryStreamStore : IStreamStore
     {
         readonly string _path;
+        readonly string _pathNone;
+        readonly string _pathGZiped;
+        readonly string[] _paths;
 
         struct MetaEntry
         {
@@ -34,29 +37,38 @@ namespace CKSetup.StreamStore
         /// <param name="path">The local directory path.</param>
         public DirectoryStreamStore( string path )
         {
+            Debug.Assert( Enum.GetNames( typeof( CompressionKind ) ).SequenceEqual( new[] { "None", "GZiped" } ) );
+            Debug.Assert( ((int[])Enum.GetValues( typeof( CompressionKind ) )).SequenceEqual( new[] { 0, 1 } ) );
+
             _path = Path.GetFullPath( path );
-            Directory.CreateDirectory( _path );
+            _pathNone = FileUtil.NormalizePathSeparator( Path.Combine( _path, "None" ), true );
+            _pathGZiped = FileUtil.NormalizePathSeparator( Path.Combine( _path, "GZiped" ), true );
+            _paths = new string[] { _pathNone, _pathGZiped };
+
+            Directory.CreateDirectory( _pathNone );
+            Directory.CreateDirectory( _pathGZiped );
         }
 
         MetaEntry Find( string fullName )
         {
-            Debug.Assert( Enum.GetNames( typeof( CompressionKind ) ).SequenceEqual( new[] { "None", "GZiped" } ) );
             fullName = fullName.ToLowerInvariant();
-            FileInfo e = new FileInfo( Path.Combine( _path, "None", fullName ) );
+            FileInfo e = new FileInfo( _pathNone + fullName );
             if( e.Exists ) return new MetaEntry( e, CompressionKind.None );
-            e = new FileInfo( Path.Combine( _path, "GZiped", fullName ) );
-            if( e != null ) return new MetaEntry( e, CompressionKind.GZiped );
+            e = new FileInfo( _pathGZiped + fullName );
+            if( e.Exists ) return new MetaEntry( e, CompressionKind.GZiped );
             return new MetaEntry();
         }
 
-        bool IStreamStore.IsEmptyStore => !Directory.EnumerateFileSystemEntries( _path ).Any();
+        string GetFullPath( CompressionKind k, string fullName ) => _paths[(int)k] + fullName.ToLowerInvariant();
+
+        bool IStreamStore.IsEmptyStore => !Directory.EnumerateFileSystemEntries( _pathNone ).Any()
+                                          || !Directory.EnumerateFileSystemEntries( _pathGZiped ).Any();
 
         bool IStreamStore.Exists( string fullName ) => Find( fullName ).File != null;
 
         void IStreamStore.Create( string fullName, Action<Stream> writer, CompressionKind storageKind )
         {
-            Debug.Assert( Enum.GetNames( typeof( CompressionKind ) ).SequenceEqual( new[] { "None", "GZiped" } ) );
-            fullName = Path.Combine( _path, storageKind.ToString(), fullName.ToLowerInvariant() );
+            fullName = GetFullPath( storageKind, fullName );
             try
             {
                 using( var output = new FileStream( fullName, FileMode.CreateNew, FileAccess.Write, FileShare.None, 4096, FileOptions.SequentialScan ) )
@@ -78,7 +90,7 @@ namespace CKSetup.StreamStore
             if( e.File == null && !allowCreate ) throw new ArgumentException( $"{fullName} does not exist.", nameof( fullName ) );
             if( e.File != null && e.Kind != storageKind ) e.File.Delete();
 
-            fullName = Path.Combine( _path, storageKind.ToString(), fullName.ToLowerInvariant() );
+            fullName = GetFullPath( storageKind, fullName );
             using( var output = new FileStream( fullName, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, 4096, FileOptions.SequentialScan ) )
             {
                 writer( output );
@@ -110,7 +122,7 @@ namespace CKSetup.StreamStore
         {
             var e = Find( fullName );
             if( e.File == null ) throw new ArgumentException( $"'{fullName}' not found.", nameof( fullName ) );
-            if( e.Kind == CompressionKind.None ) e.File.CopyTo( fullName, false );
+            if( e.Kind == CompressionKind.None ) e.File.CopyTo( targetPath, false );
             else
             {
                 using( var s = StreamStoreExtension.OpenUncompressedRead( this, fullName ) )
@@ -123,12 +135,12 @@ namespace CKSetup.StreamStore
 
         int IStreamStore.Delete( Func<string, bool> predicate )
         {
-            int count = DoDelete( predicate, Path.Combine( _path, "None" ) );
-            count += DoDelete( predicate, Path.Combine( _path, "GZiped" ) );
+            int count = DoDelete( predicate, _pathNone );
+            count += DoDelete( predicate, _pathGZiped );
             return count;
         }
 
-        static int DoDelete( Func<string, bool> predicate,string prefix )
+        static int DoDelete( Func<string, bool> predicate, string prefix )
         {
             int count = 0;
             foreach( var e in Directory.EnumerateFiles( prefix, "*", SearchOption.AllDirectories ) )

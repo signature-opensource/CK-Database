@@ -140,61 +140,72 @@ namespace CKSetup.Tests
         /// <summary>
         /// Gets a path to a zip.
         /// </summary>
+        /// <param name="type">Type of the store.</param>
         /// <param name="suffix">Optional suffix (will appear before the .zip extension).</param>
         /// <param name="name">Name (automatically sets from the caller method name).</param>
         /// <returns>Path to a zip file that may already exists.</returns>
-        public static string GetTestZipPath( string suffix = null, [CallerMemberName]string name = null )
+        public static string GetTestZipPath( TestStoreType type, string suffix = null, [CallerMemberName]string name = null )
         {
-            return Path.Combine( TestFolder, name + suffix + ".zip" );
+            return type == TestStoreType.Zip
+                    ? Path.Combine( TestFolder, name + suffix + ".zip" )
+                    : Path.Combine( TestFolder, "FolderStore", name + suffix );
         }
 
         /// <summary>
-        /// Gets a free path to zip (if the zip exists it is deleted).
+        /// Gets a free path to store (if the store exists it is deleted).
         /// </summary>
+        /// <param name="type">Type of the store.</param>
         /// <param name="suffix">Optional suffix (will appear before the .zip extension).</param>
         /// <param name="name">Name (automatically sets from the caller method name).</param>
         /// <returns>Path to a zip file that does not exist.</returns>
-        public static string GetCleanTestZipPath( string suffix = null, [CallerMemberName]string name = null )
+        public static string GetCleanTestZipPath( TestStoreType type, string suffix = null, [CallerMemberName]string name = null )
         {
-            var p = GetTestZipPath( suffix, name );
-            File.Delete( p );
+            var p = GetTestZipPath( type, suffix, name );
+            if( type == TestStoreType.Zip ) File.Delete( p );
+            else if( Directory.Exists( p ) ) Directory.Delete( p, true );
             return p;
         }
 
-        static bool _standardDbHasNet461;
-        static bool _standardDbHasNetStandard;
+        static bool[] _standardDbHasNet461 = new bool[Enum.GetNames( typeof( TestStoreType ) ).Length];
+        static bool[] _standardDbHasNetStandard = new bool[Enum.GetNames( typeof( TestStoreType ) ).Length];
 
-        public static RuntimeArchive OpenCKDatabaseZip( bool withNetStandard = false )
+        public static RuntimeArchive OpenCKDatabaseZip( TestStoreType type, bool withNetStandard = false )
         {
-            string zipPath = GetTestZipPath( null, "Standard" );
+            string zipPath = GetTestZipPath( type, null, "Standard" );
             RuntimeArchive zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath );
-            if( !_standardDbHasNet461 )
+            if( !_standardDbHasNet461[(int)type] )
             {
-                zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjModel461Path ) ).Should().BeTrue();
-                zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjRuntime461Path ) ).Should().BeTrue();
-                zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjEngine461Path ) ).Should().BeTrue();
-                zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableModel461Path ) ).Should().BeTrue();
-                zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableRuntime461Path ) ).Should().BeTrue();
-                zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableEngine461Path ) ).Should().BeTrue();
-                zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupModel461Path ) ).Should().BeTrue();
-                zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupRuntime461Path ) ).Should().BeTrue();
-                zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupEngine461Path ) ).Should().BeTrue();
-                _standardDbHasNet461 = true;
+                zip.CreateLocalImporter().AddComponent(
+                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjModel461Path ),
+                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjRuntime461Path ),
+                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjEngine461Path ),
+                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableModel461Path ),
+                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableRuntime461Path ),
+                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableEngine461Path ),
+                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupModel461Path ),
+                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupRuntime461Path ),
+                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupEngine461Path ) )
+                .Import()
+                .Should().BeTrue();
+                _standardDbHasNet461[(int)type] = true;
             }
             #region NetStandard
             //// Net standard
-            if( withNetStandard && !_standardDbHasNetStandard )
+            if( withNetStandard && !_standardDbHasNetStandard[(int)type] )
             {
-                zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjModelNet13Path ) ).Should().BeTrue();
-                zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjRuntimeNet16Path ) ).Should().BeTrue();
-                zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjEngineNet16Path ) ).Should().BeTrue();
-                zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableModelNet13Path ) ).Should().BeTrue();
-                zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableRuntimeNet16Path ) ).Should().BeTrue();
-                zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableEngineNet16Path ) ).Should().BeTrue();
-                zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupModelNet13Path ) ).Should().BeTrue();
-                zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupRuntimeNet16Path ) ).Should().BeTrue();
-                zip.AddComponent( CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupEngineNet16Path ) ).Should().BeTrue();
-                _standardDbHasNetStandard = true;
+                zip.CreateLocalImporter().AddComponent( 
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjModelNet13Path ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjRuntimeNet16Path ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjEngineNet16Path ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableModelNet13Path ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableRuntimeNet16Path ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableEngineNet16Path ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupModelNet13Path ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupRuntimeNet16Path ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupEngineNet16Path ) )
+                    .Import()
+                    .Should().BeTrue();
+                _standardDbHasNetStandard[(int)type] = true;
             }
 
             #endregion

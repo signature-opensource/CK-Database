@@ -27,7 +27,7 @@ namespace CKSetup
         public static void DefineAdd( CommandLineApplication c )
         {
             c.FullName = c.Parent.FullName + ".Add";
-            c.Description = "Adds a Component (Engine, Runtime or Model) to the store.";
+            c.Description = "Adds components (Engine, Runtime or Model) to the store.";
             c.StandardConfiguration( true );
 
             StoreDirArguments toAdd = c.AddStoreDirArguments( "Components to add to the store." );
@@ -40,9 +40,9 @@ namespace CKSetup
                 using( RuntimeArchive zip = RuntimeArchive.OpenOrCreate( monitor, zipFile.StorePath ) )
                 {
                     if( zip == null ) return Program.RetCodeError;
-                    foreach( var f in toAdd.Folders )
+                    if( !zip.CreateLocalImporter().AddComponent( toAdd.Folders ).Import() )
                     {
-                        if( !zip.AddComponent( f ) ) return Program.RetCodeError;
+                        return Program.RetCodeError;
                     }
                 }
                 return Program.RetCodeSuccess;

@@ -91,6 +91,22 @@ namespace CKSetup
             return true;
         }
 
+        /// <summary>
+        /// Defines equality operator.
+        /// </summary>
+        /// <param name="x">First sha1.</param>
+        /// <param name="y">Second sha1.</param>
+        /// <returns>True if x equals y, otherwise false.</returns>
+        static public bool operator ==( SHA1Value x, SHA1Value y ) => x.Equals( y );
+
+        /// <summary>
+        /// Defines unequality operator.
+        /// </summary>
+        /// <param name="x">First sha1.</param>
+        /// <param name="y">Second sha1.</param>
+        /// <returns>True if x is not equal to y, otherwise false.</returns>
+        static public bool operator !=( SHA1Value x, SHA1Value y ) => !x.Equals( y );
+
         static SHA1Value()
         {
             ZeroSHA1 = new SHA1Value( true );

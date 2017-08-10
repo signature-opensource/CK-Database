@@ -1,0 +1,116 @@
+﻿using FluentAssertions;
+using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Xml.Linq;
+
+namespace CKSetup.Tests
+{
+    [TestFixture]
+    public class RuntimeArchiveTests
+    {
+        [TestCase( TestStoreType.Zip )]
+        [TestCase( TestStoreType.Directory )]
+        public void adding_setupable_runtimes_files_to_zip_is_not_possible_unless_its_embedded_are_also_added( TestStoreType type )
+        {
+            string zipPath = TestHelper.GetCleanTestZipPath( type );
+            using( RuntimeArchive zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
+            {
+                zip.Should().NotBeNull();
+
+                var fSetupableRT = BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SetupableRuntime461Path );
+                var fSetupableM = BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SetupableModel461Path );
+                var fStObjRT = BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjRuntime461Path );
+                var fStObjM = BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjModel461Path );
+                fSetupableRT.Should().NotBeNull();
+                fSetupableM.Should().NotBeNull();
+                fStObjRT.Should().NotBeNull();
+                fStObjM.Should().NotBeNull();
+
+                zip.CreateLocalImporter().AddComponent( fSetupableRT ).Import().Should().BeFalse();
+                zip.CreateLocalImporter().AddComponent( fSetupableRT, fStObjRT ).Import().Should().BeFalse();
+                zip.CreateLocalImporter().AddComponent( fSetupableRT, fStObjRT, fSetupableM ).Import().Should().BeFalse();
+                zip.CreateLocalImporter().AddComponent( fSetupableRT, fStObjRT, fSetupableM, fStObjM )
+                    .Import().Should().BeTrue();
+            }
+            StoreContent c = new StoreContent( zipPath );
+            c.Db.Should().NotBeNull();
+
+            var setupableRuntime = c.ComponentDB
+                                    .Components
+                                    .Single( x => x.Name == "CK.Setupable.Runtime"
+                                                  && x.TargetFramework == TargetFramework.Net461 );
+            c.ComponentDB.Components.Count.Should().Be( 4 );
+            c.AllComponentFilesShouldBeStored( setupableRuntime );
+        }
+
+        [TestCase( TestStoreType.Zip, true )]
+        [TestCase( TestStoreType.Directory, false )]
+        public void adding_both_stobj_runtime_and_stobj_model( TestStoreType type, bool runtimeFirst )
+        {
+            string zipPath = TestHelper.GetTestZipPath( type, runtimeFirst ? ".runtimeFirst" : ".modelFirst" );
+            using( RuntimeArchive zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
+            {
+                zip.Should().NotBeNull();
+                if( runtimeFirst )
+                {
+                    zip.CreateLocalImporter().AddComponent( 
+                        BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjRuntime461Path ), 
+                        BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjModel461Path ) )
+                        .Import().Should().BeTrue();
+                }
+                else
+                {
+                    zip.CreateLocalImporter().AddComponent(
+                        BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjModel461Path ),
+                        BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjRuntime461Path ) )
+                        .Import().Should().BeTrue();
+                }
+            }
+            StoreContent c = new StoreContent( zipPath );
+            c.Db.Should().NotBeNull();
+            var stObjRuntime = c.ComponentDB.Components.Single( e => e.Name == "CK.StObj.Runtime" && e.TargetFramework == TargetFramework.Net461 );
+            var stObjModel = c.ComponentDB.Components.Single( e => e.Name == "CK.StObj.Model" && e.TargetFramework == TargetFramework.Net461 );
+
+            // Only runtimes files remains: Model files are removed.
+            c.ComponentShouldContainFiles( stObjRuntime, "CK.StObj.Runtime.dll" );
+            c.ComponentShouldNotContainFiles( stObjRuntime, 
+                "CK.StObj.Model.dll", 
+                "CK.ActivityMonitor.dll" );
+
+            // Model files are not stored.
+            c.NoComponentFilesShouldBeStored( stObjModel );
+        }
+
+        [TestCase( TestStoreType.Zip )]
+        [TestCase( TestStoreType.Directory )]
+        public void importing_exporting_components( TestStoreType type )
+        {
+            string zipPath = TestHelper.GetCleanTestZipPath( type );
+            using( RuntimeArchive zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
+            using( RuntimeArchive realZip = TestHelper.OpenCKDatabaseZip( type ) )
+            using( Stream buffer = new MemoryStream() )
+            {
+                zip.Export( c => true, buffer );
+                buffer.Position.Should().BeLessThan( 100, "Only marker contents." );
+
+                buffer.Position = 0;
+                realZip.Export( c => c.Name == "CK.Setupable.Engine", buffer );
+                buffer.Position.Should().BeGreaterThan( 100 );
+                buffer.WriteByte( 251 );
+                buffer.Position = 0;
+                zip.ImportComponents( buffer, new FakeRemote( realZip ) ).Should().BeTrue();
+                buffer.ReadByte().Should().Be( 251 );
+            }
+            StoreContent content = new StoreContent( zipPath );
+            content.Db.Elements( "Component" ).Single().Attribute( "Name" ).Value.Should().Be( "CK.Setupable.Engine" );
+            content.FileEntries.Count.Should().Be( 1 );
+        }
+
+
+    }
+}

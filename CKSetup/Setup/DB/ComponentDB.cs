@@ -61,7 +61,7 @@ namespace CKSetup
         public IReadOnlyList<Component> Components { get; }
 
         /// <summary>
-        /// Gets a set of <see cref="ComponentRef"/> that should be added since they are
+        /// Gets the <see cref="ComponentRef"/> that should be added since they are
         /// currently discovered as embedded inside other ones.
         /// </summary>
         public IEnumerable<ComponentRef> EmbeddedComponents => Components.SelectMany( c => c.Embedded ).Distinct();
@@ -195,7 +195,10 @@ namespace CKSetup
             }
         }
 
-        ComponentDB DoAdd( IActivityMonitor m, Component newC ) => new ComponentDB( Components.Select( c => c.WithNewComponent( m, newC ) ).Append( newC ) );
+        ComponentDB DoAdd( IActivityMonitor m, Component newC )
+        {
+            return new ComponentDB( Components.Select( c => c.WithNewComponent( m, newC ) ).Append( newC ) );
+        }
 
         /// <summary>
         /// Exports a filtered set of components to a <see cref="Stream"/>.

@@ -10,7 +10,7 @@ namespace CKSetup
     /// <summary>
     /// Immutable file description.
     /// </summary>
-    public class ComponentFile
+    public class ComponentFile : IEquatable<ComponentFile>
     {
         /// <summary>
         /// Initializes a new <see cref="ComponentFile"/>.
@@ -41,6 +41,12 @@ namespace CKSetup
             CheckValid();
         }
 
+        public bool Equals( ComponentFile other ) => SHA1 == other?.SHA1;
+
+        public override bool Equals( object obj ) => Equals( obj as ComponentFile );
+
+        public override int GetHashCode() => SHA1.GetHashCode();
+
         public XElement ToXml()
         {
             return new XElement( DBXmlNames.File,
@@ -60,5 +66,6 @@ namespace CKSetup
         {
             return $"{Name} ({Length}), sha1: {SHA1}";
         }
+
     }
 }
