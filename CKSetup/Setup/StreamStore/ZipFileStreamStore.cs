@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace CKSetup.StreamStore
 {
-    public class ZipFileStreamStore : IStreamStore
+    public sealed class ZipFileStreamStore : IStreamStore
     {
         ZipArchive _archive;
         readonly string _path;

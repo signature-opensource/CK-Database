@@ -6,11 +6,66 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
-namespace CKSetup
+namespace CKSetup.StreamStore
 {
-    static class StreamStoreExtension
+    /// <summary>
+    /// Extends <see cref="IStreamStore"/> with <see cref="ComponentDB"/> related method extensions.
+    /// </summary>
+    public static class StreamStoreComponentDBExtension
     {
+        /// <summary>
+        /// Reads or creates the <see cref="RuntimeArchive.DbXmlFileName"/> manifest file in this store.
+        /// </summary>
+        /// <param name="this">This store.</param>
+        /// <param name="db">Database to update.</param>
+        /// <returns>The component database or null on error.</returns>
+        static public void Save( this IStreamStore @this, ComponentDB db )
+        {
+            @this.UpdateText( RuntimeArchive.DbXmlFileName, db.ToXml().ToString(), CompressionKind.None );
+        }
+
+        /// <summary>
+        /// Reads or creates the <see cref="RuntimeArchive.DbXmlFileName"/> manifest file in this store.
+        /// </summary>
+        /// <param name="this">This store.</param>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <returns>The component database or null on error.</returns>
+        static public ComponentDB Initialize( this IStreamStore @this, IActivityMonitor monitor )
+        {
+            ComponentDB db = null;
+            if( @this.IsEmptyStore )
+            {
+                monitor.Info( $"Creating new empty store." );
+                db = new ComponentDB();
+                @this.CreateText( RuntimeArchive.DbXmlFileName, db.ToXml().ToString( SaveOptions.DisableFormatting ), CompressionKind.None );
+            }
+            else
+            {
+                try
+                {
+                    string text = @this.ReadText( RuntimeArchive.DbXmlFileName );
+                    if( text != null )
+                    {
+                        db = new ComponentDB( XDocument.Parse( text ).Root );
+                        monitor.Trace( $"Opened store with {db.Components.Count} components." );
+                    }
+                    else
+                    {
+                        monitor.Error( $"File is not a valid runtime zip ({RuntimeArchive.DbXmlFileName} manifest not found)." );
+                        db = null;
+                    }
+                }
+                catch( Exception ex )
+                {
+                    monitor.Fatal( $"Invalid {RuntimeArchive.DbXmlFileName} manifest.", ex );
+                    db = null;
+                }
+            }
+            return db;
+        }
+
         /// <summary>
         /// Tries to download a missing file to this store.
         /// </summary>

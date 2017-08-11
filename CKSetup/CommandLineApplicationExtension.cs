@@ -63,9 +63,9 @@ namespace CKSetup
                                            false ) );
         }
 
-        static public StoreDirArguments AddStoreDirArguments( this CommandLineApplication @this, string description )
+        static public StoreBinFolderArguments AddStoreDirArguments( this CommandLineApplication @this, string description )
         {
-            return new StoreDirArguments( @this.Argument( "ZipRunTimeDir",
+            return new StoreBinFolderArguments( @this.Argument( "BinFolders",
                                                description,
                                                true ) );
         }
@@ -78,12 +78,24 @@ namespace CKSetup
                                       CommandOptionType.MultipleValue ) );
         }
 
-        static public StorePathOption AddStorePathOption( this CommandLineApplication @this )
+        static public StorePathOptions AddStorePathOption( this CommandLineApplication @this )
         {
-            return new StorePathOption( @this.Option(
+            return new StorePathOptions( @this.Option(
                                          "--store",
-                                         $"Full path of the runtime store to use (can be a .zip or a directory). Defaults to: {StorePathOption.DefaultStorePath}.",
+                                         $"Full path of the runtime store to use (can be a .zip or a directory). Defaults to: {StorePathOptions.DefaultStorePath}.",
                                          CommandOptionType.SingleValue ) );
+        }
+
+        static public StorePushOptions AddStorePushOptions( this CommandLineApplication @this )
+        {
+            return new StorePushOptions( @this.Option( 
+                                            "-u|--url",
+                                            $"Url of the remote store. Defaults to: {StorePushOptions.DefaultStoreUrl}.",
+                                            CommandOptionType.SingleValue ),
+                                         @this.Option(
+                                            "-k|--apiKey",
+                                            $"Api key for the remote.",
+                                            CommandOptionType.SingleValue ) );
         }
 
         static public ConsoleMonitor CreateConsoleMonitor( this CommandLineApplication @this )

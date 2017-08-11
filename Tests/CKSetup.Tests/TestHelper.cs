@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using FluentAssertions;
 using System.Data.SqlClient;
+using System.Diagnostics;
 
 namespace CKSetup.Tests
 {
@@ -80,6 +81,18 @@ namespace CKSetup.Tests
             c.InitialCatalog = savedMaster;
             return result;
         }
+
+        public static Uri EnsureCKSetupRemoteRunning( bool release )
+        {
+            var pI = new ProcessStartInfo()
+            {
+                WorkingDirectory = Path.Combine( SolutionFolder, "CKSetupRemoteStore" ),
+                FileName = Path.Combine( "bin", release ? "Release" : "Debug", "net461", "CKSetupRemoteStore.exe" )
+            };
+            Process.Start( pI );
+            return new Uri( "http://localhost:2982" );
+        }
+
 
         public static string BinFolder
         {

@@ -27,7 +27,7 @@ namespace CKSetup
             c.StandardConfiguration( true );
             ConnectionStringArgument connectionArg = c.AddConnectionStringArgument();
             BinPathsOption binPaths = c.AddBinPathsOption( "Path to the directories containing the assembly files, and in which the generated assembly will be saved. Defaults to the current working directory." );
-            StorePathOption storePath = c.AddStorePathOption();
+            StorePathOptions storePath = c.AddStorePathOption();
 
             var generatedAssemblyNameOpt = c.Option( "-n|--generatedAssemblyName",
                                                      $"Assembly name, and file name (without the .dll suffix) of the generated assembly. Defaults to 'CK.StObj.AutoAssembly'.",

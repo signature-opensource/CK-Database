@@ -22,6 +22,7 @@ namespace CKSetup
             c.OnExecute( () => { c.ShowHelp(); return Program.RetCodeHelp; } );
             c.Command( "add", DefineAdd );
             c.Command( "clear", DefineClear );
+            c.Command( "push", DefinePush );
         }
 
         public static void DefineAdd( CommandLineApplication c )
@@ -30,8 +31,8 @@ namespace CKSetup
             c.Description = "Adds components (Engine, Runtime or Model) to the store.";
             c.StandardConfiguration( true );
 
-            StoreDirArguments toAdd = c.AddStoreDirArguments( "Components to add to the store." );
-            StorePathOption storePath = c.AddStorePathOption();
+            StoreBinFolderArguments toAdd = c.AddStoreDirArguments( "Components to add to the store." );
+            StorePathOptions storePath = c.AddStorePathOption();
 
             c.OnExecute( monitor =>
             {
@@ -51,10 +52,10 @@ namespace CKSetup
 
         static void DefineClear( CommandLineApplication c )
         {
-            c.FullName = c.Parent.FullName;
+            c.FullName = c.Parent.FullName + ".Clear";
             c.Description = "Clears the store.";
             c.StandardConfiguration( true );
-            StorePathOption zipFile = c.AddStorePathOption();
+            StorePathOptions zipFile = c.AddStorePathOption();
 
             c.OnExecute( monitor =>
             {
@@ -62,6 +63,27 @@ namespace CKSetup
                 using( RuntimeArchive zip = RuntimeArchive.OpenOrCreate( monitor, zipFile.StorePath ) )
                 {
                     if( zip == null || !zip.Clear() ) return Program.RetCodeError;
+                }
+                return Program.RetCodeSuccess;
+            } );
+        }
+
+        static void DefinePush( CommandLineApplication c )
+        {
+            c.FullName = c.Parent.FullName + ".Push";
+            c.Description = "Push local components to a remote store.";
+            c.StandardConfiguration( true );
+            StorePathOptions storePath = c.AddStorePathOption();
+            StorePushOptions pushOptions = c.AddStorePushOptions();
+
+            c.OnExecute( monitor =>
+            {
+                if( !storePath.Initialize( monitor, null ) ) return Program.RetCodeError;
+                if( !pushOptions.Initialize( monitor ) ) return Program.RetCodeError;
+                using( RuntimeArchive zip = RuntimeArchive.OpenOrCreate( monitor, storePath.StorePath ) )
+                {
+                    if( zip == null ) return Program.RetCodeError;
+                    if( !zip.PushComponents( comp => true, pushOptions.Url, pushOptions.ApiKey ) ) return Program.RetCodeError;
                 }
                 return Program.RetCodeSuccess;
             } );

@@ -7,31 +7,34 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using CK.AspNet;
+using CK.Core;
 
 namespace CKSetupRemoteStore
 {
     public class Startup
     {
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
-        public void ConfigureServices(IServiceCollection services)
+        public void ConfigureServices( IServiceCollection services )
         {
+            services.AddMemoryCache();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure( IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory )
         {
-            loggerFactory.AddConsole();
-
-            if (env.IsDevelopment())
+            var monitor = new ActivityMonitor( "Pipeline configuration." );
+            if( env.IsDevelopment() )
             {
+                loggerFactory.AddConsole();
                 app.UseDeveloperExceptionPage();
             }
-
-            app.Run(async (context) =>
-            {
-                await context.Response.WriteAsync("Hello World!");
-            });
+            app.UseRequestMonitor();
+            app.UseMiddleware<CKSetupStoreMiddleware>( monitor );
+            app.Run( async ( context ) =>
+             {
+                 await context.Response.WriteAsync( "Hello World!" );
+             } );
+            monitor.MonitorEnd();
         }
     }
 }

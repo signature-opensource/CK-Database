@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CK.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -37,6 +38,31 @@ namespace CKSetup
             ErrorText = error;
         }
 
+        public PushComponentsResult( CKBinaryReader r )
+        {
+            int version = r.ReadNonNegativeSmallInt32();
+            SessionId = r.ReadNullableString();
+            ErrorText = r.ReadNullableString();
+            if( ErrorText != null )
+            {
+                var all = new SHA1Value[r.ReadNonNegativeSmallInt32()];
+                for( int i = 0; i < all.Length; ++i ) all[i] = new SHA1Value( r );
+                Files = all;
+            }
+        }
+
+        public void Write( CKBinaryWriter w )
+        {
+            w.WriteNonNegativeSmallInt32( 0 );
+            w.WriteNullableString( SessionId );
+            w.WriteNullableString( ErrorText );
+            if( ErrorText != null )
+            {
+                w.WriteNonNegativeSmallInt32( Files.Count );
+                foreach( var f in Files ) f.Write( w );
+            }
+        }
+
         /// <summary>
         /// Gets the session identifier that identifies this push
         /// on the server side.
@@ -46,6 +72,7 @@ namespace CKSetup
         
         /// <summary>
         /// Gets the files identifiers that are required.
+        /// Null when <see cref="ErrorText"/> is not null.
         /// </summary>
         public IReadOnlyCollection<SHA1Value> Files { get; }
 

@@ -192,7 +192,13 @@ namespace CKSetup.StreamStore
             throw new ArgumentException( $"Unknown {inputKind} or {storageKind}.", "kind" );
         }
 
-        static Action<Stream> GetCompressShell( CompressionKind kind, Action<Stream> writer )
+        /// <summary>
+        /// Creates a stream compressor wrapper action if <paramref name="kind"/> is <see cref="CompressionKind.None"/>.
+        /// </summary>
+        /// <param name="kind">Compression kind of the writer.</param>
+        /// <param name="writer">Stream writer.</param>
+        /// <returns>The writer or an adapted writer.</returns>
+        static public Action<Stream> GetCompressShell( CompressionKind kind, Action<Stream> writer )
         {
             switch( kind )
             {

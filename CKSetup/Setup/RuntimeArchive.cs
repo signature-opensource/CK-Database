@@ -29,39 +29,10 @@ namespace CKSetup
             _cleanupFiles = new List<string>();
             _monitor = monitor;
             _storageKind = storageKind;
-            bool success = true;
-            if( _store.IsEmptyStore )
-            {
-                monitor.Info( $"Creating new store." );
-                _dbOrigin = _dbCurrent = new ComponentDB();
-                _store.CreateText( DbXmlFileName, _dbCurrent.ToXml().ToString( SaveOptions.DisableFormatting ), CompressionKind.None );
-            }
-            else
-            {
-                try
-                {
-                    string text = _store.ReadText( DbXmlFileName );
-                    if( text != null )
-                    {
-                        _dbOrigin = _dbCurrent = new ComponentDB( XDocument.Parse( text ).Root );
-                        monitor.Trace( $"Opened store: {_dbOrigin.Components.Count} components." );
-                    }
-                    else
-                    {
-                        monitor.Error( $"File is not a valid runtime zip ({DbXmlFileName} manifest not found)." );
-                        success = false;
-                    }
-                }
-                catch( Exception ex )
-                {
-                    monitor.Fatal( $"Invalid {DbXmlFileName} manifest.", ex );
-                    success = false;
-                }
-            }
-            if( !success )
+            _dbOrigin = _dbCurrent = _store.Initialize( monitor );
+            if( _dbOrigin == null )
             {
                 _store.Dispose();
-                _dbCurrent = null;
             }
         }
 
@@ -504,12 +475,29 @@ namespace CKSetup
             return true;
         }
 
+
+        /// <summary>
+        /// Pushes selected components to a remote url.
+        /// </summary>
+        /// <param name="filter">Filter for components to export.</param>
+        /// <param name="url">Url of the remote.</param>
+        /// <param name="apiKey">Optional api key.</param>
+        /// <returns>True on success, false otherwise.</returns>
+        public bool PushComponents( Func<Component, bool> filter, Uri url, string apiKey )
+        {
+            if( filter == null ) throw new ArgumentNullException( nameof( filter ) );
+            if( url == null ) throw new ArgumentNullException( nameof( url ) );
+            using( var remote = new ClientRemoteStore( url, apiKey ) )
+            {
+                return PushComponents( filter, remote );
+            }
+        }
+
         void SaveDbCurrent()
         {
             if( _dbOrigin != _dbCurrent )
             {
-                _store.UpdateText( DbXmlFileName, _dbCurrent.ToXml().ToString(), CompressionKind.None );
-                _store.Flush();
+                _store.Save( _dbCurrent );
                 _dbOrigin = _dbCurrent;
             }
         }

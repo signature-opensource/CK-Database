@@ -282,6 +282,7 @@ namespace CKSetup
                     monitor.Error( ex );
                     return new ImportResult( null );
                 }
+                Debug.Assert( (currentDb != this) == (newOnes.Count > 0) );
                 return new ImportResult( currentDb, newOnes.Select( n => currentDb.Components.Single( c => c.GetRef().Equals( n ) ) ).ToList() );
             }
         }

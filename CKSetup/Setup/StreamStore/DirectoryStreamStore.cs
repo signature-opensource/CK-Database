@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace CKSetup.StreamStore
 {
-    public class DirectoryStreamStore : IStreamStore
+    public sealed class DirectoryStreamStore : IStreamStore
     {
         readonly string _path;
         readonly string _pathNone;
@@ -59,12 +59,23 @@ namespace CKSetup.StreamStore
             return new MetaEntry();
         }
 
-        string GetFullPath( CompressionKind k, string fullName ) => _paths[(int)k] + fullName.ToLowerInvariant();
+        /// <summary>
+        /// Gets the full path of a file.
+        /// </summary>
+        /// <param name="k">The compression kind.</param>
+        /// <param name="fullName">The entry name.</param>
+        /// <returns>The full path of the stored file.</returns>
+        public string GetFullPath( CompressionKind k, string fullName ) => _paths[(int)k] + fullName.ToLowerInvariant();
 
         bool IStreamStore.IsEmptyStore => !Directory.EnumerateFileSystemEntries( _pathNone ).Any()
                                           || !Directory.EnumerateFileSystemEntries( _pathGZiped ).Any();
 
-        bool IStreamStore.Exists( string fullName ) => Find( fullName ).File != null;
+        /// <summary>
+        /// Checks whether teh entry exists (regardless of its actual <see cref="CompressionKind"/>).
+        /// </summary>
+        /// <param name="fullName">The entry name.</param>
+        /// <returns>True if the file exists, false otherwise.</returns>
+        public bool Exists( string fullName ) => Find( fullName ).File != null;
 
         void IStreamStore.Create( string fullName, Action<Stream> writer, CompressionKind storageKind )
         {

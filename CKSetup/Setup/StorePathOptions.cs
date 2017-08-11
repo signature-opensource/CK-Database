@@ -10,19 +10,19 @@ using System.Threading.Tasks;
 
 namespace CKSetup
 {
-    class StorePathOption
+    class StorePathOptions
     {
         /// <summary>
         /// The default store is the directory Environment.SpecialFolder.LocalApplicationData/CKSetupStore.
         /// </summary>
         public static readonly string DefaultStorePath = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.LocalApplicationData ), "CKSetupStore" );
 
-        public StorePathOption( CommandOption arg )
+        public StorePathOptions( CommandOption arg )
         {
-            CommandOption = arg;
+            StorePathOption = arg;
         }
 
-        public CommandOption CommandOption { get; }
+        public CommandOption StorePathOption { get; }
 
         public string StorePath { get; private set; }
         
@@ -32,9 +32,9 @@ namespace CKSetup
         /// <param name="m">The monitor.</param>
         /// <param name="binPath">Optional binary path.</param>
         /// <returns>True on success, false on error.</returns>
-        public bool Initialize( ConsoleMonitor m, string binPath )
+        public bool Initialize( IActivityMonitor m, string binPath )
         {
-            StorePath = CommandOption.Value();
+            StorePath = StorePathOption.Value();
             if( string.IsNullOrEmpty( StorePath ) )
             {
                 if( binPath != null )

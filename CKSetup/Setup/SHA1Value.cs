@@ -42,6 +42,23 @@ namespace CKSetup
         }
 
         /// <summary>
+        /// Computes the SHA1 of a local file by reading its content.
+        /// </summary>
+        /// <param name="fullPath">The file full path.</param>
+        /// <param name="wrapReader">Optional stream wrapper reader.</param>
+        /// <returns>The SHA1 of the file.</returns>
+        public static async Task<SHA1Value> ComputeFileSHA1Async( string fullPath, Func<Stream,Stream> wrapReader = null )
+        {
+            using( var shaCompute = new SHA1Stream() )
+            using( var file = new FileStream( fullPath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.SequentialScan | FileOptions.Asynchronous ) )
+            using( var wrap = wrapReader != null ? wrapReader( file ) : file )
+            {
+                await wrap.CopyToAsync( shaCompute );
+                return shaCompute.GetFinalResult();
+            }
+        }
+
+        /// <summary>
         /// A SHA1 is a non null 20 bytes long array.
         /// </summary>
         /// <param name="sha1">The potential sha1.</param>
@@ -132,6 +149,16 @@ namespace CKSetup
             _bytes = twentyBytes.SequenceEqual( ZeroSHA1._bytes ) ? ZeroSHA1._bytes : twentyBytes.ToArray();
         }
 
+        /// <summary>
+        /// Initializes a new <see cref="SHA1Value"/> from a binary reader.
+        /// </summary>
+        /// <param name="reader">Binary reader.</param>
+        public SHA1Value( BinaryReader reader )
+        {
+            _bytes = reader.ReadBytes( 20 );
+            if( _bytes.SequenceEqual( ZeroSHA1._bytes ) ) _bytes = ZeroSHA1._bytes;
+        }
+
         SHA1Value( byte[] b )
         {
             Debug.Assert( b.Length == 20 && !b.SequenceEqual( ZeroSHA1._bytes ) );
@@ -160,6 +187,18 @@ namespace CKSetup
                     || (_bytes == ZeroSHA1._bytes && other._bytes == null)
                     || _bytes.SequenceEqual( other._bytes );
         }
+
+        /// <summary>
+        /// Gets the sha1 as a 20 bytes readonly list.
+        /// </summary>
+        /// <returns>The sha1 bytes.</returns>
+        public IReadOnlyList<byte> GetBytes() => _bytes ?? ZeroSHA1._bytes;
+
+        /// <summary>
+        /// Writes this SHA1 value in a <see cref="BinaryWriter"/>.
+        /// </summary>
+        /// <param name="w">Targtet binary writer.</param>
+        public void Write( BinaryWriter w ) => w.Write( _bytes ?? ZeroSHA1._bytes );
 
         /// <summary>
         /// Overridden to test actual SHA1 equality.

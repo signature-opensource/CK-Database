@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace CKSetup
 {
-    class StoreDirArguments
+    class StoreBinFolderArguments
     {
-        public StoreDirArguments( CommandArgument arg )
+        public StoreBinFolderArguments( CommandArgument arg )
         {
             CommandArgument = arg;
         }
