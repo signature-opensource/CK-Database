@@ -169,9 +169,11 @@ namespace CKSetup.Tests
         static bool[] _standardDbHasNet461 = new bool[Enum.GetNames( typeof( TestStoreType ) ).Length];
         static bool[] _standardDbHasNetStandard = new bool[Enum.GetNames( typeof( TestStoreType ) ).Length];
 
+        public static string GetCKDatabaseZipPath(TestStoreType type) => GetTestZipPath( type, null, "Standard" );
+
         public static RuntimeArchive OpenCKDatabaseZip( TestStoreType type, bool withNetStandard = false )
         {
-            string zipPath = GetTestZipPath( type, null, "Standard" );
+            string zipPath = GetCKDatabaseZipPath( type );
             RuntimeArchive zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath );
             if( !_standardDbHasNet461[(int)type] )
             {

@@ -17,7 +17,7 @@ namespace CKSetup
         public static void Define( CommandLineApplication c )
         {
             c.FullName = c.Parent.FullName + ".Store";
-            c.Description = "Manages the runtime store file.";
+            c.Description = "Manages the runtime store.";
             c.StandardConfiguration( withMonitor: false );
             c.OnExecute( () => { c.ShowHelp(); return Program.RetCodeHelp; } );
             c.Command( "add", DefineAdd );
@@ -31,13 +31,13 @@ namespace CKSetup
             c.StandardConfiguration( true );
 
             StoreDirArguments toAdd = c.AddStoreDirArguments( "Components to add to the store." );
-            StoreFileOption zipFile = c.AddZipRuntimeFileOption();
+            StorePathOption storePath = c.AddStorePathOption();
 
             c.OnExecute( monitor =>
             {
                 if( !toAdd.Initialize( monitor ) ) return Program.RetCodeError;
-                if( !zipFile.Initialize( monitor, null ) ) return Program.RetCodeError;
-                using( RuntimeArchive zip = RuntimeArchive.OpenOrCreate( monitor, zipFile.StorePath ) )
+                if( !storePath.Initialize( monitor, null ) ) return Program.RetCodeError;
+                using( RuntimeArchive zip = RuntimeArchive.OpenOrCreate( monitor, storePath.StorePath ) )
                 {
                     if( zip == null ) return Program.RetCodeError;
                     if( !zip.CreateLocalImporter().AddComponent( toAdd.Folders ).Import() )
@@ -54,7 +54,7 @@ namespace CKSetup
             c.FullName = c.Parent.FullName;
             c.Description = "Clears the store.";
             c.StandardConfiguration( true );
-            StoreFileOption zipFile = c.AddZipRuntimeFileOption();
+            StorePathOption zipFile = c.AddStorePathOption();
 
             c.OnExecute( monitor =>
             {

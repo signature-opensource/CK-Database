@@ -122,7 +122,7 @@ namespace CKSetup.StreamStore
                             @this.Create( fullName, w => input.CopyTo( w ), storageKind );
                             return;
                         case CompressionKind.GZiped:
-                            @this.Create( fullName, GetCompressShell( storageKind, w => input.CopyTo(w)), storageKind );
+                            @this.Create( fullName, GetCompressShell( storageKind, w => input.CopyTo( w ) ), storageKind );
                             return;
                     }
                     break;
@@ -137,6 +137,54 @@ namespace CKSetup.StreamStore
                             return;
                         case CompressionKind.GZiped:
                             @this.Create( fullName, w => input.CopyTo( w ), storageKind );
+                            return;
+                    }
+                    break;
+            }
+            throw new ArgumentException( $"Unknown {inputKind} or {storageKind}.", "kind" );
+        }
+
+        /// <summary>
+        /// Updates an entry, optionnaly allow creating it if it does not exists.
+        /// </summary>
+        /// <param name="this">This component storage.</param>
+        /// <param name="fullName">The resource full name (case insensitive).</param>
+        /// <param name="writer">The stream writer.</param>
+        /// <param name="inputKind">Specifies the content's writer stream compression.</param>
+        /// <param name="storageKind">Specifies the content's stream storage compression.</param>
+        /// <param name="allowCreate">True to automatically creates the entry if it does not already exist.</param>
+        static public void Update( this IStreamStore @this, string fullName, Action<Stream> writer, CompressionKind inputKind, CompressionKind storageKind, bool allowCreate )
+        {
+            if( writer == null ) throw new ArgumentNullException( nameof( writer ) );
+            switch( inputKind )
+            {
+                case CompressionKind.None:
+                    switch( storageKind )
+                    {
+                        case CompressionKind.None:
+                            @this.Update( fullName, writer, storageKind, allowCreate );
+                            return;
+                        case CompressionKind.GZiped:
+                            @this.Update( fullName, GetCompressShell( storageKind, writer ), storageKind, allowCreate );
+                            return;
+                    }
+                    break;
+                case CompressionKind.GZiped:
+                    switch( storageKind )
+                    {
+                        case CompressionKind.None:
+                            using( var buffer = new MemoryStream() )
+                            {
+                                writer( buffer );
+                                buffer.Position = 0;
+                                using( var decompressor = new GZipStream( buffer, CompressionMode.Decompress, true ) )
+                                {
+                                    @this.Update( fullName, w => decompressor.CopyTo( w ), storageKind, allowCreate );
+                                }
+                            }
+                            return;
+                        case CompressionKind.GZiped:
+                            @this.Update( fullName, writer, storageKind, allowCreate );
                             return;
                     }
                     break;

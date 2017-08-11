@@ -26,8 +26,8 @@ namespace CKSetup
             c.Description = "Sets up the given CK.Database assemblies in a SQL Server instance, using the given SQL Server connection string to connect, and generates a structure (StObjMap) assembly.";
             c.StandardConfiguration( true );
             ConnectionStringArgument connectionArg = c.AddConnectionStringArgument();
-            BinPathsOption binPaths = c.AddBinPathsOption( "Path to the directory containing the assembly files, and in which the generated assembly will be saved. Defaults to the current working directory." );
-            StoreFileOption zipFile = c.AddZipRuntimeFileOption();
+            BinPathsOption binPaths = c.AddBinPathsOption( "Path to the directories containing the assembly files, and in which the generated assembly will be saved. Defaults to the current working directory." );
+            StorePathOption storePath = c.AddStorePathOption();
 
             var generatedAssemblyNameOpt = c.Option( "-n|--generatedAssemblyName",
                                                      $"Assembly name, and file name (without the .dll suffix) of the generated assembly. Defaults to 'CK.StObj.AutoAssembly'.",
@@ -42,19 +42,19 @@ namespace CKSetup
             {
                 if( !connectionArg.Initialize( monitor ) ) return Program.RetCodeError;
                 if( !binPaths.Initialize( monitor ) ) return Program.RetCodeError;
-                if( !zipFile.Initialize( monitor, binPaths.BinPaths[0] ) ) return Program.RetCodeError;
+                if( !storePath.Initialize( monitor, binPaths.BinPaths[0] ) ) return Program.RetCodeError;
 
                 if( binPaths.BinPaths.Count > 1 )
                 {
                     throw new NotImplementedException( "Multi Bin path Setup is not yet implemented." );
                 }
-                using( RuntimeArchive zip = RuntimeArchive.OpenOrCreate( monitor, zipFile.StorePath ) )
+                using( RuntimeArchive store = RuntimeArchive.OpenOrCreate( monitor, storePath.StorePath ) )
                 {
-                    if( zip == null ) return Program.RetCodeError;
+                    if( store == null ) return Program.RetCodeError;
                     return DoSetup(
                             monitor,
                             binPaths.BinPaths[0],
-                            zip,
+                            store,
                             connectionArg.TargetConnectionString,
                             generatedAssemblyNameOpt.Value(),
                             sourceGenerationOpt.HasValue() );

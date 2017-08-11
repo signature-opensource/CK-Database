@@ -15,6 +15,7 @@ namespace CKSetup.Tests
     public class StoreContent
     {
         public readonly XElement Db;
+        public readonly XElement DbWithoutVaryingParts;
         public readonly ComponentDB ComponentDB;
 
         public struct FileEntry
@@ -35,6 +36,13 @@ namespace CKSetup.Tests
         }
 
         public readonly Dictionary<SHA1Value,FileEntry> FileEntries;
+
+        public void ShouldBeEquivalentTo( StoreContent other )
+        {
+            DbWithoutVaryingParts.ToString(SaveOptions.DisableFormatting)
+                .Should().Be( other.DbWithoutVaryingParts.ToString( SaveOptions.DisableFormatting ) );
+            FileEntries.ShouldBeEquivalentTo( other.FileEntries );
+        }
 
         public void AllComponentFilesShouldBeStored( Component c )
         {
@@ -63,15 +71,12 @@ namespace CKSetup.Tests
                 using( var z = ZipFile.Open( path, ZipArchiveMode.Read ) )
                 {
                     var e = z.GetEntry( "None/" + RuntimeArchive.DbXmlFileName );
-                    if( e != null )
+                    e.Should().NotBeNull();
+                    using( var content = e.Open() )
                     {
-                        using( var content = e.Open() )
-                        {
-                            Db = NormalizeWithoutAnyOrder( XDocument.Load( content ).Root );
-                        }
-                        ComponentDB = new ComponentDB( Db );
+                        Db = NormalizeWithoutAnyOrder( XDocument.Load( content ).Root );
                     }
-
+                    ComponentDB = new ComponentDB( Db );
                     FileEntries = z.Entries
                                 .Where( x => RemoveCompressionPrefix( x.FullName ) != RuntimeArchive.DbXmlFileName )
                                 .Select( x => new FileEntry( ComponentDB, x.FullName ) )
@@ -83,11 +88,9 @@ namespace CKSetup.Tests
                 path = Path.GetFullPath( path ) + FileUtil.DirectorySeparatorString;
                 string pathNone = FileUtil.NormalizePathSeparator( Path.Combine( path, "None" ), true );
                 string pathGZiped = FileUtil.NormalizePathSeparator( Path.Combine( path, "GZiped" ), true );
-                if( File.Exists( pathNone + RuntimeArchive.DbXmlFileName ) )
-                {
-                    Db = NormalizeWithoutAnyOrder( XDocument.Load( pathNone + RuntimeArchive.DbXmlFileName ).Root );
-                    ComponentDB = new ComponentDB( Db );
-                }
+                File.Exists( pathNone + RuntimeArchive.DbXmlFileName ).Should().BeTrue();
+                Db = NormalizeWithoutAnyOrder( XDocument.Load( pathNone + RuntimeArchive.DbXmlFileName ).Root );
+                ComponentDB = new ComponentDB( Db );
                 FileEntries = Directory.EnumerateFiles( pathNone, "*", SearchOption.AllDirectories )
                                 .Concat( Directory.EnumerateFiles( pathGZiped, "*", SearchOption.AllDirectories ) )
                                 .Select( p => p.Substring( path.Length ) )
@@ -95,6 +98,16 @@ namespace CKSetup.Tests
                                 .Select( x => new FileEntry( ComponentDB, x ) )
                                 .ToDictionary( x => x.ComponentFile.SHA1 );
             }
+            DbWithoutVaryingParts = RemoveVaryingParts( Db );
+        }
+
+
+        XElement RemoveVaryingParts( XElement e )
+        {
+            return new XElement(
+                        e.Name,
+                        e.Attributes().Where( a => a.Name != "Version" ).Select( a => new XAttribute(a) ),
+                        e.Elements().Select( c => RemoveVaryingParts( c ) ) );
         }
 
         static string RemoveCompressionPrefix( string name )

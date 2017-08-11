@@ -10,9 +10,14 @@ using System.Threading.Tasks;
 
 namespace CKSetup
 {
-    class StoreFileOption
+    class StorePathOption
     {
-        public StoreFileOption( CommandOption arg )
+        /// <summary>
+        /// The default store is the directory Environment.SpecialFolder.LocalApplicationData/CKSetupStore.
+        /// </summary>
+        public static readonly string DefaultStorePath = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.LocalApplicationData ), "CKSetupStore" );
+
+        public StorePathOption( CommandOption arg )
         {
             CommandOption = arg;
         }
@@ -42,14 +47,15 @@ namespace CKSetup
                 }
                 if( string.IsNullOrEmpty( StorePath ) )
                 {
-                    return binPath != null
-                            ? m.SendErrorAndDisplayHelp( $"Unable to locate CKSetupStore folder or CKSetupStore.zip file above '{binPath}' or {AppContext.BaseDirectory}." ) == Program.RetCodeSuccess
-                            : m.SendErrorAndDisplayHelp( $"Unable to locate CKSetupStore folder or CKSetupStore.zip file above {AppContext.BaseDirectory}." ) == Program.RetCodeSuccess;
+                    StorePath = DefaultStorePath;
                 }
             }
             else 
             {
-                if( !File.Exists( StorePath ) || !Directory.Exists( StorePath ) ) return m.SendErrorAndDisplayHelp( $"The provided store '{StorePath}' does not exist." ) == Program.RetCodeSuccess;
+                if( !File.Exists( StorePath ) || !Directory.Exists( StorePath ) )
+                {
+                    m.Warn().Send( $"The provided store '{StorePath}' does not exist. It will be created." );
+                }
             }
             m.Info().Send( $"Using store: {StorePath}" );
             return true;

@@ -392,25 +392,116 @@ namespace CKSetup
         /// <param name="input">Input stream.</param>
         /// <param name="downloader">Missing files downloader.</param>
         /// <returns>True on success, false on error.</returns>
-        public bool ImportComponents( Stream input, IComponentFileDownloader downloader = null )
+        public bool ImportComponents( Stream input, IComponentFileDownloader downloader )
         {
-            using( _monitor.OpenInfo().Send( "Starting import." ) )
+            if( downloader == null ) throw new ArgumentNullException( nameof( downloader ) );
+            using( _monitor.OpenInfo().Send( "Starting import with file downloader." ) )
             {
                 var n = _dbCurrent.Import( _monitor, input );
                 if( n.Error ) return false;
-                if( downloader != null )
+                var r = _store.DownloadImportResult( _monitor, downloader, n, _storageKind );
+                if( r.Item2 > 0 )
                 {
-                    var r = _store.DownloadImportResult( _monitor, downloader, n, _storageKind );
-                    if( r.Item2 > 0 )
-                    {
-                        _monitor.Error().Send( $"{r.Item2} download errors. Import canceled." );
-                        return false;
-                    }
+                    _monitor.Error().Send( $"{r.Item2} download errors. Import canceled." );
+                    return false;
                 }
                 _dbCurrent = n.NewDB;
                 SaveDbCurrent();
                 return true;
             }
+        }
+
+        /// <summary>
+        /// Imports a set of components from a <see cref="Stream"/> and returns
+        /// a <see cref="PushComponentsResult"/>.
+        /// </summary>
+        /// <param name="input">Input stream.</param>
+        /// <param name="sessionId">
+        /// Optional session identifier.
+        /// When not set, <see cref="PushComponentsResult.SessionId"/> is null on error
+        /// and a new guid is generated on success.
+        /// </param>
+        /// <returns>True on success, false on error.</returns>
+        public PushComponentsResult ImportComponents( Stream input, string sessionId = null )
+        {
+            using( _monitor.OpenInfo().Send( "Starting import." ) )
+            {
+                var n = _dbCurrent.Import( _monitor, input );
+                if( n.Error ) return new PushComponentsResult("Error while importing component into ComponentDB.", sessionId );
+                IReadOnlyList<SHA1Value> missingFiles;
+                if( n.NewComponents != null && n.NewComponents.Count > 0 )
+                {
+                    missingFiles = n.NewComponents
+                                    .Where( c => c.ComponentKind != ComponentKind.Model )
+                                    .SelectMany( c => c.Files )
+                                    .Select( f => f.SHA1 )
+                                    .Distinct()
+                                    .Where( sha => !_store.Exists( sha.ToString() ) )
+                                    .ToList();
+                }
+                else missingFiles = Array.Empty<SHA1Value>();
+                _dbCurrent = n.NewDB;
+                SaveDbCurrent();
+                return new PushComponentsResult( missingFiles, sessionId ?? Guid.NewGuid().ToString() );
+            }
+        }
+
+        /// <summary>
+        /// Pushes selected components to a <see cref="IComponentPushTarget"/>.
+        /// </summary>
+        /// <param name="filter">Filter for components to export.</param>
+        /// <param name="target">Target for the components.</param>
+        /// <returns>True on success, false otherwise.</returns>
+        public bool PushComponents( Func<Component,bool> filter, IComponentPushTarget target )
+        {
+            if( filter == null ) throw new ArgumentNullException( nameof( filter ) );
+            if( target == null ) throw new ArgumentNullException( nameof( target ) );
+
+            using( _monitor.OpenInfo().Send( $"Starting component push." ) )
+            {
+                var result = target.PushComponents( _monitor, w => _dbCurrent.Export( filter, w ) );
+                if( result.ErrorText != null )
+                {
+                    _monitor.Error().Send( "Target error: " + result.ErrorText );
+                    return false;
+                }
+                int fileCount = 0;
+                bool fileError = false;
+                if( result.Files.Count > 0 )
+                {
+                    using( _monitor.OpenInfo().Send( $"Starting {result.Files.Count} push. SessionId={result.SessionId}." ) )
+                    {
+                        foreach( var sha in result.Files )
+                        {
+                            ++fileCount;
+                            StoredStream sf = _store.OpenRead( sha.ToString() );
+                            if( sf.Stream != null )
+                            {
+                                try
+                                {
+                                    if( !target.PushFile( _monitor, result.SessionId, sha, w => sf.Stream.CopyTo( w ), sf.Kind ) )
+                                    {
+                                        _monitor.Error().Send( $"Failed to push file {sha}." );
+                                        --fileCount;
+                                        fileError = true;
+                                    }
+                                }
+                                finally
+                                {
+                                    sf.Stream.Dispose();
+                                }
+                            }
+                            else
+                            {
+                                _monitor.Warn().Send( $"Target requested file '{sha}' that does not locally exist." );
+                                --fileCount;
+                            }
+                        }
+                    }
+                }
+                if( !fileError ) _monitor.CloseGroup( $"Target is up to date. {fileCount} file uploaded." );
+            }
+            return true;
         }
 
         void SaveDbCurrent()

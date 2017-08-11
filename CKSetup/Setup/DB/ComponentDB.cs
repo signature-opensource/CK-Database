@@ -39,11 +39,13 @@ namespace CKSetup
             {
                 comps.Add( new Component( c ) );
             }
+            Version = (long)e.Attribute( DBXmlNames.Version );
         }
 
-        ComponentDB( IEnumerable<Component> components )
+        ComponentDB( ComponentDB origin, IEnumerable<Component> components )
         {
             Components = components.ToArray();
+            Version = origin.Version + 1;
         }
 
         /// <summary>
@@ -52,8 +54,13 @@ namespace CKSetup
         /// <returns>The Xml element.</returns>
         public XElement ToXml()
         {
-            return new XElement( DBXmlNames.DB, Components.Select( c => c.ToXml() ) );
+            return new XElement( DBXmlNames.DB, new XAttribute( DBXmlNames.Version, Version ), Components.Select( c => c.ToXml() ) );
         }
+
+        /// <summary>
+        /// Gets the version number of this database.
+        /// </summary>
+        public long Version { get; }
 
         /// <summary>
         /// Gets the list of registered components.
@@ -197,7 +204,7 @@ namespace CKSetup
 
         ComponentDB DoAdd( IActivityMonitor m, Component newC )
         {
-            return new ComponentDB( Components.Select( c => c.WithNewComponent( m, newC ) ).Append( newC ) );
+            return new ComponentDB( this, Components.Select( c => c.WithNewComponent( m, newC ) ).Append( newC ) );
         }
 
         /// <summary>

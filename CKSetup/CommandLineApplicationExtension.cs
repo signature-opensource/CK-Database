@@ -78,11 +78,11 @@ namespace CKSetup
                                       CommandOptionType.MultipleValue ) );
         }
 
-        static public StoreFileOption AddZipRuntimeFileOption( this CommandLineApplication @this )
+        static public StorePathOption AddStorePathOption( this CommandLineApplication @this )
         {
-            return new StoreFileOption( @this.Option(
-                                         "-z|--zipRuntimeFile",
-                                         "Full ",
+            return new StorePathOption( @this.Option(
+                                         "--store",
+                                         $"Full path of the runtime store to use (can be a .zip or a directory). Defaults to: {StorePathOption.DefaultStorePath}.",
                                          CommandOptionType.SingleValue ) );
         }
 

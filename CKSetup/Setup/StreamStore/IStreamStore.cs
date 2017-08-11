@@ -48,7 +48,7 @@ namespace CKSetup.StreamStore
         /// <param name="fullName">The resource full name (case insensitive).</param>
         /// <param name="writeContent">Stream writer action.</param>
         /// <param name="storageKind">Specifies the content's stream storage compression.</param>
-        /// <param name="allowCreate">True to automatically creates the entry if it does not alreadt exist.</param>
+        /// <param name="allowCreate">True to automatically creates the entry if it does not already exist.</param>
         void Update( string fullName, Action<Stream> writeContent, CompressionKind storageKind, bool allowCreate = false );
 
         /// <summary>

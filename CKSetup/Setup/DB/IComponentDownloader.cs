@@ -18,7 +18,7 @@ namespace CKSetup
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
         /// <param name="missing">The components to download.</param>
-        /// <returns>The current database, null on error.</returns>
+        /// <returns>The updated database, null on error.</returns>
         ComponentDB Download( IActivityMonitor monitor, ComponentMissingDescription missing );
     }
 }
