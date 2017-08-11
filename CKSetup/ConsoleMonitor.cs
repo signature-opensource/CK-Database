@@ -34,7 +34,7 @@ namespace CKSetup
                 else
                 {
                     consoleClient.Filter = LogFilter.Undefined;
-                    _m.Warn().Send( $"Unrecognized LogFiler value. Using default. {CommandLineApplicationExtension.LogFilterDesc}" );
+                    _m.Warn( $"Unrecognized LogFiler value. Using default. {CommandLineApplicationExtension.LogFilterDesc}" );
                 }
             }
             var optFile = c.Options.FirstOrDefault( o => o.LongName == CommandLineApplicationExtension.LogFileOptionName );
@@ -83,14 +83,14 @@ namespace CKSetup
 
         public int SendErrorAndDisplayHelp( string msg )
         {
-            _m.Error().Send( msg );
+            _m.Error( msg );
             _c.ShowHelp();
             return Program.RetCodeError;
         }
 
         public int SendError( string msg )
         {
-            _m.Error().Send( msg );
+            _m.Error( msg );
             return Program.RetCodeError;
         }
     }

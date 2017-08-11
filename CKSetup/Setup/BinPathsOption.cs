@@ -25,7 +25,7 @@ namespace CKSetup
         {
             if( !CommandOption.HasValue() )
             {
-                m.Info().Send( "No path to the bin folder is specified. Using current directory." );
+                m.Info( "No path to the bin folder is specified. Using current directory." );
                 BinPaths = new[] { Environment.CurrentDirectory };
             }
             else

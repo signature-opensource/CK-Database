@@ -48,7 +48,7 @@ namespace CKSetup.Tests
 
         bool IComponentPushTarget.PushFile( IActivityMonitor monitor, string sessionId, SHA1Value sha1, Action<Stream> writer, CompressionKind kind )
         {
-            monitor.Debug().Send( $"Pushing {sha1}." );
+            monitor.Debug( $"Pushing {sha1}." );
             _privateStore.Update( sha1.ToString(), writer, kind, true );
             return true;
         }

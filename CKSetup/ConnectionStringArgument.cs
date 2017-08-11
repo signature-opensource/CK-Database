@@ -43,9 +43,9 @@ namespace CKSetup
             }
             dcsb.InitialCatalog = "master";
 
-            m.Trace().Send( $"Target connection string: {TargetConnectionString = connectionString}" );
-            m.Trace().Send( $"Database name: {TargetDatabaseName = targetDatabaseName}" );
-            m.Trace().Send( $"Effective connection string: {MasterConnectionString = dcsb.ToString()}" );
+            m.Trace( $"Target connection string: {TargetConnectionString = connectionString}" );
+            m.Trace( $"Database name: {TargetDatabaseName = targetDatabaseName}" );
+            m.Trace( $"Effective connection string: {MasterConnectionString = dcsb.ToString()}" );
 
             return true;
         }
@@ -57,8 +57,8 @@ namespace CKSetup
             {
                 foreach( SqlError info in ev.Errors )
                 {
-                    if( info.Class > 10 ) m.Error().Send( info.Message );
-                    else m.Info().Send( info.Message );
+                    if( info.Class > 10 ) m.Error( info.Message );
+                    else m.Info( info.Message );
                 }
             };
             sqlConn.Open();

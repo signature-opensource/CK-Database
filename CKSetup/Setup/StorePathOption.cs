@@ -54,10 +54,10 @@ namespace CKSetup
             {
                 if( !File.Exists( StorePath ) || !Directory.Exists( StorePath ) )
                 {
-                    m.Warn().Send( $"The provided store '{StorePath}' does not exist. It will be created." );
+                    m.Warn( $"The provided store '{StorePath}' does not exist. It will be created." );
                 }
             }
-            m.Info().Send( $"Using store: {StorePath}" );
+            m.Info( $"Using store: {StorePath}" );
             return true;
         }
 

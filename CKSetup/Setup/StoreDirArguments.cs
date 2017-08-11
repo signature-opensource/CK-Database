@@ -24,7 +24,7 @@ namespace CKSetup
         public bool Initialize( ConsoleMonitor m )
         {
             var result = new List<BinFolder>();
-            using( m.OpenDebug().Send( "Discovering files." ) )
+            using( m.OpenDebug( "Discovering files." ) )
             {
                 try
                 {
@@ -37,7 +37,7 @@ namespace CKSetup
                 }
                 catch( Exception ex )
                 {
-                    m.Fatal().Send( ex );
+                    m.Fatal( ex );
                     return false;
                 }
             }

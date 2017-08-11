@@ -38,12 +38,12 @@ namespace CKSetup
         /// </returns>
         public IReadOnlyList<Component> Run( IActivityMonitor monitor, IComponentDownloader downloader )
         {
-            using( monitor.OpenInfo().Send( "Initializing root dependencies." ) )
+            using( monitor.OpenInfo( "Initializing root dependencies." ) )
             {
                 if( !_engine.Initialize( monitor, Roots )
                     || !UpdateDBIfNeeded( monitor, downloader ) ) return null;
             }
-            using( monitor.OpenInfo().Send( "Resolving dependencies." ) )
+            using( monitor.OpenInfo( "Resolving dependencies." ) )
             {
                 while( !_engine.ExpandDependencies( monitor ) )
                 {
@@ -59,11 +59,11 @@ namespace CKSetup
             {
                 if( downloader != null )
                 {
-                    using( monitor.OpenInfo().Send( $"Using donwloader." ) )
+                    using( monitor.OpenInfo( $"Using donwloader." ) )
                     {
-                        monitor.Debug().Send( $"Requesting: TargetRuntime = {TargetRuntime}" );
-                        monitor.Debug().Send( $"Requesting: Dependencies = {_engine.MissingDependencies.Select( d => d.ToString() ).Concatenate()}" );
-                        monitor.Debug().Send( $"Requesting: Components = {_engine.MissingEmbedded.Select( d => d.ToString() ).Concatenate()}" );
+                        monitor.Debug( $"Requesting: TargetRuntime = {TargetRuntime}" );
+                        monitor.Debug( $"Requesting: Dependencies = {_engine.MissingDependencies.Select( d => d.ToString() ).Concatenate()}" );
+                        monitor.Debug( $"Requesting: Components = {_engine.MissingEmbedded.Select( d => d.ToString() ).Concatenate()}" );
                         try
                         {
                             var missing = new ComponentMissingDescription( TargetRuntime, _engine.MissingDependencies, _engine.MissingEmbedded );
@@ -77,18 +77,18 @@ namespace CKSetup
                         }
                         catch( Exception ex )
                         {
-                            monitor.Error().Send( ex );
+                            monitor.Error( ex );
                             return false;
                         }
                     }
                 }
                 if( _engine.MissingEmbedded.Count > 0 )
                 {
-                    monitor.Error().Send( $"Missing embeddeds: {_engine.MissingEmbedded.Select( d => d.ToString() ).Concatenate() }." );
+                    monitor.Error( $"Missing embeddeds: {_engine.MissingEmbedded.Select( d => d.ToString() ).Concatenate() }." );
                 }
                 if( _engine.MissingDependencies.Count > 0 )
                 {
-                    monitor.Error().Send( $"Missing required dependencies: {_engine.MissingDependencies.Select( d => d.ToString() ).Concatenate() }." );
+                    monitor.Error( $"Missing required dependencies: {_engine.MissingDependencies.Select( d => d.ToString() ).Concatenate() }." );
                 }
                 return false;
             }

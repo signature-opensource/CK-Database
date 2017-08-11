@@ -27,13 +27,8 @@ namespace CKSetup
                     if( !backupPathArg.Initialize( monitor, sqlConn ) ) return Program.RetCodeError;
                     string q = BuildBackupQuery( connectionArg.TargetDatabaseName, backupPathArg.BackupPath );
 
-                    using( monitor.OpenTrace().Send( "SQL Server command execution", q ) )
-                    using( SqlCommand cmd = new SqlCommand( q, sqlConn ) )
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
+                    return SqlServerHelper.ExecuteNonQuery( monitor, sqlConn, q );
                 }
-                return Program.RetCodeSuccess;
             } );
         }
 

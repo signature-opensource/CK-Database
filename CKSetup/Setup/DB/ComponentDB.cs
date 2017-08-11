@@ -150,23 +150,23 @@ namespace CKSetup
         {
             if( !folder.Heads.Any() )
             {
-                m.Error().Send( "No components found." );
+                m.Error( "No components found." );
                 return new AddLocalResult( null );
             }
             var freeHeads = folder.Heads.Where( h => Find( h.ComponentRef ) == null );
             int freeHeadsCount = freeHeads.Count();
             if( freeHeadsCount > 1 )
             {
-                m.Error().Send( $"Cannot register '{freeHeads.Select( h => h.Name.Name ).Concatenate( "', '" )}' at the same time. They must be registered individually." );
+                m.Error( $"Cannot register '{freeHeads.Select( h => h.Name.Name ).Concatenate( "', '" )}' at the same time. They must be registered individually." );
                 return new AddLocalResult( null );
             }
             if( freeHeadsCount == 0 )
             {
-                m.Warn().Send( $"No component added (found already registered Components: '{folder.Heads.Select( h => h.Name.Name ).Concatenate( "', '" )}')" );
+                m.Warn( $"No component added (found already registered Components: '{folder.Heads.Select( h => h.Name.Name ).Concatenate( "', '" )}')" );
                 return new AddLocalResult( this );
             }
             BinFileInfo toAdd = freeHeads.Single();
-            using( m.OpenInfo().Send( $"Found '{toAdd.ComponentRef.EntryPathPrefix}' to register." ) )
+            using( m.OpenInfo( $"Found '{toAdd.ComponentRef.EntryPathPrefix}' to register." ) )
             {
                 List<ComponentDependency> dependencies = CollectSetupDependencies( m, toAdd.SetupDependencies );
 
@@ -180,19 +180,19 @@ namespace CKSetup
                     {
                         if( dependencies.Any( d => d.UseName == cSub.Name ) )
                         {
-                            m.Error().Send( $"{cSub.Name} is declared as a Setup dependency but exists as an embedded component." );
+                            m.Error( $"{cSub.Name} is declared as a Setup dependency but exists as an embedded component." );
                             return new AddLocalResult( null );
                         }
                         if( toAdd.ComponentKind != ComponentKind.Model && cSub.ComponentKind != ComponentKind.Model )
                         {
                             dependencies.Add( new ComponentDependency( cSub.Name, cSub.Version ) );
                         }
-                        m.Info().Send( $"Removing {cSub.Files.Count} files thanks to already registered '{cSub.GetRef()}'." );
+                        m.Info( $"Removing {cSub.Files.Count} files thanks to already registered '{cSub.GetRef()}'." );
                         binFiles = binFiles.Where( f => !cSub.Files.Any( fc => fc.Name == f.LocalFileName ) );
                     }
                     else
                     {
-                        m.Warn().Send( $"Embedded component '{sub.ComponentRef}' will be included. It should be registered individually." );
+                        m.Warn( $"Embedded component '{sub.ComponentRef}' will be included. It should be registered individually." );
                         embeddedComponents.Add( sub.ComponentRef );
                     }
                 }
@@ -252,7 +252,7 @@ namespace CKSetup
         /// <returns>The new ComponentDB with imported components.</returns>
         public ImportResult Import( IActivityMonitor monitor, Stream input )
         {
-            using( monitor.OpenInfo().Send( "Starting components import." ) )
+            using( monitor.OpenInfo( "Starting components import." ) )
             using( CKBinaryReader reader = new CKBinaryReader( input, Encoding.UTF8, true ) )
             {
                 var newOnes = new List<ComponentRef>();
@@ -260,18 +260,18 @@ namespace CKSetup
                 try
                 {
                     var v = reader.ReadNonNegativeSmallInt32();
-                    monitor.Debug().Send( $"Stream version: {v}" );
+                    monitor.Debug( $"Stream version: {v}" );
                     while( reader.ReadBoolean() )
                     {
                         var newC = new Component( XElement.Parse( reader.ReadString() ) );
                         bool skip = currentDb.Find( newC.GetRef() ) != null;
                         if( skip )
                         {
-                            monitor.Warn().Send( $"Skipping '{newC}' since it already exists." );
+                            monitor.Warn( $"Skipping '{newC}' since it already exists." );
                         }
                         else
                         {
-                            monitor.Trace().Send( $"Importing Component '{newC}' ({newC.Files.Count} files)." );
+                            monitor.Trace( $"Importing Component '{newC}' ({newC.Files.Count} files)." );
                             currentDb = currentDb.DoAdd( monitor, newC );
                             newOnes.Add( newC.GetRef() );
                         }
@@ -279,7 +279,7 @@ namespace CKSetup
                 }
                 catch( Exception ex )
                 {
-                    monitor.Error().Send( ex );
+                    monitor.Error( ex );
                     return new ImportResult( null );
                 }
                 return new ImportResult( currentDb, newOnes.Select( n => currentDb.Components.Single( c => c.GetRef().Equals( n ) ) ).ToList() );
@@ -295,7 +295,7 @@ namespace CKSetup
         public ISet<Component> FindAvailable( ComponentMissingDescription what, IActivityMonitor monitor = null )
         {
             var result = new HashSet<Component>();
-            using( monitor?.OpenInfo().Send( $"Finding available components." ) )
+            using( monitor?.OpenInfo( $"Finding available components." ) )
             {
                 if( what.Components.Count > 0 )
                 {
@@ -306,20 +306,20 @@ namespace CKSetup
                         {
                             result.Add( c );
                         }
-                        else monitor?.Warn().Send( $"Component {cRef} not found." );
+                        else monitor?.Warn( $"Component {cRef} not found." );
                     }
                     if( result.Count == 0 )
                     {
-                        monitor?.Warn().Send( "No component found." );
+                        monitor?.Warn( "No component found." );
                     }
                     else
                     {
-                        monitor?.Info().Send( $"Found: {result.Select( c => c.GetRef().ToString() ).Concatenate()}." );
+                        monitor?.Info( $"Found: {result.Select( c => c.GetRef().ToString() ).Concatenate()}." );
                     }
                 }
                 if( what.Dependencies.Count > 0 )
                 {
-                    using( monitor?.OpenInfo().Send( $"Resolving dependencies for {what.TargetRuntime}: {what.Dependencies.Select( d => d.ToString() ).Concatenate()}." ) )
+                    using( monitor?.OpenInfo( $"Resolving dependencies for {what.TargetRuntime}: {what.Dependencies.Select( d => d.ToString() ).Concatenate()}." ) )
                     {
                         int embeddedCount = result.Count;
                         foreach( var dep in what.Dependencies )
@@ -331,16 +331,16 @@ namespace CKSetup
                             }
                             else
                             {
-                                monitor?.Warn().Send( $"Unresolved dependency: {dep}" );
+                                monitor?.Warn( $"Unresolved dependency: {dep}" );
                             }
                         }
                         if( result.Count == embeddedCount )
                         {
-                            monitor?.Warn().Send( "No dependency resolved." );
+                            monitor?.Warn( "No dependency resolved." );
                         }
                         else
                         {
-                            monitor?.Info().Send( $"Resolved components: {result.Skip(embeddedCount).Select( c => c.GetRef().ToString() ).Concatenate()}." );
+                            monitor?.Info( $"Resolved components: {result.Skip(embeddedCount).Select( c => c.GetRef().ToString() ).Concatenate()}." );
                         }
                     }
                 }
@@ -356,17 +356,17 @@ namespace CKSetup
         /// <returns>Null on error, otherwise the DependencyResolver (may be empty).</returns>
         public DependencyResolver GetRuntimeDependenciesResolver( IActivityMonitor m, IEnumerable<BinFolder> targets )
         {
-            using( m.OpenInfo().Send( $"Creating runtime dependencies resolver for {targets.Select( t => t.BinPath ).Concatenate()}." ) )
+            using( m.OpenInfo( $"Creating runtime dependencies resolver for {targets.Select( t => t.BinPath ).Concatenate()}." ) )
             {
                 var models = targets.SelectMany( t => t.Components ).Where( c => c.ComponentKind == ComponentKind.Model );
                 if( !models.Any() )
                 {
-                    m.Warn().Send( "No Model component found." );
+                    m.Warn( "No Model component found." );
                     return new DependencyResolver( this, TargetRuntime.None, Array.Empty<ComponentDependency>() );
                 }
                 foreach( var eOrR in targets.SelectMany( t => t.Components ).Where( c => c.ComponentKind != ComponentKind.Model ) )
                 {
-                    m.Warn().Send( $"{eOrR.ComponentKind} '{eOrR.ComponentRef}' found. It will be ignored." );
+                    m.Warn( $"{eOrR.ComponentKind} '{eOrR.ComponentRef}' found. It will be ignored." );
                 }
                 var targetRuntime = SelectTargetRuntime( m, models );
                 if( targetRuntime == TargetRuntime.None ) return null;
@@ -378,12 +378,12 @@ namespace CKSetup
 
         static TargetRuntime SelectTargetRuntime( IActivityMonitor m, IEnumerable<BinFileInfo> models )
         {
-            using( m.OpenInfo().Send( $"Detecting runtimes for: ${ models.Select( x => x.Name.Name + '/' + x.ComponentRef.TargetFramework ).Concatenate() }" ) )
+            using( m.OpenInfo( $"Detecting runtimes for: ${ models.Select( x => x.Name.Name + '/' + x.ComponentRef.TargetFramework ).Concatenate() }" ) )
             {
                 var runtimes = models.First().ComponentRef.TargetFramework.GetCommonRuntimes( models.Skip( 1 ).Select( x => x.ComponentRef.TargetFramework ) );
                 if( !runtimes.Any() )
                 {
-                    m.Error().Send( $"Unable to determine at least one common allowed runtime." );
+                    m.Error( $"Unable to determine at least one common allowed runtime." );
                     return TargetRuntime.None;
                 }
                 var theOnlyOne = runtimes.Count() == 1 ? runtimes.First() : TargetRuntime.None;
@@ -392,7 +392,7 @@ namespace CKSetup
                     m.CloseGroup( $"Single selected runtime: {theOnlyOne}." );
                     return theOnlyOne;
                 }
-                m.Info().Send( $"Multiple possible runtime: {runtimes.Select( r => r.ToString() ).Concatenate()}." );
+                m.Info( $"Multiple possible runtime: {runtimes.Select( r => r.ToString() ).Concatenate()}." );
                 theOnlyOne = runtimes.Min();
                 m.CloseGroup( $"Lowest selected runtime: {theOnlyOne}." );
                 return theOnlyOne;
@@ -418,11 +418,11 @@ namespace CKSetup
                 {
                     var max = versions.Max();
                     var culprits = dep.Where( d => d.UseName == name );
-                    using( m.OpenWarn().Send( $"Version upgrade for '{name}'. Using: {max}." ) )
+                    using( m.OpenWarn( $"Version upgrade for '{name}'. Using: {max}." ) )
                     {
                         foreach( var c in culprits )
                         {
-                            m.Warn().Send( $"'{c.Source.Name.Name}' declares to use the version {c.UseMinVersion}." );
+                            m.Warn( $"'{c.Source.Name.Name}' declares to use the version {c.UseMinVersion}." );
                         }
                     }
                     dependencies.Add( new ComponentDependency( name, max ) );

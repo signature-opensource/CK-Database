@@ -91,7 +91,7 @@ namespace CKSetup
                         int countToRemove = _resolved.Count - succesfulIndex;
                         _resolved.RemoveRange( succesfulIndex, countToRemove );
                         idx = succesfulIndex;
-                        monitor.Trace().Send( $"Restarting from {succesfulIndex}, backtracking {countToRemove} previous resoltions." );
+                        monitor.Trace( $"Restarting from {succesfulIndex}, backtracking {countToRemove} previous resoltions." );
                     }
                 }
             }
@@ -101,7 +101,7 @@ namespace CKSetup
 
         public bool OnDatabaseUpdated( IActivityMonitor monitor, ComponentDB db )
         {
-            using( monitor.OpenInfo().Send( "Updating DependencyEngine state." ) )
+            using( monitor.OpenInfo( "Updating DependencyEngine state." ) )
             {
                 var unified = _resolved.Select( r => new ComponentDependency( r.Name, r.Version ) )
                                     .Concat( _deps )
@@ -114,7 +114,7 @@ namespace CKSetup
                 _embeddeds.Clear();
                 _resolved.AddRange( unified.Select( d => db.FindBest( _target, d.UseName, d.UseMinVersion ) ) );
                 _db = db;
-                monitor.Trace().Send( $"Resolved is now: {_resolved.Select( d => d.ToString() ).Concatenate()}." );
+                monitor.Trace( $"Resolved is now: {_resolved.Select( d => d.ToString() ).Concatenate()}." );
                 Debug.Assert( _resolved.Take( Roots.Count ).Select( r => r.Name ).SequenceEqual( Roots.Select( r => r.UseName ) ) );
                 return true;
             }
@@ -132,19 +132,19 @@ namespace CKSetup
                 int idx = _deps.FindIndex( x => x.UseName == d.UseName && x.UseMinVersion >= d.UseMinVersion );
                 if( idx >= 0 )
                 {
-                    monitor.Debug().Send( $"Already existing dependency {_deps[idx]} for {d}." );
+                    monitor.Debug( $"Already existing dependency {_deps[idx]} for {d}." );
                 }
                 else
                 {
                     idx = _deps.FindIndex( x => x.UseName == d.UseName && x.UseMinVersion < d.UseMinVersion );
                     if( idx >= 0 )
                     {
-                        monitor.Trace().Send( $"Upgrading required dependency {sourceName}{d}." );
+                        monitor.Trace( $"Upgrading required dependency {sourceName}{d}." );
                         _deps[idx] = d;
                     }
                     else
                     {
-                        monitor.Trace().Send( $"Adding required dependency {sourceName}{d}." );
+                        monitor.Trace( $"Adding required dependency {sourceName}{d}." );
                         _deps.Add( d );
                     }
                 }
@@ -160,7 +160,7 @@ namespace CKSetup
                 var found = _db.FindBest( _target, d.UseName, d.UseMinVersion );
                 if( found != null )
                 {
-                    monitor.Trace().Send( $"Resolved required dependency {d} to local {found}." );
+                    monitor.Trace( $"Resolved required dependency {d} to local {found}." );
                     _resolved.Add( HandleEmbedded( monitor, found ) );
                     return -1;
                 }
@@ -170,13 +170,13 @@ namespace CKSetup
                 var exists = _resolved[idx];
                 if( exists.Version >= d.UseMinVersion )
                 {
-                    monitor.Debug().Send( $"Required dependency {d} resolved to existing local {exists}." );
+                    monitor.Debug( $"Required dependency {d} resolved to existing local {exists}." );
                     return -1;
                 }
                 var found = _db.FindBest( _target, d.UseName, d.UseMinVersion );
                 if( found != null )
                 {
-                    monitor.Trace().Send( $"Local {exists} upgraded to local {found}." );
+                    monitor.Trace( $"Local {exists} upgraded to local {found}." );
                     _resolved[idx] = HandleEmbedded( monitor, found );
                     return idx;
                 }
@@ -194,7 +194,7 @@ namespace CKSetup
                     if( idx >= 0 )
                     {
                         // The exact reference will satisfy the floating one.
-                        monitor.Trace().Send( $"Required dependency {_deps[idx]} upgraded to embedded {m}." );
+                        monitor.Trace( $"Required dependency {_deps[idx]} upgraded to embedded {m}." );
                         _deps.RemoveAt( idx );
                     }
                 }

@@ -27,23 +27,15 @@ namespace CKSetup
                     if( !backupPathArg.Initialize( monitor, sqlConn ) ) return Program.RetCodeError;
 
                     string dataDir = SqlServerHelper.GetDefaultServerDataPath( monitor, sqlConn );
-                    monitor.Trace().Send( "Server data directory: {0}", dataDir );
+                    monitor.Trace( $"Server data directory: {dataDir}" );
 
                     string logDir = SqlServerHelper.GetDefaultServerLogPath( monitor, sqlConn );
-                    monitor.Trace().Send( "Server log directory: {0}", logDir );
+                    monitor.Trace( $"Server log directory: {logDir}" );
 
                     string q = BuildRestoreQuery( monitor, sqlConn, connectionArg.TargetDatabaseName, backupPathArg.BackupPath, dataDir, logDir );
 
-                    monitor.Trace().Send( "Calling: {0}", q );
-                    using( SqlCommand cmd = new SqlCommand( q, sqlConn ) )
-                    {
-                        using( monitor.OpenTrace().Send( "SQL Server command execution", q ) )
-                        {
-                            int result = cmd.ExecuteNonQuery();
-                        }
-                    }
+                    return SqlServerHelper.ExecuteNonQuery( monitor, sqlConn, q );
                 }
-                return Program.RetCodeSuccess;
             } );
         }
 
@@ -60,8 +52,8 @@ namespace CKSetup
             string dataFileNewPath = Path.Combine( dataDir, $"{targetDatabaseName}.mdf" );
             string logFileNewPath = Path.Combine( logDir, $"{targetDatabaseName}_log.ldf" );
 
-            m.Info().Send( "Restoring data file to: {0}", dataFileNewPath );
-            m.Info().Send( "Restoring log file to: {0}", logFileNewPath );
+            m.Info( $"Restoring data file to: {dataFileNewPath}"  );
+            m.Info( $"Restoring log file to: {logFileNewPath}" );
 
             options.Add( $"MOVE '{SqlServerHelper.EncodeStringContent( logicalNames.Item1 )}' TO '{SqlServerHelper.EncodeStringContent( dataFileNewPath )}'" );
             options.Add( $"MOVE '{SqlServerHelper.EncodeStringContent( logicalNames.Item2 )}' TO '{SqlServerHelper.EncodeStringContent( logFileNewPath )}'" );
@@ -93,19 +85,19 @@ namespace CKSetup
             string dataLogicalName = null;
             string logLogicalName = null;
 
-            m.Trace().Send( $"Executing: {0}", restore );
+            using( m.OpenTrace( $"Executing: {restore}" ) )
             using( SqlCommand cmd = new SqlCommand( restore, c ) )
             {
                 using( SqlDataReader r = cmd.ExecuteReader() )
                 {
                     while( r.Read() )
                     {
-                        string logicalName = r.GetString(0);
-                        string physicalName = r.GetString(1);
-                        string type = r.GetString(2);
-                        long fileId = r.GetInt64(6);
+                        string logicalName = r.GetString( 0 );
+                        string physicalName = r.GetString( 1 );
+                        string type = r.GetString( 2 );
+                        long fileId = r.GetInt64( 6 );
 
-                        m.Trace().Send( $"{fileId}: [{type}] {logicalName} ({physicalName})" );
+                        m.Trace( $"{fileId}: [{type}] {logicalName} ({physicalName})" );
                         if( type == "D" )
                         {
                             if( dataLogicalName != null ) { throw new NotSupportedException( "Complex backups with multiple data files are not supported" ); }

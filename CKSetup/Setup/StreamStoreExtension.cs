@@ -23,12 +23,12 @@ namespace CKSetup
         static public bool Download( this IStreamStore @this, IActivityMonitor monitor, IComponentFileDownloader downloader, ComponentFile f, CompressionKind storageKind )
         {
             Debug.Assert( monitor != null && downloader != null && f != null );
-            using( monitor.OpenInfo().Send( $"Downloading {f}." ) )
+            using( monitor.OpenInfo( $"Downloading {f}." ) )
             {
                 var storedStream = downloader.GetDownloadStream( monitor, f.SHA1, storageKind );
                 if( storedStream.Stream == null )
                 {
-                    monitor.Error().Send( $"Unable to obtain file by its SHA1 from downloader." );
+                    monitor.Error( $"Unable to obtain file by its SHA1 from downloader." );
                     return false;
                 }
                 try
@@ -39,7 +39,7 @@ namespace CKSetup
                 }
                 catch( Exception ex )
                 {
-                    monitor.Error().Send( ex );
+                    monitor.Error( ex );
                     return false;
                 }
             }
@@ -68,7 +68,7 @@ namespace CKSetup
             int failedCount = 0;
             if( r.NewComponents != null && r.NewComponents.Count > 0 )
             {
-                using( monitor.OpenInfo().Send( $"Downloading missing files." ) )
+                using( monitor.OpenInfo( $"Downloading missing files." ) )
                 {
                     var newFiles = r.NewComponents
                                     .Where( c => c.ComponentKind != ComponentKind.Model )
@@ -82,7 +82,7 @@ namespace CKSetup
                     }
                     else
                     {
-                        using( monitor.OpenInfo().Send( $"{newFiles.Count} files missing." ) )
+                        using( monitor.OpenInfo( $"{newFiles.Count} files missing." ) )
                         {
                             foreach( var f in newFiles.Select( g => g.First() ) )
                             {

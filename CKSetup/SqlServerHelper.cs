@@ -42,6 +42,34 @@ namespace CKSetup
             }
         }
 
+        /// <summary>
+        /// Executes a query and returns <see cref="Program.RetCodeSuccess"/> or <see cref="Program.RetCodeError"/>.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="sqlConn">The connection.</param>
+        /// <param name="query">The command to execute.</param>
+        /// <returns>The error code: <see cref="Program.RetCodeSuccess"/> or <see cref="Program.RetCodeError"/></returns>
+        public static int ExecuteNonQuery( IActivityMonitor monitor, SqlConnection sqlConn, string query )
+        {
+            using( monitor.OpenDebug( $"SQL Server command execution: {query}" ) )
+            {
+                try
+                {
+                    using( SqlCommand cmd = new SqlCommand( query, sqlConn ) )
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                catch( Exception ex )
+                {
+                    monitor.Error( ex );
+                    return Program.RetCodeError;
+                }
+            }
+            return Program.RetCodeSuccess;
+        }
+
+
         private static string ExecXpInstanceRegread( IActivityMonitor m, SqlConnection c, string rootKey, string key, string valueName )
         {
             using( SqlCommand cmd = new SqlCommand( "master.dbo.xp_instance_regread", c ) )
@@ -67,9 +95,9 @@ namespace CKSetup
                 valParam.Size = 256;
                 valParam.Direction = ParameterDirection.Output;
 
-                m.Trace().Send( "Executing command: {0}", cmd.CommandText );
+                m.Debug( $"Executing command: {cmd.CommandText}" );
                 int r = cmd.ExecuteNonQuery();
-                m.Trace().Send( "Non-query returned {0}", r );
+                m.Debug( $"Non-query returned {r}" );
 
                 string value = valParam.Value is DBNull ? null : (string)valParam.Value;
                 return value;

@@ -101,9 +101,9 @@ namespace CKSetup
             int delta = Files.Count - newFiles.Count;
             if( delta > 0 )
             {
-                m.Info().Send( $"Removing {delta} files from '{_ref}' thanks to newly registered '{newC.Name}'." );
+                m.Info( $"Removing {delta} files from '{_ref}' thanks to newly registered '{newC.Name}'." );
             }
-            m.Info().Send( $"Component '{_ref}' does not embedd '{newC.GetRef()}' anymore." );
+            m.Info( $"Component '{_ref}' does not embedd '{newC.GetRef()}' anymore." );
             return new Component( ComponentKind, _ref, newDependencies, newEmbedded, newFiles );
         }
 

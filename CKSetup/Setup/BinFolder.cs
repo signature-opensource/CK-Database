@@ -34,12 +34,12 @@ namespace CKSetup
         {
             if( !Components.Any() )
             {
-                m.Error().Send( "Unable to find a Model, Runtime or Engine assembly in this folder." );
+                m.Error( "Unable to find a Model, Runtime or Engine assembly in this folder." );
                 return false;
             }
             if( !Heads.Any() )
             {
-                m.Error().Send( "Components are co-dependent. How did you get there?" );
+                m.Error( "Components are co-dependent. How did you get there?" );
                 return false;
             }
             return true;
@@ -56,14 +56,14 @@ namespace CKSetup
         {
             if( m == null ) throw new ArgumentNullException( nameof( m ) );
             if( binPath == null ) throw new ArgumentNullException( nameof( binPath ) );
-            using( m.OpenInfo().Send( $"Reading files from '{binPath}'." ) )
+            using( m.OpenInfo( $"Reading files from '{binPath}'." ) )
             {
                 try
                 {
                     binPath = FileUtil.NormalizePathSeparator( Path.GetFullPath( binPath ), true );
                     if( !Directory.Exists( binPath ) )
                     {
-                        m.Error().Send( "Directory not found: " + binPath );
+                        m.Error( "Directory not found: " + binPath );
                         return null;
                     }
                     var b = new BinFolder( binPath, BinFileInfo.ReadFiles( m, binPath ) );
@@ -72,7 +72,7 @@ namespace CKSetup
                 }
                 catch( Exception ex )
                 {
-                    m.Error().Send( ex );
+                    m.Error( ex );
                     return null;
                 }
             }

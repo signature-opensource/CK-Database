@@ -59,8 +59,8 @@ namespace CKSetup.Tests
                 if( c == null )
                 {
                     c = "Server=.;Database=master;Integrated Security=SSPI";
-                    ConsoleMonitor.Info().Send( "Using default connection string: {0}", c );
                 }
+                ConsoleMonitor.Info( $"Master connection string: {c}" );
                 _masterConnectionString = new SqlConnectionStringBuilder( c );
             }
             return _masterConnectionString;

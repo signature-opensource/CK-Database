@@ -100,12 +100,12 @@ namespace CKSetup
                     try
                     {
                         int r = invoke( monitor );
-                        if( r == Program.RetCodeSuccess ) monitor.Info().Send( $"Command {@this.Name} succeed." );
+                        if( r == Program.RetCodeSuccess ) monitor.Info( $"Command {@this.Name} succeed." );
                         return r;
                     }
-                    catch( Exception e )
+                    catch( Exception ex )
                     {
-                        monitor.Fatal().Send( e, $"Command {@this.Name} failed." );
+                        monitor.Fatal( $"Command {@this.Name} failed.", ex );
                         return Program.RetCodeError;
                     }
                 }

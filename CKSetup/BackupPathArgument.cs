@@ -28,15 +28,15 @@ namespace CKSetup
             {
                 return m.SendErrorAndDisplayHelp( "A path to the backup file is required." ) == Program.RetCodeSuccess;
             }
-            m.Trace().Send( $"Path to backup: {backupPath}" );
+            m.Trace( $"Path to backup: {backupPath}" );
             if( !Path.IsPathRooted( backupPath ) )
             {
-                m.Info().Send( $"Path '{backupPath}' is not absolute: Using default server backup directory.", backupPath );
+                m.Info( $"Path '{backupPath}' is not absolute: Using default server backup directory." );
                 string defaultBackupPath = SqlServerHelper.GetDefaultServerBackupPath( m, c );
-                m.Trace().Send( $"Default server backup path: '{defaultBackupPath}'." );
+                m.Trace( $"Default server backup path: '{defaultBackupPath}'." );
                 backupPath = Path.GetFullPath( Path.Combine( defaultBackupPath, backupPath ) );
             }
-            m.Info().Send( $"Effective backup path: {BackupPath = backupPath}" );
+            m.Info( $"Effective backup path: {BackupPath = backupPath}" );
             return true;
         }
 

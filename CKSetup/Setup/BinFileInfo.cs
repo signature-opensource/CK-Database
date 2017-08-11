@@ -37,7 +37,7 @@ namespace CKSetup
             if( IsExcludedFromSetup )
             {
                 SetupDependencies = Array.Empty<SetupDependency>();
-                m.Debug().Send( $"'{Name.Name}' has ExcludeFromSetup attribute." );
+                m.Debug( $"'{Name.Name}' has ExcludeFromSetup attribute." );
             }
             else 
             {
@@ -90,7 +90,7 @@ namespace CKSetup
                 if( InfoVersion.OriginalInformationalVersion == null )
                 {
                     InfoVersion = InformationalVersion.Zero;
-                    m.Warn().Send( $"Component '{p}' does not have a standard CSemVer version in its InformationalVersion. Using the ZeroVersion." );
+                    m.Warn( $"Component '{p}' does not have a standard CSemVer version in its InformationalVersion. Using the ZeroVersion." );
                 }
                 else if( !InfoVersion.IsValidSyntax )
                 {
@@ -236,11 +236,11 @@ namespace CKSetup
             long len = fi.Length;
             if( len > Int32.MaxValue )
             {
-                m.Warn().Send( $"'{fullPath}' is bigger than 2 GiB. It will be ignored." );
+                m.Warn( $"'{fullPath}' is bigger than 2 GiB. It will be ignored." );
             }
             else if( len == 0 )
             {
-                m.Warn().Send( $"'{fullPath}' is an empty file. It will be ignored." );
+                m.Warn( $"'{fullPath}' is an empty file. It will be ignored." );
             }
             else
             {
@@ -257,7 +257,7 @@ namespace CKSetup
                 }
                 catch( BadImageFormatException ex )
                 {
-                    m.Warn().Send( ex, $"While analysing '{fullPath}'." );
+                    m.Warn( $"While analysing '{fullPath}'.", ex );
                 }
             }
             return info;

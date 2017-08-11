@@ -32,7 +32,7 @@ namespace CKSetup
             bool success = true;
             if( _store.IsEmptyStore )
             {
-                monitor.Info().Send( $"Creating new store." );
+                monitor.Info( $"Creating new store." );
                 _dbOrigin = _dbCurrent = new ComponentDB();
                 _store.CreateText( DbXmlFileName, _dbCurrent.ToXml().ToString( SaveOptions.DisableFormatting ), CompressionKind.None );
             }
@@ -44,17 +44,17 @@ namespace CKSetup
                     if( text != null )
                     {
                         _dbOrigin = _dbCurrent = new ComponentDB( XDocument.Parse( text ).Root );
-                        monitor.Trace().Send( $"Opened store: {_dbOrigin.Components.Count} components." );
+                        monitor.Trace( $"Opened store: {_dbOrigin.Components.Count} components." );
                     }
                     else
                     {
-                        monitor.Error().Send( $"File is not a valid runtime zip ({DbXmlFileName} manifest not found)." );
+                        monitor.Error( $"File is not a valid runtime zip ({DbXmlFileName} manifest not found)." );
                         success = false;
                     }
                 }
                 catch( Exception ex )
                 {
-                    monitor.Fatal().Send( ex, $"Invalid {DbXmlFileName} manifest." );
+                    monitor.Fatal( $"Invalid {DbXmlFileName} manifest.", ex );
                     success = false;
                 }
             }
@@ -86,7 +86,7 @@ namespace CKSetup
         /// <returns>True on success, false on error.</returns>
         public bool Clear()
         {
-            using( _monitor.OpenInfo().Send( $"Clearing runtime archive." ) )
+            using( _monitor.OpenInfo( $"Clearing runtime archive." ) )
             {
                 try
                 {
@@ -98,7 +98,7 @@ namespace CKSetup
                 }
                 catch( Exception ex )
                 {
-                    _monitor.Error().Send( ex );
+                    _monitor.Error( ex );
                     return false;
                 }
             }
@@ -176,13 +176,13 @@ namespace CKSetup
         bool LocalImport( IOrderedEnumerable<BinFolder> folders, IComponentImporter missingImporter )
         {
             if( !IsValid ) throw new InvalidOperationException();
-            using( _monitor.OpenInfo().Send( $"Importing local folders." ) )
+            using( _monitor.OpenInfo( $"Importing local folders." ) )
             {
                 ComponentDB db = _dbCurrent;
                 var added = new Dictionary<ComponentRef, BinFolder>();
                 foreach( var f in folders )
                 {
-                    using( _monitor.OpenInfo().Send( $"Adding {f.BinPath}." ) )
+                    using( _monitor.OpenInfo( $"Adding {f.BinPath}." ) )
                     {
                         var result = db.AddLocal( _monitor, f );
                         if( result.Error ) return false;
@@ -200,7 +200,7 @@ namespace CKSetup
                 {
                     if( missingImporter != null )
                     {
-                        using( _monitor.OpenInfo().Send( $"Components have missing embedded components. Trying to use importer." ) )
+                        using( _monitor.OpenInfo( $"Components have missing embedded components. Trying to use importer." ) )
                         {
                             var downloader = new ComponentDownloader( missingImporter, db, _store, _storageKind );
                             var missing = new ComponentMissingDescription( newC.SelectMany( c => c.C.Embedded ).ToList() );
@@ -211,11 +211,11 @@ namespace CKSetup
                     }
                     else
                     {
-                        using( _monitor.OpenError().Send( $"Components have missing embedded components. Embedded components are required to be resolved." ) )
+                        using( _monitor.OpenError( "Components have missing embedded components. Embedded components are required to be resolved." ) )
                         {
                             foreach( var c in newC.Where( c => c.C.Embedded.Count > 0 ) )
                             {
-                                _monitor.Trace().Send( $"'{c.C}' embedds: '{c.C.Embedded.Select( e => e.ToString() ).Concatenate( "', '" )}'." );
+                                _monitor.Trace( $"'{c.C}' embedds: '{c.C.Embedded.Select( e => e.ToString() ).Concatenate( "', '" )}'." );
                             }
                         }
                         return false;
@@ -225,7 +225,7 @@ namespace CKSetup
                 {
                     foreach( var f in c.C.Files )
                     {
-                        using( _monitor.OpenTrace().Send( $"Importing file {f.Name} content." ) )
+                        using( _monitor.OpenTrace( $"Importing file {f.Name} content." ) )
                         {
                             try
                             {
@@ -244,7 +244,7 @@ namespace CKSetup
                             }
                             catch( Exception ex)
                             {
-                                _monitor.Error().Send( ex );
+                                _monitor.Error( ex );
                                 return false;
                             }
                         }
@@ -287,7 +287,7 @@ namespace CKSetup
 
             bool ImportComponents( IActivityMonitor monitor, Stream input, IComponentFileDownloader downloader )
             {
-                using( monitor.OpenInfo().Send( "Starting import." ) )
+                using( monitor.OpenInfo( "Starting import." ) )
                 {
                     var n = _db.Import( monitor, input );
                     if( n.Error ) return false;
@@ -308,10 +308,10 @@ namespace CKSetup
         public bool ExtractRuntimeDependencies( IEnumerable<BinFolder> targets, string runPath = null, IComponentImporter missingImporter = null )
         {
             if( !targets.Any() ) throw new ArgumentException( "At least one target is required.", nameof( targets ) );
-            using( _monitor.OpenInfo().Send( $"Extracting runtime support for '{targets.Select( t => t.BinPath ).Concatenate()}'." ) )
+            using( _monitor.OpenInfo( $"Extracting runtime support for '{targets.Select( t => t.BinPath ).Concatenate()}'." ) )
             {
                 if( runPath == null ) runPath = targets.First().BinPath;
-                _monitor.Info().Send( $"Extracting to {runPath}." );
+                _monitor.Info( $"Extracting to {runPath}." );
                 var resolver = _dbCurrent.GetRuntimeDependenciesResolver( _monitor, targets );
                 if( resolver == null ) return false;
                 IComponentDownloader downloader = missingImporter != null
@@ -322,7 +322,7 @@ namespace CKSetup
                 int count = 0;
                 foreach( var c in components )
                 {
-                    using( _monitor.OpenInfo().Send( $"{c.Files.Count} files from '{c}'." ) )
+                    using( _monitor.OpenInfo( $"{c.Files.Count} files from '{c}'." ) )
                     {
                         foreach( var f in c.Files )
                         {
@@ -336,26 +336,26 @@ namespace CKSetup
                                     {
                                         if( missingImporter == null )
                                         {
-                                            _monitor.Error().Send( $"Missing file '{f}' in local store." );
+                                            _monitor.Error( $"Missing file '{f}' in local store." );
                                             return false;
                                         }
                                         if( !_store.Download( _monitor, missingImporter, f, _storageKind ) ) return false;
                                     }
                                     _store.ExtractToFile( fileKey, targetPath );
-                                    _monitor.Debug().Send( $"Extracted {f.Name}." );
+                                    _monitor.Debug( $"Extracted {f.Name}." );
                                     _cleanupFiles.Add( targetPath );
                                     ++count;
                                 }
                                 catch( Exception ex )
                                 {
-                                    _monitor.Error().Send( ex, $"While extracting '{targetPath}'." );
+                                    _monitor.Error( $"While extracting '{targetPath}'.", ex );
                                     return false;
                                 }
                             }
-                            else _monitor.Trace().Send( $"Skipped '{targetPath}' since it already exists." );
+                            else _monitor.Trace( $"Skipped '{targetPath}' since it already exists." );
                         }
                     }
-                    _monitor.Info().Send( $"{count} files extracted." );
+                    _monitor.Info( $"{count} files extracted." );
                 }
             }
             return true;
@@ -395,14 +395,14 @@ namespace CKSetup
         public bool ImportComponents( Stream input, IComponentFileDownloader downloader )
         {
             if( downloader == null ) throw new ArgumentNullException( nameof( downloader ) );
-            using( _monitor.OpenInfo().Send( "Starting import with file downloader." ) )
+            using( _monitor.OpenInfo( "Starting import with file downloader." ) )
             {
                 var n = _dbCurrent.Import( _monitor, input );
                 if( n.Error ) return false;
                 var r = _store.DownloadImportResult( _monitor, downloader, n, _storageKind );
                 if( r.Item2 > 0 )
                 {
-                    _monitor.Error().Send( $"{r.Item2} download errors. Import canceled." );
+                    _monitor.Error( $"{r.Item2} download errors. Import canceled." );
                     return false;
                 }
                 _dbCurrent = n.NewDB;
@@ -424,7 +424,7 @@ namespace CKSetup
         /// <returns>True on success, false on error.</returns>
         public PushComponentsResult ImportComponents( Stream input, string sessionId = null )
         {
-            using( _monitor.OpenInfo().Send( "Starting import." ) )
+            using( _monitor.OpenInfo( "Starting import." ) )
             {
                 var n = _dbCurrent.Import( _monitor, input );
                 if( n.Error ) return new PushComponentsResult("Error while importing component into ComponentDB.", sessionId );
@@ -457,19 +457,19 @@ namespace CKSetup
             if( filter == null ) throw new ArgumentNullException( nameof( filter ) );
             if( target == null ) throw new ArgumentNullException( nameof( target ) );
 
-            using( _monitor.OpenInfo().Send( $"Starting component push." ) )
+            using( _monitor.OpenInfo( $"Starting component push." ) )
             {
                 var result = target.PushComponents( _monitor, w => _dbCurrent.Export( filter, w ) );
                 if( result.ErrorText != null )
                 {
-                    _monitor.Error().Send( "Target error: " + result.ErrorText );
+                    _monitor.Error( "Target error: " + result.ErrorText );
                     return false;
                 }
                 int fileCount = 0;
                 bool fileError = false;
                 if( result.Files.Count > 0 )
                 {
-                    using( _monitor.OpenInfo().Send( $"Starting {result.Files.Count} push. SessionId={result.SessionId}." ) )
+                    using( _monitor.OpenInfo( $"Starting {result.Files.Count} push. SessionId={result.SessionId}." ) )
                     {
                         foreach( var sha in result.Files )
                         {
@@ -481,7 +481,7 @@ namespace CKSetup
                                 {
                                     if( !target.PushFile( _monitor, result.SessionId, sha, w => sf.Stream.CopyTo( w ), sf.Kind ) )
                                     {
-                                        _monitor.Error().Send( $"Failed to push file {sha}." );
+                                        _monitor.Error( $"Failed to push file {sha}." );
                                         --fileCount;
                                         fileError = true;
                                     }
@@ -493,7 +493,7 @@ namespace CKSetup
                             }
                             else
                             {
-                                _monitor.Warn().Send( $"Target requested file '{sha}' that does not locally exist." );
+                                _monitor.Warn( $"Target requested file '{sha}' that does not locally exist." );
                                 --fileCount;
                             }
                         }
@@ -521,11 +521,11 @@ namespace CKSetup
         public void Dispose()
         {
             if( _dbCurrent == null ) return;
-            using( _monitor.OpenInfo().Send( "Closing Zip archive." ) )
+            using( _monitor.OpenInfo( "Closing Zip archive." ) )
             {
                 if( _cleanupFiles.Count > 0 )
                 {
-                    using( _monitor.OpenTrace().Send( $"Cleaning {_cleanupFiles.Count} runtime files." ) )
+                    using( _monitor.OpenTrace( $"Cleaning {_cleanupFiles.Count} runtime files." ) )
                     {
                         foreach( var f in _cleanupFiles )
                         {
@@ -535,7 +535,7 @@ namespace CKSetup
                             }
                             catch( Exception ex )
                             {
-                                _monitor.Warn().Send( ex );
+                                _monitor.Warn( ex );
                             }
                         }
                         _cleanupFiles.Clear();
@@ -575,7 +575,7 @@ namespace CKSetup
             }
             catch( Exception ex )
             {
-                m.Fatal().Send( ex, $"While opening or creating zip file '{path}'." );
+                m.Fatal( $"While opening or creating zip file '{path}'.", ex );
                 return null;
             }
         }

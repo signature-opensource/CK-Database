@@ -81,7 +81,7 @@ namespace CKSetup
             var toSetup = binFolder.Files.Where( b => !b.IsExcludedFromSetup 
                                                         && b.LocalDependencies.Any( dep => dep.ComponentKind == ComponentKind.Model ) )
                                             .Select( b => b.Name.Name );
-            using( monitor.OpenTrace().Send( "Creating setup configuration xml file." ) )
+            using( monitor.OpenTrace( "Creating setup configuration xml file." ) )
             {
                 var config = BuildSetupConfig(
                                 targetConnectionString,
@@ -96,7 +96,7 @@ namespace CKSetup
 
         static int RunSetup( IActivityMonitor m, string binPath )
         {
-            using( m.OpenInfo().Send( "Launching setup." ) )
+            using( m.OpenInfo( "Launching setup." ) )
             {
                 bool useDotNet = false;
                 string exe = Path.Combine( binPath, "CK.Setupable.Engine.exe" );
@@ -105,7 +105,7 @@ namespace CKSetup
                 {
                     if( !File.Exists( dll ) )
                     {
-                        m.Error().Send( "Unable to find CK.Setupable.Engine.exe runner in folder." );
+                        m.Error( "Unable to find CK.Setupable.Engine.exe runner in folder." );
                         return Program.RetCodeError;
                     }
                     useDotNet = true;
@@ -130,12 +130,12 @@ namespace CKSetup
                 using( Process cmdProcess = new Process() )
                 {
                     cmdProcess.StartInfo = cmdStartInfo;
-                    cmdProcess.ErrorDataReceived += ( o, e ) => { if( !string.IsNullOrEmpty( e.Data ) ) m.Error().Send( e.Data ); };
+                    cmdProcess.ErrorDataReceived += ( o, e ) => { if( !string.IsNullOrEmpty( e.Data ) ) m.Error( e.Data ); };
                     cmdProcess.OutputDataReceived += ( o, e ) =>
                     {
                         if( e.Data != null )
                         {
-                            m.Info().Send( e.Data );
+                            m.Info( e.Data );
                         }
                     };
                     cmdProcess.Start();
@@ -157,7 +157,7 @@ namespace CKSetup
                                 conf.SerializeXml( new XElement( SetupRunner.xSetup ), typeWriter ) ) );
             string filePath = Path.Combine( binPath, SetupRunner.XmlFileName );
             string text = doc.ToString();
-            m.Debug().Send( text );
+            m.Debug( text );
             File.WriteAllText( filePath, text );
             return filePath;
         }
