@@ -400,9 +400,9 @@ namespace CKSetup
                 var n = _dbCurrent.Import( _monitor, input );
                 if( n.Error ) return new PushComponentsResult("Error while importing component into ComponentDB.", sessionId );
                 IReadOnlyList<SHA1Value> missingFiles;
-                if( n.NewComponents != null && n.NewComponents.Count > 0 )
+                if( n.Components != null && n.Components.Count > 0 )
                 {
-                    missingFiles = n.NewComponents
+                    missingFiles = n.Components
                                     .Where( c => c.ComponentKind != ComponentKind.Model )
                                     .SelectMany( c => c.Files )
                                     .Select( f => f.SHA1 )
@@ -428,6 +428,7 @@ namespace CKSetup
             if( filter == null ) throw new ArgumentNullException( nameof( filter ) );
             if( target == null ) throw new ArgumentNullException( nameof( target ) );
 
+            bool fileError = false;
             using( _monitor.OpenInfo( $"Starting component push." ) )
             {
                 var result = target.PushComponents( _monitor, w => _dbCurrent.Export( filter, w ) );
@@ -437,7 +438,6 @@ namespace CKSetup
                     return false;
                 }
                 int fileCount = 0;
-                bool fileError = false;
                 if( result.Files.Count > 0 )
                 {
                     using( _monitor.OpenInfo( $"Starting {result.Files.Count} push. SessionId={result.SessionId}." ) )
@@ -472,7 +472,7 @@ namespace CKSetup
                 }
                 if( !fileError ) _monitor.CloseGroup( $"Target is up to date. {fileCount} file uploaded." );
             }
-            return true;
+            return !fileError;
         }
 
 

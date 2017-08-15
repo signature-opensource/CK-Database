@@ -233,13 +233,16 @@ namespace CKSetup
         public struct ImportResult
         {
             public readonly ComponentDB NewDB;
-            public readonly IReadOnlyList<Component> NewComponents;
+            /// <summary>
+            /// The imported components (whether they ar new or not).
+            /// </summary>
+            public readonly IReadOnlyList<Component> Components;
             public bool Error => NewDB == null;
 
             public ImportResult( ComponentDB db, IReadOnlyList<Component> n = null )
             {
                 NewDB = db;
-                NewComponents = n;
+                Components = n;
             }
         }
 
@@ -273,8 +276,8 @@ namespace CKSetup
                         {
                             monitor.Trace( $"Importing Component '{newC}' ({newC.Files.Count} files)." );
                             currentDb = currentDb.DoAdd( monitor, newC );
-                            newOnes.Add( newC.GetRef() );
-                        }
+                         }
+                         newOnes.Add( newC.GetRef() );
                     }
                 }
                 catch( Exception ex )
@@ -282,7 +285,6 @@ namespace CKSetup
                     monitor.Error( ex );
                     return new ImportResult( null );
                 }
-                Debug.Assert( (currentDb != this) == (newOnes.Count > 0) );
                 return new ImportResult( currentDb, newOnes.Select( n => currentDb.Components.Single( c => c.GetRef().Equals( n ) ) ).ToList() );
             }
         }

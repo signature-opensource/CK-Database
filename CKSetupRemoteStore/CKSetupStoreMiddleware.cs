@@ -40,7 +40,7 @@ namespace CKSetupRemoteStore
         {
             _next = next;
             _cache = cache;
-            _store = new DirectoryStreamStore( options.StorePath );
+            _store = new DirectoryStreamStore( options.RootStorePath );
             _dbCurrent = _store.Initialize( monitor );
             _rwLock = new ReaderWriterLockSlim( LockRecursionPolicy.NoRecursion );
         }
@@ -102,10 +102,8 @@ namespace CKSetupRemoteStore
                 {
                     var n = _dbCurrent.Import( monitor, input );
                     if( n.Error ) return new PushComponentsResult( "Error while importing component into ComponentDB.", null );
-                    if( _dbCurrent == n.NewDB ) return new PushComponentsResult( Array.Empty<SHA1Value>(), null );
-                    Debug.Assert( n.NewComponents != null && n.NewComponents.Count > 0 );
 
-                    var missingFiles = n.NewComponents
+                    var missingFiles = n.Components
                                         .Where( c => c.ComponentKind != ComponentKind.Model )
                                         .SelectMany( c => c.Files )
                                         .Select( f => f.SHA1 )
@@ -116,20 +114,27 @@ namespace CKSetupRemoteStore
                     string sessionId = Guid.NewGuid().ToString();
                     monitor.Info( $"New session: {sessionId}" );
                     result = new PushComponentsResult( missingFiles, sessionId );
-                    var cacheEntry = _cache.CreateEntry( sessionId );
-                    cacheEntry.SetSlidingExpiration( TimeSpan.FromSeconds( 5 ) );
-                    cacheEntry.SetValue( result );
-                    _rwLock.EnterWriteLock();
-                    try
+                    using( var cacheEntry = _cache.CreateEntry( sessionId ) )
                     {
-                        _dbCurrent = n.NewDB;
-                        _store.Save( _dbCurrent );
-                        return result;
+                        cacheEntry.SetSlidingExpiration( TimeSpan.FromSeconds( 500 ) );
+                        cacheEntry.Priority = CacheItemPriority.NeverRemove;
+                        cacheEntry.SetValue( result );
                     }
-                    finally
+                    Debug.Assert( _cache.Get<PushComponentsResult>( sessionId ) == result );
+                    if( _dbCurrent != n.NewDB )
                     {
-                        _rwLock.ExitWriteLock();
+                        _rwLock.EnterWriteLock();
+                        try
+                        {
+                            _dbCurrent = n.NewDB;
+                            _store.Save( _dbCurrent );
+                        }
+                        finally
+                        {
+                            _rwLock.ExitWriteLock();
+                        }
                     }
+                    return result;
                 }
                 catch( Exception ex )
                 {
@@ -147,7 +152,7 @@ namespace CKSetupRemoteStore
         {
             var sessionId = (string)ctx.Request.Headers[ClientRemoteStore.SessionIdHeader];
             var initial = _cache.Get<PushComponentsResult>( sessionId );
-            if( initial == null || !SHA1Value.TryParse( shaPath.Value, 0, out var sha1 ) )
+            if( initial == null || !SHA1Value.TryParse( shaPath.Value, 1, out var sha1 ) )
             {
                 ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
                 return;
@@ -172,8 +177,22 @@ namespace CKSetupRemoteStore
                     return;
                 }
                 if( TargetFileExists( ctx, monitor, sha1, targetFileName ) ) return;
-                File.Move( temp.Path, targetFileName );
+                try
+                {
+                    File.Move( temp.Path, targetFileName );
+                }
+                catch( Exception ex )
+                {
+                    if( !TargetFileExists( ctx, monitor, sha1, targetFileName ) )
+                    {
+                        monitor.Error( ex );
+                        ctx.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                        return;
+                    }
+                    else monitor.Warn( "Concurency upload clash. File has already been uploaded.", ex );
+                }
             }
+            ctx.Response.StatusCode = StatusCodes.Status200OK;
         }
 
         static bool TargetFileExists( HttpContext ctx, IActivityMonitor monitor, SHA1Value sha1, string targetFileName )

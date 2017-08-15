@@ -29,13 +29,13 @@ namespace CKSetup
         static public readonly string PushFilePath = "/fp";
 
         readonly HttpClient _client;
-        readonly Uri _remoteStoreUrl;
+        readonly string _remotePrefix;
         readonly string _pushApiKey;
 
         public ClientRemoteStore( Uri remoteStoreUrl, string pushApiKey )
         {
             _client = new HttpClient();
-            _remoteStoreUrl = remoteStoreUrl;
+            _remotePrefix = remoteStoreUrl + RootPathString.Substring( 1 );
             _pushApiKey = pushApiKey;
         }
 
@@ -60,7 +60,7 @@ namespace CKSetup
                     using( var c = new StreamContent( buffer ) )
                     {
                         c.Headers.Add( ApiKeyHeader, _pushApiKey );
-                        using( HttpResponseMessage r = _client.PostAsync( _remoteStoreUrl + PushPath, c ).GetAwaiter().GetResult() )
+                        using( HttpResponseMessage r = _client.PostAsync( _remotePrefix + PushPath, c ).GetAwaiter().GetResult() )
                         using( var responseStream = r.Content.ReadAsStreamAsync().GetAwaiter().GetResult() )
                         {
                             return new PushComponentsResult( new CKBinaryReader( responseStream ) );
@@ -79,20 +79,26 @@ namespace CKSetup
         {
             try
             {
+                bool success = true;
                 using( var buffer = new MemoryStream() )
                 {
-                    writer = StreamStoreExtension.GetCompressShell( kind, writer );
+                    if( kind== CompressionKind.None ) writer = StreamStoreExtension.GetCompressShell( writer );
                     writer( buffer );
                     buffer.Position = 0;
                     using( var c = new StreamContent( buffer ) )
                     {
                         c.Headers.Add( SessionIdHeader, sessionId );
-                        var url = _remoteStoreUrl + PushFilePath + '?' + sha1;
+                        var url = _remotePrefix + PushFilePath + '/' + sha1;
                         HttpResponseMessage r = _client.PostAsync( url, c ).GetAwaiter().GetResult();
+                        if( !r.IsSuccessStatusCode )
+                        {
+                            monitor.Error( $"Target response Status: {r.StatusCode}." );
+                            success = false;
+                        }
                         r.Dispose();
                     }
                 }
-                return true;
+                return success;
             }
             catch( Exception ex )
             {

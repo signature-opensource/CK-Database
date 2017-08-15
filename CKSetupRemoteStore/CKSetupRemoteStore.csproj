@@ -5,6 +5,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Store\**" />
+    <Content Remove="Store\**" />
+    <EmbeddedResource Remove="Store\**" />
+    <None Remove="Store\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="wwwroot\" />
   </ItemGroup>
   
@@ -12,7 +19,7 @@
     <ProjectReference Include="../CKSetup/CKSetup.csproj" />
     <PackageReference Include="Microsoft.AspNetCore" Version="1.1.2" />
     <PackageReference Include="CK.AspNet" Version="0.1.0-a12" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="1.1.2"/>
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="1.1.2" />
   </ItemGroup>
 
 </Project>

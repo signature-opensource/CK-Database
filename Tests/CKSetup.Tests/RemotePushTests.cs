@@ -18,9 +18,10 @@ namespace CKSetup.Tests
         [TestCase( TestStoreType.Directory )]
         public void push_to_the_remote( TestStoreType sourceType )
         {
+            Uri url = TestHelper.EnsureCKSetupRemoteRunning();
             using( var source = TestHelper.OpenCKDatabaseZip( sourceType ) )
             {
-                source.PushComponents( c => true,  ).Should().BeTrue();
+                source.PushComponents( c => true, url, "HappyKey" ).Should().BeTrue();
             }
         }
     }

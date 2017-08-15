@@ -8,6 +8,7 @@ namespace CKSetupRemoteStore
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
+                .UseUrls( "http://localhost:2982" )
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()

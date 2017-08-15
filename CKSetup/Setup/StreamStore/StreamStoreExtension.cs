@@ -18,13 +18,13 @@ namespace CKSetup.StreamStore
         /// <param name="storageKind">Specifies the content's stream storage compression.</param>
         static public void CreateText( this IStreamStore @this, string fullName, string text, CompressionKind storageKind )
         {
+            Action<Stream> writer = w =>
+                                    {
+                                        byte[] b = Encoding.UTF8.GetBytes( text );
+                                        w.Write( b, 0, b.Length );
+                                    };
             @this.Create( fullName,
-                          GetCompressShell( storageKind,
-                                            w =>
-                                            {
-                                                byte[] b = Encoding.UTF8.GetBytes( text );
-                                                w.Write( b, 0, b.Length );
-                                            } ),
+                          storageKind == CompressionKind.GZiped ? GetCompressShell( writer ) : writer,
                           storageKind );
         }
 
@@ -37,13 +37,13 @@ namespace CKSetup.StreamStore
         /// <param name="allowCreate">True to automatically creates the entry if it does not already exist.</param>
         static public void UpdateText( this IStreamStore @this, string fullName, string text, CompressionKind storageKind, bool allowCreate = false )
         {
+            Action<Stream> writer = w =>
+            {
+                byte[] b = Encoding.UTF8.GetBytes( text );
+                w.Write( b, 0, b.Length );
+            };
             @this.Update( fullName,
-                          GetCompressShell( storageKind,
-                                            w =>
-                                            {
-                                                byte[] b = Encoding.UTF8.GetBytes( text );
-                                                w.Write( b, 0, b.Length );
-                                            } ),
+                          storageKind == CompressionKind.GZiped ? GetCompressShell( writer ) : writer,
                           storageKind,
                           allowCreate );
         }
@@ -122,7 +122,7 @@ namespace CKSetup.StreamStore
                             @this.Create( fullName, w => input.CopyTo( w ), storageKind );
                             return;
                         case CompressionKind.GZiped:
-                            @this.Create( fullName, GetCompressShell( storageKind, w => input.CopyTo( w ) ), storageKind );
+                            @this.Create( fullName, GetCompressShell( w => input.CopyTo( w ) ), storageKind );
                             return;
                     }
                     break;
@@ -165,7 +165,7 @@ namespace CKSetup.StreamStore
                             @this.Update( fullName, writer, storageKind, allowCreate );
                             return;
                         case CompressionKind.GZiped:
-                            @this.Update( fullName, GetCompressShell( storageKind, writer ), storageKind, allowCreate );
+                            @this.Update( fullName, GetCompressShell( writer ), storageKind, allowCreate );
                             return;
                     }
                     break;
@@ -193,28 +193,37 @@ namespace CKSetup.StreamStore
         }
 
         /// <summary>
-        /// Creates a stream compressor wrapper action if <paramref name="kind"/> is <see cref="CompressionKind.None"/>.
+        /// Creates a stream compressor wrapper action.
         /// </summary>
-        /// <param name="kind">Compression kind of the writer.</param>
         /// <param name="writer">Stream writer.</param>
         /// <returns>The writer or an adapted writer.</returns>
-        static public Action<Stream> GetCompressShell( CompressionKind kind, Action<Stream> writer )
+        static public Action<Stream> GetCompressShell( Action<Stream> writer )
         {
-            switch( kind )
+            return w =>
             {
-                case CompressionKind.None:
-                    return writer;
-                case CompressionKind.GZiped:
-                    return w =>
-                    {
-                        using( var compressor = new GZipStream( w, CompressionLevel.Optimal, true ) )
-                        {
-                            writer( compressor );
-                            compressor.Flush();
-                        }
-                    };
-                default: throw new ArgumentException( $"Unknown {kind}.", nameof( kind ) );
-            }
+                using( var compressor = new GZipStream( w, CompressionLevel.Optimal, true ) )
+                {
+                    writer( compressor );
+                    compressor.Flush();
+                }
+            };
+        }
+
+        /// <summary>
+        /// Creates a stream compressor wrapper action.
+        /// </summary>
+        /// <param name="writer">Stream writer.</param>
+        /// <returns>The writer or an adapted writer.</returns>
+        static public Func<Stream,Task> GetCompressShellAsync( Func<Stream,Task> writer )
+        {
+            return async w =>
+            {
+                using( var compressor = new GZipStream( w, CompressionLevel.Optimal, true ) )
+                {
+                    await writer( compressor );
+                    compressor.Flush();
+                }
+            };
         }
 
     }

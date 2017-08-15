@@ -68,7 +68,7 @@ namespace CKSetup.StreamStore
         public string GetFullPath( CompressionKind k, string fullName ) => _paths[(int)k] + fullName.ToLowerInvariant();
 
         bool IStreamStore.IsEmptyStore => !Directory.EnumerateFileSystemEntries( _pathNone ).Any()
-                                          || !Directory.EnumerateFileSystemEntries( _pathGZiped ).Any();
+                                          && !Directory.EnumerateFileSystemEntries( _pathGZiped ).Any();
 
         /// <summary>
         /// Checks whether teh entry exists (regardless of its actual <see cref="CompressionKind"/>).

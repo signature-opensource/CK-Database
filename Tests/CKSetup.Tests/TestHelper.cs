@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using FluentAssertions;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using System.Net.Http;
 
 namespace CKSetup.Tests
 {
@@ -82,17 +83,26 @@ namespace CKSetup.Tests
             return result;
         }
 
-        public static Uri EnsureCKSetupRemoteRunning( bool release )
+        public static Uri EnsureCKSetupRemoteRunning()
         {
             var pI = new ProcessStartInfo()
             {
                 WorkingDirectory = Path.Combine( SolutionFolder, "CKSetupRemoteStore" ),
-                FileName = Path.Combine( "bin", release ? "Release" : "Debug", "net461", "CKSetupRemoteStore.exe" )
+                FileName = Path.Combine( "bin", Configuration, "net461", "CKSetupRemoteStore.exe" )
             };
             Process.Start( pI );
-            return new Uri( "http://localhost:2982" );
+            var u = new Uri( "http://localhost:2982" );
+            using( var client = new HttpClient() )
+            {
+                HttpResponseMessage msg;
+                do
+                {
+                    msg = client.GetAsync( u ).GetAwaiter().GetResult();
+                }
+                while( !msg.IsSuccessStatusCode );
+            }
+            return u;
         }
-
 
         public static string BinFolder
         {
@@ -114,41 +124,41 @@ namespace CKSetup.Tests
             get { if( _testOutputPath == null ) InitalizePaths(); return _testOutputPath; }
         }
 
-        public static string StObjModel461Path => Path.Combine( SolutionFolder, "CK.StObj.Model", "bin", "Debug", "net461" );
-        public static string StObjRuntime461Path => Path.Combine( SolutionFolder, "CK.StObj.Runtime", "bin", "Debug", "net461" );
-        public static string StObjEngine461Path => Path.Combine( SolutionFolder, "CK.StObj.Engine", "bin", "Debug", "net461" );
+        public static string StObjModel461Path => Path.Combine( SolutionFolder, "CK.StObj.Model", "bin", Configuration, "net461" );
+        public static string StObjRuntime461Path => Path.Combine( SolutionFolder, "CK.StObj.Runtime", "bin", Configuration, "net461" );
+        public static string StObjEngine461Path => Path.Combine( SolutionFolder, "CK.StObj.Engine", "bin", Configuration, "net461" );
 
-        public static string SetupableModel461Path => Path.Combine( SolutionFolder, "CK.Setupable.Model", "bin", "Debug", "net461" );
-        public static string SetupableRuntime461Path => Path.Combine( SolutionFolder, "CK.Setupable.Runtime", "bin", "Debug", "net461" );
-        public static string SetupableEngine461Path => Path.Combine( SolutionFolder, "CK.Setupable.Engine", "bin", "Debug", "net461" );
+        public static string SetupableModel461Path => Path.Combine( SolutionFolder, "CK.Setupable.Model", "bin", Configuration, "net461" );
+        public static string SetupableRuntime461Path => Path.Combine( SolutionFolder, "CK.Setupable.Runtime", "bin", Configuration, "net461" );
+        public static string SetupableEngine461Path => Path.Combine( SolutionFolder, "CK.Setupable.Engine", "bin", Configuration, "net461" );
 
-        public static string SqlServerSetupModel461Path => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Model", "bin", "Debug", "net461" );
-        public static string SqlServerSetupRuntime461Path => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Runtime", "bin", "Debug", "net461" );
-        public static string SqlServerSetupEngine461Path => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Engine", "bin", "Debug", "net461" );
+        public static string SqlServerSetupModel461Path => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Model", "bin", Configuration, "net461" );
+        public static string SqlServerSetupRuntime461Path => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Runtime", "bin", Configuration, "net461" );
+        public static string SqlServerSetupEngine461Path => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Engine", "bin", Configuration, "net461" );
 
-        public static string SqlCallDemoModel461Path => Path.Combine( SolutionFolder, "Tests", "SqlCallDemo", "SqlCallDemo", "bin", "Debug", "net461" );
+        public static string SqlCallDemoModel461Path => Path.Combine( SolutionFolder, "Tests", "SqlCallDemo", "SqlCallDemo", "bin", Configuration, "net461" );
 
-        public static string SqlActorPackageModel461Path => Path.Combine( SolutionFolder, "Tests", "BasicModels", "SqlActorPackage", "bin", "Debug", "net461" );
-        public static string SqlActorPackageRuntime461Path => Path.Combine( SolutionFolder, "Tests", "BasicModels", "SqlActorPackage.Runtime", "bin", "Debug", "net461" );
-
-
-        #region Net standard component Paths
-        public static string StObjModelNet13Path => Path.Combine( SolutionFolder, "CK.StObj.Model", "bin", "Debug", "netstandard1.3" );
-        public static string StObjRuntimeNet16Path => Path.Combine( SolutionFolder, "CK.StObj.Runtime", "bin", "Debug", "netstandard1.6" );
-        public static string StObjEngineNet16Path => Path.Combine( SolutionFolder, "CK.StObj.Engine", "bin", "Debug", "netstandard1.6" );
-
-        public static string SetupableModelNet13Path => Path.Combine( SolutionFolder, "CK.Setupable.Model", "bin", "Debug", "netstandard1.3" );
-        public static string SetupableRuntimeNet16Path => Path.Combine( SolutionFolder, "CK.Setupable.Runtime", "bin", "Debug", "netstandard1.6" );
-        public static string SetupableEngineNet16Path => Path.Combine( SolutionFolder, "CK.Setupable.Engine", "bin", "Debug", "netstandard1.6" );
-
-        public static string SqlServerSetupModelNet13Path => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Model", "bin", "Debug", "netstandard1.3" );
-        public static string SqlServerSetupRuntimeNet16Path => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Runtime", "bin", "Debug", "netstandard1.6" );
-        public static string SqlServerSetupEngineNet16Path => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Engine", "bin", "Debug", "netstandard1.6" );
-
-        public static string SqlCallDemoModelNet13Path => Path.Combine( SolutionFolder, "Tests", "SqlCallDemo", "SqlCallDemo", "bin", "Debug", "netstandard1.3" );
+        public static string SqlActorPackageModel461Path => Path.Combine( SolutionFolder, "Tests", "BasicModels", "SqlActorPackage", "bin", Configuration, "net461" );
+        public static string SqlActorPackageRuntime461Path => Path.Combine( SolutionFolder, "Tests", "BasicModels", "SqlActorPackage.Runtime", "bin", Configuration, "net461" );
 
 
-        #endregion
+#region Net standard component Paths
+        public static string StObjModelNet13Path => Path.Combine( SolutionFolder, "CK.StObj.Model", "bin", Configuration, "netstandard1.3" );
+        public static string StObjRuntimeNet16Path => Path.Combine( SolutionFolder, "CK.StObj.Runtime", "bin", Configuration, "netstandard1.6" );
+        public static string StObjEngineNet16Path => Path.Combine( SolutionFolder, "CK.StObj.Engine", "bin", Configuration, "netstandard1.6" );
+
+        public static string SetupableModelNet13Path => Path.Combine( SolutionFolder, "CK.Setupable.Model", "bin", Configuration, "netstandard1.3" );
+        public static string SetupableRuntimeNet16Path => Path.Combine( SolutionFolder, "CK.Setupable.Runtime", "bin", Configuration, "netstandard1.6" );
+        public static string SetupableEngineNet16Path => Path.Combine( SolutionFolder, "CK.Setupable.Engine", "bin", Configuration, "netstandard1.6" );
+
+        public static string SqlServerSetupModelNet13Path => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Model", "bin", Configuration, "netstandard1.3" );
+        public static string SqlServerSetupRuntimeNet16Path => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Runtime", "bin", Configuration, "netstandard1.6" );
+        public static string SqlServerSetupEngineNet16Path => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Engine", "bin", Configuration, "netstandard1.6" );
+
+        public static string SqlCallDemoModelNet13Path => Path.Combine( SolutionFolder, "Tests", "SqlCallDemo", "SqlCallDemo", "bin", Configuration, "netstandard1.3" );
+
+
+#endregion
 
         /// <summary>
         /// Gets a path to a zip.

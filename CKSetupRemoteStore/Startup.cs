@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using CK.AspNet;
 using CK.Core;
+using System.IO;
 
 namespace CKSetupRemoteStore
 {
@@ -29,7 +30,10 @@ namespace CKSetupRemoteStore
                 app.UseDeveloperExceptionPage();
             }
             app.UseRequestMonitor();
-            app.UseMiddleware<CKSetupStoreMiddleware>( monitor );
+            app.UseMiddleware<CKSetupStoreMiddleware>( monitor, new CKSetupStoreMiddlewareOptions()
+            {
+                RootStorePath = Path.Combine( env.ContentRootPath, "Store" )
+            } );
             app.Run( async ( context ) =>
              {
                  await context.Response.WriteAsync( "Hello World!" );

@@ -121,11 +121,11 @@ namespace CKSetup.StreamStore
             Debug.Assert( monitor != null && downloader != null );
             int successCount = 0;
             int failedCount = 0;
-            if( r.NewComponents != null && r.NewComponents.Count > 0 )
+            if( r.Components != null && r.Components.Count > 0 )
             {
                 using( monitor.OpenInfo( $"Downloading missing files." ) )
                 {
-                    var newFiles = r.NewComponents
+                    var newFiles = r.Components
                                     .Where( c => c.ComponentKind != ComponentKind.Model )
                                     .SelectMany( c => c.Files )
                                     .ToLookup( f => f.SHA1 )

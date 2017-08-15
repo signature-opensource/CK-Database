@@ -30,13 +30,15 @@ namespace CKSetup
         /// Computes the SHA1 of a local file by reading its content.
         /// </summary>
         /// <param name="fullPath">The file full path.</param>
+        /// <param name="wrapReader">Optional stream wrapper reader.</param>
         /// <returns>The SHA1 of the file.</returns>
-        public static SHA1Value ComputeFileSHA1( string fullPath )
+        public static SHA1Value ComputeFileSHA1( string fullPath, Func<Stream, Stream> wrapReader = null )
         {
             using( var shaCompute = new SHA1Stream() )
-            using( var file = new FileStream( fullPath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.SequentialScan ) )
+            using( var file = new FileStream( fullPath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.SequentialScan | FileOptions.Asynchronous ) )
+            using( var wrap = wrapReader != null ? wrapReader( file ) : file )
             {
-                file.CopyTo( shaCompute );
+                wrap.CopyTo( shaCompute );
                 return shaCompute.GetFinalResult();
             }
         }
@@ -83,6 +85,7 @@ namespace CKSetup
 
         /// <summary>
         /// Tries to parse a 40 length hexadecimal string to a SHA1 value.
+        /// The string can be longer, suffix is ignored.
         /// </summary>
         /// <param name="s">The string to parse.</param>
         /// <param name="offset">The offset in the string.</param>
@@ -91,7 +94,7 @@ namespace CKSetup
         public static bool TryParse( string s, int offset, out SHA1Value value )
         {
             value = ZeroSHA1;
-            if( offset + 40 < s.Length ) return false;
+            if( s == null || offset + 40 > s.Length ) return false;
             bool zero = true;
             byte[] b = new byte[20];
             for( int i = 0; i < 40; ++i )
