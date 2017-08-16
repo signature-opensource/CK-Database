@@ -269,10 +269,7 @@ namespace CodeCake
                  } );
 
             Task( "Push-CKRemoteStore-WebSite" )
-                //.IsDependentOn( "Push-NuGet-Packages" )
-
-                .IsDependentOn( "Check-Repository" )
-
+                .IsDependentOn( "Push-NuGet-Packages" )
                 .WithCriteria( () => gitInfo.IsValid )
                 .Does( () =>
                 {
@@ -281,13 +278,13 @@ namespace CodeCake
                     {
                         var conf = new MSBuildSettings();
                         conf.Configuration = configuration;
-
+                        
                         // Workaround for: https://github.com/dotnet/sdk/issues/1073
                         conf.MSBuildPlatform = MSBuildPlatform.x86;
                         conf.Targets.Add( "Build" );
                         conf.Targets.Add( "Publish" );
                         conf.WithProperty( "DeployOnBuild", "true" )
-                            .WithProperty( "PublishProfile", "CodeCakeBuilder\\CustomProfile.xml" )
+                            .WithProperty( "PublishProfile", "CustomProfile" )
                             .WithProperty( "UserName", "ci@invenietis.net" )
                             .WithProperty( "Password", publishPwd )
                             .WithProperty( "VisualStudioVersion", "15.0" );
@@ -299,7 +296,7 @@ namespace CodeCake
 
             // The Default task for this script can be set here.
             Task( "Default" )
-                .IsDependentOn( "Push-CKRemoteStore-WebSite" /*"Push-NuGet-Packages"*/ );
+                .IsDependentOn( "Push-CKRemoteStore-WebSite" );
 
         }
 

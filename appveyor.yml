@@ -1,4 +1,4 @@
-# Basic appveyor configuration : CodeCakeBuilder does the job.
+﻿# Basic appveyor configuration : CodeCakeBuilder does the job.
 version: build{build}
 services: mssql2016
 branches:
@@ -14,6 +14,8 @@ environment:
     secure: jhHWme6+MulQTwEN1kkwygP2kEf47L8SyndWGQWEvPn6dRwZh9ZQXXGz4e1Xk7q0
   CK_DB_TEST_MASTER_CONNECTION_STRING:
     Server=(local)\SQL2016;Database=master;User ID=sa;Password=Password12!
+  PUBLISH_CKSetupRemoteStore_PWD:
+    secure: slwWxsDP26iAuYeD92611MzTsurgIEVxnv2aILFp+Ps=
 init:
 - git config --global core.autocrlf true
 install:
