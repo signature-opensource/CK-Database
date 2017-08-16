@@ -10,13 +10,27 @@ using Microsoft.Extensions.Logging;
 using CK.AspNet;
 using CK.Core;
 using System.IO;
+using Microsoft.Extensions.Configuration;
 
 namespace CKSetupRemoteStore
 {
     public class Startup
     {
+        public Startup( IHostingEnvironment env )
+        {
+            var builder = new ConfigurationBuilder()
+                    .SetBasePath( env.ContentRootPath )
+                    .AddJsonFile( "appsettings.json", optional: true, reloadOnChange: true )
+                    .AddEnvironmentVariables();
+            Configuration = builder.Build();
+        }
+
+        public IConfigurationRoot Configuration { get; set; }
+
         public void ConfigureServices( IServiceCollection services )
         {
+            services.AddOptions();
+            services.Configure<CKSetupStoreMiddlewareOptions>( Configuration.GetSection("store") );
             services.AddMemoryCache();
         }
 
@@ -30,10 +44,7 @@ namespace CKSetupRemoteStore
                 app.UseDeveloperExceptionPage();
             }
             app.UseRequestMonitor();
-            app.UseMiddleware<CKSetupStoreMiddleware>( monitor, new CKSetupStoreMiddlewareOptions()
-            {
-                RootStorePath = Path.Combine( env.ContentRootPath, "Store" )
-            } );
+            app.UseMiddleware<CKSetupStoreMiddleware>( monitor );
             app.Run( async ( context ) =>
              {
                  await context.Response.WriteAsync( "Hello World!" );

@@ -16,6 +16,8 @@ using System.Text;
 using System.IO.Compression;
 using System.Xml;
 using System.Xml.Linq;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Hosting;
 
 namespace CKSetupRemoteStore
 {
@@ -29,6 +31,8 @@ namespace CKSetupRemoteStore
         readonly RequestDelegate _next;
         readonly IMemoryCache _cache;
         readonly ReaderWriterLockSlim _rwLock;
+        readonly TimeSpan _pushSessionDuration;
+        readonly HashSet<string> _apiKeys;
         ComponentDB _dbCurrent;
         DirectoryStreamStore _store;
 
@@ -38,11 +42,25 @@ namespace CKSetupRemoteStore
         /// <param name="next">Next middleware.</param>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="options">Middleware options.</param>
-        public CKSetupStoreMiddleware( RequestDelegate next, IActivityMonitor monitor, CKSetupStoreMiddlewareOptions options, IMemoryCache cache )
+        public CKSetupStoreMiddleware( RequestDelegate next, IActivityMonitor monitor, IHostingEnvironment env, IOptions<CKSetupStoreMiddlewareOptions> options, IMemoryCache cache )
         {
+            CKSetupStoreMiddlewareOptions opt = options.Value;
+            if( opt.ApiKeys == null 
+                || (_apiKeys = new HashSet<string>( opt.ApiKeys.Where( key => !string.IsNullOrWhiteSpace( key ) ) )).Count == 0 )
+            {
+                throw new ArgumentException( "There must be at least one non empty string key.", nameof( opt.ApiKeys ) );
+            }
+            _pushSessionDuration = opt.PushSessionDuration;
+            string storePath = opt.RootStorePath;
+            if( String.IsNullOrWhiteSpace( storePath ) ) storePath = "Store";
+            if( !Path.IsPathRooted( storePath ) )
+            {
+                storePath = Path.Combine( env.ContentRootPath, storePath );
+            }
+            monitor.Info( $"Store path: {storePath}" );
             _next = next;
             _cache = cache;
-            _store = new DirectoryStreamStore( options.RootStorePath );
+            _store = new DirectoryStreamStore( storePath );
             _dbCurrent = _store.Initialize( monitor );
             _rwLock = new ReaderWriterLockSlim( LockRecursionPolicy.NoRecursion );
         }
@@ -126,7 +144,7 @@ namespace CKSetupRemoteStore
         async Task HandlePush( HttpContext ctx, IActivityMonitor monitor )
         {
             var apiKey = (string)ctx.Request.Headers[ClientRemoteStore.ApiKeyHeader];
-            if( apiKey != "HappyKey" )
+            if( !_apiKeys.Contains( apiKey ) )
             {
                 ctx.Response.StatusCode = StatusCodes.Status403Forbidden;
                 return;
@@ -171,7 +189,7 @@ namespace CKSetupRemoteStore
                     result = new PushComponentsResult( missingFiles, sessionId );
                     using( var cacheEntry = _cache.CreateEntry( sessionId ) )
                     {
-                        cacheEntry.SetSlidingExpiration( TimeSpan.FromSeconds( 500 ) );
+                        cacheEntry.SetSlidingExpiration( _pushSessionDuration );
                         cacheEntry.Priority = CacheItemPriority.NeverRemove;
                         cacheEntry.SetValue( result );
                     }

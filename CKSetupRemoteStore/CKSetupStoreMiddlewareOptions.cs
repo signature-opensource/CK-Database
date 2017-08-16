@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 
 namespace CKSetupRemoteStore
 {
     public class CKSetupStoreMiddlewareOptions
     {
         /// <summary>
-        /// Gets or sets the root store path.
+        /// Gets or sets the root store path. If not <see cref="Path.IsPathRooted"/> it it relative 
+        /// to the <see cref="IHostingEnvironment.ContentRootPath"/>.
+        /// Defaults to ContentRootPath/Store.
         /// </summary>
         public string RootStorePath { get; set; }
 
@@ -17,5 +21,11 @@ namespace CKSetupRemoteStore
         /// validity. Defaults to 3 seconds.
         /// </summary>
         public TimeSpan PushSessionDuration { get; set; } = TimeSpan.FromSeconds( 3 );
+
+        /// <summary>
+        /// Gets or sets the list of allowed Api keys.
+        /// Must not be null nor empty.
+        /// </summary>
+        public List<string> ApiKeys { get; set; }
     }
 }

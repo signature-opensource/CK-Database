@@ -56,8 +56,7 @@ namespace CodeCake
             bool buildDone = false;
             Teardown( c =>
             {
-                var mustStop = Process.GetProcessesByName( "CKSetupRemoteStore" )
-                                .Where( x => x.MainModule.FileName.StartsWith( Cake.Environment.WorkingDirectory.FullPath, StringComparison.OrdinalIgnoreCase ) );
+                var mustStop = Process.GetProcessesByName( "CKSetupRemoteStore" );
                 foreach( var p in mustStop ) p.Kill();
                 if( buildDone ) c.CleanDirectories( projects.Select( p => p.Path.GetDirectory().Combine( "bin" ) ) );
             } );
