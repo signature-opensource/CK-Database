@@ -29,12 +29,12 @@ namespace CKSetup.Tests
             _monitor.MinimalFilter = LogFilter.Debug;
             _monitor.Output.BridgeTarget.HonorMonitorFilter = false;
             _console = new ActivityMonitorConsoleClient();
-            LogsToConsole = false;
+            LogToConsole = false;
         }
 
         public static IActivityMonitor ConsoleMonitor => _monitor;
 
-        public static bool LogsToConsole
+        public static bool LogToConsole
         {
             get { return _monitor.Output.Clients.Contains( _console ); }
             set

@@ -1,13 +1,6 @@
-﻿using NUnit.Framework;
+﻿using FluentAssertions;
+using NUnit.Framework;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CK.Core;
-using CKSetup.StreamStore;
-using System.IO;
-using FluentAssertions;
 
 namespace CKSetup.Tests
 {
@@ -37,7 +30,6 @@ namespace CKSetup.Tests
                     remoteStoreUrl: url
                     ).Should().Be( 0 );
             }
-
         }
     }
 }

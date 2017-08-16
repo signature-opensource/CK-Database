@@ -255,3 +255,4 @@ CodeCakeBuilder/Tools/
 CKDBSetup/Imports/
 Tests/CKSetup.Tests/TestOutput/
 CKSetupRemoteStore/Store/
+CKSetupRemoteStore/Logs/

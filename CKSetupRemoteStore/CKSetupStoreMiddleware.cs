@@ -131,6 +131,7 @@ namespace CKSetupRemoteStore
                 ctx.Response.StatusCode = StatusCodes.Status403Forbidden;
                 return;
             }
+            monitor.Info( $"Pushing with Api key: {apiKey}" );
             using( var buffer = new MemoryStream() )
             {
                 await ctx.Request.Body.CopyToAsync( buffer );
