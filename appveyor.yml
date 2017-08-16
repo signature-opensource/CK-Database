@@ -1,4 +1,4 @@
-﻿# Basic appveyor configuration : CodeCakeBuilder does the job.
+# Basic appveyor configuration : CodeCakeBuilder does the job.
 version: build{build}
 services: mssql2016
 branches:
