@@ -227,6 +227,7 @@ namespace CKSetup
                     }
                 }
                 writer.Write( false );
+                writer.Flush();
             }
         }
 

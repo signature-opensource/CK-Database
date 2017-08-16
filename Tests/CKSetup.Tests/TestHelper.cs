@@ -29,7 +29,7 @@ namespace CKSetup.Tests
             _monitor.MinimalFilter = LogFilter.Debug;
             _monitor.Output.BridgeTarget.HonorMonitorFilter = false;
             _console = new ActivityMonitorConsoleClient();
-            LogsToConsole = true;
+            LogsToConsole = false;
         }
 
         public static IActivityMonitor ConsoleMonitor => _monitor;

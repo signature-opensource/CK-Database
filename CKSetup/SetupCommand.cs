@@ -72,12 +72,28 @@ namespace CKSetup
         /// <param name="generatedAssemblyName">Name of the assembly to generate.</param>
         /// <param name="sourceGeneration">True to generate source code.</param>
         /// <param name="missingImporter">Optional component importer.</param>
+        /// <param name="remoteStoreUrl">Optional remote store url.</param>
         /// <returns>Program return code (0 for success).</returns>
-        public static int DoSetup( IActivityMonitor monitor, string binPath, RuntimeArchive zip, string targetConnectionString, string generatedAssemblyName, bool sourceGeneration, IComponentImporter missingImporter = null )
+        public static int DoSetup( 
+            IActivityMonitor monitor, 
+            string binPath, 
+            RuntimeArchive zip, 
+            string targetConnectionString, 
+            string generatedAssemblyName, 
+            bool sourceGeneration, 
+            IComponentImporter missingImporter = null,
+            Uri remoteStoreUrl = null )
         {
             var binFolder = BinFolder.ReadBinFolder( monitor, binPath );
             if( binFolder == null ) return Program.RetCodeError;
-            if( !zip.ExtractRuntimeDependencies( new[] { binFolder }, null, missingImporter ) ) return Program.RetCodeError;
+            if( missingImporter != null )
+            {
+                if( !zip.ExtractRuntimeDependencies( new[] { binFolder }, null, missingImporter ) ) return Program.RetCodeError;
+            }
+            else
+            {
+                if( !zip.ExtractRuntimeDependencies( new[] { binFolder }, remoteStoreUrl, null ) ) return Program.RetCodeError;
+            }
             var toSetup = binFolder.Files.Where( b => !b.IsExcludedFromSetup 
                                                         && b.LocalDependencies.Any( dep => dep.ComponentKind == ComponentKind.Model ) )
                                             .Select( b => b.Name.Name );

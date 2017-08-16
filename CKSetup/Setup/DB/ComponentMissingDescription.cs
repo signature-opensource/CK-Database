@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CK.Core;
 using System.IO;
 using System.Threading;
+using System.Xml.Linq;
 
 namespace CKSetup
 {
@@ -34,6 +35,29 @@ namespace CKSetup
             TargetRuntime = TargetRuntime.None;
             Dependencies = Array.Empty<ComponentDependency>();
             Components = components;
+        }
+
+        /// <summary>
+        /// Initializes a <see cref="ComponentMissingDescription"/> from a XElement.
+        /// </summary>
+        /// <param name="e">Xml element. Can not be null.</param>
+        public ComponentMissingDescription( XElement e )
+        {
+            TargetRuntime = e.AttributeEnum<TargetRuntime>( DBXmlNames.Runtime, TargetRuntime.None );
+            Dependencies = e.Elements( DBXmlNames.Dependency ).Select( d => new ComponentDependency( d ) ).ToList();
+            Components = e.Elements( DBXmlNames.Ref ).Select( d => new ComponentRef( d ) ).ToList();
+        }
+
+        /// <summary>
+        /// Creates a xml representation of this <see cref="ComponentMissingDescription"/>.
+        /// </summary>
+        /// <returns>The XElement.</returns>
+        public XElement ToXml()
+        {
+            return new XElement( DBXmlNames.Missing, 
+                                    new XAttribute( DBXmlNames.Runtime, TargetRuntime.ToString() ),
+                                    Dependencies.Select( d => d.ToXml() ),
+                                    Components.Select( c => c.ToXml() ) );
         }
 
         /// <summary>

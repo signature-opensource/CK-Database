@@ -25,5 +25,7 @@ namespace CKSetup
         static public readonly XName Version = XNamespace.None + "Version";
         static public readonly XName LocalFileKeys = XNamespace.None + "LocalFileKeys";
         static public readonly XName Key = XNamespace.None + "Key";
+        static public readonly XName Missing = XNamespace.None + "Missing";
+        static public readonly XName Runtime = XNamespace.None + "Runtime";
     }
 }

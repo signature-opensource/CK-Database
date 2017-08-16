@@ -61,12 +61,10 @@ namespace CKSetup
                 {
                     using( monitor.OpenInfo( $"Using donwloader." ) )
                     {
-                        monitor.Debug( $"Requesting: TargetRuntime = {TargetRuntime}" );
-                        monitor.Debug( $"Requesting: Dependencies = {_engine.MissingDependencies.Select( d => d.ToString() ).Concatenate()}" );
-                        monitor.Debug( $"Requesting: Components = {_engine.MissingEmbedded.Select( d => d.ToString() ).Concatenate()}" );
                         try
                         {
                             var missing = new ComponentMissingDescription( TargetRuntime, _engine.MissingDependencies, _engine.MissingEmbedded );
+                            monitor.Debug( missing.ToXml().ToString() );
                             var newDb = downloader.Download( monitor, missing );
                             if( newDb == null ) return false;
                             if( _db != newDb )

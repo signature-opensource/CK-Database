@@ -14,6 +14,8 @@ using Microsoft.Extensions.Caching.Memory;
 using System.Diagnostics;
 using System.Text;
 using System.IO.Compression;
+using System.Xml;
+using System.Xml.Linq;
 
 namespace CKSetupRemoteStore
 {
@@ -54,13 +56,24 @@ namespace CKSetupRemoteStore
             PathString remainder;
             if( ctx.Request.Path.StartsWithSegments( _root, out remainder ) )
             {
+                PathString sha;
                 ctx.Response.SetNoCacheAndDefaultStatus( StatusCodes.Status404NotFound );
-                if( remainder.Value == ClientRemoteStore.PushPath )
+                if( remainder.Value == ClientRemoteStore.PullPath )
+                {
+                    if( HttpMethods.IsPost( ctx.Request.Method ) ) return HandlePull( ctx, ctx.GetRequestMonitor() );
+                    ctx.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
+                }
+                if( remainder.StartsWithSegments( ClientRemoteStore.PullFilePath, out sha ) )
+                {
+                    if( HttpMethods.IsGet( ctx.Request.Method ) ) return HandlePullFile( ctx, ctx.GetRequestMonitor(), sha );
+                    ctx.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
+                }
+                else if( remainder.Value == ClientRemoteStore.PushPath )
                 {
                     if( HttpMethods.IsPost( ctx.Request.Method ) ) return HandlePush( ctx, ctx.GetRequestMonitor() );
                     ctx.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
                 }
-                else if( remainder.StartsWithSegments( ClientRemoteStore.PushFilePath, out var sha ) )
+                else if( remainder.StartsWithSegments( ClientRemoteStore.PushFilePath, out sha ) )
                 {
                     if( HttpMethods.IsPost( ctx.Request.Method ) ) return HandlePushFile( ctx, ctx.GetRequestMonitor(), sha );
                     ctx.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
@@ -68,6 +81,47 @@ namespace CKSetupRemoteStore
             }
             return _next.Invoke( ctx );
         }
+
+
+        #region Pull
+
+        async Task HandlePull( HttpContext ctx, IActivityMonitor monitor )
+        {
+            using( var buffer = new MemoryStream() )
+            {
+                await ctx.Request.Body.CopyToAsync( buffer );
+                buffer.Position = 0;
+                var missing = new ComponentMissingDescription( XElement.Load( buffer ) );
+
+                ComponentDB db = _dbCurrent;
+                var toExport = db.FindAvailable( missing, monitor );
+                buffer.Position = 0;
+                db.Export( c => toExport.Contains( c ), buffer );
+                ctx.Response.StatusCode = StatusCodes.Status200OK;
+                await ctx.Response.Body.WriteAsync( buffer.GetBuffer(), 0, (int)buffer.Position );
+            }
+        }
+
+        async Task HandlePullFile( HttpContext ctx, IActivityMonitor monitor, PathString shaPath )
+        {
+            if( !SHA1Value.TryParse( shaPath.Value, 1, out var sha1 ) )
+            {
+                ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return;
+            }
+            var s = _store.OpenRead( sha1.ToString(), CompressionKind.GZiped );
+            if( s.Stream == null )
+            {
+                ctx.Response.StatusCode = StatusCodes.Status404NotFound;
+                return;
+            }
+            ctx.Response.StatusCode = StatusCodes.Status200OK;
+            await s.Stream.CopyToAsync( ctx.Response.Body );
+        }
+
+        #endregion
+
+        #region Push (HandlePush, ImportComponent, HandlePushFile)
 
         async Task HandlePush( HttpContext ctx, IActivityMonitor monitor )
         {
@@ -152,7 +206,9 @@ namespace CKSetupRemoteStore
         {
             var sessionId = (string)ctx.Request.Headers[ClientRemoteStore.SessionIdHeader];
             var initial = _cache.Get<PushComponentsResult>( sessionId );
-            if( initial == null || !SHA1Value.TryParse( shaPath.Value, 1, out var sha1 ) )
+            if( initial == null 
+                || !SHA1Value.TryParse( shaPath.Value, 1, out var sha1 )
+                || !initial.Files.Contains( sha1 ) )
             {
                 ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
                 return;
@@ -172,7 +228,8 @@ namespace CKSetupRemoteStore
                 var localSha = await SHA1Value.ComputeFileSHA1Async( temp.Path, r => new GZipStream( r, CompressionMode.Decompress, true ) );
                 if( localSha != sha1 )
                 {
-                    monitor.Error( $"Temporary file SHA is {localSha} but should be {sha1}." );
+                    monitor.Error( $"Temporary file '{temp.Path}' SHA is {localSha} but should be {sha1}. Uploaded file kept for possible analysis." );
+                    temp.Detach();
                     ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
                     return;
                 }
@@ -205,5 +262,7 @@ namespace CKSetupRemoteStore
             }
             return false;
         }
+
+        #endregion
     }
 }

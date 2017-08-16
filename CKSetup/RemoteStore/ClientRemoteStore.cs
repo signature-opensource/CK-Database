@@ -9,6 +9,9 @@ using CKSetup.StreamStore;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.IO.Compression;
+using System.Net;
+using System.Xml.Linq;
+using System.Xml;
 
 namespace CKSetup
 {
@@ -26,7 +29,9 @@ namespace CKSetup
         static public readonly string SessionIdHeader = "X-SessionId";
         static public readonly string RootPathString = "/.cksetup/store";
         static public readonly string PushPath = "/push";
-        static public readonly string PushFilePath = "/fp";
+        static public readonly string PushFilePath = "/push/f";
+        static public readonly string PullPath = "/pull";
+        static public readonly string PullFilePath = "/pull/f";
 
         readonly HttpClient _client;
         readonly string _remotePrefix;
@@ -39,14 +44,38 @@ namespace CKSetup
             _pushApiKey = pushApiKey;
         }
 
-        StoredStream IComponentFileDownloader.GetDownloadStream( IActivityMonitor monitor, SHA1Value file, CompressionKind kind )
-        {
-            throw new NotImplementedException();
-        }
-
         Stream IComponentImporter.OpenImportStream( IActivityMonitor monitor, ComponentMissingDescription missing )
         {
-            throw new NotImplementedException();
+            try
+            {
+                using( var buffer = new MemoryStream() )
+                {
+                    using( var w = XmlWriter.Create( buffer, new XmlWriterSettings() { CloseOutput = false, Indent = false } ) )
+                    {
+                        missing.ToXml().WriteTo( w );
+                    }
+                    HttpResponseMessage r;
+                    buffer.Position = 0;
+                    using( var c = new StreamContent( buffer ) )
+                    {
+                        r = _client.PostAsync( _remotePrefix + PullPath, c ).GetAwaiter().GetResult();
+                    }
+                    return r.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
+                }
+            }
+            catch( Exception ex )
+            {
+                monitor.Error( "Client call error.", ex );
+                return null;
+            }
+        }
+
+        StoredStream IComponentFileDownloader.GetDownloadStream( IActivityMonitor monitor, SHA1Value file, CompressionKind kind )
+        {
+            var url = _remotePrefix + PullFilePath + '/' + file.ToString();
+            return new StoredStream( CompressionKind.GZiped,
+                                     _client.GetAsync( url ).GetAwaiter().GetResult()
+                                        .Content.ReadAsStreamAsync().GetAwaiter().GetResult() );
         }
 
         PushComponentsResult IComponentPushTarget.PushComponents( IActivityMonitor monitor, Action<Stream> componentsWriter )
@@ -82,7 +111,7 @@ namespace CKSetup
                 bool success = true;
                 using( var buffer = new MemoryStream() )
                 {
-                    if( kind== CompressionKind.None ) writer = StreamStoreExtension.GetCompressShell( writer );
+                    if( kind == CompressionKind.None ) writer = StreamStoreExtension.GetCompressShell( writer );
                     writer( buffer );
                     buffer.Position = 0;
                     using( var c = new StreamContent( buffer ) )

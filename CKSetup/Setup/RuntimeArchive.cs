@@ -274,6 +274,21 @@ namespace CKSetup
         /// Extracts required runtime support for Models in a targets.
         /// </summary>
         /// <param name="targets">The target folders.</param>
+        /// <param name="remoteUrl">Remote store url. Can be null.</param>
+        /// <param name="runPath">Optional run path: the first target <see cref="BinFolder.BinPath"/> is the default.</param>
+        /// <returns>True on success, false on error.</returns>
+        public bool ExtractRuntimeDependencies( IEnumerable<BinFolder> targets, Uri remoteUrl, string runPath = null )
+        {
+            using( var store = remoteUrl != null ? new ClientRemoteStore( remoteUrl, null ) : null )
+            {
+                return ExtractRuntimeDependencies( targets, runPath, store );
+            }
+        }
+
+        /// <summary>
+        /// Extracts required runtime support for Models in a targets.
+        /// </summary>
+        /// <param name="targets">The target folders.</param>
         /// <param name="runPath">Optional run path: the first target <see cref="BinFolder.BinPath"/> is the default.</param>
         /// <returns>True on success, false on error.</returns>
         public bool ExtractRuntimeDependencies( IEnumerable<BinFolder> targets, string runPath = null, IComponentImporter missingImporter = null )
