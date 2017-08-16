@@ -11,6 +11,8 @@ using CK.AspNet;
 using CK.Core;
 using System.IO;
 using Microsoft.Extensions.Configuration;
+using System.Reflection;
+using CSemVer;
 
 namespace CKSetupRemoteStore
 {
@@ -47,7 +49,9 @@ namespace CKSetupRemoteStore
             app.UseMiddleware<CKSetupStoreMiddleware>( monitor );
             app.Run( async ( context ) =>
              {
-                 await context.Response.WriteAsync( "Hello World!" );
+                 var a = (AssemblyInformationalVersionAttribute)Attribute.GetCustomAttribute( Assembly.GetExecutingAssembly(), typeof( AssemblyInformationalVersionAttribute ) );
+                 var v = new InformationalVersion( a?.InformationalVersion );
+                 await context.Response.WriteAsync( $"Welcome to {env.ApplicationName}. Version: {v.ToString()}." );
              } );
             monitor.MonitorEnd();
         }

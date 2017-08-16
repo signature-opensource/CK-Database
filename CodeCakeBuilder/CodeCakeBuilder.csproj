@@ -74,6 +74,7 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="Bootstrap.ps1" />
+    <Content Include="CKSetupRemoteStorePublish.xml" />
     <None Include="NuSpec\CKDBSetup.nuspec" />
     <None Include="CoreBuild.proj" />
     <None Include="packages.config" />

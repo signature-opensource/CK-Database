@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <!-- Workaround for https://github.com/aspnet/websdk/issues/107 -->
+    <UseMSDeployExe>true</UseMSDeployExe>
+    <AllowUntrustedCertificate>true</AllowUntrustedCertificate>
+    
+    <WebPublishMethod>MSDeploy</WebPublishMethod>
+    <LastUsedBuildConfiguration>Release</LastUsedBuildConfiguration>
+    <LastUsedPlatform>Any CPU</LastUsedPlatform>
+    <SiteUrlToLaunchAfterPublish />
+    <LaunchSiteAfterPublish>True</LaunchSiteAfterPublish>
+    <ExcludeApp_Data>False</ExcludeApp_Data>
+    <PublishFramework>net461</PublishFramework>
+    <ProjectGuid>a93e24ca-0678-4ad5-b2a6-f15132ae512a</ProjectGuid>
+    <MSDeployServiceURL>pingui.cloudapp.net</MSDeployServiceURL>
+    <DeployIisAppPath>CKSetup</DeployIisAppPath>
+    <RemoteSitePhysicalPath />
+    <SkipExtraFilesOnServer>True</SkipExtraFilesOnServer>
+    <MSDeployPublishMethod>WMSVC</MSDeployPublishMethod>
+    <EnableMSDeployBackup>True</EnableMSDeployBackup>
+    <_SavePWD>False</_SavePWD>
+    <PublishProvider>AzureVirtualMachine</PublishProvider>
+    <_DestinationType>AzureVirtualMachine</_DestinationType>
+  </PropertyGroup>
+</Project>

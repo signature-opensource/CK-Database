@@ -17,6 +17,7 @@
   <Target Name="Pack">
     <ItemGroup>
       <CoreProj Remove="..\Tests\**\*.csproj" />
+      <CoreProj Remove="CKSetupRemoteStore\CKSetupRemoteStore.csproj" />
     </ItemGroup>
     <MSBuild Targets="Pack" Projects="@(CoreProj)" Properties="@(Properties)" />
   </Target>

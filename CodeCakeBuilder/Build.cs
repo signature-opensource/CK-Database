@@ -225,7 +225,6 @@ namespace CodeCake
                      Cake.DotNetCorePack( "CodeCakeBuilder/CoreBuild.proj", settings );
                  } );
 
-
             Task( "Push-NuGet-Packages" )
                 .IsDependentOn( "Create-All-NuGet-Packages" )
                 .WithCriteria( () => gitInfo.IsValid )
@@ -269,9 +268,37 @@ namespace CodeCake
                      }
                  } );
 
+            Task( "Push-CKRemoteStore-WebSite" )
+                //.IsDependentOn( "Push-NuGet-Packages" )
+
+                .IsDependentOn( "Check-Repository" )
+
+                .WithCriteria( () => gitInfo.IsValid )
+                .Does( () =>
+                {
+                    var publishPwd = Cake.InteractiveEnvironmentVariable( "PUBLISH_CKSetupRemoteStore_PWD" );
+                    if( !String.IsNullOrWhiteSpace( publishPwd ) )
+                    {
+                        var conf = new MSBuildSettings();
+                        conf.Configuration = configuration;
+
+                        // Workaround for: https://github.com/dotnet/sdk/issues/1073
+                        conf.MSBuildPlatform = MSBuildPlatform.x86;
+
+                        conf.WithProperty( "DeployOnBuild", "true" )
+                            .WithProperty( "PublishProfile", "CodeCakeBuilder/CKSetupRemoteStorePubxlish.xml" )
+                            .WithProperty( "UserName", "ci@invenietis.net" )
+                            .WithProperty( "Password", publishPwd )
+                            .WithProperty( "VisualStudioVersion", "15.0" );
+                        conf.AddVersionArguments( gitInfo );
+
+                        Cake.MSBuild( "CKSetupRemoteStore/CKSetupRemoteStore.csproj", conf );
+                    }
+                } );
+
             // The Default task for this script can be set here.
             Task( "Default" )
-                .IsDependentOn( "Push-NuGet-Packages" );
+                .IsDependentOn( "Push-CKRemoteStore-WebSite" /*"Push-NuGet-Packages"*/ );
 
         }
 
