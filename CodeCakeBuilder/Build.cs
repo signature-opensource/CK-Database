@@ -284,9 +284,10 @@ namespace CodeCake
 
                         // Workaround for: https://github.com/dotnet/sdk/issues/1073
                         conf.MSBuildPlatform = MSBuildPlatform.x86;
-
+                        conf.Targets.Add( "Build" );
+                        conf.Targets.Add( "Publish" );
                         conf.WithProperty( "DeployOnBuild", "true" )
-                            .WithProperty( "PublishProfile", "CodeCakeBuilder/CKSetupRemoteStorePubxlish.xml" )
+                            .WithProperty( "PublishProfile", "CodeCakeBuilder\\CKSetupRemoteStoreProfile.xml" )
                             .WithProperty( "UserName", "ci@invenietis.net" )
                             .WithProperty( "Password", publishPwd )
                             .WithProperty( "VisualStudioVersion", "15.0" );
