@@ -287,7 +287,7 @@ namespace CodeCake
                         conf.Targets.Add( "Build" );
                         conf.Targets.Add( "Publish" );
                         conf.WithProperty( "DeployOnBuild", "true" )
-                            .WithProperty( "PublishProfile", "CodeCakeBuilder\\CKSetupRemoteStoreProfile.xml" )
+                            .WithProperty( "PublishProfile", "CodeCakeBuilder\\CustomProfile.xml" )
                             .WithProperty( "UserName", "ci@invenietis.net" )
                             .WithProperty( "Password", publishPwd )
                             .WithProperty( "VisualStudioVersion", "15.0" );
