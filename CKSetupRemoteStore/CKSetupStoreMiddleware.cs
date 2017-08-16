@@ -100,7 +100,6 @@ namespace CKSetupRemoteStore
             return _next.Invoke( ctx );
         }
 
-
         #region Pull
 
         async Task HandlePull( HttpContext ctx, IActivityMonitor monitor )
