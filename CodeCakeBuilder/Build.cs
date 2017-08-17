@@ -315,8 +315,11 @@ namespace CodeCake
                      }
                  } );
 
+            // This is an independent task.
+            // Must be run manually.
+            // It resets the appsettings.json (ignoring
+            // the  <ExcludeFilesFromDeployment>appsettings.json</ExcludeFilesFromDeployment> in pubxml).
             Task( "Push-CKRemoteStore-WebSite" )
-                //.IsDependentOn( "Push-NuGet-Packages" )
                 .WithCriteria( () => gitInfo.IsValid )
                 .Does( () =>
                 {
@@ -340,7 +343,6 @@ namespace CodeCake
             // The Default task for this script can be set here.
             Task( "Default" )
                 .IsDependentOn( "Push-CKRemoteStore-WebSite" /*"Push-Runtimes-and-Engines"*/ );
-
         }
 
         void PushNuGetPackages(string apiKeyName, string pushUrl, IEnumerable<FilePath> nugetPackages)

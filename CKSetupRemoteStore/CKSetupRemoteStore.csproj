@@ -7,10 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Logs\**" />
     <Compile Remove="Store\**" />
+    <Content Remove="Logs\**" />
     <Content Remove="Store\**" />
+    <EmbeddedResource Remove="Logs\**" />
     <EmbeddedResource Remove="Store\**" />
+    <None Remove="Logs\**" />
     <None Remove="Store\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="appsettings.json" />
   </ItemGroup>
   
   <ItemGroup>
