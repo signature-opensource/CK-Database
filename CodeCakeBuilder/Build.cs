@@ -226,7 +226,8 @@ namespace CodeCake
                  } );
 
             Task( "Push-Runtimes-and-Engines" )
-                .IsDependentOn( "Unit-Testing" )
+                //.IsDependentOn( "Unit-Testing" )
+                .IsDependentOn( "Build" )
                 .WithCriteria( () => gitInfo.IsValid )
                 .Does( () =>
                 {
