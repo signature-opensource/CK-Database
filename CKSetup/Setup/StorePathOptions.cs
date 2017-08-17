@@ -53,7 +53,7 @@ namespace CKSetup
             else 
             {
                 StorePath = Path.GetFullPath( StorePath );
-                if( !File.Exists( StorePath ) || !Directory.Exists( StorePath ) )
+                if( !File.Exists( StorePath ) && !Directory.Exists( StorePath ) )
                 {
                     m.Warn( $"The provided store '{StorePath}' does not exist. It will be created." );
                 }

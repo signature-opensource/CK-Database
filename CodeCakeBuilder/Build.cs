@@ -225,52 +225,8 @@ namespace CodeCake
                      Cake.DotNetCorePack( "CodeCakeBuilder/CoreBuild.proj", settings );
                  } );
 
-            Task( "Push-NuGet-Packages" )
-                .IsDependentOn( "Create-All-NuGet-Packages" )
-                .WithCriteria( () => gitInfo.IsValid )
-                .Does( () =>
-                 {
-                     IEnumerable<FilePath> nugetPackages = Cake.GetFiles( releasesDir.Path + "/*.nupkg" );
-                     if( Cake.IsInteractiveMode() )
-                     {
-                         var localFeed = Cake.FindDirectoryAbove( "LocalFeed" );
-                         if( localFeed != null )
-                         {
-                             Cake.Information( "LocalFeed directory found: {0}", localFeed );
-                             if( Cake.ReadInteractiveOption( "Do you want to publish to LocalFeed?", 'Y', 'N' ) == 'Y' )
-                             {
-                                 Cake.CopyFiles( nugetPackages, localFeed );
-                             }
-                         }
-                     }
-                     if( gitInfo.IsValidRelease )
-                     {
-                         if( gitInfo.PreReleaseName == ""
-                             || gitInfo.PreReleaseName == "prerelease"
-                             || gitInfo.PreReleaseName == "rc" )
-                         {
-                             PushNuGetPackages( "NUGET_API_KEY", "https://www.nuget.org/api/v2/package", nugetPackages );
-                         }
-                         else
-                         {
-                            // An alpha, beta, delta, epsilon, gamma, kappa goes to invenietis-preview.
-                            PushNuGetPackages( "MYGET_PREVIEW_API_KEY", "https://www.myget.org/F/invenietis-preview/api/v2/package", nugetPackages );
-                         }
-                     }
-                     else
-                     {
-                         Debug.Assert( gitInfo.IsValidCIBuild );
-                         PushNuGetPackages( "MYGET_CI_API_KEY", "https://www.myget.org/F/invenietis-ci/api/v2/package", nugetPackages );
-                     }
-                     if( Cake.AppVeyor().IsRunningOnAppVeyor )
-                     {
-                         Cake.AppVeyor().UpdateBuildVersion( gitInfo.SafeNuGetVersion );
-                     }
-                 } );
-
             Task( "Push-Runtimes-and-Engines" )
-                //.IsDependentOn( "Create-NuGet-Packages" )
-                .IsDependentOn( "Build" )
+                .IsDependentOn( "Unit-Testing" )
                 .WithCriteria( () => gitInfo.IsValid )
                 .Does( () =>
                 {
@@ -315,8 +271,52 @@ namespace CodeCake
                     else Cake.Information( "Skipped push to http:/cksetup.invenietis.net." );
                 } );
 
+            Task( "Push-NuGet-Packages" )
+                .IsDependentOn( "Create-All-NuGet-Packages" )
+                .IsDependentOn( "Push-Runtimes-and-Engines" )
+                .WithCriteria( () => gitInfo.IsValid )
+                .Does( () =>
+                 {
+                     IEnumerable<FilePath> nugetPackages = Cake.GetFiles( releasesDir.Path + "/*.nupkg" );
+                     if( Cake.IsInteractiveMode() )
+                     {
+                         var localFeed = Cake.FindDirectoryAbove( "LocalFeed" );
+                         if( localFeed != null )
+                         {
+                             Cake.Information( "LocalFeed directory found: {0}", localFeed );
+                             if( Cake.ReadInteractiveOption( "Do you want to publish to LocalFeed?", 'Y', 'N' ) == 'Y' )
+                             {
+                                 Cake.CopyFiles( nugetPackages, localFeed );
+                             }
+                         }
+                     }
+                     if( gitInfo.IsValidRelease )
+                     {
+                         if( gitInfo.PreReleaseName == ""
+                             || gitInfo.PreReleaseName == "prerelease"
+                             || gitInfo.PreReleaseName == "rc" )
+                         {
+                             PushNuGetPackages( "NUGET_API_KEY", "https://www.nuget.org/api/v2/package", nugetPackages );
+                         }
+                         else
+                         {
+                            // An alpha, beta, delta, epsilon, gamma, kappa goes to invenietis-preview.
+                            PushNuGetPackages( "MYGET_PREVIEW_API_KEY", "https://www.myget.org/F/invenietis-preview/api/v2/package", nugetPackages );
+                         }
+                     }
+                     else
+                     {
+                         Debug.Assert( gitInfo.IsValidCIBuild );
+                         PushNuGetPackages( "MYGET_CI_API_KEY", "https://www.myget.org/F/invenietis-ci/api/v2/package", nugetPackages );
+                     }
+                     if( Cake.AppVeyor().IsRunningOnAppVeyor )
+                     {
+                         Cake.AppVeyor().UpdateBuildVersion( gitInfo.SafeNuGetVersion );
+                     }
+                 } );
+
             Task( "Push-CKRemoteStore-WebSite" )
-                .IsDependentOn( "Push-NuGet-Packages" )
+                //.IsDependentOn( "Push-NuGet-Packages" )
                 .WithCriteria( () => gitInfo.IsValid )
                 .Does( () =>
                 {
@@ -325,16 +325,12 @@ namespace CodeCake
                     {
                         var conf = new MSBuildSettings();
                         conf.Configuration = configuration;
-                        
-                        // Workaround for: https://github.com/dotnet/sdk/issues/1073
-                        conf.MSBuildPlatform = MSBuildPlatform.x86;
                         conf.Targets.Add( "Build" );
                         conf.Targets.Add( "Publish" );
                         conf.WithProperty( "DeployOnBuild", "true" )
                             .WithProperty( "PublishProfile", "CustomProfile" )
                             .WithProperty( "UserName", "ci@invenietis.net" )
-                            .WithProperty( "Password", publishPwd )
-                            .WithProperty( "VisualStudioVersion", "15.0" );
+                            .WithProperty( "Password", publishPwd );
                         conf.AddVersionArguments( gitInfo );
 
                         Cake.MSBuild( "CKSetupRemoteStore/CKSetupRemoteStore.csproj", conf );
@@ -343,7 +339,7 @@ namespace CodeCake
 
             // The Default task for this script can be set here.
             Task( "Default" )
-                .IsDependentOn( "Push-Runtimes-and-Engines" );
+                .IsDependentOn( "Push-CKRemoteStore-WebSite" /*"Push-Runtimes-and-Engines"*/ );
 
         }
 
