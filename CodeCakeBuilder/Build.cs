@@ -1,4 +1,4 @@
-﻿using Cake.Common.Build;
+using Cake.Common.Build;
 using Cake.Common.Diagnostics;
 using Cake.Common.IO;
 using Cake.Common.Solution;
@@ -268,6 +268,53 @@ namespace CodeCake
                      }
                  } );
 
+            Task( "Push-Runtimes-and-Engines" )
+                //.IsDependentOn( "Create-NuGet-Packages" )
+                .IsDependentOn( "Build" )
+                .WithCriteria( () => gitInfo.IsValid )
+                .Does( () =>
+                {
+                    var apiKey = Cake.InteractiveEnvironmentVariable( "CKSETUPREMOTESTORE_PUSH_API_KEY" );
+                    if( !String.IsNullOrWhiteSpace( apiKey ) )
+                    {
+                        string ckSetupExe = "CKSetup/bin/" + configuration + "/net461/CKSetup.exe";
+                        string storePath = releasesDir.Path.Combine( "TempStore" ).FullPath;
+                        var args = new ProcessArgumentBuilder()
+                                    .Append( "store" )
+                                    .Append( "add" );
+
+                        args.Append( GetBinFolder( "CK.StObj.Model", configuration ) );
+                        args.Append( GetBinFolder( "CK.StObj.Runtime", configuration ) );
+                        args.Append( GetBinFolder( "CK.StObj.Engine", configuration ) );
+                        args.Append( GetBinFolder( "CK.Setupable.Model", configuration ) );
+                        args.Append( GetBinFolder( "CK.Setupable.Runtime", configuration ) );
+                        args.Append( GetBinFolder( "CK.Setupable.Engine", configuration ) );
+                        args.Append( GetBinFolder( "CK.SqlServer.Setup.Model", configuration ) );
+                        args.Append( GetBinFolder( "CK.SqlServer.Setup.Runtime", configuration ) );
+                        args.Append( GetBinFolder( "CK.SqlServer.Setup.Engine", configuration ) );
+
+                        args.AppendSwitchQuoted( "--store", storePath )
+                            .AppendSwitchQuoted( "-f", "Debug" );
+
+                        Cake.ProcessRunner.Start( ckSetupExe, new ProcessSettings()
+                        {
+                            Arguments = args
+                        } ).WaitForExit();
+                        args.Clear();
+                        args.Append( "store" )
+                            .Append( "push" )
+                            .AppendSwitch( "-u", "http://cksetup.invenietis.net" )
+                            .AppendSwitchSecret( "-k", apiKey )
+                            .AppendSwitchQuoted( "--store", storePath )
+                            .AppendSwitchQuoted( "-f", "Debug" );
+                        Cake.ProcessRunner.Start( ckSetupExe, new ProcessSettings()
+                        {
+                            Arguments = args
+                        } ).WaitForExit();
+                    }
+                    else Cake.Information( "Skipped push to http:/cksetup.invenietis.net." );
+                } );
+
             Task( "Push-CKRemoteStore-WebSite" )
                 .IsDependentOn( "Push-NuGet-Packages" )
                 .WithCriteria( () => gitInfo.IsValid )
@@ -296,7 +343,7 @@ namespace CodeCake
 
             // The Default task for this script can be set here.
             Task( "Default" )
-                .IsDependentOn( "Push-CKRemoteStore-WebSite" );
+                .IsDependentOn( "Push-Runtimes-and-Engines" );
 
         }
 
@@ -323,6 +370,12 @@ namespace CodeCake
                     Cake.NuGetPush(nupkg, settings);
                 }
             }
+        }
+
+
+        string GetBinFolder( string name, string configuration )
+        {
+            return System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/net461" );
         }
     }
 }

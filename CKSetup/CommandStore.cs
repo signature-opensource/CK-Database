@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
@@ -12,7 +12,7 @@ using Mono.Collections.Generic;
 
 namespace CKSetup
 {
-    static partial class StoreCommand
+    static partial class CommandStore
     {
         public static void Define( CommandLineApplication c )
         {

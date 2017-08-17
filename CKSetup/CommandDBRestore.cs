@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
@@ -9,7 +9,7 @@ using CK.Text;
 
 namespace CKSetup
 {
-    static class RestoreCommand
+    static class CommandDBRestore
     {
         public static void Define( CommandLineApplication c )
         {
@@ -17,7 +17,7 @@ namespace CKSetup
             c.Description = "Restores a SQL Server database from a backup file, automatically moving its data and log files.";
             c.StandardConfiguration( true );
             ConnectionStringArgument connectionArg = c.AddConnectionStringArgument();
-            BackupPathArgument backupPathArg = c.AddBackupPathArgument( "Path to the backup file to restore, on the machine hosting the SQL Server instance. It must be readable by the SQL Server service. Non-absolute paths will be resolved relative to the default server backup directory." );
+            DBBackupPathArgument backupPathArg = c.AddBackupPathArgument( "Path to the backup file to restore, on the machine hosting the SQL Server instance. It must be readable by the SQL Server service. Non-absolute paths will be resolved relative to the default server backup directory." );
 
             c.OnExecute( monitor =>
             {

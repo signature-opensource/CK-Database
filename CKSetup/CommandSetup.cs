@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
@@ -18,7 +18,7 @@ namespace CKSetup
     /// <summary>
     /// Setup command implementation.
     /// </summary>
-    static public class SetupCommand
+    static public class CommandSetup
     {
         public static void Define( CommandLineApplication c )
         {

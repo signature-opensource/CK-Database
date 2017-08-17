@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.CommandLineUtils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -56,9 +56,9 @@ namespace CKSetup
                                                  false ) );
         }
 
-        static public BackupPathArgument AddBackupPathArgument( this CommandLineApplication @this, string description )
+        static public DBBackupPathArgument AddBackupPathArgument( this CommandLineApplication @this, string description )
         {
-            return new BackupPathArgument( @this.Argument( "BackupFilePath",
+            return new DBBackupPathArgument( @this.Argument( "BackupFilePath",
                                            description,
                                            false ) );
         }

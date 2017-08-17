@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
@@ -9,7 +9,7 @@ using CK.Text;
 
 namespace CKSetup
 {
-    static partial class BackupCommand
+    static partial class CommandDBBackup
     {
         public static void Define( CommandLineApplication c )
         {
@@ -17,7 +17,7 @@ namespace CKSetup
             c.Description = "Creates a full independent backup of a SQL Server database to a file on the SQL Server instance.";
             c.StandardConfiguration( true );
             ConnectionStringArgument connectionArg = c.AddConnectionStringArgument();
-            BackupPathArgument backupPathArg = c.AddBackupPathArgument( $"Path to the new backup file on the machine hosting the SQL Server instance.{Environment.NewLine}It must be writable by the SQL Server service. Non-absolute paths will be resolved relative to the default server backup directory." );
+            DBBackupPathArgument backupPathArg = c.AddBackupPathArgument( $"Path to the new backup file on the machine hosting the SQL Server instance.{Environment.NewLine}It must be writable by the SQL Server service. Non-absolute paths will be resolved relative to the default server backup directory." );
 
             c.OnExecute( monitor =>
             {

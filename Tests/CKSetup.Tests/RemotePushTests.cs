@@ -20,7 +20,7 @@ namespace CKSetup.Tests
             string zipPath = TestHelper.GetCleanTestZipPath( sourceType );
             using( var zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
             {
-                CKSetup.SetupCommand.DoSetup(
+                CKSetup.CommandSetup.DoSetup(
                     TestHelper.ConsoleMonitor,
                     TestHelper.SqlCallDemoModel461Path,
                     zip,

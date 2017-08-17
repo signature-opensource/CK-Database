@@ -21,7 +21,7 @@ namespace CKSetup.Tests
         {
             using( var zip = TestHelper.OpenCKDatabaseZip( type ) )
             {
-                CKSetup.SetupCommand.DoSetup(
+                CKSetup.CommandSetup.DoSetup(
                     TestHelper.ConsoleMonitor,
                     TestHelper.SqlCallDemoModel461Path,
                     zip,
@@ -41,7 +41,7 @@ namespace CKSetup.Tests
             using( var zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
             using( var remoteZip = TestHelper.OpenCKDatabaseZip( type ) )
             {
-                CKSetup.SetupCommand.DoSetup(
+                CKSetup.CommandSetup.DoSetup(
                     TestHelper.ConsoleMonitor,
                     TestHelper.SqlCallDemoModel461Path,
                     zip,
@@ -61,7 +61,7 @@ namespace CKSetup.Tests
             Assume.That( false, "Support for netstandard/netcore has yet to be implemented." );
             using( var zip = TestHelper.OpenCKDatabaseZip( type, withNetStandard: true ) )
             {
-                CKSetup.SetupCommand.DoSetup(
+                CKSetup.CommandSetup.DoSetup(
                     TestHelper.ConsoleMonitor,
                     TestHelper.SqlCallDemoModelNet13Path,
                     zip,
@@ -86,7 +86,7 @@ namespace CKSetup.Tests
                     BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SqlActorPackageRuntime461Path ) )
                     .Import()
                     .Should().BeTrue();
-                CKSetup.SetupCommand.DoSetup(
+                CKSetup.CommandSetup.DoSetup(
                     TestHelper.ConsoleMonitor,
                     TestHelper.SqlActorPackageModel461Path,
                     zip,

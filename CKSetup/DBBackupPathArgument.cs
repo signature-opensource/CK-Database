@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using Microsoft.Extensions.CommandLineUtils;
 using System;
 using System.Collections.Generic;
@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace CKSetup
 {
-    class BackupPathArgument
+    class DBBackupPathArgument
     {
-        public BackupPathArgument( CommandArgument arg )
+        public DBBackupPathArgument( CommandArgument arg )
         {
             CommandArgument = arg;
         }

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.CommandLineUtils;
 using System;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -22,9 +22,10 @@ namespace CKSetup
             app.StandardConfiguration( withMonitor: false );
             app.OnExecute( () => { app.ShowHelp(); return RetCodeHelp; } );
 
-            app.Command( "backup", BackupCommand.Define );
-            app.Command( "restore", RestoreCommand.Define );
-            app.Command( "setup", SetupCommand.Define );
+            app.Command( "db-backup", CommandDBBackup.Define );
+            app.Command( "db-restore", CommandDBRestore.Define );
+            app.Command( "setup", CommandSetup.Define );
+            app.Command( "store", CommandStore.Define );
 
             return app.Execute( args );
         }

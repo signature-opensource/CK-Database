@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using Microsoft.Extensions.CommandLineUtils;
 using System;
 using System.Collections.Generic;
@@ -52,6 +52,7 @@ namespace CKSetup
             }
             else 
             {
+                StorePath = Path.GetFullPath( StorePath );
                 if( !File.Exists( StorePath ) || !Directory.Exists( StorePath ) )
                 {
                     m.Warn( $"The provided store '{StorePath}' does not exist. It will be created." );
