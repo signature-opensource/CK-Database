@@ -6,6 +6,7 @@
     <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <PackageType Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">DotnetCliTool</PackageType>
+    <AssemblyName>dotnet-CKSetup</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
