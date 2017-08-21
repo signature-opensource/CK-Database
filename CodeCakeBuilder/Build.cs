@@ -226,8 +226,7 @@ namespace CodeCake
                  } );
 
             Task( "Push-Runtimes-and-Engines" )
-                //.IsDependentOn( "Unit-Testing" )
-                .IsDependentOn( "Build" )
+                .IsDependentOn( "Unit-Testing" )
                 .WithCriteria( () => gitInfo.IsValid )
                 .Does( () =>
                 {
@@ -320,7 +319,7 @@ namespace CodeCake
             // The appsettings.json is not included in the project.
             // (the <ExcludeFilesFromDeployment>appsettings.json</ExcludeFilesFromDeployment> in
             // pubxml seems to be ignored).
-            Task( "Push-CKRemoteStore-WebSite" )
+            Task( "Build-And-Push-CKRemoteStore-WebSite" )
                 .WithCriteria( () => gitInfo.IsValid )
                 .Does( () =>
                 {
@@ -343,8 +342,8 @@ namespace CodeCake
 
             // The Default task for this script can be set here.
             Task( "Default" )
-                //.IsDependentOn( "Push-CKRemoteStore-WebSite" );
-                .IsDependentOn( "Push-Runtimes-and-Engines" );
+                .IsDependentOn( "Build-And-Push-CKRemoteStore-WebSite" );
+                //.IsDependentOn( "Push-Runtimes-and-Engines" );
         }
 
         void PushNuGetPackages(string apiKeyName, string pushUrl, IEnumerable<FilePath> nugetPackages)

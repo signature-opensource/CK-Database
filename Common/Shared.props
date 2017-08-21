@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <!-- SharedDir is the /Common directory. -->
@@ -22,7 +22,7 @@
     <!-- Centralized version dependencies. -->
     <CKCoreVersion>7.0.1</CKCoreVersion>
     <CKActivityMonitorVersion>8.0.0</CKActivityMonitorVersion>
-    <CKMonitoringVersion>7.0.0</CKMonitoringVersion>
+    <CKMonitoringVersion>7.1.0</CKMonitoringVersion>
     <CKSetupDependencyVersion>6.0.1</CKSetupDependencyVersion>
     <CKSqlServerParserVersion>6.0.0-d01</CKSqlServerParserVersion>
     <CKSqlServerParserModelVersion>3.2.5</CKSqlServerParserModelVersion>
