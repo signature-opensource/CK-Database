@@ -342,8 +342,8 @@ namespace CodeCake
 
             // The Default task for this script can be set here.
             Task( "Default" )
-                .IsDependentOn( "Build-And-Push-CKRemoteStore-WebSite" );
-                //.IsDependentOn( "Push-Runtimes-and-Engines" );
+                //.IsDependentOn( "Build-And-Push-CKRemoteStore-WebSite" );
+                .IsDependentOn( "Push-NuGet-Packages" );
         }
 
         void PushNuGetPackages(string apiKeyName, string pushUrl, IEnumerable<FilePath> nugetPackages)
