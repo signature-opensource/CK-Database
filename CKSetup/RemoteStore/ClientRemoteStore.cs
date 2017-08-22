@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -90,9 +90,17 @@ namespace CKSetup
                     {
                         c.Headers.Add( ApiKeyHeader, _pushApiKey );
                         using( HttpResponseMessage r = _client.PostAsync( _remotePrefix + PushPath, c ).GetAwaiter().GetResult() )
-                        using( var responseStream = r.Content.ReadAsStreamAsync().GetAwaiter().GetResult() )
                         {
-                            return new PushComponentsResult( new CKBinaryReader( responseStream ) );
+                            if( !r.IsSuccessStatusCode )
+                            {
+                                var msg = $"Remote response Status: {r.StatusCode}.";
+                                monitor.Error( msg );
+                                return new PushComponentsResult( msg, null );
+                            }
+                            using( var responseStream = r.Content.ReadAsStreamAsync().GetAwaiter().GetResult() )
+                            {
+                                return new PushComponentsResult( new CKBinaryReader( responseStream ) );
+                            }
                         }
                     }
                 }
@@ -118,13 +126,14 @@ namespace CKSetup
                     {
                         c.Headers.Add( SessionIdHeader, sessionId );
                         var url = _remotePrefix + PushFilePath + '/' + sha1;
-                        HttpResponseMessage r = _client.PostAsync( url, c ).GetAwaiter().GetResult();
-                        if( !r.IsSuccessStatusCode )
+                        using( HttpResponseMessage r = _client.PostAsync( url, c ).GetAwaiter().GetResult() )
                         {
-                            monitor.Error( $"Target response Status: {r.StatusCode}." );
-                            success = false;
+                            if( !r.IsSuccessStatusCode )
+                            {
+                                monitor.Error( $"Remote response Status: {r.StatusCode}." );
+                                success = false;
+                            }
                         }
-                        r.Dispose();
                     }
                 }
                 return success;
