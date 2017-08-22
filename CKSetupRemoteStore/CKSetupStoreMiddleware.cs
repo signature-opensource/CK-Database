@@ -1,4 +1,4 @@
-﻿using CK.AspNet;
+using CK.AspNet;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -145,6 +145,7 @@ namespace CKSetupRemoteStore
             var apiKey = (string)ctx.Request.Headers[ClientRemoteStore.ApiKeyHeader];
             if( !_apiKeys.Contains( apiKey ) )
             {
+                monitor.Warn( "Bad API key." );
                 ctx.Response.StatusCode = StatusCodes.Status403Forbidden;
                 return;
             }
@@ -183,27 +184,41 @@ namespace CKSetupRemoteStore
                                         .Where( sha => !_store.Exists( sha.ToString() ) )
                                         .ToList();
 
-                    string sessionId = Guid.NewGuid().ToString();
-                    monitor.Info( $"New session: {sessionId}" );
-                    result = new PushComponentsResult( missingFiles, sessionId );
-                    using( var cacheEntry = _cache.CreateEntry( sessionId ) )
+                    string sessionId = null;
+                    if( missingFiles.Count > 0 )
                     {
-                        cacheEntry.SetSlidingExpiration( _pushSessionDuration );
-                        cacheEntry.Priority = CacheItemPriority.NeverRemove;
-                        cacheEntry.SetValue( result );
+                        sessionId = Guid.NewGuid().ToString();
+                        monitor.Info( $"New session: {sessionId}. Expecting {missingFiles.Count} file(s)." );
                     }
-                    Debug.Assert( _cache.Get<PushComponentsResult>( sessionId ) == result );
+                    result = new PushComponentsResult( missingFiles, sessionId );
+                    if( missingFiles.Count > 0 )
+                    {
+                        using( var cacheEntry = _cache.CreateEntry( sessionId ) )
+                        {
+                            cacheEntry.SetSlidingExpiration( _pushSessionDuration );
+                            cacheEntry.Priority = CacheItemPriority.NeverRemove;
+                            cacheEntry.SetValue( result );
+                        }
+                        Debug.Assert( _cache.Get<PushComponentsResult>( sessionId ) == result );
+                    }
                     if( _dbCurrent != n.NewDB )
                     {
-                        _rwLock.EnterWriteLock();
-                        try
+                        using( monitor.OpenInfo( $"Saving new database ({n.NewDB.Components.Count} components)." ) )
                         {
-                            _dbCurrent = n.NewDB;
-                            _store.Save( _dbCurrent );
-                        }
-                        finally
-                        {
-                            _rwLock.ExitWriteLock();
+                            _rwLock.EnterWriteLock();
+                            try
+                            {
+                                _dbCurrent = n.NewDB;
+                                _store.Save( _dbCurrent );
+                            }
+                            catch( Exception ex )
+                            {
+                                monitor.Error( ex );
+                            }
+                            finally
+                            {
+                                _rwLock.ExitWriteLock();
+                            }
                         }
                     }
                     return result;

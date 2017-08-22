@@ -315,7 +315,10 @@ namespace CodeCake
                      }
                  } );
 
-            // This is an independent task that must be run manually.
+            // This is an independent task that must be run manually:
+            //
+            //      -target=Build-And-Push-CKRemoteStore-WebSite
+            //
             // The appsettings.json is not included in the project.
             // (the <ExcludeFilesFromDeployment>appsettings.json</ExcludeFilesFromDeployment> in
             // pubxml seems to be ignored).

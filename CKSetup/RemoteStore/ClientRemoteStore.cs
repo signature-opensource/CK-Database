@@ -93,9 +93,7 @@ namespace CKSetup
                         {
                             if( !r.IsSuccessStatusCode )
                             {
-                                var msg = $"Remote response Status: {r.StatusCode}.";
-                                monitor.Error( msg );
-                                return new PushComponentsResult( msg, null );
+                                return new PushComponentsResult( $"Remote response Status: {r.StatusCode}.", null );
                             }
                             using( var responseStream = r.Content.ReadAsStreamAsync().GetAwaiter().GetResult() )
                             {
