@@ -239,10 +239,10 @@
     <Error Condition="!Exists('..\packages\Costura.Fody.1.6.2\build\dotnet\Costura.Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Costura.Fody.1.6.2\build\dotnet\Costura.Fody.targets'))" />
   </Target>
   <PropertyGroup>
-    <PreBuildEvent>xcopy /y $(SolutionDir)CK.SqlServer.Setup.Engine\bin\$(ConfigurationName)\net461\CK.StObj.*.dll $(ProjectDir)Imports\
-xcopy /y $(SolutionDir)CK.SqlServer.Setup.Engine\bin\$(ConfigurationName)\net461\CK.SqlServer.Setup.*.dll $(ProjectDir)Imports\
-xcopy /y $(SolutionDir)CK.SqlServer.Setup.Engine\bin\$(ConfigurationName)\net461\CK.Setupable.*.dll $(ProjectDir)Imports\
-xcopy /y $(SolutionDir)CK.SqlServer.Setup.Engine\bin\$(ConfigurationName)\net461\CK.Setupable.Engine.exe $(ProjectDir)Imports\
+    <PreBuildEvent>xcopy /y $(SolutionDir)CK.SqlServer.Setup.Engine\bin\$(ConfigurationName)\net461\win\CK.StObj.*.dll $(ProjectDir)Imports\
+xcopy /y $(SolutionDir)CK.SqlServer.Setup.Engine\bin\$(ConfigurationName)\net461\win\CK.SqlServer.Setup.*.dll $(ProjectDir)Imports\
+xcopy /y $(SolutionDir)CK.SqlServer.Setup.Engine\bin\$(ConfigurationName)\net461\win\CK.Setupable.*.dll $(ProjectDir)Imports\
+xcopy /y $(SolutionDir)CK.SqlServer.Setup.Engine\bin\$(ConfigurationName)\net461\win\CK.Setupable.Engine.exe $(ProjectDir)Imports\
 </PreBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\SimpleGitVersionTask.0.28.0\build\SimpleGitVersionTask.targets" Condition="Exists('..\packages\SimpleGitVersionTask.0.28.0\build\SimpleGitVersionTask.targets')" />
