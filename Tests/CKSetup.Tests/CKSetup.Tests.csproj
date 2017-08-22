@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\Common\Shared.props" />
-
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
   </PropertyGroup>
   
+  <Import Project="..\..\Common\Shared.props" />
+
   <ItemGroup>
     <PackageReference Include="NUnit" Version="[2.6.4]" />
     <PackageReference Include="FluentAssertions" Version="4.19.3" />

@@ -138,7 +138,7 @@ namespace CodeCake
                              {
                                  ProjectPath = p.Path.GetDirectory(),
                                  NetCoreAppDll = p.Path.GetDirectory().CombineWithFilePath( "bin/" + configuration + "/netcoreapp1.1/" + p.Name + ".dll" ),
-                                 Net461Dll = p.Path.GetDirectory().CombineWithFilePath( "bin/" + configuration + "/net461/" + p.Name + ".dll" ),
+                                 Net461Dll = p.Path.GetDirectory().CombineWithFilePath( "bin/" + configuration + "/net461/win/" + p.Name + ".dll" ),
                              } );
 
                      foreach( var test in testDlls )
@@ -165,7 +165,7 @@ namespace CodeCake
                 .Does( () =>
                 {
                     var exe = Cake.File( $@"CKDBSetup\bin\{configuration}\CKDBSetup.exe" ).Path.MakeAbsolute( Cake.Environment );
-                    var callDemoPath = Cake.Directory( $@"Tests\SqlCallDemo\SqlCallDemo\bin\{configuration}\net461" );
+                    var callDemoPath = Cake.Directory( $@"Tests\SqlCallDemo\SqlCallDemo\bin\{configuration}\net461\win" );
 
                     string c = Environment.GetEnvironmentVariable( "CK_DB_TEST_MASTER_CONNECTION_STRING" );
                     if( c == null ) c = System.Configuration.ConfigurationManager.AppSettings["CK_DB_TEST_MASTER_CONNECTION_STRING"];
@@ -233,21 +233,21 @@ namespace CodeCake
                     var apiKey = Cake.InteractiveEnvironmentVariable( "CKSETUPREMOTESTORE_PUSH_API_KEY" );
                     if( !String.IsNullOrWhiteSpace( apiKey ) )
                     {
-                        string ckSetupExe = "CKSetup/bin/" + configuration + "/net461/CKSetup.exe";
+                        string ckSetupExe = "CKSetup/bin/" + configuration + "/net461/win/CKSetup.exe";
                         string storePath = releasesDir.Path.Combine( "TempStore" ).FullPath;
                         var args = new ProcessArgumentBuilder()
                                     .Append( "store" )
                                     .Append( "add" );
 
-                        args.Append( GetBinFolder( "CK.StObj.Model", configuration ) );
-                        args.Append( GetBinFolder( "CK.StObj.Runtime", configuration ) );
-                        args.Append( GetBinFolder( "CK.StObj.Engine", configuration ) );
-                        args.Append( GetBinFolder( "CK.Setupable.Model", configuration ) );
-                        args.Append( GetBinFolder( "CK.Setupable.Runtime", configuration ) );
-                        args.Append( GetBinFolder( "CK.Setupable.Engine", configuration ) );
-                        args.Append( GetBinFolder( "CK.SqlServer.Setup.Model", configuration ) );
-                        args.Append( GetBinFolder( "CK.SqlServer.Setup.Runtime", configuration ) );
-                        args.Append( GetBinFolder( "CK.SqlServer.Setup.Engine", configuration ) );
+                        args.Append( GetNet461BinFolder( "CK.StObj.Model", configuration ) );
+                        args.Append( GetNet461BinFolder( "CK.StObj.Runtime", configuration ) );
+                        args.Append( GetNet461BinFolder( "CK.StObj.Engine", configuration ) );
+                        args.Append( GetNet461BinFolder( "CK.Setupable.Model", configuration ) );
+                        args.Append( GetNet461BinFolder( "CK.Setupable.Runtime", configuration ) );
+                        args.Append( GetNet461BinFolder( "CK.Setupable.Engine", configuration ) );
+                        args.Append( GetNet461BinFolder( "CK.SqlServer.Setup.Model", configuration ) );
+                        args.Append( GetNet461BinFolder( "CK.SqlServer.Setup.Runtime", configuration ) );
+                        args.Append( GetNet461BinFolder( "CK.SqlServer.Setup.Engine", configuration ) );
 
                         args.AppendSwitchQuoted( "--store", storePath )
                             .AppendSwitchQuoted( "-f", "Debug" );
@@ -372,9 +372,9 @@ namespace CodeCake
         }
 
 
-        string GetBinFolder( string name, string configuration )
+        string GetNet461BinFolder( string name, string configuration )
         {
-            return System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/net461" );
+            return System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/net461/win" );
         }
     }
 }

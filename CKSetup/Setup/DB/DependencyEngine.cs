@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using CK.Text;
 using CSemVer;
 using System;
@@ -103,18 +103,33 @@ namespace CKSetup
         {
             using( monitor.OpenInfo( "Updating DependencyEngine state." ) )
             {
+                // Unifies and captures dependencies and embedded refs as dependencies in a list.
                 var unified = _resolved.Select( r => new ComponentDependency( r.Name, r.Version ) )
                                     .Concat( _deps )
                                     .Concat( _embeddeds.Select( d => new ComponentDependency( d.Name, d.Version ) ) )
                                     .GroupBy( d => d.UseName )
                                     .Select( g => g.MaxBy( d => d.UseMinVersion ) )
                                     .ToList();
+                // Clean current state.
                 _resolved.Clear();
                 _deps.Clear();
                 _embeddeds.Clear();
-                _resolved.AddRange( unified.Select( d => db.FindBest( _target, d.UseName, d.UseMinVersion ) ) );
+                // Updates new state with the current resolved Components.
+                int failedCount = 0;
+                foreach( var d in unified )
+                {
+                    var c = db.FindBest( _target, d.UseName, d.UseMinVersion );
+                    if( c == null )
+                    {
+                        monitor.Error( $"Failed to resolve dependency {d}." );
+                        ++failedCount;
+                    }
+                    else _resolved.Add( c );
+                }
                 _db = db;
                 monitor.Trace( $"Resolved is now: {_resolved.Select( d => d.ToString() ).Concatenate()}." );
+                if( failedCount > 0 ) return false;
+                // On every success, initial root dependencies are stable.
                 Debug.Assert( _resolved.Take( Roots.Count ).Select( r => r.Name ).SequenceEqual( Roots.Select( r => r.UseName ) ) );
                 return true;
             }

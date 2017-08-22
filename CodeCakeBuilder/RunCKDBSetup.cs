@@ -1,4 +1,4 @@
-﻿using Cake.Common.Diagnostics;
+using Cake.Common.Diagnostics;
 using Cake.Common.IO;
 using Code.Cake;
 using CodeCake;
@@ -18,7 +18,7 @@ namespace CodeCakeBuilder
             string configuration = "Debug";
 
             var exe = Cake.File( $@"CKDBSetup\bin\{configuration}\CKDBSetup.exe" ).Path.MakeAbsolute( Cake.Environment );
-            var callDemoPath = Cake.Directory( $@"Tests\SqlCallDemo\SqlCallDemo\bin\{configuration}\net461" );
+            var callDemoPath = Cake.Directory( $@"Tests\SqlCallDemo\SqlCallDemo\bin\{configuration}\net461\win" );
 
             string c = Environment.GetEnvironmentVariable( "CK_DB_TEST_MASTER_CONNECTION_STRING" );
             if( c == null ) c = System.Configuration.ConfigurationManager.AppSettings["CK_DB_TEST_MASTER_CONNECTION_STRING"];

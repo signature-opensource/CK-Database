@@ -1,5 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-
+<Project Sdk="Microsoft.NET.Sdk.Web">
+    
+  <!-- import before setting net461 so that Runtime "win" is not set. -->
   <Import Project="..\Common\Shared.props" />
 
   <PropertyGroup>

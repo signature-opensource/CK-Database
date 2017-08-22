@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -111,11 +111,12 @@ namespace CKSetup
             /// <summary>
             /// Adds one or more components. Ignores them when already registered.
             /// </summary>
-            /// <param name="folders">Folders to add.</param>
+            /// <param name="folders">Folders to add. Must not contain null folders.</param>
             /// <returns>This importer (enable fluent syntax).</returns>
             public LocalImporter AddComponent( IEnumerable<BinFolder> folders )
             {
                 if( folders == null ) throw new ArgumentNullException( nameof( folders ) );
+                if( folders.Any( f => f == null ) ) throw new ArgumentNullException( nameof( folders ), $"{nameof(folders)}.ElementAt({folders.IndexOf( f => f ==  null )}) is null." );
                 _toAdd.AddRange( folders.Where( f => f != null ) );
                 return this;
             }

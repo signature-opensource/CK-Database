@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\Common\Shared.props" />
-
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
   </PropertyGroup>
+  
+  <Import Project="..\..\Common\Shared.props" />
 
   <ItemGroup>
     <EmbeddedResource Include="Res\TextFile.txt;Another\Namespace\TextFile.txt;SubNamespace\**\*.txt" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />

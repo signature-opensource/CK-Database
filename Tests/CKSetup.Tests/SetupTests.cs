@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -97,5 +97,31 @@ namespace CKSetup.Tests
                     ).Should().Be( 0 );
             }
         }
-   }
+
+        [TestCase( TestStoreType.Zip )]
+        [TestCase( TestStoreType.Directory )]
+        public void setup_SqlActorPackage_without_its_runtime_fails( TestStoreType type )
+        {
+            string zipPath = TestHelper.GetCleanTestZipPath( type );
+            using( var zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
+            using( var remoteZip = TestHelper.OpenCKDatabaseZip( type ) )
+            {
+                var missingImporter = new FakeRemote( remoteZip );
+                zip.CreateLocalImporter( missingImporter ).AddComponent(
+                    BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SqlActorPackageModel461Path ) )
+                    .Import()
+                    .Should().BeTrue();
+                CKSetup.CommandSetup.DoSetup(
+                    TestHelper.ConsoleMonitor,
+                    TestHelper.SqlActorPackageModel461Path,
+                    zip,
+                    TestHelper.GetConnectionString( "CKDB_TEST_SqlActorPackage" ),
+                    "SqlActorPackage.Generated.ByCKSetup",
+                    sourceGeneration: true,
+                    missingImporter: missingImporter
+                    ).Should().NotBe( 0 );
+            }
+        }
+
+    }
 }
