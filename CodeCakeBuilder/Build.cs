@@ -101,9 +101,13 @@ namespace CodeCake
                 .Does( () =>
                  {
                      // https://docs.microsoft.com/en-us/nuget/schema/msbuild-targets
-                     Cake.DotNetCoreRestore( "CodeCakeBuilder/CoreBuild.proj", new DotNetCoreRestoreSettings().AddVersionArguments( gitInfo ) );
+                     var dotNetConf = new DotNetCoreRestoreSettings().AddVersionArguments( gitInfo );
+                     dotNetConf.Verbosity = DotNetCoreVerbosity.Minimal;
+
+                     Cake.DotNetCoreRestore( "CodeCakeBuilder/CoreBuild.proj", dotNetConf );
                      Cake.NuGetRestore( "CKDBSetup/packages.config", new NuGetRestoreSettings()
                      {
+                         Verbosity = NuGetVerbosity.Quiet,
                          PackagesDirectory = "packages"
                      } );
                  } );
