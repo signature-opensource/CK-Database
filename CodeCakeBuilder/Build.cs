@@ -169,7 +169,7 @@ namespace CodeCake
                 .Does( () =>
                 {
                     var exe = Cake.File( $@"CKDBSetup\bin\{configuration}\CKDBSetup.exe" ).Path.MakeAbsolute( Cake.Environment );
-                    var callDemoPath = Cake.Directory( $@"Tests\SqlCallDemo\SqlCallDemo\bin\{configuration}\net461\win" );
+                    var callDemoPath = Cake.Directory( $@"Tests\SqlCallDemo\SqlCallDemo\bin\{configuration}\net461" );
 
                     string c = Environment.GetEnvironmentVariable( "CK_DB_TEST_MASTER_CONNECTION_STRING" );
                     if( c == null ) c = System.Configuration.ConfigurationManager.AppSettings["CK_DB_TEST_MASTER_CONNECTION_STRING"];
@@ -181,12 +181,12 @@ namespace CodeCake
                     var cmdLineIL = $@"{exe.FullPath} setup ""{dbCon}"" -ra ""SqlCallDemo"" -n ""GenByCKDBSetup"" -p ""{callDemoPath}""";
                     {
                         int result = Cake.RunCmd( cmdLineIL );
-                        if( result != 0 ) throw new Exception( "CKDSetup.exe failed for IL generation." );
+                        if( result != 0 ) throw new Exception( "CKDBSetup.exe failed for IL generation." );
                     }
-                    //{
-                    //    int result = Cake.RunCmd( cmdLineIL + " -sg" );
-                    //    if( result != 0 ) throw new Exception( "CKDSetup.exe failed for Source Code generation." );
-                    //}
+                    {
+                        int result = Cake.RunCmd( cmdLineIL + " -sg" );
+                        if( result != 0 ) throw new Exception( "CKDBSetup.exe failed for Source Code generation." );
+                    }
                 } );
 
             Task( "Create-NuGet-Package-For-CKDBSetup" )
