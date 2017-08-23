@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -52,11 +52,11 @@ namespace CKDBSetup
                 CommandOptionType.SingleValue
                 );
 
-            //var sourceGenerationOpt = c.Option(
-            //    "-sg|--sourceGeneration",
-            //    $"Use the new code source generation (instead of IL emit).",
-            //    CommandOptionType.NoValue
-            //    );
+            var sourceGenerationOpt = c.Option(
+                "-sg|--sourceGeneration",
+                $"Use the new code source generation (instead of IL emit).",
+                CommandOptionType.NoValue
+                );
 
             var sampleUsage = $@"Sample usage: {c.Parent.Name} {c.Name} ""Server=.;Database=Test;Integrated Security=true;"" -ra ""Super.Data"" -r ""Another.Model"" -p ""C:\App\Prod\SuperApp\bin""  -n ""Super.Generated"" ";
 
@@ -101,7 +101,7 @@ namespace CKDBSetup
                     generatedAssemblyName = generatedAssemblyNameOpt.Value().Trim();
                 }
 
-                sourceGeneration = false; // sourceGenerationOpt.HasValue(); 
+                sourceGeneration = sourceGenerationOpt.HasValue(); 
 
                 // No connectionString given
                 if( string.IsNullOrEmpty( connectionString ) )
@@ -116,7 +116,7 @@ namespace CKDBSetup
                 monitor.Trace().Send( $"Recurse Assembly names: {recurseAssemblyNames.Concatenate()}" );
                 monitor.Trace().Send( $"Binaries path: {binPath}" );
                 monitor.Trace().Send( $"Generated assembly name: {generatedAssemblyName}" );
-                //monitor.Trace().Send( $"Source Generation: {sourceGeneration}" );
+                monitor.Trace().Send( $"Source Generation: {sourceGeneration}" );
 
                 var buildConfig = DbSetupHelper.BuildSetupConfig( connectionString, assemblyNames, recurseAssemblyNames, generatedAssemblyName, binPath, runningMode, sourceGeneration );
 
