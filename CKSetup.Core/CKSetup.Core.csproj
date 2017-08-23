@@ -1,11 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- import before setting net461 so that Runtime "win" is not set. -->
+  <Import Project="..\Common\Shared.props" />
+
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
   </PropertyGroup>
   
-  <Import Project="..\Common\Shared.props" />
-
   <ItemGroup>
     <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="$(CKActivityMonitorVersion)" />
     <PackageReference Include="Mono.Cecil" Version="$(MonoCecilVersion)" />
