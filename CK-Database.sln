@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.16
+VisualStudioVersion = 15.0.26730.8
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{6E913090-EA34-4A90-8DBB-1501F9981F53}"
 EndProject
@@ -97,7 +97,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlCallDemo.NetCore.Tests",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CKSetup", "CKSetup\CKSetup.csproj", "{1EE076A9-08E3-4A07-8DAA-5A18508A45A5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CKSetup.Tests", "Tests\CKSetup.Tests\CKSetup.Tests.csproj", "{D29B730E-853F-49F7-9EB9-144A9287FC3F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CKSetup.Core.Tests", "Tests\CKSetup.Core.Tests\CKSetup.Core.Tests.csproj", "{D29B730E-853F-49F7-9EB9-144A9287FC3F}"
 	ProjectSection(ProjectDependencies) = postProject
 		{16336B59-7D68-4742-B5F7-2A4EB392C3BD} = {16336B59-7D68-4742-B5F7-2A4EB392C3BD}
 		{BF604471-BF24-4B4F-815B-578BD8CE4A87} = {BF604471-BF24-4B4F-815B-578BD8CE4A87}
@@ -108,6 +108,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CKSetup.Tests", "Tests\CKSe
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CKSetupRemoteStore", "CKSetupRemoteStore\CKSetupRemoteStore.csproj", "{A93E24CA-0678-4AD5-B2A6-F15132AE512A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CKSetup.Core", "CKSetup.Core\CKSetup.Core.csproj", "{31C44FE9-1848-4851-9130-7B96B42CE2FB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -515,6 +517,18 @@ Global
 		{A93E24CA-0678-4AD5-B2A6-F15132AE512A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{A93E24CA-0678-4AD5-B2A6-F15132AE512A}.Release|x86.ActiveCfg = Release|Any CPU
 		{A93E24CA-0678-4AD5-B2A6-F15132AE512A}.Release|x86.Build.0 = Release|Any CPU
+		{31C44FE9-1848-4851-9130-7B96B42CE2FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31C44FE9-1848-4851-9130-7B96B42CE2FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31C44FE9-1848-4851-9130-7B96B42CE2FB}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{31C44FE9-1848-4851-9130-7B96B42CE2FB}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{31C44FE9-1848-4851-9130-7B96B42CE2FB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{31C44FE9-1848-4851-9130-7B96B42CE2FB}.Debug|x86.Build.0 = Debug|Any CPU
+		{31C44FE9-1848-4851-9130-7B96B42CE2FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31C44FE9-1848-4851-9130-7B96B42CE2FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31C44FE9-1848-4851-9130-7B96B42CE2FB}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{31C44FE9-1848-4851-9130-7B96B42CE2FB}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{31C44FE9-1848-4851-9130-7B96B42CE2FB}.Release|x86.ActiveCfg = Release|Any CPU
+		{31C44FE9-1848-4851-9130-7B96B42CE2FB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -546,5 +560,6 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.0\lib\NET35;packages\Unity.2.1.505.2\lib\NET35
+		SolutionGuid = {FAF75456-A490-4FB3-B2E8-CFFC10068A8E}
 	EndGlobalSection
 EndGlobal

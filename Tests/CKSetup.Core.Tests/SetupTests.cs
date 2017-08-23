@@ -21,14 +21,14 @@ namespace CKSetup.Tests
         {
             using( var zip = TestHelper.OpenCKDatabaseZip( type ) )
             {
-                CKSetup.CommandSetup.DoSetup(
+                Facade.DoSetup(
                     TestHelper.ConsoleMonitor,
                     TestHelper.SqlCallDemoModel461Path,
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",
                     sourceGeneration: true
-                    ).Should().Be( 0 );
+                    ).Should().BeTrue();
             }
         }
 
@@ -41,7 +41,7 @@ namespace CKSetup.Tests
             using( var zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
             using( var remoteZip = TestHelper.OpenCKDatabaseZip( type ) )
             {
-                CKSetup.CommandSetup.DoSetup(
+                Facade.DoSetup(
                     TestHelper.ConsoleMonitor,
                     TestHelper.SqlCallDemoModel461Path,
                     zip,
@@ -49,7 +49,7 @@ namespace CKSetup.Tests
                     "SqlCallDemo.Generated.ByCKSetup",
                     sourceGeneration: true,
                     missingImporter: new FakeRemote( remoteZip )
-                    ).Should().Be( 0 );
+                    ).Should().BeTrue();
             }
         }
 
@@ -61,14 +61,14 @@ namespace CKSetup.Tests
             Assume.That( false, "Support for netstandard/netcore has yet to be implemented." );
             using( var zip = TestHelper.OpenCKDatabaseZip( type, withNetStandard: true ) )
             {
-                CKSetup.CommandSetup.DoSetup(
+                Facade.DoSetup(
                     TestHelper.ConsoleMonitor,
                     TestHelper.SqlCallDemoModelNet13Path,
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",
                     sourceGeneration: true
-                    ).Should().Be( 0 );
+                    ).Should().BeTrue();
             }
         }
 
@@ -86,7 +86,7 @@ namespace CKSetup.Tests
                     BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SqlActorPackageRuntime461Path ) )
                     .Import()
                     .Should().BeTrue();
-                CKSetup.CommandSetup.DoSetup(
+                Facade.DoSetup(
                     TestHelper.ConsoleMonitor,
                     TestHelper.SqlActorPackageModel461Path,
                     zip,
@@ -94,7 +94,7 @@ namespace CKSetup.Tests
                     "SqlActorPackage.Generated.ByCKSetup",
                     sourceGeneration: true,
                     missingImporter: missingImporter
-                    ).Should().Be( 0 );
+                    ).Should().BeTrue();
             }
         }
 
@@ -111,7 +111,7 @@ namespace CKSetup.Tests
                     BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SqlActorPackageModel461Path ) )
                     .Import()
                     .Should().BeTrue();
-                CKSetup.CommandSetup.DoSetup(
+                Facade.DoSetup(
                     TestHelper.ConsoleMonitor,
                     TestHelper.SqlActorPackageModel461Path,
                     zip,
@@ -119,7 +119,7 @@ namespace CKSetup.Tests
                     "SqlActorPackage.Generated.ByCKSetup",
                     sourceGeneration: true,
                     missingImporter: missingImporter
-                    ).Should().NotBe( 0 );
+                    ).Should().BeFalse();
             }
         }
 

@@ -12,12 +12,9 @@
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Configuration" />
     <Reference Include="System" />
+    <ProjectReference Include="..\..\CKSetup.Core\CKSetup.Core.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\CKSetup\CKSetup.csproj" />
-  </ItemGroup>
-
+  
   <ItemGroup>
     <Compile Include="..\..\CK.DB.Tests.NUnit\AppSettings.cs">
       <Link>Includes\%(RecursiveDir)%(Filename)%(Extension)</Link>
@@ -28,6 +25,7 @@
   <ItemGroup>
     <Folder Include="TestOutput\" />
   </ItemGroup>
+
 
 
 </Project>

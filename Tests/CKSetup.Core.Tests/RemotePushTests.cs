@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using NUnit.Framework;
 using System;
 
@@ -20,7 +20,7 @@ namespace CKSetup.Tests
             string zipPath = TestHelper.GetCleanTestZipPath( sourceType );
             using( var zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
             {
-                CKSetup.CommandSetup.DoSetup(
+                Facade.DoSetup(
                     TestHelper.ConsoleMonitor,
                     TestHelper.SqlCallDemoModel461Path,
                     zip,
@@ -28,7 +28,7 @@ namespace CKSetup.Tests
                     "SqlCallDemo.Generated.ByCKSetup",
                     sourceGeneration: true,
                     remoteStoreUrl: url
-                    ).Should().Be( 0 );
+                    ).Should().BeTrue();
             }
         }
     }

@@ -2,13 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
-    <OutputType>Exe</OutputType>
   </PropertyGroup>
   
   <Import Project="..\Common\Shared.props" />
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
     <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="$(CKActivityMonitorVersion)" />
     <PackageReference Include="Mono.Cecil" Version="$(MonoCecilVersion)" />
     <PackageReference Include="CSemVer" Version="$(CSemVerVersion)" />
@@ -28,13 +26,10 @@
       <Link>Includes\%(RecursiveDir)%(Filename)%(Extension)</Link>
       <Visible>true</Visible>
     </Compile>
-    <Compile Remove="..\CK.Setupable.Model\Configuration\**" />
-    <Compile Remove="..\CK.SqlServer.Setup.Model\Configuration\**" />
-    <Compile Remove="..\CK.StObj.Model\Configuration\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\CKSetup.Core\CKSetup.Core.csproj" />
+    <Compile Include="..\CK.Setupable.Engine\SetupRunner.XmlNames.cs">
+      <Link>Includes\%(Filename)%(Extension)</Link>
+      <Visible>true</Visible>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>

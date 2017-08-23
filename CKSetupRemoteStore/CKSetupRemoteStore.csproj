@@ -1,11 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
     
-  <!-- import before setting net461 so that Runtime "win" is not set. -->
-  <Import Project="..\Common\Shared.props" />
-
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
   </PropertyGroup>
+  
+  <Import Project="..\Common\Shared.props" />
 
   <ItemGroup>
     <Compile Remove="Logs\**" />
@@ -23,7 +22,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="../CKSetup/CKSetup.csproj" />
+    <ProjectReference Include="../CKSetup.Core/CKSetup.Core.csproj" />
     <PackageReference Include="Microsoft.AspNetCore" Version="1.1.2" />
     <PackageReference Include="CK.AspNet" Version="0.1.0-a12" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="1.1.2" />
