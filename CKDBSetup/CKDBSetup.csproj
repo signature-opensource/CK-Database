@@ -60,7 +60,7 @@
       <HintPath>..\packages\CK.ActivityMonitor.StandardSender.8.0.0\lib\net451\CK.ActivityMonitor.StandardSender.dll</HintPath>
     </Reference>
     <Reference Include="CK.CodeGen, Version=0.1.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.CodeGen.0.1.0-a16\lib\net461\CK.CodeGen.dll</HintPath>
+      <HintPath>..\packages\CK.CodeGen.0.1.0-a18\lib\net461\CK.CodeGen.dll</HintPath>
     </Reference>
     <Reference Include="CK.Core, Version=7.0.1.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
       <HintPath>..\packages\CK.Core.7.0.1\lib\net451\CK.Core.dll</HintPath>

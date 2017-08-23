@@ -11,6 +11,10 @@
     </Description>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net461' ">
+    <RuntimeIdentifier>win</RuntimeIdentifier>
+  </PropertyGroup>
+    
   <ItemGroup>
     <ProjectReference Include="..\CK.StObj.Model\CK.StObj.Model.csproj" />
     <PackageReference Include="CK.CodeGen" Version="$(CKCodeGenVersion)" />

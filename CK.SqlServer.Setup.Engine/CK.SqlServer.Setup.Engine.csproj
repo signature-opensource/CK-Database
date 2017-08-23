@@ -10,6 +10,10 @@
     </Description>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net461' ">
+    <RuntimeIdentifier>win</RuntimeIdentifier>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\CK.Setupable.Engine\CK.Setupable.Engine.csproj" />
     <ProjectReference Include="..\CK.SqlServer.Setup.Runtime\CK.SqlServer.Setup.Runtime.csproj" />

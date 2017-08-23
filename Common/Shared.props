@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net461' ">
-    <RuntimeIdentifier>win</RuntimeIdentifier>
-  </PropertyGroup>
-    
   <!-- SharedDir is the /Common directory. -->
   <PropertyGroup>
     <SharedDir>$(MSBuildThisFileDirectory)</SharedDir>
@@ -31,7 +27,7 @@
     <CKSqlServerParserVersion>6.0.0-d01</CKSqlServerParserVersion>
     <CKSqlServerParserModelVersion>3.2.5</CKSqlServerParserModelVersion>
     <CKReflectionVersion>5.1.0</CKReflectionVersion>
-    <CKCodeGenVersion>0.1.0-a17</CKCodeGenVersion>
+    <CKCodeGenVersion>0.1.0-a18</CKCodeGenVersion>
     <YodiiScriptVersion>0.4.1</YodiiScriptVersion>
     <CSemVerVersion>1.0.1</CSemVerVersion>
     <MonoCecilVersion>0.10.0-beta6</MonoCecilVersion>

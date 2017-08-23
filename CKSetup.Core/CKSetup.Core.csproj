@@ -5,14 +5,7 @@
     <TargetFramework>net461</TargetFramework>
   </PropertyGroup>
 
-  <!-- Since dotnet pack DOES a Build ( - - no-build is IGNORED in 2.0 tooling) 
-       importing before setting net461 so that Runtime "win" is not set FAILS.
-       We explicitly clears the RuntimeIdentifier here.
-  -->
   <Import Project="..\Common\Shared.props" />
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net461' ">
-    <RuntimeIdentifier></RuntimeIdentifier>
-  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="$(CKActivityMonitorVersion)" />

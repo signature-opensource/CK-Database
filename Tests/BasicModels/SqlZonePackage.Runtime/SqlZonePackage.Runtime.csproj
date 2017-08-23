@@ -1,10 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\..\..\Common\Shared.props" />
+
   <PropertyGroup>
     <TargetFrameworks>netstandard1.6;net461</TargetFrameworks>
   </PropertyGroup>
 
-  <Import Project="..\..\..\Common\Shared.props" />
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net461' ">
+    <RuntimeIdentifier>win</RuntimeIdentifier>
+  </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\CK.SqlServer.Setup.Runtime\CK.SqlServer.Setup.Runtime.csproj" />
