@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,10 +9,10 @@ namespace CK.Setup
 {
     public sealed partial class SetupEngine
     {
-        static internal T GetSetupEngineAspect<T>( IReadOnlyList<ISetupEngineAspect> aspects, bool required = true ) where T : class
+        static internal T GetSetupEngineAspect<T>( IReadOnlyList<IStObjEngineAspect> aspects, bool required = true ) where T : class
         {
             T a = aspects.OfType<T>().FirstOrDefault();
-            if( a == null && required ) throw new CKException( "Aspect '{0}' is required. Did you forget to register an aspect configuration in the SetupEngineConfiguration.Aspects list?", typeof( T ).FullName );
+            if( a == null && required ) throw new CKException( $"Aspect '{typeof( T ).FullName}' is required. Did you forget to register an aspect configuration in the SetupEngineConfiguration.Aspects list?" );
             return a;
         }
 
@@ -34,7 +34,7 @@ namespace CK.Setup
                             success = false;
                             _monitor.Error().Send( "Aspect '{0}' occurs more than once in configuration." );
                         }
-                        else _startConfiguration.AddAspect( (ISetupEngineAspect)Activator.CreateInstance( t, this, c ) );
+                        else _startConfiguration.AddAspect( (IStObjEngineAspect)Activator.CreateInstance( t, this, c ) );
                     }
                     catch( Exception ex )
                     {

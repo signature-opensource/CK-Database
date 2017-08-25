@@ -7,17 +7,17 @@ using System.Threading.Tasks;
 namespace CK.Setup
 {
     /// <summary>
-    /// Provides access to available <see cref="ISetupEngineAspect"/>.
+    /// Provides access to available <see cref="IStObjEngineAspect"/>.
     /// </summary>
     public interface ISetupEngineAspectProvider
     {
         /// <summary>
-        /// Gets the <see cref="ISetupEngineAspect"/> that participate to setup.
+        /// Gets the <see cref="IStObjEngineAspect"/> that participate to setup.
         /// </summary>
-        IReadOnlyList<ISetupEngineAspect> Aspects { get; }
+        IReadOnlyList<IStObjEngineAspect> Aspects { get; }
 
         /// <summary>
-        /// Gets the first <see cref="ISetupEngineAspect"/> that is assignable to <typeparamref name="T"/>. 
+        /// Gets the first <see cref="IStObjEngineAspect"/> that is assignable to <typeparamref name="T"/>. 
         /// If such aspect can not be found, depending on <paramref name="required"/> a <see cref="CKException"/> is thrown or null is returned.
         /// </summary>
         /// <typeparam name="T">Type of the aspect to obtain.</typeparam>

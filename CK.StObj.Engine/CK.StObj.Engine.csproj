@@ -24,7 +24,6 @@
 
   <ItemGroup>
     <PackageReference Include="CK.Core" Version="$(CKCoreVersion)" />
-    <PackageReference Include="CK.Setup.Dependency" Version="$(CKSetupDependencyVersion)" />
     <PackageReference Include="CK.Reflection" Version="$(CKReflectionVersion)" />
   </ItemGroup>
 

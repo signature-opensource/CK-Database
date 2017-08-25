@@ -33,7 +33,7 @@ namespace CK.Setup
                 {
                     XElement root = XDocument.Load( Path.Combine( AppContext.BaseDirectory, XmlFileName ) ).Root;
                     m.MinimalFilter = LogFilter.Parse( root.Element( xLogFiler ).Value );
-                    var config = new SetupEngineConfiguration( root.Element( xSetup ) );
+                    var config = new SetupableAspectConfiguration( root.Element( xSetup ) );
                     return StObjContextRoot.Build( config, null, m );
                 }
                 catch( Exception ex )

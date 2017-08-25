@@ -52,7 +52,7 @@ namespace CK.Setup
         /// There is no limit to the number of rounds: this mechanism has been prefered to a DynamicItemInitialize method
         /// (either on the <see cref="IStObjSetupDynamicInitializer"/> interface or on a new interface) precisely because
         /// there is no limit. Since "transformers" and other low level operations are handled by clever developpers ;), 
-        /// this offers efficient, easy and extensible way to implement complex, multi-phases processes.
+        /// this trampoline pattern offers efficient, easy and extensible way to implement complex, multi-phases processes.
         /// </remarks>
         /// <param name="a">The defferred action to execute during the next round.</param>
         void PushNextRoundAction( Action<IStObjSetupDynamicInitializerState, IMutableSetupItem, IStObjResult> a );

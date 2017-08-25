@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,31 +20,31 @@ namespace CK.Setup
         /// is not <see cref="BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile"/>.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
-        /// <param name="runtimeBuilder">Runtime builder to use to create final mapper object.</param>
         /// <param name="callPEVrify">True to call PEVerify on the generated assembly.</param>
         /// <returns>False if any error occured (logged into <paramref name="monitor"/>).</returns>
-        public bool GenerateFinalAssembly( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, bool callPEVrify, bool withIL, bool withSrc )
+        public bool GenerateFinalAssembly( IActivityMonitor monitor, bool callPEVrify, bool withIL, bool withSrc )
         {
-            try
+            using( monitor.OpenInfo().Send( "Generating StObj dynamic assembly." ) )
             {
+                try
+                {
 #if NET461
-             if( _finalAssembly == null ) throw new InvalidOperationException( "Using GenerateOption.DoNotGenerateFile." );
-             if( withIL && !DoGenerateFinalAssembly( monitor, runtimeBuilder, callPEVrify ) ) return false;
+                    if( _finalAssembly == null ) throw new InvalidOperationException( "Using GenerateOption.DoNotGenerateFile." );
+                    if( withIL && !DoGenerateFinalAssembly( monitor, callPEVrify ) ) return false;
 #endif
-                return withSrc ? GenerateSourceCode( monitor, runtimeBuilder, true, withIL ) : true;
-            }
-            catch( Exception ex )
-            {
-                monitor.Error().Send( ex, "While generating final assembly '{0}'.", _tempAssembly.SaveFileName );
-                return false;
+                    return withSrc ? GenerateSourceCode( monitor, true, withIL ) : true;
+                }
+                catch( Exception ex )
+                {
+                    monitor.Error().Send( ex, $"While generating final assembly '{_tempAssembly.SaveFileName}'." );
+                    return false;
+                }
             }
         }
 
-
-
 #if NET461
 
-        bool DoGenerateFinalAssembly(IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, bool callPEVrify)
+        bool DoGenerateFinalAssembly( IActivityMonitor monitor, bool callPEVrify )
         {
             TypeBuilder root = _finalAssembly.ModuleBuilder.DefineType( StObjContextRoot.RootContextTypeName, TypeAttributes.Class | TypeAttributes.Sealed, typeof( StObjContextRoot ) );
 
@@ -112,8 +112,8 @@ namespace CK.Setup
             outS.Memory.Position = 0;
             _finalAssembly.ModuleBuilder.DefineManifestResource( StObjContextRoot.RootContextTypeName + ".Data", outS.Memory, ResourceAttributes.Private );
             _finalAssembly.Save();
-            if (callPEVrify && !ExecutePEVerify(monitor) ) return false;
-                   
+            if( callPEVrify && !ExecutePEVerify( monitor ) ) return false;
+
             return true;
         }
 

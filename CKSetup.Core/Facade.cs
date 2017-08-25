@@ -119,7 +119,7 @@ namespace CKSetup
             }
         }
 
-        static string WritDBSetupConfig( IActivityMonitor m, SetupEngineConfiguration conf, string binPath )
+        static string WritDBSetupConfig( IActivityMonitor m, SetupableAspectConfiguration conf, string binPath )
         {
             // We have only one aspect to handle: the SqlSetupAspectConfiguration.
             Func<Type, string> typeWriter = t => "CK.Setup.SqlSetupAspectConfiguration, CK.SqlServer.Setup.Model";
@@ -134,13 +134,13 @@ namespace CKSetup
             return filePath;
         }
 
-        static SetupEngineConfiguration BuildSetupConfig(
+        static SetupableAspectConfiguration BuildSetupConfig(
             string connectionString,
             IEnumerable<string> assembliesToSetup,
             string dynamicAssemblyName,
             bool sourceGeneration )
         {
-            var config = new SetupEngineConfiguration();
+            var config = new SetupableAspectConfiguration();
             config.RunningMode = SetupEngineRunningMode.Default;
             config.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.AddRange( assembliesToSetup );
             config.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = dynamicAssemblyName;

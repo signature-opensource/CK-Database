@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -17,14 +17,12 @@ namespace CK.Setup
         public class BuildStObjResult
         {
             readonly StObjCollectorResult _result;
-            readonly IStObjRuntimeBuilder _runtimeBuilder;
             readonly BuilderFinalAssemblyConfiguration _configuration;
 
-            public BuildStObjResult( StObjCollectorResult r, IEnumerable<ISetupItem> items, IStObjRuntimeBuilder runtimeBuilder, BuilderFinalAssemblyConfiguration configuration )
+            public BuildStObjResult( StObjCollectorResult r, IEnumerable<ISetupItem> items, BuilderFinalAssemblyConfiguration configuration )
             {
                 _result = r;
                 SetupItems = items;
-                _runtimeBuilder = runtimeBuilder;
                 _configuration = configuration;
             }
 
@@ -52,7 +50,7 @@ namespace CK.Setup
                     using( monitor.OpenInfo().Send( "Generating StObj dynamic assembly." ) )
                     {
                         bool peVerify = _configuration.GenerateFinalAssemblyOption == BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFileAndPEVerify;
-                        bool success = _result.GenerateFinalAssembly( monitor, _runtimeBuilder, peVerify, !_configuration.SourceGeneration, _configuration.SourceGeneration );
+                        bool success = _result.GenerateFinalAssembly( monitor, peVerify, !_configuration.SourceGeneration, _configuration.SourceGeneration );
                         Debug.Assert( success || hasError, "!success ==> An error has been logged." );
                         return success;
                     }
@@ -105,7 +103,7 @@ namespace CK.Setup
                         }
                         if( setupItems != null )
                         {
-                            return new BuildStObjResult( result, setupItems, runtimeBuilder, config.FinalAssemblyConfiguration );
+                            return new BuildStObjResult( result, setupItems, config.FinalAssemblyConfiguration );
                         }
                     }
                 }

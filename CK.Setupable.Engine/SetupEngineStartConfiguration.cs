@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -12,7 +12,7 @@ namespace CK.Setup
     /// </summary>
     public sealed class SetupEngineStartConfiguration
     {
-        readonly List<ISetupEngineAspect> _aspects;
+        readonly List<IStObjEngineAspect> _aspects;
         List<Type> _explicitRegisteredClasses;
         IVersionedItemReader _versionReader;
         IVersionedItemWriter _versionWriter;
@@ -24,7 +24,7 @@ namespace CK.Setup
 
         internal SetupEngineStartConfiguration( SetupEngine e )
         {
-            _aspects = new List<ISetupEngineAspect>();
+            _aspects = new List<IStObjEngineAspect>();
         }
 
         void CheckNotRunning( [CallerMemberName]string name = null )
@@ -80,12 +80,12 @@ namespace CK.Setup
         /// <summary>
         /// Gets the list of all registered aspects.
         /// Aspects are available in this list as soon as they are created (recall that the order 
-        /// of the configurations in <see cref="SetupEngineConfiguration.Aspects"/> drives the order of Aspects creation).
-        /// When <see cref="ISetupEngineAspect.Configure"/> is called, all available aspects are registered.
+        /// of the configurations in <see cref="SetupableAspectConfiguration.Aspects"/> drives the order of Aspects creation).
+        /// When <see cref="IStObjEngineAspect.Configure"/> is called, all available aspects are registered.
         /// </summary>
-        public IReadOnlyList<ISetupEngineAspect> Aspects => _aspects; 
+        public IReadOnlyList<IStObjEngineAspect> Aspects => _aspects; 
 
-        internal void AddAspect( ISetupEngineAspect a ) => _aspects.Add( a );
+        internal void AddAspect( IStObjEngineAspect a ) => _aspects.Add( a );
 
         /// <summary>
         /// Gets or sets a function that will be called with the list of StObjs once all of them are 

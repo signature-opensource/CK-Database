@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CK.Core;
@@ -7,7 +7,7 @@ using CK.SqlServer.Parser;
 
 namespace CK.SqlServer.Setup
 {
-    public class SqlSetupAspect : ISetupEngineAspect, ISqlSetupAspect, IDisposable
+    public class SqlSetupAspect : IStObjEngineAspect, ISqlSetupAspect, IDisposable
     {
         readonly SqlSetupAspectConfiguration _config;
         readonly SetupEngine _engine;
@@ -42,7 +42,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Initializes a new <see cref="SqlSetupAspect"/>.
         /// This constructor is called by the <see cref="SetupEngine"/> whenever a <see cref="SqlSetupAspectConfiguration"/> configuration object
-        /// appears in <see cref="SetupEngineConfiguration.Aspects"/> list.
+        /// appears in <see cref="SetupableAspectConfiguration.Aspects"/> list.
         /// </summary>
         /// <param name="engine">Current engine.</param>
         /// <param name="config">Configuration object.</param>
@@ -60,7 +60,7 @@ namespace CK.SqlServer.Setup
             }
         }
 
-        bool ISetupEngineAspect.Configure()
+        bool IStObjEngineAspect.Configure()
         {
             _defaultDatabase = _databases.FindManagerByName( SqlDatabase.DefaultDatabaseName );
             ISqlManager realSqlManager = _defaultDatabase as ISqlManager;
@@ -105,7 +105,7 @@ namespace CK.SqlServer.Setup
         /// </summary>
         public SetupEngine SetupEngine => _engine; 
 
-        ISetupEngineAspectConfiguration ISetupEngineAspect.Configuration => _config; 
+        ISetupEngineAspectConfiguration IStObjEngineAspect.Configuration => _config; 
 
         /// <summary>
         /// Gets the configuration object.

@@ -21,7 +21,7 @@ namespace CK.Setup
         readonly ISetupDriverFactory _driverFactory;
         readonly IActivityMonitor _monitor;
         readonly ISetupSessionMemory _memory;
-        readonly IReadOnlyList<ISetupEngineAspect> _aspects;
+        readonly IReadOnlyList<IStObjEngineAspect> _aspects;
         SetupEngineState _state;
 
         class DriverBaseList : IDriverBaseList
@@ -126,7 +126,7 @@ namespace CK.Setup
         /// <param name="aspects">Available aspects.</param>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="driverFactory">Factory for setup drivers.</param>
-        public SetupCoreEngine( VersionedItemTracker versionTracker, ISetupSessionMemory memory, IReadOnlyList<ISetupEngineAspect> aspects, IActivityMonitor monitor, ISetupDriverFactory driverFactory )
+        public SetupCoreEngine( VersionedItemTracker versionTracker, ISetupSessionMemory memory, IReadOnlyList<IStObjEngineAspect> aspects, IActivityMonitor monitor, ISetupDriverFactory driverFactory )
         {
             Debug.Assert( versionTracker != null );
             Debug.Assert( aspects != null );
@@ -142,9 +142,9 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the <see cref="ISetupEngineAspect"/> that participate to setup.
+        /// Gets the <see cref="IStObjEngineAspect"/> that participate to setup.
         /// </summary>
-        public IReadOnlyList<ISetupEngineAspect> Aspects => _aspects;
+        public IReadOnlyList<IStObjEngineAspect> Aspects => _aspects;
 
         /// <summary>
         /// Gets the first typed aspect that is assignable to <typeparamref name="T"/>. 

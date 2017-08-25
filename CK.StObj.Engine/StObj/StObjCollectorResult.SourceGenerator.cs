@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -77,7 +77,7 @@ namespace CK.Setup
         }
 
 
-        public bool GenerateSourceCode( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, bool saveSource, bool withSrcSuffix )
+        public bool GenerateSourceCode( IActivityMonitor monitor, bool saveSource, bool withSrcSuffix )
         {
             try
             {

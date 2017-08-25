@@ -1,4 +1,4 @@
-﻿#region Proprietary License
+#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.StObj.Model\StObjContextRoot.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -85,7 +85,7 @@ namespace CK.Core
         /// </param>
         /// <param name="monitor">Optional monitor.</param>
         /// <returns>True on success, false if build has failed.</returns>
-        public static bool Build( IStObjBuilderConfiguration config, Func<IStObjRuntimeBuilder> builderFactoryStaticMethod = null, IActivityMonitor monitor = null )
+        public static bool Build( StObjEngineConfiguration config, Func<IStObjRuntimeBuilder> builderFactoryStaticMethod = null, IActivityMonitor monitor = null )
         {
             string typeName = null;
             string methodName = null;
@@ -114,7 +114,7 @@ namespace CK.Core
         /// <param name="monitor">Optional monitor.</param>
         /// <returns>True on success, false if the build faield.</returns>
         public static bool Build(
-            IStObjBuilderConfiguration config,
+            StObjEngineConfiguration config,
             string stObjRuntimeBuilderFactoryTypeName = null,
             string stObjRuntimeBuilderFactoryMethodName = "CreateStObjRuntimeBuilder",
             IActivityMonitor monitor = null )
@@ -122,20 +122,21 @@ namespace CK.Core
             return DoBuild( config, null, stObjRuntimeBuilderFactoryTypeName, stObjRuntimeBuilderFactoryMethodName, monitor );
         }
 
-        static bool DoBuild( 
-            IStObjBuilderConfiguration config,
+        static bool DoBuild(
+            StObjEngineConfiguration config,
             Func<IStObjRuntimeBuilder> builderMethod,
-            string stObjRuntimeBuilderFactoryTypeName, 
-            string stObjRuntimeBuilderFactoryMethodName, 
+            string stObjRuntimeBuilderFactoryTypeName,
+            string stObjRuntimeBuilderFactoryMethodName,
             IActivityMonitor monitor )
         {
             if( config == null ) throw new ArgumentNullException( "config" );
             if( monitor == null ) monitor = new ActivityMonitor( "CK.Core.StObjContextRoot.Build" );
 
-            var stObjConfig = config.StObjEngineConfiguration;
             IStObjRuntimeBuilder runtimeBuilder = ResolveRuntimeBuilder( builderMethod, stObjRuntimeBuilderFactoryTypeName, stObjRuntimeBuilderFactoryMethodName, monitor );
-            IStObjBuilder runner = (IStObjBuilder)Activator.CreateInstance(SimpleTypeFinder.WeakResolver(config.BuilderAssemblyQualifiedName, true), monitor, config, runtimeBuilder);
-            return runner.Run();
+            Type runnerType = SimpleTypeFinder.WeakResolver( config.EngineAssemblyQualifiedName, true );
+            object runner = Activator.CreateInstance( runnerType, monitor, config, runtimeBuilder );
+            MethodInfo m = runnerType.GetMethod( "Run" );
+            return (bool)m.Invoke( runner, Array.Empty<object>() );
         }
 
         static IStObjRuntimeBuilder ResolveRuntimeBuilder( Func<IStObjRuntimeBuilder> builderMethod, string stObjRuntimeBuilderFactoryTypeName, string stObjRuntimeBuilderFactoryMethodName, IActivityMonitor monitor )

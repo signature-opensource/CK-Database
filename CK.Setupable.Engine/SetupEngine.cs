@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,9 +6,9 @@ using CK.Core;
 
 namespace CK.Setup
 {
-    public sealed partial class SetupEngine : IStObjBuilder
+    public sealed partial class SetupEngine 
     {
-        readonly SetupEngineConfiguration _config;
+        readonly SetupableAspectConfiguration _config;
         readonly SetupEngineConfigurator _configurator;
         readonly IActivityMonitor _monitor;
         readonly SetupEngineStartConfiguration _startConfiguration;
@@ -20,12 +20,12 @@ namespace CK.Setup
 
         /// <summary>
         /// Initializes a new <see cref="SetupEngine"/>. This constructor is the one used when calling <see cref="StObjBuilder.SafeBuildStObj"/> method 
-        /// with a <see cref="SetupEngineConfiguration"/> configuration object.
+        /// with a <see cref="SetupableAspectConfiguration"/> configuration object.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="config">Configuration object.</param>
         /// <param name="runtimeBuilder">Final builder of objects.</param>
-        public SetupEngine( IActivityMonitor monitor, SetupEngineConfiguration config, IStObjRuntimeBuilder runtimeBuilder )
+        public SetupEngine( IActivityMonitor monitor, SetupableAspectConfiguration config, IStObjRuntimeBuilder runtimeBuilder )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
             if( config == null ) throw new ArgumentNullException( "config" );
@@ -52,7 +52,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets the configuration object of this engine.
         /// </summary>
-        public SetupEngineConfiguration Configuration => _config; 
+        public SetupableAspectConfiguration Configuration => _config; 
 
         /// <summary>
         /// Gets or sets a <see cref="SetupableConfigurator"/> that will be used.
@@ -89,7 +89,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Executes the whole setup process (<see cref="SetupCoreEngine.RegisterAndCreateDrivers"/>, <see cref="SetupCoreEngine.RunInit"/>, <see cref="SetupCoreEngine.RunInstall"/>, <see cref="SetupCoreEngine.RunSettle"/>).
-        /// This is automatically called by  <see cref="StObjBuilder.SafeBuildStObj(SetupEngine, IStObjRuntimeBuilder, SetupEngineConfigurator)"/> after it has instanciating this object when using a <see cref="SetupEngineConfiguration"/>.
+        /// This is automatically called by  <see cref="StObjBuilder.SafeBuildStObj(SetupEngine, IStObjRuntimeBuilder, SetupEngineConfigurator)"/> after it has instanciating this object when using a <see cref="SetupableAspectConfiguration"/>.
         /// This can be called only once.
         /// </summary>
         /// <returns>True on success, false if an error occured.</returns>
@@ -115,11 +115,7 @@ namespace CK.Setup
                 if( _startConfiguration.VersionedItemReader == null ) throw new InvalidOperationException( "StartConfiguration.VersionedItemReader must be set before calling Run or ManualRun." );
                 if( _startConfiguration.VersionedItemWriter == null ) throw new InvalidOperationException( "StartConfiguration.VersionedItemWriter must be set before calling Run or ManualRun." );
                 if( _startConfiguration.SetupSessionMemoryProvider == null ) throw new InvalidOperationException( "StartConfiguration.SetupSessionMemoryProvider must be set before calling Run or ManualRun." );
-                if( _config.RunningMode == SetupEngineRunningMode.InitializeEngineOnly )
-                {
-                    _monitor.Info().Send( "RunningMode = InitializeAspectsOnly complete." );
-                    return true;
-                }
+
                 var buildResult = StObjBuilder.SafeBuildStObj( this, _runtimeBuilder, _configurator );
                 if( buildResult == null ) return false;
                 var path = _monitor.Output.RegisterClient( new ActivityMonitorPathCatcher() );

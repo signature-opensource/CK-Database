@@ -16,7 +16,7 @@ namespace CK.Setup
     /// <summary>
     /// A StObj "slices" a Structured Object (that is an <see cref="IAmbientContract"/>) by types in its inheritance chain.
     /// The <see cref="InitialObject">Structured Object</see> itself is built based on already built dependencies from top 
-    /// to bottom thanks to its "Construct" (<see cref="StObjContextRoot.ConstructMethodName"/>) methods. 
+    /// to bottom thanks to its "StObjConstruct" (<see cref="StObjContextRoot.ConstructMethodName"/>) methods. 
     /// This interface is available after the dependency graph ordering (this is the Owner exposed by <see cref="IStObjFinalParameter"/> for construct parameters for instance).
     /// It is the final interface that is exposed for each StObj at the end of the StObjCollector.GetResults work.
     /// </summary>
@@ -26,8 +26,6 @@ namespace CK.Setup
         /// Gets the associated object instance (the final, most specialized, structured object).
         /// This instance is built at the beginning of the process and remains the same: it is not necessarily a "real" object since its auto-implemented methods
         /// are not generated (only stupid default stub implementation are created to be able to instanciate it).
-        /// Once the dynamic assembly has been generated (and if StObjCollector.InjectFinalObjectAccessor has been called), the <see cref="ObjectAccessor"/>
-        /// is updated to obtain a "real" object from the <see cref="StObjContextRoot"/>.
         /// </summary>
         object InitialObject { get; }
 

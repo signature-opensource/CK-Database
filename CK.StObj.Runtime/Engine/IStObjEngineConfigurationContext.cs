@@ -1,0 +1,70 @@
+using CK.Core;
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace CK.Setup
+{
+    /// <summary>
+    /// Context that is given to <see cref="IStObjEngineAspect.Configure"/> method.
+    /// </summary>
+    public interface IStObjEngineConfigurationContext
+    {
+        /// <summary>
+        /// Gets the service container into which services provided by aspects can be registered
+        /// Concrete type mapping to aspects instances are automatically registered.
+        /// </summary>
+        ISimpleServiceContainer ServiceContainer { get; }
+
+        /// <summary>
+        /// Registers a configuration only service. This is used to comunicate the fact that the registered service
+        /// should only be used by the other following aspects only from their <see cref="IStObjEngineAspect.Configure"/> method.
+        /// </summary>
+        /// <typeparam name="T">Actual type of the service.</typeparam>
+        /// <param name="service">Strongly typed wrapper around a necessary not null service instance.</param>
+        void AddConfigureOnlyService<T>( ConfigureOnly<T> service ); 
+
+        /// <summary>
+        /// Gets the root of the <see cref="StObjBuildConfigurator"/> chain of responsibility.
+        /// Aspects can add any needed configurator to it.
+        /// </summary>
+        StObjEngineConfigurator Configurator { get; }
+
+        /// <summary>
+        /// Registers a type for registration.
+        /// Aspects can use this instead of adding the assembly qualified name of the type into <see cref="BuildAndRegisterConfiguration.ExplicitClasses"/>.
+        /// </summary>
+        /// <param name="type">Type to register.</param>
+        void AddExplicitRegisteredClass( Type type );
+
+        /// <summary>
+        /// Gets the list of already created and configured aspects.
+        /// Recall that the order of the configurations in <see cref="SetupEngineConfiguration.Aspects"/> drives the order of Aspects creation).
+        /// When <see cref="IStObjEngineAspect.Configure"/> is called, only configured aspects are registered here and available.
+        /// </summary>
+        IReadOnlyList<IStObjEngineAspect> Aspects { get; }
+
+        /// <summary>
+        /// Gets or sets a function that will be called with the list of StObjs once all of them are 
+        /// registered in the <see cref="DependencySorter"/> used by the <see cref="StObjCollector"/>.
+        /// This action, like any action, is composable by using += operator.
+        /// </summary>
+        Action<IEnumerable<IDependentItem>> StObjDependencySorterHookInput { get; }
+
+        /// <summary>
+        /// Gets or sets a function that will be called when StObjs have been successfuly sorted by 
+        /// the <see cref="DependencySorter"/> used by the <see cref="StObjCollector"/>.
+        /// This action, like any action, is composable by using += operator.
+        /// </summary>
+        Action<IEnumerable<ISortedItem>> StObjDependencySorterHookOutput { get; }
+
+        /// <summary>
+        /// Pushes a defered configure action.
+        /// It will be executed after the configuration of all aspects.
+        /// An action can be pushed at any moment and a pushed action can push another action.
+        /// </summary>
+        /// <param name="postAction">Action to execute.</param>
+        void PushPostConfigureAction( Func<IActivityMonitor, IStObjEngineConfigurationContext, bool> postAction );
+    }
+
+}

@@ -22,9 +22,9 @@ namespace CK.Setup
         readonly IStObjSetupConfigurator _configurator;
         readonly IStObjSetupItemFactory _setupItemFactory;
         readonly IStObjSetupDynamicInitializer _dynamicInitializer;
-        readonly IReadOnlyList<ISetupEngineAspect> _aspects;
+        readonly IReadOnlyList<IStObjEngineAspect> _aspects;
 
-        public StObjSetupItemBuilder( IActivityMonitor monitor, IReadOnlyList<ISetupEngineAspect> aspects, IStObjSetupConfigurator configurator = null, IStObjSetupItemFactory setupItemFactory = null, IStObjSetupDynamicInitializer dynamicInitializer = null )
+        public StObjSetupItemBuilder( IActivityMonitor monitor, IReadOnlyList<IStObjEngineAspect> aspects, IStObjSetupConfigurator configurator = null, IStObjSetupItemFactory setupItemFactory = null, IStObjSetupDynamicInitializer dynamicInitializer = null )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
             _monitor = monitor;
@@ -41,13 +41,21 @@ namespace CK.Setup
         /// <returns>A set of setup items.</returns>
         public IEnumerable<ISetupItem> Build( IReadOnlyList<IStObjResult> orderedObjects )
         {
-            if( orderedObjects == null ) throw new ArgumentNullException( "rootObjects" );
-
-            var setupableItems = new Dictionary<IStObjResult, StObjSetupData>();
-            BuildSetupItems( orderedObjects, setupableItems );
-            BindDependencies( setupableItems );
-            if( !CallDynamicInitializer( orderedObjects, setupableItems ) ) return null;
-            return setupableItems.Values.Select( data => data.SetupItem );
+            if( orderedObjects == null ) throw new ArgumentNullException( nameof( orderedObjects ) );
+            bool hasError = false;
+            using( _monitor.OnError( () => hasError = true ) )
+            using( _monitor.OpenInfo( "Creating Setup Items from Structured Objects." ) )
+            {
+                var setupableItems = new Dictionary<IStObjResult, StObjSetupData>();
+                BuildSetupItems( orderedObjects, setupableItems );
+                BindDependencies( setupableItems );
+                if( !CallDynamicInitializer( orderedObjects, setupableItems ) )
+                {
+                    Debug.Assert( hasError, "An error has been logged." );
+                    return null;
+                }
+                return setupableItems.Values.Select( data => data.SetupItem );
+            }
         }
 
         #region SafeBuildStObj phasis: BuildSetupItems, BindDependencies and CallDynamicInitializer
@@ -124,7 +132,7 @@ namespace CK.Setup
                     }
                     catch( Exception ex )
                     {
-                        _monitor.Error().Send( ex, "While initializing Setup item for StObj '{0}'.", data.FullName );
+                        _monitor.Error( $"While initializing Setup item for StObj '{data.FullName}'.", ex );
                     }
                 }
             }
@@ -148,7 +156,7 @@ namespace CK.Setup
                         IMutableSetupItemGroup g = gData.SetupItem as IMutableSetupItemGroup;
                         if( g == null )
                         {
-                            _monitor.Error().Send( "Structure Item '{0}' declares '{1}' as a Group, but the latter is not a IMutableSetupItemGroup (only a IMutableSetupItem).", data.FullName, gData.FullName );
+                            _monitor.Error( $"Structure Item '{data.FullName}' declares '{gData.FullName}' as a Group, but the latter is not a IMutableSetupItemGroup (only a IMutableSetupItem)." );
                         }
                         else
                         {
@@ -161,7 +169,7 @@ namespace CK.Setup
                         IMutableSetupItemGroup g = data.SetupItem as IMutableSetupItemGroup;
                         if( g == null )
                         {
-                            _monitor.Error().Send( "Structure Item '{0}' has associated children but it is not a IMutableSetupItemGroup (only a IMutableSetupItem).", data.FullName );
+                            _monitor.Error( $"Structure Item '{data.FullName}' has associated children but it is not a IMutableSetupItemGroup (only a IMutableSetupItem)." );
                         }
                         else
                         {
@@ -186,7 +194,7 @@ namespace CK.Setup
                 {
                     if( existing.FullNameWithoutContext != data.ContainerFullName )
                     {
-                        _monitor.Info().Send( "Container of '{0}' is '{1}'. (Original Container was: '{2}'.)", data.FullName, existing.FullNameWithoutContext, data.ContainerFullName );
+                        _monitor.Info( $"Container of '{data.FullName}' is '{existing.FullNameWithoutContext}'. (Original Container was: '{data.ContainerFullName}'.)" );
                     }
                     data.SetupItem.Container = new NamedDependentItemContainerRef( data.ContainerFullName );
                 }
@@ -195,11 +203,11 @@ namespace CK.Setup
                 {
                     if( existing.SetupItem != null )
                     {
-                        _monitor.Error().Send( "Structure Item '{0}' is bound to a Container named '{1}' but the corresponding IDependentItem is not a IDependentItemContainer (its type is '{2}').", data.FullName, existing.FullNameWithoutContext, existing.SetupItem.GetType().FullName );
+                        _monitor.Error( $"Structure Item '{data.FullName}' is bound to a Container named '{existing.FullNameWithoutContext}' but the corresponding IDependentItem is not a IDependentItemContainer (its type is '{existing.SetupItem.GetType().FullName}')." );
                     }
                     else
                     {
-                        _monitor.Error().Send( "Structure Item '{0}' is bound to a Container named '{1}' but the corresponding IDependentItem has not been successfully created.", data.FullName, existing.FullNameWithoutContext );
+                        _monitor.Error( $"Structure Item '{data.FullName}' is bound to a Container named '{existing.FullNameWithoutContext}' but the corresponding IDependentItem has not been successfully created." );
                     }
                 }
                 else
@@ -306,7 +314,7 @@ namespace CK.Setup
                         }
                         catch( Exception ex )
                         {
-                            Monitor.Fatal().Send( ex, $"While calling a pushed action on '{CurrentItem.FullName}' (round n°{_currentRoundActions})." );
+                            Monitor.Fatal( $"While calling a pushed action on '{CurrentItem.FullName}' (round n°{_currentRoundActions}).", ex );
                             Debug.Assert( success == false, "OnError dit the job..." );
                         }
                         ++i;
@@ -318,7 +326,7 @@ namespace CK.Setup
 
         bool CallDynamicInitializer( IReadOnlyList<IStObjResult> orderedObjects, Dictionary<IStObjResult, StObjSetupData> setupableItems )
         {
-            using( _monitor.OpenInfo().Send( "Dynamic initialization of Setup items (calling IStObjSetupDynamicInitializer.DynamicItemInitialize for each of them)." ) )
+            using( _monitor.OpenInfo( "Dynamic initialization of Setup items (calling IStObjSetupDynamicInitializer.DynamicItemInitialize for each of them)." ) )
             {
                 var state = new DynamicInitializerState( this );
                 bool success = true;
@@ -351,15 +359,15 @@ namespace CK.Setup
                         }
                         catch( Exception ex )
                         {
-                            _monitor.Error().Send( ex, "While Dynamic item initialization (from {2}) of '{0}' for object '{1}'.", item.FullName, o.ObjectType.Name, initSource );
-                            Debug.Assert( success == false, "OnError dit the job..." );
+                            _monitor.Error( $"While Dynamic item initialization (from {initSource}) of '{item.FullName}' for object '{o.ObjectType.Name}'.", ex );
+                            Debug.Assert( success == false, "OnError did the job..." );
                         }
                     }
                 }
                 // On success, we execute the pushed actions.
                 if( success && (state.PushedActionsCount > 0 || state.PushedNextRoundActionsCount > 0) )
                 {
-                    using( _monitor.OpenInfo().Send( "Executing {0} deferred actions.", state.PushedActionsCount ) )
+                    using( _monitor.OpenInfo( $"Executing {state.PushedActionsCount} deferred actions." ) )
                     {
                         success = state.ExecuteActions();
                     }
@@ -370,7 +378,7 @@ namespace CK.Setup
         
         #endregion
 
-        IReadOnlyList<ISetupEngineAspect> ISetupEngineAspectProvider.Aspects => _aspects; 
+        IReadOnlyList<IStObjEngineAspect> ISetupEngineAspectProvider.Aspects => _aspects; 
 
         T ISetupEngineAspectProvider.GetSetupEngineAspect<T>( bool required ) => SetupEngine.GetSetupEngineAspect<T>( _aspects, required );
 

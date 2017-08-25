@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -246,7 +246,7 @@ namespace CK.SqlServer.Setup
                                                     .ToList();
                 if( availableCtors.Count == 0 )
                 {
-                    monitor.Error().Send( "The returned type '{0}' has no public constructor that takes a SqlCommand and the {1} extra parameters of the method.", m.ReturnType.Name, extraMethodParameters.Count );
+                    monitor.Error().Send( $"The returned type '{m.ReturnType.Name}' has no public constructor that takes a SqlCommand and the {extraMethodParameters.Count} extra parameters of the method." );
                     ++nbError;
                 }
                 else

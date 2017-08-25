@@ -20,7 +20,7 @@ namespace CK.Core
         static IActivityMonitor _monitor;
         static ActivityMonitorConsoleClient _console;
         static SqlConnectionStringBuilder _masterConnectionString;
-        static SetupEngineConfiguration _config;
+        static SetupableAspectConfiguration _config;
         static IStObjMap _map;
         static string _binFolder;
         static string _projectFolder;
@@ -427,13 +427,13 @@ namespace CK.Core
         /// This configuration uses <see cref="DynamicAssemblyName"/>, <see cref="AssembliesToSetup"/>
         /// and <see cref="DatabaseTestConnectionString"/> by default.
         /// </summary>
-        public static SetupEngineConfiguration Config
+        public static SetupableAspectConfiguration Config
         {
             get
             {
                 if( _config == null )
                 {
-                    _config = new SetupEngineConfiguration();
+                    _config = new SetupableAspectConfiguration();
                     _config.StObjEngineConfiguration.FinalAssemblyConfiguration.GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFileAndPEVerify;
                     foreach( var a in AssembliesToSetup )
                     {

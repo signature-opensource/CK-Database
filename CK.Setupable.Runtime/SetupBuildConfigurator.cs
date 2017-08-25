@@ -1,42 +1,53 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setupable.Engine\SetupableConfigurator.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
+using CK.Core;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using CK.Core;
+using System.Diagnostics;
 
 namespace CK.Setup
 {
     /// <summary>
-    /// Template class that concentrates the different hooks called during a setup phasis (except the <see cref="IStObjRuntimeBuilder"/> methods).
+    /// Template class that implements a Chain of Responsibility pattern on the different hooks called
+    /// during the StObj build phasis (except the <see cref="IStObjRuntimeBuilder"/> methods).
+    /// These configurator must be added to a <see cref="SetupAspectConfigurator"/>.
+    /// It does nothing at its level except calling the <see cref="Next"/> configurator if it is not null.
     /// Methods are defined here in the order where they are called.
     /// </summary>
-    public class SetupEngineConfigurator : IStObjSetupConfigurator, IStObjSetupItemFactory, IStObjSetupDynamicInitializer, ISetupDriverFactory
+    public class SetupBuildConfigurator : IStObjSetupConfigurator, IStObjSetupItemFactory, IStObjSetupDynamicInitializer, ISetupDriverFactory
     {
-        SetupEngineConfigurator _previous;
+        SetupBuildConfigurator _next;
+        SetupAspectConfigurator _host;
 
         /// <summary>
-        /// Initializes a new <see cref="SetupEngineConfigurator"/> bound to an optional previous one. 
+        /// Gets the next <see cref="SetupBuildConfigurator"/> that should be called by all hooks in this configurator.
+        /// Can be null.
         /// </summary>
-        /// <param name="previous">Another configurator that should be called by all hooks in this configurator.</param>
-        public SetupEngineConfigurator( SetupEngineConfigurator previous = null )
+        public SetupBuildConfigurator Next
         {
-            _previous = previous;
+            get { return _next; }
+            internal set { _next = value; }
         }
 
         /// <summary>
-        /// Gets or sets the previous <see cref="SetupEngineConfigurator"/> that will be called first by the different methods. Can be null.
+        /// Gets the configuration host to which this configurator has been added.
+        /// Null if this configurator is not bound to a <see cref="SetupAspectConfigurator"/>.
         /// </summary>
-        public SetupEngineConfigurator Previous
+        public SetupAspectConfigurator Host
         {
-            get { return _previous; }
-            set { _previous = value; }
+            get { return _host; }
+            internal set { _host = value; }
+        }
+
+        /// <summary>
+        /// Step n°1 - Called during Assembly/Types discovering: allows a Type not marked with <see cref="IAmbientContract"/> to be considered as an Ambiant Contract.
+        /// Empty implementation of <see cref="IAmbientContractDispatcher.IsAmbientContractClass"/>.
+        /// Returns the result of the <see cref="Next"/> if it exist, otherwise returns always false: only classes that are explicitely marked with <see cref="IAmbientContract"/>
+        /// or types that inherit from a <see cref="IAmbientContractDefiner"/> are considered as Ambient Contracts.
+        /// </summary>
+        /// <param name="t">A type that is not, structurally through the interfaces it supports, an Ambient Contract.</param>
+        /// <returns>True to consider the given type (and all its specializations) as an Ambient Contract.</returns>
+        public virtual bool IsAmbientContractClass( Type t )
+        {
+            return _next != null ? _next.IsAmbientContractClass( t ) : false;
         }
 
         /// <summary>
@@ -93,5 +104,6 @@ namespace CK.Setup
         }
 
     }
+
 
 }
