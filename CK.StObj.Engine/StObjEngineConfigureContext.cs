@@ -7,13 +7,13 @@ using System.Runtime.CompilerServices;
 
 namespace CK.Setup
 {
-    sealed class StObjEngineConfigurationContext : IStObjEngineConfigurationContext
+    sealed class StObjEngineConfigureContext : IStObjEngineConfigureContext
     {
         sealed class Container : SimpleServiceContainer
         {
-            readonly StObjEngineConfigurationContext _c;
+            readonly StObjEngineConfigureContext _c;
 
-            public Container( StObjEngineConfigurationContext c )
+            public Container( StObjEngineConfigureContext c )
             {
                 _c = c;
             }
@@ -34,25 +34,33 @@ namespace CK.Setup
         }
 
         readonly IActivityMonitor _monitor;
+        readonly IStObjEngineStatus _status;
+        readonly StObjEngineConfiguration _config;
         readonly List<IStObjEngineAspect> _aspects;
-        readonly List<Func<IActivityMonitor, IStObjEngineConfigurationContext, bool>> _postActions;
+        readonly List<Func<IActivityMonitor, IStObjEngineConfigureContext, bool>> _postActions;
         readonly Container _container;
         readonly SimpleServiceContainer _configureOnlycontainer;
         readonly StObjEngineConfigurator _configurator;
+        readonly StObjEngineAspectTrampoline<IStObjEngineConfigureContext> _trampoline;
 
         List<Type> _explicitRegisteredClasses;
         Action<IEnumerable<IDependentItem>> _stObjDependencySorterHookInput;
         Action<IEnumerable<ISortedItem>> _stObjDependencySorterHookOutput;
 
-        internal StObjEngineConfigurationContext( IActivityMonitor monitor )
+        internal StObjEngineConfigureContext( IActivityMonitor monitor, StObjEngineConfiguration config, IStObjEngineStatus status )
         {
             _monitor = monitor;
+            _config = config;
+            _status = status;
             _aspects = new List<IStObjEngineAspect>();
-            _postActions = new List<Func<IActivityMonitor, IStObjEngineConfigurationContext, bool>>();
-            _container = new Container( this );
+            _postActions = new List<Func<IActivityMonitor, IStObjEngineConfigureContext, bool>>();
             _configurator = new StObjEngineConfigurator();
+            _container = new Container( this );
             _configureOnlycontainer = new SimpleServiceContainer( _container );
+            _trampoline = new StObjEngineAspectTrampoline<IStObjEngineConfigureContext>( this );
         }
+
+        public IStObjEngineStatus EngineStatus => _status;
 
         public void AddExplicitRegisteredClass( Type type )
         {
@@ -60,6 +68,8 @@ namespace CK.Setup
             if( _explicitRegisteredClasses == null ) _explicitRegisteredClasses = new List<Type>();
             _explicitRegisteredClasses.Add( type );
         }
+
+        public StObjEngineConfiguration ExternalConfiguration => _config;
 
         internal IReadOnlyList<Type> ExplicitRegisteredClasses =>_explicitRegisteredClasses;
 
@@ -71,13 +81,9 @@ namespace CK.Setup
 
         public StObjEngineConfigurator Configurator => _configurator;
 
-        public void PushPostConfigureAction( Func<IActivityMonitor,IStObjEngineConfigurationContext,bool> postAction )
-        {
-            if( postAction == null ) throw new ArgumentNullException( nameof( postAction ) );
-            _postActions.Add( postAction );
-        }
+        public void PushPostConfigureAction( Func<IActivityMonitor, IStObjEngineConfigureContext, bool> postAction ) => _trampoline.Push( postAction );
 
-        internal bool Initialize( IReadOnlyList<IStObjEngineAspectConfiguration> configs )
+        internal void CreateAndConfigureAspects( IReadOnlyList<IStObjEngineAspectConfiguration> configs, Func<bool> onError )
         {
             bool success = true;
             using( _monitor.OpenTrace().Send( $"Creating and configuring {configs.Count} aspect(s)." ) )
@@ -90,7 +96,7 @@ namespace CK.Setup
                     aspectTypeName = c.AspectType;
                     if( String.IsNullOrWhiteSpace( aspectTypeName ) )
                     {
-                        success = false;
+                        success = onError();
                         _monitor.Error( $"Null or empty {c.GetType().FullName}.AspectType string." );
                     }
                     else
@@ -100,24 +106,24 @@ namespace CK.Setup
                         Type t = SimpleTypeFinder.WeakResolver( aspectTypeName, true );
                         if( !aspectsType.Add( t ) )
                         {
-                            success = false;
+                            success = onError();
                             _monitor.Error().Send( $"Aspect '{t.FullName}' occurs more than once in configuration." );
                         }
                         else
                         {
                             IStObjEngineAspect a = CreateAspect( t );
-                            if( a == null ) success = false;
+                            if( a == null ) success = onError();
                             else
                             {
                                 using( _monitor.OpenTrace().Send( $"Configuring aspect '{t.FullName}'." ) )
                                 {
                                     try
                                     {
-                                        success |= a.Configure( _monitor, this );
+                                        if( !a.Configure( _monitor, this ) ) success = onError();
                                     }
                                     catch( Exception ex )
                                     {
-                                        success = false;
+                                        success = onError();
                                         _monitor.Error().Send( ex );
                                     }
                                 }
@@ -130,9 +136,8 @@ namespace CK.Setup
                         }
                     }
                 }
-                if( success ) success = ExecutePostActions();
+                _trampoline.Execute( _monitor, onError() );
             }
-            return success;
         }
 
         IStObjEngineAspect CreateAspect( Type t )
@@ -180,23 +185,6 @@ namespace CK.Setup
                     return null;
                 }
             }
-        }
-
-        bool ExecutePostActions()
-        {
-            int i = 0;
-            while( i < _postActions.Count )
-            {
-                var a = _postActions[i];
-                _postActions[i++] = null;
-                if( !a( _monitor, this ) )
-                {
-                    _monitor.Error().Send( "A defered configuration action failed." );
-                    return false;
-                }
-            }
-            _postActions.Clear();
-            return true;
         }
 
         public Action<IEnumerable<IDependentItem>> StObjDependencySorterHookInput

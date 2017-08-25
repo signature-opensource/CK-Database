@@ -8,8 +8,18 @@ namespace CK.Setup
     /// <summary>
     /// Context that is given to <see cref="IStObjEngineAspect.Configure"/> method.
     /// </summary>
-    public interface IStObjEngineConfigurationContext
+    public interface IStObjEngineConfigureContext
     {
+        /// <summary>
+        /// Gets engine status information.
+        /// </summary>
+        IStObjEngineStatus EngineStatus { get; }
+
+        /// <summary>
+        /// Gets the external configuration object.
+        /// </summary>
+        StObjEngineConfiguration ExternalConfiguration { get; }
+
         /// <summary>
         /// Gets the service container into which services provided by aspects can be registered
         /// Concrete type mapping to aspects instances are automatically registered.
@@ -25,8 +35,8 @@ namespace CK.Setup
         void AddConfigureOnlyService<T>( ConfigureOnly<T> service ); 
 
         /// <summary>
-        /// Gets the root of the <see cref="StObjBuildConfigurator"/> chain of responsibility.
-        /// Aspects can add any needed configurator to it.
+        /// Gets the root of the <see cref="StObjConfigurationLayer"/> chain of responsibility.
+        /// Aspects can add any needed configuration layer to it.
         /// </summary>
         StObjEngineConfigurator Configurator { get; }
 
@@ -64,7 +74,7 @@ namespace CK.Setup
         /// An action can be pushed at any moment and a pushed action can push another action.
         /// </summary>
         /// <param name="postAction">Action to execute.</param>
-        void PushPostConfigureAction( Func<IActivityMonitor, IStObjEngineConfigurationContext, bool> postAction );
+        void PushPostConfigureAction( Func<IActivityMonitor, IStObjEngineConfigureContext, bool> postAction );
     }
 
 }

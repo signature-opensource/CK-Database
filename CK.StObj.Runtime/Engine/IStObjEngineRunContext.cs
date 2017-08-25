@@ -6,10 +6,15 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
-    /// Context that is given to <see cref="IStObjEngineAspect.OnStObjBuild"/> method.
+    /// Context that is given to <see cref="IStObjEngineAspect.Run"/> method.
     /// </summary>
-    public interface IStObjEngineStObjBuildContext
+    public interface IStObjEngineRunContext
     {
+        /// <summary>
+        /// Gets engine status information.
+        /// </summary>
+        IStObjEngineStatus EngineStatus { get; }
+
         /// <summary>
         /// Gets the available services.
         /// </summary>
@@ -27,11 +32,11 @@ namespace CK.Setup
 
         /// <summary>
         /// Pushes a defered action.
-        /// It will be executed after the OnStObjBuild call on all aspects.
+        /// It will be executed after the Run call on all aspects.
         /// An action can be pushed at any moment and a pushed action can push another action.
         /// </summary>
         /// <param name="postAction">Action to execute.</param>
-        void PushDeferredAction( Func<IActivityMonitor, IStObjEngineStObjBuildContext, bool> postAction );
+        void PushDeferredAction( Func<IActivityMonitor, IStObjEngineRunContext, bool> postAction );
     }
 
 }

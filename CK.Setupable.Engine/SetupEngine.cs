@@ -197,10 +197,7 @@ namespace CK.Setup
             return !hasError;
         }
 
-        static IEnumerable<T> OfTypeRecurse<T>( IEnumerable e )
-        {
-            return new Flattennifier().Flatten<T>( e );
-        }
+        static IEnumerable<T> OfTypeRecurse<T>( IEnumerable e ) => new Flattennifier().Flatten<T>( e );
 
         class Flattennifier
         {
@@ -214,7 +211,7 @@ namespace CK.Setup
                     {
                         if( o is T ) yield return (T)o;
                         // If o is both a T and an IEnumerable, we continue: this
-                        // handles composites. For monades, this may lead to a duplicate
+                        // handles composites. For "monades", this may lead to a duplicate
                         // (since often the element belongs to its own enumeration).
                         // Such duplicates should not be a surprise for the developper
                         // that works with such funny beast: I prefer to keep handling 
@@ -235,13 +232,13 @@ namespace CK.Setup
         SetupCoreEngine CreateCoreEngine( VersionedItemTracker versionTracker, ISetupSessionMemory m )
         {
             SetupCoreEngine engine = null;
-            using( _monitor.OpenInfo().Send( "Setup engine initialization." ) )
+            using( _monitor.OpenInfo( "Setupable Core Engine initialization." ) )
             {
                 var memory = _startConfiguration.SetupSessionMemoryProvider;
-                if( memory.StartCount == 0 ) _monitor.Info().Send( "Starting a new setup." );
+                if( memory.StartCount == 0 ) _monitor.Info( "Starting a new setup." );
                 else
                 {
-                    _monitor.Info().Send( "{0} previous Setup attempt(s). Last on {2}, error was: '{1}'.", memory.StartCount, memory.LastError, memory.LastStartDate );
+                    _monitor.Info( $"{memory.StartCount} previous Setup attempt(s). Last on {memory.LastStartDate}, error was: '{memory.LastError}'." );
                 }
                 engine = new SetupCoreEngine( versionTracker, m, _startConfiguration.Aspects, _monitor, _configurator );
                 engine.RegisterSetupEvent += _relayRegisterSetupEvent;
@@ -251,16 +248,11 @@ namespace CK.Setup
             return engine;
         }
 
-        void OnEngineRegisterSetupEvent( object sender, RegisterSetupEventArgs e )
-        {
-            var h = RegisterSetupEvent;
-            if( h != null ) h( this, e );
-        }
+        void OnEngineRegisterSetupEvent( object sender, RegisterSetupEventArgs e ) => RegisterSetupEvent?.Invoke( this, e );
 
         void OnEngineSetupEvent( object sender, SetupEventArgs e )
         {
-            var h = SetupEvent;
-            if( h != null ) h( this, e );
+            SetupEvent?.Invoke( this, e );
             if( e.Step == SetupStep.Disposed )
             {
                 var engine = (SetupCoreEngine)sender;
@@ -270,11 +262,7 @@ namespace CK.Setup
             }
         }
 
-        void OnEngineDriverEvent( object sender, DriverEventArgs e )
-        {
-            var h = DriverEvent;
-            if( h != null ) h( this, e );
-        }
+        void OnEngineDriverEvent( object sender, DriverEventArgs e ) => DriverEvent?.Invoke( this, e );
 
     }
 }

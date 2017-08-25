@@ -12,12 +12,14 @@ namespace CK.Setup
     /// <summary>
     /// Generic engine that runs a <see cref="StObjEngineConfiguration"/>.
     /// </summary>
-    public class StObjEngine
+    public class StObjEngine : IStObjEngineStatus
     {
         readonly IActivityMonitor _monitor;
+        readonly ActivityMonitorPathCatcher _pathCatcher;
         readonly StObjEngineConfiguration _config;
         readonly IStObjRuntimeBuilder _runtimeBuilder;
-        StObjEngineConfigurationContext _startConfiguration;
+        StObjEngineConfigureContext _startConfiguration;
+        bool _success;
 
         /// <summary>
         /// Initializes a new <see cref="StObjEngine"/>.
@@ -30,8 +32,11 @@ namespace CK.Setup
             if( monitor == null ) throw new ArgumentNullException( nameof( monitor ) );
             if( config == null ) throw new ArgumentNullException( nameof( config ) );
             _monitor = monitor;
+            _pathCatcher = new ActivityMonitorPathCatcher() { IsLocked = true };
+            _monitor.Output.RegisterClient( _pathCatcher );
             _config = config;
             _runtimeBuilder = runtimeBuilder ?? StObjContextRoot.DefaultStObjRuntimeBuilder;
+            _success = true;
         }
 
         /// <summary>
@@ -46,21 +51,51 @@ namespace CK.Setup
         public bool Run()
         {
             if( _startConfiguration != null ) throw new InvalidOperationException( "Run can be called only once." );
-            _startConfiguration = new StObjEngineConfigurationContext( _monitor );
+            _startConfiguration = new StObjEngineConfigureContext( _monitor, _config, this );
             try
             {
-                if( !_startConfiguration.Initialize( _config.Aspects ) ) return false;
+                _startConfiguration.CreateAndConfigureAspects( _config.Aspects, () => _success = false );
+                if( _success )
+                {
+                    StObjCollectorResult r = SafeBuildStObj();
+                    if( r == null ) return _success = false;
 
-                StObjCollectorResult r = SafeBuildStObj();
-                if( r == null ) return false;
+                    var runCtx = new StObjEngineRunContext( _monitor, _startConfiguration, r.OrderedStObjs );
+                    runCtx.RunAspects( () => _success = false );
+                    if( _success )
+                    {
+                        _success = GenerateStObjFinalAssembly( r );
+                    }
 
-                var final = new StObjEngineStObjBuildContext( _monitor, _startConfiguration, r.OrderedStObjs );
-                return final.RunOnStObjBuild();
+                    var termCtx = new StObjEngineTerminateContext( _monitor, runCtx );
+                    termCtx.TerminateAspects( () => _success = false );
+                }
+                return _success;
             }
             finally
             {
                 DisposeDisposableAspects();
             }
+        }
+
+        private bool GenerateStObjFinalAssembly( StObjCollectorResult r )
+        {
+            bool success = true;
+            var generateConfig = _config.FinalAssemblyConfiguration;
+            var generateOption = generateConfig.GenerateFinalAssemblyOption;
+            if( generateOption != BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile )
+            {
+                bool hasError = false;
+                using( _monitor.OnError( () => hasError = true ) )
+                using( _monitor.OpenInfo( "Generating StObj dynamic assembly." ) )
+                {
+                    bool peVerify = generateOption == BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFileAndPEVerify;
+                    success = r.GenerateFinalAssembly( _monitor, peVerify, !generateConfig.SourceGeneration, generateConfig.SourceGeneration );
+                    Debug.Assert( success || hasError, "!success ==> An error has been logged." );
+                    return success;
+                }
+            }
+            return success;
         }
 
         StObjCollectorResult SafeBuildStObj()
@@ -72,7 +107,7 @@ namespace CK.Setup
                 StObjCollectorResult result;
                 AssemblyRegisterer typeReg = new AssemblyRegisterer( _monitor );
                 typeReg.Discover( _config.BuildAndRegisterConfiguration.Assemblies );
-                var configurator = _startConfiguration.Configurator.BuildConfigurator;
+                var configurator = _startConfiguration.Configurator.FirstLayer;
                 StObjCollector stObjC = new StObjCollector(
                     _monitor,
                     _config.FinalAssemblyConfiguration,
@@ -122,5 +157,15 @@ namespace CK.Setup
                 }
             }
         }
+
+        bool IStObjEngineStatus.Success => _success;
+
+        IReadOnlyList<ActivityMonitorPathCatcher.PathElement> IStObjEngineStatus.DynamicPath => _pathCatcher.DynamicPath;
+
+        IReadOnlyList<ActivityMonitorPathCatcher.PathElement> IStObjEngineStatus.LastErrorPath => _pathCatcher.LastErrorPath;
+
+        IReadOnlyList<ActivityMonitorPathCatcher.PathElement> IStObjEngineStatus.LastWarnOrErrorPath => _pathCatcher.LastErrorPath;
+
+
     }
 }

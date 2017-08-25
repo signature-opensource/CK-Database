@@ -48,30 +48,30 @@ namespace CK.Core
         /// <returns>A <see cref="IStObjMap"/> that provides access to the objects graph.</returns>
         public static IStObjMap Load( Assembly a, IStObjRuntimeBuilder runtimeBuilder = null, IActivityMonitor monitor = null )
         {
-            if (a == null) throw new ArgumentNullException(nameof(a));
-            IActivityMonitor m = monitor ?? new ActivityMonitor("CK.Core.StObjContextRoot.Load");
+            if( a == null ) throw new ArgumentNullException( nameof( a ) );
+            IActivityMonitor m = monitor ?? new ActivityMonitor( "CK.Core.StObjContextRoot.Load" );
             bool loaded;
-            lock( _alreadyLoaded ) 
+            lock( _alreadyLoaded )
             {
                 loaded = _alreadyLoaded.Contains( a );
                 if( !loaded ) _alreadyLoaded.Add( a );
             }
-            using( m.OpenInfo().Send( loaded ? $"'{a.FullName}' is already loaded." : $"Loading dynamic '{a.FullName}'." ) )
+            using( m.OpenInfo( loaded ? $"'{a.FullName}' is already loaded." : $"Loading dynamic '{a.FullName}'." ) )
             {
                 try
                 {
-                    Type t = a.GetType(RootContextTypeName, true, false);
-                    return (IStObjMap)Activator.CreateInstance(t, new object[] { m, runtimeBuilder ?? DefaultStObjRuntimeBuilder });
+                    Type t = a.GetType( RootContextTypeName, true, false );
+                    return (IStObjMap)Activator.CreateInstance( t, new object[] { m, runtimeBuilder ?? DefaultStObjRuntimeBuilder } );
                 }
                 catch( Exception ex )
                 {
-                    m.Error().Send(ex, "Unable to instanciate StObjMap.");
+                    m.Error( "Unable to instanciate StObjMap.", ex );
                     return null;
                 }
                 finally
                 {
                     m.CloseGroup();
-                    if (monitor == null) m.MonitorEnd();
+                    if( monitor == null ) m.MonitorEnd();
                 }
             }
         }
@@ -142,7 +142,7 @@ namespace CK.Core
         static IStObjRuntimeBuilder ResolveRuntimeBuilder( Func<IStObjRuntimeBuilder> builderMethod, string stObjRuntimeBuilderFactoryTypeName, string stObjRuntimeBuilderFactoryMethodName, IActivityMonitor monitor )
         {
             IStObjRuntimeBuilder runtimeBuilder;
-            using( monitor.OpenInfo().Send( "Obtention of the IStObjRuntimeBuilder." ) )
+            using( monitor.OpenInfo( "Obtention of the IStObjRuntimeBuilder." ) )
             {
                 runtimeBuilder = DefaultStObjRuntimeBuilder;
                 if( stObjRuntimeBuilderFactoryTypeName != null )

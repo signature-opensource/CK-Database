@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.StObj.Engine\StObj\Impl\MutableItem.StObjProperties.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -107,7 +100,7 @@ namespace CK.Setup
                         {
                             if( p.Type.GetTypeInfo().IsValueType && !(p.Type.GetTypeInfo().IsGenericType && p.Type.GetGenericTypeDefinition() == typeof( Nullable<> )) )
                             {
-                                monitor.Error().Send( "StObjProperty '{0}.{1}' has been set to null but its type '{2}' is not nullable.", ToString(), p.Name, p.Type.Name );
+                                monitor.Error( $"StObjProperty '{ToString()}.{p.Name}' has been set to null but its type '{p.Type.Name}' is not nullable." );
                                 setIt = false;
                             }
                         }
@@ -115,7 +108,7 @@ namespace CK.Setup
                         {
                             if( !p.Type.IsAssignableFrom( v.GetType() ) )
                             {
-                                monitor.Error().Send( "StObjProperty '{0}.{1}' is of type '{2}', but a value of type '{3}' has been set.", ToString(), p.Name, p.Type.Name, v.GetType() );
+                                monitor.Error( $"StObjProperty '{ToString()}.{p.Name}' is of type '{p.Type.Name}', but a value of type '{v.GetType()}' has been set." );
                                 setIt = false;
                             }
                         }
@@ -139,11 +132,12 @@ namespace CK.Setup
                 if( c.InfoOnType != null && !p.Type.IsAssignableFrom( c.Type ) )
                 {
                     // It is a warning because if actual values work, everything is okay... but one day, it should fail.
-                    monitor.Warn().Send( "StObjProperty '{0}.{1}' of type '{2}' is not compatible with the one of its {6} ('{3}.{4}' of type '{5}'). Type should be compatible since {6}'s property value will be propagated if no explicit value is set for '{7}.{1}' or if '{3}.{4}' is set with an incompatible value.",
+                    var msg = String.Format( "StObjProperty '{0}.{1}' of type '{2}' is not compatible with the one of its {6} ('{3}.{4}' of type '{5}'). Type should be compatible since {6}'s property value will be propagated if no explicit value is set for '{7}.{1}' or if '{3}.{4}' is set with an incompatible value.",
                         ToString(), p.Name, p.Type.Name,
                         _dContainer.Type.Name, c.Name, c.Type.Name,
                         sourceName,
                         Type.Name );
+                    monitor.Warn( msg ); 
                 }
                 if( doSetOrMerge )
                 {
@@ -159,7 +153,7 @@ namespace CK.Setup
                                 services.Add( monitor );
                                 if( !((IMergeable)p.Value).Merge( c.Value, services ) )
                                 {
-                                    monitor.Error().Send( "Unable to merge StObjProperty '{0}.{1}' with value from {2}.", ToString(), p.Value, sourceName );
+                                    monitor.Error( $"Unable to merge StObjProperty '{ToString()}.{p.Value}' with value from {sourceName}." );
                                 }
                             }
                         }

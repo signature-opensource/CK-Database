@@ -6,20 +6,20 @@ namespace CK.Setup
 {
 
     /// <summary>
-    /// Holds the head of a Chain of Responsibility composed of <see cref="StObjBuildConfigurator"/>.
+    /// Holds the head of a Chain of Responsibility composed of <see cref="StObjConfigurationLayer"/>.
     /// </summary>
     public sealed class StObjEngineConfigurator
     {
-        StObjBuildConfigurator _first;
+        StObjConfigurationLayer _first;
 
         /// <summary>
         /// Adds a configurator as the first configurator.
         /// </summary>
-        /// <param name="configurator">Configurator to add. Must have a null <see cref="StObjBuildConfigurator.Host"/>.</param>
-        public void AddConfigurator( StObjBuildConfigurator configurator )
+        /// <param name="configurator">Configurator to add. Must have a null <see cref="StObjConfigurationLayer.Host"/>.</param>
+        public void AddConfigurator( StObjConfigurationLayer configurator )
         {
             if( configurator == null ) throw new ArgumentNullException( nameof( configurator ) );
-            if( configurator.Host != null ) throw new ArgumentException( "StObjBuildConfigurator is already hosted.", nameof( configurator ) );
+            if( configurator.Host != null ) throw new ArgumentException( $"{nameof(StObjConfigurationLayer)} is already hosted.", nameof( configurator ) );
             configurator.Next = _first;
             _first = configurator;
             configurator.Host = this;
@@ -29,12 +29,12 @@ namespace CK.Setup
         /// Removes a previously added configurator.
         /// </summary>
         /// <param name="configurator">Configurator to remove.</param>
-        public void RemoveConfigurator( StObjBuildConfigurator configurator )
+        public void RemoveConfigurator( StObjConfigurationLayer configurator )
         {
             if( configurator == null ) throw new ArgumentNullException( nameof( configurator ) );
-            if( configurator.Host != this ) throw new ArgumentException( "StObjBuildConfigurator is not hosted by this StObjEngineConfigurator.", nameof( configurator ) );
-            StObjBuildConfigurator prev = null;
-            StObjBuildConfigurator x = _first;
+            if( configurator.Host != this ) throw new ArgumentException( $"{nameof(StObjConfigurationLayer)} is not hosted by this {nameof(StObjEngineConfigurator)}.", nameof( configurator ) );
+            StObjConfigurationLayer prev = null;
+            StObjConfigurationLayer x = _first;
             while( x != configurator ) x = x.Next;
             if( prev != null ) prev.Next = configurator.Next;
             else _first = configurator.Next;
@@ -42,10 +42,10 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the first <see cref="StObjBuildConfigurator"/>.
-        /// Null if no configurator has been added.
+        /// Gets the first <see cref="StObjConfigurationLayer"/>.
+        /// Null if no layer has been added.
         /// </summary>
-        public StObjBuildConfigurator BuildConfigurator => _first;
+        public StObjConfigurationLayer FirstLayer => _first;
     }
 
 }

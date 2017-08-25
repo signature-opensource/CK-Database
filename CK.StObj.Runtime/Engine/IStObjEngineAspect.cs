@@ -24,16 +24,43 @@ namespace CK.Setup
     public interface IStObjEngineAspect
     {
         /// <summary>
-        /// Called by the engine once all the aspects have been successfuly created, before actual Run.
+        /// Called by the engine right after the aspect have been successfuly created.
+        /// This method typically registers services that will be available to following aspects.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="context">Configuration context.</param>
         /// <returns>
-        /// Must return true on succes, false if any error occured (errors must be logged).
-        /// Returning false stops the engine.
+        /// Must return true on success, false if any error occured (errors must be logged).
+        /// Returning false prevents any subsequent <see cref="Run"/> (the engine does not even build
+        /// the StObj graph) but the remaining aspects are nevertheless configured in order to
+        /// detect potential other configuration errors.
         /// </returns>
-        bool Configure( IActivityMonitor monitor, IStObjEngineConfigurationContext context );
+        bool Configure( IActivityMonitor monitor, IStObjEngineConfigureContext context );
 
-        bool OnStObjBuild( IActivityMonitor monitor, IStObjEngineStObjBuildContext context );
+        /// <summary>
+        /// Runs the aspect once the StObjs graphs have been successfully build.
+        /// </summary>
+        /// <param name="monitor">Monitor to use.</param>
+        /// <param name="context">Run context.</param>
+        /// <returns>
+        /// Must return true on succes, false if any error occured (errors must be logged).
+        /// Returning false does not stop the engine: <see cref="IStObjEngineStatus.Success"/> is set to false
+        /// and following aspects are run, the final assembly is not generated and <see cref="Terminate"/> is
+        /// called on all the aspects.
+        /// </returns>
+        bool Run( IActivityMonitor monitor, IStObjEngineRunContext context );
+
+        /// <summary>
+        /// Called by the engine after all aspects have <see cref="Run"/>.
+        /// </summary>
+        /// <param name="monitor">Monitor to use.</param>
+        /// <param name="context">Terminate context.</param>
+        /// <returns>
+        /// Must return true on succes, false if any error occured (errors must be logged).
+        /// Returning false sets <see cref="IStObjEngineStatus.Success"/> to false but following
+        /// aspects are terminated.
+        /// </returns>
+        bool Terminate( IActivityMonitor monitor, IStObjEngineTerminateContext context );
+
     }
 }

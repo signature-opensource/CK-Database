@@ -211,7 +211,7 @@ namespace CK.Setup
         /// 3 - Orders all the items topologicaly according to their dependencies/relationships.
         /// 4 - Creates their associated drivers (the type of the driver is given by the <see cref="IDependentItem.StartDependencySort"/> returned value).
         ///     For each newly created drivers, <see cref="DriverEvent"/> is raised with its <see cref="DriverEventArgs.Step"/> sets to SetupStep.PreInit.
-        ///     To give the opportunity to external participants that may have prepared stuff if an error or a concellation occurs once a driver has been created,
+        ///     To give the opportunity to external participants that may have prepared stuff if an error or a cancellation occurs once a driver has been created,
         ///     a second <see cref="SetupEvent"/> at PreInitStep indicating the error or cancelation is raised and an error result is returned.
         /// </summary>
         /// <param name="items">Set of <see cref="IDependentItem"/>.</param>
@@ -237,7 +237,7 @@ namespace CK.Setup
                             if( e.RegisteredDiscoverers != null ) discoverers = discoverers.Concat( e.RegisteredDiscoverers );
                         }
                     }
-                    if( hSetupEvent != null ) hSetupEvent( this, e );
+                    hSetupEvent?.Invoke( this, e );
                     if( e.CancelReason != null )
                     {
                         return new SetupCoreEngineRegisterResult( null ) { CancelReason = e.CancelReason };
@@ -376,7 +376,7 @@ namespace CK.Setup
             }
             catch( Exception ex )
             {
-                throw new CKException( ex, "While creating SetupDriver for item '{1}', type='{0}'.", typeToCreate.FullName, buildInfo.SortedItem.FullName );
+                throw new CKException( ex, $"While creating SetupDriver for item '{buildInfo.SortedItem.FullName}', type='{typeToCreate.FullName}'." );
             }
         }
 
@@ -384,18 +384,18 @@ namespace CK.Setup
         {
             var h = SetupEvent;
             if( h == null ) return true;
-            using( _monitor.OpenTrace().Send( errorOccured ? "Raising error event during {0}." : "Raising {0} setup event.", step ) )
+            using( _monitor.OpenTrace( errorOccured ? $"Raising error event during {step}." : $"Raising {step} setup event." ) )
             {
                 var e = new SetupEventArgs( step, errorOccured );
                 try
                 {
                     h( this, e );
                     if( e.CancelReason == null ) return true;
-                    _monitor.Fatal().Send( e.CancelReason );
+                    _monitor.Fatal( e.CancelReason );
                 }
                 catch( Exception ex )
                 {
-                    _monitor.Fatal().Send( ex );
+                    _monitor.Fatal( ex );
                 }
             }
             return false;
@@ -452,7 +452,7 @@ namespace CK.Setup
                 var reusableEvent = new DriverEventArgs( SetupStep.Install );
                 foreach( var d in _allDrivers )
                 {
-                    using( _monitor.OpenInfo().Send( "Installing {0} ({1})", d.FullName, VersionTransitionString( d ) ) )
+                    using( _monitor.OpenInfo( $"Installing {d.FullName} ({VersionTransitionString( d )})." ) )
                     {
                         if( !d.ExecuteInstall() ) return false;
                         var hE = DriverEvent;
@@ -467,7 +467,7 @@ namespace CK.Setup
             }
             catch( Exception ex )
             {
-                _monitor.Fatal().Send( ex );
+                _monitor.Fatal( ex );
                 SafeFireSetupEvent( SetupStep.Install, true );
                 return false;
             }
@@ -521,7 +521,7 @@ namespace CK.Setup
                 var reusableEvent = new DriverEventArgs( SetupStep.Settle );
                 foreach( var d in _allDrivers )
                 {
-                    using( _monitor.OpenInfo().Send( "Settling {0}", d.FullName ) )
+                    using( _monitor.OpenInfo( $"Settling {d.FullName}." ) )
                     {
                         if( !d.ExecuteSettle() ) return false;
                         var hE = DriverEvent;
@@ -542,7 +542,7 @@ namespace CK.Setup
             }
             catch( Exception ex )
             {
-                _monitor.Fatal().Send( ex );
+                _monitor.Fatal( ex );
                 SafeFireSetupEvent( SetupStep.Settle, true );
                 return false;
             }
@@ -555,7 +555,7 @@ namespace CK.Setup
         {
             if( (_state & SetupEngineState.Disposed) == 0 )
             {
-                using( Monitor.OpenInfo().Send( "Disposing {0} drivers.", _allDrivers.Count ) )
+                using( Monitor.OpenInfo( $"Disposing {_allDrivers.Count} drivers." ) )
                 {
                     foreach( var d in _allDrivers )
                     {
@@ -568,7 +568,7 @@ namespace CK.Setup
                             }
                             catch( Exception ex )
                             {
-                                Monitor.Error().Send( ex, "Disposing {0} of type '{1}'.", d.FullName, d.GetType() );
+                                Monitor.Error( $"Disposing {d.FullName} of type '{d.GetType()}'.", ex );
                             }
                         }
                     }
@@ -597,7 +597,7 @@ namespace CK.Setup
         {
             if( _state != requiredState )
             {
-                throw new InvalidOperationException( String.Format( "Invalid SetupCenter state: {0} expected but was {1}", requiredState, _state.ToString() ) );
+                throw new InvalidOperationException( $"Invalid SetupCenter state: {requiredState} expected but was {_state.ToString()}." );
             }
         }
 

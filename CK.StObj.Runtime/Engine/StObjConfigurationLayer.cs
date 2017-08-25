@@ -8,20 +8,20 @@ namespace CK.Setup
     /// <summary>
     /// Template class that implements a Chain of Responsibility pattern on the different hooks called
     /// during the StObj build phasis (except the <see cref="IStObjRuntimeBuilder"/> methods).
-    /// These configurator must be added to a <see cref="StObjEngineConfigurator"/>.
+    /// These configuration layers must be added to a <see cref="StObjEngineConfigurator"/>.
     /// It does nothing at its level except calling the <see cref="Next"/> configurator if it is not null.
     /// Methods are defined here in the order where they are called.
     /// </summary>
-    public class StObjBuildConfigurator : IAmbientContractDispatcher, IStObjStructuralConfigurator, IStObjValueResolver
+    public class StObjConfigurationLayer : IAmbientContractDispatcher, IStObjStructuralConfigurator, IStObjValueResolver
     {
-        StObjBuildConfigurator _next;
+        StObjConfigurationLayer _next;
         StObjEngineConfigurator _host;
 
         /// <summary>
-        /// Gets the next <see cref="StObjBuildConfigurator"/> that should be called by all hooks in this configurator.
+        /// Gets the next <see cref="StObjConfigurationLayer"/> that should be called by all hooks in this configurator.
         /// Can be null.
         /// </summary>
-        public StObjBuildConfigurator Next
+        public StObjConfigurationLayer Next
         {
             get { return _next; }
             internal set { _next = value; }
