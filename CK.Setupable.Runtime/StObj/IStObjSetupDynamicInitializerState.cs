@@ -22,9 +22,9 @@ namespace CK.Setup
         IActivityMonitor Monitor { get; }
 
         /// <summary>
-        /// Gets the aspects provider.
+        /// Gets the services provider.
         /// </summary>
-        ISetupEngineAspectProvider AspectProvider { get; }
+        IServiceProvider ServiceProvider { get; }
 
         /// <summary>
         /// Gets an associative dictionary that memorizes states between actions.

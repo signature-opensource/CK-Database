@@ -80,11 +80,11 @@ namespace CK.Setup
         /// the dependency graph of the setup items (StObj and/or pure <see cref="IDependentItem"/>) has been resolved, we now create the Setup Drivers for each of them that 
         /// will support the three-steps setup phasis.
         /// Creates a (potentially configured) instance of <see cref="SetupItemDriver"/> of a given <paramref name="driverType"/>.
-        /// This empty implementation calls <see cref="Previous"/> if it is not null, otherwise it always returns null.
+        /// This empty implementation calls <see cref="Next"/> if it is not null, otherwise it always returns null.
         /// </summary>
         /// <param name="driverType">SetupDriver type to create.</param>
         /// <param name="info">Internal constructor information.</param>
-        /// <returns>A setup driver. Null if not able to create it (a basic <see cref="Activator.CreateInstance(Type)"/> will be used to create the driver).</returns>
+        /// <returns>A setup driver. Null if not able to create it (<see cref="ServiceProviderExtension.SimpleObjectActivate(IServiceProvider, IActivityMonitor, Type, object)"/> will be used to create the driver).</returns>
         public virtual SetupItemDriver CreateDriver( Type driverType, SetupItemDriver.BuildInfo info )
         {
             return _next != null ? _next.CreateDriver( driverType, info ) : null;

@@ -18,7 +18,7 @@ namespace CK.Setup
         readonly ActivityMonitorPathCatcher _pathCatcher;
         readonly StObjEngineConfiguration _config;
         readonly IStObjRuntimeBuilder _runtimeBuilder;
-        StObjEngineConfigureContext _startConfiguration;
+        StObjEngineConfigureContext _startContext;
         bool _success;
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets whether this engine is running or has <see cref="Run"/> (it can run only once).
         /// </summary>
-        public bool Started => _startConfiguration != null;
+        public bool Started => _startContext != null;
 
         /// <summary>
         /// Runs the setup.
@@ -50,23 +50,31 @@ namespace CK.Setup
         /// <returns>True on success, false if an error occurred.</returns>
         public bool Run()
         {
-            if( _startConfiguration != null ) throw new InvalidOperationException( "Run can be called only once." );
-            _startConfiguration = new StObjEngineConfigureContext( _monitor, _config, this );
+            if( _startContext != null ) throw new InvalidOperationException( "Run can be called only once." );
+            _startContext = new StObjEngineConfigureContext( _monitor, _config, this );
             try
             {
-                _startConfiguration.CreateAndConfigureAspects( _config.Aspects, () => _success = false );
+                _startContext.CreateAndConfigureAspects( _config.Aspects, () => _success = false );
                 if( _success )
                 {
                     StObjCollectorResult r = SafeBuildStObj();
                     if( r == null ) return _success = false;
 
-                    var runCtx = new StObjEngineRunContext( _monitor, _startConfiguration, r.OrderedStObjs );
+                    var runCtx = new StObjEngineRunContext( _monitor, _startContext, r.OrderedStObjs );
                     runCtx.RunAspects( () => _success = false );
                     if( _success )
                     {
                         _success = GenerateStObjFinalAssembly( r );
                     }
-
+                    else
+                    {
+                        var errorPath = _pathCatcher.LastErrorPath;
+                        if( errorPath.Count == 0 )
+                        {
+                            Debug.Fail( "Success status is false but no error has been logged." );
+                            _monitor.Fatal( "Success status is false but no error has been logged." );
+                        }
+                    }
                     var termCtx = new StObjEngineTerminateContext( _monitor, runCtx );
                     termCtx.TerminateAspects( () => _success = false );
                 }
@@ -102,12 +110,12 @@ namespace CK.Setup
         {
             bool hasError = false;
             using( _monitor.OnError( () => hasError = true ) )
-            using( _monitor.OpenInfo().Send( "Building StObj objects." ) )
+            using( _monitor.OpenInfo( "Building StObj objects." ) )
             {
                 StObjCollectorResult result;
                 AssemblyRegisterer typeReg = new AssemblyRegisterer( _monitor );
                 typeReg.Discover( _config.BuildAndRegisterConfiguration.Assemblies );
-                var configurator = _startConfiguration.Configurator.FirstLayer;
+                var configurator = _startContext.Configurator.FirstLayer;
                 StObjCollector stObjC = new StObjCollector(
                     _monitor,
                     _config.FinalAssemblyConfiguration,
@@ -118,20 +126,20 @@ namespace CK.Setup
                 stObjC.RevertOrderingNames = _config.RevertOrderingNames;
                 if( _config.TraceDependencySorterInput ) stObjC.DependencySorterHookInput += i => i.Trace( _monitor );
                 if( _config.TraceDependencySorterOutput ) stObjC.DependencySorterHookOutput += i => i.Trace( _monitor );
-                stObjC.DependencySorterHookInput += _startConfiguration.StObjDependencySorterHookInput;
-                stObjC.DependencySorterHookOutput += _startConfiguration.StObjDependencySorterHookOutput;
-                using( _monitor.OpenInfo().Send( "Registering StObj types." ) )
+                stObjC.DependencySorterHookInput += _startContext.StObjDependencySorterHookInput;
+                stObjC.DependencySorterHookOutput += _startContext.StObjDependencySorterHookOutput;
+                using( _monitor.OpenInfo( "Registering StObj types." ) )
                 {
                     stObjC.RegisterTypes( typeReg );
                     stObjC.RegisterClasses( _config.BuildAndRegisterConfiguration.ExplicitClasses );
-                    foreach( var t in _startConfiguration.ExplicitRegisteredClasses ) stObjC.RegisterClass( t );
+                    foreach( var t in _startContext.ExplicitRegisteredClasses ) stObjC.RegisterClass( t );
                     Debug.Assert( stObjC.RegisteringFatalOrErrorCount == 0 || hasError, "stObjC.RegisteringFatalOrErrorCount > 0 ==> An error has been logged." );
                 }
                 if( stObjC.RegisteringFatalOrErrorCount == 0 )
                 {
-                    using( _monitor.OpenInfo().Send( "Resolving StObj dependency graph." ) )
+                    using( _monitor.OpenInfo( "Resolving StObj dependency graph." ) )
                     {
-                        result = stObjC.GetResult();
+                        result = stObjC.GetResult( _startContext.ServiceContainer );
                         Debug.Assert( !result.HasFatalError || hasError, "result.HasFatalError ==> An error has been logged." );
                     }
                     if( !result.HasFatalError ) return result;
@@ -145,7 +153,7 @@ namespace CK.Setup
         /// </summary>
         void DisposeDisposableAspects()
         {
-            foreach( var aspect in _startConfiguration.Aspects.OfType<IDisposable>() )
+            foreach( var aspect in _startContext.Aspects.OfType<IDisposable>() )
             {
                 try
                 {

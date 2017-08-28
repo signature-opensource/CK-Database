@@ -11,11 +11,26 @@ namespace CK.Setup
     {
         sealed class Container : SimpleServiceContainer
         {
+            readonly SimpleServiceContainer _baseForConfig;
             readonly StObjEngineConfigureContext _c;
 
             public Container( StObjEngineConfigureContext c )
             {
                 _c = c;
+                _baseForConfig = new SimpleServiceContainer();
+                _baseForConfig.Add<ISimpleObjectActivator>( new SimpleObjectActivator() );
+                BaseProvider = _baseForConfig;
+            }
+
+            public void ConfigureDone( IActivityMonitor monitor )
+            {
+                ISimpleObjectActivator defaultActivator = _baseForConfig.GetService<ISimpleObjectActivator>();
+                BaseProvider = null;
+                if( GetService( typeof(ISimpleObjectActivator) ) == null )
+                {
+                    monitor.Info( "No explicit ISimpleObjectActivator has been registered. Using a default SimpleObjectActivator." );
+                    this.Add( defaultActivator );
+                }
             }
 
             protected override object GetDirectService( Type serviceType )
@@ -111,10 +126,11 @@ namespace CK.Setup
                         }
                         else
                         {
-                            IStObjEngineAspect a = CreateAspect( t );
+                            IStObjEngineAspect a = (IStObjEngineAspect)_configureOnlycontainer.SimpleObjectActivate( _monitor, t );
                             if( a == null ) success = onError();
                             else
                             {
+                                _aspects.Add( a );
                                 using( _monitor.OpenTrace().Send( $"Configuring aspect '{t.FullName}'." ) )
                                 {
                                     try
@@ -136,54 +152,8 @@ namespace CK.Setup
                         }
                     }
                 }
-                _trampoline.Execute( _monitor, onError() );
-            }
-        }
-
-        IStObjEngineAspect CreateAspect( Type t )
-        {
-            {
-                try
-                {
-                    var longestCtor = t.GetTypeInfo().GetConstructors()
-                                        .Select( x => new
-                                        {
-                                            Ctor = x,
-                                            P = x.GetParameters()
-                                        } )
-                                        // Ignores the default constructor.
-                                        .Where( x => x.P.Length > 0 )
-                                        .OrderByDescending( x => x.P.Length )
-                                        .FirstOrDefault();
-                    if( longestCtor == null )
-                    {
-                        _monitor.Error( $"Unable to find a non default constructor for Aspect '{t.FullName}'." );
-                        return null;
-                    }
-                    var mapped = longestCtor.P.Select( param => new
-                    {
-                        Param = param,
-                        Result = _configureOnlycontainer.GetService( param.ParameterType )
-                    } );
-                    if( mapped.Any( p => p.Result == null && !p.Param.HasDefaultValue ) )
-                    {
-                        using( _monitor.OpenError( $"Considering longest constructor: {longestCtor.ToString()}." ) )
-                        {
-                            foreach( var failed in mapped.Where( p => p.Result == null && !p.Param.HasDefaultValue ) )
-                            {
-                                _monitor.Trace( $"Resolution failed for parameter '{failed.Param.Name}', type: '{failed.Param.ParameterType.Name}'." );
-                            }
-                        }
-                    }
-                    var a = (IStObjEngineAspect)longestCtor.Ctor.Invoke( mapped.Select( p => p.Result ).ToArray() );
-                    _aspects.Add( a );
-                    return a;
-                }
-                catch( Exception ex )
-                {
-                    _monitor.Error().Send( ex, $"While creating aspect instance of '{t.FullName}'." );
-                    return null;
-                }
+                if( !_trampoline.Execute( _monitor, onError ) ) success = false;
+                if( success ) _container.ConfigureDone( _monitor );
             }
         }
 

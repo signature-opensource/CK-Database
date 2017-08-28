@@ -22,7 +22,7 @@ namespace CK.Setup
 
         public IStObjEngineStatus EngineStatus => _startContext.EngineStatus;
 
-        public IServiceProvider Services => _startContext.ServiceContainer;
+        public ISimpleServiceContainer ServiceContainer => _startContext.ServiceContainer;
 
         public IReadOnlyList<IStObjEngineAspect> Aspects => _startContext.Aspects;
 

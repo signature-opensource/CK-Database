@@ -16,7 +16,7 @@ namespace CK.Setup
         /// Adds a configurator as the first configurator.
         /// </summary>
         /// <param name="configurator">Configurator to add. Must have a null <see cref="StObjConfigurationLayer.Host"/>.</param>
-        public void AddConfigurator( StObjConfigurationLayer configurator )
+        public void AddLayer( StObjConfigurationLayer configurator )
         {
             if( configurator == null ) throw new ArgumentNullException( nameof( configurator ) );
             if( configurator.Host != null ) throw new ArgumentException( $"{nameof(StObjConfigurationLayer)} is already hosted.", nameof( configurator ) );

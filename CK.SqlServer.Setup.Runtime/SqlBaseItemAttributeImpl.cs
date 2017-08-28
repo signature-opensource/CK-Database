@@ -13,9 +13,12 @@ namespace CK.SqlServer.Setup
     /// </summary>
     public class SqlBaseItemAttributeImpl : SetupObjectItemAttributeImplBase
     {
-        public SqlBaseItemAttributeImpl( SetupObjectItemAttributeBase a )
+        readonly ISqlServerParser _parser;
+
+        public SqlBaseItemAttributeImpl( SetupObjectItemAttributeBase a, ISqlServerParser parser )
             : base( a )
         {
+            _parser = parser;
         }
 
         /// <summary>
@@ -54,9 +57,8 @@ namespace CK.SqlServer.Setup
         /// <returns>The created object or null if an error occurred and has been logged.</returns>
         protected override SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeRegisterer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
         {
-            ISqlSetupAspect sql = SetupEngineAspectProvider.GetSetupEngineAspect<ISqlSetupAspect>();
-            return SqlBaseItem.Create( 
-                sql.SqlParser, 
+            return SqlBaseItem.Create(
+                _parser, 
                 r, 
                 (SqlContextLocName)name, 
                 (SqlPackageBaseItem)firstContainer, 

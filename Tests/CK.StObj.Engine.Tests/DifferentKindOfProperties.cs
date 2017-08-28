@@ -113,7 +113,7 @@ namespace CK.StObj.Engine.Tests
             {
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
                 collector.RegisterClass( typeof( InvalidAmbientContractProperty ) );
-                var r = collector.GetResult();
+                var r = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( r.HasFatalError );
             }
         }
@@ -164,7 +164,7 @@ namespace CK.StObj.Engine.Tests
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
                 collector.RegisterClass( typeof( CB3 ) );
                 collector.RegisterClass( typeof( CA3 ) );
-                var r = collector.GetResult();
+                var r = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( r.HasFatalError, Is.False );
                 var cb = r.Default.StObjMap.Obtain<CB>();
                 Assert.That( cb, Is.InstanceOf<CB3>() );
@@ -202,7 +202,7 @@ namespace CK.StObj.Engine.Tests
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
                 collector.RegisterClass( typeof( CPrivateSetter ) );
                 collector.RegisterClass( typeof( CA2 ) );
-                var r = collector.GetResult();
+                var r = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( r.HasFatalError, Is.False );
                 var c = r.Default.StObjMap.Obtain<CPrivateSetter>();
                 Assert.That( c.A, Is.InstanceOf<CA2>() );

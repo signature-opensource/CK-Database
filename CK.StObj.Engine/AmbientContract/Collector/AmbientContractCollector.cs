@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -216,6 +216,7 @@ namespace CK.Core
         {
             public readonly CT Context;
             readonly IActivityMonitor _monitor;
+            readonly IServiceProvider _services;
             readonly DynamicAssembly _tempAssembly;
 
             Dictionary<object,TC> _mappings;
@@ -224,11 +225,12 @@ namespace CK.Core
             List<Type> _abstractTails;
             int _registeredCount;
 
-            public PreResult( IActivityMonitor monitor, CT c, DynamicAssembly tempAssembly )
+            public PreResult( IActivityMonitor monitor, CT c, IServiceProvider services, DynamicAssembly tempAssembly )
             {
                 Debug.Assert( c != null );
                 Context = c;
                 _monitor = monitor;
+                _services = services;
                 _tempAssembly = tempAssembly;
                 _mappings = c.RawMappings;
                 _concreteClasses = new List<List<TC>>();
@@ -241,7 +243,7 @@ namespace CK.Core
                 if( newOne.Generalization == null )
                 {
                     var deepestConcretes = new List<Tuple<TC,object>>();
-                    newOne.CollectDeepestConcrete<T, TC>( _monitor, Context, null, _tempAssembly, deepestConcretes, _abstractTails );
+                    newOne.CollectDeepestConcrete<T, TC>( _monitor, _services, Context, null, _tempAssembly, deepestConcretes, _abstractTails );
                     if( deepestConcretes.Count == 1 )
                     {
                         var last = deepestConcretes[0].Item1;
@@ -316,7 +318,7 @@ namespace CK.Core
         /// Obtains the result of the collection.
         /// </summary>
         /// <returns>The result object.</returns>
-        public AmbientContractCollectorResult<CT,T,TC> GetResult()
+        public AmbientContractCollectorResult<CT,T,TC> GetResult( IServiceProvider services )
         {
             IPocoSupportResult pocoSupport;
             using( _monitor.OpenInfo().Send( "Creating Poco Types and PocoFactory." ) )
@@ -332,10 +334,15 @@ namespace CK.Core
             }
             var mappings = _mapFactory( _monitor );
             var byContext = new Dictionary<string, PreResult>();
-            byContext.Add( string.Empty, new PreResult( _monitor, mappings.CreateAndAddContext<T,TC>( _monitor, string.Empty ), _tempAssembly ) );
+            // Creates default context.
+            byContext.Add( string.Empty, new PreResult(
+                _monitor,
+                mappings.CreateAndAddContext<T,TC>( _monitor, string.Empty ),
+                services,
+                _tempAssembly ) );
             foreach( AmbientTypeInfo m in _roots )
             {
-                HandleContexts( m, byContext, mappings.CreateAndAddContext<T,TC> );
+                HandleContexts( m, byContext, mappings.CreateAndAddContext<T,TC>, services );
             }
             var r = new AmbientContractCollectorResult<CT,T,TC>( mappings, pocoSupport, _collector, Assemblies );
             foreach( PreResult rCtx in byContext.Values )
@@ -351,16 +358,16 @@ namespace CK.Core
             return t != typeof( IAmbientContract ) && typeof( IAmbientContract ).IsAssignableFrom( t );
         }
 
-        void HandleContexts( AmbientTypeInfo m, Dictionary<string, PreResult> contexts, Func<IActivityMonitor,string,CT> contextCreator )
+        void HandleContexts( AmbientTypeInfo m, Dictionary<string, PreResult> contexts, Func<IActivityMonitor,string,CT> contextCreator, IServiceProvider services )
         {
             foreach( AmbientTypeInfo child in m.SpecializationsByContext( null ) )
             {
-                HandleContexts( child, contexts, contextCreator );
+                HandleContexts( child, contexts, contextCreator, services );
                 m.MutableFinalContexts.AddRange( child.MutableFinalContexts );
             }
             foreach( string context in m.MutableFinalContexts )
             {
-                contexts.GetOrSet( context, c => new PreResult( _monitor, contextCreator( _monitor, c ), _tempAssembly ) ).Add( m );
+                contexts.GetOrSet( context, c => new PreResult( _monitor, contextCreator( _monitor, c ), services, _tempAssembly ) ).Add( m );
             }
         }
 

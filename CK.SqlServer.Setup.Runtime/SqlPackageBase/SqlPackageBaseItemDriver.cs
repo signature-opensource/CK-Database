@@ -38,7 +38,7 @@ namespace CK.SqlServer.Setup
         {
             if( Item.ResourceLocation?.Type == null )
             {
-                Engine.Monitor.Error().Send( "ResourceLocator for '{0}' has no Type defined. A ResourceType must be set in order to load resources.", FullName );
+                Engine.Monitor.Error( $"ResourceLocator for '{FullName}' has no Type defined. A ResourceType must be set in order to load resources." );
                 return false;
             }
 
@@ -136,7 +136,7 @@ namespace CK.SqlServer.Setup
             var monitor = Engine.Monitor;
             int nbScripts = scripts.AddFromResources( monitor, resLoc, context, location, name, ".sql" );
             nbScripts += scripts.AddFromResources( monitor, resLoc, context, location, name, ".y4" );
-            monitor.Info().Send( "{1} sql scripts in resource found for '{0}' in '{2}.", name, nbScripts, resLoc );
+            monitor.Info( $"{nbScripts} sql scripts in resource found for '{name}' in '{resLoc}." );
             return scripts;
         }
 

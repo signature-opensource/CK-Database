@@ -16,22 +16,22 @@ using System.Reflection;
 
 namespace CK.Setup
 {
-    class StObjSetupItemBuilder : ISetupEngineAspectProvider
+    class StObjSetupItemBuilder
     {
         readonly IActivityMonitor _monitor;
         readonly IStObjSetupConfigurator _configurator;
         readonly IStObjSetupItemFactory _setupItemFactory;
         readonly IStObjSetupDynamicInitializer _dynamicInitializer;
-        readonly IReadOnlyList<IStObjEngineAspect> _aspects;
+        readonly IServiceProvider _services;
 
-        public StObjSetupItemBuilder( IActivityMonitor monitor, IReadOnlyList<IStObjEngineAspect> aspects, IStObjSetupConfigurator configurator = null, IStObjSetupItemFactory setupItemFactory = null, IStObjSetupDynamicInitializer dynamicInitializer = null )
+        public StObjSetupItemBuilder( IActivityMonitor monitor, IServiceProvider services, IStObjSetupConfigurator configurator = null, IStObjSetupItemFactory setupItemFactory = null, IStObjSetupDynamicInitializer dynamicInitializer = null )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
             _monitor = monitor;
             _configurator = configurator;
             _setupItemFactory = setupItemFactory;
             _dynamicInitializer = dynamicInitializer;
-            _aspects = aspects;
+            _services = services;
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace CK.Setup
                             }
                             else
                             {
-                                data.SetupItem = (IStObjSetupItem)Activator.CreateInstance( itemType, _monitor, data );
+                                data.SetupItem = (IStObjSetupItem)_services.SimpleObjectActivate(_monitor, itemType, data );
                             }
                         }
                         // Configures Generalization since we got it above.
@@ -257,7 +257,7 @@ namespace CK.Setup
 
             public IActivityMonitor Monitor { get { return _builder._monitor; } }
 
-            public ISetupEngineAspectProvider AspectProvider { get { return _builder; } }
+            public IServiceProvider ServiceProvider { get { return _builder._services; } }
 
             public IDictionary Memory { get { return _memory; } }
 
@@ -326,7 +326,7 @@ namespace CK.Setup
 
         bool CallDynamicInitializer( IReadOnlyList<IStObjResult> orderedObjects, Dictionary<IStObjResult, StObjSetupData> setupableItems )
         {
-            using( _monitor.OpenInfo( "Dynamic initialization of Setup items (calling IStObjSetupDynamicInitializer.DynamicItemInitialize for each of them)." ) )
+            using( _monitor.OpenInfo( "Dynamic initialization of Setup items." ) )
             {
                 var state = new DynamicInitializerState( this );
                 bool success = true;
@@ -377,10 +377,6 @@ namespace CK.Setup
         }
         
         #endregion
-
-        IReadOnlyList<IStObjEngineAspect> ISetupEngineAspectProvider.Aspects => _aspects; 
-
-        T ISetupEngineAspectProvider.GetSetupEngineAspect<T>( bool required ) => SetupEngine.GetSetupEngineAspect<T>( _aspects, required );
 
     }
 }

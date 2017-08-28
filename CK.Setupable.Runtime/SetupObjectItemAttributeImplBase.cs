@@ -17,7 +17,6 @@ namespace CK.Setup
     {
         readonly SetupObjectItemAttributeBase _attribute;
         readonly int _maxObjectCount;
-        ISetupEngineAspectProvider _aspectProvider;
         List<BestCreator> _theBest;
 
         internal interface ISetupItemCreator : IStObjSetupDynamicInitializer
@@ -114,14 +113,8 @@ namespace CK.Setup
         /// </summary>
         protected SetupObjectItemAttributeBase Attribute => _attribute; 
 
-        /// <summary>
-        /// Gets the aspects provider.
-        /// </summary>
-        protected ISetupEngineAspectProvider SetupEngineAspectProvider => _aspectProvider; 
-
         void IStObjSetupDynamicInitializer.DynamicItemInitialize( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjResult stObj )
         {
-            _aspectProvider = state.AspectProvider;
             var r = new SetupObjectItemAttributeRegisterer( state, item, stObj, this );
             if( _maxObjectCount == 1 ) Register( Attribute.NameOrCommaSeparatedObjectNames, r, item, state );
             else
@@ -129,7 +122,7 @@ namespace CK.Setup
                 var names = Attribute.NameOrCommaSeparatedObjectNames.Split( ',' );
                 if( _maxObjectCount != 0 && names.Length > _maxObjectCount )
                 {
-                    state.Monitor.Error().Send( $"At most {_maxObjectCount} names allowed:  '{GetDetailedName(r, Attribute.NameOrCommaSeparatedObjectNames)}'." );
+                    state.Monitor.Error( $"At most {_maxObjectCount} names allowed:  '{GetDetailedName(r, Attribute.NameOrCommaSeparatedObjectNames)}'." );
                     return;
                 }
                 HashSet<string> already = new HashSet<string>();

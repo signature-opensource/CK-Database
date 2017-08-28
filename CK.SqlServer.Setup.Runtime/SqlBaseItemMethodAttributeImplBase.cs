@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -24,6 +24,7 @@ namespace CK.SqlServer.Setup
     public abstract class SqlBaseItemMethodAttributeImplBase : SetupObjectItemMemberAttributeImplBase, IAutoImplementorMethod
     {
         readonly string _expectedItemType;
+        readonly ISqlServerParser _parser;
         bool _implementHasBeenAlreadyBeenCalled;
 
         /// <summary>
@@ -32,9 +33,10 @@ namespace CK.SqlServer.Setup
         /// </summary>
         /// <param name="a">The attribute.</param>
         /// <param name="expectedItemType">The expected type of the object.</param>
-        protected SqlBaseItemMethodAttributeImplBase( SetupObjectItemMemberAttributeBase a, string expectedItemType )
+        protected SqlBaseItemMethodAttributeImplBase( SetupObjectItemMemberAttributeBase a, ISqlServerParser parser, string expectedItemType )
             : base( a )
         {
+            _parser = parser;
             _expectedItemType = expectedItemType;
         }
 
@@ -45,9 +47,8 @@ namespace CK.SqlServer.Setup
 
         protected override SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeRegisterer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
         {
-            ISqlSetupAspect sql = SetupEngineAspectProvider.GetSetupEngineAspect<ISqlSetupAspect>();
-            return SqlBaseItem.Create( 
-                sql.SqlParser, 
+            return SqlBaseItem.Create(
+                _parser, 
                 r, 
                 (SqlContextLocName)name, 
                 (SqlPackageBaseItem)firstContainer, 

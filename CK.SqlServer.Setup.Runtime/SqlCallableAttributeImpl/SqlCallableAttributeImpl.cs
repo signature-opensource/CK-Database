@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Data.SqlClient;
 using System.Diagnostics;
@@ -16,8 +16,8 @@ namespace CK.SqlServer.Setup
 
     public partial class SqlCallableAttributeImpl : SqlBaseItemMethodAttributeImplBase
     {
-        public SqlCallableAttributeImpl( SqlCallableAttributeBase a )
-            : base( a, a.ObjectType )
+        public SqlCallableAttributeImpl( SqlCallableAttributeBase a, ISqlServerParser parser )
+            : base( a, parser, a.ObjectType )
         {
         }
 

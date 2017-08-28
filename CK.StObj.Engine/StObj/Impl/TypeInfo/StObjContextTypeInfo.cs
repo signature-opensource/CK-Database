@@ -25,8 +25,8 @@ namespace CK.Setup
     /// </remarks>
     internal abstract class StObjContextTypeInfo : AmbientContextualTypeInfo<StObjTypeInfo,MutableItem>
     {
-        internal StObjContextTypeInfo( StObjTypeInfo t, MutableItem generalization, IContextualTypeMap context )
-            : base( t, generalization, context )
+        internal StObjContextTypeInfo( IActivityMonitor monitor, StObjTypeInfo t, MutableItem generalization, IContextualTypeMap context, IServiceProvider services )
+            : base(monitor, t, generalization, context, services)
         {
         }
 
@@ -34,7 +34,7 @@ namespace CK.Setup
         /// Used only for Empty Item Pattern implementations.
         /// </summary>
         protected StObjContextTypeInfo()
-            : base( StObjTypeInfo.Empty, null, null )
+            : base( null, StObjTypeInfo.Empty, null, null, null )
         {
         }
 
@@ -46,10 +46,7 @@ namespace CK.Setup
         /// All attributes related to ObjectType (either on the type itself or on any of its members) should be retrieved 
         /// thanks to this method otherwise stateful attributes will not work correctly.
         /// </remarks>
-        public ICKCustomAttributeTypeMultiProvider Attributes 
-        {
-            get { return this; } 
-        }
+        public ICKCustomAttributeTypeMultiProvider Attributes  => this; 
 
 
     }

@@ -18,7 +18,7 @@ namespace CK.Setup
     /// <summary>
     /// Core abstraction of Setup engine.
     /// </summary>
-    public interface ISetupEngine : ISetupEngineAspectProvider
+    public interface ISetupEngine
     {
         /// <summary>
         /// Triggered before registration (at the beginning of the Register step).
@@ -36,12 +36,6 @@ namespace CK.Setup
         /// Triggered for each <see cref="DriverBase"/> setup phasis.
         /// </summary>
         event EventHandler<DriverEventArgs> DriverEvent;
-        
-        /// <summary>
-        /// Gets the <see cref="ISetupSessionMemory"/> service that is used to persist any state related to setup phasis.
-        /// It is a simple key-value dictionary where key is a string not longer than 255 characters and value is a non null string.
-        /// </summary>
-        ISetupSessionMemory Memory { get; } 
 
         /// <summary>
         /// Monitor that will be used during setup.
@@ -58,7 +52,7 @@ namespace CK.Setup
         /// Gives access to an ordered list of <see cref="DriverBase"/> indexed by the <see cref="IDependentItem.FullName"/> 
         /// or by the <see cref="IDependentItem"/> object instance itself that participate to Setup.
         /// This list contains all the <see cref="SetupItemDriver"/> plus all the internal drivers for the head of Groups 
-        /// or Containers (the ones that ar not SetupItemDriver instances and have a <see cref="DriverBase.FullName"/> that
+        /// or Containers (the ones that are not SetupItemDriver instances and have a <see cref="DriverBase.FullName"/> that
         /// ends with ".Head").
         /// </summary>
         IDriverBaseList AllDrivers { get; }

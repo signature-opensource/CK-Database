@@ -16,9 +16,9 @@ namespace CK.Setup
         IStObjEngineStatus EngineStatus { get; }
 
         /// <summary>
-        /// Gets the available services.
+        /// Gets the service container.
         /// </summary>
-        IServiceProvider Services { get; }
+        ISimpleServiceContainer ServiceContainer { get; }
 
         /// <summary>
         /// Gets the list of all available aspects.

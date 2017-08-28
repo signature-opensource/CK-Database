@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Data.SqlClient;
 using CK.Core;
@@ -39,15 +39,19 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
         private static void InstallDropAndReverseInstall( bool resetFirst, bool withZone, string dllName, bool doRevert = true )
         {
-            var c = new SetupableAspectConfiguration();
-            c.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverRecurseAssemblyNames.Add( "SqlActorPackage" );
-            if( withZone ) c.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( "SqlZonePackage" );
-            c.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = dllName;
+            var c = new StObjEngineConfiguration();
+            c.BuildAndRegisterConfiguration.Assemblies.DiscoverRecurseAssemblyNames.Add( "SqlActorPackage" );
+            if( withZone ) c.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( "SqlZonePackage" );
+            c.FinalAssemblyConfiguration.AssemblyName = dllName;
             c.TraceDependencySorterInput = true;
             c.TraceDependencySorterOutput = true;
-            var config = new SqlSetupAspectConfiguration();
-            config.DefaultDatabaseConnectionString = TestHelper.DatabaseTestConnectionString;
-            c.Aspects.Add( config );
+
+            var setupable = new SetupableAspectConfiguration();
+            c.Aspects.Add( setupable );
+
+            var sql = new SqlSetupAspectConfiguration();
+            sql.DefaultDatabaseConnectionString = TestHelper.DatabaseTestConnectionString;
+            c.Aspects.Add( sql );
 
             using( var db = SqlManager.OpenOrCreate( TestHelper.DatabaseTestConnectionString, TestHelper.Monitor ) )
             {
@@ -58,7 +62,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
                     db.SchemaDropAllObjects( "CKCore", false );
                 }
             }
-            Assert.That(StObjContextRoot.Build(c, null, TestHelper.Monitor));
+            Assert.That( StObjContextRoot.Build( c, null, TestHelper.Monitor ) );
 
             using( var db = SqlManager.OpenOrCreate( TestHelper.DatabaseTestConnectionString, TestHelper.Monitor ) )
             {
@@ -78,11 +82,12 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
                 db.SchemaDropAllObjects( "CKCore", false );
                 Assert.That( db.ExecuteScalar( "select count(*) from sys.tables where name in ('tSystem','tItemVersionStore')" ), Is.EqualTo( 0 ) );
             }
-            c.RunningMode = SetupEngineRunningMode.RevertNames;
-            c.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = dllName + ".Reverted";
+            c.RevertOrderingNames = true;
+            setupable.RevertOrderingNames = true;
+            c.FinalAssemblyConfiguration.AssemblyName = dllName + ".Reverted";
             using( TestHelper.Monitor.OpenTrace().Send( "Second setup (reverse order)" ) )
             {
-                Assert.That(StObjContextRoot.Build(c, null, TestHelper.Monitor));
+                Assert.That( StObjContextRoot.Build( c, null, TestHelper.Monitor ) );
             }
 
             using( var db = SqlManager.OpenOrCreate( TestHelper.DatabaseTestConnectionString, TestHelper.Monitor ) )

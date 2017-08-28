@@ -21,7 +21,7 @@ namespace CK.Setup
         readonly ISetupDriverFactory _driverFactory;
         readonly IActivityMonitor _monitor;
         readonly ISetupSessionMemory _memory;
-        readonly IReadOnlyList<IStObjEngineAspect> _aspects;
+        readonly IServiceProvider _services;
         SetupEngineState _state;
 
         class DriverBaseList : IDriverBaseList
@@ -108,55 +108,33 @@ namespace CK.Setup
 
         }
 
-        class DefaultDriverfactory : ISetupDriverFactory
-        {
-            public readonly static ISetupDriverFactory Default = new DefaultDriverfactory();
-
-            SetupItemDriver ISetupDriverFactory.CreateDriver( Type type, SetupItemDriver.BuildInfo info )
-            {
-                return (SetupItemDriver)Activator.CreateInstance( type, info );
-            }
-        }
-
         /// <summary>
         /// Initializes a new setup engine.
         /// </summary>
         /// <param name="versionRepository">Provides version information about items already installed.</param>
         /// <param name="memory">Provides persistent memory to setup participants.</param>
-        /// <param name="aspects">Available aspects.</param>
+        /// <param name="services">Available services.</param>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="driverFactory">Factory for setup drivers.</param>
-        public SetupCoreEngine( VersionedItemTracker versionTracker, ISetupSessionMemory memory, IReadOnlyList<IStObjEngineAspect> aspects, IActivityMonitor monitor, ISetupDriverFactory driverFactory )
+        public SetupCoreEngine( VersionedItemTracker versionTracker, ISetupSessionMemory memory, IServiceProvider services, IActivityMonitor monitor, ISetupDriverFactory driverFactory )
         {
             Debug.Assert( versionTracker != null );
-            Debug.Assert( aspects != null );
+            Debug.Assert( services != null );
             Debug.Assert( monitor != null );
             Debug.Assert( memory != null );
             _versionTracker = versionTracker;
             _memory = memory;
-            _aspects = aspects;
-            _driverFactory = driverFactory ?? DefaultDriverfactory.Default;
+            _services = services;
+            _driverFactory = driverFactory;
             _monitor = monitor;
             _allDrivers = new DriverBaseList( this );
             _genDrivers = new DriverList( _allDrivers );
         }
 
         /// <summary>
-        /// Gets the <see cref="IStObjEngineAspect"/> that participate to setup.
+        /// Gets the <see cref="IServiceProvider"/>.
         /// </summary>
-        public IReadOnlyList<IStObjEngineAspect> Aspects => _aspects;
-
-        /// <summary>
-        /// Gets the first typed aspect that is assignable to <typeparamref name="T"/>. 
-        /// If such aspect can not be found, depending on <paramref name="required"/> a <see cref="CKException"/> is thrown or null is returned.
-        /// </summary>
-        /// <typeparam name="T">Type of the aspect to obtain.</typeparam>
-        /// <param name="required">False to silently return null instead of throwing an exception if the aspect can not be found.</param>
-        /// <returns>The first compatible aspect (may be null if <paramref name="required"/> is false).</returns>
-        public T GetSetupEngineAspect<T>( bool required = true ) where T : class
-        {
-            return SetupEngine.GetSetupEngineAspect<T>( _aspects, required );
-        }
+        public IServiceProvider Services => _services;
 
         /// <summary>
         /// Triggered before registration (at the beginning of <see cref="RegisterAndCreateDrivers"/>).
@@ -175,11 +153,6 @@ namespace CK.Setup
         /// </summary>
         public event EventHandler<DriverEventArgs> DriverEvent;
 
-        /// <summary>
-        /// Gets the <see cref="ISetupSessionMemory"/> service that is used to persist any state related to setup phasis.
-        /// It is a simple key-value dictionary where key is a string not longer than 255 characters and value is a non null string.
-        /// </summary>
-        public ISetupSessionMemory Memory => _memory;
 
         /// <summary>
         /// Monitor that will be used during setup.
@@ -370,14 +343,23 @@ namespace CK.Setup
 
         SetupItemDriver CreateSetupDriver( Type typeToCreate, SetupItemDriver.BuildInfo buildInfo )
         {
-            try
+            if( _driverFactory != null )
             {
-                return _driverFactory.CreateDriver( typeToCreate, buildInfo ) ?? DefaultDriverfactory.Default.CreateDriver( typeToCreate, buildInfo );
+                try
+                {
+                    return _driverFactory?.CreateDriver( typeToCreate, buildInfo );
+                }
+                catch( Exception ex )
+                {
+                    throw new CKException( ex, $"While creating SetupDriver for item '{buildInfo.SortedItem.FullName}', type='{typeToCreate.FullName}'." );
+                }
             }
-            catch( Exception ex )
+            var d = (SetupItemDriver)_services.SimpleObjectActivate( _monitor, typeToCreate, buildInfo );
+            if( d == null )
             {
-                throw new CKException( ex, $"While creating SetupDriver for item '{buildInfo.SortedItem.FullName}', type='{typeToCreate.FullName}'." );
+                throw new CKException( $"Unable to create SetupDriver for item '{buildInfo.SortedItem.FullName}', type='{typeToCreate.FullName}'." );
             }
+            return d;
         }
 
         bool SafeFireSetupEvent( SetupStep step, bool errorOccured = false )

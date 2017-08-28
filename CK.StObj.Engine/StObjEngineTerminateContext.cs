@@ -18,7 +18,9 @@ namespace CK.Setup
             _trampoline = new StObjEngineAspectTrampoline<IStObjEngineTerminateContext>( this );
         }
 
-        public IServiceProvider Services => _runContext.Services;
+        public ISimpleServiceContainer ServiceContainer => _runContext.ServiceContainer;
+
+        public IStObjEngineStatus EngineStatus => _runContext.EngineStatus;
 
         public IReadOnlyList<IStObjEngineAspect> Aspects => _runContext.Aspects;
 

@@ -23,8 +23,9 @@ namespace CK.Setup
             _postActions.Add( deferredAction );
         }
 
-        public void Execute( IActivityMonitor m, Func<bool> onError )
+        public bool Execute( IActivityMonitor m, Func<bool> onError )
         {
+            bool trampolineSuccess = true;
             int i = 0;
             using( m.OpenInfo( $"Executing initial {_postActions.Count} deferred actions." )
                     .ConcludeWith( () => $"Executed {i} actions." ) )
@@ -38,18 +39,18 @@ namespace CK.Setup
                         if( !a( m, _holder ) )
                         {
                             m.Error( "A deferred action failed." );
-                            onError();
+                            trampolineSuccess = onError();
                         }
                     }
                     catch( Exception ex )
                     {
                         m.Error( ex );
-                        onError();
+                        trampolineSuccess = onError();
                     }
                 }
                 _postActions.Clear();
-                onError();
             }
+            return trampolineSuccess;
         }
     }
 }

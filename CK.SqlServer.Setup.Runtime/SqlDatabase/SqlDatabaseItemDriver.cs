@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Setup.Runtime\SqlDatabase\SqlDatabaseSetupDriver.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using CK.Setup;
 using CK.Core;
 using CK.SqlServer.Parser;
@@ -16,17 +9,17 @@ namespace CK.SqlServer.Setup
     public class SqlDatabaseItemDriver : SetupItemDriver
     {
         readonly SqlDatabaseConnectionItemDriver _connection;
+        readonly ISetupSessionMemory _sessionMemory;
         readonly List<ISqlServerObject> _sqlObjects;
         readonly Dictionary<object,object> _sharedState;
-        readonly ISqlSetupAspect _aspects;
 
-        public SqlDatabaseItemDriver( BuildInfo info )
+        public SqlDatabaseItemDriver( BuildInfo info, ISetupSessionMemory sessionMemory )
             : base( info )
         {
+            _sessionMemory = sessionMemory;
             _connection = (SqlDatabaseConnectionItemDriver)Engine.Drivers[Item.ConnectionItem];
             _sqlObjects = new List<ISqlServerObject>();
             _sharedState = new Dictionary<object, object>();
-            _aspects = info.Engine.GetSetupEngineAspect<ISqlSetupAspect>();
         }
 
         /// <summary>
@@ -61,13 +54,7 @@ namespace CK.SqlServer.Setup
 
         bool DoRun( string script, string key = null )
         {
-            //var result = _aspects.SqlParser.Parse( one.Body );
-            //if( result.IsError )
-            //{
-            //    result.LogOnError( Engine.Monitor );
-            //    return false;
-            //}
-            if( key != null && Engine.Memory.IsItemRegistered( key ) )
+            if( key != null && _sessionMemory.IsItemRegistered( key ) )
             {
                 Engine.Monitor.Trace().Send( $"Script '{key}' has already been executed." );
                 return true;
@@ -76,7 +63,7 @@ namespace CK.SqlServer.Setup
             {
                 if( SqlManager.ExecuteOneScript( script, Engine.Monitor ) )
                 {
-                    if( key != null ) Engine.Memory.RegisterItem( key );
+                    if( key != null ) _sessionMemory.RegisterItem( key );
                     return true;
                 }
             }

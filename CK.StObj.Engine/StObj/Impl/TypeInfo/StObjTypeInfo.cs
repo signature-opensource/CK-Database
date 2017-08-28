@@ -348,9 +348,9 @@ namespace CK.Setup
             return null;
         }
 
-        protected internal override TC CreateContextTypeInfo<T, TC>( TC generalization, IContextualTypeMap context )
+        protected internal override TC CreateContextTypeInfo<T, TC>( IActivityMonitor monitor, IServiceProvider services, TC generalization, IContextualTypeMap context )
         {
-            return (TC)(object)(new MutableItem( this, (MutableItem)((object)generalization), context ));
+            return (TC)(object)(new MutableItem( monitor, this, (MutableItem)((object)generalization), context, services ));
         }
 
     }

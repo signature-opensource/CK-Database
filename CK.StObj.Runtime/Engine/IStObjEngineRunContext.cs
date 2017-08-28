@@ -16,9 +16,11 @@ namespace CK.Setup
         IStObjEngineStatus EngineStatus { get; }
 
         /// <summary>
-        /// Gets the available services.
+        /// Gets the service container.
+        /// Exposing the container itself during the run (instead of the mere <see cref="IServiceProvider"/>)
+        /// enables aspects to dynamically register services while running.
         /// </summary>
-        IServiceProvider Services { get; }
+        ISimpleServiceContainer ServiceContainer { get; }
 
         /// <summary>
         /// Gets the list of all available aspects.

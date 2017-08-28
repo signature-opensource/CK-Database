@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,7 +20,7 @@ namespace CK.Core
         static IActivityMonitor _monitor;
         static ActivityMonitorConsoleClient _console;
         static SqlConnectionStringBuilder _masterConnectionString;
-        static SetupableAspectConfiguration _config;
+        static StObjEngineConfiguration _config;
         static IStObjMap _map;
         static string _binFolder;
         static string _projectFolder;
@@ -141,7 +141,7 @@ namespace CK.Core
                 {
                     try
                     {
-                        string assemblyName = Config.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName;
+                        string assemblyName = Config.FinalAssemblyConfiguration.AssemblyName;
                         if( assemblyName == null ) assemblyName = BuilderFinalAssemblyConfiguration.DefaultAssemblyName;
                         var a = LoadAssemblyFromAppContextBaseDirectory( assemblyName );
                         _map = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, Monitor );
@@ -194,11 +194,14 @@ namespace CK.Core
             {
                 try
                 {
-                    Config.RunningMode = revertNames ? SetupEngineRunningMode.RevertNames : SetupEngineRunningMode.Default;
-                    Config.StObjEngineConfiguration.TraceDependencySorterInput = traceStObjGraphOrdering;
-                    Config.StObjEngineConfiguration.TraceDependencySorterOutput = traceStObjGraphOrdering;
-                    Config.TraceDependencySorterInput = traceSetupGraphOrdering;
-                    Config.TraceDependencySorterOutput = traceSetupGraphOrdering;
+                    Config.RevertOrderingNames = revertNames;
+                    Config.TraceDependencySorterInput = traceStObjGraphOrdering;
+                    Config.TraceDependencySorterOutput = traceStObjGraphOrdering;
+
+                    var setupable = Config.Aspects.OfType<SetupableAspectConfiguration>().Single();
+                    setupable.RevertOrderingNames = revertNames;
+                    setupable.TraceDependencySorterInput = traceSetupGraphOrdering;
+                    setupable.TraceDependencySorterOutput = traceSetupGraphOrdering;
                     bool success = StObjContextRoot.Build( Config, null, TestHelper.Monitor );
                     if( success )
                     {
@@ -427,24 +430,27 @@ namespace CK.Core
         /// This configuration uses <see cref="DynamicAssemblyName"/>, <see cref="AssembliesToSetup"/>
         /// and <see cref="DatabaseTestConnectionString"/> by default.
         /// </summary>
-        public static SetupableAspectConfiguration Config
+        public static StObjEngineConfiguration Config
         {
             get
             {
                 if( _config == null )
                 {
-                    _config = new SetupableAspectConfiguration();
-                    _config.StObjEngineConfiguration.FinalAssemblyConfiguration.GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFileAndPEVerify;
+                    _config = new StObjEngineConfiguration();
+                    _config.FinalAssemblyConfiguration.GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFileAndPEVerify;
                     foreach( var a in AssembliesToSetup )
                     {
-                        _config.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( a );
+                        _config.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( a );
                     }
                     foreach( var a in RecurseAssembliesToSetup )
                     {
-                        _config.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverRecurseAssemblyNames.Add( a );
+                        _config.BuildAndRegisterConfiguration.Assemblies.DiscoverRecurseAssemblyNames.Add( a );
                     }
-                    _config.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = DynamicAssemblyName;
-                    _config.StObjEngineConfiguration.FinalAssemblyConfiguration.SourceGeneration = DefaultSourceGeneration;
+                    _config.FinalAssemblyConfiguration.AssemblyName = DynamicAssemblyName;
+                    _config.FinalAssemblyConfiguration.SourceGeneration = DefaultSourceGeneration;
+
+                    var cSetupable = new SetupableAspectConfiguration();
+                    _config.Aspects.Add( cSetupable );
 
                     var c = new SqlSetupAspectConfiguration();
                     c.DefaultDatabaseConnectionString = DatabaseTestConnectionString;

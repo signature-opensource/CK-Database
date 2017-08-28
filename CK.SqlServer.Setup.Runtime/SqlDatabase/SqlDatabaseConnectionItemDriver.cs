@@ -1,4 +1,4 @@
-﻿#region Proprietary License
+#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.SqlServer.Setup.Runtime\SqlDatabase\SqlDatabaseConnectionSetupDriver.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -16,10 +16,10 @@ namespace CK.SqlServer.Setup
         readonly ISqlManagerProvider _sqlProvider;
         ISqlManagerBase _connection;
 
-        public SqlDatabaseConnectionItemDriver( BuildInfo info )
+        public SqlDatabaseConnectionItemDriver( BuildInfo info, ISqlManagerProvider sqlProvider )
             : base( info )
         {
-            _sqlProvider = info.Engine.GetSetupEngineAspect<ISqlSetupAspect>().SqlDatabases;
+            _sqlProvider = sqlProvider;
         }
 
         public new SqlDatabaseConnectionItem Item => (SqlDatabaseConnectionItem)base.Item;
@@ -85,7 +85,7 @@ if @isSingleUser = 1 exec( 'alter database '+@dbNameQ+' set multi_user;' );
             }
             if( c == null )
             {
-                monitor.Error().Send( "Database '{0}' not available.", db.Name );
+                monitor.Error( $"Database '{db.Name}' not available." );
             }
             else if( !db.IsDefaultDatabase && db.InstallCore )
             {

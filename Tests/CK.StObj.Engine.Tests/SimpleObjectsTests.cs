@@ -1,4 +1,4 @@
-﻿#region Proprietary License
+#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (Tests\CK.StObj.Engine.Tests\SimpleObjectsTests.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -29,7 +29,7 @@ namespace CK.StObj.Engine.Tests
             StObjCollector collector = new StObjCollector( TestHelper.Monitor );
             collector.RegisterTypes( disco );
             
-            var result = collector.GetResult();
+            var result = collector.GetResult( new SimpleServiceContainer() );
             Assert.That( result.HasFatalError, Is.False );
 
             IStObjResult oa = result.Default.StObjMap.ToStObj( typeof(ObjectA) );
@@ -69,7 +69,7 @@ namespace CK.StObj.Engine.Tests
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
                 collector.RegisterTypes( disco );
 
-                var result = collector.GetResult();
+                var result = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( result.HasFatalError, Is.False );
             }
 
@@ -85,7 +85,7 @@ namespace CK.StObj.Engine.Tests
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
                 collector.RegisterTypes( disco );
 
-                var result = collector.GetResult();
+                var result = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( result.HasFatalError, Is.False );
             }
         }
@@ -108,7 +108,7 @@ namespace CK.StObj.Engine.Tests
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
                 collector.RegisterTypes( disco );
 
-                var result = collector.GetResult();
+                var result = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( result.HasFatalError, Is.True );
             }
         }
@@ -129,7 +129,7 @@ namespace CK.StObj.Engine.Tests
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
                 collector.RegisterTypes( disco );
 
-                var result = collector.GetResult();
+                var result = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( result.HasFatalError, Is.True );
             }
         }
@@ -149,7 +149,7 @@ namespace CK.StObj.Engine.Tests
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
                 collector.RegisterTypes( disco );
-                var result = collector.GetResult();
+                var result = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( result.HasFatalError, Is.True );
             }
         }
@@ -167,7 +167,7 @@ namespace CK.StObj.Engine.Tests
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
                 collector.RegisterTypes( disco );
-                var result = collector.GetResult();
+                var result = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( result.HasFatalError, Is.False );
 
                 IStObjResult theObject = result.Default.StObjMap.ToLeaf( typeof(CK.StObj.Engine.Tests.SimpleObjects.LoggerInjection.LoggerInjected) );
@@ -213,7 +213,7 @@ namespace CK.StObj.Engine.Tests
 
             StObjCollector collector = new StObjCollector( TestHelper.Monitor );
             collector.RegisterTypes( disco );
-            var result = collector.GetResult();
+            var result = collector.GetResult( new SimpleServiceContainer() );
             Assert.That( result.HasFatalError, Is.True );
         }
 
@@ -240,7 +240,7 @@ namespace CK.StObj.Engine.Tests
 
             StObjCollector collector = new StObjCollector( TestHelper.Monitor );
             collector.RegisterTypes( disco );
-            var result = collector.GetResult();
+            var result = collector.GetResult( new SimpleServiceContainer() );
             Assert.That( result.HasFatalError, Is.True );
 
         }
@@ -265,7 +265,7 @@ namespace CK.StObj.Engine.Tests
 
             StObjCollector collector = new StObjCollector( TestHelper.Monitor );
             collector.RegisterTypes( disco );
-            var result = collector.GetResult();
+            var result = collector.GetResult( new SimpleServiceContainer() );
             Assert.That( result.HasFatalError, Is.False );
         
         }

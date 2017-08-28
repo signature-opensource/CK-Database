@@ -149,8 +149,8 @@ namespace CK.Setup
         /// <summary>
         /// Called from Generalization to Specialization.
         /// </summary>
-        internal MutableItem( StObjTypeInfo objectType, MutableItem generalization, IContextualTypeMap context )
-            : base( objectType, generalization, context ) 
+        internal MutableItem( IActivityMonitor monitor, StObjTypeInfo objectType, MutableItem generalization, IContextualTypeMap context, IServiceProvider services )
+            : base( monitor, objectType, generalization, context, services ) 
         {
             Debug.Assert( context != null );
             // These 2 lists can be initialized here (even if they can not work until InitializeBottomUp is called).

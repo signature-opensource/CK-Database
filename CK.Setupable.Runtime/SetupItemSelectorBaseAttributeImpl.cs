@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -48,17 +48,17 @@ namespace CK.Setup
                             if( i.Item is T ) items.Add( i );
                             else 
                             {
-                                driver.Engine.Monitor.Error().Send( "Item '{0}' in {2} attribute of '{1}' must be a '{3}'.", i.FullName, driver.Item.FullName, _attribute.GetShortTypeName(), typeof(T).Name );
+                                driver.Engine.Monitor.Error( $"Item '{i.FullName}' in {_attribute.GetShortTypeName()} attribute of '{driver.Item.FullName}' must be a '{typeof(T).Name}'." );
                                 result = false;
                             }
                         }
                         if( count == 0 )
                         {
-                            driver.Engine.Monitor.Error().Send( "Name '{0}' in {2} attribute of '{1}' not found.", itemName, driver.Item.FullName, _attribute.GetShortTypeName() );
+                            driver.Engine.Monitor.Error( $"Name '{itemName}' in {_attribute.GetShortTypeName()} attribute of '{driver.Item.FullName}' not found." );
                             result = false;
                         }
                     }
-                    else driver.Engine.Monitor.Warn().Send( "Duplicate name '{0}' in {2} attribute of '{1}'.", itemName, driver.Item.FullName, _attribute.GetShortTypeName() );
+                    else driver.Engine.Monitor.Warn( $"Duplicate name '{itemName}' in {_attribute.GetShortTypeName()} attribute of '{driver.Item.FullName}'." );
                 }
             }
             if( !result ) return false;

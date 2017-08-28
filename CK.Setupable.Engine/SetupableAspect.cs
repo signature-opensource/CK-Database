@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace CK.Setup
 {
-    public class SetupableAspect : IStObjEngineAspect
+    public class SetupableAspect : IStObjEngineAspect, ISetupableAspect
     {
         readonly SetupableAspectConfiguration _config;
         readonly SetupAspectConfigurator _configurator;
@@ -62,9 +62,9 @@ namespace CK.Setup
             _relayDriverEvent = OnEngineDriverEvent;
         }
 
-        public bool Configure( IActivityMonitor monitor, IStObjEngineConfigureContext context )
+        bool IStObjEngineAspect.Configure( IActivityMonitor monitor, IStObjEngineConfigureContext context )
         {
-
+            context.AddConfigureOnlyService( new ConfigureOnly<ISetupableAspectConfiguration>( new RunConfiguration( this ) ) );
             context.PushPostConfigureAction( PostConfigure );
             return true;
         }
@@ -83,10 +83,10 @@ namespace CK.Setup
 
         public event EventHandler<DriverEventArgs> DriverEvent;
 
-        public bool Run( IActivityMonitor monitor, IStObjEngineRunContext context )
+        bool IStObjEngineAspect.Run( IActivityMonitor monitor, IStObjEngineRunContext context )
         {
             var configurator = _configurator.FirstLayer;
-            var itemBuilder = new StObjSetupItemBuilder( monitor, context.Aspects, configurator, configurator, configurator );
+            var itemBuilder = new StObjSetupItemBuilder( monitor, context.ServiceContainer, configurator, configurator, configurator );
             IEnumerable<ISetupItem> setupItems = itemBuilder.Build( context.OrderedStObjs );
             if( setupItems == null ) return false;
 
@@ -94,14 +94,15 @@ namespace CK.Setup
             VersionedItemTracker versionTracker = new VersionedItemTracker( _versionedItemReader );
             if( versionTracker.Initialize( monitor ) )
             {
-                bool setupSuccess = DoRun( monitor, context.Aspects, setupItems, versionTracker, _setupSessionMemory );
+                context.ServiceContainer.Add( _setupSessionMemory );
+                bool setupSuccess = DoRun( monitor, context.ServiceContainer, setupItems, versionTracker, _setupSessionMemory );
                 setupSuccess &= versionTracker.ConcludeWithFatalOnError( monitor, _versionedItemWriter, setupSuccess );
                 return setupSuccess;
             }
             return false;
         }
 
-        public bool Terminate( IActivityMonitor monitor, IStObjEngineTerminateContext context )
+        bool IStObjEngineAspect.Terminate( IActivityMonitor monitor, IStObjEngineTerminateContext context )
         {
             if( context.EngineStatus.Success )
             {
@@ -111,14 +112,15 @@ namespace CK.Setup
             {
                 _setupSessionMemoryProvider.StopSetup( context.EngineStatus.LastErrorPath.ToStringPath() );
             }
+            context.ServiceContainer.Remove<ISetupSessionMemory>();
             return true;
         }
 
-        bool DoRun( IActivityMonitor monitor, IReadOnlyList<IStObjEngineAspect> aspects, IEnumerable<ISetupItem> stObjItems, VersionedItemTracker versionTracker, ISetupSessionMemory m )
+        bool DoRun( IActivityMonitor monitor, IServiceProvider services, IEnumerable<ISetupItem> stObjItems, VersionedItemTracker versionTracker, ISetupSessionMemory m )
         {
             bool hasError = false;
             using( monitor.OnError( () => hasError = true ) )
-            using( SetupCoreEngine engine = CreateCoreEngine( monitor, aspects, versionTracker, m ) )
+            using( SetupCoreEngine engine = CreateCoreEngine( monitor, services, versionTracker, m ) )
             {
                 using( monitor.OpenInfo( "Register step." ) )
                 {
@@ -185,7 +187,7 @@ namespace CK.Setup
             }
         }
 
-        SetupCoreEngine CreateCoreEngine( IActivityMonitor monitor, IReadOnlyList<IStObjEngineAspect> aspects, VersionedItemTracker versionTracker, ISetupSessionMemory m )
+        SetupCoreEngine CreateCoreEngine( IActivityMonitor monitor, IServiceProvider services, VersionedItemTracker versionTracker, ISetupSessionMemory m )
         {
             SetupCoreEngine engine = null;
             using( monitor.OpenInfo( "Setupable Core Engine initialization." ) )
@@ -196,7 +198,7 @@ namespace CK.Setup
                 {
                     monitor.Info( $"{memory.StartCount} previous Setup attempt(s). Last on {memory.LastStartDate}, error was: '{memory.LastError}'." );
                 }
-                engine = new SetupCoreEngine( versionTracker, m, aspects, monitor, _configurator.FirstLayer );
+                engine = new SetupCoreEngine( versionTracker, m, services, monitor, _configurator.FirstLayer );
                 engine.RegisterSetupEvent += _relayRegisterSetupEvent;
                 engine.SetupEvent += _relaySetupEvent;
                 engine.DriverEvent += _relayDriverEvent;

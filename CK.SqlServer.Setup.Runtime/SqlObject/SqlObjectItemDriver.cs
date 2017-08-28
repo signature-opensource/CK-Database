@@ -1,4 +1,4 @@
-﻿#region Proprietary License
+#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.SqlServer.Setup.Runtime\SqlObject\SqlObjectSetupDriver.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -22,13 +22,11 @@ namespace CK.SqlServer.Setup
     /// </summary>
     public class SqlObjectItemDriver : SetupItemDriver
     {
-        readonly ISqlSetupAspect _aspects;
         SqlDatabaseItemDriver _dbDriver;
 
         public SqlObjectItemDriver( BuildInfo info )
             : base( info )
         {
-            _aspects = info.Engine.GetSetupEngineAspect<ISqlSetupAspect>();
         }
 
         public new SqlObjectItem Item => (SqlObjectItem)base.Item;

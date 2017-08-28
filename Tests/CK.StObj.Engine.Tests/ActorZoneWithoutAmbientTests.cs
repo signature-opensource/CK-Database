@@ -111,7 +111,7 @@ namespace CK.StObj.Engine.Tests
             collector.DependencySorterHookInput = items => TestHelper.Monitor.TraceDependentItem( items );
             collector.DependencySorterHookOutput = sortedItems => TestHelper.Monitor.TraceSortedItem( sortedItems, false );
             
-            var r = collector.GetResult();
+            var r = collector.GetResult( new SimpleServiceContainer() );
             Assert.That( r.HasFatalError, Is.False );
 
             r.Default.CheckChildren<BasicPackage>( "BasicActor,BasicUser,BasicGroup" );

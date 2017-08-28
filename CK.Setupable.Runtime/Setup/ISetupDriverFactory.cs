@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using CK.Core;
 
 namespace CK.Setup
 {
@@ -19,7 +20,7 @@ namespace CK.Setup
         /// </summary>
         /// <param name="driverType">SetupDriver type to create.</param>
         /// <param name="info">Internal constructor information.</param>
-        /// <returns>A setup driver. Null if not able to create it (a basic <see cref="Activator.CreateInstance(Type)"/> will be used to create the driver).</returns>
+        /// <returns>A setup driver. Null if not able to create it (<see cref="ServiceProviderExtension.SimpleObjectActivate(IServiceProvider, IActivityMonitor, Type, object)"/> will be used to create the driver).</returns>
         SetupItemDriver CreateDriver( Type driverType, SetupItemDriver.BuildInfo info );
     }
 }

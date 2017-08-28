@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -18,7 +18,6 @@ namespace CK.Setup
         readonly AmbientContextBoundDelegationAttribute _attribute;
         ICKCustomAttributeTypeMultiProvider _owner;
         MemberInfo _member;
-        ISetupEngineAspectProvider _aspectProvider;
         SetupObjectItemAttributeImplBase.BestCreator _theBest;
 
         /// <summary>
@@ -66,11 +65,6 @@ namespace CK.Setup
         /// </summary>
         protected MemberInfo Member => _member; 
 
-        /// <summary>
-        /// Gets the aspects provider.
-        /// </summary>
-        protected ISetupEngineAspectProvider SetupEngineAspectProvider => _aspectProvider; 
-
         void IAttributeAmbientContextBoundInitializer.Initialize( ICKCustomAttributeTypeMultiProvider owner, MemberInfo m )
         {
             _owner = owner;
@@ -79,7 +73,6 @@ namespace CK.Setup
 
         void IStObjSetupDynamicInitializer.DynamicItemInitialize( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjResult stObj )
         {
-            _aspectProvider = state.AspectProvider;
             var r = new SetupObjectItemAttributeRegisterer( state, item, stObj, this );
             _theBest = r.Register( Behavior, ObjectName );
             if( _theBest != null ) state.PushAction( DynamicItemInitializeAfterFollowing );
