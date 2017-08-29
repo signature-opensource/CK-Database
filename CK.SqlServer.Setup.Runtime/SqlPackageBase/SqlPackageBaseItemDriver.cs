@@ -25,7 +25,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Gets the database driver.
         /// </summary>
-        public SqlDatabaseItemDriver DatabaseDriver => _dbDriver ?? (_dbDriver = (SqlDatabaseItemDriver)Engine.Drivers[Item.Groups.OfType<SqlDatabaseItem>().Single()]);
+        public SqlDatabaseItemDriver DatabaseDriver => _dbDriver ?? (_dbDriver = Drivers.Find<SqlDatabaseItemDriver>( Item.Groups.OfType<SqlDatabaseItem>().Single() ) );
 
         public new SqlPackageBaseItem Item => (SqlPackageBaseItem)base.Item;
 
@@ -33,19 +33,20 @@ namespace CK.SqlServer.Setup
         /// Loads the scripts from resources: found scripts are registered in a <see cref="SetupHandler"/>
         /// that will install the scripts.
         /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
         /// <returns>True on success, false otherwise.</returns>
-        protected override bool ExecutePreInit()
+        protected override bool ExecutePreInit( IActivityMonitor monitor )
         {
             if( Item.ResourceLocation?.Type == null )
             {
-                Engine.Monitor.Error( $"ResourceLocator for '{FullName}' has no Type defined. A ResourceType must be set in order to load resources." );
+                monitor.Error( $"ResourceLocator for '{FullName}' has no Type defined. A ResourceType must be set in order to load resources." );
                 return false;
             }
 
             var externalVersion = ExternalVersion?.Version;
-            if( !CreateScriptHandlerFor( this, Item.ResourceLocation, ItemVersion, externalVersion ) ) return false;
-            if( Item.Model != null && !CreateScriptHandlerFor( Engine.Drivers[Item.Model], Item.ResourceLocation, ItemVersion, externalVersion ) ) return false;
-            if( Item.ObjectsPackage != null && !CreateScriptHandlerFor( Engine.Drivers[Item.ObjectsPackage], Item.ResourceLocation, ItemVersion, externalVersion ) ) return false;
+            if( !CreateScriptHandlerFor( monitor, this, Item.ResourceLocation, ItemVersion, externalVersion ) ) return false;
+            if( Item.Model != null && !CreateScriptHandlerFor( monitor, Drivers[Item.Model], Item.ResourceLocation, ItemVersion, externalVersion ) ) return false;
+            if( Item.ObjectsPackage != null && !CreateScriptHandlerFor( monitor, Drivers[Item.ObjectsPackage], Item.ResourceLocation, ItemVersion, externalVersion ) ) return false;
             return true;
         }
 
@@ -53,23 +54,24 @@ namespace CK.SqlServer.Setup
         /// Loads the init/install/settle scripts, filters them thanks to the provided target version (the 
         /// current, latest, one) and the currently installed version (that is null if no previous version has been 
         /// installed yet). The selected scripts are then given to a <see cref="SetupHandler"/> that is registered
-        /// on the driver object: this SetupHandler will <see cref="SqlDatabaseItemDriver.InstallScript(ISetupScript)"/> 
+        /// on the driver object: this SetupHandler will <see cref="SqlDatabaseItemDriver.InstallScript"/> 
         /// the appropriate scripts into this <see cref="DatabaseDriver"/> for each <see cref="SetupCallGroupStep"/>.
         /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
         /// <param name="driver">The driver to which scripts must be associated.</param>
         /// <param name="resLoc">The resource locator to use.</param>
         /// <param name="target">The current version.</param>
         /// <param name="externalVersion">The existing version if any.</param>
         /// <returns>True on success, false otherwise.</returns>
-        protected bool CreateScriptHandlerFor( SetupItemDriver driver, ResourceLocator resLoc, Version target, Version externalVersion = null )
+        protected bool CreateScriptHandlerFor( IActivityMonitor monitor, SetupItemDriver driver, ResourceLocator resLoc, Version target, Version externalVersion = null )
         {
-            ScriptsCollection c = LoadResourceScriptsFor( driver.Item, resLoc );
+            ScriptsCollection c = LoadResourceScriptsFor( monitor, driver.Item, resLoc );
             bool externalLoadError = false;
-            using( Engine.Monitor.OnError( () => externalLoadError = true ) )
+            using( monitor.OnError( () => externalLoadError = true ) )
             {
-                if( !LoadExternalScriptsFor( Engine.Monitor, driver.Item, c ) )
+                if( !LoadExternalScriptsFor( monitor, driver.Item, c ) )
                 {
-                    if( !externalLoadError ) Engine.Monitor.Error().Send( $"Error while loading external scripts for '{driver.Item.FullName}'." );
+                    if( !externalLoadError ) monitor.Error( $"Error while loading external scripts for '{driver.Item.FullName}'." );
                     return false;
                 }
             }
@@ -90,7 +92,7 @@ namespace CK.SqlServer.Setup
                             string body = s.GetScript();
                             if( s.Name.Extension == "y4" )
                             {
-                                body = SqlPackageBaseItem.ProcessY4Template( Engine.Monitor, this, Item, Item.ActualObject, s.Name.FileName, body );
+                                body = SqlPackageBaseItem.ProcessY4Template( monitor, this, Item, Item.ActualObject, s.Name.FileName, body );
                                 if( body == null ) return false;
                                 sToAdd = new SetupScript( s.Name, body );
                             }
@@ -126,14 +128,13 @@ namespace CK.SqlServer.Setup
             return true;
         }
 
-        ScriptsCollection LoadResourceScriptsFor( IContextLocNaming locName, ResourceLocator resLoc )
+        ScriptsCollection LoadResourceScriptsFor( IActivityMonitor monitor, IContextLocNaming locName, ResourceLocator resLoc )
         {
             string context, location, name;
             var scripts = new ScriptsCollection();
             context = locName.Context;
             location = locName.Location;
             name = locName.Name;
-            var monitor = Engine.Monitor;
             int nbScripts = scripts.AddFromResources( monitor, resLoc, context, location, name, ".sql" );
             nbScripts += scripts.AddFromResources( monitor, resLoc, context, location, name, ".y4" );
             monitor.Info( $"{nbScripts} sql scripts in resource found for '{name}' in '{resLoc}." );
@@ -152,11 +153,11 @@ namespace CK.SqlServer.Setup
                 _scripts = scripts;
             }
 
-            protected override bool OnStep( SetupCallGroupStep step )
+            protected override bool OnStep( IActivityMonitor monitor, SetupCallGroupStep step )
             {
                 foreach( var s in _scripts[(int)step - 1] )
                 {
-                    if( !_main.DatabaseDriver.InstallScript( s ) ) return false;
+                    if( !_main.DatabaseDriver.InstallScript( monitor, s ) ) return false;
                 }
                 return true;
             }

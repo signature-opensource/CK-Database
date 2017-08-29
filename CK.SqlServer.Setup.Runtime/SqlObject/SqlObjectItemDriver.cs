@@ -34,15 +34,15 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Gets the database driver.
         /// </summary>
-        public SqlDatabaseItemDriver DatabaseDriver => _dbDriver ?? (_dbDriver = (SqlDatabaseItemDriver)Engine.Drivers[SqlDatabaseItem.ItemNameFor(Item)]);
+        public SqlDatabaseItemDriver DatabaseDriver => _dbDriver ?? (_dbDriver = Drivers.Find<SqlDatabaseItemDriver>( SqlDatabaseItem.ItemNameFor(Item) ));
 
-        protected override bool Install( bool beforeHandlers )
+        protected override bool Install( IActivityMonitor monitor, bool beforeHandlers )
         {
             if( beforeHandlers ) return true;
-            return LegacyInstall();
+            return LegacyInstall( monitor );
         }
 
-        internal bool OnTargetTransformed( SqlTransformerItemDriver transformerDriver, ISqlServerObject transformed )
+        internal bool OnTargetTransformed( IActivityMonitor monitor, SqlTransformerItemDriver transformerDriver, ISqlServerObject transformed )
         {
             Debug.Assert( Item.TransformTarget != null, "We are a transformation source." );
             // Updates the target with the current transformed object.
@@ -57,10 +57,10 @@ namespace CK.SqlServer.Setup
                     .AppendStrings( Item.Transformers.Select( t => (t.TransformTarget ?? t).FullName ) )
                     .AppendLine();
             }
-            return ExpandAndExecuteScript( b.ToString() );
+            return ExpandAndExecuteScript( monitor, b.ToString() );
         }
 
-        bool LegacyInstall()
+        bool LegacyInstall( IActivityMonitor monitor )
         {
             Debug.Assert( Item.TransformTarget == null || Item.TransformSource == null, "Both can not be set on the same item." );
 
@@ -70,7 +70,7 @@ namespace CK.SqlServer.Setup
             StringBuilder b = new StringBuilder();
             // If this is the first occurrence of a transformed item OR the only one (no transformation).
             Item.WriteSafeDrop( b );
-            if( !DatabaseDriver.SqlManager.ExecuteOneScript( b.ToString(), Engine.Monitor ) ) return false;
+            if( !DatabaseDriver.SqlManager.ExecuteOneScript( b.ToString(), monitor ) ) return false;
             b.Clear();
             if( Item.TransformTarget != null )
             {
@@ -79,15 +79,15 @@ namespace CK.SqlServer.Setup
                     .AppendLine();
             }
             Item.WriteCreate( b, alreadyExists: false );
-            return ExpandAndExecuteScript( b.ToString() );
+            return ExpandAndExecuteScript( monitor, b.ToString() );
         }
 
-        private bool ExpandAndExecuteScript( string s )
+        private bool ExpandAndExecuteScript( IActivityMonitor monitor, string s )
         {
             var tagHandler = new SimpleScriptTagHandler( s );
-            if( !tagHandler.Expand( Engine.Monitor, true ) ) return false;
+            if( !tagHandler.Expand( monitor, true ) ) return false;
             var scripts = tagHandler.SplitScript();
-            if( !DatabaseDriver.SqlManager.ExecuteScripts( scripts.Select( c => c.Body ), Engine.Monitor ) )
+            if( !DatabaseDriver.SqlManager.ExecuteScripts( scripts.Select( c => c.Body ), monitor ) )
             {
                 return false;
             }

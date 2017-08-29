@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CK.Setup;
 using CK.SqlServer.Setup;
 using CK.SqlServer.Parser;
+using CK.Core;
 
 namespace SqlActorPackage.Runtime
 {
@@ -20,7 +21,7 @@ namespace SqlActorPackage.Runtime
             _header = header;
         }
 
-        protected override bool Init()
+        protected override bool Init( IActivityMonitor m )
         {
             SqlProcedureItem item = (SqlProcedureItem)Driver.Item;
             SqlStoredProcedure p = (SqlStoredProcedure)item.SqlObject;

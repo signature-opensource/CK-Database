@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Setup.Runtime\SqlDatabase\SqlDatabaseConnectionSetupDriver.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using CK.Core;
 using CK.Setup;
@@ -29,20 +22,32 @@ namespace CK.SqlServer.Setup
         /// </summary>
         public ISqlManagerBase SqlManager => _connection;
 
-        protected override bool ExecutePreInit()
+        /// <summary>
+        /// Initializes the <see cref="SqlManager"/> based on the <see cref="Item"/>'s <see cref="SqlDatabaseConnectionItem.SqlDatabase"/>.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <returns>True on success, false if the database can not be found in the <see cref="ISqlManagerProvider"/>.</returns>
+        protected override bool ExecutePreInit( IActivityMonitor monitor )
         {
-            _connection = FindManager( _sqlProvider, Engine.Monitor, Item.SqlDatabase );
+            _connection = FindManager( _sqlProvider, monitor, Item.SqlDatabase );
             return _connection != null;
         }
 
-        protected override bool Init( bool beforeHandlers )
+        /// <summary>
+        /// Initializes the database by ensuring that all <see cref="Item"/>'s registered <see cref="SqlDatabase.Schemas"/>
+        /// exists and that snapshot_isolation and read_committed_snapshot are on for this db. 
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="beforeHandlers">Initialization is done after the handlers (when true, this method does nothing).</param>
+        /// <returns>True on success, false if an error occurred.</returns>
+        protected override bool Init( IActivityMonitor monitor, bool beforeHandlers )
         {
             if( !beforeHandlers )
             {
                 foreach( var name in Item.SqlDatabase.Schemas )
                 {
                     string sqlName = name.Replace( "]", "]]" );
-                    _connection.ExecuteOneScript( $"if not exists(select 1 from sys.schemas where name = '{name}') begin exec( 'create schema [{sqlName}]' ); end", Engine.Monitor );
+                    _connection.ExecuteOneScript( $"if not exists(select 1 from sys.schemas where name = '{name}') begin exec( 'create schema [{sqlName}]' ); end", monitor );
                 }               
                 _connection.ExecuteOneScript( @"
 -- Ensure that snapshot_isolation and read_committed_snapshot are on for this db.
@@ -67,7 +72,7 @@ begin
 end;
  
 if @isSingleUser = 1 exec( 'alter database '+@dbNameQ+' set multi_user;' );
-", Engine.Monitor );
+", monitor );
             }
             return true;
         }

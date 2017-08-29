@@ -198,7 +198,7 @@ namespace CK.Setup
                 {
                     monitor.Info( $"{memory.StartCount} previous Setup attempt(s). Last on {memory.LastStartDate}, error was: '{memory.LastError}'." );
                 }
-                engine = new SetupCoreEngine( versionTracker, m, services, monitor, _configurator.FirstLayer );
+                engine = new SetupCoreEngine( versionTracker, services, monitor, _configurator.FirstLayer );
                 engine.RegisterSetupEvent += _relayRegisterSetupEvent;
                 engine.SetupEvent += _relaySetupEvent;
                 engine.DriverEvent += _relayDriverEvent;

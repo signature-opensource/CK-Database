@@ -84,7 +84,7 @@ namespace CK.Setup
         /// </summary>
         /// <param name="driverType">SetupDriver type to create.</param>
         /// <param name="info">Internal constructor information.</param>
-        /// <returns>A setup driver. Null if not able to create it (<see cref="ServiceProviderExtension.SimpleObjectActivate(IServiceProvider, IActivityMonitor, Type, object)"/> will be used to create the driver).</returns>
+        /// <returns>A setup driver. Null if not able to create it (<see cref="ServiceProviderExtension.SimpleObjectCreate(IServiceProvider, IActivityMonitor, Type, object)"/> will be used to create the driver).</returns>
         public virtual SetupItemDriver CreateDriver( Type driverType, SetupItemDriver.BuildInfo info )
         {
             return _next != null ? _next.CreateDriver( driverType, info ) : null;

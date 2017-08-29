@@ -119,14 +119,12 @@ namespace CKSetup
             }
         }
 
-        static string WritDBSetupConfig( IActivityMonitor m, SetupableAspectConfiguration conf, string binPath )
+        static string WritDBSetupConfig( IActivityMonitor m, StObjEngineConfiguration conf, string binPath )
         {
-            // We have only one aspect to handle: the SqlSetupAspectConfiguration.
-            Func<Type, string> typeWriter = t => "CK.Setup.SqlSetupAspectConfiguration, CK.SqlServer.Setup.Model";
             var doc = new XDocument(
                             new XElement( SetupRunner.xRunner,
                                 new XElement( SetupRunner.xLogFiler, m.MinimalFilter.ToString() ),
-                                conf.SerializeXml( new XElement( SetupRunner.xSetup ), typeWriter ) ) );
+                                conf.SerializeXml( new XElement( SetupRunner.xSetup ) ) ) );
             string filePath = Path.Combine( binPath, SetupRunner.XmlFileName );
             string text = doc.ToString();
             m.Debug( text );
@@ -134,23 +132,27 @@ namespace CKSetup
             return filePath;
         }
 
-        static SetupableAspectConfiguration BuildSetupConfig(
+        static StObjEngineConfiguration BuildSetupConfig(
             string connectionString,
             IEnumerable<string> assembliesToSetup,
             string dynamicAssemblyName,
             bool sourceGeneration )
         {
-            var config = new SetupableAspectConfiguration();
-            config.RunningMode = SetupEngineRunningMode.Default;
-            config.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.AddRange( assembliesToSetup );
-            config.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = dynamicAssemblyName;
-            config.StObjEngineConfiguration.FinalAssemblyConfiguration.SourceGeneration = sourceGeneration;
-            var c = new SqlSetupAspectConfiguration
+            var config = new StObjEngineConfiguration();
+            config.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.AddRange( assembliesToSetup );
+            config.FinalAssemblyConfiguration.AssemblyName = dynamicAssemblyName;
+            config.FinalAssemblyConfiguration.SourceGeneration = sourceGeneration;
+
+            var setupable = new SetupableAspectConfiguration();
+            config.Aspects.Add( setupable );
+
+            var sql = new SqlSetupAspectConfiguration
             {
                 DefaultDatabaseConnectionString = connectionString,
                 IgnoreMissingDependencyIsError = true
             };
-            config.Aspects.Add( c );
+            config.Aspects.Add( sql );
+
             return config;
         }
 

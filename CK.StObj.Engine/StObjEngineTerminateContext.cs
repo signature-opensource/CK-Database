@@ -32,8 +32,9 @@ namespace CK.Setup
         {
             using( _monitor.OpenInfo( "Terminating Aspects." ) )
             {
-                foreach( var a in _runContext.Aspects )
+                for( int i = _runContext.Aspects.Count-1; i >= 0; --i )
                 {
+                    IStObjEngineAspect a = _runContext.Aspects[i];
                     using( _monitor.OpenInfo( $"Aspect: {a.GetType().FullName}." ) )
                     {
                         try

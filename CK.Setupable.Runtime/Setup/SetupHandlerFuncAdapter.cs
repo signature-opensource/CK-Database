@@ -1,10 +1,4 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setupable.Runtime\Setup\SetupHandlerFuncAdapter.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,35 +7,41 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
-    /// Internal adapter used by <see cref="SetupItemDriver"/>.
+    /// Raw <see cref="ISetupHandler"/> that relays the call to a function.
+    /// This handler is not bound to a driver but to a specific <see cref="SetupStep"/>.
     /// </summary>
-    class SetupHandlerFuncAdapter : ISetupHandler
+    public class SetupHandlerFuncAdapter : ISetupHandler
     {
-        readonly Func<SetupItemDriver,bool> _func;
+        readonly Func<IActivityMonitor,SetupItemDriver,bool> _func;
         readonly SetupCallGroupStep _step;
 
-        public SetupHandlerFuncAdapter( Func<SetupItemDriver, bool> handler, SetupCallGroupStep step )
+        /// <summary>
+        /// Initializes a new <see cref="SetupHandlerFuncAdapter"/> with a function for a specific step.
+        /// </summary>
+        /// <param name="handler">The function to call.</param>
+        /// <param name="step">The step at which the handler must be called.</param>
+        public SetupHandlerFuncAdapter( Func<IActivityMonitor,SetupItemDriver, bool> handler, SetupCallGroupStep step )
         {
             _func = handler;
             _step = step;
         }
 
-        public bool OnStep( SetupItemDriver d, SetupCallGroupStep step )
+        bool ISetupHandler.OnStep( IActivityMonitor monitor, SetupItemDriver d, SetupCallGroupStep step )
         {
-            return _step == step ? _func( d ) : true;
+            return _step == step ? _func( monitor, d ) : true;
         }
 
-        public bool Init( SetupItemDriver d ) => true;
+        bool ISetupHandler.Init( IActivityMonitor monitor, SetupItemDriver d ) => true;
 
-        public bool InitContent( SetupItemDriver d ) => true;
-    
-        public bool Install( SetupItemDriver d ) => true;
+        bool ISetupHandler.InitContent( IActivityMonitor monitor, SetupItemDriver d ) => true;
 
-        public bool InstallContent( SetupItemDriver d ) => true;
+        bool ISetupHandler.Install( IActivityMonitor monitor, SetupItemDriver d ) => true;
 
-        public bool Settle( SetupItemDriver d ) => true;
+        bool ISetupHandler.InstallContent( IActivityMonitor monitor, SetupItemDriver d ) => true;
 
-        public bool SettleContent( SetupItemDriver d ) => true;
+        bool ISetupHandler.Settle( IActivityMonitor monitor, SetupItemDriver d ) => true;
+
+        bool ISetupHandler.SettleContent( IActivityMonitor monitor, SetupItemDriver d ) => true;
 
     }
 

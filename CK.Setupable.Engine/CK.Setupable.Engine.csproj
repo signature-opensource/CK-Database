@@ -16,7 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CK.StObj.Engine\CK.StObj.Engine.csproj" />
+    <ProjectReference Include="..\CK.StObj.Runtime\CK.StObj.Runtime.csproj" />
     <ProjectReference Include="..\CK.Setupable.Runtime\CK.Setupable.Runtime.csproj" />
   </ItemGroup>
 

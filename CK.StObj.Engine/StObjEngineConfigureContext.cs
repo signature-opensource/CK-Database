@@ -126,7 +126,7 @@ namespace CK.Setup
                         }
                         else
                         {
-                            IStObjEngineAspect a = (IStObjEngineAspect)_configureOnlycontainer.SimpleObjectActivate( _monitor, t );
+                            IStObjEngineAspect a = (IStObjEngineAspect)_configureOnlycontainer.SimpleObjectCreate( _monitor, t );
                             if( a == null ) success = onError();
                             else
                             {

@@ -10,52 +10,38 @@ namespace CK.Setup
     /// <summary>
     /// Core setup object. Contains the execution context and all ambient services required to
     /// process a setup. It is in charge of item ordering, setup drivers management and Init/Install/Settle steps.
-    /// It does not contain anything related to script management: the <see cref="SetupEngine"/> wraps
-    /// this class and offers package script support (see <see cref="SetupEngine.Scripts"/>).
+    /// It does not contain anything related to script managemen.
     /// </summary>
-    sealed class SetupCoreEngine : ISetupEngine, IDisposable
+    sealed class SetupCoreEngine : IDisposable
     {
         readonly VersionedItemTracker _versionTracker;
         readonly DriverBaseList _allDrivers;
-        readonly DriverList _genDrivers;
+        readonly DriverList _drivers;
         readonly ISetupDriverFactory _driverFactory;
         readonly IActivityMonitor _monitor;
-        readonly ISetupSessionMemory _memory;
         readonly IServiceProvider _services;
-        SetupEngineState _state;
+        SetupCoreEngineState _state;
 
         class DriverBaseList : IDriverBaseList
         {
-            Dictionary<object, DriverBase> _index;
-            List<DriverBase> _drivers;
-            SetupCoreEngine _center;
+            readonly Dictionary<object, DriverBase> _index;
+            readonly List<DriverBase> _drivers;
+            readonly SetupCoreEngine _engine;
 
-            public DriverBaseList( SetupCoreEngine center )
+            public DriverBaseList( SetupCoreEngine e )
             {
-                _center = center;
+                _engine = e;
                 _index = new Dictionary<object, DriverBase>();
                 _drivers = new List<DriverBase>();
             }
 
-            public DriverBase this[string fullName]
-            {
-                get { return fullName == null ? null : _index.GetValueWithDefault( fullName, null ); }
-            }
+            public DriverBase this[string fullName] => fullName == null ? null : _index.GetValueWithDefault( fullName, null ); 
 
-            public DriverBase this[IDependentItem item]
-            {
-                get { return item == null ? null : _index.GetValueWithDefault( item, null ); }
-            }
+            public DriverBase this[IDependentItem item] =>  item == null ? null : _index.GetValueWithDefault( item, null );
 
-            public DriverBase this[int index]
-            {
-                get { return _drivers[index]; }
-            }
+            public DriverBase this[int index] => _drivers[index];
 
-            public int Count
-            {
-                get { return _drivers.Count; }
-            }
+            public int Count => _drivers.Count; 
 
             public IEnumerator<DriverBase> GetEnumerator() => _drivers.GetEnumerator();
 
@@ -69,7 +55,7 @@ namespace CK.Setup
 
             internal void Add( DriverBase d )
             {
-                Debug.Assert( d != null && d.Engine == _center );
+                Debug.Assert( d != null && d.Drivers == _engine.Drivers );
                 Debug.Assert( !_index.ContainsKey( d.FullName ) );
                 Debug.Assert( _drivers.Count == 0 || _drivers[_drivers.Count - 1].SortedItem.Index < d.SortedItem.Index );
                 _drivers.Add( d );
@@ -112,23 +98,20 @@ namespace CK.Setup
         /// Initializes a new setup engine.
         /// </summary>
         /// <param name="versionRepository">Provides version information about items already installed.</param>
-        /// <param name="memory">Provides persistent memory to setup participants.</param>
         /// <param name="services">Available services.</param>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="driverFactory">Factory for setup drivers.</param>
-        public SetupCoreEngine( VersionedItemTracker versionTracker, ISetupSessionMemory memory, IServiceProvider services, IActivityMonitor monitor, ISetupDriverFactory driverFactory )
+        public SetupCoreEngine( VersionedItemTracker versionTracker, IServiceProvider services, IActivityMonitor monitor, ISetupDriverFactory driverFactory )
         {
             Debug.Assert( versionTracker != null );
             Debug.Assert( services != null );
             Debug.Assert( monitor != null );
-            Debug.Assert( memory != null );
             _versionTracker = versionTracker;
-            _memory = memory;
             _services = services;
             _driverFactory = driverFactory;
             _monitor = monitor;
             _allDrivers = new DriverBaseList( this );
-            _genDrivers = new DriverList( _allDrivers );
+            _drivers = new DriverList( _allDrivers );
         }
 
         /// <summary>
@@ -153,12 +136,6 @@ namespace CK.Setup
         /// </summary>
         public event EventHandler<DriverEventArgs> DriverEvent;
 
-
-        /// <summary>
-        /// Monitor that will be used during setup.
-        /// </summary>
-        public IActivityMonitor Monitor => _monitor;
-
         /// <summary>
         /// Gives access to the ordered list (also indexed by item fullname) of all the <see cref="DriverBase"/> that participate to Setup.
         /// DriverBase 
@@ -168,12 +145,7 @@ namespace CK.Setup
         /// <summary>
         /// Gives access to the ordered list of the <see cref="SetupItemDriver"/>.
         /// </summary>
-        public IDriverList Drivers => _genDrivers;
-
-        /// <summary>
-        /// Gets the current state of the engine.
-        /// </summary>
-        public SetupEngineState State => _state;
+        public IDriverList Drivers => _drivers;
 
         /// <summary>
         /// This is the very first step: registers any number of <see cref="IDependentItem"/> and/or <see cref="IDependentItemDiscoverer"/>.
@@ -193,12 +165,12 @@ namespace CK.Setup
         /// <returns>A <see cref="SetupCoreEngineRegisterResult"/> that captures detailed information about the registration result.</returns>
         public SetupCoreEngineRegisterResult RegisterAndCreateDrivers( IEnumerable<ISetupItem> items, IEnumerable<IDependentItemDiscoverer<ISetupItem>> discoverers, DependencySorterOptions options = null )
         {
-            CheckState( SetupEngineState.None );
+            CheckState( SetupCoreEngineState.None );
             var hRegisterSetupEvent = RegisterSetupEvent;
             var hSetupEvent = SetupEvent;
             if( hRegisterSetupEvent != null || hSetupEvent != null )
             {
-                var e = new RegisterSetupEventArgs();
+                var e = new RegisterSetupEventArgs( _monitor );
                 try
                 {
                     if( hRegisterSetupEvent != null )
@@ -226,11 +198,11 @@ namespace CK.Setup
             // the state remains set to SetupEngineState.None.
             try
             {
-                result = new SetupCoreEngineRegisterResult( DependencySorter<ISetupItem>.OrderItems( Monitor, items, discoverers, options ) );
+                result = new SetupCoreEngineRegisterResult( DependencySorter<ISetupItem>.OrderItems( _monitor, items, discoverers, options ) );
                 if( result.IsValid )
                 {
                     #region Creating drivers
-                    using( Monitor.OpenInfo().Send( $"Instanciating drivers for {result.SortResult.SortedItems.Count} items." ) )
+                    using( _monitor.OpenInfo( $"Instanciating drivers for {result.SortResult.SortedItems.Count} items." ) )
                     {
                         foreach( var item in result.SortResult.SortedItems )
                         {
@@ -241,8 +213,8 @@ namespace CK.Setup
                             {
                                 var head = (GroupHeadSetupDriver)_allDrivers[item.HeadForGroup.FullName];
                                 typeToCreate = ResolveDriverType( item );
-                                setupItemDriver = CreateSetupDriver( typeToCreate, new SetupItemDriver.BuildInfo( head, item ) );
-                                d = head.Group = setupItemDriver;
+                                setupItemDriver = CreateSetupDriver( typeToCreate, new SetupItemDriver.BuildInfo( head, _drivers, _allDrivers, item ) );
+                                d = head.GroupOrContainer = setupItemDriver;
                             }
                             else
                             {
@@ -253,28 +225,28 @@ namespace CK.Setup
 
                                 if( item.IsGroupHead )
                                 {
-                                    d = new GroupHeadSetupDriver( this, item, externalVersion );
+                                    d = new GroupHeadSetupDriver( _drivers, _allDrivers, item, externalVersion );
                                 }
                                 else
                                 {
                                     typeToCreate = ResolveDriverType( item );
-                                    d = setupItemDriver = CreateSetupDriver( typeToCreate, new SetupItemDriver.BuildInfo( this, item, externalVersion ) );
+                                    d = setupItemDriver = CreateSetupDriver( typeToCreate, new SetupItemDriver.BuildInfo( _drivers, _allDrivers, item, externalVersion ) );
                                 }
                             }
                             Debug.Assert( d != null, "Otherwise an exception is thrown by CreateSetupDriver that will be caught as the result.UnexpectedError." );
                             _allDrivers.Add( d );
-                            if( setupItemDriver != null ) _genDrivers.Add( setupItemDriver );
+                            if( setupItemDriver != null ) _drivers.Add( setupItemDriver );
                         }
                     }
                     #endregion
 
                     #region Pre initialization phasis.
-                    using( Monitor.OpenInfo().Send( $"Calling PreInit on {_allDrivers.Count} drivers." ) )
+                    using( _monitor.OpenInfo( $"Calling PreInit on {_allDrivers.Count} drivers." ) )
                     {
-                        var reusableEvent = new DriverEventArgs( SetupStep.PreInit );
+                        var reusableEvent = new DriverEventArgs( _monitor, SetupStep.PreInit );
                         foreach( var d in _allDrivers )
                         {
-                            Debug.Assert( (d is SetupItemDriver) == !d.IsGroupHead, "There is only 2 DriverBase specializations: GenericItemSetupDriver and GroupHeadSetupDriver." );
+                            Debug.Assert( (d is SetupItemDriver) == !d.IsGroupHead, $"There is only 2 DriverBase specializations: {nameof(SetupItemDriver)} and {nameof(GroupHeadSetupDriver)}." );
                             // Raising PreInit global event.
                             var hE = DriverEvent;
                             if( hE != null )
@@ -292,7 +264,7 @@ namespace CK.Setup
                             if( !d.IsGroupHead )
                             {
                                 SetupItemDriver genDriver = (SetupItemDriver)d;
-                                if( !genDriver.ExecutePreInit() )
+                                if( !genDriver.ExecutePreInit( _monitor ) )
                                 {
                                     string msg = $"Canceled by '{d.Item.FullName}'.ExecutePreInit() method.";
                                     return new SetupCoreEngineRegisterResult( null ) { CancelReason = msg };
@@ -303,7 +275,7 @@ namespace CK.Setup
                                     var all = stObjIem.StObj.Attributes.GetAllCustomAttributes<ISetupItemDriverAware>();
                                     foreach( var a in all )
                                     {
-                                        if( !a.OnDriverPreInitialized( genDriver ) )
+                                        if( !a.OnDriverPreInitialized( _monitor, genDriver ) )
                                         {
                                             string msg = $"Canceled by one Attribute of Item '{d.Item.FullName}' during driver creation.";
                                             return new SetupCoreEngineRegisterResult( null ) { CancelReason = msg };
@@ -313,7 +285,7 @@ namespace CK.Setup
                                 ISetupItemDriverAware aware = d.Item as ISetupItemDriverAware;
                                 if( aware != null )
                                 {
-                                    if( !aware.OnDriverPreInitialized( genDriver ) )
+                                    if( !aware.OnDriverPreInitialized( _monitor, genDriver ) )
                                     {
                                         string msg = $"Canceled by Item '{d.Item.FullName}' during driver creation.";
                                         return new SetupCoreEngineRegisterResult( null ) { CancelReason = msg };
@@ -333,7 +305,7 @@ namespace CK.Setup
                 result.UnexpectedError = ex;
                 _allDrivers.Clear();
             }
-            if( result.IsValid ) _state = SetupEngineState.Registered;
+            if( result.IsValid ) _state = SetupCoreEngineState.Registered;
             else
             {
                 SafeFireSetupEvent( SetupStep.PreInit, errorOccured: true );
@@ -347,14 +319,14 @@ namespace CK.Setup
             {
                 try
                 {
-                    return _driverFactory?.CreateDriver( typeToCreate, buildInfo );
+                    return _driverFactory.CreateDriver( typeToCreate, buildInfo );
                 }
                 catch( Exception ex )
                 {
                     throw new CKException( ex, $"While creating SetupDriver for item '{buildInfo.SortedItem.FullName}', type='{typeToCreate.FullName}'." );
                 }
             }
-            var d = (SetupItemDriver)_services.SimpleObjectActivate( _monitor, typeToCreate, buildInfo );
+            var d = (SetupItemDriver)_services.SimpleObjectCreate( _monitor, typeToCreate, buildInfo );
             if( d == null )
             {
                 throw new CKException( $"Unable to create SetupDriver for item '{buildInfo.SortedItem.FullName}', type='{typeToCreate.FullName}'." );
@@ -368,7 +340,7 @@ namespace CK.Setup
             if( h == null ) return true;
             using( _monitor.OpenTrace( errorOccured ? $"Raising error event during {step}." : $"Raising {step} setup event." ) )
             {
-                var e = new SetupEventArgs( step, errorOccured );
+                var e = new SetupEventArgs( _monitor, step, errorOccured );
                 try
                 {
                     h( this, e );
@@ -393,17 +365,17 @@ namespace CK.Setup
         /// <returns></returns>
         public bool RunInit()
         {
-            CheckState( SetupEngineState.Registered );
-            _state = SetupEngineState.InitializationError;
+            CheckState( SetupCoreEngineState.Registered );
+            _state = SetupCoreEngineState.InitializationError;
             if( !SafeFireSetupEvent( SetupStep.Init ) ) return false;
             try
             {
-                var reusableEvent = new DriverEventArgs( SetupStep.Init );
+                var reusableEvent = new DriverEventArgs( _monitor, SetupStep.Init );
                 foreach( var d in _allDrivers )
                 {
                     using( _monitor.OpenInfo().Send( "Initializing {0}", d.FullName ) )
                     {
-                        if( !d.ExecuteInit() ) return false;
+                        if( !d.ExecuteInit( _monitor ) ) return false;
                         var hE = DriverEvent;
                         if( hE != null )
                         {
@@ -420,23 +392,23 @@ namespace CK.Setup
                 SafeFireSetupEvent( SetupStep.Init, true );
                 return false;
             }
-            _state = SetupEngineState.Initialized;
+            _state = SetupCoreEngineState.Initialized;
             return true;
         }
 
         public bool RunInstall()
         {
-            CheckState( SetupEngineState.Initialized );
-            _state = SetupEngineState.InstallationError;
+            CheckState( SetupCoreEngineState.Initialized );
+            _state = SetupCoreEngineState.InstallationError;
             if( !SafeFireSetupEvent( SetupStep.Install ) ) return false;
             try
             {
-                var reusableEvent = new DriverEventArgs( SetupStep.Install );
+                var reusableEvent = new DriverEventArgs( _monitor, SetupStep.Install );
                 foreach( var d in _allDrivers )
                 {
                     using( _monitor.OpenInfo( $"Installing {d.FullName} ({VersionTransitionString( d )})." ) )
                     {
-                        if( !d.ExecuteInstall() ) return false;
+                        if( !d.ExecuteInstall( _monitor ) ) return false;
                         var hE = DriverEvent;
                         if( hE != null )
                         {
@@ -453,7 +425,7 @@ namespace CK.Setup
                 SafeFireSetupEvent( SetupStep.Install, true );
                 return false;
             }
-            _state = SetupEngineState.Installed;
+            _state = SetupCoreEngineState.Installed;
             return true;
         }
 
@@ -478,7 +450,7 @@ namespace CK.Setup
                     }
                     else
                     {
-                        if( d.IsGroupHead ) d = ((GroupHeadSetupDriver)d).Group;
+                        if( d.IsGroupHead ) d = ((GroupHeadSetupDriver)d).GroupOrContainer;
                         if( d.ExternalVersion.FullName != d.FullName )
                         {
                             versionTransition = String.Format( "{0} => {1}", d.ExternalVersion, d.ItemVersion );
@@ -495,17 +467,17 @@ namespace CK.Setup
 
         public bool RunSettle()
         {
-            CheckState( SetupEngineState.Installed );
-            _state = SetupEngineState.SettlementError;
+            CheckState( SetupCoreEngineState.Installed );
+            _state = SetupCoreEngineState.SettlementError;
             if( !SafeFireSetupEvent( SetupStep.Settle ) ) return false;
             try
             {
-                var reusableEvent = new DriverEventArgs( SetupStep.Settle );
+                var reusableEvent = new DriverEventArgs( _monitor, SetupStep.Settle );
                 foreach( var d in _allDrivers )
                 {
                     using( _monitor.OpenInfo( $"Settling {d.FullName}." ) )
                     {
-                        if( !d.ExecuteSettle() ) return false;
+                        if( !d.ExecuteSettle( _monitor ) ) return false;
                         var hE = DriverEvent;
                         if( hE != null )
                         {
@@ -528,16 +500,16 @@ namespace CK.Setup
                 SafeFireSetupEvent( SetupStep.Settle, true );
                 return false;
             }
-            _state = SetupEngineState.Settled;
+            _state = SetupCoreEngineState.Settled;
             SafeFireSetupEvent( SetupStep.Success );
             return true;
         }
 
         public void Dispose()
         {
-            if( (_state & SetupEngineState.Disposed) == 0 )
+            if( (_state & SetupCoreEngineState.Disposed) == 0 )
             {
-                using( Monitor.OpenInfo( $"Disposing {_allDrivers.Count} drivers." ) )
+                using( _monitor.OpenInfo( $"Disposing {_allDrivers.Count} drivers." ) )
                 {
                     foreach( var d in _allDrivers )
                     {
@@ -550,12 +522,12 @@ namespace CK.Setup
                             }
                             catch( Exception ex )
                             {
-                                Monitor.Error( $"Disposing {d.FullName} of type '{d.GetType()}'.", ex );
+                                _monitor.Error( $"Disposing {d.FullName} of type '{d.GetType()}'.", ex );
                             }
                         }
                     }
                 }
-                _state |= SetupEngineState.Disposed;
+                _state |= SetupCoreEngineState.Disposed;
                 SafeFireSetupEvent( SetupStep.Disposed );
             }
         }
@@ -575,7 +547,7 @@ namespace CK.Setup
             return SimpleTypeFinder.WeakResolver( typeName, true );
         }
 
-        void CheckState( SetupEngineState requiredState )
+        void CheckState( SetupCoreEngineState requiredState )
         {
             if( _state != requiredState )
             {

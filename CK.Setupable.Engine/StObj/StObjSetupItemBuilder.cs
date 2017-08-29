@@ -119,7 +119,7 @@ namespace CK.Setup
                             }
                             else
                             {
-                                data.SetupItem = (IStObjSetupItem)_services.SimpleObjectActivate(_monitor, itemType, data );
+                                data.SetupItem = (IStObjSetupItem)_services.SimpleObjectCreate(_monitor, itemType, data );
                             }
                         }
                         // Configures Generalization since we got it above.

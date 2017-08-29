@@ -17,7 +17,7 @@ namespace CK.SqlServer.Setup
             : base( info )
         {
             _sessionMemory = sessionMemory;
-            _connection = (SqlDatabaseConnectionItemDriver)Engine.Drivers[Item.ConnectionItem];
+            _connection = Drivers.Find<SqlDatabaseConnectionItemDriver>( Item.ConnectionItem );
             _sqlObjects = new List<ISqlServerObject>();
             _sharedState = new Dictionary<object, object>();
         }
@@ -35,33 +35,34 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Installs a script.
         /// </summary>
+        /// <param name="monitor">Monitor to use.</param>
         /// <param name="script">The script to install.</param>
         /// <returns>True on succes, false on error.</returns>
-        public bool InstallScript( ISetupScript script )
+        public bool InstallScript( IActivityMonitor monitor, ISetupScript script )
         {
             string body = script.GetScript();
             var tagHandler = new SimpleScriptTagHandler( body );
-            if( !tagHandler.Expand( Engine.Monitor, true ) ) return false;
+            if( !tagHandler.Expand( monitor, true ) ) return false;
             int idx = 0;
             foreach( var one in tagHandler.SplitScript() )
             {
                 string key = script.Name.GetScriptKey( one.Label ?? "AutoLabel" + idx );
-                if( !DoRun( one.Body, key ) ) return false;
+                if( !DoRun( monitor, one.Body, key ) ) return false;
                 ++idx;
             }
             return true;
         }
 
-        bool DoRun( string script, string key = null )
+        bool DoRun( IActivityMonitor monitor, string script, string key = null )
         {
             if( key != null && _sessionMemory.IsItemRegistered( key ) )
             {
-                Engine.Monitor.Trace().Send( $"Script '{key}' has already been executed." );
+                monitor.Trace( $"Script '{key}' has already been executed." );
                 return true;
             }
-            using( Engine.Monitor.OpenTrace().Send( $"Executing '{key ?? "<no key>"}'." ) )
+            using( monitor.OpenTrace( $"Executing '{key ?? "<no key>"}'." ) )
             {
-                if( SqlManager.ExecuteOneScript( script, Engine.Monitor ) )
+                if( SqlManager.ExecuteOneScript( script, monitor ) )
                 {
                     if( key != null ) _sessionMemory.RegisterItem( key );
                     return true;

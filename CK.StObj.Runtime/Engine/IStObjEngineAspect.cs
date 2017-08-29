@@ -46,18 +46,18 @@ namespace CK.Setup
         /// Must return true on succes, false if any error occured (errors must be logged).
         /// Returning false does not stop the engine: <see cref="IStObjEngineStatus.Success"/> is set to false
         /// and following aspects are run, the final assembly is not generated and <see cref="Terminate"/> is
-        /// called on all the aspects.
+        /// called on all the aspects in reverse order.
         /// </returns>
         bool Run( IActivityMonitor monitor, IStObjEngineRunContext context );
 
         /// <summary>
-        /// Called by the engine after all aspects have <see cref="Run"/>.
+        /// Called by the engine in reverse order after all aspects have <see cref="Run"/>.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="context">Terminate context.</param>
         /// <returns>
         /// Must return true on succes, false if any error occured (errors must be logged).
-        /// Returning false sets <see cref="IStObjEngineStatus.Success"/> to false but following
+        /// Returning false sets <see cref="IStObjEngineStatus.Success"/> to false but preceeding
         /// aspects are terminated.
         /// </returns>
         bool Terminate( IActivityMonitor monitor, IStObjEngineTerminateContext context );

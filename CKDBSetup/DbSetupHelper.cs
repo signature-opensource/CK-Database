@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,28 +10,28 @@ namespace CKDBSetup
 {
     static class DbSetupHelper
     {
-        public static SetupEngineConfiguration BuildSetupConfig( 
+        public static StObjEngineConfiguration BuildSetupConfig( 
             string connectionString,
             IEnumerable<string> assembliesToSetup,
             IEnumerable<string> recurseAssembliesToSetup,
             string dynamicAssemblyName, 
             string binPath,
-            SetupEngineRunningMode runningMode,
             bool sourceGeneration )
         {
-            var config = new SetupEngineConfiguration();
-            config.RunningMode = runningMode;
-            config.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.AddRange( assembliesToSetup );
-            config.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverRecurseAssemblyNames.AddRange( recurseAssembliesToSetup );
-            config.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = dynamicAssemblyName;
-            config.StObjEngineConfiguration.FinalAssemblyConfiguration.Directory = binPath;
-            config.StObjEngineConfiguration.FinalAssemblyConfiguration.SourceGeneration = sourceGeneration;
-            var c = new SqlSetupAspectConfiguration
+            var config = new StObjEngineConfiguration();
+            config.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.AddRange( assembliesToSetup );
+            config.BuildAndRegisterConfiguration.Assemblies.DiscoverRecurseAssemblyNames.AddRange( recurseAssembliesToSetup );
+            config.FinalAssemblyConfiguration.AssemblyName = dynamicAssemblyName;
+            config.FinalAssemblyConfiguration.Directory = binPath;
+            config.FinalAssemblyConfiguration.SourceGeneration = sourceGeneration;
+            var setupable = new SetupableAspectConfiguration();
+            config.Aspects.Add( setupable );
+            var sql = new SqlSetupAspectConfiguration
             {
                 DefaultDatabaseConnectionString = connectionString,
                 IgnoreMissingDependencyIsError = true // Set to true while we don't have SqlFragment support.
             };
-            config.Aspects.Add( c );
+            config.Aspects.Add( sql );
 
             return config;
         }

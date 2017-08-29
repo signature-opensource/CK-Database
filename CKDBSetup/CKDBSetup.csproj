@@ -242,7 +242,6 @@
     <PreBuildEvent>xcopy /y $(SolutionDir)CK.SqlServer.Setup.Engine\bin\$(ConfigurationName)\net461\win\CK.StObj.*.dll $(ProjectDir)Imports\
 xcopy /y $(SolutionDir)CK.SqlServer.Setup.Engine\bin\$(ConfigurationName)\net461\win\CK.SqlServer.Setup.*.dll $(ProjectDir)Imports\
 xcopy /y $(SolutionDir)CK.SqlServer.Setup.Engine\bin\$(ConfigurationName)\net461\win\CK.Setupable.*.dll $(ProjectDir)Imports\
-xcopy /y $(SolutionDir)CK.SqlServer.Setup.Engine\bin\$(ConfigurationName)\net461\win\CK.Setupable.Engine.exe $(ProjectDir)Imports\
 </PreBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\SimpleGitVersionTask.0.28.0\build\SimpleGitVersionTask.targets" Condition="Exists('..\packages\SimpleGitVersionTask.0.28.0\build\SimpleGitVersionTask.targets')" />

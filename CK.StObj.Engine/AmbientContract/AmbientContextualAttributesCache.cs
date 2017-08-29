@@ -77,7 +77,7 @@ namespace CK.Core
                 if( a is AmbientContextBoundDelegationAttribute delegated )
                 {
                     Type dT = SimpleTypeFinder.WeakResolver( delegated.ActualAttributeTypeAssemblyQualifiedName, true );
-                    finalAttributeToUse = services.SimpleObjectActivate( monitor, dT, a );
+                    finalAttributeToUse = services.SimpleObjectCreate( monitor, dT, a );
                     if( finalAttributeToUse == null ) continue;
                 }
                 all.Add( new Entry( m, finalAttributeToUse ) );

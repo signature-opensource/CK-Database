@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CK.Setup;
 using CK.SqlServer.Setup;
+using CK.Core;
 
 namespace SqlActorPackage.Runtime
 {
@@ -17,9 +18,9 @@ namespace SqlActorPackage.Runtime
 
         protected new TestAutoHeaderSPMemberAttribute Attribute => (TestAutoHeaderSPMemberAttribute)base.Attribute; 
 
-        bool ISetupItemDriverAware.OnDriverPreInitialized( SetupItemDriver driver )
+        bool ISetupItemDriverAware.OnDriverPreInitialized( IActivityMonitor m, SetupItemDriver driver )
         {
-            new TestAutoHeaderSPHandler( driver.Engine.Drivers[SetupObjectItem], Attribute.HeaderComment );
+            new TestAutoHeaderSPHandler( driver.Drivers[SetupObjectItem], Attribute.HeaderComment );
             return true;
         }
     }
