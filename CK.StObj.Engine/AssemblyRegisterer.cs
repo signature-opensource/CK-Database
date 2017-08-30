@@ -1,4 +1,4 @@
-﻿#region Proprietary License
+#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.StObj.Engine\AssemblyRegisterer.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -67,14 +67,11 @@ namespace CK.Core
         public void Discover( AssemblyRegistererConfiguration config )
         {
             if( config == null ) throw new ArgumentNullException( "config" );
-            // Allow bindings to whatever is in the bin folder.
-            //#if NET461
-            //using( CK.Core.WeakAssemblyNameResolver.TempInstall() )
-            //#endif
             using( _monitor.OpenInfo().Send( "Discovering assemblies & types from configuration." ) )
             {
                 Predicate<Assembly> accept = a => !config.IgnoredAssemblyNames.Contains( a.GetName().Name )
-                                                    && !config.IgnoredAssemblyNamesByPrefix.Any( p => a.GetName().Name.StartsWith( p ) );
+                                                    && !config.IgnoredAssemblyNamesByPrefix.Any( p => a.GetName().Name.StartsWith( p ) )
+                                                    && !a.CustomAttributes.Any( attr => attr.AttributeType.FullName == "CK.Setup.ExcludeFromSetupAttribute" );
                 var prevFilter = _assemblyFilter;
                 if( prevFilter != null )
                 {

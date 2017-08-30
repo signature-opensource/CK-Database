@@ -49,7 +49,7 @@ namespace CKSetup
                     {
                         if( !zip.ExtractRuntimeDependencies( new[] { binFolder }, remoteStoreUrl, null ) ) return false;
                     }
-                    var toSetup = binFolder.Files.Where( b => b.LocalDependencies.Any( dep => dep.ComponentKind == ComponentKind.Model ) )
+                    var toSetup = binFolder.Assemblies.Where( b => b.LocalDependencies.Any( dep => dep.ComponentKind == ComponentKind.Model ) )
                                                     .Select( b => b.Name.Name );
                     using( monitor.OpenTrace( "Creating setup configuration xml file." ) )
                     {
@@ -131,10 +131,16 @@ namespace CKSetup
 
         static string WritDBSetupConfig( IActivityMonitor m, StObjEngineConfiguration conf, string binPath )
         {
+            Func<Type, string> aspectTypeWriter = t =>
+             {
+                 if( t == typeof( SetupableAspectConfiguration ) ) return "CK.Setup.SetupableAspectConfiguration, CK.Setupable.Model";
+                 if( t == typeof( SqlSetupAspectConfiguration ) ) return "CK.Setup.SqlSetupAspectConfiguration, CK.SqlServer.Setup.Model";
+                 throw new Exception("Unreachable code.");
+             };
             var doc = new XDocument(
                             new XElement( CK.StObj.Runner.Program.xRunner,
                                 new XElement( CK.StObj.Runner.Program.xLogFiler, m.MinimalFilter.ToString() ),
-                                conf.SerializeXml( new XElement( CK.StObj.Runner.Program.xSetup ) ) ) );
+                                conf.SerializeXml( new XElement( CK.StObj.Runner.Program.xSetup ), aspectTypeWriter ) ) );
             string filePath = Path.Combine( binPath, CK.StObj.Runner.Program.XmlFileName );
             string text = doc.ToString();
             m.Debug( text );

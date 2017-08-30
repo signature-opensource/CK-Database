@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using CK.Text;
 using CSemVer;
 using System;
@@ -165,7 +165,7 @@ namespace CKSetup
                 m.Warn( $"No component added (found already registered Components: '{folder.Heads.Select( h => h.Name.Name ).Concatenate( "', '" )}')" );
                 return new AddLocalResult( this );
             }
-            BinFileInfo toAdd = freeHeads.Single();
+            var toAdd = freeHeads.Single();
             using( m.OpenInfo( $"Found '{toAdd.ComponentRef.EntryPathPrefix}' to register." ) )
             {
                 List<ComponentDependency> dependencies = CollectSetupDependencies( m, toAdd.SetupDependencies );
@@ -376,13 +376,14 @@ namespace CKSetup
                 if( targetRuntime == TargetRuntime.None ) return null;
 
                 var rootDeps = CollectSetupDependencies( m, models.SelectMany( b => b.SetupDependencies ) );
+                if( rootDeps.Count == 0 ) m.Warn( "No Setup Dependency components found." );
                 return new DependencyResolver( this, targetRuntime, rootDeps );
             }
         }
 
-        static TargetRuntime SelectTargetRuntime( IActivityMonitor m, IEnumerable<BinFileInfo> models )
+        static TargetRuntime SelectTargetRuntime( IActivityMonitor m, IEnumerable<BinFileAssemblyInfo> models )
         {
-            using( m.OpenInfo( $"Detecting runtimes for: ${ models.Select( x => x.Name.Name + '/' + x.ComponentRef.TargetFramework ).Concatenate() }" ) )
+            using( m.OpenInfo( $"Detecting runtimes for: { models.Select( x => x.Name.Name + '/' + x.ComponentRef.TargetFramework ).Concatenate() }" ) )
             {
                 var runtimes = models.First().ComponentRef.TargetFramework.GetCommonRuntimes( models.Skip( 1 ).Select( x => x.ComponentRef.TargetFramework ) );
                 if( !runtimes.Any() )

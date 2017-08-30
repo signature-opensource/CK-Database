@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -132,7 +132,8 @@ namespace CKSetup.StreamStore
         void IStreamStore.ExtractToFile( string fullName, string targetPath )
         {
             var e = Find( fullName );
-            if( e.File == null ) throw new ArgumentException( $"'{fullName}' not found.", nameof( fullName ) );
+            if( e.File == null ) throw new ArgumentException( $"'{fullName}' not found in Directory store.", nameof( fullName ) );
+            Directory.CreateDirectory( Path.GetDirectoryName( targetPath ) );
             if( e.Kind == CompressionKind.None ) e.File.CopyTo( targetPath, false );
             else
             {

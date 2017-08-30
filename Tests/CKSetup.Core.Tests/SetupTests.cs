@@ -63,7 +63,7 @@ namespace CKSetup.Tests
             {
                 Facade.DoSetup(
                     TestHelper.ConsoleMonitor,
-                    TestHelper.SqlCallDemoModelNet13Path,
+                    TestHelper.SqlCallDemoModel461Path,
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",
@@ -82,8 +82,8 @@ namespace CKSetup.Tests
             {
                 var missingImporter = new FakeRemote( remoteZip );
                 zip.CreateLocalImporter( missingImporter ).AddComponent( 
-                    BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SqlActorPackageModel461Path ),
-                    BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SqlActorPackageRuntime461Path ) )
+                    BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.EnsurePublishPath( TestHelper.SqlActorPackageModel461Path ) ),
+                    BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.EnsurePublishPath( TestHelper.SqlActorPackageRuntime461Path ) ) )
                     .Import()
                     .Should().BeTrue();
                 Facade.DoSetup(
@@ -108,7 +108,7 @@ namespace CKSetup.Tests
             {
                 var missingImporter = new FakeRemote( remoteZip );
                 zip.CreateLocalImporter( missingImporter ).AddComponent(
-                    BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SqlActorPackageModel461Path ) )
+                    BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.EnsurePublishPath( TestHelper.SqlActorPackageModel461Path ) ) )
                     .Import()
                     .Should().BeTrue();
                 Facade.DoSetup(

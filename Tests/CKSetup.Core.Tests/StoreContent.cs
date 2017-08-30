@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using CK.Text;
 using FluentAssertions;
 using System;
@@ -24,15 +24,13 @@ namespace CKSetup.Tests
             {
                 string sha = RemoveCompressionPrefix( fullName );
                 SHA1Value v = SHA1Value.Parse( sha );
-                var allComps = db.Components.SelectMany( c => c.Files ).Where( f => f.SHA1 == v );
-                allComps.Should().NotBeNullOrEmpty();
-                ComponentFile = allComps.First();
-                allComps.ShouldAllBeEquivalentTo( ComponentFile );
+                ComponentFiles = db.Components.SelectMany( c => c.Files ).Where( f => f.SHA1 == v );
+                ComponentFiles.Should().NotBeNullOrEmpty();
             }
 
-            public readonly ComponentFile ComponentFile;
+            public readonly IEnumerable<ComponentFile> ComponentFiles;
 
-            public override string ToString() => ComponentFile.ToString();
+            public override string ToString() => ComponentFiles.Select( c => c.ToString() ).Concatenate();
         }
 
         public readonly Dictionary<SHA1Value,FileEntry> FileEntries;
@@ -80,7 +78,7 @@ namespace CKSetup.Tests
                     FileEntries = z.Entries
                                 .Where( x => RemoveCompressionPrefix( x.FullName ) != RuntimeArchive.DbXmlFileName )
                                 .Select( x => new FileEntry( ComponentDB, x.FullName ) )
-                                .ToDictionary( x => x.ComponentFile.SHA1 );
+                                .ToDictionary( x => x.ComponentFiles.First().SHA1 );
                 }
             }
             else
@@ -96,7 +94,7 @@ namespace CKSetup.Tests
                                 .Select( p => p.Substring( path.Length ) )
                                 .Where( x => RemoveCompressionPrefix( x ) != RuntimeArchive.DbXmlFileName )
                                 .Select( x => new FileEntry( ComponentDB, x ) )
-                                .ToDictionary( x => x.ComponentFile.SHA1 );
+                                .ToDictionary( x => x.ComponentFiles.First().SHA1 );
             }
             DbWithoutVaryingParts = RemoveVaryingParts( Db );
         }

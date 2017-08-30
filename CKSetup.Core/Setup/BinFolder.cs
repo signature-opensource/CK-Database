@@ -17,11 +17,12 @@ namespace CKSetup
         {
             BinPath = p;
             Files = files;
+            Assemblies = files.OfType<BinFileAssemblyInfo>().ToArray();
             foreach( var b in files )
             {
                 b.SetBinFolderAndUpdateLocalDependencies( this );
             }
-            var heads = Files.Where( f => f.ComponentKind != ComponentKind.None ).ToList();
+            var heads = Assemblies.Where( f => f.ComponentKind != ComponentKind.None ).ToList();
             Components = heads.ToArray();
             foreach( var c in Components )
             {
@@ -85,19 +86,24 @@ namespace CKSetup
         public string BinPath { get; }
 
         /// <summary>
-        /// Gets all the discovered files (.dll or .exe).
+        /// Gets all the discovered files.
         /// </summary>
         public IReadOnlyList<BinFileInfo> Files { get; }
 
         /// <summary>
+        /// Gets all the discovered files.
+        /// </summary>
+        public IReadOnlyList<BinFileAssemblyInfo> Assemblies { get; }
+
+        /// <summary>
         /// Gets the components (Model or Setup Dependency).
         /// </summary>
-        public IReadOnlyList<BinFileInfo> Components { get; }
+        public IReadOnlyList<BinFileAssemblyInfo> Components { get; }
 
         /// <summary>
         /// Gets the head components.
         /// </summary>
-        public IReadOnlyList<BinFileInfo> Heads { get; }
+        public IReadOnlyList<BinFileAssemblyInfo> Heads { get; }
 
         public override string ToString()
         {

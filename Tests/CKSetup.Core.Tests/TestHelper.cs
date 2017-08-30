@@ -253,6 +253,7 @@ namespace CKSetup.Tests
                 var pathToConfiguration = Path.GetDirectoryName( pathToFramework );
                 var configuration = Path.GetFileName( pathToConfiguration );
                 var projectPath = Path.GetDirectoryName( Path.GetDirectoryName( pathToConfiguration ) );
+                var projectName = Path.GetFileName( projectPath );
                 var pI = new ProcessStartInfo()
                 {
                     WorkingDirectory = projectPath,
@@ -264,6 +265,7 @@ namespace CKSetup.Tests
                     UseShellExecute = false,
                     CreateNoWindow = true
                 };
+                using( ConsoleMonitor.OpenInfo( $"Publishing {projectName}: dotnet {pI.Arguments}" ) )
                 using( Process cmdProcess = new Process() )
                 {
                     cmdProcess.StartInfo = pI;

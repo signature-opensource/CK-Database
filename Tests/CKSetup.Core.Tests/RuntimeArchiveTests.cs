@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -22,10 +22,10 @@ namespace CKSetup.Tests
             {
                 zip.Should().NotBeNull();
 
-                var fSetupableRT = BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SetupableRuntime461Path );
-                var fSetupableM = BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SetupableModel461Path );
-                var fStObjRT = BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjRuntime461Path );
-                var fStObjM = BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjModel461Path );
+                var fSetupableRT = BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.EnsurePublishPath( TestHelper.SetupableRuntime461Path ) );
+                var fSetupableM = BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.EnsurePublishPath( TestHelper.SetupableModel461Path ) );
+                var fStObjRT = BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.EnsurePublishPath( TestHelper.StObjRuntime461Path ) );
+                var fStObjM = BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.EnsurePublishPath( TestHelper.StObjModel461Path ) );
                 fSetupableRT.Should().NotBeNull();
                 fSetupableM.Should().NotBeNull();
                 fStObjRT.Should().NotBeNull();
@@ -59,15 +59,15 @@ namespace CKSetup.Tests
                 if( runtimeFirst )
                 {
                     zip.CreateLocalImporter().AddComponent( 
-                        BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjRuntime461Path ), 
-                        BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjModel461Path ) )
+                        BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.EnsurePublishPath( TestHelper.StObjRuntime461Path ) ), 
+                        BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.EnsurePublishPath( TestHelper.StObjModel461Path ) ) )
                         .Import().Should().BeTrue();
                 }
                 else
                 {
                     zip.CreateLocalImporter().AddComponent(
-                        BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjModel461Path ),
-                        BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjRuntime461Path ) )
+                        BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.EnsurePublishPath( TestHelper.StObjModel461Path ) ),
+                        BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.EnsurePublishPath( TestHelper.StObjRuntime461Path ) ) )
                         .Import().Should().BeTrue();
                 }
             }

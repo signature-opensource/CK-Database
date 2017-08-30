@@ -133,11 +133,20 @@ namespace CK.Core
         /// <param name="e">The element to populate.</param>
         /// <param name="aspectTypeNameWriter">
         /// Writer for aspects type names. 
-        /// Defaults to a function that returns <see cref="Type.AssemblyQualifiedName"/>.
+        /// Defaults to a function that returns a weak assembly name from <see cref="Type.AssemblyQualifiedName"/>
+        /// (using <see cref="SimpleTypeFinder.WeakenAssemblyQualifiedName(string, out string)"/>).
         /// </param>
         /// <returns>The <paramref name="e"/> element.</returns>
         public XElement SerializeXml( XElement e, Func<Type, string> aspectTypeNameWriter = null )
         {
+            if( aspectTypeNameWriter == null )
+            {
+                aspectTypeNameWriter = t =>
+                {
+                    SimpleTypeFinder.WeakenAssemblyQualifiedName( t.AssemblyQualifiedName, out string weaken );
+                    return weaken;
+                };
+            }
             e.Add( new XAttribute( XmlNames.Version, CurrentXmlVersion ),
                    TraceDependencySorterInput ? new XElement( XmlNames.TraceDependencySorterInput, "true" ) : null,
                    TraceDependencySorterOutput ? new XElement( XmlNames.TraceDependencySorterOutput, "true" ) : null,
