@@ -1,3 +1,3 @@
-﻿
-// Defines the engine assembly.
-[assembly: CK.Setup.IsRuntimeThatUsesEngine( "CK.SqlServer.Setup.Engine", "UseRuntimeVersion" )]
+
+[assembly: CK.Setup.IsSetupDependency()]
+[assembly: CK.Setup.RequiredSetupDependency( "CK.SqlServer.Setup.Engine" )]

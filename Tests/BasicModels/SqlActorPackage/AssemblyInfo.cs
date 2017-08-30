@@ -1,3 +1,3 @@
-﻿using CK.Setup;
 
-[assembly: IsModelThatUsesRuntime( "SqlActorPackage.Runtime" )]
+[assembly: CK.Setup.IsModel()]
+[assembly: CK.Setup.RequiredSetupDependency( "SqlActorPackage.Runtime" )]

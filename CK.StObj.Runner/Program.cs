@@ -5,9 +5,9 @@ using System.Reflection;
 using CK.Setup;
 using CK.Core;
 
-namespace CK.Setup
+namespace CK.StObj.Runner
 {
-    public static partial class SetupRunner
+    public static partial class Program
     {
         static public int Main( string[] args )
         {
@@ -27,7 +27,7 @@ namespace CK.Setup
         {
             var m = new ActivityMonitor();
             m.Output.RegisterClient( new ActivityMonitorConsoleClient() );
-            using( m.OpenInfo().Send( "Starting CKSetup.Runner" ) )
+            using( m.OpenInfo( "Starting CK.StObj.Runner" ) )
             {
                 try
                 {
@@ -38,7 +38,7 @@ namespace CK.Setup
                 }
                 catch( Exception ex )
                 {
-                    m.Fatal().Send( ex );
+                    m.Fatal( ex );
                     return false;
                 }
             }

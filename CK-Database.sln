@@ -111,6 +111,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CKSetupRemoteStore", "CKSet
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CKSetup.Core", "CKSetup.Core\CKSetup.Core.csproj", "{31C44FE9-1848-4851-9130-7B96B42CE2FB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.StObj.Runner", "CK.StObj.Runner\CK.StObj.Runner.csproj", "{A5DD40BF-1914-4C39-B94D-EE58622590C0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -529,6 +531,18 @@ Global
 		{31C44FE9-1848-4851-9130-7B96B42CE2FB}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{31C44FE9-1848-4851-9130-7B96B42CE2FB}.Release|x86.ActiveCfg = Release|Any CPU
 		{31C44FE9-1848-4851-9130-7B96B42CE2FB}.Release|x86.Build.0 = Release|Any CPU
+		{A5DD40BF-1914-4C39-B94D-EE58622590C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5DD40BF-1914-4C39-B94D-EE58622590C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5DD40BF-1914-4C39-B94D-EE58622590C0}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{A5DD40BF-1914-4C39-B94D-EE58622590C0}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{A5DD40BF-1914-4C39-B94D-EE58622590C0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A5DD40BF-1914-4C39-B94D-EE58622590C0}.Debug|x86.Build.0 = Debug|Any CPU
+		{A5DD40BF-1914-4C39-B94D-EE58622590C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5DD40BF-1914-4C39-B94D-EE58622590C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5DD40BF-1914-4C39-B94D-EE58622590C0}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{A5DD40BF-1914-4C39-B94D-EE58622590C0}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{A5DD40BF-1914-4C39-B94D-EE58622590C0}.Release|x86.ActiveCfg = Release|Any CPU
+		{A5DD40BF-1914-4C39-B94D-EE58622590C0}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -559,7 +573,7 @@ Global
 		{D29B730E-853F-49F7-9EB9-144A9287FC3F} = {6E913090-EA34-4A90-8DBB-1501F9981F53}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.0\lib\NET35;packages\Unity.2.1.505.2\lib\NET35
 		SolutionGuid = {FAF75456-A490-4FB3-B2E8-CFFC10068A8E}
+		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.0\lib\NET35;packages\Unity.2.1.505.2\lib\NET35
 	EndGlobalSection
 EndGlobal

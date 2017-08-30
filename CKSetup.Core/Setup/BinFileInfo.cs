@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using CSemVer;
 using Mono.Cecil;
 using System;
@@ -32,49 +32,39 @@ namespace CKSetup
                                         .FirstOrDefault();
 
             AssemblyReferences = a.MainModule.AssemblyReferences.ToArray();
-            // SetupDependencies may need VersionName or RawTargetFramework.
-            IsExcludedFromSetup = a.CustomAttributes.Any( x => x.AttributeType.FullName == "CK.Setup.ExcludeFromSetupAttribute" );
-            if( IsExcludedFromSetup )
+            SetupDependencies = a.CustomAttributes
+                                    .Select( x => (x.AttributeType.FullName == "RequiredSetupDependencyAttribute"
+                                                        ? new SetupDependency( true, x.ConstructorArguments, this )
+                                                        : null) )
+                                    .Where( x => x != null )
+                                    .ToArray();
+            bool isSetupDependency = false, isModel = false;
+            foreach( var attr in a.CustomAttributes )
             {
-                SetupDependencies = Array.Empty<SetupDependency>();
-                m.Debug( $"'{Name.Name}' has ExcludeFromSetup attribute." );
+                if( attr.AttributeType.FullName == "CK.Setup.IsSetupDependencyAttribute" )
+                {
+                    isSetupDependency = true;
+                }
+                else if( attr.AttributeType.FullName == "CK.Setup.IsModelAttribute" )
+                {
+                    isModel = true;
+                }
             }
-            else 
+            if( isModel && isSetupDependency )
             {
-                bool tooMuchKind = false;
-                bool isEngine = a.CustomAttributes.Any( x => x.AttributeType.FullName == "CK.Setup.IsEngineAttribute" );
-                if( isEngine )
-                {
-                    ComponentKind = ComponentKind.Engine;
-                }
-                bool isRuntime = a.CustomAttributes.Any( x => x.AttributeType.FullName == "CK.Setup.IsRuntimeAttribute" );
-                if( isRuntime )
-                {
-                    if( ComponentKind != ComponentKind.None ) tooMuchKind = true;
-                    ComponentKind = ComponentKind.Runtime;
-                }
-                SetupDependencies = a.CustomAttributes
-                                        .Select( x => (x.AttributeType.FullName == "CK.Setup.IsModelThatUsesRuntimeAttribute"
-                                                            ? new SetupDependency( true, x.ConstructorArguments, this )
-                                                            : (x.AttributeType.FullName == "CK.Setup.IsRuntimeThatUsesEngineAttribute")
-                                                                  ? new SetupDependency( false, x.ConstructorArguments, this )
-                                                                  : null) )
-                                        .Where( x => x != null )
-                                        .ToArray();
-                if( !tooMuchKind && SetupDependencies.Any( d => d.IsModel ) )
-                {
-                    if( ComponentKind != ComponentKind.None ) tooMuchKind = true;
-                    ComponentKind = ComponentKind.Model;
-                }
-                if( !tooMuchKind && SetupDependencies.Any( d => d.IsRuntime ) )
-                {
-                    if( ComponentKind != ComponentKind.None && ComponentKind != ComponentKind.Runtime ) tooMuchKind = true;
-                    ComponentKind = ComponentKind.Runtime;
-                }
-                if( tooMuchKind )
-                {
-                    throw new CKException( $"File '{p}' cannot be marked with more that one kind ot attributes (Engine, Runtime or Model)." );
-                }
+                throw new CKException( $"Component '{p}' is marked with both IsModel and IsSetupDependency attribute." );
+            }
+            if( isSetupDependency )
+            {
+                ComponentKind = ComponentKind.SetupDependency;
+            }
+            else if( isModel ) 
+            {
+                ComponentKind = ComponentKind.Model;
+            }
+            else if( SetupDependencies.Count > 0 )
+            {
+                throw new CKException( $"Component '{p}' has at least one RequiredSetupDepency attribute. It must also be marked with IsModel or IsSetupDependency attribute." );
             }
             if( ComponentKind != ComponentKind.None )
             {
@@ -102,11 +92,6 @@ namespace CKSetup
         }
 
         /// <summary>
-        /// Gets whether this file is marked with CK.Setup.ExcludeFromSetupAttribute.
-        /// </summary>
-        public bool IsExcludedFromSetup { get; }
-
-        /// <summary>
         /// Gets the folder with all its binaries.
         /// The <see cref="LocalDependencies"/> is a subset of the <see cref="BinFolder.Files"/> set.
         /// </summary>
@@ -123,16 +108,6 @@ namespace CKSetup
         public string LocalFileName { get; private set; }
 
         /// <summary>
-        /// Gets the assembly <see cref="AssemblyNameDefinition"/>.
-        /// </summary>
-        public AssemblyNameDefinition Name { get; }
-
-        /// <summary>
-        /// Gets the CKVersion info if found.
-        /// </summary>
-        public InformationalVersion InfoVersion { get; }
-
-        /// <summary>
         /// Gets the file length in bytes.
         /// There is no need/interest to handle files bigger than 2GB here.
         /// </summary>
@@ -144,15 +119,26 @@ namespace CKSetup
         public SHA1Value ContentSHA1 => _sha1.IsZero ? (_sha1 = SHA1Value.ComputeFileSHA1( FullPath )) : _sha1;
 
         /// <summary>
+        /// Gets the <see cref="ComponentKind"/>.
+        /// </summary>
+        public ComponentKind ComponentKind { get; }
+
+        /// <summary>
+        /// Gets the assembly <see cref="AssemblyNameDefinition"/>.
+        /// Null if this file is not an assembly.
+        /// </summary>
+        public AssemblyNameDefinition Name { get; }
+
+        /// <summary>
+        /// Gets the CKVersion info if found.
+        /// </summary>
+        public InformationalVersion InfoVersion { get; }
+
+        /// <summary>
         /// Gets the TargetFramework if <see cref="System.Runtime.Versioning.TargetFrameworkAttribute"/>
         /// exists on the assembly.
         /// </summary>
         public string RawTargetFramework { get; }
-
-        /// <summary>
-        /// Gets the <see cref="ComponentKind"/>.
-        /// </summary>
-        public ComponentKind ComponentKind { get; }
 
         /// <summary>
         /// Gets the corresponding <see cref="ComponentRef"/> if this is a Component.
@@ -160,7 +146,7 @@ namespace CKSetup
         public ComponentRef ComponentRef => _cRef;
 
         /// <summary>
-        /// Gets the setup dependencies (from attributes named CK.Setup.SetupDependencyAttribute).
+        /// Gets the setup dependencies (from attributes named CK.Setup.RequiredSetupDependencyAttribute).
         /// </summary>
         public IReadOnlyList<SetupDependency> SetupDependencies { get; }
 
@@ -218,9 +204,10 @@ namespace CKSetup
         {
             var result = new List<BinFileInfo>();
             ReaderParameters r = new ReaderParameters();
-            foreach( var f in Directory.EnumerateFiles( binPath )
-                                .Where( p => p.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase ) 
-                                             || p.EndsWith( ".exe", StringComparison.OrdinalIgnoreCase ) ) )
+            foreach( var f in Directory.EnumerateFiles( binPath, "*.*", SearchOption.AllDirectories )
+                                .Where( p => p.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase )
+                                             || p.EndsWith( ".exe", StringComparison.OrdinalIgnoreCase )
+                                             || p.EndsWith( ".so", StringComparison.OrdinalIgnoreCase ) ) )
             {
                 BinFileInfo info = TryRead( m, r, f );
                 if( info != null ) result.Add( info );

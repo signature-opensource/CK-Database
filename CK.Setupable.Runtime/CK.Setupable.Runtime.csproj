@@ -10,10 +10,6 @@
       CK.Setupable.Runtime is able to generate StObj objects support for TSS (Three Steps Setup).
     </Description>
   </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net461' ">
-    <RuntimeIdentifier>win</RuntimeIdentifier>
-  </PropertyGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\CK.Setupable.Model\CK.Setupable.Model.csproj" />

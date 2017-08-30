@@ -27,7 +27,7 @@
       <Link>Includes\%(RecursiveDir)%(Filename)%(Extension)</Link>
       <Visible>true</Visible>
     </Compile>
-    <Compile Include="..\CK.Setupable.Engine\SetupRunner.XmlNames.cs">
+    <Compile Include="..\CK.StObj.Runner\Program.XmlNames.cs">
       <Link>Includes\%(Filename)%(Extension)</Link>
       <Visible>true</Visible>
     </Compile>

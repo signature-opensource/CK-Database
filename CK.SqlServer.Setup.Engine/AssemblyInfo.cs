@@ -1,3 +1,2 @@
-﻿
-// Marks this assembly as an engine.
-[assembly: CK.Setup.IsEngine()]
+
+[assembly: CK.Setup.IsSetupDependency()]

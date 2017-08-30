@@ -1,16 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 
 namespace CK.Setup
 {
-
     /// <summary>
-    /// Marks an assembly as an Engine. 
+    /// Marks an assembly as being a a Model.
     /// </summary>
     [AttributeUsage( AttributeTargets.Assembly, AllowMultiple = false )]
-    public class IsEngineAttribute : Attribute
+    public class IsModelAttribute : Attribute
     {
     }
 }

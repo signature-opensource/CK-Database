@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
@@ -34,7 +34,7 @@ namespace CKSetup
         {
             if( !Components.Any() )
             {
-                m.Error( "Unable to find a Model, Runtime or Engine assembly in this folder." );
+                m.Error( "Unable to find a Model or Setup Dependency assembly in this folder." );
                 return false;
             }
             if( !Heads.Any() )
@@ -85,12 +85,12 @@ namespace CKSetup
         public string BinPath { get; }
 
         /// <summary>
-        /// Gets all the .dll files.
+        /// Gets all the discovered files (.dll or .exe).
         /// </summary>
         public IReadOnlyList<BinFileInfo> Files { get; }
 
         /// <summary>
-        /// Gets the components (Model, Runtime or Engine).
+        /// Gets the components (Model or Setup Dependency).
         /// </summary>
         public IReadOnlyList<BinFileInfo> Components { get; }
 

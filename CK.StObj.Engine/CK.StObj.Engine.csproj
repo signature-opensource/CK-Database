@@ -10,10 +10,6 @@
     </Description>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net461' ">
-    <RuntimeIdentifier>win</RuntimeIdentifier>
-  </PropertyGroup>
-
   <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
     <EmbeddedResource Include="AutoImplementor\DynamicKeyPair.snk;PEVerify\PEVerify.exe;PEVerify\pevrfyrc.dll" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
   </ItemGroup>

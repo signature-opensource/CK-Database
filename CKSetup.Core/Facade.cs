@@ -35,44 +35,54 @@ namespace CKSetup
             IComponentImporter missingImporter = null,
             Uri remoteStoreUrl = null )
         {
-            var binFolder = BinFolder.ReadBinFolder( monitor, binPath );
-            if( binFolder == null ) return false;
-            if( missingImporter != null )
+            using( monitor.OpenTrace( "Running Setup." ) )
             {
-                if( !zip.ExtractRuntimeDependencies( new[] { binFolder }, null, missingImporter ) ) return false;
+                try
+                {
+                    var binFolder = BinFolder.ReadBinFolder( monitor, binPath );
+                    if( binFolder == null ) return false;
+                    if( missingImporter != null )
+                    {
+                        if( !zip.ExtractRuntimeDependencies( new[] { binFolder }, null, missingImporter ) ) return false;
+                    }
+                    else
+                    {
+                        if( !zip.ExtractRuntimeDependencies( new[] { binFolder }, remoteStoreUrl, null ) ) return false;
+                    }
+                    var toSetup = binFolder.Files.Where( b => b.LocalDependencies.Any( dep => dep.ComponentKind == ComponentKind.Model ) )
+                                                    .Select( b => b.Name.Name );
+                    using( monitor.OpenTrace( "Creating setup configuration xml file." ) )
+                    {
+                        var config = BuildSetupConfig(
+                                        targetConnectionString,
+                                        toSetup,
+                                        generatedAssemblyName,
+                                        sourceGeneration );
+                        var configPath = WritDBSetupConfig( monitor, config, binPath );
+                        zip.RegisterFileToDelete( configPath );
+                    }
+                    return RunSetup( monitor, binPath );
+                }
+                catch( Exception ex )
+                {
+                    monitor.Fatal( ex );
+                    return false;
+                }
             }
-            else
-            {
-                if( !zip.ExtractRuntimeDependencies( new[] { binFolder }, remoteStoreUrl, null ) ) return false;
-            }
-            var toSetup = binFolder.Files.Where( b => !b.IsExcludedFromSetup
-                                                        && b.LocalDependencies.Any( dep => dep.ComponentKind == ComponentKind.Model ) )
-                                            .Select( b => b.Name.Name );
-            using( monitor.OpenTrace( "Creating setup configuration xml file." ) )
-            {
-                var config = BuildSetupConfig(
-                                targetConnectionString,
-                                toSetup,
-                                generatedAssemblyName,
-                                sourceGeneration );
-                var configPath = WritDBSetupConfig( monitor, config, binPath );
-                zip.RegisterFileToDelete( configPath );
-            }
-            return RunSetup( monitor, binPath );
         }
 
         static bool RunSetup( IActivityMonitor m, string binPath )
         {
-            using( m.OpenInfo( "Launching setup." ) )
+            using( m.OpenInfo( "Launching CK.StObj.Runner." ) )
             {
                 bool useDotNet = false;
-                string exe = Path.Combine( binPath, "CK.Setupable.Engine.exe" );
-                string dll = Path.Combine( binPath, "CK.Setupable.Engine.dll" );
+                string exe = Path.Combine( binPath, "CK.StObj.Runner.exe" );
+                string dll = Path.Combine( binPath, "CK.StObj.Runner.dll" );
                 if( !File.Exists( exe ) )
                 {
                     if( !File.Exists( dll ) )
                     {
-                        m.Error( "Unable to find CK.Setupable.Engine.exe runner in folder." );
+                        m.Error( "Unable to find CK.StObj.Runner runner in folder." );
                         return false;
                     }
                     useDotNet = true;
@@ -87,7 +97,7 @@ namespace CKSetup
                 if( useDotNet )
                 {
                     cmdStartInfo.FileName = "dotnet";
-                    cmdStartInfo.Arguments = "CK.Setupable.Engine.dll";
+                    cmdStartInfo.Arguments = "CK.StObj.Runner.dll";
                 }
                 else
                 {
@@ -122,10 +132,10 @@ namespace CKSetup
         static string WritDBSetupConfig( IActivityMonitor m, StObjEngineConfiguration conf, string binPath )
         {
             var doc = new XDocument(
-                            new XElement( SetupRunner.xRunner,
-                                new XElement( SetupRunner.xLogFiler, m.MinimalFilter.ToString() ),
-                                conf.SerializeXml( new XElement( SetupRunner.xSetup ) ) ) );
-            string filePath = Path.Combine( binPath, SetupRunner.XmlFileName );
+                            new XElement( CK.StObj.Runner.Program.xRunner,
+                                new XElement( CK.StObj.Runner.Program.xLogFiler, m.MinimalFilter.ToString() ),
+                                conf.SerializeXml( new XElement( CK.StObj.Runner.Program.xSetup ) ) ) );
+            string filePath = Path.Combine( binPath, CK.StObj.Runner.Program.XmlFileName );
             string text = doc.ToString();
             m.Debug( text );
             File.WriteAllText( filePath, text );

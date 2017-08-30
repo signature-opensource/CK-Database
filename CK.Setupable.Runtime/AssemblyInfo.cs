@@ -1,3 +1,3 @@
-﻿
-// Defines the runtime assembly.
-[assembly: CK.Setup.IsRuntimeThatUsesEngine( "CK.Setupable.Engine", "UseRuntimeVersion" )]
+
+[assembly: CK.Setup.IsSetupDependency()]
+[assembly: CK.Setup.RequiredSetupDependency( "CK.Setupable.Engine" )]
