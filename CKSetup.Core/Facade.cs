@@ -18,7 +18,7 @@ namespace CKSetup
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
         /// <param name="binPath">The bin path to setup.</param>
-        /// <param name="zip">The opened, valid, Zip runtime.</param>
+        /// <param name="archive">The opened, valid, Zip runtime.</param>
         /// <param name="targetConnectionString">The default connection string.</param>
         /// <param name="generatedAssemblyName">Name of the assembly to generate.</param>
         /// <param name="sourceGeneration">True to generate source code.</param>
@@ -28,7 +28,7 @@ namespace CKSetup
         public static bool DoSetup(
             IActivityMonitor monitor,
             string binPath,
-            RuntimeArchive zip,
+            RuntimeArchive archive,
             string targetConnectionString,
             string generatedAssemblyName,
             bool sourceGeneration,
@@ -43,11 +43,11 @@ namespace CKSetup
                     if( binFolder == null ) return false;
                     if( missingImporter != null )
                     {
-                        if( !zip.ExtractRuntimeDependencies( new[] { binFolder }, null, missingImporter ) ) return false;
+                        if( !archive.ExtractRuntimeDependencies( new[] { binFolder }, null, missingImporter ) ) return false;
                     }
                     else
                     {
-                        if( !zip.ExtractRuntimeDependencies( new[] { binFolder }, remoteStoreUrl, null ) ) return false;
+                        if( !archive.ExtractRuntimeDependencies( new[] { binFolder }, remoteStoreUrl, null ) ) return false;
                     }
                     var toSetup = binFolder.Assemblies.Where( b => b.LocalDependencies.Any( dep => dep.ComponentKind == ComponentKind.Model ) )
                                                     .Select( b => b.Name.Name );
@@ -59,7 +59,7 @@ namespace CKSetup
                                         generatedAssemblyName,
                                         sourceGeneration );
                         var configPath = WritDBSetupConfig( monitor, config, binPath );
-                        zip.RegisterFileToDelete( configPath );
+                        archive.RegisterFileToDelete( configPath );
                     }
                     return RunSetup( monitor, binPath );
                 }
