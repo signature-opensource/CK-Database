@@ -77,9 +77,9 @@ namespace CKSetup
         {
             using( m.OpenInfo( "Launching CK.StObj.Runner." ) )
             {
-                bool useDotNet = false;
                 string exe = Path.Combine( binPath, "CK.StObj.Runner.exe" );
                 string dll = Path.Combine( binPath, "CK.StObj.Runner.dll" );
+                string fileName, arguments;
                 if( !File.Exists( exe ) )
                 {
                     if( !File.Exists( dll ) )
@@ -87,47 +87,51 @@ namespace CKSetup
                         m.Error( "Unable to find CK.StObj.Runner runner in folder." );
                         return false;
                     }
-                    useDotNet = true;
-                }
-                ProcessStartInfo cmdStartInfo = new ProcessStartInfo();
-                cmdStartInfo.WorkingDirectory = binPath;
-                cmdStartInfo.RedirectStandardOutput = true;
-                cmdStartInfo.RedirectStandardError = true;
-                cmdStartInfo.RedirectStandardInput = true;
-                cmdStartInfo.UseShellExecute = false;
-                cmdStartInfo.CreateNoWindow = true;
-                if( useDotNet )
-                {
-                    cmdStartInfo.FileName = "dotnet";
-                    cmdStartInfo.Arguments = "CK.StObj.Runner.dll";
+                    fileName = "dotnet";
+                    arguments = "CK.StObj.Runner.dll merge-deps";
+                    if( RunRunnerProcess( m, binPath, debugBreakInCKStObjRunner, fileName, arguments ) )
+                    {
+                        string theFile = Path.Combine( binPath, "CK.StObj.Runner.deps.json" );
+                        File.Replace( theFile + ".merged", theFile, theFile + ".bak" );
+                    }
+                    arguments = "CK.StObj.Runner.dll";
                 }
                 else
                 {
-                    cmdStartInfo.FileName = exe;
+                    fileName = exe;
+                    arguments = String.Empty;
                 }
-                if( debugBreakInCKStObjRunner ) cmdStartInfo.Arguments += " launch-debugger";
-                using( Process cmdProcess = new Process() )
+                return RunRunnerProcess( m, binPath, debugBreakInCKStObjRunner, fileName, arguments );
+            }
+        }
+
+        static bool RunRunnerProcess( IActivityMonitor m, string binPath, bool debugBreakInCKStObjRunner, string fileName, string arguments )
+        {
+            ProcessStartInfo cmdStartInfo = new ProcessStartInfo();
+            cmdStartInfo.WorkingDirectory = binPath;
+            cmdStartInfo.RedirectStandardOutput = true;
+            cmdStartInfo.RedirectStandardError = true;
+            cmdStartInfo.RedirectStandardInput = true;
+            cmdStartInfo.UseShellExecute = false;
+            cmdStartInfo.CreateNoWindow = true;
+            cmdStartInfo.FileName = fileName;
+            cmdStartInfo.Arguments = arguments;
+            if( debugBreakInCKStObjRunner ) cmdStartInfo.Arguments += " launch-debugger";
+            using( Process cmdProcess = new Process() )
+            {
+                cmdProcess.StartInfo = cmdStartInfo;
+                cmdProcess.ErrorDataReceived += ( o, e ) => { if( !string.IsNullOrEmpty( e.Data ) ) m.Error( e.Data ); };
+                cmdProcess.OutputDataReceived += ( o, e ) => { if( e.Data != null ) m.Info( e.Data ); };
+                cmdProcess.Start();
+                cmdProcess.BeginErrorReadLine();
+                cmdProcess.BeginOutputReadLine();
+                cmdProcess.WaitForExit();
+                if( cmdProcess.ExitCode != 0 )
                 {
-                    cmdProcess.StartInfo = cmdStartInfo;
-                    cmdProcess.ErrorDataReceived += ( o, e ) => { if( !string.IsNullOrEmpty( e.Data ) ) m.Error( e.Data ); };
-                    cmdProcess.OutputDataReceived += ( o, e ) =>
-                    {
-                        if( e.Data != null )
-                        {
-                            m.Info( e.Data );
-                        }
-                    };
-                    cmdProcess.Start();
-                    cmdProcess.BeginErrorReadLine();
-                    cmdProcess.BeginOutputReadLine();
-                    cmdProcess.WaitForExit();
-                    if( cmdProcess.ExitCode != 0 )
-                    {
-                        m.Error( $"Process returned ExitCode {cmdProcess.ExitCode}." );
-                        return false;
-                    }
-                    return true;
+                    m.Error( $"Process returned ExitCode {cmdProcess.ExitCode}." );
+                    return false;
                 }
+                return true;
             }
         }
 
