@@ -63,11 +63,14 @@ namespace CK.Setup
                     var runCtx = new StObjEngineRunContext( _monitor, _startContext, r.OrderedStObjs );
                     runCtx.RunAspects( () => _success = false );
                     if( _success ) _success = GenerateStObjFinalAssembly( r );
-                    var errorPath = _pathCatcher.LastErrorPath;
-                    if( errorPath.Count == 0 )
+                    if( !_success )
                     {
-                        Debug.Fail( "Success status is false but no error has been logged." );
-                        _monitor.Fatal( "Success status is false but no error has been logged." );
+                        var errorPath = _pathCatcher.LastErrorPath;
+                        if( errorPath == null || errorPath.Count == 0 )
+                        {
+                            Debug.Fail( "Success status is false but no error has been logged." );
+                            _monitor.Fatal( "Success status is false but no error has been logged." );
+                        }
                     }
                     var termCtx = new StObjEngineTerminateContext( _monitor, runCtx );
                     termCtx.TerminateAspects( () => _success = false );
@@ -94,7 +97,6 @@ namespace CK.Setup
                     bool peVerify = generateOption == BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFileAndPEVerify;
                     success = r.GenerateFinalAssembly( _monitor, peVerify, !generateConfig.SourceGeneration, generateConfig.SourceGeneration );
                     Debug.Assert( success || hasError, "!success ==> An error has been logged." );
-                    return success;
                 }
             }
             return success;

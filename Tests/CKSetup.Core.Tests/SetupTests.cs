@@ -17,7 +17,7 @@ namespace CKSetup.Tests
     {
         [TestCase( TestStoreType.Zip )]
         [TestCase( TestStoreType.Directory )]
-        public void setup_SqlCallDemo( TestStoreType type )
+        public void setup_SqlCallDemo461( TestStoreType type )
         {
             using( var zip = TestHelper.OpenCKDatabaseZip( type ) )
             {
@@ -27,7 +27,8 @@ namespace CKSetup.Tests
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",
-                    sourceGeneration: true
+                    sourceGeneration: true,
+                    debugBreakInCKStObjRunner: true
                     ).Should().BeTrue();
             }
         }

@@ -297,7 +297,7 @@ namespace CKSetup.Tests
                 p = Path.GetDirectoryName( p );
             }
             _solutionFolder = p;
-            _testOutputPath = Path.Combine( SolutionFolder, "Tests", "CKSetup.Tests", "TestOutput" );
+            _testOutputPath = Path.Combine( SolutionFolder, "Tests", "CKSetup.Core.Tests", "TestOutput" );
             if( Directory.Exists( _testOutputPath ) ) Directory.Delete( _testOutputPath, true );
             Directory.CreateDirectory( _testOutputPath );
             Console.WriteLine( $"SolutionFolder is: {_solutionFolder}." );
