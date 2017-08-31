@@ -295,6 +295,7 @@ namespace CKSetup
         /// </summary>
         /// <param name="targets">The target folders.</param>
         /// <param name="runPath">Optional run path: the first target <see cref="BinFolder.BinPath"/> is the default.</param>
+        /// <param name="missingImporter">Optional component importer.</param>
         /// <returns>True on success, false on error.</returns>
         public bool ExtractRuntimeDependencies( IEnumerable<BinFolder> targets, string runPath = null, IComponentImporter missingImporter = null )
         {

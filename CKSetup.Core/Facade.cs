@@ -23,7 +23,8 @@ namespace CKSetup
         /// <param name="generatedAssemblyName">Name of the assembly to generate.</param>
         /// <param name="sourceGeneration">True to generate source code.</param>
         /// <param name="missingImporter">Optional component importer.</param>
-        /// <param name="remoteStoreUrl">Optional remote store url.</param>
+        /// <param name="remoteStoreUrl">Optional remote store url (ignored if a <paramref name="missingImporter"/> is specified).</param>
+        /// <param name="debugBreakInCKStObjRunner">Calls Debugger.Launch() at the start of CK.StObj.Runner entry point.</param>
         /// <returns>True on success, false on error.</returns>
         public static bool DoSetup(
             IActivityMonitor monitor,
@@ -33,7 +34,8 @@ namespace CKSetup
             string generatedAssemblyName,
             bool sourceGeneration,
             IComponentImporter missingImporter = null,
-            Uri remoteStoreUrl = null )
+            Uri remoteStoreUrl = null,
+            bool debugBreakInCKStObjRunner = false )
         {
             using( monitor.OpenTrace( "Running Setup." ) )
             {
@@ -61,7 +63,7 @@ namespace CKSetup
                         var configPath = WritDBSetupConfig( monitor, config, binPath );
                         archive.RegisterFileToDelete( configPath );
                     }
-                    return RunSetup( monitor, binPath );
+                    return RunSetup( monitor, binPath, debugBreakInCKStObjRunner );
                 }
                 catch( Exception ex )
                 {
@@ -71,7 +73,7 @@ namespace CKSetup
             }
         }
 
-        static bool RunSetup( IActivityMonitor m, string binPath )
+        static bool RunSetup( IActivityMonitor m, string binPath, bool debugBreakInCKStObjRunner )
         {
             using( m.OpenInfo( "Launching CK.StObj.Runner." ) )
             {
@@ -103,7 +105,7 @@ namespace CKSetup
                 {
                     cmdStartInfo.FileName = exe;
                 }
-
+                if( debugBreakInCKStObjRunner ) cmdStartInfo.Arguments += " launch-debugger";
                 using( Process cmdProcess = new Process() )
                 {
                     cmdProcess.StartInfo = cmdStartInfo;

@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using CK.Setup;
 using CK.Core;
+using System.Diagnostics;
 
 namespace CK.StObj.Runner
 {
@@ -11,6 +12,10 @@ namespace CK.StObj.Runner
     {
         static public int Main( string[] args )
         {
+            if( Array.IndexOf( args, "launch-debugger" ) >= 0 )
+            {
+                Debugger.Launch();
+            }
 #if NET461
             AppDomain.CurrentDomain.AssemblyResolve += ( object sender, ResolveEventArgs a ) =>
             {
