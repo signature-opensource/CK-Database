@@ -399,6 +399,7 @@ namespace CKSetup
                 }
                 m.Info( $"Multiple possible runtime: {runtimes.Select( r => r.ToString() ).Concatenate()}." );
                 theOnlyOne = runtimes.Min();
+                if( theOnlyOne == TargetRuntime.NetCoreApp11 ) theOnlyOne = TargetRuntime.NetCoreApp20;
                 m.CloseGroup( $"Lowest selected runtime: {theOnlyOne}." );
                 return theOnlyOne;
             }

@@ -21,7 +21,7 @@
       <Visible>true</Visible>
     </Compile>
   </ItemGroup>
-
+  
   <ItemGroup>
     <Folder Include="TestOutput\" />
   </ItemGroup>

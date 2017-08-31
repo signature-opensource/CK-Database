@@ -10,6 +10,7 @@ using FluentAssertions;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Net.Http;
+using System.Threading;
 
 namespace CKSetup.Tests
 {
@@ -298,7 +299,12 @@ namespace CKSetup.Tests
             }
             _solutionFolder = p;
             _testOutputPath = Path.Combine( SolutionFolder, "Tests", "CKSetup.Core.Tests", "TestOutput" );
-            if( Directory.Exists( _testOutputPath ) ) Directory.Delete( _testOutputPath, true );
+            if( Directory.Exists( _testOutputPath ) )
+            {
+                Directory.Delete( _testOutputPath, true );
+                // CreateDirectory is sometimes ignored.
+                Thread.Sleep( 100 );
+            }
             Directory.CreateDirectory( _testOutputPath );
             Console.WriteLine( $"SolutionFolder is: {_solutionFolder}." );
             Console.WriteLine( $"Core path: {typeof( string ).GetTypeInfo().Assembly.CodeBase}." );

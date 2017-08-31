@@ -25,6 +25,9 @@ namespace CK.StObj.Runner
                         : null;
             };
 #endif
+#if NETCOREAPP2_0
+
+#endif
             return Run() ? 0 : 1;
         }
 

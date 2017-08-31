@@ -68,7 +68,9 @@ namespace CKSetup
             foreach( var f in Directory.EnumerateFiles( binPath, "*", SearchOption.AllDirectories )
                                 .Where( p => p.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase )
                                              || p.EndsWith( ".exe", StringComparison.OrdinalIgnoreCase )
-                                             || p.EndsWith( ".so", StringComparison.OrdinalIgnoreCase ) ) )
+                                             || p.EndsWith( ".so", StringComparison.OrdinalIgnoreCase )
+                                             || p.EndsWith( ".runtimeconfig.json", StringComparison.OrdinalIgnoreCase )
+                                             || p.EndsWith( ".deps.json", StringComparison.OrdinalIgnoreCase ) ) )
             {
                 BinFileInfo info = TryRead( m, r, f, f.Substring( binPath.Length ) );
                 if( info != null ) result.Add( info );
@@ -90,7 +92,8 @@ namespace CKSetup
             {
                 m.Warn( $"'{localFileName}' is an empty file. It will be ignored." );
             }
-            else if( localFileName.EndsWith( ".dll" ) || localFileName.EndsWith( ".exe" ) )
+            else if( localFileName.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase )
+                    || localFileName.EndsWith( ".exe", StringComparison.OrdinalIgnoreCase ) )
             {
                 try
                 {

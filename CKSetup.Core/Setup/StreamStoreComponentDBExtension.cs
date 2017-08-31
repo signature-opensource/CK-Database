@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using CKSetup.StreamStore;
 using System;
 using System.Collections.Generic;
@@ -37,7 +37,7 @@ namespace CKSetup.StreamStore
             ComponentDB db = null;
             if( @this.IsEmptyStore )
             {
-                monitor.Info( $"Creating new empty store." );
+                monitor.Info( $"Initializing new empty store." );
                 db = new ComponentDB();
                 @this.CreateText( RuntimeArchive.DbXmlFileName, db.ToXml().ToString( SaveOptions.DisableFormatting ), CompressionKind.None );
             }

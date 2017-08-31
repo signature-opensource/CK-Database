@@ -27,12 +27,28 @@ namespace CKSetup.Tests
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",
-                    sourceGeneration: true,
-                    debugBreakInCKStObjRunner: true
+                    sourceGeneration: true
                     ).Should().BeTrue();
             }
         }
 
+
+        [TestCase( TestStoreType.Zip )]
+        [TestCase( TestStoreType.Directory )]
+        public void setup_SqlCallDemo_for_netstandard13( TestStoreType type )
+        {
+            using( var zip = TestHelper.OpenCKDatabaseZip( type, withNetStandard: true ) )
+            {
+                Facade.DoSetup(
+                    TestHelper.ConsoleMonitor,
+                    TestHelper.EnsurePublishPath( TestHelper.SqlCallDemoNet13 ),
+                    zip,
+                    TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
+                    "SqlCallDemo.Generated.ByCKSetup",
+                    sourceGeneration: true
+                    ).Should().BeTrue();
+            }
+        }
 
         [TestCase( TestStoreType.Zip )]
         [TestCase( TestStoreType.Directory )]
@@ -54,23 +70,6 @@ namespace CKSetup.Tests
             }
         }
 
-
-        [TestCase( TestStoreType.Zip )]
-        [TestCase( TestStoreType.Directory )]
-        public void setup_SqlCallDemo_for_netstandard13( TestStoreType type )
-        {
-            using( var zip = TestHelper.OpenCKDatabaseZip( type, withNetStandard: true ) )
-            {
-                Facade.DoSetup(
-                    TestHelper.ConsoleMonitor,
-                    TestHelper.SqlCallDemoNet13,
-                    zip,
-                    TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
-                    "SqlCallDemo.Generated.ByCKSetup",
-                    sourceGeneration: true
-                    ).Should().BeTrue();
-            }
-        }
 
         [TestCase( TestStoreType.Zip )]
         [TestCase( TestStoreType.Directory )]
