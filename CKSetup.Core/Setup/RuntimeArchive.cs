@@ -346,7 +346,7 @@ namespace CKSetup
                             else _monitor.Trace( $"Skipped '{targetPath}' since it already exists." );
                         }
                     }
-                    _monitor.Info( $"{count} files extracted." );
+                    _monitor.Trace( $"{count} files extracted so far." );
                 }
             }
             return true;

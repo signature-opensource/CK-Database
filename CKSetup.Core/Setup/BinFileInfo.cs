@@ -17,11 +17,12 @@ namespace CKSetup
         BinFolder _binFolder;
         SHA1Value _sha1;
 
-        protected BinFileInfo( string p, int len )
+        protected BinFileInfo( string fullPath, string localName, int len )
         {
-            FullPath = p;
+            FullPath = fullPath;
             FileLength = len;
             _sha1 = SHA1Value.ZeroSHA1;
+            LocalFileName = localName;
         }
 
         /// <summary>
@@ -38,7 +39,7 @@ namespace CKSetup
         /// <summary>
         /// Gets the local fileName of this BinFileInfo.
         /// </summary>
-        public string LocalFileName { get; private set; }
+        public string LocalFileName { get; }
 
         /// <summary>
         /// Gets the file length in bytes.
@@ -53,11 +54,8 @@ namespace CKSetup
 
         internal virtual HashSet<BinFileAssemblyInfo> SetBinFolderAndUpdateLocalDependencies( BinFolder binFolder )
         {
-            if( _binFolder == null )
-            {
-                _binFolder = binFolder;
-                LocalFileName = FullPath.Substring( _binFolder.BinPath.Length );
-            }
+            Debug.Assert( _binFolder == null || _binFolder == binFolder );
+            if( _binFolder == null ) _binFolder = binFolder;
             return null;
         }
 
@@ -67,18 +65,18 @@ namespace CKSetup
         {
             var result = new List<BinFileInfo>();
             ReaderParameters r = new ReaderParameters();
-            foreach( var f in Directory.EnumerateFiles( binPath, "*.*", SearchOption.AllDirectories )
+            foreach( var f in Directory.EnumerateFiles( binPath, "*", SearchOption.AllDirectories )
                                 .Where( p => p.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase )
                                              || p.EndsWith( ".exe", StringComparison.OrdinalIgnoreCase )
                                              || p.EndsWith( ".so", StringComparison.OrdinalIgnoreCase ) ) )
             {
-                BinFileInfo info = TryRead( m, r, f );
+                BinFileInfo info = TryRead( m, r, f, f.Substring( binPath.Length ) );
                 if( info != null ) result.Add( info );
             }
             return result;
         }
 
-        static BinFileInfo TryRead( IActivityMonitor m, ReaderParameters r, string fullPath )
+        static BinFileInfo TryRead( IActivityMonitor m, ReaderParameters r, string fullPath, string localFileName )
         {
             BinFileInfo info = null;
 
@@ -86,13 +84,13 @@ namespace CKSetup
             long len = fi.Length;
             if( len > Int32.MaxValue )
             {
-                m.Warn( $"'{fullPath}' is bigger than 2 GiB. It will be ignored." );
+                m.Warn( $"'{localFileName}' is bigger than 2 GiB. It will be ignored." );
             }
             else if( len == 0 )
             {
-                m.Warn( $"'{fullPath}' is an empty file. It will be ignored." );
+                m.Warn( $"'{localFileName}' is an empty file. It will be ignored." );
             }
-            else
+            else if( localFileName.EndsWith( ".dll" ) || localFileName.EndsWith( ".exe" ) )
             {
                 try
                 {
@@ -102,14 +100,23 @@ namespace CKSetup
                     //   using( AssemblyDefinition a = AssemblyDefinition.ReadAssembly( shaCompute, r ) )
                     using( AssemblyDefinition a = AssemblyDefinition.ReadAssembly( fullPath, r ) )
                     {
-                        info = new BinFileAssemblyInfo( fullPath, (int)len, a, m );
+                        var excludeAttribute = a.CustomAttributes.FirstOrDefault( attr => attr.AttributeType.FullName == "CK.Setup.ExcludeFromSetupAttribute" );
+                        if( excludeAttribute != null )
+                        {
+                            m.Warn( $"'{localFileName}' is marked with ExcludeFromSetup attribute. It will be ignored." );
+                        }
+                        else info = new BinFileAssemblyInfo( fullPath, localFileName, (int)len, a, m );
                     }
                 }
                 catch( BadImageFormatException ex )
                 {
-                    m.Warn( $"While analysing '{fullPath}'.", ex );
-                    info = new BinFileInfo( fullPath, (int)len );
+                    m.Warn( $"While analysing '{localFileName}'.", ex );
+                    info = new BinFileInfo( fullPath, localFileName, (int)len );
                 }
+            }
+            else
+            {
+                info = new BinFileInfo( fullPath, localFileName, (int)len );
             }
             return info;
         }

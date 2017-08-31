@@ -17,8 +17,8 @@ namespace CKSetup
         HashSet<BinFileAssemblyInfo> _localDependencies;
         ComponentRef _cRef;
 
-        internal BinFileAssemblyInfo( string p, int len, AssemblyDefinition a, IActivityMonitor m )
-            : base( p, len )
+        internal BinFileAssemblyInfo( string fullPath, string localFileName, int len, AssemblyDefinition a, IActivityMonitor m )
+            : base( fullPath, localFileName, len )
         {
             InfoVersion = a.GetInformationalVersion();
             Name = a.Name;
@@ -48,7 +48,7 @@ namespace CKSetup
             }
             if( isModel && isSetupDependency )
             {
-                throw new CKException( $"Component '{p}' is marked with both IsModel and IsSetupDependency attribute." );
+                throw new CKException( $"Component '{localFileName}' is marked with both IsModel and IsSetupDependency attribute." );
             }
             if( isSetupDependency )
             {
@@ -60,7 +60,7 @@ namespace CKSetup
             }
             else if( SetupDependencies.Count > 0 )
             {
-                throw new CKException( $"Component '{p}' has at least one RequiredSetupDepency attribute. It must also be marked with IsModel or IsSetupDependency attribute." );
+                throw new CKException( $"Component '{localFileName}' has at least one RequiredSetupDepency attribute. It must also be marked with IsModel or IsSetupDependency attribute." );
             }
             if( ComponentKind != ComponentKind.None )
             {
@@ -69,18 +69,18 @@ namespace CKSetup
                 {
                     if( RawTargetFramework == null )
                     {
-                        throw new CKException( $"Component '{p}' must be marked with a TargetFrameworkAttribute." );
+                        throw new CKException( $"Component '{localFileName}' must be marked with a TargetFrameworkAttribute." );
                     }
-                    throw new CKException( $"Component '{p}' has TargetFrameworkAttribute {RawTargetFramework} that is invalid or not currently handled." );
+                    throw new CKException( $"Component '{localFileName}' has TargetFrameworkAttribute {RawTargetFramework} that is invalid or not currently handled." );
                 }
                 if( InfoVersion.OriginalInformationalVersion == null )
                 {
                     InfoVersion = InformationalVersion.Zero;
-                    m.Warn( $"Component '{p}' does not have a standard CSemVer version in its InformationalVersion. Using the ZeroVersion." );
+                    m.Warn( $"Component '{localFileName}' does not have a standard CSemVer version in its InformationalVersion. Using the ZeroVersion." );
                 }
                 else if( !InfoVersion.IsValidSyntax )
                 {
-                    throw new CKException( $"Component '{p}' standard CSemVer version error: {InfoVersion.ParseErrorMessage}." );
+                    throw new CKException( $"Component '{localFileName}' standard CSemVer version error: {InfoVersion.ParseErrorMessage}." );
                 }
                 foreach( var d in SetupDependencies ) d.OnSourceVersionKnown( InfoVersion.NuGetVersion );
                 _cRef = new ComponentRef( Name.Name, t, InfoVersion.NuGetVersion );

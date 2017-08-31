@@ -130,7 +130,8 @@ namespace CKSetup
                 monitor.Trace( $"Resolved is now: {_resolved.Select( d => d.ToString() ).Concatenate()}." );
                 if( failedCount > 0 ) return false;
                 // On every success, initial root dependencies are stable.
-                Debug.Assert( _resolved.Take( Roots.Count ).Select( r => r.Name ).SequenceEqual( Roots.Select( r => r.UseName ) ) );
+                Debug.Assert( _resolved.Take( Roots.Count ).Select( r => r.Name ).OrderBy( n => n )
+                    .SequenceEqual( Roots.Select( r => r.UseName ).OrderBy( n => n ) ) );
                 return true;
             }
         }

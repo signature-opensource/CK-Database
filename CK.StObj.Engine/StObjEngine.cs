@@ -62,18 +62,12 @@ namespace CK.Setup
 
                     var runCtx = new StObjEngineRunContext( _monitor, _startContext, r.OrderedStObjs );
                     runCtx.RunAspects( () => _success = false );
-                    if( _success )
+                    if( _success ) _success = GenerateStObjFinalAssembly( r );
+                    var errorPath = _pathCatcher.LastErrorPath;
+                    if( errorPath.Count == 0 )
                     {
-                        _success = GenerateStObjFinalAssembly( r );
-                    }
-                    else
-                    {
-                        var errorPath = _pathCatcher.LastErrorPath;
-                        if( errorPath.Count == 0 )
-                        {
-                            Debug.Fail( "Success status is false but no error has been logged." );
-                            _monitor.Fatal( "Success status is false but no error has been logged." );
-                        }
+                        Debug.Fail( "Success status is false but no error has been logged." );
+                        _monitor.Fatal( "Success status is false but no error has been logged." );
                     }
                     var termCtx = new StObjEngineTerminateContext( _monitor, runCtx );
                     termCtx.TerminateAspects( () => _success = false );

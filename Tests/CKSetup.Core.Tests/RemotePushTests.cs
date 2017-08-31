@@ -22,7 +22,7 @@ namespace CKSetup.Tests
             {
                 Facade.DoSetup(
                     TestHelper.ConsoleMonitor,
-                    TestHelper.SqlCallDemoModel461Path,
+                    TestHelper.SqlCallDemo461,
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",

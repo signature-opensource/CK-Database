@@ -23,7 +23,7 @@ namespace CKSetup.Tests
             {
                 Facade.DoSetup(
                     TestHelper.ConsoleMonitor,
-                    TestHelper.SqlCallDemoModel461Path,
+                    TestHelper.SqlCallDemo461,
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",
@@ -43,7 +43,7 @@ namespace CKSetup.Tests
             {
                 Facade.DoSetup(
                     TestHelper.ConsoleMonitor,
-                    TestHelper.SqlCallDemoModel461Path,
+                    TestHelper.SqlCallDemo461,
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",
@@ -58,12 +58,11 @@ namespace CKSetup.Tests
         [TestCase( TestStoreType.Directory )]
         public void setup_SqlCallDemo_for_netstandard13( TestStoreType type )
         {
-            Assume.That( false, "Support for netstandard/netcore has yet to be implemented." );
             using( var zip = TestHelper.OpenCKDatabaseZip( type, withNetStandard: true ) )
             {
                 Facade.DoSetup(
                     TestHelper.ConsoleMonitor,
-                    TestHelper.SqlCallDemoModel461Path,
+                    TestHelper.SqlCallDemoNet13,
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",
@@ -82,13 +81,13 @@ namespace CKSetup.Tests
             {
                 var missingImporter = new FakeRemote( remoteZip );
                 zip.CreateLocalImporter( missingImporter ).AddComponent( 
-                    BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.EnsurePublishPath( TestHelper.SqlActorPackageModel461Path ) ),
-                    BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.EnsurePublishPath( TestHelper.SqlActorPackageRuntime461Path ) ) )
+                    BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.EnsurePublishPath( TestHelper.SqlActorPackageModel461 ) ),
+                    BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.EnsurePublishPath( TestHelper.SqlActorPackageRuntime461 ) ) )
                     .Import()
                     .Should().BeTrue();
                 Facade.DoSetup(
                     TestHelper.ConsoleMonitor,
-                    TestHelper.SqlActorPackageModel461Path,
+                    TestHelper.SqlActorPackageModel461,
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlActorPackage" ),
                     "SqlActorPackage.Generated.ByCKSetup",
@@ -108,12 +107,12 @@ namespace CKSetup.Tests
             {
                 var missingImporter = new FakeRemote( remoteZip );
                 zip.CreateLocalImporter( missingImporter ).AddComponent(
-                    BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.EnsurePublishPath( TestHelper.SqlActorPackageModel461Path ) ) )
+                    BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.EnsurePublishPath( TestHelper.SqlActorPackageModel461 ) ) )
                     .Import()
                     .Should().BeTrue();
                 Facade.DoSetup(
                     TestHelper.ConsoleMonitor,
-                    TestHelper.SqlActorPackageModel461Path,
+                    TestHelper.SqlActorPackageModel461,
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlActorPackage" ),
                     "SqlActorPackage.Generated.ByCKSetup",
