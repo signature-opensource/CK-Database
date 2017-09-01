@@ -6,7 +6,6 @@
     <TargetFrameworks>netstandard1.6;net461</TargetFrameworks>
   </PropertyGroup>
 
-
   <ItemGroup>
     <ProjectReference Include="..\..\..\CK.SqlServer.Setup.Runtime\CK.SqlServer.Setup.Runtime.csproj" />
     <ProjectReference Include="..\..\..\Tests\BasicModels\SqlActorPackage\SqlActorPackage.csproj" />

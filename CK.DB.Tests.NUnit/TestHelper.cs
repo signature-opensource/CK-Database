@@ -183,17 +183,35 @@ namespace CK.Core
 
         /// <summary>
         /// Runs the database setup based on <see cref="Config"/> and updates <see cref="StObjMap"/>.
-        /// Automatically called by StObjMap when the StObjMap is not yet intialized.
+        /// Automatically called by StObjMap when the StObjMap is not yet initialized.
         /// </summary>
         /// <param name="traceStObjGraphOrdering">True to trace input and output of StObj graph ordering.</param>
         /// <param name="traceSetupGraphOrdering">True to trace input and output of setup graph ordering.</param>
         /// <param name="revertNames">True to revert names in ordering.</param>
         public static bool RunDBSetup( bool traceStObjGraphOrdering = false, bool traceSetupGraphOrdering = false, bool revertNames = false )
         {
-            using( Monitor.OpenTrace().Send( $"Running Setup on {TestHelper.DatabaseTestConnectionString}." ) )
+            return DoRunDBSetup( false, traceStObjGraphOrdering, traceSetupGraphOrdering, revertNames );
+        }
+
+        /// <summary>
+        /// Runs the database setup based on <see cref="Config"/> and updates <see cref="StObjMap"/>.
+        /// Automatically called by StObjMap when the StObjMap is not yet initialized.
+        /// </summary>
+        /// <param name="traceStObjGraphOrdering">True to trace input and output of StObj graph ordering.</param>
+        /// <param name="traceSetupGraphOrdering">True to trace input and output of setup graph ordering.</param>
+        /// <param name="revertNames">True to revert names in ordering.</param>
+        public static bool RunDBSetupSource( bool traceStObjGraphOrdering = false, bool traceSetupGraphOrdering = false, bool revertNames = false )
+        {
+            return DoRunDBSetup( true, traceStObjGraphOrdering, traceSetupGraphOrdering, revertNames );
+        }
+
+        static bool DoRunDBSetup( bool sourceGeneration, bool traceStObjGraphOrdering, bool traceSetupGraphOrdering, bool revertNames )
+        {
+            using( Monitor.OpenTrace().Send( $"Running Setup on {TestHelper.DatabaseTestConnectionString} ({(sourceGeneration ? "Source" : "IL Emit")})." ) )
             {
                 try
                 {
+                    Config.FinalAssemblyConfiguration.SourceGeneration = sourceGeneration;
                     Config.RevertOrderingNames = revertNames;
                     Config.TraceDependencySorterInput = traceStObjGraphOrdering;
                     Config.TraceDependencySorterOutput = traceStObjGraphOrdering;
@@ -216,7 +234,6 @@ namespace CK.Core
                 }
             }
         }
-
         /// <summary>
         /// Loads an assembly that must be in probe paths in .Net framework and in
         /// AppContext.BaseDirectory in .Net Core.

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -45,12 +45,13 @@ namespace CK.DB.Tests
             TestHelper.ClearDatabaseUsedSchemas();
         }
 
-        [Test]
+        [TestCase( "IL Emit" )]
+        [TestCase( "Source" )]
         [Explicit]
-        public void db_setup()
+        public void db_setup( string type )
         {
             TestHelper.LogToConsole = true;
-            Assert.That(TestHelper.RunDBSetup(), "DBSetup failed.");
+            Assert.That( type == "Source" ? TestHelper.RunDBSetupSource() : TestHelper.RunDBSetup(), "DBSetup failed.");
         }
 
         [Test]
