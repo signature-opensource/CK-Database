@@ -24,10 +24,10 @@
     <CKActivityMonitorVersion>8.0.0</CKActivityMonitorVersion>
     <CKMonitoringVersion>7.1.0</CKMonitoringVersion>
     <CKSetupDependencyVersion>6.0.1</CKSetupDependencyVersion>
-    <CKSqlServerParserVersion>6.0.0-d01</CKSqlServerParserVersion>
-    <CKSqlServerParserModelVersion>3.2.5</CKSqlServerParserModelVersion>
+    <CKSqlServerParserVersion>6.0.0-d02</CKSqlServerParserVersion>
+    <CKSqlServerParserModelVersion>3.2.6</CKSqlServerParserModelVersion>
     <CKReflectionVersion>5.1.0</CKReflectionVersion>
-    <CKCodeGenVersion>0.1.0-a19</CKCodeGenVersion>
+    <CKCodeGenVersion>0.1.0-a20</CKCodeGenVersion>
     <YodiiScriptVersion>0.4.1</YodiiScriptVersion>
     <CSemVerVersion>1.0.1</CSemVerVersion>
     <MonoCecilVersion>0.10.0-beta6</MonoCecilVersion>

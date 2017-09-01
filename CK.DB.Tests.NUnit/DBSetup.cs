@@ -25,7 +25,7 @@ namespace CK.DB.Tests
         public void manual_load_existing_generated_dll()
         {
             TestHelper.LogToConsole = true;
-            Assert.That( TestHelper.LoadStObjMapFromExistingGeneratedAssembly() != null, "Generated Assembly must exist and a StObjMap muts be loaded." );
+            Assert.That( TestHelper.LoadStObjMapFromExistingGeneratedAssembly() != null, "Generated Assembly must exist and a StObjMap must be loaded." );
         }
 
         [Test]
