@@ -73,6 +73,16 @@ namespace CKSetup
         }
 
         /// <summary>
+        /// Gets whether this <see cref="TargetFramework"/> is a .NetFramework.
+        /// </summary>
+        /// <param name="this">This framework.</param>
+        /// <returns>True if this is a .Net framework.</returns>
+        static public bool IsNetFramework( this TargetFramework @this )
+        {
+            return (((int)@this >> 16) & 127) > 0;
+        }
+
+        /// <summary>
         /// Parses the TargetFrameworkAttribute (from System.Runtime.Versioning).
         /// </summary>
         /// <param name="rawTargetFramework">

@@ -50,7 +50,7 @@ namespace CKSetup.Tests
 
         [TestCase( TestStoreType.Zip, true )]
         [TestCase( TestStoreType.Directory, false )]
-        public void adding_both_stobj_runtime_and_stobj_model( TestStoreType type, bool runtimeFirst )
+        public void adding_both_stobj_runtime_and_stobj_model_in_net461( TestStoreType type, bool runtimeFirst )
         {
             string zipPath = TestHelper.GetTestZipPath( type, runtimeFirst ? ".runtimeFirst" : ".modelFirst" );
             using( RuntimeArchive zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
@@ -82,7 +82,7 @@ namespace CKSetup.Tests
                 "CK.StObj.Model.dll", 
                 "CK.ActivityMonitor.dll" );
 
-            // Model files are not stored.
+            // Model files in .Net framework are not stored.
             c.NoComponentFilesShouldBeStored( stObjModel );
         }
 

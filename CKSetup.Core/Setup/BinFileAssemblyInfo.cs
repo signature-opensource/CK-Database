@@ -88,9 +88,15 @@ namespace CKSetup
         }
 
         /// <summary>
-        /// Gets the <see cref="ComponentKind"/>.
+        /// Gets the <see cref="ComponentKind"/>. Can be <see cref="ComponentKind.None"/>.
         /// </summary>
         public ComponentKind ComponentKind { get; }
+
+        /// <summary>
+        /// Gets whether files should be stored: only Models in .Net framework don't need to be stored.
+        /// </summary>
+        public bool StoreFiles => ComponentKind == ComponentKind.SetupDependency
+                                    || (ComponentKind == ComponentKind.Model || !_cRef.TargetFramework.IsNetFramework());
 
         /// <summary>
         /// Gets the assembly <see cref="AssemblyNameDefinition"/>.

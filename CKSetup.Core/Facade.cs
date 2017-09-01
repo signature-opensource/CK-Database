@@ -63,7 +63,7 @@ namespace CKSetup
                         var configPath = WritDBSetupConfig( monitor, config, binPath );
                         archive.RegisterFileToDelete( configPath );
                     }
-                    return RunSetup( monitor, binPath, debugBreakInCKStObjRunner );
+                    return RunSetup( monitor, binPath, archive, debugBreakInCKStObjRunner );
                 }
                 catch( Exception ex )
                 {
@@ -73,7 +73,7 @@ namespace CKSetup
             }
         }
 
-        static bool RunSetup( IActivityMonitor m, string binPath, bool debugBreakInCKStObjRunner )
+        static bool RunSetup( IActivityMonitor m, string binPath, RuntimeArchive archive, bool debugBreakInCKStObjRunner )
         {
             using( m.OpenInfo( "Launching CK.StObj.Runner." ) )
             {
@@ -92,7 +92,9 @@ namespace CKSetup
                     if( RunRunnerProcess( m, binPath, debugBreakInCKStObjRunner, fileName, arguments ) )
                     {
                         string theFile = Path.Combine( binPath, "CK.StObj.Runner.deps.json" );
-                        File.Replace( theFile + ".merged", theFile, theFile + ".bak" );
+                        string theBackup = theFile + ".cksetup-backup";
+                        File.Replace( theFile + ".merged", theFile, theBackup );
+                        archive.RegisterFileToDelete( theBackup );
                     }
                     arguments = "CK.StObj.Runner.dll";
                 }
@@ -117,6 +119,7 @@ namespace CKSetup
             cmdStartInfo.FileName = fileName;
             cmdStartInfo.Arguments = arguments;
             if( debugBreakInCKStObjRunner ) cmdStartInfo.Arguments += " launch-debugger";
+            using( m.OpenTrace( $"{fileName} {cmdStartInfo.Arguments}" ) )
             using( Process cmdProcess = new Process() )
             {
                 cmdProcess.StartInfo = cmdStartInfo;

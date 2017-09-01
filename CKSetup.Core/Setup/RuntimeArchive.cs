@@ -163,9 +163,9 @@ namespace CKSetup
                 {
                     var result = db.AddLocal( _monitor, f );
                     if( result.Error ) return false;
-                    // We do not store files for models: they are necessarily in 
+                    // We do not store files for models in .Net framework: they are necessarily in 
                     // any target folders that has the model!
-                    if( result.NewComponent != null && result.NewComponent.ComponentKind != ComponentKind.Model )
+                    if( result.NewComponent != null && result.NewComponent.StoreFiles )
                     {
                         added[result.NewComponent.GetRef()] = f;
                     }
@@ -312,7 +312,7 @@ namespace CKSetup
                 IReadOnlyList<Component> components = resolver.Run( _monitor, downloader );
                 if( components == null ) return false;
                 int count = 0;
-                foreach( var c in components )
+                foreach( var c in components.OrderByDescending( x => x.TargetFramework ) )
                 {
                     using( _monitor.OpenInfo( $"{c.Files.Count} files from '{c}'." ) )
                     {
@@ -340,11 +340,11 @@ namespace CKSetup
                                 }
                                 catch( Exception ex )
                                 {
-                                    _monitor.Error( $"While extracting '{targetPath}'.", ex );
+                                    _monitor.Error( $"While extracting '{f.Name}'.", ex );
                                     return false;
                                 }
                             }
-                            else _monitor.Trace( $"Skipped '{targetPath}' since it already exists." );
+                            else _monitor.Trace( $"Skipped '{f.Name}' since it already exists." );
                         }
                     }
                     _monitor.Trace( $"{count} files extracted so far." );
@@ -424,7 +424,7 @@ namespace CKSetup
                 if( n.Components != null && n.Components.Count > 0 )
                 {
                     missingFiles = n.Components
-                                    .Where( c => c.ComponentKind != ComponentKind.Model )
+                                    .Where( c => c.StoreFiles )
                                     .SelectMany( c => c.Files )
                                     .Select( f => f.SHA1 )
                                     .Distinct()

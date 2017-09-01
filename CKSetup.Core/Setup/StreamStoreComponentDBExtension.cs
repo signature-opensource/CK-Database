@@ -126,7 +126,7 @@ namespace CKSetup.StreamStore
                 using( monitor.OpenInfo( $"Downloading missing files." ) )
                 {
                     var newFiles = r.Components
-                                    .Where( c => c.ComponentKind != ComponentKind.Model )
+                                    .Where( c => c.StoreFiles )
                                     .SelectMany( c => c.Files )
                                     .ToLookup( f => f.SHA1 )
                                     .Where( g => !@this.Exists( g.Key.ToString() ) )

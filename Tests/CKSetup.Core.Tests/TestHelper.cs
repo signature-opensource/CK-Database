@@ -225,17 +225,17 @@ namespace CKSetup.Tests
             if( withNetStandard && !_standardDbHasNetStandard[(int)type] )
             {
                 zip.CreateLocalImporter().AddComponent(
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( StObjRunnerNetCoreApp11 ) ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( StObjRunnerNetCoreApp20 ) ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( StObjModelNet13 ) ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( StObjRuntimeNet16 ) ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( StObjEngineNet16 ) ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SetupableModelNet13 ) ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SetupableRuntimeNet16 ) ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SetupableEngineNet16 ) ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SqlServerSetupModelNet13 ) ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SqlServerSetupRuntimeNet16 ) ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SqlServerSetupEngineNet16 ) ) )
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjRunnerNetCoreApp11 ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjRunnerNetCoreApp20  ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjModelNet13 ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjRuntimeNet16 ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjEngineNet16  ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableModelNet13 ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableRuntimeNet16 ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableEngineNet16 ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupModelNet13 ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupRuntimeNet16 ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupEngineNet16 ) )
                     .Import()
                     .Should().BeTrue();
                 _standardDbHasNetStandard[(int)type] = true;

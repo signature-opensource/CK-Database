@@ -22,6 +22,7 @@ namespace CK.StObj.Runner
             }
             var m = new ActivityMonitor();
             m.Output.RegisterClient( new ActivityMonitorConsoleClient() );
+            InstallLoadHooks( m );
             using( m.OpenInfo( "Starting CK.StObj.Runner" ) )
             {
                 try
@@ -76,7 +77,6 @@ namespace CK.StObj.Runner
 
         static bool Run( IActivityMonitor m )
         {
-            InstallLoadHooks( m );
             XElement root = XDocument.Load( Path.Combine( AppContext.BaseDirectory, XmlFileName ) ).Root;
             m.MinimalFilter = LogFilter.Parse( root.Element( xLogFiler ).Value );
             var config = new StObjEngineConfiguration( root.Element( xSetup ) );
@@ -99,14 +99,25 @@ namespace CK.StObj.Runner
 #endif
 
 #if NETCOREAPP2_0
-            monitor.Info( $"CurrentDomain.RelativeSearchPath: {AppDomain.CurrentDomain.RelativeSearchPath}" );
+            monitor.Info( $"CurrentDomain.BaseDirectory: {AppDomain.CurrentDomain.BaseDirectory}" );
             AppDomain.CurrentDomain.AssemblyResolve += ( object sender, ResolveEventArgs a ) =>
             {
                 var failed = new AssemblyName( a.Name );
                 var resolved = failed.Version != null && failed.CultureName == null
                         ? Assembly.Load( new AssemblyName( failed.Name ) )
                         : null;
-                monitor.Info( $"AssemblyResolve: {a.Name} ==> {resolved?.FullName}" );
+                monitor.Info( $"AssemblyResolve (weaken): {a.Name} ==> {resolved?.FullName}" );
+                if( resolved == null )
+                {
+                    string file = Path.Combine( AppContext.BaseDirectory, failed.Name + ".dll" );
+                    if( File.Exists( file ) )
+                    {
+                        monitor.Info( $"File '{failed.Name}.dll' exists in BaseDirectory." );
+                        resolved = Assembly.LoadFrom( file );
+                        monitor.Info( $"AssemblyResolve (LoadFrom): {a.Name} ==> {resolved?.FullName}" );
+                    }
+                    else monitor.Warn( $"File '{failed.Name}.dll' does not exist in BaseDirectory." );
+                }
                 return resolved;
             };
 #endif

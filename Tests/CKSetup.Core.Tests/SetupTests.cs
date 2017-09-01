@@ -32,10 +32,44 @@ namespace CKSetup.Tests
             }
         }
 
+        [TestCase( TestStoreType.Zip )]
+        [TestCase( TestStoreType.Directory )]
+        public void setup_SqlCallDemo461_publish_folder( TestStoreType type )
+        {
+            using( var zip = TestHelper.OpenCKDatabaseZip( type ) )
+            {
+                Facade.DoSetup(
+                    TestHelper.ConsoleMonitor,
+                    TestHelper.EnsurePublishPath( TestHelper.SqlCallDemo461 ),
+                    zip,
+                    TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
+                    "SqlCallDemo.Generated.ByCKSetup",
+                    sourceGeneration: true
+                    ).Should().BeTrue();
+            }
+        }
+
 
         [TestCase( TestStoreType.Zip )]
         [TestCase( TestStoreType.Directory )]
         public void setup_SqlCallDemo_for_netstandard13( TestStoreType type )
+        {
+            using( var zip = TestHelper.OpenCKDatabaseZip( type, withNetStandard: true ) )
+            {
+                Facade.DoSetup(
+                    TestHelper.ConsoleMonitor,
+                    TestHelper.SqlCallDemoNet13,
+                    zip,
+                    TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
+                    "SqlCallDemo.Generated.ByCKSetup",
+                    sourceGeneration: true
+                    ).Should().BeTrue();
+            }
+        }
+
+        [TestCase( TestStoreType.Zip )]
+        [TestCase( TestStoreType.Directory )]
+        public void setup_SqlCallDemo_for_netstandard13_publish_folder( TestStoreType type )
         {
             using( var zip = TestHelper.OpenCKDatabaseZip( type, withNetStandard: true ) )
             {

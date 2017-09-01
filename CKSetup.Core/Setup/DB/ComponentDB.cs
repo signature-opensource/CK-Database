@@ -183,7 +183,7 @@ namespace CKSetup
                             m.Error( $"{cSub.Name} is declared as a Setup dependency but exists as an embedded component." );
                             return new AddLocalResult( null );
                         }
-                        if( toAdd.ComponentKind != ComponentKind.Model && cSub.ComponentKind != ComponentKind.Model )
+                        if( toAdd.StoreFiles && cSub.StoreFiles )
                         {
                             dependencies.Add( new ComponentDependency( cSub.Name, cSub.Version ) );
                         }
@@ -370,7 +370,7 @@ namespace CKSetup
                 }
                 foreach( var eOrR in targets.SelectMany( t => t.Components ).Where( c => c.ComponentKind != ComponentKind.Model ) )
                 {
-                    m.Warn( $"{eOrR.ComponentKind} '{eOrR.ComponentRef}' found. It will be ignored." );
+                    m.Warn( $"Found a SetupDependency '{eOrR.ComponentRef}' component. It will be ignored: only Models are considered when selecting TargetRuntime." );
                 }
                 var targetRuntime = SelectTargetRuntime( m, models );
                 if( targetRuntime == TargetRuntime.None ) return null;
