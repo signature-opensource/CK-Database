@@ -15,8 +15,5 @@
     <ProjectReference Include="..\..\Tests\BasicModels\SqlActorPackage.Runtime\SqlActorPackage.Runtime.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
-    <Reference Include="System" />
-  </ItemGroup>
 
 </Project>

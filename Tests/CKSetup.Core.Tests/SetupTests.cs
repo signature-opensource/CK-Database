@@ -52,13 +52,13 @@ namespace CKSetup.Tests
 
         [TestCase( TestStoreType.Zip )]
         [TestCase( TestStoreType.Directory )]
-        public void setup_SqlCallDemo_for_netstandard13( TestStoreType type )
+        public void setup_SqlCallDemo_for_netstandard20( TestStoreType type )
         {
             using( var zip = TestHelper.OpenCKDatabaseZip( type, withNetStandard: true ) )
             {
                 Facade.DoSetup(
                     TestHelper.ConsoleMonitor,
-                    TestHelper.SqlCallDemoNet13,
+                    TestHelper.SqlCallDemoNet20,
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",
@@ -69,13 +69,13 @@ namespace CKSetup.Tests
 
         [TestCase( TestStoreType.Zip )]
         [TestCase( TestStoreType.Directory )]
-        public void setup_SqlCallDemo_for_netstandard13_publish_folder( TestStoreType type )
+        public void setup_SqlCallDemo_for_netstandard20_publish_folder( TestStoreType type )
         {
             using( var zip = TestHelper.OpenCKDatabaseZip( type, withNetStandard: true ) )
             {
                 Facade.DoSetup(
                     TestHelper.ConsoleMonitor,
-                    TestHelper.EnsurePublishPath( TestHelper.SqlCallDemoNet13 ),
+                    TestHelper.EnsurePublishPath( TestHelper.SqlCallDemoNet20 ),
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",

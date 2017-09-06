@@ -43,7 +43,7 @@ namespace CK.Core
             {
                 if( _monitor == null )
                 {
-                    SystemActivityMonitor.RootLogPath = LogFolder;
+                    LogFile.RootLogPath = LogFolder;
                     _monitor = new ActivityMonitor();
                     _console = new ActivityMonitorConsoleClient();
                 }

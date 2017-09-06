@@ -15,11 +15,6 @@
     <PackageReference Include="CK.SqlServer.Parser" Version="$(CKSqlServerParserVersion)" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
-    <PackageReference Include="NUnit" Version="[2.6.4]" />
-    <Reference Include="System" />
-  </ItemGroup>
-
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>

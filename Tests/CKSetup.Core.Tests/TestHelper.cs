@@ -126,7 +126,6 @@ namespace CKSetup.Tests
         }
 
         public static string StObjRunnerNet461 => Path.Combine( SolutionFolder, "CK.StObj.Runner", "bin", Configuration, "net461" );
-        public static string StObjRunnerNetCoreApp11 => Path.Combine( SolutionFolder, "CK.StObj.Runner", "bin", Configuration, "netcoreapp1.1" );
         public static string StObjRunnerNetCoreApp20 => Path.Combine( SolutionFolder, "CK.StObj.Runner", "bin", Configuration, "netcoreapp2.0" );
 
         public static string StObjModel461 => Path.Combine( SolutionFolder, "CK.StObj.Model", "bin", Configuration, "net461" );
@@ -148,19 +147,19 @@ namespace CKSetup.Tests
 
 
         #region Net standard component Paths
-        public static string StObjModelNet13 => Path.Combine( SolutionFolder, "CK.StObj.Model", "bin", Configuration, "netstandard1.3" );
-        public static string StObjRuntimeNet16 => Path.Combine( SolutionFolder, "CK.StObj.Runtime", "bin", Configuration, "netstandard1.6" );
-        public static string StObjEngineNet16 => Path.Combine( SolutionFolder, "CK.StObj.Engine", "bin", Configuration, "netstandard1.6" );
+        public static string StObjModelNet20 => Path.Combine( SolutionFolder, "CK.StObj.Model", "bin", Configuration, "netstandard2.0" );
+        public static string StObjRuntimeNet20 => Path.Combine( SolutionFolder, "CK.StObj.Runtime", "bin", Configuration, "netcoreapp2.0" );
+        public static string StObjEngineNet20 => Path.Combine( SolutionFolder, "CK.StObj.Engine", "bin", Configuration, "netcoreapp2.0" );
 
-        public static string SetupableModelNet13 => Path.Combine( SolutionFolder, "CK.Setupable.Model", "bin", Configuration, "netstandard1.3" );
-        public static string SetupableRuntimeNet16 => Path.Combine( SolutionFolder, "CK.Setupable.Runtime", "bin", Configuration, "netstandard1.6" );
-        public static string SetupableEngineNet16 => Path.Combine( SolutionFolder, "CK.Setupable.Engine", "bin", Configuration, "netstandard1.6" );
+        public static string SetupableModelNet20 => Path.Combine( SolutionFolder, "CK.Setupable.Model", "bin", Configuration, "netstandard2.0" );
+        public static string SetupableRuntimeNet20 => Path.Combine( SolutionFolder, "CK.Setupable.Runtime", "bin", Configuration, "netcoreapp2.0" );
+        public static string SetupableEngineNet20 => Path.Combine( SolutionFolder, "CK.Setupable.Engine", "bin", Configuration, "netcoreapp2.0" );
 
-        public static string SqlServerSetupModelNet13 => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Model", "bin", Configuration, "netstandard1.3" );
-        public static string SqlServerSetupRuntimeNet16 => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Runtime", "bin", Configuration, "netstandard1.6" );
-        public static string SqlServerSetupEngineNet16 => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Engine", "bin", Configuration, "netstandard1.6" );
+        public static string SqlServerSetupModelNet20 => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Model", "bin", Configuration, "netcoreapp2.0" );
+        public static string SqlServerSetupRuntimeNet20 => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Runtime", "bin", Configuration, "netcoreapp2.0" );
+        public static string SqlServerSetupEngineNet20 => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Engine", "bin", Configuration, "netcoreapp2.0" );
 
-        public static string SqlCallDemoNet13 => Path.Combine( SolutionFolder, "Tests", "SqlCallDemo", "SqlCallDemo", "bin", Configuration, "netstandard1.3" );
+        public static string SqlCallDemoNet20 => Path.Combine( SolutionFolder, "Tests", "SqlCallDemo", "SqlCallDemo", "bin", Configuration, "netcoreapp2.0" );
 
 
         #endregion
@@ -225,17 +224,16 @@ namespace CKSetup.Tests
             if( withNetStandard && !_standardDbHasNetStandard[(int)type] )
             {
                 zip.CreateLocalImporter().AddComponent(
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjRunnerNetCoreApp11 ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjRunnerNetCoreApp20  ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjModelNet13 ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjRuntimeNet16 ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjEngineNet16  ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableModelNet13 ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableRuntimeNet16 ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableEngineNet16 ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupModelNet13 ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupRuntimeNet16 ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupEngineNet16 ) )
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( StObjRunnerNetCoreApp20 ) ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( StObjModelNet20 ) ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( StObjRuntimeNet20 ) ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( StObjEngineNet20 ) ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SetupableModelNet20 ) ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SetupableRuntimeNet20 ) ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SetupableEngineNet20 ) ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SqlServerSetupModelNet20 ) ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SqlServerSetupRuntimeNet20 ) ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SqlServerSetupEngineNet20 ) ) )
                     .Import()
                     .Should().BeTrue();
                 _standardDbHasNetStandard[(int)type] = true;

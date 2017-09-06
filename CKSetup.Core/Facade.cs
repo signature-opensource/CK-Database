@@ -89,13 +89,14 @@ namespace CKSetup
                     }
                     fileName = "dotnet";
                     arguments = "CK.StObj.Runner.dll merge-deps";
-                    if( RunRunnerProcess( m, binPath, debugBreakInCKStObjRunner, fileName, arguments ) )
+                    if( !RunRunnerProcess( m, binPath, debugBreakInCKStObjRunner, fileName, arguments ) )
                     {
-                        string theFile = Path.Combine( binPath, "CK.StObj.Runner.deps.json" );
-                        string theBackup = theFile + ".cksetup-backup";
-                        File.Replace( theFile + ".merged", theFile, theBackup );
-                        archive.RegisterFileToDelete( theBackup );
+                        return false;
                     }
+                    string theFile = Path.Combine( binPath, "CK.StObj.Runner.deps.json" );
+                    string theBackup = theFile + ".cksetup-backup";
+                    File.Replace( theFile + ".merged", theFile, theBackup );
+                    archive.RegisterFileToDelete( theBackup );
                     arguments = "CK.StObj.Runner.dll";
                 }
                 else

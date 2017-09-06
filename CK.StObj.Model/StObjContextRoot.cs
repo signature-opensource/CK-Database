@@ -132,11 +132,30 @@ namespace CK.Core
             if( config == null ) throw new ArgumentNullException( "config" );
             if( monitor == null ) monitor = new ActivityMonitor( "CK.Core.StObjContextRoot.Build" );
 
-            IStObjRuntimeBuilder runtimeBuilder = ResolveRuntimeBuilder( builderMethod, stObjRuntimeBuilderFactoryTypeName, stObjRuntimeBuilderFactoryMethodName, monitor );
-            Type runnerType = SimpleTypeFinder.WeakResolver( config.EngineAssemblyQualifiedName, true );
-            object runner = Activator.CreateInstance( runnerType, monitor, config, runtimeBuilder );
-            MethodInfo m = runnerType.GetMethod( "Run" );
-            return (bool)m.Invoke( runner, Array.Empty<object>() );
+            ResolveEventHandler loadHook = ( sender, args ) =>
+            {
+                var failed = new AssemblyName( args.Name );
+
+                var resolved = failed.Version != null && string.IsNullOrWhiteSpace( failed.CultureName )
+                        ? Assembly.Load( new AssemblyName( failed.Name ) )
+                        : null;
+                monitor.Info( $"DoBuild AssemblyResolve hook: {failed.Name} ==> {resolved?.FullName}" );
+                return resolved;
+            };
+
+            try
+            {
+                AppDomain.CurrentDomain.AssemblyResolve += loadHook;
+                IStObjRuntimeBuilder runtimeBuilder = ResolveRuntimeBuilder( builderMethod, stObjRuntimeBuilderFactoryTypeName, stObjRuntimeBuilderFactoryMethodName, monitor );
+                Type runnerType = SimpleTypeFinder.WeakResolver( config.EngineAssemblyQualifiedName, true );
+                object runner = Activator.CreateInstance( runnerType, monitor, config, runtimeBuilder );
+                MethodInfo m = runnerType.GetMethod( "Run" );
+                return (bool)m.Invoke( runner, Array.Empty<object>() );
+            }
+            finally
+            {
+                AppDomain.CurrentDomain.AssemblyResolve -= loadHook;
+            }
         }
 
         static IStObjRuntimeBuilder ResolveRuntimeBuilder( Func<IStObjRuntimeBuilder> builderMethod, string stObjRuntimeBuilderFactoryTypeName, string stObjRuntimeBuilderFactoryMethodName, IActivityMonitor monitor )

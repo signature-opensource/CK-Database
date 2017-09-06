@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
-    <RuntimeIdentifier>win</RuntimeIdentifier>
+    <!--<RuntimeIdentifier>win</RuntimeIdentifier>-->
   </PropertyGroup>
 
   <Import Project="..\..\..\Common\Shared.props" />
@@ -15,10 +15,6 @@
     <ProjectReference Include="..\..\..\CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj" />
     <ProjectReference Include="..\..\..\Tests\SqlTransform\Model\CKLevel0\CKLevel0.csproj" />
     <ProjectReference Include="..\..\..\Tests\SqlTransform\Model\CKLevel2\CKLevel2.csproj" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
-    <Reference Include="System" />
   </ItemGroup>
 
 </Project>

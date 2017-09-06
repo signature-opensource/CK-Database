@@ -107,8 +107,12 @@ namespace CKSetup.Tests
                 buffer.ReadByte().Should().Be( 251 );
             }
             StoreContent content = new StoreContent( zipPath );
-            content.Db.Elements( "Component" ).Single().Attribute( "Name" ).Value.Should().Be( "CK.Setupable.Engine" );
-            content.FileEntries.Count.Should().Be( 1 );
+            var engines = content.Db.Elements( "Component" ).ToArray();
+            engines.Select( c => c.Name ).ShouldBeEquivalentTo( "CK.Setupable.Engine" );
+
+            // CK.Setupable.Engine.dll (net461) and/or
+            // CK.Setupable.Engine.dll (net20) and CK.Setupable.Engine.deps.json.
+            content.FileEntries.Should().HaveCount( n => n > 0 && n < 3 );
         }
 
 

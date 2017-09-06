@@ -16,8 +16,4 @@
     <ProjectReference Include="..\..\Tests\BasicModels\SqlZonePackage.Runtime\SqlZonePackage.Runtime.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
-    <Reference Include="System" />
-  </ItemGroup>
-
 </Project>

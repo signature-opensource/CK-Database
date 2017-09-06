@@ -19,10 +19,6 @@
     <PackageReference Include="CK.Setup.Dependency" Version="$(CKSetupDependencyVersion)" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
-    <Reference Include="System" />
-  </ItemGroup>
-
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
