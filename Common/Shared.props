@@ -21,13 +21,13 @@
   <PropertyGroup>
     <!-- Centralized version dependencies. -->
     <CKCoreVersion>8.0.1-Cdevelop-0004</CKCoreVersion>
-    <CKActivityMonitorVersion>8.0.1-Cdevelop-0005</CKActivityMonitorVersion>
-    <CKMonitoringVersion>7.1.1-Cdevelop-0002</CKMonitoringVersion>
-    <CKSetupDependencyVersion>6.0.2-Cdevelop-0003</CKSetupDependencyVersion>
-    <CKSqlServerParserVersion>6.0.0-d02-00-develop-0003</CKSqlServerParserVersion>
-    <CKSqlServerParserModelVersion>3.2.7-Cdevelop-0004</CKSqlServerParserModelVersion>
+    <CKActivityMonitorVersion>9.0.0-a00-00-develop-0003</CKActivityMonitorVersion>
+    <CKMonitoringVersion>7.1.1-Cdevelop-0003</CKMonitoringVersion>
+    <CKSetupDependencyVersion>6.0.2-Cdevelop-0004</CKSetupDependencyVersion>
+    <CKSqlServerParserVersion>6.0.0-d02-00-develop-0004</CKSqlServerParserVersion>
+    <CKSqlServerParserModelVersion>3.2.7-Cdevelop-0005</CKSqlServerParserModelVersion>
     <CKReflectionVersion>5.1.0</CKReflectionVersion>
-    <CKCodeGenVersion>0.1.0-a20-00-develop-0003</CKCodeGenVersion>
+    <CKCodeGenVersion>0.1.0-a20-00-develop-0004</CKCodeGenVersion>
     <YodiiScriptVersion>0.4.1</YodiiScriptVersion>
     <CSemVerVersion>1.0.1</CSemVerVersion>
     <MonoCecilVersion>0.10.0-beta6</MonoCecilVersion>

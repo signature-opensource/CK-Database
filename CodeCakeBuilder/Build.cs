@@ -22,6 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 
 namespace CodeCake
@@ -237,12 +238,13 @@ namespace CodeCake
                     var apiKey = Cake.InteractiveEnvironmentVariable( "CKSETUPREMOTESTORE_PUSH_API_KEY" );
                     if( !String.IsNullOrWhiteSpace( apiKey ) )
                     {
-                        string ckSetupExe = "CKSetup/bin/" + configuration + "/net461/win/CKSetup.exe";
+                        string ckSetupExe = "CKSetup/bin/" + configuration + "/net461/CKSetup.exe";
                         string storePath = releasesDir.Path.Combine( "TempStore" ).FullPath;
                         var args = new ProcessArgumentBuilder()
                                     .Append( "store" )
                                     .Append( "add" );
 
+                        args.Append( GetNet461BinFolder( "CK.StObj.Runner", configuration ) );
                         args.Append( GetNet461BinFolder( "CK.StObj.Model", configuration ) );
                         args.Append( GetNet461BinFolder( "CK.StObj.Runtime", configuration ) );
                         args.Append( GetNet461BinFolder( "CK.StObj.Engine", configuration ) );
@@ -252,6 +254,17 @@ namespace CodeCake
                         args.Append( GetNet461BinFolder( "CK.SqlServer.Setup.Model", configuration ) );
                         args.Append( GetNet461BinFolder( "CK.SqlServer.Setup.Runtime", configuration ) );
                         args.Append( GetNet461BinFolder( "CK.SqlServer.Setup.Engine", configuration ) );
+
+                        args.Append( GetNetCoreBinFolder( "CK.StObj.Runner", configuration ) );
+                        args.Append( GetNetCoreBinFolder( "CK.StObj.Model", configuration ) );
+                        args.Append( GetNetCoreBinFolder( "CK.StObj.Runtime", configuration ) );
+                        args.Append( GetNetCoreBinFolder( "CK.StObj.Engine", configuration ) );
+                        args.Append( GetNetCoreBinFolder( "CK.Setupable.Model", configuration ) );
+                        args.Append( GetNetCoreBinFolder( "CK.Setupable.Runtime", configuration ) );
+                        args.Append( GetNetCoreBinFolder( "CK.Setupable.Engine", configuration ) );
+                        args.Append( GetNetCoreBinFolder( "CK.SqlServer.Setup.Model", configuration ) );
+                        args.Append( GetNetCoreBinFolder( "CK.SqlServer.Setup.Runtime", configuration ) );
+                        args.Append( GetNetCoreBinFolder( "CK.SqlServer.Setup.Engine", configuration ) );
 
                         args.AppendSwitchQuoted( "--store", storePath )
                             .AppendSwitchQuoted( "-f", "Debug" );
@@ -378,10 +391,62 @@ namespace CodeCake
             }
         }
 
-
         string GetNet461BinFolder( string name, string configuration )
         {
-            return System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/net461/win" );
+            string pathToFramework = System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/net461" );
+            return EnsurePublishPath( pathToFramework );
         }
+
+        string GetNetCoreBinFolder( string name, string configuration )
+        {
+            string pathToFramework = System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/netstandard2.0" );
+            if( !Directory.Exists( pathToFramework ) )
+            {
+                pathToFramework = System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/netcoreapp2.0" );
+            }
+            return EnsurePublishPath( pathToFramework );
+        }
+
+        string EnsurePublishPath( string pathToFramework )
+        {
+            var publishPath = System.IO.Path.Combine( pathToFramework, "publish" );
+            if( !Directory.Exists( publishPath ) )
+            {
+                var framework = System.IO.Path.GetFileName( pathToFramework );
+                var pathToConfiguration = System.IO.Path.GetDirectoryName( pathToFramework );
+                var configuration = System.IO.Path.GetFileName( pathToConfiguration );
+                var projectPath = System.IO.Path.GetDirectoryName( System.IO.Path.GetDirectoryName( pathToConfiguration ) );
+                var projectName = System.IO.Path.GetFileName( projectPath );
+                var pI = new ProcessStartInfo()
+                {
+                    WorkingDirectory = projectPath,
+                    FileName = "dotnet",
+                    Arguments = $"publish -c {configuration} -f {framework}",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    RedirectStandardInput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+                Cake.Information( $"Publishing {projectName}: dotnet {pI.Arguments}" );
+                using( Process cmdProcess = new Process() )
+                {
+                    cmdProcess.StartInfo = pI;
+                    cmdProcess.ErrorDataReceived += ( o, e ) => { if( !string.IsNullOrEmpty( e.Data ) ) Cake.Error( e.Data ); };
+                    cmdProcess.OutputDataReceived += ( o, e ) => { if( e.Data != null ) Cake.Information( e.Data ); };
+                    cmdProcess.Start();
+                    cmdProcess.BeginErrorReadLine();
+                    cmdProcess.BeginOutputReadLine();
+                    cmdProcess.WaitForExit();
+                    if( cmdProcess.ExitCode != 0 )
+                    {
+                        Cake.Error( $"Process returned ExitCode {cmdProcess.ExitCode}." );
+                        return null;
+                    }
+                }
+            }
+            return publishPath;
+        }
+
     }
 }

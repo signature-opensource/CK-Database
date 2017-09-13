@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
@@ -9,9 +9,7 @@
   <ItemGroup>
     <PackageReference Include="NUnit" Version="[2.6.4]" />
     <PackageReference Include="FluentAssertions" Version="4.19.4" />
-    <Reference Include="System.IO.Compression" />
     <Reference Include="System.Configuration" />
-    <Reference Include="System" />
     <ProjectReference Include="..\..\CKSetup.Core\CKSetup.Core.csproj" />
   </ItemGroup>
   
