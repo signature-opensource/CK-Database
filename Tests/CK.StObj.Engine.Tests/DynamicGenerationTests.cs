@@ -143,7 +143,7 @@ namespace CK.StObj.Engine.Tests
 
                 void StObjConstruct( IActivityMonitor monitor )
                 {
-                    monitor.Trace().Send( "At A level: StObjPower = '{0}'.", StObjPower );
+                    monitor.Trace( $"At A level: StObjPower = '{StObjPower}'." );
                 }
             }
 
@@ -154,7 +154,7 @@ namespace CK.StObj.Engine.Tests
 
                 void StObjConstruct( IActivityMonitor monitor, B b )
                 {
-                    monitor.Trace().Send( "At ASpec level: StObjPower = '{0}'.", StObjPower );
+                    monitor.Trace( $"At ASpec level: StObjPower = '{StObjPower}'." );
                     TheB = b;
                 }
 
@@ -255,7 +255,7 @@ namespace CK.StObj.Engine.Tests
 
                 void StObjConstruct( IActivityMonitor monitor, [Container]BSpec bIsTheContainerOfA )
                 {
-                    monitor.Trace().Send( "At A level: StObjPower = '{0}'.", StObjPower );
+                    monitor.Trace( $"At A level: StObjPower = '{StObjPower}'." );
                 }
 
                 void StObjInitialize( IActivityMonitor monitor, IContextualStObjMap map )
@@ -277,7 +277,7 @@ namespace CK.StObj.Engine.Tests
 
                 void StObjConstruct( IActivityMonitor monitor )
                 {
-                    monitor.Trace().Send( "At ASpec level: StObjPower = '{0}'.", StObjPower );
+                    monitor.Trace( $"At ASpec level: StObjPower = '{StObjPower}'." );
                 }
 
                 void StObjInitialize( IActivityMonitor monitor, IContextualStObjMap map )

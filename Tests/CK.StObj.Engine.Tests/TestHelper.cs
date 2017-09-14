@@ -1,4 +1,4 @@
-﻿#region Proprietary License
+#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (Tests\CK.StObj.Engine.Tests\TestHelper.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -43,11 +43,11 @@ namespace CK.StObj.Engine.Tests
                 if( value )
                 {
                     _monitor.Output.RegisterUniqueClient( c => c == _console, () => _console );
-                    _monitor.Info().Send( "Console log is ON." );
+                    _monitor.Info( "Console log is ON." );
                 }
                 else
                 {
-                    _monitor.Info().Send( "Console log is OFF." );
+                    _monitor.Info( "Console log is OFF." );
                     _monitor.Output.UnregisterClient( _console );
                 }
             }
@@ -72,7 +72,7 @@ namespace CK.StObj.Engine.Tests
 
         public static void TraceDependentItem( this IActivityMonitor @this, IEnumerable<IDependentItem> e )
         {
-            using( @this.OpenTrace().Send( "Dependent items" ) )
+            using( @this.OpenTrace( "Dependent items" ) )
             {
                 foreach( var i in e ) TraceDependentItem( @this, i );
             }
@@ -80,22 +80,22 @@ namespace CK.StObj.Engine.Tests
 
         public static void TraceDependentItem( this IActivityMonitor @this, IDependentItem i )
         {
-            using( _monitor.OpenTrace().Send( "FullName = {0}", i.FullName ) )
+            using( _monitor.OpenTrace( "FullName = " + i.FullName ) )
             {
-                _monitor.Trace().Send( "Container = {0}", OneName( i.Container ) );
-                _monitor.Trace().Send( "Generalization = {0}", OneName( i.Generalization ) );
-                _monitor.Trace().Send( "Requires = {0}", Names( i.Requires ) );
-                _monitor.Trace().Send( "RequiredBy = {0}", Names( i.RequiredBy ) );
-                _monitor.Trace().Send( "Groups = {0}", Names( i.Groups ) );
+                _monitor.Trace( "Container = " + OneName( i.Container ) );
+                _monitor.Trace( "Generalization = " + OneName( i.Generalization ) );
+                _monitor.Trace( "Requires = " + Names( i.Requires ) );
+                _monitor.Trace( "RequiredBy = " + Names( i.RequiredBy ) );
+                _monitor.Trace( "Groups = " + Names( i.Groups ) );
                 IDependentItemGroup g = i as IDependentItemGroup;
                 if( g != null )
                 {
                     IDependentItemContainerTyped c = i as IDependentItemContainerTyped;
                     if( c != null )
                     {
-                        _monitor.Trace().Send( "[{0}]Children = {1}", c.ItemKind.ToString()[0], Names( g.Children ) );
+                        _monitor.Trace( $"[{c.ItemKind.ToString()[0]}]Children = {Names( g.Children )}"  );
                     }
-                    else _monitor.Trace().Send( "[G]Children = {0}", Names( g.Children ) );
+                    else _monitor.Trace( "[G]Children = " + Names( g.Children ) );
                 }
             }
         }
@@ -116,7 +116,7 @@ namespace CK.StObj.Engine.Tests
 
         public static void TraceSortedItem( this IActivityMonitor @this, IEnumerable<ISortedItem> e, bool skipGroupTail )
         {
-            using( _monitor.OpenTrace().Send( "Sorted items" ) )
+            using( _monitor.OpenTrace( "Sorted items" ) )
             {
                 foreach( var i in e )
                     if( i.HeadForGroup == null || skipGroupTail )
@@ -126,13 +126,13 @@ namespace CK.StObj.Engine.Tests
 
         public static void TraceSortedItem( this IActivityMonitor @this, ISortedItem i )
         {
-            using( _monitor.OpenTrace().Send( "[{1}]FullName = {0}", i.FullName, i.ItemKind.ToString()[0] ) )
+            using( _monitor.OpenTrace( $"[{i.ItemKind.ToString()[0]}]FullName = {i.FullName}"  ) )
             {
-                _monitor.Trace().Send( "Container = {0}", i.Container != null ? i.Container.FullName : "(null)" );
-                _monitor.Trace().Send( "Generalization = {0}", i.Generalization != null ? i.Generalization.FullName : "(null)" );
-                _monitor.Trace().Send( "Requires = {0}", Names( i.Requires ) );
-                _monitor.Trace().Send( "Groups = {0}", Names( i.Groups ) );
-                _monitor.Trace().Send( "Children = {0}", Names( i.Children ) );
+                _monitor.Trace( "Container = " + i.Container != null ? i.Container.FullName : "(null)" );
+                _monitor.Trace( "Generalization = " + i.Generalization != null ? i.Generalization.FullName : "(null)" );
+                _monitor.Trace( "Requires = " + Names( i.Requires ) );
+                _monitor.Trace( "Groups = " + Names( i.Groups ) );
+                _monitor.Trace( "Children = " + Names( i.Children ) );
             }
         }
 

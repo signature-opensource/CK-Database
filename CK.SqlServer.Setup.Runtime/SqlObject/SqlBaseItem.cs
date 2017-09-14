@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -91,7 +91,7 @@ namespace CK.SqlServer.Setup
             if( !configReader.Apply( monitor, h, out foundConfig ) ) return false;
             if( !foundConfig )
             {
-                monitor.Warn().Send( "Missing SetupConfig:{}. At least an empty one should appear in the header." );
+                monitor.Warn( "Missing SetupConfig:{}. At least an empty one should appear in the header." );
             }
             return true;
         }
@@ -134,7 +134,7 @@ namespace CK.SqlServer.Setup
         {
             Debug.Assert( (transformArgument != null) == (name.TransformArg != null) );
             SqlPackageBaseItem packageItem = (SqlPackageBaseItem)r.Container;
-            using( r.Monitor.OpenTrace().Send( $"Loading '{name}' of '{r.Container.FullName}'." ) )
+            using( r.Monitor.OpenTrace( $"Loading '{name}' of '{r.Container.FullName}'." ) )
             {
                 string fileName;
                 string text = name.LoadTextResource( r.Monitor, packageItem, out fileName );
@@ -184,7 +184,7 @@ namespace CK.SqlServer.Setup
                 }
                 if( expectedItemTypes != null && !expectedItemTypes.Contains( result.ItemType ) )
                 {
-                    registerer.Monitor.Error().Send( $"Content is a '{result.ItemType}' whereas '{expectedItemTypes.Concatenate( "' or '" )}' is expected." );
+                    registerer.Monitor.Error( $"Content is a '{result.ItemType}' whereas '{expectedItemTypes.Concatenate( "' or '" )}' is expected." );
                     return null;
                 }
                 SqlTransformerItem t = result as SqlTransformerItem;
@@ -196,9 +196,9 @@ namespace CK.SqlServer.Setup
             }
             catch( Exception ex )
             {
-                using( registerer.Monitor.OpenError().Send( ex ) )
+                using( registerer.Monitor.OpenError( ex ) )
                 {
-                    registerer.Monitor.Info().Send( text );
+                    registerer.Monitor.Info( text );
                 }
                 return null;
             }

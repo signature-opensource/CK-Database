@@ -80,18 +80,17 @@ namespace CK.SqlServer.Setup
             {
                 if( _implementHasBeenAlreadyBeenCalled )
                 {
-                    monitor.Warn().Send( "Implement has already been called: no resource should have been found for method {0}.", Member.Name );
+                    monitor.Warn( $"Implement has already been called: no resource should have been found for method {Member.Name}." );
                 }
                 else
                 {
-                    //Debug.Assert( CK.Reflection.MemberInfoEqualityComparer.Default.Equals( m, Member ), "IAutoImplementorMethod called with a method that differs from the IAttributeAmbientContextBoundInitializer initilaized member." );
                     Debug.Assert( m == Member, "IAutoImplementorMethod called with a method that differs from the IAttributeAmbientContextBoundInitializer initilaized member." );
                     _implementHasBeenAlreadyBeenCalled = true;
                 }
                 return false;
             }
             // 3 - Ready to implement the method (SetupObjectItem has been initialized by DynamicItemInitialize).
-            using( monitor.OpenInfo().Send( "Generating {0}.", SqlCallableAttributeImpl.DumpMethodSignature( m ) ) )
+            using( monitor.OpenInfo( $"Generating {SqlCallableAttributeImpl.DumpMethodSignature( m )}." ) )
             {
                 var target = SetupObjectItem is SqlTransformerItem
                                 ? ((SqlTransformerItem)SetupObjectItem).Target
@@ -138,7 +137,7 @@ namespace CK.SqlServer.Setup
             //}
             if (SetupObjectItem == null) return false;
             // 3 - Ready to implement the method (SetupObjectItem has been initialized by DynamicItemInitialize).
-            using (monitor.OpenInfo().Send("Generating {0}.", SqlCallableAttributeImpl.DumpMethodSignature(m)))
+            using (monitor.OpenInfo( $"Generating {SqlCallableAttributeImpl.DumpMethodSignature( m )}." ))
             {
                 var target = SetupObjectItem is SqlTransformerItem
                                 ? ((SqlTransformerItem)SetupObjectItem).Target

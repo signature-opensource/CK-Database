@@ -62,7 +62,7 @@ namespace CK.Setup
 
         void BuildSetupItems( IReadOnlyList<IStObjResult> orderedObjects, Dictionary<IStObjResult, StObjSetupData> setupableItems )
         {
-            using( _monitor.OpenInfo().Send( "Building setupable items from {0} Structure Objects (calling IStObjSetupConfigurator.ConfigureDependentItem and IStObjSetupItemFactory.CreateDependentItem for each of them).", orderedObjects.Count ) )
+            using( _monitor.OpenInfo( $"Building setupable items from {orderedObjects.Count} Structure Objects (calling IStObjSetupConfigurator.ConfigureDependentItem and IStObjSetupItemFactory.CreateDependentItem for each of them)." ) )
             {
                 foreach( var r in orderedObjects )
                 {
@@ -140,7 +140,7 @@ namespace CK.Setup
 
         void BindDependencies( Dictionary<IStObjResult, StObjSetupData> setupableItems )
         {
-            using( _monitor.OpenInfo().Send( "Binding dependencies between Setupable items." ) )
+            using( _monitor.OpenInfo( "Binding dependencies between Setupable items." ) )
             {
                 foreach( StObjSetupData data in setupableItems.Values )
                 {
@@ -285,7 +285,7 @@ namespace CK.Setup
             {
                 for(;;)
                 {
-                    using( Monitor.OpenInfo().Send( "Starting intialization round n°{0}.", _currentRoundActions ) )
+                    using( Monitor.OpenInfo( $"Starting intialization round n°{_currentRoundActions}." ) )
                     {
                         if( !ExecuteCurrentActions() ) return false;
                         if( _nextRoundActions == null ) return true;

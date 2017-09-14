@@ -26,51 +26,51 @@ namespace CK.Setup
 
         static bool HandleCreateResult( IActivityMonitor monitor, string sourceCode, GenerateResult result )
         {
-            using( monitor.OpenInfo().Send( "Code Generation information." ) )
+            using( monitor.OpenInfo( "Code Generation information." ) )
             {
                 if( result.LoadFailures.Count > 0 )
                 {
-                    using( monitor.OpenWarn().Send( $"{result.LoadFailures.Count} assembly load failure(s)." ) )
+                    using( monitor.OpenWarn( $"{result.LoadFailures.Count} assembly load failure(s)." ) )
                         foreach( var e in result.LoadFailures )
-                            if( e.SuccessfulWeakFallback != null ) monitor.Warn().Send( $"'{e.Name}' load failed, used '{e.SuccessfulWeakFallback}' instead." );
-                            else monitor.Error().Send( $"'{e.Name}' load failed." );
+                            if( e.SuccessfulWeakFallback != null ) monitor.Warn( $"'{e.Name}' load failed, used '{e.SuccessfulWeakFallback}' instead." );
+                            else monitor.Error( $"'{e.Name}' load failed." );
                 }
-                if( result.Success ) monitor.Trace().Send( "Source code generation and compilation succeeded." );
+                if( result.Success ) monitor.Trace( "Source code generation and compilation succeeded." );
                 else
                 {
-                    using( monitor.OpenError().Send( "Generation failed." ) )
+                    using( monitor.OpenError( "Generation failed." ) )
                     {
                         if( result.EmitError != null )
                         {
-                            monitor.Error().Send( result.EmitError );
+                            monitor.Error( result.EmitError );
                         }
                         if( result.EmitResult != null )
                         {
                             if( !result.EmitResult.Success )
                             {
-                                using( monitor.OpenError().Send( $"{result.EmitResult.Diagnostics.Count()} Compilation diagnostics & Source code." ) )
+                                using( monitor.OpenError( $"{result.EmitResult.Diagnostics.Count()} Compilation diagnostics & Source code." ) )
                                 {
                                     foreach( var diag in result.EmitResult.Diagnostics )
                                     {
-                                        monitor.Trace().Send( diag.ToString() );
+                                        monitor.Trace( diag.ToString() );
                                     }
                                 }
                                 var withNumber = sourceCode
                                                     .Split( new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries )
                                                     .Select( (line,i) => $"{i+1,4} - {line}" )
                                                     .Concatenate(Environment.NewLine);
-                                monitor.Trace().Send( withNumber );
+                                monitor.Trace( withNumber );
                             }
                         }
                     }
                 }
                 if( result.AssemblyLoadError != null )
                 {
-                    monitor.Error().Send( result.AssemblyLoadError, "Generated assembly load failed." );
+                    monitor.Error( "Generated assembly load failed.", result.AssemblyLoadError );
                 }
                 else if( result.Assembly != null )
                 {
-                    monitor.Trace().Send( "Generated assembly successfuly loaded." );
+                    monitor.Trace( "Generated assembly successfuly loaded." );
                 }
             }
             return result.Success;
@@ -103,7 +103,7 @@ namespace CK.Setup
             }
             catch( Exception ex )
             {
-                monitor.Error().Send( ex, $"While generating final assembly '{_tempAssembly.SaveFileName}' from source code." );
+                monitor.Error( $"While generating final assembly '{_tempAssembly.SaveFileName}' from source code.", ex );
                 return false;
             }
         }

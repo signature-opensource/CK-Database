@@ -34,7 +34,7 @@ namespace CK.DB.Tests
         {
             TestHelper.LogToConsole = true;
             if( !Debugger.IsAttached) Debugger.Launch();
-            else TestHelper.Monitor.Info().Send( "Debugger is already attached." );
+            else TestHelper.Monitor.Info( "Debugger is already attached." );
         }
 
         [Test]

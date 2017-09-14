@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -44,55 +44,55 @@ namespace CK.Core
         /// <param name="resources">Resources stream when building.</param>
         protected StObjContextRoot( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, Type[] allTypes, Stream resources )
         {
-            if( monitor == null ) throw new ArgumentNullException( nameof(monitor) );
-            if( runtimeBuilder == null ) throw new ArgumentNullException( nameof(runtimeBuilder) );
-            if( allTypes == null ) throw new ArgumentNullException( nameof(allTypes) );
-            using (monitor.OpenInfo().Send($"Loading {allTypes.Length} types."))
+            if( monitor == null ) throw new ArgumentNullException( nameof( monitor ) );
+            if( runtimeBuilder == null ) throw new ArgumentNullException( nameof( runtimeBuilder ) );
+            if( allTypes == null ) throw new ArgumentNullException( nameof( allTypes ) );
+            using( monitor.OpenInfo( $"Loading {allTypes.Length} types." ) )
             {
                 Logger = monitor;
                 StObjs = new StObj[allTypes.Length];
-                for (int i = 0; i < allTypes.Length; ++i)
+                for( int i = 0; i < allTypes.Length; ++i )
                 {
-                    StObjs[i] = new StObj(this, allTypes[i]);
+                    StObjs[i] = new StObj( this, allTypes[i] );
                 }
                 // Resources stream is explicitly provided when instanciating objects from the dynamic assembly
                 // since GetManifestResourceStream is NOT supported on a dynamic assembly...
-                using (Stream s = resources ?? GetType().GetTypeInfo().Assembly.GetManifestResourceStream(RootContextTypeName + ".Data"))
+                using( Stream s = resources ?? GetType().GetTypeInfo().Assembly.GetManifestResourceStream( RootContextTypeName + ".Data" ) )
                 {
-                    BinaryReader reader = new BinaryReader(s);
+                    BinaryReader reader = new BinaryReader( s );
 
                     _contexts = new StObjContext[reader.ReadInt32()];
-                    _defaultContext = ReadContexts(reader);
+                    _defaultContext = ReadContexts( reader );
 
-                    SimpleDeserializer des = new SimpleDeserializer(s);
+                    SimpleDeserializer des = new SimpleDeserializer( s );
                     BuilderValues = (object[])des.Read().Value;
 
                     SpecializationCount = reader.ReadInt32();
-                    SingletonCache = new StructuredObjectCache(SpecializationCount);
-                    foreach (var o in StObjs)
+                    SingletonCache = new StructuredObjectCache( SpecializationCount );
+                    foreach( var o in StObjs )
                     {
-                        o.Initialize(reader);
+                        o.Initialize( reader );
                     }
                     // Singleton creation.
-                    foreach (var o in StObjs)
+                    foreach( var o in StObjs )
                     {
-                        object instance = SingletonCache.Get(o.CacheIndex);
-                        if (instance == null) SingletonCache.Set(o.CacheIndex, instance = runtimeBuilder.CreateInstance(o.LeafSpecialization.ObjectType));
-                        o.CallConstruct(monitor, idx => SingletonCache.Get(StObjs[idx].CacheIndex), instance);
+                        object instance = SingletonCache.Get( o.CacheIndex );
+                        if( instance == null ) SingletonCache.Set( o.CacheIndex, instance = runtimeBuilder.CreateInstance( o.LeafSpecialization.ObjectType ) );
+                        o.CallConstruct( monitor, idx => SingletonCache.Get( StObjs[idx].CacheIndex ), instance );
                     }
                     // Setting post build properties.
-                    foreach (var o in StObjs)
+                    foreach( var o in StObjs )
                     {
-                        if (o.Specialization == null)
+                        if( o.Specialization == null )
                         {
-                            object instance = SingletonCache.Get(o.CacheIndex);
-                            o.SetPostBuilProperties(idx => SingletonCache.Get(StObjs[idx].CacheIndex), instance);
+                            object instance = SingletonCache.Get( o.CacheIndex );
+                            o.SetPostBuilProperties( idx => SingletonCache.Get( StObjs[idx].CacheIndex ), instance );
                         }
                     }
                     // Calling Initialize method.
-                    foreach (var o in StObjs)
+                    foreach( var o in StObjs )
                     {
-                        o.CallInitialize(monitor, SingletonCache.Get(o.CacheIndex));
+                        o.CallInitialize( monitor, SingletonCache.Get( o.CacheIndex ) );
                     }
                 }
             }

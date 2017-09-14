@@ -311,16 +311,16 @@ n°1
 
         private static void DumpScripts( string testName, SimpleScriptTagHandler p, List<SimpleScriptTagHandler.Script> s )
         {
-            using( TestHelper.Monitor.OpenTrace().Send( testName ) )
+            using( TestHelper.Monitor.OpenTrace( testName ) )
             {
-                TestHelper.Monitor.Trace().Send( p.OriginalScript );
-                using( TestHelper.Monitor.OpenTrace().Send( "Result" ) )
+                TestHelper.Monitor.Trace( p.OriginalScript );
+                using( TestHelper.Monitor.OpenTrace( "Result" ) )
                 {
                     foreach( var one in s )
                     {
-                        using( TestHelper.Monitor.OpenTrace().Send( "Script Label: {0}", one.Label ) )
+                        using( TestHelper.Monitor.OpenTrace( $"Script Label: {one.Label}" ) )
                         {
-                            TestHelper.Monitor.Trace().Send( one.Body );
+                            TestHelper.Monitor.Trace( one.Body );
                         }
                     }
                 }

@@ -74,12 +74,12 @@ namespace CK.Setup
 
         public bool Initialize( IActivityMonitor monitor )
         {
-            using( monitor.OpenInfo().Send( "Reading original versions." ) )
+            using( monitor.OpenInfo( "Reading original versions." ) )
             {
                 try
                 {
                     var originals = _versionReader.GetOriginalVersions( monitor );
-                    if( originals == null ) monitor.Fatal().Send( "VersionedItemRepository must return a non null OriginalVersions." );
+                    if( originals == null ) monitor.Fatal( "VersionedItemRepository must return a non null OriginalVersions." );
                     else
                     {
                         int nbRead = _tracker.Initialize( originals );
@@ -89,7 +89,7 @@ namespace CK.Setup
                 }
                 catch( Exception ex )
                 {
-                    monitor.Fatal().Send( ex );
+                    monitor.Fatal( ex );
                 }
                 return false;
             }

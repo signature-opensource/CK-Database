@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -67,15 +67,15 @@ namespace CK.Setup
                 if( result == script )
                 {
                     _scripts[script] = script;
-                    monitor.Info().Send( $"Script '{script.Name.FileName}' in '{script.Name.ExtraPath}' replaced script from source '{existing.Name.FileName}' in '{existing.Name.ExtraPath}'." );
+                    monitor.Info( $"Script '{script.Name.FileName}' in '{script.Name.ExtraPath}' replaced script from source '{existing.Name.FileName}' in '{existing.Name.ExtraPath}'." );
                 }
                 else if( result == existing || result == null )
                 {
-                    monitor.Warn().Send( $"Script '{script.Name.FileName}' in '{script.Name.ExtraPath}' is already registered (from source '{existing.Name.FileName}' in '{existing.Name.ExtraPath}'). It is ignored." );
+                    monitor.Warn( $"Script '{script.Name.FileName}' in '{script.Name.ExtraPath}' is already registered (from source '{existing.Name.FileName}' in '{existing.Name.ExtraPath}'). It is ignored." );
                 }
                 else
                 {
-                    monitor.Info().Send( $"Script '{script.Name.FileName}' in '{script.Name.ExtraPath}' and already registered '{existing.Name.FileName}' in '{existing.Name.ExtraPath}' have given birth to a merged script." );
+                    monitor.Info( $"Script '{script.Name.FileName}' in '{script.Name.ExtraPath}' and already registered '{existing.Name.FileName}' in '{existing.Name.ExtraPath}' have given birth to a merged script." );
                 }
                 return false;
             }

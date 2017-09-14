@@ -3,7 +3,7 @@
   <Import Project="..\Common\Shared.props" />
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 
@@ -15,6 +15,19 @@
     <PackageReference Include="System.Net.Http" Version="4.3.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CKSetup.Core\CKSetup.Core.csproj" />
+  </ItemGroup>
+
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
+    <PackageReference Include="System.Data.SqlClient" Version="4.4.0" />
+  </ItemGroup>
+  
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
+    <Reference Include="System.IO.Compression" />
+  </ItemGroup>
+  
   <ItemGroup>
     <Compile Include="..\CK.StObj.Model\**\Configuration\*.cs">
       <Link>Includes\%(RecursiveDir)%(Filename)%(Extension)</Link>
@@ -33,12 +46,5 @@
     <Compile Remove="..\CK.StObj.Model\Configuration\**" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\CKSetup.Core\CKSetup.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="System.IO.Compression" />
-  </ItemGroup>
 
 </Project>

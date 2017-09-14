@@ -101,7 +101,7 @@ namespace CK.Setup
         internal void CreateAndConfigureAspects( IReadOnlyList<IStObjEngineAspectConfiguration> configs, Func<bool> onError )
         {
             bool success = true;
-            using( _monitor.OpenTrace().Send( $"Creating and configuring {configs.Count} aspect(s)." ) )
+            using( _monitor.OpenTrace( $"Creating and configuring {configs.Count} aspect(s)." ) )
             {
                 var aspectsType = new HashSet<Type>();
                 foreach( var c in configs )
@@ -122,7 +122,7 @@ namespace CK.Setup
                         if( !aspectsType.Add( t ) )
                         {
                             success = onError();
-                            _monitor.Error().Send( $"Aspect '{t.FullName}' occurs more than once in configuration." );
+                            _monitor.Error( $"Aspect '{t.FullName}' occurs more than once in configuration." );
                         }
                         else
                         {
@@ -131,7 +131,7 @@ namespace CK.Setup
                             else
                             {
                                 _aspects.Add( a );
-                                using( _monitor.OpenTrace().Send( $"Configuring aspect '{t.FullName}'." ) )
+                                using( _monitor.OpenTrace( $"Configuring aspect '{t.FullName}'." ) )
                                 {
                                     try
                                     {
@@ -140,7 +140,7 @@ namespace CK.Setup
                                     catch( Exception ex )
                                     {
                                         success = onError();
-                                        _monitor.Error().Send( ex );
+                                        _monitor.Error( ex );
                                     }
                                 }
                                 if( success )

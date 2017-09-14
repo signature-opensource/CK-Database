@@ -74,7 +74,7 @@ namespace CK.SqlServer.Setup
             string fileName, 
             string text )
         {
-            using( monitor.OpenInfo().Send( $"Evaluating template '{fileName}'." ) )
+            using( monitor.OpenInfo( $"Evaluating template '{fileName}'." ) )
             {
                 GlobalContext c = new GlobalContext();
                 if( driver != null ) c.Register( "Driver", driver );
@@ -89,9 +89,9 @@ namespace CK.SqlServer.Setup
                 var r = e.Process( text );
                 if( r.ErrorMessage != null )
                 {
-                    using( monitor.OpenError().Send( r.ErrorMessage ) )
+                    using( monitor.OpenError( r.ErrorMessage ) )
                     {
-                        monitor.Trace().Send( text );
+                        monitor.Trace( text );
                     }
                     return null;
                 }

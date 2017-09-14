@@ -321,7 +321,7 @@ namespace CK.Core
         public AmbientContractCollectorResult<CT,T,TC> GetResult( IServiceProvider services )
         {
             IPocoSupportResult pocoSupport;
-            using( _monitor.OpenInfo().Send( "Creating Poco Types and PocoFactory." ) )
+            using( _monitor.OpenInfo( "Creating Poco Types and PocoFactory." ) )
             {
                 pocoSupport = _pocoRegisterer.Finalize( _finalAssembly?.ModuleBuilder ?? _tempAssembly.ModuleBuilder, _monitor );
                 if( pocoSupport != null )

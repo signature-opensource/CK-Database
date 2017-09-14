@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -29,7 +29,7 @@ namespace SqlActorPackage.Tests
                 }
                 catch( AssertionException ex )
                 {
-                    TestHelper.Monitor.Trace().Send( ex.Message );
+                    TestHelper.Monitor.Trace( ex.Message );
                     Assert.That( ex.Message, Is.EqualTo( @"
 InvariantKey    | CountSelect                              | RunStatus
 ----------------------------------------------------------------------
@@ -46,7 +46,7 @@ FakeForTestOnly | select @Count = count(*) from sys.tables | Failed
                 }
                 catch( AssertionException ex )
                 {
-                    TestHelper.Monitor.Trace().Send( ex.Message );
+                    TestHelper.Monitor.Trace( ex.Message );
                     Assert.That( ex.Message, Is.EqualTo( @"
 InvariantKey     | CountSelect                              | RunStatus
 -----------------------------------------------------------------------
@@ -59,7 +59,7 @@ FakeForTestOnly2 | select @Count = count(*) from sys.tables | Failed
                 }
                 catch( AssertionException ex )
                 {
-                    TestHelper.Monitor.Trace().Send( ex.Message );
+                    TestHelper.Monitor.Trace( ex.Message );
                     Assert.That( ex.Message, Is.EqualTo( @"
 InvariantKey     | CountSelect                              | RunStatus  
 -------------------------------------------------------------------------

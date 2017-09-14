@@ -47,7 +47,7 @@ namespace CK.Setup
             {
                 if( _isOptionalDefined )
                 {
-                    monitor.Error().Send($"{Kind}: Property '{DeclaringType.FullName}.{Name}' states that it is optional but base property '{gen.DeclaringType.FullName}.{Name}' is required." );
+                    monitor.Error( $"{Kind}: Property '{DeclaringType.FullName}.{Name}' states that it is optional but base property '{gen.DeclaringType.FullName}.{Name}' is required." );
                 }
                 _isOptional = false;
             }
@@ -86,7 +86,7 @@ namespace CK.Setup
                     Type tP = stObjAttr.PropertyType == null ? p.PropertyType : stObjAttr.PropertyType;
                     if( stObjProperties.Find( sp => sp.Name == nP ) != null )
                     {
-                        monitor.Error().Send( "StObj property named '{0}' for '{1}' is defined more than once. It should be declared only once.", p.Name, p.DeclaringType.FullName );
+                        monitor.Error( $"StObj property named '{p.Name}' for '{p.DeclaringType.FullName}' is defined more than once. It should be declared only once." );
                         continue;
                     }
                     stObjProperties.Add( new StObjPropertyInfo( t, stObjAttr.ResolutionSource, nP, tP, p ) );
@@ -98,7 +98,7 @@ namespace CK.Setup
                 {
                     if( stObjAttr != null || (ac != null && ap != null) )
                     {
-                        monitor.Error().Send( "Property named '{0}' for '{1}' can not be both an Ambient Contract, an Ambient Property or a StObj property.", p.Name, p.DeclaringType.FullName );
+                        monitor.Error( $"Property named '{p.Name}' for '{p.DeclaringType.FullName}' can not be both an Ambient Contract, an Ambient Property or a StObj property." );
                         continue;
                     }
                     IAmbientPropertyOrInjectContractAttribute attr = ac ?? ap;
@@ -107,7 +107,7 @@ namespace CK.Setup
                     var mGet = p.GetGetMethod( true );
                     if( mGet == null || mGet.IsPrivate )
                     {
-                        monitor.Error().Send( "Property '{0}' of '{1}' can not be marked as {2}. Did you forget to make it protected or public?", p.Name, p.DeclaringType.FullName, kindName );
+                        monitor.Error( $"Property '{p.Name}' of '{p.DeclaringType.FullName}' can not be marked as {kindName}. Did you forget to make it protected or public?" );
                         continue;
                     }
                     if( attr.IsAmbientProperty )

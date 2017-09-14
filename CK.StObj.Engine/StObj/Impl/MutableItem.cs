@@ -325,7 +325,7 @@ namespace CK.Setup
             MutableAmbientProperty mp = _leafData.AllAmbientProperties.FirstOrDefault( a => a.Name == propertyName );
             if( mp != null )
             {
-                monitor.Error().Send( "Unable to set direct property '{1}.{0}' since it is defined as an Ambient property. Use SetAmbiantPropertyValue to set it. (Source:{2})", propertyName, Type.FullName, sourceDescription );
+                monitor.Error( $"Unable to set direct property '{Type.FullName}.{propertyName}' since it is defined as an Ambient property. Use SetAmbiantPropertyValue to set it. (Source:{sourceDescription})" );
                 return false;
             }
 
@@ -334,7 +334,7 @@ namespace CK.Setup
             PropertyInfo p = _leafData.LeafSpecialization.Type.GetProperty( propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
             if( p == null || !p.CanWrite )
             {
-                monitor.Error().Send( "Unable to set direct property '{1}.{0}' structural value. It must exist and be writable (on type '{2}'). (Source:{3})", propertyName, Type.FullName, _leafData.LeafSpecialization.Type.FullName, sourceDescription );
+                monitor.Error( $"Unable to set direct property '{Type.FullName}.{propertyName}' structural value. It must exist and be writable (on type '{_leafData.LeafSpecialization.Type.FullName}'). (Source:{sourceDescription})"  );
                 return false;
             }
             if( _leafData.DirectPropertiesToSet == null ) _leafData.DirectPropertiesToSet = new Dictionary<PropertyInfo, object>();
@@ -355,7 +355,7 @@ namespace CK.Setup
             {
                 return mp.SetValue( AmbientTypeInfo.SpecializationDepth, monitor, value );
             }
-            monitor.Error().Send( "Unable to set unexisting Ambient property '{1}.{0}'. It must exist, be writable and marked with AmbientPropertyAttribute. (Source:{2})", propertyName, Type.FullName, sourceDescription );
+            monitor.Error( $"Unable to set unexisting Ambient property '{Type.FullName}.{propertyName}'. It must exist, be writable and marked with AmbientPropertyAttribute. (Source:{sourceDescription})" );
             return false;
         }
 
@@ -369,7 +369,7 @@ namespace CK.Setup
             {
                 return mp.SetConfiguration( AmbientTypeInfo.SpecializationDepth, monitor, context, type, behavior );
             }
-            monitor.Error().Send( "Unable to configure unexisting Ambient property '{1}.{0}'. It must exist, be writable and marked with AmbientPropertyAttribute. (Source:{2})", propertyName, Type.FullName, sourceDescription );
+            monitor.Error( $"Unable to configure unexisting Ambient property '{Type.FullName}.{propertyName}'. It must exist, be writable and marked with AmbientPropertyAttribute. (Source:{sourceDescription})" );
             return false;        
         }
 
@@ -382,7 +382,7 @@ namespace CK.Setup
             MutableAmbientProperty mp = _leafData.AllAmbientProperties.FirstOrDefault( a => a.Name == propertyName );
             if( mp != null )
             {
-                monitor.Error().Send( "Unable to set StObj property '{1}.{0}' since it is defined as an Ambient property. Use SetAmbiantPropertyValue to set it. (Source:{2})", propertyName, Type.FullName, sourceDescription );
+                monitor.Error( $"Unable to set StObj property '{Type.FullName}.{propertyName}' since it is defined as an Ambient property. Use SetAmbiantPropertyValue to set it. (Source:{sourceDescription})" );
                 return false;
             }
 
@@ -395,14 +395,14 @@ namespace CK.Setup
         internal bool PrepareDependentItem( IActivityMonitor monitor, StObjCollectorResult collector, StObjCollectorContextualResult cachedCollector )
         {
             if( _prepareState == PrepareState.PreparedDone ) return true;
-            using( monitor.OpenTrace().Send( "Preparing '{0}'.", ToString() ) )
+            using( monitor.OpenTrace( $"Preparing '{ToString()}'." ) )
             {
                 try
                 {
                     bool result = true;
                     if( _prepareState == PrepareState.RecursePreparing )
                     {
-                        monitor.Warn().Send( "Cycle detected while preparing item." );
+                        monitor.Warn( "Cycle detected while preparing item." );
                         result = false;
                     }
                     else
@@ -425,7 +425,7 @@ namespace CK.Setup
                         // Check configuration.
                         if( _itemKind == DependentItemKind.Unknown )
                         {
-                            monitor.Warn().Send( "Since ItemKind is not specified on this base class ('{0}'), it defaults to SimpleItem. It should be explicitely set to either SimpleItem, Group or Container.", ToString() );
+                            monitor.Warn( $"Since ItemKind is not specified on this base class ('{ToString()}'), it defaults to SimpleItem. It should be explicitely set to either SimpleItem, Group or Container." );
                             _itemKind = DependentItemKind.Item;
                         }
                         if( _trackAmbientPropertiesMode == TrackAmbientPropertiesMode.Unknown ) _trackAmbientPropertiesMode = TrackAmbientPropertiesMode.None;

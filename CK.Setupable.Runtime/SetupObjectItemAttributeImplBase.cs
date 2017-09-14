@@ -153,7 +153,7 @@ namespace CK.Setup
                         _theBest.Add( best );
                     }
                 }
-                else state.Monitor.Warn().Send( "Duplicate name '{0}' in SqlObjectItem attribute of '{1}'.", nTrimmed, item.FullName );
+                else state.Monitor.Warn( $"Duplicate name '{nTrimmed}' in SqlObjectItem attribute of '{item.FullName}'."  );
             }
         }
 

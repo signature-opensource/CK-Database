@@ -27,21 +27,21 @@ namespace CK.SqlServer.Setup
         {
             if( !typeof( SqlPackageBase ).IsAssignableFrom( o.ObjectType.GetTypeInfo().BaseType ) )
             {
-                monitor.Error().Send( "{0}: Attribute {1} must be set only on class that specialize SqlPackageBase.", o.ToString(), GetType().Name );
+                monitor.Error( $"{o.ToString()}: Attribute {GetType().Name} must be set only on class that specialize SqlPackageBase." );
             }
             if( Attribute.Package != null )
             {
                 if( o.Container.Type == null ) o.Container.Type = Attribute.Package;
                 else if( o.Container.Type != Attribute.Package )
                 {
-                    monitor.Error().Send( "{0}: Attribute {3} sets Package to be '{1}' but it is already '{2}'.", o.ToString(), Attribute.Package.Name, o.Container.Type, GetType().Name );
+                    monitor.Error( $"{o.ToString()}: Attribute {GetType().Name} sets Package to be '{Attribute.Package.Name}' but it is already '{o.Container.Type}'." );
                 }
             }
             if( Attribute.Database != null )
             {
                 if( !typeof( SqlDatabase ).IsAssignableFrom( Attribute.Database ) )
                 {
-                    monitor.Error().Send( "{0}: Database type property must reference a type that specializes SqlDatabase.", o.ToString() );
+                    monitor.Error( $"{o.ToString()}: Database type property must reference a type that specializes SqlDatabase." );
                 }
                 else
                 {
@@ -69,12 +69,12 @@ namespace CK.SqlServer.Setup
                 var autoName = p.Schema + '.' + data.StObj.ObjectType.Name;
                 if( data.IsFullNameWithoutContextAvailable( autoName ) )
                 {
-                    monitor.Info().Send( "{0} '{1}' uses '{2}' as its SetupName.", loggedObjectTypeName, data.StObj.ObjectType.FullName, autoName );
+                    monitor.Info( $"{loggedObjectTypeName} '{data.StObj.ObjectType.FullName}' uses '{autoName}' as its SetupName." );
                 }
                 else
                 {
                     autoName = FindAvailableFullNameWithoutContext( data, autoName );
-                    monitor.Info().Send( "{0} '{1}' has no defined SetupName. It has been automatically computed as '{2}'. You may set a [SetupName] attribute on the class to settle it.", loggedObjectTypeName, data.StObj.ObjectType.FullName, autoName );
+                    monitor.Info( $"{loggedObjectTypeName} '{data.StObj.ObjectType.FullName}' has no defined SetupName. It has been automatically computed as '{autoName}'. You may set a [SetupName] attribute on the class to settle it." );
                 }
                 data.FullNameWithoutContext = autoName;
                 return true;

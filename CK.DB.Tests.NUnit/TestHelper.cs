@@ -65,11 +65,11 @@ namespace CK.Core
                     if( value )
                     {
                         Monitor.Output.RegisterClient( _console );
-                        Monitor.Info().Send( "Switching console log ON." );
+                        Monitor.Info( "Switching console log ON." );
                     }
                     else
                     {
-                        Monitor.Info().Send( "Switching console log OFF." );
+                        Monitor.Info( "Switching console log OFF." );
                         Monitor.Output.UnregisterClient( _console );
                     }
                 }
@@ -137,7 +137,7 @@ namespace CK.Core
         {
             if( _map == null )
             {
-                using( Monitor.OpenInfo().Send( "Loading StObj map from generated assembly." ) )
+                using( Monitor.OpenInfo( "Loading StObj map from generated assembly." ) )
                 {
                     try
                     {
@@ -148,7 +148,7 @@ namespace CK.Core
                     }
                     catch( Exception ex )
                     {
-                        Monitor.Error().Send( ex );
+                        Monitor.Error( ex );
                     }
                 }
             }
@@ -207,7 +207,7 @@ namespace CK.Core
 
         static bool DoRunDBSetup( bool sourceGeneration, bool traceStObjGraphOrdering, bool traceSetupGraphOrdering, bool revertNames )
         {
-            using( Monitor.OpenTrace().Send( $"Running Setup on {TestHelper.DatabaseTestConnectionString} ({(sourceGeneration ? "Source" : "IL Emit")})." ) )
+            using( Monitor.OpenTrace( $"Running Setup on {TestHelper.DatabaseTestConnectionString} ({(sourceGeneration ? "Source" : "IL Emit")})." ) )
             {
                 try
                 {
@@ -229,7 +229,7 @@ namespace CK.Core
                 }
                 catch( Exception ex )
                 {
-                    Monitor.Error().Send( ex );
+                    Monitor.Error( ex );
                     throw;
                 }
             }
@@ -258,7 +258,7 @@ namespace CK.Core
         {
             connectionSting = connectionSting ?? DatabaseTestConnectionString;
             var monitor = TestHelper.Monitor;
-            using( monitor.OpenInfo().Send( "Clearing used schemas ({0}).", connectionSting ) )
+            using( monitor.OpenInfo( $"Clearing used schemas ({connectionSting})." ) )
             using( var m = new SqlManager( monitor ) )
             {
                 m.OpenFromConnectionString( connectionSting );
@@ -272,12 +272,12 @@ namespace CK.Core
                     {
                         if( s == "CKCore" )
                         {
-                            TestHelper.Monitor.Trace().Send( "Removing 'CKCore' objets." );
+                            TestHelper.Monitor.Trace( "Removing 'CKCore' objets." );
                             retry |= !m.SchemaDropAllObjects( "CKCore", false );
                         }
                         else
                         {
-                            TestHelper.Monitor.Trace().Send( "Removing '{0}' schema and its objets.", s );
+                            TestHelper.Monitor.Trace( $"Removing '{s}' schema and its objets." );
                             retry |= !m.SchemaDropAllObjects( s, true );
                         }
                     }
@@ -305,7 +305,7 @@ namespace CK.Core
                 if( c == null )
                 {
                     c = "Server=.;Database=master;Integrated Security=SSPI";
-                    Monitor.Info().Send( "Using default connection string: {0}", c );
+                    Monitor.Info( $"Using default connection string: {c}" );
                 }
                 _masterConnectionString = new SqlConnectionStringBuilder( c );
             }

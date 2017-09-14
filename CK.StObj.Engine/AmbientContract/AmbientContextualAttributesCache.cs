@@ -107,8 +107,8 @@ namespace CK.Core
         /// <returns>True if at least one attribute exists.</returns>
         public bool IsDefined( MemberInfo m, Type attributeType )
         {
-            if( m == null ) throw new ArgumentNullException( "m" );
-            if( attributeType == null ) throw new ArgumentNullException( "attributeType" );
+            if( m == null ) throw new ArgumentNullException( nameof(m) );
+            if( attributeType == null ) throw new ArgumentNullException( nameof(attributeType) );
             return _all.Any( e => CK.Reflection.MemberInfoEqualityComparer.Default.Equals( e.M, m ) 
                                   && attributeType.IsAssignableFrom( e.Attr.GetType() ) )
                     || ( (m.DeclaringType == Type.AsType() || (_includeBaseClasses && m.DeclaringType.IsAssignableFrom( Type.AsType() ))) 
@@ -147,7 +147,7 @@ namespace CK.Core
         public IEnumerable<T> GetCustomAttributes<T>( MemberInfo m )
         {
             if( m == null ) throw new ArgumentNullException( "m" );
-            var fromCache = _all.Where( e => CK.Core.MemberInfoEqualityComparer.Default.Equals( e.M, m ) && e.Attr is T ).Select( e => (T)e.Attr );
+            var fromCache = _all.Where( e => CK.Reflection.MemberInfoEqualityComparer.Default.Equals( e.M, m ) && e.Attr is T ).Select( e => (T)e.Attr );
             if( m.DeclaringType == Type.AsType() || (_includeBaseClasses && m.DeclaringType.IsAssignableFrom( Type.AsType())) )
             {
                 return fromCache

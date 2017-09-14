@@ -68,9 +68,9 @@ namespace CK.Setup
             if( monitor == null ) throw new ArgumentNullException( "_monitor" );
             if( !IsValid )
             {
-                if( UnexpectedError != null ) monitor.Fatal().Send( UnexpectedError );
-                if( CanceledRegistrationCulprit != null ) monitor.Fatal().Send( "Canceled during '{0}' registration.", CanceledRegistrationCulprit.FullName );
-                if( CancelReason != null ) monitor.Fatal().Send( CancelReason );
+                if( UnexpectedError != null ) monitor.Fatal( UnexpectedError );
+                if( CanceledRegistrationCulprit != null ) monitor.Fatal( $"Canceled during '{CanceledRegistrationCulprit.FullName}' registration." );
+                if( CancelReason != null ) monitor.Fatal( CancelReason );
                 if( SortResult != null ) SortResult.LogError( monitor );
             }
         }

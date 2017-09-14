@@ -20,14 +20,14 @@
 
   <PropertyGroup>
     <!-- Centralized version dependencies. -->
-    <CKCoreVersion>8.0.1-Cdevelop-0004</CKCoreVersion>
-    <CKActivityMonitorVersion>9.0.0-a00-00-develop-0003</CKActivityMonitorVersion>
-    <CKMonitoringVersion>7.1.1-Cdevelop-0003</CKMonitoringVersion>
-    <CKSetupDependencyVersion>6.0.2-Cdevelop-0004</CKSetupDependencyVersion>
-    <CKSqlServerParserVersion>6.0.0-d02-00-develop-0004</CKSqlServerParserVersion>
-    <CKSqlServerParserModelVersion>3.2.7-Cdevelop-0005</CKSqlServerParserModelVersion>
-    <CKReflectionVersion>5.1.0</CKReflectionVersion>
-    <CKCodeGenVersion>0.1.0-a20-00-develop-0004</CKCodeGenVersion>
+    <CKCoreVersion>9.0.0-p</CKCoreVersion>
+    <CKActivityMonitorVersion>9.0.0-b</CKActivityMonitorVersion>
+    <CKMonitoringVersion>8.0.0-a</CKMonitoringVersion>
+    <CKSetupDependencyVersion>6.0.2-a</CKSetupDependencyVersion>
+    <CKSqlServerParserVersion>6.0.0-d03</CKSqlServerParserVersion>
+    <CKSqlServerParserModelVersion>4.0.0-a</CKSqlServerParserModelVersion>
+    <CKReflectionVersion>6.0.1</CKReflectionVersion>
+    <CKCodeGenVersion>0.1.0-a21</CKCodeGenVersion>
     <YodiiScriptVersion>0.4.1</YodiiScriptVersion>
     <CSemVerVersion>1.0.1</CSemVerVersion>
     <MonoCecilVersion>0.10.0-beta6</MonoCecilVersion>
@@ -35,12 +35,10 @@
   
   <!-- 
     When building from the CI (ie. from Cake, hence directly with the msbuild tool, SolutionDir is not defined),
-    we unify the behavior here as well as setting the BaseIntermediateOutputPath (the /obj folder)
-    below CodeCakeBuilder/Releases/ so that compilation from external sources does not interfere with visual studio work.
+    we unify the behavior here.
   -->
   <PropertyGroup Condition=" '$(CakeBuild)' == 'true' ">
     <SolutionDir>$([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName($(MSBuildThisFileDirectory)))))\</SolutionDir>
-    <BaseIntermediateOutputPath>$(SolutionDir)CodeCakeBuilder\Releases\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
   </PropertyGroup>
   <!-- When not building from the CI, assemblies do not have any AssemblyInfo attributes. -->
   <PropertyGroup Condition=" '$(CakeBuild)' != 'true' ">

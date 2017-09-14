@@ -143,15 +143,15 @@ namespace CK.Setup
             {
                 if( String.IsNullOrWhiteSpace( p.PropertyName ) )
                 {
-                    monitor.Error().Send( "Unnamed or whitespace StObj property on '{0}'. Attribute must be configured with a valid PropertyName.", t.FullName );
+                    monitor.Error( $"Unnamed or whitespace StObj property on '{t.FullName}'. Attribute must be configured with a valid PropertyName." );
                 }
                 else if( p.PropertyType == null )
                 {
-                    monitor.Error().Send( "StObj property named '{0}' for '{1}' has no PropertyType defined. It should be typeof(object) to explicitly express that any type is accepted.", p.PropertyName, t.FullName );
+                    monitor.Error( $"StObj property named '{p.PropertyName}' for '{t.FullName}' has no PropertyType defined. It should be typeof(object) to explicitly express that any type is accepted." );
                 }
                 else if( stObjProperties.Find( sP => sP.Name == p.PropertyName ) != null )
                 {
-                    monitor.Error().Send( "StObj property named '{0}' for '{1}' is defined more than once. It should be declared only once.", p.PropertyName, t.FullName );
+                    monitor.Error( $"StObj property named '{p.PropertyName}' for '{t.FullName}' is defined more than once. It should be declared only once." );
                 }
                 else
                 {
@@ -181,7 +181,7 @@ namespace CK.Setup
                     INamedPropertyInfo exists;
                     if( names.TryGetValue( newP.Name, out exists ) )
                     {
-                        monitor.Error().Send( "{0} property '{1}.{2}' is declared as a '{3}' property by '{4}'. Property names must be distinct.", newP.Kind, newP.DeclaringType.FullName, newP.Name, exists.Kind, exists.DeclaringType.FullName );
+                        monitor.Error( $"{newP.Kind} property '{newP.DeclaringType.FullName}.{newP.Name}' is declared as a '{exists.Kind}' property by '{exists.DeclaringType.FullName}'. Property names must be distinct." );
                     }
                     else names.Add( newP.Name, newP );
                 }
@@ -223,14 +223,14 @@ namespace CK.Setup
                 StObjConstruct = t.GetMethod("Construct", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
                 if( StObjConstruct != null )
                 {
-                    monitor.Warn().Send($"Deprecated: Method '{t.FullName}.Construct' must be named '{StObjContextRoot.ConstructMethodName}' instead." );
+                    monitor.Warn( $"Deprecated: Method '{t.FullName}.Construct' must be named '{StObjContextRoot.ConstructMethodName}' instead." );
                 }
             }
             if ( StObjConstruct != null )
             {
                 if( StObjConstruct.IsVirtual )
                 {
-                    monitor.Error().Send($"Method '{t.FullName}.{StObjContextRoot.ConstructMethodName}' must NOT be virtual.");
+                    monitor.Error( $"Method '{t.FullName}.{StObjContextRoot.ConstructMethodName}' must NOT be virtual.");
                 }
                 else
                 {
@@ -254,18 +254,18 @@ namespace CK.Setup
                         {
                             if( ContainerConstructParameterIndex >= 0 )
                             {
-                                monitor.Error().Send($"'{t.FullName}.{StObjContextRoot.ConstructMethodName}' method has more than one parameter marked with [Container] attribute.");
+                                monitor.Error( $"'{t.FullName}.{StObjContextRoot.ConstructMethodName}' method has more than one parameter marked with [Container] attribute.");
                             }
                             else
                             {
                                 // The Parameter is the Container.
                                 if( Container != null && Container != p.ParameterType )
                                 {
-                                    monitor.Error().Send($"'{t.FullName}.{StObjContextRoot.ConstructMethodName}' method parameter '{p.Name}' defines the Container as '{p.ParameterType.FullName}' but an attribute on the class declares the Container as '{Container.FullName}'." );
+                                    monitor.Error( $"'{t.FullName}.{StObjContextRoot.ConstructMethodName}' method parameter '{p.Name}' defines the Container as '{p.ParameterType.FullName}' but an attribute on the class declares the Container as '{Container.FullName}'." );
                                 }
                                 else if( ContainerContext != null && ContainerContext != parameterContext )
                                 {
-                                    monitor.Error().Send($"'{t.FullName}.{StObjContextRoot.ConstructMethodName}' method parameter '{p.Name}' targets the Container in '{parameterContext}' but an attribute on the class declares the Container context as '{ContainerContext}'.");
+                                    monitor.Error( $"'{t.FullName}.{StObjContextRoot.ConstructMethodName}' method parameter '{p.Name}' targets the Container in '{parameterContext}' but an attribute on the class declares the Container context as '{ContainerContext}'.");
                                 }
                                 ContainerConstructParameterIndex = i;
                                 Container = p.ParameterType;
@@ -283,7 +283,7 @@ namespace CK.Setup
             {
                 if (initialize.IsVirtual)
                 {
-                    monitor.Error().Send($"'{t.FullName}.{StObjContextRoot.InitializeMethodName}' method must NOT be virtual.");
+                    monitor.Error( $"'{t.FullName}.{StObjContextRoot.InitializeMethodName}' method must NOT be virtual.");
                 }
                 else
                 {
@@ -292,7 +292,7 @@ namespace CK.Setup
                         || parameters[0].ParameterType != typeof(IActivityMonitor)
                         || parameters[1].ParameterType != typeof(IContextualStObjMap))
                     {
-                        monitor.Error().Send($"'{t.FullName}.{StObjContextRoot.InitializeMethodName}' method parameters must be (IActivityMonitor, IContextualStObjMap).");
+                        monitor.Error( $"'{t.FullName}.{StObjContextRoot.InitializeMethodName}' method parameters must be (IActivityMonitor, IContextualStObjMap).");
                     }
                 }
             }

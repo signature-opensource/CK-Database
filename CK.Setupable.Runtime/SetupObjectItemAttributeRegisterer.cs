@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -56,7 +56,7 @@ namespace CK.Setup
 
         BestCreator SetError( string msg )
         {
-            if( msg != null ) _state.Monitor.Error().Send( msg );
+            if( msg != null ) _state.Monitor.Error( msg );
             HasError = true;
             _state.Memory[typeof( SetupObjectItemAttributeRegisterer )] = typeof( SetupObjectItemAttributeRegisterer );
             return null;
@@ -142,7 +142,7 @@ namespace CK.Setup
         SetupObjectItem DoCreateSetupObjectItem( IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
         {
             SetupObjectItem o;
-            using( _state.Monitor.OpenInfo().Send( "Handling: " + _candidate.GetDetailedName( this, name.FullName ) ) )
+            using( _state.Monitor.OpenInfo( $"Handling: {_candidate.GetDetailedName( this, name.FullName )}" ) )
             using( _state.Monitor.OnError( () => SetError( null ) ) )
             {
                 o = _candidate.CreateSetupObjectItem( this, firstContainer, name, transformArgument );

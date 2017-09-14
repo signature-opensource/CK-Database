@@ -9,8 +9,12 @@
   <ItemGroup>
     <PackageReference Include="NUnit" Version="[2.6.4]" />
     <PackageReference Include="FluentAssertions" Version="4.19.4" />
-    <Reference Include="System.Configuration" />
     <ProjectReference Include="..\..\CKSetup.Core\CKSetup.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.IO.Compression" />
   </ItemGroup>
   
   <ItemGroup>

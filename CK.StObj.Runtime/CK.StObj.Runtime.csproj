@@ -13,11 +13,8 @@
   <ItemGroup>
     <ProjectReference Include="..\CK.StObj.Model\CK.StObj.Model.csproj" />
     <PackageReference Include="CK.CodeGen" Version="$(CKCodeGenVersion)" />
+    <PackageReference Include="CK.Reflection" Version="$(CKReflectionVersion)" />
     <PackageReference Include="CK.Setup.Dependency" Version="$(CKSetupDependencyVersion)" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>

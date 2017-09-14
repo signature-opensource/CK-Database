@@ -64,7 +64,7 @@ namespace CK.Setup
             var mSet = _p.GetSetMethod( true );
             if( mSet == null )
             {
-                monitor.Error().Send( "Property '{0}.{1}' must have a setter (since it is the first declaration of the property).", DeclaringType.FullName, Name );
+                monitor.Error( $"Property '{DeclaringType.FullName}.{Name}' must have a setter (since it is the first declaration of the property)." );
             }
             _settablePropertyInfo = _p;
         }
@@ -74,11 +74,11 @@ namespace CK.Setup
             // Covariance ?
             if( PropertyType != gen.PropertyType && !gen.PropertyType.IsAssignableFrom( PropertyType ) )
             {
-                monitor.Error().Send( "Property '{0}.{1}' type is not compatible with base property '{2}.{1}'.", DeclaringType.FullName, Name, gen.DeclaringType.FullName );
+                monitor.Error( $"Property '{DeclaringType.FullName}.{Name}' type is not compatible with base property '{gen.DeclaringType.FullName}.{Name}'." );
             }
             else if( _p.GetSetMethod( true ) != null )
             {
-                monitor.Warn().Send( "Property '{0}.{1}' should not have a setter (there should only be a getter that casts the base property).", DeclaringType.FullName, Name, gen.DeclaringType.FullName );
+                monitor.Warn( $"Property '{DeclaringType.FullName}.{Name}' should not have a setter (there should only be a getter that casts the base property)." );
             }
             // Propagates the top first definer level.
             _definerSpecializationDepth = gen.DefinerSpecializationDepth;

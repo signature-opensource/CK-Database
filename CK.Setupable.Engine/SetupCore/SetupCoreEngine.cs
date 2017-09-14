@@ -373,7 +373,7 @@ namespace CK.Setup
                 var reusableEvent = new DriverEventArgs( _monitor, SetupStep.Init );
                 foreach( var d in _allDrivers )
                 {
-                    using( _monitor.OpenInfo().Send( "Initializing {0}", d.FullName ) )
+                    using( _monitor.OpenInfo( $"Initializing {d.FullName}" ) )
                     {
                         if( !d.ExecuteInit( _monitor ) ) return false;
                         var hE = DriverEvent;
@@ -388,7 +388,7 @@ namespace CK.Setup
             }
             catch( Exception ex )
             {
-                _monitor.Fatal().Send( ex );
+                _monitor.Fatal( ex );
                 SafeFireSetupEvent( SetupStep.Init, true );
                 return false;
             }

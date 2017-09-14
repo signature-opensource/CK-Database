@@ -11,7 +11,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
     {
         static void CheckSqlCallContext( SqlManager c, IStObjMap map )
         {
-            using( TestHelper.Monitor.OpenTrace().Send( "CheckSqlCallContext" ) )
+            using( TestHelper.Monitor.OpenTrace( "CheckSqlCallContext" ) )
             {
                 var package = map.Default.Obtain<Package>();
                 CallWithAuthContext( package );

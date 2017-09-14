@@ -1,4 +1,4 @@
-﻿#region Proprietary License
+#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.StObj.Engine\AmbientContract\Collector\AmbientContractCollectorResult.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -45,11 +45,11 @@ namespace CK.Core
         public void LogErrorAndWarnings( IActivityMonitor monitor )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
-            using( monitor.OpenTrace().Send( $"Ambient Contract discovering: {Contexts.Count} context(s)."  ) )
+            using( monitor.OpenTrace( $"Ambient Contract discovering: {Contexts.Count} context(s)."  ) )
             {
                 if( PocoSupport == null )
                 {
-                    monitor.Fatal().Send( $"Poco support failed!" );
+                    monitor.Fatal( $"Poco support failed!" );
                 }
                 Foreach( r => r.LogErrorAndWarnings( monitor ) );
             }

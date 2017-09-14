@@ -78,13 +78,13 @@ namespace CK.Setup
             if( string.IsNullOrEmpty( directory ) )
             {
                 directory = System.IO.Path.GetDirectoryName( new Uri(typeof(StObjContextRoot).Assembly.CodeBase).LocalPath );
-                monitor.Info().Send( $"No directory has been specified for final assembly. Trying to use the path of CK.StObj.Model assembly: {directory}" );
+                monitor.Info( $"No directory has been specified for final assembly. Trying to use the path of CK.StObj.Model assembly: {directory}" );
             }
             string assemblyName = c.AssemblyName;
             if( string.IsNullOrEmpty( assemblyName ) )
             {
                 assemblyName = BuilderFinalAssemblyConfiguration.GetFinalAssemblyName( assemblyName );
-                monitor.Info().Send( "No assembly name has been specified for final assembly. Using default: {0}", assemblyName );
+                monitor.Info( $"No assembly name has been specified for final assembly. Using default: {assemblyName}" );
             }
             bool signAssembly = c.SignAssembly;
             StrongNameKeyPair signKeyPair = signAssembly ? DynamicAssembly.DynamicKeyPair : null;
@@ -101,13 +101,13 @@ namespace CK.Setup
             if( string.IsNullOrEmpty( directory ) )
             {
                 directory = AppContext.BaseDirectory;
-                monitor.Info().Send( $"No directory has been specified for final assembly. Trying to use the AppContext.BaseDirectory path: {directory}" );
+                monitor.Info( $"No directory has been specified for final assembly. Trying to use the AppContext.BaseDirectory path: {directory}" );
             }
             string assemblyName = c.AssemblyName;
             if( string.IsNullOrEmpty( assemblyName ) )
             {
                 assemblyName = BuilderFinalAssemblyConfiguration.GetFinalAssemblyName( assemblyName );
-                monitor.Info().Send( $"No assembly name has been specified for final assembly. Using default: {assemblyName}" );
+                monitor.Info( $"No assembly name has been specified for final assembly. Using default: {assemblyName}" );
             }
             return new DynamicAssembly( directory, assemblyName );
         }
@@ -139,16 +139,16 @@ namespace CK.Setup
             if( registerer == null ) throw new ArgumentNullException( "registerer" );
             int totalRegistered = 0;
             using( _monitor.OnError( () => ++_registerFatalOrErrorCount ) )
-            using( _monitor.OpenTrace().Send( "Registering {0} assemblies.", registerer.Assemblies.Count ) )
+            using( _monitor.OpenTrace( $"Registering {registerer.Assemblies.Count} assemblies." ) )
             {
                 foreach( var one in registerer.Assemblies )
                 {
-                    using( _monitor.OpenTrace().Send( "Registering assembly '{0}'.", one.Assembly.FullName ) )
+                    using( _monitor.OpenTrace( $"Registering assembly '{one.Assembly.FullName}'." ) )
                     {
                         int nbAlready = _cc.RegisteredTypeCount;
                         _cc.Register( one.Types );
                         int delta = _cc.RegisteredTypeCount - nbAlready;
-                        _monitor.CloseGroup( String.Format( "{0} types(s) registered.", delta ) );
+                        _monitor.CloseGroup( $"{delta} types(s) registered." );
                         totalRegistered += delta;
                     }
                 }
@@ -163,7 +163,7 @@ namespace CK.Setup
         /// <returns>True if it is a new class for this collector, false if it has already been registered.</returns>
         public bool RegisterClass( Type c )
         {
-            using( _monitor.OpenTrace().Send( "Explicitely registering Type '{0}'.", c.AssemblyQualifiedName ) )
+            using( _monitor.OpenTrace( $"Explicitely registering Type '{c.AssemblyQualifiedName}'." ) )
             using( _monitor.OnError( () => ++_registerFatalOrErrorCount ) )
             {
                 if( !_cc.RegisterClass( c ) )
@@ -182,7 +182,7 @@ namespace CK.Setup
         public void RegisterClasses( IReadOnlyList<string> classes )
         {
             if( classes == null ) throw new ArgumentNullException();
-            using( _monitor.OpenTrace().Send( "Explicitely registering {0} class(es).", classes.Count ) )
+            using( _monitor.OpenTrace( $"Explicitely registering {classes.Count} class(es)." ) )
             {
                 foreach( var aqn in classes )
                 {
@@ -193,7 +193,7 @@ namespace CK.Setup
                     catch( Exception ex )
                     {
                         ++_registerFatalOrErrorCount;
-                        _monitor.OpenError().Send( ex, "While resolving type '{0}'.", aqn );
+                        _monitor.OpenError( $"While resolving type '{aqn}'.", ex );
                     }
                 }
             }
@@ -316,7 +316,7 @@ namespace CK.Setup
                                 }
                                 catch( Exception ex )
                                 {
-                                    _monitor.Error().Send( ex );
+                                    _monitor.Error( ex );
                                 }
                             }
                             ordered.Add( m );
@@ -360,7 +360,7 @@ namespace CK.Setup
                 // continue the process.
                 if( theObject == null )
                 {
-                    _monitor.Error().Send( "Unable to create an instance of '{0}'.", pathTypes[pathTypes.Count - 1].AmbientTypeInfo.Type.FullName );
+                    _monitor.Error( $"Unable to create an instance of '{pathTypes[pathTypes.Count - 1].AmbientTypeInfo.Type.FullName}'." );
                     continue;
                 }
                 // Finalize configuration by soliciting IStObjStructuralConfigurator.
@@ -393,7 +393,7 @@ namespace CK.Setup
             foreach( StObjCollectorContextualResult contextResult in collector.Contexts )
             {
                 using( _monitor.OnError( () => contextResult.SetFatal() ) )
-                using( _monitor.OpenInfo().Send( "Working on Context [{0}].", contextResult.Context ) )
+                using( _monitor.OpenInfo( $"Working on Context [{contextResult.Context}]." ) )
                 {
                     foreach( MutableItem item in contextResult._specializations )
                     {
@@ -417,7 +417,7 @@ namespace CK.Setup
             foreach( StObjCollectorContextualResult contextResult in collector.Contexts )
             {
                 using( _monitor.OnError( () => contextResult.SetFatal() ) )
-                using( _monitor.OpenInfo().Send( "Working on Context [{0}].", contextResult.Context ) )
+                using( _monitor.OpenInfo( $"Working on Context [{contextResult.Context}]." ) )
                 {
                     foreach( MutableItem item in contextResult._specializations )
                     {
@@ -436,7 +436,7 @@ namespace CK.Setup
             foreach( StObjCollectorContextualResult contextResult in collector.Contexts )
             {
                 using( _monitor.OnError( () => contextResult.SetFatal() ) )
-                using( _monitor.OpenInfo().Send( "Working on Context [{0}].", contextResult.Context ) )
+                using( _monitor.OpenInfo( $"Working on Context [{contextResult.Context}]." ) )
                 {
                     foreach( MutableItem item in contextResult._specializations )
                     {

@@ -180,7 +180,7 @@ namespace CK.Setup
                 object value = a.Value;
                 if( value == System.Type.Missing )
                 {
-                    if( !a.IsOptional ) monitor.Error().Send( "{0}: Unable to resolve non optional.", a.ToString() );
+                    if( !a.IsOptional ) monitor.Error( $"{a.ToString()}: Unable to resolve non optional." );
                 }
                 else
                 {
@@ -296,7 +296,7 @@ namespace CK.Setup
                     a = _leafData.AllAmbientProperties.FirstOrDefault( p => p.Name == name );
                     if( a != null && !propertyType.IsAssignableFrom( a.Type ) )
                     {
-                        monitor.Warn().Send( "Looking for property named '{0}' of type '{1}': found a candidate on '{2}' but type does not match (it is '{3}'). It is ignored.", name, propertyType.Name, ToString(), a.Type.Name );
+                        monitor.Warn( $"Looking for property named '{name}' of type '{propertyType.Name}': found a candidate on '{ToString()}' but type does not match (it is '{a.Type.Name}'). It is ignored." );
                         return null;
                     }
                 }

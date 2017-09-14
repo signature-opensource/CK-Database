@@ -4,19 +4,13 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
-    <Description>
-      CK-Database helps to setup, construct, manages and build modular relationnal databases upon SqlServer.
-      CK.Setupable.Runtime is able to generate StObj objects support for TSS (Three Steps Setup).
+    <Description>CK.Setupable.Engine implements CK.Setupable.Runtime: it the aspect that support the Three Steps Setup.
     </Description>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CK.StObj.Runtime\CK.StObj.Runtime.csproj" />
     <ProjectReference Include="..\CK.Setupable.Runtime\CK.Setupable.Runtime.csproj" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
-    <Reference Include="System" />
   </ItemGroup>
 
   <ItemGroup>

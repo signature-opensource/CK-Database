@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -209,12 +209,12 @@ namespace CK.SqlServer
                 {
                     if (currentStart == null)
                     {
-                        monitor.Error().Send("Unexpected {0}: missing expanded start marker.", _text.Substring(t.Index, t.Length));
+                        monitor.Error( $"Unexpected {_text.Substring( t.Index, t.Length )}: missing expanded start marker.");
                         return false;
                     }
                     if ((currentStart.Type & ~TokenType.StartExpanded) != (t.Type & ~TokenType.StopExpanded))
                     {
-                        monitor.Error().Send("Expanded markers mismatch: {0} / {1}.", _text.Substring(currentStart.Index, currentStart.Length), _text.Substring(t.Index, t.Length));
+                        monitor.Error( $"Expanded markers mismatch: {_text.Substring( currentStart.Index, currentStart.Length )} / {_text.Substring( t.Index, t.Length )}." );
                         return false;
                     }
                     currentStart.MergeExpanded(t);
@@ -225,20 +225,20 @@ namespace CK.SqlServer
                 {
                     if (currentStart != null)
                     {
-                        monitor.Error().Send("Unexpected {0}: duplicate expanded start marker.", _text.Substring(t.Index, t.Length));
+                        monitor.Error( $"Unexpected {_text.Substring(t.Index, t.Length)}: duplicate expanded start marker." );
                         return false;
                     }
                     currentStart = t;
                 }
                 else if (currentStart != null)
                 {
-                    monitor.Error().Send("Expected {0} stop marker instead of {1}.", _text.Substring(currentStart.Index, currentStart.Length), _text.Substring(t.Index, t.Length));
+                    monitor.Error( $"Expected {_text.Substring( currentStart.Index, currentStart.Length )} stop marker instead of {_text.Substring( t.Index, t.Length )}.");
                     return false;
                 }
             }
             if (currentStart != null)
             {
-                monitor.Error().Send("Expected {0} stop marker.", _text.Substring(currentStart.Index, currentStart.Length));
+                monitor.Error( $"Expected {_text.Substring( currentStart.Index, currentStart.Length )} stop marker." );
                 return false;
             }
             return true;
@@ -253,14 +253,14 @@ namespace CK.SqlServer
                 Token t = _tokens[i];
                 if (!allowInnerGo && t.IsGo && scriptLevel > 0)
                 {
-                    monitor.Error().Send("Invalid GO batch separator inside --[begin{0}] ... --[end{0}].", TokenTypeDisplayName(type));
+                    monitor.Error( $"Invalid GO batch separator inside --[begin{TokenTypeDisplayName( type )}] ... --[end{TokenTypeDisplayName( type )}]." );
                     return false;
                 }
                 if ((t.Type & type) != 0)
                 {
                     if (!allowed)
                     {
-                        monitor.Error().Send("Invalid {0} in this context.", _text.Substring(t.Index, t.Length).Trim());
+                        monitor.Error( $"Invalid {_text.Substring( t.Index, t.Length ).Trim()} in this context." );
                         return false;
                     }
                     bool ignored = false;
@@ -279,7 +279,7 @@ namespace CK.SqlServer
                             {
                                 if (labels.Contains(t.Label))
                                 {
-                                    monitor.Error().Send("Label '{0}' is already used: labels must be unique.", t.Label);
+                                    monitor.Error( $"Label '{t.Label}' is already used: labels must be unique.");
                                     return false;
                                 }
                                 labels.Add(t.Label);
@@ -291,7 +291,7 @@ namespace CK.SqlServer
                         Debug.Assert(t.IsEnd);
                         if (scriptLevel == 0)
                         {
-                            monitor.Error().Send("Unexpected {0} found.", _text.Substring(t.Index, t.Length).Trim());
+                            monitor.Error( $"Unexpected {_text.Substring( t.Index, t.Length ).Trim()} found." );
                             return false;
                         }
                         if (scriptLevel-- > 1)
@@ -305,12 +305,12 @@ namespace CK.SqlServer
                             {
                                 if (current == null)
                                 {
-                                    monitor.Error().Send("Unknown label: label '{0}' has never be defined.", t.Label);
+                                    monitor.Error( $"Unknown label: label '{t.Label}' has never be defined." );
                                     return false;
                                 }
                                 if (current != t.Label)
                                 {
-                                    monitor.Error().Send("Label mismatch: label '{0}' does not match current one '{1}'.", t.Label, current);
+                                    monitor.Error( $"Label mismatch: label '{t.Label}' does not match current one '{current}'.");
                                     return false;
                                 }
                                 labels.Add(t.Label);
@@ -320,14 +320,14 @@ namespace CK.SqlServer
                     }
                     if (ignored)
                     {
-                        monitor.Warn().Send("Nested {0} found. It is ignored.", _text.Substring(t.Index, t.Length).Trim());
+                        monitor.Warn( $"Nested {_text.Substring( t.Index, t.Length ).Trim()} found. It is ignored." );
                         _tokens.RemoveAt(i--);
                     }
                 }
             }
             if (scriptLevel > 0)
             {
-                monitor.Error().Send("Unbalanced --[begin{0}] ... --[end{0}] found.", TokenTypeDisplayName(type));
+                monitor.Error( $"Unbalanced --[begin{TokenTypeDisplayName(type)}] ... --[end{TokenTypeDisplayName(type)}] found." );
                 return false;
             }
             return true;
@@ -398,7 +398,7 @@ namespace CK.SqlServer
                     }
                     else
                     {
-                        monitor.Warn().Send("Unrecognized sql mark '{0}'. It is ignored.", m.Value.Trim());
+                        monitor.Warn( $"Unrecognized sql mark '{m.Value.Trim()}'. It is ignored." );
                     }
                 }
                 m = m.NextMatch();

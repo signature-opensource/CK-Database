@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -101,7 +101,7 @@ namespace CK.Setup
             if( transformer == null ) throw new ArgumentNullException( nameof( transformer ) );
             if( transformer.Source != null || transformer.Target != null )
             {
-                monitor.Error().Send( $"Transformer {transformer.FullName} is already bound to a source ({transformer.Source?.FullName}) and/or to a target ({transformer.Target?.FullName})", nameof( transformer ) );
+                monitor.Error( $"Transformer {transformer.FullName} is already bound to a source ({transformer.Source?.FullName}) and/or to a target ({transformer.Target?.FullName})" );
                 return null;
             }
             if( _transformTarget == null )
@@ -243,7 +243,7 @@ namespace CK.Setup
         /// </returns>
         protected virtual object StartDependencySort( IActivityMonitor m )
         {
-            if( _driverType == null ) m.Error().Send( $"'{FullName}': SetDriverType must have been called before starting the topological sort." );
+            if( _driverType == null ) m.Error( $"'{FullName}': SetDriverType must have been called before starting the topological sort." );
             return _driverType;
         }
 

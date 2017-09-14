@@ -54,7 +54,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void DiscoverWithLevel3()
         {
-            using( TestHelper.Monitor.OpenInfo().Send( "Without ObjectALevel4 class." ) )
+            using( TestHelper.Monitor.OpenInfo( "Without ObjectALevel4 class." ) )
             {
                 
                 AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
@@ -73,7 +73,7 @@ namespace CK.StObj.Engine.Tests
                 Assert.That( result.HasFatalError, Is.False );
             }
 
-            using( TestHelper.Monitor.OpenInfo().Send( "ObjectALevel4 class (specializes ObjectALevel3 and use IAbstractionBOnLevel2)." ) )
+            using( TestHelper.Monitor.OpenInfo( "ObjectALevel4 class (specializes ObjectALevel3 and use IAbstractionBOnLevel2)." ) )
             {
                 AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
 
@@ -93,7 +93,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void CycleInPackage()
         {
-            using( TestHelper.Monitor.OpenInfo().Send( "A specialization of ObjectBLevel3 wants to be in PackageForAB." ) )
+            using( TestHelper.Monitor.OpenInfo( "A specialization of ObjectBLevel3 wants to be in PackageForAB." ) )
             {
                 // ↳ PackageForAB ∋ ObjectBLevel3_InPackageForAB ⇒ ObjectBLevel2 ⇒ ObjectBLevel1 ∈ PackageForABLevel1 ⇒ PackageForAB.
                 AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
@@ -116,7 +116,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void Cycle()
         {
-            using( TestHelper.Monitor.OpenInfo().Send( "ObjectXNeedsY and ObjectYNeedsX." ) )
+            using( TestHelper.Monitor.OpenInfo( "ObjectXNeedsY and ObjectYNeedsX." ) )
             {
                 AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
                 disco.AssemblyFilter = a => a == TestHelper.Assembly;
@@ -137,7 +137,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void MissingReference()
         {
-            using( TestHelper.Monitor.OpenInfo().Send( "ObjectXNeedsY without ObjectYNeedsX." ) )
+            using( TestHelper.Monitor.OpenInfo( "ObjectXNeedsY without ObjectYNeedsX." ) )
             {
                 AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
                 disco.AssemblyFilter = a => a == TestHelper.Assembly;
@@ -157,7 +157,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void LoggerInjection()
         {
-            using( TestHelper.Monitor.OpenInfo().Send( "ConsoleMonitor injection (and optional parameter)." ) )
+            using( TestHelper.Monitor.OpenInfo( "ConsoleMonitor injection (and optional parameter)." ) )
             {
                 AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
                 disco.AssemblyFilter = a => a == TestHelper.Assembly;

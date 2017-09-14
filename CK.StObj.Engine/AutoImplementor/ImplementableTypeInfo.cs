@@ -1,4 +1,4 @@
-﻿#region Proprietary License
+#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.StObj.Engine\AutoImplementor\ImplementableTypeInfo.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -121,7 +121,7 @@ namespace CK.Core
                     ++nbUncovered;
                     if( mGet == null || mSet == null || !mGet.IsAbstract || !mSet.IsAbstract )
                     {
-                        monitor.Error().Send( $"Property {p.DeclaringType.FullName}.{p.Name} is not a valid abstract property (both getter and setter must exist and be abstract)." );
+                        monitor.Error( $"Property {p.DeclaringType.FullName}.{p.Name} is not a valid abstract property (both getter and setter must exist and be abstract)." );
                     }
                     else
                     {
@@ -168,7 +168,7 @@ namespace CK.Core
             }
             catch( Exception ex )
             {
-                monitor.Fatal().Send( ex, $"While implementing Stub for '{AbstractType.FullName}'." );
+                monitor.Fatal( $"While implementing Stub for '{AbstractType.FullName}'.", ex );
                 return null;
             }
         }
@@ -196,14 +196,14 @@ namespace CK.Core
                     IAutoImplementorMethod m = am.ImplementorToUse;
                     if (m == null || m == UnimplementedMarker)
                     {
-                        monitor.Fatal().Send("Method '{0}.{1}' has no valid associated IAutoImplementorMethod.", AbstractType.FullName, am.Method.Name);
+                        monitor.Fatal( $"Method '{AbstractType.FullName}.{am.Method.Name}' has no valid associated IAutoImplementorMethod." );
                         hasFatal = true;
                     }
                     else
                     {
                         if (!m.Implement(monitor, am.Method, assembly, b, false))
                         {
-                            monitor.Fatal().Send($"Method '{AbstractType.FullName}.{am.Method.Name}' can not be implemented by its IAutoImplementorMethod.");
+                            monitor.Fatal( $"Method '{AbstractType.FullName}.{am.Method.Name}' can not be implemented by its IAutoImplementorMethod.");
                             hasFatal = true;
                         }
                     }
@@ -213,14 +213,14 @@ namespace CK.Core
                     IAutoImplementorProperty p = ap.ImplementorToUse;
                     if (p == null || p == UnimplementedMarker)
                     {
-                        monitor.Fatal().Send($"Property '{AbstractType.FullName}.{ap.Property.Name}' has no valid associated IAutoImplementorProperty.");
+                        monitor.Fatal( $"Property '{AbstractType.FullName}.{ap.Property.Name}' has no valid associated IAutoImplementorProperty.");
                         hasFatal = true;
                     }
                     else
                     {
                         if (!p.Implement(monitor, ap.Property, assembly, b, false))
                         {
-                            monitor.Fatal().Send($"Property '{AbstractType.FullName}.{ap.Property.Name}' can not be implemented by its IAutoImplementorProperty.");
+                            monitor.Fatal( $"Property '{AbstractType.FullName}.{ap.Property.Name}' can not be implemented by its IAutoImplementorProperty.");
                             hasFatal = true;
                         }
                     }
@@ -230,7 +230,7 @@ namespace CK.Core
             }
             catch (Exception ex)
             {
-                monitor.Fatal().Send(ex, $"While implementing Type '{AbstractType.FullName}'.");
+                monitor.Fatal( $"While implementing Type '{AbstractType.FullName}'.", ex );
                 return null;
             }
         }
@@ -243,13 +243,13 @@ namespace CK.Core
                 IAutoImplementorMethod m = am.ImplementorToUse;
                 if( m == null || m == UnimplementedMarker )
                 {
-                    monitor.Fatal().Send( $"Method '{AbstractType.FullName}.{am.Method.Name}' has no valid associated IAutoImplementorMethod." );
+                    monitor.Fatal( $"Method '{AbstractType.FullName}.{am.Method.Name}' has no valid associated IAutoImplementorMethod." );
                 }
                 else
                 {
                     if( !m.Implement( monitor, am.Method, a, cB ) )
                     {
-                        monitor.Fatal().Send( $"Method '{AbstractType.FullName}.{am.Method.Name}' can not be implemented by its IAutoImplementorMethod." );
+                        monitor.Fatal( $"Method '{AbstractType.FullName}.{am.Method.Name}' can not be implemented by its IAutoImplementorMethod." );
                     }
                 }
             }
@@ -258,13 +258,13 @@ namespace CK.Core
                 IAutoImplementorProperty p = ap.ImplementorToUse;
                 if( p == null || p == UnimplementedMarker )
                 {
-                    monitor.Fatal().Send( $"Property '{AbstractType.FullName}.{ap.Property.Name}' has no valid associated IAutoImplementorProperty." );
+                    monitor.Fatal( $"Property '{AbstractType.FullName}.{ap.Property.Name}' has no valid associated IAutoImplementorProperty." );
                 }
                 else
                 {
                     if( !p.Implement( monitor, ap.Property, a, cB ) )
                     {
-                        monitor.Fatal().Send( $"Property '{AbstractType.FullName}.{ap.Property.Name}' can not be implemented by its IAutoImplementorProperty." );
+                        monitor.Fatal( $"Property '{AbstractType.FullName}.{ap.Property.Name}' can not be implemented by its IAutoImplementorProperty." );
                     }
                 }
             }

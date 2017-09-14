@@ -157,7 +157,7 @@ namespace CK.Setup
                 }
                 catch( Exception ex )
                 {
-                    _monitor.Error().Send( ex, $"While disposing Aspect '{aspect.GetType().AssemblyQualifiedName}'." );
+                    _monitor.Error( $"While disposing Aspect '{aspect.GetType().AssemblyQualifiedName}'.", ex );
                 }
             }
         }

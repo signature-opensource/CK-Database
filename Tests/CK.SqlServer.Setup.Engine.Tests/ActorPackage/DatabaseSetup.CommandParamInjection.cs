@@ -8,7 +8,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
     {
         static void CheckCommandParamInjection( SqlManager c, IStObjMap map )
         {
-            using( TestHelper.Monitor.OpenTrace().Send( "CheckBasicPackageForCommandWrappers" ) )
+            using( TestHelper.Monitor.OpenTrace("CheckBasicPackageForCommandWrappers" ) )
             {
                 var package = map.Default.Obtain<Package>();
                 SimpleProcedureNaked( c, package );

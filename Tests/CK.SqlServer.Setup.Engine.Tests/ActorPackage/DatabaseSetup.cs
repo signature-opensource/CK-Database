@@ -85,7 +85,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             c.RevertOrderingNames = true;
             setupable.RevertOrderingNames = true;
             c.FinalAssemblyConfiguration.AssemblyName = dllName + ".Reverted";
-            using( TestHelper.Monitor.OpenTrace().Send( "Second setup (reverse order)" ) )
+            using( TestHelper.Monitor.OpenTrace( "Second setup (reverse order)" ) )
             {
                 Assert.That( StObjContextRoot.Build( c, null, TestHelper.Monitor ) );
             }
@@ -101,7 +101,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
         private static void CheckBasicOnly( SqlManager c, IStObjMap map )
         {
-            using( TestHelper.Monitor.OpenTrace().Send( "CheckBasicOnly" ) )
+            using( TestHelper.Monitor.OpenTrace( "CheckBasicOnly" ) )
             {
                 Assert.That( c.ExecuteScalar( "select count(*) from CK.tActor where ActorId <= 1" ), Is.EqualTo( 2 ) );
                 Assert.That( c.ExecuteScalar( "select count(*) from CK.tGroup where GroupName = 'Public'" ), Is.EqualTo( 1 ) );
@@ -128,7 +128,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
         private static void CheckBasicAndZone( SqlManager c, IStObjMap map )
         {
-            using( TestHelper.Monitor.OpenTrace().Send( "CheckBasicAndZone" ) )
+            using( TestHelper.Monitor.OpenTrace( "CheckBasicAndZone" ) )
             {
                 Assert.That( c.ExecuteScalar( "select count(*) from CK.tActor where ActorId <= 1" ), Is.EqualTo( 2 ) );
                 Assert.That( c.ExecuteScalar( "select count(*) from CK.tSecurityZone where SecurityZoneId <= 1" ), Is.EqualTo( 2 ) );
