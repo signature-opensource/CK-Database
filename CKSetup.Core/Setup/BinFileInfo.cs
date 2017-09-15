@@ -23,6 +23,8 @@ namespace CKSetup
             FileLength = len;
             _sha1 = SHA1Value.ZeroSHA1;
             LocalFileName = localName;
+            var info = FileVersionInfo.GetVersionInfo( fullPath );
+            FileVersion = new Version( info.FileMajorPart, info.FileMinorPart, info.FileBuildPart, info.FilePrivatePart );
         }
 
         /// <summary>
@@ -46,6 +48,18 @@ namespace CKSetup
         /// There is no need/interest to handle files bigger than 2GB here.
         /// </summary>
         public int FileLength { get; }
+
+        /// <summary>
+        /// Gets the file version from the <see cref="FileVersionInfo"/> if the file has a PE header with a VERSIONINFO.
+        /// Null otherwise.
+        /// </summary>
+        public Version FileVersion { get; }
+
+        /// <summary>
+        /// Gets the .Net assembly version if this file is a <see cref="BinFileAssemblyInfo"/> and the version exists.
+        /// Null otherwise.
+        /// </summary>
+        public virtual Version AssemblyVersion => null;
 
         /// <summary>
         /// Get the SHA1 of the file (file is loaded the first time and only once).

@@ -196,7 +196,7 @@ namespace CKSetup
                         embeddedComponents.Add( sub.ComponentRef );
                     }
                 }
-                var files = binFiles.Select( bf => new ComponentFile( bf.LocalFileName, bf.FileLength, bf.ContentSHA1 ) );
+                var files = binFiles.Select( bf => new ComponentFile( bf.LocalFileName, bf.FileLength, bf.ContentSHA1, bf.FileVersion, bf.AssemblyVersion ) );
                 var newC = new Component( toAdd.ComponentKind, toAdd.ComponentRef, dependencies, embeddedComponents, files );
                 return new AddLocalResult( DoAdd( m, newC ), newC );
             }

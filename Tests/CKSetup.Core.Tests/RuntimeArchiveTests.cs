@@ -108,7 +108,9 @@ namespace CKSetup.Tests
             }
             StoreContent content = new StoreContent( zipPath );
             var engines = content.Db.Elements( "Component" ).ToArray();
-            engines.Select( c => c.Name ).ShouldBeEquivalentTo( "CK.Setupable.Engine" );
+            engines.Select( c => c.Attribute( "Name" ).Value )
+                    .All( n => n == "CK.Setupable.Engine" )
+                    .Should().BeTrue();
 
             // CK.Setupable.Engine.dll (net461) and/or
             // CK.Setupable.Engine.dll (net20) and CK.Setupable.Engine.deps.json.

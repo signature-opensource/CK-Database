@@ -26,7 +26,7 @@ namespace CKSetup
                                         .Where( x => x.AttributeType.FullName == "System.Runtime.Versioning.TargetFrameworkAttribute" && x.HasConstructorArguments )
                                         .Select( x => x.ConstructorArguments[0].Value as string )
                                         .FirstOrDefault();
-
+            AssemblyVersion = a.Name.Version;
             AssemblyReferences = a.MainModule.AssemblyReferences.ToArray();
             SetupDependencies = a.CustomAttributes
                                     .Select( x => (x.AttributeType.FullName == "CK.Setup.RequiredSetupDependencyAttribute"
@@ -108,6 +108,12 @@ namespace CKSetup
         /// Gets the CKVersion info if found.
         /// </summary>
         public InformationalVersion InfoVersion { get; }
+
+        /// <summary>
+        /// Gets the .Net assembly version if it exists.
+        /// Null otherwise.
+        /// </summary>
+        public override Version AssemblyVersion { get; }
 
         /// <summary>
         /// Gets the TargetFramework if <see cref="System.Runtime.Versioning.TargetFrameworkAttribute"/>

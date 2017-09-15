@@ -96,16 +96,16 @@ namespace CK.StObj.Runner
         static void InstallLoadHooks( IActivityMonitor monitor )
         {
 #if NETCOREAPP2_0
-            monitor.Info( $"CurrentDomain.BaseDirectory: {AppDomain.CurrentDomain.BaseDirectory}" );
+            monitor?.Info( $"CurrentDomain.BaseDirectory: {AppDomain.CurrentDomain.BaseDirectory}" );
 
             AssemblyLoadContext.Default.Resolving += ( context, assemblyName ) =>
             {
-                monitor.Info( $"AssemblyLoadContext.Default.Resolving: {assemblyName.Name}" );
+                monitor?.Info( $"AssemblyLoadContext.Default.Resolving: {assemblyName.Name}" );
                 string file = Path.Combine( AppContext.BaseDirectory, assemblyName.Name + ".dll" );
                 Assembly resolved = null;
                 if( File.Exists( file ) )
                 {
-                    monitor.Info( $"File '{assemblyName.Name}.dll' exists in BaseDirectory." );
+                    monitor?.Info( $"File '{assemblyName.Name}.dll' exists in BaseDirectory." );
                     try
                     {
                         using( var stream = File.OpenRead( file ) )
@@ -113,11 +113,11 @@ namespace CK.StObj.Runner
                     }
                     catch( Exception ex )
                     {
-                        monitor.Error( $"While context.LoadFromStream.", ex );
+                        monitor?.Error( $"While context.LoadFromStream.", ex );
                     }
                 }
-                else monitor.Warn( $"File '{assemblyName.Name}.dll' does not exist in BaseDirectory." );
-                monitor.Info( $"Resolved ==> {resolved?.FullName}" );
+                else monitor?.Warn( $"File '{assemblyName.Name}.dll' does not exist in BaseDirectory." );
+                monitor?.Info( $"Resolved ==> {resolved?.FullName}" );
                 return resolved;
             };
 
