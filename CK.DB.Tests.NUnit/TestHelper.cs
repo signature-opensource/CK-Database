@@ -6,7 +6,6 @@ using CK.Setup;
 using CK.SqlServer.Setup;
 using NUnit.Framework;
 using System.Data.SqlClient;
-using System.Diagnostics;
 using System.Reflection;
 
 namespace CK.Core
@@ -245,7 +244,7 @@ namespace CK.Core
 #if NET461
             return Assembly.Load( new AssemblyName( assemblyName ) );
 #else
-            return System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath( Path.Combine( AppContext.BaseDirectory, assemblyName + ".dll" ) );
+            return Assembly.LoadFrom( Path.Combine( AppContext.BaseDirectory, assemblyName + ".dll" ) );
 #endif
         }
 

@@ -64,7 +64,7 @@ namespace CK.StObj.Engine.Tests
 #if NET461
             return Assembly.Load( new AssemblyName( assemblyName ) );
 #else
-            return System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath( Path.Combine( AppContext.BaseDirectory, assemblyName + ".dll" ) );
+            return Assembly.LoadFrom( Path.Combine( AppContext.BaseDirectory, assemblyName + ".dll" ) );
 #endif
         }
 
