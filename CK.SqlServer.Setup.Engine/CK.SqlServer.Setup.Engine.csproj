@@ -3,7 +3,7 @@
   <Import Project="..\Common\Shared.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
     <Description>
       CK-Database helps to setup, construct, manages and build modular relationnal databases upon SqlServer.
       CK.SqlServer.Setup.Engine provides full Sql Server setup support.

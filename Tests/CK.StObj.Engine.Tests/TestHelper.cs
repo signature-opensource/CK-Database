@@ -64,7 +64,7 @@ namespace CK.StObj.Engine.Tests
 #if NET461
             return Assembly.Load( new AssemblyName( assemblyName ) );
 #else
-            return Assembly.LoadFrom( Path.Combine( AppContext.BaseDirectory, assemblyName + ".dll" ) );
+            return System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath( Path.Combine( AppContext.BaseDirectory, assemblyName + ".dll" ) );
 #endif
         }
 
@@ -128,8 +128,8 @@ namespace CK.StObj.Engine.Tests
         {
             using( _monitor.OpenTrace( $"[{i.ItemKind.ToString()[0]}]FullName = {i.FullName}"  ) )
             {
-                _monitor.Trace( "Container = " + i.Container != null ? i.Container.FullName : "(null)" );
-                _monitor.Trace( "Generalization = " + i.Generalization != null ? i.Generalization.FullName : "(null)" );
+                _monitor.Trace( "Container = " + (i.Container != null ? i.Container.FullName : "(null)") );
+                _monitor.Trace( "Generalization = " + (i.Generalization != null ? i.Generalization.FullName : "(null)") );
                 _monitor.Trace( "Requires = " + Names( i.Requires ) );
                 _monitor.Trace( "Groups = " + Names( i.Groups ) );
                 _monitor.Trace( "Children = " + Names( i.Children ) );
