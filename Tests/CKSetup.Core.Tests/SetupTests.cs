@@ -49,24 +49,6 @@ namespace CKSetup.Tests
             }
         }
 
-
-        [TestCase( TestStoreType.Zip )]
-        [TestCase( TestStoreType.Directory )]
-        public void setup_SqlCallDemo_for_netstandard20( TestStoreType type )
-        {
-            using( var zip = TestHelper.OpenCKDatabaseZip( type, withNetStandard: true ) )
-            {
-                Facade.DoSetup(
-                    TestHelper.ConsoleMonitor,
-                    TestHelper.SqlCallDemoNet20,
-                    zip,
-                    TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
-                    "SqlCallDemo.Generated.ByCKSetup",
-                    sourceGeneration: true
-                    ).Should().BeTrue();
-            }
-        }
-
         [TestCase( TestStoreType.Zip )]
         [TestCase( TestStoreType.Directory )]
         public void setup_SqlCallDemo_for_netstandard20_publish_folder( TestStoreType type )

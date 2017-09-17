@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using CK.SqlServer;
 using NUnit.Framework;
 using System;
@@ -42,39 +42,12 @@ namespace SqlTransform.Tests
             return parameters[0].Value == DBNull.Value ? (string)null : (string)parameters[0].Value;
         }
 
-#if NET461
-
         [Test]
         public void calling_SimpleReplaceTest_method()
         {
             var p = TestHelper.StObjMap.Default.Obtain<CKLevel0.Package>();
             using( var ctx = new SqlStandardCallContext() )
             {
-                /*
-                var aFromType = typeof(System.Data.SqlClient.SqlCommand).GetTypeInfo().Assembly;
-                string path = aFromType.Location;
-                Console.WriteLine($"SqlCommand assembly from SqlTransform.Tests => {typeof(SqlCommand).GetTypeInfo().Assembly.Location}");
-
-                var aFromType2 = typeof(System.Data.DbType).GetTypeInfo().Assembly;
-                Console.WriteLine($"DbType assembly from SqlTransform.Tests => => {aFromType2.FullName}");
-                string path2 = aFromType2.Location;
-
-                ISqlCommandExecutor e = (ISqlCommandExecutor)ctx;
-                MethodInfo m = e.GetType().GetTypeInfo().DeclaredMethods.Single(xx => xx.Name == "CK.SqlServer.ISqlCommandExecutor.ExecuteNonQuery");
-                Type tC = m.GetParameters()[1].ParameterType;
-                Console.WriteLine($"SqlCommand parameter of ISqlCommandExecutor.ExecuteNonQuery => => {tC.GetTypeInfo().Assembly.Location}");
-                */
-                Assembly genDll = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "Transform.Tests.Generated" );
-                {
-                    Type tCommandCreator = genDll.GetTypes().Single(t => t.FullName == "CK._g.CreatorForSqlCommand");
-                    MethodInfo mSimpleCreate = tCommandCreator.GetRuntimeMethods().Single(x => x.Name == "[]db^CK.sSimpleReplaceTest");
-                    string utimatePathOfSqlClientAssembly = mSimpleCreate.ReturnType.GetTypeInfo().Assembly.Location;
-                }
-                {
-                    Type tCommandCreator = genDll.GetTypes().Single(t => t.FullName == "CK._g.Package1");
-                    MethodInfo mSimpleReplace = tCommandCreator.GetRuntimeMethods().Single(x => x.Name == "SimpleReplaceTest");
-                    string strA = mSimpleReplace.GetParameters()[1].ParameterType.GetTypeInfo().Assembly.Location;
-                }
                 SimpleReplaceTestGenerated(ctx, "Pouf!", p.Database.ConnectionString);
                 
                 var aFromType = typeof(string).GetTypeInfo().Assembly;
@@ -83,7 +56,6 @@ namespace SqlTransform.Tests
                 Assert.That( s, Is.EqualTo( "Return: Hello! 0" ) );
             }
         }
-#endif
 
         [Test]
         public void calling_SimpleTransformTest_method()
