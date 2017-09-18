@@ -5,7 +5,7 @@ using System;
 namespace CKSetup.Tests
 {
     [TestFixture]
-    public class RemotePushTests
+    public class SetupWithRemoteTests
     {
         [TestCase( TestStoreType.Zip )]
         [TestCase( TestStoreType.Directory )]
@@ -34,7 +34,7 @@ namespace CKSetup.Tests
 
         [TestCase( TestStoreType.Zip )]
         [TestCase( TestStoreType.Directory )]
-        public void push_to_the_remote_and_setup_SqlCallDemoNet20_publish_from_scratch( TestStoreType sourceType )
+        public void push_to_the_remote_and_setup_SqlCallDemoNetCoreTests20_from_scratch( TestStoreType sourceType )
         {
             Uri url = TestHelper.EnsureCKSetupRemoteRunning();
             using( var source = TestHelper.OpenCKDatabaseZip( sourceType, withNetStandard: true ) )
@@ -47,7 +47,7 @@ namespace CKSetup.Tests
             {
                 Facade.DoSetup(
                     TestHelper.ConsoleMonitor,
-                    TestHelper.EnsurePublishPath( TestHelper.SqlCallDemoNet20 ),
+                    TestHelper.SqlCallDemoNetCoreTests20,
                     archive,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",

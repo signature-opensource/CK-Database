@@ -32,7 +32,15 @@
     <CSemVerVersion>1.0.1</CSemVerVersion>
     <MonoCecilVersion>0.10.0-beta6</MonoCecilVersion>
   </PropertyGroup>
-  
+
+  <!-- Extends Clean to fully remove bin folders. 
+       Keep obj folders since removing them messes up VS Project System.
+  -->  
+  <Target Name="CKExtendClean" AfterTargets="Clean"> 
+    <Message Text="CKExtendClean: Deleting $(TargetDir)" />  
+    <RemoveDir Directories="$(TargetDir)" />
+  </Target>
+
   <!-- 
     When building from the CI (ie. from Cake, hence directly with the msbuild tool, SolutionDir is not defined),
     we unify the behavior here.

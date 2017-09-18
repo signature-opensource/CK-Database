@@ -83,7 +83,6 @@ namespace CKSetup
                                 .Where( p => p.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase )
                                              || p.EndsWith( ".exe", StringComparison.OrdinalIgnoreCase )
                                              || p.EndsWith( ".so", StringComparison.OrdinalIgnoreCase )
-                                             || p.EndsWith( ".runtimeconfig.json", StringComparison.OrdinalIgnoreCase )
                                              || p.EndsWith( ".deps.json", StringComparison.OrdinalIgnoreCase ) ) )
             {
                 BinFileInfo info = TryRead( m, r, f, f.Substring( binPath.Length ) );

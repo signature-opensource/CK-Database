@@ -147,19 +147,21 @@ namespace CKSetup.Tests
 
 
         #region Net standard component Paths
-        public static string StObjModelNet20 => Path.Combine( SolutionFolder, "CK.StObj.Model", "bin", Configuration, "netcoreapp2.0" );
+        public static string StObjModelNet20 => Path.Combine( SolutionFolder, "CK.StObj.Model", "bin", Configuration, "netstandard2.0" );
         public static string StObjRuntimeNet20 => Path.Combine( SolutionFolder, "CK.StObj.Runtime", "bin", Configuration, "netcoreapp2.0" );
         public static string StObjEngineNet20 => Path.Combine( SolutionFolder, "CK.StObj.Engine", "bin", Configuration, "netcoreapp2.0" );
 
-        public static string SetupableModelNet20 => Path.Combine( SolutionFolder, "CK.Setupable.Model", "bin", Configuration, "netcoreapp2.0" );
+        public static string SetupableModelNet20 => Path.Combine( SolutionFolder, "CK.Setupable.Model", "bin", Configuration, "netstandard2.0" );
         public static string SetupableRuntimeNet20 => Path.Combine( SolutionFolder, "CK.Setupable.Runtime", "bin", Configuration, "netcoreapp2.0" );
         public static string SetupableEngineNet20 => Path.Combine( SolutionFolder, "CK.Setupable.Engine", "bin", Configuration, "netcoreapp2.0" );
 
-        public static string SqlServerSetupModelNet20 => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Model", "bin", Configuration, "netcoreapp2.0" );
+        public static string SqlServerSetupModelNet20 => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Model", "bin", Configuration, "netstandard2.0" );
         public static string SqlServerSetupRuntimeNet20 => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Runtime", "bin", Configuration, "netcoreapp2.0" );
         public static string SqlServerSetupEngineNet20 => Path.Combine( SolutionFolder, "CK.SqlServer.Setup.Engine", "bin", Configuration, "netcoreapp2.0" );
 
-        public static string SqlCallDemoNet20 => Path.Combine( SolutionFolder, "Tests", "SqlCallDemo", "SqlCallDemo", "bin", Configuration, "netcoreapp2.0" );
+        public static string SqlCallDemoNet20 => Path.Combine( SolutionFolder, "Tests", "SqlCallDemo", "SqlCallDemo", "bin", Configuration, "netstandard2.0" );
+
+        public static string SqlCallDemoNetCoreTests20 => Path.Combine( SolutionFolder, "Tests", "SqlCallDemo", "SqlCallDemo.NetCore.Tests", "bin", Configuration, "netcoreapp2.0" );
 
 
         #endregion
@@ -225,13 +227,13 @@ namespace CKSetup.Tests
             {
                 zip.CreateLocalImporter().AddComponent(
                         CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( StObjRunnerNetCoreApp20 ) ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( StObjModelNet20 ) ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjModelNet20 ),
                         CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( StObjRuntimeNet20 ) ),
                         CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( StObjEngineNet20 ) ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SetupableModelNet20 ) ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableModelNet20 ),
                         CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SetupableRuntimeNet20 ) ),
                         CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SetupableEngineNet20 ) ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SqlServerSetupModelNet20 ) ),
+                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupModelNet20 ),
                         CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SqlServerSetupRuntimeNet20 ) ),
                         CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SqlServerSetupEngineNet20 ) ) )
                     .Import()

@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
-    <RuntimeIdentifier>win</RuntimeIdentifier>
   </PropertyGroup>
 
   <Import Project="..\..\..\Common\Shared.props" />

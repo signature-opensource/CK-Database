@@ -67,9 +67,9 @@ namespace CKSetup
         public ComponentKind ComponentKind { get; }
 
         /// <summary>
-        /// Gets whether files should be stored: only Models in .Net framework don't need to be stored.
+        /// Gets whether files should be stored: only SetupDependency need to be stored.
         /// </summary>
-        public bool StoreFiles => ComponentKind == ComponentKind.SetupDependency || !_ref.TargetFramework.IsNetFramework();
+        public bool StoreFiles => ComponentKind == ComponentKind.SetupDependency;
 
         public TargetFramework TargetFramework => _ref.TargetFramework;
 

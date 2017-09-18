@@ -1,5 +1,6 @@
 using CK.Core;
 using CK.Setup;
+using CK.Text;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -88,15 +89,53 @@ namespace CKSetup
                         return false;
                     }
                     fileName = "dotnet";
-                    arguments = "CK.StObj.Runner.dll merge-deps";
-                    if( !RunRunnerProcess( m, binPath, debugBreakInCKStObjRunner, fileName, arguments ) )
+                    #region Using existing runtimeconfig.json to create CK.StObj.Runner.runtimeconfig.json.
                     {
-                        return false;
+                        if( !FindRuntimeConfigFiles( m, binPath, out string fRtDevPath, out string fRtPath ) )
+                        {
+                            return false;
+                        }
+                        string runnerFile = Path.Combine( binPath, "CK.StObj.Runner.runtimeconfig.json" );
+                        string additionalProbePaths = ExtractJsonAdditonalProbePaths( m, fRtDevPath );
+                        if( additionalProbePaths == null )
+                        {
+                            File.Copy( fRtPath, runnerFile, true );
+                        }
+                        else
+                        {
+                            string txt = File.ReadAllText( fRtPath );
+                            int idx = txt.LastIndexOf( '}' ) - 1;
+                            if( idx > 0 ) idx = txt.LastIndexOf( '}', idx ) - 1;
+                            if( idx > 0 )
+                            {
+                                txt = txt.Insert( idx, "," + additionalProbePaths );
+                                File.WriteAllText( runnerFile, txt );
+                            }
+                            else
+                            {
+                                using( m.OpenError( "Unable to inject additionalProbingPaths in:" ) )
+                                {
+                                    m.Error( txt );
+                                }
+                                return false;
+                            }
+                        }
+                        archive.RegisterFileToDelete( runnerFile );
                     }
-                    string theFile = Path.Combine( binPath, "CK.StObj.Runner.deps.json" );
-                    string theBackup = theFile + ".cksetup-backup";
-                    File.Replace( theFile + ".merged", theFile, theBackup );
-                    archive.RegisterFileToDelete( theBackup );
+                    #endregion
+                    #region Merging all deps.json into CK.StObj.Runner.deps.json
+                    {
+                        arguments = "CK.StObj.Runner.dll merge-deps";
+                        if( !RunRunnerProcess( m, binPath, debugBreakInCKStObjRunner, fileName, arguments ) )
+                        {
+                            return false;
+                        }
+                        string theFile = Path.Combine( binPath, "CK.StObj.Runner.deps.json" );
+                        string theBackup = theFile + ".cksetup-backup";
+                        File.Replace( theFile + ".merged", theFile, theBackup );
+                        archive.RegisterFileToDelete( theBackup );
+                    }
+                    #endregion
                     arguments = "CK.StObj.Runner.dll";
                 }
                 else
@@ -106,6 +145,79 @@ namespace CKSetup
                 }
                 return RunRunnerProcess( m, binPath, debugBreakInCKStObjRunner, fileName, arguments );
             }
+        }
+
+        private static string ExtractJsonAdditonalProbePaths( IActivityMonitor m, string fRtDevPath )
+        {
+            if( fRtDevPath == null ) return null;
+            string txt = File.ReadAllText( fRtDevPath );
+            var matcher = new StringMatcher( txt );
+            List<KeyValuePair<string, object>> oRoot;
+            int idxRuntimeOptions;
+            List<KeyValuePair<string, object>> oRuntimeOptions;
+            int idxAdditionalProbingPaths;
+            List<object> additionalProbingPathsObj;
+            if( matcher.MatchJSONObject( out object oConfig )
+                && (oRoot = (oConfig as List<KeyValuePair<string, object>>)) != null
+                && (idxRuntimeOptions = oRoot.IndexOf( kv => kv.Key == "runtimeOptions" )) >= 0
+                && (oRuntimeOptions = oRoot[idxRuntimeOptions].Value as List<KeyValuePair<string, object>>) != null
+                && (idxAdditionalProbingPaths = oRuntimeOptions.IndexOf( kv => kv.Key == "additionalProbingPaths" )) >= 0
+                && (additionalProbingPathsObj = oRuntimeOptions[idxAdditionalProbingPaths].Value as List<object>) != null
+                && additionalProbingPathsObj.All( p => p is string ) )
+            {
+                m.Trace( $"Extracted {additionalProbingPathsObj.OfType<string>().Concatenate()} from {fRtDevPath}." );
+                return "\"additionalProbingPaths\":[\""
+                            + additionalProbingPathsObj
+                                .Select( p => ((string)p).Replace("\\","\\\\" ) )
+                                .Concatenate( "\", \"" )
+                            + "\"]";
+            }
+            using( m.OpenWarn( "Unable to extract any additional probing paths from:" ) )
+            {
+                m.Warn( txt );
+            }
+            return null;
+        }
+
+        private static bool FindRuntimeConfigFiles( IActivityMonitor m, string binPath, out string fRtDevPath, out string fRtPath )
+        {
+            fRtDevPath = fRtPath = null;
+            // First find the dev file.
+            var devs = Directory.EnumerateFiles( binPath, "*.runtimeconfig.dev.json" ).ToList();
+            if( devs.Count > 1 )
+            {
+                m.Error( $"Found more than one runtimeconfig.dev.json files: '{String.Join( "', '", devs.Select( p => Path.GetFileName( p ) ) ) }'." );
+                return false;
+            }
+            if( devs.Count == 1 )
+            {
+                fRtDevPath = devs[0];
+                string fRtDevName = Path.GetFileName( fRtDevPath );
+                m.Trace( $"Found '{fRtDevName}'." );
+                string fRtName = fRtDevName.Remove( fRtDevName.Length - 9, 4 );
+                fRtPath = Path.Combine( binPath, fRtName );
+                if( !File.Exists( fRtPath ) )
+                {
+                    m.Error( $"Unable to find '{fRtName}' file (but found '{fRtDevName}')." );
+                    return false;
+                }
+            }
+            else
+            {
+                var rtFiles = Directory.EnumerateFiles( binPath, "*.runtimeconfig.json" ).ToList();
+                if( rtFiles.Count > 1 )
+                {
+                    m.Error( $"Found more than one runtimeconfig.json files: '{String.Join( "', '", rtFiles.Select( p => Path.GetFileName( p ) ) ) }'." );
+                    return false;
+                }
+                else if( rtFiles.Count == 0 )
+                {
+                    m.Error( $"Unable to find a runtimeconfig.json file." );
+                    return false;
+                }
+                fRtPath = rtFiles[0];
+            }
+            return true;
         }
 
         static bool RunRunnerProcess( IActivityMonitor m, string binPath, bool debugBreakInCKStObjRunner, string fileName, string arguments )
