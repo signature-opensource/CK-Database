@@ -9,7 +9,7 @@ namespace CKSetup.Tests
     {
         [TestCase( TestStoreType.Zip )]
         [TestCase( TestStoreType.Directory )]
-        public void push_to_the_remote_and_setup_sqlCallDemo461_from_scratch( TestStoreType sourceType )
+        public void push_to_the_remote_and_setup_SqlCallDemo461_from_scratch( TestStoreType sourceType )
         {
             Uri url = TestHelper.EnsureCKSetupRemoteRunning();
             using( var source = TestHelper.OpenCKDatabaseZip( sourceType ) )
@@ -34,7 +34,7 @@ namespace CKSetup.Tests
 
         [TestCase( TestStoreType.Zip )]
         [TestCase( TestStoreType.Directory )]
-        public void push_to_the_remote_and_setup_sqlCallDemoNet20_from_scratch( TestStoreType sourceType )
+        public void push_to_the_remote_and_setup_SqlCallDemoNet20_publish_from_scratch( TestStoreType sourceType )
         {
             Uri url = TestHelper.EnsureCKSetupRemoteRunning();
             using( var source = TestHelper.OpenCKDatabaseZip( sourceType, withNetStandard: true ) )

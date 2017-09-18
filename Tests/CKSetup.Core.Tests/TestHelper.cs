@@ -205,16 +205,16 @@ namespace CKSetup.Tests
             if( !_standardDbHasNet461[(int)type] )
             {
                 zip.CreateLocalImporter().AddComponent(
-                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( StObjRunnerNet461 ) ),
-                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( StObjModel461 ) ),
-                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( StObjRuntime461 ) ),
-                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( StObjEngine461 ) ),
-                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SetupableModel461 ) ),
-                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SetupableRuntime461 ) ),
-                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SetupableEngine461 ) ),
-                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SqlServerSetupModel461 ) ),
-                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SqlServerSetupRuntime461 ) ),
-                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SqlServerSetupEngine461 ) ) )
+                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjRunnerNet461 ),
+                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjModel461 ),
+                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjRuntime461 ),
+                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjEngine461 ),
+                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableModel461 ),
+                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableRuntime461 ),
+                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableEngine461 ),
+                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupModel461 ),
+                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupRuntime461 ),
+                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupEngine461 ) )
                 .Import()
                 .Should().BeTrue();
                 _standardDbHasNet461[(int)type] = true;
