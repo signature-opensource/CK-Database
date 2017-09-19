@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,6 +22,8 @@ namespace CKSetup
         static public readonly XName Name = XNamespace.None + "Name";
         static public readonly XName Length = XNamespace.None + "Length";
         static public readonly XName SHA1 = XNamespace.None + "SHA1";
+        static public readonly XName FileVersion = XNamespace.None + "FileVersion";
+        static public readonly XName AssemblyVersion = XNamespace.None + "AssemblyVersion";
         static public readonly XName Version = XNamespace.None + "Version";
         static public readonly XName LocalFileKeys = XNamespace.None + "LocalFileKeys";
         static public readonly XName Key = XNamespace.None + "Key";

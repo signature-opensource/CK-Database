@@ -1,10 +1,4 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setupable.Runtime\Setup\RegisterSetupEventArgs.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,8 +15,8 @@ namespace CK.Setup
         internal List<ISetupItem> RegisteredItems;
         internal List<IDependentItemDiscoverer<ISetupItem>> RegisteredDiscoverers;
 
-        internal RegisterSetupEventArgs()
-            : base( SetupStep.PreInit )
+        internal RegisterSetupEventArgs( IActivityMonitor m )
+            : base( m, SetupStep.PreInit )
         {
         }
 

@@ -3,8 +3,7 @@
   <Import Project="..\Common\Shared.props" />
   
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.3;net461</TargetFrameworks>
-    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.6' ">1.6.1</NetStandardImplicitPackageVersion>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <Description>
       CK-Database helps to setup, construct, manages and build modular relationnal databases upon SqlServer.
       CK.StObj.Model is the central core component required by any CK-Database project.
@@ -13,11 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CK.ActivityMonitor.StandardSender" Version="$(CKActivityMonitorVersion)" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
-    <Reference Include="System" />
+    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="$(CKActivityMonitorVersion)" />
   </ItemGroup>
 
   <ItemGroup>

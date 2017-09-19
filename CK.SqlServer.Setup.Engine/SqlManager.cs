@@ -125,7 +125,7 @@ namespace CK.SqlServer.Setup
         /// <returns>True on success.</returns>
         public bool OpenFromConnectionString( string connectionString, bool autoCreate = false )
         {
-            using( _monitor.OpenInfo().Send( "Connection to {0}.", connectionString ) )
+            using( _monitor.OpenInfo( $"Connection to {connectionString}." ) )
             {
                 try
                 {
@@ -137,19 +137,19 @@ namespace CK.SqlServer.Setup
                 {
                     if( autoCreate )
                     {
-                        _monitor.Warn().Send( ex );
+                        _monitor.Warn( ex );
                         string name;
                         using( var master = new SqlConnection( GetMasterConnectionString( connectionString, out name ) ) )
                         {
                             try
                             {
-                                _monitor.Info().Send( $"Creating database '{name}'." );
+                                _monitor.Info( $"Creating database '{name}'." );
                                 master.Open();
                                 using( var cmd = new SqlCommand( $"create database {name}" ) { Connection = master } ) cmd.ExecuteNonQuery();
                             }
                             catch( Exception exCreate )
                             {
-                                _monitor.Error().Send( exCreate );
+                                _monitor.Error( exCreate );
                                 return false;
                             }
                         }
@@ -160,13 +160,13 @@ namespace CK.SqlServer.Setup
                         }
                         catch( Exception exOpenCreated )
                         {
-                            _monitor.Error().Send( exOpenCreated );
+                            _monitor.Error( exOpenCreated );
                             return false;
                         }
                     }
                     else
                     {
-                        _monitor.Error().Send( ex );
+                        _monitor.Error( ex );
                         return false;
                     }
                 }
@@ -254,7 +254,7 @@ namespace CK.SqlServer.Setup
             }
             catch( Exception ex )
             {
-                _monitor.Error().Send( ex );
+                _monitor.Error( ex );
                 return false;
             }
         }
@@ -331,13 +331,13 @@ namespace CK.SqlServer.Setup
                     FailCount = FailCount + 1;
                     if( _monitor == null ) throw;
                     // If the monitor is tracing, the text has already been logged.
-                    if( hasBeenTraced ) _monitor.Error().Send( e );
+                    if( hasBeenTraced ) _monitor.Error( e );
                     else
                     {
                         // If the text is not already logged, then we unconditionally log it below the error.
-                        using( _monitor.OpenError().Send( e ) )
+                        using( _monitor.OpenError( e ) )
                         {
-                            _monitor.Info().Send( script );
+                            _monitor.Info( script );
                         }
                     }
                 }
@@ -369,19 +369,19 @@ namespace CK.SqlServer.Setup
                                     msg += "Failed -> " + ex.Message;
                                 }
                             }
-                            if( _monitor != null ) _monitor.Error().Send( msg );
+                            if( _monitor != null ) _monitor.Error( msg );
                             else if( LastSucceed ) throw new Exception( msg );
                         }
                     }
                     if( _databaseName != null && _databaseName != _manager.Connection.Database )
                     {
-                        if( _monitor != null ) _monitor.Info().Send( "Current database automatically restored from {0} to {1}.", _manager.Connection.Database, _databaseName );
+                        if( _monitor != null ) _monitor.Info( $"Current database automatically restored from {_manager.Connection.Database} to {_databaseName}." );
                         _command.Connection.ChangeDatabase( _databaseName );
                     }
                 }
                 catch( Exception ex )
                 {
-                    if( _monitor != null ) _monitor.OpenWarn().Send( ex );
+                    if( _monitor != null ) _monitor.OpenWarn( ex );
                     else
                     {
                         if( LastSucceed ) throw;
@@ -503,8 +503,8 @@ namespace CK.SqlServer.Setup
         {
             Debug.Assert( _monitor != null );
             if( args.CurrentState == ConnectionState.Open )
-                _monitor.Info().Send( "Connected to database." );
-            else _monitor.Info().Send( "Disconnected from database." );
+                _monitor.Info( "Connected to database." );
+            else _monitor.Info( "Disconnected from database." );
         }
 
         void OnConnInfo( object sender, SqlInfoMessageEventArgs args )
@@ -516,27 +516,19 @@ namespace CK.SqlServer.Setup
                 {
                     if( _missingDependencyIsError && err.Number == 2007 )
                     {
-                        _monitor.Error().Send( "Missing Dependency (MissingDependencyIsError configuration is true for this object).\r\n"
+                        _monitor.Error( $"Missing Dependency (MissingDependencyIsError configuration is true for this object).\r\n"
                                       + "You can set MissingDependencyIsError to false for this object, or set IgnoreMissingDependencyIsError configuration to true to globally ignore this error (but it is better to correctly manage Requirements).\r\n"
-                                      + "{0} ({1}): {2}", err.Procedure, err.LineNumber, err.Message );
+                                      + "{err.Procedure} ({err.LineNumber}): {err.Message}" );
                     }
-                    else _monitor.Info().Send( "{0} ({1}): {2}", err.Procedure, err.LineNumber, err.Message );
+                    else _monitor.Info( $"{err.Procedure} ({err.LineNumber}): {err.Message}" );
                 }
                 else if( err.Class <= 16 )
                 {
-                    _monitor.Warn().Send( "{0} ({1}): {2}", err.Procedure, err.LineNumber, err.Message );
+                    _monitor.Warn( $"{err.Procedure} ({err.LineNumber}): {err.Message}" );
                 }
                 else
                 {
-                    _monitor.Error().Send( "Sql Server error at '{0}'\r\nClass='{1}'\r\nMessage: '{2}'\r\nProcedure: '{6}'\r\nLineNumber: '{7}'\r\nNumber: '{3}'\r\nState: '{4}'\r\nServer: '{5}'",
-                                        err.Source,
-                                        err.Class,
-                                        err.Message,
-                                        err.Number,
-                                        err.State,
-                                        err.Server,
-                                        err.Procedure,
-                                        err.LineNumber );
+                    _monitor.Error( $"Sql Server error at '{err.Source}'\r\nClass='{err.Class}'\r\nMessage: '{err.Message}'\r\nProcedure: '{err.Procedure}'\r\nLineNumber: '{err.LineNumber}'\r\nNumber: '{err.Number}'\r\nState: '{err.State}'\r\nServer: '{err.Server}'" );
                 }
             }
         }

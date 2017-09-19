@@ -1,4 +1,4 @@
-﻿using CSemVer;
+using CSemVer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -66,6 +66,11 @@ namespace CKSetup
 
         public ComponentKind ComponentKind { get; }
 
+        /// <summary>
+        /// Gets whether files should be stored: only SetupDependency need to be stored.
+        /// </summary>
+        public bool StoreFiles => ComponentKind == ComponentKind.SetupDependency;
+
         public TargetFramework TargetFramework => _ref.TargetFramework;
 
         public SVersion Version => _ref.Version;
@@ -94,7 +99,7 @@ namespace CKSetup
             if( uselessEmbedded.Name == null ) return this;
 
             var newEmbedded = Embedded.Where( e => !e.Equals( uselessEmbedded ) );
-            var newDependencies = ComponentKind != ComponentKind.Model && newC.ComponentKind != ComponentKind.Model
+            var newDependencies = StoreFiles && newC.StoreFiles
                                     ? Dependencies.Append( new ComponentDependency( uselessEmbedded.Name, uselessEmbedded.Version ) ).ToList()
                                     : Dependencies;
             var newFiles = Files.Where( f => !newC.Files.Any( cf => cf.Name == f.Name ) ).ToList();

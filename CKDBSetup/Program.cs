@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reflection;
 using Microsoft.Extensions.CommandLineUtils;
 
@@ -89,7 +89,7 @@ namespace CKDBSetup
 
         static string GetCkDatabaseVersion()
         {
-            var a = Assembly.GetAssembly( typeof( CK.Setup.SetupEngineConfiguration ) );
+            var a = Assembly.GetAssembly( typeof( CK.Core.StObjEngineConfiguration ) );
 
             AssemblyInformationalVersionAttribute aiv = Attribute
                 .GetCustomAttribute( a, typeof(AssemblyInformationalVersionAttribute))

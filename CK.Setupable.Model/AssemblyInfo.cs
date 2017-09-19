@@ -1,3 +1,3 @@
-﻿
-// Defines the runtime assembly.
-[assembly: CK.Setup.IsModelThatUsesRuntime( "CK.Setupable.Runtime" )]
+
+[assembly: CK.Setup.IsModel()]
+[assembly: CK.Setup.RequiredSetupDependency( "CK.Setupable.Runtime" )]

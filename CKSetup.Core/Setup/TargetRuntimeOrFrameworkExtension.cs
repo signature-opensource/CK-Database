@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,9 +28,8 @@ namespace CKSetup
         static TargetRuntime[] NetFramework461Runtimes = new TargetRuntime[] { TargetRuntime.NetFramework461, TargetRuntime.NetFramework462, TargetRuntime.NetFramework47 };
         static TargetRuntime[] NetFramework462Runtimes = new TargetRuntime[] { TargetRuntime.NetFramework461, TargetRuntime.NetFramework462 };
         static TargetRuntime[] NetFramework47Runtimes = new TargetRuntime[] { TargetRuntime.NetFramework47 };
-        static TargetRuntime[] NetStandard16Runtimes = new TargetRuntime[] { TargetRuntime.NetFramework461, TargetRuntime.NetFramework462, TargetRuntime.NetFramework47, TargetRuntime.NetCoreApp10, TargetRuntime.NetCoreApp11, TargetRuntime.NetCoreApp20 };
-        static TargetRuntime[] NetStandard20Runtimes = new TargetRuntime[] { TargetRuntime.NetFramework461, TargetRuntime.NetFramework462, TargetRuntime.NetFramework47, TargetRuntime.NetCoreApp20 };
-        static TargetRuntime[] NetCoreApp10Runtimes = new TargetRuntime[] { TargetRuntime.NetCoreApp10 };
+        static TargetRuntime[] NetStandard16Runtimes = new TargetRuntime[] { TargetRuntime.NetCoreApp11, TargetRuntime.NetCoreApp20 };
+        static TargetRuntime[] NetStandard20Runtimes = new TargetRuntime[] { TargetRuntime.NetCoreApp20 };
         static TargetRuntime[] NetCoreApp11Runtimes = new TargetRuntime[] { TargetRuntime.NetCoreApp11 };
         static TargetRuntime[] NetCoreApp20Runtimes = new TargetRuntime[] { TargetRuntime.NetCoreApp20 };
 
@@ -56,7 +55,6 @@ namespace CKSetup
                 case TargetFramework.NetStandard15:
                 case TargetFramework.NetStandard16: return NetStandard16Runtimes;
                 case TargetFramework.NetStandard20: return NetStandard20Runtimes;
-                case TargetFramework.NetCoreApp10: return NetCoreApp10Runtimes;
                 case TargetFramework.NetCoreApp11: return NetCoreApp11Runtimes;
                 case TargetFramework.NetCoreApp20: return NetCoreApp20Runtimes;
                 default: return Array.Empty<TargetRuntime>();
@@ -72,6 +70,16 @@ namespace CKSetup
         static public bool CanWorkOn( this TargetFramework @this, TargetRuntime r )
         {
             return GetAllowedRuntimes( @this ).Contains( r );
+        }
+
+        /// <summary>
+        /// Gets whether this <see cref="TargetFramework"/> is a .NetFramework.
+        /// </summary>
+        /// <param name="this">This framework.</param>
+        /// <returns>True if this is a .Net framework.</returns>
+        static public bool IsNetFramework( this TargetFramework @this )
+        {
+            return (((int)@this >> 16) & 127) > 0;
         }
 
         /// <summary>

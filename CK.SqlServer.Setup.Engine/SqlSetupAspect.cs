@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CK.Core;
@@ -7,52 +7,49 @@ using CK.SqlServer.Parser;
 
 namespace CK.SqlServer.Setup
 {
-    public class SqlSetupAspect : ISetupEngineAspect, ISqlSetupAspect, IDisposable
+    public class SqlSetupAspect : IStObjEngineAspect, ISqlSetupAspect, IDisposable
     {
         readonly SqlSetupAspectConfiguration _config;
-        readonly SetupEngine _engine;
+        readonly ISetupableAspectConfiguration _setupConfiguration;
         readonly SqlManagerProvider _databases;
         ISqlServerParser _sqlParser;
         ISqlManagerBase _defaultDatabase;
 
-        class ConfiguratorHook : SetupEngineConfigurator
+        class StObjConfiguratorHook : StObjConfigurationLayer
         {
-            readonly SqlSetupAspect _center;
+            readonly SqlSetupAspectConfiguration _config;
 
-            public ConfiguratorHook( SqlSetupAspect sqlAspect )
-                : base( sqlAspect._engine.SetupableConfigurator )
+            public StObjConfiguratorHook( SqlSetupAspectConfiguration config )
             {
-                _center = sqlAspect;
+                _config = config;
             }
 
             public override void ResolveParameterValue( IActivityMonitor monitor, IStObjFinalParameter parameter )
             {
                 base.ResolveParameterValue( monitor, parameter );
-                if( parameter.Name == "connectionString" )
+                if( parameter.Name == "connectionString"
+                    && parameter.Owner.InitialObject is SqlDatabase db )
                 {
-                    SqlDatabase db = parameter.Owner.InitialObject as SqlDatabase;
-                    if( db != null )
-                    {
-                        parameter.SetParameterValue( _center._config.FindConnectionStringByName( db.Name ) );
-                    }
+                    parameter.SetParameterValue( _config.FindConnectionStringByName( db.Name ) );
                 }
             } 
         }
 
         /// <summary>
         /// Initializes a new <see cref="SqlSetupAspect"/>.
-        /// This constructor is called by the <see cref="SetupEngine"/> whenever a <see cref="SqlSetupAspectConfiguration"/> configuration object
-        /// appears in <see cref="SetupEngineConfiguration.Aspects"/> list.
+        /// This constructor is called by the StObjEngine whenever a <see cref="SqlSetupAspectConfiguration"/> configuration object
+        /// appears in <see cref="StObjEngineConfiguration.Aspects"/> list.
         /// </summary>
-        /// <param name="engine">Current engine.</param>
         /// <param name="config">Configuration object.</param>
-        public SqlSetupAspect( SetupEngine engine, SqlSetupAspectConfiguration config )
+        /// <param name="monitor">Monitor to use.</param>
+        /// <param name="setupConfiguration"></param>
+        public SqlSetupAspect( SqlSetupAspectConfiguration config, IActivityMonitor monitor, ConfigureOnly<ISetupableAspectConfiguration> setupConfiguration )
         {
-            if( engine == null ) throw new ArgumentNullException( "engine" );
-            if( config == null ) throw new ArgumentNullException( "config" );
+            if( setupConfiguration.Service == null ) throw new ArgumentNullException( nameof(setupConfiguration) );
+            if( config == null ) throw new ArgumentNullException( nameof(config) );
             _config = config;
-            _engine = engine;
-            _databases = new SqlManagerProvider( _engine.Monitor, m => m.IgnoreMissingDependencyIsError = _config.IgnoreMissingDependencyIsError );
+            _setupConfiguration = setupConfiguration.Service;
+            _databases = new SqlManagerProvider( monitor, m => m.IgnoreMissingDependencyIsError = _config.IgnoreMissingDependencyIsError );
             _databases.Add( SqlDatabase.DefaultDatabaseName, _config.DefaultDatabaseConnectionString, autoCreate:true );
             foreach( var db in _config.Databases )
             {
@@ -60,52 +57,52 @@ namespace CK.SqlServer.Setup
             }
         }
 
-        bool ISetupEngineAspect.Configure()
+        bool IStObjEngineAspect.Configure( IActivityMonitor monitor, IStObjEngineConfigureContext context )
         {
             _defaultDatabase = _databases.FindManagerByName( SqlDatabase.DefaultDatabaseName );
             ISqlManager realSqlManager = _defaultDatabase as ISqlManager;
-            if( _engine.StartConfiguration.VersionedItemReader == null )
+            if( !context.ServiceContainer.IsAvailable<IVersionedItemReader>() )
             {
                 if( realSqlManager != null )
                 {
-                    _engine.Monitor.Info().Send( $"Setting SqlVersionedItemReader on the default database as the version reader." );
-                    _engine.StartConfiguration.VersionedItemReader = new SqlVersionedItemReader( realSqlManager );
+                    monitor.Info( "Registering SqlVersionedItemReader on the default database as the version reader." );
+                    context.ServiceContainer.Add<IVersionedItemReader>( new SqlVersionedItemReader( realSqlManager ) );
                 }
                 else
                 {
-                    _engine.Monitor.Info().Send( $"SqlSetupAspects: Unable to use SqlVersionedItemReader on the default database as the version writer since the underlying sql manager is not a real manager." );
+                    monitor.Info( $"Unable to use SqlVersionedItemReader on the default database as the version writer since the underlying sql manager is not a real manager." );
                 }
             }
-            if( _engine.StartConfiguration.VersionedItemWriter == null )
+            if( !context.ServiceContainer.IsAvailable<IVersionedItemWriter>() )
             {
-                _engine.Monitor.Info().Send( $"Setting SqlVersionedItemWriter on the default database as the version writer." );
-                _engine.StartConfiguration.VersionedItemWriter = new SqlVersionedItemWriter( _defaultDatabase );
+                monitor.Info( "Registering SqlVersionedItemWriter on the default database as the version writer." );
+                context.ServiceContainer.Add<IVersionedItemWriter>( new SqlVersionedItemWriter( _defaultDatabase ) );
             }
-            if( _engine.StartConfiguration.SetupSessionMemoryProvider == null )
+            if( !context.ServiceContainer.IsAvailable<ISetupSessionMemoryProvider>() )
             {
-
                 if( realSqlManager != null )
                 {
-                    _engine.Monitor.Info().Send( $"Setting SqlSetupSessionMemoryProvider on the default database as the memory provider." );
-                    _engine.StartConfiguration.SetupSessionMemoryProvider = new SqlSetupSessionMemoryProvider( realSqlManager );
+                    monitor.Info( $"Registering SqlSetupSessionMemoryProvider on the default database as the memory provider." );
+                    context.ServiceContainer.Add<ISetupSessionMemoryProvider>( new SqlSetupSessionMemoryProvider( realSqlManager ) );
                 }
                 else
                 {
-                    _engine.Monitor.Info().Send( $"SqlSetupAspects: Unable to use SqlSetupSessionMemoryProvider on the default database as the memory provider since the underlying sql manager is not a real manager." );
+                    monitor.Info( "Unable to use SqlSetupSessionMemoryProvider on the default database as the memory provider since the underlying sql manager is not a real manager." );
                 }
             }
-
-            _engine.SetupableConfigurator = new ConfiguratorHook( this );
-            _engine.StartConfiguration.AddExplicitRegisteredClass( typeof( SqlDefaultDatabase ) );
+            // SqlServerParser is late bound.
+            Type t = SimpleTypeFinder.WeakResolver( "CK.SqlServer.Parser.SqlServerParser, CK.SqlServer.Parser", true );
+            _sqlParser = (ISqlServerParser)Activator.CreateInstance( t );
+            context.ServiceContainer.Add( _sqlParser );
+            context.ServiceContainer.Add<ISqlManagerProvider>( _databases );
+            context.Configurator.AddLayer( new StObjConfiguratorHook( _config ) );
+            context.AddExplicitRegisteredClass( typeof( SqlDefaultDatabase ) );
             return true;
         }
 
-        /// <summary>
-        /// Gets the engine to which this aspect is bound.
-        /// </summary>
-        public SetupEngine SetupEngine => _engine; 
+        bool IStObjEngineAspect.Run( IActivityMonitor monitor, IStObjEngineRunContext context ) => true;
 
-        ISetupEngineAspectConfiguration ISetupEngineAspect.Configuration => _config; 
+        bool IStObjEngineAspect.Terminate( IActivityMonitor monitor, IStObjEngineTerminateContext context ) => true;
 
         /// <summary>
         /// Gets the configuration object.
@@ -121,18 +118,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Gets the <see cref="ISqlServerParser"/> to use.
         /// </summary>
-        public ISqlServerParser SqlParser
-        {
-            get
-            {
-                if( _sqlParser == null )
-                {
-                    Type t = SimpleTypeFinder.WeakResolver( "CK.SqlServer.Parser.SqlServerParser, CK.SqlServer.Parser", true );
-                    _sqlParser = (ISqlServerParser)Activator.CreateInstance( t );
-                }
-                return _sqlParser;
-            }
-        }
+        public ISqlServerParser SqlParser => _sqlParser;
 
         /// <summary>
         /// Gets the default database as a <see cref="ISqlManagerBase"/> object.

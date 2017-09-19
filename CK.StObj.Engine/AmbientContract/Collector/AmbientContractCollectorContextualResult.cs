@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using CK.Text;
 
 namespace CK.Core
 {
@@ -85,19 +86,19 @@ namespace CK.Core
         public void LogErrorAndWarnings( IActivityMonitor monitor )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
-            using( monitor.OpenTrace().Send( "Ambient Contract for context '{1}': {0} mappings for {2} concrete paths.", _mappings.MappedTypeCount, Context, _concreteClassesPath.Count ) )
+            using( monitor.OpenTrace( $"Ambient Contract for context '{Context}': {_mappings.MappedTypeCount} mappings for {_concreteClassesPath.Count} concrete paths." ) )
             {
                 foreach( var a in _classAmbiguities )
                 {
-                    monitor.Error().Send( "Base class '{0}' has more than one concrete specialization: '{1}'.", a[0].FullName, String.Join( "', '", a.Skip(1).Select( t => t.FullName ) ) );
+                    monitor.Error( $"Base class '{a[0].FullName}' has more than one concrete specialization: '{a.Skip( 1 ).Select( t => t.FullName ).Concatenate( "', '" )}'." );
                 }
                 foreach( var a in _interfaceAmbiguities )
                 {
-                    monitor.Error().Send( "Interface '{0}' is implemented by more than one concrete classes: {1}.", a[0].FullName, String.Join( "', '", a.Skip( 1 ).Select( t => t.FullName ) ) );
+                    monitor.Error( $"Interface '{a[0].FullName}' is implemented by more than one concrete classes: {a.Skip( 1 ).Select( t => t.FullName ).Concatenate( "', '" )}." );
                 }
                 if( _abstractTails.Count > 0 )
                 {
-                    monitor.Warn().Send( "Abstract classes without specialization are ignored: {0}.", String.Join( ", ", _abstractTails.Select( t => t.FullName ) ) );
+                    monitor.Warn( $"Abstract classes without specialization are ignored: {_abstractTails.Select( t => t.FullName ).Concatenate()}." );
                 }
 
             }

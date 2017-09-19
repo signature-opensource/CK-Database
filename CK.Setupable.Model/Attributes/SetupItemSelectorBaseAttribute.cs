@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,7 +21,7 @@ namespace CK.Setup
         protected SetupItemSelectorBaseAttribute( string actualAttributeTypeAssemblyQualifiedName, string commaSeparatedTypeNames, SetupItemSelectorScope scope )
             : base( actualAttributeTypeAssemblyQualifiedName )
         {
-            if( scope == Setup.SetupItemSelectorScope.None ) throw new ArgumentException( "scope" ); 
+            if( scope == Setup.SetupItemSelectorScope.None ) throw new ArgumentException( nameof(scope) ); 
             CommaSeparatedTypeNames = commaSeparatedTypeNames;
             SetupItemSelectorScope = scope;
         }

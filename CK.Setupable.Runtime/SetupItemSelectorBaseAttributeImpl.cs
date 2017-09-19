@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -28,7 +28,7 @@ namespace CK.Setup
         /// </summary>
         protected SetupItemSelectorBaseAttribute Attribute => _attribute; 
 
-        bool ISetupItemDriverAware.OnDriverPreInitialized( SetupItemDriver driver )
+        bool ISetupItemDriverAware.OnDriverPreInitialized( IActivityMonitor monitor, SetupItemDriver driver )
         {
             HashSet<string> already = new HashSet<string>();
             bool result = true;
@@ -48,31 +48,32 @@ namespace CK.Setup
                             if( i.Item is T ) items.Add( i );
                             else 
                             {
-                                driver.Engine.Monitor.Error().Send( "Item '{0}' in {2} attribute of '{1}' must be a '{3}'.", i.FullName, driver.Item.FullName, _attribute.GetShortTypeName(), typeof(T).Name );
+                                monitor.Error( $"Item '{i.FullName}' in {_attribute.GetShortTypeName()} attribute of '{driver.Item.FullName}' must be a '{typeof(T).Name}'." );
                                 result = false;
                             }
                         }
                         if( count == 0 )
                         {
-                            driver.Engine.Monitor.Error().Send( "Name '{0}' in {2} attribute of '{1}' not found.", itemName, driver.Item.FullName, _attribute.GetShortTypeName() );
+                            monitor.Error( $"Name '{itemName}' in {_attribute.GetShortTypeName()} attribute of '{driver.Item.FullName}' not found." );
                             result = false;
                         }
                     }
-                    else driver.Engine.Monitor.Warn().Send( "Duplicate name '{0}' in {2} attribute of '{1}'.", itemName, driver.Item.FullName, _attribute.GetShortTypeName() );
+                    else monitor.Warn( $"Duplicate name '{itemName}' in {_attribute.GetShortTypeName()} attribute of '{driver.Item.FullName}'." );
                 }
             }
             if( !result ) return false;
-            return OnDriverCreated( driver, items.OrderBy( s => s.Index ).Select( s => (T)s.Item ) );
+            return OnDriverCreated( monitor, driver, items.OrderBy( s => s.Index ).Select( s => (T)s.Item ) );
         }
 
         /// <summary>
         /// Called once the driver of the object to which the attribute is applied has been created and 
         /// typed setup items have been selected based on their names.
         /// </summary>
+        /// <param name="monitor">Monitor to use.</param>
         /// <param name="driver">The driver associated to the object to which the attribute is applied.</param>
         /// <param name="items">Selected items (in setup order).</param>
         /// <returns>True on success, false to stop the process.</returns>
-        protected abstract bool OnDriverCreated( SetupItemDriver driver, IEnumerable<T> items );
+        protected abstract bool OnDriverCreated( IActivityMonitor monitor, SetupItemDriver driver, IEnumerable<T> items );
 
         IEnumerable<ISortedItem<ISetupItem>> ItemsByName( SetupItemDriver driver, string name )
         {
@@ -82,7 +83,7 @@ namespace CK.Setup
             }
             else if( _attribute.SetupItemSelectorScope == SetupItemSelectorScope.All )
             {
-                return driver.Engine.AllDrivers.Where( d => !d.IsGroupHead ).Select( d => d.SortedItem ).Where( c => c.FullName.Contains( name ) ).ToList();
+                return driver.Drivers.Where( d => d.FullName.Contains( name ) ).Select( d => d.SortedItem ).ToList();
             }
             Debug.Assert( _attribute.SetupItemSelectorScope == SetupItemSelectorScope.Children );
             return driver.SortedItem.AllChildren.Where( c => c.FullName.Contains( name ) ).ToList();

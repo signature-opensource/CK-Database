@@ -1,4 +1,4 @@
-﻿#region Proprietary License
+#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.SqlServer.Setup.Runtime\SqlProcedureAttributeImpl.WrapperCtorMatcher.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -103,7 +103,7 @@ namespace CK.SqlServer.Setup
 
             internal void ExplainFailure( IActivityMonitor monitor )
             {
-                using( monitor.OpenInfo().Send( "Considering constructor: {0}.", DumpParameters( Parameters, true ) ) )
+                using( monitor.OpenInfo( $"Considering constructor: {DumpParameters( Parameters, true )}." ) )
                 {
                     for( int idx = 0; idx < _mappedParameters.Length; ++idx )
                     {
@@ -112,34 +112,34 @@ namespace CK.SqlServer.Setup
                         if( cP == null )
                         {
                             cP = Parameters[idx];
-                            if( cP.HasDefaultValue ) monitor.Error().Send( "Parameter '{0}' is not bound (and using its default value is not possible).", DumpParameter( cP ) );
-                            else monitor.Error().Send( "Parameter '{0}' is not bound.", DumpParameter( cP ) );
+                            if( cP.HasDefaultValue ) monitor.Error( $"Parameter '{DumpParameter( cP )}' is not bound (and using its default value is not possible)." );
+                            else monitor.Error( $"Parameter '{DumpParameter( cP )}' is not bound." );
                         }
                         else if( cP == _declaringTypeMarker )
                         {
-                            monitor.Trace().Send( "Parameter '{0}' is bound to the Type that defines the method ({1}).", Parameters[idx], _declaringType.FullName );
+                            monitor.Trace( $"Parameter '{Parameters[idx]}' is bound to the Type that defines the method ({_declaringType.FullName})." );
                         }
                         else if( cP.Member == Ctor )
                         {
-                            monitor.Trace().Send( "Parameter '{0}' uses its default value.", DumpParameter( cP ) );
+                            monitor.Trace( $"Parameter '{DumpParameter( cP )}' uses its default value." );
                         }
                         else
                         {
-                            monitor.Trace().Send( "Parameter '{0}' is bound to method parameter '{1}'.", Parameters[idx], DumpParameter( cP ) );
+                            monitor.Trace( $"Parameter '{Parameters[idx]}' is bound to method parameter '{DumpParameter( cP )}'." );
                         }
                     }
                     foreach( var mP in _methodParameters.Where( p => p.IdxTarget == -1 ) )
                     {
                         if( SqlCallContextInfo.IsSqlParameterSource( mP.Parameter ) )
-                            monitor.Trace().Send( "Method parameter '{0}' is a parameter source.", DumpParameter( mP.Parameter ) );
-                        else monitor.Error().Send( "Unable to map extra method parameter '{0}'.", DumpParameter( mP.Parameter ) );
+                            monitor.Trace( $"Method parameter '{DumpParameter( mP.Parameter )}' is a parameter source." );
+                        else monitor.Error( $"Unable to map extra method parameter '{DumpParameter( mP.Parameter )}'." );
                     }
                 }
             }
 
             internal void LogWarnings( IActivityMonitor monitor )
             {
-                if( _warnings.Length > 0 ) monitor.Warn().Send( _warnings.ToString() );
+                if( _warnings.Length > 0 ) monitor.Warn( _warnings.ToString() );
             }
 
             internal void LdParameters( ModuleBuilder mB, ILGenerator g, LocalBuilder locCmd )

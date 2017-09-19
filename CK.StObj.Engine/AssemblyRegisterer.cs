@@ -1,4 +1,4 @@
-﻿#region Proprietary License
+#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.StObj.Engine\AssemblyRegisterer.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -67,14 +67,11 @@ namespace CK.Core
         public void Discover( AssemblyRegistererConfiguration config )
         {
             if( config == null ) throw new ArgumentNullException( "config" );
-            // Allow bindings to whatever is in the bin folder.
-            //#if NET461
-            //using( CK.Core.WeakAssemblyNameResolver.TempInstall() )
-            //#endif
-            using( _monitor.OpenInfo().Send( "Discovering assemblies & types from configuration." ) )
+            using( _monitor.OpenInfo( "Discovering assemblies & types from configuration." ) )
             {
                 Predicate<Assembly> accept = a => !config.IgnoredAssemblyNames.Contains( a.GetName().Name )
-                                                    && !config.IgnoredAssemblyNamesByPrefix.Any( p => a.GetName().Name.StartsWith( p ) );
+                                                    && !config.IgnoredAssemblyNamesByPrefix.Any( p => a.GetName().Name.StartsWith( p ) )
+                                                    && !a.CustomAttributes.Any( attr => attr.AttributeType.FullName == "CK.Setup.ExcludeFromSetupAttribute" );
                 var prevFilter = _assemblyFilter;
                 if( prevFilter != null )
                 {
@@ -223,7 +220,7 @@ namespace CK.Core
                 var disco = new DiscoveredInfo( assembly );
                 _index.Add( assembly, disco );
 
-                using( _monitor.OpenTrace().Send( "Discovering assembly '{0}'.", assembly.FullName ) )
+                using( _monitor.OpenTrace( $"Discovering assembly '{assembly.FullName}'." ) )
                 {
                     try
                     {
@@ -243,11 +240,11 @@ namespace CK.Core
                                         }
                                         else skipped.Add( refName );
                                     }
-                                    else _monitor.Warn().Send( $"Reference '{refName}' load: null assembly." );
+                                    else _monitor.Warn( $"Reference '{refName}' load: null assembly." );
                                 }
                                 if( skipped.Count > 0 )
                                 {
-                                    _monitor.Trace().Send( $"References '{skipped.Select( n => n.Name ).Concatenate( "', '" )}': skipped by filter." );
+                                    _monitor.Trace( $"References '{skipped.Select( n => n.Name ).Concatenate( "', '" )}': skipped by filter." );
                                 }
                             }
                             IEnumerable<Type> types = _publicTypesOnly ? assembly.GetExportedTypes() : assembly.GetTypes();
@@ -260,7 +257,7 @@ namespace CK.Core
                     }
                     catch( Exception ex )
                     {
-                        _monitor.OpenError().Send( ex );
+                        _monitor.Error( ex );
                     }
                 }
             }

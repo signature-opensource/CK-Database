@@ -1,4 +1,4 @@
-﻿#region Proprietary License
+#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.SqlServer.Setup.Runtime\SqlProcedureAttributeImpl.SqlCallContextInfo.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -60,7 +60,7 @@ namespace CK.SqlServer.Setup
                     {
                         if( sqlP.SqlType.IsTypeCompatible( Prop.PropertyType ) )
                         {
-                            monitor.Info().Send( $"Sql Parameter '{sqlP.ToStringClean()}' will take its value from the [ParameterSource] '{Parameter.Name}.{Prop.Name}' property." );
+                            monitor.Info( $"Sql Parameter '{sqlP.ToStringClean()}' will take its value from the [ParameterSource] '{Parameter.Name}.{Prop.Name}' property." );
                             return true;
                         }
                     }
@@ -132,7 +132,7 @@ namespace CK.SqlServer.Setup
                         if( typeof( ISqlCommandExecutor ).IsAssignableFrom( param.ParameterType ) )
                         {
                             _sqlCommandExecutorParameter = param;
-                            monitor.Trace().Send( $"Planning to use parameter '{param.Name}' {_executorCallNonQuery.Name} method." );
+                            monitor.Trace( $"Planning to use parameter '{param.Name}' {_executorCallNonQuery.Name} method." );
                             _sourceExecutor = $"((CK.SqlServer.ISqlCommandExecutor){param.Name})";
                             return true;
                         }
@@ -141,7 +141,7 @@ namespace CK.SqlServer.Setup
                         {
                             _sqlCommandExecutorParameter = param;
                             _sqlCommandExecutorMethodGetter = pE.GetGetMethod();
-                            monitor.Trace().Send( $"Planning to use parameter '{param.Name}.Executor' property {_executorCallNonQuery.Name} method." );
+                            monitor.Trace( $"Planning to use parameter '{param.Name}.Executor' property {_executorCallNonQuery.Name} method." );
                             _sourceExecutor = $"{param.Name}.Executor";
                             return true;
                         }
@@ -153,7 +153,7 @@ namespace CK.SqlServer.Setup
                         {
                             _sqlCommandExecutorParameter = param;
                             _sqlCommandExecutorMethodGetter = mE;
-                            monitor.Trace().Send( $"Planning to use parameter '{param.Name}.GetExecutor()' method {_executorCallNonQuery.Name} method." );
+                            monitor.Trace( $"Planning to use parameter '{param.Name}.GetExecutor()' method {_executorCallNonQuery.Name} method." );
                             _sourceExecutor = $"{param.Name}.GetExecutor()";
                             return true;
                         }

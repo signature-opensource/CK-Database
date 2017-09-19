@@ -1,4 +1,5 @@
-﻿using System;
+using CK.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
@@ -8,7 +9,7 @@ namespace CK.Setup
     /// <summary>
     /// Aspect configuration object.
     /// </summary>
-    public class SqlSetupAspectConfiguration : ISetupEngineAspectConfiguration
+    public class SqlSetupAspectConfiguration : IStObjEngineAspectConfiguration
     {
         /// <summary>
         /// Default database name is "db".
@@ -86,7 +87,7 @@ namespace CK.Setup
         /// </summary>
         public bool GlobalResolution { get; set; }
 
-        string ISetupEngineAspectConfiguration.AspectType => "CK.SqlServer.Setup.SqlSetupAspect, CK.SqlServer.Setup.Engine"; 
+        string IStObjEngineAspectConfiguration.AspectType => "CK.SqlServer.Setup.SqlSetupAspect, CK.SqlServer.Setup.Engine"; 
 
         
         /// <summary>

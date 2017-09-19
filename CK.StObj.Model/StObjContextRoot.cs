@@ -1,4 +1,4 @@
-﻿#region Proprietary License
+#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.StObj.Model\StObjContextRoot.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -48,30 +48,30 @@ namespace CK.Core
         /// <returns>A <see cref="IStObjMap"/> that provides access to the objects graph.</returns>
         public static IStObjMap Load( Assembly a, IStObjRuntimeBuilder runtimeBuilder = null, IActivityMonitor monitor = null )
         {
-            if (a == null) throw new ArgumentNullException(nameof(a));
-            IActivityMonitor m = monitor ?? new ActivityMonitor("CK.Core.StObjContextRoot.Load");
+            if( a == null ) throw new ArgumentNullException( nameof( a ) );
+            IActivityMonitor m = monitor ?? new ActivityMonitor( "CK.Core.StObjContextRoot.Load" );
             bool loaded;
-            lock( _alreadyLoaded ) 
+            lock( _alreadyLoaded )
             {
                 loaded = _alreadyLoaded.Contains( a );
                 if( !loaded ) _alreadyLoaded.Add( a );
             }
-            using( m.OpenInfo().Send( loaded ? $"'{a.FullName}' is already loaded." : $"Loading dynamic '{a.FullName}'." ) )
+            using( m.OpenInfo( loaded ? $"'{a.FullName}' is already loaded." : $"Loading dynamic '{a.FullName}'." ) )
             {
                 try
                 {
-                    Type t = a.GetType(RootContextTypeName, true, false);
-                    return (IStObjMap)Activator.CreateInstance(t, new object[] { m, runtimeBuilder ?? DefaultStObjRuntimeBuilder });
+                    Type t = a.GetType( RootContextTypeName, true, false );
+                    return (IStObjMap)Activator.CreateInstance( t, new object[] { m, runtimeBuilder ?? DefaultStObjRuntimeBuilder } );
                 }
                 catch( Exception ex )
                 {
-                    m.Error().Send(ex, "Unable to instanciate StObjMap.");
+                    m.Error( "Unable to instanciate StObjMap.", ex );
                     return null;
                 }
                 finally
                 {
                     m.CloseGroup();
-                    if (monitor == null) m.MonitorEnd();
+                    if( monitor == null ) m.MonitorEnd();
                 }
             }
         }
@@ -85,7 +85,7 @@ namespace CK.Core
         /// </param>
         /// <param name="monitor">Optional monitor.</param>
         /// <returns>True on success, false if build has failed.</returns>
-        public static bool Build( IStObjBuilderConfiguration config, Func<IStObjRuntimeBuilder> builderFactoryStaticMethod = null, IActivityMonitor monitor = null )
+        public static bool Build( StObjEngineConfiguration config, Func<IStObjRuntimeBuilder> builderFactoryStaticMethod = null, IActivityMonitor monitor = null )
         {
             string typeName = null;
             string methodName = null;
@@ -114,7 +114,7 @@ namespace CK.Core
         /// <param name="monitor">Optional monitor.</param>
         /// <returns>True on success, false if the build faield.</returns>
         public static bool Build(
-            IStObjBuilderConfiguration config,
+            StObjEngineConfiguration config,
             string stObjRuntimeBuilderFactoryTypeName = null,
             string stObjRuntimeBuilderFactoryMethodName = "CreateStObjRuntimeBuilder",
             IActivityMonitor monitor = null )
@@ -122,26 +122,46 @@ namespace CK.Core
             return DoBuild( config, null, stObjRuntimeBuilderFactoryTypeName, stObjRuntimeBuilderFactoryMethodName, monitor );
         }
 
-        static bool DoBuild( 
-            IStObjBuilderConfiguration config,
+        static bool DoBuild(
+            StObjEngineConfiguration config,
             Func<IStObjRuntimeBuilder> builderMethod,
-            string stObjRuntimeBuilderFactoryTypeName, 
-            string stObjRuntimeBuilderFactoryMethodName, 
+            string stObjRuntimeBuilderFactoryTypeName,
+            string stObjRuntimeBuilderFactoryMethodName,
             IActivityMonitor monitor )
         {
             if( config == null ) throw new ArgumentNullException( "config" );
             if( monitor == null ) monitor = new ActivityMonitor( "CK.Core.StObjContextRoot.Build" );
 
-            var stObjConfig = config.StObjEngineConfiguration;
-            IStObjRuntimeBuilder runtimeBuilder = ResolveRuntimeBuilder( builderMethod, stObjRuntimeBuilderFactoryTypeName, stObjRuntimeBuilderFactoryMethodName, monitor );
-            IStObjBuilder runner = (IStObjBuilder)Activator.CreateInstance(SimpleTypeFinder.WeakResolver(config.BuilderAssemblyQualifiedName, true), monitor, config, runtimeBuilder);
-            return runner.Run();
+            ResolveEventHandler loadHook = ( sender, args ) =>
+            {
+                var failed = new AssemblyName( args.Name );
+
+                var resolved = failed.Version != null && string.IsNullOrWhiteSpace( failed.CultureName )
+                        ? Assembly.Load( new AssemblyName( failed.Name ) )
+                        : null;
+                monitor.Info( $"DoBuild AssemblyResolve hook: {failed.Name} ==> {resolved?.FullName}" );
+                return resolved;
+            };
+
+            try
+            {
+                AppDomain.CurrentDomain.AssemblyResolve += loadHook;
+                IStObjRuntimeBuilder runtimeBuilder = ResolveRuntimeBuilder( builderMethod, stObjRuntimeBuilderFactoryTypeName, stObjRuntimeBuilderFactoryMethodName, monitor );
+                Type runnerType = SimpleTypeFinder.WeakResolver( config.EngineAssemblyQualifiedName, true );
+                object runner = Activator.CreateInstance( runnerType, monitor, config, runtimeBuilder );
+                MethodInfo m = runnerType.GetMethod( "Run" );
+                return (bool)m.Invoke( runner, Array.Empty<object>() );
+            }
+            finally
+            {
+                AppDomain.CurrentDomain.AssemblyResolve -= loadHook;
+            }
         }
 
         static IStObjRuntimeBuilder ResolveRuntimeBuilder( Func<IStObjRuntimeBuilder> builderMethod, string stObjRuntimeBuilderFactoryTypeName, string stObjRuntimeBuilderFactoryMethodName, IActivityMonitor monitor )
         {
             IStObjRuntimeBuilder runtimeBuilder;
-            using( monitor.OpenInfo().Send( "Obtention of the IStObjRuntimeBuilder." ) )
+            using( monitor.OpenInfo( "Obtention of the IStObjRuntimeBuilder." ) )
             {
                 runtimeBuilder = DefaultStObjRuntimeBuilder;
                 if( stObjRuntimeBuilderFactoryTypeName != null )

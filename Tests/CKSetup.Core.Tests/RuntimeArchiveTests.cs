@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -22,10 +22,10 @@ namespace CKSetup.Tests
             {
                 zip.Should().NotBeNull();
 
-                var fSetupableRT = BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SetupableRuntime461Path );
-                var fSetupableM = BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SetupableModel461Path );
-                var fStObjRT = BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjRuntime461Path );
-                var fStObjM = BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjModel461Path );
+                var fSetupableRT = BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SetupableRuntime461 );
+                var fSetupableM = BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SetupableModel461 );
+                var fStObjRT = BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjRuntime461 );
+                var fStObjM = BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjModel461 );
                 fSetupableRT.Should().NotBeNull();
                 fSetupableM.Should().NotBeNull();
                 fStObjRT.Should().NotBeNull();
@@ -50,7 +50,7 @@ namespace CKSetup.Tests
 
         [TestCase( TestStoreType.Zip, true )]
         [TestCase( TestStoreType.Directory, false )]
-        public void adding_both_stobj_runtime_and_stobj_model( TestStoreType type, bool runtimeFirst )
+        public void adding_both_stobj_runtime_and_stobj_model_in_net461( TestStoreType type, bool runtimeFirst )
         {
             string zipPath = TestHelper.GetTestZipPath( type, runtimeFirst ? ".runtimeFirst" : ".modelFirst" );
             using( RuntimeArchive zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
@@ -59,15 +59,15 @@ namespace CKSetup.Tests
                 if( runtimeFirst )
                 {
                     zip.CreateLocalImporter().AddComponent( 
-                        BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjRuntime461Path ), 
-                        BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjModel461Path ) )
+                        BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjRuntime461 ), 
+                        BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjModel461 ) )
                         .Import().Should().BeTrue();
                 }
                 else
                 {
                     zip.CreateLocalImporter().AddComponent(
-                        BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjModel461Path ),
-                        BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjRuntime461Path ) )
+                        BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjModel461 ),
+                        BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjRuntime461 ) )
                         .Import().Should().BeTrue();
                 }
             }
@@ -82,7 +82,7 @@ namespace CKSetup.Tests
                 "CK.StObj.Model.dll", 
                 "CK.ActivityMonitor.dll" );
 
-            // Model files are not stored.
+            // Model files in .Net framework are not stored.
             c.NoComponentFilesShouldBeStored( stObjModel );
         }
 
@@ -107,8 +107,14 @@ namespace CKSetup.Tests
                 buffer.ReadByte().Should().Be( 251 );
             }
             StoreContent content = new StoreContent( zipPath );
-            content.Db.Elements( "Component" ).Single().Attribute( "Name" ).Value.Should().Be( "CK.Setupable.Engine" );
-            content.FileEntries.Count.Should().Be( 1 );
+            var engines = content.Db.Elements( "Component" ).ToArray();
+            engines.Select( c => c.Attribute( "Name" ).Value )
+                    .All( n => n == "CK.Setupable.Engine" )
+                    .Should().BeTrue();
+
+            // CK.Setupable.Engine.dll (net461) and/or
+            // CK.Setupable.Engine.dll (net20) and CK.Setupable.Engine.deps.json.
+            content.FileEntries.Should().HaveCount( n => n > 0 && n < 3 );
         }
 
 

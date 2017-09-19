@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -41,7 +41,7 @@ namespace CK.SqlServer.Setup
                 MethodInfo m = transformer.GetType().GetMethod( Member.Name );
                 if( m == null )
                 {
-                    state.Monitor.Fatal().Send( "Unable to find transformer method '{0}' on '{1}'.", Member.Name, transformer.GetType().AssemblyQualifiedName );
+                    state.Monitor.Fatal( $"Unable to find transformer method '{Member.Name}' on '{transformer.GetType().AssemblyQualifiedName}'." );
                     return;
                 }
                 SqlPackageBaseItem container = (SqlPackageBaseItem)item;
@@ -66,7 +66,7 @@ namespace CK.SqlServer.Setup
                     transformerType = SimpleTypeFinder.WeakResolver( altTypeName, false );
                     if( transformerType == null )
                     {
-                        state.Monitor.Fatal().Send( "Unable to locate transformer object. Tried '{0}' and '{1}'.", transformerTypeName, altTypeName );
+                        state.Monitor.Fatal( $"Unable to locate transformer object. Tried '{transformerTypeName}' and '{altTypeName}'." );
                         state.Memory[cacheKey] = this;
                         return null;
                     }

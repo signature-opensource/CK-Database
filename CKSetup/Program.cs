@@ -1,7 +1,9 @@
 using Microsoft.Extensions.CommandLineUtils;
 using System;
+using System.Globalization;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace CKSetup
 {
@@ -11,8 +13,13 @@ namespace CKSetup
         public const int RetCodeError = 1;
         public const int RetCodeHelp = 2;
 
-        static int Main(string[] args)
+        static int Main( string[] args )
         {
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo( "en-US" );
+            CultureInfo.CurrentUICulture = CultureInfo.CurrentCulture;
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CurrentCulture;
+            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.CurrentCulture;
+
             var app = new CommandLineApplication
             {
                 Name = "CKSetup",

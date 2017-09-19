@@ -1,4 +1,4 @@
-﻿#region Proprietary License
+#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.SqlServer.Setup.Runtime\SqlProcedureAttributeImpl.SqlParameterHandlerList.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -120,14 +120,14 @@ namespace CK.SqlServer.Setup
                         #region ref or out Method parameter
                         if( _holder.IsAsyncCall )
                         {
-                            monitor.Error().Send( "The method '{0}' implements an async call, There can not be 'ref' or 'out' parameters (like parameter '{1}').", mP.Member.Name, mP.Name );
+                            monitor.Error( $"The method '{mP.Member.Name}' implements an async call, There can not be 'ref' or 'out' parameters (like parameter '{mP.Name}')." );
                             ++nbError;
                         }
                         else
                         {
                             if( isComplexReturnedType )
                             {
-                                monitor.Warn().Send( "Sql parameter '{0}' is not an output parameter. The method '{1}' uses 'ref' for it. That is useless.", p.Name, mP.Member.Name );
+                                monitor.Warn( $"Sql parameter '{p.Name}' is not an output parameter. The method '{mP.Member.Name}' uses 'ref' for it. That is useless." );
                             }
                             if( mP.IsOut )
                             {
@@ -136,18 +136,18 @@ namespace CK.SqlServer.Setup
                                 {
                                     if( _isUsedByReturnedType )
                                     {
-                                        monitor.Warn().Send( "Sql parameter '{0}' is an /*input*/output parameter. The method '{1}' should use 'ref' for it (not 'out') or no ref nor out since this parameter is used by returned call.", p.Name, mP.Member.Name );
+                                        monitor.Warn( $"Sql parameter '{p.Name}' is an /*input*/output parameter. The method '{mP.Member.Name}' should use 'ref' for it (not 'out') or no ref nor out since this parameter is used by returned call." );
                                     }
                                     else
                                     {
-                                        monitor.Error().Send( "Sql parameter '{0}' is an /*input*/output parameter. The method '{1}' must use 'ref' for it (not 'out').", p.Name, mP.Member.Name );
+                                        monitor.Error( $"Sql parameter '{p.Name}' is an /*input*/output parameter. The method '{mP.Member.Name}' must use 'ref' for it (not 'out')." );
                                         ++nbError;
                                     }
                                 }
                                 else if( sqlIsInput )
                                 {
                                     Debug.Assert( !sqlIsOutput );
-                                    monitor.Error().Send( "Sql parameter '{0}' is an input parameter. The method '{1}' can not use 'out' for it (and 'ref' modifier will be useless).", p.Name, mP.Member.Name );
+                                    monitor.Error( $"Sql parameter '{p.Name}' is an input parameter. The method '{mP.Member.Name}' can not use 'out' for it (and 'ref' modifier will be useless)." );
                                     ++nbError;
                                 }
                                 #endregion
@@ -157,7 +157,7 @@ namespace CK.SqlServer.Setup
                                 // ref Method parameter.
                                 if( !sqlIsOutput )
                                 {
-                                    monitor.Warn().Send( "Sql parameter '{0}' is not an output parameter. The method '{1}' uses 'ref' for it. That is useless.", p.Name, mP.Member.Name );
+                                    monitor.Warn( $"Sql parameter '{p.Name}' is not an output parameter. The method '{mP.Member.Name}' uses 'ref' for it. That is useless." );
                                 }
                             }
                         }
@@ -169,7 +169,7 @@ namespace CK.SqlServer.Setup
                         if( sqlIsPureOutput )
                         {
                             // By value method parameter with a pure output Sql parameter: it should be /*input*/output in sql.
-                            monitor.Warn().Send( $"Sql parameter '{p.Name}' is an output parameter. Setting its value is useless. Should it be marked /*input*/output?." );
+                            monitor.Warn( $"Sql parameter '{p.Name}' is an output parameter. Setting its value is useless. Should it be marked /*input*/output?." );
                         }
                         // Whenever the sql parameter is output but it is not ref nor out, we warn the user: it is an ignored return from the database.
                         // When using specialization, this should NOT occur if we succeed to reroute the call to the most specialized, covariant, method.
@@ -184,11 +184,11 @@ namespace CK.SqlServer.Setup
                         {
                             if( isComplexReturnedType )
                             {
-                                monitor.Warn().Send( $"Sql parameter '{p.Name}' is an /*input*/output parameter and this parameter is not returned in '{_holder.ComplexReturnType.CreatedType.Name} {mP.Member.Name}' method." );
+                                monitor.Warn( $"Sql parameter '{p.Name}' is an /*input*/output parameter and this parameter is not returned in '{_holder.ComplexReturnType.CreatedType.Name} {mP.Member.Name}' method." );
                             }
                             else
                             {
-                                monitor.Warn().Send( $"Sql parameter '{p.Name}' is an /*input*/output parameter and this parameter is not returned. The method '{mP.Member.Name}' may use 'ref' to retrieve the new value after the call." );
+                                monitor.Warn( $"Sql parameter '{p.Name}' is an /*input*/output parameter and this parameter is not returned. The method '{mP.Member.Name}' may use 'ref' to retrieve the new value after the call." );
                             }
                         }
                         #endregion
@@ -288,7 +288,7 @@ namespace CK.SqlServer.Setup
                 {
                     if( SqlExprParam.DefaultValue.IsVariable )
                     {
-                        monitor.Error().Send( $"Parameter '{SqlExprParam.ToStringClean()}' has default value '{SqlExprParam.DefaultValue.ToString()}' that is a variable. This not supported." );
+                        monitor.Error( $"Parameter '{SqlExprParam.ToStringClean()}' has default value '{SqlExprParam.DefaultValue.ToString()}' that is a variable. This not supported." );
                         return false;
                     }
                     object o = SqlExprParam.DefaultValue.NullOrLitteralDotNetValue;
@@ -341,7 +341,7 @@ namespace CK.SqlServer.Setup
                     }
                     else
                     {
-                        monitor.Error().Send( "Emit for type  '{1}' (Parameter '{0}') is not supported.", SqlExprParam.ToStringClean(), o.GetType().Name );
+                        monitor.Error( $"Emit for type  '{o.GetType().Name}' (Parameter '{SqlExprParam.ToStringClean()}') is not supported." );
                         return false;
                     }
                     return true;
@@ -352,7 +352,7 @@ namespace CK.SqlServer.Setup
                     if( _isIgnoredOutputParameter ) return true;
                     if( _isUseDefaultSqlValue )
                     {
-                        monitor.Info().Send( "Parameter '{0}' will use its default value.", SqlExprParam.ToStringClean() );
+                        monitor.Info( $"Parameter '{SqlExprParam.ToStringClean()}' will use its default value." );
                         return EmitSetParameterCode( monitor, g, locParameterCollection, LdObjectToSetFromDefaultSqlValue );
                     }
                     Debug.Assert( IsMappedToMethodParameterOrParameterSourceProperty );
@@ -421,10 +421,10 @@ namespace CK.SqlServer.Setup
                     {
                         if( SqlExprParam.DefaultValue.IsVariable )
                         {
-                            monitor.Error().Send( $"Parameter '{SqlExprParam.ToStringClean()}' has default value '{SqlExprParam.DefaultValue}' that is a variable. This not supported." );
+                            monitor.Error( $"Parameter '{SqlExprParam.ToStringClean()}' has default value '{SqlExprParam.DefaultValue}' that is a variable. This not supported." );
                             return false;
                         }
-                        monitor.Info().Send( $"Parameter '{SqlExprParam.ToStringClean()}' will use its default sql value '{SqlExprParam.DefaultValue}'." );
+                        monitor.Info( $"Parameter '{SqlExprParam.ToStringClean()}' will use its default sql value '{SqlExprParam.DefaultValue}'." );
                         object o = SqlExprParam.DefaultValue.NullOrLitteralDotNetValue;
                         if( o == DBNull.Value ) b.Append( "DBNull.Value" );
                         else
@@ -435,7 +435,7 @@ namespace CK.SqlServer.Setup
                             }
                             catch( Exception ex )
                             {
-                                monitor.Error().Send( ex, $"Emit for type  '{SqlExprParam.ToStringClean()}' (Parameter '{o.GetType().Name}') is not supported." );
+                                monitor.Error( $"Emit for type  '{SqlExprParam.ToStringClean()}' (Parameter '{o.GetType().Name}') is not supported.", ex );
                                 return false;
                             }
                         }
@@ -557,7 +557,7 @@ namespace CK.SqlServer.Setup
                     }
                     else
                     {
-                        monitor.Error().Send( $"Type mismatch for function returned type '{returnType.Name}' / '{_funcReturnParameter.SqlType.ToStringClean()}'." );
+                        monitor.Error( $"Type mismatch for function returned type '{returnType.Name}' / '{_funcReturnParameter.SqlType.ToStringClean()}'." );
                         return false;
                     }
                 }
@@ -578,7 +578,7 @@ namespace CK.SqlServer.Setup
                 {
                     if( returnType.GetTypeInfo().IsInterface )
                     {
-                        monitor.Error().Send( $"Return type '{returnType.Name}' is an interface. This is not yet supported." );
+                        monitor.Error( $"Return type '{returnType.Name}' is an interface. This is not yet supported." );
                         return false;
                     }
                     _unwrappedReturnedType = returnType;
@@ -597,7 +597,7 @@ namespace CK.SqlServer.Setup
                         return true;
                     }
                 }
-                monitor.Error().Send( $"Unable to find a way to return the required return type '{returnType.ToCSharpName()}'." );
+                monitor.Error( $"Unable to find a way to return the required return type '{returnType.ToCSharpName()}'." );
                 return false;
             }
 

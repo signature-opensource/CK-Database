@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,9 +16,10 @@ namespace CK.Setup
         /// <summary>
         /// Called by the Engine right after the driver has been pre initialized.
         /// </summary>
+        /// <param name="monitor">Monitor to use.</param>
         /// <param name="driver">The driver associated to this item.</param>
         /// <returns>True on success. Returning false cancels the setup process.</returns>
-        bool OnDriverPreInitialized( SetupItemDriver driver );
+        bool OnDriverPreInitialized( IActivityMonitor monitor, SetupItemDriver driver );
 
     }
 }

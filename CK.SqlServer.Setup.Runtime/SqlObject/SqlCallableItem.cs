@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
@@ -62,7 +62,7 @@ namespace CK.SqlServer.Setup
             {
                 // Adds a fake key to avoid multiple attempts.
                 dynamicAssembly.Memory.Add( methodKey, MCommandGetParameters );
-                using( monitor.OpenTrace().Send( "Low level SqlCommand create method for: '{0}'.", SqlObject.ToStringSignature( true ) ) )
+                using( monitor.OpenTrace( $"Low level SqlCommand create method for: '{SqlObject.ToStringSignature( true )}'." ) )
                 {
                     try
                     {
@@ -72,13 +72,13 @@ namespace CK.SqlServer.Setup
                         {
                             if( p.IsPureOutput && p.DefaultValue != null )
                             {
-                                monitor.Warn().Send( "Sql parameter '{0}' is an output parameter but has a default value: if it is used as an input parameter it should be marked as /*input*/output.", p.Name );
+                                monitor.Warn( $"Sql parameter '{p.Name}' is an output parameter but has a default value: if it is used as an input parameter it should be marked as /*input*/output." );
                             }
                         }
                     }
                     catch( Exception ex )
                     {
-                        monitor.Error().Send( ex );
+                        monitor.Error( ex );
                     }
                 }
             }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -158,7 +158,7 @@ namespace CK.SqlServer.Setup
             }
             if( text == null )
             {
-                monitor.Error().Send( $"Resource '{FullName}' of '{packageItem.FullName}' not found. Tried: '{candidates.Concatenate( "' ,'" )}'." );
+                monitor.Error( $"Resource '{FullName}' of '{packageItem.FullName}' not found. Tried: '{candidates.Concatenate( "' ,'" )}'." );
                 return null;
             }
             if( fileName.EndsWith( ".y4" ) )

@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using CK.Text;
 using CSemVer;
 using System;
@@ -165,7 +165,7 @@ namespace CKSetup
                 m.Warn( $"No component added (found already registered Components: '{folder.Heads.Select( h => h.Name.Name ).Concatenate( "', '" )}')" );
                 return new AddLocalResult( this );
             }
-            BinFileInfo toAdd = freeHeads.Single();
+            var toAdd = freeHeads.Single();
             using( m.OpenInfo( $"Found '{toAdd.ComponentRef.EntryPathPrefix}' to register." ) )
             {
                 List<ComponentDependency> dependencies = CollectSetupDependencies( m, toAdd.SetupDependencies );
@@ -183,7 +183,7 @@ namespace CKSetup
                             m.Error( $"{cSub.Name} is declared as a Setup dependency but exists as an embedded component." );
                             return new AddLocalResult( null );
                         }
-                        if( toAdd.ComponentKind != ComponentKind.Model && cSub.ComponentKind != ComponentKind.Model )
+                        if( toAdd.StoreFiles && cSub.StoreFiles )
                         {
                             dependencies.Add( new ComponentDependency( cSub.Name, cSub.Version ) );
                         }
@@ -196,7 +196,7 @@ namespace CKSetup
                         embeddedComponents.Add( sub.ComponentRef );
                     }
                 }
-                var files = binFiles.Select( bf => new ComponentFile( bf.LocalFileName, bf.FileLength, bf.ContentSHA1 ) );
+                var files = binFiles.Select( bf => new ComponentFile( bf.LocalFileName, bf.FileLength, bf.ContentSHA1, bf.FileVersion, bf.AssemblyVersion ) );
                 var newC = new Component( toAdd.ComponentKind, toAdd.ComponentRef, dependencies, embeddedComponents, files );
                 return new AddLocalResult( DoAdd( m, newC ), newC );
             }
@@ -370,19 +370,20 @@ namespace CKSetup
                 }
                 foreach( var eOrR in targets.SelectMany( t => t.Components ).Where( c => c.ComponentKind != ComponentKind.Model ) )
                 {
-                    m.Warn( $"{eOrR.ComponentKind} '{eOrR.ComponentRef}' found. It will be ignored." );
+                    m.Warn( $"Found a SetupDependency '{eOrR.ComponentRef}' component. It will be ignored: only Models are considered when selecting TargetRuntime." );
                 }
                 var targetRuntime = SelectTargetRuntime( m, models );
                 if( targetRuntime == TargetRuntime.None ) return null;
 
                 var rootDeps = CollectSetupDependencies( m, models.SelectMany( b => b.SetupDependencies ) );
+                if( rootDeps.Count == 0 ) m.Warn( "No Setup Dependency components found." );
                 return new DependencyResolver( this, targetRuntime, rootDeps );
             }
         }
 
-        static TargetRuntime SelectTargetRuntime( IActivityMonitor m, IEnumerable<BinFileInfo> models )
+        static TargetRuntime SelectTargetRuntime( IActivityMonitor m, IEnumerable<BinFileAssemblyInfo> models )
         {
-            using( m.OpenInfo( $"Detecting runtimes for: ${ models.Select( x => x.Name.Name + '/' + x.ComponentRef.TargetFramework ).Concatenate() }" ) )
+            using( m.OpenInfo( $"Detecting runtimes for: { models.Select( x => x.Name.Name + '/' + x.ComponentRef.TargetFramework ).Concatenate() }" ) )
             {
                 var runtimes = models.First().ComponentRef.TargetFramework.GetCommonRuntimes( models.Skip( 1 ).Select( x => x.ComponentRef.TargetFramework ) );
                 if( !runtimes.Any() )
@@ -398,6 +399,7 @@ namespace CKSetup
                 }
                 m.Info( $"Multiple possible runtime: {runtimes.Select( r => r.ToString() ).Concatenate()}." );
                 theOnlyOne = runtimes.Min();
+                if( theOnlyOne == TargetRuntime.NetCoreApp11 ) theOnlyOne = TargetRuntime.NetCoreApp20;
                 m.CloseGroup( $"Lowest selected runtime: {theOnlyOne}." );
                 return theOnlyOne;
             }

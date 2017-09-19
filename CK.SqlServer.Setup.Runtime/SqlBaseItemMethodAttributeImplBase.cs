@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -24,6 +24,7 @@ namespace CK.SqlServer.Setup
     public abstract class SqlBaseItemMethodAttributeImplBase : SetupObjectItemMemberAttributeImplBase, IAutoImplementorMethod
     {
         readonly string _expectedItemType;
+        readonly ISqlServerParser _parser;
         bool _implementHasBeenAlreadyBeenCalled;
 
         /// <summary>
@@ -32,9 +33,10 @@ namespace CK.SqlServer.Setup
         /// </summary>
         /// <param name="a">The attribute.</param>
         /// <param name="expectedItemType">The expected type of the object.</param>
-        protected SqlBaseItemMethodAttributeImplBase( SetupObjectItemMemberAttributeBase a, string expectedItemType )
+        protected SqlBaseItemMethodAttributeImplBase( SetupObjectItemMemberAttributeBase a, ISqlServerParser parser, string expectedItemType )
             : base( a )
         {
+            _parser = parser;
             _expectedItemType = expectedItemType;
         }
 
@@ -45,9 +47,8 @@ namespace CK.SqlServer.Setup
 
         protected override SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeRegisterer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
         {
-            ISqlSetupAspect sql = SetupEngineAspectProvider.GetSetupEngineAspect<ISqlSetupAspect>();
-            return SqlBaseItem.Create( 
-                sql.SqlParser, 
+            return SqlBaseItem.Create(
+                _parser, 
                 r, 
                 (SqlContextLocName)name, 
                 (SqlPackageBaseItem)firstContainer, 
@@ -79,18 +80,17 @@ namespace CK.SqlServer.Setup
             {
                 if( _implementHasBeenAlreadyBeenCalled )
                 {
-                    monitor.Warn().Send( "Implement has already been called: no resource should have been found for method {0}.", Member.Name );
+                    monitor.Warn( $"Implement has already been called: no resource should have been found for method {Member.Name}." );
                 }
                 else
                 {
-                    //Debug.Assert( CK.Reflection.MemberInfoEqualityComparer.Default.Equals( m, Member ), "IAutoImplementorMethod called with a method that differs from the IAttributeAmbientContextBoundInitializer initilaized member." );
                     Debug.Assert( m == Member, "IAutoImplementorMethod called with a method that differs from the IAttributeAmbientContextBoundInitializer initilaized member." );
                     _implementHasBeenAlreadyBeenCalled = true;
                 }
                 return false;
             }
             // 3 - Ready to implement the method (SetupObjectItem has been initialized by DynamicItemInitialize).
-            using( monitor.OpenInfo().Send( "Generating {0}.", SqlCallableAttributeImpl.DumpMethodSignature( m ) ) )
+            using( monitor.OpenInfo( $"Generating {SqlCallableAttributeImpl.DumpMethodSignature( m )}." ) )
             {
                 var target = SetupObjectItem is SqlTransformerItem
                                 ? ((SqlTransformerItem)SetupObjectItem).Target
@@ -137,7 +137,7 @@ namespace CK.SqlServer.Setup
             //}
             if (SetupObjectItem == null) return false;
             // 3 - Ready to implement the method (SetupObjectItem has been initialized by DynamicItemInitialize).
-            using (monitor.OpenInfo().Send("Generating {0}.", SqlCallableAttributeImpl.DumpMethodSignature(m)))
+            using (monitor.OpenInfo( $"Generating {SqlCallableAttributeImpl.DumpMethodSignature( m )}." ))
             {
                 var target = SetupObjectItem is SqlTransformerItem
                                 ? ((SqlTransformerItem)SetupObjectItem).Target

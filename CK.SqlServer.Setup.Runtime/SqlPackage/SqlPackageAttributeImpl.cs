@@ -29,7 +29,7 @@ namespace CK.SqlServer.Setup
         {
             if( data.IsDefaultFullNameWithoutContext )
             {
-                monitor.Info().Send( $"SqlPackage '{data.FullNameWithoutContext}' uses its own full name as its SetupName." );
+                monitor.Info( $"SqlPackage '{data.FullNameWithoutContext}' uses its own full name as its SetupName." );
             }
             if( data.ItemType == null && data.ItemTypeName == null )
             {

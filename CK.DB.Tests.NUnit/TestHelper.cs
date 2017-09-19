@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,7 +6,6 @@ using CK.Setup;
 using CK.SqlServer.Setup;
 using NUnit.Framework;
 using System.Data.SqlClient;
-using System.Diagnostics;
 using System.Reflection;
 
 namespace CK.Core
@@ -20,7 +19,7 @@ namespace CK.Core
         static IActivityMonitor _monitor;
         static ActivityMonitorConsoleClient _console;
         static SqlConnectionStringBuilder _masterConnectionString;
-        static SetupEngineConfiguration _config;
+        static StObjEngineConfiguration _config;
         static IStObjMap _map;
         static string _binFolder;
         static string _projectFolder;
@@ -43,7 +42,7 @@ namespace CK.Core
             {
                 if( _monitor == null )
                 {
-                    SystemActivityMonitor.RootLogPath = LogFolder;
+                    LogFile.RootLogPath = LogFolder;
                     _monitor = new ActivityMonitor();
                     _console = new ActivityMonitorConsoleClient();
                 }
@@ -65,11 +64,11 @@ namespace CK.Core
                     if( value )
                     {
                         Monitor.Output.RegisterClient( _console );
-                        Monitor.Info().Send( "Switching console log ON." );
+                        Monitor.Info( "Switching console log ON." );
                     }
                     else
                     {
-                        Monitor.Info().Send( "Switching console log OFF." );
+                        Monitor.Info( "Switching console log OFF." );
                         Monitor.Output.UnregisterClient( _console );
                     }
                 }
@@ -137,18 +136,18 @@ namespace CK.Core
         {
             if( _map == null )
             {
-                using( Monitor.OpenInfo().Send( "Loading StObj map from generated assembly." ) )
+                using( Monitor.OpenInfo( "Loading StObj map from generated assembly." ) )
                 {
                     try
                     {
-                        string assemblyName = Config.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName;
+                        string assemblyName = Config.FinalAssemblyConfiguration.AssemblyName;
                         if( assemblyName == null ) assemblyName = BuilderFinalAssemblyConfiguration.DefaultAssemblyName;
                         var a = LoadAssemblyFromAppContextBaseDirectory( assemblyName );
                         _map = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, Monitor );
                     }
                     catch( Exception ex )
                     {
-                        Monitor.Error().Send( ex );
+                        Monitor.Error( ex );
                     }
                 }
             }
@@ -183,22 +182,43 @@ namespace CK.Core
 
         /// <summary>
         /// Runs the database setup based on <see cref="Config"/> and updates <see cref="StObjMap"/>.
-        /// Automatically called by StObjMap when the StObjMap is not yet intialized.
+        /// Automatically called by StObjMap when the StObjMap is not yet initialized.
         /// </summary>
         /// <param name="traceStObjGraphOrdering">True to trace input and output of StObj graph ordering.</param>
         /// <param name="traceSetupGraphOrdering">True to trace input and output of setup graph ordering.</param>
         /// <param name="revertNames">True to revert names in ordering.</param>
         public static bool RunDBSetup( bool traceStObjGraphOrdering = false, bool traceSetupGraphOrdering = false, bool revertNames = false )
         {
-            using( Monitor.OpenTrace().Send( $"Running Setup on {TestHelper.DatabaseTestConnectionString}." ) )
+            return DoRunDBSetup( false, traceStObjGraphOrdering, traceSetupGraphOrdering, revertNames );
+        }
+
+        /// <summary>
+        /// Runs the database setup based on <see cref="Config"/> and updates <see cref="StObjMap"/>.
+        /// Automatically called by StObjMap when the StObjMap is not yet initialized.
+        /// </summary>
+        /// <param name="traceStObjGraphOrdering">True to trace input and output of StObj graph ordering.</param>
+        /// <param name="traceSetupGraphOrdering">True to trace input and output of setup graph ordering.</param>
+        /// <param name="revertNames">True to revert names in ordering.</param>
+        public static bool RunDBSetupSource( bool traceStObjGraphOrdering = false, bool traceSetupGraphOrdering = false, bool revertNames = false )
+        {
+            return DoRunDBSetup( true, traceStObjGraphOrdering, traceSetupGraphOrdering, revertNames );
+        }
+
+        static bool DoRunDBSetup( bool sourceGeneration, bool traceStObjGraphOrdering, bool traceSetupGraphOrdering, bool revertNames )
+        {
+            using( Monitor.OpenTrace( $"Running Setup on {TestHelper.DatabaseTestConnectionString} ({(sourceGeneration ? "Source" : "IL Emit")})." ) )
             {
                 try
                 {
-                    Config.RunningMode = revertNames ? SetupEngineRunningMode.RevertNames : SetupEngineRunningMode.Default;
-                    Config.StObjEngineConfiguration.TraceDependencySorterInput = traceStObjGraphOrdering;
-                    Config.StObjEngineConfiguration.TraceDependencySorterOutput = traceStObjGraphOrdering;
-                    Config.TraceDependencySorterInput = traceSetupGraphOrdering;
-                    Config.TraceDependencySorterOutput = traceSetupGraphOrdering;
+                    Config.FinalAssemblyConfiguration.SourceGeneration = sourceGeneration;
+                    Config.RevertOrderingNames = revertNames;
+                    Config.TraceDependencySorterInput = traceStObjGraphOrdering;
+                    Config.TraceDependencySorterOutput = traceStObjGraphOrdering;
+
+                    var setupable = Config.Aspects.OfType<SetupableAspectConfiguration>().Single();
+                    setupable.RevertOrderingNames = revertNames;
+                    setupable.TraceDependencySorterInput = traceSetupGraphOrdering;
+                    setupable.TraceDependencySorterOutput = traceSetupGraphOrdering;
                     bool success = StObjContextRoot.Build( Config, null, TestHelper.Monitor );
                     if( success )
                     {
@@ -208,12 +228,11 @@ namespace CK.Core
                 }
                 catch( Exception ex )
                 {
-                    Monitor.Error().Send( ex );
+                    Monitor.Error( ex );
                     throw;
                 }
             }
         }
-
         /// <summary>
         /// Loads an assembly that must be in probe paths in .Net framework and in
         /// AppContext.BaseDirectory in .Net Core.
@@ -225,7 +244,7 @@ namespace CK.Core
 #if NET461
             return Assembly.Load( new AssemblyName( assemblyName ) );
 #else
-            return System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath( Path.Combine( AppContext.BaseDirectory, assemblyName + ".dll" ) );
+            return Assembly.LoadFrom( Path.Combine( AppContext.BaseDirectory, assemblyName + ".dll" ) );
 #endif
         }
 
@@ -238,7 +257,7 @@ namespace CK.Core
         {
             connectionSting = connectionSting ?? DatabaseTestConnectionString;
             var monitor = TestHelper.Monitor;
-            using( monitor.OpenInfo().Send( "Clearing used schemas ({0}).", connectionSting ) )
+            using( monitor.OpenInfo( $"Clearing used schemas ({connectionSting})." ) )
             using( var m = new SqlManager( monitor ) )
             {
                 m.OpenFromConnectionString( connectionSting );
@@ -252,12 +271,12 @@ namespace CK.Core
                     {
                         if( s == "CKCore" )
                         {
-                            TestHelper.Monitor.Trace().Send( "Removing 'CKCore' objets." );
+                            TestHelper.Monitor.Trace( "Removing 'CKCore' objets." );
                             retry |= !m.SchemaDropAllObjects( "CKCore", false );
                         }
                         else
                         {
-                            TestHelper.Monitor.Trace().Send( "Removing '{0}' schema and its objets.", s );
+                            TestHelper.Monitor.Trace( $"Removing '{s}' schema and its objets." );
                             retry |= !m.SchemaDropAllObjects( s, true );
                         }
                     }
@@ -285,7 +304,7 @@ namespace CK.Core
                 if( c == null )
                 {
                     c = "Server=.;Database=master;Integrated Security=SSPI";
-                    Monitor.Info().Send( "Using default connection string: {0}", c );
+                    Monitor.Info( $"Using default connection string: {c}" );
                 }
                 _masterConnectionString = new SqlConnectionStringBuilder( c );
             }
@@ -427,24 +446,27 @@ namespace CK.Core
         /// This configuration uses <see cref="DynamicAssemblyName"/>, <see cref="AssembliesToSetup"/>
         /// and <see cref="DatabaseTestConnectionString"/> by default.
         /// </summary>
-        public static SetupEngineConfiguration Config
+        public static StObjEngineConfiguration Config
         {
             get
             {
                 if( _config == null )
                 {
-                    _config = new SetupEngineConfiguration();
-                    _config.StObjEngineConfiguration.FinalAssemblyConfiguration.GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFileAndPEVerify;
+                    _config = new StObjEngineConfiguration();
+                    _config.FinalAssemblyConfiguration.GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFileAndPEVerify;
                     foreach( var a in AssembliesToSetup )
                     {
-                        _config.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( a );
+                        _config.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( a );
                     }
                     foreach( var a in RecurseAssembliesToSetup )
                     {
-                        _config.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverRecurseAssemblyNames.Add( a );
+                        _config.BuildAndRegisterConfiguration.Assemblies.DiscoverRecurseAssemblyNames.Add( a );
                     }
-                    _config.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = DynamicAssemblyName;
-                    _config.StObjEngineConfiguration.FinalAssemblyConfiguration.SourceGeneration = DefaultSourceGeneration;
+                    _config.FinalAssemblyConfiguration.AssemblyName = DynamicAssemblyName;
+                    _config.FinalAssemblyConfiguration.SourceGeneration = DefaultSourceGeneration;
+
+                    var cSetupable = new SetupableAspectConfiguration();
+                    _config.Aspects.Add( cSetupable );
 
                     var c = new SqlSetupAspectConfiguration();
                     c.DefaultDatabaseConnectionString = DatabaseTestConnectionString;

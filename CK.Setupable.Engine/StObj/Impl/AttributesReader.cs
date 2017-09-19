@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -57,7 +57,7 @@ namespace CK.Setup
                 if( name == null ) name = n.FullName;
                 else if( n.FullName != null && String.CompareOrdinal( name, n.FullName ) != 0 )
                 {
-                    monitor.Warn().Send( $"FullName '{name}' is already associated to type '{t.FullName}'. Extraneous name '{n.FullName}' is ignored." );
+                    monitor.Warn( $"FullName '{name}' is already associated to type '{t.FullName}'. Extraneous name '{n.FullName}' is ignored." );
                 }
             }
             if( name == null )
@@ -65,7 +65,7 @@ namespace CK.Setup
                 name = t.FullName;
                 if( warnWhenDefaultToTypeFullName )
                 {
-                    monitor.Warn().Send( $"Type '{t.FullName}' has no explicit associated Setup Name. Using the Type's full name." );
+                    monitor.Warn( $"Type '{t.FullName}' has no explicit associated Setup Name. Using the Type's full name." );
                 }
             }
             return name;

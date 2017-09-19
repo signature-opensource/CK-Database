@@ -1,3 +1,3 @@
-﻿
-// Defines the runtime assembly.
-[assembly: CK.Setup.IsModelThatUsesRuntime( "CK.SqlServer.Setup.Runtime" )]
+
+[assembly: CK.Setup.IsModel()]
+[assembly: CK.Setup.RequiredSetupDependency( "CK.SqlServer.Setup.Runtime" )]

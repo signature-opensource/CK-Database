@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using CK.Text;
 using System;
 using System.Collections.Generic;
@@ -53,9 +53,9 @@ namespace CK.Setup
             if( m.MatchChar( '{' ) ) ParseContent( m );
             if( m.IsError )
             {
-                using( monitor.OpenError().Send( "Invalid SetupConfig (expected JSON syntax): " + m.ErrorMessage ) )
+                using( monitor.OpenError( "Invalid SetupConfig (expected JSON syntax): " + m.ErrorMessage ) )
                 {
-                    monitor.Trace().Send( text );
+                    monitor.Trace( text );
                 }
                 return false;
             }

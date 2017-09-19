@@ -1,4 +1,4 @@
-﻿#region Proprietary License
+#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (Tests\CK.StObj.Engine.Tests\AutoImplementationTests.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -46,7 +46,7 @@ namespace CK.StObj.Engine.Tests
         {
             StObjCollector collector = new StObjCollector( TestHelper.Monitor );
             collector.RegisterClass( typeof( A2 ) );
-            StObjCollectorResult result = collector.GetResult();
+            StObjCollectorResult result = collector.GetResult( new SimpleServiceContainer() );
             Assert.That( result.HasFatalError, Is.False );
             Assert.That( result.Default.StObjMap.Obtain<A>(), Is.Not.Null.And.AssignableTo<A2>() );
         }

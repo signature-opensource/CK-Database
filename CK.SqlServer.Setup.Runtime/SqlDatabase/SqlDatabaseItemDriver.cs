@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Setup.Runtime\SqlDatabase\SqlDatabaseSetupDriver.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using CK.Setup;
 using CK.Core;
 using CK.SqlServer.Parser;
@@ -16,17 +9,17 @@ namespace CK.SqlServer.Setup
     public class SqlDatabaseItemDriver : SetupItemDriver
     {
         readonly SqlDatabaseConnectionItemDriver _connection;
+        readonly ISetupSessionMemory _sessionMemory;
         readonly List<ISqlServerObject> _sqlObjects;
         readonly Dictionary<object,object> _sharedState;
-        readonly ISqlSetupAspect _aspects;
 
-        public SqlDatabaseItemDriver( BuildInfo info )
+        public SqlDatabaseItemDriver( BuildInfo info, ISetupSessionMemory sessionMemory )
             : base( info )
         {
-            _connection = (SqlDatabaseConnectionItemDriver)Engine.Drivers[Item.ConnectionItem];
+            _sessionMemory = sessionMemory;
+            _connection = Drivers.Find<SqlDatabaseConnectionItemDriver>( Item.ConnectionItem );
             _sqlObjects = new List<ISqlServerObject>();
             _sharedState = new Dictionary<object, object>();
-            _aspects = info.Engine.GetSetupEngineAspect<ISqlSetupAspect>();
         }
 
         /// <summary>
@@ -42,41 +35,36 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Installs a script.
         /// </summary>
+        /// <param name="monitor">Monitor to use.</param>
         /// <param name="script">The script to install.</param>
         /// <returns>True on succes, false on error.</returns>
-        public bool InstallScript( ISetupScript script )
+        public bool InstallScript( IActivityMonitor monitor, ISetupScript script )
         {
             string body = script.GetScript();
             var tagHandler = new SimpleScriptTagHandler( body );
-            if( !tagHandler.Expand( Engine.Monitor, true ) ) return false;
+            if( !tagHandler.Expand( monitor, true ) ) return false;
             int idx = 0;
             foreach( var one in tagHandler.SplitScript() )
             {
                 string key = script.Name.GetScriptKey( one.Label ?? "AutoLabel" + idx );
-                if( !DoRun( one.Body, key ) ) return false;
+                if( !DoRun( monitor, one.Body, key ) ) return false;
                 ++idx;
             }
             return true;
         }
 
-        bool DoRun( string script, string key = null )
+        bool DoRun( IActivityMonitor monitor, string script, string key = null )
         {
-            //var result = _aspects.SqlParser.Parse( one.Body );
-            //if( result.IsError )
-            //{
-            //    result.LogOnError( Engine.Monitor );
-            //    return false;
-            //}
-            if( key != null && Engine.Memory.IsItemRegistered( key ) )
+            if( key != null && _sessionMemory.IsItemRegistered( key ) )
             {
-                Engine.Monitor.Trace().Send( $"Script '{key}' has already been executed." );
+                monitor.Trace( $"Script '{key}' has already been executed." );
                 return true;
             }
-            using( Engine.Monitor.OpenTrace().Send( $"Executing '{key ?? "<no key>"}'." ) )
+            using( monitor.OpenTrace( $"Executing '{key ?? "<no key>"}'." ) )
             {
-                if( SqlManager.ExecuteOneScript( script, Engine.Monitor ) )
+                if( SqlManager.ExecuteOneScript( script, monitor ) )
                 {
-                    if( key != null ) Engine.Memory.RegisterItem( key );
+                    if( key != null ) _sessionMemory.RegisterItem( key );
                     return true;
                 }
             }

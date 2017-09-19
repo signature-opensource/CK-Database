@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setupable.Engine\StObj\Impl\StObjSetupData.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,10 +23,7 @@ namespace CK.Setup
             _versions = AttributesReader.GetVersionsString( o.ObjectType );
         }
 
-        public IStObjResult StObj
-        {
-            get { return _stObj; }
-        }
+        public IStObjResult StObj => _stObj; 
 
         public string FullNameWithoutContext
         {
@@ -52,15 +42,9 @@ namespace CK.Setup
             return true;
         }
 
-        public bool IsDefaultFullNameWithoutContext
-        {
-            get { return ReferenceEquals( _fullNameWithoutContext, _stObj.ObjectType.FullName ); } 
-        }
+        public bool IsDefaultFullNameWithoutContext => ReferenceEquals( _fullNameWithoutContext, _stObj.ObjectType.FullName );
 
-        public string FullName
-        {
-            get { return DefaultContextLocNaming.Format( _stObj.Context.Context, null, _fullNameWithoutContext ); }
-        }
+        public string FullName => DefaultContextLocNaming.Format( _stObj.Context.Context, null, _fullNameWithoutContext );
 
         public string Versions
         {
@@ -76,25 +60,13 @@ namespace CK.Setup
 
         internal IStObjSetupItem SetupItem { get; set; }
 
-        IReadOnlyList<IDependentItemRef> IStObjSetupData.RequiredBy
-        {
-            get { return (IReadOnlyList<IDependentItemRef>)RequiredBy; }
-        }
+        IReadOnlyList<IDependentItemRef> IStObjSetupData.RequiredBy => (IReadOnlyList<IDependentItemRef>)RequiredBy; 
 
-        IReadOnlyList<IDependentItemRef> IStObjSetupData.Requires
-        {
-            get { return (IReadOnlyList<IDependentItemRef>)Requires; }
-        }
+        IReadOnlyList<IDependentItemRef> IStObjSetupData.Requires => (IReadOnlyList<IDependentItemRef>)Requires;
 
-        IReadOnlyList<IDependentItemRef> IStObjSetupData.Children
-        {
-            get { return (IReadOnlyList<IDependentItemRef>)Children; }
-        }
+        IReadOnlyList<IDependentItemRef> IStObjSetupData.Children => (IReadOnlyList<IDependentItemRef>)Children; 
 
-        IReadOnlyList<IDependentItemGroupRef> IStObjSetupData.Groups
-        {
-            get { return (IReadOnlyList<IDependentItemGroupRef>)Groups; }
-        }
+        IReadOnlyList<IDependentItemGroupRef> IStObjSetupData.Groups => (IReadOnlyList<IDependentItemGroupRef>)Groups;
 
     }
 }

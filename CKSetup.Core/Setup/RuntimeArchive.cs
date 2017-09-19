@@ -111,13 +111,12 @@ namespace CKSetup
             /// <summary>
             /// Adds one or more components. Ignores them when already registered.
             /// </summary>
-            /// <param name="folders">Folders to add. Must not contain null folders.</param>
+            /// <param name="folders">Folders to add. Must not contain null folders (<see cref="Import"/> will fail).</param>
             /// <returns>This importer (enable fluent syntax).</returns>
             public LocalImporter AddComponent( IEnumerable<BinFolder> folders )
             {
                 if( folders == null ) throw new ArgumentNullException( nameof( folders ) );
-                if( folders.Any( f => f == null ) ) throw new ArgumentNullException( nameof( folders ), $"{nameof(folders)}.ElementAt({folders.IndexOf( f => f ==  null )}) is null." );
-                _toAdd.AddRange( folders.Where( f => f != null ) );
+                _toAdd.AddRange( folders );
                 return this;
             }
 
@@ -127,11 +126,19 @@ namespace CKSetup
             /// <returns>True on success, false on error.</returns>
             public bool Import()
             {
-                if( _toAdd.Count == 0 ) return true;
-                // Small trick: ordering by files count will tend to reduce
-                // Components mutation and multiple heads registration errors
-                // since smallest (ie. most basic) components come first.
-                return _archive.LocalImport( _toAdd.OrderBy( f => f.Files.Count ), _missingImporter );
+                using( _archive._monitor.OpenInfo( $"Importing {_toAdd.Count} local folders." ) )
+                {
+                    if( _toAdd.Count == 0 ) return true;
+                    if( _toAdd.Any( f => f == null ) )
+                    {
+                        _archive._monitor.Error( $"Added BinFolder at index {_toAdd.IndexOf( f => f == null )} is null." );
+                        return false;
+                    }
+                    // Small trick: ordering by files count will tend to reduce
+                    // Components mutation and multiple heads registration errors
+                    // since smallest (ie. most basic) components come first.
+                    return _archive.LocalImport( _toAdd.OrderBy( f => f.Files.Count ), _missingImporter );
+                }
             }
         }
 
@@ -148,84 +155,81 @@ namespace CKSetup
         bool LocalImport( IOrderedEnumerable<BinFolder> folders, IComponentImporter missingImporter )
         {
             if( !IsValid ) throw new InvalidOperationException();
-            using( _monitor.OpenInfo( $"Importing local folders." ) )
+            ComponentDB db = _dbCurrent;
+            var added = new Dictionary<ComponentRef, BinFolder>();
+            foreach( var f in folders )
             {
-                ComponentDB db = _dbCurrent;
-                var added = new Dictionary<ComponentRef, BinFolder>();
-                foreach( var f in folders )
+                using( _monitor.OpenInfo( $"Adding {f.BinPath}." ) )
                 {
-                    using( _monitor.OpenInfo( $"Adding {f.BinPath}." ) )
+                    var result = db.AddLocal( _monitor, f );
+                    if( result.Error ) return false;
+                    // We do not store files for models in .Net framework: they are necessarily in 
+                    // any target folders that has the model!
+                    if( result.NewComponent != null && result.NewComponent.StoreFiles )
                     {
-                        var result = db.AddLocal( _monitor, f );
-                        if( result.Error ) return false;
-                        // We do not store files for models: they are necessarily in 
-                        // any target folders that has the model!
-                        if( result.NewComponent != null && result.NewComponent.ComponentKind != ComponentKind.Model )
-                        {
-                            added[result.NewComponent.GetRef()] = f;
-                        }
-                        db = result.NewDB;
+                        added[result.NewComponent.GetRef()] = f;
                     }
+                    db = result.NewDB;
                 }
-                var newC = added.Select( kv => new { C = db.Components.Single( c => c.GetRef().Equals( kv.Key ) ), F = kv.Value } );
-                if( newC.Any( c => c.C.Embedded.Count > 0 ) )
-                {
-                    if( missingImporter != null )
-                    {
-                        using( _monitor.OpenInfo( $"Components have missing embedded components. Trying to use importer." ) )
-                        {
-                            var downloader = new ComponentDownloader( missingImporter, db, _store, _storageKind );
-                            var missing = new ComponentMissingDescription( newC.SelectMany( c => c.C.Embedded ).ToList() );
-                            var updatedDB = downloader.Download( _monitor, missing );
-                            if( updatedDB == null ) return false;
-                            db = updatedDB;
-                        }
-                    }
-                    else
-                    {
-                        using( _monitor.OpenError( "Components have missing embedded components. Embedded components are required to be resolved." ) )
-                        {
-                            foreach( var c in newC.Where( c => c.C.Embedded.Count > 0 ) )
-                            {
-                                _monitor.Trace( $"'{c.C}' embedds: '{c.C.Embedded.Select( e => e.ToString() ).Concatenate( "', '" )}'." );
-                            }
-                        }
-                        return false;
-                    }
-                }
-                foreach( var c in newC )
-                {
-                    foreach( var f in c.C.Files )
-                    {
-                        using( _monitor.OpenTrace( $"Importing file {f.Name} content." ) )
-                        {
-                            try
-                            {
-                                string key = f.SHA1.ToString();
-                                if( _store.Exists( key ) )
-                                {
-                                    _monitor.CloseGroup( "Already stored." );
-                                }
-                                else
-                                {
-                                    using( var content = File.OpenRead( c.F.Files.Single( b => b.ContentSHA1 == f.SHA1 ).FullPath ) )
-                                    {
-                                        _store.Create( key, content, CompressionKind.None, _storageKind );
-                                    }
-                                }
-                            }
-                            catch( Exception ex)
-                            {
-                                _monitor.Error( ex );
-                                return false;
-                            }
-                        }
-                    }
-                }
-                _dbCurrent = db;
-                SaveDbCurrent();
-                return true;
             }
+            var newC = added.Select( kv => new { C = db.Components.Single( c => c.GetRef().Equals( kv.Key ) ), F = kv.Value } );
+            if( newC.Any( c => c.C.Embedded.Count > 0 ) )
+            {
+                if( missingImporter != null )
+                {
+                    using( _monitor.OpenInfo( $"Components have missing embedded components. Trying to use importer." ) )
+                    {
+                        var downloader = new ComponentDownloader( missingImporter, db, _store, _storageKind );
+                        var missing = new ComponentMissingDescription( newC.SelectMany( c => c.C.Embedded ).ToList() );
+                        var updatedDB = downloader.Download( _monitor, missing );
+                        if( updatedDB == null ) return false;
+                        db = updatedDB;
+                    }
+                }
+                else
+                {
+                    using( _monitor.OpenError( "Components have missing embedded components. Embedded components are required to be resolved." ) )
+                    {
+                        foreach( var c in newC.Where( c => c.C.Embedded.Count > 0 ) )
+                        {
+                            _monitor.Trace( $"'{c.C}' embedds: '{c.C.Embedded.Select( e => e.ToString() ).Concatenate( "', '" )}'." );
+                        }
+                    }
+                    return false;
+                }
+            }
+            foreach( var c in newC )
+            {
+                foreach( var f in c.C.Files )
+                {
+                    using( _monitor.OpenTrace( $"Importing file {f.Name} content." ) )
+                    {
+                        try
+                        {
+                            string key = f.SHA1.ToString();
+                            if( _store.Exists( key ) )
+                            {
+                                _monitor.CloseGroup( "Already stored." );
+                            }
+                            else
+                            {
+                                using( var content = File.OpenRead( c.F.Files.First( b => b.ContentSHA1 == f.SHA1 ).FullPath ) )
+                                {
+                                    _store.Create( key, content, CompressionKind.None, _storageKind );
+                                }
+                            }
+                        }
+                        catch( Exception ex )
+                        {
+                            _monitor.Error( ex );
+                            return false;
+                        }
+                    }
+                }
+            }
+            _dbCurrent = db;
+            SaveDbCurrent();
+            return true;
         }
 
         class ComponentDownloader : IComponentDownloader
@@ -291,6 +295,7 @@ namespace CKSetup
         /// </summary>
         /// <param name="targets">The target folders.</param>
         /// <param name="runPath">Optional run path: the first target <see cref="BinFolder.BinPath"/> is the default.</param>
+        /// <param name="missingImporter">Optional component importer.</param>
         /// <returns>True on success, false on error.</returns>
         public bool ExtractRuntimeDependencies( IEnumerable<BinFolder> targets, string runPath = null, IComponentImporter missingImporter = null )
         {
@@ -300,14 +305,14 @@ namespace CKSetup
                 if( runPath == null ) runPath = targets.First().BinPath;
                 _monitor.Info( $"Extracting to {runPath}." );
                 var resolver = _dbCurrent.GetRuntimeDependenciesResolver( _monitor, targets );
-                if( resolver == null ) return false;
+                if( resolver == null || resolver.IsEmpty ) return false;
                 IComponentDownloader downloader = missingImporter != null
                                                     ? new ComponentDownloader(missingImporter, this)
                                                     : null;
                 IReadOnlyList<Component> components = resolver.Run( _monitor, downloader );
                 if( components == null ) return false;
                 int count = 0;
-                foreach( var c in components )
+                foreach( var c in components.OrderByDescending( x => x.TargetFramework ) )
                 {
                     using( _monitor.OpenInfo( $"{c.Files.Count} files from '{c}'." ) )
                     {
@@ -335,14 +340,14 @@ namespace CKSetup
                                 }
                                 catch( Exception ex )
                                 {
-                                    _monitor.Error( $"While extracting '{targetPath}'.", ex );
+                                    _monitor.Error( $"While extracting '{f.Name}'.", ex );
                                     return false;
                                 }
                             }
-                            else _monitor.Trace( $"Skipped '{targetPath}' since it already exists." );
+                            else _monitor.Trace( $"Skipped '{f.Name}' since it already exists." );
                         }
                     }
-                    _monitor.Info( $"{count} files extracted." );
+                    _monitor.Trace( $"{count} files extracted so far." );
                 }
             }
             return true;
@@ -419,7 +424,7 @@ namespace CKSetup
                 if( n.Components != null && n.Components.Count > 0 )
                 {
                     missingFiles = n.Components
-                                    .Where( c => c.ComponentKind != ComponentKind.Model )
+                                    .Where( c => c.StoreFiles )
                                     .SelectMany( c => c.Files )
                                     .Select( f => f.SHA1 )
                                     .Distinct()

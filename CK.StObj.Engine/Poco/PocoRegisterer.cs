@@ -1,4 +1,4 @@
-﻿using CK.Reflection;
+using CK.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -75,7 +75,7 @@ namespace CK.Core
                         // Base interface must be a IPoco.
                         if( !typeof( IPoco ).IsAssignableFrom( b ) )
                         {
-                            monitor.Fatal().Send( $"Poco interface '{t.AssemblyQualifiedName}' extends '{b.Name}'. '{b.Name}' must be marked with CK.Core.IPoco interface." );
+                            monitor.Fatal( $"Poco interface '{t.AssemblyQualifiedName}' extends '{b.Name}'. '{b.Name}' must be marked with CK.Core.IPoco interface." );
                             return null;
                         }
                         // Attempts to register the base.
@@ -86,7 +86,7 @@ namespace CK.Core
                         {
                             if( theOnlyRoot != baseType.Root )
                             {
-                                monitor.Fatal().Send( $"Poco interface '{t.AssemblyQualifiedName}' extends both '{theOnlyRoot.Type.Name}' and '{baseType.Root.Type.Name}' (via '{baseType.Type.Name}')." );
+                                monitor.Fatal( $"Poco interface '{t.AssemblyQualifiedName}' extends both '{theOnlyRoot.Type.Name}' and '{baseType.Root.Type.Name}' (via '{baseType.Type.Name}')." );
                                 return null;
                             }
                         }
@@ -232,7 +232,7 @@ namespace CK.Core
                     {
                         if( implP.PropertyType != p.PropertyType )
                         {
-                            monitor.Error().Send( $"Interface '{i.FullName}' and '{implP.DeclaringType.FullName}' both declare property '{p.Name}' but their type differ ({p.PropertyType.Name} vs. {implP.PropertyType.Name})." );
+                            monitor.Error( $"Interface '{i.FullName}' and '{implP.DeclaringType.FullName}' both declare property '{p.Name}' but their type differ ({p.PropertyType.Name} vs. {implP.PropertyType.Name})." );
                             return null;
                         }
                     }

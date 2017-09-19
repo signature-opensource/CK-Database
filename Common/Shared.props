@@ -20,27 +20,33 @@
 
   <PropertyGroup>
     <!-- Centralized version dependencies. -->
-    <CKCoreVersion>7.0.1</CKCoreVersion>
-    <CKActivityMonitorVersion>8.0.0</CKActivityMonitorVersion>
-    <CKMonitoringVersion>7.1.0</CKMonitoringVersion>
-    <CKSetupDependencyVersion>6.0.1</CKSetupDependencyVersion>
-    <CKSqlServerParserVersion>6.0.0-d01</CKSqlServerParserVersion>
-    <CKSqlServerParserModelVersion>3.2.5</CKSqlServerParserModelVersion>
-    <CKReflectionVersion>5.1.0</CKReflectionVersion>
-    <CKCodeGenVersion>0.1.0-a18</CKCodeGenVersion>
+    <CKCoreVersion>9.0.0</CKCoreVersion>
+    <CKActivityMonitorVersion>9.0.0</CKActivityMonitorVersion>
+    <CKMonitoringVersion>8.0.0</CKMonitoringVersion>
+    <CKSetupDependencyVersion>6.0.2</CKSetupDependencyVersion>
+    <CKSqlServerParserVersion>6.0.0-d04</CKSqlServerParserVersion>
+    <CKSqlServerParserModelVersion>4.0.0</CKSqlServerParserModelVersion>
+    <CKReflectionVersion>6.0.1</CKReflectionVersion>
+    <CKCodeGenVersion>0.1.0-a22</CKCodeGenVersion>
     <YodiiScriptVersion>0.4.1</YodiiScriptVersion>
     <CSemVerVersion>1.0.1</CSemVerVersion>
     <MonoCecilVersion>0.10.0-beta6</MonoCecilVersion>
   </PropertyGroup>
-  
+
+  <!-- Extends Clean to fully remove bin folders. 
+       Keep obj folders since removing them messes up VS Project System.
+  -->  
+  <Target Name="CKExtendClean" AfterTargets="Clean"> 
+    <Message Text="CKExtendClean: Deleting $(TargetDir)" />  
+    <RemoveDir Directories="$(TargetDir)" />
+  </Target>
+
   <!-- 
     When building from the CI (ie. from Cake, hence directly with the msbuild tool, SolutionDir is not defined),
-    we unify the behavior here as well as setting the BaseIntermediateOutputPath (the /obj folder)
-    below CodeCakeBuilder/Releases/ so that compilation from external sources does not interfere with visual studio work.
+    we unify the behavior here.
   -->
   <PropertyGroup Condition=" '$(CakeBuild)' == 'true' ">
     <SolutionDir>$([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName($(MSBuildThisFileDirectory)))))\</SolutionDir>
-    <BaseIntermediateOutputPath>$(SolutionDir)CodeCakeBuilder\Releases\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
   </PropertyGroup>
   <!-- When not building from the CI, assemblies do not have any AssemblyInfo attributes. -->
   <PropertyGroup Condition=" '$(CakeBuild)' != 'true' ">

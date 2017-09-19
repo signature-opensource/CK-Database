@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,31 +20,31 @@ namespace CK.Setup
         /// is not <see cref="BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile"/>.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
-        /// <param name="runtimeBuilder">Runtime builder to use to create final mapper object.</param>
         /// <param name="callPEVrify">True to call PEVerify on the generated assembly.</param>
         /// <returns>False if any error occured (logged into <paramref name="monitor"/>).</returns>
-        public bool GenerateFinalAssembly( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, bool callPEVrify, bool withIL, bool withSrc )
+        public bool GenerateFinalAssembly( IActivityMonitor monitor, bool callPEVrify, bool withIL, bool withSrc )
         {
-            try
+            using( monitor.OpenInfo( "Generating StObj dynamic assembly." ) )
             {
+                try
+                {
 #if NET461
-             if( _finalAssembly == null ) throw new InvalidOperationException( "Using GenerateOption.DoNotGenerateFile." );
-             if( withIL && !DoGenerateFinalAssembly( monitor, runtimeBuilder, callPEVrify ) ) return false;
+                    if( _finalAssembly == null ) throw new InvalidOperationException( "Using GenerateOption.DoNotGenerateFile." );
+                    if( withIL && !DoGenerateFinalAssembly( monitor, callPEVrify ) ) return false;
 #endif
-                return withSrc ? GenerateSourceCode( monitor, runtimeBuilder, true, withIL ) : true;
-            }
-            catch( Exception ex )
-            {
-                monitor.Error().Send( ex, "While generating final assembly '{0}'.", _tempAssembly.SaveFileName );
-                return false;
+                    return withSrc ? GenerateSourceCode( monitor, true, withIL ) : true;
+                }
+                catch( Exception ex )
+                {
+                    monitor.Error( $"While generating final assembly '{_tempAssembly.SaveFileName}'.", ex );
+                    return false;
+                }
             }
         }
 
-
-
 #if NET461
 
-        bool DoGenerateFinalAssembly(IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder, bool callPEVrify)
+        bool DoGenerateFinalAssembly( IActivityMonitor monitor, bool callPEVrify )
         {
             TypeBuilder root = _finalAssembly.ModuleBuilder.DefineType( StObjContextRoot.RootContextTypeName, TypeAttributes.Class | TypeAttributes.Sealed, typeof( StObjContextRoot ) );
 
@@ -53,7 +53,7 @@ namespace CK.Setup
             Type stobjContectRootType = root.CreateType();
 
             RawOutStream outS = new RawOutStream();
-            using( monitor.OpenTrace().Send( "Generating resource informations." ) )
+            using( monitor.OpenTrace( "Generating resource informations." ) )
             {
                 outS.Writer.Write( Contexts.Count );
                 foreach( var c in Contexts )
@@ -74,13 +74,13 @@ namespace CK.Setup
                 outS.Writer.Flush();
 
                 long typeMappingSize = outS.Memory.Length;
-                monitor.Trace().Send( "Type mappings require {0} bytes in resource.", typeMappingSize );
+                monitor.Trace( $"Type mappings require {typeMappingSize} bytes in resource." );
 
                 // Once Contexts are serialized, we serialize the values that have been injected during graph construction.
                 outS.Formatter.Write( _buildValueCollector.Values, _buildValueCollector.Values.Count );
 
                 long valuesSize = outS.Memory.Length - typeMappingSize;
-                monitor.Trace().Send( "Configured properties and parameter require {0} bytes in resource.", valuesSize );
+                monitor.Trace( $"Configured properties and parameter require {valuesSize} bytes in resource." );
 
                 outS.Writer.Write( _totalSpecializationCount );
                 foreach( var m in _orderedStObjs )
@@ -105,26 +105,26 @@ namespace CK.Setup
                 }
 
                 long graphDescSize = outS.Memory.Length - valuesSize - typeMappingSize;
-                monitor.Trace().Send( "Graph description requires {0} bytes in resource.", graphDescSize );
+                monitor.Trace( $"Graph description requires {graphDescSize} bytes in resource." );
 
             }
             // Generates the Resource BLOB now.
             outS.Memory.Position = 0;
             _finalAssembly.ModuleBuilder.DefineManifestResource( StObjContextRoot.RootContextTypeName + ".Data", outS.Memory, ResourceAttributes.Private );
             _finalAssembly.Save();
-            if (callPEVrify && !ExecutePEVerify(monitor) ) return false;
-                   
+            if( callPEVrify && !ExecutePEVerify( monitor ) ) return false;
+
             return true;
         }
 
         bool ExecutePEVerify(IActivityMonitor monitor)
         {
-            monitor.OpenInfo().Send("PEVerify the generated assembly.");
+            monitor.OpenInfo( "PEVerify the generated assembly.");
             string directory = Path.GetDirectoryName(_finalAssembly.SaveFilePath);
             string peVerfiyPath = Path.Combine(directory, "PEVerify.exe");
             if (!File.Exists(peVerfiyPath))
             {
-                using (monitor.OpenWarn().Send("PEVerify.exe not found in directory '{0}': extracting a self-embedded version.", directory))
+                using (monitor.OpenWarn( $"PEVerify.exe not found in directory '{directory}': extracting a self-embedded version." ))
                 {
                     using (var source = Assembly.GetExecutingAssembly().GetManifestResourceStream("CK.StObj.Engine.PEVerify.PEVerify.exe"))
                     using (var target = File.Create(peVerfiyPath))
@@ -152,12 +152,12 @@ namespace CK.Setup
                 string output = pr.StandardOutput.ReadToEnd();
                 if (pr.ExitCode == 0)
                 {
-                    monitor.Trace().Send(output);
+                    monitor.Trace( output );
                 }
                 else
                 {
-                    monitor.Error().Send(output);
-                    monitor.CloseGroup(String.Format("PEVerify.exe exited with code: {0}.", pr.ExitCode));
+                    monitor.Error( output );
+                    monitor.CloseGroup( $"PEVerify.exe exited with code: {pr.ExitCode}." );
                     return false;
                 }
             }
@@ -167,7 +167,7 @@ namespace CK.Setup
         bool FinalizeTypesCreationAndCreateCtor( IActivityMonitor monitor, DynamicAssembly a, TypeBuilder root )
         {
             int typeCreatedCount, typeErrorCount;
-            using( monitor.OpenInfo().Send( "Generating dynamic types." ) )
+            using( monitor.OpenInfo( "Generating dynamic types." ) )
             {
                 FieldBuilder types = DefineTypeInitializer( monitor, a, root, out typeCreatedCount, out typeErrorCount );
 

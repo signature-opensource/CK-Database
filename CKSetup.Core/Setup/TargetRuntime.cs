@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,9 +12,9 @@ namespace CKSetup
         NetFramework461 = 1 << 16,
         NetFramework462 = 2 << 16,
         NetFramework47 = 3 << 16,
-        NetCoreApp10 = 100 << 16,
-        NetCoreApp11 = 101 << 16,
-        NetCoreApp20 = 102 << 16,
+        NetCoreApp10 = 128 << 16,
+        NetCoreApp11 = 129 << 16,
+        NetCoreApp20 = 130 << 16,
     }
 
 }

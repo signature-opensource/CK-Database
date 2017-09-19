@@ -30,16 +30,18 @@ namespace CK.Core
         /// Initializes a new <see cref="AmbientContextualTypeInfo{T,TC}"/>. 
         /// Attributes must be retrieved with <see cref="AmbientContextualAttributesCache.GetCustomAttributes">GetCustomAttributes</see> methods.
         /// </summary>
+        /// <param name="monitor">Monitor to use.</param>
         /// <param name="t">Type.</param>
         /// <param name="generalization">Generalization in this context. Null if this is the root of the specialization path.</param>
         /// <param name="context">Context.</param>
+        /// <param name="services">Available services that will be used for delegated attribute constructor injection.</param>
         /// <remarks>
         /// Contextual type information are built top-down (from generalization to most specialized type).
         /// Once the ultimate leaf (AbstractTypeCanBeInstanciated) has been computed and no ambiguities occur, initialization
         /// is done bottom-up through <see cref="InitializeBottomUp"/>.
         /// </remarks>
-        internal protected AmbientContextualTypeInfo( T t, TC generalization, IContextualTypeMap context )
-            : base( t.Type.GetTypeInfo(), generalization == null )
+        internal protected AmbientContextualTypeInfo( IActivityMonitor monitor, T t, TC generalization, IContextualTypeMap context, IServiceProvider services )
+            : base( monitor, t.Type.GetTypeInfo(), services, generalization == null )
         {
             AmbientTypeInfo = t;
             Context = context;
@@ -97,10 +99,7 @@ namespace CK.Core
         /// Overridden to return the name of the type in the context.
         /// </summary>
         /// <returns>Formatted name.</returns>
-        public override string ToString()
-        {
-            return AmbientContractCollector.FormatContextualFullName( Context.Context, Type.AsType() );
-        }
+        public override string ToString() => AmbientContractCollector.FormatContextualFullName( Context.Context, Type.AsType() );
     }
 
 }

@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -130,7 +130,8 @@ namespace CKSetup.StreamStore
         void IStreamStore.ExtractToFile( string fullName, string targetPath )
         {
             var e = Find( fullName );
-            if( e.Entry == null ) throw new ArgumentException( $"'{fullName}' not found.", nameof(fullName) );
+            if( e.Entry == null ) throw new ArgumentException( $"'{fullName}' not found in Zip store.", nameof(fullName) );
+            Directory.CreateDirectory( Path.GetDirectoryName( targetPath ) );
             e.Entry.ExtractToFile( targetPath, false );
         }
 

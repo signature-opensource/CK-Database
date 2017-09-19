@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
@@ -26,29 +26,29 @@ namespace CK.SqlServer.Setup
 
         public new SqlTransformerItem Item => (SqlTransformerItem)base.Item;
 
-        protected override bool Install( bool beforeHandlers )
+        protected override bool Install( IActivityMonitor monitor, bool beforeHandlers )
         {
             if( beforeHandlers ) return true;
-            var transformed = Item.SqlObject.SafeTransform( Engine.Monitor, Item.Target.SqlObject );
+            var transformed = Item.SqlObject.SafeTransform( monitor, Item.Target.SqlObject );
             if( transformed == null )
             {
-                using( Engine.Monitor.OpenError().Send( "Transformation source:" ) )
+                using( monitor.OpenError( "Transformation source:" ) )
                 {
-                    Engine.Monitor.Error().Send( Item.Target.SqlObject.ToFullString() );
+                    monitor.Error( Item.Target.SqlObject.ToFullString() );
                 }
                 return false;
             }
-            var objectDriver = Engine.Drivers[Item.Source] as SqlObjectItemDriver;
+            var objectDriver = Drivers[Item.Source] as SqlObjectItemDriver;
             if( objectDriver != null )
             {
-                return objectDriver.OnTargetTransformed( this, (ISqlServerObject)transformed );
+                return objectDriver.OnTargetTransformed( monitor, this, (ISqlServerObject)transformed );
             }
             // We are transforming... a transformer!
-            Debug.Assert( Engine.Drivers[Item.Target] is SqlTransformerItemDriver );
+            Debug.Assert( Drivers[Item.Target] is SqlTransformerItemDriver );
             Item.Target.SqlObject = transformed;
-            using( Engine.Monitor.OpenTrace().Send( "Transformation of the Transformer:" ) )
+            using( monitor.OpenTrace( "Transformation of the Transformer:" ) )
             {
-                Engine.Monitor.Trace().Send( Item.Target.SqlObject.ToFullString() );
+                monitor.Trace( Item.Target.SqlObject.ToFullString() );
             }
             return true;
         }

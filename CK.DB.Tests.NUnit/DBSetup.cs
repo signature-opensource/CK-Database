@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -25,7 +25,7 @@ namespace CK.DB.Tests
         public void manual_load_existing_generated_dll()
         {
             TestHelper.LogToConsole = true;
-            Assert.That( TestHelper.LoadStObjMapFromExistingGeneratedAssembly() != null, "Generated Assembly must exist and a StObjMap muts be loaded." );
+            Assert.That( TestHelper.LoadStObjMapFromExistingGeneratedAssembly() != null, "Generated Assembly must exist and a StObjMap must be loaded." );
         }
 
         [Test]
@@ -34,7 +34,7 @@ namespace CK.DB.Tests
         {
             TestHelper.LogToConsole = true;
             if( !Debugger.IsAttached) Debugger.Launch();
-            else TestHelper.Monitor.Info().Send( "Debugger is already attached." );
+            else TestHelper.Monitor.Info( "Debugger is already attached." );
         }
 
         [Test]
@@ -45,12 +45,13 @@ namespace CK.DB.Tests
             TestHelper.ClearDatabaseUsedSchemas();
         }
 
-        [Test]
+        [TestCase( "IL Emit" )]
+        [TestCase( "Source" )]
         [Explicit]
-        public void db_setup()
+        public void db_setup( string type )
         {
             TestHelper.LogToConsole = true;
-            Assert.That(TestHelper.RunDBSetup(), "DBSetup failed.");
+            Assert.That( type == "Source" ? TestHelper.RunDBSetupSource() : TestHelper.RunDBSetup(), "DBSetup failed.");
         }
 
         [Test]

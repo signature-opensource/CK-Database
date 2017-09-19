@@ -76,7 +76,6 @@ namespace CKDBSetup
                 List<string> recurseAssemblyNames;
                 string binPath = Environment.CurrentDirectory;
                 string generatedAssemblyName = BuilderFinalAssemblyConfiguration.DefaultAssemblyName;
-                SetupEngineRunningMode runningMode = SetupEngineRunningMode.Default;
                 bool sourceGeneration;
 
                 connectionString = connectionStringArg.Value?.Trim();
@@ -118,7 +117,7 @@ namespace CKDBSetup
                 monitor.Trace().Send( $"Generated assembly name: {generatedAssemblyName}" );
                 monitor.Trace().Send( $"Source Generation: {sourceGeneration}" );
 
-                var buildConfig = DbSetupHelper.BuildSetupConfig( connectionString, assemblyNames, recurseAssemblyNames, generatedAssemblyName, binPath, runningMode, sourceGeneration );
+                var buildConfig = DbSetupHelper.BuildSetupConfig( connectionString, assemblyNames, recurseAssemblyNames, generatedAssemblyName, binPath, sourceGeneration );
 
                 bool isSuccess = false;
 

@@ -3,29 +3,18 @@
   <Import Project="..\Common\Shared.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.6;net461</TargetFrameworks>
-    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.6' ">1.6.1</NetStandardImplicitPackageVersion>
+    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
     <Description>
       CK-Database helps to setup, construct, manages and build modular relationnal databases upon SqlServer.
       CK.StObj.Runtime contains runtime objects that enables StObj implementation to be generated.
     </Description>
   </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net461' ">
-    <RuntimeIdentifier>win</RuntimeIdentifier>
-  </PropertyGroup>
     
   <ItemGroup>
     <ProjectReference Include="..\CK.StObj.Model\CK.StObj.Model.csproj" />
     <PackageReference Include="CK.CodeGen" Version="$(CKCodeGenVersion)" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
-    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
-    <Reference Include="System" />
+    <PackageReference Include="CK.Reflection" Version="$(CKReflectionVersion)" />
+    <PackageReference Include="CK.Setup.Dependency" Version="$(CKSetupDependencyVersion)" />
   </ItemGroup>
 
   <ItemGroup>

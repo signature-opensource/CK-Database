@@ -2,7 +2,7 @@
 
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
   </PropertyGroup>
 
   <Import Project="..\Common\Shared.props" />
@@ -12,6 +12,13 @@
     <PackageReference Include="Mono.Cecil" Version="$(MonoCecilVersion)" />
     <PackageReference Include="CSemVer" Version="$(CSemVerVersion)" />
     <PackageReference Include="System.Net.Http" Version="4.3.2" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
+    <Reference Include="System.IO.Compression" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,14 +34,10 @@
       <Link>Includes\%(RecursiveDir)%(Filename)%(Extension)</Link>
       <Visible>true</Visible>
     </Compile>
-    <Compile Include="..\CK.Setupable.Engine\SetupRunner.XmlNames.cs">
+    <Compile Include="..\CK.StObj.Runner\Program.XmlNames.cs">
       <Link>Includes\%(Filename)%(Extension)</Link>
       <Visible>true</Visible>
     </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="System.IO.Compression" />
   </ItemGroup>
 
 </Project>

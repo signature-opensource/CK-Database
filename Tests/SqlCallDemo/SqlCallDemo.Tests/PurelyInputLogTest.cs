@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -88,7 +88,7 @@ namespace SqlCallDemo.Tests
                         Assert.That( ex.InnerException.InnerException.Message, 
                                         Does.EndWith( "Operation cancelled by user." )
                                         .Or.EndWith( "Opération annulée par l'utilisateur." ) );
-                        TestHelper.Monitor.Info().Send( ex, "Cancellation: the inner exception is a SqlException with a message that contains 'Operation cancelled by user.' suffix." );
+                        TestHelper.Monitor.Info( "Cancellation: the inner exception is a SqlException with a message that contains 'Operation cancelled by user.' suffix.", ex );
                     }
                     p.Database.AssertScalarEquals( "This one must pass. - @OneMore = 1", "select top 1 LogText from CK.tPurelyInputLog order by Id desc" );
                 }

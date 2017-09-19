@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -143,7 +143,7 @@ namespace CK.SqlServer.Setup
 
                         if( mP.ParameterType.IsByRef && sqlParamHandlers.IsAsyncCall )
                         {
-                            monitor.Error().Send( "Parameter '{0}' is ref or out: ref or out are not compatible with an asynchronous execution (the returned type of the method is a Task).", mP.Name );
+                            monitor.Error( $"Parameter '{mP.Name}' is ref or out: ref or out are not compatible with an asynchronous execution (the returned type of the method is a Task)." );
                             ++nbError;
                         }
                         else if( !isParameterSourceOrCommandExecutor
@@ -152,7 +152,7 @@ namespace CK.SqlServer.Setup
                         {
                             // When direct parameters can not be mapped to Sql parameters, this is an error.
                             Debug.Assert( extraMethodParameters == null );
-                            monitor.Error().Send( "Parameter '{0}' not found in procedure parameters. Defined C# parameters must respect the actual stored procedure order.", mP.Name );
+                            monitor.Error( $"Parameter '{mP.Name}' not found in procedure parameters. Defined C# parameters must respect the actual stored procedure order." );
                             ++nbError;
                         }
                     }
@@ -187,13 +187,13 @@ namespace CK.SqlServer.Setup
                                 {
                                     if( !setter.IsUsedByReturnType )
                                     {
-                                        monitor.Info().Send( "Method '{0}' does not declare the Sql Parameter '{1}'. Since it is a pure output parameter, it will be ignored.", m.Name, sqlP.ToStringClean() );
+                                        monitor.Info( $"Method '{m.Name}' does not declare the Sql Parameter '{sqlP.ToStringClean()}'. Since it is a pure output parameter, it will be ignored." );
                                     }
                                     setter.SetMappingToIgnoredOutput();
                                 }
                                 else
                                 {
-                                    monitor.Error().Send( "Sql parameter '{0}' in procedure parameters has no default value. The method '{1}' must declare it (or a property must exist in one of the [ParameterSource] parameters) or the procedure must specify the default value.", sqlP.Name, m.Name );
+                                    monitor.Error( $"Sql parameter '{sqlP.Name}' in procedure parameters has no default value. The method '{m.Name}' must declare it (or a property must exist in one of the [ParameterSource] parameters) or the procedure must specify the default value." );
                                     ++nbError;
                                 }
                             }
@@ -202,7 +202,7 @@ namespace CK.SqlServer.Setup
                                 // The parameter has a default value.
                                 if( sqlP.IsPureOutput )
                                 {
-                                    monitor.Warn().Send( "Sql parameter '{0}' in procedure is a pure output parameter that has a default value. If the input matters, it should be marked /*input*/output.", sqlP.Name );
+                                    monitor.Warn( $"Sql parameter '{sqlP.Name}' in procedure is a pure output parameter that has a default value. If the input matters, it should be marked /*input*/output." );
                                 }
                                 setter.SetMappingToSqlDefaultValue();
                             }
@@ -246,7 +246,7 @@ namespace CK.SqlServer.Setup
                                                     .ToList();
                 if( availableCtors.Count == 0 )
                 {
-                    monitor.Error().Send( "The returned type '{0}' has no public constructor that takes a SqlCommand and the {1} extra parameters of the method.", m.ReturnType.Name, extraMethodParameters.Count );
+                    monitor.Error( $"The returned type '{m.ReturnType.Name}' has no public constructor that takes a SqlCommand and the {extraMethodParameters.Count} extra parameters of the method." );
                     ++nbError;
                 }
                 else
@@ -254,7 +254,7 @@ namespace CK.SqlServer.Setup
                     WrapperCtorMatcher matcher = availableCtors.FirstOrDefault( c => c.IsCallable() );
                     if( matcher == null )
                     {
-                        using( monitor.OpenError().Send( "Unable to find a constructor for the returned type '{0}': the {1} extra parameters of the method cannot be mapped.", m.ReturnType.Name, extraMethodParameters.Count ) )
+                        using( monitor.OpenError( $"Unable to find a constructor for the returned type '{m.ReturnType.Name}': the {extraMethodParameters.Count} extra parameters of the method cannot be mapped." ) )
                         {
                             foreach( var mFail in availableCtors ) mFail.ExplainFailure( monitor );
                         }
@@ -272,7 +272,7 @@ namespace CK.SqlServer.Setup
             {
                 if( sqlCallContexts == null || sqlCallContexts.SqlCommandExecutorParameter == null )
                 {
-                    monitor.Error().Send( "When calling with {0}, at least one ISqlCallContext object must be or exposes a ISqlCommandExecutor.", gType );
+                    monitor.Error( $"When calling with {gType}, at least one ISqlCallContext object must be or exposes a ISqlCommandExecutor." );
                     ++nbError;
                 }
                 else if( nbError == 0 )
@@ -305,7 +305,7 @@ namespace CK.SqlServer.Setup
             }
             if( nbError != 0 )
             {
-                monitor.Info().Send( GenerateBothSignatures( sqlObject, m, mParameters, extraMethodParameters ) );
+                monitor.Info( GenerateBothSignatures( sqlObject, m, mParameters, extraMethodParameters ) );
             }
             g.Emit( OpCodes.Ret );
             return nbError == 0;
@@ -457,7 +457,7 @@ namespace CK.SqlServer.Setup
         static bool CheckParameterType( Type t, ISqlServerParameter p, IActivityMonitor monitor )
         {
             if( p.SqlType.IsTypeCompatible( t ) ) return true;
-            monitor.Error().Send( $"Sql parameter '{p.ToStringClean()}' is not compliant with Type {t.Name}." );
+            monitor.Error( $"Sql parameter '{p.ToStringClean()}' is not compliant with Type {t.Name}." );
             return false;
         }
 

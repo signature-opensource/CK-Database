@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using CK.Core;
+using System.Collections;
 
 namespace CK.Setup
 {
@@ -19,12 +20,13 @@ namespace CK.Setup
     {
         readonly ISortedItem<ISetupItem> _sortedItem;
 
-        internal DriverBase( ISetupEngine engine, ISortedItem<ISetupItem> sortedItem, VersionedName externalVersion )
+        internal DriverBase( IDriverList drivers, IDriverBaseList allDrivers, ISortedItem<ISetupItem> sortedItem, VersionedName externalVersion )
         {
-            Engine = engine;
             _sortedItem = sortedItem;
             ExternalVersion = externalVersion;
             FullName = _sortedItem.FullName;
+            Drivers = drivers;
+            AllDriverBase = allDrivers;
         }
 
         /// <summary>
@@ -32,7 +34,6 @@ namespace CK.Setup
         /// This property is often redefined (masked with the new keyword in C#) to expose a more precise associated type.
         /// </summary>
         public ISetupItem Item => _sortedItem.Item; 
-
 
         /// <summary>
         /// Gets the <see cref="ISortedItem{T}"/> of the item.
@@ -45,6 +46,21 @@ namespace CK.Setup
         /// Null has always the same semantics: the item is not versioned.
         /// </summary>
         public Version ItemVersion => (_sortedItem.Item as IVersionedItem)?.Version;
+
+        /// <summary>
+        /// Gets the ordered list of <see cref="SetupItemDriver"/> indexed by the <see cref="IDependentItem.FullName"/> 
+        /// or by the <see cref="IDependentItem"/> object instance itself.
+        /// </summary>
+        public IDriverList Drivers { get; }
+
+        /// <summary>
+        /// Gets the ordered list of <see cref="DriverBase"/> indexed by the <see cref="IDependentItem.FullName"/> 
+        /// or by the <see cref="IDependentItem"/> object instance itself that participate to Setup.
+        /// This list contains all the <see cref="SetupItemDriver"/> plus all the internal drivers for the head of Groups 
+        /// or Containers (the ones that are not SetupItemDriver instances and have a <see cref="DriverBase.FullName"/> that
+        /// ends with ".Head").
+        /// </summary>
+        public IDriverBaseList AllDriverBase { get; }
 
         /// <summary>
         /// Whether this driver is the head of a container.
@@ -63,16 +79,11 @@ namespace CK.Setup
         /// </summary>
         public readonly VersionedName ExternalVersion;
 
-        /// <summary>
-        /// The <see cref="ISetupEngine"/> to which this driver belongs.
-        /// </summary>
-        public readonly ISetupEngine Engine;
+        internal abstract bool ExecuteInit( IActivityMonitor monitor );
 
-        internal abstract bool ExecuteInit();
-
-        internal abstract bool ExecuteInstall();
+        internal abstract bool ExecuteInstall( IActivityMonitor monitor );
         
-        internal abstract bool ExecuteSettle();
+        internal abstract bool ExecuteSettle( IActivityMonitor monitor );
 
     }
 }

@@ -30,7 +30,7 @@ namespace CK.SqlServer.Setup
         {
             Debug.Assert( !_initialized );
             var monitor = Manager.Monitor;
-            using( monitor.OpenTrace().Send( "Installing SqlVersionedItemRepository store." ) )
+            using( monitor.OpenTrace( "Installing SqlVersionedItemRepository store." ) )
             {
                 int ver = (int)Manager.ExecuteScalar( _scriptCreateAndGetVersion );
 
@@ -47,7 +47,7 @@ namespace CK.SqlServer.Setup
                     }
                     while( ver < CurrentVersion )
                     {
-                        using( monitor.OpenInfo().Send( $"Upgrading to Version = {ver}." ) )
+                        using( monitor.OpenInfo( $"Upgrading to Version = {ver}." ) )
                         {
                             Manager.ExecuteNonQuery( _upgradeScripts[ver++] );
                         }

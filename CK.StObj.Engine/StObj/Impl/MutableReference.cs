@@ -143,12 +143,12 @@ namespace CK.Setup
 
         protected void Warn( IActivityMonitor monitor, string text )
         {
-            monitor.Warn().Send( "{0}: {1}.", ToString(), text );
+            monitor.Warn( $"{ToString()}: {text}." );
         }
 
         protected void Error( IActivityMonitor monitor, string text )
         {
-            monitor.Error().Send( "{0}: {1}.", ToString(), text );
+            monitor.Error( $"{ToString()}: {text}." );
         }
 
         public override string ToString() => $"{_kind.ToString()} reference for '{Owner}'";

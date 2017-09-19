@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reflection;
 using CK.Core;
 using CK.Setup;
@@ -38,7 +38,7 @@ namespace CK.StObj.Engine.Tests
             StObjCollector collector = new StObjCollector( TestHelper.Monitor );
             collector.RegisterTypes( disco );
 
-            var result = collector.GetResult();
+            var result = collector.GetResult( new SimpleServiceContainer() );
             Assert.That( result.HasFatalError, Is.False );
             return result;
         }

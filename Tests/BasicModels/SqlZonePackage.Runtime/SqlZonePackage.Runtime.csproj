@@ -3,11 +3,7 @@
   <Import Project="..\..\..\Common\Shared.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.6;net461</TargetFrameworks>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net461' ">
-    <RuntimeIdentifier>win</RuntimeIdentifier>
+    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,11 +13,6 @@
 
   <ItemGroup>
     <PackageReference Include="CK.SqlServer.Parser" Version="$(CKSqlServerParserVersion)" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
-    <PackageReference Include="NUnit" Version="[2.6.4]" />
-    <Reference Include="System" />
   </ItemGroup>
 
   <ItemGroup>

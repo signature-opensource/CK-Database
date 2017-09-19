@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -26,22 +26,22 @@ namespace CK.Core
         /// </summary>
         /// <param name="directory">Directory where the assembly must be saved. Must not be null if the assembly must be saved.</param>
         /// <param name="assemblyName">Assembly name to use.</param>
-        protected DynamicAssemblyBase(string directory, string assemblyName )
+        protected DynamicAssemblyBase( string directory, string assemblyName )
         {
-            if (String.IsNullOrWhiteSpace(assemblyName)) throw new ArgumentException("Name is invalid.", nameof(assemblyName));
+            if( String.IsNullOrWhiteSpace( assemblyName ) ) throw new ArgumentException( "Name is invalid.", nameof( assemblyName ) );
 
-            AssemblyName = new AssemblyName(assemblyName);
-            AssemblyName.Version = new Version(1, 0, 0, 0);
-            if (directory != null)
+            AssemblyName = new AssemblyName( assemblyName );
+            AssemblyName.Version = new Version( 1, 0, 0, 0 );
+            if( directory != null )
             {
                 _saveFileName = AssemblyName.Name + ".dll";
-                _saveFilePath = System.IO.Path.Combine(directory, _saveFileName);
+                _saveFilePath = System.IO.Path.Combine( directory, _saveFileName );
             }
             _memory = new Dictionary<object, object>();
             _postActions = new List<Action<IDynamicAssembly>>();
             SourceModules = new List<ICodeGeneratorModule>();
             SourceModules.Add( new ExcludeFromSetupModule() );
-            SourceBuilder = new NamespaceBuilder("CK._g");
+            SourceBuilder = new NamespaceBuilder( "CK._g" );
         }
 
         class ExcludeFromSetupModule : ICodeGeneratorModule
@@ -81,7 +81,7 @@ namespace CK.Core
         /// <summary>
         /// Gets the source modules for this <see cref="IDynamicAssembly"/>.
         /// </summary>
-        public IList<ICodeGeneratorModule> SourceModules { get; } 
+        public IList<ICodeGeneratorModule> SourceModules { get; }
 
         /// <summary>
         /// Provides a new unique number that can be used for generating unique names inside this dynamic assembly.
@@ -102,10 +102,10 @@ namespace CK.Core
         /// An action can be pushed at any moment and a pushed action can push another action.
         /// </summary>
         /// <param name="postAction">Action to execute.</param>
-        public void PushFinalAction(Action<IDynamicAssembly> postAction)
+        public void PushFinalAction( Action<IDynamicAssembly> postAction )
         {
-            if (postAction == null) throw new ArgumentNullException("postAction");
-            _postActions.Add(postAction);
+            if( postAction == null ) throw new ArgumentNullException( "postAction" );
+            _postActions.Add( postAction );
         }
 
         /// <summary>
@@ -114,14 +114,14 @@ namespace CK.Core
         protected void ExecutePostActions()
         {
             int i = 0;
-            while (i < _postActions.Count)
+            while( i < _postActions.Count )
             {
                 var a = _postActions[i];
                 _postActions[i++] = null;
-                a(this);
+                a( this );
             }
             _postActions.Clear();
         }
-    }
+    } 
 
 }

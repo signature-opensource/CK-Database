@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -189,9 +189,7 @@ namespace CK.SqlServer.Setup
                         }
                         else if( _selectedCtor.Parameters.Count == c.Parameters.Count )
                         {
-                            monitor.Error().Send( "Ambiguous constructors: both '{0}' and '{1}' are satisfied.",
-                                                        SqlCallableAttributeImpl.DumpParameters( _selectedCtor.CtorParameters, true ),
-                                                        SqlCallableAttributeImpl.DumpParameters( c.CtorParameters, true ) );
+                            monitor.Error( $"Ambiguous constructors: both '{SqlCallableAttributeImpl.DumpParameters( _selectedCtor.CtorParameters, true )}' and '{SqlCallableAttributeImpl.DumpParameters( c.CtorParameters, true )}' are satisfied." );
                             return false;
                         }
                     }
@@ -199,7 +197,7 @@ namespace CK.SqlServer.Setup
             }
             if( _selectedCtor == null )
             {
-                monitor.Error().Send( "Unable to find a constructor." );
+                monitor.Error( "Unable to find a constructor." );
                 return false;
             }
             _mappedInputIsSelectedCtor = new HashSet<int>();
@@ -216,21 +214,21 @@ namespace CK.SqlServer.Setup
             var unmappedProperties = _props.Where( p => !p.IsInputSatisfied ).ToList();
             if( unmappedProperties.Count != 0 &&_unmappedInputs != null )
             {
-                using( monitor.OpenWarn().Send( $"There are {unmappedProperties.Count} unmapped property(ie)s and {_unmappedInputs.Count} unmapped input(s)." ) )
+                using( monitor.OpenWarn( $"There are {unmappedProperties.Count} unmapped property(ie)s and {_unmappedInputs.Count} unmapped input(s)." ) )
                 {
                     foreach( var p in unmappedProperties )
                     {
-                        monitor.Info().Send( $"Property '{p.Property.Name}.{p.Property.PropertyType.Name}' is not mapped." );
+                        monitor.Info( $"Property '{p.Property.Name}.{p.Property.PropertyType.Name}' is not mapped." );
                     }
                     foreach( var i in _unmappedInputs )
                     {
                         if( i.Type == null )
                         {
-                            monitor.Info().Send( $"Input n°{i.Index} named '{i.Name}' is not mapped." );
+                            monitor.Info( $"Input n°{i.Index} named '{i.Name}' is not mapped." );
                         }
                         else
                         {
-                            monitor.Info().Send( $"Input n°{i.Index} named '{i.Name}' of type '{i.Type}' is not mapped." );
+                            monitor.Info( $"Input n°{i.Index} named '{i.Name}' of type '{i.Type}' is not mapped." );
                         }
                     }
                 }

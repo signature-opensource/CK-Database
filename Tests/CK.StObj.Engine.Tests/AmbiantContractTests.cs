@@ -1,4 +1,4 @@
-﻿#region Proprietary License
+#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (Tests\CK.StObj.Engine.Tests\AmbiantContractTests.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -92,16 +92,16 @@ namespace CK.Setup.Tests
         {
         }
 
-        protected override TC CreateContextTypeInfo<T, TC>( TC generalization, IContextualTypeMap context )
+        protected override TC CreateContextTypeInfo<T, TC>( IActivityMonitor monitor, IServiceProvider services, TC generalization, IContextualTypeMap context )
         {
-            return (TC)(object)(new TypeInsideContext( this, (TypeInsideContext)(object)generalization, context ));
+            return (TC)(object)(new TypeInsideContext( monitor, this, (TypeInsideContext)(object)generalization, context, services ));
         }
     }
-
+     
     public class TypeInsideContext : AmbientContextualTypeInfo<TypeInfo, TypeInsideContext>
     {
-        public TypeInsideContext( TypeInfo t, TypeInsideContext generalization, IContextualTypeMap context )
-            : base( t, generalization, context )
+        public TypeInsideContext( IActivityMonitor monitor, TypeInfo t, TypeInsideContext generalization, IContextualTypeMap context, IServiceProvider services )
+            : base(monitor, t, generalization, context, services )
         {
         }
     }
@@ -130,7 +130,7 @@ namespace CK.Setup.Tests
             Assert.That( c.RegisterClass( typeof( Base ) ), Is.True );
             Assert.That( c.RegisteredTypeCount, Is.EqualTo( 2 ), "AbstractBase, Base" );
 
-            var r = c.GetResult().Default;
+            var r = c.GetResult( new SimpleServiceContainer() ).Default;
             CheckEmpty( r );
         }
 
@@ -141,7 +141,7 @@ namespace CK.Setup.Tests
             Assert.That( c.RegisterClass( typeof( Ambient ) ), Is.True );
             Assert.That( c.RegisteredTypeCount, Is.EqualTo( 3 ), "AbstractBase, Base, Ambient" );
 
-            var r = c.GetResult().Default;
+            var r = c.GetResult( new SimpleServiceContainer() ).Default;
             Assert.That( r.ConcreteClasses.Count, Is.EqualTo( 1 ) );
             Assert.That( r.ClassAmbiguities.Count, Is.EqualTo( 0 ) );
             Assert.That( r.InterfaceAmbiguities.Count, Is.EqualTo( 0 ) );
@@ -155,7 +155,7 @@ namespace CK.Setup.Tests
             Assert.That( c.RegisterClass( typeof( AbstractAmbient ) ), Is.True );
             Assert.That( c.RegisteredTypeCount, Is.EqualTo( 2 ), "AbstractBase, AbstractAmbient" );
 
-            var r = c.GetResult().Default;
+            var r = c.GetResult( new SimpleServiceContainer() ).Default;
             Assert.That( r.AbstractTails.Count, Is.EqualTo( 1 ) );
             Assert.That( r.ConcreteClasses.Count, Is.EqualTo( 0 ) );
             Assert.That( r.ClassAmbiguities.Count, Is.EqualTo( 0 ) );
@@ -169,7 +169,7 @@ namespace CK.Setup.Tests
             Action<DefaultAmbientContractCollector> check = c =>
                 {
                     Assert.That( c.RegisteredTypeCount, Is.EqualTo( 4 ), "AbstractBase, Base, Ambient, AmbientChild" );
-                    var r = c.GetResult().Default;
+                    var r = c.GetResult( new SimpleServiceContainer() ).Default;
                     Assert.That( r.AbstractTails.Count, Is.EqualTo( 0 ) );
                     Assert.That( r.ConcreteClasses.Count, Is.EqualTo( 1 ) );
                     Assert.That( r.ClassAmbiguities.Count, Is.EqualTo( 0 ) );
@@ -196,7 +196,7 @@ namespace CK.Setup.Tests
             Action<DefaultAmbientContractCollector> check = c =>
             {
                 Assert.That( c.RegisteredTypeCount, Is.EqualTo( 5 ), "AbstractBase, Base, Ambient, AmbientChild, AmbientChildAbstractTail" );
-                var r = c.GetResult().Default;
+                var r = c.GetResult( new SimpleServiceContainer() ).Default;
                 Assert.That( r.AbstractTails.Count, Is.EqualTo( 1 ), "AmbientChild => AmbientChildAbstractTail is the abstract tail." );
                 Assert.That( r.ConcreteClasses.Count, Is.EqualTo( 1 ), "AmbientChild is the Concrete class." );
                 Assert.That( r.ClassAmbiguities.Count, Is.EqualTo( 0 ) );
@@ -224,7 +224,7 @@ namespace CK.Setup.Tests
         {
             Action<DefaultAmbientContractCollector> check = c =>
             {
-                var rAll = c.GetResult();
+                var rAll = c.GetResult( new SimpleServiceContainer() );
                 rAll.LogErrorAndWarnings( TestHelper.Monitor );
                 {
                     var r = rAll.Default;
@@ -264,7 +264,7 @@ namespace CK.Setup.Tests
         {
             Action<DefaultAmbientContractCollector> check = c =>
             {
-                var rAll = c.GetResult();
+                var rAll = c.GetResult( new SimpleServiceContainer() );
                 Assert.That( rAll.Default.ConcreteClasses.Count == 1 && rAll.Default.ConcreteClasses[0][0].AmbientTypeInfo.Type == typeof( Ambient ), "Default context contains Ambient." );
                 
                 // Whereas int context contains Ambient, AmbientScoped and AmbientScopedChild.
@@ -293,7 +293,7 @@ namespace CK.Setup.Tests
             Action<DefaultAmbientContractCollector> check = c =>
             {
                 Assert.That( c.RegisteredTypeCount, Is.EqualTo( 3 ), "AbstractBase, Base, ScopedBaseDefiner" );
-                var rAll = c.GetResult();
+                var rAll = c.GetResult( new SimpleServiceContainer() );
                 CheckEmpty( rAll.Default );
                 Assert.That( rAll.Contexts.Count, Is.EqualTo( 1 ) );
             };
@@ -309,7 +309,7 @@ namespace CK.Setup.Tests
         {
             Action<DefaultAmbientContractCollector> check = c =>
             {
-                var rAll = c.GetResult();
+                var rAll = c.GetResult( new SimpleServiceContainer() );
                 CheckEmpty( rAll.Default );
 
                 var rInt = rAll.FindContext( "int" );

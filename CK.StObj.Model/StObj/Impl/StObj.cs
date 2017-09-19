@@ -119,7 +119,7 @@ namespace CK.Core
             }
             catch( Exception ex )
             {
-                monitor.Error().Send(ex, "Step: " + step);
+                monitor.Error( "Step: " + step, ex );
                 throw;
             }
         }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
@@ -27,14 +27,18 @@ namespace CK.SqlServer.Setup.Engine.Tests.Core
         [Test]
         public void an_invalid_database_name_does_not_DBSetup_master()
         {
-            var c = new SetupEngineConfiguration();
-            c.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( "SqlActorPackage" );
-            c.StObjEngineConfiguration.FinalAssemblyConfiguration.GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile;
-            var config = new SqlSetupAspectConfiguration();
-            c.Aspects.Add( config );
-            config.DefaultDatabaseConnectionString = ConnectionString;
+            var c = new StObjEngineConfiguration();
+            c.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( "SqlActorPackage" );
+            c.FinalAssemblyConfiguration.GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile;
 
-            Assert.That(StObjContextRoot.Build(c, null, TestHelper.Monitor), Is.False );
+            var setupable = new SetupableAspectConfiguration();
+            c.Aspects.Add( setupable );
+
+            var sql = new SqlSetupAspectConfiguration();
+            sql.DefaultDatabaseConnectionString = ConnectionString;
+            c.Aspects.Add( sql );
+
+            Assert.That( StObjContextRoot.Build( c, null, TestHelper.Monitor ), Is.False );
 
             SqlDatabaseExtensions.AssertScalar( TestHelper.ConnectionStringMaster, Is.EqualTo( "master" ), "select DB_Name()" );
             SqlDatabaseExtensions.AssertScalar( TestHelper.ConnectionStringMaster, Is.EqualTo( 0 ), "select count(*) from sys.tables where name = 'tSystem';" );

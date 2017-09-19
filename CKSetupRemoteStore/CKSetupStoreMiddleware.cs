@@ -177,7 +177,7 @@ namespace CKSetupRemoteStore
                     if( n.Error ) return new PushComponentsResult( "Error while importing component into ComponentDB.", null );
 
                     var missingFiles = n.Components
-                                        .Where( c => c.ComponentKind != ComponentKind.Model )
+                                        .Where( c => c.StoreFiles )
                                         .SelectMany( c => c.Files )
                                         .Select( f => f.SHA1 )
                                         .Distinct()

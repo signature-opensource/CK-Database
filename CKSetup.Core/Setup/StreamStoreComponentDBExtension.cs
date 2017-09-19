@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using CKSetup.StreamStore;
 using System;
 using System.Collections.Generic;
@@ -37,7 +37,7 @@ namespace CKSetup.StreamStore
             ComponentDB db = null;
             if( @this.IsEmptyStore )
             {
-                monitor.Info( $"Creating new empty store." );
+                monitor.Info( $"Initializing new empty store." );
                 db = new ComponentDB();
                 @this.CreateText( RuntimeArchive.DbXmlFileName, db.ToXml().ToString( SaveOptions.DisableFormatting ), CompressionKind.None );
             }
@@ -126,7 +126,7 @@ namespace CKSetup.StreamStore
                 using( monitor.OpenInfo( $"Downloading missing files." ) )
                 {
                     var newFiles = r.Components
-                                    .Where( c => c.ComponentKind != ComponentKind.Model )
+                                    .Where( c => c.StoreFiles )
                                     .SelectMany( c => c.Files )
                                     .ToLookup( f => f.SHA1 )
                                     .Where( g => !@this.Exists( g.Key.ToString() ) )

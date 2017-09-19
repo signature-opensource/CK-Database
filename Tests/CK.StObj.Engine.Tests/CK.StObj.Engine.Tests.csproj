@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
+    <RuntimeIdentifier>win</RuntimeIdentifier>
   </PropertyGroup>
   
   <Import Project="..\..\Common\Shared.props" />
@@ -10,7 +11,7 @@
     <ProjectReference Include="..\..\CK.StObj.Engine\CK.StObj.Engine.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
+  <ItemGroup>
     <Reference Include="System" />
     <PackageReference Include="NUnit" Version="[2.6.4]" />
   </ItemGroup>

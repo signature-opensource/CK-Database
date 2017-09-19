@@ -3,7 +3,7 @@
   <Import Project="..\..\..\Common\Shared.props" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <OriginProjectName>SqlCallDemo.Tests</OriginProjectName>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
@@ -14,8 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NUnit" Version="3.6.1" />
-    <PackageReference Include="NUnitLite" Version="3.6.1" />
+    <PackageReference Include="NUnit" Version="3.8.1" />
+    <PackageReference Include="NUnitLite" Version="3.8.1" />
   </ItemGroup>
 
   <ItemGroup>

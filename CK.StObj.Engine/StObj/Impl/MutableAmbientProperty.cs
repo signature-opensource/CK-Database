@@ -77,7 +77,7 @@ namespace CK.Setup
             Debug.Assert( _maxSpecializationDepthSet != Int32.MaxValue );
             if( setterSpecializationDepth < _maxSpecializationDepthSet )
             {
-                monitor.Error().Send( "'{0}' has already been set or configured through a more specialized object.", ToString() );
+                monitor.Error( $"'{ToString()}' has already been set or configured through a more specialized object." );
                 return false;
             }
             _maxSpecializationDepthSet = setterSpecializationDepth;
@@ -91,7 +91,7 @@ namespace CK.Setup
             Debug.Assert( _maxSpecializationDepthSet != Int32.MaxValue );
             if( setterSpecializationDepth < _maxSpecializationDepthSet )
             {
-                monitor.Error().Send( $"'{this}' has already been set or configured through a more specialized object." );
+                monitor.Error( $"'{this}' has already been set or configured through a more specialized object." );
                 return false;
             }
             _maxSpecializationDepthSet = setterSpecializationDepth;

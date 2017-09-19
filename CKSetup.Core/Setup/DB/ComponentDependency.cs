@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using CSemVer;
 using System;
 using System.Collections.Generic;
@@ -45,7 +45,7 @@ namespace CKSetup
         /// </summary>
         public SVersion UseMinVersion { get; }
 
-        public override string ToString() => $"-> {UseName}/{UseMinVersion.Text}";
+        public override string ToString() => $"-> {UseName}/{(UseMinVersion == null ? "<no min version>" : UseMinVersion.Text)}";
 
         public bool Equals( ComponentDependency other ) => other != null && other.UseName == UseName && other.UseMinVersion == UseMinVersion;
 

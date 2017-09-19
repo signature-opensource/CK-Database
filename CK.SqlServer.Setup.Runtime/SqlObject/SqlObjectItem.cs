@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -120,7 +120,7 @@ namespace CK.SqlServer.Setup
         {
             if( ContextLocName.ObjectName != SqlObject.Name )
             {
-                monitor.Error().Send( $"Definition of '{ContextLocName.Name}' instead of '{SqlObject.Name}'. Names must match." );
+                monitor.Error( $"Definition of '{ContextLocName.Name}' instead of '{SqlObject.Name}'. Names must match." );
                 return false;
             }
             if( SqlObject.Schema == null )
@@ -128,12 +128,12 @@ namespace CK.SqlServer.Setup
                 if( !string.IsNullOrWhiteSpace( ContextLocName.Schema ) )
                 {
                     SqlObject = SqlObject.SetSchema( ContextLocName.Schema );
-                    monitor.Trace().Send( $"{ItemType} '{SqlObject.Name}' does not specify a schema: it will use '{ContextLocName.Schema}' schema." );
+                    monitor.Trace( $"{ItemType} '{SqlObject.Name}' does not specify a schema: it will use '{ContextLocName.Schema}' schema." );
                 }
             }
             else if( SqlObject.Schema != ContextLocName.Schema )
             {
-                monitor.Error().Send( $"{ItemType} is defined in the schema '{SqlObject.Schema}' instead of '{ContextLocName.Schema}'." );
+                monitor.Error( $"{ItemType} is defined in the schema '{SqlObject.Schema}' instead of '{ContextLocName.Schema}'." );
                 return false;
             }
             return true;

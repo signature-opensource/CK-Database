@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using CK.Core;
+using System.Collections;
 
 namespace CK.Setup
 {
@@ -16,32 +18,31 @@ namespace CK.Setup
 
         /// <summary>
         /// Encapsulates construction information for <see cref="SetupItemDriver"/> objects.
-        /// This is an opaque parameter (except the <see cref="Engine"/> property) that enables the abstract 
-        /// DriverBase to be correctly intialized.
+        /// This is an opaque parameter (except the <see cref="Drivers"/> and <see cref="AllDrivers"/> properties) that
+        /// enables the abstract DriverBase to be correctly initialized.
         /// </summary>
         public sealed class BuildInfo
         {
-            internal BuildInfo( ISetupEngine engine, ISortedItem<ISetupItem> sortedItem, VersionedName externalVersion )
+            internal BuildInfo( IDriverList drivers, IDriverBaseList allDrivers, ISortedItem<ISetupItem> item, VersionedName externalVersion )
             {               
                 Head = null;
-                Engine = engine;
-                SortedItem = sortedItem;
+                Drivers = drivers;
+                AllDrivers = allDrivers;
                 ExternalVersion = externalVersion;
+                SortedItem = item;
             }
 
-            internal BuildInfo( DriverBase head, ISortedItem<ISetupItem> sortedItem )
+            internal BuildInfo( DriverBase head, IDriverList drivers, IDriverBaseList allDrivers, ISortedItem<ISetupItem> item )
             {
                 Head = head;
-                Engine = head.Engine;
+                Drivers = drivers;
+                AllDrivers = allDrivers;
                 ExternalVersion = head.ExternalVersion;
-                SortedItem = sortedItem;
+                SortedItem = item;
             }
 
-            /// <summary>
-            /// Gets the <see cref="ISetupEngine"/>.
-            /// </summary>
-            public ISetupEngine Engine { get; set; }
-
+            internal readonly IDriverList Drivers;
+            internal readonly IDriverBaseList AllDrivers;
             internal readonly ISortedItem<ISetupItem> SortedItem;
             internal readonly VersionedName ExternalVersion;
             internal readonly DriverBase Head;
@@ -52,16 +53,70 @@ namespace CK.Setup
         /// </summary>
         /// <param name="info">Opaque parameter built by the framework.</param>
         public SetupItemDriver( BuildInfo info )
-            : base( info.Engine, info.SortedItem, info.ExternalVersion )
+            : base( info.Drivers, info.AllDrivers, info.SortedItem, info.ExternalVersion )
         {
             Debug.Assert( info.Head == null || info.SortedItem.FullName + ".Head" == info.Head.FullName );
             Head = info.Head;
+            PreviousDrivers = new PreviousDriversImpl( this );
         }
+
+        class PreviousDriversImpl : IDriverList
+        {
+            readonly DriverBase _d;
+            readonly int _count;
+
+            public PreviousDriversImpl( SetupItemDriver d )
+            {
+                _d = d;
+                _count = _d.Drivers.Count;
+            }
+
+            public SetupItemDriver this[string fullName]
+            {
+                get
+                {
+                    var d = _d.Drivers[fullName];
+                    if( d != null && d.SortedItem.Index >= _d.SortedItem.Index ) d = null;
+                    return d;
+                }
+            }
+
+            public SetupItemDriver this[IDependentItem item]
+            {
+                get
+                {
+                    var d = _d.Drivers[item];
+                    if( d != null && d.SortedItem.Index >= _d.SortedItem.Index ) d = null;
+                    return d;
+                }
+            }
+
+            public SetupItemDriver this[int index]
+            {
+                get
+                {
+                    if( index >= _count ) throw new ArgumentOutOfRangeException( nameof( index ) );
+                    return _d.Drivers[index];
+                }
+            }
+
+            public int Count => _count;
+
+            public IEnumerator<SetupItemDriver> GetEnumerator() => _d.Drivers.Take( _count ).GetEnumerator();
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+        
+        /// <summary>
+        /// Gets the ordered list of <see cref="SetupItemDriver"/> indexed by the <see cref="IDependentItem.FullName"/> 
+        /// or by the <see cref="IDependentItem"/> object instance itself thar are before this one.
+        /// </summary>
+        public IDriverList PreviousDrivers { get; }
 
         /// <summary>
         /// Gets the container driver (or null if the item does not belong to a container).
         /// </summary>
-        public SetupItemDriver ContainerDriver => Engine.Drivers[SortedItem.Container?.Item];
+        public SetupItemDriver ContainerDriver => Drivers[SortedItem.Container?.Item];
 
         /// <summary>
         /// Gets all the container driver, starting with this <see cref="ContainerDriver"/> up to the 
@@ -91,98 +146,97 @@ namespace CK.Setup
 
         /// <summary>
         /// Very first method called after all driver have been created.
-        /// Any <see cref="ISetupItemDriverAware.OnDriverPreInitialized(SetupItemDriver)"/> on setup items
+        /// Any <see cref="ISetupItemDriverAware.OnDriverPreInitialized"/> on setup items
         /// are called right after.
         /// Does nothing by default (always return true).
         /// </summary>
+        /// <param name="monitor">Monitor to use.</param>
         /// <returns>True on success, false to stop the process.</returns>
-        internal protected virtual bool ExecutePreInit() => true;
+        internal protected virtual bool ExecutePreInit( IActivityMonitor monitor ) => true;
 
-        internal bool ExecuteHeadInit()
+        internal bool ExecuteHeadInit( IActivityMonitor monitor )
         {
-            if( !Init( true ) || !OnStep( SetupCallGroupStep.Init, true ) ) return false;
+            if( !Init( monitor, true ) || !OnStep( monitor, SetupCallGroupStep.Init, true ) ) return false;
             if( _handlers != null )
             {
                 foreach( var h in _handlers )
                 {
-                    if( !h.Init( this ) || !h.OnStep( this, SetupCallGroupStep.Init ) ) return false;
+                    if( !h.Init( monitor, this ) || !h.OnStep( monitor, this, SetupCallGroupStep.Init ) ) return false;
                 }
             }
-            return Init( false ) && OnStep( SetupCallGroupStep.Init, false );
+            return Init( monitor, false ) && OnStep( monitor, SetupCallGroupStep.Init, false );
         }
 
-        internal override bool ExecuteInit()
+        internal override bool ExecuteInit( IActivityMonitor monitor )
         {
-            if( !IsGroup ) return ExecuteHeadInit();
+            if( !IsGroup ) return ExecuteHeadInit( monitor );
             // If the item is not a Group or a Container, InitContent is not called.
-            if( !InitContent( true ) || !OnStep( SetupCallGroupStep.InitContent, true ) ) return false;
+            if( !InitContent( monitor, true ) || !OnStep( monitor, SetupCallGroupStep.InitContent, true ) ) return false;
             if( _handlers != null )
             {
                 foreach( var h in _handlers )
                 {
-                    if( !h.InitContent( this ) || !h.OnStep( this, SetupCallGroupStep.InitContent ) ) return false;
+                    if( !h.InitContent( monitor, this ) || !h.OnStep( monitor, this, SetupCallGroupStep.InitContent ) ) return false;
                 }
             }
-            return InitContent( false ) && OnStep( SetupCallGroupStep.InitContent, false );
+            return InitContent( monitor, false ) && OnStep( monitor, SetupCallGroupStep.InitContent, false );
         }
 
-        internal bool ExecuteHeadInstall()
+        internal bool ExecuteHeadInstall( IActivityMonitor monitor )
         {
-            if( !Install( true ) || !OnStep( SetupCallGroupStep.Install, true ) ) return false;
+            if( !Install( monitor, true ) || !OnStep( monitor, SetupCallGroupStep.Install, true ) ) return false;
             if( _handlers != null )
             {
                 foreach( var h in _handlers )
                 {
-                    if( !h.Install( this ) || !h.OnStep( this, SetupCallGroupStep.Install ) ) return false;
+                    if( !h.Install( monitor, this ) || !h.OnStep( monitor, this, SetupCallGroupStep.Install ) ) return false;
                 }
             }
-            return Install( false ) && OnStep( SetupCallGroupStep.Install, false );
+            return Install( monitor, false ) && OnStep( monitor, SetupCallGroupStep.Install, false );
         }
 
-        internal override bool ExecuteInstall()
+        internal override bool ExecuteInstall( IActivityMonitor monitor )
         {
-            if( !IsGroup ) return ExecuteHeadInstall();
+            if( !IsGroup ) return ExecuteHeadInstall( monitor );
             // If the item is not a Group or a Container, InstallContent is not called.
-            if( !InstallContent( true ) || !OnStep( SetupCallGroupStep.InstallContent, true ) ) return false;
+            if( !InstallContent( monitor, true ) || !OnStep( monitor, SetupCallGroupStep.InstallContent, true ) ) return false;
             if( _handlers != null )
             {
                 foreach( var h in _handlers )
                 {
-                    if( !h.InstallContent( this ) || !h.OnStep( this, SetupCallGroupStep.InstallContent ) ) return false;
+                    if( !h.InstallContent( monitor, this ) || !h.OnStep( monitor, this, SetupCallGroupStep.InstallContent ) ) return false;
                 }
             }
-            return InstallContent( false ) && OnStep( SetupCallGroupStep.InstallContent, false );
+            return InstallContent( monitor, false ) && OnStep( monitor, SetupCallGroupStep.InstallContent, false );
         }
 
-        internal bool ExecuteHeadSettle()
+        internal bool ExecuteHeadSettle( IActivityMonitor monitor )
         {
-            if( !Settle( true ) || !OnStep( SetupCallGroupStep.Settle, true ) ) return false;
+            if( !Settle( monitor, true ) || !OnStep( monitor, SetupCallGroupStep.Settle, true ) ) return false;
             if( _handlers != null )
             {
                 foreach( var h in _handlers )
                 {
-                    if( !h.Settle( this ) || !h.OnStep( this, SetupCallGroupStep.Settle ) ) return false;
+                    if( !h.Settle( monitor, this ) || !h.OnStep( monitor, this, SetupCallGroupStep.Settle ) ) return false;
                 }
             }
-            return Settle( false ) && OnStep( SetupCallGroupStep.Settle, false );
+            return Settle( monitor, false ) && OnStep( monitor, SetupCallGroupStep.Settle, false );
         }
 
-        internal override bool ExecuteSettle()
+        internal override bool ExecuteSettle( IActivityMonitor monitor )
         {
-            if( !IsGroup ) return ExecuteHeadSettle();
+            if( !IsGroup ) return ExecuteHeadSettle( monitor );
             // If the item is not a Group or a Container, SettleContent is not called.
-            if( !SettleContent( true ) || !OnStep( SetupCallGroupStep.SettleContent, true ) ) return false;
+            if( !SettleContent( monitor, true ) || !OnStep( monitor, SetupCallGroupStep.SettleContent, true ) ) return false;
             if( _handlers != null )
             {
                 foreach( var h in _handlers )
                 {
-                    if( !h.SettleContent( this ) || !h.OnStep( this, SetupCallGroupStep.SettleContent ) ) return false;
+                    if( !h.SettleContent( monitor, this ) || !h.OnStep( monitor, this, SetupCallGroupStep.SettleContent ) ) return false;
                 }
             }
-            return SettleContent( false ) && OnStep( SetupCallGroupStep.SettleContent, false );
+            return SettleContent( monitor, false ) && OnStep( monitor, SetupCallGroupStep.SettleContent, false );
         }
-
-        #region Handler management
 
         /// <summary>
         /// Adds a <see cref="ISetupHandler"/> in the chain of handlers.
@@ -192,112 +246,80 @@ namespace CK.Setup
         /// <param name="handler">The handler to append.</param>
         public void AddHandler( ISetupHandler handler )
         {
-            if( handler == null ) throw new ArgumentNullException( "handler" );
+            if( handler == null ) throw new ArgumentNullException( nameof(handler) );
             if( _handlers == null ) _handlers = new List<ISetupHandler>();
             _handlers.Add( handler );
         }
 
-        public void AddInitHandler( Func<SetupItemDriver, bool> handler )
-        {
-            if( handler == null ) throw new ArgumentNullException( "handler" );
-            AddHandler( new SetupHandlerFuncAdapter( handler, SetupCallGroupStep.Init ) );
-        }
-
-        public void AddInitContentHandler( Func<SetupItemDriver, bool> handler )
-        {
-            if( handler == null ) throw new ArgumentNullException( "handler" );
-            AddHandler( new SetupHandlerFuncAdapter( handler, SetupCallGroupStep.InitContent ) );
-        }
-
-        public void AddInstallHandler( Func<SetupItemDriver, bool> handler )
-        {
-            if( handler == null ) throw new ArgumentNullException( "handler" );
-            AddHandler( new SetupHandlerFuncAdapter( handler, SetupCallGroupStep.Install ) );
-        }
-
-        public void AddInstallContentHandler( Func<SetupItemDriver, bool> handler )
-        {
-            if( handler == null ) throw new ArgumentNullException( "handler" );
-            AddHandler( new SetupHandlerFuncAdapter( handler, SetupCallGroupStep.InstallContent ) );
-        }
-
-        public void AddSettleHandler( Func<SetupItemDriver, bool> handler )
-        {
-            if( handler == null ) throw new ArgumentNullException( "handler" );
-            AddHandler( new SetupHandlerFuncAdapter( handler, SetupCallGroupStep.Settle ) );
-        }
-
-        public void AddSettleContentHandler( Func<SetupItemDriver, bool> handler )
-        {
-            if( handler == null ) throw new ArgumentNullException( "handler" );
-            AddHandler( new SetupHandlerFuncAdapter( handler, SetupCallGroupStep.SettleContent ) );
-        }
-
-        #endregion
-
         /// <summary>
         /// Does nothing (always returns true).
         /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
         /// <param name="beforeHandlers">
         /// True when handlers associated to this driver have not been called yet.
         /// False when their <see cref="ISetupHandler.Init"/> method have been called.
         /// </param>
         /// <returns>Always true.</returns>
-        internal protected virtual bool Init( bool beforeHandlers ) => true;
+        internal protected virtual bool Init( IActivityMonitor monitor, bool beforeHandlers ) => true;
 
         /// <summary>
         /// Called, only if <see cref="IsGroup"/> is true, after <see cref="Init"/> (and <see cref="InitContent"/> for groups 
         /// or containers) have been called on all the contained items.
         /// Does nothing (always returns true).
         /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
         /// <param name="beforeHandlers">
         /// True when handlers associated to this driver have not been called yet.
         /// False when their <see cref="ISetupHandler.InitContent"/> method have been called.
         /// </param>
         /// <returns>Always true.</returns>
-        protected virtual bool InitContent( bool beforeHandlers ) => true;
+        protected virtual bool InitContent( IActivityMonitor monitor, bool beforeHandlers ) => true;
 
         /// <summary>
         /// Does nothing (always returns true).
         /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
         /// <param name="beforeHandlers">
         /// True when handlers associated to this driver have not been called yet.
         /// False when their <see cref="ISetupHandler.Install"/> method have been called.
         /// </param>
         /// <returns>Always true.</returns>
-        internal protected virtual bool Install( bool beforeHandlers ) => true;
+        internal protected virtual bool Install( IActivityMonitor monitor, bool beforeHandlers ) => true;
 
         /// <summary>
         /// Called, only if <see cref="IsGroup"/> is true, after <see cref="Install"/> (and <see cref="InstallContent"/> for groups 
         /// or containers) have been called on all the contained items.
         /// Does nothing (always returns true).
         /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
         /// <param name="beforeHandlers">
         /// True when handlers associated to this driver have not been called yet.
         /// False when their <see cref="ISetupHandler.InstallContent"/> method have been called.
         /// </param>
-        protected virtual bool InstallContent( bool beforeHandlers ) => true;
+        protected virtual bool InstallContent( IActivityMonitor monitor, bool beforeHandlers ) => true;
 
         /// <summary>
         /// Does nothing (always returns true).
         /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
         /// <param name="beforeHandlers">
         /// True when handlers associated to this driver have not been called yet.
         /// False when their <see cref="ISetupHandler.Settle"/> method have been called.
         /// </param>
         /// <returns>Always true.</returns>
-        internal protected virtual bool Settle( bool beforeHandlers ) => true;
+        internal protected virtual bool Settle( IActivityMonitor monitor, bool beforeHandlers ) => true;
 
         /// <summary>
         /// Called, only if <see cref="IsGroup"/> is true, after <see cref="Settle"/> (and <see cref="SettleContent"/> for groups 
         /// or containers) have been called on all the contained items.
         /// Does nothing (always returns true).
         /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
         /// <param name="beforeHandlers">
         /// True when handlers associated to this driver have not been called yet.
         /// False when their <see cref="ISetupHandler.SettleContent"/> method have been called.
         /// </param>
-        protected virtual bool SettleContent( bool beforeHandlers ) => true;
+        protected virtual bool SettleContent( IActivityMonitor monitor, bool beforeHandlers ) => true;
 
         /// <summary>
         /// This method is called right after its corresponding dedicated method.
@@ -306,12 +328,14 @@ namespace CK.Setup
         /// only their actual contents/data is step dependent.
         /// Does nothing (always returns true).
         /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="step">The current step.</param>
         /// <param name="beforeHandlers">
         /// True when handlers associated to this driver have not been called yet.
         /// False when their associated step method have been called.
         /// </param>
         /// <returns>Always true.</returns>
-        protected virtual bool OnStep( SetupCallGroupStep step, bool beforeHandlers ) => true;
+        protected virtual bool OnStep( IActivityMonitor monitor, SetupCallGroupStep step, bool beforeHandlers ) => true;
 
     }
 }

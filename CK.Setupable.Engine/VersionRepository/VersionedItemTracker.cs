@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using CK.Core;
 using System.Linq;
@@ -74,12 +74,12 @@ namespace CK.Setup
 
         public bool Initialize( IActivityMonitor monitor )
         {
-            using( monitor.OpenInfo().Send( "Reading original versions." ) )
+            using( monitor.OpenInfo( "Reading original versions." ) )
             {
                 try
                 {
                     var originals = _versionReader.GetOriginalVersions( monitor );
-                    if( originals == null ) monitor.Fatal().Send( "VersionedItemRepository must return a non null OriginalVersions." );
+                    if( originals == null ) monitor.Fatal( "VersionedItemRepository must return a non null OriginalVersions." );
                     else
                     {
                         int nbRead = _tracker.Initialize( originals );
@@ -89,22 +89,22 @@ namespace CK.Setup
                 }
                 catch( Exception ex )
                 {
-                    monitor.Fatal().Send( ex );
+                    monitor.Fatal( ex );
                 }
                 return false;
             }
         }
 
-        internal bool ConcludeWithFatalOnError( IActivityMonitor monitor, IVersionedItemWriter writer, bool setupSuccess )
+        internal bool ConcludeWithFatalOnError( IActivityMonitor monitor, IVersionedItemWriter writer, bool deleteUnaccessedItems )
         {
             try
             {
-                writer.SetVersions( monitor, _versionReader, _tracker.All, setupSuccess );
+                writer.SetVersions( monitor, _versionReader, _tracker.All, deleteUnaccessedItems );
                 return true;
             }
             catch( Exception ex )
             {
-                monitor.Fatal().Send( ex, "While saving versions." );
+                monitor.Fatal( "While saving versions.", ex );
                 return false;
             }
         }

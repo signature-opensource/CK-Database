@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Data.SqlClient;
 using System.Diagnostics;
@@ -16,8 +16,8 @@ namespace CK.SqlServer.Setup
 
     public partial class SqlCallableAttributeImpl : SqlBaseItemMethodAttributeImplBase
     {
-        public SqlCallableAttributeImpl( SqlCallableAttributeBase a )
-            : base( a, a.ObjectType )
+        public SqlCallableAttributeImpl( SqlCallableAttributeBase a, ISqlServerParser parser )
+            : base( a, parser, a.ObjectType )
         {
         }
 
@@ -28,13 +28,13 @@ namespace CK.SqlServer.Setup
             ISqlCallableItem item = sqlItem as ISqlCallableItem;
             if( item == null )
             {
-                monitor.Fatal().Send( $"The item '{item.FullName}' must be a ISqlCallableItem object to be able to generate call implementation." );
+                monitor.Fatal( $"The item '{item.FullName}' must be a ISqlCallableItem object to be able to generate call implementation." );
                 return false;
             }
             MethodInfo mCreateCommand = item.AssumeCommandBuilder( monitor, dynamicAssembly );
             if( mCreateCommand == null )
             {
-                monitor.Error().Send( $"Invalid low level SqlCommand creation method for '{item.FullName}'." );
+                monitor.Error( $"Invalid low level SqlCommand creation method for '{item.FullName}'." );
                 return false;
             }
             ParameterInfo[] mParameters = m.GetParameters();
@@ -58,7 +58,7 @@ namespace CK.SqlServer.Setup
                 {
                     if( executeCall )
                     {
-                        monitor.Error().Send( "When a SqlCommand is returned, ExecuteCall must not be specified.", m.DeclaringType.FullName, m.Name );
+                        monitor.Error( "When a SqlCommand is returned, ExecuteCall must not be specified." );
                         return false;
                     }
                     gType = GenerationType.ReturnSqlCommand;
@@ -69,7 +69,7 @@ namespace CK.SqlServer.Setup
                     {
                         if( executeCall )
                         {
-                            monitor.Error().Send( "When a Wrapper is returned, ExecuteNonQuery must not be specified.", m.DeclaringType.FullName, m.Name );
+                            monitor.Error( $"When a Wrapper is returned, ExecuteNonQuery must not be specified." );
                             return false;
                         }
                         gType = GenerationType.ReturnWrapper;
@@ -80,7 +80,7 @@ namespace CK.SqlServer.Setup
                     }
                     else
                     {
-                        monitor.Error().Send( "Method '{0}.{1}' must return a SqlCommand -OR- a type that has at least one constructor with a non optional SqlCommand (among other parameters) -OR- accepts a SqlCommand by reference as its first argument -OR- use ExecuteNonQuery mode.", m.DeclaringType.FullName, m.Name );
+                        monitor.Error( $"Method '{m.DeclaringType.FullName}.{m.Name}' must return a SqlCommand -OR- a type that has at least one constructor with a non optional SqlCommand (among other parameters) -OR- accepts a SqlCommand by reference as its first argument -OR- use ExecuteNonQuery mode." );
                         return false;
                     }
                 }

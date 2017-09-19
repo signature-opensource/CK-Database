@@ -1,4 +1,4 @@
-﻿#region Proprietary License
+#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (Tests\CK.StObj.Engine.Tests\SimpleObjectsTests.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -29,7 +29,7 @@ namespace CK.StObj.Engine.Tests
             StObjCollector collector = new StObjCollector( TestHelper.Monitor );
             collector.RegisterTypes( disco );
             
-            var result = collector.GetResult();
+            var result = collector.GetResult( new SimpleServiceContainer() );
             Assert.That( result.HasFatalError, Is.False );
 
             IStObjResult oa = result.Default.StObjMap.ToStObj( typeof(ObjectA) );
@@ -54,7 +54,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void DiscoverWithLevel3()
         {
-            using( TestHelper.Monitor.OpenInfo().Send( "Without ObjectALevel4 class." ) )
+            using( TestHelper.Monitor.OpenInfo( "Without ObjectALevel4 class." ) )
             {
                 
                 AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
@@ -69,11 +69,11 @@ namespace CK.StObj.Engine.Tests
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
                 collector.RegisterTypes( disco );
 
-                var result = collector.GetResult();
+                var result = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( result.HasFatalError, Is.False );
             }
 
-            using( TestHelper.Monitor.OpenInfo().Send( "ObjectALevel4 class (specializes ObjectALevel3 and use IAbstractionBOnLevel2)." ) )
+            using( TestHelper.Monitor.OpenInfo( "ObjectALevel4 class (specializes ObjectALevel3 and use IAbstractionBOnLevel2)." ) )
             {
                 AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
 
@@ -85,7 +85,7 @@ namespace CK.StObj.Engine.Tests
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
                 collector.RegisterTypes( disco );
 
-                var result = collector.GetResult();
+                var result = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( result.HasFatalError, Is.False );
             }
         }
@@ -93,7 +93,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void CycleInPackage()
         {
-            using( TestHelper.Monitor.OpenInfo().Send( "A specialization of ObjectBLevel3 wants to be in PackageForAB." ) )
+            using( TestHelper.Monitor.OpenInfo( "A specialization of ObjectBLevel3 wants to be in PackageForAB." ) )
             {
                 // ↳ PackageForAB ∋ ObjectBLevel3_InPackageForAB ⇒ ObjectBLevel2 ⇒ ObjectBLevel1 ∈ PackageForABLevel1 ⇒ PackageForAB.
                 AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
@@ -108,7 +108,7 @@ namespace CK.StObj.Engine.Tests
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
                 collector.RegisterTypes( disco );
 
-                var result = collector.GetResult();
+                var result = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( result.HasFatalError, Is.True );
             }
         }
@@ -116,7 +116,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void Cycle()
         {
-            using( TestHelper.Monitor.OpenInfo().Send( "ObjectXNeedsY and ObjectYNeedsX." ) )
+            using( TestHelper.Monitor.OpenInfo( "ObjectXNeedsY and ObjectYNeedsX." ) )
             {
                 AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
                 disco.AssemblyFilter = a => a == TestHelper.Assembly;
@@ -129,7 +129,7 @@ namespace CK.StObj.Engine.Tests
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
                 collector.RegisterTypes( disco );
 
-                var result = collector.GetResult();
+                var result = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( result.HasFatalError, Is.True );
             }
         }
@@ -137,7 +137,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void MissingReference()
         {
-            using( TestHelper.Monitor.OpenInfo().Send( "ObjectXNeedsY without ObjectYNeedsX." ) )
+            using( TestHelper.Monitor.OpenInfo( "ObjectXNeedsY without ObjectYNeedsX." ) )
             {
                 AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
                 disco.AssemblyFilter = a => a == TestHelper.Assembly;
@@ -149,7 +149,7 @@ namespace CK.StObj.Engine.Tests
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
                 collector.RegisterTypes( disco );
-                var result = collector.GetResult();
+                var result = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( result.HasFatalError, Is.True );
             }
         }
@@ -157,7 +157,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void LoggerInjection()
         {
-            using( TestHelper.Monitor.OpenInfo().Send( "ConsoleMonitor injection (and optional parameter)." ) )
+            using( TestHelper.Monitor.OpenInfo( "ConsoleMonitor injection (and optional parameter)." ) )
             {
                 AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
                 disco.AssemblyFilter = a => a == TestHelper.Assembly;
@@ -167,7 +167,7 @@ namespace CK.StObj.Engine.Tests
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
                 collector.RegisterTypes( disco );
-                var result = collector.GetResult();
+                var result = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( result.HasFatalError, Is.False );
 
                 IStObjResult theObject = result.Default.StObjMap.ToLeaf( typeof(CK.StObj.Engine.Tests.SimpleObjects.LoggerInjection.LoggerInjected) );
@@ -213,7 +213,7 @@ namespace CK.StObj.Engine.Tests
 
             StObjCollector collector = new StObjCollector( TestHelper.Monitor );
             collector.RegisterTypes( disco );
-            var result = collector.GetResult();
+            var result = collector.GetResult( new SimpleServiceContainer() );
             Assert.That( result.HasFatalError, Is.True );
         }
 
@@ -240,7 +240,7 @@ namespace CK.StObj.Engine.Tests
 
             StObjCollector collector = new StObjCollector( TestHelper.Monitor );
             collector.RegisterTypes( disco );
-            var result = collector.GetResult();
+            var result = collector.GetResult( new SimpleServiceContainer() );
             Assert.That( result.HasFatalError, Is.True );
 
         }
@@ -265,7 +265,7 @@ namespace CK.StObj.Engine.Tests
 
             StObjCollector collector = new StObjCollector( TestHelper.Monitor );
             collector.RegisterTypes( disco );
-            var result = collector.GetResult();
+            var result = collector.GetResult( new SimpleServiceContainer() );
             Assert.That( result.HasFatalError, Is.False );
         
         }

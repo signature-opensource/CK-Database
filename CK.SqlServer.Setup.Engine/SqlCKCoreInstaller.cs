@@ -21,7 +21,7 @@ namespace CK.SqlServer.Setup
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
 
-            using( monitor.OpenTrace().Send( "Installing CKCore kernel." ) )
+            using( monitor.OpenTrace( "Installing CKCore kernel." ) )
             {
                 short ver = 0;
                 if( !forceInstall && (ver = (short)manager.ExecuteScalar( "if object_id('CKCore.tSystem') is not null select Ver from CKCore.tSystem where Id=1 else select cast(0 as smallint);" )) == CurrentVersion )

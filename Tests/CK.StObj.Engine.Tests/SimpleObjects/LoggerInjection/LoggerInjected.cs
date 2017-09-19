@@ -13,7 +13,7 @@ namespace CK.StObj.Engine.Tests.SimpleObjects.LoggerInjection
         {
             Assert.That( monitor, Is.Not.Null, "This is the Setup monitor. Parameter must be exactly 'IActivityMonitor monitor'." );
             Assert.That( anotherLogger, Is.Null, "This is NOT the Setup monitor. Since it is optional, it works." );
-            monitor.Trace().Send("Setup monitor can be used by StObjConstruct method.");
+            monitor.Trace( "Setup monitor can be used by StObjConstruct method.");
         }
     }
 }
