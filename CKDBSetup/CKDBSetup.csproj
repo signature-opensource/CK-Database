@@ -51,25 +51,25 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CK.ActivityMonitor, Version=9.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.ActivityMonitor.9.0.0-b\lib\net461\CK.ActivityMonitor.dll</HintPath>
+      <HintPath>..\packages\CK.ActivityMonitor.9.0.0\lib\net461\CK.ActivityMonitor.dll</HintPath>
     </Reference>
     <Reference Include="CK.ActivityMonitor.SimpleSender, Version=9.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.ActivityMonitor.SimpleSender.9.0.0-b\lib\net461\CK.ActivityMonitor.SimpleSender.dll</HintPath>
+      <HintPath>..\packages\CK.ActivityMonitor.SimpleSender.9.0.0\lib\net461\CK.ActivityMonitor.SimpleSender.dll</HintPath>
     </Reference>
     <Reference Include="CK.ActivityMonitor.StandardSender, Version=9.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.ActivityMonitor.StandardSender.9.0.0-b\lib\net461\CK.ActivityMonitor.StandardSender.dll</HintPath>
+      <HintPath>..\packages\CK.ActivityMonitor.StandardSender.9.0.0\lib\net461\CK.ActivityMonitor.StandardSender.dll</HintPath>
     </Reference>
     <Reference Include="CK.CodeGen, Version=0.1.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.CodeGen.0.1.0-a21\lib\net461\CK.CodeGen.dll</HintPath>
+      <HintPath>..\packages\CK.CodeGen.0.1.0-a22\lib\net461\CK.CodeGen.dll</HintPath>
     </Reference>
     <Reference Include="CK.Core, Version=9.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.Core.9.0.0-p\lib\net461\CK.Core.dll</HintPath>
+      <HintPath>..\packages\CK.Core.9.0.0\lib\net461\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="CK.Reflection, Version=6.0.1.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
       <HintPath>..\packages\CK.Reflection.6.0.1\lib\net461\CK.Reflection.dll</HintPath>
     </Reference>
-    <Reference Include="CK.Setup.Dependency, Version=6.0.1.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.Setup.Dependency.6.0.2-Cdevelop-0005\lib\netstandard2.0\CK.Setup.Dependency.dll</HintPath>
+    <Reference Include="CK.Setup.Dependency, Version=6.0.2.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <HintPath>..\packages\CK.Setup.Dependency.6.0.2\lib\net461\CK.Setup.Dependency.dll</HintPath>
     </Reference>
     <Reference Include="CK.Setupable.Engine">
       <HintPath>Imports\CK.Setupable.Engine.exe</HintPath>
@@ -81,10 +81,10 @@
       <HintPath>Imports\CK.Setupable.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="CK.SqlServer.Parser, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.SqlServer.Parser.6.0.0-d03\lib\net461\CK.SqlServer.Parser.dll</HintPath>
+      <HintPath>..\packages\CK.SqlServer.Parser.6.0.0-d04\lib\net461\CK.SqlServer.Parser.dll</HintPath>
     </Reference>
     <Reference Include="CK.SqlServer.Parser.Model, Version=4.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.SqlServer.Parser.Model.4.0.0-a\lib\net461\CK.SqlServer.Parser.Model.dll</HintPath>
+      <HintPath>..\packages\CK.SqlServer.Parser.Model.4.0.0\lib\net461\CK.SqlServer.Parser.Model.dll</HintPath>
     </Reference>
     <Reference Include="CK.SqlServer.Setup.Engine">
       <HintPath>Imports\CK.SqlServer.Setup.Engine.dll</HintPath>
@@ -96,7 +96,7 @@
       <HintPath>Imports\CK.SqlServer.Setup.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="CK.SqlServer.Transform, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.SqlServer.Transform.6.0.0-d03\lib\net461\CK.SqlServer.Transform.dll</HintPath>
+      <HintPath>..\packages\CK.SqlServer.Transform.6.0.0-d04\lib\net461\CK.SqlServer.Transform.dll</HintPath>
     </Reference>
     <Reference Include="CK.StObj.Engine">
       <HintPath>Imports\CK.StObj.Engine.dll</HintPath>
