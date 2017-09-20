@@ -106,11 +106,11 @@ namespace CodeCake
                      dotNetConf.Verbosity = DotNetCoreVerbosity.Minimal;
 
                      Cake.DotNetCoreRestore( "CodeCakeBuilder/CoreBuild.proj", dotNetConf );
-                     Cake.NuGetRestore( "CKDBSetup/packages.config", new NuGetRestoreSettings()
-                     {
-                         Verbosity = NuGetVerbosity.Quiet,
-                         PackagesDirectory = "packages"
-                     } );
+                     //Cake.NuGetRestore( "CKDBSetup/packages.config", new NuGetRestoreSettings()
+                     //{
+                     //    Verbosity = NuGetVerbosity.Quiet,
+                     //    PackagesDirectory = "packages"
+                     //} );
                  } );
 
             Task( "Build" )
@@ -126,11 +126,11 @@ namespace CodeCake
                              s.Configuration = configuration;
                          } ) );
 
-                     Cake.MSBuild( "CKDBSetup/CKDBSetup.csproj", new MSBuildSettings().AddVersionArguments( gitInfo, s =>
-                          {
-                             s.Configuration = configuration;
-                             s.ToolVersion = MSBuildToolVersion.VS2015;
-                         } ) );
+                     //Cake.MSBuild( "CKDBSetup/CKDBSetup.csproj", new MSBuildSettings().AddVersionArguments( gitInfo, s =>
+                     //     {
+                     //        s.Configuration = configuration;
+                     //        s.ToolVersion = MSBuildToolVersion.VS2015;
+                     //    } ) );
                  } );
 
             Task( "Unit-Testing" )
@@ -164,60 +164,60 @@ namespace CodeCake
                      }
                  } );
 
-            Task( "Testing-CKDBSetup" )
-                .IsDependentOn( "Unit-Testing" )
-                .IsDependentOn( "Build" )
-                .Does( () =>
-                {
-                    var exe = Cake.File( $@"CKDBSetup\bin\{configuration}\CKDBSetup.exe" ).Path.MakeAbsolute( Cake.Environment );
-                    var callDemoPath = Cake.Directory( $@"Tests\SqlCallDemo\SqlCallDemo\bin\{configuration}\net461" );
+            //Task( "Testing-CKDBSetup" )
+            //    .IsDependentOn( "Unit-Testing" )
+            //    .IsDependentOn( "Build" )
+            //    .Does( () =>
+            //    {
+            //        var exe = Cake.File( $@"CKDBSetup\bin\{configuration}\CKDBSetup.exe" ).Path.MakeAbsolute( Cake.Environment );
+            //        var callDemoPath = Cake.Directory( $@"Tests\SqlCallDemo\SqlCallDemo\bin\{configuration}\net461" );
 
-                    string c = Environment.GetEnvironmentVariable( "CK_DB_TEST_MASTER_CONNECTION_STRING" );
-                    if( c == null ) c = System.Configuration.ConfigurationManager.AppSettings["CK_DB_TEST_MASTER_CONNECTION_STRING"];
-                    if( c == null ) c = "Server=.;Database=master;Integrated Security=SSPI";
-                    var csB = new SqlConnectionStringBuilder( c );
-                    csB.InitialCatalog = "CKDB_TEST_SqlCallDemo";
-                    var dbCon = csB.ToString();
+            //        string c = Environment.GetEnvironmentVariable( "CK_DB_TEST_MASTER_CONNECTION_STRING" );
+            //        if( c == null ) c = System.Configuration.ConfigurationManager.AppSettings["CK_DB_TEST_MASTER_CONNECTION_STRING"];
+            //        if( c == null ) c = "Server=.;Database=master;Integrated Security=SSPI";
+            //        var csB = new SqlConnectionStringBuilder( c );
+            //        csB.InitialCatalog = "CKDB_TEST_SqlCallDemo";
+            //        var dbCon = csB.ToString();
 
-                    var cmdLineIL = $@"{exe.FullPath} setup ""{dbCon}"" -ra ""SqlCallDemo"" -n ""GenByCKDBSetup"" -p ""{callDemoPath}""";
-                    {
-                        int result = Cake.RunCmd( cmdLineIL );
-                        if( result != 0 ) throw new Exception( "CKDBSetup.exe failed for IL generation." );
-                    }
-                    {
-                        int result = Cake.RunCmd( cmdLineIL + " -sg" );
-                        if( result != 0 ) throw new Exception( "CKDBSetup.exe failed for Source Code generation." );
-                    }
-                } );
+            //        var cmdLineIL = $@"{exe.FullPath} setup ""{dbCon}"" -ra ""SqlCallDemo"" -n ""GenByCKDBSetup"" -p ""{callDemoPath}""";
+            //        {
+            //            int result = Cake.RunCmd( cmdLineIL );
+            //            if( result != 0 ) throw new Exception( "CKDBSetup.exe failed for IL generation." );
+            //        }
+            //        {
+            //            int result = Cake.RunCmd( cmdLineIL + " -sg" );
+            //            if( result != 0 ) throw new Exception( "CKDBSetup.exe failed for Source Code generation." );
+            //        }
+            //    } );
 
-            Task( "Create-NuGet-Package-For-CKDBSetup" )
-                .WithCriteria( () => gitInfo.IsValid )
-                .IsDependentOn( "Unit-Testing" )
-                .IsDependentOn( "Testing-CKDBSetup" )
-                .Does( () =>
-                 {
-                     Cake.CreateDirectory( releasesDir );
-                     var settings = new NuGetPackSettings()
-                     {
-                         Version = gitInfo.SafeNuGetVersion,
-                         BasePath = Cake.Environment.WorkingDirectory,
-                         OutputDirectory = releasesDir
-                     };
-                     var tempNuspec = releasesDir.Path.CombineWithFilePath( "CKDBSetup.nuspec" );
-                     Cake.CopyFile( "CodeCakeBuilder/NuSpec/CKDBSetup.nuspec", tempNuspec );
-                     Cake.TransformTextFile( tempNuspec, "{{", "}}" )
-                             .WithToken( "configuration", configuration )
-                             .WithToken( "NuGetVersion", gitInfo.SafeNuGetVersion )
-                             .WithToken( "CSemVer", gitInfo.SafeSemVersion )
-                             .Save( tempNuspec );
-                     Cake.NuGetPack( tempNuspec, settings );
-                     Cake.DeleteFile( tempNuspec );
-                 } );
+            //Task( "Create-NuGet-Package-For-CKDBSetup" )
+            //    .WithCriteria( () => gitInfo.IsValid )
+            //    .IsDependentOn( "Unit-Testing" )
+            //    .IsDependentOn( "Testing-CKDBSetup" )
+            //    .Does( () =>
+            //     {
+            //         Cake.CreateDirectory( releasesDir );
+            //         var settings = new NuGetPackSettings()
+            //         {
+            //             Version = gitInfo.SafeNuGetVersion,
+            //             BasePath = Cake.Environment.WorkingDirectory,
+            //             OutputDirectory = releasesDir
+            //         };
+            //         var tempNuspec = releasesDir.Path.CombineWithFilePath( "CKDBSetup.nuspec" );
+            //         Cake.CopyFile( "CodeCakeBuilder/NuSpec/CKDBSetup.nuspec", tempNuspec );
+            //         Cake.TransformTextFile( tempNuspec, "{{", "}}" )
+            //                 .WithToken( "configuration", configuration )
+            //                 .WithToken( "NuGetVersion", gitInfo.SafeNuGetVersion )
+            //                 .WithToken( "CSemVer", gitInfo.SafeSemVersion )
+            //                 .Save( tempNuspec );
+            //         Cake.NuGetPack( tempNuspec, settings );
+            //         Cake.DeleteFile( tempNuspec );
+            //     } );
 
             Task( "Create-All-NuGet-Packages" )
                 .WithCriteria( () => gitInfo.IsValid )
                 .IsDependentOn( "Unit-Testing" )
-                .IsDependentOn( "Create-NuGet-Package-For-CKDBSetup" )
+                //.IsDependentOn( "Create-NuGet-Package-For-CKDBSetup" )
                 .Does( () =>
                  {
                      Cake.CreateDirectory( releasesDir );
