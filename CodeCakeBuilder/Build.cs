@@ -255,16 +255,16 @@ namespace CodeCake
                         args.Append( GetNet461BinFolder( "CK.SqlServer.Setup.Runtime", configuration ) );
                         args.Append( GetNet461BinFolder( "CK.SqlServer.Setup.Engine", configuration ) );
 
-                        args.Append( GetNetCoreBinFolder( "CK.StObj.Runner", configuration ) );
+                        args.Append( EnsurePublishPath( GetNetCoreBinFolder( "CK.StObj.Runner", configuration ) ) );
                         args.Append( GetNetCoreBinFolder( "CK.StObj.Model", configuration ) );
-                        args.Append( GetNetCoreBinFolder( "CK.StObj.Runtime", configuration ) );
-                        args.Append( GetNetCoreBinFolder( "CK.StObj.Engine", configuration ) );
+                        args.Append( EnsurePublishPath( GetNetCoreBinFolder( "CK.StObj.Runtime", configuration ) ) );
+                        args.Append( EnsurePublishPath( GetNetCoreBinFolder( "CK.StObj.Engine", configuration ) ) );
                         args.Append( GetNetCoreBinFolder( "CK.Setupable.Model", configuration ) );
-                        args.Append( GetNetCoreBinFolder( "CK.Setupable.Runtime", configuration ) );
-                        args.Append( GetNetCoreBinFolder( "CK.Setupable.Engine", configuration ) );
+                        args.Append( EnsurePublishPath( GetNetCoreBinFolder( "CK.Setupable.Runtime", configuration ) ) );
+                        args.Append( EnsurePublishPath( GetNetCoreBinFolder( "CK.Setupable.Engine", configuration ) ) );
                         args.Append( GetNetCoreBinFolder( "CK.SqlServer.Setup.Model", configuration ) );
-                        args.Append( GetNetCoreBinFolder( "CK.SqlServer.Setup.Runtime", configuration ) );
-                        args.Append( GetNetCoreBinFolder( "CK.SqlServer.Setup.Engine", configuration ) );
+                        args.Append( EnsurePublishPath( GetNetCoreBinFolder( "CK.SqlServer.Setup.Runtime", configuration ) ) );
+                        args.Append( EnsurePublishPath( GetNetCoreBinFolder( "CK.SqlServer.Setup.Engine", configuration ) ) );
 
                         args.AppendSwitchQuoted( "--store", storePath )
                             .AppendSwitchQuoted( "-f", "Debug" );
@@ -336,6 +336,7 @@ namespace CodeCake
             //
             //      -target=Build-And-Push-CKRemoteStore-WebSite
             //
+            // This task does the build.
             // The appsettings.json is not included in the project.
             // (the <ExcludeFilesFromDeployment>appsettings.json</ExcludeFilesFromDeployment> in
             // pubxml seems to be ignored).
@@ -393,8 +394,7 @@ namespace CodeCake
 
         string GetNet461BinFolder( string name, string configuration )
         {
-            string pathToFramework = System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/net461" );
-            return EnsurePublishPath( pathToFramework );
+            return System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/net461" );
         }
 
         string GetNetCoreBinFolder( string name, string configuration )
@@ -404,7 +404,7 @@ namespace CodeCake
             {
                 pathToFramework = System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/netcoreapp2.0" );
             }
-            return EnsurePublishPath( pathToFramework );
+            return pathToFramework;
         }
 
         string EnsurePublishPath( string pathToFramework )
