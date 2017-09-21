@@ -20,10 +20,10 @@ namespace CK.StObj.Runner
         static public int Main( string[] args )
         {
             // See https://github.com/dotnet/corefx/issues/23608
-            Thread.CurrentThread.CurrentUICulture = new CultureInfo( "en-US" );
-            Thread.CurrentThread.CurrentCulture = Thread.CurrentThread.CurrentCulture;
-            CultureInfo.DefaultThreadCurrentCulture = Thread.CurrentThread.CurrentCulture;
-            CultureInfo.DefaultThreadCurrentUICulture = Thread.CurrentThread.CurrentCulture;
+            CultureInfo.CurrentCulture
+                = CultureInfo.CurrentUICulture
+                = CultureInfo.DefaultThreadCurrentCulture
+                = CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo( "en-US" );
 
             if( Array.IndexOf( args, "launch-debugger" ) >= 0 )
             {
