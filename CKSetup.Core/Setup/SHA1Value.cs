@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -12,11 +12,13 @@ namespace CKSetup
 
     /// <summary>
     /// Immutable SHA1 value.
+    /// Default value is <see cref="ZeroSHA1"/>.
     /// </summary>
     public struct SHA1Value : IEquatable<SHA1Value>
     {
         /// <summary>
         /// The "zero" SHA1 (20 bytes full of zeroes).
+        /// This is the default value of a new SHA1Value().
         /// </summary>
         public static readonly SHA1Value ZeroSHA1;
 

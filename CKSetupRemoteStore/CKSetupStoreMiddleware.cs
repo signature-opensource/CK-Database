@@ -239,9 +239,8 @@ namespace CKSetupRemoteStore
         {
             var sessionId = (string)ctx.Request.Headers[ClientRemoteStore.SessionIdHeader];
             var initial = _cache.Get<PushComponentsResult>( sessionId );
-            if( initial == null 
-                || !SHA1Value.TryParse( shaPath.Value, 1, out var sha1 )
-                || !initial.Files.Contains( sha1 ) )
+            SHA1Value sha1 = ValidPushFileRequest( monitor, shaPath, initial );
+            if( sha1.IsZero )
             {
                 ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
                 return;
@@ -283,6 +282,25 @@ namespace CKSetupRemoteStore
                 }
             }
             ctx.Response.StatusCode = StatusCodes.Status200OK;
+        }
+
+        static SHA1Value ValidPushFileRequest( IActivityMonitor monitor, PathString shaPath, PushComponentsResult initial )
+        {
+            SHA1Value sha1;
+            if( initial == null )
+            {
+                monitor.Error( "Unknown session identifier." );
+            }
+            else if( !SHA1Value.TryParse( shaPath.Value, 1, out sha1 ) )
+            {
+                monitor.Error( "Invalid SHA1." );
+            }
+            else if( !initial.Files.Contains( sha1 ) )
+            {
+                monitor.Error( $"SHA1 file '{sha1}' does not belong to the import session." );
+                sha1 = SHA1Value.ZeroSHA1;
+            }
+            return sha1;
         }
 
         static bool TargetFileExists( HttpContext ctx, IActivityMonitor monitor, SHA1Value sha1, string targetFileName )

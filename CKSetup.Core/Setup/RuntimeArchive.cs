@@ -202,7 +202,7 @@ namespace CKSetup
             {
                 foreach( var f in c.C.Files )
                 {
-                    using( _monitor.OpenTrace( $"Importing file {f.Name} content." ) )
+                    using( _monitor.OpenTrace( $"Importing file {f} content." ) )
                     {
                         try
                         {
