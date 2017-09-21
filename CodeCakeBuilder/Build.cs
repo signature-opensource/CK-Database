@@ -96,27 +96,9 @@ namespace CodeCake
                      Cake.DeleteFiles( "Tests/**/TestResult*.xml" );
                  } );
 
-            Task( "Restore-NuGet-Packages" )
-                .IsDependentOn( "Check-Repository" )
-                .IsDependentOn( "Clean" )
-                .Does( () =>
-                 {
-                     // https://docs.microsoft.com/en-us/nuget/schema/msbuild-targets
-                     var dotNetConf = new DotNetCoreRestoreSettings().AddVersionArguments( gitInfo );
-                     dotNetConf.Verbosity = DotNetCoreVerbosity.Minimal;
-
-                     Cake.DotNetCoreRestore( "CodeCakeBuilder/CoreBuild.proj", dotNetConf );
-                     //Cake.NuGetRestore( "CKDBSetup/packages.config", new NuGetRestoreSettings()
-                     //{
-                     //    Verbosity = NuGetVerbosity.Quiet,
-                     //    PackagesDirectory = "packages"
-                     //} );
-                 } );
-
             Task( "Build" )
                 .IsDependentOn( "Check-Repository" )
                 .IsDependentOn( "Clean" )
-                .IsDependentOn( "Restore-NuGet-Packages" )
                 .Does( () =>
                  {
                      buildDone = true;
