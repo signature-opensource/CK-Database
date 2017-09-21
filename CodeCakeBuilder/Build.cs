@@ -150,7 +150,9 @@ namespace CodeCake
                      Cake.CreateDirectory( releasesDir );
                      var settings = new DotNetCorePackSettings();
                      settings.ArgumentCustomization = args => args.Append( "--include-symbols" );
-                     settings.NoBuild = true;
+                     // --no-build DOES NOT WORK :(
+                     // https://github.com/dotnet/cli/issues/5331
+                     //settings.NoBuild = true;
                      settings.Configuration = configuration;
                      settings.OutputDirectory = releasesDir;
                      settings.AddVersionArguments( gitInfo );
