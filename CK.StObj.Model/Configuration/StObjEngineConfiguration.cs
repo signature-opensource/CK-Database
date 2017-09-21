@@ -128,7 +128,7 @@ namespace CK.Core
 
         /// <summary>
         /// Serializes its content in the provided <see cref="XElement"/> and returns it.
-        /// The <see cref="StObjEngineConfiguration(XElement)"/> constructor will be able to read this element back.
+        /// The <see cref="StObjEngineConfiguration"/> constructor will be able to read this element back.
         /// </summary>
         /// <param name="e">The element to populate.</param>
         /// <param name="aspectTypeNameWriter">

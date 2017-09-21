@@ -47,13 +47,9 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Reads a <see cref="XElement"/> content (typically created by <see cref="SerializeXml(XElement, Func{Type, string})"/>).
+        /// Reads a <see cref="XElement"/> content (typically created by <see cref="SerializeXml(XElement)"/>).
         /// </summary>
         /// <param name="e">The element to read.</param>
-        /// <param name="aspectTypeResolver">
-        /// Resolver for types.
-        /// Defaults to a function that calls <see cref="SimpleTypeFinder.WeakResolver"/>.
-        /// </param>
         public SetupableAspectConfiguration( XElement e )
         {
             int? nv = (int?)e.Attribute( StObjEngineConfiguration.XmlNames.Version );

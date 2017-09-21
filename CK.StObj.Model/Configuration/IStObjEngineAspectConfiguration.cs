@@ -6,10 +6,6 @@ namespace CK.Core
     /// All configuration of a Engine Aspect must implement this interface.
     /// Aspect configuration must have a deserialization constructor that take a XElement.
     /// </summary>
-    /// <remarks>
-    /// Any <see cref="Type"/> or delegates of any kind should be avoided (ie. any kind 
-    /// of stuff that can not be serialized).
-    /// </remarks>
     public interface IStObjEngineAspectConfiguration
     {
         /// <summary>

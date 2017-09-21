@@ -22,7 +22,7 @@ namespace CK.Setup
         /// Initializes a new required setup dependency attribute.
         /// </summary>
         /// <param name="assemblyName">Name of the setup dependency asssembly.</param>
-        /// <param name="minDependencyversion">
+        /// <param name="minDependencyVersion">
         /// Optional version. By default, the dependency must have at least the version of this component.
         /// Setting it to null removes all version constraints and setting it to a specific version
         /// states that subsequent version of the dependency should continue to be able to handle this component.
