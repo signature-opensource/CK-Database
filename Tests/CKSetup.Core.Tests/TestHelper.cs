@@ -33,15 +33,26 @@ namespace CKSetup.Tests
             LogToConsole = false;
         }
 
-        public static IActivityMonitor ConsoleMonitor => _monitor;
+        public static IActivityMonitor Monitor => _monitor;
 
         public static bool LogToConsole
         {
-            get { return _monitor.Output.Clients.Contains( _console ); }
+            get { return Monitor.Output.Clients.Contains( _console ); }
             set
             {
-                if( value ) _monitor.Output.RegisterUniqueClient( c => c == _console, () => _console );
-                else _monitor.Output.UnregisterClient( _console );
+                if( LogToConsole != value )
+                {
+                    if( value )
+                    {
+                        Monitor.Output.RegisterClient( _console );
+                        Monitor.Info( "Switching console log ON." );
+                    }
+                    else
+                    {
+                        Monitor.Info( "Switching console log OFF." );
+                        Monitor.Output.UnregisterClient( _console );
+                    }
+                }
             }
         }
 
@@ -63,7 +74,7 @@ namespace CKSetup.Tests
                 {
                     c = "Server=.;Database=master;Integrated Security=SSPI";
                 }
-                ConsoleMonitor.Info( $"Master connection string: {c}" );
+                Monitor.Info( $"Master connection string: {c}" );
                 _masterConnectionString = new SqlConnectionStringBuilder( c );
             }
             return _masterConnectionString;
@@ -203,20 +214,20 @@ namespace CKSetup.Tests
         public static RuntimeArchive OpenCKDatabaseZip( TestStoreType type, bool withNetStandard = false )
         {
             string zipPath = GetCKDatabaseZipPath( type );
-            RuntimeArchive zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath );
+            RuntimeArchive zip = RuntimeArchive.OpenOrCreate( TestHelper.Monitor, zipPath );
             if( !_standardDbHasNet461[(int)type] )
             {
                 zip.CreateLocalImporter().AddComponent(
-                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjRunnerNet461 ),
-                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjModel461 ),
-                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjRuntime461 ),
-                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjEngine461 ),
-                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableModel461 ),
-                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableRuntime461 ),
-                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableEngine461 ),
-                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupModel461 ),
-                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupRuntime461 ),
-                    CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupEngine461 ) )
+                    CKSetup.BinFolder.ReadBinFolder( Monitor, StObjRunnerNet461 ),
+                    CKSetup.BinFolder.ReadBinFolder( Monitor, StObjModel461 ),
+                    CKSetup.BinFolder.ReadBinFolder( Monitor, StObjRuntime461 ),
+                    CKSetup.BinFolder.ReadBinFolder( Monitor, StObjEngine461 ),
+                    CKSetup.BinFolder.ReadBinFolder( Monitor, SetupableModel461 ),
+                    CKSetup.BinFolder.ReadBinFolder( Monitor, SetupableRuntime461 ),
+                    CKSetup.BinFolder.ReadBinFolder( Monitor, SetupableEngine461 ),
+                    CKSetup.BinFolder.ReadBinFolder( Monitor, SqlServerSetupModel461 ),
+                    CKSetup.BinFolder.ReadBinFolder( Monitor, SqlServerSetupRuntime461 ),
+                    CKSetup.BinFolder.ReadBinFolder( Monitor, SqlServerSetupEngine461 ) )
                 .Import()
                 .Should().BeTrue();
                 _standardDbHasNet461[(int)type] = true;
@@ -226,16 +237,16 @@ namespace CKSetup.Tests
             if( withNetStandard && !_standardDbHasNetStandard[(int)type] )
             {
                 zip.CreateLocalImporter().AddComponent(
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( StObjRunnerNetCoreApp20 ) ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, StObjModelNet20 ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( StObjRuntimeNet20 ) ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( StObjEngineNet20 ) ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SetupableModelNet20 ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SetupableRuntimeNet20 ) ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SetupableEngineNet20 ) ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, SqlServerSetupModelNet20 ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SqlServerSetupRuntimeNet20 ) ),
-                        CKSetup.BinFolder.ReadBinFolder( ConsoleMonitor, EnsurePublishPath( SqlServerSetupEngineNet20 ) ) )
+                        CKSetup.BinFolder.ReadBinFolder( Monitor, EnsurePublishPath( StObjRunnerNetCoreApp20 ) ),
+                        CKSetup.BinFolder.ReadBinFolder( Monitor, StObjModelNet20 ),
+                        CKSetup.BinFolder.ReadBinFolder( Monitor, EnsurePublishPath( StObjRuntimeNet20 ) ),
+                        CKSetup.BinFolder.ReadBinFolder( Monitor, EnsurePublishPath( StObjEngineNet20 ) ),
+                        CKSetup.BinFolder.ReadBinFolder( Monitor, SetupableModelNet20 ),
+                        CKSetup.BinFolder.ReadBinFolder( Monitor, EnsurePublishPath( SetupableRuntimeNet20 ) ),
+                        CKSetup.BinFolder.ReadBinFolder( Monitor, EnsurePublishPath( SetupableEngineNet20 ) ),
+                        CKSetup.BinFolder.ReadBinFolder( Monitor, SqlServerSetupModelNet20 ),
+                        CKSetup.BinFolder.ReadBinFolder( Monitor, EnsurePublishPath( SqlServerSetupRuntimeNet20 ) ),
+                        CKSetup.BinFolder.ReadBinFolder( Monitor, EnsurePublishPath( SqlServerSetupEngineNet20 ) ) )
                     .Import()
                     .Should().BeTrue();
                 _standardDbHasNetStandard[(int)type] = true;
@@ -243,6 +254,39 @@ namespace CKSetup.Tests
 
             #endregion
             return zip;
+        }
+
+        public static void DeleteNet20PublishFolder()
+        {
+            using( Monitor.OpenInfo( "Deleting published Setup dependencies" ) )
+            {
+                DeleteDirectory( Path.Combine( StObjRunnerNetCoreApp20, "publish" ) );
+                DeleteDirectory( Path.Combine( StObjRuntimeNet20, "publish" ) );
+                DeleteDirectory( Path.Combine( StObjEngineNet20, "publish" ) );
+                DeleteDirectory( Path.Combine( SetupableRuntimeNet20, "publish" ) );
+                DeleteDirectory( Path.Combine( SetupableEngineNet20, "publish" ) );
+                DeleteDirectory( Path.Combine( SqlServerSetupRuntimeNet20, "publish" ) );
+                DeleteDirectory( Path.Combine( SqlServerSetupEngineNet20, "publish" ) );
+            }
+            using( Monitor.OpenInfo( "Deleting published tests folders." ) )
+            {
+                DeleteDirectory( Path.Combine( SqlCallDemoNetCoreTests20, "publish" ) );
+            }
+        }
+
+        public static void DeleteDirectory( string path )
+        {
+            using( Monitor.OpenInfo( $"Deleting '{path}'." ) )
+            {
+                try
+                {
+                    if( Directory.Exists( path ) ) Directory.Delete( path, true );
+                }
+                catch( Exception ex )
+                {
+                    Monitor.Error( ex );
+                }
+            }
         }
 
         public static string EnsurePublishPath( string pathToFramework )
@@ -266,19 +310,19 @@ namespace CKSetup.Tests
                     UseShellExecute = false,
                     CreateNoWindow = true
                 };
-                using( ConsoleMonitor.OpenInfo( $"Publishing {projectName}: dotnet {pI.Arguments}" ) )
+                using( Monitor.OpenInfo( $"Publishing {projectName}: dotnet {pI.Arguments}" ) )
                 using( Process cmdProcess = new Process() )
                 {
                     cmdProcess.StartInfo = pI;
-                    cmdProcess.ErrorDataReceived += ( o, e ) => { if( !string.IsNullOrEmpty( e.Data ) ) ConsoleMonitor.Error( e.Data ); };
-                    cmdProcess.OutputDataReceived += ( o, e ) => { if( e.Data != null ) ConsoleMonitor.Info( e.Data ); };
+                    cmdProcess.ErrorDataReceived += ( o, e ) => { if( !string.IsNullOrEmpty( e.Data ) ) Monitor.Error( e.Data ); };
+                    cmdProcess.OutputDataReceived += ( o, e ) => { if( e.Data != null ) Monitor.Info( e.Data ); };
                     cmdProcess.Start();
                     cmdProcess.BeginErrorReadLine();
                     cmdProcess.BeginOutputReadLine();
                     cmdProcess.WaitForExit();
                     if( cmdProcess.ExitCode != 0 )
                     {
-                        ConsoleMonitor.Error( $"Process returned ExitCode {cmdProcess.ExitCode}." );
+                        Monitor.Error( $"Process returned ExitCode {cmdProcess.ExitCode}." );
                         return null;
                     }
                 }

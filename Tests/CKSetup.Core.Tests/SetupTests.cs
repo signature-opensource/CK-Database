@@ -22,7 +22,7 @@ namespace CKSetup.Tests
             using( var zip = TestHelper.OpenCKDatabaseZip( type ) )
             {
                 Facade.DoSetup(
-                    TestHelper.ConsoleMonitor,
+                    TestHelper.Monitor,
                     TestHelper.SqlCallDemo461,
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
@@ -39,7 +39,7 @@ namespace CKSetup.Tests
             using( var zip = TestHelper.OpenCKDatabaseZip( type, withNetStandard: true ) )
             {
                 Facade.DoSetup(
-                    TestHelper.ConsoleMonitor,
+                    TestHelper.Monitor,
                     TestHelper.SqlCallDemoNet20,
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
@@ -56,7 +56,7 @@ namespace CKSetup.Tests
             using( var zip = TestHelper.OpenCKDatabaseZip( type, withNetStandard: true ) )
             {
                 Facade.DoSetup(
-                    TestHelper.ConsoleMonitor,
+                    TestHelper.Monitor,
                     TestHelper.EnsurePublishPath( TestHelper.SqlCallDemoNet20 ),
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
@@ -73,7 +73,7 @@ namespace CKSetup.Tests
             using( var zip = TestHelper.OpenCKDatabaseZip( type, withNetStandard: true ) )
             {
                 Facade.DoSetup(
-                    TestHelper.ConsoleMonitor,
+                    TestHelper.Monitor,
                     TestHelper.SqlCallDemoNetCoreTests20,
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
@@ -88,11 +88,11 @@ namespace CKSetup.Tests
         public void setup_SqlCallDemo461_with_remote_imports(TestStoreType type)
         {
             string zipPath = TestHelper.GetCleanTestZipPath( type );
-            using( var zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
+            using( var zip = RuntimeArchive.OpenOrCreate( TestHelper.Monitor, zipPath ) )
             using( var remoteZip = TestHelper.OpenCKDatabaseZip( type ) )
             {
                 Facade.DoSetup(
-                    TestHelper.ConsoleMonitor,
+                    TestHelper.Monitor,
                     TestHelper.SqlCallDemo461,
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
@@ -109,17 +109,17 @@ namespace CKSetup.Tests
         public void setup_SqlActorPackageModel461( TestStoreType type )
         {
             string zipPath = TestHelper.GetCleanTestZipPath( type );
-            using( var zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
+            using( var zip = RuntimeArchive.OpenOrCreate( TestHelper.Monitor, zipPath ) )
             using( var remoteZip = TestHelper.OpenCKDatabaseZip( type ) )
             {
                 var missingImporter = new FakeRemote( remoteZip );
                 zip.CreateLocalImporter( missingImporter ).AddComponent( 
-                    BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SqlActorPackageModel461 ),
-                    BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SqlActorPackageRuntime461 ) )
+                    BinFolder.ReadBinFolder( TestHelper.Monitor, TestHelper.SqlActorPackageModel461 ),
+                    BinFolder.ReadBinFolder( TestHelper.Monitor, TestHelper.SqlActorPackageRuntime461 ) )
                     .Import()
                     .Should().BeTrue();
                 Facade.DoSetup(
-                    TestHelper.ConsoleMonitor,
+                    TestHelper.Monitor,
                     TestHelper.SqlActorPackageModel461,
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlActorPackage" ),
@@ -135,16 +135,16 @@ namespace CKSetup.Tests
         public void setup_SqlActorPackageModel461_without_its_runtime_fails( TestStoreType type )
         {
             string zipPath = TestHelper.GetCleanTestZipPath( type );
-            using( var zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
+            using( var zip = RuntimeArchive.OpenOrCreate( TestHelper.Monitor, zipPath ) )
             using( var remoteZip = TestHelper.OpenCKDatabaseZip( type ) )
             {
                 var missingImporter = new FakeRemote( remoteZip );
                 zip.CreateLocalImporter( missingImporter ).AddComponent(
-                    BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SqlActorPackageModel461 ) )
+                    BinFolder.ReadBinFolder( TestHelper.Monitor, TestHelper.SqlActorPackageModel461 ) )
                     .Import()
                     .Should().BeTrue();
                 Facade.DoSetup(
-                    TestHelper.ConsoleMonitor,
+                    TestHelper.Monitor,
                     TestHelper.SqlActorPackageModel461,
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlActorPackage" ),

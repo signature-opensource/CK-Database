@@ -21,7 +21,7 @@ namespace CKSetup.Tests
         public void push_to_a_fake_remote( TestStoreType sourceType, TestStoreType targetType )
         {
             string zipPath = TestHelper.GetCleanTestZipPath( targetType, "-From-"+ sourceType );
-            using( var target = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
+            using( var target = RuntimeArchive.OpenOrCreate( TestHelper.Monitor, zipPath ) )
             using( var source = TestHelper.OpenCKDatabaseZip( sourceType ) )
             {
                 source.PushComponents( c => true, new FakeRemote( target ) ).Should().BeTrue();

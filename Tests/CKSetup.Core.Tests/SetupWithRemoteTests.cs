@@ -18,10 +18,10 @@ namespace CKSetup.Tests
             }
             // Now use it...
             string archivePath = TestHelper.GetCleanTestZipPath( sourceType );
-            using( var archive = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, archivePath ) )
+            using( var archive = RuntimeArchive.OpenOrCreate( TestHelper.Monitor, archivePath ) )
             {
                 Facade.DoSetup(
-                    TestHelper.ConsoleMonitor,
+                    TestHelper.Monitor,
                     TestHelper.SqlCallDemo461,
                     archive,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
@@ -43,10 +43,10 @@ namespace CKSetup.Tests
             }
             // Now use it...
             string archivePath = TestHelper.GetCleanTestZipPath( sourceType );
-            using( var archive = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, archivePath ) )
+            using( var archive = RuntimeArchive.OpenOrCreate( TestHelper.Monitor, archivePath ) )
             {
                 Facade.DoSetup(
-                    TestHelper.ConsoleMonitor,
+                    TestHelper.Monitor,
                     TestHelper.SqlCallDemoNetCoreTests20,
                     archive,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),

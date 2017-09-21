@@ -18,14 +18,14 @@ namespace CKSetup.Tests
         public void adding_setupable_runtimes_files_to_zip_is_not_possible_unless_its_embedded_are_also_added( TestStoreType type )
         {
             string zipPath = TestHelper.GetCleanTestZipPath( type );
-            using( RuntimeArchive zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
+            using( RuntimeArchive zip = RuntimeArchive.OpenOrCreate( TestHelper.Monitor, zipPath ) )
             {
                 zip.Should().NotBeNull();
 
-                var fSetupableRT = BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SetupableRuntime461 );
-                var fSetupableM = BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.SetupableModel461 );
-                var fStObjRT = BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjRuntime461 );
-                var fStObjM = BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjModel461 );
+                var fSetupableRT = BinFolder.ReadBinFolder( TestHelper.Monitor, TestHelper.SetupableRuntime461 );
+                var fSetupableM = BinFolder.ReadBinFolder( TestHelper.Monitor, TestHelper.SetupableModel461 );
+                var fStObjRT = BinFolder.ReadBinFolder( TestHelper.Monitor, TestHelper.StObjRuntime461 );
+                var fStObjM = BinFolder.ReadBinFolder( TestHelper.Monitor, TestHelper.StObjModel461 );
                 fSetupableRT.Should().NotBeNull();
                 fSetupableM.Should().NotBeNull();
                 fStObjRT.Should().NotBeNull();
@@ -53,21 +53,21 @@ namespace CKSetup.Tests
         public void adding_both_stobj_runtime_and_stobj_model_in_net461( TestStoreType type, bool runtimeFirst )
         {
             string zipPath = TestHelper.GetTestZipPath( type, runtimeFirst ? ".runtimeFirst" : ".modelFirst" );
-            using( RuntimeArchive zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
+            using( RuntimeArchive zip = RuntimeArchive.OpenOrCreate( TestHelper.Monitor, zipPath ) )
             {
                 zip.Should().NotBeNull();
                 if( runtimeFirst )
                 {
                     zip.CreateLocalImporter().AddComponent( 
-                        BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjRuntime461 ), 
-                        BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjModel461 ) )
+                        BinFolder.ReadBinFolder( TestHelper.Monitor, TestHelper.StObjRuntime461 ), 
+                        BinFolder.ReadBinFolder( TestHelper.Monitor, TestHelper.StObjModel461 ) )
                         .Import().Should().BeTrue();
                 }
                 else
                 {
                     zip.CreateLocalImporter().AddComponent(
-                        BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjModel461 ),
-                        BinFolder.ReadBinFolder( TestHelper.ConsoleMonitor, TestHelper.StObjRuntime461 ) )
+                        BinFolder.ReadBinFolder( TestHelper.Monitor, TestHelper.StObjModel461 ),
+                        BinFolder.ReadBinFolder( TestHelper.Monitor, TestHelper.StObjRuntime461 ) )
                         .Import().Should().BeTrue();
                 }
             }
@@ -91,7 +91,7 @@ namespace CKSetup.Tests
         public void importing_exporting_components( TestStoreType type )
         {
             string zipPath = TestHelper.GetCleanTestZipPath( type );
-            using( RuntimeArchive zip = RuntimeArchive.OpenOrCreate( TestHelper.ConsoleMonitor, zipPath ) )
+            using( RuntimeArchive zip = RuntimeArchive.OpenOrCreate( TestHelper.Monitor, zipPath ) )
             using( RuntimeArchive realZip = TestHelper.OpenCKDatabaseZip( type ) )
             using( Stream buffer = new MemoryStream() )
             {
