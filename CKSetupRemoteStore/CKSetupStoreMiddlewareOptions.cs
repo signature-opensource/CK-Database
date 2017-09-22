@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 
 namespace CKSetupRemoteStore
 {
@@ -17,10 +18,16 @@ namespace CKSetupRemoteStore
         public string RootStorePath { get; set; }
 
         /// <summary>
-        /// Gets or sets the sliding expiration time of the push files
-        /// validity. Defaults to 3 seconds.
+        /// Gets or sets the url prefix to download zipped components.
+        /// Defaults to "/dl-zip".
         /// </summary>
-        public TimeSpan PushSessionDuration { get; set; } = TimeSpan.FromSeconds( 3 );
+        public PathString DownloadZipPrefix { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sliding expiration time of the push files
+        /// validity. Defaults to 5 minutes.
+        /// </summary>
+        public TimeSpan PushSessionDuration { get; set; } = TimeSpan.FromMinutes( 5 );
 
         /// <summary>
         /// Gets or sets the list of allowed Api keys.

@@ -10,11 +10,17 @@ using System.Xml.Linq;
 
 namespace CKSetup
 {
+    /// <summary>
+    /// A component dependency is defined by a <see cref="UseName"/> component's name
+    /// and its <see cref="UseMinVersion"/> minimal version.
+    /// This is an immutable and equatable value (both nme and minimal version must be equal).
+    /// </summary>
     public class ComponentDependency : IEquatable<ComponentDependency>
     {
         internal ComponentDependency( string name, SVersion version )
         {
             Debug.Assert( !string.IsNullOrWhiteSpace( name ) );
+            Debug.Assert( version == null || version.Text != null );
             UseName = name;
             UseMinVersion = version;
         }

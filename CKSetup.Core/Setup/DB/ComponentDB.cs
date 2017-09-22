@@ -277,8 +277,8 @@ namespace CKSetup
                         {
                             monitor.Trace( $"Importing Component '{newC}' ({newC.Files.Count} files)." );
                             currentDb = currentDb.DoAdd( monitor, newC );
-                         }
-                         newOnes.Add( newC.GetRef() );
+                        }
+                        newOnes.Add( newC.GetRef() );
                     }
                 }
                 catch( Exception ex )
@@ -344,7 +344,7 @@ namespace CKSetup
                         }
                         else
                         {
-                            monitor?.Info( $"Resolved components: {result.Skip(embeddedCount).Select( c => c.GetRef().ToString() ).Concatenate()}." );
+                            monitor?.Info( $"Resolved components: {result.Skip( embeddedCount ).Select( c => c.GetRef().ToString() ).Concatenate()}." );
                         }
                     }
                 }
@@ -381,6 +381,43 @@ namespace CKSetup
             }
         }
 
+        /// <summary>
+        /// Resolves all dependencies from a root component.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="name">The component name.</param>
+        /// <param name="runtime">The target runtime.</param>
+        /// <param name="version">Optional version. When null, the greatest version will be returned.</param>
+        /// <returns>The component list on success, null if the root component or its dependencies can not be resolved.</returns>
+        public IReadOnlyList<Component> ResolveLocalDependencies( IActivityMonitor monitor, string name, TargetRuntime runtime, SVersion version = null )
+        {
+            Component root;
+            if( version != null )
+            {
+                root = Components.FirstOrDefault( c => c.Name == name
+                                                        && c.TargetFramework.CanWorkOn( runtime )
+                                                        && c.Version == version );
+                if( root == null )
+                {
+                    monitor.Error( $"Unable to find component '{name}/{runtime}/{version.Text}'." );
+                    return null;
+                }
+            }
+            else
+            {
+                root = Components.Where( c => c.Name == name && c.TargetFramework.CanWorkOn( runtime ) )
+                            .OrderByDescending( c => c.Version )
+                            .FirstOrDefault();
+                if( root == null )
+                {
+                    monitor.Error( $"Unable to find component '{name}/{runtime}'." );
+                    return null;
+                }
+            }
+            var engine = new DependencyEngine( this, runtime, root );
+            return engine.ExpandDependencies( monitor ) ? engine.Resolved : null;
+        }
+
         static TargetRuntime SelectTargetRuntime( IActivityMonitor m, IEnumerable<BinFileAssemblyInfo> models )
         {
             using( m.OpenInfo( $"Detecting runtimes for: { models.Select( x => x.Name.Name + '/' + x.ComponentRef.TargetFramework ).Concatenate() }" ) )
@@ -405,7 +442,7 @@ namespace CKSetup
             }
         }
 
-        static List<ComponentDependency> CollectSetupDependencies(IActivityMonitor m, IEnumerable<SetupDependency> deps)
+        static List<ComponentDependency> CollectSetupDependencies( IActivityMonitor m, IEnumerable<SetupDependency> deps )
         {
             var dependencies = new List<ComponentDependency>();
             foreach( var dep in deps.GroupBy( d => d.UseName ) )

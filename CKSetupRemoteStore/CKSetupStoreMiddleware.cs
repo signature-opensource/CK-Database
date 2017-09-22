@@ -34,7 +34,7 @@ namespace CKSetupRemoteStore
         readonly TimeSpan _pushSessionDuration;
         readonly HashSet<string> _apiKeys;
         readonly DirectoryStreamStore _store;
-        readonly SimpleFileLibraryService _fileLib;
+        readonly PathString _dlZipPrefix;
         ComponentDB _dbCurrent;
 
         /// <summary>
@@ -44,16 +44,17 @@ namespace CKSetupRemoteStore
         /// <param name="env">Hosting environment.</param>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="options">Middleware options.</param>
-        public CKSetupStoreMiddleware( RequestDelegate next, IActivityMonitor monitor, IHostingEnvironment env, SimpleFileLibraryService fileLib, IOptions<CKSetupStoreMiddlewareOptions> options, IMemoryCache cache )
+        public CKSetupStoreMiddleware( RequestDelegate next, IActivityMonitor monitor, IHostingEnvironment env, IOptions<CKSetupStoreMiddlewareOptions> options, IMemoryCache cache )
         {
             CKSetupStoreMiddlewareOptions opt = options.Value;
-            _fileLib = fileLib;
             if( opt.ApiKeys == null 
                 || (_apiKeys = new HashSet<string>( opt.ApiKeys.Where( key => !string.IsNullOrWhiteSpace( key ) ) )).Count == 0 )
             {
                 throw new ArgumentException( "There must be at least one non empty string key.", nameof( opt.ApiKeys ) );
             }
             _pushSessionDuration = opt.PushSessionDuration;
+            _dlZipPrefix = opt.DownloadZipPrefix;
+            if( !_dlZipPrefix.HasValue ) _dlZipPrefix = "/dl-zip";
             string storePath = opt.RootStorePath;
             if( String.IsNullOrWhiteSpace( storePath ) ) storePath = "Store";
             if( !Path.IsPathRooted( storePath ) )
@@ -75,7 +76,13 @@ namespace CKSetupRemoteStore
         public Task Invoke( HttpContext ctx )
         {
             PathString remainder;
-            if( ctx.Request.Path.StartsWithSegments( _root, out remainder ) )
+            if( ctx.Request.Path.StartsWithSegments( _dlZipPrefix, out remainder ) )
+            {
+                ctx.Response.SetNoCacheAndDefaultStatus( StatusCodes.Status404NotFound );
+                if( HttpMethods.IsGet( ctx.Request.Method ) ) return HandleDownloadZip( ctx, remainder, ctx.GetRequestMonitor() );
+                ctx.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
+            }
+            else if( ctx.Request.Path.StartsWithSegments( _root, out remainder ) )
             {
                 PathString sha;
                 ctx.Response.SetNoCacheAndDefaultStatus( StatusCodes.Status404NotFound );
@@ -99,13 +106,44 @@ namespace CKSetupRemoteStore
                     if( HttpMethods.IsPost( ctx.Request.Method ) ) return HandlePushFile( ctx, ctx.GetRequestMonitor(), sha );
                     ctx.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
                 }
-                else if( remainder.StartsWithSegments( "/upload" ) )
-                {
-                    if( HttpMethods.IsPost( ctx.Request.Method ) ) return HandleUpload( ctx, ctx.GetRequestMonitor() );
-                    ctx.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
-                }
             }
             return _next.Invoke( ctx );
+        }
+
+        async Task HandleDownloadZip( HttpContext ctx, PathString remainder, IActivityMonitor activityMonitor )
+        {
+            string[] nv = remainder.Value.Split( '/' );
+            if( nv.Length < 2
+                || nv.Length > 3 )
+            {
+                ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return;
+            }
+            string name = nv[0];
+            if( String.IsNullOrWhiteSpace( name ) )
+            {
+                ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return;
+            }
+            TargetRuntime runtime;
+            if( !Enum.TryParse( nv[1], true, out runtime ) )
+            {
+                ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return;
+            }
+            CSemVer.SVersion version = null;
+            if( nv.Length == 3 )
+            {
+                version = CSemVer.SVersion.TryParse( nv[2] );
+                if( !version.IsValidSyntax )
+                {
+                    ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    return;
+                }
+            }
+            bool partial = ctx.Request.Query.ContainsKey( "partial" );
+
+            IReadOnlyList<Component> components = _dbCurrent.ResolveLocalDependencies( monitor, name, runtime, version );
         }
 
         #region Pull
@@ -324,39 +362,6 @@ namespace CKSetupRemoteStore
 
         #endregion
 
-
-        async Task HandleUpload( HttpContext ctx, IActivityMonitor monitor )
-        {
-            var apiKey = (string)ctx.Request.Headers[ClientRemoteStore.ApiKeyHeader];
-            if( !_apiKeys.Contains( apiKey ) )
-            {
-                monitor.Warn( "Bad API key." );
-                ctx.Response.StatusCode = StatusCodes.Status403Forbidden;
-                return;
-            }
-            ctx.Response.StatusCode = StatusCodes.Status500InternalServerError;
-            using( monitor.OpenInfo( $"Uploading file with Api key: {apiKey}" ) )
-            {
-                try
-                {
-                    string fileName = ctx.Request.Headers["FileName"];
-                    var version = CSemVer.SVersion.Parse( (string)ctx.Request.Headers["Version"] );
-                    bool allowOverwrite = ctx.Request.Headers["AllowOverwrite"] == "true";
-                    if( await _fileLib.AddOrUpdate( monitor, fileName, version, ctx.Request.Body, allowOverwrite ) )
-                    {
-                        ctx.Response.StatusCode = StatusCodes.Status200OK;
-                    }
-                    else
-                    {
-                        ctx.Response.StatusCode = StatusCodes.Status409Conflict;
-                    }
-                }
-                catch( Exception ex )
-                {
-                    monitor.Error( ex );
-                }
-            }
-        }
 
     }
 }

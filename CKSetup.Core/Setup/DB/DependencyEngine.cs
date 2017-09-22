@@ -20,25 +20,20 @@ namespace CKSetup
 
         ComponentDB _db;
         
-        public DependencyEngine( ComponentDB db, TargetRuntime t )
+        internal DependencyEngine( ComponentDB db, TargetRuntime t, Component root = null )
         {
             _db = db;
             _target = t;
             _resolved = new List<Component>();
             _deps = new List<ComponentDependency>();
             _embeddeds = new HashSet<ComponentRef>();
+            if( root != null ) _resolved.Add( root );
         }
 
         /// <summary>
         /// Gets resolved dependencies.
         /// </summary>
         public List<Component> Resolved => _resolved;
-
-        /// <summary>
-        /// Gets the smallest index of <see cref="Resolved"/> dependencies that has
-        /// been upgraded to a greater version.
-        /// </summary>
-        public int ResolvedUpgradeMinIndex { get; private set; }
 
         /// <summary>
         /// Gets any missing dependencies that have been found.
@@ -91,7 +86,7 @@ namespace CKSetup
                         int countToRemove = _resolved.Count - succesfulIndex;
                         _resolved.RemoveRange( succesfulIndex, countToRemove );
                         idx = succesfulIndex;
-                        monitor.Trace( $"Restarting from {succesfulIndex}, backtracking {countToRemove} previous resoltions." );
+                        monitor.Trace( $"Restarting from {succesfulIndex}, backtracking {countToRemove} previous resolutions." );
                     }
                 }
             }

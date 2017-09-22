@@ -7,17 +7,13 @@ namespace CKSetup.Tests
     [TestFixture]
     public class SetupWithRemoteTests
     {
-        [TestCase( TestStoreType.Zip )]
-        [TestCase( TestStoreType.Directory )]
-        public void push_to_the_remote_and_setup_SqlCallDemo461_from_scratch( TestStoreType sourceType )
+
+        [Test]
+        public void push_to_the_remote_and_setup_SqlCallDemo461_from_scratch()
         {
-            Uri url = TestHelper.EnsureCKSetupRemoteRunning();
-            using( var source = TestHelper.OpenCKDatabaseZip( sourceType ) )
-            {
-                source.PushComponents( c => true, url, "HappyKey" ).Should().BeTrue();
-            }
+            Uri storeUrl = TestHelper.EnsureLocalCKDatabaseZipIsPushed( withNetStandard: false );
             // Now use it...
-            string archivePath = TestHelper.GetCleanTestZipPath( sourceType );
+            string archivePath = TestHelper.GetCleanTestZipPath( TestStoreType.Directory );
             using( var archive = RuntimeArchive.OpenOrCreate( TestHelper.Monitor, archivePath ) )
             {
                 Facade.DoSetup(
@@ -27,7 +23,7 @@ namespace CKSetup.Tests
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",
                     sourceGeneration: true,
-                    remoteStoreUrl: url
+                    remoteStoreUrl: storeUrl
                     ).Should().BeTrue();
             }
         }
@@ -36,11 +32,7 @@ namespace CKSetup.Tests
         [TestCase( TestStoreType.Directory )]
         public void push_to_the_remote_and_setup_SqlCallDemoNetCoreTests20_from_scratch( TestStoreType sourceType )
         {
-            Uri url = TestHelper.EnsureCKSetupRemoteRunning();
-            using( var source = TestHelper.OpenCKDatabaseZip( sourceType, withNetStandard: true ) )
-            {
-                source.PushComponents( c => true, url, "HappyKey" ).Should().BeTrue();
-            }
+            Uri storeUrl = TestHelper.EnsureLocalCKDatabaseZipIsPushed( withNetStandard: true );
             // Now use it...
             string archivePath = TestHelper.GetCleanTestZipPath( sourceType );
             using( var archive = RuntimeArchive.OpenOrCreate( TestHelper.Monitor, archivePath ) )
@@ -52,7 +44,7 @@ namespace CKSetup.Tests
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",
                     sourceGeneration: true,
-                    remoteStoreUrl: url
+                    remoteStoreUrl: storeUrl
                     ).Should().BeTrue();
             }
         }

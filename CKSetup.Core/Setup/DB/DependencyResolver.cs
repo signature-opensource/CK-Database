@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using CK.Text;
 using System;
 using System.Collections.Generic;
@@ -34,8 +34,7 @@ namespace CKSetup
         /// </summary>
         /// <param name="monitor">The monitor.</param>
         /// <param name="downloader">Optional downloader of missing components.</param>
-        /// <returns>Resolved dependencies on success, null on error.
-        /// </returns>
+        /// <returns>Resolved dependencies on success, null on error.</returns>
         public IReadOnlyList<Component> Run( IActivityMonitor monitor, IComponentDownloader downloader )
         {
             using( monitor.OpenInfo( "Initializing root dependencies." ) )

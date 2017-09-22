@@ -95,6 +95,10 @@ namespace CKSetup.Tests
             return result;
         }
 
+        static HttpClient _sharedHttpClient;
+
+        public static HttpClient SharedHttpClient => _sharedHttpClient ?? (_sharedHttpClient = new HttpClient());
+
         public static Uri EnsureCKSetupRemoteRunning()
         {
             var pI = new ProcessStartInfo()
@@ -104,15 +108,12 @@ namespace CKSetup.Tests
             };
             Process.Start( pI );
             var u = new Uri( "http://localhost:2982" );
-            using( var client = new HttpClient() )
+            HttpResponseMessage msg;
+            do
             {
-                HttpResponseMessage msg;
-                do
-                {
-                    msg = client.GetAsync( u ).GetAwaiter().GetResult();
-                }
-                while( !msg.IsSuccessStatusCode );
+                msg = SharedHttpClient.GetAsync( u ).GetAwaiter().GetResult();
             }
+            while( !msg.IsSuccessStatusCode );
             return u;
         }
 
@@ -136,9 +137,15 @@ namespace CKSetup.Tests
             get { if( _testOutputPath == null ) InitalizePaths(); return _testOutputPath; }
         }
 
+        // The CKSetup application itself is in net461 & netcorapp2.0
+        public static string CKSetupAppNet461 => Path.Combine( SolutionFolder, "CKSetup", "bin", Configuration, "net461" );
+        public static string CKSetupAppNetCoreApp20 => Path.Combine( SolutionFolder, "CKSetup", "bin", Configuration, "netcoreapp2.0" );
+
+        // The CK.StObj.Runner is running in net461 & netcorapp2.0
         public static string StObjRunnerNet461 => Path.Combine( SolutionFolder, "CK.StObj.Runner", "bin", Configuration, "net461" );
         public static string StObjRunnerNetCoreApp20 => Path.Combine( SolutionFolder, "CK.StObj.Runner", "bin", Configuration, "netcoreapp2.0" );
 
+        // Net461: the bin folder is enough for all the components.
         public static string StObjModel461 => Path.Combine( SolutionFolder, "CK.StObj.Model", "bin", Configuration, "net461" );
         public static string StObjRuntime461 => Path.Combine( SolutionFolder, "CK.StObj.Runtime", "bin", Configuration, "net461" );
         public static string StObjEngine461 => Path.Combine( SolutionFolder, "CK.StObj.Engine", "bin", Configuration, "net461" );
@@ -158,6 +165,9 @@ namespace CKSetup.Tests
 
 
         #region Net standard component Paths
+        // Currently, only Models are in netstandard2.0, Engines and runtimes are in NetCoreApp2.0
+        // Engine and Runtimes may be in netstandard one day...
+        //
         public static string StObjModelNet20 => Path.Combine( SolutionFolder, "CK.StObj.Model", "bin", Configuration, "netstandard2.0" );
         public static string StObjRuntimeNet20 => Path.Combine( SolutionFolder, "CK.StObj.Runtime", "bin", Configuration, "netcoreapp2.0" );
         public static string StObjEngineNet20 => Path.Combine( SolutionFolder, "CK.StObj.Engine", "bin", Configuration, "netcoreapp2.0" );
@@ -206,6 +216,26 @@ namespace CKSetup.Tests
             return p;
         }
 
+
+        static bool _net461Pushed;
+        static bool _netStandardPushed;
+        static Uri _storeUrl;
+
+        public static Uri EnsureLocalCKDatabaseZipIsPushed( bool withNetStandard )
+        {
+            if( withNetStandard && _netStandardPushed ) return _storeUrl;
+            if( !withNetStandard && _net461Pushed ) return _storeUrl;
+
+            _storeUrl = TestHelper.EnsureCKSetupRemoteRunning();
+            using( var source = TestHelper.OpenCKDatabaseZip( TestStoreType.Directory, withNetStandard ) )
+            {
+                source.PushComponents( c => true, _storeUrl, "HappyKey" ).Should().BeTrue();
+            }
+            if( withNetStandard ) _netStandardPushed = true;
+            else _net461Pushed = true;
+            return _storeUrl;
+        }
+
         static bool[] _standardDbHasNet461 = new bool[Enum.GetNames( typeof( TestStoreType ) ).Length];
         static bool[] _standardDbHasNetStandard = new bool[Enum.GetNames( typeof( TestStoreType ) ).Length];
 
@@ -227,7 +257,8 @@ namespace CKSetup.Tests
                     CKSetup.BinFolder.ReadBinFolder( Monitor, SetupableEngine461 ),
                     CKSetup.BinFolder.ReadBinFolder( Monitor, SqlServerSetupModel461 ),
                     CKSetup.BinFolder.ReadBinFolder( Monitor, SqlServerSetupRuntime461 ),
-                    CKSetup.BinFolder.ReadBinFolder( Monitor, SqlServerSetupEngine461 ) )
+                    CKSetup.BinFolder.ReadBinFolder( Monitor, SqlServerSetupEngine461 ),
+                    CKSetup.BinFolder.ReadBinFolder( Monitor, CKSetupAppNet461 ) )
                 .Import()
                 .Should().BeTrue();
                 _standardDbHasNet461[(int)type] = true;
@@ -246,7 +277,8 @@ namespace CKSetup.Tests
                         CKSetup.BinFolder.ReadBinFolder( Monitor, EnsurePublishPath( SetupableEngineNet20 ) ),
                         CKSetup.BinFolder.ReadBinFolder( Monitor, SqlServerSetupModelNet20 ),
                         CKSetup.BinFolder.ReadBinFolder( Monitor, EnsurePublishPath( SqlServerSetupRuntimeNet20 ) ),
-                        CKSetup.BinFolder.ReadBinFolder( Monitor, EnsurePublishPath( SqlServerSetupEngineNet20 ) ) )
+                        CKSetup.BinFolder.ReadBinFolder( Monitor, EnsurePublishPath( SqlServerSetupEngineNet20 ) ),
+                        CKSetup.BinFolder.ReadBinFolder( Monitor, EnsurePublishPath( CKSetupAppNetCoreApp20 ) ) )
                     .Import()
                     .Should().BeTrue();
                 _standardDbHasNetStandard[(int)type] = true;

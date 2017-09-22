@@ -35,7 +35,6 @@ namespace CKSetupRemoteStore
             services.AddOptions();
             services.Configure<CKSetupStoreMiddlewareOptions>( Configuration.GetSection("store") );
             services.AddMemoryCache();
-            services.AddSingleton<SimpleFileLibraryService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -48,7 +47,6 @@ namespace CKSetupRemoteStore
                 app.UseDeveloperExceptionPage();
             }
             app.UseRequestMonitor();
-            app.UseStaticFiles(new StaticFileOptions() { ServeUnknownFileTypes = true, RequestPath = "/Files" } );
             app.UseMiddleware<CKSetupStoreMiddleware>( monitor );
             app.Run( async ( context ) =>
              {
@@ -57,10 +55,6 @@ namespace CKSetupRemoteStore
 
                  await context.Response.WriteAsync( "<html><body>" );
                  await context.Response.WriteAsync( $"<h1>Welcome to {env.ApplicationName}.</h1>Version: {v.ToString()}." );
-
-                 var fileLib = context.RequestServices.GetRequiredService<SimpleFileLibraryService>();
-                 await context.Response.WriteAsync( fileLib.HtmlContent );
-
                  await context.Response.WriteAsync( "</body></html>" );
              } );
             monitor.MonitorEnd();
