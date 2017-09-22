@@ -33,18 +33,21 @@ namespace CKSetupRemoteStore
         readonly ReaderWriterLockSlim _rwLock;
         readonly TimeSpan _pushSessionDuration;
         readonly HashSet<string> _apiKeys;
+        readonly DirectoryStreamStore _store;
+        readonly SimpleFileLibraryService _fileLib;
         ComponentDB _dbCurrent;
-        DirectoryStreamStore _store;
 
         /// <summary>
         /// Initializes a new <see cref="CKSetupStoreMiddleware"/>.
         /// </summary>
         /// <param name="next">Next middleware.</param>
+        /// <param name="env">Hosting environment.</param>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="options">Middleware options.</param>
-        public CKSetupStoreMiddleware( RequestDelegate next, IActivityMonitor monitor, IHostingEnvironment env, IOptions<CKSetupStoreMiddlewareOptions> options, IMemoryCache cache )
+        public CKSetupStoreMiddleware( RequestDelegate next, IActivityMonitor monitor, IHostingEnvironment env, SimpleFileLibraryService fileLib, IOptions<CKSetupStoreMiddlewareOptions> options, IMemoryCache cache )
         {
             CKSetupStoreMiddlewareOptions opt = options.Value;
+            _fileLib = fileLib;
             if( opt.ApiKeys == null 
                 || (_apiKeys = new HashSet<string>( opt.ApiKeys.Where( key => !string.IsNullOrWhiteSpace( key ) ) )).Count == 0 )
             {
@@ -94,6 +97,11 @@ namespace CKSetupRemoteStore
                 else if( remainder.StartsWithSegments( ClientRemoteStore.PushFilePath, out sha ) )
                 {
                     if( HttpMethods.IsPost( ctx.Request.Method ) ) return HandlePushFile( ctx, ctx.GetRequestMonitor(), sha );
+                    ctx.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
+                }
+                else if( remainder.StartsWithSegments( "/upload" ) )
+                {
+                    if( HttpMethods.IsPost( ctx.Request.Method ) ) return HandleUpload( ctx, ctx.GetRequestMonitor() );
                     ctx.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
                 }
             }
@@ -315,5 +323,40 @@ namespace CKSetupRemoteStore
         }
 
         #endregion
+
+
+        async Task HandleUpload( HttpContext ctx, IActivityMonitor monitor )
+        {
+            var apiKey = (string)ctx.Request.Headers[ClientRemoteStore.ApiKeyHeader];
+            if( !_apiKeys.Contains( apiKey ) )
+            {
+                monitor.Warn( "Bad API key." );
+                ctx.Response.StatusCode = StatusCodes.Status403Forbidden;
+                return;
+            }
+            ctx.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            using( monitor.OpenInfo( $"Uploading file with Api key: {apiKey}" ) )
+            {
+                try
+                {
+                    string fileName = ctx.Request.Headers["FileName"];
+                    var version = CSemVer.SVersion.Parse( (string)ctx.Request.Headers["Version"] );
+                    bool allowOverwrite = ctx.Request.Headers["AllowOverwrite"] == "true";
+                    if( await _fileLib.AddOrUpdate( monitor, fileName, version, ctx.Request.Body, allowOverwrite ) )
+                    {
+                        ctx.Response.StatusCode = StatusCodes.Status200OK;
+                    }
+                    else
+                    {
+                        ctx.Response.StatusCode = StatusCodes.Status409Conflict;
+                    }
+                }
+                catch( Exception ex )
+                {
+                    monitor.Error( ex );
+                }
+            }
+        }
+
     }
 }

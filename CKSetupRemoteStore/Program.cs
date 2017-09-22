@@ -19,6 +19,7 @@ namespace CKSetupRemoteStore
                     .UseUrls( "http://localhost:2982" )
                     .UseKestrel()
                     .UseContentRoot( Directory.GetCurrentDirectory() )
+                    .UseWebRoot( Path.Combine( Directory.GetCurrentDirectory(), "Files" ) )
                     .UseIISIntegration()
                     .UseStartup<Startup>()
                     .Build();

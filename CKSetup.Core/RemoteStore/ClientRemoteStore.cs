@@ -25,9 +25,9 @@ namespace CKSetup
     /// </remarks>
     public class ClientRemoteStore : IComponentImporter, IComponentPushTarget, IDisposable
     {
+        static public readonly string RootPathString = "/.cksetup/store";
         static public readonly string ApiKeyHeader = "X-API-Key";
         static public readonly string SessionIdHeader = "X-SessionId";
-        static public readonly string RootPathString = "/.cksetup/store";
         static public readonly string PushPath = "/push";
         static public readonly string PushFilePath = "/push/f";
         static public readonly string PullPath = "/pull";
