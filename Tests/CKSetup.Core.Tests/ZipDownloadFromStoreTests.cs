@@ -16,12 +16,13 @@ namespace CKSetup.Tests
     public class ZipDownloadFromStoreTests
     {
 
-        [Test]
-        public async Task downloading_cksetup_itself_from_remote_store()
+        [TestCase( "Net461" )]
+        [TestCase( "NetCoreApp20" )]
+        public async Task downloading_cksetup_itself_from_remote_store( string runtime )
         {
             string folderForCKSetup = TestHelper.GetCleanTestZipPath( TestStoreType.Directory );
-            Uri storeUrl = TestHelper.EnsureLocalCKDatabaseZipIsPushed( withNetStandard: false );
-            using( var body = await TestHelper.SharedHttpClient.GetStreamAsync( storeUrl + "/dl-zip/CKSetup/Net461" ) )
+            Uri storeUrl = TestHelper.EnsureLocalCKDatabaseZipIsPushed( runtime == "NetCoreApp20" );
+            using( var body = await TestHelper.SharedHttpClient.GetStreamAsync( storeUrl + "dl-zip/CKSetup/" + runtime ) )
             using( var mem = new MemoryStream() )
             {
                 await body.CopyToAsync( mem );
@@ -30,10 +31,22 @@ namespace CKSetup.Tests
                 {
                     z.ExtractToDirectory( folderForCKSetup );
                 }
-                Directory.EnumerateFiles( TestHelper.CKSetupAppNet461, "*.dll", SearchOption.AllDirectories )
-                    .ShouldBeEquivalentTo( Directory.EnumerateFiles( folderForCKSetup, "*.dll", SearchOption.AllDirectories ));
+
+                var original = runtime == "NetCoreApp20"
+                                ? Path.Combine( TestHelper.CKSetupAppNetCoreApp20, "publish" )
+                                : TestHelper.CKSetupAppNet461;
+
+                Directory.EnumerateFiles( original, "*.dll", SearchOption.AllDirectories )
+                         .Select( s => s.Substring( original.Length ) )
+                         .OrderBy( s => s )
+                    .SequenceEqual( Directory.EnumerateFiles( folderForCKSetup, "*.dll", SearchOption.AllDirectories )
+                                                    .Select( s => s.Substring( folderForCKSetup.Length ) )
+                                                    .OrderBy( s => s ) )
+                    .Should().BeTrue();
             }
         }
+
+
 
      }
 }

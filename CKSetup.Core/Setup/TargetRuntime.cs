@@ -9,9 +9,9 @@ namespace CKSetup
     public enum TargetRuntime
     {
         None = 0,
-        NetFramework461 = 1 << 16,
-        NetFramework462 = 2 << 16,
-        NetFramework47 = 3 << 16,
+        Net461 = 1 << 16,
+        Net462 = 2 << 16,
+        Net47 = 3 << 16,
         NetCoreApp10 = 128 << 16,
         NetCoreApp11 = 129 << 16,
         NetCoreApp20 = 130 << 16,

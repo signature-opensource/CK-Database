@@ -110,40 +110,60 @@ namespace CKSetupRemoteStore
             return _next.Invoke( ctx );
         }
 
-        async Task HandleDownloadZip( HttpContext ctx, PathString remainder, IActivityMonitor activityMonitor )
+        async Task HandleDownloadZip( HttpContext ctx, PathString remainder, IActivityMonitor monitor )
         {
             string[] nv = remainder.Value.Split( '/' );
-            if( nv.Length < 2
-                || nv.Length > 3 )
+            if( nv.Length < 3
+                || nv.Length > 4 )
             {
                 ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
                 return;
             }
-            string name = nv[0];
+            string name = nv[1];
             if( String.IsNullOrWhiteSpace( name ) )
             {
                 ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
                 return;
             }
             TargetRuntime runtime;
-            if( !Enum.TryParse( nv[1], true, out runtime ) )
+            if( !Enum.TryParse( nv[2], true, out runtime ) )
             {
                 ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
                 return;
             }
             CSemVer.SVersion version = null;
-            if( nv.Length == 3 )
+            if( nv.Length == 4 )
             {
-                version = CSemVer.SVersion.TryParse( nv[2] );
+                version = CSemVer.SVersion.TryParse( nv[3] );
                 if( !version.IsValidSyntax )
                 {
                     ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
                     return;
                 }
             }
-            bool partial = ctx.Request.Query.ContainsKey( "partial" );
 
             IReadOnlyList<Component> components = _dbCurrent.ResolveLocalDependencies( monitor, name, runtime, version );
+            if( components == null )
+            {
+                ctx.Response.StatusCode = StatusCodes.Status404NotFound;
+                return;
+            }
+
+            ctx.Response.StatusCode = StatusCodes.Status200OK;
+            using( ZipArchive a = new ZipArchive( ctx.Response.Body, ZipArchiveMode.Create, true ) )
+            {
+                foreach( var f in components.SelectMany( c => c.Files ) )
+                {
+                    var e = a.CreateEntry( f.Name );
+                    using( var content = e.Open() )
+                    {
+                        using( var file = _store.OpenUncompressedRead( f.SHA1.ToString() ) )
+                        {
+                            await file.CopyToAsync( content );
+                        }
+                    }
+                }
+            }
         }
 
         #region Pull

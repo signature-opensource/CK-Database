@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,11 +9,11 @@ namespace CKSetup
     public enum TargetFramework
     {
         None = 0,
-        Net451 = TargetRuntime.NetFramework461 | 451,
-        Net46 = TargetRuntime.NetFramework461 | 460,
-        Net461 = TargetRuntime.NetFramework461 | 461,
-        Net462 = TargetRuntime.NetFramework462 | 462,
-        Net47 = TargetRuntime.NetFramework47 | 470,
+        Net451 = TargetRuntime.Net461 | 451,
+        Net46 = TargetRuntime.Net461 | 460,
+        Net461 = TargetRuntime.Net461 | 461,
+        Net462 = TargetRuntime.Net462 | 462,
+        Net47 = TargetRuntime.Net47 | 470,
         NetStandard10 = 10,
         NetStandard11 = 11,
         NetStandard12 = 12,

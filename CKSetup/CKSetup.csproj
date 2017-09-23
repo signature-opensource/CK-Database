@@ -19,24 +19,5 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
     <Reference Include="System.IO.Compression" />
   </ItemGroup>
-  
-  <ItemGroup>
-    <Compile Include="..\CK.StObj.Model\**\Configuration\*.cs">
-      <Link>Includes\%(RecursiveDir)%(Filename)%(Extension)</Link>
-      <Visible>true</Visible>
-    </Compile>
-    <Compile Include="..\CK.Setupable.Model\**\Configuration\*.cs">
-      <Link>Includes\%(RecursiveDir)%(Filename)%(Extension)</Link>
-      <Visible>true</Visible>
-    </Compile>
-    <Compile Include="..\CK.SqlServer.Setup.Model\**\Configuration\*.cs">
-      <Link>Includes\%(RecursiveDir)%(Filename)%(Extension)</Link>
-      <Visible>true</Visible>
-    </Compile>
-    <Compile Remove="..\CK.Setupable.Model\Configuration\**" />
-    <Compile Remove="..\CK.SqlServer.Setup.Model\Configuration\**" />
-    <Compile Remove="..\CK.StObj.Model\Configuration\**" />
-  </ItemGroup>
-
 
 </Project>

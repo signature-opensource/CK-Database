@@ -299,6 +299,7 @@ namespace CKSetup.Tests
                 DeleteDirectory( Path.Combine( SetupableEngineNet20, "publish" ) );
                 DeleteDirectory( Path.Combine( SqlServerSetupRuntimeNet20, "publish" ) );
                 DeleteDirectory( Path.Combine( SqlServerSetupEngineNet20, "publish" ) );
+                DeleteDirectory( Path.Combine( CKSetupAppNetCoreApp20, "publish" ) );
             }
             using( Monitor.OpenInfo( "Deleting published tests folders." ) )
             {

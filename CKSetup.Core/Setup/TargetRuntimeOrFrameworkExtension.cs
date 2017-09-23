@@ -25,9 +25,9 @@ namespace CKSetup
             return intersect;
         }
 
-        static TargetRuntime[] NetFramework461Runtimes = new TargetRuntime[] { TargetRuntime.NetFramework461, TargetRuntime.NetFramework462, TargetRuntime.NetFramework47 };
-        static TargetRuntime[] NetFramework462Runtimes = new TargetRuntime[] { TargetRuntime.NetFramework461, TargetRuntime.NetFramework462 };
-        static TargetRuntime[] NetFramework47Runtimes = new TargetRuntime[] { TargetRuntime.NetFramework47 };
+        static TargetRuntime[] NetFramework461Runtimes = new TargetRuntime[] { TargetRuntime.Net461, TargetRuntime.Net462, TargetRuntime.Net47 };
+        static TargetRuntime[] NetFramework462Runtimes = new TargetRuntime[] { TargetRuntime.Net461, TargetRuntime.Net462 };
+        static TargetRuntime[] NetFramework47Runtimes = new TargetRuntime[] { TargetRuntime.Net47 };
         static TargetRuntime[] NetStandard16Runtimes = new TargetRuntime[] { TargetRuntime.NetCoreApp11, TargetRuntime.NetCoreApp20 };
         static TargetRuntime[] NetStandard20Runtimes = new TargetRuntime[] { TargetRuntime.NetCoreApp20 };
         static TargetRuntime[] NetCoreApp11Runtimes = new TargetRuntime[] { TargetRuntime.NetCoreApp11 };
