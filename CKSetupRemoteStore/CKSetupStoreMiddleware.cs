@@ -18,6 +18,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Net.Http.Headers;
 
 namespace CKSetupRemoteStore
 {
@@ -35,6 +36,7 @@ namespace CKSetupRemoteStore
         readonly HashSet<string> _apiKeys;
         readonly DirectoryStreamStore _store;
         readonly PathString _dlZipPrefix;
+        readonly PathString _componentInfoPrefix;
         ComponentDB _dbCurrent;
 
         /// <summary>
@@ -55,6 +57,8 @@ namespace CKSetupRemoteStore
             _pushSessionDuration = opt.PushSessionDuration;
             _dlZipPrefix = opt.DownloadZipPrefix;
             if( !_dlZipPrefix.HasValue ) _dlZipPrefix = "/dl-zip";
+            _componentInfoPrefix = opt.ComponentInfoPrefix;
+            if( !_componentInfoPrefix.HasValue ) _componentInfoPrefix = "/component-info";
             string storePath = opt.RootStorePath;
             if( String.IsNullOrWhiteSpace( storePath ) ) storePath = "Store";
             if( !Path.IsPathRooted( storePath ) )
@@ -80,6 +84,12 @@ namespace CKSetupRemoteStore
             {
                 ctx.Response.SetNoCacheAndDefaultStatus( StatusCodes.Status404NotFound );
                 if( HttpMethods.IsGet( ctx.Request.Method ) ) return HandleDownloadZip( ctx, remainder, ctx.GetRequestMonitor() );
+                ctx.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
+            }
+            else if( ctx.Request.Path.StartsWithSegments( _componentInfoPrefix, out remainder ) )
+            {
+                ctx.Response.SetNoCacheAndDefaultStatus( StatusCodes.Status404NotFound );
+                if( HttpMethods.IsGet( ctx.Request.Method ) ) return HandleComponentInfo( ctx, remainder, ctx.GetRequestMonitor() );
                 ctx.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
             }
             else if( ctx.Request.Path.StartsWithSegments( _root, out remainder ) )
@@ -110,39 +120,42 @@ namespace CKSetupRemoteStore
             return _next.Invoke( ctx );
         }
 
+        Task HandleComponentInfo( HttpContext ctx, PathString remainder, IActivityMonitor monitor )
+        {
+            var req = GetRequestParameterParseResult<TargetFramework>.Parse( remainder );
+            if( req.ErrorMessage != null )
+            {
+                ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
+                ctx.Response.Headers.Add( "ErrorMsg", req.ErrorMessage );
+                return Task.CompletedTask;
+            }
+            Component found;
+            if( req.Version != null )
+            {
+                found = _dbCurrent.Components.FirstOrDefault( c => c.Name == req.Name && c.TargetFramework == req.Target && c.Version == req.Version );
+            }
+            else
+            {
+                found = _dbCurrent.Components.Where( c => c.Name == req.Name && c.TargetFramework == req.Target )
+                            .OrderByDescending( c => c.Version )
+                            .FirstOrDefault();
+            }
+            if( found == null ) found = Component.None;
+            ctx.Response.StatusCode = StatusCodes.Status200OK;
+            ctx.Response.GetTypedHeaders().ContentType = new MediaTypeHeaderValue( "application/xml" );
+            return ctx.Response.WriteAsync( found.ToXml().ToString() );
+        }
+
         async Task HandleDownloadZip( HttpContext ctx, PathString remainder, IActivityMonitor monitor )
         {
-            string[] nv = remainder.Value.Split( '/' );
-            if( nv.Length < 3
-                || nv.Length > 4 )
+            var req = GetRequestParameterParseResult<TargetRuntime>.Parse( remainder );
+            if( req.ErrorMessage != null )
             {
                 ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
+                ctx.Response.Headers.Add( "ErrorMsg", req.ErrorMessage );
                 return;
             }
-            string name = nv[1];
-            if( String.IsNullOrWhiteSpace( name ) )
-            {
-                ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
-                return;
-            }
-            TargetRuntime runtime;
-            if( !Enum.TryParse( nv[2], true, out runtime ) )
-            {
-                ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
-                return;
-            }
-            CSemVer.SVersion version = null;
-            if( nv.Length == 4 )
-            {
-                version = CSemVer.SVersion.TryParse( nv[3] );
-                if( !version.IsValidSyntax )
-                {
-                    ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    return;
-                }
-            }
-
-            IReadOnlyList<Component> components = _dbCurrent.ResolveLocalDependencies( monitor, name, runtime, version );
+            IReadOnlyList<Component> components = _dbCurrent.ResolveLocalDependencies( monitor, req.Name, req.Target, req.Version );
             if( components == null )
             {
                 ctx.Response.StatusCode = StatusCodes.Status404NotFound;

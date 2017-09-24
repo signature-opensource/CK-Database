@@ -16,6 +16,21 @@ namespace CKSetup
     {
         readonly ComponentRef _ref;
 
+
+        /// <summary>
+        /// An empty, none, null component object.
+        /// </summary>
+        public static Component None = new Component();
+
+        Component()
+        {
+            _ref = new ComponentRef( String.Empty, TargetFramework.None, SVersion.ZeroVersion );
+            ComponentKind = ComponentKind.None;
+            Dependencies = Array.Empty<ComponentDependency>();
+            Embedded = Array.Empty<ComponentRef>();
+            Files = Array.Empty<ComponentFile>();
+        }
+
         public Component(
             ComponentKind k, 
             ComponentRef cRef,

@@ -24,6 +24,12 @@ namespace CKSetupRemoteStore
         public PathString DownloadZipPrefix { get; set; }
 
         /// <summary>
+        /// Gets or sets the url prefix to get component information.
+        /// Defaults to "/component-info".
+        /// </summary>
+        public PathString ComponentInfoPrefix { get; set; }
+
+        /// <summary>
         /// Gets or sets the sliding expiration time of the push files
         /// validity. Defaults to 5 minutes.
         /// </summary>
