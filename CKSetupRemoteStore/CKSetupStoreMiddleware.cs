@@ -239,7 +239,7 @@ namespace CKSetupRemoteStore
                 ctx.Response.StatusCode = StatusCodes.Status403Forbidden;
                 return;
             }
-            monitor.Info( $"Pushing with Api key: {apiKey}" );
+            monitor.Info( $"Pushing with Api key (SHA1={SHA1Value.ComputeSHA1( apiKey ).ToString()})." );
             using( var buffer = new MemoryStream() )
             {
                 await ctx.Request.Body.CopyToAsync( buffer );

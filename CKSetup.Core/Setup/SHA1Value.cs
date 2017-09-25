@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using CK.Text;
 using System.Threading.Tasks;
+using System.Text;
 
 namespace CKSetup
 {
@@ -43,6 +44,31 @@ namespace CKSetup
                 wrap.CopyTo( shaCompute );
                 return shaCompute.GetFinalResult();
             }
+        }
+
+        /// <summary>
+        /// Computes the SHA1 of a raw byte array.
+        /// </summary>
+        /// <param name="data">Byte array. Can be null.</param>
+        /// <returns>The SHA1 of the data: <see cref="EmptySHA1"/> if data is null or empty.</returns>
+        public static SHA1Value ComputeSHA1( byte[] data )
+        {
+            if( data == null || data.Length == 0 ) return EmptySHA1;
+            using( var n = new SHA1Managed() )
+            {
+                return new SHA1Value( n.ComputeHash( data ) );
+            }
+        }
+
+        /// <summary>
+        /// Computes the SHA1 of a string (using <see cref="Encoding.Default"/>).
+        /// </summary>
+        /// <param name="data">String data. Can be null.</param>
+        /// <returns>The SHA1 of the data: <see cref="EmptySHA1"/> if data is null or empty.</returns>
+        public static SHA1Value ComputeSHA1( string data )
+        {
+            if( data == null || data.Length == 0 ) return EmptySHA1;
+            return ComputeSHA1( Encoding.Default.GetBytes( data ) );
         }
 
         /// <summary>
