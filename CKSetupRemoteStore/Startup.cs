@@ -54,7 +54,9 @@ namespace CKSetupRemoteStore
                  var v = new InformationalVersion( a?.InformationalVersion );
 
                  await context.Response.WriteAsync( "<html><body>" );
-                 await context.Response.WriteAsync( $"<h1>Welcome to {env.ApplicationName}.</h1>Version: {v.ToString()}." );
+                 await context.Response.WriteAsync( $"<h1>Welcome to {env.ApplicationName}.</h1>Version: {v.ToString()}.<br>" );
+                 await context.Response.WriteAsync( $"<a href=\"/dl-zip/CKSetup/Net461\">CKSetup.zip (Net461)</a><br>" );
+                 await context.Response.WriteAsync( $"<a href=\"/dl-zip/CKSetup/NetCoreApp20\">CKSetup.zip (NetCoreApp20)</a>" );
                  await context.Response.WriteAsync( "</body></html>" );
              } );
             monitor.MonitorEnd();

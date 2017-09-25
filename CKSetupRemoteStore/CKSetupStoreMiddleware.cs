@@ -165,8 +165,15 @@ namespace CKSetupRemoteStore
                 ctx.Response.StatusCode = StatusCodes.Status404NotFound;
                 return;
             }
+            var rootComponent = components[0];
+            Debug.Assert( rootComponent.Name == req.Name );
+            Debug.Assert( rootComponent.TargetFramework.CanWorkOn( req.Target ) );
 
             ctx.Response.StatusCode = StatusCodes.Status200OK;
+            var contentDisposition = new ContentDispositionHeaderValue( "attachment" );
+            contentDisposition.SetHttpFileName( $"{rootComponent.Name}.{rootComponent.TargetFramework}.{rootComponent.Version}.zip" );
+            ctx.Response.GetTypedHeaders().ContentDisposition = contentDisposition;
+
             using( ZipArchive a = new ZipArchive( ctx.Response.Body, ZipArchiveMode.Create, true ) )
             {
                 foreach( var f in components.SelectMany( c => c.Files ) )

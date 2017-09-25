@@ -383,6 +383,7 @@ namespace CKSetup
 
         /// <summary>
         /// Resolves all dependencies from a root component.
+        /// The first component (as long as the return is not null), is the root component.
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
         /// <param name="name">The component name.</param>
@@ -415,7 +416,9 @@ namespace CKSetup
                 }
             }
             var engine = new DependencyEngine( this, runtime, root );
-            return engine.ExpandDependencies( monitor ) ? engine.Resolved : null;
+            var results = engine.ExpandDependencies( monitor ) ? engine.Resolved : null;
+            Debug.Assert( results == null || results[0] == root );
+            return results;
         }
 
         static TargetRuntime SelectTargetRuntime( IActivityMonitor m, IEnumerable<BinFileAssemblyInfo> models )
