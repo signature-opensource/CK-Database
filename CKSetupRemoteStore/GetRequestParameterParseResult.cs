@@ -31,26 +31,26 @@ namespace CKSetupRemoteStore
 
         public static GetRequestParameterParseResult<T> Parse( PathString remainder )
         {
-            string[] nv = remainder.Value.Split( '/' );
-            if( nv.Length < 3
-                || nv.Length > 4 )
+            string[] nv = remainder.Value.Split( new[] { '/' }, StringSplitOptions.RemoveEmptyEntries );
+            if( nv.Length < 2
+                || nv.Length > 3 )
             {
                 return new GetRequestParameterParseResult<T>( "Invalid path." );
             }
-            string name = nv[1];
+            string name = nv[0];
             if( String.IsNullOrWhiteSpace( name ) )
             {
                 return new GetRequestParameterParseResult<T>( "Invalid Component name." );
             }
             T target;
-            if( !Enum.TryParse( nv[2], true, out target ) )
+            if( !Enum.TryParse( nv[1], true, out target ) )
             {
                 return new GetRequestParameterParseResult<T>( $"Invalid {typeof( T ).Name}." );
             }
             SVersion version = null;
-            if( nv.Length == 4 )
+            if( nv.Length == 3 )
             {
-                version = SVersion.TryParse( nv[3] );
+                version = SVersion.TryParse( nv[2] );
                 if( !version.IsValidSyntax )
                 {
                     return new GetRequestParameterParseResult<T>( $"Invalid version." );

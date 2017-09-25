@@ -140,10 +140,14 @@ namespace CKSetupRemoteStore
                             .OrderByDescending( c => c.Version )
                             .FirstOrDefault();
             }
-            if( found == null ) found = Component.None;
+            if( found == null )
+            {
+                ctx.Response.StatusCode = StatusCodes.Status204NoContent;
+                return Task.CompletedTask;
+            }
             ctx.Response.StatusCode = StatusCodes.Status200OK;
             ctx.Response.GetTypedHeaders().ContentType = new MediaTypeHeaderValue( "application/xml" );
-            return ctx.Response.WriteAsync( found.ToXml().ToString() );
+            return ctx.Response.WriteAsync( new XDocument( found.ToXml() ).ToString() );
         }
 
         async Task HandleDownloadZip( HttpContext ctx, PathString remainder, IActivityMonitor monitor )

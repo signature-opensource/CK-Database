@@ -43,9 +43,10 @@ namespace CKSetup.StreamStore
             }
             else
             {
+                string text = null;
                 try
                 {
-                    string text = @this.ReadText( RuntimeArchive.DbXmlFileName );
+                    text = @this.ReadText( RuntimeArchive.DbXmlFileName );
                     if( text != null )
                     {
                         db = new ComponentDB( XDocument.Parse( text ).Root );
@@ -59,7 +60,10 @@ namespace CKSetup.StreamStore
                 }
                 catch( Exception ex )
                 {
-                    monitor.Fatal( $"Invalid {RuntimeArchive.DbXmlFileName} manifest.", ex );
+                    using( monitor.OpenFatal( $"Invalid {RuntimeArchive.DbXmlFileName} manifest.", ex ) )
+                    {
+                        monitor.Trace( text ?? "Unable to read text from manifest." );
+                    }
                     db = null;
                 }
             }
