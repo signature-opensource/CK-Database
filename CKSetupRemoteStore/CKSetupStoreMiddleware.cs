@@ -364,6 +364,7 @@ namespace CKSetupRemoteStore
                 try
                 {
                     File.Move( temp.Path, targetFileName );
+                    if( retryCount > 0 ) monitor.Warn( $"Successful file move required {retryCount} try(ies)." );
                 }
                 catch( Exception ex )
                 {
@@ -376,6 +377,7 @@ namespace CKSetupRemoteStore
                             await Task.Delay( retryTime );
                             goto tryAgain;
                         }
+                        monitor.Error( $"Failed to move file '{temp.Path}' to '{targetFileName}'." );
                         ctx.Response.StatusCode = StatusCodes.Status500InternalServerError;
                         return;
                     }
