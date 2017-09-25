@@ -183,6 +183,7 @@ namespace CodeCake
                         args.Append( GetNet461BinFolder( "CK.SqlServer.Setup.Model", configuration ) );
                         args.Append( GetNet461BinFolder( "CK.SqlServer.Setup.Runtime", configuration ) );
                         args.Append( GetNet461BinFolder( "CK.SqlServer.Setup.Engine", configuration ) );
+                        args.Append( GetNet461BinFolder( "CKSetup", configuration ) );
 
                         args.Append( EnsurePublishPath( GetNetCoreBinFolder( "CK.StObj.Runner", configuration ) ) );
                         args.Append( GetNetCoreBinFolder( "CK.StObj.Model", configuration ) );
@@ -194,6 +195,7 @@ namespace CodeCake
                         args.Append( GetNetCoreBinFolder( "CK.SqlServer.Setup.Model", configuration ) );
                         args.Append( EnsurePublishPath( GetNetCoreBinFolder( "CK.SqlServer.Setup.Runtime", configuration ) ) );
                         args.Append( EnsurePublishPath( GetNetCoreBinFolder( "CK.SqlServer.Setup.Engine", configuration ) ) );
+                        args.Append( EnsurePublishPath( GetNetCoreBinFolder( "CKSetup", configuration ) ) );
 
                         args.AppendSwitchQuoted( "--store", storePath )
                             .AppendSwitchQuoted( "-f", "Debug" );
