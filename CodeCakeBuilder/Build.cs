@@ -211,10 +211,16 @@ namespace CodeCake
                             .AppendSwitchSecret( "-k", apiKey )
                             .AppendSwitchQuoted( "--store", storePath )
                             .AppendSwitchQuoted( "-f", "Debug" );
-                        Cake.ProcessRunner.Start( ckSetupExe, new ProcessSettings()
+                        var p = Cake.ProcessRunner.Start( ckSetupExe, new ProcessSettings()
                         {
                             Arguments = args
-                        } ).WaitForExit();
+                        } );
+                        p.WaitForExit();
+                        int result = p.GetExitCode();
+                        if( result != 0 )
+                        {
+                            Cake.TerminateWithError( $"CKSetup.exe terminates with failure exit code: {result}" );
+                        }
                     }
                     else Cake.Information( "Skipped push to http:/cksetup.invenietis.net." );
                 } );

@@ -356,6 +356,11 @@ namespace CKSetupRemoteStore
                     return;
                 }
                 if( TargetFileExists( ctx, monitor, sha1, targetFileName ) ) return;
+                const int maxRetryCount = 5;
+                TimeSpan retryTime = TimeSpan.FromMilliseconds( 200 );
+
+                int retryCount = 0;
+                tryAgain:
                 try
                 {
                     File.Move( temp.Path, targetFileName );
@@ -365,6 +370,12 @@ namespace CKSetupRemoteStore
                     if( !TargetFileExists( ctx, monitor, sha1, targetFileName ) )
                     {
                         monitor.Error( ex );
+                        if( ++retryCount <= maxRetryCount )
+                        {
+                            monitor.Info( $"Waiting {retryTime}. (retryCount = {retryCount})." );
+                            await Task.Delay( retryTime );
+                            goto tryAgain;
+                        }
                         ctx.Response.StatusCode = StatusCodes.Status500InternalServerError;
                         return;
                     }
