@@ -47,14 +47,14 @@ namespace CKSetup
             }
             else if( !Uri.TryCreate( UrlOption.Value(), UriKind.Absolute, out u ) )
             {
-                m.Error( $"--url {UrlOption.Value()} is not a valid absolute url." );
+                m.Error( $"--remote {UrlOption.Value()} is not a valid absolute url." );
                 return false;
             }
             Url = u;
             ApiKey = ApiKeyOption.Value();
             if( string.IsNullOrEmpty( ApiKey ) ) ApiKey = null;
 
-            m.Info( $"Using remote url: {Url} with" + ApiKey != null ? " an API key." : "out API key." );
+            m.Info( $"Using remote: {Url} with" + ApiKey != null ? " an API key." : "out API key." );
             return true;
         }
 

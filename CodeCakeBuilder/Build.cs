@@ -207,7 +207,7 @@ namespace CodeCake
                         args.Clear();
                         args.Append( "store" )
                             .Append( "push" )
-                            .AppendSwitch( "-u", "http://cksetup.invenietis.net" )
+                            .AppendSwitch( "-r", "http://cksetup.invenietis.net" )
                             .AppendSwitchSecret( "-k", apiKey )
                             .AppendSwitchQuoted( "--store", storePath )
                             .AppendSwitchQuoted( "-f", "Debug" );

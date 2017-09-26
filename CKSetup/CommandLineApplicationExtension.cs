@@ -43,7 +43,7 @@ namespace CKSetup
                               $"Sets a log level filter for console and/or file output. {LogFilterDesc}", 
                               CommandOptionType.SingleValue );
 
-                @this.Option( $"--l|--{LogFileOptionName}",
+                @this.Option( $"-l|--{LogFileOptionName}",
                               $"Path of a log file which will contain the log output. Defaults to none (console logging only).",
                               CommandOptionType.SingleValue );
             }
@@ -89,7 +89,7 @@ namespace CKSetup
         static public RemoteUriOptions AddRemoteUriOptions( this CommandLineApplication @this )
         {
             return new RemoteUriOptions( @this.Option( 
-                                            "-r|--remoteUri",
+                                            "-r|--remote",
                                             $"Url of the remote store. Defaults to: {RemoteUriOptions.DefaultStoreUrl}. Use 'none' to not use remote store.",
                                             CommandOptionType.SingleValue ),
                                          @this.Option(
