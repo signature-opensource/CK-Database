@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -77,6 +77,12 @@ namespace CK.Core
             if ( mustSave )
             {
                 ModuleBuilder = _assemblyBuilder.DefineDynamicModule(AssemblyName.Name, SaveFileName);
+                var tABuilder = ModuleBuilder.DefineType( "CK.Setup.ExcludeFromSetupAttribute" );
+                tABuilder.SetParent( typeof( Attribute ) );
+                var tA = tABuilder.CreateType();
+                ConstructorInfo tCA = tA.GetConstructor( Type.EmptyTypes );
+                CustomAttributeBuilder attrBuilder = new CustomAttributeBuilder( tCA, Array.Empty<object>() );
+                _assemblyBuilder.SetCustomAttribute( attrBuilder );
             }
             else ModuleBuilder = _assemblyBuilder.DefineDynamicModule(AssemblyName.Name);
         }
