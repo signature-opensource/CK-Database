@@ -35,9 +35,9 @@ namespace CKSetup
                 $"Assembly name, and file name (without the .dll suffix) of the generated assembly. Defaults to 'CK.StObj.AutoAssembly'.",
                 CommandOptionType.SingleValue );
 
-            var sourceGenerationOpt = c.Option(
-                "-sg|--sourceGeneration",
-                $"Use the new code source generation (instead of IL emit).",
+            var ilGenerationOpt = c.Option(
+                "-il|--ILGeneration",
+                $"Use the old IL emit generation (instead of new code source generation).",
                 CommandOptionType.NoValue
                 );
 
@@ -65,7 +65,7 @@ namespace CKSetup
                             store,
                             connectionArg.TargetConnectionString,
                             generatedAssemblyNameOpt.Value(),
-                            sourceGenerationOpt.HasValue(),
+                            !ilGenerationOpt.HasValue(),
                             remote )
                             ? Program.RetCodeSuccess
                             : Program.RetCodeError;
