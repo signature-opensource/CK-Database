@@ -51,7 +51,7 @@ namespace CK.DB.Tests
         public void db_setup( string type )
         {
             TestHelper.LogToConsole = true;
-            Assert.That( type == "Source" ? TestHelper.RunDBSetupSource() : TestHelper.RunDBSetup(), "DBSetup failed.");
+            Assert.That( type == "Source" ? TestHelper.RunDBSetup() : TestHelper.RunDBSetupILEmit(), "DBSetup failed.");
         }
 
         [Test]

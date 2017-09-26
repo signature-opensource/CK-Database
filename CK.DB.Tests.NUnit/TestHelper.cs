@@ -189,7 +189,7 @@ namespace CK.Core
         /// <param name="revertNames">True to revert names in ordering.</param>
         public static bool RunDBSetup( bool traceStObjGraphOrdering = false, bool traceSetupGraphOrdering = false, bool revertNames = false )
         {
-            return DoRunDBSetup( false, traceStObjGraphOrdering, traceSetupGraphOrdering, revertNames );
+            return DoRunDBSetup( true, traceStObjGraphOrdering, traceSetupGraphOrdering, revertNames );
         }
 
         /// <summary>
@@ -199,7 +199,7 @@ namespace CK.Core
         /// <param name="traceStObjGraphOrdering">True to trace input and output of StObj graph ordering.</param>
         /// <param name="traceSetupGraphOrdering">True to trace input and output of setup graph ordering.</param>
         /// <param name="revertNames">True to revert names in ordering.</param>
-        public static bool RunDBSetupSource( bool traceStObjGraphOrdering = false, bool traceSetupGraphOrdering = false, bool revertNames = false )
+        public static bool RunDBSetupILEmit( bool traceStObjGraphOrdering = false, bool traceSetupGraphOrdering = false, bool revertNames = false )
         {
             return DoRunDBSetup( true, traceStObjGraphOrdering, traceSetupGraphOrdering, revertNames );
         }
