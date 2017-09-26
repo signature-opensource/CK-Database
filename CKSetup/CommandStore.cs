@@ -74,16 +74,16 @@ namespace CKSetup
             c.Description = "Push local components to a remote store.";
             c.StandardConfiguration( true );
             StorePathOptions storePath = c.AddStorePathOption();
-            StorePushOptions pushOptions = c.AddStorePushOptions();
+            RemoteUriOptions remoteOpt = c.AddRemoteUriOptions();
 
             c.OnExecute( monitor =>
             {
                 if( !storePath.Initialize( monitor, null ) ) return Program.RetCodeError;
-                if( !pushOptions.Initialize( monitor ) ) return Program.RetCodeError;
+                if( !remoteOpt.Initialize( monitor ) ) return Program.RetCodeError;
                 using( RuntimeArchive zip = RuntimeArchive.OpenOrCreate( monitor, storePath.StorePath ) )
                 {
                     if( zip == null ) return Program.RetCodeError;
-                    if( !zip.PushComponents( comp => true, pushOptions.Url, pushOptions.ApiKey ) ) return Program.RetCodeError;
+                    if( !zip.PushComponents( comp => true, remoteOpt.Url, remoteOpt.ApiKey ) ) return Program.RetCodeError;
                 }
                 return Program.RetCodeSuccess;
             } );

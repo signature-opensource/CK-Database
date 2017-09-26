@@ -28,10 +28,13 @@ namespace CKSetup
             ConnectionStringArgument connectionArg = c.AddConnectionStringArgument();
             BinPathsOption binPaths = c.AddBinPathsOption( "Path to the directories containing the assembly files, and in which the generated assembly will be saved. Defaults to the current working directory." );
             StorePathOptions storePath = c.AddStorePathOption();
+            RemoteUriOptions remoteOpt = c.AddRemoteUriOptions();
 
-            var generatedAssemblyNameOpt = c.Option( "-n|--generatedAssemblyName",
-                                                     $"Assembly name, and file name (without the .dll suffix) of the generated assembly. Defaults to 'CK.StObj.AutoAssembly'.",
-                                                     CommandOptionType.SingleValue );
+            var generatedAssemblyNameOpt = c.Option(
+                "-n|--generatedAssemblyName",
+                $"Assembly name, and file name (without the .dll suffix) of the generated assembly. Defaults to 'CK.StObj.AutoAssembly'.",
+                CommandOptionType.SingleValue );
+
             var sourceGenerationOpt = c.Option(
                 "-sg|--sourceGeneration",
                 $"Use the new code source generation (instead of IL emit).",
@@ -43,11 +46,16 @@ namespace CKSetup
                 if( !connectionArg.Initialize( monitor ) ) return Program.RetCodeError;
                 if( !binPaths.Initialize( monitor ) ) return Program.RetCodeError;
                 if( !storePath.Initialize( monitor, binPaths.BinPaths[0] ) ) return Program.RetCodeError;
+                if( !remoteOpt.Initialize( monitor ) ) return Program.RetCodeError;
 
                 if( binPaths.BinPaths.Count > 1 )
                 {
                     throw new NotImplementedException( "Multi Bin path Setup is not yet implemented." );
                 }
+                ClientRemoteStore remote = remoteOpt.Url != null
+                                            ? new ClientRemoteStore( remoteOpt.Url, remoteOpt.ApiKey )
+                                            : null;
+
                 using( RuntimeArchive store = RuntimeArchive.OpenOrCreate( monitor, storePath.StorePath ) )
                 {
                     if( store == null ) return Program.RetCodeError;
@@ -57,7 +65,8 @@ namespace CKSetup
                             store,
                             connectionArg.TargetConnectionString,
                             generatedAssemblyNameOpt.Value(),
-                            sourceGenerationOpt.HasValue() )
+                            sourceGenerationOpt.HasValue(),
+                            remote )
                             ? Program.RetCodeSuccess
                             : Program.RetCodeError;
                 }

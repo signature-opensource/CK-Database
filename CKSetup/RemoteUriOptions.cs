@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using Microsoft.Extensions.CommandLineUtils;
 using System;
 using System.Collections.Generic;
@@ -10,14 +10,14 @@ using System.Threading.Tasks;
 
 namespace CKSetup
 {
-    class StorePushOptions
+    class RemoteUriOptions
     {
         /// <summary>
-        /// The default remote store is https://cksetup.invenietis.net.
+        /// The default remote store is http://cksetup.invenietis.net.
         /// </summary>
-        public static readonly Uri DefaultStoreUrl = new Uri( "https://cksetup.invenietis.net" );
+        public static readonly Uri DefaultStoreUrl = new Uri( "http://cksetup.invenietis.net" );
 
-        public StorePushOptions( CommandOption url, CommandOption apiKey )
+        public RemoteUriOptions( CommandOption url, CommandOption apiKey )
         {
             UrlOption = url;
             ApiKeyOption = apiKey;
@@ -40,7 +40,12 @@ namespace CKSetup
         {
             Uri u;
             if( !UrlOption.HasValue() ) u = DefaultStoreUrl;
-            else if( !Uri.TryCreate( UrlOption.Value(), UriKind.Absolute, out u ))
+            else if( UrlOption.Value() == "'none'" || UrlOption.Value() == "none" )
+            {
+                // Nothing to do.
+                return true;
+            }
+            else if( !Uri.TryCreate( UrlOption.Value(), UriKind.Absolute, out u ) )
             {
                 m.Error( $"--url {UrlOption.Value()} is not a valid absolute url." );
                 return false;
@@ -49,7 +54,7 @@ namespace CKSetup
             ApiKey = ApiKeyOption.Value();
             if( string.IsNullOrEmpty( ApiKey ) ) ApiKey = null;
 
-            m.Info( $"Using remote url: {Url}" );
+            m.Info( $"Using remote url: {Url} with" + ApiKey != null ? " an API key." : "out API key." );
             return true;
         }
 

@@ -86,11 +86,11 @@ namespace CKSetup
                                          CommandOptionType.SingleValue ) );
         }
 
-        static public StorePushOptions AddStorePushOptions( this CommandLineApplication @this )
+        static public RemoteUriOptions AddRemoteUriOptions( this CommandLineApplication @this )
         {
-            return new StorePushOptions( @this.Option( 
-                                            "-u|--url",
-                                            $"Url of the remote store. Defaults to: {StorePushOptions.DefaultStoreUrl}.",
+            return new RemoteUriOptions( @this.Option( 
+                                            "-r|--remoteUri",
+                                            $"Url of the remote store. Defaults to: {RemoteUriOptions.DefaultStoreUrl}. Use 'none' to not use remote store.",
                                             CommandOptionType.SingleValue ),
                                          @this.Option(
                                             "-k|--apiKey",
