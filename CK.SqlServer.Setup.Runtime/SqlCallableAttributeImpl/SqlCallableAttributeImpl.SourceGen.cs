@@ -326,25 +326,29 @@ namespace CK.SqlServer.Setup
                  if( nbError == 0 )
                  {
                      Debug.Assert( sqlParamHandlers.Handlers.All( h => h.MappingDone ) );
-                    // Configures Connection and Transaction properties if such method parameters appear.
-                    // 1 - Sets SqlCommand.Connection from the parameter if it exists.
-                    if( firstSqlConnectionParameter != null )
+                     // Configures Connection and Transaction properties if such method parameters appear.
+                     // See: http://stackoverflow.com/questions/4013906/why-both-sqlconnection-and-sqltransaction-are-present-in-sqlcommand-constructor
+                     if( firstSqlConnectionParameter != null && firstSqlTransactionParameter != null )
                      {
+                         // If both parameters are presents, the transaction wins if it is not null.
+                         b.AppendLine( $"if( {firstSqlTransactionParameter.Name} != null )" )
+                          .AppendLine( "{" )
+                          .AppendLine( $"  cmd_loc.Transaction = {firstSqlTransactionParameter.Name};" )
+                          .AppendLine( $"  cmd_loc.Connection = {firstSqlTransactionParameter.Name}.Connection;" )
+                          .AppendLine( "}" )
+                          .AppendLine( $"else cmd_loc.Connection = {firstSqlConnectionParameter.Name};" );
+                     }
+                     else if( firstSqlConnectionParameter != null )
+                     {
+                         // Only the connection parameter.
                          b.AppendLine( $"cmd_loc.Connection = {firstSqlConnectionParameter.Name};" );
                      }
-                    // 2 - Sets SqlCommand.Transaction from the parameter if it exists.
-                    // See: http://stackoverflow.com/questions/4013906/why-both-sqlconnection-and-sqltransaction-are-present-in-sqlcommand-constructor
-                    if( firstSqlTransactionParameter != null )
+                     else if( firstSqlTransactionParameter != null )
                      {
-                         b.AppendLine( $"cmd_loc.Transaction = {firstSqlTransactionParameter.Name};" );
-                         if( firstSqlConnectionParameter == null )
-                         {
-                            // If the SqlTransaction is null, we set a null connection to be coherent.
-                            b.AppendIf(
-                                 cb => cb.Append( $"{firstSqlTransactionParameter.Name} != null" ),
-                                 tb => tb.Append( $"cmd_loc.Connection = {firstSqlTransactionParameter.Name}.Connection;" ),
-                                 eb => eb.Append( "cmd_loc.Connection = null;" ) );
-                         }
+                         // Only the transaction parameter: the connection is the one of the transaction if
+                         // it is not null.
+                         b.AppendLine( $"  cmd_loc.Transaction = {firstSqlTransactionParameter.Name};" )
+                          .AppendLine( $"  cmd_loc.Connection = {firstSqlTransactionParameter.Name}?.Connection;" );
                      }
                      if( sqlParamHandlers.Handlers.Count > 0 )
                      {
