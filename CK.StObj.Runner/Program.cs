@@ -32,6 +32,17 @@ namespace CK.StObj.Runner
 
             var m = new ActivityMonitor();
             m.Output.RegisterClient( new ActivityMonitorConsoleClient() );
+            XElement root;
+            try
+            {
+                root = XDocument.Load( Path.Combine( AppContext.BaseDirectory, XmlFileName ) ).Root;
+                ActivityMonitor.DefaultFilter = LogFilter.Parse( root.Element( xLogFiler ).Value );
+            }
+            catch( Exception ex )
+            {
+                m.Fatal( ex );
+                return -2;
+            }
             InstallLoadHooks( m );
             using( m.OpenInfo( "Starting CK.StObj.Runner" ) )
             {
@@ -42,7 +53,8 @@ namespace CK.StObj.Runner
                         MergeDeps( m );
                         return 0;
                     }
-                    return Run( m ) ? 0 : 1;
+                    var config = new StObjEngineConfiguration( root.Element( xSetup ) );
+                    return StObjContextRoot.Build( config, null, m ) ? 0 : 1;
                 }
                 catch( Exception ex )
                 {
@@ -85,13 +97,6 @@ namespace CK.StObj.Runner
 #endif
         }
 
-        static bool Run( IActivityMonitor m )
-        {
-            XElement root = XDocument.Load( Path.Combine( AppContext.BaseDirectory, XmlFileName ) ).Root;
-            m.MinimalFilter = LogFilter.Parse( root.Element( xLogFiler ).Value );
-            var config = new StObjEngineConfiguration( root.Element( xSetup ) );
-            return StObjContextRoot.Build( config, null, m );
-        }
 
         static void InstallLoadHooks( IActivityMonitor monitor )
         {

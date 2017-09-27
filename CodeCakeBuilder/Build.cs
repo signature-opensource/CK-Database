@@ -198,7 +198,7 @@ namespace CodeCake
                         args.Append( EnsurePublishPath( GetNetCoreBinFolder( "CKSetup", configuration ) ) );
 
                         args.AppendSwitchQuoted( "--store", storePath )
-                            .AppendSwitchQuoted( "-f", "Debug" );
+                            .AppendSwitchQuoted( "-v", "Debug" );
 
                         Cake.ProcessRunner.Start( ckSetupExe, new ProcessSettings()
                         {
@@ -210,7 +210,7 @@ namespace CodeCake
                             .AppendSwitch( "-r", "http://cksetup.invenietis.net" )
                             .AppendSwitchSecret( "-k", apiKey )
                             .AppendSwitchQuoted( "--store", storePath )
-                            .AppendSwitchQuoted( "-f", "Debug" );
+                            .AppendSwitchQuoted( "-v", "Debug" );
                         var p = Cake.ProcessRunner.Start( ckSetupExe, new ProcessSettings()
                         {
                             Arguments = args

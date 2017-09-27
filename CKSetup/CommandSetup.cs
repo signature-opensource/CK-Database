@@ -66,6 +66,7 @@ namespace CKSetup
                             connectionArg.TargetConnectionString,
                             generatedAssemblyNameOpt.Value(),
                             !ilGenerationOpt.HasValue(),
+                            ActivityMonitor.DefaultFilter,
                             remote )
                             ? Program.RetCodeSuccess
                             : Program.RetCodeError;

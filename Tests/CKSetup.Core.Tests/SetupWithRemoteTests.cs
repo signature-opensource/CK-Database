@@ -1,3 +1,4 @@
+using CK.Core;
 using FluentAssertions;
 using NUnit.Framework;
 using System;
@@ -23,6 +24,7 @@ namespace CKSetup.Tests
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",
                     sourceGeneration: true,
+                    runnerLogFilter: LogFilter.Debug,
                     remoteStoreUrl: storeUrl
                     ).Should().BeTrue();
             }
@@ -44,6 +46,7 @@ namespace CKSetup.Tests
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",
                     sourceGeneration: true,
+                    runnerLogFilter: LogFilter.Debug,
                     remoteStoreUrl: storeUrl
                     ).Should().BeTrue();
             }

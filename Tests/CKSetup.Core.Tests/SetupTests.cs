@@ -15,9 +15,9 @@ namespace CKSetup.Tests
     [TestFixture]
     public class SetupTests
     {
-        [TestCase( TestStoreType.Zip )]
-        [TestCase( TestStoreType.Directory )]
-        public void setup_SqlCallDemo461( TestStoreType type )
+        [TestCase( TestStoreType.Zip, "Monitor" )]
+        [TestCase( TestStoreType.Directory, "Trace" )]
+        public void setup_SqlCallDemo461( TestStoreType type, string logFilter )
         {
             using( var zip = TestHelper.OpenCKDatabaseZip( type ) )
             {
@@ -27,14 +27,15 @@ namespace CKSetup.Tests
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",
-                    sourceGeneration: true
+                    sourceGeneration: true,
+                    runnerLogFilter: LogFilter.Parse( logFilter )
                     ).Should().BeTrue();
             }
         }
 
-        [TestCase( TestStoreType.Zip )]
-        [TestCase( TestStoreType.Directory )]
-        public void setup_SqlCallDemoNet20_fails( TestStoreType type )
+        [TestCase( TestStoreType.Zip, "Release" )]
+        [TestCase( TestStoreType.Directory, "Verbose" )]
+        public void setup_SqlCallDemoNet20_fails( TestStoreType type, string logFilter )
         {
             using( var zip = TestHelper.OpenCKDatabaseZip( type, withNetStandard: true ) )
             {
@@ -44,14 +45,15 @@ namespace CKSetup.Tests
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",
-                    sourceGeneration: true
+                    sourceGeneration: true,
+                    runnerLogFilter: LogFilter.Parse( logFilter )
                     ).Should().BeFalse();
             }
         }
 
-        [TestCase( TestStoreType.Zip )]
-        [TestCase( TestStoreType.Directory )]
-        public void setup_SqlCallDemoNet20_publish_folder_fails( TestStoreType type )
+        [TestCase( TestStoreType.Zip, "Off" )]
+        [TestCase( TestStoreType.Directory, "Debug" )]
+        public void setup_SqlCallDemoNet20_publish_folder_fails( TestStoreType type, string logFilter )
         {
             using( var zip = TestHelper.OpenCKDatabaseZip( type, withNetStandard: true ) )
             {
@@ -61,14 +63,15 @@ namespace CKSetup.Tests
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",
-                    sourceGeneration: true
+                    sourceGeneration: true,
+                    runnerLogFilter: LogFilter.Parse( logFilter )
                     ).Should().BeFalse();
             }
         }
 
-        [TestCase( TestStoreType.Zip )]
-        [TestCase( TestStoreType.Directory )]
-        public void setup_SqlCallDemoNetCoreTests20( TestStoreType type )
+        [TestCase( TestStoreType.Zip, "Terse" )]
+        [TestCase( TestStoreType.Directory, "Undefined" )]
+        public void setup_SqlCallDemoNetCoreTests20( TestStoreType type, string logFilter )
         {
             using( var zip = TestHelper.OpenCKDatabaseZip( type, withNetStandard: true ) )
             {
@@ -78,14 +81,15 @@ namespace CKSetup.Tests
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",
-                    sourceGeneration: true
+                    sourceGeneration: true,
+                    runnerLogFilter: LogFilter.Parse( logFilter )
                     ).Should().BeTrue();
             }
         }
 
-        [TestCase( TestStoreType.Zip )]
-        [TestCase( TestStoreType.Directory )]
-        public void setup_SqlCallDemo461_with_remote_imports(TestStoreType type)
+        [TestCase( TestStoreType.Zip, "Terse" )]
+        [TestCase( TestStoreType.Directory, "Trace" )]
+        public void setup_SqlCallDemo461_with_remote_imports(TestStoreType type,string logFilter)
         {
             string zipPath = TestHelper.GetCleanTestZipPath( type );
             using( var zip = RuntimeArchive.OpenOrCreate( TestHelper.Monitor, zipPath ) )
@@ -98,6 +102,7 @@ namespace CKSetup.Tests
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",
                     sourceGeneration: true,
+                    runnerLogFilter: LogFilter.Parse( logFilter ),
                     missingImporter: new FakeRemote( remoteZip )
                     ).Should().BeTrue();
             }
@@ -125,6 +130,7 @@ namespace CKSetup.Tests
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlActorPackage" ),
                     "SqlActorPackage.Generated.ByCKSetup",
                     sourceGeneration: true,
+                    runnerLogFilter: LogFilter.Terse,
                     missingImporter: missingImporter
                     ).Should().BeTrue();
             }
@@ -150,6 +156,7 @@ namespace CKSetup.Tests
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlActorPackage" ),
                     "SqlActorPackage.Generated.ByCKSetup",
                     sourceGeneration: true,
+                    runnerLogFilter: LogFilter.Verbose,
                     missingImporter: missingImporter
                     ).Should().BeFalse();
             }

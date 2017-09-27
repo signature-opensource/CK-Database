@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using Microsoft.Extensions.CommandLineUtils;
 using System;
 using System.Collections.Generic;
@@ -17,35 +17,27 @@ namespace CKSetup
         readonly CommandLineApplication _c;
         StreamWriter _fileWriter;
 
-        public ConsoleMonitor( CommandLineApplication c )
+        public ConsoleMonitor( CommandLineApplication c, CommandOption logFileOption = null )
         {
             _c = c;
             _m = new ActivityMonitor();
-            ColoredActivityMonitorConsoleClient consoleClient = new ColoredActivityMonitorConsoleClient();
+            var consoleClient = new ColoredActivityMonitorConsoleClient();
             _m.Output.RegisterClient( consoleClient );
-            var optLevel = c.Options.FirstOrDefault( o => o.LongName == CommandLineApplicationExtension.LogLevelOptionName );
-            if( optLevel != null && optLevel.Value() != null )
+            if( logFileOption != null && !string.IsNullOrWhiteSpace( logFileOption.Value() ) )
             {
-                LogFilter lf;
-                if( LogFilter.TryParse( optLevel.Value(), out lf ) )
+                try
                 {
-                    consoleClient.Filter = lf;
-                }
-                else
-                {
-                    consoleClient.Filter = LogFilter.Undefined;
-                    _m.Warn( $"Unrecognized LogFiler value. Using default. {CommandLineApplicationExtension.LogFilterDesc}" );
-                }
-            }
-            var optFile = c.Options.FirstOrDefault( o => o.LongName == CommandLineApplicationExtension.LogFileOptionName );
-            if( optFile != null && !string.IsNullOrWhiteSpace( optFile.Value() ) )
-            {
-                var logFilePath = Path.GetFullPath( optFile.Value() );
-                string dir = Path.GetDirectoryName( logFilePath );
-                Directory.CreateDirectory( dir );
+                    var logFilePath = Path.GetFullPath( logFileOption.Value() );
+                    string dir = Path.GetDirectoryName( logFilePath );
+                    Directory.CreateDirectory( dir );
 
-                _fileWriter = new StreamWriter( logFilePath, true, Encoding.UTF8, 4096 );
-                _m.Output.RegisterClient( new ActivityMonitorTextWriterClient( _fileWriter.Write ) );
+                    _fileWriter = new StreamWriter( logFilePath, true, Encoding.UTF8, 4096 );
+                    _m.Output.RegisterClient( new ActivityMonitorTextWriterClient( _fileWriter.Write ) );
+                }
+                catch( Exception ex )
+                {
+                    _m.Warn( "While creating log file.", ex );
+                }
             }
         }
 

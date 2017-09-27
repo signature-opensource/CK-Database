@@ -34,6 +34,7 @@ namespace CKSetup
             string targetConnectionString,
             string generatedAssemblyName,
             bool sourceGeneration,
+            LogFilter runnerLogFilter,
             IComponentImporter missingImporter = null,
             Uri remoteStoreUrl = null,
             bool debugBreakInCKStObjRunner = false )
@@ -61,7 +62,7 @@ namespace CKSetup
                                         toSetup,
                                         generatedAssemblyName,
                                         sourceGeneration );
-                        var configPath = WritDBSetupConfig( monitor, config, binPath );
+                        var configPath = WritDBSetupConfig( monitor, config, binPath, runnerLogFilter );
                         archive.RegisterFileToDelete( configPath );
                     }
                     return RunSetup( monitor, binPath, archive, debugBreakInCKStObjRunner );
@@ -251,7 +252,7 @@ namespace CKSetup
             }
         }
 
-        static string WritDBSetupConfig( IActivityMonitor m, StObjEngineConfiguration conf, string binPath )
+        static string WritDBSetupConfig( IActivityMonitor m, StObjEngineConfiguration conf, string binPath, LogFilter logFilter )
         {
             Func<Type, string> aspectTypeWriter = t =>
              {
@@ -261,7 +262,7 @@ namespace CKSetup
              };
             var doc = new XDocument(
                             new XElement( CK.StObj.Runner.Program.xRunner,
-                                new XElement( CK.StObj.Runner.Program.xLogFiler, m.MinimalFilter.ToString() ),
+                                new XElement( CK.StObj.Runner.Program.xLogFiler, logFilter.ToString() ),
                                 conf.SerializeXml( new XElement( CK.StObj.Runner.Program.xSetup ), aspectTypeWriter ) ) );
             string filePath = Path.Combine( binPath, CK.StObj.Runner.Program.XmlFileName );
             string text = doc.ToString();

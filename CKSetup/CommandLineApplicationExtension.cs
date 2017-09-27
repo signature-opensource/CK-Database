@@ -15,13 +15,16 @@ namespace CKSetup
 {
     static class CommandLineApplicationExtension
     {
-        public const string LogLevelOptionName = "logFilter";
+        public const string LogLevelOptionName = "verbosity";
         public const string LogFileOptionName = "logFile";
-        public const string LogFilterDesc = "Valid log filters: \"Off\", \"Release\", \"Monitor\", \"Terse\", \"Verbose\", \"Debug\", or any \"{Group,Line}\" format where Group and Line can be: \"Debug\", \"Trace\", \"Info\", \"Warn\", \"Error\", \"Fatal\", or \"Off\".";
+        public const string LogFilterDesc = "Valid verbosity levels: \"Off\", \"Release\", \"Monitor\", \"Terse\", \"Verbose\", \"Debug\", or any \"{Group,Line}\" format where Group and Line can be: \"Debug\", \"Trace\", \"Info\", \"Warn\", \"Error\", \"Fatal\", or \"Off\".";
 
         static readonly InformationalVersion _thisVersion;
         static readonly string _longVersion;
         static readonly string _shortVersion;
+
+        // There can be at most one console monitor creation during a run.
+        static bool _consoleMonitorCreated;
 
         static CommandLineApplicationExtension()
         {
@@ -36,11 +39,11 @@ namespace CKSetup
             @this.LongVersionGetter = () => _longVersion;
             @this.ShortVersionGetter = () => _shortVersion;
             @this.HelpOption( "-?|-h|--help" );
-            @this.VersionOption( "-v|--version", @this.LongVersionGetter() );
+            @this.VersionOption( "--version", @this.LongVersionGetter() );
             if( withMonitor )
             {
-                @this.Option( $"-f|--{LogLevelOptionName}", 
-                              $"Sets a log level filter for console and/or file output. {LogFilterDesc}", 
+                @this.Option( $"-v|--{LogLevelOptionName}", 
+                              $"Sets a verbosity level for console and/or file output. {LogFilterDesc}", 
                               CommandOptionType.SingleValue );
 
                 @this.Option( $"-l|--{LogFileOptionName}",
@@ -100,7 +103,24 @@ namespace CKSetup
 
         static public ConsoleMonitor CreateConsoleMonitor( this CommandLineApplication @this )
         {
-            return new ConsoleMonitor( @this );
+            if( _consoleMonitorCreated ) throw new Exception( "CreateConsoleMonitor must be called at moste once." );
+            _consoleMonitorCreated = true;
+
+            var m = new ConsoleMonitor( @this, @this.Options.FirstOrDefault( o => o.LongName == LogFileOptionName ) );
+            var optLevel = @this.Options.FirstOrDefault( o => o.LongName == LogLevelOptionName );
+            if( optLevel != null && optLevel.Value() != null )
+            {
+                LogFilter lf;
+                if( LogFilter.TryParse( optLevel.Value(), out lf ) )
+                {
+                    ActivityMonitor.DefaultFilter = lf;
+                }
+                else
+                {
+                    m.Warn( $"Unrecognized LogFiler value. Using default (LogFilter.Undefined). {LogFilterDesc}" );
+                }
+            }
+            return m;
         }
 
         static public void OnExecute( this CommandLineApplication @this, Func<ConsoleMonitor,int> invoke )
