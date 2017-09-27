@@ -106,6 +106,7 @@ namespace CKSetup
             if( _consoleMonitorCreated ) throw new Exception( "CreateConsoleMonitor must be called at moste once." );
             _consoleMonitorCreated = true;
 
+            ActivityMonitor.DefaultFilter = LogFilter.Verbose;
             var m = new ConsoleMonitor( @this, @this.Options.FirstOrDefault( o => o.LongName == LogFileOptionName ) );
             var optLevel = @this.Options.FirstOrDefault( o => o.LongName == LogLevelOptionName );
             if( optLevel != null && optLevel.Value() != null )
@@ -117,7 +118,7 @@ namespace CKSetup
                 }
                 else
                 {
-                    m.Warn( $"Unrecognized LogFiler value. Using default (LogFilter.Undefined). {LogFilterDesc}" );
+                    m.Warn( $"Unrecognized LogFiler value. Using default Verbose level. {LogFilterDesc}" );
                 }
             }
             return m;
