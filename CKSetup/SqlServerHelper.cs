@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -12,10 +12,6 @@ namespace CKSetup
 {
     class SqlServerHelper
     {
-        private static readonly Regex SqlServerIdentifierRegex = new Regex( @"^[\p{L}_][\p{L}\p{N}@$#_]{0,127}$" );
-
-        public static bool IsValidIdentifier( string name ) => SqlServerIdentifierRegex.IsMatch( name );
-
         static public string EncodeStringContent( string s )
         {
             return s == null ? string.Empty : s.Replace( "'", "''" );

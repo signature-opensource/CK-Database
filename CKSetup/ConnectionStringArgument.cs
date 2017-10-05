@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using Microsoft.Extensions.CommandLineUtils;
 using System;
 using System.Collections.Generic;
@@ -36,10 +36,6 @@ namespace CKSetup
             if( string.IsNullOrEmpty( targetDatabaseName ) )
             {
                 return m.SendErrorAndDisplayHelp( "The connection string does not point to a database." ) == Program.RetCodeSuccess;
-            }
-            if( !SqlServerHelper.IsValidIdentifier( targetDatabaseName ) )
-            {
-                return m.SendErrorAndDisplayHelp( $"Invalid SQL Server database name: {targetDatabaseName}" ) == Program.RetCodeSuccess;
             }
             dcsb.InitialCatalog = "master";
 
