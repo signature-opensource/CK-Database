@@ -3,7 +3,7 @@ using NUnitLite;
 using System.Globalization;
 using System.Reflection;
 
-namespace CK.StObj.Engine.Tests.NetCore
+namespace SqlCallDemo.NetCore.Tests
 {
     public static class Program
     {

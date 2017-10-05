@@ -103,7 +103,7 @@ namespace CKSetup
 
         static public ConsoleMonitor CreateConsoleMonitor( this CommandLineApplication @this )
         {
-            if( _consoleMonitorCreated ) throw new Exception( "CreateConsoleMonitor must be called at moste once." );
+            if( _consoleMonitorCreated ) throw new Exception( "CreateConsoleMonitor must be called at most once." );
             _consoleMonitorCreated = true;
 
             ActivityMonitor.DefaultFilter = LogFilter.Verbose;
