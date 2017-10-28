@@ -61,11 +61,12 @@ namespace CK.StObj.Engine.Tests
         /// <returns>The loaded assembly.</returns>
         static public Assembly LoadAssemblyFromAppContextBaseDirectory( string assemblyName )
         {
-#if NET461
+//#if NET461
+//            return Assembly.Load( new AssemblyName( assemblyName ) );
+//#else
+//            return System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath( Path.Combine( AppContext.BaseDirectory, assemblyName + ".dll" ) );
+//#endif
             return Assembly.Load( new AssemblyName( assemblyName ) );
-#else
-            return System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath( Path.Combine( AppContext.BaseDirectory, assemblyName + ".dll" ) );
-#endif
         }
 
         #region Trace for IDependentItem

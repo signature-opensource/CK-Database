@@ -46,11 +46,12 @@ namespace CK.Setup
         {
             Debug.Assert( monitor != null );
             Debug.Assert( t != null );
-#if NET461
+//#if NET461
+//            var all = (IAttributeSetupName[])t.GetCustomAttributes( typeof( IAttributeSetupName ), false );
+//#else
+//            var all = t.GetTypeInfo().GetCustomAttributes( false ).OfType<IAttributeSetupName>().ToArray();
+//#endif
             var all = (IAttributeSetupName[])t.GetCustomAttributes( typeof( IAttributeSetupName ), false );
-#else
-            var all = t.GetTypeInfo().GetCustomAttributes( false ).OfType<IAttributeSetupName>().ToArray();
-#endif
             string name = alreadyNamed;
             foreach( var n in all )
             {

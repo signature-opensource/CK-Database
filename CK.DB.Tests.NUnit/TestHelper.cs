@@ -241,11 +241,12 @@ namespace CK.Core
         /// <returns>The loaded assembly.</returns>
         static public Assembly LoadAssemblyFromAppContextBaseDirectory( string assemblyName )
         {
-#if NET461
+//#if NET461
+//            return Assembly.Load( new AssemblyName( assemblyName ) );
+//#else
+//            return Assembly.LoadFrom( Path.Combine( AppContext.BaseDirectory, assemblyName + ".dll" ) );
+//#endif
             return Assembly.Load( new AssemblyName( assemblyName ) );
-#else
-            return Assembly.LoadFrom( Path.Combine( AppContext.BaseDirectory, assemblyName + ".dll" ) );
-#endif
         }
 
 
