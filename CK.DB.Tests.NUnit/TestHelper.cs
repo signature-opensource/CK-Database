@@ -142,7 +142,7 @@ namespace CK.Core
                     {
                         string assemblyName = Config.FinalAssemblyConfiguration.AssemblyName;
                         if( assemblyName == null ) assemblyName = BuilderFinalAssemblyConfiguration.DefaultAssemblyName;
-                        var a = LoadAssemblyFromAppContextBaseDirectory( assemblyName );
+                        var a = Assembly.Load( new AssemblyName( assemblyName ) );
                         _map = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, Monitor );
                     }
                     catch( Exception ex )
@@ -233,22 +233,6 @@ namespace CK.Core
                 }
             }
         }
-        /// <summary>
-        /// Loads an assembly that must be in probe paths in .Net framework and in
-        /// AppContext.BaseDirectory in .Net Core.
-        /// </summary>
-        /// <param name="assemblyName">Name of the assembly to load (without any .dll suffix).</param>
-        /// <returns>The loaded assembly.</returns>
-        static public Assembly LoadAssemblyFromAppContextBaseDirectory( string assemblyName )
-        {
-//#if NET461
-//            return Assembly.Load( new AssemblyName( assemblyName ) );
-//#else
-//            return Assembly.LoadFrom( Path.Combine( AppContext.BaseDirectory, assemblyName + ".dll" ) );
-//#endif
-            return Assembly.Load( new AssemblyName( assemblyName ) );
-        }
-
 
         /// <summary>
         /// Clears all <see cref="UsedSchemas"/> and resets <see cref="StObjMap"/> (using <see cref="DatabaseTestConnectionString"/>

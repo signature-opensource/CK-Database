@@ -33,11 +33,6 @@ namespace CK.Setup
             if( objectType == null ) throw new ArgumentNullException( "objectType" );
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
 
-//#if NET461
-//            var a = (IStObjAttribute[])objectType.GetCustomAttributes( typeof( IStObjAttribute ), false );
-//#else
-//            var a = objectType.GetTypeInfo().GetCustomAttributes( false ).OfType<IStObjAttribute>().ToArray();
-//#endif
             var a = (IStObjAttribute[])objectType.GetCustomAttributes( typeof( IStObjAttribute ), false );
             if( a.Length == 0 ) return null;
             if( a.Length == 1 ) return a[0];

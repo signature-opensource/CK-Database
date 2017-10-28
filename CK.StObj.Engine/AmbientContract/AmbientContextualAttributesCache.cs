@@ -66,11 +66,6 @@ namespace CK.Core
         static int Register( IActivityMonitor monitor, IServiceProvider services, List<Entry> all, MemberInfo m, bool inherit = false )
         {
             int initializerCount = 0;
-//#if NET461
-//            var attr = (IAttributeAmbientContextBound[])m.GetCustomAttributes( typeof( IAttributeAmbientContextBound ), inherit );
-//#else
-//            var attr = m.GetCustomAttributes(inherit).OfType<IAttributeAmbientContextBound>();
-//#endif
             var attr = (IAttributeAmbientContextBound[])m.GetCustomAttributes( typeof( IAttributeAmbientContextBound ), inherit );
             foreach( var a in attr )
             {
