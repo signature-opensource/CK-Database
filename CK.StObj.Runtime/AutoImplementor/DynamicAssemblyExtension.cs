@@ -28,9 +28,10 @@ namespace CK.Core
         /// <returns>A unique type name.</returns>
         public static string AutoNextTypeName(this IDynamicAssembly @this, string name = null)
         {
-            return @this.SourceBuilder.Name + '.' + (name != null ? name + @this.NextUniqueNumber() : Guid.NewGuid().ToString());
+            return @this.DefaultGenerationNamespace.FullName + '.' + (name != null ? name + @this.NextUniqueNumber() : Guid.NewGuid().ToString());
         }
 
+/*
         public struct Marker<T>
         {
             public readonly T Value;
@@ -67,7 +68,7 @@ namespace CK.Core
             if (r is T) return (T)r;
             throw new InvalidOperationException($"DynamicAssembly.Memory type mismatch for key '{key}'. Expected '{typeof(T).Name}', got '{r.GetType().Name}'.");
         }
-
+*/
         /// <summary>
         /// Gets all information related to Poco.
         /// </summary>

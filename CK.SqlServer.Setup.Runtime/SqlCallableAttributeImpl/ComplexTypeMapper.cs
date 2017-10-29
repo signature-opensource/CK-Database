@@ -10,6 +10,7 @@ using CK.Core;
 using CK.Reflection;
 using CK.Text;
 using CK.CodeGen;
+using CK.CodeGen.Abstractions;
 
 namespace CK.SqlServer.Setup
 {
@@ -267,7 +268,7 @@ namespace CK.SqlServer.Setup
 
 
 
-        public string EmitFullInitialization( StringBuilder b, Func<int, Type, string> getValueGenerator )
+        public string EmitFullInitialization( ICodeWriter b, Func<int, Type, string> getValueGenerator )
         {
             Debug.Assert( _selectedCtor != null && _selectedCtor.IsInputSatisfied );
 
@@ -275,16 +276,17 @@ namespace CK.SqlServer.Setup
                                                     .Select( pCtor => getValueGenerator( pCtor.InputIndex, pCtor.Type ) )
                                                     .ToArray();
 
-            b.Append( $"var oR = new {CreatedType.ToCSharpName()}(" )
-                .AppendStrings( ctorVariableNames )
-                .AppendLine( ");" );
+            b.Append( "var oR = new " ).AppendCSharpName( CreatedType ).Append( "(" )
+                .Append( ctorVariableNames )
+                .Append( ");" )
+                .NewLine();
             foreach( var pProp in _props )
             {
                 if( pProp.IsInputSatisfied && !_mappedInputIsSelectedCtor.Contains( pProp.Parameters[0].InputIndex ) )
                 {
                     var param = pProp.Parameters[0];
                     string varName = getValueGenerator( param.InputIndex, param.Type );
-                    b.Append( $"oR.{pProp.Property.Name} = {varName};" );
+                    b.Append( "oR." ).Append( pProp.Property.Name).Append( " = " ).Append( varName ).Append( ";" ).NewLine();
                 }
             }
             return "oR";

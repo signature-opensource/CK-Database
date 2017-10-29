@@ -10,6 +10,7 @@ using CK.CodeGen;
 using CK.Core;
 using CK.Setup;
 using CK.SqlServer.Parser;
+using CK.CodeGen.Abstractions;
 
 namespace CK.SqlServer.Setup
 {
@@ -117,7 +118,7 @@ namespace CK.SqlServer.Setup
         /// </returns>
         protected abstract bool DoImplement( IActivityMonitor monitor, MethodInfo m, SqlBaseItem sqlItem, IDynamicAssembly dynamicAssembly, System.Reflection.Emit.TypeBuilder tB, bool isVirtual );
 
-        bool IAutoImplementorMethod.Implement(IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, ClassBuilder b)
+        bool IAutoImplementorMethod.Implement(IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, ITypeScope b)
         {
             //// 1 - Not ready to implement anything (no body yet): 
             ////     - Checks that the MethodInfo is the Member (Debug only).
@@ -161,7 +162,7 @@ namespace CK.SqlServer.Setup
         /// (for instance, whenever the method is not ready to be implemented). 
         /// Any error must be logged into the <paramref name="monitor"/>.
         /// </returns>
-        protected abstract bool DoImplement(IActivityMonitor monitor, MethodInfo m, SqlBaseItem sqlItem, IDynamicAssembly dynamicAssembly, ClassBuilder b);
+        protected abstract bool DoImplement(IActivityMonitor monitor, MethodInfo m, SqlBaseItem sqlItem, IDynamicAssembly dynamicAssembly, ITypeScope b);
     }
 
 }

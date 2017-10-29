@@ -1,4 +1,5 @@
 using CK.CodeGen;
+using CK.CodeGen.Abstractions;
 using System.Collections;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -23,7 +24,7 @@ namespace CK.Core
         /// True if the method is actually implemented, false if, for any reason, another implementation (empty for instance) must be generated 
         /// (for instance, whenever the method is not ready to be implemented). Any error must be logged into the <paramref name="monitor"/>.
         /// </returns>
-        bool Implement(IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, System.Reflection.Emit.TypeBuilder b, bool isVirtual);
+        bool Implement( IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, System.Reflection.Emit.TypeBuilder b, bool isVirtual );
 
         /// <summary>
         /// Implements the given method on the given <see cref="ClassBuilder"/>.
@@ -32,13 +33,13 @@ namespace CK.Core
         /// <param name="monitor">The monitor to use.</param>
         /// <param name="m">The method to implement.</param>
         /// <param name="dynamicAssembly">Dynamic assembly being implemented.</param>
-        /// <param name="b">The class builder to use.</param>
+        /// <param name="b">The type builder to use.</param>
         /// <returns>
         /// True if the method is actually implemented, false if, for any reason, another implementation (empty for instance) must be generated 
         /// (for instance, whenever the method is not ready to be implemented). 
         /// Any error must be logged into the <paramref name="monitor"/>.
         /// </returns>
-        bool Implement(IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, ClassBuilder b);
+        bool Implement( IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, ITypeScope b );
     }
 
 }

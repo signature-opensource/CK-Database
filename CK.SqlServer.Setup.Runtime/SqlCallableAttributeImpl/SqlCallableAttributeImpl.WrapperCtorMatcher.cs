@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using CK.Core;
 using CK.Reflection;
 using CK.CodeGen;
+using CK.CodeGen.Abstractions;
 
 namespace CK.SqlServer.Setup
 {
@@ -195,7 +196,7 @@ namespace CK.SqlServer.Setup
                 }
             }
 
-            internal void LdParameters( StringBuilder b, string varCmdName, ParameterInfo[] callingParameters )
+            internal void LdParameters( ICodeWriter b, string varCmdName, ParameterInfo[] callingParameters )
             {
                 int i = 0;
                 foreach( var mP in _mappedParameters )
@@ -207,13 +208,13 @@ namespace CK.SqlServer.Setup
                     }
                     else if( mP == _declaringTypeMarker )
                     {
-                        b.Append('(').AppendCSharpName( Parameters[i].ParameterType ).Append(")this" );
+                        b.Append( "(" ).AppendCSharpName( Parameters[i].ParameterType ).Append(")this" );
                     }
                     else if( mP.Member == Ctor )
                     {
                         Debug.Assert( IsValidDefaultValue( mP ) );
                         Debug.Assert( mP.Position == i, "This is the ParameterInfo of the constructor." );
-                        b.AppendSourceString( mP.DefaultValue );
+                        b.Append( mP.DefaultValue );
                     }
                     else
                     {

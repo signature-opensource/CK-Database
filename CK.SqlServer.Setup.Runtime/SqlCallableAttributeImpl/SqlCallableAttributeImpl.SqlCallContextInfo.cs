@@ -18,6 +18,7 @@ using CK.Core;
 using CK.Reflection;
 using CK.SqlServer.Parser;
 using CK.CodeGen;
+using CK.CodeGen.Abstractions;
 
 namespace CK.SqlServer.Setup
 {
@@ -239,27 +240,27 @@ namespace CK.SqlServer.Setup
                 g.Emit( OpCodes.Callvirt, toCall );
             }
 
-            public void GenerateExecuteNonQueryCall( StringBuilder b, string varCommandName, string resultBuilderName, ParameterInfo[] callingParameters )
+            public void GenerateExecuteNonQueryCall( ICodeWriter b, string varCommandName, string resultBuilderName, ParameterInfo[] callingParameters )
             {
                 b.Append( _sourceExecutor )
-                    .Append( '.' )
+                    .Append( "." )
                     .Append( _sourceExecutorCallNonQuery )
                     .Append( "(Database.ConnectionString," )
                     .Append( varCommandName );
                 if( resultBuilderName != null )
                 {
-                    b.Append( ',' ).Append( resultBuilderName );
+                    b.Append( "," ).Append( resultBuilderName );
                 }
                 if( IsAsyncCall )
                 {
-                    b.Append( ',' );
+                    b.Append( "," );
                     if( _cancellationTokenParam != null )
                     {
                         b.Append( callingParameters[_cancellationTokenParam.Position].Name );
                     }
                     else b.Append( "default(System.Threading.CancellationToken)" );
                 }
-                b.AppendLine( ");" );
+                b.Append( ");" ).NewLine();
             }
 
             /// <summary>

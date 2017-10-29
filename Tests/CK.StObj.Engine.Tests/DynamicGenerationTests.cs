@@ -10,6 +10,7 @@ using System.CodeDom.Compiler;
 using System.Reflection;
 using System.Collections;
 using CK.CodeGen;
+using CK.CodeGen.Abstractions;
 
 namespace CK.StObj.Engine.Tests
 {
@@ -28,9 +29,11 @@ namespace CK.StObj.Engine.Tests
                     return true;
                 }
 
-                public bool Implement(IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, ClassBuilder b)
+                public bool Implement(IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, ITypeScope b)
                 {
-                    b.Build().DefineOverrideMethod(m, body => body.Append( $"=> default({m.ReturnType.FullName});" ));
+                    b.AppendOverrideSignature( m )
+                     .Append( $"=> default({m.ReturnType.FullName});" )
+                     .NewLine();
                     return true;
                 }
             }

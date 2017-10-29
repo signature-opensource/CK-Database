@@ -1,4 +1,5 @@
 using CK.CodeGen;
+using CK.CodeGen.Abstractions;
 using CK.Core;
 using CK.SqlServer.Parser;
 using System;
@@ -10,21 +11,26 @@ namespace CK.SqlServer.Setup
 {
     public partial class SqlCallableItem<T>
     {
-        MethodBuilder ISqlCallableItem.AssumeSourceCommandBuilder( IActivityMonitor monitor, IDynamicAssembly dynamicAssembly )
+        IFunctionScope ISqlCallableItem.AssumeSourceCommandBuilder( IActivityMonitor monitor, IDynamicAssembly dynamicAssembly )
         {
             if( SqlObject == null ) return null;
-            ClassBuilder tB = (ClassBuilder)dynamicAssembly.Memory["CreatorForSqlCommand"];
+            ITypeScope tB = (ITypeScope)dynamicAssembly.Memory["CreatorForSqlCommand"];
             if( tB == null )
             {
-                if( !dynamicAssembly.SourceBuilder.Usings.Contains( "System.Data" ) ) dynamicAssembly.SourceBuilder.Usings.Add( "System.Data" );
-                if( !dynamicAssembly.SourceBuilder.Usings.Contains( "System.Data.SqlClient" ) ) dynamicAssembly.SourceBuilder.Usings.Add( "System.Data.SqlClient" );
+                tB = dynamicAssembly.DefaultGenerationNamespace
+                        .EnsureUsing( "System.Data" )
+                        .EnsureUsing( "System.Data.SqlClient" )
+                        .CreateType( "static class CreatorForSqlCommand" );
 
-                tB = dynamicAssembly.SourceBuilder.DefineClass( "CreatorForSqlCommand" );
-                tB.FrontModifiers.Build().Add( "static" );
+                //if( !dynamicAssembly.SourceBuilder.Usings.Contains( "System.Data" ) ) dynamicAssembly.SourceBuilder.Usings.Add( "System.Data" );
+                //if( !dynamicAssembly.SourceBuilder.Usings.Contains( "System.Data.SqlClient" ) ) dynamicAssembly.SourceBuilder.Usings.Add( "System.Data.SqlClient" );
+
+                //tB = dynamicAssembly.SourceBuilder.DefineClass( "CreatorForSqlCommand" );
+                //tB.FrontModifiers.Build().Add( "static" );
                 dynamicAssembly.Memory.Add( "CreatorForSqlCommand", tB );
             }
             string methodKey = "CreatorForSqlCommand" + '.' + FullName;
-            var m = (MethodBuilder)dynamicAssembly.Memory[methodKey];
+            var m = (IFunctionScope)dynamicAssembly.Memory[methodKey];
             if( m == null )
             {
                 using( monitor.OpenTrace( $"Low level SqlCommand create method for: '{SqlObject.ToStringSignature( true )}'." ) )
@@ -50,50 +56,58 @@ namespace CK.SqlServer.Setup
             return m;
         }
 
-        private MethodBuilder GenerateCreateSqlCommand( ClassBuilder tB, string fullName, string name, T sqlObject )
+        private IFunctionScope GenerateCreateSqlCommand( ITypeScope tB, string fullName, string name, T sqlObject )
         {
-            MethodBuilder mB = tB.DefineMethod( "public static", name );
-            mB.ReturnType = "SqlCommand";
-            mB.Body
-                .AppendLine( $"var cmd = new SqlCommand({sqlObject.SchemaName.ToSourceString()});" )
-                .AppendLine( "cmd.CommandType = CommandType.StoredProcedure;" );
+            IFunctionScope mB = tB.CreateFunction( t => t.Append( "public static SqlCommand " ).Append( name ).Append( "()" ) );
+            mB.Append( $"var cmd = new SqlCommand(" ).Append( sqlObject.SchemaName.ToSourceString() ).Append( ");" ).NewLine()
+              .Append( "cmd.CommandType = CommandType.StoredProcedure;" ).NewLine();
             ISqlServerFunctionScalar func = sqlObject as ISqlServerFunctionScalar;
             if( func != null )
             {
-                GenerateCreateSqlParameter( mB.Body, "pR", new SqlParameterReturnedValue( func.ReturnType ) );
-                mB.Body.AppendLine( "cmd.Parameters.Add( pR ).Direction = ParameterDirection.ReturnValue;" );
+                GenerateCreateSqlParameter( mB, "pR", new SqlParameterReturnedValue( func.ReturnType ) );
+                mB.Append( "cmd.Parameters.Add( pR ).Direction = ParameterDirection.ReturnValue;" ).NewLine();
             }
             int idxP = 0;
             foreach( ISqlServerParameter p in sqlObject.Parameters )
             {
-                var pName = GenerateCreateSqlParameter( mB.Body, $"p{++idxP}", p );
+                var pName = GenerateCreateSqlParameter( mB, $"p{++idxP}", p );
                 if( p.IsOutput )
                 {
-                    mB.Body.AppendLine( $"{pName}.Direction = ParameterDirection.{(p.IsInputOutput ? ParameterDirection.InputOutput : ParameterDirection.Output)};" );
+                    mB.Append( pName )
+                       .Append( ".Direction = ParameterDirection." )
+                       .Append( p.IsInputOutput ? "InputOutput" : "Output" )
+                       .Append( ";" )
+                       .NewLine();
                 }
-                mB.Body.AppendLine( $"cmd.Parameters.Add({pName});" );
+                mB.Append( "cmd.Parameters.Add(").Append( pName ).Append( ");" ).NewLine();
             }
-            mB.Body.AppendLine( "return cmd;" );
+            mB.Append( "return cmd;" ).NewLine();
             return mB;
         }
 
-        static string GenerateCreateSqlParameter( StringBuilder b, string name, ISqlServerParameter p )
+        static string GenerateCreateSqlParameter( IFunctionScope b, string name, ISqlServerParameter p )
         {
             int size = p.SqlType.SyntaxSize;
-            b.Append( $"var {name} = new SqlParameter( {p.Name.ToSourceString()}, SqlDbType.{p.SqlType.DbType}" );
+            // b.Append( $"var {name} = new SqlParameter( {p.Name.ToSourceString()}, SqlDbType.{p.SqlType.DbType}" );
+            b.Append( "var " )
+             .Append( name )
+             .Append( " = new SqlParameter( " )
+             .AppendSourceString( p.Name )
+             .Append( ", SqlDbType." )
+             .Append( p.SqlType.DbType.ToString() );
             if( size != 0 && size != -2 )
             {
-                b.Append( $", {size}" );
+                b.Append( ", " ).Append( size );
             }
-            b.AppendLine( ");" );
+            b.Append( ");" ).NewLine();
             var precision = p.SqlType.SyntaxPrecision;
             if( precision != 0 )
             {
-                b.AppendLine( $"{name}.Precision = {precision};" );
+                b.Append( name ).Append( ".Precision = " ).Append( precision ).Append( ";" ).NewLine();
                 var scale = p.SqlType.SyntaxScale;
                 if( scale != 0 )
                 {
-                    b.AppendLine( $"{name}.Scale = {scale};" );
+                    b.Append( name ).Append( ".Scale = " ).Append( scale ).Append( ";" ).NewLine();
                 }
             }
             return name;

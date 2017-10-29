@@ -18,6 +18,7 @@ using CK.Core;
 using CK.Reflection;
 using CK.SqlServer.Parser;
 using CK.CodeGen;
+using CK.CodeGen.Abstractions;
 
 namespace CK.SqlServer.Setup
 {
@@ -396,7 +397,7 @@ namespace CK.SqlServer.Setup
                     return true;
                 }
 
-                internal bool EmitSetSqlParameterValue( IActivityMonitor monitor, StringBuilder b, string varParameterName )
+                internal bool EmitSetSqlParameterValue( IActivityMonitor monitor, ICodeWriter b, string varParameterName )
                 {
                     if( _isIgnoredOutputParameter ) return true;
                     string sqlType = SqlExprParam.SqlType.ToStringClean();
@@ -404,8 +405,10 @@ namespace CK.SqlServer.Setup
                         || StringComparer.OrdinalIgnoreCase.Equals( sqlType, "Geography" )
                         || StringComparer.OrdinalIgnoreCase.Equals( sqlType, "HierarchyId" ) )
                     {
-                        b.AppendLine( $"{varParameterName}.SqlDbType = SqlDbType.Udt;" );
-                        b.AppendLine( $"{varParameterName}.UdtTypeName = {sqlType.ToLowerInvariant().ToSourceString()};" );
+                        b.Append( varParameterName ).Append( ".SqlDbType = SqlDbType.Udt;" ).NewLine();
+                        b.Append( varParameterName )
+                          .Append( ".UdtTypeName = " ).AppendSourceString( sqlType.ToLowerInvariant() ).Append( ";" )
+                          .NewLine();
                     }
                     // Do not set any Value if the C# parameter is out.
                     if( !_isUseDefaultSqlValue && _methodParam != null && _methodParam.IsOut ) return true;
@@ -414,9 +417,9 @@ namespace CK.SqlServer.Setup
                     // for Sql Server to take into account the input value.
                     if( SqlExprParam.IsPureOutput )
                     {
-                        b.AppendLine( $"{varParameterName}.Direction = ParameterDirection.InputOutput;" );
+                        b.Append( varParameterName ).Append( ".Direction = ParameterDirection.InputOutput;" ).NewLine();
                     }
-                    b.Append( $"{varParameterName}.Value = " );
+                    b.Append( varParameterName ).Append( ".Value = " );
                     if( _isUseDefaultSqlValue )
                     {
                         if( SqlExprParam.DefaultValue.IsVariable )
@@ -431,7 +434,7 @@ namespace CK.SqlServer.Setup
                         {
                             try
                             {
-                                b.AppendSourceString( o );
+                                b.Append( o );
                             }
                             catch( Exception ex )
                             {
@@ -459,13 +462,18 @@ namespace CK.SqlServer.Setup
                         {
                             if( _ctxProp.PocoMappedType != null )
                             {
-                                b.Append( "((" ).AppendCSharpName( _ctxProp.PocoMappedType ).Append( ')' ).Append( _ctxProp.Parameter.Name ).Append( ")." ).Append( _ctxProp.Prop.Name );
+                                b.Append( "((" )
+                                    .AppendCSharpName( _ctxProp.PocoMappedType )
+                                    .Append( ")" )
+                                    .Append( _ctxProp.Parameter.Name )
+                                    .Append( ")." )
+                                    .Append( _ctxProp.Prop.Name );
                             }
-                            else b.Append( _ctxProp.Parameter.Name ).Append( '.' ).Append( _ctxProp.Prop.Name );
+                            else b.Append( _ctxProp.Parameter.Name ).Append( "." ).Append( _ctxProp.Prop.Name );
                         }
                         if( isNullable ) b.Append( " ?? DBNull.Value" );
                     }
-                    b.AppendLine( ";" );
+                    b.Append( ";" ).NewLine();
                     return true;
                 }
 
@@ -492,12 +500,12 @@ namespace CK.SqlServer.Setup
                         g.Emit( OpCodes.Stind_Ref );
                     }
                 }
-                internal void EmitSetRefOrOutParameter( StringBuilder b, string varCmdParameters, Func<string> tempObjName )
+                internal void EmitSetRefOrOutParameter( ICodeWriter b, string varCmdParameters, Func<string> tempObjName )
                 {
                     if( _methodParam == null || !_methodParam.ParameterType.IsByRef ) return;
 
                     string resultName = EmitGetSqlCommandParameterValue( b, varCmdParameters, tempObjName, _index, _actualParameterType.AsType() );
-                    b.Append( _methodParam.Name ).Append( "=" ).Append( resultName ).AppendLine( ";" );
+                    b.Append( _methodParam.Name ).Append( "=" ).Append( resultName ).Append( ";" ).NewLine();
                 }
             }
 
@@ -625,7 +633,7 @@ namespace CK.SqlServer.Setup
                 }
             }
 
-            internal string EmitInlineReturn(StringBuilder b, string nameParameters, Func<string> tempObjectName )
+            internal string EmitInlineReturn(ICodeWriter b, string nameParameters, Func<string> tempObjectName )
             {
                 if (_simpleReturnType != null)
                 {
@@ -638,11 +646,14 @@ namespace CK.SqlServer.Setup
                 });
             }
 
-            static string EmitGetSqlCommandParameterValue(StringBuilder b, string varCmdParameters, Func<string> tempObjName, int sqlParameterIndex, Type targetType)
+            static string EmitGetSqlCommandParameterValue(ICodeWriter b, string varCmdParameters, Func<string> tempObjName, int sqlParameterIndex, Type targetType)
             {
                 Debug.Assert( !targetType.IsByRef );
                 string resultName = "getR" + sqlParameterIndex;
-                b.AppendLine($"{tempObjName()} = {varCmdParameters}[{sqlParameterIndex}].Value;");
+                b.Append( tempObjName() )
+                    .Append( " = " )
+                    .Append( varCmdParameters ).Append( "[" ).Append( sqlParameterIndex ).Append( "].Value;")
+                    .NewLine();
                 bool isNullable = true;
                 Type enumUnderlyingType = null;
                 if( targetType.GetTypeInfo().IsValueType )
@@ -678,7 +689,7 @@ namespace CK.SqlServer.Setup
                         .AppendCSharpName( targetType )
                         .Append( ')' );
                 }
-                b.Append( tempObjName() ).AppendLine( ";" );
+                b.Append( tempObjName() ).Append( ";" ).NewLine();
                 return resultName;
             }
 
@@ -750,10 +761,10 @@ namespace CK.SqlServer.Setup
 
             class FuncTypeHolder
             {
-                public readonly ClassBuilder ClassBuilder;
+                public readonly ITypeScope ClassBuilder;
                 public readonly System.Reflection.Emit.TypeBuilder TypeBuilder;
                 public FuncImpl FirstFuncImpl;
-                public FuncTypeHolder(System.Reflection.Emit.TypeBuilder b, ClassBuilder classBuilder)
+                public FuncTypeHolder(System.Reflection.Emit.TypeBuilder b, ITypeScope classBuilder )
                 {
                     TypeBuilder = b;
                     ClassBuilder = classBuilder;
@@ -774,8 +785,7 @@ namespace CK.SqlServer.Setup
                 if (fB == null)
                 {
                     System.Reflection.Emit.TypeBuilder tB = dynamicAssembly.ModuleBuilder.DefineType(_funcHolderTypeName, TypeAttributes.Class | TypeAttributes.Sealed | TypeAttributes.NotPublic);
-                    ClassBuilder cB = dynamicAssembly.SourceBuilder.DefineClass("_build_func_");
-                    cB.FrontModifiers.Add("static");
+                    ITypeScope cB = dynamicAssembly.DefaultGenerationNamespace.CreateType("static class _build_func_");
                     dynamicAssembly.Memory.Add(_funcHolderTypeName, (fB = new FuncTypeHolder(tB, cB)));
                     dynamicAssembly.PushFinalAction(FinalizeFuncHolderType);
                 }
@@ -817,27 +827,47 @@ namespace CK.SqlServer.Setup
                     string fieldName = "_" + funcName;
                     string tFuncReturnType = _unwrappedReturnedType.ToCSharpName();
                     string tFunc = $"Func<{SqlObjectItem.TypeCommand.FullName},{tFuncReturnType}>";
-                    var fieldDef = fB.ClassBuilder.DefineField(tFunc, fieldName);
-                    fieldDef.FrontModifiers.Add("internal static readonly");
-                    fieldDef.InitialValue = funcName;
-                    var func = fB.ClassBuilder.DefineMethod(funcName);
-                    func.FrontModifiers.Add("private static");
-                    func.ReturnType = tFuncReturnType;
-                    func.Parameters.Add(new CodeGen.ParameterBuilder() { Name = "c", ParameterType = SqlObjectItem.TypeCommand.FullName } );
+                    //var fieldDef = fB.ClassBuilder.DefineField(tFunc, fieldName);
+                    //fieldDef.FrontModifiers.Add("internal static readonly");
+                    //fieldDef.InitialValue = funcName;
+                    fB.ClassBuilder.Append( "internal static readonly " )
+                                    .Append( tFunc )
+                                    .Append( " " )
+                                    .Append( fieldName )
+                                    .Append( " = " )
+                                    .Append( funcName )
+                                    .Append( ";" )
+                                    .NewLine();
+
+                    //var func = fB.ClassBuilder.DefineMethod(funcName);
+                    //func.FrontModifiers.Add("private static");
+                    //func.ReturnType = tFuncReturnType;
+                    //func.Parameters.Add(new CodeGen.ParameterBuilder() { Name = "c", ParameterType = SqlObjectItem.TypeCommand.FullName } );
+
+                    fB.ClassBuilder.Append( "private static " )
+                                    .Append( tFuncReturnType )
+                                    .Append( " " )
+                                    .Append( funcName )
+                                    .Append( "( " )
+                                    .Append( SqlObjectItem.TypeCommand.FullName )
+                                    .Append( " c )" )
+                                    .NewLine();
+
                     // We may use a temporary object.
                     string tempObjectName = null;
                     Func<string> GetTempObjectName = () =>
                     {
                         if( tempObjectName == null )
                         {
-                            func.Body.AppendLine( "object tempObj;" );
+                            fB.ClassBuilder.Append( "object tempObj;" ).NewLine();
                             tempObjectName = "tempObj";
                         }
                         return tempObjectName;
                     };
-                    func.Body.AppendLine("var parameters = c.Parameters;");
-                    string varName = EmitInlineReturn(func.Body, "parameters", GetTempObjectName );
-                    func.Body.AppendLine($"return {varName};");
+                    fB.ClassBuilder.Append("var parameters = c.Parameters;").NewLine();
+                    string varName = EmitInlineReturn( fB.ClassBuilder, "parameters", GetTempObjectName );
+                    fB.ClassBuilder.Append( "return " ).Append( varName ).Append( ";" ).NewLine();
+                    fB.ClassBuilder.Append( "}" ).NewLine();
 
                     fieldFullName = fB.ClassBuilder.FullName + '.' + fieldName;
                     dynamicAssembly.Memory[funcKey] = fieldFullName;
