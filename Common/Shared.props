@@ -45,7 +45,7 @@
     <CKSqlServerParserVersion>6.0.0</CKSqlServerParserVersion>
     <CKSqlServerParserModelVersion>4.0.0</CKSqlServerParserModelVersion>
     <CKReflectionVersion>6.0.1</CKReflectionVersion>
-    <CKCodeGenVersion>0.1.0-a22-00-develop-0019</CKCodeGenVersion>
+    <CKCodeGenVersion>0.1.0-a22-00-develop-0021</CKCodeGenVersion>
     <YodiiScriptVersion>0.4.1</YodiiScriptVersion>
     <CSemVerVersion>1.0.1</CSemVerVersion>
     <MonoCecilVersion>0.10.0-beta6</MonoCecilVersion>
