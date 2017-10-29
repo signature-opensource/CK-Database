@@ -53,6 +53,21 @@ namespace CK.StObj.Engine.Tests
             }
         }
 
+        /// <summary>
+        /// Loads an assembly that must be in probe paths in .Net framework and in
+        /// AppContext.BaseDirectory in .Net Core.
+        /// </summary>
+        /// <param name="assemblyName">Name of the assembly to load (without any .dll suffix).</param>
+        /// <returns>The loaded assembly.</returns>
+        static public Assembly LoadAssemblyFromAppContextBaseDirectory( string assemblyName )
+        {
+#if NET461
+            return Assembly.Load( new AssemblyName( assemblyName ) );
+#else
+            return System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath( Path.Combine( AppContext.BaseDirectory, assemblyName + ".dll" ) );
+#endif
+        }
+
         #region Trace for IDependentItem
 
         public static void TraceDependentItem( this IActivityMonitor @this, IEnumerable<IDependentItem> e )

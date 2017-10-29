@@ -106,7 +106,7 @@ namespace CK.StObj.Engine.Tests
 
                 r.GenerateFinalAssembly( TestHelper.Monitor, false, true, true );
                 {
-                    var a = Assembly.Load( new AssemblyName( "TEST_SimpleEmitSrc" ) );
+                    var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_SimpleEmitSrc" );
                     IStObjMap c = StObjContextRoot.Load( a, runtimeBuilder, TestHelper.Monitor );
                     Assert.That( typeof( B ).IsAssignableFrom( c.Default.ToLeafType( typeof( A ) ) ) );
                     Assert.That( c.Default.ToLeafType( typeof( IC ) ), Is.SameAs( typeof( D ) ) );
@@ -115,7 +115,7 @@ namespace CK.StObj.Engine.Tests
                 }
 #if NET461
                 {
-                    var a = Assembly.Load( new AssemblyName( "TEST_SimpleEmit" ) );
+                    var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_SimpleEmit" );
                     IStObjMap c = StObjContextRoot.Load( a, runtimeBuilder, TestHelper.Monitor );
                     Assert.That( typeof( B ).IsAssignableFrom( c.Default.ToLeafType( typeof( A ) ) ) );
                     Assert.That( c.Default.ToLeafType( typeof( IC ) ), Is.SameAs( typeof( D ) ) );
@@ -211,7 +211,7 @@ namespace CK.StObj.Engine.Tests
                 r.GenerateFinalAssembly( TestHelper.Monitor, false, true, true );
 
                 {
-                    var a = Assembly.Load( new AssemblyName( "TEST_ConstructCalledSrc" ) );
+                    var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_ConstructCalledSrc" );
                     IStObjMap c = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
                     Assert.That( c.Default.Obtain<B>().TheA, Is.SameAs( c.Default.Obtain<A>() ).And.SameAs( c.Default.Obtain<ASpec>() ) );
                     Assert.That( c.Default.Obtain<ASpec>().TheB, Is.SameAs( c.Default.Obtain<B>() ) );
@@ -222,7 +222,7 @@ namespace CK.StObj.Engine.Tests
                 }
 #if NET461
                 {
-                    var a = Assembly.Load( new AssemblyName( "TEST_ConstructCalled" ) );
+                    var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_ConstructCalled" );
                     IStObjMap c = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
                     Assert.That( c.Default.Obtain<B>().TheA, Is.SameAs( c.Default.Obtain<A>() ).And.SameAs( c.Default.Obtain<ASpec>() ) );
                     Assert.That( c.Default.Obtain<ASpec>().TheB, Is.SameAs( c.Default.Obtain<B>() ) );
@@ -347,7 +347,7 @@ namespace CK.StObj.Engine.Tests
                 r.GenerateFinalAssembly( TestHelper.Monitor, false, true, true );
 
                 {
-                    var a = Assembly.Load( new AssemblyName( "TEST_PostBuildSetSrc" ) );
+                    var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_PostBuildSetSrc" );
                     IStObjMap c = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
                     Assert.That( c.Default.Obtain<B>().TheA, Is.SameAs( c.Default.Obtain<A>() ).And.SameAs( c.Default.Obtain<ASpec>() ) );
                     Assert.That( c.Default.Obtain<ASpec>().TheB, Is.SameAs( c.Default.Obtain<B>() ) );
@@ -364,7 +364,7 @@ namespace CK.StObj.Engine.Tests
                 }
 #if NET461
                 {
-                    var a = Assembly.Load( new AssemblyName( "TEST_PostBuildSet" ) );
+                    var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_PostBuildSet" );
                     IStObjMap c = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
                     Assert.That( c.Default.Obtain<B>().TheA, Is.SameAs( c.Default.Obtain<A>() ).And.SameAs( c.Default.Obtain<ASpec>() ) );
                     Assert.That( c.Default.Obtain<ASpec>().TheB, Is.SameAs( c.Default.Obtain<B>() ) );
