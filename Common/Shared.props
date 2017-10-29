@@ -27,7 +27,10 @@
     <CKSqlServerParserVersion>6.0.0</CKSqlServerParserVersion>
     <CKSqlServerParserModelVersion>4.0.0</CKSqlServerParserModelVersion>
     <CKReflectionVersion>6.0.1</CKReflectionVersion>
-    <CKCodeGenVersion>0.1.0-a22-00-test-0003</CKCodeGenVersion>
+      <!-- This CodeGen uses CK.Text 6.0.3-Cdevelop-0002
+           (New version - TryMatchHexNumber - but without reproducible builds.)
+      -->
+    <CKCodeGenVersion>0.1.0-a22-00-test-0004</CKCodeGenVersion>
     <YodiiScriptVersion>0.4.1</YodiiScriptVersion>
     <CSemVerVersion>1.0.1</CSemVerVersion>
     <MonoCecilVersion>0.10.0-beta6</MonoCecilVersion>
