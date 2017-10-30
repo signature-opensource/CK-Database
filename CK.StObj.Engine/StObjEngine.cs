@@ -12,14 +12,42 @@ namespace CK.Setup
     /// <summary>
     /// Generic engine that runs a <see cref="StObjEngineConfiguration"/>.
     /// </summary>
-    public class StObjEngine : IStObjEngineStatus
+    public class StObjEngine
     {
         readonly IActivityMonitor _monitor;
-        readonly ActivityMonitorPathCatcher _pathCatcher;
         readonly StObjEngineConfiguration _config;
         readonly IStObjRuntimeBuilder _runtimeBuilder;
+        Status _status;
         StObjEngineConfigureContext _startContext;
-        bool _success;
+
+        class Status : IStObjEngineStatus, IDisposable
+        {
+            readonly IActivityMonitor _m;
+            readonly ActivityMonitorPathCatcher _pathCatcher;
+            public bool Success;
+
+            public Status( IActivityMonitor m )
+            {
+                _m = m;
+                _pathCatcher = new ActivityMonitorPathCatcher() { IsLocked = true };
+                _m.Output.RegisterClient( _pathCatcher );
+                Success = true;
+            }
+
+            bool IStObjEngineStatus.Success => Success;
+
+            public IReadOnlyList<ActivityMonitorPathCatcher.PathElement> DynamicPath => _pathCatcher.DynamicPath;
+
+            public IReadOnlyList<ActivityMonitorPathCatcher.PathElement> LastErrorPath => _pathCatcher.LastErrorPath;
+
+            public IReadOnlyList<ActivityMonitorPathCatcher.PathElement> LastWarnOrErrorPath => _pathCatcher.LastErrorPath;
+
+            public void Dispose()
+            {
+                _pathCatcher.IsLocked = false;
+                _m.Output.UnregisterClient( _pathCatcher );
+            }
+        }
 
         /// <summary>
         /// Initializes a new <see cref="StObjEngine"/>.
@@ -32,11 +60,8 @@ namespace CK.Setup
             if( monitor == null ) throw new ArgumentNullException( nameof( monitor ) );
             if( config == null ) throw new ArgumentNullException( nameof( config ) );
             _monitor = monitor;
-            _pathCatcher = new ActivityMonitorPathCatcher() { IsLocked = true };
-            _monitor.Output.RegisterClient( _pathCatcher );
             _config = config;
             _runtimeBuilder = runtimeBuilder ?? StObjContextRoot.DefaultStObjRuntimeBuilder;
-            _success = true;
         }
 
         /// <summary>
@@ -51,21 +76,22 @@ namespace CK.Setup
         public bool Run()
         {
             if( _startContext != null ) throw new InvalidOperationException( "Run can be called only once." );
-            _startContext = new StObjEngineConfigureContext( _monitor, _config, this );
+            _status = new Status( _monitor );
+            _startContext = new StObjEngineConfigureContext( _monitor, _config, _status );
             try
             {
-                _startContext.CreateAndConfigureAspects( _config.Aspects, () => _success = false );
-                if( _success )
+                _startContext.CreateAndConfigureAspects( _config.Aspects, () => _status.Success = false );
+                if( _status.Success )
                 {
                     StObjCollectorResult r = SafeBuildStObj();
-                    if( r == null ) return _success = false;
+                    if( r == null ) return _status.Success = false;
 
                     var runCtx = new StObjEngineRunContext( _monitor, _startContext, r.OrderedStObjs );
-                    runCtx.RunAspects( () => _success = false );
-                    if( _success ) _success = GenerateStObjFinalAssembly( r );
-                    if( !_success )
+                    runCtx.RunAspects( () => _status.Success = false );
+                    if( _status.Success ) _status.Success = GenerateStObjFinalAssembly( r );
+                    if( !_status.Success )
                     {
-                        var errorPath = _pathCatcher.LastErrorPath;
+                        var errorPath = _status.LastErrorPath;
                         if( errorPath == null || errorPath.Count == 0 )
                         {
                             Debug.Fail( "Success status is false but no error has been logged." );
@@ -73,13 +99,14 @@ namespace CK.Setup
                         }
                     }
                     var termCtx = new StObjEngineTerminateContext( _monitor, runCtx );
-                    termCtx.TerminateAspects( () => _success = false );
+                    termCtx.TerminateAspects( () => _status.Success = false );
                 }
-                return _success;
+                return _status.Success;
             }
             finally
             {
                 DisposeDisposableAspects();
+                _status.Dispose();
             }
         }
 
@@ -161,15 +188,6 @@ namespace CK.Setup
                 }
             }
         }
-
-        bool IStObjEngineStatus.Success => _success;
-
-        IReadOnlyList<ActivityMonitorPathCatcher.PathElement> IStObjEngineStatus.DynamicPath => _pathCatcher.DynamicPath;
-
-        IReadOnlyList<ActivityMonitorPathCatcher.PathElement> IStObjEngineStatus.LastErrorPath => _pathCatcher.LastErrorPath;
-
-        IReadOnlyList<ActivityMonitorPathCatcher.PathElement> IStObjEngineStatus.LastWarnOrErrorPath => _pathCatcher.LastErrorPath;
-
 
     }
 }

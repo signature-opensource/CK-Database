@@ -1,9 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.StObj.Engine\AutoImplementor\ImplementableTypeInfo.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
 
 using System;
 using System.Collections.Generic;
@@ -14,6 +8,7 @@ using System.Reflection.Emit;
 using System.Collections;
 using CK.Reflection;
 using CK.CodeGen;
+using CK.CodeGen.Abstractions;
 
 namespace CK.Core
 {
@@ -31,12 +26,12 @@ namespace CK.Core
                 throw new NotSupportedException();
             }
 
-            public bool Implement( IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, ClassBuilder b )
+            public bool Implement( IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, ITypeScope b )
             {
                 throw new NotSupportedException();
             }
 
-            public bool Implement( IActivityMonitor monitor, PropertyInfo p, IDynamicAssembly dynamicAssembly, ClassBuilder b )
+            public bool Implement( IActivityMonitor monitor, PropertyInfo p, IDynamicAssembly dynamicAssembly, ITypeScope b )
             {
                 throw new NotSupportedException();
             }
@@ -237,7 +232,11 @@ namespace CK.Core
 #endif
         public string GenerateType( IActivityMonitor monitor, IDynamicAssembly a )
         {
-            var cB = a.SourceBuilder.DefineClassWithPublicPassThroughConstructors( "public", _stubType.Name, AbstractType );
+            var cB = a.DefaultGenerationNamespace.CreateType( t => t.Append( "public class " )
+                                                                    .Append( _stubType.Name )
+                                                                    .Append( " : " )
+                                                                    .AppendCSharpName( AbstractType ) );
+            cB.AppendPassThroughConstructors( AbstractType );
             foreach( var am in MethodsToImplement )
             {
                 IAutoImplementorMethod m = am.ImplementorToUse;

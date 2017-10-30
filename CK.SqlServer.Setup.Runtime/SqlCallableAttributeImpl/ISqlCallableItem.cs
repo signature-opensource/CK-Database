@@ -9,6 +9,8 @@ using CK.Setup;
 using CK.SqlServer.Parser;
 using CK.Reflection;
 using CK.CodeGen;
+using System.Reflection.Emit;
+using CK.CodeGen.Abstractions;
 
 namespace CK.SqlServer.Setup
 {
@@ -34,7 +36,7 @@ namespace CK.SqlServer.Setup
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="dynamicAssembly">Use the memory associated to the dynamic to share the static class that implements the creation methods.</param>
         /// <returns>The method info. Null if <see cref="IsValid"/> is false or if an error occurred while generating it.</returns>
-        MethodBuilder AssumeSourceCommandBuilder(IActivityMonitor monitor, IDynamicAssembly dynamicAssembly);
+        IFunctionScope AssumeSourceCommandBuilder(IActivityMonitor monitor, IDynamicAssembly dynamicAssembly);
     }
 
 }

@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -102,7 +102,7 @@ namespace CK.Core
             /// </summary>
             Type = 19,
             /// <summary>
-            /// A list of object, each of them beeing a known.
+            /// A list of object, each of them beeing of a known type.
             /// This is read back as an array, but can be written as any IEnumerable or, better 
             /// (since length is known), any ICollection.
             /// </summary>

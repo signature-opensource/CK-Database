@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CK.CodeGen;
+using CK.CodeGen.Abstractions;
 using Microsoft.CodeAnalysis;
 
 namespace CK.Core
@@ -39,22 +40,22 @@ namespace CK.Core
             }
             _memory = new Dictionary<object, object>();
             _postActions = new List<Action<IDynamicAssembly>>();
+
             SourceModules = new List<ICodeGeneratorModule>();
-            SourceModules.Add( new ExcludeFromSetupModule() );
-            SourceBuilder = new NamespaceBuilder( "CK._g" );
+            var ws = CodeWorkspace.Create();
+            ws.Global.Append( "[assembly:CK.Setup.ExcludeFromSetup()]" ).NewLine();
+            DefaultGenerationNamespace = ws.Global.FindOrCreateNamespace( "CK._g" );
         }
 
-        class ExcludeFromSetupModule : ICodeGeneratorModule
-        {
-            public IEnumerable<Assembly> RequiredAssemblies => Enumerable.Empty<Assembly>();
+        //class ExcludeFromSetupModule : ICodeGeneratorModule
+        //{
+        //    public void Inject( ICodeWorkspace code )
+        //    {
+        //        code.Global.Append( "[assembly:CK.Setup.ExcludeFromSetup()]" );
+        //    }
 
-            public void AppendSource( StringBuilder b )
-            {
-                b.AppendLine( "[assembly:CK.Setup.ExcludeFromSetup()]" );
-            }
-
-            public SyntaxTree PostProcess( SyntaxTree t ) => t;
-        }
+        //    public IReadOnlyList<SyntaxTree> Rewrite( IReadOnlyList<SyntaxTree> trees ) => trees;
+        //}
 
         protected AssemblyName AssemblyName { get; }
 
@@ -74,9 +75,12 @@ namespace CK.Core
         public ModuleBuilder ModuleBuilder { get; protected set; }
 
         /// <summary>
-        /// Gets the source builder for this <see cref="IDynamicAssembly"/>.
+        /// Gets the default name space for this <see cref="IDynamicAssembly"/>
+        /// into which code should be generated.
+        /// Note that nothing prevents the <see cref="ICodeScope.Workspace"/> to be used and other
+        /// namespaces to be created.
         /// </summary>
-        public NamespaceBuilder SourceBuilder { get; }
+        public INamespaceScope DefaultGenerationNamespace { get; }
 
         /// <summary>
         /// Gets the source modules for this <see cref="IDynamicAssembly"/>.

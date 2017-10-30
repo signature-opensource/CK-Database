@@ -8,11 +8,28 @@
     <IsInTestsFolder Condition="$(MSBuildProjectDirectoryNoRoot.Contains('\Tests\'))">true</IsInTestsFolder>
   </PropertyGroup>
 
-  <!-- Xml documentation is generated in Release or during Cake builds (except for tests projects). --><!--
+
+    <!-- Reproducible builds. See: http://blog.paranoidcoding.com/2016/04/05/deterministic-builds-in-roslyn.html
+        On appveyor, the clone folder MUST be set to the solution path in the CK-World.
+        For this solution, it is:
+
+        clone_folder: C:\CK-World\CK-Database-Projects\CK-Database
+
+        This must be adapted for each solution/repository.
+    -->
+    <PropertyGroup>
+        <Deterministic>true</Deterministic>
+        <CKWorldPath>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), CK-World))</CKWorldPath>
+        <PathMap Condition=" '$(CKWorldPath)' != '' ">$(CKWorldPath)=C:\CK-World</PathMap>
+    </PropertyGroup>
+
+
+  <!-- Xml documentation is generated in Release or during Cake builds (except for tests projects). -->
+  <!--
   <PropertyGroup Condition=" '$(IsInTestsFolder)' != 'true' And ('$(CakeBuild)' == 'true' Or '$(Configuration)' == 'Release') ">
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>-->
-
+  </PropertyGroup
+  >-->
   <!-- TEMPORARY: Enable Xml documentation only for .Model assemblies. -->
   <PropertyGroup Condition=" '$(IsInTestsFolder)' != 'true' And ('$(CakeBuild)' == 'true' Or '$(Configuration)' == 'Release') And $(MSBuildProjectName.EndsWith('.Model'))">
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -22,15 +39,13 @@
     <!-- Centralized version dependencies. -->
     <CKCoreVersion>9.0.0</CKCoreVersion>
     <CKActivityMonitorVersion>9.0.0</CKActivityMonitorVersion>
-    <CKMonitoringVersion>8.0.0</CKMonitoringVersion>
+    <CKAspNetVersion>1.2.1</CKAspNetVersion>
+    <CKMonitoringVersion>8.2.0</CKMonitoringVersion>
     <CKSetupDependencyVersion>6.0.2</CKSetupDependencyVersion>
     <CKSqlServerParserVersion>6.0.0</CKSqlServerParserVersion>
     <CKSqlServerParserModelVersion>4.0.0</CKSqlServerParserModelVersion>
     <CKReflectionVersion>6.0.1</CKReflectionVersion>
-      <!-- This CodeGen uses CK.Text 6.0.3-Cdevelop-0002
-           (New version - TryMatchHexNumber - but without reproducible builds.)
-      -->
-    <CKCodeGenVersion>0.1.0-a22-00-test-0004</CKCodeGenVersion>
+    <CKCodeGenVersion>0.1.0-a22-00-develop-0022</CKCodeGenVersion>
     <YodiiScriptVersion>0.4.1</YodiiScriptVersion>
     <CSemVerVersion>1.0.1</CSemVerVersion>
     <MonoCecilVersion>0.10.0-beta6</MonoCecilVersion>

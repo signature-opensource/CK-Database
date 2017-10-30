@@ -1,4 +1,5 @@
-﻿using CK.CodeGen;
+using CK.CodeGen;
+using CK.CodeGen.Abstractions;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -31,12 +32,15 @@ namespace CK.Core
         ModuleBuilder ModuleBuilder { get; }
 
         /// <summary>
-        /// Gets the source builder for this <see cref="IDynamicAssembly"/>.
+        /// Gets the default name space for this <see cref="IDynamicAssembly"/>
+        /// into which code should be generated.
+        /// Note that nothing prevents the <see cref="ICodeScope.Workspace"/> to be used and other
+        /// namespaces to be created.
         /// </summary>
-        NamespaceBuilder SourceBuilder { get; }
+        INamespaceScope DefaultGenerationNamespace { get; }
 
         /// <summary>
-        /// Gets the source modules for this <see cref="IDynamicAssembly"/>.
+        /// Gets a mutable list of source code generator modules for this <see cref="IDynamicAssembly"/>.
         /// </summary>
         IList<ICodeGeneratorModule> SourceModules { get; }
 

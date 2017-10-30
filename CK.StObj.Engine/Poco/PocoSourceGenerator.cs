@@ -1,4 +1,4 @@
-﻿using CK.CodeGen;
+using CK.CodeGen;
 using CK.Text;
 using System;
 using System.Collections.Generic;
@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using CK.CodeGen.Abstractions;
 
 namespace CK.Core
 {
@@ -20,49 +21,45 @@ namespace CK.Core
                 _r = r;
             }
 
-            public IEnumerable<Assembly> RequiredAssemblies => Enumerable.Empty<Assembly>();
+            public IReadOnlyList<SyntaxTree> Rewrite( IReadOnlyList<SyntaxTree> trees ) => trees;
 
-            public void AppendSource( StringBuilder b )
+            public void Inject( ICodeWorkspace code )
             {
                 if( _r.AllInterfaces.Count == 0 ) return;
-                b.Append( "namespace " ).Append( _r.FinalFactory.Namespace ).AppendLine( "{" );
-                b.AppendLine( "using System;" );
+                var b = code.Global
+                                .FindOrCreateNamespace( _r.FinalFactory.Namespace )
+                                .EnsureUsing( "System" );
                 foreach( var root in _r.Roots )
                 {
-                    b.Append( "class " )
-                     .Append( root.PocoClass.Name )
-                     .Append( ':' )
-                     .AppendStrings( root.Interfaces.Select( i => i.PocoInterface.ToCSharpName() ) )
-                     .AppendLine( "{" );
+                    var tB = b.CreateType( t => t.Append( "class " )
+                                                 .Append( root.PocoClass.Name )
+                                                 .Append( " : " )
+                                                 .Append( root.Interfaces.Select( i => i.PocoInterface.ToCSharpName() ) ) );
                     foreach( var p in root.PocoClass.GetTypeInfo().GetProperties() )
                     {
-                        b.Append("public " ).AppendCSharpName( p.PropertyType ).Append( ' ' ).Append( p.Name ).Append( '{' );
+                        tB.Append("public " ).AppendCSharpName( p.PropertyType ).Space().Append( p.Name ).Append( "{" );
                         b.Append( "get;" );
-                        if( p.CanWrite )
-                        {
-                            b.Append( "set;" );
-                        }
-                        b.AppendLine( "}" );
+                        if( p.CanWrite ) b.Append( "set;" );
+                        b.Append( "}" ).NewLine();
                     }
-                    b.AppendLine( "}" );
                 }
-                b.Append( "class " )
-                 .Append( _r.FinalFactory.Name )
-                 .Append( ':' )
-                 .AppendStrings( _r.AllInterfaces.Select( i => i.PocoFactoryInterface.ToCSharpName() ) )
-                 .AppendLine( "{" );
+                var fB = b.CreateType( t => t.Append( "class " )
+                                             .Append( _r.FinalFactory.Name )
+                                             .Append( " : " )
+                                             .Append( _r.AllInterfaces.Select( i => i.PocoFactoryInterface.ToCSharpName() ) ) );
                 foreach( var i in _r.AllInterfaces )
                 {
-                    b.AppendCSharpName( i.PocoInterface ).Append( ' ' ).AppendCSharpName( i.PocoFactoryInterface ).Append( ".Create()" )
-                        .Append( "=>new " ).AppendCSharpName( i.Root.PocoClass ).AppendLine( "();" );
-                    b.Append( "Type " ).AppendCSharpName( i.PocoFactoryInterface ).Append( ".PocoClassType" )
-                        .Append( "=>typeof(" ).AppendCSharpName( i.Root.PocoClass ).AppendLine( ");" );
+                    fB.AppendCSharpName( i.PocoInterface )
+                      .Space()
+                      .AppendCSharpName( i.PocoFactoryInterface )
+                      .Append( ".Create() => new " ).AppendCSharpName( i.Root.PocoClass ).Append( "();" )
+                      .NewLine();
+                   fB.Append( "Type " )
+                     .AppendCSharpName( i.PocoFactoryInterface )
+                     .Append( ".PocoClassType => typeof(" ).AppendCSharpName( i.Root.PocoClass ).Append( ");" )
+                     .NewLine();
                 }
-                b.AppendLine( "}" );
-                b.AppendLine( "}" );
             }
-
-            public SyntaxTree PostProcess( SyntaxTree t ) => t;
         }
 
         public static ICodeGeneratorModule CreateModule( IPocoSupportResult r )
