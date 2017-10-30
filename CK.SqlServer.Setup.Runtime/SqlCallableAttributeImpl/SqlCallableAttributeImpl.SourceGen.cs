@@ -166,12 +166,12 @@ namespace CK.SqlServer.Setup
             ISqlServerCallableObject sqlObject,
             MethodInfo m,
             ParameterInfo[] mParameters,
-            ITypeScope cB,
+            ITypeScope tB,
             bool hasRefSqlCommand )
         {
             int nbError = 0;
             List<ParameterInfo> extraMethodParameters = null;
-            cB.AppendOverrideSignature( m );
+            IFunctionScope cB = tB.CreateOverride( m );
             // We may need a temporary object.
             string tempObjectName = null;
             Func<string> GetTempObjectName = () =>
@@ -201,7 +201,7 @@ namespace CK.SqlServer.Setup
             {
                 string sqlCommandRefName = mParameters[0].Name;
                 cB.Append( $"if({sqlCommandRefName} == null ) {sqlCommandRefName} = {mCreateCommand.EnclosingType.FullName}.{mCreateCommand.FunctionName.NakedName}();" ).NewLine();
-                cB.Append( "cmd_loc = " ).Append( sqlCommandRefName ).Append( "};" ).NewLine();
+                cB.Append( "cmd_loc = " ).Append( sqlCommandRefName ).Append( ";" ).NewLine();
             }
             else cB.Append( $"cmd_loc = {mCreateCommand.EnclosingType.FullName}.{mCreateCommand.FunctionName.NakedName}();" ).NewLine();
             cB.Append( $"SqlParameterCollection cmd_parameters = cmd_loc.Parameters;" ).NewLine();
@@ -436,11 +436,7 @@ namespace CK.SqlServer.Setup
                 }
             }
 
-            if( nbError == 0 )
-            {
-                cB.Append( "}" ).NewLine();
-                return true;
-            }
+            if( nbError == 0 ) return true;
             monitor.Info( GenerateBothSignatures( sqlObject, m, mParameters, extraMethodParameters ) );
             return false;
         }

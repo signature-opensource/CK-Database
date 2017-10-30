@@ -95,7 +95,9 @@ namespace CK.Setup
                 var result = g.Generate( ws, fileName, new DefaultAssemblyResolver() );
                 if( saveSource && result.Sources != null )
                 {
-                    File.WriteAllText( fileName + ".cs", result.Sources.Select( t => t.ToString() ).Concatenate( Environment.NewLine ) );
+                    string sourceFile = fileName + ".cs";
+                    monitor.Info( $"Saved source file: {sourceFile}" );
+                    File.WriteAllText( sourceFile, result.Sources.Select( t => t.ToString() ).Concatenate( Environment.NewLine ) );
                 }
                 result.LogResult( monitor );
                 return result.Success;
