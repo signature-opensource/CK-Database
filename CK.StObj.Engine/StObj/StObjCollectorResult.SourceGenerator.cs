@@ -18,7 +18,17 @@ namespace CK.Setup
     {
         public class DefaultAssemblyResolver : CK.CodeGen.IAssemblyResolver
         {
-            public string GetAssemblyFilePath( Assembly a ) => new Uri( a.CodeBase ).LocalPath;
+            public string GetAssemblyFilePath( Assembly a )
+            {
+                try
+                {
+                    return new Uri( a.CodeBase ).LocalPath;
+                }
+                catch( Exception ex )
+                {
+                    return null;
+                }
+            }
 
             public IEnumerable<AssemblyName> GetReferencedAssemblies( Assembly a ) => a.GetReferencedAssemblies();
 
@@ -92,6 +102,7 @@ namespace CK.Setup
                 if( !withSrcSuffix ) fileName = fileName.Substring( 0, fileName.Length - 7 ) + ".dll";
 
                 var g = new CodeGenerator( CodeWorkspace.Factory );
+                g.Modules.AddRange( _tempAssembly.SourceModules );
                 var result = g.Generate( ws, fileName, new DefaultAssemblyResolver() );
                 if( saveSource && result.Sources != null )
                 {

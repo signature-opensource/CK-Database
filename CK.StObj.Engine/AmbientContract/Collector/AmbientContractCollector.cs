@@ -53,7 +53,11 @@ namespace CK.Core
             return context == null ? type.FullName : '[' + context + ']' + type.FullName;
         }
 
-        protected void RegisterAssembly( Type t ) => Assemblies.Add( t.GetTypeInfo().Assembly );
+        protected void RegisterAssembly(Type t)
+        {
+            var a = t.GetTypeInfo().Assembly;
+            if( !a.IsDynamic ) Assemblies.Add( a );
+        }
 
         /// <summary>
         /// The set of assemblies for which at least one type has been registered.

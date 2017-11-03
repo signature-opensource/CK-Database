@@ -45,7 +45,7 @@ namespace CK.Core
         /// <summary>
         /// Initializes a new <see cref="PocoRegisterer"/>.
         /// </summary>
-        /// <param name="namespace">Namespace into which dynamic types will be cerated.</param>
+        /// <param name="namespace">Namespace into which dynamic types will be created.</param>
         public PocoRegisterer( string @namespace = "CK._g.poco" )
         {
             _namespace = @namespace ?? "CK._g.poco";

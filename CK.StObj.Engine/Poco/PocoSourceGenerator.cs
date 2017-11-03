@@ -38,9 +38,9 @@ namespace CK.Core
                     foreach( var p in root.PocoClass.GetTypeInfo().GetProperties() )
                     {
                         tB.Append("public " ).AppendCSharpName( p.PropertyType ).Space().Append( p.Name ).Append( "{" );
-                        b.Append( "get;" );
-                        if( p.CanWrite ) b.Append( "set;" );
-                        b.Append( "}" ).NewLine();
+                        tB.Append( "get;" );
+                        if( p.CanWrite ) tB.Append( "set;" );
+                        tB.Append( "}" ).NewLine();
                     }
                 }
                 var fB = b.CreateType( t => t.Append( "class " )

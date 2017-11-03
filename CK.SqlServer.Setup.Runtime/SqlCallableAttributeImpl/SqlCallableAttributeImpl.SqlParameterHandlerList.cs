@@ -782,7 +782,7 @@ namespace CK.SqlServer.Setup
             FuncTypeHolder AssumeFuncTypeHolder(IDynamicAssembly dynamicAssembly)
             {
                 FuncTypeHolder fB = (FuncTypeHolder)dynamicAssembly.Memory[_funcHolderTypeName];
-                if (fB == null)
+                if( fB == null )
                 {
                     System.Reflection.Emit.TypeBuilder tB = dynamicAssembly.ModuleBuilder.DefineType(_funcHolderTypeName, TypeAttributes.Class | TypeAttributes.Sealed | TypeAttributes.NotPublic);
                     ITypeScope cB = dynamicAssembly.DefaultGenerationNamespace.CreateType("static class _build_func_");
@@ -796,7 +796,7 @@ namespace CK.SqlServer.Setup
             {
                 string funcKey = _funcHolderTypeName + ':' + _funcResultBuilderSignature.ToString();
                 FuncImpl f = (FuncImpl)dynamicAssembly.Memory[funcKey];
-                if (f == null)
+                if( f == null )
                 {
                     FuncTypeHolder fB = AssumeFuncTypeHolder(dynamicAssembly);
                     string funcName = 'f' + dynamicAssembly.NextUniqueNumber();
@@ -816,13 +816,13 @@ namespace CK.SqlServer.Setup
                 return f.Field;
             }
 
-            internal string AssumeSourceFuncResultBuilder(IDynamicAssembly dynamicAssembly)
+            internal string AssumeSourceFuncResultBuilder( IDynamicAssembly dynamicAssembly )
             {
                 string funcKey = "S:" + _funcHolderTypeName + ':' + _funcResultBuilderSignature.ToString();
                 string fieldFullName = (string)dynamicAssembly.Memory[funcKey];
-                if (fieldFullName == null)
+                if( fieldFullName == null )
                 {
-                    FuncTypeHolder fB = AssumeFuncTypeHolder(dynamicAssembly);
+                    FuncTypeHolder fB = AssumeFuncTypeHolder( dynamicAssembly );
                     string funcName = 'f' + dynamicAssembly.NextUniqueNumber();
                     string fieldName = "_" + funcName;
                     string tFuncReturnType = _unwrappedReturnedType.ToCSharpName();
@@ -844,14 +844,14 @@ namespace CK.SqlServer.Setup
                     //func.ReturnType = tFuncReturnType;
                     //func.Parameters.Add(new CodeGen.ParameterBuilder() { Name = "c", ParameterType = SqlObjectItem.TypeCommand.FullName } );
 
-                    fB.ClassBuilder.Append( "private static " )
+                    var fT = fB.ClassBuilder.CreateFunction( h =>
+                                   h.Append( "private static " )
                                     .Append( tFuncReturnType )
                                     .Append( " " )
                                     .Append( funcName )
                                     .Append( "( " )
                                     .Append( SqlObjectItem.TypeCommand.FullName )
-                                    .Append( " c )" )
-                                    .NewLine();
+                                    .Append( " c )" ) );
 
                     // We may use a temporary object.
                     string tempObjectName = null;
@@ -859,15 +859,14 @@ namespace CK.SqlServer.Setup
                     {
                         if( tempObjectName == null )
                         {
-                            fB.ClassBuilder.Append( "object tempObj;" ).NewLine();
+                            fT.Append( "object tempObj;" ).NewLine();
                             tempObjectName = "tempObj";
                         }
                         return tempObjectName;
                     };
-                    fB.ClassBuilder.Append("var parameters = c.Parameters;").NewLine();
-                    string varName = EmitInlineReturn( fB.ClassBuilder, "parameters", GetTempObjectName );
-                    fB.ClassBuilder.Append( "return " ).Append( varName ).Append( ";" ).NewLine();
-                    fB.ClassBuilder.Append( "}" ).NewLine();
+                    fT.Append("var parameters = c.Parameters;").NewLine();
+                    string varName = EmitInlineReturn( fT, "parameters", GetTempObjectName );
+                    fT.Append( "return " ).Append( varName ).Append( ";" ).NewLine();
 
                     fieldFullName = fB.ClassBuilder.FullName + '.' + fieldName;
                     dynamicAssembly.Memory[funcKey] = fieldFullName;

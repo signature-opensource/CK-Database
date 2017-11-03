@@ -201,7 +201,7 @@ namespace CK.Core
         /// <param name="revertNames">True to revert names in ordering.</param>
         public static bool RunDBSetupILEmit( bool traceStObjGraphOrdering = false, bool traceSetupGraphOrdering = false, bool revertNames = false )
         {
-            return DoRunDBSetup( true, traceStObjGraphOrdering, traceSetupGraphOrdering, revertNames );
+            return DoRunDBSetup( false, traceStObjGraphOrdering, traceSetupGraphOrdering, revertNames );
         }
 
         static bool DoRunDBSetup( bool sourceGeneration, bool traceStObjGraphOrdering, bool traceSetupGraphOrdering, bool revertNames )
