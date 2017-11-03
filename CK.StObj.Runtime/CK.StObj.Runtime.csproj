@@ -12,6 +12,8 @@
     
   <ItemGroup>
     <ProjectReference Include="..\CK.StObj.Model\CK.StObj.Model.csproj" />
+    <!-- IDynamicAssembly exposes IList<ICodeGeneratorModule> SourceModules { get; } -->
+    <PackageReference Include="CK.CodeGen.Roslyn" Version="$(CKCodeGenVersion)" />
     <PackageReference Include="CK.CodeGen" Version="$(CKCodeGenVersion)" />
     <PackageReference Include="CK.Reflection" Version="$(CKReflectionVersion)" />
     <PackageReference Include="CK.Setup.Dependency" Version="$(CKSetupDependencyVersion)" />

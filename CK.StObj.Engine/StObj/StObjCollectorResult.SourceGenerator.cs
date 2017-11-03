@@ -91,7 +91,7 @@ namespace CK.Setup
                 string fileName = _tempAssembly.SaveFilePath;
                 if( !withSrcSuffix ) fileName = fileName.Substring( 0, fileName.Length - 7 ) + ".dll";
 
-                var g = new CodeGenerator();
+                var g = new CodeGenerator( CodeWorkspace.Factory );
                 var result = g.Generate( ws, fileName, new DefaultAssemblyResolver() );
                 if( saveSource && result.Sources != null )
                 {

@@ -17,7 +17,6 @@
   <ItemGroup>
     <ProjectReference Include="..\CK.StObj.Runtime\CK.StObj.Runtime.csproj" />
     <PackageReference Include="CK.Core" Version="$(CKCoreVersion)" />
-    <PackageReference Include="CK.Reflection" Version="$(CKReflectionVersion)" />
   </ItemGroup>
 
   <ItemGroup>

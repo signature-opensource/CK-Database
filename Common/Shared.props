@@ -42,10 +42,10 @@
     <CKAspNetVersion>1.2.1</CKAspNetVersion>
     <CKMonitoringVersion>8.2.0</CKMonitoringVersion>
     <CKSetupDependencyVersion>6.0.2</CKSetupDependencyVersion>
-    <CKSqlServerParserVersion>6.0.0</CKSqlServerParserVersion>
+    <CKSqlServerParserVersion>6.1.0</CKSqlServerParserVersion>
     <CKSqlServerParserModelVersion>4.0.0</CKSqlServerParserModelVersion>
     <CKReflectionVersion>6.0.1</CKReflectionVersion>
-    <CKCodeGenVersion>0.1.0-a22-00-develop-0022</CKCodeGenVersion>
+    <CKCodeGenVersion>0.1.0-b</CKCodeGenVersion>
     <YodiiScriptVersion>0.4.1</YodiiScriptVersion>
     <CSemVerVersion>1.0.1</CSemVerVersion>
     <MonoCecilVersion>0.10.0-beta6</MonoCecilVersion>
