@@ -41,6 +41,12 @@ namespace CKSetup
                 CommandOptionType.NoValue
                 );
 
+            var keepFilesOpt = c.Option(
+                "-kf|--KeepFolder",
+                $"Optional root path or path relative to the binPath that will be cleaned up and filled with a copy of all the runtime files that have been resolved and injected along with a FilesSkippedSinceTheyExist.txt file.",
+                CommandOptionType.SingleValue
+                );
+
             c.OnExecute( monitor =>
             {
                 if( !connectionArg.Initialize( monitor ) ) return Program.RetCodeError;
@@ -67,7 +73,9 @@ namespace CKSetup
                             generatedAssemblyNameOpt.Value(),
                             !ilGenerationOpt.HasValue(),
                             ActivityMonitor.DefaultFilter,
-                            remote )
+                            remote,
+                            keepRuntimesFilesFolder: keepFilesOpt.HasValue() ? keepFilesOpt.Value() : null
+                            )
                             ? Program.RetCodeSuccess
                             : Program.RetCodeError;
                 }

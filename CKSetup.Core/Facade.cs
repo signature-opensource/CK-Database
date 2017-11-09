@@ -23,9 +23,15 @@ namespace CKSetup
         /// <param name="targetConnectionString">The default connection string.</param>
         /// <param name="generatedAssemblyName">Name of the assembly to generate.</param>
         /// <param name="sourceGeneration">True to generate source code.</param>
+        /// <param name="runnerLogFilter">Log filter that the runner must use.</param>
         /// <param name="missingImporter">Optional component importer.</param>
         /// <param name="remoteStoreUrl">Optional remote store url (ignored if a <paramref name="missingImporter"/> is specified).</param>
         /// <param name="debugBreakInCKStObjRunner">Calls Debugger.Launch() at the start of CK.StObj.Runner entry point.</param>
+        /// <param name="keepRuntimesFilesFolder">
+        /// Optional root path or path relative to the <paramref name="binPath"/> that will be cleaned up and
+        /// filled with a copy of all the runtime files that have been resolved and injected along
+        /// with a FilesSkippedSinceTheyExist.txt file. 
+        /// </param>
         /// <returns>True on success, false on error.</returns>
         public static bool DoSetup(
             IActivityMonitor monitor,
@@ -37,7 +43,8 @@ namespace CKSetup
             LogFilter runnerLogFilter,
             IComponentImporter missingImporter = null,
             Uri remoteStoreUrl = null,
-            bool debugBreakInCKStObjRunner = false )
+            bool debugBreakInCKStObjRunner = false,
+            string keepRuntimesFilesFolder = null )
         {
             using( monitor.OpenTrace( "Running Setup." ) )
             {
@@ -45,13 +52,22 @@ namespace CKSetup
                 {
                     var binFolder = BinFolder.ReadBinFolder( monitor, binPath );
                     if( binFolder == null ) return false;
+                    DirectoryInfo keepFiles = null;
+                    if( keepRuntimesFilesFolder != null )
+                    {
+                        if( !Path.IsPathRooted( keepRuntimesFilesFolder ) )
+                        {
+                            keepRuntimesFilesFolder = Path.Combine( binPath, keepRuntimesFilesFolder );
+                        }
+                        keepFiles = new DirectoryInfo( Path.GetFullPath( keepRuntimesFilesFolder ) );
+                    }
                     if( missingImporter != null )
                     {
-                        if( !archive.ExtractRuntimeDependencies( new[] { binFolder }, null, missingImporter ) ) return false;
+                        if( !archive.ExtractRuntimeDependencies( new[] { binFolder }, null, missingImporter, keepFiles ) ) return false;
                     }
                     else
                     {
-                        if( !archive.ExtractRuntimeDependencies( new[] { binFolder }, remoteStoreUrl, null ) ) return false;
+                        if( !archive.ExtractRuntimeDependencies( new[] { binFolder }, remoteStoreUrl, null, keepFiles ) ) return false;
                     }
                     var toSetup = binFolder.Assemblies.Where( b => b.LocalDependencies.Any( dep => dep.ComponentKind == ComponentKind.Model ) )
                                                     .Select( b => b.Name.Name );

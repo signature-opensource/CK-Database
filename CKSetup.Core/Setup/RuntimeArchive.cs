@@ -281,29 +281,55 @@ namespace CKSetup
         /// <param name="targets">The target folders.</param>
         /// <param name="remoteUrl">Remote store url. Can be null.</param>
         /// <param name="runPath">Optional run path: the first target <see cref="BinFolder.BinPath"/> is the default.</param>
+        /// <param name="runtimeFilesCopyClones">
+        /// Optional directory that will be cleaned up and filled with a copy of all the runtime files that have been
+        /// resolved and injected along with a FilesSkippedSinceTheyExist.txt file.
+        /// </param>
         /// <returns>True on success, false on error.</returns>
-        public bool ExtractRuntimeDependencies( IEnumerable<BinFolder> targets, Uri remoteUrl, string runPath = null )
+        public bool ExtractRuntimeDependencies( IEnumerable<BinFolder> targets, Uri remoteUrl, string runPath = null, DirectoryInfo runtimeFilesCopyClones = null )
         {
             using( var store = remoteUrl != null ? new ClientRemoteStore( remoteUrl, null ) : null )
             {
-                return ExtractRuntimeDependencies( targets, runPath, store );
+                return ExtractRuntimeDependencies( targets, runPath, store, runtimeFilesCopyClones );
             }
         }
 
         /// <summary>
-        /// Extracts required runtime support for Models in a targets.
+        /// Extracts required runtime support for Models in targets.
         /// </summary>
         /// <param name="targets">The target folders.</param>
         /// <param name="runPath">Optional run path: the first target <see cref="BinFolder.BinPath"/> is the default.</param>
         /// <param name="missingImporter">Optional component importer.</param>
+        /// <param name="runtimeFilesCopyClones">
+        /// Optional directory that will be cleaned up and filled with a copy of all the runtime files that have been
+        /// resolved and injected along with a FilesSkippedSinceTheyExist.txt file.
+        /// </param>
         /// <returns>True on success, false on error.</returns>
-        public bool ExtractRuntimeDependencies( IEnumerable<BinFolder> targets, string runPath = null, IComponentImporter missingImporter = null )
+        public bool ExtractRuntimeDependencies(
+            IEnumerable<BinFolder> targets,
+            string runPath = null,
+            IComponentImporter missingImporter = null,
+            DirectoryInfo runtimeFilesCopyClones = null )
         {
             if( !targets.Any() ) throw new ArgumentException( "At least one target is required.", nameof( targets ) );
             using( _monitor.OpenInfo( $"Extracting runtime support for '{targets.Select( t => t.BinPath ).Concatenate()}'." ) )
             {
                 if( runPath == null ) runPath = targets.First().BinPath;
                 _monitor.Info( $"Extracting to {runPath}." );
+                if( runtimeFilesCopyClones != null )
+                {
+                    try
+                    {
+                        if( runtimeFilesCopyClones.Exists ) runtimeFilesCopyClones.Delete( true );
+                        runtimeFilesCopyClones.Create();
+                        _monitor.Info( $"Runtime files will be copied and kept in '{runtimeFilesCopyClones.FullName}' folder." );
+                    }
+                    catch( Exception ex )
+                    {
+                        _monitor.Error( $"While reseting '{runtimeFilesCopyClones.FullName}' folder.", ex );
+                        return false;
+                    }
+                }
                 var resolver = _dbCurrent.GetRuntimeDependenciesResolver( _monitor, targets );
                 if( resolver == null || resolver.IsEmpty ) return false;
                 IComponentDownloader downloader = missingImporter != null
@@ -324,7 +350,7 @@ namespace CKSetup
                                 try
                                 {
                                     string fileKey = f.SHA1.ToString();
-                                    if( !_store.Exists(fileKey) )
+                                    if( !_store.Exists( fileKey ) )
                                     {
                                         if( missingImporter == null )
                                         {
@@ -336,6 +362,11 @@ namespace CKSetup
                                     _store.ExtractToFile( fileKey, targetPath );
                                     _monitor.Debug( $"Extracted {f.Name}." );
                                     _cleanupFiles.Add( targetPath );
+                                    if( runtimeFilesCopyClones != null )
+                                    {
+                                        var clonePath = Path.Combine( runtimeFilesCopyClones.FullName, f.Name );
+                                        File.Copy( targetPath, clonePath );
+                                    }
                                     ++count;
                                 }
                                 catch( Exception ex )
@@ -344,7 +375,15 @@ namespace CKSetup
                                     return false;
                                 }
                             }
-                            else _monitor.Trace( $"Skipped '{f.Name}' since it already exists." );
+                            else
+                            {
+                                _monitor.Trace( $"Skipped '{f.Name}' since it already exists." );
+                                if( runtimeFilesCopyClones != null )
+                                {
+                                    var pLog = Path.Combine( runtimeFilesCopyClones.FullName, "FilesSkippedSinceTheyExist.txt" );
+                                    File.AppendAllText( pLog, f.ToString() + Environment.NewLine );
+                                }
+                            }
                         }
                     }
                     _monitor.Trace( $"{count} files extracted so far." );

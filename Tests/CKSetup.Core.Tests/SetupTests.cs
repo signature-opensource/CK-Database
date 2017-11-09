@@ -15,22 +15,51 @@ namespace CKSetup.Tests
     [TestFixture]
     public class SetupTests
     {
-        [TestCase( TestStoreType.Zip, "Monitor" )]
-        [TestCase( TestStoreType.Directory, "Trace" )]
-        public void setup_SqlCallDemo461( TestStoreType type, string logFilter )
+        [TestCase( TestStoreType.Zip, "Monitor", "../../RelToBinPath" )]
+        [TestCase( TestStoreType.Directory, "Trace", "UseAbsolutePath" )]
+        public void setup_SqlCallDemo461_with_KeepFolder_option( TestStoreType type, string logFilter, string keepFolder )
         {
-            using( var zip = TestHelper.OpenCKDatabaseZip( type ) )
+            string expectedKeepFolder = null;
+            if( keepFolder == "UseAbsolutePath" )
             {
-                Facade.DoSetup(
-                    TestHelper.Monitor,
-                    TestHelper.SqlCallDemo461,
-                    zip,
-                    TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
-                    "SqlCallDemo.Generated.ByCKSetup",
-                    sourceGeneration: true,
-                    runnerLogFilter: LogFilter.Parse( logFilter )
-                    ).Should().BeTrue();
+                keepFolder = Path.Combine( TestHelper.TestFolder, "TestingKeepFolderOption" );
+                expectedKeepFolder = keepFolder;
             }
+            else
+            {
+                expectedKeepFolder = Path.GetDirectoryName( Path.GetDirectoryName( TestHelper.SqlCallDemo461 ) );
+                expectedKeepFolder = Path.Combine( expectedKeepFolder, "RelToBinPath" );
+            }
+
+            // Artificially makes that CK.Reflection.dll exists in the bin folder so that
+            // we have FilesSkippedSinceTheyExist.txt filled with one line.
+            string existingDll = Path.Combine( TestHelper.SqlCallDemo461, "CK.Reflection.dll" );
+            File.Copy( Path.Combine( TestHelper.SetupableEngine461, "CK.Reflection.dll" ), existingDll );
+            try
+            {
+                using( var zip = TestHelper.OpenCKDatabaseZip( type ) )
+                {
+                    Facade.DoSetup(
+                        TestHelper.Monitor,
+                        TestHelper.SqlCallDemo461,
+                        zip,
+                        TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
+                        "SqlCallDemo.Generated.ByCKSetup",
+                        sourceGeneration: true,
+                        runnerLogFilter: LogFilter.Parse( logFilter ),
+                        keepRuntimesFilesFolder: keepFolder
+                        ).Should().BeTrue();
+                }
+            }
+            finally
+            {
+                File.Delete( existingDll );
+            }
+            var dir = new DirectoryInfo( expectedKeepFolder );
+            dir.Exists.Should().BeTrue();
+            var files = dir.GetFiles();
+            files.Length.Should().BeGreaterThan( 2 );
+            files.Should().Contain( f => f.Name == "FilesSkippedSinceTheyExist.txt" );
         }
 
         [TestCase( TestStoreType.Zip, "Release" )]
