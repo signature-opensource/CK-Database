@@ -118,15 +118,26 @@ namespace CKSetup
                     #region Using existing runtimeconfig.json to create CK.StObj.Runner.runtimeconfig.json.
                     {
                         const string runnerConfigFileName = "CK.StObj.Runner.runtimeconfig.json";
+                        // We try to find an existing runtimeconfig.json:
+                        // - First look for unique runtimeconfig.dev.json
+                        //    - It must be unique and have an associated runtimeconfig.json file otherwise we fail.
+                        //    - If no dev file exists, we look for a unique runtimeconfig.json
+                        // - If there is runtimeconfig.json duplicates in the folder, we fail.
+                        // - If there is no runtimeconfig.json, we generate a default one.
                         if( !FindRuntimeConfigFiles( m, binPath, out string fRtDevPath, out string fRtPath ) )
                         {
                             return false;
                         }
                         string runnerFile = Path.Combine( binPath, runnerConfigFileName );
+                        // If there is a dev file, extracts its additional probe paths.
                         string additionalProbePaths = ExtractJsonAdditonalProbePaths( m, fRtDevPath );
                         if( additionalProbePaths == null )
                         {
-                            File.Copy( fRtPath, runnerFile, true );
+                            if( fRtPath == null )
+                            {
+                                File.WriteAllText( fRtPath, "{\"runtimeOptions\":{\"tfm\":\"netcoreapp2.0\",\"framework\":{\"name\":\"Microsoft.NETCore.App\",\"version\": \"2.0.0\"}}}" );
+                            }
+                            else File.Copy( fRtPath, runnerFile, true );
                         }
                         else
                         {
@@ -243,8 +254,10 @@ namespace CKSetup
                 }
                 else if( rtFiles.Count == 0 )
                 {
-                    m.Error( $"Unable to find a runtimeconfig.json file." );
-                    return false;
+                    // When there is NO runtimeconfig.json file, this is not an error:
+                    // We'll use a default one (and pray).
+                    m.Warn( $"Unable to find a runtimeconfig.json file." );
+                    return true;
                 }
                 fRtPath = rtFiles[0];
             }
