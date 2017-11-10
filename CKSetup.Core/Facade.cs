@@ -135,7 +135,9 @@ namespace CKSetup
                         {
                             if( fRtPath == null )
                             {
-                                File.WriteAllText( runnerFile, "{\"runtimeOptions\":{\"tfm\":\"netcoreapp2.0\",\"framework\":{\"name\":\"Microsoft.NETCore.App\",\"version\": \"2.0.0\"}}}" );
+                                const string defaultRt = "{\"runtimeOptions\":{\"tfm\":\"netcoreapp2.0\",\"framework\":{\"name\":\"Microsoft.NETCore.App\",\"version\": \"2.0.0\"}}}";
+                                m.Info( $"Trying with a default {runnerConfigFileName}: {defaultRt}" );
+                                File.WriteAllText( runnerFile, defaultRt );
                             }
                             else File.Copy( fRtPath, runnerFile, true );
                         }

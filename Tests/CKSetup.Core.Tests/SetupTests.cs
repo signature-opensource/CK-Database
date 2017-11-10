@@ -82,7 +82,7 @@ namespace CKSetup.Tests
 
         [TestCase( TestStoreType.Zip, "Off" )]
         [TestCase( TestStoreType.Directory, "Debug" )]
-        public void setup_SqlCallDemoNet20_publish_folder_fails( TestStoreType type, string logFilter )
+        public void setup_SqlCallDemoNet20_publish_folder_WORKS_thanks_to_default_runtimeconfig_json_file( TestStoreType type, string logFilter )
         {
             using( var zip = TestHelper.OpenCKDatabaseZip( type, withNetStandard: true ) )
             {
