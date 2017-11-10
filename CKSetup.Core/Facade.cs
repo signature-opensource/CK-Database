@@ -135,7 +135,7 @@ namespace CKSetup
                         {
                             if( fRtPath == null )
                             {
-                                File.WriteAllText( fRtPath, "{\"runtimeOptions\":{\"tfm\":\"netcoreapp2.0\",\"framework\":{\"name\":\"Microsoft.NETCore.App\",\"version\": \"2.0.0\"}}}" );
+                                File.WriteAllText( runnerFile, "{\"runtimeOptions\":{\"tfm\":\"netcoreapp2.0\",\"framework\":{\"name\":\"Microsoft.NETCore.App\",\"version\": \"2.0.0\"}}}" );
                             }
                             else File.Copy( fRtPath, runnerFile, true );
                         }
