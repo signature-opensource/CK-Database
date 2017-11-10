@@ -281,7 +281,7 @@ namespace CKSetup
                     cmdProcess.StartInfo = cmdStartInfo;
                     cmdProcess.Start();
                     cmdProcess.WaitForExit();
-                    var endLogStatus = logReceiver.WaitEnd();
+                    var endLogStatus = logReceiver.WaitEnd( cmdProcess.ExitCode != 0 );
                     if( endLogStatus != LogReceiverEndStatus.Normal )
                     {
                         m.Warn( $"Pipe log channel abnormal end status: {endLogStatus}." );

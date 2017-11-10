@@ -33,15 +33,19 @@ namespace CKSetup
 
         public string PipeName { get; }
 
-        public LogReceiverEndStatus WaitEnd()
+        public LogReceiverEndStatus WaitEnd( bool otherFailed )
         {
-            _thread.Join();
+            if( otherFailed )
+            {
+                if( !_thread.Join( 500 ) ) _endFlag = LogReceiverEndStatus.Error;
+            }
+            else _thread.Join();
             return _endFlag;
         }
 
         public void Dispose()
         {
-            _thread.Join();
+            if( _endFlag == LogReceiverEndStatus.None ) _thread.Join();
             _reader.Dispose();
             _server.Dispose();
         }
