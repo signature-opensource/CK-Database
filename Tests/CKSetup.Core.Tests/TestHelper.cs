@@ -311,13 +311,20 @@ namespace CKSetup.Tests
         {
             using( Monitor.OpenInfo( $"Deleting '{path}'." ) )
             {
-                try
+                int tryCount = 0;
+                for(; ; )
                 {
-                    if( Directory.Exists( path ) ) Directory.Delete( path, true );
-                }
-                catch( Exception ex )
-                {
-                    Monitor.Error( ex );
+                    try
+                    {
+                        if( Directory.Exists( path ) ) Directory.Delete( path, true );
+                        return;
+                    }
+                    catch( Exception ex )
+                    {
+                        if( ++tryCount == 20 ) throw;
+                        Monitor.Info( "While cleaning up test directory. Retrying.", ex );
+                        Thread.Sleep( 100 );
+                    }
                 }
             }
         }

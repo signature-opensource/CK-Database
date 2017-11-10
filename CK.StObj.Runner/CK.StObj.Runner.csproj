@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CK.StObj.Model\CK.StObj.Model.csproj" />
+    <PackageReference Include="CK.Monitoring" Version="$(CKMonitoringVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">

@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="$(CKActivityMonitorVersion)" />
+    <PackageReference Include="CK.Monitoring" Version="$(CKMonitoringVersion)" />
     <PackageReference Include="Mono.Cecil" Version="$(MonoCecilVersion)" />
     <PackageReference Include="CSemVer" Version="$(CSemVerVersion)" />
     <PackageReference Include="System.Net.Http" Version="4.3.2" />

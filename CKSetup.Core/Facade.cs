@@ -52,22 +52,22 @@ namespace CKSetup
                 {
                     var binFolder = BinFolder.ReadBinFolder( monitor, binPath );
                     if( binFolder == null ) return false;
-                    DirectoryInfo keepFiles = null;
+                    DirectoryInfo keepFolder = null;
                     if( keepRuntimesFilesFolder != null )
                     {
                         if( !Path.IsPathRooted( keepRuntimesFilesFolder ) )
                         {
                             keepRuntimesFilesFolder = Path.Combine( binPath, keepRuntimesFilesFolder );
                         }
-                        keepFiles = new DirectoryInfo( Path.GetFullPath( keepRuntimesFilesFolder ) );
+                        keepFolder = new DirectoryInfo( Path.GetFullPath( keepRuntimesFilesFolder ) );
                     }
                     if( missingImporter != null )
                     {
-                        if( !archive.ExtractRuntimeDependencies( new[] { binFolder }, null, missingImporter, keepFiles ) ) return false;
+                        if( !archive.ExtractRuntimeDependencies( new[] { binFolder }, null, missingImporter, keepFolder ) ) return false;
                     }
                     else
                     {
-                        if( !archive.ExtractRuntimeDependencies( new[] { binFolder }, remoteStoreUrl, null, keepFiles ) ) return false;
+                        if( !archive.ExtractRuntimeDependencies( new[] { binFolder }, remoteStoreUrl, null, keepFolder ) ) return false;
                     }
                     var toSetup = binFolder.Assemblies.Where( b => b.LocalDependencies.Any( dep => dep.ComponentKind == ComponentKind.Model ) )
                                                     .Select( b => b.Name.Name );
@@ -79,9 +79,13 @@ namespace CKSetup
                                         generatedAssemblyName,
                                         sourceGeneration );
                         var configPath = WritDBSetupConfig( monitor, config, binPath, runnerLogFilter );
+                        if( keepFolder != null )
+                        {
+                            File.Copy( configPath, Path.Combine( keepFolder.FullName, CK.StObj.Runner.Program.XmlFileName ) );
+                        }
                         archive.RegisterFileToDelete( configPath );
                     }
-                    return RunSetup( monitor, binPath, archive, debugBreakInCKStObjRunner );
+                    return RunSetup( monitor, binPath, archive, keepFolder, debugBreakInCKStObjRunner );
                 }
                 catch( Exception ex )
                 {
@@ -91,9 +95,14 @@ namespace CKSetup
             }
         }
 
-        static bool RunSetup( IActivityMonitor m, string binPath, RuntimeArchive archive, bool debugBreakInCKStObjRunner )
+        static bool RunSetup(
+            IActivityMonitor m,
+            string binPath,
+            RuntimeArchive archive,
+            DirectoryInfo keepFolder,
+            bool debugBreakInCKStObjRunner )
         {
-            using( m.OpenInfo( "Launching CK.StObj.Runner." ) )
+            using( m.OpenInfo( "Launching CK.StObj.Runner process." ) )
             {
                 string exe = Path.Combine( binPath, "CK.StObj.Runner.exe" );
                 string dll = Path.Combine( binPath, "CK.StObj.Runner.dll" );
@@ -108,11 +117,12 @@ namespace CKSetup
                     fileName = "dotnet";
                     #region Using existing runtimeconfig.json to create CK.StObj.Runner.runtimeconfig.json.
                     {
+                        const string runnerConfigFileName = "CK.StObj.Runner.runtimeconfig.json";
                         if( !FindRuntimeConfigFiles( m, binPath, out string fRtDevPath, out string fRtPath ) )
                         {
                             return false;
                         }
-                        string runnerFile = Path.Combine( binPath, "CK.StObj.Runner.runtimeconfig.json" );
+                        string runnerFile = Path.Combine( binPath, runnerConfigFileName );
                         string additionalProbePaths = ExtractJsonAdditonalProbePaths( m, fRtDevPath );
                         if( additionalProbePaths == null )
                         {
@@ -136,6 +146,10 @@ namespace CKSetup
                                 }
                                 return false;
                             }
+                        }
+                        if( keepFolder != null )
+                        {
+                            File.Copy( runnerFile, Path.Combine( keepFolder.FullName, runnerConfigFileName ) );
                         }
                         archive.RegisterFileToDelete( runnerFile );
                     }
@@ -241,30 +255,31 @@ namespace CKSetup
         {
             ProcessStartInfo cmdStartInfo = new ProcessStartInfo();
             cmdStartInfo.WorkingDirectory = binPath;
-            cmdStartInfo.RedirectStandardOutput = true;
-            cmdStartInfo.RedirectStandardError = true;
-            cmdStartInfo.RedirectStandardInput = true;
             cmdStartInfo.UseShellExecute = false;
             cmdStartInfo.CreateNoWindow = true;
             cmdStartInfo.FileName = fileName;
-            cmdStartInfo.Arguments = arguments;
-            if( debugBreakInCKStObjRunner ) cmdStartInfo.Arguments += " launch-debugger";
-            using( m.OpenTrace( $"{fileName} {cmdStartInfo.Arguments}" ) )
-            using( Process cmdProcess = new Process() )
+            using( var logReceiver = LogReceiver.Start( m, true ) )
             {
-                cmdProcess.StartInfo = cmdStartInfo;
-                cmdProcess.ErrorDataReceived += ( o, e ) => { if( !string.IsNullOrEmpty( e.Data ) ) m.Error( e.Data ); };
-                cmdProcess.OutputDataReceived += ( o, e ) => { if( e.Data != null ) m.Info( e.Data ); };
-                cmdProcess.Start();
-                cmdProcess.BeginErrorReadLine();
-                cmdProcess.BeginOutputReadLine();
-                cmdProcess.WaitForExit();
-                if( cmdProcess.ExitCode != 0 )
+                cmdStartInfo.Arguments = arguments + " /logPipe:" + logReceiver.PipeName;
+                if( debugBreakInCKStObjRunner ) cmdStartInfo.Arguments += " launch-debugger";
+                using( m.OpenTrace( $"{fileName} {cmdStartInfo.Arguments}" ) )
+                using( Process cmdProcess = new Process() )
                 {
-                    m.Error( $"Process returned ExitCode {cmdProcess.ExitCode}." );
-                    return false;
+                    cmdProcess.StartInfo = cmdStartInfo;
+                    cmdProcess.Start();
+                    cmdProcess.WaitForExit();
+                    var endLogStatus = logReceiver.WaitEnd();
+                    if( endLogStatus != LogReceiverEndStatus.Normal )
+                    {
+                        m.Warn( $"Pipe log channel abnormal end status: {endLogStatus}." );
+                    }
+                    if( cmdProcess.ExitCode != 0 )
+                    {
+                        m.Error( $"Process returned ExitCode {cmdProcess.ExitCode}." );
+                        return false;
+                    }
+                    return true;
                 }
-                return true;
             }
         }
 

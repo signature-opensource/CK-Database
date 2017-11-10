@@ -18,17 +18,7 @@ namespace CK.Setup
     {
         public class DefaultAssemblyResolver : CK.CodeGen.IAssemblyResolver
         {
-            public string GetAssemblyFilePath( Assembly a )
-            {
-                try
-                {
-                    return new Uri( a.CodeBase ).LocalPath;
-                }
-                catch( Exception ex )
-                {
-                    return null;
-                }
-            }
+            public string GetAssemblyFilePath( Assembly a ) => new Uri( a.CodeBase ).LocalPath;
 
             public IEnumerable<AssemblyName> GetReferencedAssemblies( Assembly a ) => a.GetReferencedAssemblies();
 

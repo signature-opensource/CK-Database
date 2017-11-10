@@ -30,38 +30,57 @@ namespace CK.StObj.Runner
                 Debugger.Launch();
             }
 
-            var m = new ActivityMonitor();
-            m.Output.RegisterClient( new ActivityMonitorConsoleClient() );
-            XElement root;
-            try
+            using( var pipeClient = GetPipeLogClient( args ) )
             {
-                root = XDocument.Load( Path.Combine( AppContext.BaseDirectory, XmlFileName ) ).Root;
-                ActivityMonitor.DefaultFilter = LogFilter.Parse( root.Element( xLogFiler ).Value );
-            }
-            catch( Exception ex )
-            {
-                m.Fatal( ex );
-                return -2;
-            }
-            InstallLoadHooks( m );
-            using( m.OpenInfo( "Starting CK.StObj.Runner" ) )
-            {
+                var m = new ActivityMonitor();
+                if( pipeClient == null ) m.Output.RegisterClient( new ActivityMonitorConsoleClient() );
+                else
+                {
+                    m.Output.RegisterClient( pipeClient );
+                }
+                XElement root;
                 try
                 {
-                    if( Array.IndexOf( args, "merge-deps" ) >= 0 )
-                    {
-                        MergeDeps( m );
-                        return 0;
-                    }
-                    var config = new StObjEngineConfiguration( root.Element( xSetup ) );
-                    return StObjContextRoot.Build( config, null, m ) ? 0 : 1;
+                    root = XDocument.Load( Path.Combine( AppContext.BaseDirectory, XmlFileName ) ).Root;
+                    ActivityMonitor.DefaultFilter = LogFilter.Parse( root.Element( xLogFiler ).Value );
                 }
                 catch( Exception ex )
                 {
                     m.Fatal( ex );
-                    return -1;
+                    return -2;
+                }
+                InstallLoadHooks( m );
+                using( m.OpenInfo( "Starting CK.StObj.Runner" ) )
+                {
+                    try
+                    {
+                        if( Array.IndexOf( args, "merge-deps" ) >= 0 )
+                        {
+                            MergeDeps( m );
+                            return 0;
+                        }
+                        var config = new StObjEngineConfiguration( root.Element( xSetup ) );
+                        return StObjContextRoot.Build( config, null, m ) ? 0 : 1;
+                    }
+                    catch( Exception ex )
+                    {
+                        m.Fatal( ex );
+                        return -1;
+                    }
                 }
             }
+        }
+
+        static ActivityMonitorAnonymousPipeLogSenderClient GetPipeLogClient( string[] args )
+        {
+            foreach( var a in args )
+            {
+                if( a.StartsWith("/logPipe:" ) && a.Length > 9 )
+                {
+                    return new ActivityMonitorAnonymousPipeLogSenderClient( a.Substring( 9 ) );
+                }
+            }
+            return null;
         }
 
         static void MergeDeps( IActivityMonitor m )

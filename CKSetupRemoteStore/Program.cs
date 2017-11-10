@@ -1,6 +1,7 @@
 using CK.Core;
 using CK.Monitoring;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using System.IO;
 
 namespace CKSetupRemoteStore
@@ -9,22 +10,35 @@ namespace CKSetupRemoteStore
     {
         public static void Main( string[] args )
         {
-            ActivityMonitor.AutoConfiguration += m => m.Output.RegisterClient( new ActivityMonitorConsoleClient() );
-            LogFile.RootLogPath = Path.Combine( Directory.GetCurrentDirectory(), "Logs" );
-            var c = new GrandOutputConfiguration();
-            c.Handlers.Add( new CK.Monitoring.Handlers.TextFileConfiguration() { Path = "Text" } );
-            using( GrandOutput.EnsureActiveDefault( c ) )
-            {
-                var host = new WebHostBuilder()
-                    .UseUrls( "http://localhost:2982" )
-                    .UseKestrel()
-                    .UseContentRoot( Directory.GetCurrentDirectory() )
-                    .UseIISIntegration()
-                    .UseStartup<Startup>()
-                    .Build();
+            var host = CreateBuilder( args ).Build();
+            host.Run();
+        }
 
-                host.Run();
+        static IWebHostBuilder CreateBuilder( string[] args )
+        {
+            var builder = new WebHostBuilder()
+                     .UseUrls( "http://localhost:2982" )
+                     .UseKestrel()
+                     .UseContentRoot( Directory.GetCurrentDirectory() )
+                     .ConfigureAppConfiguration( ( hostingContext, config ) =>
+                     {
+                        config.AddJsonFile( "appsettings.json", optional: false, reloadOnChange: true );
+                        config.AddEnvironmentVariables();
+                        if( args != null ) config.AddCommandLine( args );
+                     } )
+                     .UseMonitoring()
+                     .UseIISIntegration()
+                     .UseDefaultServiceProvider( ( context, options ) =>
+                     {
+                        options.ValidateScopes = context.HostingEnvironment.IsDevelopment();
+                     } )
+                     .UseStartup<Startup>();
+
+            if( args != null )
+            {
+                builder.UseConfiguration( new ConfigurationBuilder().AddCommandLine( args ).Build() );
             }
+            return builder;
         }
     }
 }

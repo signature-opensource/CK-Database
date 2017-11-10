@@ -114,7 +114,7 @@ namespace CKSetup.Tests
 
             // CK.Setupable.Engine.dll (net461) and/or
             // CK.Setupable.Engine.dll (net20) and CK.Setupable.Engine.deps.json.
-            content.FileEntries.Should().HaveCount( n => n > 0 && n < 3 );
+            content.FileEntries.Should().HaveCount( n => n > 0 && n <= 3 );
         }
 
 
