@@ -104,7 +104,9 @@ namespace CKSetup.Tests
             var pI = new ProcessStartInfo()
             {
                 WorkingDirectory = Path.Combine( SolutionFolder, "CKSetupRemoteStore" ),
-                FileName = Path.Combine( "bin", Configuration, "net461", "CKSetupRemoteStore.exe" )
+                FileName = Path.Combine( "bin", Configuration, "net461", "CKSetupRemoteStore.exe" ),
+                CreateNoWindow = true,
+                UseShellExecute = false
             };
             Process.Start( pI );
             var u = new Uri( "http://localhost:2982" );
