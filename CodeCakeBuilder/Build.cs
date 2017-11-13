@@ -59,7 +59,7 @@ namespace CodeCake
             {
                 var mustStop = Process.GetProcessesByName( "CKSetupRemoteStore" );
                 foreach( var p in mustStop ) p.Kill();
-                if( buildDone ) c.CleanDirectories( projects.Select( p => p.Path.GetDirectory().Combine( "bin" ) ) );
+                //if( buildDone ) c.CleanDirectories( projects.Select( p => p.Path.GetDirectory().Combine( "bin" ) ) );
             } );
 
             Task( "Check-Repository" )
