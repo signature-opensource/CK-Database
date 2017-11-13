@@ -110,10 +110,12 @@ namespace CKSetup.Tests
         {
             using( EnsureConsoleMonitor() )
             {
+                var workingDir = Path.Combine( SolutionFolder, "CKSetupRemoteStore" );
+                var fName = Path.Combine( workingDir, "bin", Configuration, "net461", "CKSetupRemoteStore.exe" );
                 var pI = new ProcessStartInfo()
                 {
-                    WorkingDirectory = Path.Combine( SolutionFolder, "CKSetupRemoteStore" ),
-                    FileName = Path.Combine( "bin", Configuration, "net461", "CKSetupRemoteStore.exe" ),
+                    WorkingDirectory = workingDir,
+                    FileName = fName,
                     CreateNoWindow = true,
                     UseShellExecute = false
                 };
@@ -132,7 +134,7 @@ namespace CKSetup.Tests
                 }
                 catch( Exception ex )
                 {
-                    Monitor.Fatal( $"While launching '{pI.FileName}' in '{pI.WorkingDirectory}'.", ex );
+                    Monitor.Fatal( $"While launching '{fName}' in '{workingDir}'.", ex );
                     throw;
                 }
             }
