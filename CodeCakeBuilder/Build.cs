@@ -119,11 +119,12 @@ namespace CodeCake
                      var testDlls = projects.Where( p => p.Name.EndsWith( ".Tests" ) ).Select( p =>
                                  new
                                  {
+                                     Name = p.Name,
                                      ProjectPath = p.Path.GetDirectory(),
                                      NetCoreAppDll = p.Path.GetDirectory().CombineWithFilePath( "bin/" + configuration + "/netcoreapp2.0/" + p.Name + ".dll" ),
                                      Net461Dll = p.Path.GetDirectory().CombineWithFilePath( "bin/" + configuration + "/net461/" + p.Name + ".dll" ),
                                  } );
-
+                     testDlls = testDlls.BringToFront( p => p.Name == "CKSetup.Core.Tests" );
                      foreach( var test in testDlls )
                      {
                          using( Cake.Environment.SetWorkingDirectory( test.ProjectPath ) )
