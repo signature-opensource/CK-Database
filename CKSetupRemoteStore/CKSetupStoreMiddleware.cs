@@ -131,14 +131,17 @@ namespace CKSetupRemoteStore
                 return Task.CompletedTask;
             }
             Component found;
-            if( req.Version != null )
+            if( req.Version != null || req.VersionMoniker == "ci" )
             {
                 found = _dbCurrent.Components.FirstOrDefault( c => c.Name == req.Name && c.TargetFramework == req.Target && c.Version == req.Version );
             }
             else
             {
+                Func<SVersion, bool> filter = FilterPreview;
+                if( req.VersionMoniker == "release" ) filter = FilterRelease;
                 found = _dbCurrent.Components.Where( c => c.Name == req.Name && c.TargetFramework == req.Target )
                             .OrderByDescending( c => c.Version )
+                            .Where( c => filter( c.Version ) )
                             .FirstOrDefault();
             }
             if( found == null )
