@@ -415,6 +415,41 @@ namespace CKSetup
                     return null;
                 }
             }
+            return ExpandDependencies( monitor, root, runtime );
+        }
+
+        /// <summary>
+        /// Resolves all dependencies from a root component.
+        /// The first component (as long as the return is not null), is the root component.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="name">The component name.</param>
+        /// <param name="runtime">The target runtime.</param>
+        /// <param name="firstVersionMatcher">
+        /// Optional first version matcher.
+        /// When null, the greatest version will be returned.
+        /// When not null, this predicate is called from the last (greatest) version to the lowest one: the
+        /// first time it returns true will be selected.
+        /// </param>
+        /// <returns>The component list on success, null if the root component or its dependencies can not be resolved.</returns>
+        public IReadOnlyList<Component> ResolveLocalDependencies( IActivityMonitor monitor, string name, TargetRuntime runtime, Func<SVersion, bool> firstVersionMatcher = null )
+        {
+            Component root;
+            if( firstVersionMatcher == null ) return ResolveLocalDependencies( monitor, name, runtime, (SVersion)null );
+            root = Components.Where( c => c.Name == name && c.TargetFramework.CanWorkOn( runtime ) )
+                        .OrderByDescending( c => c.Version )
+                        .Where( c => firstVersionMatcher( c.Version ) )
+                        .FirstOrDefault();
+            if( root == null )
+            {
+                monitor.Error( $"Unable to find component '{name}/{runtime}' that satisfies the version requirement." );
+                return null;
+            }
+            return ExpandDependencies( monitor, root, runtime );
+        }
+
+        List<Component> ExpandDependencies(IActivityMonitor monitor, Component root, TargetRuntime runtime)
+        {
             var engine = new DependencyEngine( this, runtime, root );
             var results = engine.ExpandDependencies( monitor ) ? engine.Resolved : null;
             Debug.Assert( results == null || results[0] == root );

@@ -1,30 +1,62 @@
 using CSemVer;
 using Microsoft.AspNetCore.Http;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace CKSetupRemoteStore
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T">Either <see cref="TargetRuntime"/> or <see cref="TargetFramework"/></typeparam>
     class GetRequestParameterParseResult<T> where T : struct
     {
+        /// <summary>
+        /// Gets the name of the component.
+        /// Cannot be null or empty.
+        /// This is the first part.
+        /// </summary>
         public string Name { get; }
+
+        /// <summary>
+        /// Gets the runtime or the framework.
+        /// It is mandatory (otherwise parse fails).
+        /// This is the second part.
+        /// </summary>
         public T Target { get; }
+
+        /// <summary>
+        /// Gets the version.
+        /// This is the third part and is optional.
+        /// </summary>
         public SVersion Version { get; }
+
+        /// <summary>
+        /// Gets authorized monikers: "ci", "preview", or "release".
+        /// This moniker and actual <see cref="Version"/> are mutually exclusive.
+        /// "ci" is the same as a null Version: the very latest version is selected whatever it is.
+        /// "preview" allows pre release versions as well as final releases.
+        /// "release" allows only final releases.
+        /// </summary>
+        public string VersionMoniker { get; }
+
+        /// <summary>
+        /// Gets the error message if parse failed.
+        /// </summary>
         public string ErrorMessage { get; }
 
-        public GetRequestParameterParseResult(
+        GetRequestParameterParseResult(
             string name,
             T target,
-            SVersion version )
+            SVersion version,
+            string moniker )
         {
             Name = name;
             Target = target;
             Version = version;
+            VersionMoniker = moniker;
         }
 
-        public GetRequestParameterParseResult( string error )
+        GetRequestParameterParseResult( string error )
         {
             ErrorMessage = error;
         }
@@ -48,15 +80,32 @@ namespace CKSetupRemoteStore
                 return new GetRequestParameterParseResult<T>( $"Invalid {typeof( T ).Name}." );
             }
             SVersion version = null;
+            string moniker = null;
             if( nv.Length == 3 )
             {
-                version = SVersion.TryParse( nv[2] );
-                if( !version.IsValidSyntax )
+                string theVersion = nv[2];
+                if( "ci".Equals( theVersion, StringComparison.OrdinalIgnoreCase ) )
                 {
-                    return new GetRequestParameterParseResult<T>( $"Invalid version." );
+                    moniker = "ci";
+                }
+                else if( "preview".Equals( theVersion, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    moniker = "preview";
+                }
+                else if( "release".Equals( theVersion, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    moniker = "release";
+                }
+                else
+                {
+                    version = SVersion.TryParse( theVersion );
+                    if( !version.IsValidSyntax )
+                    {
+                        return new GetRequestParameterParseResult<T>( $"Invalid version." );
+                    }
                 }
             }
-            return new GetRequestParameterParseResult<T>( name, target, version );
+            return new GetRequestParameterParseResult<T>( name, target, version, moniker );
         }
     }
 

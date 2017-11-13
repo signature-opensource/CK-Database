@@ -19,6 +19,7 @@ using System.Xml.Linq;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Net.Http.Headers;
+using CSemVer;
 
 namespace CKSetupRemoteStore
 {
@@ -150,6 +151,13 @@ namespace CKSetupRemoteStore
             return ctx.Response.WriteAsync( new XDocument( found.ToXml() ).ToString() );
         }
 
+        /// <summary>
+        /// /dl-zip/ComponentName/RuntimeOrFramework/Version where version is optional 
+        /// </summary>
+        /// <param name="ctx">The current http context.</param>
+        /// <param name="remainder">The ComponentName/RuntimeOrFramework/Version part.</param>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <returns>The continuation.</returns>
         async Task HandleDownloadZip( HttpContext ctx, PathString remainder, IActivityMonitor monitor )
         {
             var req = GetRequestParameterParseResult<TargetRuntime>.Parse( remainder );
@@ -159,7 +167,17 @@ namespace CKSetupRemoteStore
                 ctx.Response.Headers.Add( "ErrorMsg", req.ErrorMessage );
                 return;
             }
-            IReadOnlyList<Component> components = _dbCurrent.ResolveLocalDependencies( monitor, req.Name, req.Target, req.Version );
+            IReadOnlyList<Component> components;
+            if( req.Version != null || req.VersionMoniker == "ci" )
+            {
+                components = _dbCurrent.ResolveLocalDependencies( monitor, req.Name, req.Target, req.Version );
+            }
+            else
+            {
+                Func<SVersion,bool> filter = FilterPreview;
+                if( req.VersionMoniker == "release" ) filter = FilterRelease;
+                components = _dbCurrent.ResolveLocalDependencies( monitor, req.Name, req.Target, filter );
+            }
             if( components == null )
             {
                 ctx.Response.StatusCode = StatusCodes.Status404NotFound;
@@ -188,6 +206,20 @@ namespace CKSetupRemoteStore
                     }
                 }
             }
+        }
+
+        static bool FilterPreview( SVersion v )
+        {
+            // This is a shortcut to avoid parsing a CSemVer for release.
+            if( v.Prerelease == null ) return true;
+            // If it is a CSemVer version, it is a release or a pre-release:
+            // CI-builds are not CSemVer.
+            return CSVersion.TryParse( v.Text ).IsValidSyntax;
+        }
+
+        static bool FilterRelease( SVersion v )
+        {
+            return v.Prerelease == null;
         }
 
         #region Pull

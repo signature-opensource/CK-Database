@@ -19,16 +19,12 @@ namespace CKSetupRemoteStore
 {
     public class Startup
     {
-        public Startup( IHostingEnvironment env )
+        public Startup( IConfiguration conf )
         {
-            var builder = new ConfigurationBuilder()
-                    .SetBasePath( env.ContentRootPath )
-                    .AddJsonFile( "appsettings.json", optional: true, reloadOnChange: true )
-                    .AddEnvironmentVariables();
-            Configuration = builder.Build();
+            Configuration = conf;
         }
 
-        public IConfigurationRoot Configuration { get; set; }
+        public IConfiguration Configuration { get; }
 
         public void ConfigureServices( IServiceCollection services )
         {
@@ -55,8 +51,15 @@ namespace CKSetupRemoteStore
 
                  await context.Response.WriteAsync( "<html><body>" );
                  await context.Response.WriteAsync( $"<h1>Welcome to {env.ApplicationName}.</h1>Version: {v.ToString()}.<br>" );
-                 await context.Response.WriteAsync( $"<a href=\"/dl-zip/CKSetup/Net461\">CKSetup.zip (Net461)</a><br>" );
-                 await context.Response.WriteAsync( $"<a href=\"/dl-zip/CKSetup/NetCoreApp20\">CKSetup.zip (NetCoreApp20)</a>" );
+                 await context.Response.WriteAsync( $"<br>Latest (CI)<br>" );
+                 await context.Response.WriteAsync( $"- <a href=\"/dl-zip/CKSetup/Net461/ci\">CKSetup.zip (Net461)</a><br>" );
+                 await context.Response.WriteAsync( $"- <a href=\"/dl-zip/CKSetup/NetCoreApp20/ci\">CKSetup.zip (NetCoreApp20)</a>" );
+                 await context.Response.WriteAsync( $"<br>Current Preview<br>" );
+                 await context.Response.WriteAsync( $"- <a href=\"/dl-zip/CKSetup/Net461/preview\">CKSetup.zip (Net461)</a><br>" );
+                 await context.Response.WriteAsync( $"- <a href=\"/dl-zip/CKSetup/NetCoreApp20/preview\">CKSetup.zip (NetCoreApp20)</a>" );
+                 await context.Response.WriteAsync( $"<br>Current Release<br>" );
+                 await context.Response.WriteAsync( $"- <a href=\"/dl-zip/CKSetup/Net461/release\">CKSetup.zip (Net461)</a><br>" );
+                 await context.Response.WriteAsync( $"- <a href=\"/dl-zip/CKSetup/NetCoreApp20/release\">CKSetup.zip (NetCoreApp20)</a>" );
                  await context.Response.WriteAsync( "</body></html>" );
              } );
             monitor.MonitorEnd();

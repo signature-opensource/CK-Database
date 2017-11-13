@@ -287,7 +287,6 @@ namespace CKSetup
                 cmdStartInfo.RedirectStandardOutput = true;
                 cmdStartInfo.RedirectStandardError = true;
                 cmdStartInfo.RedirectStandardInput = true;
-                cmdStartInfo.UseShellExecute = false;
             }
             cmdStartInfo.UseShellExecute = false;
             cmdStartInfo.CreateNoWindow = true;
