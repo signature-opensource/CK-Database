@@ -72,7 +72,7 @@ namespace CKSetup
                             connectionArg.TargetConnectionString,
                             generatedAssemblyNameOpt.Value(),
                             !ilGenerationOpt.HasValue(),
-                            ActivityMonitor.DefaultFilter,
+                            LogFilter.Debug,
                             remote,
                             keepRuntimesFilesFolder: keepFilesOpt.HasValue() ? keepFilesOpt.Value() : null
                             )

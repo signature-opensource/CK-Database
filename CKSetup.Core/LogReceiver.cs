@@ -67,10 +67,15 @@ namespace CKSetup
                     switch( e.LogType )
                     {
                         case LogEntryType.Line:
-                            _monitor.UnfilteredLog( e.Tags, e.LogLevel, e.Text, e.LogTime, CKException.CreateFrom( e.Exception ), e.FileName, e.LineNumber );
+                            if( _monitor.ShouldLogLine( e.LogLevel, e.FileName, e.LineNumber ) )
+                            {
+                                _monitor.UnfilteredLog( e.Tags, e.LogLevel|LogLevel.IsFiltered, e.Text, e.LogTime, CKException.CreateFrom( e.Exception ), e.FileName, e.LineNumber );
+                            }
                             break;
                         case LogEntryType.OpenGroup:
-                            _monitor.UnfilteredOpenGroup( e.Tags, e.LogLevel, null, e.Text, e.LogTime, CKException.CreateFrom( e.Exception ), e.FileName, e.LineNumber );
+                            _monitor.UnfilteredOpenGroup( _monitor.ShouldLogGroup( e.LogLevel, e.FileName, e.LineNumber )
+                                                            ? new ActivityMonitorGroupData( e.LogLevel | LogLevel.IsFiltered, e.Tags, e.Text, e.LogTime, CKException.CreateFrom( e.Exception ), null, e.FileName, e.LineNumber )
+                                                            : null );
                             break;
                         case LogEntryType.CloseGroup:
                             _monitor.CloseGroup( e.LogTime, e.Conclusions );

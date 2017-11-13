@@ -54,12 +54,10 @@ namespace CodeCake
             // Configuration is either "Debug" or "Release".
             string configuration = "Debug";
 
-            bool buildDone = false;
             Teardown( c =>
             {
                 var mustStop = Process.GetProcessesByName( "CKSetupRemoteStore" );
                 foreach( var p in mustStop ) p.Kill();
-                //if( buildDone ) c.CleanDirectories( projects.Select( p => p.Path.GetDirectory().Combine( "bin" ) ) );
             } );
 
             Task( "Check-Repository" )
@@ -101,7 +99,6 @@ namespace CodeCake
                 .IsDependentOn( "Clean" )
                 .Does( () =>
                  {
-                     buildDone = true;
                      Cake.DotNetCoreBuild( "CodeCakeBuilder/CoreBuild.proj",
                          new DotNetCoreBuildSettings().AddVersionArguments( gitInfo, s =>
                          {
