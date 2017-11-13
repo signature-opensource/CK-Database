@@ -94,7 +94,7 @@ namespace CKSetup.Tests
                     "SqlCallDemo.Generated.ByCKSetup",
                     sourceGeneration: true,
                     runnerLogFilter: LogFilter.Parse( logFilter )
-                    ).Should().BeFalse();
+                    ).Should().BeTrue();
             }
         }
 

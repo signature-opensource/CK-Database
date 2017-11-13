@@ -56,6 +56,13 @@ namespace CKSetup.Tests
             }
         }
 
+        public static IDisposable EnsureConsoleMonitor()
+        {
+            bool prev = LogToConsole;
+            LogToConsole = true;
+            return Util.CreateDisposableAction( () => LogToConsole = prev );
+        }
+
         /// <summary>
         /// Gets the connection string to the master database.
         /// It is first the environment variable named "CK_DB_TEST_MASTER_CONNECTION_STRING", then 
@@ -101,22 +108,34 @@ namespace CKSetup.Tests
 
         public static Uri EnsureCKSetupRemoteRunning()
         {
-            var pI = new ProcessStartInfo()
+            using( EnsureConsoleMonitor() )
             {
-                WorkingDirectory = Path.Combine( SolutionFolder, "CKSetupRemoteStore" ),
-                FileName = Path.Combine( "bin", Configuration, "net461", "CKSetupRemoteStore.exe" ),
-                CreateNoWindow = true,
-                UseShellExecute = false
-            };
-            Process.Start( pI );
-            var u = new Uri( "http://localhost:2982" );
-            HttpResponseMessage msg;
-            do
-            {
-                msg = SharedHttpClient.GetAsync( u ).GetAwaiter().GetResult();
+                var pI = new ProcessStartInfo()
+                {
+                    WorkingDirectory = Path.Combine( SolutionFolder, "CKSetupRemoteStore" ),
+                    FileName = Path.Combine( "bin", Configuration, "net461", "CKSetupRemoteStore.exe" ),
+                    CreateNoWindow = true,
+                    UseShellExecute = false
+                };
+                try
+                {
+                    Process.Start( pI );
+                    var u = new Uri( "http://localhost:2982" );
+                    HttpResponseMessage msg;
+                    do
+                    {
+                        msg = SharedHttpClient.GetAsync( u ).GetAwaiter().GetResult();
+                    }
+                    while( !msg.IsSuccessStatusCode );
+                    return u;
+
+                }
+                catch( Exception ex )
+                {
+                    Monitor.Fatal( $"While launching '{pI.FileName}' in '{pI.WorkingDirectory}'.", ex );
+                    throw;
+                }
             }
-            while( !msg.IsSuccessStatusCode );
-            return u;
         }
 
         public static string BinFolder
