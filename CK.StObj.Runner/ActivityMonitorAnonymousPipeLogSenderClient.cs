@@ -17,6 +17,7 @@ namespace CK.StObj.Runner
             _client = new AnonymousPipeClientStream( PipeDirection.Out, pipeHandlerName );
             _writer = new CKBinaryWriter( _client );
             _writer.Write( LogReader.CurrentStreamVersion );
+            _client.WaitForPipeDrain();
         }
 
         public void Dispose()
