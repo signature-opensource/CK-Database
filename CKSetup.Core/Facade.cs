@@ -107,6 +107,7 @@ namespace CKSetup
                 string exe = Path.Combine( binPath, "CK.StObj.Runner.exe" );
                 string dll = Path.Combine( binPath, "CK.StObj.Runner.dll" );
                 string fileName, arguments;
+                bool usePipeLogs;
                 if( !File.Exists( exe ) )
                 {
                     if( !File.Exists( dll ) )
@@ -114,6 +115,8 @@ namespace CKSetup
                         m.Error( "Unable to find CK.StObj.Runner runner in folder." );
                         return false;
                     }
+                    usePipeLogs = GetUsePipeLogFromRunnerVersion( dll );
+
                     fileName = "dotnet";
                     #region Using existing runtimeconfig.json to create CK.StObj.Runner.runtimeconfig.json.
                     {
@@ -170,7 +173,7 @@ namespace CKSetup
                     #region Merging all deps.json into CK.StObj.Runner.deps.json
                     {
                         arguments = "CK.StObj.Runner.dll merge-deps";
-                        if( !RunRunnerProcess( m, binPath, debugBreakInCKStObjRunner, fileName, arguments ) )
+                        if( !RunRunnerProcess( m, usePipeLogs, binPath, debugBreakInCKStObjRunner, fileName, arguments ) )
                         {
                             return false;
                         }
@@ -186,9 +189,18 @@ namespace CKSetup
                 {
                     fileName = exe;
                     arguments = String.Empty;
+                    usePipeLogs = GetUsePipeLogFromRunnerVersion( exe );
                 }
-                return RunRunnerProcess( m, binPath, debugBreakInCKStObjRunner, fileName, arguments );
+                return RunRunnerProcess( m, usePipeLogs, binPath, debugBreakInCKStObjRunner, fileName, arguments );
             }
+        }
+
+        private static bool GetUsePipeLogFromRunnerVersion( string dll )
+        {
+            bool usePipeLogs;
+            CSemVer.SVersion vRunner = CSemVer.InformationalVersion.Parse( FileVersionInfo.GetVersionInfo( dll ).ProductVersion ).SemVersion;
+            usePipeLogs = vRunner.CompareTo( new CSemVer.SVersion( 5, 0, 0, "delta.3" ) ) > 0;
+            return usePipeLogs;
         }
 
         private static string ExtractJsonAdditonalProbePaths( IActivityMonitor m, string fRtDevPath )
@@ -266,27 +278,48 @@ namespace CKSetup
             return true;
         }
 
-        static bool RunRunnerProcess( IActivityMonitor m, string binPath, bool debugBreakInCKStObjRunner, string fileName, string arguments )
+        static bool RunRunnerProcess( IActivityMonitor m, bool usePipeLogs, string binPath, bool debugBreakInCKStObjRunner, string fileName, string arguments )
         {
             ProcessStartInfo cmdStartInfo = new ProcessStartInfo();
             cmdStartInfo.WorkingDirectory = binPath;
+            if( !usePipeLogs )
+            {
+                cmdStartInfo.RedirectStandardOutput = true;
+                cmdStartInfo.RedirectStandardError = true;
+                cmdStartInfo.RedirectStandardInput = true;
+                cmdStartInfo.UseShellExecute = false;
+            }
             cmdStartInfo.UseShellExecute = false;
             cmdStartInfo.CreateNoWindow = true;
             cmdStartInfo.FileName = fileName;
-            using( var logReceiver = LogReceiver.Start( m, true ) )
+            using( var logReceiver = usePipeLogs ? LogReceiver.Start( m, true ) : null )
             {
-                cmdStartInfo.Arguments = arguments + " /logPipe:" + logReceiver.PipeName;
+                cmdStartInfo.Arguments = arguments;
+                if( usePipeLogs ) cmdStartInfo.Arguments += " /logPipe:" + logReceiver.PipeName;
                 if( debugBreakInCKStObjRunner ) cmdStartInfo.Arguments += " launch-debugger";
                 using( m.OpenTrace( $"{fileName} {cmdStartInfo.Arguments}" ) )
                 using( Process cmdProcess = new Process() )
                 {
                     cmdProcess.StartInfo = cmdStartInfo;
-                    cmdProcess.Start();
-                    cmdProcess.WaitForExit();
-                    var endLogStatus = logReceiver.WaitEnd( cmdProcess.ExitCode != 0 );
-                    if( endLogStatus != LogReceiverEndStatus.Normal )
+                    if( !usePipeLogs )
                     {
-                        m.Warn( $"Pipe log channel abnormal end status: {endLogStatus}." );
+                        cmdProcess.ErrorDataReceived += ( o, e ) => { if( !string.IsNullOrEmpty( e.Data ) ) m.Error( e.Data ); };
+                        cmdProcess.OutputDataReceived += ( o, e ) => { if( e.Data != null ) m.Info( e.Data ); };
+                    }
+                    cmdProcess.Start();
+                    if( !usePipeLogs )
+                    {
+                        cmdProcess.BeginErrorReadLine();
+                        cmdProcess.BeginOutputReadLine();
+                    }
+                    cmdProcess.WaitForExit();
+                    if( usePipeLogs )
+                    {
+                        var endLogStatus = logReceiver.WaitEnd( cmdProcess.ExitCode != 0 );
+                        if( endLogStatus != LogReceiverEndStatus.Normal )
+                        {
+                            m.Warn( $"Pipe log channel abnormal end status: {endLogStatus}." );
+                        }
                     }
                     if( cmdProcess.ExitCode != 0 )
                     {

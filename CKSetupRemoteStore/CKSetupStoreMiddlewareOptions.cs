@@ -11,7 +11,7 @@ namespace CKSetupRemoteStore
     public class CKSetupStoreMiddlewareOptions
     {
         /// <summary>
-        /// Gets or sets the root store path. If not <see cref="Path.IsPathRooted"/> it it relative 
+        /// Gets or sets the root store path. If not <see cref="Path.IsPathRooted"/> it is relative 
         /// to the <see cref="IHostingEnvironment.ContentRootPath"/>.
         /// Defaults to ContentRootPath/Store.
         /// </summary>
