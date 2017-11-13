@@ -17,12 +17,14 @@ namespace CK.StObj.Runner
             _client = new AnonymousPipeClientStream( PipeDirection.Out, pipeHandlerName );
             _writer = new CKBinaryWriter( _client );
             _writer.Write( LogReader.CurrentStreamVersion );
+            _client.Flush();
             _client.WaitForPipeDrain();
         }
 
         public void Dispose()
         {
             _client.WriteByte( 0 );
+            _client.Flush();
             _client.WaitForPipeDrain();
             _writer.Dispose();
             _client.Dispose();
