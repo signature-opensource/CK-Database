@@ -119,10 +119,22 @@ namespace CKSetup.Tests
                     CreateNoWindow = true,
                     UseShellExecute = false
                 };
+                Process p = null;
                 try
                 {
-                    Process.Start( pI );
-                    var u = new Uri( "http://localhost:2982" );
+                    p = Process.Start( pI );
+                }
+                catch( Exception ex )
+                {
+                    Monitor.Fatal( $"While launching '{fName}' in '{workingDir}'.", ex );
+                    throw;
+                }
+                var u = new Uri( "http://localhost:2982" );
+                int tryCount = 0;
+                retry:
+                ++tryCount;
+                try
+                {
                     HttpResponseMessage msg;
                     do
                     {
@@ -134,7 +146,16 @@ namespace CKSetup.Tests
                 }
                 catch( Exception ex )
                 {
-                    Monitor.Fatal( $"While launching '{fName}' in '{workingDir}'.", ex );
+                    Monitor.Error( $"While geting '{u}'.", ex );
+                    if( p.HasExited )
+                    {
+                        Monitor.Fatal( "CKSetupRemoteStore.exe has exited." );
+                    }
+                    else if( tryCount < 5 )
+                    {
+                        Thread.Sleep( 200 );
+                        goto retry;
+                    }
                     throw;
                 }
             }
