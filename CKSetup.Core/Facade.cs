@@ -198,8 +198,8 @@ namespace CKSetup
         private static bool GetUsePipeLogFromRunnerVersion( string dll )
         {
             bool usePipeLogs;
-            CSemVer.SVersion vRunner = CSemVer.InformationalVersion.Parse( FileVersionInfo.GetVersionInfo( dll ).ProductVersion ).SemVersion;
-            usePipeLogs = vRunner.CompareTo( new CSemVer.SVersion( 5, 0, 0, "delta.3" ) ) > 0;
+            var vRunner = new CSemVer.InformationalVersion( FileVersionInfo.GetVersionInfo( dll ).ProductVersion );
+            usePipeLogs = vRunner.SemVersion == null || vRunner.SemVersion.CompareTo( new CSemVer.SVersion( 5, 0, 0, "delta.3" ) ) > 0;
             return usePipeLogs;
         }
 
