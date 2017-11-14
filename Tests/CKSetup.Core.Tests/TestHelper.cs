@@ -146,14 +146,14 @@ namespace CKSetup.Tests
                 }
                 catch( Exception ex )
                 {
-                    Monitor.Error( $"While geting '{u}'.", ex );
+                    Monitor.Error( $"While geting '{u}' (try n°{tryCount}).", ex );
                     if( p.HasExited )
                     {
                         Monitor.Fatal( "CKSetupRemoteStore.exe has exited." );
                     }
                     else if( tryCount < 5 )
                     {
-                        Thread.Sleep( 200 );
+                        Thread.Sleep( 300 );
                         goto retry;
                     }
                     throw;
