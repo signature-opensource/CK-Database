@@ -42,7 +42,7 @@ namespace CKSetupRemoteStore
         /// <summary>
         /// Gets whether this requests asks for the latest version: it is "/ci" or no version part at all. 
         /// </summary>
-        public bool IsLastVersion => ErrorMessage != null && (VersionMoniker == "ci" || VersionMoniker == null && Version == null);
+        public bool IsLastVersion => ErrorMessage == null && (VersionMoniker == "ci" || VersionMoniker == null && Version == null);
 
         /// <summary>
         /// Gets the error message if parse failed.

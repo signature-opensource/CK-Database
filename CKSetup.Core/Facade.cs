@@ -115,7 +115,7 @@ namespace CKSetup
                         m.Error( "Unable to find CK.StObj.Runner runner in folder." );
                         return false;
                     }
-                    usePipeLogs = GetUsePipeLogFromRunnerVersion( dll );
+                    usePipeLogs = GetUsePipeLogFromRunnerVersion( m, dll );
 
                     fileName = "dotnet";
                     #region Using existing runtimeconfig.json to create CK.StObj.Runner.runtimeconfig.json.
@@ -189,16 +189,17 @@ namespace CKSetup
                 {
                     fileName = exe;
                     arguments = String.Empty;
-                    usePipeLogs = GetUsePipeLogFromRunnerVersion( exe );
+                    usePipeLogs = GetUsePipeLogFromRunnerVersion( m, exe );
                 }
                 return RunRunnerProcess( m, usePipeLogs, binPath, debugBreakInCKStObjRunner, fileName, arguments );
             }
         }
 
-        private static bool GetUsePipeLogFromRunnerVersion( string dll )
+        private static bool GetUsePipeLogFromRunnerVersion( IActivityMonitor m, string runnerPath )
         {
             bool usePipeLogs;
-            var vRunner = new CSemVer.InformationalVersion( FileVersionInfo.GetVersionInfo( dll ).ProductVersion );
+            var vRunner = new CSemVer.InformationalVersion( FileVersionInfo.GetVersionInfo( runnerPath ).ProductVersion );
+            m.Info( $"Using CK.StObj.Runner version = {vRunner.SemVersion ?? CSemVer.SVersion.ZeroVersion}" );
             usePipeLogs = vRunner.SemVersion == null || vRunner.SemVersion.CompareTo( new CSemVer.SVersion( 5, 0, 0, "delta.3" ) ) > 0;
             return usePipeLogs;
         }
