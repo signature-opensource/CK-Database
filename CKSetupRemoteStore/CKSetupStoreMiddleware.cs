@@ -1,25 +1,23 @@
 using CK.AspNet;
-using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using CK.Core;
 using CKSetup;
 using CKSetup.StreamStore;
-using System.Threading;
-using System.IO;
-using Microsoft.Extensions.Caching;
-using Microsoft.Extensions.Caching.Memory;
-using System.Diagnostics;
-using System.Text;
-using System.IO.Compression;
-using System.Xml;
-using System.Xml.Linq;
-using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Net.Http.Headers;
 using CSemVer;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
+using Microsoft.Net.Http.Headers;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace CKSetupRemoteStore
 {
@@ -131,9 +129,9 @@ namespace CKSetupRemoteStore
                 return Task.CompletedTask;
             }
             Component found;
-            if( req.Version != null || req.VersionMoniker == "ci" )
+            if( req.Version != null || req.IsLastVersion )
             {
-                found = _dbCurrent.Components.FirstOrDefault( c => c.Name == req.Name && c.TargetFramework == req.Target && c.Version == req.Version );
+                found = _dbCurrent.Components.FirstOrDefault( c => c.Name == req.Name && c.TargetFramework == req.Target && (req.Version == null || c.Version == req.Version) );
             }
             else
             {
@@ -171,7 +169,7 @@ namespace CKSetupRemoteStore
                 return;
             }
             IReadOnlyList<Component> components;
-            if( req.Version != null || req.VersionMoniker == "ci" )
+            if( req.Version != null || req.IsLastVersion )
             {
                 components = _dbCurrent.ResolveLocalDependencies( monitor, req.Name, req.Target, req.Version );
             }

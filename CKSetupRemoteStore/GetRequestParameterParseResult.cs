@@ -5,7 +5,7 @@ using System;
 namespace CKSetupRemoteStore
 {
     /// <summary>
-    /// 
+    /// Encapsulates url parse for /dl-zip/ and /component-info/.
     /// </summary>
     /// <typeparam name="T">Either <see cref="TargetRuntime"/> or <see cref="TargetFramework"/></typeparam>
     class GetRequestParameterParseResult<T> where T : struct
@@ -38,6 +38,11 @@ namespace CKSetupRemoteStore
         /// "release" allows only final releases.
         /// </summary>
         public string VersionMoniker { get; }
+
+        /// <summary>
+        /// Gets whether this requests asks for the latest version: it is "/ci" or no version part at all. 
+        /// </summary>
+        public bool IsLastVersion => ErrorMessage != null && (VersionMoniker == "ci" || VersionMoniker == null && Version == null);
 
         /// <summary>
         /// Gets the error message if parse failed.
