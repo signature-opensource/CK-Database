@@ -47,7 +47,7 @@
     <CKReflectionVersion>6.0.1</CKReflectionVersion>
     <CKCodeGenVersion>0.1.0-b</CKCodeGenVersion>
     <YodiiScriptVersion>0.4.1</YodiiScriptVersion>
-    <CSemVerVersion>1.0.1</CSemVerVersion>
+    <CSemVerVersion>1.1.0</CSemVerVersion>
     <MonoCecilVersion>0.10.0-beta7</MonoCecilVersion>
   </PropertyGroup>
 
