@@ -249,9 +249,16 @@ namespace CKSetupRemoteStore
                 ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
                 return;
             }
-            ctx.Response.StatusCode = await _dbProvider.ExportFile( monitor, sha1, ctx.Response.Body )
-                                        ? StatusCodes.Status200OK
-                                        : StatusCodes.Status404NotFound;
+            var content = _dbProvider.OpenFileStream( monitor, sha1 );
+            if( content == null )
+            {
+                ctx.Response.StatusCode = StatusCodes.Status404NotFound;
+            }
+            else
+            {
+                ctx.Response.StatusCode = StatusCodes.Status200OK;
+                await content.CopyToAsync( ctx.Response.Body );
+            }
         }
 
         #endregion

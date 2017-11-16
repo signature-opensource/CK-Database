@@ -137,21 +137,14 @@ namespace CKSetupRemoteStore
         }
 
         /// <summary>
-        /// Writes a file (GZip compressed) content.
+        /// Opens a file (GZip compressed) content.
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
         /// <param name="sha1">The SHA1 of the file.</param>
-        /// <param name="output">The output stream.</param>
-        /// <returns>True if the file has been found, false otherwise.</returns>
-        public async Task<bool> ExportFile( IActivityMonitor monitor, SHA1Value sha1, Stream output )
+        /// <returns>The readable stream if the file has been found, null otherwise.</returns>
+        public Stream OpenFileStream( IActivityMonitor monitor, SHA1Value sha1 )
         {
-            var s = _store.OpenRead( sha1.ToString(), CompressionKind.GZiped );
-            if( s.Stream == null )
-            {
-                return false;
-            }
-            await s.Stream.CopyToAsync( output );
-            return true;
+            return _store.OpenRead( sha1.ToString(), CompressionKind.GZiped ).Stream;
         }
 
         /// <summary>
