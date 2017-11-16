@@ -90,7 +90,8 @@ namespace CKSetup
 
         public string ToDisplayString()
         {
-            return $"{Name} ({Length/1024} KiB), File version: {FileVersion} Assembly version: {AssemblyVersion}";
+            string len = Length < 10 * 1024 ? $"{Length} B" : $"{Length/1024} KiB";
+            return $"{Name} ({len}), File version: {FileVersion} Assembly version: {AssemblyVersion}";
         }
 
     }

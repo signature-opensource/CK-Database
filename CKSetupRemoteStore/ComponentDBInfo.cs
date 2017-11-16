@@ -55,9 +55,9 @@ namespace CKSetupRemoteStore
             internal readonly BestKeeper<ComponentFile> _biggestFiles;
             internal readonly BestKeeper<ComponentFile> _smallestFiles;
             internal int _componentsFilesCount;
-            internal int _componentsTotalFilesSize;
+            internal long _componentsTotalFilesSize;
             internal int _storedFilesCount;
-            internal int _storedTotalFilesSize;
+            internal long _storedTotalFilesSize;
 
             public Visitor( int bestCount = 10 )
             {
