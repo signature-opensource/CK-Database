@@ -38,7 +38,7 @@ namespace CKSetupRemoteStore
                 {
                     return x.Name == y.Name
                             && x.FileVersion == y.FileVersion
-                            && x.AssemblyVersion == y.FileVersion
+                            && x.AssemblyVersion == y.AssemblyVersion
                             && x.Length == y.Length;
                 }
 
