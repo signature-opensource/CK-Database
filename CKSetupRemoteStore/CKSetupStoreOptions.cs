@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace CKSetupRemoteStore
 {
-    public class CKSetupStoreMiddlewareOptions
+    public class CKSetupStoreOptions
     {
         /// <summary>
         /// Gets or sets the root store path. If not <see cref="Path.IsPathRooted"/> it is relative 
@@ -28,6 +28,12 @@ namespace CKSetupRemoteStore
         /// Defaults to "/component-info".
         /// </summary>
         public PathString ComponentInfoPrefix { get; set; }
+
+        /// <summary>
+        /// Gets or sets the url prefix to get the full component database information.
+        /// Defaults to "/component-db".
+        /// </summary>
+        public PathString ComponentDbPrefix { get; set; }
 
         /// <summary>
         /// Gets or sets the sliding expiration time of the push files

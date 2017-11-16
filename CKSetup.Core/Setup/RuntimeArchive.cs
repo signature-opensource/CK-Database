@@ -52,7 +52,8 @@ namespace CKSetup
         }
 
         /// <summary>
-        /// Removes all registered components.
+        /// Removes all registered components: the component database becomes <see cref="ComponentDB.Empty"/>
+        /// and all stored files are deleted.
         /// </summary>
         /// <returns>True on success, false on error.</returns>
         public bool Clear()
@@ -61,7 +62,7 @@ namespace CKSetup
             {
                 try
                 {
-                    _dbCurrent = new ComponentDB();
+                    _dbCurrent = ComponentDB.Empty;
                     int deleted = _store.Delete( f => !f.Equals( DbXmlFileName, StringComparison.OrdinalIgnoreCase ) );
                     _monitor.CloseGroup( $"{deleted} entries removed." );
                     SaveDbCurrent();

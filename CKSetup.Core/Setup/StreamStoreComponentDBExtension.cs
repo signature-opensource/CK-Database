@@ -38,7 +38,7 @@ namespace CKSetup.StreamStore
             if( @this.IsEmptyStore )
             {
                 monitor.Info( $"Initializing new empty store." );
-                db = new ComponentDB();
+                db = ComponentDB.Empty;
                 @this.CreateText( RuntimeArchive.DbXmlFileName, db.ToXml().ToString( SaveOptions.DisableFormatting ), CompressionKind.None );
             }
             else

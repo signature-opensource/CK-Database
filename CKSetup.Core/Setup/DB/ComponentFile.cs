@@ -88,5 +88,10 @@ namespace CKSetup
             return $"{Name} ({Length}), fV: {FileVersion} aV: {AssemblyVersion}, sha1: {SHA1}";
         }
 
+        public string ToDisplayString()
+        {
+            return $"{Name} ({Length/1024} KiB), File version: {FileVersion} Assembly version: {AssemblyVersion}";
+        }
+
     }
 }

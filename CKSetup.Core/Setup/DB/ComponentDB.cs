@@ -19,9 +19,14 @@ namespace CKSetup
     public class ComponentDB
     {
         /// <summary>
-        /// Initializes a new mpty <see cref="ComponentDB"/>.
+        /// The empty component database singleton.
         /// </summary>
-        public ComponentDB()
+        public static readonly ComponentDB Empty = new ComponentDB();
+
+        /// <summary>
+        /// Initializes a new empty <see cref="ComponentDB"/>.
+        /// </summary>
+        ComponentDB()
         {
             Components = Array.Empty<Component>();
         }
@@ -42,7 +47,7 @@ namespace CKSetup
             Version = (long)e.Attribute( DBXmlNames.Version );
         }
 
-        ComponentDB( ComponentDB origin, IEnumerable<Component> components )
+        internal ComponentDB( ComponentDB origin, IEnumerable<Component> components )
         {
             Components = components.ToArray();
             Version = origin.Version + 1;
