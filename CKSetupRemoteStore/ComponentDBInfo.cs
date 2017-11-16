@@ -69,7 +69,10 @@ namespace CKSetupRemoteStore
                     {
                         _storedFilesCount++;
                         _storedTotalFilesSize += f.Length;
-                        _smallestFiles.Add( f );
+                        if( !f.Name.EndsWith( ".json", StringComparison.OrdinalIgnoreCase ) )
+                        {
+                            _smallestFiles.Add( f );
+                        }
                         _biggestFiles.Add( f );
                     }
                 }
