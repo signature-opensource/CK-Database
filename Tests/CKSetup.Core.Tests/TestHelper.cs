@@ -176,7 +176,12 @@ namespace CKSetup.Tests
             get { if( _solutionFolder == null ) InitalizePaths(); return _solutionFolder; }
         }
 
-        public static string TestFolder
+        public static string CapturedStoredFolder
+        {
+            get => Path.Combine( SolutionFolder, "Tests", "CKSetup.Core.Tests", "CapturedStores" );
+        }
+
+        public static string TestOutputFolder
         {
             get { if( _testOutputPath == null ) InitalizePaths(); return _testOutputPath; }
         }
@@ -241,8 +246,8 @@ namespace CKSetup.Tests
         public static string GetTestZipPath( TestStoreType type, string suffix = null, [CallerMemberName]string name = null )
         {
             return type == TestStoreType.Zip
-                    ? Path.Combine( TestFolder, name + suffix + ".zip" )
-                    : Path.Combine( TestFolder, "FolderStore", name + suffix );
+                    ? Path.Combine( TestOutputFolder, name + suffix + ".zip" )
+                    : Path.Combine( TestOutputFolder, "FolderStore", name + suffix );
         }
 
         /// <summary>

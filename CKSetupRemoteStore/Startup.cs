@@ -75,7 +75,6 @@ namespace CKSetupRemoteStore
                 await context.Response.WriteAsync( $"- Stored Files: {dbInfo.StoredFilesCount} - {dbInfo.StoredTotalFilesSize / 1024} KiB <br>" );
                 await context.Response.WriteAsync( $"- Without file sharing: {dbInfo.ComponentsFilesCount} - {dbInfo.ComponentsTotalFilesSize/ 1024} KiB <br>" );
                 await WriteFiles( context.Response, dbInfo.BiggestFiles, "Biggest" );
-                //await WriteFiles( context.Response, dbInfo.SmallestFiles, "Smallest (except .json)" );
                 await context.Response.WriteAsync( "</body></html>" );
             } );
             monitor.MonitorEnd();

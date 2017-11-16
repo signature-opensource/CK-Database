@@ -22,7 +22,7 @@ namespace CKSetup.Tests
             string expectedKeepFolder = null;
             if( keepFolder == "UseAbsolutePath" )
             {
-                keepFolder = Path.Combine( TestHelper.TestFolder, "TestingKeepFolderOption" );
+                keepFolder = Path.Combine( TestHelper.TestOutputFolder, "TestingKeepFolderOption" );
                 expectedKeepFolder = keepFolder;
             }
             else

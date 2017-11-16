@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections;
 
-namespace CKSetupRemoteStore
+namespace CKSetup
 {
     public class ComponentDBInfo
     {
@@ -30,24 +30,9 @@ namespace CKSetupRemoteStore
             StoredTotalFilesSize = v._storedTotalFilesSize;
         }
 
+
         class Visitor : ComponentDBVisitor
         {
-            class DedupDisplay : IEqualityComparer<ComponentFile>
-            {
-                public bool Equals( ComponentFile x, ComponentFile y )
-                {
-                    return x.Name == y.Name
-                            && x.FileVersion == y.FileVersion
-                            && x.AssemblyVersion == y.AssemblyVersion
-                            && x.Length == y.Length;
-                }
-
-                public int GetHashCode( ComponentFile o )
-                {
-                    return Util.Hash.Combine( o.Name.GetHashCode(), o.FileVersion, o.AssemblyVersion, o.Length ).GetHashCode();
-                }
-            }
-
             readonly HashSet<ComponentFile> _files;
             readonly HashSet<ComponentFile> _filesDedupDisplay;
             internal readonly HashSet<string> _componentNames;
@@ -62,7 +47,7 @@ namespace CKSetupRemoteStore
             public Visitor( int bestCount = 20 )
             {
                 _files = new HashSet<ComponentFile>();
-                _filesDedupDisplay = new HashSet<ComponentFile>( new DedupDisplay() );
+                _filesDedupDisplay = new HashSet<ComponentFile>( ComponentFile.DisplayEqualityComparer );
                 _componentNames = new HashSet<string>();
                 _biggestFiles = new BestKeeper<ComponentFile>( bestCount, ( f1, f2 ) => f2.Length - f1.Length );
                 _smallestFiles = new BestKeeper<ComponentFile>( bestCount, ( f1, f2 ) => f1.Length - f2.Length );

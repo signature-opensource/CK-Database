@@ -1,3 +1,4 @@
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,28 @@ namespace CKSetup
     /// </summary>
     public class ComponentFile : IEquatable<ComponentFile>
     {
+        class DisplayEqualityComparerImpl : IEqualityComparer<ComponentFile>
+        {
+            public bool Equals( ComponentFile x, ComponentFile y )
+            {
+                return x.Name == y.Name
+                        && x.FileVersion == y.FileVersion
+                        && x.AssemblyVersion == y.AssemblyVersion
+                        && x.Length == y.Length;
+            }
+
+            public int GetHashCode( ComponentFile o )
+            {
+                return Util.Hash.Combine( o.Name.GetHashCode(), o.FileVersion, o.AssemblyVersion, o.Length ).GetHashCode();
+            }
+        }
+
+        /// <summary>
+        /// Comparer that consider only <see cref="ComponentFile.Name"/>, <see cref="ComponentFile.Version"/>,
+        /// <see cref="ComponentFile.FileVersion"/> and <see cref="ComponentFile.Length"/>.
+        /// </summary>
+        public static readonly IEqualityComparer<ComponentFile> DisplayEqualityComparer = new DisplayEqualityComparerImpl();
+
         /// <summary>
         /// Initializes a new <see cref="ComponentFile"/>.
         /// </summary>
