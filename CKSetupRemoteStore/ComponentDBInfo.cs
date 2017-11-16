@@ -39,7 +39,7 @@ namespace CKSetupRemoteStore
                     return x.Name == y.Name
                             && x.FileVersion == y.FileVersion
                             && x.AssemblyVersion == y.FileVersion
-                            && x.Length == x.Length;
+                            && x.Length == y.Length;
                 }
 
                 public int GetHashCode( ComponentFile o )
@@ -87,13 +87,13 @@ namespace CKSetupRemoteStore
                     {
                         _storedFilesCount++;
                         _storedTotalFilesSize += f.Length;
-                        if( _filesDedupDisplay.Add( f ) )
+                        if( !f.Name.EndsWith( ".json", StringComparison.OrdinalIgnoreCase ) )
                         {
-                            if( !f.Name.EndsWith( ".json", StringComparison.OrdinalIgnoreCase ) )
+                            if( _filesDedupDisplay.Add( f ) )
                             {
                                 _smallestFiles.Add( f );
+                                _biggestFiles.Add( f );
                             }
-                            _biggestFiles.Add( f );
                         }
                     }
                 }
