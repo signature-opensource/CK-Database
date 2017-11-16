@@ -59,7 +59,7 @@ namespace CKSetupRemoteStore
             internal int _storedFilesCount;
             internal long _storedTotalFilesSize;
 
-            public Visitor( int bestCount = 10 )
+            public Visitor( int bestCount = 20 )
             {
                 _files = new HashSet<ComponentFile>();
                 _filesDedupDisplay = new HashSet<ComponentFile>( new DedupDisplay() );

@@ -86,7 +86,7 @@ namespace CKSetupRemoteStore
             if( files.Count > 0 )
             {
                 await context.WriteAsync( $"- {title} files:<br>" );
-                foreach( var f in files.Take( 3 ) )
+                foreach( var f in files.Take( 4 ) )
                 {
                     await context.WriteAsync( $"&nbsp;&nbsp;- {f.ToDisplayString()}<br>" );
                 }
