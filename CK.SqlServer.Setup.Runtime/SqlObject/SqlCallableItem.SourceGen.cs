@@ -21,14 +21,9 @@ namespace CK.SqlServer.Setup
                         .EnsureUsing( "System.Data" )
                         .EnsureUsing( "System.Data.SqlClient" )
                         .CreateType( "static class CreatorForSqlCommand" );
-
-                //if( !dynamicAssembly.SourceBuilder.Usings.Contains( "System.Data" ) ) dynamicAssembly.SourceBuilder.Usings.Add( "System.Data" );
-                //if( !dynamicAssembly.SourceBuilder.Usings.Contains( "System.Data.SqlClient" ) ) dynamicAssembly.SourceBuilder.Usings.Add( "System.Data.SqlClient" );
-
-                //tB = dynamicAssembly.SourceBuilder.DefineClass( "CreatorForSqlCommand" );
-                //tB.FrontModifiers.Build().Add( "static" );
                 dynamicAssembly.Memory.Add( "CreatorForSqlCommand", tB );
             }
+            
             string methodKey = "CreatorForSqlCommand" + '.' + FullName;
             var m = (IFunctionScope)dynamicAssembly.Memory[methodKey];
             if( m == null )
@@ -88,7 +83,6 @@ namespace CK.SqlServer.Setup
         static string GenerateCreateSqlParameter( IFunctionScope b, string name, ISqlServerParameter p )
         {
             int size = p.SqlType.SyntaxSize;
-            // b.Append( $"var {name} = new SqlParameter( {p.Name.ToSourceString()}, SqlDbType.{p.SqlType.DbType}" );
             b.Append( "var " )
              .Append( name )
              .Append( " = new SqlParameter( " )

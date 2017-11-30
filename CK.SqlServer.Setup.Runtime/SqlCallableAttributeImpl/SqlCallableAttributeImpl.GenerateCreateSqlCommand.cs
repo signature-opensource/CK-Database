@@ -16,16 +16,6 @@ namespace CK.SqlServer.Setup
 {
     public partial class SqlCallableAttributeImpl
     {
-        [Flags]
-        enum GenerationType
-        {
-            ReturnSqlCommand = 1,
-            ByRefSqlCommand = 2,
-            ReturnWrapper = 3,
-            IsCall = 4,
-            ExecuteNonQuery = IsCall | 0
-        }
-
         bool GenerateCreateSqlCommand( 
             IDynamicAssembly dynamicAssembly, 
             GenerationType gType, 

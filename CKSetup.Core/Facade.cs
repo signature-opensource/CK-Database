@@ -60,6 +60,11 @@ namespace CKSetup
                             keepRuntimesFilesFolder = Path.Combine( binPath, keepRuntimesFilesFolder );
                         }
                         keepFolder = new DirectoryInfo( Path.GetFullPath( keepRuntimesFilesFolder ) );
+                        if( binFolder.BinPath.StartsWith( keepFolder.FullName ) )
+                        {
+                            monitor.Error( "KeepFolder must not be in bin path!" );
+                            return false;
+                        }
                     }
                     if( missingImporter != null )
                     {

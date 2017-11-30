@@ -20,66 +20,18 @@ using CK.CodeGen.Abstractions;
 namespace CK.SqlServer.Setup
 {
 
-    static class CGExtensions
-    {
-        public static StringBuilder AppendIf( this StringBuilder @this, Action<StringBuilder> condition, Action<StringBuilder> then, Action<StringBuilder> @else = null )
-        {
-            @this.Append( "if( " );
-            condition( @this );
-            @this.AppendLine( " )" );
-            @this.AppendLine( "{" );
-            then( @this );
-            @this.AppendLine( "}" );
-            if( @else != null )
-            {
-                @this.AppendLine( "else" );
-                @this.AppendLine( "{" );
-                @else( @this );
-                @this.AppendLine( "}" );
-            }
-            return @this;
-        }
-    }
-
-//#if !NET461
-//    class FixDBNull : ICodeGeneratorModule
-//    {
-//        class DBNullToCKFixRewriter : CSharpSyntaxRewriter
-//        {
-//            public override SyntaxNode VisitIdentifierName( IdentifierNameSyntax node )
-//            {
-//                if( node.Identifier.Text == "DBNull" )
-//                {
-//                    return node.WithIdentifier( SyntaxFactory.Identifier( "CKFixDBNull" ) );
-//                }
-//                return node;
-//            }
-
-//            public static SyntaxTree Run( SyntaxTree t )
-//            {
-//                return t.WithRootAndOptions( new DBNullToCKFixRewriter().Visit( t.GetRoot() ), t.Options );
-//            }
-//        }
-
-//        public IEnumerable<Assembly> RequiredAssemblies => new[] { typeof( System.Reflection.TypeInfo ).GetTypeInfo().Assembly };
-
-//        public void AppendSource( StringBuilder b )
-//        {
-//            b.AppendLine( @"namespace System 
-//                { 
-//                    using System.Reflection; 
-//                    public static class CKFixDBNull
-//                    { 
-//                        public static object Value = typeof( System.Data.Common.DbConnection ).GetTypeInfo().Assembly.GetType( ""System.DBNull"" ).GetField(""Value"").GetValue(null);
-//                    }
-//                }" );
-//        }
-
-//        public SyntaxTree PostProcess( SyntaxTree t ) => DBNullToCKFixRewriter.Run( t );
-//    }
-//#endif
     public partial class SqlCallableAttributeImpl
     {
+        [Flags]
+        enum GenerationType
+        {
+            ReturnSqlCommand = 1,
+            ByRefSqlCommand = 2,
+            ReturnWrapper = 3,
+            IsCall = 4,
+            ExecuteNonQuery = IsCall | 0
+        }
+
         protected override bool DoImplement(
             IActivityMonitor monitor,
             MethodInfo m,
@@ -87,14 +39,6 @@ namespace CK.SqlServer.Setup
             IDynamicAssembly dynamicAssembly,
             ITypeScope cB )
         {
-//            // This code MUST be in the SqlAspect !!!
-//#if !NET461
-//            if( !dynamicAssembly.SourceModules.Any( module => module is FixDBNull ) )
-//            {
-//                dynamicAssembly.SourceModules.Add( new FixDBNull() );
-//            }
-//#endif
-
             ISqlCallableItem item = sqlItem as ISqlCallableItem;
             if( item == null )
             {
@@ -158,7 +102,7 @@ namespace CK.SqlServer.Setup
             return GenerateCreateSqlCommand( dynamicAssembly, gType, monitor, mCreateCommand, item.CallableObject, m, mParameters, cB, hasRefSqlCommand );
         }
 
-        bool GenerateCreateSqlCommand(
+        static bool GenerateCreateSqlCommand(
             IDynamicAssembly dynamicAssembly,
             GenerationType gType,
             IActivityMonitor monitor,
