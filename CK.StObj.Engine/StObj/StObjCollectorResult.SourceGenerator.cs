@@ -82,26 +82,48 @@ namespace CK.Setup
         {
             try
             {
+                // Injects System.Reflection and setup assemblies into the
+                // workspace that will be used to generate source code.
                 var ws = _tempAssembly.DefaultGenerationNamespace.Workspace;
                 ws.EnsureAssemblyReference( typeof( BindingFlags ) );
                 ws.EnsureAssemblyReference( _contractResult.Assemblies );
-                GenerateContextSource( monitor, _tempAssembly );
 
-                Debug.Assert( _tempAssembly.SaveFilePath.EndsWith( "Src.dll" ) );
-                string fileName = _tempAssembly.SaveFilePath;
-                if( !withSrcSuffix ) fileName = fileName.Substring( 0, fileName.Length - 7 ) + ".dll";
-
-                var g = new CodeGenerator( CodeWorkspace.Factory );
-                g.Modules.AddRange( _tempAssembly.SourceModules );
-                var result = g.Generate( ws, fileName, new DefaultAssemblyResolver() );
-                if( saveSource && result.Sources != null )
+                IReadOnlyList<ActivityMonitorSimpleCollector.Entry> errorSummary = null;
+                using( monitor.OpenInfo( "Generating source code." ) )
+                using( monitor.CollectEntries( entries => errorSummary = entries ) )
                 {
-                    string sourceFile = fileName + ".cs";
-                    monitor.Info( $"Saved source file: {sourceFile}" );
-                    File.WriteAllText( sourceFile, result.Sources.Select( t => t.ToString() ).Concatenate( Environment.NewLine ) );
+                    GenerateContextSource( monitor, _tempAssembly );
                 }
-                result.LogResult( monitor );
-                return result.Success;
+                if( errorSummary != null )
+                {
+                    using( monitor.OpenFatal( $"{errorSummary.Count} error(s). Summary:" ) )
+                    {
+                        foreach( var e in errorSummary )
+                        {
+                            monitor.Trace( $"{e.MaskedLevel} - {e.Text}" );
+                        }
+                    }
+                    return false;
+                }
+
+                using( monitor.OpenInfo( "Compiling source code." ) )
+                {
+                    Debug.Assert( _tempAssembly.SaveFilePath.EndsWith( "Src.dll" ) );
+                    string fileName = _tempAssembly.SaveFilePath;
+                    if( !withSrcSuffix ) fileName = fileName.Substring( 0, fileName.Length - 7 ) + ".dll";
+
+                    var g = new CodeGenerator( CodeWorkspace.Factory );
+                    g.Modules.AddRange( _tempAssembly.SourceModules );
+                    var result = g.Generate( ws, fileName, new DefaultAssemblyResolver() );
+                    if( saveSource && result.Sources != null )
+                    {
+                        string sourceFile = fileName + ".cs";
+                        monitor.Info( $"Saved source file: {sourceFile}" );
+                        File.WriteAllText( sourceFile, result.Sources.Select( t => t.ToString() ).Concatenate( Environment.NewLine ) );
+                    }
+                    result.LogResult( monitor );
+                    return result.Success;
+                }
             }
             catch( Exception ex )
             {

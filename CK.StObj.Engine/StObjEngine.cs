@@ -119,7 +119,6 @@ namespace CK.Setup
             {
                 bool hasError = false;
                 using( _monitor.OnError( () => hasError = true ) )
-                using( _monitor.OpenInfo( "Generating StObj dynamic assembly." ) )
                 {
                     bool peVerify = generateOption == BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFileAndPEVerify;
                     success = r.GenerateFinalAssembly( _monitor, peVerify, !generateConfig.SourceGeneration, generateConfig.SourceGeneration );
