@@ -192,8 +192,17 @@ namespace CK.Core
         {
             using( var c = new SqlConnection( @this.ConnectionString ) )
             {
-                c.Open();
-                return cmd.ExecuteNonQuery();
+                var saved = cmd.Connection;
+                try
+                {
+                    c.Open();
+                    cmd.Connection = c;
+                    return cmd.ExecuteNonQuery();
+                }
+                finally
+                {
+                    cmd.Connection = saved;
+                }
             }
         }
 
@@ -207,8 +216,17 @@ namespace CK.Core
         {
             using( var c = new SqlConnection( @this.ConnectionString ) )
             {
-                c.Open();
-                return cmd.ExecuteScalar();
+                var saved = cmd.Connection;
+                try
+                {
+                    c.Open();
+                    cmd.Connection = c;
+                    return cmd.ExecuteScalar();
+                }
+                finally
+                {
+                    cmd.Connection = saved;
+                }
             }
         }
 
