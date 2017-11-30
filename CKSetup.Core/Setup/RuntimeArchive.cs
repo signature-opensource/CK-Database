@@ -366,6 +366,8 @@ namespace CKSetup
                                     if( runtimeFilesCopyClones != null )
                                     {
                                         var clonePath = Path.Combine( runtimeFilesCopyClones.FullName, f.Name );
+                                        var dirClonePath = Path.GetDirectoryName( clonePath );
+                                        Directory.CreateDirectory( dirClonePath );
                                         File.Copy( targetPath, clonePath );
                                     }
                                     ++count;

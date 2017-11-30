@@ -106,13 +106,18 @@ namespace CK.Setup
         {
             if( context.EngineStatus.Success )
             {
+                Debug.Assert( _setupSessionMemory != null );
                 _setupSessionMemoryProvider.StopSetup( null );
+                context.ServiceContainer.Remove<ISetupSessionMemory>();
             }
             else
             {
-                _setupSessionMemoryProvider.StopSetup( context.EngineStatus.LastErrorPath.ToStringPath() );
+                if( _setupSessionMemory != null )
+                {
+                    _setupSessionMemoryProvider.StopSetup( context.EngineStatus.LastErrorPath.ToStringPath() );
+                    context.ServiceContainer.Remove<ISetupSessionMemory>();
+                }
             }
-            context.ServiceContainer.Remove<ISetupSessionMemory>();
             return true;
         }
 
