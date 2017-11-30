@@ -21,11 +21,11 @@ namespace SqlActorPackage.Tests
             var a = TestHelper.StObjMap.Default.Obtain<ActorHome>();
             try
             {
-                a.Database.AssertCKCoreInvariants();
+                a.Database.GetCKCoreInvariantsViolations();
                 a.Database.ExecuteNonQuery( "exec CKCore.sInvariantRegister 'FakeForTestOnly', 'from sys.tables';" );
                 try
                 {
-                    a.Database.AssertCKCoreInvariants( "FakeForTestOnly" );
+                    a.Database.GetCKCoreInvariantsViolations( "FakeForTestOnly" );
                 }
                 catch( AssertionException ex )
                 {
@@ -41,8 +41,8 @@ FakeForTestOnly | select @Count = count(*) from sys.tables | Failed
                     a.Database.ExecuteNonQuery( "exec CKCore.sInvariantRegister 'FakeForTestOnly', null;" );
                     a.Database.ExecuteNonQuery( "exec CKCore.sInvariantRegister 'FakeForTestOnly2', 'from sys.tables';" );
                     a.Database.ExecuteNonQuery( "exec CKCore.sInvariantRegister 'FakeForTestOnly3', 'from sys.XXXXXX';" );
-                    Assert.Throws<SqlException>( () => a.Database.AssertCKCoreInvariants( "FakeForTestOnly" ) );
-                    a.Database.AssertCKCoreInvariants( "FakeForTestOnly2" );
+                    Assert.Throws<SqlException>( () => a.Database.GetCKCoreInvariantsViolations( "FakeForTestOnly" ) );
+                    a.Database.GetCKCoreInvariantsViolations( "FakeForTestOnly2" );
                 }
                 catch( AssertionException ex )
                 {
@@ -55,7 +55,7 @@ FakeForTestOnly2 | select @Count = count(*) from sys.tables | Failed
                 }
                 try
                 {
-                    a.Database.AssertCKCoreInvariants();
+                    a.Database.GetCKCoreInvariantsViolations();
                 }
                 catch( AssertionException ex )
                 {

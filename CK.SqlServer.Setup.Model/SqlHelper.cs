@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -243,6 +243,7 @@ namespace CK.SqlServer
 
         /// <summary>
         /// Provides a correct string content by replacing ' with ''.
+        /// This does not enclose the result by surrounding quotes: this has to be done at the caller level.
         /// </summary>
         /// <param name="s">The starting string.</param>
         /// <returns>An encoded string.</returns>

@@ -46,9 +46,10 @@
     <CKSqlServerParserModelVersion>4.0.0</CKSqlServerParserModelVersion>
     <CKReflectionVersion>6.0.1</CKReflectionVersion>
     <CKCodeGenVersion>0.1.0-b01</CKCodeGenVersion>
-    <YodiiScriptVersion>0.5.0</YodiiScriptVersion>
+    <YodiiScriptVersion>0.5.2</YodiiScriptVersion>
     <CSemVerVersion>1.1.0</CSemVerVersion>
     <MonoCecilVersion>0.10.0-beta7</MonoCecilVersion>
+    <FluentAssertionsVersion>4.19.4</FluentAssertionsVersion>
   </PropertyGroup>
 
   <!-- Extends Clean to fully remove bin folders. 

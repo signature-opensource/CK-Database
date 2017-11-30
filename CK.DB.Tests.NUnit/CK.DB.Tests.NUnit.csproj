@@ -12,6 +12,7 @@
     <ProjectReference Include="..\CK.Setupable.Engine\CK.Setupable.Engine.csproj" />
     <ProjectReference Include="..\CK.SqlServer.Setup.Engine\CK.SqlServer.Setup.Engine.csproj" />
     <PackageReference Include="CK.SqlServer.Transform" Version="$(CKSqlServerParserVersion)" />
+    <PackageReference Include="FluentAssertions" Version="$(FluentAssertionsVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">

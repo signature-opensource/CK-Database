@@ -7,6 +7,7 @@ using CK.SqlServer.Setup;
 using NUnit.Framework;
 using System.Data.SqlClient;
 using System.Reflection;
+using CK.SqlServer.Parser;
 
 namespace CK.Core
 {
@@ -21,6 +22,8 @@ namespace CK.Core
         static SqlConnectionStringBuilder _masterConnectionString;
         static StObjEngineConfiguration _config;
         static IStObjMap _map;
+        static SqlServerParser _sqlParser;
+
         static string _binFolder;
         static string _projectFolder;
         static string _solutionFolder;
@@ -154,7 +157,10 @@ namespace CK.Core
             return _map;
         }
 
-
+        /// <summary>
+        /// Gets a shared reusable <see cref="SqlServerParser"/>.
+        /// </summary>
+        static public SqlServerParser SqlServerParser => _sqlParser ?? ( _sqlParser = new SqlServerParser());
 
         /// <summary>
         /// Gets the solution folder. It is the parent directory of the 'Tests/' folder (that must exist).

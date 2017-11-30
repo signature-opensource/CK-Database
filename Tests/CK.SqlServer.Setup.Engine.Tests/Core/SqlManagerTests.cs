@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using CK.Core;
 using CK.Setup;
 using NUnit.Framework;
+using FluentAssertions;
 
 namespace CK.SqlServer.Setup.Engine.Tests.Core
 {
@@ -40,8 +41,16 @@ namespace CK.SqlServer.Setup.Engine.Tests.Core
 
             Assert.That( StObjContextRoot.Build( c, null, TestHelper.Monitor ), Is.False );
 
-            SqlDatabaseExtensions.AssertScalar( TestHelper.ConnectionStringMaster, Is.EqualTo( "master" ), "select DB_Name()" );
-            SqlDatabaseExtensions.AssertScalar( TestHelper.ConnectionStringMaster, Is.EqualTo( 0 ), "select count(*) from sys.tables where name = 'tSystem';" );
+            using( var db = new SqlConnection( TestHelper.ConnectionStringMaster ) )
+            {
+                db.Open();
+                using( var cmd = new SqlCommand( "select DB_Name()", db ) )
+                {
+                    cmd.ExecuteScalar().Should().Be( "master" );
+                    cmd.CommandText = "select count(*) from sys.tables where name = 'tSystem';";
+                    cmd.ExecuteScalar().Should().Be( 0 );
+                }
+            }
         }
 
         [Test]

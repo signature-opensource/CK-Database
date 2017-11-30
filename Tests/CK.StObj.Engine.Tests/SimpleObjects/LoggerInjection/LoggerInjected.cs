@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using CK.Core;
-using NUnit.Framework;
+using FluentAssertions;
 
 namespace CK.StObj.Engine.Tests.SimpleObjects.LoggerInjection
 {
@@ -11,8 +11,8 @@ namespace CK.StObj.Engine.Tests.SimpleObjects.LoggerInjection
     {
         void StObjConstruct( IActivityMonitor monitor, IActivityMonitor anotherLogger = null )
         {
-            Assert.That( monitor, Is.Not.Null, "This is the Setup monitor. Parameter must be exactly 'IActivityMonitor monitor'." );
-            Assert.That( anotherLogger, Is.Null, "This is NOT the Setup monitor. Since it is optional, it works." );
+            monitor.Should().NotBeNull( "This is the Setup monitor. Parameter must be exactly 'IActivityMonitor monitor'." );
+            anotherLogger.Should().BeNull( "This is NOT the Setup monitor. Since it is optional, it works." );
             monitor.Trace( "Setup monitor can be used by StObjConstruct method.");
         }
     }

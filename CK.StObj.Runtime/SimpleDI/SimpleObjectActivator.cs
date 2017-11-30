@@ -23,7 +23,7 @@ namespace CK.Core
         {
             if( monitor == null ) throw new ArgumentNullException( nameof( monitor ) );
             if( t == null ) throw new ArgumentNullException( nameof( t ) );
-            //using( monitor.OpenDebug( $"Creating type: {t.AssemblyQualifiedName}." ) )
+            using( monitor.OpenDebug( $"Creating instance of type: {t.AssemblyQualifiedName}." ) )
             try
             {
                 Required required = requiredParameters == null
@@ -46,7 +46,7 @@ namespace CK.Core
                                     .FirstOrDefault();
                 if( longestCtor == null )
                 {
-                    var msg = $"Unable to find a constructor for '{t.FullName}'.";
+                    var msg = $"Unable to find a public constructor for '{t.FullName}'.";
                     if( required.Count > 0 )
                     {
                         msg += " With required parameters compatible with type: " + required.Select( r => r.Value.Name ).Concatenate();
@@ -71,7 +71,7 @@ namespace CK.Core
                 }
                 if( failCount > 0 )
                 {
-                    monitor.OpenError( $"Unable to resolve parameters for '{t.FullName}'. Considered longest constructor: {longestCtor.ToString()}." );
+                    monitor.OpenError( $"Unable to resolve parameters for '{t.FullName}'. Considered longest constructor: {longestCtor.Ctor.ToString()}." );
                     return null;
                 }
                 return longestCtor.Ctor.Invoke( longestCtor.Mapped );

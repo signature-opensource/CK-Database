@@ -1,5 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\..\Common\Shared.props" />
+
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <OriginProjectName>CK.StObj.Engine.Tests</OriginProjectName>
@@ -14,6 +16,7 @@
     <PackageReference Include="NUnit" Version="3.8.1" />
     <PackageReference Include="NUnitLite" Version="3.8.1" />
     <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
+    <PackageReference Include="FluentAssertions" Version="$(FluentAssertionsVersion)" />
   </ItemGroup>
 
   <ItemGroup>

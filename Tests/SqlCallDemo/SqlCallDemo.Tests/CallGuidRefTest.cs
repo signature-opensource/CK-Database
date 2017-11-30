@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CK.Core;
 using NUnit.Framework;
+using FluentAssertions;
 
 namespace SqlCallDemo.Tests
 {
@@ -23,28 +24,27 @@ namespace SqlCallDemo.Tests
             Guid inOut = Guid2;
             string result;
             SqlCommand cmd = p.CmdGuidRefTest( true, Guid1, ref inOut, out result );
-            Assert.That( cmd.Parameters.Count, Is.EqualTo( 4 ) );
+            cmd.Parameters.Should().HaveCount( 4 );
 
-            Assert.That( cmd.Parameters[0].ParameterName, Is.EqualTo( "@ReplaceInAndOut" ) );
-            Assert.That( cmd.Parameters[0].Direction, Is.EqualTo( ParameterDirection.Input ) );
-            Assert.That( cmd.Parameters[0].Value, Is.EqualTo( true ) );
+            cmd.Parameters[0].ParameterName.Should().Be( "@ReplaceInAndOut" );
+            cmd.Parameters[0].Direction.Should().Be( ParameterDirection.Input );
+            cmd.Parameters[0].Value.Should().Be( true );
 
-            Assert.That( cmd.Parameters[1].ParameterName, Is.EqualTo( "@InOnly" ) );
-            Assert.That( cmd.Parameters[1].Direction, Is.EqualTo( ParameterDirection.Input ) );
-            Assert.That( cmd.Parameters[1].Value, Is.EqualTo( Guid1 ) );
+            cmd.Parameters[1].ParameterName.Should().Be( "@InOnly" );
+            cmd.Parameters[1].Direction.Should().Be( ParameterDirection.Input );
+            cmd.Parameters[1].Value.Should().Be( Guid1 );
 
-            Assert.That( cmd.Parameters[2].ParameterName, Is.EqualTo( "@InAndOut" ) );
-            Assert.That( cmd.Parameters[2].Direction, Is.EqualTo( ParameterDirection.InputOutput ) );
-            Assert.That( cmd.Parameters[2].Value, Is.EqualTo( Guid2 ) );
+            cmd.Parameters[2].ParameterName.Should().Be( "@InAndOut" );
+            cmd.Parameters[2].Direction.Should().Be( ParameterDirection.InputOutput );
+            cmd.Parameters[2].Value.Should().Be( Guid2 );
 
-            Assert.That( cmd.Parameters[3].ParameterName, Is.EqualTo( "@TextResult" ) );
-            Assert.That( cmd.Parameters[3].Direction, Is.EqualTo( ParameterDirection.Output ) );
-            Assert.That( cmd.Parameters[3].Value, Is.Null );
+            cmd.Parameters[3].ParameterName.Should().Be( "@TextResult" );
+            cmd.Parameters[3].Direction.Should().Be( ParameterDirection.Output );
+            cmd.Parameters[3].Value.Should().BeNull();
 
             p.Database.ExecuteNonQuery( cmd );
-            Assert.That( cmd.Parameters[2].Value, Is.Not.EqualTo( Guid2 ), "Since ReplaceInAndOut was true." );
-            Assert.That( cmd.Parameters[3].Value, Is.EqualTo( "@InOnly is not null, @InAndOut is not null." ) );
-
+            cmd.Parameters[2].Value.Should().NotBe( Guid2, "Since ReplaceInAndOut was true." );
+            cmd.Parameters[3].Value.Should().Be( "@InOnly is not null, @InAndOut is not null." );
         }
 
         [Test]
