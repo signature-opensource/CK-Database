@@ -65,19 +65,19 @@ namespace CK.Setup
             _runtimeBuilder = runtimeBuilder ?? StObjContextRoot.DefaultStObjRuntimeBuilder;
         }
 
-        /// <summary>
-        /// Initializes a new <see cref="StObjEngine"/>.
-        /// </summary>
-        /// <param name="monitor">Logger that must be used.</param>
-        /// <param name="config">Configuration that describes the key aspects of the build.</param>
-        public StObjEngine( IActivityMonitor monitor, XElement config )
-        {
-            if( monitor == null ) throw new ArgumentNullException( nameof( monitor ) );
-            if( config == null ) throw new ArgumentNullException( nameof( config ) );
-            _monitor = monitor;
-            _config = new StObjEngineConfiguration( config );
-            _runtimeBuilder = StObjContextRoot.DefaultStObjRuntimeBuilder;
-        }
+        ///// <summary>
+        ///// Initializes a new <see cref="StObjEngine"/>.
+        ///// </summary>
+        ///// <param name="monitor">Logger that must be used.</param>
+        ///// <param name="config">Configuration that describes the key aspects of the build.</param>
+        //public StObjEngine( IActivityMonitor monitor, XElement config )
+        //{
+        //    if( monitor == null ) throw new ArgumentNullException( nameof( monitor ) );
+        //    if( config == null ) throw new ArgumentNullException( nameof( config ) );
+        //    _monitor = monitor;
+        //    _config = new StObjEngineConfiguration( config );
+        //    _runtimeBuilder = StObjContextRoot.DefaultStObjRuntimeBuilder;
+        //}
 
         /// <summary>
         /// Gets whether this engine is running or has <see cref="Run"/> (it can run only once).

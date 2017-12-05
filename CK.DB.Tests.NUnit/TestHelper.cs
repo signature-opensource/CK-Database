@@ -207,8 +207,7 @@ namespace CK.Core
                     setupable.RevertOrderingNames = revertNames;
                     setupable.TraceDependencySorterInput = traceSetupGraphOrdering;
                     setupable.TraceDependencySorterOutput = traceSetupGraphOrdering;
-                    var e = new StObjEngine( Monitor, Config );
-                    bool success = e.Run();
+                    bool success = RunStObjEngine( Config );
                     if( success )
                     {
                         success = LoadStObjMapFromExistingGeneratedAssembly() != null;
@@ -222,6 +221,35 @@ namespace CK.Core
                 }
             }
         }
+
+        /// <summary>
+        /// Runs a StObjEngine with a standard "weak assembly resolver".
+        /// </summary>
+        /// <param name="c">The configuration.</param>
+        /// <returns>True on success, false on error.</returns>
+        public static bool RunStObjEngine( StObjEngineConfiguration c )
+        {
+            ResolveEventHandler loadHook = ( sender, arg ) =>
+            {
+                var failed = new AssemblyName( arg.Name );
+                var resolved = failed.Version != null && string.IsNullOrWhiteSpace( failed.CultureName )
+                        ? Assembly.Load( new AssemblyName( failed.Name ) )
+                        : null;
+                Monitor.Info( $"[CK.DB.Tests.NUnit]Load conflict: {arg.Name} => {(resolved != null ? resolved.FullName : "(null)")}" );
+                return resolved;
+            };
+            AppDomain.CurrentDomain.AssemblyResolve += loadHook;
+            try
+            {
+                var e = new StObjEngine( Monitor, Config );
+                return e.Run();
+            }
+            finally
+            {
+                AppDomain.CurrentDomain.AssemblyResolve -= loadHook;
+            }
+        }
+
         /// <summary>
         /// Loads an assembly that must be in probe paths in .Net framework and in
         /// AppContext.BaseDirectory in .Net Core.

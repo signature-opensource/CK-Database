@@ -383,7 +383,7 @@ namespace CKSetup
 
                 var allDeps = models.SelectMany( b => b.SetupDependencies );
                 if( explicitDependencies != null ) allDeps = allDeps.Concat( explicitDependencies );
-                var rootDeps = CollectSetupDependencies( m, explicitDependencies );
+                var rootDeps = CollectSetupDependencies( m, allDeps );
                 if( rootDeps.Count == 0 ) m.Warn( "No Setup Dependency components found." );
                 return new DependencyResolver( this, targetRuntime, rootDeps );
             }

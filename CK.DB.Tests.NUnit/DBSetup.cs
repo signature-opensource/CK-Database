@@ -45,6 +45,7 @@ namespace CK.DB.Tests
             TestHelper.ClearDatabaseUsedSchemas();
         }
 
+        [Test]
         [Explicit]
         public void db_setup()
         {

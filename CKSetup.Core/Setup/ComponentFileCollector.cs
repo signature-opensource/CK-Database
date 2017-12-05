@@ -55,13 +55,14 @@ namespace CKSetup
                 {
                     var list = nKV.Value;
                     var best = list[0];
-                    using( m.OpenInfo( best.Value.ToDisplayString() ) )
+                    var others = list.Skip( 1 ).Where( kv => kv.Value.SHA1 != best.Value.SHA1 ).ToList();
+                    var level = others.Count > 0 ? LogLevel.Info : LogLevel.Debug;
+                    using( m.OpenGroup( level, best.Value.ToDisplayString() ) )
                     {
-                        m.Info( $"From: {list.Where( kv => kv.Value.SHA1 == best.Value.SHA1 ).Select( kv => kv.Key.Name).Concatenate()}" );
-                        var others = list.Skip( 1 ).Where( kv => kv.Value.SHA1 != best.Value.SHA1 ).ToList();
+                        m.Log( level, $"From: {list.Where( kv => kv.Value.SHA1 == best.Value.SHA1 ).Select( kv => kv.Key.Name).Concatenate()}" );
                         foreach( var o in others )
                         {
-                            m.Info( $"Skipped {o.Value} from {o.Key}" );
+                            m.Log( level, $"Skipped {o.Value} from {o.Key}" );
                         }
                     }
                 }

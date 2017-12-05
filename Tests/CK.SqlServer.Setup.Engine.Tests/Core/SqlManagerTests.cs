@@ -39,8 +39,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.Core
             sql.DefaultDatabaseConnectionString = InvalidConnectionString;
             c.Aspects.Add( sql );
 
-            var e = new StObjEngine( TestHelper.Monitor, c );
-            Assert.That( e.Run(), Is.False );
+            Assert.That( TestHelper.RunStObjEngine( c ), Is.False );
 
             using( var db = new SqlConnection( TestHelper.ConnectionStringMaster ) )
             {

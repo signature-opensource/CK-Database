@@ -63,8 +63,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
                 }
             }
 
-            var e = new StObjEngine( TestHelper.Monitor, c );
-            Assert.That( e.Run() );
+            Assert.That( TestHelper.RunStObjEngine( c ) );
 
             using( var db = SqlManager.OpenOrCreate( TestHelper.DatabaseTestConnectionString, TestHelper.Monitor ) )
             {
@@ -90,8 +89,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
             using( TestHelper.Monitor.OpenTrace( "Second setup (reverse order)" ) )
             {
-                var eRevert = new StObjEngine( TestHelper.Monitor, c );
-                Assert.That( eRevert.Run() );
+                Assert.That( TestHelper.RunStObjEngine( c ) );
             }
 
             using( var db = SqlManager.OpenOrCreate( TestHelper.DatabaseTestConnectionString, TestHelper.Monitor ) )
