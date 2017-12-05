@@ -58,6 +58,11 @@ namespace CKSetup
 
         public int Length { get; }
 
+        /// <summary>
+        /// Gets the length with "B" or "KiB" units.
+        /// </summary>
+        public string DisplayLength => Length < 10 * 1024 ? $"{Length} B" : $"{Length / 1024} KiB";
+
         public SHA1Value SHA1 { get; }
 
         /// <summary>
@@ -111,10 +116,14 @@ namespace CKSetup
             return $"{Name} ({Length}), fV: {FileVersion} aV: {AssemblyVersion}, sha1: {SHA1}";
         }
 
+        /// <summary>
+        /// Displays: <see cref="Name"/> (<see cref="DisplayLength"/>) File version: <see cref="FileVersion"/> Assembly version: <see cref="AssemblyVersion"/>
+        /// without SHA1.
+        /// </summary>
+        /// <returns>User friendly string.</returns>
         public string ToDisplayString()
         {
-            string len = Length < 10 * 1024 ? $"{Length} B" : $"{Length/1024} KiB";
-            return $"{Name} ({len}), File version: {FileVersion} Assembly version: {AssemblyVersion}";
+            return $"{Name} ({DisplayLength}), File version: {FileVersion} Assembly version: {AssemblyVersion}";
         }
 
     }

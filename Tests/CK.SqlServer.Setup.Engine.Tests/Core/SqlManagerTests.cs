@@ -14,14 +14,14 @@ namespace CK.SqlServer.Setup.Engine.Tests.Core
     [TestFixture]
     public class SqlManagerTests
     {
-        static readonly string ConnectionString = TestHelper.GetConnectionString( "INVALID-NAME-TEST" );
+        static readonly string InvalidConnectionString = TestHelper.GetConnectionString( "INVALID-NAME-TEST" );
 
         [Test]
         public void SqlManager_OpenOrCreate_catch_any_errors_when_a_Monitor_is_set()
         {
             using( SqlManager m = new SqlManager( TestHelper.Monitor ) )
             {
-                Assert.That( m.OpenFromConnectionString( ConnectionString, true ), Is.False );
+                Assert.That( m.OpenFromConnectionString( InvalidConnectionString, true ), Is.False );
             }
         }
 
@@ -36,10 +36,11 @@ namespace CK.SqlServer.Setup.Engine.Tests.Core
             c.Aspects.Add( setupable );
 
             var sql = new SqlSetupAspectConfiguration();
-            sql.DefaultDatabaseConnectionString = ConnectionString;
+            sql.DefaultDatabaseConnectionString = InvalidConnectionString;
             c.Aspects.Add( sql );
 
-            Assert.That( StObjContextRoot.Build( c, null, TestHelper.Monitor ), Is.False );
+            var e = new StObjEngine( TestHelper.Monitor, c );
+            Assert.That( e.Run(), Is.False );
 
             using( var db = new SqlConnection( TestHelper.ConnectionStringMaster ) )
             {

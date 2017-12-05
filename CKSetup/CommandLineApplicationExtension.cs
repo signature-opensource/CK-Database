@@ -59,6 +59,13 @@ namespace CKSetup
                                                  false ) );
         }
 
+        static public ConfigurationPathArgument ConfigurationPathArgument( this CommandLineApplication @this )
+        {
+            return new ConfigurationPathArgument( @this.Argument( "ConfigurationPath",
+                                                 "Xml configuration to use.",
+                                                 false ) );
+        }
+
         static public DBBackupPathArgument AddBackupPathArgument( this CommandLineApplication @this, string description )
         {
             return new DBBackupPathArgument( @this.Argument( "BackupFilePath",

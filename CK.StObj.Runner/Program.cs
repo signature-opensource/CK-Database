@@ -25,11 +25,6 @@ namespace CK.StObj.Runner
                 = CultureInfo.DefaultThreadCurrentCulture
                 = CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo( "en-US" );
 
-            if( Array.IndexOf( args, "launch-debugger" ) >= 0 )
-            {
-                Debugger.Launch();
-            }
-
             using( var pipeClient = GetPipeLogClient( args ) )
             {
                 var m = new ActivityMonitor();
@@ -60,7 +55,10 @@ namespace CK.StObj.Runner
                             return 0;
                         }
                         var config = new StObjEngineConfiguration( root.Element( xSetup ) );
-                        return StObjContextRoot.Build( config, null, m ) ? 0 : 1;
+                        Type runnerType = SimpleTypeFinder.WeakResolver( "CK.Setup.StObjEngine, CK.StObj.Engine", true );
+                        object runner = Activator.CreateInstance( runnerType, m, config, StObjContextRoot.DefaultStObjRuntimeBuilder );
+                        MethodInfo mRun = runnerType.GetMethod( "Run" );
+                        return (bool)mRun.Invoke( runner, Array.Empty<object>() ) ? 0 : 1;
                     }
                     catch( Exception ex )
                     {

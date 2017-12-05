@@ -14,6 +14,271 @@ namespace CKSetup
 {
     static public class Facade
     {
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="archive">The opened, valid, runtime archive.</param>
+        /// <param name="config">The setup configuration.</param>
+        /// <param name="missingImporter">Optional component importer.</param>
+        /// <returns>True on success, false on error.</returns>
+        public static bool DoRun(
+            IActivityMonitor monitor,
+            RuntimeArchive archive,
+            SetupConfiguration config,
+            IComponentImporter missingImporter = null )
+        {
+            using( monitor.OpenTrace( "Running Setup." ) )
+            {
+                string workingDir = null;
+                try
+                {
+                    IReadOnlyDictionary<string, BinFileInfo> dedupFiles;
+                    IReadOnlyList<BinFolder> folders = ReadBinFolders( monitor, config.BinPaths, out dedupFiles );
+                    if( folders == null ) return false;
+                    workingDir = GetWorkingDirectory( monitor, config.WorkingDirectory, folders );
+                    if( workingDir == null ) return false;
+                    var manualDependencies = config.Dependencies.Append( new SetupDependency( "CKSetup.Runner" ) );
+                    if( !archive.ExtractRuntimeDependencies( workingDir, folders, missingImporter, manualDependencies ) ) return false;
+                    using( monitor.OpenInfo( $"Copying {dedupFiles.Count} files from bin folders." ) )
+                    {
+                        foreach( var f in dedupFiles.Values )
+                        {
+                            string targetPath = workingDir + f.LocalFileName;
+                            if( File.Exists( targetPath ) )
+                            {
+                                monitor.Trace( $"Skipping already exisiting '{f.LocalFileName}'." );
+                            }
+                            else
+                            {
+                                File.Copy( f.FullPath, targetPath );
+                            }
+                        }
+                    }
+                    using( monitor.OpenInfo( $"Generating CKSetup.Runner.Config.xml file." ) )
+                    {
+                        var root = new XElement( config.Configuration );
+                        var ckSetup = new XElement( SetupConfiguration.xCKSetup );
+                        ckSetup.Add( new XElement( SetupConfiguration.xEngineAssemblyQualifiedName, config.EngineAssemblyQualifiedName ) );
+                        var binPaths = new XElement( SetupConfiguration.xBinPaths );
+                        foreach( BinFolder f in folders )
+                        {
+                            var binPath = new XElement( SetupConfiguration.xBinPath, new XAttribute( SetupConfiguration.xBinPath, f.BinPath ) );
+                            var models = f.Assemblies.Where( a => a.ComponentKind == ComponentKind.Model );
+                            var dependencies = f.Assemblies.Where( a => a.ComponentKind == ComponentKind.SetupDependency );
+                            var modelDependents = f.Assemblies.Where( a => a.ComponentKind == ComponentKind.None && a.LocalDependencies.Any( dep => dep.ComponentKind == ComponentKind.Model ) );
+                            binPath.Add( models.Select( a => new XElement( SetupConfiguration.xModel, a.Name.Name ) ) );
+                            binPath.Add( dependencies.Select( a => new XElement( SetupConfiguration.xDependency, a.Name.Name ) ) );
+                            binPath.Add( modelDependents.Select( a => new XElement( SetupConfiguration.xModelDependent, a.Name.Name ) ) );
+                            binPaths.Add( binPath );
+                        }
+                        ckSetup.Add( binPaths );
+                        root.Add( ckSetup );
+                        new XDocument( root ).Save( Path.Combine( workingDir, "CKSetup.Runner.Config.xml" ) );
+                    }
+                    return RunSetupRunner( monitor, workingDir );
+                }
+                catch( Exception ex )
+                {
+                    monitor.Fatal( ex );
+                    return false;
+                }
+            }
+        }
+
+        static IReadOnlyList<BinFolder> ReadBinFolders(
+            IActivityMonitor monitor,
+            IEnumerable<string> binPaths,
+            out IReadOnlyDictionary<string, BinFileInfo> dedupFiles )
+        {
+            dedupFiles = null;
+            using( monitor.OpenInfo( "Reading binary folders." ) )
+            {
+                var folders = binPaths.Select( p => BinFolder.ReadBinFolder( monitor, p ) ).ToList();
+                if( folders.Any( f => f == null ) ) return null;
+                if( folders.Count == 0 )
+                {
+                    monitor.Error( $"No BinPath provided. At least one is required." );
+                    return null;
+                }
+                using( monitor.OpenInfo( "Checking that common files are the same." ) )
+                {
+                    bool conflict = false;
+                    Dictionary<string, BinFileInfo> byName = new Dictionary<string, BinFileInfo>();
+                    foreach( var folder in folders )
+                    {
+                        foreach( var file in folder.Files )
+                        {
+                            if( byName.TryGetValue( file.LocalFileName, out var exists ) )
+                            {
+                                if( exists.ContentSHA1 != file.ContentSHA1 )
+                                {
+                                    conflict = true;
+                                    using( monitor.OpenError( $"File mismatch: {file.LocalFileName}" ) )
+                                    {
+                                        monitor.Info( $"{exists.BinFolder.BinPath} has {exists.ToString()} with SHA1: {exists.ContentSHA1}." );
+                                        monitor.Info( $"{file.BinFolder.BinPath} has {file.ToString()} with SHA1: {file.ContentSHA1}." );
+                                    }
+                                }
+                            }
+                            else byName.Add( file.LocalFileName, file );
+                        }
+                    }
+                    if( conflict ) return null;
+                    dedupFiles = byName;
+                }
+                monitor.CloseGroup( $"{folders.Count} folders read." );
+                return folders;
+            }
+        }
+
+        static string GetWorkingDirectory( IActivityMonitor monitor, string workingDir, IReadOnlyList<BinFolder> folders )
+        {
+            if( !String.IsNullOrWhiteSpace( workingDir ) )
+            {
+                workingDir = FileUtil.NormalizePathSeparator( Path.GetFullPath( workingDir ), true );
+                if( folders.Any( b => b.BinPath.StartsWith( workingDir, StringComparison.OrdinalIgnoreCase ) ) )
+                {
+                    monitor.Error( $"Working directory can not be inside one of the bin paths." );
+                    return null;
+                }
+                if( Directory.Exists( workingDir ) ) Directory.Delete( workingDir, true );
+                Directory.CreateDirectory( workingDir );
+            }
+            else workingDir = Path.GetTempPath() + Guid.NewGuid().ToString( "N" ) + Path.DirectorySeparatorChar;
+            return workingDir;
+        }
+
+        static bool RunSetupRunner(
+            IActivityMonitor m,
+            string workingDir )
+        {
+            using( m.OpenInfo( "Launching CKSetup.Runner process." ) )
+            {
+                string exe = Path.Combine( workingDir, "CKSetup.Runner.exe" );
+                string dll = Path.Combine( workingDir, "CKSetup.Runner.dll" );
+                string fileName, arguments;
+                if( !File.Exists( exe ) )
+                {
+                    if( !File.Exists( dll ) )
+                    {
+                        m.Error( "Unable to find CKSetup.Runner in folder." );
+                        return false;
+                    }
+                    fileName = "dotnet";
+                    #region Using existing runtimeconfig.json to create CKSetup.Runner.runtimeconfig.json.
+                    {
+                        const string runnerConfigFileName = "CKSetup.Runner.runtimeconfig.json";
+                        // We try to find an existing runtimeconfig.json:
+                        // - First look for unique runtimeconfig.dev.json
+                        //    - It must be unique and have an associated runtimeconfig.json file otherwise we fail.
+                        //    - If no dev file exists, we look for a unique runtimeconfig.json
+                        // - If there is runtimeconfig.json duplicates in the folder, we fail.
+                        // - If there is no runtimeconfig.json, we generate a default one.
+                        if( !FindRuntimeConfigFiles( m, workingDir, out string fRtDevPath, out string fRtPath ) )
+                        {
+                            return false;
+                        }
+                        string runnerFile = Path.Combine( workingDir, runnerConfigFileName );
+                        // If there is a dev file, extracts its additional probe paths.
+                        string additionalProbePaths = ExtractJsonAdditonalProbePaths( m, fRtDevPath );
+                        if( additionalProbePaths == null )
+                        {
+                            if( fRtPath == null )
+                            {
+                                const string defaultRt = "{\"runtimeOptions\":{\"tfm\":\"netcoreapp2.0\",\"framework\":{\"name\":\"Microsoft.NETCore.App\",\"version\": \"2.0.0\"}}}";
+                                m.Info( $"Trying with a default {runnerConfigFileName}: {defaultRt}" );
+                                File.WriteAllText( runnerFile, defaultRt );
+                            }
+                            else File.Copy( fRtPath, runnerFile, true );
+                        }
+                        else
+                        {
+                            string txt = File.ReadAllText( fRtPath );
+                            int idx = txt.LastIndexOf( '}' ) - 1;
+                            if( idx > 0 ) idx = txt.LastIndexOf( '}', idx ) - 1;
+                            if( idx > 0 )
+                            {
+                                txt = txt.Insert( idx, "," + additionalProbePaths );
+                                File.WriteAllText( runnerFile, txt );
+                            }
+                            else
+                            {
+                                using( m.OpenError( "Unable to inject additionalProbingPaths in:" ) )
+                                {
+                                    m.Error( txt );
+                                }
+                                return false;
+                            }
+                        }
+                    }
+                    #endregion
+                    #region Merging all deps.json into CKSetup.Runner.deps.json
+                    {
+                        arguments = "CKSetup.Runner.dll merge-deps";
+                        if( !RunCKSetupRunnerProcess( m, workingDir, fileName, arguments ) )
+                        {
+                            return false;
+                        }
+                        string theFile = Path.Combine( workingDir, "CKSetup.Runner.deps.json" );
+                        string theBackup = theFile + ".original";
+                        File.Replace( theFile + ".merged", theFile, theBackup );
+                    }
+                    #endregion
+                    arguments = "CKSetup.Runner.dll ";
+                }
+                else
+                {
+                    fileName = exe;
+                    arguments = String.Empty;
+                }
+                return RunCKSetupRunnerProcess( m, workingDir, fileName, arguments );
+            }
+        }
+
+        static bool RunCKSetupRunnerProcess(
+                IActivityMonitor m,
+                string workingDir,
+                string fileName,
+                string arguments )
+        {
+            ProcessStartInfo cmdStartInfo = new ProcessStartInfo();
+            cmdStartInfo.WorkingDirectory = workingDir;
+            cmdStartInfo.UseShellExecute = false;
+            cmdStartInfo.CreateNoWindow = true;
+            cmdStartInfo.FileName = fileName;
+            using( var logReceiver = LogReceiver.Start( m, true ) )
+            {
+                cmdStartInfo.Arguments = arguments;
+                cmdStartInfo.Arguments += " /logPipe:" + logReceiver.PipeName;
+                using( m.OpenTrace( $"{fileName} {cmdStartInfo.Arguments}" ) )
+                using( Process cmdProcess = new Process() )
+                {
+                    cmdProcess.StartInfo = cmdStartInfo;
+                    cmdProcess.Start();
+                    cmdProcess.WaitForExit();
+                    var endLogStatus = logReceiver.WaitEnd( cmdProcess.ExitCode != 0 );
+                    if( endLogStatus != LogReceiverEndStatus.Normal )
+                    {
+                        m.Warn( $"Pipe log channel abnormal end status: {endLogStatus}." );
+                    }
+                    if( cmdProcess.ExitCode != 0 )
+                    {
+                        m.Error( $"Process returned ExitCode {cmdProcess.ExitCode}." );
+                        return false;
+                    }
+                    return true;
+                }
+            }
+        }
+
+
+
+
+
+
+
         /// <summary>
         /// This is static in order to ease tests.
         /// </summary>
@@ -43,7 +308,6 @@ namespace CKSetup
             LogFilter runnerLogFilter,
             IComponentImporter missingImporter = null,
             Uri remoteStoreUrl = null,
-            bool debugBreakInCKStObjRunner = false,
             string keepRuntimesFilesFolder = null )
         {
             using( monitor.OpenTrace( "Running Setup." ) )
@@ -90,7 +354,7 @@ namespace CKSetup
                         }
                         archive.RegisterFileToDelete( configPath );
                     }
-                    return RunSetup( monitor, binPath, archive, keepFolder, debugBreakInCKStObjRunner );
+                    return RunSetup( monitor, binPath, archive, keepFolder );
                 }
                 catch( Exception ex )
                 {
@@ -104,8 +368,7 @@ namespace CKSetup
             IActivityMonitor m,
             string binPath,
             RuntimeArchive archive,
-            DirectoryInfo keepFolder,
-            bool debugBreakInCKStObjRunner )
+            DirectoryInfo keepFolder )
         {
             using( m.OpenInfo( "Launching CK.StObj.Runner process." ) )
             {
@@ -178,7 +441,7 @@ namespace CKSetup
                     #region Merging all deps.json into CK.StObj.Runner.deps.json
                     {
                         arguments = "CK.StObj.Runner.dll merge-deps";
-                        if( !RunRunnerProcess( m, usePipeLogs, binPath, debugBreakInCKStObjRunner, fileName, arguments ) )
+                        if( !RunRunnerProcess( m, usePipeLogs, binPath, fileName, arguments ) )
                         {
                             return false;
                         }
@@ -196,7 +459,7 @@ namespace CKSetup
                     arguments = String.Empty;
                     usePipeLogs = GetUsePipeLogFromRunnerVersion( m, exe );
                 }
-                return RunRunnerProcess( m, usePipeLogs, binPath, debugBreakInCKStObjRunner, fileName, arguments );
+                return RunRunnerProcess( m, usePipeLogs, binPath, fileName, arguments );
             }
         }
 
@@ -284,7 +547,12 @@ namespace CKSetup
             return true;
         }
 
-        static bool RunRunnerProcess( IActivityMonitor m, bool usePipeLogs, string binPath, bool debugBreakInCKStObjRunner, string fileName, string arguments )
+        static bool RunRunnerProcess(
+                        IActivityMonitor m,
+                        bool usePipeLogs,
+                        string binPath,
+                        string fileName,
+                        string arguments )
         {
             ProcessStartInfo cmdStartInfo = new ProcessStartInfo();
             cmdStartInfo.WorkingDirectory = binPath;
@@ -301,7 +569,6 @@ namespace CKSetup
             {
                 cmdStartInfo.Arguments = arguments;
                 if( usePipeLogs ) cmdStartInfo.Arguments += " /logPipe:" + logReceiver.PipeName;
-                if( debugBreakInCKStObjRunner ) cmdStartInfo.Arguments += " launch-debugger";
                 using( m.OpenTrace( $"{fileName} {cmdStartInfo.Arguments}" ) )
                 using( Process cmdProcess = new Process() )
                 {

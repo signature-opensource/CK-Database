@@ -62,7 +62,9 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
                     db.SchemaDropAllObjects( "CKCore", false );
                 }
             }
-            Assert.That( StObjContextRoot.Build( c, null, TestHelper.Monitor ) );
+
+            var e = new StObjEngine( TestHelper.Monitor, c );
+            Assert.That( e.Run() );
 
             using( var db = SqlManager.OpenOrCreate( TestHelper.DatabaseTestConnectionString, TestHelper.Monitor ) )
             {
@@ -85,9 +87,11 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             c.RevertOrderingNames = true;
             setupable.RevertOrderingNames = true;
             c.FinalAssemblyConfiguration.AssemblyName = dllName + ".Reverted";
+
             using( TestHelper.Monitor.OpenTrace( "Second setup (reverse order)" ) )
             {
-                Assert.That( StObjContextRoot.Build( c, null, TestHelper.Monitor ) );
+                var eRevert = new StObjEngine( TestHelper.Monitor, c );
+                Assert.That( eRevert.Run() );
             }
 
             using( var db = SqlManager.OpenOrCreate( TestHelper.DatabaseTestConnectionString, TestHelper.Monitor ) )

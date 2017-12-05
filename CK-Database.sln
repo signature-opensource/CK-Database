@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.8
+VisualStudioVersion = 15.0.27004.2005
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{6E913090-EA34-4A90-8DBB-1501F9981F53}"
 EndProject
@@ -99,6 +99,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CKSetup.Core", "CKSetup.Core\CKSetup.Core.csproj", "{31C44FE9-1848-4851-9130-7B96B42CE2FB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.StObj.Runner", "CK.StObj.Runner\CK.StObj.Runner.csproj", "{A5DD40BF-1914-4C39-B94D-EE58622590C0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CKSetup.Runner", "CKSetup.Runner\CKSetup.Runner.csproj", "{E3FCF9C6-C0C6-4118-B80E-C049E810305C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -518,6 +520,18 @@ Global
 		{A5DD40BF-1914-4C39-B94D-EE58622590C0}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{A5DD40BF-1914-4C39-B94D-EE58622590C0}.Release|x86.ActiveCfg = Release|Any CPU
 		{A5DD40BF-1914-4C39-B94D-EE58622590C0}.Release|x86.Build.0 = Release|Any CPU
+		{E3FCF9C6-C0C6-4118-B80E-C049E810305C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3FCF9C6-C0C6-4118-B80E-C049E810305C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3FCF9C6-C0C6-4118-B80E-C049E810305C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E3FCF9C6-C0C6-4118-B80E-C049E810305C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E3FCF9C6-C0C6-4118-B80E-C049E810305C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E3FCF9C6-C0C6-4118-B80E-C049E810305C}.Debug|x86.Build.0 = Debug|Any CPU
+		{E3FCF9C6-C0C6-4118-B80E-C049E810305C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3FCF9C6-C0C6-4118-B80E-C049E810305C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3FCF9C6-C0C6-4118-B80E-C049E810305C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E3FCF9C6-C0C6-4118-B80E-C049E810305C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E3FCF9C6-C0C6-4118-B80E-C049E810305C}.Release|x86.ActiveCfg = Release|Any CPU
+		{E3FCF9C6-C0C6-4118-B80E-C049E810305C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -548,7 +562,7 @@ Global
 		{D29B730E-853F-49F7-9EB9-144A9287FC3F} = {6E913090-EA34-4A90-8DBB-1501F9981F53}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.0\lib\NET35;packages\Unity.2.1.505.2\lib\NET35
 		SolutionGuid = {FAF75456-A490-4FB3-B2E8-CFFC10068A8E}
+		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.0\lib\NET35;packages\Unity.2.1.505.2\lib\NET35
 	EndGlobalSection
 EndGlobal

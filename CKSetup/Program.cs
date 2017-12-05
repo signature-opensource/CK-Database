@@ -31,6 +31,7 @@ namespace CKSetup
 
             app.Command( "db-backup", CommandDBBackup.Define );
             app.Command( "db-restore", CommandDBRestore.Define );
+            app.Command( "run", CommandRun.Define );
             app.Command( "setup", CommandSetup.Define );
             app.Command( "store", CommandStore.Define );
 

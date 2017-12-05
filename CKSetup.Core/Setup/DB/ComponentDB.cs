@@ -361,9 +361,10 @@ namespace CKSetup
         /// Returns a new <see cref="DependencyResolver"/> for a target <see cref="BinFolder"/>.
         /// </summary>
         /// <param name="m">The monitor to use.</param>
-        /// <param name="target">The targets for which required components must be found.</param>
+        /// <param name="targets">The targets for which required components must be found.</param>
+        /// <param name="explicitDependencies">Optional extra dependencies that, when specified, must be resolved.</param>
         /// <returns>Null on error, otherwise the DependencyResolver (may be empty).</returns>
-        public DependencyResolver GetRuntimeDependenciesResolver( IActivityMonitor m, IEnumerable<BinFolder> targets )
+        public DependencyResolver GetRuntimeDependenciesResolver( IActivityMonitor m, IEnumerable<BinFolder> targets, IEnumerable<SetupDependency> explicitDependencies = null )
         {
             using( m.OpenInfo( $"Creating runtime dependencies resolver for {targets.Select( t => t.BinPath ).Concatenate()}." ) )
             {
@@ -380,7 +381,9 @@ namespace CKSetup
                 var targetRuntime = SelectTargetRuntime( m, models );
                 if( targetRuntime == TargetRuntime.None ) return null;
 
-                var rootDeps = CollectSetupDependencies( m, models.SelectMany( b => b.SetupDependencies ) );
+                var allDeps = models.SelectMany( b => b.SetupDependencies );
+                if( explicitDependencies != null ) allDeps = allDeps.Concat( explicitDependencies );
+                var rootDeps = CollectSetupDependencies( m, explicitDependencies );
                 if( rootDeps.Count == 0 ) m.Warn( "No Setup Dependency components found." );
                 return new DependencyResolver( this, targetRuntime, rootDeps );
             }
@@ -508,7 +511,7 @@ namespace CKSetup
                     {
                         foreach( var c in culprits )
                         {
-                            m.Warn( $"'{c.Source.Name.Name}' declares to use the version {c.UseMinVersion}." );
+                            m.Warn( $"'{c.SourceName}' declares to use the version {c.UseMinVersion}." );
                         }
                     }
                     dependencies.Add( new ComponentDependency( name, max ) );

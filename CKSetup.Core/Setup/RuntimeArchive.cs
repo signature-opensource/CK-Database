@@ -298,6 +298,74 @@ namespace CKSetup
         /// <summary>
         /// Extracts required runtime support for Models in targets.
         /// </summary>
+        /// <param name="workingDirectory">The working directory.</param>
+        /// <param name="targets">The target folders.</param>
+        /// <param name="missingImporter">Component importer. Can be null.</param>
+        /// <param name="explicitDependencies">Optional extra dependencies that, when specified, must be resolved.</param>
+        /// <returns>True on success, false on error.</returns>
+        public bool ExtractRuntimeDependencies(
+            string workingDirectory,
+            IEnumerable<BinFolder> targets,
+            IComponentImporter missingImporter,
+            IEnumerable<SetupDependency> explicitDependencies )
+        {
+            if( String.IsNullOrWhiteSpace( workingDirectory )
+                || !Path.IsPathRooted( workingDirectory )
+                || !Directory.Exists( workingDirectory )
+                || workingDirectory[workingDirectory.Length - 1] != Path.DirectorySeparatorChar )
+            {
+                throw new ArgumentException( "WorkingDirectory must exist and end with a directory separator.", nameof( workingDirectory ) );
+            }
+            if( !targets.Any() ) throw new ArgumentException( "At least one target is required.", nameof( targets ) );
+
+            ComponentFileCollector fileCollector;
+            using( _monitor.OpenInfo( $"Resolving runtime support for '{targets.Select( t => t.BinPath ).Concatenate()}'." ) )
+            {
+                var resolver = _dbCurrent.GetRuntimeDependenciesResolver( _monitor, targets, explicitDependencies );
+                if( resolver == null || resolver.IsEmpty ) return false;
+                IComponentDownloader downloader = missingImporter != null
+                                                    ? new ComponentDownloader( missingImporter, this )
+                                                    : null;
+                IReadOnlyList<Component> components = resolver.Run( _monitor, downloader );
+                if( components == null ) return false;
+
+                fileCollector = new ComponentFileCollector();
+                fileCollector.Add( components.OrderByDescending( x => x.TargetFramework ) );
+                fileCollector.DumpResult( _monitor );
+            }
+            using( _monitor.OpenInfo( $"Copying files to '{workingDirectory}'." ) )
+            {
+                foreach( var f in fileCollector.Result )
+                {
+                    string targetPath = workingDirectory + f.Name;
+                    try
+                    {
+                        string fileKey = f.SHA1.ToString();
+                        if( !_store.Exists( fileKey ) )
+                        {
+                            if( missingImporter == null )
+                            {
+                                _monitor.Error( $"Missing file '{f}' in local store." );
+                                return false;
+                            }
+                            if( !_store.Download( _monitor, missingImporter, f, _storageKind ) ) return false;
+                        }
+                        _store.ExtractToFile( fileKey, targetPath );
+                        _monitor.Debug( $"Extracted {f.Name}." );
+                    }
+                    catch( Exception ex )
+                    {
+                        _monitor.Error( $"While extracting '{f.Name}'.", ex );
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Extracts required runtime support for Models in targets.
+        /// </summary>
         /// <param name="targets">The target folders.</param>
         /// <param name="runPath">Optional run path: the first target <see cref="BinFolder.BinPath"/> is the default.</param>
         /// <param name="missingImporter">Optional component importer.</param>
@@ -338,58 +406,56 @@ namespace CKSetup
                                                     : null;
                 IReadOnlyList<Component> components = resolver.Run( _monitor, downloader );
                 if( components == null ) return false;
-                int count = 0;
-                foreach( var c in components.OrderByDescending( x => x.TargetFramework ) )
+
+                ComponentFileCollector fileCollector = new ComponentFileCollector();
+                fileCollector.Add( components.OrderByDescending( x => x.TargetFramework ) );
+                fileCollector.DumpResult( _monitor );
+                using( _monitor.OpenInfo( $"Copying {fileCollector.Count} files." ) )
                 {
-                    using( _monitor.OpenInfo( $"{c.Files.Count} files from '{c}'." ) )
+                    foreach( var f in fileCollector.Result )
                     {
-                        foreach( var f in c.Files )
+                        string targetPath = runPath + f.Name;
+                        if( !File.Exists( targetPath ) )
                         {
-                            string targetPath = runPath + f.Name;
-                            if( !File.Exists( targetPath ) )
+                            try
                             {
-                                try
+                                string fileKey = f.SHA1.ToString();
+                                if( !_store.Exists( fileKey ) )
                                 {
-                                    string fileKey = f.SHA1.ToString();
-                                    if( !_store.Exists( fileKey ) )
+                                    if( missingImporter == null )
                                     {
-                                        if( missingImporter == null )
-                                        {
-                                            _monitor.Error( $"Missing file '{f}' in local store." );
-                                            return false;
-                                        }
-                                        if( !_store.Download( _monitor, missingImporter, f, _storageKind ) ) return false;
+                                        _monitor.Error( $"Missing file '{f}' in local store." );
+                                        return false;
                                     }
-                                    _store.ExtractToFile( fileKey, targetPath );
-                                    _monitor.Debug( $"Extracted {f.Name}." );
-                                    _cleanupFiles.Add( targetPath );
-                                    if( runtimeFilesCopyClones != null )
-                                    {
-                                        var clonePath = Path.Combine( runtimeFilesCopyClones.FullName, f.Name );
-                                        var dirClonePath = Path.GetDirectoryName( clonePath );
-                                        Directory.CreateDirectory( dirClonePath );
-                                        File.Copy( targetPath, clonePath );
-                                    }
-                                    ++count;
+                                    if( !_store.Download( _monitor, missingImporter, f, _storageKind ) ) return false;
                                 }
-                                catch( Exception ex )
-                                {
-                                    _monitor.Error( $"While extracting '{f.Name}'.", ex );
-                                    return false;
-                                }
-                            }
-                            else
-                            {
-                                _monitor.Trace( $"Skipped '{f.Name}' since it already exists." );
+                                _store.ExtractToFile( fileKey, targetPath );
+                                _monitor.Debug( $"Extracted {f.Name}." );
+                                _cleanupFiles.Add( targetPath );
                                 if( runtimeFilesCopyClones != null )
                                 {
-                                    var pLog = Path.Combine( runtimeFilesCopyClones.FullName, "FilesSkippedSinceTheyExist.txt" );
-                                    File.AppendAllText( pLog, f.ToString() + Environment.NewLine );
+                                    var clonePath = Path.Combine( runtimeFilesCopyClones.FullName, f.Name );
+                                    var dirClonePath = Path.GetDirectoryName( clonePath );
+                                    Directory.CreateDirectory( dirClonePath );
+                                    File.Copy( targetPath, clonePath );
                                 }
+                            }
+                            catch( Exception ex )
+                            {
+                                _monitor.Error( $"While extracting '{f.Name}'.", ex );
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            _monitor.Trace( $"Skipped '{f.Name}' since it already exists." );
+                            if( runtimeFilesCopyClones != null )
+                            {
+                                var pLog = Path.Combine( runtimeFilesCopyClones.FullName, "FilesSkippedSinceTheyExist.txt" );
+                                File.AppendAllText( pLog, f.ToString() + Environment.NewLine );
                             }
                         }
                     }
-                    _monitor.Trace( $"{count} files extracted so far." );
                 }
             }
             return true;

@@ -30,9 +30,9 @@ namespace CKSetup
         /// Initializes this option.
         /// </summary>
         /// <param name="m">The monitor.</param>
-        /// <param name="binPath">Optional binary path.</param>
+        /// <param name="binPath">Optional path to look for a store up to the root.</param>
         /// <returns>True on success, false on error.</returns>
-        public bool Initialize( IActivityMonitor m, string binPath )
+        public bool Initialize( IActivityMonitor m, string binPath = null )
         {
             StorePath = StorePathOption.Value();
             if( string.IsNullOrEmpty( StorePath ) )
@@ -40,10 +40,10 @@ namespace CKSetup
                 if( binPath != null )
                 {
                     StorePath = FindStorePathFrom( binPath );
-                    if( string.IsNullOrEmpty( StorePath ) )
-                    {
-                        StorePath = FindStorePathFrom( AppContext.BaseDirectory );
-                    }
+                }
+                if( string.IsNullOrEmpty( StorePath ) )
+                {
+                    StorePath = FindStorePathFrom( AppContext.BaseDirectory );
                 }
                 if( string.IsNullOrEmpty( StorePath ) )
                 {

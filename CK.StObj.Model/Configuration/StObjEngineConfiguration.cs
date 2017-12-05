@@ -11,22 +11,15 @@ namespace CK.Core
     /// </summary>
     public sealed class StObjEngineConfiguration
     {
+        /// <summary>
+        /// Default assembly name.
+        /// </summary>
+        public const string DefaultGeneratedAssemblyName = "CK.StObj.AutoAssembly";
+
         readonly BuildAndRegisterConfiguration _buildConfig;
         readonly BuilderFinalAssemblyConfiguration _finalConfig;
         readonly List<IStObjEngineAspectConfiguration> _aspects;
-
-        /// <summary>
-        /// The standard engine is "CK.Setup.StObjEngine, CK.StObj.Engine".
-        /// </summary>
-        static public readonly string StandardEngineTypeName = "CK.Setup.StObjEngine, CK.StObj.Engine";
-
-        /// <summary>
-        /// This current Xml schema version applies to <see cref="CK.Core.StObjEngineConfiguration"/> and
-        /// its 3 parts: <see cref="CK.Core.BuildAndRegisterConfiguration"/>, <see cref="CK.Core.BuilderFinalAssemblyConfiguration"/>
-        /// and the <see cref="Aspects"/>. This must not be used for aspects schemas: each aspect must implement its
-        /// own versioning handling.
-        /// </summary>
-        public const int CurrentXmlVersion = 1;
+        string _generatedAssemblyName;
 
         /// <summary>
         /// Initializes a new empty configuration.
@@ -98,29 +91,18 @@ namespace CK.Core
         /// Initializes a new <see cref="StObjEngineConfiguration"/> from a <see cref="XElement"/>.
         /// </summary>
         /// <param name="e">The xml element.</param>
-        /// <param name="aspectTypeResolver">
-        /// Resolver for types.
-        /// Defaults to a function that calls <see cref="SimpleTypeFinder.WeakResolver"/>.
-        /// </param>
-        public StObjEngineConfiguration( XElement e, Func<string, Type> aspectTypeResolver = null )
+        public StObjEngineConfiguration( XElement e )
         {
-            if( aspectTypeResolver == null )
-            {
-                aspectTypeResolver = aqn => SimpleTypeFinder.WeakResolver( aqn, true );
-            }
-            int? nv = (int?)e.Attribute( XmlNames.Version );
-            int version = nv.HasValue ? nv.Value : CurrentXmlVersion;
             TraceDependencySorterInput = string.Equals( e.Element( XmlNames.TraceDependencySorterInput )?.Value, "true", StringComparison.OrdinalIgnoreCase );
             TraceDependencySorterOutput = string.Equals( e.Element( XmlNames.TraceDependencySorterOutput )?.Value, "true", StringComparison.OrdinalIgnoreCase );
             RevertOrderingNames = string.Equals( e.Element( XmlNames.RevertOrderingNames )?.Value, "true", StringComparison.OrdinalIgnoreCase );
-            EngineAssemblyQualifiedName = e.Element( XmlNames.EngineAssemblyQualifiedName )?.Value ?? StandardEngineTypeName;
-            _buildConfig = new BuildAndRegisterConfiguration( e.Element( XmlNames.BuildAndRegisterConfiguration ), version );
-            _finalConfig = new BuilderFinalAssemblyConfiguration( e.Element( XmlNames.BuilderFinalAssemblyConfiguration ), version );
+            _buildConfig = new BuildAndRegisterConfiguration( e.Element( XmlNames.BuildAndRegisterConfiguration ), 1 );
+            _finalConfig = new BuilderFinalAssemblyConfiguration( e.Element( XmlNames.BuilderFinalAssemblyConfiguration ), 1 );
             _aspects = new List<IStObjEngineAspectConfiguration>();
             foreach( var a in e.Elements( XmlNames.Aspect ) )
             {
                 string type = (string)a.AttributeRequired( XmlNames.Type );
-                Type tAspect = aspectTypeResolver( type );
+                Type tAspect = SimpleTypeFinder.WeakResolver( type, true );
                 IStObjEngineAspectConfiguration aspect = (IStObjEngineAspectConfiguration)Activator.CreateInstance( tAspect, a );
                 _aspects.Add( aspect );
             }
@@ -147,15 +129,23 @@ namespace CK.Core
                     return weaken;
                 };
             }
-            e.Add( new XAttribute( XmlNames.Version, CurrentXmlVersion ),
-                   TraceDependencySorterInput ? new XElement( XmlNames.TraceDependencySorterInput, "true" ) : null,
+            e.Add( TraceDependencySorterInput ? new XElement( XmlNames.TraceDependencySorterInput, "true" ) : null,
                    TraceDependencySorterOutput ? new XElement( XmlNames.TraceDependencySorterOutput, "true" ) : null,
                    RevertOrderingNames ? new XElement( XmlNames.RevertOrderingNames, "true" ) : null,
-                   EngineAssemblyQualifiedName != StandardEngineTypeName ? new XElement( XmlNames.EngineAssemblyQualifiedName, EngineAssemblyQualifiedName ) : null,
                    _buildConfig.SerializeXml( new XElement( XmlNames.BuildAndRegisterConfiguration ) ),
                    _finalConfig.SerializeXml( new XElement( XmlNames.BuilderFinalAssemblyConfiguration ) ),
                    _aspects.Select( a => a.SerializeXml( new XElement( XmlNames.Aspect, new XAttribute( XmlNames.Type, aspectTypeNameWriter( a.GetType() ) ) ) ) ) );
             return e;
+        }
+
+        /// <summary>
+        /// Gets or sets the final Assembly name.
+        /// When set to null (the default), <see cref="DefaultGeneratedAssemblyName"/> "CK.StObj.AutoAssembly" is returned.
+        /// </summary>
+        public string GeneratedAssemblyName
+        {
+            get => _generatedAssemblyName ?? DefaultGeneratedAssemblyName;
+            set => _generatedAssemblyName = value;
         }
 
         /// <summary>
@@ -167,6 +157,7 @@ namespace CK.Core
         /// <summary>
         /// Gets the configuration related to final assembly generation.
         /// </summary>
+        [Obsolete("A pu!", true)]
         public BuilderFinalAssemblyConfiguration FinalAssemblyConfiguration => _finalConfig;
 
         /// <summary>
@@ -193,15 +184,6 @@ namespace CK.Core
         /// Defaults to false.
         /// </summary>
         public bool TraceDependencySorterOutput { get; set; }
-
-        /// <summary>
-        /// Gets or sets the engine Assembly Qualified Name.
-        /// Defaults to <see cref="StandardEngineTypeName"/>.
-        /// Engine can be any object with a public constructor with parameters
-        /// (<see cref="IActivityMonitor"/>, <see cref="StObjEngineConfiguration"/>, <see cref="IStObjRuntimeBuilder"/>)
-        /// and  a public <c>bool Run()</c> method.
-        /// </summary>
-        public string EngineAssemblyQualifiedName { get; set; } = StandardEngineTypeName;
 
     }
 }

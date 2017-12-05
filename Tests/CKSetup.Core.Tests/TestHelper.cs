@@ -194,6 +194,10 @@ namespace CKSetup.Tests
         public static string StObjRunnerNet461 => Path.Combine( SolutionFolder, "CK.StObj.Runner", "bin", Configuration, "net461" );
         public static string StObjRunnerNetCoreApp20 => Path.Combine( SolutionFolder, "CK.StObj.Runner", "bin", Configuration, "netcoreapp2.0" );
 
+        // The CKSetup.Runner is running in net461 & netcorapp2.0
+        public static string SetupRunnerNet461 => Path.Combine( SolutionFolder, "CKSetup.Runner", "bin", Configuration, "net461" );
+        public static string SetupRunnerNetCoreApp20 => Path.Combine( SolutionFolder, "CKSetup.Runner", "bin", Configuration, "netcoreapp2.0" );
+
         // Net461: the bin folder is enough for all the components.
         public static string StObjModel461 => Path.Combine( SolutionFolder, "CK.StObj.Model", "bin", Configuration, "net461" );
         public static string StObjRuntime461 => Path.Combine( SolutionFolder, "CK.StObj.Runtime", "bin", Configuration, "net461" );
@@ -298,6 +302,7 @@ namespace CKSetup.Tests
             {
                 zip.CreateLocalImporter().AddComponent(
                     CKSetup.BinFolder.ReadBinFolder( Monitor, StObjRunnerNet461 ),
+                    CKSetup.BinFolder.ReadBinFolder( Monitor, SetupRunnerNet461 ),
                     CKSetup.BinFolder.ReadBinFolder( Monitor, StObjModel461 ),
                     CKSetup.BinFolder.ReadBinFolder( Monitor, StObjRuntime461 ),
                     CKSetup.BinFolder.ReadBinFolder( Monitor, StObjEngine461 ),
@@ -318,6 +323,7 @@ namespace CKSetup.Tests
             {
                 zip.CreateLocalImporter().AddComponent(
                         CKSetup.BinFolder.ReadBinFolder( Monitor, EnsurePublishPath( StObjRunnerNetCoreApp20 ) ),
+                        CKSetup.BinFolder.ReadBinFolder( Monitor, EnsurePublishPath( SetupRunnerNetCoreApp20 ) ),
                         CKSetup.BinFolder.ReadBinFolder( Monitor, StObjModelNet20 ),
                         CKSetup.BinFolder.ReadBinFolder( Monitor, EnsurePublishPath( StObjRuntimeNet20 ) ),
                         CKSetup.BinFolder.ReadBinFolder( Monitor, EnsurePublishPath( StObjEngineNet20 ) ),
@@ -342,6 +348,7 @@ namespace CKSetup.Tests
             using( Monitor.OpenInfo( "Deleting published Setup dependencies" ) )
             {
                 DeleteDirectory( Path.Combine( StObjRunnerNetCoreApp20, "publish" ) );
+                DeleteDirectory( Path.Combine( SetupRunnerNetCoreApp20, "publish" ) );
                 DeleteDirectory( Path.Combine( StObjRuntimeNet20, "publish" ) );
                 DeleteDirectory( Path.Combine( StObjEngineNet20, "publish" ) );
                 DeleteDirectory( Path.Combine( SetupableRuntimeNet20, "publish" ) );
