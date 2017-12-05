@@ -95,8 +95,7 @@ namespace CK.StObj.Engine.Tests
                 var config = new BuilderFinalAssemblyConfiguration()
                 {
                     AssemblyName = "TEST_SimpleEmit",
-                    GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFile,
-                    SourceGeneration = true
+                    GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFile
                 }; 
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor, config, runtimeBuilder: runtimeBuilder );
@@ -116,16 +115,6 @@ namespace CK.StObj.Engine.Tests
                     Assert.That( c.Default.Obtain<B>().Auto( 3 ), Is.EqualTo( 0 ) );
                     Assert.That( c.Default.Obtain<B>().InjectedString, Is.EqualTo( ctorParam ) );
                 }
-#if NET461
-                {
-                    var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_SimpleEmit" );
-                    IStObjMap c = StObjContextRoot.Load( a, runtimeBuilder, TestHelper.Monitor );
-                    Assert.That( typeof( B ).IsAssignableFrom( c.Default.ToLeafType( typeof( A ) ) ) );
-                    Assert.That( c.Default.ToLeafType( typeof( IC ) ), Is.SameAs( typeof( D ) ) );
-                    Assert.That( c.Default.Obtain<B>().Auto( 3 ), Is.EqualTo( 0 ) );
-                    Assert.That( c.Default.Obtain<B>().InjectedString, Is.EqualTo( ctorParam ) );
-                }
-#endif
             }
 
         }
@@ -188,8 +177,7 @@ namespace CK.StObj.Engine.Tests
                 var config = new BuilderFinalAssemblyConfiguration()
                 {
                     GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFile,
-                    AssemblyName = "TEST_ConstructCalled",
-                    SourceGeneration = true
+                    AssemblyName = "TEST_ConstructCalled"
                 };
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor, finalAssemblyConfig: config, configurator: new StObjPropertyConfigurator() );
@@ -223,19 +211,6 @@ namespace CK.StObj.Engine.Tests
                     Assert.That( theA.StObjPower, Is.EqualTo( "ASpec level property." ) );
                     Assert.That( typeof( A ).GetProperty( "StObjPower" ).GetValue( theA, null ), Is.EqualTo( "This is the A property." ) );
                 }
-#if NET461
-                {
-                    var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_ConstructCalled" );
-                    IStObjMap c = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
-                    Assert.That( c.Default.Obtain<B>().TheA, Is.SameAs( c.Default.Obtain<A>() ).And.SameAs( c.Default.Obtain<ASpec>() ) );
-                    Assert.That( c.Default.Obtain<ASpec>().TheB, Is.SameAs( c.Default.Obtain<B>() ) );
-
-                    ASpec theA = (ASpec)c.Default.Obtain<A>();
-                    Assert.That( theA.StObjPower, Is.EqualTo( "ASpec level property." ) );
-                    Assert.That( typeof( A ).GetProperty( "StObjPower" ).GetValue( theA, null ), Is.EqualTo( "This is the A property." ) );
-                }
-
-#endif
             }
 
         }
@@ -245,7 +220,6 @@ namespace CK.StObj.Engine.Tests
         {
             new CConstructCalledAndStObjProperties().DoTest();
         }
-
 
         public class PostBuildSet
         {
@@ -323,8 +297,7 @@ namespace CK.StObj.Engine.Tests
                 var config = new BuilderFinalAssemblyConfiguration()
                 {
                     GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFile,
-                    AssemblyName = "TEST_PostBuildSet",
-                    SourceGeneration = true
+                    AssemblyName = "TEST_PostBuildSet"
                 };
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor, finalAssemblyConfig: config, configurator: new StObjPropertyConfigurator() );
@@ -365,25 +338,6 @@ namespace CK.StObj.Engine.Tests
                     Assert.That( theA.StObjInitializeOnACalled, Is.True );
                     Assert.That( theA.StObjInitializeOnASpecCalled, Is.True );
                 }
-#if NET461
-                {
-                    var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_PostBuildSet" );
-                    IStObjMap c = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
-                    Assert.That( c.Default.Obtain<B>().TheA, Is.SameAs( c.Default.Obtain<A>() ).And.SameAs( c.Default.Obtain<ASpec>() ) );
-                    Assert.That( c.Default.Obtain<ASpec>().TheB, Is.SameAs( c.Default.Obtain<B>() ) );
-
-                    ASpec theA = (ASpec)c.Default.Obtain<A>();
-                    Assert.That( theA.StObjPower, Is.EqualTo( "ASpec level property." ) );
-                    Assert.That( typeof( A ).GetProperty( "StObjPower" ).GetValue( theA, null ), Is.EqualTo( "This is the A property." ) );
-
-                    Assert.That( theA.TheB, Is.SameAs( c.Default.Obtain<B>() ) );
-                    Assert.That( c.Default.Obtain<B>().TheInjectedA, Is.SameAs( theA ) );
-
-                    Assert.That( theA.StObjInitializeOnACalled, Is.True );
-                    Assert.That( theA.StObjInitializeOnASpecCalled, Is.True );
-                }
-#endif
-
             }
 
         }

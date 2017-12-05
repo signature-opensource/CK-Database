@@ -195,28 +195,10 @@ namespace CK.Core
         /// <param name="revertNames">True to revert names in ordering.</param>
         public static bool RunDBSetup( bool traceStObjGraphOrdering = false, bool traceSetupGraphOrdering = false, bool revertNames = false )
         {
-            return DoRunDBSetup( true, traceStObjGraphOrdering, traceSetupGraphOrdering, revertNames );
-        }
-
-        /// <summary>
-        /// Runs the database setup based on <see cref="Config"/> and updates <see cref="StObjMap"/>.
-        /// Automatically called by StObjMap when the StObjMap is not yet initialized.
-        /// </summary>
-        /// <param name="traceStObjGraphOrdering">True to trace input and output of StObj graph ordering.</param>
-        /// <param name="traceSetupGraphOrdering">True to trace input and output of setup graph ordering.</param>
-        /// <param name="revertNames">True to revert names in ordering.</param>
-        public static bool RunDBSetupILEmit( bool traceStObjGraphOrdering = false, bool traceSetupGraphOrdering = false, bool revertNames = false )
-        {
-            return DoRunDBSetup( false, traceStObjGraphOrdering, traceSetupGraphOrdering, revertNames );
-        }
-
-        static bool DoRunDBSetup( bool sourceGeneration, bool traceStObjGraphOrdering, bool traceSetupGraphOrdering, bool revertNames )
-        {
-            using( Monitor.OpenTrace( $"Running Setup on {TestHelper.DatabaseTestConnectionString} ({(sourceGeneration ? "Source" : "IL Emit")})." ) )
+            using( Monitor.OpenTrace( $"Running Setup on {DatabaseTestConnectionString}." ) )
             {
                 try
                 {
-                    Config.FinalAssemblyConfiguration.SourceGeneration = sourceGeneration;
                     Config.RevertOrderingNames = revertNames;
                     Config.TraceDependencySorterInput = traceStObjGraphOrdering;
                     Config.TraceDependencySorterOutput = traceStObjGraphOrdering;
@@ -225,7 +207,8 @@ namespace CK.Core
                     setupable.RevertOrderingNames = revertNames;
                     setupable.TraceDependencySorterInput = traceSetupGraphOrdering;
                     setupable.TraceDependencySorterOutput = traceSetupGraphOrdering;
-                    bool success = StObjContextRoot.Build( Config, null, TestHelper.Monitor );
+                    var e = new StObjEngine( Monitor, Config );
+                    bool success = e.Run();
                     if( success )
                     {
                         success = LoadStObjMapFromExistingGeneratedAssembly() != null;
@@ -469,7 +452,6 @@ namespace CK.Core
                         _config.BuildAndRegisterConfiguration.Assemblies.DiscoverRecurseAssemblyNames.Add( a );
                     }
                     _config.FinalAssemblyConfiguration.AssemblyName = DynamicAssemblyName;
-                    _config.FinalAssemblyConfiguration.SourceGeneration = DefaultSourceGeneration;
 
                     var cSetupable = new SetupableAspectConfiguration();
                     _config.Aspects.Add( cSetupable );

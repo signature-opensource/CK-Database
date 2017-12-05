@@ -157,7 +157,6 @@ namespace CK.Core
         /// <summary>
         /// Gets the configuration related to final assembly generation.
         /// </summary>
-        [Obsolete("A pu!", true)]
         public BuilderFinalAssemblyConfiguration FinalAssemblyConfiguration => _finalConfig;
 
         /// <summary>

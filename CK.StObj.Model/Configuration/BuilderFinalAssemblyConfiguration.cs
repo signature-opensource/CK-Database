@@ -61,7 +61,6 @@ namespace CK.Core
         {
             Directory = e.Element( xDirectory )?.Value;
             AssemblyName = e.Element( xAssemblyName )?.Value;
-            SourceGeneration = !string.Equals( e.Element( xSourceGeneration )?.Value, "false", StringComparison.OrdinalIgnoreCase );
             SignAssembly = string.Equals( e.Element( xSignAssembly )?.Value, "true", StringComparison.OrdinalIgnoreCase );
         }
 
@@ -75,7 +74,6 @@ namespace CK.Core
         {
             e.Add( string.IsNullOrWhiteSpace( Directory ) ? null : new XElement( xDirectory, Directory ),
                    string.IsNullOrWhiteSpace( AssemblyName ) ? null : new XElement( xAssemblyName, AssemblyName ),
-                   !SourceGeneration ? new XElement( xSourceGeneration, "false" ) : null,
                    SignAssembly ? new XElement( xSignAssembly, "true" ) : null );
             return e;
         }
@@ -103,17 +101,6 @@ namespace CK.Core
         /// </summary>
         public bool SignAssembly { get; set; }
 
-#if NET461
-        /// <summary>
-        /// Gets or sets whether source code generation is also done.
-        /// </summary>
-        public bool SourceGeneration { get; set; } = true;
-#else
-        /// <summary>
-        /// Always true since on .Net core this is the only way...
-        /// </summary>
-        public bool SourceGeneration { get => true; set { } }
-#endif
         /// <summary>
         /// Uses <paramref name="assemblyName"/> if it is not null nor empty or <see cref="DefaultAssemblyName"/>.
         /// </summary>

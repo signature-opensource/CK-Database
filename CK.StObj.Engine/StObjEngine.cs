@@ -136,7 +136,7 @@ namespace CK.Setup
                 using( _monitor.OnError( () => hasError = true ) )
                 {
                     bool peVerify = generateOption == BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFileAndPEVerify;
-                    success = r.GenerateFinalAssembly( _monitor, peVerify, !generateConfig.SourceGeneration, generateConfig.SourceGeneration );
+                    success = r.GenerateFinalAssembly( _monitor, peVerify, false, true );
                     Debug.Assert( success || hasError, "!success ==> An error has been logged." );
                 }
             }

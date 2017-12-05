@@ -45,13 +45,11 @@ namespace CK.DB.Tests
             TestHelper.ClearDatabaseUsedSchemas();
         }
 
-        [TestCase( "IL Emit" )]
-        [TestCase( "Source" )]
         [Explicit]
-        public void db_setup( string type )
+        public void db_setup()
         {
             TestHelper.LogToConsole = true;
-            Assert.That( type == "Source" ? TestHelper.RunDBSetup() : TestHelper.RunDBSetupILEmit(), "DBSetup failed.");
+            Assert.That( TestHelper.RunDBSetup(), "DBSetup failed.");
         }
 
         [Test]
