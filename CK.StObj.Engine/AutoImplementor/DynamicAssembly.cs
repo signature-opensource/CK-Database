@@ -18,25 +18,16 @@ namespace CK.Core
     {
         int _typeID;
         readonly IDictionary _memory;
-        readonly string _saveFileName;
-        readonly string _saveFilePath;
 
         /// <summary>
-        /// Initializes a new <see cref="DynamicAssembly"/> with the given name and access.
+        /// Initializes a new <see cref="DynamicAssembly"/>.
         /// </summary>
-        /// <param name="directory">Directory where the assembly must be saved. Must not be null if the assembly must be saved.</param>
-        /// <param name="assemblyName">Assembly name to use.</param>
-        public DynamicAssembly( string directory, string assemblyName )
+        public DynamicAssembly()
         {
-            if( String.IsNullOrWhiteSpace( assemblyName ) ) throw new ArgumentException( "Name is invalid.", nameof( assemblyName ) );
-            var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly( new AssemblyName( assemblyName ), AssemblyBuilderAccess.Run );
-            StubModuleBuilder = assemblyBuilder.DefineDynamicModule( assemblyName );
+            var name = Guid.NewGuid().ToString();
+            var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly( new AssemblyName( name ), AssemblyBuilderAccess.Run );
+            StubModuleBuilder = assemblyBuilder.DefineDynamicModule( name );
 
-            if( directory != null )
-            {
-                _saveFileName = assemblyName + ".dll";
-                _saveFilePath = System.IO.Path.Combine( directory, _saveFileName );
-            }
             _memory = new Dictionary<object, object>();
 
             SourceModules = new List<ICodeGeneratorModule>();
@@ -44,16 +35,6 @@ namespace CK.Core
             ws.Global.Append( "[assembly:CK.Setup.ExcludeFromSetup()]" ).NewLine();
             DefaultGenerationNamespace = ws.Global.FindOrCreateNamespace( "CK._g" );
         }
-
-        /// <summary>
-        /// Gets the name of the dll (ends with '.dll') if it must be eventually saved, otherwise null.
-        /// </summary>
-        public string SaveFileName => _saveFileName;
-
-        /// <summary>
-        /// Gets the full path of the dll if it must be eventually saved, otherwise null.
-        /// </summary>
-        public string SaveFilePath => _saveFilePath;
 
         /// <summary>
         /// Gets the <see cref="StubModuleBuilder"/> for this <see cref="DynamicAssembly"/>.

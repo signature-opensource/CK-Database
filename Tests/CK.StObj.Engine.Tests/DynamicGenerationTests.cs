@@ -86,13 +86,8 @@ namespace CK.StObj.Engine.Tests
             {
                 var runtimeBuilder = new StObjRuntimeBuilder();
 
-                var config = new BuilderFinalAssemblyConfiguration()
-                {
-                    AssemblyName = "TEST_SimpleEmit",
-                    GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFile
-                }; 
 
-                StObjCollector collector = new StObjCollector( TestHelper.Monitor, config, runtimeBuilder: runtimeBuilder );
+                StObjCollector collector = new StObjCollector( TestHelper.Monitor, runtimeBuilder: runtimeBuilder );
                 collector.RegisterClass( typeof( B ) );
                 collector.RegisterClass( typeof( D ) );
                 collector.DependencySorterHookInput = items => TestHelper.Monitor.TraceDependentItem( items );
@@ -100,15 +95,13 @@ namespace CK.StObj.Engine.Tests
                 var r = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( r.HasFatalError, Is.False );
 
-                r.GenerateFinalAssembly( TestHelper.Monitor );
-                {
-                    var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_SimpleEmit" );
-                    IStObjMap c = StObjContextRoot.Load( a, runtimeBuilder, TestHelper.Monitor );
-                    Assert.That( typeof( B ).IsAssignableFrom( c.Default.ToLeafType( typeof( A ) ) ) );
-                    Assert.That( c.Default.ToLeafType( typeof( IC ) ), Is.SameAs( typeof( D ) ) );
-                    Assert.That( c.Default.Obtain<B>().Auto( 3 ), Is.EqualTo( 0 ) );
-                    Assert.That( c.Default.Obtain<B>().InjectedString, Is.EqualTo( ctorParam ) );
-                }
+                r.GenerateFinalAssembly( TestHelper.Monitor, Path.Combine( AppContext.BaseDirectory, "TEST_SimpleEmit.dll" ), false );
+                var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_SimpleEmit" );
+                IStObjMap c = StObjContextRoot.Load( a, runtimeBuilder, TestHelper.Monitor );
+                Assert.That( typeof( B ).IsAssignableFrom( c.Default.ToLeafType( typeof( A ) ) ) );
+                Assert.That( c.Default.ToLeafType( typeof( IC ) ), Is.SameAs( typeof( D ) ) );
+                Assert.That( c.Default.Obtain<B>().Auto( 3 ), Is.EqualTo( 0 ) );
+                Assert.That( c.Default.Obtain<B>().InjectedString, Is.EqualTo( ctorParam ) );
             }
 
         }
@@ -168,13 +161,7 @@ namespace CK.StObj.Engine.Tests
 
             public void DoTest()
             {
-                var config = new BuilderFinalAssemblyConfiguration()
-                {
-                    GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFile,
-                    AssemblyName = "TEST_ConstructCalled"
-                };
-
-                StObjCollector collector = new StObjCollector( TestHelper.Monitor, finalAssemblyConfig: config, configurator: new StObjPropertyConfigurator() );
+                StObjCollector collector = new StObjCollector( TestHelper.Monitor, configurator: new StObjPropertyConfigurator() );
                 collector.RegisterClass( typeof( B ) );
                 collector.RegisterClass( typeof( ASpec ) );
                 collector.DependencySorterHookInput = items => TestHelper.Monitor.TraceDependentItem( items );
@@ -193,8 +180,7 @@ namespace CK.StObj.Engine.Tests
                     Assert.That( typeof( A ).GetProperty( "StObjPower" ).GetValue( theA, null ), Is.EqualTo( "This is the A property." ) );
                 }
 
-                r.GenerateFinalAssembly( TestHelper.Monitor );
-
+                r.GenerateFinalAssembly( TestHelper.Monitor, Path.Combine( AppContext.BaseDirectory, "TEST_ConstructCalled.dll" ), false );
                 {
                     var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_ConstructCalled" );
                     IStObjMap c = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
@@ -288,13 +274,7 @@ namespace CK.StObj.Engine.Tests
 
             public void DoTest()
             {
-                var config = new BuilderFinalAssemblyConfiguration()
-                {
-                    GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFile,
-                    AssemblyName = "TEST_PostBuildSet"
-                };
-
-                StObjCollector collector = new StObjCollector( TestHelper.Monitor, finalAssemblyConfig: config, configurator: new StObjPropertyConfigurator() );
+                StObjCollector collector = new StObjCollector( TestHelper.Monitor, configurator: new StObjPropertyConfigurator() );
                 collector.RegisterClass( typeof( BSpec ) );
                 collector.RegisterClass( typeof( ASpec ) );
                 collector.DependencySorterHookInput = items => TestHelper.Monitor.TraceDependentItem( items );
@@ -314,7 +294,7 @@ namespace CK.StObj.Engine.Tests
                     Assert.That( theA.StObjInitializeOnACalled, Is.False, "StObjInitialize is NOT called on temporary instances." );
                 }
 
-                r.GenerateFinalAssembly( TestHelper.Monitor );
+                r.GenerateFinalAssembly( TestHelper.Monitor, Path.Combine( AppContext.BaseDirectory, "TEST_PostBuildSet.dll" ), false );
 
                 {
                     var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_PostBuildSet" );

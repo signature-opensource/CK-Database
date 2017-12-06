@@ -88,7 +88,7 @@ namespace CK.Core
         /// <param name="monitor">The monitor to use.</param>
         /// <param name="assembly">The dynamic assembly to use for generated types if necessary.</param>
         /// <param name="abstractTypeInfo">Optional object that could be associated to concretize an abstract type.</param>
-        internal protected virtual bool AbstractTypeCanBeInstanciated( IActivityMonitor monitor, DynamicAssembly assembly, out object abstractTypeInfo )
+        internal protected virtual bool AbstractTypeCanBeInstanciated( IActivityMonitor monitor, IDynamicAssembly assembly, out object abstractTypeInfo )
         {
             Debug.Assert( AmbientTypeInfo.Type.GetTypeInfo().IsAbstract && assembly != null );
             abstractTypeInfo = null;

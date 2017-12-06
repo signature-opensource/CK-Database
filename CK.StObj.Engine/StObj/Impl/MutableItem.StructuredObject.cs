@@ -19,7 +19,7 @@ namespace CK.Setup
 
     partial class MutableItem
     {
-        protected internal override bool AbstractTypeCanBeInstanciated( IActivityMonitor monitor, DynamicAssembly assembly, out object abstractTypeInfo )
+        protected internal override bool AbstractTypeCanBeInstanciated( IActivityMonitor monitor, IDynamicAssembly assembly, out object abstractTypeInfo )
         {
             Debug.Assert(assembly != null );
             Debug.Assert(Specialization == null && Type.IsAbstract);

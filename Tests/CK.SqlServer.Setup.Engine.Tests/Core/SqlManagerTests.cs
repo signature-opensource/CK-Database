@@ -30,7 +30,6 @@ namespace CK.SqlServer.Setup.Engine.Tests.Core
         {
             var c = new StObjEngineConfiguration();
             c.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( "SqlActorPackage" );
-            c.FinalAssemblyConfiguration.GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile;
 
             var setupable = new SetupableAspectConfiguration();
             c.Aspects.Add( setupable );

@@ -96,8 +96,7 @@ namespace CK.Core
         readonly Func<IActivityMonitor,T,Type,T> _typeInfoFactory;
         
         readonly IActivityMonitor _monitor;
-        readonly DynamicAssembly _tempAssembly;
-        readonly DynamicAssembly _finalAssembly;
+        readonly IDynamicAssembly _tempAssembly;
         readonly PocoRegisterer _pocoRegisterer;
 
         /// <summary>
@@ -106,15 +105,13 @@ namespace CK.Core
         /// <param name="monitor">The monitor to use.</param>
         /// <param name="mapFactory">Factory for <see cref="IContextualTypeMap"/> objects.</param>
         /// <param name="typeInfoFactory">Factory for <see cref="AmbientTypeInfo"/> objects.</param>
-        /// <param name="tempAssembly">The temporary <see cref="DynamicAssembly"/>.</param>
-        /// <param name="finalAssembly">The optional final <see cref="DynamicAssembly"/>.</param>
+        /// <param name="tempAssembly">The temporary <see cref="IDynamicAssembly"/>.</param>
         /// <param name="contextDispatcher">The strategy that will be used to alter type dispatching.</param>
         public AmbientContractCollector( 
             IActivityMonitor monitor,
             Func<IActivityMonitor, AmbientTypeMap<CT>> mapFactory,
             Func<IActivityMonitor, T, Type, T> typeInfoFactory,
-            DynamicAssembly tempAssembly,
-            DynamicAssembly finalAssembly = null,
+            IDynamicAssembly tempAssembly,
             IAmbientContractDispatcher contextDispatcher = null )
         {
             if( monitor == null ) throw new ArgumentNullException( nameof( monitor ) );
@@ -124,7 +121,6 @@ namespace CK.Core
             _monitor = monitor;
             _contextDispatcher = contextDispatcher;
             _tempAssembly = tempAssembly;
-            _finalAssembly = finalAssembly;
             _collector = new Dictionary<Type, T>();
             _roots = new List<T>();
             _mapFactory = mapFactory;
@@ -221,7 +217,7 @@ namespace CK.Core
             public readonly CT Context;
             readonly IActivityMonitor _monitor;
             readonly IServiceProvider _services;
-            readonly DynamicAssembly _tempAssembly;
+            readonly IDynamicAssembly _tempAssembly;
 
             Dictionary<object,TC> _mappings;
             List<List<TC>> _concreteClasses;
@@ -229,7 +225,7 @@ namespace CK.Core
             List<Type> _abstractTails;
             int _registeredCount;
 
-            public PreResult( IActivityMonitor monitor, CT c, IServiceProvider services, DynamicAssembly tempAssembly )
+            public PreResult( IActivityMonitor monitor, CT c, IServiceProvider services, IDynamicAssembly tempAssembly )
             {
                 Debug.Assert( c != null );
                 Context = c;
@@ -327,12 +323,11 @@ namespace CK.Core
             IPocoSupportResult pocoSupport;
             using( _monitor.OpenInfo( "Creating Poco Types and PocoFactory." ) )
             {
-                pocoSupport = _pocoRegisterer.Finalize( _finalAssembly?.StubModuleBuilder ?? _tempAssembly.StubModuleBuilder, _monitor );
+                pocoSupport = _pocoRegisterer.Finalize( _tempAssembly.StubModuleBuilder, _monitor );
                 if( pocoSupport != null )
                 {
                     _tempAssembly.Memory.Add( typeof( IPocoSupportResult ), pocoSupport );
                     _tempAssembly.SourceModules.Add( PocoSourceGenerator.CreateModule( pocoSupport ) );
-                    if( _finalAssembly != null ) _finalAssembly.Memory.Add( typeof( IPocoSupportResult ), pocoSupport );
                     RegisterClass( pocoSupport.FinalFactory );
                 }
             }

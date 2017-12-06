@@ -19,8 +19,10 @@ namespace CK.Setup
         /// Generates final assembly.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
+        /// <param name="finalFilePath">Full path of the final dynamic assembly. Must end with '.dll'.</param>
+        /// <param name="saveSource">Whether generated source files must be saved alongside the final dll.</param>
         /// <returns>False if any error occured (logged into <paramref name="monitor"/>).</returns>
-        public bool GenerateFinalAssembly( IActivityMonitor monitor )
+        public bool GenerateFinalAssembly( IActivityMonitor monitor, string finalFilePath, bool saveSource )
         {
             bool hasError = false;
             using( monitor.OnError( () => hasError = true ) )
@@ -28,13 +30,13 @@ namespace CK.Setup
             {
                 try
                 {
-                    bool success = GenerateSourceCode( monitor, true );
+                    bool success = GenerateSourceCode( monitor, finalFilePath, true );
                     Debug.Assert( success || hasError, "!success ==> An error has been logged." );
                     return success;
                 }
                 catch( Exception ex )
                 {
-                    monitor.Error( $"While generating final assembly '{_tempAssembly.SaveFileName}'.", ex );
+                    monitor.Error( $"While generating final assembly '{finalFilePath}'.", ex );
                     return false;
                 }
             }

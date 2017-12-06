@@ -78,7 +78,7 @@ namespace CK.Setup
         }
 
 
-        bool GenerateSourceCode( IActivityMonitor monitor, bool saveSource )
+        bool GenerateSourceCode( IActivityMonitor monitor, string finalFilePath, bool saveSource )
         {
             try
             {
@@ -108,16 +108,14 @@ namespace CK.Setup
 
                 using( monitor.OpenInfo( "Compiling source code." ) )
                 {
-                    string fileName = _tempAssembly.SaveFilePath;
-
                     var g = new CodeGenerator( CodeWorkspace.Factory );
                     g.Modules.AddRange( _tempAssembly.SourceModules );
-                    var result = g.Generate( ws, fileName, new DefaultAssemblyResolver() );
+                    var result = g.Generate( ws, finalFilePath, new DefaultAssemblyResolver() );
                     if( saveSource && result.Sources != null )
                     {
                         for( int i = 0; i < result.Sources.Count; ++i )
                         {
-                            string sourceFile = $"{fileName}.{i}.cs";
+                            string sourceFile = $"{finalFilePath}.{i}.cs";
                             monitor.Info( $"Saved source file: {sourceFile}" );
                             File.WriteAllText( sourceFile, result.Sources[i].ToString() );
                         }
@@ -128,7 +126,7 @@ namespace CK.Setup
             }
             catch( Exception ex )
             {
-                monitor.Error( $"While generating final assembly '{_tempAssembly.SaveFileName}' from source code.", ex );
+                monitor.Error( $"While generating final assembly '{finalFilePath}' from source code.", ex );
                 return false;
             }
         }
@@ -220,7 +218,7 @@ class GContext : IContextualStObjMap
 }";
         #endregion
 
-        void GenerateContextSource( IActivityMonitor monitor, IDynamicAssembly a)
+        void GenerateContextSource( IActivityMonitor monitor, IDynamicAssembly a )
         {
             var global = a.DefaultGenerationNamespace.Workspace.Global
                           .EnsureUsing( "CK.Core" )

@@ -113,8 +113,7 @@ namespace CK.Setup.Tests
                   monitor ?? new ActivityMonitor(), 
                   l => new AmbientRoot(), 
                   ( l, p, t ) => new TypeInfo( p, t ), 
-                  new DynamicAssembly(null,BuilderFinalAssemblyConfiguration.DefaultAssemblyName), 
-                  null, 
+                  new DynamicAssembly(),
                   contextDispatcher )
         {
         }

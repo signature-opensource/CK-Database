@@ -103,7 +103,20 @@ namespace CK.Setup
 
                     var runCtx = new StObjEngineRunContext( _monitor, _startContext, r.OrderedStObjs );
                     runCtx.RunAspects( () => _status.Success = false );
-                    if( _status.Success ) _status.Success = r.GenerateFinalAssembly( _monitor );
+                    if( _status.Success )
+                    {
+                        string directory = _config.FinalAssemblyConfiguration.Directory;
+                        if( string.IsNullOrEmpty( directory ) )
+                        {
+                            directory = AppContext.BaseDirectory;
+                            _monitor.Info( $"No directory has been specified for final assembly. Trying to use the AppContext.BaseDirectory path: {directory}" );
+                        }
+                        string name = _config.GeneratedAssemblyName;
+                        if( !name.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase ) ) name += ".dll";
+
+                        string finalPath = System.IO.Path.Combine( directory, name );
+                        _status.Success = r.GenerateFinalAssembly( _monitor, finalPath, _config.GenerateSourceFiles );
+                    }
                     if( !_status.Success )
                     {
                         var errorPath = _status.LastErrorPath;
@@ -137,7 +150,6 @@ namespace CK.Setup
                 var configurator = _startContext.Configurator.FirstLayer;
                 StObjCollector stObjC = new StObjCollector(
                     _monitor,
-                    _config.FinalAssemblyConfiguration,
                     _config.TraceDependencySorterInput,
                     _config.TraceDependencySorterOutput,
                     _runtimeBuilder,

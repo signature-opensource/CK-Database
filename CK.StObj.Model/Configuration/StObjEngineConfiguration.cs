@@ -149,6 +149,11 @@ namespace CK.Core
         }
 
         /// <summary>
+        /// Gets or sets whether generated source files should be generated alongside the <see cref="GeneratedAssemblyName"/>.
+        /// </summary>
+        public bool GenerateSourceFiles { get; set; }
+
+        /// <summary>
         /// Gets the configuration that describes how Application Domain must be used during build and
         /// which assemlies and types must be discovered.
         /// </summary>

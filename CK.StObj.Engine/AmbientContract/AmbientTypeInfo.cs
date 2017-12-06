@@ -110,7 +110,7 @@ namespace CK.Core
             }
         }
 
-        internal bool CollectDeepestConcrete<T, TC>( IActivityMonitor monitor, IServiceProvider services, IContextualTypeMap context, TC generalization, DynamicAssembly tempAssembly, List<Tuple<TC,object>> lastConcretes, List<Type> abstractTails )
+        internal bool CollectDeepestConcrete<T, TC>( IActivityMonitor monitor, IServiceProvider services, IContextualTypeMap context, TC generalization, IDynamicAssembly tempAssembly, List<Tuple<TC,object>> lastConcretes, List<Type> abstractTails )
             where T : AmbientTypeInfo
             where TC : AmbientContextualTypeInfo<T,TC>
         {
