@@ -23,7 +23,6 @@ namespace CKSetup.Tests
                     archive,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",
-                    sourceGeneration: true,
                     runnerLogFilter: LogFilter.Debug,
                     remoteStoreUrl: storeUrl
                     ).Should().BeTrue();
@@ -45,7 +44,6 @@ namespace CKSetup.Tests
                     archive,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",
-                    sourceGeneration: true,
                     runnerLogFilter: LogFilter.Debug,
                     remoteStoreUrl: storeUrl
                     ).Should().BeTrue();

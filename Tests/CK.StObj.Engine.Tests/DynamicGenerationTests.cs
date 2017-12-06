@@ -23,12 +23,6 @@ namespace CK.StObj.Engine.Tests
 
             class AutoImplementedAttribute : Attribute, IAutoImplementorMethod
             {
-                public bool Implement( IActivityMonitor monitor, System.Reflection.MethodInfo m, IDynamicAssembly dynamicAssembly, System.Reflection.Emit.TypeBuilder b, bool isVirtual )
-                {
-                    CK.Reflection.EmitHelper.ImplementEmptyStubMethod( b, m, isVirtual );
-                    return true;
-                }
-
                 public bool Implement(IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, ITypeScope b)
                 {
                     b.AppendOverrideSignature( m )

@@ -35,12 +35,6 @@ namespace CKSetup
                 $"Assembly name, and file name (without the .dll suffix) of the generated assembly. Defaults to 'CK.StObj.AutoAssembly'.",
                 CommandOptionType.SingleValue );
 
-            var ilGenerationOpt = c.Option(
-                "-il|--ILGeneration",
-                $"Use the old IL emit generation (instead of new code source generation).",
-                CommandOptionType.NoValue
-                );
-
             var keepFilesOpt = c.Option(
                 "-kf|--KeepFolder",
                 $"Optional root path or path relative to the binPath that will be cleaned up and filled with a copy of all the runtime files that have been resolved and injected along with a FilesSkippedSinceTheyExist.txt file.",
@@ -71,7 +65,6 @@ namespace CKSetup
                             store,
                             connectionArg.TargetConnectionString,
                             generatedAssemblyNameOpt.Value(),
-                            !ilGenerationOpt.HasValue(),
                             LogFilter.Debug,
                             remote,
                             keepRuntimesFilesFolder: keepFilesOpt.HasValue() ? keepFilesOpt.Value() : null

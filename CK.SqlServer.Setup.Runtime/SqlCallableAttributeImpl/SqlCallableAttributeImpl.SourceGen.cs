@@ -384,5 +384,90 @@ namespace CK.SqlServer.Setup
             monitor.Info( GenerateBothSignatures( sqlObject, m, mParameters, extraMethodParameters ) );
             return false;
         }
+
+        static string GenerateBothSignatures( ISqlServerCallableObject sqlObject, MethodInfo m, ParameterInfo[] mParameters, IList<ParameterInfo> extraParameters )
+        {
+            StringBuilder b = new StringBuilder();
+            b.AppendLine( sqlObject.ToStringSignature( false ) );
+            DumpMethodSignature( b, m, mParameters );
+            if( extraParameters != null && extraParameters.Count > 0 )
+            {
+                b.Append( Environment.NewLine );
+                b.Append( " - Extra Parameters: " );
+                DumpParameters( b, extraParameters );
+            }
+            return b.ToString();
+        }
+
+        internal static string DumpMethodSignature( MethodInfo m )
+        {
+            StringBuilder b = new StringBuilder();
+            DumpMethodSignature( b, m );
+            return b.ToString();
+        }
+
+        static void DumpMethodSignature( StringBuilder b, MethodInfo m, IEnumerable<ParameterInfo> mParameters = null )
+        {
+            b.Append( "Method " ).Append( m.DeclaringType.Name ).Append( '.' ).Append( m.Name ).Append( "( " );
+            DumpParameters( b, mParameters ?? m.GetParameters() );
+            b.Append( " )" );
+            if( m.ReturnType != typeof( void ) )
+            {
+                b.Append( " => " ).Append( m.ReturnType.Name );
+            }
+        }
+
+        internal static string DumpParameters( IEnumerable<ParameterInfo> parameters, bool withParenthesis )
+        {
+            StringBuilder b = new StringBuilder();
+            if( withParenthesis ) b.Append( "( " );
+            DumpParameters( b, parameters );
+            if( withParenthesis ) b.Append( " )" );
+            return b.ToString();
+        }
+
+        static void DumpParameters( StringBuilder b, IEnumerable<ParameterInfo> parameters )
+        {
+            bool atLeastOne = false;
+            foreach( var mP in parameters )
+            {
+                atLeastOne = DumpParameter( b, atLeastOne, mP );
+            }
+        }
+
+        static string DumpParameter( ParameterInfo mP, bool commaPrefix = false )
+        {
+            StringBuilder b = new StringBuilder();
+            DumpParameter( b, commaPrefix, mP );
+            return b.ToString();
+        }
+
+        static bool DumpParameter( StringBuilder b, bool atLeastOne, ParameterInfo mP )
+        {
+            if( atLeastOne ) b.Append( ", " );
+            else atLeastOne = true;
+            if( mP.ParameterType.IsByRef )
+            {
+                b.Append( mP.IsOut ? "out " : "ref " ).Append( mP.ParameterType.GetElementType().Name );
+            }
+            else b.Append( mP.ParameterType.Name );
+            b.Append( ' ' ).Append( mP.Name );
+            if( !mP.ParameterType.IsByRef && mP.HasDefaultValue )
+            {
+                object d = mP.DefaultValue;
+                if( d == null ) b.Append( " = null" );
+                else b.Append( " = " ).Append( d.ToString() );
+            }
+            return atLeastOne;
+        }
+
+        static bool CheckParameterType( Type t, ISqlServerParameter p, IActivityMonitor monitor )
+        {
+            if( p.SqlType.IsTypeCompatible( t ) ) return true;
+            monitor.Error( $"Sql parameter '{p.ToStringClean()}' is not compliant with Type {t.Name}." );
+            return false;
+        }
+
+
     }
 }

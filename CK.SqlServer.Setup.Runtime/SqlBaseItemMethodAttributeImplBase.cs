@@ -26,7 +26,6 @@ namespace CK.SqlServer.Setup
     {
         readonly string _expectedItemType;
         readonly ISqlServerParser _parser;
-        bool _implementHasBeenAlreadyBeenCalled;
 
         /// <summary>
         /// Initializes a new <see cref="SqlBaseItemMethodAttributeImplBase"/> bound to a <see cref="SetupObjectItemMemberAttributeBase"/> 
@@ -49,11 +48,11 @@ namespace CK.SqlServer.Setup
         protected override SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeRegisterer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
         {
             return SqlBaseItem.Create(
-                _parser, 
-                r, 
-                (SqlContextLocName)name, 
-                (SqlPackageBaseItem)firstContainer, 
-                (SqlBaseItem)transformArgument, 
+                _parser,
+                r,
+                (SqlContextLocName)name,
+                (SqlPackageBaseItem)firstContainer,
+                (SqlBaseItem)transformArgument,
                 new[] { _expectedItemType },
                 CreateSqlBaseItem );
         }
@@ -73,78 +72,17 @@ namespace CK.SqlServer.Setup
             return null;
         }
 
-        bool IAutoImplementorMethod.Implement( IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, System.Reflection.Emit.TypeBuilder tB, bool isVirtual )
+        bool IAutoImplementorMethod.Implement( IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, ITypeScope b )
         {
-            // 1 - Not ready to implement anything (no body yet): 
-            //     - returns false to implement a stub.
-            if( SetupObjectItem == null )
-            {
-                if( _implementHasBeenAlreadyBeenCalled )
-                {
-                    monitor.Warn( $"Implement has already been called: no resource should have been found for method {Member.Name}." );
-                }
-                else
-                {
-                    Debug.Assert( m == Member, "IAutoImplementorMethod called with a method that differs from the IAttributeAmbientContextBoundInitializer initilaized member." );
-                    _implementHasBeenAlreadyBeenCalled = true;
-                }
-                return false;
-            }
-            // 3 - Ready to implement the method (SetupObjectItem has been initialized by DynamicItemInitialize).
+            // SetupObjectItem has been initialized by DynamicItemInitialize.
+            if( SetupObjectItem == null ) return false;
             using( monitor.OpenInfo( $"Generating {SqlCallableAttributeImpl.DumpMethodSignature( m )}." ) )
             {
                 var target = SetupObjectItem is SqlTransformerItem
                                 ? ((SqlTransformerItem)SetupObjectItem).Target
                                 : (SetupObjectItem.TransformTarget ?? SetupObjectItem);
                 var item = (SqlObjectItem)target;
-                return DoImplement( monitor, m, item, dynamicAssembly, tB, isVirtual );
-            }
-        }
-
-        /// <summary>
-        /// Implements the given method on the given <see cref="TypeBuilder"/> that is bound to the given <see cref="SqlObjectItem"/>.
-        /// Implementations can rely on the <paramref name="dynamicAssembly"/> to store shared information if needed.
-        /// </summary>
-        /// <param name="monitor">The monitor to use.</param>
-        /// <param name="m">The method to implement.</param>
-        /// <param name="sqlItem">The associated <see cref="SqlBaseItem"/> (target of the method).</param>
-        /// <param name="dynamicAssembly">Dynamic assembly being implemented.</param>
-        /// <param name="tB">The type builder to use.</param>
-        /// <param name="isVirtual">True if a virtual method must be implemented. False if it must be sealed.</param>
-        /// <returns>
-        /// True if the method is actually implemented, false if, for any reason, another implementation (empty for instance) must be generated 
-        /// (for instance, whenever the method is not ready to be implemented). 
-        /// Any error must be logged into the <paramref name="monitor"/>.
-        /// </returns>
-        protected abstract bool DoImplement( IActivityMonitor monitor, MethodInfo m, SqlBaseItem sqlItem, IDynamicAssembly dynamicAssembly, System.Reflection.Emit.TypeBuilder tB, bool isVirtual );
-
-        bool IAutoImplementorMethod.Implement(IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, ITypeScope b)
-        {
-            //// 1 - Not ready to implement anything (no body yet): 
-            ////     - Checks that the MethodInfo is the Member (Debug only).
-            ////     - returns false to implement a stub.
-            //if (SetupObjectItem == null)
-            //{
-            //    if (_implementHasBeenAlreadyBeenCalled)
-            //    {
-            //        monitor.Warn().Send("Implement has already been called: no resource should have been found for method {0}.", Member.Name);
-            //    }
-            //    else
-            //    {
-            //        Debug.Assert(CK.Reflection.MemberInfoEqualityComparer.Default.Equals(m, Member), "IAutoImplementorMethod called with a method that differs from the IAttributeAmbientContextBoundInitializer initilaized member.");
-            //        _implementHasBeenAlreadyBeenCalled = true;
-            //    }
-            //    return false;
-            //}
-            if (SetupObjectItem == null) return false;
-            // 3 - Ready to implement the method (SetupObjectItem has been initialized by DynamicItemInitialize).
-            using (monitor.OpenInfo( $"Generating {SqlCallableAttributeImpl.DumpMethodSignature( m )}." ))
-            {
-                var target = SetupObjectItem is SqlTransformerItem
-                                ? ((SqlTransformerItem)SetupObjectItem).Target
-                                : (SetupObjectItem.TransformTarget ?? SetupObjectItem);
-                var item = (SqlObjectItem)target;
-                return DoImplement(monitor, m, item, dynamicAssembly, b);
+                return DoImplement( monitor, m, item, dynamicAssembly, b );
             }
         }
 
@@ -158,11 +96,10 @@ namespace CK.SqlServer.Setup
         /// <param name="dynamicAssembly">Dynamic assembly being implemented.</param>
         /// <param name="b">The class builder to use.</param>
         /// <returns>
-        /// True if the method is actually implemented, false if, for any reason, another implementation (empty for instance) must be generated 
-        /// (for instance, whenever the method is not ready to be implemented). 
+        /// True on success, false on error. 
         /// Any error must be logged into the <paramref name="monitor"/>.
         /// </returns>
-        protected abstract bool DoImplement(IActivityMonitor monitor, MethodInfo m, SqlBaseItem sqlItem, IDynamicAssembly dynamicAssembly, ITypeScope b);
+        protected abstract bool DoImplement( IActivityMonitor monitor, MethodInfo m, SqlBaseItem sqlItem, IDynamicAssembly dynamicAssembly, ITypeScope b );
     }
 
 }

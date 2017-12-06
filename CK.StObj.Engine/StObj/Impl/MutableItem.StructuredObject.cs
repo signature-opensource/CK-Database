@@ -53,15 +53,6 @@ namespace CK.Setup
                 return null;
             }
         }
-#if NET461
-        public Type CreateFinalType( IActivityMonitor monitor, DynamicAssembly a )
-        {
-            Debug.Assert( Specialization == null );
-            return _leafData.ImplementableTypeInfo == null 
-                        ? Type 
-                        : _leafData.ImplementableTypeInfo.CreateFinalType( monitor, a );
-        }
-#endif
 
         /// <summary>
         /// Gets the properties to set right before the call to StObjConstruct.

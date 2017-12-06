@@ -16,16 +16,6 @@ namespace CK.Core
     {
         public class NoImplementationMarker : IAutoImplementorMethod, IAutoImplementorProperty
         {
-            public bool Implement( IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, System.Reflection.Emit.TypeBuilder b, bool isVirtual )
-            {
-                throw new NotSupportedException();
-            }
-
-            public bool Implement( IActivityMonitor monitor, PropertyInfo p, IDynamicAssembly dynamicAssembly, System.Reflection.Emit.TypeBuilder b, bool isVirtual )
-            {
-                throw new NotSupportedException();
-            }
-
             public bool Implement( IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, ITypeScope b )
             {
                 throw new NotSupportedException();
@@ -168,68 +158,6 @@ namespace CK.Core
             }
         }
 
-#if NET461
-        /// <summary>
-        /// Implements a final Type in a dynamic assembly that specializes <see cref="AbstractType"/> and returns it.
-        /// All current or last <see cref="IAutoImplementorMethod"/> and <see cref="IAutoImplementorProperty"/> are used.
-        /// Implemented method and properties are not virtual and the resulting type is sealed.
-        /// </summary>
-        /// <param name="monitor">Logger to use.</param>
-        /// <param name="assembly">Dynamic assembly into which the type must be created.</param>
-        /// <returns>The newly created type in the dynamic assembly. Null if an error occurred.</returns>
-        public Type CreateFinalType( IActivityMonitor monitor, IDynamicAssembly assembly )
-        {
-            try
-            {
-                TypeAttributes tA = TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed;
-                System.Reflection.Emit.TypeBuilder b = assembly.ModuleBuilder.DefineType(assembly.AutoNextTypeName(AbstractType.Name), tA, AbstractType);
-                // Relayed constructors replicates all their potential attributes (included attributes on parameters).
-                b.DefinePassThroughConstructors(c => c.Attributes | MethodAttributes.Public);
-                bool hasFatal = false;
-                foreach (var am in MethodsToImplement)
-                {
-                    IAutoImplementorMethod m = am.ImplementorToUse;
-                    if (m == null || m == UnimplementedMarker)
-                    {
-                        monitor.Fatal( $"Method '{AbstractType.FullName}.{am.Method.Name}' has no valid associated IAutoImplementorMethod." );
-                        hasFatal = true;
-                    }
-                    else
-                    {
-                        if (!m.Implement(monitor, am.Method, assembly, b, false))
-                        {
-                            monitor.Fatal( $"Method '{AbstractType.FullName}.{am.Method.Name}' can not be implemented by its IAutoImplementorMethod.");
-                            hasFatal = true;
-                        }
-                    }
-                }
-                foreach (var ap in PropertiesToImplement)
-                {
-                    IAutoImplementorProperty p = ap.ImplementorToUse;
-                    if (p == null || p == UnimplementedMarker)
-                    {
-                        monitor.Fatal( $"Property '{AbstractType.FullName}.{ap.Property.Name}' has no valid associated IAutoImplementorProperty.");
-                        hasFatal = true;
-                    }
-                    else
-                    {
-                        if (!p.Implement(monitor, ap.Property, assembly, b, false))
-                        {
-                            monitor.Fatal( $"Property '{AbstractType.FullName}.{ap.Property.Name}' can not be implemented by its IAutoImplementorProperty.");
-                            hasFatal = true;
-                        }
-                    }
-                }
-                if (hasFatal) return null;
-                return b.CreateType();
-            }
-            catch (Exception ex)
-            {
-                monitor.Fatal( $"While implementing Type '{AbstractType.FullName}'.", ex );
-                return null;
-            }
-        }
-#endif
         public string GenerateType( IActivityMonitor monitor, IDynamicAssembly a )
         {
             var cB = a.DefaultGenerationNamespace.CreateType( t => t.Append( "public class " )

@@ -15,6 +15,7 @@ namespace CKSetup
     static public class Facade
     {
 
+        #region WIP: Run support (no more StObj dependencies).
         /// <summary>
         /// 
         /// </summary>
@@ -273,11 +274,7 @@ namespace CKSetup
             }
         }
 
-
-
-
-
-
+        #endregion
 
         /// <summary>
         /// This is static in order to ease tests.
@@ -287,11 +284,9 @@ namespace CKSetup
         /// <param name="archive">The opened, valid, Zip runtime.</param>
         /// <param name="targetConnectionString">The default connection string.</param>
         /// <param name="generatedAssemblyName">Name of the assembly to generate.</param>
-        /// <param name="sourceGeneration">True to generate source code.</param>
         /// <param name="runnerLogFilter">Log filter that the runner must use.</param>
         /// <param name="missingImporter">Optional component importer.</param>
         /// <param name="remoteStoreUrl">Optional remote store url (ignored if a <paramref name="missingImporter"/> is specified).</param>
-        /// <param name="debugBreakInCKStObjRunner">Calls Debugger.Launch() at the start of CK.StObj.Runner entry point.</param>
         /// <param name="keepRuntimesFilesFolder">
         /// Optional root path or path relative to the <paramref name="binPath"/> that will be cleaned up and
         /// filled with a copy of all the runtime files that have been resolved and injected along
@@ -304,7 +299,6 @@ namespace CKSetup
             RuntimeArchive archive,
             string targetConnectionString,
             string generatedAssemblyName,
-            bool sourceGeneration,
             LogFilter runnerLogFilter,
             IComponentImporter missingImporter = null,
             Uri remoteStoreUrl = null,
@@ -345,8 +339,7 @@ namespace CKSetup
                         var config = BuildSetupConfig(
                                         targetConnectionString,
                                         toSetup,
-                                        generatedAssemblyName,
-                                        sourceGeneration );
+                                        generatedAssemblyName  );
                         var configPath = WritDBSetupConfig( monitor, config, binPath, runnerLogFilter );
                         if( keepFolder != null )
                         {
@@ -625,8 +618,7 @@ namespace CKSetup
         static StObjEngineConfiguration BuildSetupConfig(
             string connectionString,
             IEnumerable<string> assembliesToSetup,
-            string dynamicAssemblyName,
-            bool sourceGeneration )
+            string dynamicAssemblyName )
         {
             var config = new StObjEngineConfiguration();
             config.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.AddRange( assembliesToSetup );

@@ -45,7 +45,6 @@ namespace CKSetup.Tests
                         zip,
                         TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                         "SqlCallDemo.Generated.ByCKSetup",
-                        sourceGeneration: true,
                         runnerLogFilter: LogFilter.Parse( logFilter ),
                         keepRuntimesFilesFolder: keepFolder
                         ).Should().BeTrue();
@@ -74,7 +73,6 @@ namespace CKSetup.Tests
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",
-                    sourceGeneration: true,
                     runnerLogFilter: LogFilter.Parse( logFilter )
                     ).Should().BeFalse();
             }
@@ -92,7 +90,6 @@ namespace CKSetup.Tests
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",
-                    sourceGeneration: true,
                     runnerLogFilter: LogFilter.Parse( logFilter )
                     ).Should().BeTrue();
             }
@@ -110,7 +107,6 @@ namespace CKSetup.Tests
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",
-                    sourceGeneration: true,
                     runnerLogFilter: LogFilter.Parse( logFilter )
                     ).Should().BeTrue();
             }
@@ -130,7 +126,6 @@ namespace CKSetup.Tests
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlCallDemo" ),
                     "SqlCallDemo.Generated.ByCKSetup",
-                    sourceGeneration: true,
                     runnerLogFilter: LogFilter.Parse( logFilter ),
                     missingImporter: new FakeRemote( remoteZip )
                     ).Should().BeTrue();
@@ -158,7 +153,6 @@ namespace CKSetup.Tests
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlActorPackage" ),
                     "SqlActorPackage.Generated.ByCKSetup",
-                    sourceGeneration: true,
                     runnerLogFilter: LogFilter.Terse,
                     missingImporter: missingImporter
                     ).Should().BeTrue();
@@ -184,7 +178,6 @@ namespace CKSetup.Tests
                     zip,
                     TestHelper.GetConnectionString( "CKDB_TEST_SqlActorPackage" ),
                     "SqlActorPackage.Generated.ByCKSetup",
-                    sourceGeneration: true,
                     runnerLogFilter: LogFilter.Verbose,
                     missingImporter: missingImporter
                     ).Should().BeFalse();
