@@ -16,19 +16,21 @@ namespace CK.Setup
     public partial class StObjCollectorResult
     {
         /// <summary>
-        /// Generates final assembly must be called only when <see cref="BuilderFinalAssemblyConfiguration.GenerateFinalAssemblyOption"/>
-        /// is not <see cref="BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile"/>.
+        /// Generates final assembly.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
-        /// <param name="callPEVrify">True to call PEVerify on the generated assembly.</param>
         /// <returns>False if any error occured (logged into <paramref name="monitor"/>).</returns>
-        public bool GenerateFinalAssembly( IActivityMonitor monitor, bool callPEVrify, bool withIL, bool withSrc )
+        public bool GenerateFinalAssembly( IActivityMonitor monitor )
         {
+            bool hasError = false;
+            using( monitor.OnError( () => hasError = true ) )
             using( monitor.OpenInfo( "Generating StObj dynamic assembly." ) )
             {
                 try
                 {
-                    return withSrc ? GenerateSourceCode( monitor, true, withIL ) : true;
+                    bool success = GenerateSourceCode( monitor, true );
+                    Debug.Assert( success || hasError, "!success ==> An error has been logged." );
+                    return success;
                 }
                 catch( Exception ex )
                 {

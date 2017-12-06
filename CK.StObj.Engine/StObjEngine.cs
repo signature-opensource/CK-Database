@@ -103,7 +103,7 @@ namespace CK.Setup
 
                     var runCtx = new StObjEngineRunContext( _monitor, _startContext, r.OrderedStObjs );
                     runCtx.RunAspects( () => _status.Success = false );
-                    if( _status.Success ) _status.Success = GenerateStObjFinalAssembly( r );
+                    if( _status.Success ) _status.Success = r.GenerateFinalAssembly( _monitor );
                     if( !_status.Success )
                     {
                         var errorPath = _status.LastErrorPath;
@@ -123,24 +123,6 @@ namespace CK.Setup
                 DisposeDisposableAspects();
                 _status.Dispose();
             }
-        }
-
-        private bool GenerateStObjFinalAssembly( StObjCollectorResult r )
-        {
-            bool success = true;
-            var generateConfig = _config.FinalAssemblyConfiguration;
-            var generateOption = generateConfig.GenerateFinalAssemblyOption;
-            if( generateOption != BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile )
-            {
-                bool hasError = false;
-                using( _monitor.OnError( () => hasError = true ) )
-                {
-                    bool peVerify = generateOption == BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFileAndPEVerify;
-                    success = r.GenerateFinalAssembly( _monitor, peVerify, false, true );
-                    Debug.Assert( success || hasError, "!success ==> An error has been logged." );
-                }
-            }
-            return success;
         }
 
         StObjCollectorResult SafeBuildStObj()

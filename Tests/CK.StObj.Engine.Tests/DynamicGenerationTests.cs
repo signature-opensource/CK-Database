@@ -100,9 +100,9 @@ namespace CK.StObj.Engine.Tests
                 var r = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( r.HasFatalError, Is.False );
 
-                r.GenerateFinalAssembly( TestHelper.Monitor, false, true, true );
+                r.GenerateFinalAssembly( TestHelper.Monitor );
                 {
-                    var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_SimpleEmitSrc" );
+                    var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_SimpleEmit" );
                     IStObjMap c = StObjContextRoot.Load( a, runtimeBuilder, TestHelper.Monitor );
                     Assert.That( typeof( B ).IsAssignableFrom( c.Default.ToLeafType( typeof( A ) ) ) );
                     Assert.That( c.Default.ToLeafType( typeof( IC ) ), Is.SameAs( typeof( D ) ) );
@@ -193,10 +193,10 @@ namespace CK.StObj.Engine.Tests
                     Assert.That( typeof( A ).GetProperty( "StObjPower" ).GetValue( theA, null ), Is.EqualTo( "This is the A property." ) );
                 }
 
-                r.GenerateFinalAssembly( TestHelper.Monitor, false, true, true );
+                r.GenerateFinalAssembly( TestHelper.Monitor );
 
                 {
-                    var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_ConstructCalledSrc" );
+                    var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_ConstructCalled" );
                     IStObjMap c = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
                     Assert.That( c.Default.Obtain<B>().TheA, Is.SameAs( c.Default.Obtain<A>() ).And.SameAs( c.Default.Obtain<ASpec>() ) );
                     Assert.That( c.Default.Obtain<ASpec>().TheB, Is.SameAs( c.Default.Obtain<B>() ) );
@@ -314,10 +314,10 @@ namespace CK.StObj.Engine.Tests
                     Assert.That( theA.StObjInitializeOnACalled, Is.False, "StObjInitialize is NOT called on temporary instances." );
                 }
 
-                r.GenerateFinalAssembly( TestHelper.Monitor, false, true, true );
+                r.GenerateFinalAssembly( TestHelper.Monitor );
 
                 {
-                    var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_PostBuildSetSrc" );
+                    var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_PostBuildSet" );
                     IStObjMap c = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
                     Assert.That( c.Default.Obtain<B>().TheA, Is.SameAs( c.Default.Obtain<A>() ).And.SameAs( c.Default.Obtain<ASpec>() ) );
                     Assert.That( c.Default.Obtain<ASpec>().TheB, Is.SameAs( c.Default.Obtain<B>() ) );

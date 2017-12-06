@@ -78,7 +78,7 @@ namespace CK.Setup
         }
 
 
-        public bool GenerateSourceCode( IActivityMonitor monitor, bool saveSource, bool withSrcSuffix )
+        bool GenerateSourceCode( IActivityMonitor monitor, bool saveSource )
         {
             try
             {
@@ -110,16 +110,19 @@ namespace CK.Setup
                 {
                     Debug.Assert( _tempAssembly.SaveFilePath.EndsWith( "Src.dll" ) );
                     string fileName = _tempAssembly.SaveFilePath;
-                    if( !withSrcSuffix ) fileName = fileName.Substring( 0, fileName.Length - 7 ) + ".dll";
+                    fileName = fileName.Substring( 0, fileName.Length - 7 ) + ".dll";
 
                     var g = new CodeGenerator( CodeWorkspace.Factory );
                     g.Modules.AddRange( _tempAssembly.SourceModules );
                     var result = g.Generate( ws, fileName, new DefaultAssemblyResolver() );
                     if( saveSource && result.Sources != null )
                     {
-                        string sourceFile = fileName + ".cs";
-                        monitor.Info( $"Saved source file: {sourceFile}" );
-                        File.WriteAllText( sourceFile, result.Sources.Select( t => t.ToString() ).Concatenate( Environment.NewLine ) );
+                        for( int i = 0; i < result.Sources.Count; ++i )
+                        {
+                            string sourceFile = $"{fileName}.{i}.cs";
+                            monitor.Info( $"Saved source file: {sourceFile}" );
+                            File.WriteAllText( sourceFile, result.Sources[i].ToString() );
+                        }
                     }
                     result.LogResult( monitor );
                     return result.Success;
@@ -132,20 +135,8 @@ namespace CK.Setup
             }
         }
 
-        void GenerateContextSource( IActivityMonitor monitor, IDynamicAssembly a)
-        {
-            var global = a.DefaultGenerationNamespace.Workspace.Global
-                          .EnsureUsing( "CK.Core" )
-                          .EnsureUsing( "System" )
-                          .EnsureUsing( "System.Collections.Generic" )
-                          .EnsureUsing( "System.Linq" )
-                          .EnsureUsing( "System.Text" )
-                          .EnsureUsing( "System.Reflection" );
-
-            var ns = global.FindOrCreateNamespace( "CK.StObj" );
-
-            #region GStObj & GContext
-            const string sourceGStObj = @"
+        #region GStObj & GContext
+        static readonly string _sourceGStObj = @"
 class GStObj : IStObj
 {
     public GStObj( IStObjRuntimeBuilder rb, Type t, IStObj g, Type actualType )
@@ -174,12 +165,12 @@ class GStObj : IStObj
     internal StObjImplementation AsStObjImplementation => new StObjImplementation( this, Instance );
 }";
 
-            const string sourceGContext = @"
+        static readonly string _sourceGContext = @"
 class GContext : IContextualStObjMap
 {
     readonly Dictionary<Type, GStObj> _mappings;
 
-    public GContext( GeneratedRootContext allContexts, Dictionary<Type, GStObj> map, string name)
+    public GContext( " + StObjContextRoot.RootContextTypeName + @" allContexts, Dictionary<Type, GStObj> map, string name)
     {
         AllContexts = allContexts;
         _mappings = map;
@@ -199,7 +190,7 @@ class GContext : IContextualStObjMap
 
     public IEnumerable<KeyValuePair<Type, object>> Mappings => _mappings.Select( v => new KeyValuePair<Type, object>( v.Key, v.Value.Instance ) );
 
-    internal GeneratedRootContext AllContexts { get; } 
+    internal " + StObjContextRoot.RootContextTypeName + @" AllContexts { get; } 
 
     IStObjMap IContextualStObjMap.AllContexts => AllContexts;
 
@@ -229,15 +220,27 @@ class GContext : IContextualStObjMap
         return null;
     }
 }";
-            #endregion
+        #endregion
 
-            ns.Append( sourceGStObj ).NewLine();
-            ns.Append( sourceGContext ).NewLine();
-            var rootCtx = ns.CreateType( "public class GeneratedRootContext : IStObjMap" )
+        void GenerateContextSource( IActivityMonitor monitor, IDynamicAssembly a)
+        {
+            var global = a.DefaultGenerationNamespace.Workspace.Global
+                          .EnsureUsing( "CK.Core" )
+                          .EnsureUsing( "System" )
+                          .EnsureUsing( "System.Collections.Generic" )
+                          .EnsureUsing( "System.Linq" )
+                          .EnsureUsing( "System.Text" )
+                          .EnsureUsing( "System.Reflection" );
+
+            var ns = global.FindOrCreateNamespace( "CK.StObj" );
+
+            ns.Append( _sourceGStObj ).NewLine();
+            ns.Append( _sourceGContext ).NewLine();
+            var rootCtx = ns.CreateType( "public class " + StObjContextRoot.RootContextTypeName + " : IStObjMap" )
                                 .Append( "readonly GContext[] _contexts;" ).NewLine()
                                 .Append( "internal readonly GStObj[] _stObjs;" ).NewLine();
 
-            rootCtx.Append( "public GeneratedRootContext(IActivityMonitor monitor, IStObjRuntimeBuilder rb)" ).NewLine()
+            rootCtx.Append( "public " ).Append( StObjContextRoot.RootContextTypeName ).Append( "(IActivityMonitor monitor, IStObjRuntimeBuilder rb)" ).NewLine()
                    .Append( "{" ).NewLine()
                    .Append( $"_stObjs = new GStObj[{_orderedStObjs.Count}];" ).NewLine();
             int iStObj = 0;

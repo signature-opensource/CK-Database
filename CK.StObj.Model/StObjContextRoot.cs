@@ -21,12 +21,18 @@ namespace CK.Core
     /// Abstract root object that is a <see cref="IStObjMap"/> and is able to build and load concrete maps thanks
     /// to static methods.
     /// </summary>
-    public abstract partial class StObjContextRoot : IStObjMap
+    public abstract partial class StObjContextRoot
     {
         /// <summary>
         /// Holds the name of the root class.
         /// </summary>
-        public static readonly string RootContextTypeName = "CK.StObj.GeneratedRootContext";
+        public static readonly string RootContextTypeName = "GeneratedRootContext";
+
+        /// <summary>
+        /// Holds the full name of the root class.
+        /// </summary>
+        public static readonly string RootContextTypeFullName = "CK.StObj." + RootContextTypeName;
+
         /// <summary>
         /// Holds the name of 'Construct' method.
         /// </summary>
@@ -36,6 +42,32 @@ namespace CK.Core
         /// Holds the name of 'Initialize' method.
         /// </summary>
         public static readonly string InitializeMethodName = "StObjInitialize";
+
+        static IStObjRuntimeBuilder _stObjBuilder;
+
+        /// <summary>
+        /// Default <see cref="IStObjRuntimeBuilder"/> that will be used.
+        /// Never null: defaults to <see cref="BasicStObjRuntimeBuilder"/>.
+        /// </summary>
+        public static IStObjRuntimeBuilder DefaultStObjRuntimeBuilder
+        {
+            get => _stObjBuilder ?? BasicStObjRuntimeBuilder;
+            set => _stObjBuilder = value;
+        }
+
+        /// <summary>
+        /// Default and trivial implementation of <see cref="IStObjRuntimeBuilder"/> where <see cref="IStObjRuntimeBuilder.CreateInstance"/> implementation 
+        /// uses <see cref="Activator.CreateInstance(Type)"/> to call the public default constructor of the type.
+        /// </summary>
+        public readonly static IStObjRuntimeBuilder BasicStObjRuntimeBuilder = new SimpleStObjRuntimeBuilder();
+
+        class SimpleStObjRuntimeBuilder : IStObjRuntimeBuilder
+        {
+            public object CreateInstance( Type finalType )
+            {
+                return Activator.CreateInstance( finalType );
+            }
+        }
 
         static readonly HashSet<Assembly> _alreadyLoaded = new HashSet<Assembly>();
 
@@ -60,7 +92,7 @@ namespace CK.Core
             {
                 try
                 {
-                    Type t = a.GetType( RootContextTypeName, true, false );
+                    Type t = a.GetType( RootContextTypeFullName, true, false );
                     return (IStObjMap)Activator.CreateInstance( t, new object[] { m, runtimeBuilder ?? DefaultStObjRuntimeBuilder } );
                 }
                 catch( Exception ex )
