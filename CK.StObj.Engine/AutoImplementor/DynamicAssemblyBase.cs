@@ -18,7 +18,6 @@ namespace CK.Core
     {
         int _typeID;
         readonly IDictionary _memory;
-        readonly List<Action<IDynamicAssembly>> _postActions;
         readonly string _saveFileName;
         readonly string _saveFilePath;
 
@@ -39,23 +38,12 @@ namespace CK.Core
                 _saveFilePath = System.IO.Path.Combine( directory, _saveFileName );
             }
             _memory = new Dictionary<object, object>();
-            _postActions = new List<Action<IDynamicAssembly>>();
 
             SourceModules = new List<ICodeGeneratorModule>();
             var ws = CodeWorkspace.Create();
             ws.Global.Append( "[assembly:CK.Setup.ExcludeFromSetup()]" ).NewLine();
             DefaultGenerationNamespace = ws.Global.FindOrCreateNamespace( "CK._g" );
         }
-
-        //class ExcludeFromSetupModule : ICodeGeneratorModule
-        //{
-        //    public void Inject( ICodeWorkspace code )
-        //    {
-        //        code.Global.Append( "[assembly:CK.Setup.ExcludeFromSetup()]" );
-        //    }
-
-        //    public IReadOnlyList<SyntaxTree> Rewrite( IReadOnlyList<SyntaxTree> trees ) => trees;
-        //}
 
         protected AssemblyName AssemblyName { get; }
 
@@ -98,34 +86,6 @@ namespace CK.Core
         /// Methods that generate code can rely on this to store shared information as required by their generation process.
         /// </summary>
         public IDictionary Memory => _memory;
-
-        /// <summary>
-        /// Pushes an action that will be executed before the generation of the final assembly: use this to 
-        /// create final type from a <see cref="TypeBuilder"/> or to execute any action that must be done at the end 
-        /// of the generation process.
-        /// An action can be pushed at any moment and a pushed action can push another action.
-        /// </summary>
-        /// <param name="postAction">Action to execute.</param>
-        public void PushFinalAction( Action<IDynamicAssembly> postAction )
-        {
-            if( postAction == null ) throw new ArgumentNullException( "postAction" );
-            _postActions.Add( postAction );
-        }
-
-        /// <summary>
-        /// Executes registered post actions and clears them.
-        /// </summary>
-        protected void ExecutePostActions()
-        {
-            int i = 0;
-            while( i < _postActions.Count )
-            {
-                var a = _postActions[i];
-                _postActions[i++] = null;
-                a( this );
-            }
-            _postActions.Clear();
-        }
     } 
 
 }

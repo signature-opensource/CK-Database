@@ -759,92 +759,28 @@ namespace CK.SqlServer.Setup
             /// </summary>
             const string _funcHolderTypeName = "CK.<FuncResultBuilder>";
 
-            class FuncTypeHolder
-            {
-                public readonly ITypeScope ClassBuilder;
-                public readonly System.Reflection.Emit.TypeBuilder TypeBuilder;
-                public FuncImpl FirstFuncImpl;
-                public FuncTypeHolder(System.Reflection.Emit.TypeBuilder b, ITypeScope classBuilder )
-                {
-                    TypeBuilder = b;
-                    ClassBuilder = classBuilder;
-                }
-            }
-
-            class FuncImpl
-            {
-                public readonly FieldInfo Field;
-                public readonly MethodInfo Func;
-                public readonly FuncImpl Next;
-                public FuncImpl( FieldInfo field, MethodInfo func, FuncImpl next ) { Field = field; Func = func; Next = next; }
-            }
-
-            FuncTypeHolder AssumeFuncTypeHolder(IDynamicAssembly dynamicAssembly)
-            {
-                FuncTypeHolder fB = (FuncTypeHolder)dynamicAssembly.Memory[_funcHolderTypeName];
-                if( fB == null )
-                {
-                    System.Reflection.Emit.TypeBuilder tB = dynamicAssembly.ModuleBuilder.DefineType(_funcHolderTypeName, TypeAttributes.Class | TypeAttributes.Sealed | TypeAttributes.NotPublic);
-                    ITypeScope cB = dynamicAssembly.DefaultGenerationNamespace.CreateType("static class _build_func_");
-                    dynamicAssembly.Memory.Add(_funcHolderTypeName, (fB = new FuncTypeHolder(tB, cB)));
-                    dynamicAssembly.PushFinalAction(FinalizeFuncHolderType);
-                }
-                return fB;
-            }
-
-            internal FieldInfo AssumeResultBuilder( IDynamicAssembly dynamicAssembly )
-            {
-                string funcKey = _funcHolderTypeName + ':' + _funcResultBuilderSignature.ToString();
-                FuncImpl f = (FuncImpl)dynamicAssembly.Memory[funcKey];
-                if( f == null )
-                {
-                    FuncTypeHolder fB = AssumeFuncTypeHolder(dynamicAssembly);
-                    string funcName = 'f' + dynamicAssembly.NextUniqueNumber();
-                    string fieldName = "_" + funcName;
-                    Type tFunc = typeof(Func<,>).MakeGenericType(SqlObjectItem.TypeCommand, _unwrappedReturnedType);
-                    var field = fB.TypeBuilder.DefineField(fieldName, tFunc, FieldAttributes.Assembly | FieldAttributes.Static | FieldAttributes.InitOnly);
-                    var func = fB.TypeBuilder.DefineMethod(funcName, MethodAttributes.Private | MethodAttributes.Static, _unwrappedReturnedType, new Type[] { SqlObjectItem.TypeCommand });
-                    ILGenerator g = func.GetILGenerator();
-                    LocalBuilder locParams = g.DeclareLocal(SqlObjectItem.TypeParameterCollection);
-                    g.LdArg(0);
-                    g.Emit(OpCodes.Callvirt, SqlObjectItem.MCommandGetParameters);
-                    g.StLoc(locParams);
-                    EmitInlineReturn(g, locParams);
-                    g.Emit(OpCodes.Ret);
-                    dynamicAssembly.Memory[funcKey] = (fB.FirstFuncImpl = f = new FuncImpl(field, func, fB.FirstFuncImpl));
-                }
-                return f.Field;
-            }
-
             internal string AssumeSourceFuncResultBuilder( IDynamicAssembly dynamicAssembly )
             {
-                string funcKey = "S:" + _funcHolderTypeName + ':' + _funcResultBuilderSignature.ToString();
+                string funcKey = "S:_build_func_:" + _funcResultBuilderSignature.ToString();
                 string fieldFullName = (string)dynamicAssembly.Memory[funcKey];
                 if( fieldFullName == null )
                 {
-                    FuncTypeHolder fB = AssumeFuncTypeHolder( dynamicAssembly );
+                    ITypeScope t = dynamicAssembly.DefaultGenerationNamespace.FindType( "_build_func_" );
+                    if( t == null ) t = dynamicAssembly.DefaultGenerationNamespace.CreateType( "static class _build_func_" );
                     string funcName = 'f' + dynamicAssembly.NextUniqueNumber();
                     string fieldName = "_" + funcName;
                     string tFuncReturnType = _unwrappedReturnedType.ToCSharpName();
                     string tFunc = $"Func<{SqlObjectItem.TypeCommand.FullName},{tFuncReturnType}>";
-                    //var fieldDef = fB.ClassBuilder.DefineField(tFunc, fieldName);
-                    //fieldDef.FrontModifiers.Add("internal static readonly");
-                    //fieldDef.InitialValue = funcName;
-                    fB.ClassBuilder.Append( "internal static readonly " )
-                                    .Append( tFunc )
-                                    .Append( " " )
-                                    .Append( fieldName )
-                                    .Append( " = " )
-                                    .Append( funcName )
-                                    .Append( ";" )
-                                    .NewLine();
+                    t.Append( "internal static readonly " )
+                        .Append( tFunc )
+                        .Append( " " )
+                        .Append( fieldName )
+                        .Append( " = " )
+                        .Append( funcName )
+                        .Append( ";" )
+                        .NewLine();
 
-                    //var func = fB.ClassBuilder.DefineMethod(funcName);
-                    //func.FrontModifiers.Add("private static");
-                    //func.ReturnType = tFuncReturnType;
-                    //func.Parameters.Add(new CodeGen.ParameterBuilder() { Name = "c", ParameterType = SqlObjectItem.TypeCommand.FullName } );
-
-                    var fT = fB.ClassBuilder.CreateFunction( h =>
+                    var fT = t.CreateFunction( h =>
                                    h.Append( "private static " )
                                     .Append( tFuncReturnType )
                                     .Append( " " )
@@ -868,28 +804,10 @@ namespace CK.SqlServer.Setup
                     string varName = EmitInlineReturn( fT, "parameters", GetTempObjectName );
                     fT.Append( "return " ).Append( varName ).Append( ";" ).NewLine();
 
-                    fieldFullName = fB.ClassBuilder.FullName + '.' + fieldName;
+                    fieldFullName = t.FullName + '.' + fieldName;
                     dynamicAssembly.Memory[funcKey] = fieldFullName;
                 }
                 return fieldFullName;
-            }
-
-            void FinalizeFuncHolderType( IDynamicAssembly dynamicAssembly )
-            {
-                FuncTypeHolder fB = (FuncTypeHolder)dynamicAssembly.Memory[_funcHolderTypeName];
-                System.Reflection.Emit.ConstructorBuilder cB = fB.TypeBuilder.DefineTypeInitializer();
-                ILGenerator g = cB.GetILGenerator();
-                FuncImpl f = fB.FirstFuncImpl;
-                while( f != null )
-                {
-                    g.Emit( OpCodes.Ldnull );
-                    g.Emit( OpCodes.Ldftn, f.Func );
-                    g.Emit( OpCodes.Newobj, f.Field.FieldType.GetConstructor( new Type[]{ typeof( object ), typeof( IntPtr ) } ) );
-                    g.Emit( OpCodes.Stsfld, f.Field );
-                    f = f.Next;
-                }
-                g.Emit( OpCodes.Ret );
-                fB.TypeBuilder.CreateTypeInfo();
             }
 
             #endregion

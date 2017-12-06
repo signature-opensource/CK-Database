@@ -87,15 +87,6 @@ namespace CK.Core
             else ModuleBuilder = _assemblyBuilder.DefineDynamicModule(AssemblyName.Name);
         }
 
-        /// <summary>
-        /// Saves the dynamic assembly as a ".dll".
-        /// This <see cref="DynamicAssembly"/> must have been constructed with an AssemblyBuilderAccess that has <see cref="AssemblyBuilderAccess.Save"/> bit set.
-        /// </summary>
-        public void Save()
-        {
-            ExecutePostActions();
-            _assemblyBuilder.Save( _assemblyBuilder.GetName().Name + ".dll" );
-        }
     }
 #else
 
