@@ -17,7 +17,6 @@ namespace CK.Core
         public const string DefaultGeneratedAssemblyName = "CK.StObj.AutoAssembly";
 
         readonly BuildAndRegisterConfiguration _buildConfig;
-        readonly BuilderFinalAssemblyConfiguration _finalConfig;
         readonly List<IStObjEngineAspectConfiguration> _aspects;
         string _generatedAssemblyName;
 
@@ -26,8 +25,8 @@ namespace CK.Core
         /// </summary>
         public StObjEngineConfiguration()
         {
+            GenerateAppContextAssembly = true;
             _buildConfig = new BuildAndRegisterConfiguration();
-            _finalConfig = new BuilderFinalAssemblyConfiguration();
             _aspects = new List<IStObjEngineAspectConfiguration>();
         }
 
@@ -72,6 +71,11 @@ namespace CK.Core
             static public readonly XName RevertOrderingNames = XNamespace.None + "RevertOrderingNames";
 
             /// <summary>
+            /// The GenerateAppContextAssembly element name.
+            /// </summary>
+            static public readonly XName GenerateAppContextAssembly = XNamespace.None + "GenerateAppContextAssembly";
+
+            /// <summary>
             /// The TraceDependencySorterInput element name.
             /// </summary>
             static public readonly XName TraceDependencySorterInput = XNamespace.None + "TraceDependencySorterInput";
@@ -96,8 +100,9 @@ namespace CK.Core
             TraceDependencySorterInput = string.Equals( e.Element( XmlNames.TraceDependencySorterInput )?.Value, "true", StringComparison.OrdinalIgnoreCase );
             TraceDependencySorterOutput = string.Equals( e.Element( XmlNames.TraceDependencySorterOutput )?.Value, "true", StringComparison.OrdinalIgnoreCase );
             RevertOrderingNames = string.Equals( e.Element( XmlNames.RevertOrderingNames )?.Value, "true", StringComparison.OrdinalIgnoreCase );
+            GenerateAppContextAssembly = !string.Equals( e.Element( XmlNames.GenerateAppContextAssembly )?.Value, "false", StringComparison.OrdinalIgnoreCase );
+
             _buildConfig = new BuildAndRegisterConfiguration( e.Element( XmlNames.BuildAndRegisterConfiguration ), 1 );
-            _finalConfig = new BuilderFinalAssemblyConfiguration( e.Element( XmlNames.BuilderFinalAssemblyConfiguration ), 1 );
             _aspects = new List<IStObjEngineAspectConfiguration>();
             foreach( var a in e.Elements( XmlNames.Aspect ) )
             {
@@ -133,7 +138,6 @@ namespace CK.Core
                    TraceDependencySorterOutput ? new XElement( XmlNames.TraceDependencySorterOutput, "true" ) : null,
                    RevertOrderingNames ? new XElement( XmlNames.RevertOrderingNames, "true" ) : null,
                    _buildConfig.SerializeXml( new XElement( XmlNames.BuildAndRegisterConfiguration ) ),
-                   _finalConfig.SerializeXml( new XElement( XmlNames.BuilderFinalAssemblyConfiguration ) ),
                    _aspects.Select( a => a.SerializeXml( new XElement( XmlNames.Aspect, new XAttribute( XmlNames.Type, aspectTypeNameWriter( a.GetType() ) ) ) ) ) );
             return e;
         }
@@ -160,9 +164,10 @@ namespace CK.Core
         public BuildAndRegisterConfiguration BuildAndRegisterConfiguration => _buildConfig;
 
         /// <summary>
-        /// Gets the configuration related to final assembly generation.
+        /// Whether the final assembly in the <see cref="AppContext.BaseDirectory"/> should be generated.
+        /// Defaults to true.
         /// </summary>
-        public BuilderFinalAssemblyConfiguration FinalAssemblyConfiguration => _finalConfig;
+        public bool GenerateAppContextAssembly { get; set; }
 
         /// <summary>
         /// Gets the list of all configuration aspects that must participate to setup.

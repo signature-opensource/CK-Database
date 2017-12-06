@@ -7,6 +7,7 @@ using CK.Setup;
 using System.Diagnostics;
 using System.Reflection;
 using System.Xml.Linq;
+using System.IO;
 
 namespace CK.Setup
 {
@@ -105,17 +106,21 @@ namespace CK.Setup
                     runCtx.RunAspects( () => _status.Success = false );
                     if( _status.Success )
                     {
-                        string directory = _config.FinalAssemblyConfiguration.Directory;
-                        if( string.IsNullOrEmpty( directory ) )
-                        {
-                            directory = AppContext.BaseDirectory;
-                            _monitor.Info( $"No directory has been specified for final assembly. Trying to use the AppContext.BaseDirectory path: {directory}" );
-                        }
-                        string name = _config.GeneratedAssemblyName;
-                        if( !name.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase ) ) name += ".dll";
+                        string dllName = _config.GeneratedAssemblyName;
+                        if( !dllName.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase ) ) dllName += ".dll";
 
-                        string finalPath = System.IO.Path.Combine( directory, name );
-                        _status.Success = r.GenerateFinalAssembly( _monitor, finalPath, _config.GenerateSourceFiles );
+                        if( _config.GenerateAppContextAssembly )
+                        {
+                            using( _monitor.OpenInfo( "Generating AppContext (global) assembly." ) )
+                            {
+                                string finalPath = Path.Combine( AppContext.BaseDirectory, dllName );
+                                _status.Success = r.GenerateFinalAssembly( _monitor, finalPath, _config.GenerateSourceFiles );
+                            }
+                        }
+                        if( _status.Success )
+                        {
+
+                        }
                     }
                     if( !_status.Success )
                     {

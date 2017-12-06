@@ -143,8 +143,7 @@ namespace CK.Core
                 {
                     try
                     {
-                        string assemblyName = Config.FinalAssemblyConfiguration.AssemblyName;
-                        if( assemblyName == null ) assemblyName = BuilderFinalAssemblyConfiguration.DefaultAssemblyName;
+                        string assemblyName = Config.GeneratedAssemblyName;
                         var a = LoadAssemblyFromAppContextBaseDirectory( assemblyName );
                         _map = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, Monitor );
                     }
@@ -225,10 +224,11 @@ namespace CK.Core
         /// <summary>
         /// Runs a StObjEngine with a standard "weak assembly resolver".
         /// </summary>
-        /// <param name="c">The configuration.</param>
+        /// <param name="c">The configuration. Must not be null.</param>
         /// <returns>True on success, false on error.</returns>
         public static bool RunStObjEngine( StObjEngineConfiguration c )
         {
+            if( c == null ) throw new ArgumentNullException( nameof( c ) );
             ResolveEventHandler loadHook = ( sender, arg ) =>
             {
                 var failed = new AssemblyName( arg.Name );
@@ -241,7 +241,7 @@ namespace CK.Core
             AppDomain.CurrentDomain.AssemblyResolve += loadHook;
             try
             {
-                var e = new StObjEngine( Monitor, Config );
+                var e = new StObjEngine( Monitor, c );
                 return e.Run();
             }
             finally
@@ -470,7 +470,6 @@ namespace CK.Core
                 if( _config == null )
                 {
                     _config = new StObjEngineConfiguration();
-                    _config.FinalAssemblyConfiguration.GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.GenerateFileAndPEVerify;
                     foreach( var a in AssembliesToSetup )
                     {
                         _config.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( a );
@@ -479,7 +478,7 @@ namespace CK.Core
                     {
                         _config.BuildAndRegisterConfiguration.Assemblies.DiscoverRecurseAssemblyNames.Add( a );
                     }
-                    _config.FinalAssemblyConfiguration.AssemblyName = DynamicAssemblyName;
+                    _config.GeneratedAssemblyName = DynamicAssemblyName;
 
                     var cSetupable = new SetupableAspectConfiguration();
                     _config.Aspects.Add( cSetupable );

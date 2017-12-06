@@ -42,7 +42,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             var c = new StObjEngineConfiguration();
             c.BuildAndRegisterConfiguration.Assemblies.DiscoverRecurseAssemblyNames.Add( "SqlActorPackage" );
             if( withZone ) c.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( "SqlZonePackage" );
-            c.FinalAssemblyConfiguration.AssemblyName = dllName;
+            c.GeneratedAssemblyName = dllName;
             c.TraceDependencySorterInput = true;
             c.TraceDependencySorterOutput = true;
 
@@ -85,7 +85,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             }
             c.RevertOrderingNames = true;
             setupable.RevertOrderingNames = true;
-            c.FinalAssemblyConfiguration.AssemblyName = dllName + ".Reverted";
+            c.GeneratedAssemblyName = dllName + ".Reverted";
 
             using( TestHelper.Monitor.OpenTrace( "Second setup (reverse order)" ) )
             {
