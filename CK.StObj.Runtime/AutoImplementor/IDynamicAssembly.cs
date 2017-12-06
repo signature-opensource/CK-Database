@@ -27,9 +27,10 @@ namespace CK.Core
         IDictionary Memory { get; }
 
         /// <summary>
-        /// Gets the <see cref="ModuleBuilder"/> for this <see cref="IDynamicAssembly"/>.
+        /// Gets the <see cref="ModuleBuilder"/> to use to emit stub types and other
+        /// dynamic code.
         /// </summary>
-        ModuleBuilder ModuleBuilder { get; }
+        ModuleBuilder StubModuleBuilder { get; }
 
         /// <summary>
         /// Gets the default name space for this <see cref="IDynamicAssembly"/>

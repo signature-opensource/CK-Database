@@ -327,7 +327,7 @@ namespace CK.Core
             IPocoSupportResult pocoSupport;
             using( _monitor.OpenInfo( "Creating Poco Types and PocoFactory." ) )
             {
-                pocoSupport = _pocoRegisterer.Finalize( _finalAssembly?.ModuleBuilder ?? _tempAssembly.ModuleBuilder, _monitor );
+                pocoSupport = _pocoRegisterer.Finalize( _finalAssembly?.StubModuleBuilder ?? _tempAssembly.StubModuleBuilder, _monitor );
                 if( pocoSupport != null )
                 {
                     _tempAssembly.Memory.Add( typeof( IPocoSupportResult ), pocoSupport );

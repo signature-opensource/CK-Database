@@ -25,7 +25,6 @@ namespace CK.Setup
         readonly IStObjValueResolver _valueResolver;
         readonly IActivityMonitor _monitor;
         readonly DynamicAssembly _tempAssembly;
-        readonly DynamicAssembly _finalAssembly;
         readonly IStObjRuntimeBuilder _runtimeBuilder;
         int _registerFatalOrErrorCount;
 
@@ -56,42 +55,14 @@ namespace CK.Setup
             if( finalAssemblyConfig != null && finalAssemblyConfig.GenerateFinalAssemblyOption != BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile )
             {
                 _tempAssembly = CreateTempAssembly( monitor, finalAssemblyConfig );
-                _finalAssembly = null;
-#if NET461
-                _finalAssembly = CreateFinalAssembly( monitor, finalAssemblyConfig );
-#endif
             }
             else _tempAssembly = new DynamicAssembly(null, BuilderFinalAssemblyConfiguration.DefaultAssemblyName);
-            _cc = new AmbientContractCollector<StObjContextualMapper,StObjTypeInfo, MutableItem>( _monitor, l => new StObjMapper(), ( l, p, t ) => new StObjTypeInfo( l, p, t ), _tempAssembly, _finalAssembly, dispatcher );
+            _cc = new AmbientContractCollector<StObjContextualMapper,StObjTypeInfo, MutableItem>( _monitor, l => new StObjMapper(), ( l, p, t ) => new StObjTypeInfo( l, p, t ), _tempAssembly, null, dispatcher );
             _configurator = configurator;
             _valueResolver = valueResolver;
             if( traceDepencySorterInput ) DependencySorterHookInput = i => i.Trace( monitor );
             if( traceDepencySorterOutput ) DependencySorterHookOutput = i => i.Trace( monitor );
         }
-
-#if NET461
-        DynamicAssembly CreateFinalAssembly( IActivityMonitor monitor, BuilderFinalAssemblyConfiguration c )
-        {
-            Debug.Assert( c != null && c.GenerateFinalAssemblyOption != BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile );
-
-            string directory = c.Directory;
-            if( string.IsNullOrEmpty( directory ) )
-            {
-                directory = System.IO.Path.GetDirectoryName( new Uri(typeof(StObjContextRoot).Assembly.CodeBase).LocalPath );
-                monitor.Info( $"No directory has been specified for final assembly. Trying to use the path of CK.StObj.Model assembly: {directory}" );
-            }
-            string assemblyName = c.AssemblyName;
-            if( string.IsNullOrEmpty( assemblyName ) )
-            {
-                assemblyName = BuilderFinalAssemblyConfiguration.GetFinalAssemblyName( assemblyName );
-                monitor.Info( $"No assembly name has been specified for final assembly. Using default: {assemblyName}" );
-            }
-            bool signAssembly = c.SignAssembly;
-            StrongNameKeyPair signKeyPair = signAssembly ? DynamicAssembly.DynamicKeyPair : null;
-
-            return new DynamicAssembly( directory, assemblyName, signKeyPair, AssemblyBuilderAccess.RunAndSave );
-        }
-#endif
 
         DynamicAssembly CreateTempAssembly( IActivityMonitor monitor, BuilderFinalAssemblyConfiguration c )
         {
@@ -232,7 +203,7 @@ namespace CK.Setup
                     contracts.LogErrorAndWarnings( _monitor );
                 }
                 var stObjMapper = new StObjMapper();
-                var result = new StObjCollectorResult( stObjMapper, contracts, _tempAssembly, _finalAssembly );
+                var result = new StObjCollectorResult( stObjMapper, contracts, _tempAssembly, null );
                 if( result.HasFatalError ) return result;
                 using( _monitor.OpenInfo( "Creating Structure Objects." ) )
                 {

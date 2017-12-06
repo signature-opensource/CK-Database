@@ -108,9 +108,7 @@ namespace CK.Setup
 
                 using( monitor.OpenInfo( "Compiling source code." ) )
                 {
-                    Debug.Assert( _tempAssembly.SaveFilePath.EndsWith( "Src.dll" ) );
                     string fileName = _tempAssembly.SaveFilePath;
-                    fileName = fileName.Substring( 0, fileName.Length - 7 ) + ".dll";
 
                     var g = new CodeGenerator( CodeWorkspace.Factory );
                     g.Modules.AddRange( _tempAssembly.SourceModules );
