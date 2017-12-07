@@ -131,42 +131,62 @@ namespace CK.Core
         /// <summary>
         /// Gets the number of registered types.
         /// </summary>
-        public int RegisteredTypeCount => _collector.Count; 
+        public int RegisteredTypeCount => _collector.Count;
 
         /// <summary>
-        /// Registers multiple types. Classes that are registered (the enumeration 
-        /// can safely contain null references).
+        /// Registers multiple types. Only classes and IPoco interfaces are considered.
         /// </summary>
-        /// <param name="types"></param>
-        public void Register( IEnumerable<Type> types )
+        /// <param name="types">Set of types.</param>
+        public void SafeRegister( IEnumerable<Type> types )
         {
             if( types == null ) throw new ArgumentNullException( "types" );
             foreach( var t in types )
             {
-                if( t != typeof( object ) )
-                {
-                    if( t.GetTypeInfo().IsClass )
-                    {
-                        T result;
-                        DoRegisterClass( t, out result );
-                    }
-                    else if( t.GetTypeInfo().IsInterface && typeof(IPoco).IsAssignableFrom( t ) )
-                    {
-                        RegisterAssembly( t );
-                        _pocoRegisterer.Register( _monitor, t );
-                    }
-                }
+                if( t != null && t != typeof(object) ) DoRegisterClassOrPoco( t );
             }
         }
 
         /// <summary>
+        /// Registers a type.
+        /// It must be a class or a IPoco interface otherwise an argument exception is thrown.
+        /// </summary>
+        /// <param name="type">Class or IPoco interface.</param>
+        public void RegisterClassOrPoco( Type type )
+        {
+            if( type == null ) throw new ArgumentNullException( nameof( type ) );
+            if( type != typeof( object ) && !DoRegisterClassOrPoco( type ) )
+            {
+                throw new ArgumentException( $"Must be a Class or a IPoco interface: '{type.AssemblyQualifiedName}'.", nameof( type ) );
+            }
+        }
+
+        bool DoRegisterClassOrPoco( Type type )
+        {
+            Debug.Assert( type != null && type != typeof( object ) );
+            if( type.IsClass )
+            {
+                T result;
+                DoRegisterClass( type, out result );
+                return true;
+            }
+            if( type.IsInterface && typeof( IPoco ).IsAssignableFrom( type ) )
+            {
+                RegisterAssembly( type );
+                _pocoRegisterer.Register( _monitor, type );
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Registers a class.
+        /// It must be a class otherwise an argument exception is thrown.
         /// </summary>
         /// <param name="c">Class to register.</param>
         /// <returns>True if it is a new class for this collector, false if it has already been registered.</returns>
         public bool RegisterClass( Type c )
         {
-            if( c == null ) throw new ArgumentNullException( "c" );
+            if( c == null ) throw new ArgumentNullException( nameof( c ) );
             if( !c.GetTypeInfo().IsClass ) throw new ArgumentException();
             T result;
             return c != typeof(object) ? DoRegisterClass( c, out result ) : false;

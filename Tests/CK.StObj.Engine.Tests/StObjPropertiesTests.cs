@@ -39,7 +39,7 @@ namespace CK.StObj.Engine.Tests
         {
             {
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
-                collector.RegisterClass( typeof( SimpleContainer ) );
+                collector.RegisterType( typeof( SimpleContainer ) );
                 StObjCollectorResult result = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( result.OrderedStObjs.First().GetStObjProperty( "OneIntValue" ), Is.EqualTo( 3712 ) );
             }
@@ -83,11 +83,11 @@ namespace CK.StObj.Engine.Tests
         public void SchmurtzPropagation()
         {
             StObjCollector collector = new StObjCollector( TestHelper.Monitor, configurator: new SchmurtzConfigurator() );
-            collector.RegisterClass( typeof( SimpleContainer ) );
-            collector.RegisterClass( typeof( SpecializedContainer ) );
-            collector.RegisterClass( typeof( BaseObject ) );
-            collector.RegisterClass( typeof( SpecializedObject ) );
-            collector.RegisterClass( typeof( SpecializedObjectWithExplicitContainer ) );
+            collector.RegisterType( typeof( SimpleContainer ) );
+            collector.RegisterType( typeof( SpecializedContainer ) );
+            collector.RegisterType( typeof( BaseObject ) );
+            collector.RegisterType( typeof( SpecializedObject ) );
+            collector.RegisterType( typeof( SpecializedObjectWithExplicitContainer ) );
             StObjCollectorResult result = collector.GetResult( new SimpleServiceContainer() );
 
             Assert.That( result.OrderedStObjs.First( s => s.ObjectType == typeof( BaseObject ) ).GetStObjProperty( "SchmurtzProp" ).ToString(),

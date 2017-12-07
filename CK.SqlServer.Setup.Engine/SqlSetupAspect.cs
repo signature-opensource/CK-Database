@@ -90,13 +90,11 @@ namespace CK.SqlServer.Setup
                     monitor.Info( "Unable to use SqlSetupSessionMemoryProvider on the default database as the memory provider since the underlying sql manager is not a real manager." );
                 }
             }
-            // SqlServerParser is late bound.
-            Type t = SimpleTypeFinder.WeakResolver( "CK.SqlServer.Parser.SqlServerParser, CK.SqlServer.Parser", true );
-            _sqlParser = (ISqlServerParser)Activator.CreateInstance( t );
+            _sqlParser = new SqlServerParser();
             context.ServiceContainer.Add( _sqlParser );
             context.ServiceContainer.Add<ISqlManagerProvider>( _databases );
             context.Configurator.AddLayer( new StObjConfiguratorHook( _config ) );
-            context.AddExplicitRegisteredClass( typeof( SqlDefaultDatabase ) );
+            context.AddExplicitRegisteredType( typeof( SqlDefaultDatabase ) );
             return true;
         }
 

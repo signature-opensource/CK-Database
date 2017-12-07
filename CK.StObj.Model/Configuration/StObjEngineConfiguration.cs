@@ -1,23 +1,22 @@
 using CK.Core;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 
 namespace CK.Core
 {
     /// <summary>
-    /// Encapsulates configuration for the StObj layer itself.
+    /// Encapsulates configuration of the StObjEngine.
     /// </summary>
-    public sealed class StObjEngineConfiguration
+    public sealed class StObjEngineConfiguration : ISetupFolder
     {
         /// <summary>
         /// Default assembly name.
         /// </summary>
         public const string DefaultGeneratedAssemblyName = "CK.StObj.AutoAssembly";
 
-        readonly BuildAndRegisterConfiguration _buildConfig;
-        readonly List<IStObjEngineAspectConfiguration> _aspects;
         string _generatedAssemblyName;
 
         /// <summary>
@@ -26,8 +25,10 @@ namespace CK.Core
         public StObjEngineConfiguration()
         {
             GenerateAppContextAssembly = true;
-            _buildConfig = new BuildAndRegisterConfiguration();
-            _aspects = new List<IStObjEngineAspectConfiguration>();
+            Assemblies = new HashSet<string>();
+            Types = new HashSet<string>();
+            Aspects = new List<IStObjEngineAspectConfiguration>();
+            SetupFolders = new List<SetupFolder>();
         }
 
         /// <summary>
@@ -41,29 +42,39 @@ namespace CK.Core
             static public readonly XName Version = XNamespace.None + "Version";
 
             /// <summary>
-            /// The BuildAndRegisterConfiguration element name.
-            /// </summary>
-            static public readonly XName BuildAndRegisterConfiguration = XNamespace.None + "BuildAndRegisterConfiguration";
-
-            /// <summary>
-            /// The BuilderFinalAssemblyConfiguration element name.
-            /// </summary>
-            static public readonly XName BuilderFinalAssemblyConfiguration = XNamespace.None + "BuilderFinalAssemblyConfiguration";
-
-            /// <summary>
-            /// The StObjEngineConfiguration element name.
-            /// </summary>
-            static public readonly XName StObjEngineConfiguration = XNamespace.None + "StObjEngineConfiguration";
-
-            /// <summary>
             /// The Aspect element name.
             /// </summary>
             static public readonly XName Aspect = XNamespace.None + "Aspect";
 
             /// <summary>
+            /// The Assemblies element name.
+            /// </summary>
+            static public readonly XName Assemblies = XNamespace.None + "Assemblies";
+
+            /// <summary>
+            /// The Assembly element name.
+            /// </summary>
+            static public readonly XName Assembly = XNamespace.None + "Assembly";
+
+            /// <summary>
+            /// The Types element name.
+            /// </summary>
+            static public readonly XName Types = XNamespace.None + "Types";
+
+            /// <summary>
             /// The Type element name.
             /// </summary>
             static public readonly XName Type = XNamespace.None + "Type";
+
+            /// <summary>
+            /// The SetupFolder element name.
+            /// </summary>
+            static public readonly XName SetupFolder = XNamespace.None + "SetupFolder";
+
+            /// <summary>
+            /// The Directory element name.
+            /// </summary>
+            static public readonly XName Directory = XNamespace.None + "Directory";
 
             /// <summary>
             /// The RevertOrderingNames element name.
@@ -85,10 +96,6 @@ namespace CK.Core
             /// </summary>
             static public readonly XName TraceDependencySorterOutput = XNamespace.None + "TraceDependencySorterOutput";
 
-            /// <summary>
-            /// The EngineAssemblyQualifiedName element name.
-            /// </summary>
-            static public readonly XName EngineAssemblyQualifiedName = XNamespace.None + "EngineAssemblyQualifiedName";
         }
 
         /// <summary>
@@ -101,15 +108,16 @@ namespace CK.Core
             TraceDependencySorterOutput = string.Equals( e.Element( XmlNames.TraceDependencySorterOutput )?.Value, "true", StringComparison.OrdinalIgnoreCase );
             RevertOrderingNames = string.Equals( e.Element( XmlNames.RevertOrderingNames )?.Value, "true", StringComparison.OrdinalIgnoreCase );
             GenerateAppContextAssembly = !string.Equals( e.Element( XmlNames.GenerateAppContextAssembly )?.Value, "false", StringComparison.OrdinalIgnoreCase );
-
-            _buildConfig = new BuildAndRegisterConfiguration( e.Element( XmlNames.BuildAndRegisterConfiguration ), 1 );
-            _aspects = new List<IStObjEngineAspectConfiguration>();
+            Assemblies = new HashSet<string>( FromXml( e, XmlNames.Assemblies, XmlNames.Assembly ) );
+            Types = new HashSet<string>( FromXml( e, XmlNames.Types, XmlNames.Type ) );
+            SetupFolders = e.Descendants( XmlNames.SetupFolder ).Select( f => new SetupFolder( f ) ).ToList();
+            Aspects = new List<IStObjEngineAspectConfiguration>();
             foreach( var a in e.Elements( XmlNames.Aspect ) )
             {
                 string type = (string)a.AttributeRequired( XmlNames.Type );
                 Type tAspect = SimpleTypeFinder.WeakResolver( type, true );
                 IStObjEngineAspectConfiguration aspect = (IStObjEngineAspectConfiguration)Activator.CreateInstance( tAspect, a );
-                _aspects.Add( aspect );
+                Aspects.Add( aspect );
             }
         }
 
@@ -137,9 +145,22 @@ namespace CK.Core
             e.Add( TraceDependencySorterInput ? new XElement( XmlNames.TraceDependencySorterInput, "true" ) : null,
                    TraceDependencySorterOutput ? new XElement( XmlNames.TraceDependencySorterOutput, "true" ) : null,
                    RevertOrderingNames ? new XElement( XmlNames.RevertOrderingNames, "true" ) : null,
-                   _buildConfig.SerializeXml( new XElement( XmlNames.BuildAndRegisterConfiguration ) ),
-                   _aspects.Select( a => a.SerializeXml( new XElement( XmlNames.Aspect, new XAttribute( XmlNames.Type, aspectTypeNameWriter( a.GetType() ) ) ) ) ) );
+                   !GenerateAppContextAssembly ? new XElement( XmlNames.GenerateAppContextAssembly, "false" ) : null,
+                   ToXml( XmlNames.Assemblies, XmlNames.Assembly, Assemblies ),
+                   ToXml( XmlNames.Types, XmlNames.Type, Types ),
+                   Aspects.Select( a => a.SerializeXml( new XElement( XmlNames.Aspect, new XAttribute( XmlNames.Type, aspectTypeNameWriter( a.GetType() ) ) ) ) ),
+                   SetupFolders.Select( f => f.ToXml() ) );
             return e;
+        }
+
+        static internal XElement ToXml( XName names, XName name, IEnumerable<string> strings )
+        {
+            return new XElement( names, strings.Select( n => new XElement( name, n ) ) );
+        }
+
+        static internal IEnumerable<string> FromXml( XElement e, XName names, XName name )
+        {
+            return e.Elements( names ).Elements( name ).Select( c => c.Value );
         }
 
         /// <summary>
@@ -158,10 +179,30 @@ namespace CK.Core
         public bool GenerateSourceFiles { get; set; }
 
         /// <summary>
-        /// Gets the configuration that describes how Application Domain must be used during build and
-        /// which assemlies and types must be discovered.
+        /// Gets the <see cref="AppContext.BaseDirectory"/> since this were the whole setup process
+        /// must be runned.
         /// </summary>
-        public BuildAndRegisterConfiguration BuildAndRegisterConfiguration => _buildConfig;
+        public string Directory => AppContext.BaseDirectory;
+
+        /// <summary>
+        /// Gets a set of assembly names that must be processed in <see cref="AppContext.BaseDirectory"/> for setup.
+        /// Only assemblies that appear in this list will be considered.
+        /// </summary>
+        public HashSet<string> Assemblies { get; }
+
+        /// <summary>
+        /// List of assembly qualified type names that must be explicitely registered 
+        /// in <see cref="AppContext.BaseDirectory"/> regardless of <see cref="Assemblies"/>.
+        /// All other types in the assemblies that contain these explicit classes are ignored.
+        /// </summary>
+        public HashSet<string> Types { get; }
+
+        /// <summary>
+        /// Gets a list of optional <see cref="SetupFolder"/>.
+        /// Their assemblies and explicit classes must be subsets of <see cref="Assemblies"/> and <see cref="Types"/>
+        /// for <see cref="CheckValid"/> to succeed.
+        /// </summary>
+        public IList<SetupFolder> SetupFolders { get; }
 
         /// <summary>
         /// Whether the final assembly in the <see cref="AppContext.BaseDirectory"/> should be generated.
@@ -172,7 +213,7 @@ namespace CK.Core
         /// <summary>
         /// Gets the list of all configuration aspects that must participate to setup.
         /// </summary>
-        public List<IStObjEngineAspectConfiguration> Aspects => _aspects;
+        public List<IStObjEngineAspectConfiguration> Aspects { get; }
 
         /// <summary>
         /// Gets ors sets whether the ordering of StObj that share the same rank in the dependency graph must be inverted.

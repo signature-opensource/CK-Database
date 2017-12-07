@@ -41,11 +41,11 @@ namespace CK.Setup
         StObjEngineConfigurator Configurator { get; }
 
         /// <summary>
-        /// Registers a type for registration.
-        /// Aspects can use this instead of adding the assembly qualified name of the type into <see cref="BuildAndRegisterConfiguration.ExplicitClasses"/>.
+        /// Registers a type that must be a class or a IPoco interface.
+        /// Aspects can use this instead of adding the assembly qualified name of the type in <see cref="ISetupFolder.Types"/>.
         /// </summary>
         /// <param name="type">Type to register.</param>
-        void AddExplicitRegisteredClass( Type type );
+        void AddExplicitRegisteredType( Type type );
 
         /// <summary>
         /// Gets the list of already created and configured aspects.

@@ -98,16 +98,16 @@ namespace CK.StObj.Engine.Tests
         public void LayeredArchitecture()
         {
             StObjCollector collector = new StObjCollector( TestHelper.Monitor );
-            collector.RegisterClass( typeof( BasicPackage ) );
-            collector.RegisterClass( typeof( BasicActor ) );
-            collector.RegisterClass( typeof( BasicUser ) );
-            collector.RegisterClass( typeof( BasicGroup ) );
-            collector.RegisterClass( typeof( ZonePackage ) );
-            collector.RegisterClass( typeof( ZoneGroup ) );
-            collector.RegisterClass( typeof( SecurityZone ) );
-            collector.RegisterClass( typeof( AuthenticationPackage ) );
-            collector.RegisterClass( typeof( AuthenticationUser ) );
-            collector.RegisterClass( typeof( SqlDatabaseDefault ) );
+            collector.RegisterType( typeof( BasicPackage ) );
+            collector.RegisterType( typeof( BasicActor ) );
+            collector.RegisterType( typeof( BasicUser ) );
+            collector.RegisterType( typeof( BasicGroup ) );
+            collector.RegisterType( typeof( ZonePackage ) );
+            collector.RegisterType( typeof( ZoneGroup ) );
+            collector.RegisterType( typeof( SecurityZone ) );
+            collector.RegisterType( typeof( AuthenticationPackage ) );
+            collector.RegisterType( typeof( AuthenticationUser ) );
+            collector.RegisterType( typeof( SqlDatabaseDefault ) );
             collector.DependencySorterHookInput = items => TestHelper.Monitor.TraceDependentItem( items );
             collector.DependencySorterHookOutput = sortedItems => TestHelper.Monitor.TraceSortedItem( sortedItems, false );
             

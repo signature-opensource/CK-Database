@@ -15,12 +15,11 @@ namespace CK.Setup
 
     /// <summary>
     /// Discovers available structure objects and instanciates them. 
-    /// Once Types are registered (<see cref="RegisterTypes"/> and <see cref="RegisterClass"/>), the <see cref="GetResult"/> method
-    /// initializes the full object graph.
+    /// Once Types are registered, the <see cref="GetResult"/> method initializes the full object graph.
     /// </summary>
     public class StObjCollector
     {
-        readonly AmbientContractCollector<StObjContextualMapper,StObjTypeInfo,MutableItem> _cc;
+        readonly AmbientContractCollector<StObjContextualMapper, StObjTypeInfo, MutableItem> _cc;
         readonly IStObjStructuralConfigurator _configurator;
         readonly IStObjValueResolver _valueResolver;
         readonly IActivityMonitor _monitor;
@@ -38,12 +37,12 @@ namespace CK.Setup
         /// <param name="dispatcher">Used to dispatch Types between contexts or hide them. See <see cref="IAmbientContractDispatcher"/>.</param>
         /// <param name="configurator">Used to configure items. See <see cref="IStObjStructuralConfigurator"/>.</param>
         /// <param name="valueResolver">Used to explicitely resolve or alter StObjConstruct parameters and object ambient properties. See <see cref="IStObjValueResolver"/>.</param>
-        public StObjCollector( 
+        public StObjCollector(
             IActivityMonitor monitor,
-            bool traceDepencySorterInput = false, 
+            bool traceDepencySorterInput = false,
             bool traceDepencySorterOutput = false,
-            IStObjRuntimeBuilder runtimeBuilder = null, 
-            IAmbientContractDispatcher dispatcher = null, 
+            IStObjRuntimeBuilder runtimeBuilder = null,
+            IAmbientContractDispatcher dispatcher = null,
             IStObjStructuralConfigurator configurator = null,
             IStObjValueResolver valueResolver = null )
         {
@@ -51,7 +50,7 @@ namespace CK.Setup
             _runtimeBuilder = runtimeBuilder ?? StObjContextRoot.DefaultStObjRuntimeBuilder;
             _monitor = monitor;
             _tempAssembly = new DynamicAssembly();
-            _cc = new AmbientContractCollector<StObjContextualMapper,StObjTypeInfo, MutableItem>( _monitor, l => new StObjMapper(), ( l, p, t ) => new StObjTypeInfo( l, p, t ), _tempAssembly, dispatcher );
+            _cc = new AmbientContractCollector<StObjContextualMapper, StObjTypeInfo, MutableItem>( _monitor, l => new StObjMapper(), ( l, p, t ) => new StObjTypeInfo( l, p, t ), _tempAssembly, dispatcher );
             _configurator = configurator;
             _valueResolver = valueResolver;
             if( traceDepencySorterInput ) DependencySorterHookInput = i => i.Trace( monitor );
@@ -59,14 +58,9 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the count of error or fatal that occurred during <see cref="RegisterTypes"/> or <see cref="RegisterClass"/> calls.
+        /// Gets the count of error or fatal that occurred during types registration.
         /// </summary>
-        public int RegisteringFatalOrErrorCount => _registerFatalOrErrorCount; 
-
-        /// <summary>
-        /// Sets <see cref="RegisteringFatalOrErrorCount"/> to 0.
-        /// </summary>
-        public void ClearRegisteringErrors() => _registerFatalOrErrorCount = 0;
+        public int RegisteringFatalOrErrorCount => _registerFatalOrErrorCount;
 
         /// <summary>
         /// Gets ors sets whether the ordering of StObj that share the same rank in the dependency graph must be inverted.
@@ -75,23 +69,33 @@ namespace CK.Setup
         public bool RevertOrderingNames { get; set; }
 
         /// <summary>
-        /// Registers types discovered by an <see cref="AssemblyRegisterer"/>.
+        /// Registers types from multiple assemblies.
+        /// Only classes and IPoco interfaces are considered.
         /// </summary>
-        /// <param name="registerer">The discoverer that contains assemblies/types.</param>
+        /// <param name="assemblyNames">The assembly names to register.</param>
         /// <returns>The number of new discovered classes.</returns>
-        public int RegisterTypes( AssemblyRegisterer registerer )
+        public int RegisterAssemblyTypes( IReadOnlyCollection<string> assemblyNames )
         {
-            if( registerer == null ) throw new ArgumentNullException( "registerer" );
+            if( assemblyNames == null ) throw new ArgumentNullException( nameof( assemblyNames ) );
             int totalRegistered = 0;
             using( _monitor.OnError( () => ++_registerFatalOrErrorCount ) )
-            using( _monitor.OpenTrace( $"Registering {registerer.Assemblies.Count} assemblies." ) )
+            using( _monitor.OpenTrace( $"Registering {assemblyNames.Count} assemblies." ) )
             {
-                foreach( var one in registerer.Assemblies )
+                foreach( var one in assemblyNames )
                 {
-                    using( _monitor.OpenTrace( $"Registering assembly '{one.Assembly.FullName}'." ) )
+                    using( _monitor.OpenTrace( $"Registering assembly '{one}'." ) )
                     {
+                        Assembly a = null;
+                        try
+                        {
+                            a = Assembly.Load( one );
+                        }
+                        catch( Exception ex )
+                        {
+                            _monitor.Error( $"Error while loading assembly '{one}'.", ex );
+                        }
                         int nbAlready = _cc.RegisteredTypeCount;
-                        _cc.Register( one.Types );
+                        _cc.SafeRegister( a.GetTypes() );
                         int delta = _cc.RegisteredTypeCount - nbAlready;
                         _monitor.CloseGroup( $"{delta} types(s) registered." );
                         totalRegistered += delta;
@@ -102,44 +106,63 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Explicitely registers a class.
+        /// Explicitely registers a class or a IPoco interface.
         /// </summary>
-        /// <param name="c">Class to register.</param>
+        /// <param name="t">Type to register.</param>
         /// <returns>True if it is a new class for this collector, false if it has already been registered.</returns>
-        public bool RegisterClass( Type c )
+        public void RegisterType( Type t )
         {
-            using( _monitor.OpenTrace( $"Explicitely registering Type '{c.AssemblyQualifiedName}'." ) )
+            if( t == null ) throw new ArgumentNullException( nameof( t ) );
+            _monitor.Debug( $"Explicitely registering '{t.AssemblyQualifiedName}'." );
             using( _monitor.OnError( () => ++_registerFatalOrErrorCount ) )
             {
-                if( !_cc.RegisterClass( c ) )
+                try
                 {
-                    _monitor.CloseGroup( "Already registered." );
-                    return false;
+                    _cc.RegisterClassOrPoco( t );
                 }
-                return true;
+                catch( Exception ex )
+                {
+                    _monitor.Error( $"While registering type '{t.AssemblyQualifiedName}'.", ex );
+                }
             }
         }
 
         /// <summary>
-        /// Explicitely registers a set of class by their assembly qualified names.
+        /// Explicitely registers a set of classes or a IPoco interfaces.
         /// </summary>
-        /// <param name="classes">Assembly qualified names of the classes to register.</param>
-        public void RegisterClasses( IReadOnlyList<string> classes )
+        /// <param name="types">Types to register.</param>
+        public void RegisterTypes( IReadOnlyCollection<Type> types )
         {
-            if( classes == null ) throw new ArgumentNullException();
-            using( _monitor.OpenTrace( $"Explicitely registering {classes.Count} class(es)." ) )
+            if( types == null ) throw new ArgumentNullException( nameof( types ) );
+            DoRegisterTypes( types, types.Count );
+        }
+
+        /// <summary>
+        /// Explicitely registers a set of classes or a IPoco interfaces by their assembly qualified names.
+        /// </summary>
+        /// <param name="typeNames">Assembly qualified names of the types to register.</param>
+        public void RegisterTypes( IReadOnlyCollection<string> typeNames )
+        {
+            if( typeNames == null ) throw new ArgumentNullException( nameof( typeNames ) );
+            DoRegisterTypes( typeNames.Select( n => SimpleTypeFinder.WeakResolver( n, true ) ), typeNames.Count );
+        }
+
+        void DoRegisterTypes( IEnumerable<Type> types, int count )
+        {
+            if( types == null ) throw new ArgumentNullException();
+            using( _monitor.OnError( () => ++_registerFatalOrErrorCount ) )
+            using( _monitor.OpenTrace( $"Explicitely registering {count} type(s)." ) )
             {
-                foreach( var aqn in classes )
+                try
                 {
-                    try
+                    foreach( var t in types )
                     {
-                        RegisterClass( SimpleTypeFinder.WeakResolver( aqn, true ) );
+                        _cc.RegisterClassOrPoco( t );
                     }
-                    catch( Exception ex )
-                    {
-                        ++_registerFatalOrErrorCount;
-                        _monitor.OpenError( $"While resolving type '{aqn}'.", ex );
-                    }
+                }
+                catch( Exception ex )
+                {
+                    _monitor.Error( ex );
                 }
             }
         }
@@ -157,7 +180,6 @@ namespace CK.Setup
         /// <summary>
         /// Builds and returns a <see cref="StObjCollectorResult"/> if no error occurred during type registration.
         /// If <see cref="RegisteringFatalOrErrorCount"/> is not equal to 0, this throws a <see cref="CKException"/>.
-        /// To ignore registering errors, calls <see cref="ClearRegisteringErrors"/> before calling this method.
         /// </summary>
         /// <param name="services">Available services.</param>
         /// <returns>The result.</returns>
@@ -166,7 +188,7 @@ namespace CK.Setup
             if( services == null ) throw new ArgumentNullException( nameof( services ) );
             if( _registerFatalOrErrorCount > 0 )
             {
-                throw new CKException( "There are {0} registration errors. ClearRegisteringErrors must be called before calling this GetResult method to ignore registration errors.", _registerFatalOrErrorCount );
+                throw new CKException( $"There are {_registerFatalOrErrorCount} registration errors." );
             }
             using( _monitor.OpenInfo( "Collecting all StObj information." ) )
             {

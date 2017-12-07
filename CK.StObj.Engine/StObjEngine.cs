@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Xml.Linq;
 using System.IO;
+using CK.Text;
 
 namespace CK.Setup
 {
@@ -80,6 +81,20 @@ namespace CK.Setup
         //    _runtimeBuilder = StObjContextRoot.DefaultStObjRuntimeBuilder;
         //}
 
+        struct NormalizedFolder
+        {
+            public readonly string Directory;
+            public readonly HashSet<string> Assemblies;
+            public readonly HashSet<string> ExplicitTypes;
+
+            public NormalizedFolder( string d, HashSet<string> a, HashSet<string> t )
+            {
+                Directory = d;
+                Assemblies = a;
+                ExplicitTypes = t;
+            }
+        }
+
         /// <summary>
         /// Gets whether this engine is running or has <see cref="Run"/> (it can run only once).
         /// </summary>
@@ -92,6 +107,8 @@ namespace CK.Setup
         public bool Run()
         {
             if( _startContext != null ) throw new InvalidOperationException( "Run can be called only once." );
+            List<NormalizedFolder> normalizedFolders = NormalizeConfiguration();
+            if( normalizedFolders == null ) return false; 
             _status = new Status( _monitor );
             _startContext = new StObjEngineConfigureContext( _monitor, _config, _status );
             try
@@ -99,7 +116,7 @@ namespace CK.Setup
                 _startContext.CreateAndConfigureAspects( _config.Aspects, () => _status.Success = false );
                 if( _status.Success )
                 {
-                    StObjCollectorResult r = SafeBuildStObj();
+                    StObjCollectorResult r = SafeBuildStObj( normalizedFolders[0] );
                     if( r == null ) return _status.Success = false;
 
                     var runCtx = new StObjEngineRunContext( _monitor, _startContext, r.OrderedStObjs );
@@ -143,15 +160,77 @@ namespace CK.Setup
             }
         }
 
-        StObjCollectorResult SafeBuildStObj()
+        List<NormalizedFolder> NormalizeConfiguration()
+        {
+            using( _monitor.OpenInfo( "Validating configuration." ) )
+            {
+                if( _config.Assemblies.Count == 0 && _config.Types.Count == 0 ) _monitor.Error( "Assemblies and ExplicitClasses are empty." );
+                else
+                {
+                    var normalized = new List<NormalizedFolder>();
+                    string baseDir = FileUtil.NormalizePathSeparator( AppContext.BaseDirectory, true );
+                    normalized.Add( new NormalizedFolder( baseDir, _config.Assemblies, _config.Types ) );
+                    foreach( var f in _config.SetupFolders )
+                    {
+                        if( f == null ) _monitor.Error( "A null SetupFolder found in SetupFolders." );
+                        else
+                        {
+                            try
+                            {
+                                string n = FileUtil.NormalizePathSeparator( Path.GetFullPath( f.Directory ), true );
+                                if( !Directory.Exists( n ) ) _monitor.Error( $"Directory '{n}' does not exist." );
+                                else
+                                {
+                                    var clash = normalized.FirstOrDefault( norm => n.StartsWith( norm.Directory, StringComparison.OrdinalIgnoreCase )
+                                                                                   || norm.Directory.StartsWith( n, StringComparison.OrdinalIgnoreCase ) );
+                                    if( clash.Directory != null )
+                                    {
+                                        _monitor.Error( $"Directory '{n}' can not be below other SetupFolder '{clash.Directory}'." );
+                                    }
+                                    else
+                                    {
+                                        bool ok = true;
+                                        var aliens = f.Assemblies.Except( _config.Assemblies );
+                                        if( aliens.Any() )
+                                        {
+                                            _monitor.Error( $"SetupFolder '{n}' contains at least one assembly that is not in global configuration: {aliens.Concatenate()}" );
+                                            ok = false;
+                                        }
+                                        aliens = f.Types.Except( _config.Types );
+                                        if( aliens.Any() )
+                                        {
+                                            _monitor.Error( $"SetupFolder '{n}' contains at least one explicit class that is not in global configuration: {aliens.Concatenate()}" );
+                                            ok = false;
+                                        }
+                                        if( ok )
+                                        {
+                                            normalized.Add( new NormalizedFolder( n, f.Assemblies, f.Types ) );
+                                        }
+                                    }
+                                }
+                            }
+                            catch( Exception ex )
+                            {
+                                _monitor.Error( $"Invalid SetupFolder.Directory.", ex );
+                            }
+                        }
+                    }
+                    if( normalized.Count == _config.SetupFolders.Count + 1 )
+                    {
+                        return normalized;
+                    }
+                }
+            }
+            return null;
+        }
+
+        StObjCollectorResult SafeBuildStObj( NormalizedFolder f )
         {
             bool hasError = false;
             using( _monitor.OnError( () => hasError = true ) )
             using( _monitor.OpenInfo( "Building StObj objects." ) )
             {
                 StObjCollectorResult result;
-                AssemblyRegisterer typeReg = new AssemblyRegisterer( _monitor );
-                typeReg.Discover( _config.BuildAndRegisterConfiguration.Assemblies );
                 var configurator = _startContext.Configurator.FirstLayer;
                 StObjCollector stObjC = new StObjCollector(
                     _monitor,
@@ -166,9 +245,9 @@ namespace CK.Setup
                 stObjC.DependencySorterHookOutput += _startContext.StObjDependencySorterHookOutput;
                 using( _monitor.OpenInfo( "Registering StObj types." ) )
                 {
-                    stObjC.RegisterTypes( typeReg );
-                    stObjC.RegisterClasses( _config.BuildAndRegisterConfiguration.ExplicitClasses );
-                    foreach( var t in _startContext.ExplicitRegisteredClasses ) stObjC.RegisterClass( t );
+                    stObjC.RegisterAssemblyTypes( f.Assemblies );
+                    stObjC.RegisterTypes( f.ExplicitTypes );
+                    foreach( var t in _startContext.ExplicitRegisteredTypes ) stObjC.RegisterType( t );
                     Debug.Assert( stObjC.RegisteringFatalOrErrorCount == 0 || hasError, "stObjC.RegisteringFatalOrErrorCount > 0 ==> An error has been logged." );
                 }
                 if( stObjC.RegisteringFatalOrErrorCount == 0 )

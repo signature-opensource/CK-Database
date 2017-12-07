@@ -45,7 +45,7 @@ namespace CK.StObj.Engine.Tests
         public void AbstractDetection()
         {
             StObjCollector collector = new StObjCollector( TestHelper.Monitor );
-            collector.RegisterClass( typeof( A2 ) );
+            collector.RegisterType( typeof( A2 ) );
             StObjCollectorResult result = collector.GetResult( new SimpleServiceContainer() );
             Assert.That( result.HasFatalError, Is.False );
             Assert.That( result.Default.StObjMap.Obtain<A>(), Is.Not.Null.And.AssignableTo<A2>() );

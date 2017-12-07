@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -33,12 +33,12 @@ namespace CK.Core
         /// When not called before the first access, the .Net ConfigurationManager.AppSettings is used if possible (late binding).
         /// </summary>
         /// <param name="getConfigurationObject">The function that ultimately </param>
-        public void Initialize(Func<string, object> getConfigurationObject)
+        public void Initialize( Func<string, object> getConfigurationObject )
         {
-            if (getConfigurationObject == null) throw new ArgumentNullException("getConfigurationObject");
-            lock (_lock)
+            if( getConfigurationObject == null ) throw new ArgumentNullException( "getConfigurationObject" );
+            lock( _lock )
             {
-                if (_initialized) throw new CKException(Impl.CoreResources.AppSettingsAlreadyInitialized);
+                if( _initialized ) throw new CKException( Impl.CoreResources.AppSettingsAlreadyInitialized );
                 _initializedGetObject = _getObject = getConfigurationObject;
                 _initialized = true;
             }
@@ -50,15 +50,15 @@ namespace CK.Core
         /// The function that overrides the current configuration is called with the previously active function to enable chaining (filtering, alteration of the keys and or the values).
         /// </summary>
         /// <param name="filterConfigurationObject">The function that ultimately </param>
-        public void Override(Func<Func<string, object>, string, object> filterConfigurationObject)
+        public void Override( Func<Func<string, object>, string, object> filterConfigurationObject )
         {
-            if (filterConfigurationObject == null) throw new ArgumentNullException("filterConfigurationObject");
-            lock (_lock)
+            if( filterConfigurationObject == null ) throw new ArgumentNullException( "filterConfigurationObject" );
+            lock( _lock )
             {
-                if (!_initialized) DefaultInitialization();
+                if( !_initialized ) DefaultInitialization();
                 // Local required to avoid closure to this field:
                 var prev = _getObject;
-                _getObject = s => filterConfigurationObject(prev, s);
+                _getObject = s => filterConfigurationObject( prev, s );
             }
         }
 
@@ -67,9 +67,9 @@ namespace CK.Core
         /// </summary>
         public void RevertOverrides()
         {
-            lock (_lock)
+            lock( _lock )
             {
-                if (!_initialized) DefaultInitialization();
+                if( !_initialized ) DefaultInitialization();
                 _getObject = _initializedGetObject;
             }
         }
@@ -89,9 +89,9 @@ namespace CK.Core
         /// </summary>
         public void DefaultInitialize()
         {
-            lock (_lock)
+            lock( _lock )
             {
-                if (_initialized) throw new CKException(Impl.CoreResources.AppSettingsAlreadyInitialized);
+                if( _initialized ) throw new CKException( Impl.CoreResources.AppSettingsAlreadyInitialized );
                 DoDefaultInitialize();
             }
         }
@@ -106,8 +106,8 @@ namespace CK.Core
         {
             get
             {
-                if (!_initialized) DefaultInitialization();
-                var o = _getObject(key);
+                if( !_initialized ) DefaultInitialization();
+                var o = _getObject( key );
                 return o != null ? o.ToString() : null;
             }
         }
@@ -117,10 +117,10 @@ namespace CK.Core
         /// </summary>
         /// <param name="key">The configuration key.</param>
         /// <returns>The configured available object or null if no such configuration exists.</returns>
-        public object Get(string key)
+        public object Get( string key )
         {
-            if (!_initialized) DefaultInitialization();
-            return _getObject(key);
+            if( !_initialized ) DefaultInitialization();
+            return _getObject( key );
         }
 
         /// <summary>
@@ -129,10 +129,10 @@ namespace CK.Core
         /// <param name="key">The configuration key.</param>
         /// <param name="defaultValue">The default value to return if no object exists.</param>
         /// <returns>The configured available object or the <paramref name="defaultValue"/> if no such configuration exists.</returns>
-        public T Get<T>(string key, T defaultValue)
+        public T Get<T>( string key, T defaultValue )
         {
-            if (!_initialized) DefaultInitialization();
-            var o = _getObject(key);
+            if( !_initialized ) DefaultInitialization();
+            var o = _getObject( key );
             return o is T ? (T)o : defaultValue;
         }
 
@@ -141,11 +141,11 @@ namespace CK.Core
         /// </summary>
         /// <param name="key">The configuration key.</param>
         /// <returns>The configured available object.</returns>
-        public object GetRequired(string key)
+        public object GetRequired( string key )
         {
-            if (!_initialized) DefaultInitialization();
-            var o = _getObject(key);
-            if (o == null) throw new CKException(Impl.CoreResources.AppSettingsRequiredConfigurationMissing, key);
+            if( !_initialized ) DefaultInitialization();
+            var o = _getObject( key );
+            if( o == null ) throw new CKException( Impl.CoreResources.AppSettingsRequiredConfigurationMissing, key );
             return o;
         }
 
@@ -154,20 +154,20 @@ namespace CK.Core
         /// </summary>
         /// <param name="key">The configuration key.</param>
         /// <returns>The configured available object.</returns>
-        public T GetRequired<T>(string key)
+        public T GetRequired<T>( string key )
         {
-            if (!_initialized) DefaultInitialization();
-            var o = _getObject(key);
-            if (o == null) throw new CKException(Impl.CoreResources.AppSettingsRequiredConfigurationMissing, key);
-            if (!(o is T)) throw new CKException(Impl.CoreResources.AppSettingsRequiredConfigurationBadType, key, typeof(T).FullName);
+            if( !_initialized ) DefaultInitialization();
+            var o = _getObject( key );
+            if( o == null ) throw new CKException( Impl.CoreResources.AppSettingsRequiredConfigurationMissing, key );
+            if( !(o is T) ) throw new CKException( Impl.CoreResources.AppSettingsRequiredConfigurationBadType, key, typeof( T ).FullName );
             return (T)o;
         }
 
         void DefaultInitialization()
         {
-            lock (_lock)
+            lock( _lock )
             {
-                if (_initialized) return;
+                if( _initialized ) return;
                 DoDefaultInitialize();
             }
         }
@@ -182,19 +182,19 @@ namespace CK.Core
         {
             string origin = AppContext.BaseDirectory;
             string p = origin;
-            while( !File.Exists( Path.Combine( p, "App.config") ) )
+            while( !File.Exists( Path.Combine( p, "App.config" ) ) )
             {
-                p = Path.GetDirectoryName(p);
+                p = Path.GetDirectoryName( p );
                 if( p == null )
                 {
-                    throw new CKException($"Unable to find an 'App.config' file above '{origin}'.");
+                    throw new CKException( $"Unable to find an 'App.config' file above '{origin}'." );
                 }
             }
-            XDocument doc = XDocument.Load(Path.Combine(p, "App.config"));
-            var appSettings = doc.Root.Descendants("appSettings")
-                                        .Elements("add")
-                                        .ToDictionary(e => (string)e.AttributeRequired("key"), e => (string)e.AttributeRequired("value"));
-            _initializedGetObject = _getObject = key => appSettings.GetValueWithDefault(key, null);
+            XDocument doc = XDocument.Load( Path.Combine( p, "App.config" ) );
+            var appSettings = doc.Root.Descendants( "appSettings" )
+                                        .Elements( "add" )
+                                        .ToDictionary( e => (string)e.AttributeRequired( "key" ), e => (string)e.AttributeRequired( "value" ) );
+            _initializedGetObject = _getObject = key => appSettings.GetValueWithDefault( key, null );
         }
 #endif
     }

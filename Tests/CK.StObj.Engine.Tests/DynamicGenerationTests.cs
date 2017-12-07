@@ -88,8 +88,8 @@ namespace CK.StObj.Engine.Tests
 
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor, runtimeBuilder: runtimeBuilder );
-                collector.RegisterClass( typeof( B ) );
-                collector.RegisterClass( typeof( D ) );
+                collector.RegisterType( typeof( B ) );
+                collector.RegisterType( typeof( D ) );
                 collector.DependencySorterHookInput = items => TestHelper.Monitor.TraceDependentItem( items );
                 collector.DependencySorterHookOutput = sortedItems => TestHelper.Monitor.TraceSortedItem( sortedItems, false );
                 var r = collector.GetResult( new SimpleServiceContainer() );
@@ -162,8 +162,8 @@ namespace CK.StObj.Engine.Tests
             public void DoTest()
             {
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor, configurator: new StObjPropertyConfigurator() );
-                collector.RegisterClass( typeof( B ) );
-                collector.RegisterClass( typeof( ASpec ) );
+                collector.RegisterType( typeof( B ) );
+                collector.RegisterType( typeof( ASpec ) );
                 collector.DependencySorterHookInput = items => TestHelper.Monitor.TraceDependentItem( items );
                 collector.DependencySorterHookOutput = sortedItems => TestHelper.Monitor.TraceSortedItem( sortedItems, false );
                 var r = collector.GetResult( new SimpleServiceContainer() );
@@ -275,8 +275,8 @@ namespace CK.StObj.Engine.Tests
             public void DoTest()
             {
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor, configurator: new StObjPropertyConfigurator() );
-                collector.RegisterClass( typeof( BSpec ) );
-                collector.RegisterClass( typeof( ASpec ) );
+                collector.RegisterType( typeof( BSpec ) );
+                collector.RegisterType( typeof( ASpec ) );
                 collector.DependencySorterHookInput = items => TestHelper.Monitor.TraceDependentItem( items );
                 collector.DependencySorterHookOutput = sortedItems => TestHelper.Monitor.TraceSortedItem( sortedItems, false );
                 var r = collector.GetResult( new SimpleServiceContainer() );

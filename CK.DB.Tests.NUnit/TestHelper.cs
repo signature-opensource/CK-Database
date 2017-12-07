@@ -472,11 +472,7 @@ namespace CK.Core
                     _config = new StObjEngineConfiguration();
                     foreach( var a in AssembliesToSetup )
                     {
-                        _config.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( a );
-                    }
-                    foreach( var a in RecurseAssembliesToSetup )
-                    {
-                        _config.BuildAndRegisterConfiguration.Assemblies.DiscoverRecurseAssemblyNames.Add( a );
+                        _config.Assemblies.Add( a );
                     }
                     _config.GeneratedAssemblyName = DynamicAssemblyName;
 

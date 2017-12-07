@@ -58,7 +58,7 @@ namespace CK.Setup
         readonly StObjEngineConfigurator _configurator;
         readonly StObjEngineAspectTrampoline<IStObjEngineConfigureContext> _trampoline;
 
-        List<Type> _explicitRegisteredClasses;
+        List<Type> _explicitRegisteredTypes;
         Action<IEnumerable<IDependentItem>> _stObjDependencySorterHookInput;
         Action<IEnumerable<ISortedItem>> _stObjDependencySorterHookOutput;
 
@@ -77,16 +77,16 @@ namespace CK.Setup
 
         public IStObjEngineStatus EngineStatus => _status;
 
-        public void AddExplicitRegisteredClass( Type type )
+        public void AddExplicitRegisteredType( Type type )
         {
             if( type == null ) throw new ArgumentNullException();
-            if( _explicitRegisteredClasses == null ) _explicitRegisteredClasses = new List<Type>();
-            _explicitRegisteredClasses.Add( type );
+            if( _explicitRegisteredTypes == null ) _explicitRegisteredTypes = new List<Type>();
+            _explicitRegisteredTypes.Add( type );
         }
 
         public StObjEngineConfiguration ExternalConfiguration => _config;
 
-        internal IReadOnlyList<Type> ExplicitRegisteredClasses =>_explicitRegisteredClasses;
+        internal IReadOnlyList<Type> ExplicitRegisteredTypes =>_explicitRegisteredTypes;
 
         public IReadOnlyList<IStObjEngineAspect> Aspects => _aspects;
 

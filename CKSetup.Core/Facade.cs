@@ -621,7 +621,7 @@ namespace CKSetup
             string dynamicAssemblyName )
         {
             var config = new StObjEngineConfiguration();
-            config.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.AddRange( assembliesToSetup );
+            config.Assemblies.AddRange( assembliesToSetup );
             config.GeneratedAssemblyName = dynamicAssemblyName;
 
             var setupable = new SetupableAspectConfiguration();

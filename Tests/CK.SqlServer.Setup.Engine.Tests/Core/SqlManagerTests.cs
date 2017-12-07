@@ -29,7 +29,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.Core
         public void an_invalid_database_name_does_not_DBSetup_master()
         {
             var c = new StObjEngineConfiguration();
-            c.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( "SqlActorPackage" );
+            c.Assemblies.Add( "SqlActorPackage" );
 
             var setupable = new SetupableAspectConfiguration();
             c.Aspects.Add( setupable );

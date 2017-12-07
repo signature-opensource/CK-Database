@@ -4,6 +4,7 @@ using CK.Core;
 using CK.Setup;
 using NUnit.Framework;
 using CK.StObj.Engine.Tests.Poco;
+using System.Linq;
 
 namespace CK.StObj.Engine.Tests
 {
@@ -31,12 +32,11 @@ namespace CK.StObj.Engine.Tests
 
         static StObjCollectorResult BuildPocoSample()
         {
-            AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
-            disco.TypeFilter = t => t.Namespace == "CK.StObj.Engine.Tests.Poco";
-            disco.Discover( TestHelper.Assembly );
+            var types = TestHelper.Assembly.GetTypes()
+                            .Where( t => t.Namespace == "CK.StObj.Engine.Tests.Poco" );
 
             StObjCollector collector = new StObjCollector( TestHelper.Monitor );
-            collector.RegisterTypes( disco );
+            collector.RegisterTypes( types.ToList() );
 
             var result = collector.GetResult( new SimpleServiceContainer() );
             Assert.That( result.HasFatalError, Is.False );

@@ -44,20 +44,20 @@ namespace CK.StObj.Engine.Tests
         {
             {
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
-                collector.RegisterClass( typeof( ObjB ) );
-                collector.RegisterClass( typeof( ObjA ) );
+                collector.RegisterType( typeof( ObjB ) );
+                collector.RegisterType( typeof( ObjA ) );
                 Assert.That( collector.RegisteringFatalOrErrorCount == 1 );
             }
             {
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
-                collector.RegisterClass( typeof( ObjA ) );
-                collector.RegisterClass( typeof( ObjSpecA ) );
+                collector.RegisterType( typeof( ObjA ) );
+                collector.RegisterType( typeof( ObjSpecA ) );
                 Assert.That( collector.RegisteringFatalOrErrorCount == 1 );
             }
             {
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
-                collector.RegisterClass( typeof( ObjA ) );
-                collector.RegisterClass( typeof( ObjSpecA2 ) );
+                collector.RegisterType( typeof( ObjA ) );
+                collector.RegisterType( typeof( ObjSpecA2 ) );
                 Assert.That( collector.RegisteringFatalOrErrorCount == 1 );
             }
         }
@@ -85,17 +85,17 @@ namespace CK.StObj.Engine.Tests
         {
             {
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
-                collector.RegisterClass( typeof( MissingStObjPropertyType ) );
+                collector.RegisterType( typeof( MissingStObjPropertyType ) );
                 Assert.That( collector.RegisteringFatalOrErrorCount == 1 );
             }
             {
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
-                collector.RegisterClass( typeof( MissingStObjPropertyName ) );
+                collector.RegisterType( typeof( MissingStObjPropertyName ) );
                 Assert.That( collector.RegisteringFatalOrErrorCount == 1 );
             }
             {
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
-                collector.RegisterClass( typeof( DuplicateStObjProperty ) );
+                collector.RegisterType( typeof( DuplicateStObjProperty ) );
                 Assert.That( collector.RegisteringFatalOrErrorCount == 1 );
             }
         }
@@ -112,7 +112,7 @@ namespace CK.StObj.Engine.Tests
         {
             {
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
-                collector.RegisterClass( typeof( InvalidAmbientContractProperty ) );
+                collector.RegisterType( typeof( InvalidAmbientContractProperty ) );
                 var r = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( r.HasFatalError );
             }
@@ -162,8 +162,8 @@ namespace CK.StObj.Engine.Tests
         {
             {
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
-                collector.RegisterClass( typeof( CB3 ) );
-                collector.RegisterClass( typeof( CA3 ) );
+                collector.RegisterType( typeof( CB3 ) );
+                collector.RegisterType( typeof( CA3 ) );
                 var r = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( r.HasFatalError, Is.False );
                 var cb = r.Default.StObjMap.Obtain<CB>();
@@ -183,8 +183,8 @@ namespace CK.StObj.Engine.Tests
         {
             {
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
-                collector.RegisterClass( typeof( CMissingSetterOnTopDefiner ) );
-                collector.RegisterClass( typeof( CA2 ) );
+                collector.RegisterType( typeof( CMissingSetterOnTopDefiner ) );
+                collector.RegisterType( typeof( CA2 ) );
                 Assert.That( collector.RegisteringFatalOrErrorCount, Is.EqualTo( 1 ) );
             }
         }
@@ -200,8 +200,8 @@ namespace CK.StObj.Engine.Tests
         {
             {
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
-                collector.RegisterClass( typeof( CPrivateSetter ) );
-                collector.RegisterClass( typeof( CA2 ) );
+                collector.RegisterType( typeof( CPrivateSetter ) );
+                collector.RegisterType( typeof( CA2 ) );
                 var r = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( r.HasFatalError, Is.False );
                 var c = r.Default.StObjMap.Obtain<CPrivateSetter>();
