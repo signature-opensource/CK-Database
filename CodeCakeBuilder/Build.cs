@@ -171,6 +171,7 @@ namespace CodeCake
                                     .Append( "store" )
                                     .Append( "add" );
 
+                        args.Append( GetNet461BinFolder( "CKSetup.Runner", configuration ) );
                         args.Append( GetNet461BinFolder( "CK.StObj.Runner", configuration ) );
                         args.Append( GetNet461BinFolder( "CK.StObj.Model", configuration ) );
                         args.Append( GetNet461BinFolder( "CK.StObj.Runtime", configuration ) );
@@ -183,6 +184,7 @@ namespace CodeCake
                         args.Append( GetNet461BinFolder( "CK.SqlServer.Setup.Engine", configuration ) );
                         args.Append( GetNet461BinFolder( "CKSetup", configuration ) );
 
+                        args.Append( EnsurePublishPath( GetNetCoreBinFolder( "CKSetup.Runner", configuration ) ) );
                         args.Append( EnsurePublishPath( GetNetCoreBinFolder( "CK.StObj.Runner", configuration ) ) );
                         args.Append( GetNetCoreBinFolder( "CK.StObj.Model", configuration ) );
                         args.Append( EnsurePublishPath( GetNetCoreBinFolder( "CK.StObj.Runtime", configuration ) ) );
