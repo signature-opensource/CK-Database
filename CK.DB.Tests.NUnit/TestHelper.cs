@@ -228,7 +228,21 @@ namespace CK.Core
         /// <returns>True on success, false on error.</returns>
         public static bool RunStObjEngine( StObjEngineConfiguration c )
         {
-            if( c == null ) throw new ArgumentNullException( nameof( c ) );
+            return WithWeakAssemblyResolver( () =>
+            {
+                var e = new StObjEngine( Monitor, c );
+                return e.Run();
+            } );
+        }
+
+        /// <summary>
+        /// Runs code inside a standard "weak assembly resolver".
+        /// </summary>
+        /// <param name="action">The action. Must not be null.</param>
+        /// <returns>The action result.</returns>
+        public static T WithWeakAssemblyResolver<T>( Func<T> action )
+        {
+            if( action == null ) throw new ArgumentNullException( nameof( action ) );
             ResolveEventHandler loadHook = ( sender, arg ) =>
             {
                 var failed = new AssemblyName( arg.Name );
@@ -241,14 +255,14 @@ namespace CK.Core
             AppDomain.CurrentDomain.AssemblyResolve += loadHook;
             try
             {
-                var e = new StObjEngine( Monitor, c );
-                return e.Run();
+                return action();
             }
             finally
             {
                 AppDomain.CurrentDomain.AssemblyResolve -= loadHook;
             }
         }
+
 
         /// <summary>
         /// Loads an assembly that must be in probe paths in .Net framework and in

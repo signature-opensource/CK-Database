@@ -2,7 +2,9 @@ using CK.CodeGen.Abstractions;
 using CK.Core;
 using CK.Setup;
 using CK.SqlServer.Parser;
+using System;
 using System.Reflection;
+using System.Text;
 
 namespace CK.SqlServer.Setup
 {
@@ -72,17 +74,34 @@ namespace CK.SqlServer.Setup
             return null;
         }
 
-        bool IAutoImplementorMethod.Implement( IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, ITypeScope b )
+        bool IAutoImplementorMethod.Implement( IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, ITypeScope tS )
         {
-            // SetupObjectItem has been initialized by DynamicItemInitialize.
-            if( SetupObjectItem == null ) return false;
             using( monitor.OpenInfo( $"Generating {SqlCallableAttributeImpl.DumpMethodSignature( m )}." ) )
             {
-                var target = SetupObjectItem is SqlTransformerItem
+                SqlBaseItem sqlItem = null;
+
+                // Use this for the moment... To be improved.
+                StringBuilder b = new StringBuilder();
+                b.Append( m.DeclaringType.FullName ).Append('!').Append(m.Name).Append('(');
+                SqlCallableAttributeImpl.DumpParameters( b, m.GetParameters() );
+                string methodKey = b.Append(')').ToString();
+
+                // SetupObjectItem is initialized by DynamicItemInitialize.
+                // If it is null, we are be in a "second run" (a SetupFolder).
+                if( dynamicAssembly.IsSecondaryRun )
+                {
+                    sqlItem = (SqlBaseItem)dynamicAssembly.GetPrimaryRunResult( methodKey );
+                }
+                else
+                {
+                    if( SetupObjectItem == null ) throw new Exception( "SetupObjectItem must have been initialized by DynamicItemInitialize." );
+                    var target = SetupObjectItem is SqlTransformerItem
                                 ? ((SqlTransformerItem)SetupObjectItem).Target
                                 : (SetupObjectItem.TransformTarget ?? SetupObjectItem);
-                var item = (SqlObjectItem)target;
-                return DoImplement( monitor, m, item, dynamicAssembly, b );
+                    sqlItem = (SqlBaseItem)target;
+                    dynamicAssembly.SetPrimaryRunResult( methodKey, sqlItem, false );
+                }
+                return DoImplement( monitor, m, sqlItem, dynamicAssembly, tS );
             }
         }
 

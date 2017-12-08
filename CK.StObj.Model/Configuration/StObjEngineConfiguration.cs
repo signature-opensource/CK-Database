@@ -96,6 +96,11 @@ namespace CK.Core
             /// </summary>
             static public readonly XName TraceDependencySorterOutput = XNamespace.None + "TraceDependencySorterOutput";
 
+            /// <summary>
+            /// The GeneratedAssemblyName element name.
+            /// </summary>
+            static public readonly XName GeneratedAssemblyName = XNamespace.None + "GeneratedAssemblyName";
+
         }
 
         /// <summary>
@@ -108,6 +113,7 @@ namespace CK.Core
             TraceDependencySorterOutput = string.Equals( e.Element( XmlNames.TraceDependencySorterOutput )?.Value, "true", StringComparison.OrdinalIgnoreCase );
             RevertOrderingNames = string.Equals( e.Element( XmlNames.RevertOrderingNames )?.Value, "true", StringComparison.OrdinalIgnoreCase );
             GenerateAppContextAssembly = !string.Equals( e.Element( XmlNames.GenerateAppContextAssembly )?.Value, "false", StringComparison.OrdinalIgnoreCase );
+            GeneratedAssemblyName = e.Element( XmlNames.GeneratedAssemblyName )?.Value;
             Assemblies = new HashSet<string>( FromXml( e, XmlNames.Assemblies, XmlNames.Assembly ) );
             Types = new HashSet<string>( FromXml( e, XmlNames.Types, XmlNames.Type ) );
             SetupFolders = e.Descendants( XmlNames.SetupFolder ).Select( f => new SetupFolder( f ) ).ToList();
@@ -146,6 +152,9 @@ namespace CK.Core
                    TraceDependencySorterOutput ? new XElement( XmlNames.TraceDependencySorterOutput, "true" ) : null,
                    RevertOrderingNames ? new XElement( XmlNames.RevertOrderingNames, "true" ) : null,
                    !GenerateAppContextAssembly ? new XElement( XmlNames.GenerateAppContextAssembly, "false" ) : null,
+                   GeneratedAssemblyName != DefaultGeneratedAssemblyName
+                        ? new XElement( XmlNames.GeneratedAssemblyName, GeneratedAssemblyName )
+                        : null,
                    ToXml( XmlNames.Assemblies, XmlNames.Assembly, Assemblies ),
                    ToXml( XmlNames.Types, XmlNames.Type, Types ),
                    Aspects.Select( a => a.SerializeXml( new XElement( XmlNames.Aspect, new XAttribute( XmlNames.Type, aspectTypeNameWriter( a.GetType() ) ) ) ) ),
@@ -169,7 +178,7 @@ namespace CK.Core
         /// </summary>
         public string GeneratedAssemblyName
         {
-            get => _generatedAssemblyName ?? DefaultGeneratedAssemblyName;
+            get => String.IsNullOrWhiteSpace(_generatedAssemblyName) ? DefaultGeneratedAssemblyName : _generatedAssemblyName;
             set => _generatedAssemblyName = value;
         }
 

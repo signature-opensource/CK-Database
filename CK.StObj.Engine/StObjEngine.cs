@@ -121,7 +121,7 @@ namespace CK.Setup
                 _startContext.CreateAndConfigureAspects( _config.Aspects, () => _status.Success = false );
                 if( _status.Success )
                 {
-                    StObjCollectorResult r = SafeBuildStObj( normalizedFolders[0] );
+                    StObjCollectorResult r = SafeBuildStObj( normalizedFolders[0], null );
                     if( r == null ) return _status.Success = false;
                     
                     var runCtx = new StObjEngineRunContext( _monitor, _startContext, r.OrderedStObjs );
@@ -134,49 +134,16 @@ namespace CK.Setup
 
                         if( _config.GenerateAppContextAssembly || normalizedFolders.Any( f => f.SameAsRoot ) )
                         {
-                            using( _monitor.OpenInfo( "Generating AppContext (global) assembly." ) )
-                            {
-                                string finalPath = Path.Combine( AppContext.BaseDirectory, dllName );
-                                var g = r.GenerateFinalAssembly( _monitor, finalPath, _config.GenerateSourceFiles );
-                                if( g.GeneratedFileName.Count > 0 )
-                                {
-                                    foreach( var f in normalizedFolders.Where( f => f.SameAsRoot ) )
-                                    {
-                                        using( _monitor.OpenInfo( $"Copying globally generated files to folder: '{f.Directory}'." ) )
-                                        {
-                                            foreach( var file in g.GeneratedFileName )
-                                            {
-                                                try
-                                                {
-                                                    File.Copy( Path.Combine( AppContext.BaseDirectory, file ), Path.Combine( f.Directory, file ), true );
-                                                }
-                                                catch( Exception ex )
-                                                {
-                                                    _monitor.Error( ex );
-                                                    _status.Success = false;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                _status.Success = g.Success;
-                            }
+                            _status.Success = FirstGenerationRun( normalizedFolders, r, dllName );
                         }
                         if( _status.Success )
                         {
                             foreach( var f in normalizedFolders.Skip( 1 ).Where( f => !f.SameAsRoot ) )
                             {
-                                using( _monitor.OpenInfo( $"Generating assembly for folder {f.Directory}." ) )
+                                if( !SecondaryGenerationRun( r, dllName, f ) )
                                 {
-                                    StObjCollectorResult rFolder = SafeBuildStObj( f );
-                                    if( rFolder == null ) _status.Success = false;
-                                    else
-                                    {
-                                        string finalPath = Path.Combine( f.Directory, dllName );
-                                        // Here we must bind the StObjs to the reality!
-                                        var g = r.GenerateFinalAssembly( _monitor, finalPath, _config.GenerateSourceFiles );
-                                        if( !g.Success ) _status.Success = false;
-                                    }
+                                    _status.Success = false;
+                                    break;
                                 }
                             }
                         }
@@ -199,6 +166,49 @@ namespace CK.Setup
             {
                 DisposeDisposableAspects();
                 _status.Dispose();
+            }
+        }
+
+        bool SecondaryGenerationRun( StObjCollectorResult r, string dllName, NormalizedFolder f )
+        {
+            using( _monitor.OpenInfo( $"Generating assembly for folder {f.Directory}." ) )
+            {
+                StObjCollectorResult rFolder = SafeBuildStObj( f, r.SecondaryRunAccessor );
+                if( rFolder == null ) return false;
+                string finalPath = Path.Combine( f.Directory, dllName );
+                var g = rFolder.GenerateFinalAssembly( _monitor, finalPath, _config.GenerateSourceFiles );
+                return g.Success;
+            }
+        }
+
+        bool FirstGenerationRun( List<NormalizedFolder> normalizedFolders, StObjCollectorResult r, string dllName )
+        {
+            using( _monitor.OpenInfo( "Generating AppContext assembly (first run)." ) )
+            {
+                string finalPath = Path.Combine( AppContext.BaseDirectory, dllName );
+                var g = r.GenerateFinalAssembly( _monitor, finalPath, _config.GenerateSourceFiles );
+                if( g.GeneratedFileName.Count > 0 )
+                {
+                    foreach( var f in normalizedFolders.Where( f => f.SameAsRoot ) )
+                    {
+                        using( _monitor.OpenInfo( $"Copying generated files to folder: '{f.Directory}'." ) )
+                        {
+                            foreach( var file in g.GeneratedFileName )
+                            {
+                                try
+                                {
+                                    File.Copy( Path.Combine( AppContext.BaseDirectory, file ), Path.Combine( f.Directory, file ), true );
+                                }
+                                catch( Exception ex )
+                                {
+                                    _monitor.Error( ex );
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                }
+                return g.Success;
             }
         }
 
@@ -266,7 +276,7 @@ namespace CK.Setup
                                                                                    || norm.Directory.StartsWith( n, StringComparison.OrdinalIgnoreCase ) );
                                     if( clash.Directory != null )
                                     {
-                                        _monitor.Error( $"Directory '{n}' can not be below other SetupFolder '{clash.Directory}'." );
+                                        _monitor.Error( $"Directory '{n}' can not be the same, below or above other SetupFolder '{clash.Directory}'." );
                                     }
                                     else
                                     {
@@ -306,7 +316,7 @@ namespace CK.Setup
             return null;
         }
 
-        StObjCollectorResult SafeBuildStObj( NormalizedFolder f )
+        StObjCollectorResult SafeBuildStObj( NormalizedFolder f, Func<string,object> secondaryRunAccessor )
         {
             bool hasError = false;
             using( _monitor.OnError( () => hasError = true ) )
@@ -319,7 +329,8 @@ namespace CK.Setup
                     _config.TraceDependencySorterInput,
                     _config.TraceDependencySorterOutput,
                     _runtimeBuilder,
-                    configurator, configurator, configurator );
+                    configurator, configurator, configurator,
+                    secondaryRunAccessor );
                 stObjC.RevertOrderingNames = _config.RevertOrderingNames;
                 if( _config.TraceDependencySorterInput ) stObjC.DependencySorterHookInput += i => i.Trace( _monitor );
                 if( _config.TraceDependencySorterOutput ) stObjC.DependencySorterHookOutput += i => i.Trace( _monitor );

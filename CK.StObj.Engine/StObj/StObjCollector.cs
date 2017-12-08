@@ -20,6 +20,7 @@ namespace CK.Setup
         readonly IActivityMonitor _monitor;
         readonly DynamicAssembly _tempAssembly;
         readonly IStObjRuntimeBuilder _runtimeBuilder;
+        readonly Dictionary<string, object> _primaryRunCache;
         int _registerFatalOrErrorCount;
 
         /// <summary>
@@ -39,12 +40,18 @@ namespace CK.Setup
             IStObjRuntimeBuilder runtimeBuilder = null,
             IAmbientContractDispatcher dispatcher = null,
             IStObjStructuralConfigurator configurator = null,
-            IStObjValueResolver valueResolver = null )
+            IStObjValueResolver valueResolver = null,
+            Func<string,object> secondaryRunAccessor = null )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
             _runtimeBuilder = runtimeBuilder ?? StObjContextRoot.DefaultStObjRuntimeBuilder;
             _monitor = monitor;
-            _tempAssembly = new DynamicAssembly();
+            if( secondaryRunAccessor != null ) _tempAssembly = new DynamicAssembly( secondaryRunAccessor );
+            else
+            {
+                _primaryRunCache = new Dictionary<string, object>();
+                _tempAssembly = new DynamicAssembly( _primaryRunCache );
+            }
             _cc = new AmbientContractCollector<StObjContextualMapper, StObjTypeInfo, MutableItem>( _monitor, l => new StObjMapper(), ( l, p, t ) => new StObjTypeInfo( l, p, t ), _tempAssembly, dispatcher );
             _configurator = configurator;
             _valueResolver = valueResolver;
@@ -194,7 +201,7 @@ namespace CK.Setup
                     contracts.LogErrorAndWarnings( _monitor );
                 }
                 var stObjMapper = new StObjMapper();
-                var result = new StObjCollectorResult( stObjMapper, contracts, _tempAssembly, null );
+                var result = new StObjCollectorResult( stObjMapper, contracts, _tempAssembly, _primaryRunCache );
                 if( result.HasFatalError ) return result;
                 using( _monitor.OpenInfo( "Creating Structure Objects." ) )
                 {

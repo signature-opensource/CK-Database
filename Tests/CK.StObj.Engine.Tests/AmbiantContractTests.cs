@@ -12,6 +12,10 @@ using System.Text;
 using NUnit.Framework;
 using CK.Core;
 using CK.StObj.Engine.Tests;
+using CK.CodeGen;
+using CK.CodeGen.Abstractions;
+using System.Collections;
+using System.Reflection.Emit;
 
 namespace CK.Setup.Tests
 {
@@ -113,7 +117,7 @@ namespace CK.Setup.Tests
                   monitor ?? new ActivityMonitor(), 
                   l => new AmbientRoot(), 
                   ( l, p, t ) => new TypeInfo( p, t ), 
-                  new DynamicAssembly(),
+                  new DynamicAssembly( new Dictionary<string,object>() ),
                   contextDispatcher )
         {
         }

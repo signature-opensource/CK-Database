@@ -1,21 +1,16 @@
-using System;
-using System.Collections;
-using System.Data.SqlClient;
-using System.Diagnostics;
-using System.Reflection;
-using System.Linq;
-using CK.Core;
-using CK.Setup;
-using CK.SqlServer.Parser;
-using CK.Reflection;
 using CK.CodeGen;
-using System.Collections.Generic;
-using System.Threading;
-using System.Text;
+using CK.CodeGen.Abstractions;
+using CK.Core;
+using CK.SqlServer.Parser;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using CK.CodeGen.Abstractions;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading;
 
 namespace CK.SqlServer.Setup
 {
@@ -426,7 +421,7 @@ namespace CK.SqlServer.Setup
             return b.ToString();
         }
 
-        static void DumpParameters( StringBuilder b, IEnumerable<ParameterInfo> parameters )
+        internal static void DumpParameters( StringBuilder b, IEnumerable<ParameterInfo> parameters )
         {
             bool atLeastOne = false;
             foreach( var mP in parameters )

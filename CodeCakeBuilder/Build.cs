@@ -126,7 +126,7 @@ namespace CodeCake
                      {
                          using( Cake.Environment.SetWorkingDirectory( test.ProjectPath ) )
                          {
-                             Cake.Information( "Testing: {0}", test.Net461Dll );
+                             Cake.Warning( "Testing: {0}", test.Net461Dll );
                              Cake.NUnit( test.Net461Dll.FullPath, new NUnitSettings()
                              {
                                  Framework = "v4.5"

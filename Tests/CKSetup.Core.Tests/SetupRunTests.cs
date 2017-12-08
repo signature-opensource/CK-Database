@@ -29,6 +29,11 @@ namespace CKSetup.Tests
         <EngineAssemblyQualifiedName>CK.Setup.StObjEngine, CK.StObj.Engine</EngineAssemblyQualifiedName>
     </CKSetup>
     <StObjEngineConfiguration>
+        <TraceDependencySorterInput>false</TraceDependencySorterInput>
+        <TraceDependencySorterOutput>false</TraceDependencySorterOutput>
+        <RevertOrderingNames>false</RevertOrderingNames>
+        <GenerateAppContextAssembly>true</GenerateAppContextAssembly>
+        <GeneratedAssemblyName>CK.StObj.AutoAssembly</GeneratedAssemblyName>
         <Aspect Type=""CK.Setup.SetupableAspectConfiguration, CK.Setupable.Model"" >
             <TraceDependencySorterInput>false</TraceDependencySorterInput>
             <TraceDependencySorterOutput>false</TraceDependencySorterOutput>

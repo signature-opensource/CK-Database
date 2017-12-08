@@ -1,4 +1,4 @@
-﻿#region Proprietary License
+#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.StObj.Engine\StObj\StObjCollectorResult.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -24,7 +24,7 @@ namespace CK.Setup
         readonly int _totalSpecializationCount;
         readonly BuildValueCollector _buildValueCollector;
         readonly DynamicAssembly _tempAssembly;
-        readonly DynamicAssembly _finalAssembly;
+        readonly Func<string,object> _secondaryRunAccessor;
         IReadOnlyList<MutableItem> _orderedStObjs;
         bool _fatal;
 
@@ -32,12 +32,12 @@ namespace CK.Setup
             StObjMapper owner, 
             AmbientContractCollectorResult<StObjContextualMapper,StObjTypeInfo, MutableItem> contractResult,
             DynamicAssembly tempAssembly,
-            DynamicAssembly finalAssembly )
+            Dictionary<string,object> primaryRunCache )
         {
             Debug.Assert( contractResult != null );
             _contractResult = contractResult;
             _tempAssembly = tempAssembly;
-            _finalAssembly = finalAssembly;
+            if( primaryRunCache != null ) _secondaryRunAccessor = key => primaryRunCache[key];
             foreach( var r in contractResult.Contexts )
             {
                 var c = Add( new StObjCollectorContextualResult( r ) );
@@ -45,6 +45,12 @@ namespace CK.Setup
             }
             _buildValueCollector = new BuildValueCollector();
         }
+
+        /// <summary>
+        /// Gets an accessor for the primary run cache only if this result comes
+        /// from a primary run, null otherwise.
+        /// </summary>
+        public Func<string, object> SecondaryRunAccessor => _secondaryRunAccessor;
 
         /// <summary>
         /// True if a fatal error occured. Result should be discarded.

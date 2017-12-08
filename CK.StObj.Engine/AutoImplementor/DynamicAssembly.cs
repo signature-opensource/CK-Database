@@ -18,11 +18,13 @@ namespace CK.Core
     {
         int _typeID;
         readonly IDictionary _memory;
+        readonly IDictionary<string, object> _primaryRunCache;
+        readonly Func<string, object> _secondaryRunAccessor;
 
         /// <summary>
         /// Initializes a new <see cref="DynamicAssembly"/>.
         /// </summary>
-        public DynamicAssembly()
+        DynamicAssembly()
         {
             var name = Guid.NewGuid().ToString();
             var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly( new AssemblyName( name ), AssemblyBuilderAccess.Run );
@@ -35,6 +37,34 @@ namespace CK.Core
             ws.Global.Append( "[assembly:CK.Setup.ExcludeFromSetup()]" ).NewLine();
             DefaultGenerationNamespace = ws.Global.FindOrCreateNamespace( "CK._g" );
         }
+
+        /// <summary>
+        /// Initializes a new <see cref="DynamicAssembly"/> for a primary run.
+        /// </summary>
+        /// <param name="primaryRunCache">The cache that will be filled.</param>
+        public DynamicAssembly( IDictionary<string, object> primaryRunCache )
+            : this()
+        {
+            if( primaryRunCache == null ) throw new ArgumentNullException( nameof( primaryRunCache ) );
+            _primaryRunCache = primaryRunCache;
+        }
+
+        /// <summary>
+        /// Initializes a new <see cref="DynamicAssembly"/> for a secondary run.
+        /// </summary>
+        /// <param name="secondaryRunAccessor">The function that retrieves primary run result.</param>
+        public DynamicAssembly( Func<string, object> secondaryRunAccessor )
+            : this()
+        {
+            if( secondaryRunAccessor == null ) throw new ArgumentNullException( nameof( secondaryRunAccessor ) );
+            _secondaryRunAccessor = secondaryRunAccessor;
+        }
+
+        /// <summary>
+        /// Gets a shared dictionary associated to the dynamic assembly. 
+        /// Methods that generate code can rely on this to store shared information as required by their generation process.
+        /// </summary>
+        public IDictionary Memory => _memory;
 
         /// <summary>
         /// Gets the <see cref="StubModuleBuilder"/> for this <see cref="DynamicAssembly"/>.
@@ -61,10 +91,34 @@ namespace CK.Core
         public string NextUniqueNumber() => (++_typeID).ToString();
 
         /// <summary>
-        /// Gets a shared dictionary associated to the dynamic assembly. 
-        /// Methods that generate code can rely on this to store shared information as required by their generation process.
+        /// Gets whether this is a secondary run or the primary run.
         /// </summary>
-        public IDictionary Memory => _memory;
+        public bool IsSecondaryRun => _secondaryRunAccessor != null;
+
+        /// <summary>
+        /// Gets an object created by the first run: this must be called only when <see cref="IsSecondaryRun"/> is true.
+        /// The key must exist otherwise a <see cref="KeyNotFoundException"/> is throw.
+        /// </summary>
+        /// <param name="key">Key of the cached result.</param>
+        public object GetPrimaryRunResult( string key )
+        {
+            if( _secondaryRunAccessor == null ) throw new InvalidOperationException();
+            return _secondaryRunAccessor( key );
+        }
+
+        /// <summary>
+        /// Sets an object during the first run: this must be called only when <see cref="IsSecondaryRun"/> is false.
+        /// </summary>
+        /// <param name="key">Key of the object to cache.</param>
+        /// <param name="o">The object to cache.</param>
+        /// <param name="addOrUpdate">True to add or update, false to throw an exception if the key already exists.</param>
+        public void SetPrimaryRunResult( string key, object o, bool addOrUpdate )
+        {
+            if( _primaryRunCache == null ) throw new InvalidOperationException();
+            if( addOrUpdate ) _primaryRunCache[key] = o;
+            else _primaryRunCache.Add( key, o );
+        }
+
     } 
 
 }
