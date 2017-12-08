@@ -93,9 +93,9 @@ namespace CK.Setup
 
         string SetupObjectItemAttributeImplBase.ISetupItemCreator.GetDetailedName( SetupObjectItemAttributeRegisterer r, string name ) => GetDetailedName( r );
 
-        IContextLocNaming SetupObjectItemAttributeImplBase.ISetupItemCreator.BuildFullName( SetupObjectItemAttributeRegisterer r, SetupObjectItemBehavior b, string name )
+        IContextLocNaming SetupObjectItemAttributeImplBase.ISetupItemCreator.BuildFullName( ISetupItem container, SetupObjectItemBehavior b, string name )
         {
-            return BuildFullName( r, b, name );
+            return BuildFullName( container, b, name );
         }
 
         SetupObjectItem SetupObjectItemAttributeImplBase.ISetupItemCreator.CreateSetupObjectItem( SetupObjectItemAttributeRegisterer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
@@ -125,7 +125,7 @@ namespace CK.Setup
         /// <param name="b">Registration behavior.</param>
         /// <param name="name">The raw name.</param>
         /// <returns>The name of the SetupObjectItem.</returns>
-        protected abstract IContextLocNaming BuildFullName( SetupObjectItemAttributeRegisterer r, SetupObjectItemBehavior b, string name );
+        protected abstract IContextLocNaming BuildFullName( ISetupItem container, SetupObjectItemBehavior b, string name );
 
         /// <summary>
         /// Must create the <see cref="SetupObjectItem"/>.

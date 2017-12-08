@@ -40,9 +40,17 @@ namespace CK.SqlServer.Setup
             _expectedItemType = expectedItemType;
         }
 
-        protected override IContextLocNaming BuildFullName( SetupObjectItemAttributeRegisterer r, SetupObjectItemBehavior b, string attributeName )
+        /// <summary>
+        /// Must build the full name of the item based on the raw attribute name, whether this is
+        /// a definition, a replacement or a transformation and the container of the item.
+        /// </summary>
+        /// <param name="container">The item's container.</param>
+        /// <param name="b">The behavior (Define, Replace or Transform).</param>
+        /// <param name="attributeName">The raw attribute name.</param>
+        /// <returns>The context-location-name for the item.</returns>
+        protected override IContextLocNaming BuildFullName( ISetupItem container, SetupObjectItemBehavior b, string attributeName )
         {
-            return r.SqlBuildFullName( b, attributeName );
+            return SqlBaseItemAttributeImpl.SqlBuildFullName( (SqlPackageBaseItem)container, b, attributeName );
         }
 
         protected override SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeRegisterer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )

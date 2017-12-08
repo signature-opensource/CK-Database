@@ -53,7 +53,7 @@ namespace CK.Setup
 
         internal BestCreator Register( SetupObjectItemBehavior b, string name )
         {
-            var n = _candidate.BuildFullName( this, b, name );
+            var n = _candidate.BuildFullName( Container, b, name );
             if( n == null )
             {
                 return SetError( "Invalid name: " + _candidate.GetDetailedName( this, name ) );

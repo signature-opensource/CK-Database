@@ -22,17 +22,53 @@ namespace CK.SqlServer.Setup
         }
 
         /// <summary>
-        /// Must build the full name of the object based on the raw attribute name, whether this is
-        /// a definition, a replacement or a transformation and the container of the object provided 
-        /// by the <paramref name="r"/> object.
+        /// Must build the full name of the item based on the raw attribute name, whether this is
+        /// a definition, a replacement or a transformation and the container of the item.
         /// </summary>
-        /// <param name="r">The registerer.</param>
+        /// <param name="container">The item's container.</param>
         /// <param name="b">The behavior (Define, Replace or Transform).</param>
         /// <param name="attributeName">The raw attribute name.</param>
-        /// <returns>The context-location-name for the object.</returns>
-        protected override IContextLocNaming BuildFullName( SetupObjectItemAttributeRegisterer r, SetupObjectItemBehavior b, string attributeName )
+        /// <returns>The context-location-name for the item.</returns>
+        protected override IContextLocNaming BuildFullName( ISetupItem container, SetupObjectItemBehavior b, string attributeName )
         {
-            return r.SqlBuildFullName( b, attributeName );
+            return SqlBuildFullName( (SqlPackageBaseItem)container, b, attributeName );
+        }
+
+        /// <summary>
+        /// Builds a Sql context-location-name (with the <see cref="SqlContextLocName.Schema"/>) from a setup object 
+        /// name (typically from an attribute) and its <see cref="SqlPackageBaseItem"/> container that provides
+        /// ambient context, location and schema if the <paramref name="attributeName"/> does not define them.
+        /// When the behavior is <see cref="SetupObjectItemBehavior.Transform"/> and the name does not have
+        /// a transform argument, we consider it to be the default transformation of the (target) name by the container.
+        /// </summary>
+        /// <param name="container">The item's container.</param>
+        /// <param name="b">The behavior (define, replace or transform).</param>
+        /// <param name="attributeName">Name of the object defined in the attribute.</param>
+        /// <returns>The Sql context-location-name.</returns>
+        public static SqlContextLocName SqlBuildFullName( SqlPackageBaseItem container, SetupObjectItemBehavior b, string attributeName )
+        {
+            var name = new SqlContextLocName( attributeName );
+            if( name.Context == null ) name.Context = container.Context;
+            if( name.Location == null ) name.Location = container.Location;
+            if( name.Schema == null ) name.Schema = container.ActualObject.Schema;
+            // Now handling transformation.
+            if( name.TransformArg != null )
+            {
+                // The provided name is a transformation: resolves context/location/schema from container 
+                // on the target component if they are not define.
+                var target = new SqlContextLocName( name.TransformArg );
+                if( target.Context == null ) target.Context = name.Context;
+                if( target.Location == null ) target.Location = name.Location;
+                if( target.Schema == null ) target.Schema = name.Schema;
+                name.TransformArg = target.FullName;
+            }
+            else if( b == SetupObjectItemBehavior.Transform )
+            {
+                // The name is not the name of a transformation however it should be:
+                // we consider it to be the default transformation of the (target) name by the container.
+                name = new SqlContextLocName( container.Context, container.Location, container.Name + '(' + name.FullName + ')' );
+            }
+            return name;
         }
 
         /// <summary>

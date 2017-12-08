@@ -26,7 +26,7 @@ namespace CK.Setup
         /// </summary>
         internal interface ISetupItemCreator : IStObjSetupDynamicInitializer
         {
-            IContextLocNaming BuildFullName( SetupObjectItemAttributeRegisterer r, SetupObjectItemBehavior b, string name );
+            IContextLocNaming BuildFullName( ISetupItem container, SetupObjectItemBehavior b, string name );
 
             /// <summary>
             /// Must create the object.
@@ -192,9 +192,9 @@ namespace CK.Setup
 
         string ISetupItemCreator.GetDetailedName( SetupObjectItemAttributeRegisterer r, string name ) => GetDetailedName( r, name );
 
-        IContextLocNaming ISetupItemCreator.BuildFullName( SetupObjectItemAttributeRegisterer r, SetupObjectItemBehavior b, string name )
+        IContextLocNaming ISetupItemCreator.BuildFullName( ISetupItem container, SetupObjectItemBehavior b, string name )
         {
-            return BuildFullName( r, b, name );
+            return BuildFullName( container, b, name );
         }
 
         SetupObjectItem ISetupItemCreator.CreateSetupObjectItem( SetupObjectItemAttributeRegisterer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
@@ -224,7 +224,7 @@ namespace CK.Setup
         /// <param name="b">Registration behavior.</param>
         /// <param name="name">The raw name.</param>
         /// <returns>The name of the SetupObjectItem.</returns>
-        protected abstract IContextLocNaming BuildFullName( SetupObjectItemAttributeRegisterer r, SetupObjectItemBehavior b, string name );
+        protected abstract IContextLocNaming BuildFullName( ISetupItem container, SetupObjectItemBehavior b, string name );
 
         /// <summary>
         /// Must create the <see cref="SetupObjectItem"/>.
