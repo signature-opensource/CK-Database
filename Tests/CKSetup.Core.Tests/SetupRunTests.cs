@@ -9,10 +9,11 @@ using System.Threading.Tasks;
 
 namespace CKSetup.Tests
 {
+    [TestFixture]
     public class SetupRunTests
     {
-        [TestCase( TestStoreType.Zip, "Off" )]
-        [TestCase( TestStoreType.Directory, "Debug" )]
+        //[TestCase( TestStoreType.Zip, "Off" )]
+        //[TestCase( TestStoreType.Directory, "Debug" )]
         public void setup_SqlCallDemoNet20_publish_folder_WORKS_thanks_to_default_runtimeconfig_json_file( TestStoreType type, string logFilter )
         {
             using( TestHelper.Monitor.TemporarilySetMinimalFilter( LogFilter.Parse( logFilter ) ) )
