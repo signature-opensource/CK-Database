@@ -123,7 +123,7 @@ namespace CK.Setup
                 {
                     StObjCollectorResult r = SafeBuildStObj( normalizedFolders[0] );
                     if( r == null ) return _status.Success = false;
-
+                    
                     var runCtx = new StObjEngineRunContext( _monitor, _startContext, r.OrderedStObjs );
                     runCtx.RunAspects( () => _status.Success = false );
 

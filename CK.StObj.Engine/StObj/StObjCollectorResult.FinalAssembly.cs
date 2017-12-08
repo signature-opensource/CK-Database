@@ -28,17 +28,9 @@ namespace CK.Setup
             using( monitor.OnError( () => hasError = true ) )
             using( monitor.OpenInfo( "Generating StObj dynamic assembly." ) )
             {
-                try
-                {
                     var r = GenerateSourceCode( monitor, finalFilePath, true );
                     Debug.Assert( r.Success || hasError, "!success ==> An error has been logged." );
                     return r;
-                }
-                catch( Exception ex )
-                {
-                    monitor.Error( $"While generating final assembly '{finalFilePath}'.", ex );
-                    return new CodeGenerateResult( false, Array.Empty<string>() );
-                }
             }
         }
     }

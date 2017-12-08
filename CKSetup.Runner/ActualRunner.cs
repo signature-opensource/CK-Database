@@ -16,7 +16,7 @@ namespace CKSetup.Runner
         static public int Run( StringBuilder rawLogText, string[] args )
         {
             IActivityMonitor monitor = CreateMonitor( rawLogText, args );
-            using( monitor.OpenLog( LogLevel.Info, "Starting CK.StObj.Runner" ) )
+            using( monitor.OpenLog( LogLevel.Info, "Starting CKSetup.Runner" ) )
             {
                 try
                 {
@@ -97,8 +97,8 @@ namespace CKSetup.Runner
                         }
                     }
                 }
-                m.Log( LogLevel.Info, "Saving 'CK.StObj.Runner.deps.json.merged'." );
-                var path = Path.Combine( AppContext.BaseDirectory, "CK.StObj.Runner.deps.json.merged" );
+                m.Log( LogLevel.Info, "Saving 'CKSetup.Runner.deps.json.merged'." );
+                var path = Path.Combine( AppContext.BaseDirectory, "CKSetup.Runner.deps.json.merged" );
                 var writer = new DependencyContextWriter();
                 using( var output = File.Open( path, FileMode.Create, FileAccess.Write, FileShare.None ) )
                 {

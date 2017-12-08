@@ -13,7 +13,8 @@ namespace CKSetup
     {
         /// <summary>
         /// Name of the root CKSetup element. This must be the first element in the xml document,
-        /// the second one being the engine configuration that becomes the root of runner configuration file.
+        /// the second one being the engine configuration that becomes the root of runner configuration file
+        /// (its name doesn't matter).
         /// A new CKSetup element is injected at the end of this root of runner configuration file that
         /// contains the <see cref="xEngineAssemblyQualifiedName"/> element and <see cref="xBinPaths"/>.
         /// </summary>
@@ -91,7 +92,7 @@ namespace CKSetup
             WorkingDirectory = ckSetup.Element( xWorkingDirectory )?.Value;
 
             BinPaths = ckSetup.Elements( xBinPaths )
-                                .Elements( xBinPaths )
+                                .Elements( xBinPath )
                                 .Select( e => e.Value )
                                 .ToList();
 
@@ -105,6 +106,13 @@ namespace CKSetup
             EngineAssemblyQualifiedName = engine.Single().Value;
             _configuration = elements[1];
         }
+
+        /// <summary>
+        /// Helper to load a configuration file.
+        /// </summary>
+        /// <param name="path">The path of the xml file.</param>
+        /// <returns>A configuration object.</returns>
+        public static SetupConfiguration Load( string path ) => new SetupConfiguration( XDocument.Load( path ) );
 
         /// <summary>
         /// Creates a xml document from this configuration.

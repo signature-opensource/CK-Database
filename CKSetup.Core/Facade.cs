@@ -144,10 +144,22 @@ namespace CKSetup
                     monitor.Error( $"Working directory can not be inside one of the bin paths." );
                     return null;
                 }
-                if( Directory.Exists( workingDir ) ) Directory.Delete( workingDir, true );
-                Directory.CreateDirectory( workingDir );
+                if( Directory.Exists( workingDir ) )
+                {
+                    monitor.Info( $"Clearing provided working directory: {workingDir}." );
+                    Directory.Delete( workingDir, true );
+                }
+                else
+                {
+                    monitor.Info( $"Creating provided working directory: {workingDir}." );
+                }
             }
-            else workingDir = Path.GetTempPath() + Guid.NewGuid().ToString( "N" ) + Path.DirectorySeparatorChar;
+            else
+            {
+                workingDir = Path.GetTempPath() + Guid.NewGuid().ToString( "N" ) + Path.DirectorySeparatorChar;
+                monitor.Info( $"Created temporary working directory: {workingDir}." );
+            }
+            Directory.CreateDirectory( workingDir );
             return workingDir;
         }
 

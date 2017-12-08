@@ -29,6 +29,10 @@ namespace CK.Core
             Types = new HashSet<string>( StObjEngineConfiguration.FromXml( e, StObjEngineConfiguration.XmlNames.Types, StObjEngineConfiguration.XmlNames.Type ) );
         }
 
+        /// <summary>
+        /// Creates a xml element from this <see cref="SetupFolder"/>.
+        /// </summary>
+        /// <returns>A new element.</returns>
         public XElement ToXml()
         {
             return new XElement( StObjEngineConfiguration.XmlNames.SetupFolder,

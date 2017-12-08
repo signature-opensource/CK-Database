@@ -38,7 +38,7 @@ namespace CKSetup
                     {
                         return m.SendErrorAndDisplayHelp( $"Configuration file not found: '{path}'." ) == Program.RetCodeSuccess;
                     }
-                    Configuration = new SetupConfiguration( XDocument.Load( path ) );
+                    Configuration = SetupConfiguration.Load( path );
                 }
                 catch( Exception ex )
                 {
