@@ -5,20 +5,18 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
+using CK.CodeGen;
+using CK.CodeGen.Abstractions;
+using CK.Core;
+using CK.Reflection;
+using CK.SqlServer.Parser;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using CK.Core;
-using CK.Reflection;
-using CK.SqlServer.Parser;
-using CK.CodeGen;
-using CK.CodeGen.Abstractions;
 
 namespace CK.SqlServer.Setup
 {
@@ -192,53 +190,6 @@ namespace CK.SqlServer.Setup
             /// Gets whether this is an asynchronous call.
             /// </summary>
             public bool IsAsyncCall => _executorCallNonQuery != null && _executorCallNonQuery != SqlObjectItem.MExecutorCallNonQuery; 
-
-            /// <summary>
-            /// Emits call to SqlCommandExecutorParameter.ExecuteNonQuery( string, SqlCommand ) method.
-            /// </summary>
-            /// <param name="g">The IL generator.</param>
-            /// <param name="localSqlCommand">The SqlCommand local variable.</param>
-            /// <param name="resultBuilder">Field that holds the generated function (when <see cref="RequiresReturnTypeBuilder"/> is true).</param>
-            public void GenerateExecuteNonQueryCall( ILGenerator g, LocalBuilder localSqlCommand, FieldInfo resultBuilder )
-            {
-                Debug.Assert( _executorCallNonQuery != null && (RequiresReturnTypeBuilder == (resultBuilder != null)) );
-                g.LdArg( _sqlCommandExecutorParameter.Position + 1 );
-                if( _sqlCommandExecutorMethodGetter != null )
-                {
-                    g.Emit( OpCodes.Callvirt, _sqlCommandExecutorMethodGetter );
-                }
-                g.Emit( OpCodes.Ldarg_0 );
-                g.Emit( OpCodes.Call, SqlObjectItem.MGetDatabase );
-                g.Emit( OpCodes.Call, SqlObjectItem.MDatabaseGetConnectionString );
-                g.LdLoc( localSqlCommand );
-                MethodInfo toCall;
-                if( resultBuilder == null )
-                {
-                    toCall = _executorCallNonQuery;
-                }
-                else
-                {
-                    Debug.Assert( resultBuilder.FieldType.GetGenericTypeDefinition() == typeof( Func<,> ) );
-                    Debug.Assert( resultBuilder.FieldType.GetGenericArguments()[0] == SqlObjectItem.TypeCommand );
-                    Debug.Assert( resultBuilder.FieldType.GetGenericArguments()[1] == _returnedType );
-                    Debug.Assert( _executorCallNonQuery.IsGenericMethodDefinition );
-                    g.Emit( OpCodes.Ldsfld, resultBuilder );
-                    toCall = _executorCallNonQuery.MakeGenericMethod( _returnedType );
-                }
-                if( _cancellationTokenParam != null )
-                {
-                    Debug.Assert( IsAsyncCall );
-                    g.LdArg( _cancellationTokenParam.Position + 1 );
-                }
-                else if( IsAsyncCall )
-                {
-                    LocalBuilder tDef = g.DeclareLocal( typeof( CancellationToken ) );
-                    g.Emit( OpCodes.Ldloca_S, tDef );
-                    g.Emit( OpCodes.Initobj, typeof( CancellationToken ) );
-                    g.LdLoc( tDef );
-                }
-                g.Emit( OpCodes.Callvirt, toCall );
-            }
 
             public void GenerateExecuteNonQueryCall( ICodeWriter b, string varCommandName, string resultBuilderName, ParameterInfo[] callingParameters )
             {

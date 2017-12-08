@@ -2,13 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Reflection;
-using System.Reflection.Emit;
-using System.Collections;
 using CK.Reflection;
 using CK.CodeGen;
 using CK.CodeGen.Abstractions;
+using System.Reflection.Emit;
 
 namespace CK.Core
 {
@@ -137,7 +135,7 @@ namespace CK.Core
             try
             {
                 TypeAttributes tA = TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed;
-                System.Reflection.Emit.TypeBuilder b = assembly.StubModuleBuilder.DefineType( assembly.AutoNextTypeName( AbstractType.Name ), tA, AbstractType );
+                TypeBuilder b = assembly.StubModuleBuilder.DefineType( assembly.AutoNextTypeName( AbstractType.Name ), tA, AbstractType );
                 // Relayed constructors replicates all their potential attributes (included attributes on parameters).
                 // We do not replicate attributes on parameters here. 
                 b.DefinePassThroughConstructors( c => c.Attributes | MethodAttributes.Public, null, ( parameter, CustomAttributeData ) => false );

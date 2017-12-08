@@ -1,16 +1,7 @@
-using System;
-using System.Collections;
-using System.Data.SqlClient;
-using System.Diagnostics;
-using System.Reflection;
-using System.Linq;
+using CK.CodeGen.Abstractions;
 using CK.Core;
 using CK.Setup;
 using CK.SqlServer.Parser;
-using CK.Reflection;
-using CK.CodeGen;
-using System.Reflection.Emit;
-using CK.CodeGen.Abstractions;
 
 namespace CK.SqlServer.Setup
 {

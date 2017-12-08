@@ -1,14 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Diagnostics;
 using CK.Core;
 using System.Reflection;
-using System.Collections.Specialized;
-using System.Collections;
-using CK.Text;
-using System.Reflection.Emit;
 
 namespace CK.Setup
 {

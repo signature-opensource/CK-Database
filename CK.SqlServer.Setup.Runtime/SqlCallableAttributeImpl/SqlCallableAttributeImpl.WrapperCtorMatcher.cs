@@ -5,18 +5,15 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
+using CK.CodeGen;
+using CK.CodeGen.Abstractions;
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
 using System.Text;
-using System.Threading.Tasks;
-using CK.Core;
-using CK.Reflection;
-using CK.CodeGen;
-using CK.CodeGen.Abstractions;
 
 namespace CK.SqlServer.Setup
 {
@@ -141,59 +138,6 @@ namespace CK.SqlServer.Setup
             internal void LogWarnings( IActivityMonitor monitor )
             {
                 if( _warnings.Length > 0 ) monitor.Warn( _warnings.ToString() );
-            }
-
-            internal void LdParameters( ModuleBuilder mB, ILGenerator g, LocalBuilder locCmd )
-            {
-                int i = 0;
-                foreach( var mP in _mappedParameters )
-                {
-                    if( i == _idxSqlCommand )
-                    {
-                        g.LdLoc( locCmd );
-                    }
-                    else if( mP == _declaringTypeMarker )
-                    {
-                        g.LdArg( 0 );
-                        g.Emit( OpCodes.Castclass, Parameters[i].ParameterType );
-                    }
-                    else if( mP.Member == Ctor )
-                    {
-                        Debug.Assert( IsValidDefaultValue( mP ) );
-                        Debug.Assert( mP.Position == i, "This is the ParameterInfo of the constructor." );
-
-                        object d = mP.DefaultValue;
-                        if( d == null )
-                        {
-                            g.Emit( OpCodes.Ldnull );
-                        }
-                        else
-                        {
-                            Type dT = d.GetType();
-                            if( dT.Equals( typeof( Int32 ) ) || dT.Equals( typeof( Int16 ) ) || dT.Equals( typeof( sbyte ) ) )
-                            {
-                                g.LdInt32( (int)d );
-                            }
-                            else if( dT.Equals( typeof( string ) ) )
-                            {
-                                g.Emit( OpCodes.Ldstr, (string)d );
-                            }
-                            else if( dT.Equals( typeof( double ) ) )
-                            {
-                                g.Emit( OpCodes.Ldc_R8, (double)d );
-                            }
-                            else if( dT.Equals( typeof( float ) ) )
-                            {
-                                g.Emit( OpCodes.Ldc_R4, (float)d );
-                            }
-                        }
-                    }
-                    else
-                    {
-                        g.LdArg( mP.Position + 1 );
-                    }
-                    ++i;
-                }
             }
 
             internal void LdParameters( ICodeWriter b, string varCmdName, ParameterInfo[] callingParameters )

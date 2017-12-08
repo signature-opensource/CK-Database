@@ -296,6 +296,7 @@ namespace CK.Setup
             }
             return StartDependencySort( m );
         }
+
         /// <summary>
         /// This ensures that the transform target is registered if it exists
         /// even if requirements do not start from referenced objects.

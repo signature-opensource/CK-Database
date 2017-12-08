@@ -5,20 +5,17 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
+using CK.CodeGen;
+using CK.CodeGen.Abstractions;
+using CK.Core;
+using CK.SqlServer.Parser;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
-using CK.Core;
-using CK.Reflection;
-using CK.SqlServer.Parser;
-using CK.CodeGen;
-using CK.CodeGen.Abstractions;
 
 namespace CK.SqlServer.Setup
 {
@@ -231,171 +228,6 @@ namespace CK.SqlServer.Setup
                     get { return _methodParam != null || _ctxProp != null || _isIgnoredOutputParameter || _isUseDefaultSqlValue; }
                 }
 
-                #region Setting SqlParameter.Value
-
-                bool LdObjectToSetFromParameterOrCallContextProperty( IActivityMonitor monitor, ILGenerator g )
-                {
-                    Type typeToSet;
-                    TypeInfo typeToSetInfo;
-                    if( _methodParam != null )
-                    {
-                        typeToSet = _methodParam.ParameterType;
-                        g.LdArg( _methodParam.Position + 1 );
-                        if( typeToSet.IsByRef )
-                        {
-                            typeToSet = typeToSet.GetElementType();
-                            typeToSetInfo = typeToSet.GetTypeInfo();
-                            if( typeToSetInfo.IsValueType )
-                            {
-                                g.Emit( OpCodes.Ldobj, typeToSet );
-                            }
-                            else
-                            {
-                                g.Emit( OpCodes.Ldind_Ref );
-                            }
-                        }
-                        else typeToSetInfo = typeToSet.GetTypeInfo();
-                    }
-                    else
-                    {
-                        Debug.Assert( _ctxProp != null );
-                        g.LdArg( _ctxProp.Parameter.Position + 1 );
-                        if( _ctxProp.PocoMappedType != null )
-                        {
-                            g.Emit( OpCodes.Castclass, _ctxProp.PocoMappedType );
-                        }
-                        g.Emit( OpCodes.Callvirt, _ctxProp.Prop.GetGetMethod() );
-                        typeToSet = _ctxProp.Prop.PropertyType;
-                        typeToSetInfo = typeToSet.GetTypeInfo();
-                    }
-                    // The value is on the stack: it may be a value or reference type of type typeToSet.
-                    // If it is null or a Nullable<T> that has no value, we must transform it into DBNull.Value.
-                    Label objectIsAvailable = g.DefineLabel();
-                    if( typeToSetInfo.IsValueType )
-                    {
-                        // Boxing a Nullable<T> is handled at the CLR level: if Nullable<T>.HasValue is false,
-                        // a null reference is left on the stack.
-                        g.Emit( OpCodes.Box, typeToSet );
-                    }
-                    g.Emit( OpCodes.Dup );
-                    g.Emit( OpCodes.Brtrue_S, objectIsAvailable );
-                    g.Emit( OpCodes.Pop );
-                    g.Emit( OpCodes.Ldsfld, SqlObjectItem.FieldDBNullValue );
-                    g.MarkLabel( objectIsAvailable );
-                    return true;
-                }
-
-                bool LdObjectToSetFromDefaultSqlValue( IActivityMonitor monitor, ILGenerator g )
-                {
-                    if( SqlExprParam.DefaultValue.IsVariable )
-                    {
-                        monitor.Error( $"Parameter '{SqlExprParam.ToStringClean()}' has default value '{SqlExprParam.DefaultValue.ToString()}' that is a variable. This not supported." );
-                        return false;
-                    }
-                    object o = SqlExprParam.DefaultValue.NullOrLitteralDotNetValue;
-                    if( o == DBNull.Value )
-                    {
-                        g.Emit( OpCodes.Ldsfld, SqlObjectItem.FieldDBNullValue );
-                    }
-                    else if( o is Int32 )
-                    {
-                        g.LdInt32( (int)o );
-                        g.Emit( OpCodes.Box, typeof(Int32) );
-                    }
-                    else if( o is Decimal )
-                    {
-                        Decimal d = (Decimal)o;
-                        int[] bits = Decimal.GetBits( d );
-                        g.LdInt32( 4 );
-                        g.Emit( OpCodes.Newarr, typeof( Int32 ) );
-                        for( int i = 0; i < 4; ++i  )
-                        {
-                            g.Emit( OpCodes.Dup );
-                            g.LdInt32( i );
-                            g.LdInt32( bits[i] );
-                            g.Emit( OpCodes.Stelem_I4 );
-                        }
-                        g.Emit( OpCodes.Newobj, SqlObjectItem.CtorDecimalBits );
-                        g.Emit( OpCodes.Box, typeof(Decimal) );
-                    }
-                    else if( o is Double )
-                    {
-                        g.Emit( OpCodes.Ldc_R8, (double)o );
-                        g.Emit( OpCodes.Box, typeof( Double ) );
-                    }
-                    else if (o is string)
-                    {
-                        g.Emit(OpCodes.Ldstr, (string)o);
-                    }
-                    else if (o is byte[])
-                    {
-                        var t = (byte[])o;
-                        g.LdInt32(t.Length);
-                        g.Emit(OpCodes.Newarr, typeof(byte));
-                        for (int i = 0; i < t.Length; ++i)
-                        {
-                            g.Emit(OpCodes.Dup);
-                            g.LdInt32(i);
-                            g.LdInt32(t[i]);
-                            g.Emit(OpCodes.Stelem_I1);
-                        }
-                    }
-                    else
-                    {
-                        monitor.Error( $"Emit for type  '{o.GetType().Name}' (Parameter '{SqlExprParam.ToStringClean()}') is not supported." );
-                        return false;
-                    }
-                    return true;
-                }
-
-                internal bool EmitSetSqlParameterValue( IActivityMonitor monitor, ILGenerator g, LocalBuilder locParameterCollection )
-                {
-                    if( _isIgnoredOutputParameter ) return true;
-                    if( _isUseDefaultSqlValue )
-                    {
-                        monitor.Info( $"Parameter '{SqlExprParam.ToStringClean()}' will use its default value." );
-                        return EmitSetParameterCode( monitor, g, locParameterCollection, LdObjectToSetFromDefaultSqlValue );
-                    }
-                    Debug.Assert( IsMappedToMethodParameterOrParameterSourceProperty );
-                    // Do not set any Value if the C# parameter is out.
-                    if( _methodParam != null && _methodParam.IsOut ) return true;
-                    return EmitSetParameterCode( monitor, g, locParameterCollection, LdObjectToSetFromParameterOrCallContextProperty );
-                }
-
-                bool EmitSetParameterCode( IActivityMonitor monitor, ILGenerator g, LocalBuilder locParameterCollection, Func<IActivityMonitor,ILGenerator,bool> valueLoader )
-                {
-#if NET461
-                    g.LdLoc( locParameterCollection );
-                    g.LdInt32( _index );
-                    g.Emit( OpCodes.Call, SqlObjectItem.MParameterCollectionGetParameter );
-                    // The SqlCommandParameter is on the stack.
-                    // We must correct its default configuration if the Sql parameter is output in order for Sql Server to take into account the input value.
-                    if( SqlExprParam.IsPureOutput )
-                    {
-                        g.Emit( OpCodes.Dup );
-                        g.LdInt32( (int)ParameterDirection.InputOutput );
-                        g.Emit( OpCodes.Callvirt, SqlObjectItem.MParameterSetDirection );
-                    }
-                    string sqlType = SqlExprParam.SqlType.ToStringClean();
-                    if (StringComparer.OrdinalIgnoreCase.Equals(sqlType, "Geometry")
-                        || StringComparer.OrdinalIgnoreCase.Equals(sqlType, "Geography")
-                        || StringComparer.OrdinalIgnoreCase.Equals(sqlType, "HierarchyId"))
-                    {
-                        g.Emit(OpCodes.Dup);
-                        g.LdInt32((int)SqlDbType.Udt);
-                        g.Emit(OpCodes.Callvirt, SqlObjectItem.MParameterSetSqlDbType);
-
-                        g.Emit(OpCodes.Dup);
-                        g.Emit(OpCodes.Ldstr, sqlType.ToLowerInvariant());
-                        g.Emit(OpCodes.Callvirt, SqlObjectItem.MParameterSetUdtTypeName);
-                    }
-
-                    // Load object on the stack.
-                    if ( !valueLoader( monitor, g ) ) return false;
-                    g.Emit( OpCodes.Call, SqlObjectItem.MParameterSetValue );
-#endif
-                    return true;
-                }
 
                 internal bool EmitSetSqlParameterValue( IActivityMonitor monitor, ICodeWriter b, string varParameterName )
                 {
@@ -477,29 +309,6 @@ namespace CK.SqlServer.Setup
                     return true;
                 }
 
-#endregion
-
-                internal void EmitSetRefOrOutParameter( ILGenerator g, LocalBuilder locParameterCollection )
-                {
-                    if( _methodParam == null || !_methodParam.ParameterType.IsByRef ) return;
-
-                    g.LdArg( _methodParam.Position + 1 );
-                    g.LdLoc( locParameterCollection );
-                    g.LdInt32( _index );
-                    g.Emit( OpCodes.Call, SqlObjectItem.MParameterCollectionGetParameter );
-                    g.Emit( OpCodes.Call, SqlObjectItem.MParameterGetValue );
-                    Type t = _methodParam.ParameterType.GetElementType();
-                    if( t.GetTypeInfo().IsValueType )
-                    {
-                        g.Emit( OpCodes.Unbox_Any, t );
-                        g.Emit( OpCodes.Stobj, t );
-                    }
-                    else
-                    {
-                        g.Emit( OpCodes.Castclass, t );
-                        g.Emit( OpCodes.Stind_Ref );
-                    }
-                }
                 internal void EmitSetRefOrOutParameter( ICodeWriter b, string varCmdParameters, Func<string> tempObjName )
                 {
                     if( _methodParam == null || !_methodParam.ParameterType.IsByRef ) return;
@@ -617,22 +426,6 @@ namespace CK.SqlServer.Setup
                 p.SetUsedByReturnedType();
             }
 
-            internal void EmitInlineReturn(ILGenerator g, LocalBuilder locParameterCollection)
-            {
-                if (_simpleReturnType != null)
-                {
-                    EmitGetSqlCommandParameterValue(g, locParameterCollection, _simpleReturnType.Index, _unwrappedReturnedType);
-                }
-                else
-                {
-                    Debug.Assert(_complexReturnType != null);
-                    _complexReturnType.EmitFullInitialization(g, (idxValue, targetType) =>
-                    {
-                        EmitGetSqlCommandParameterValue(g, locParameterCollection, idxValue, targetType);
-                    });
-                }
-            }
-
             internal string EmitInlineReturn(ICodeWriter b, string nameParameters, Func<string> tempObjectName )
             {
                 if (_simpleReturnType != null)
@@ -691,60 +484,6 @@ namespace CK.SqlServer.Setup
                 }
                 b.Append( tempObjName() ).Append( ";" ).NewLine();
                 return resultName;
-            }
-
-            static void EmitGetSqlCommandParameterValue( ILGenerator g, LocalBuilder locParameterCollection, int sqlParameterIndex, Type targetType )
-            {
-                g.LdLoc( locParameterCollection );
-                g.LdInt32( sqlParameterIndex );
-                g.Emit( OpCodes.Call, SqlObjectItem.MParameterCollectionGetParameter );
-                g.Emit( OpCodes.Call, SqlObjectItem.MParameterGetValue );
-                if( targetType.GetTypeInfo().IsValueType )
-                {
-                    Type actualType = Nullable.GetUnderlyingType( targetType );
-                    if( actualType != null )
-                    {
-                        Label isNull = g.DefineLabel();
-                        Label afterIsNotNull = g.DefineLabel();
-                        LocalBuilder defNullable = g.DeclareLocal( targetType );
-                        g.Emit( OpCodes.Dup );
-                        g.Emit( OpCodes.Ldsfld, SqlObjectItem.FieldDBNullValue );
-                        g.Emit( OpCodes.Ceq );
-                        g.Emit( OpCodes.Brtrue_S, isNull );
-                        if( actualType.GetTypeInfo().IsEnum )
-                        {
-                            g.Emit( OpCodes.Unbox_Any, actualType );
-                            g.Emit( OpCodes.Newobj, targetType.GetConstructor( new[] { actualType } ) );
-                        }
-                        else
-                        {
-                            // For non enum value type, the Unbox_Any handles the implicit 
-                            // conversion to Nullable<actualType>: newobj is useless.
-                            g.Emit( OpCodes.Unbox_Any, targetType );
-                        }
-                        g.Emit( OpCodes.Br_S, afterIsNotNull );
-                        g.MarkLabel( isNull );
-                        g.Emit( OpCodes.Pop );
-                        g.Emit( OpCodes.Ldloc, defNullable );
-                        g.MarkLabel( afterIsNotNull );
-                    }
-                    else
-                    {
-                        g.Emit( OpCodes.Unbox_Any, targetType );
-                    }
-                }
-                else
-                {
-                    Label afterCheckDBNull = g.DefineLabel();
-                    g.Emit( OpCodes.Dup );
-                    g.Emit( OpCodes.Ldsfld, SqlObjectItem.FieldDBNullValue );
-                    g.Emit( OpCodes.Ceq );
-                    g.Emit( OpCodes.Brfalse_S, afterCheckDBNull );
-                    g.Emit( OpCodes.Pop );
-                    g.Emit( OpCodes.Ldnull );
-                    g.MarkLabel( afterCheckDBNull );
-                    g.Emit( OpCodes.Castclass, targetType );
-                }
             }
 
             static bool IsSimpleReturnType( Type returnType )

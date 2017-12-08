@@ -1,16 +1,12 @@
+using CK.CodeGen;
+using CK.CodeGen.Abstractions;
+using CK.Core;
+using CK.Text;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
-using CK.Core;
-using CK.Reflection;
-using CK.Text;
-using CK.CodeGen;
-using CK.CodeGen.Abstractions;
 
 namespace CK.SqlServer.Setup
 {
@@ -35,10 +31,6 @@ namespace CK.SqlServer.Setup
                 IsSimpleType = SqlCallableAttributeImpl.IsNetTypeMapped( type );
             }
 
-            public void EmitGetValue( ILGenerator g, Action<int, Type> getValueGenerator )
-            {
-                getValueGenerator( InputIndex, Type );
-            }
         }
 
         class Mapped
@@ -236,37 +228,6 @@ namespace CK.SqlServer.Setup
             }
             return true;
         }
-
-        public void EmitNewObj( ILGenerator g, Action<int, Type> getValueGenerator )
-        {
-            Debug.Assert( _selectedCtor != null && _selectedCtor.IsInputSatisfied );
-            foreach( var pCtor in _selectedCtor.Parameters )
-            {
-                pCtor.EmitGetValue( g, getValueGenerator );
-            }
-            g.Emit( OpCodes.Newobj, _selectedCtor.Ctor );
-        }
-
-        public void EmitPropertiesSet( ILGenerator g, Action<int, Type> getValueGenerator )
-        {
-            foreach( var pProp in _props )
-            {
-                if( pProp.IsInputSatisfied && !_mappedInputIsSelectedCtor.Contains( pProp.Parameters[0].InputIndex ) )
-                {
-                    g.Emit( OpCodes.Dup );
-                    pProp.Parameters[0].EmitGetValue( g, getValueGenerator );
-                    g.Emit( OpCodes.Callvirt, pProp.Property.GetSetMethod() );
-                }
-            }
-        }
-
-        public void EmitFullInitialization( ILGenerator g, Action<int, Type> getValueGenerator )
-        {
-            EmitNewObj( g, getValueGenerator );
-            EmitPropertiesSet( g, getValueGenerator );
-        }
-
-
 
         public string EmitFullInitialization( ICodeWriter b, Func<int, Type, string> getValueGenerator )
         {

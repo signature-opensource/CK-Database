@@ -1,15 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using CK.Core;
 using System.Diagnostics;
-using System.Reflection.Emit;
-using System.Reflection;
-using CK.Reflection;
-using System.Resources;
-using System.Collections;
-using System.IO;
 
 namespace CK.Setup
 {
@@ -28,9 +18,9 @@ namespace CK.Setup
             using( monitor.OnError( () => hasError = true ) )
             using( monitor.OpenInfo( "Generating StObj dynamic assembly." ) )
             {
-                    var r = GenerateSourceCode( monitor, finalFilePath, true );
-                    Debug.Assert( r.Success || hasError, "!success ==> An error has been logged." );
-                    return r;
+                var r = GenerateSourceCode( monitor, finalFilePath, true );
+                Debug.Assert( r.Success || hasError, "!success ==> An error has been logged." );
+                return r;
             }
         }
     }

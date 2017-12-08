@@ -1,17 +1,6 @@
-﻿using System;
-using System.Data;
-using System.Data.SqlClient;
-using System.Diagnostics;
-using System.IO;
-using System.Reflection;
-using System.Reflection.Emit;
-using CK.Core;
-using CK.Reflection;
-using CK.SqlServer.Parser;
-using System.Text;
 using CK.Setup;
-using System.Linq;
-using CK.Text;
+using CK.SqlServer.Parser;
+using System.Diagnostics;
 
 namespace CK.SqlServer.Setup
 {

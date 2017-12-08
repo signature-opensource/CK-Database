@@ -6,14 +6,6 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Reflection.Emit;
-using System.Reflection;
-using System.Threading;
-using System.IO;
-using System.Collections;
 
 namespace CK.Core
 {
@@ -31,44 +23,6 @@ namespace CK.Core
             return @this.DefaultGenerationNamespace.FullName + '.' + (name != null ? name + @this.NextUniqueNumber() : Guid.NewGuid().ToString());
         }
 
-/*
-        public struct Marker<T>
-        {
-            public readonly T Value;
-            public readonly bool AlreadyMarked;
-
-            public Marker(T v, bool e)
-            {
-                Value = v;
-                AlreadyMarked = e;
-            }
-        }
-
-        public static Marker<T> MemoryMark<T>(this IDynamicAssembly @this, object key)
-        {
-            object r = @this.Memory[key];
-            if (r == null)
-            {
-                @this.Memory[key] = new Marker<T>(default(T),true);
-                return new Marker<T>();
-            }
-            if (r is Marker<T>) return (Marker<T>)r;
-            if (r is T) return new Marker<T>((T)r, true);
-            throw new InvalidOperationException($"DynamicAssembly.Memory type mismatch for key '{key}'. Expected '{typeof(T).Name}', got '{r.GetType().Name}'.");
-        }
-
-        public static T MemoryMark<T>(this IDynamicAssembly @this, object key, T value)
-        {
-            object r = @this.Memory[key];
-            if (r == null || r is Marker<T>)
-            {
-                @this.Memory[key] = new Marker<T>(value, true);
-                return value;
-            }
-            if (r is T) return (T)r;
-            throw new InvalidOperationException($"DynamicAssembly.Memory type mismatch for key '{key}'. Expected '{typeof(T).Name}', got '{r.GetType().Name}'.");
-        }
-*/
         /// <summary>
         /// Gets all information related to Poco.
         /// </summary>

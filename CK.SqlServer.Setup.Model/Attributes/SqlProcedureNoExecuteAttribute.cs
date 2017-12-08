@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using CK.Core;
-using System.Reflection.Emit;
-using System.Reflection;
+using System;
 
 namespace CK.SqlServer.Setup
 {
-    
+
     /// <summary>
     /// Allows to declare a procedure signature and check the parameters 
     /// without code generation support to call it.

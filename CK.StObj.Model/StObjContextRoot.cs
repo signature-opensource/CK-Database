@@ -7,13 +7,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Reflection;
-using System.IO;
-using System.Reflection.Emit;
-using System.Threading;
-using System.Diagnostics;
 
 namespace CK.Core
 {

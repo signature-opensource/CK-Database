@@ -12,7 +12,7 @@ namespace CK.Setup
     /// <summary>
     /// Stateless object that handles object initialization across multiple 
     /// <see cref="IStObjSetupDynamicInitializer"/> in the context of <see cref="SetupObjectItemAttributeImplBase"/>.
-    /// It only exposes contextual information to actual intializers: most of the job is done internally.
+    /// It only exposes contextual information to actual initializers: most of the job is done internally.
     /// </summary>
     public class SetupObjectItemAttributeRegisterer
     {
