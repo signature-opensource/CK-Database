@@ -22,8 +22,6 @@ namespace CK.StObj.Runner
                 = CultureInfo.DefaultThreadCurrentCulture
                 = CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo( "en-US" );
 
-Debugger.Launch();
-
             string rawLogPath = Path.Combine( AppContext.BaseDirectory, "CK.StObj.Runner.RawLogs.txt" );
             if( File.Exists( rawLogPath ) ) File.Delete( rawLogPath );
             var rawLogText = new StringBuilder();

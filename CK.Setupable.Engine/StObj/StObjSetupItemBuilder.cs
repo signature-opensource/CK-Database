@@ -255,15 +255,15 @@ namespace CK.Setup
                 _actions = new List<PushedAction>();
             }
 
-            public IActivityMonitor Monitor { get { return _builder._monitor; } }
+            public IActivityMonitor Monitor =>_builder._monitor; 
 
-            public IServiceProvider ServiceProvider { get { return _builder._services; } }
+            public IServiceProvider ServiceProvider => _builder._services;
 
-            public IDictionary Memory { get { return _memory; } }
+            public IDictionary Memory => _memory; 
 
-            public int PushedActionsCount { get { return _actions.Count; } }
+            public int PushedActionsCount => _actions.Count; 
 
-            public int PushedNextRoundActionsCount { get { return _nextRoundActions != null ? _nextRoundActions.Count : 0; } }
+            public int PushedNextRoundActionsCount => _nextRoundActions != null ? _nextRoundActions.Count : 0; 
 
             public int CurrentRoundNumber => _currentRoundActions;
             
@@ -350,12 +350,11 @@ namespace CK.Setup
                                 }
                             }
                             initSource = "Structured Item itself";
-                            IStObjSetupDynamicInitializer objectItself = o.InitialObject as IStObjSetupDynamicInitializer;
-                            if( objectItself != null ) objectItself.DynamicItemInitialize( state, item, o );
+                            if( o.InitialObject is IStObjSetupDynamicInitializer objectItself ) objectItself.DynamicItemInitialize( state, item, o );
                             initSource = "Setup Item itself";
-                            if( item is IStObjSetupDynamicInitializer ) ((IStObjSetupDynamicInitializer)item).DynamicItemInitialize( state, item, o );
+                            if( item is IStObjSetupDynamicInitializer itemItself ) itemItself.DynamicItemInitialize( state, item, o );
                             initSource = "Global StObjSetupBuilder initializer";
-                            if( _dynamicInitializer != null ) _dynamicInitializer.DynamicItemInitialize( state, item, o );
+                            _dynamicInitializer?.DynamicItemInitialize( state, item, o );
                         }
                         catch( Exception ex )
                         {

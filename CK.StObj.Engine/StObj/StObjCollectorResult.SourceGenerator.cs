@@ -77,9 +77,21 @@ namespace CK.Setup
             return result.Success;
         }
 
-
-        bool GenerateSourceCode( IActivityMonitor monitor, string finalFilePath, bool saveSource )
+        public struct CodeGenerateResult
         {
+            public readonly bool Success;
+            public readonly IReadOnlyList<string> GeneratedFileName;
+
+            internal CodeGenerateResult( bool success, IReadOnlyList<string> fileNames )
+            {
+                Success = success;
+                GeneratedFileName = fileNames;
+            }
+        }
+
+        CodeGenerateResult GenerateSourceCode( IActivityMonitor monitor, string finalFilePath, bool saveSource )
+        {
+            List<string> generatedFileNames = new List<string>();
             try
             {
                 // Injects System.Reflection and setup assemblies into the
@@ -103,7 +115,7 @@ namespace CK.Setup
                             monitor.Trace( $"{e.MaskedLevel} - {e.Text}" );
                         }
                     }
-                    return false;
+                    return new CodeGenerateResult( false, generatedFileNames );
                 }
 
                 using( monitor.OpenInfo( "Compiling source code." ) )
@@ -118,16 +130,18 @@ namespace CK.Setup
                             string sourceFile = $"{finalFilePath}.{i}.cs";
                             monitor.Info( $"Saved source file: {sourceFile}" );
                             File.WriteAllText( sourceFile, result.Sources[i].ToString() );
+                            generatedFileNames.Add( Path.GetFileName( sourceFile ) );
                         }
                     }
+                    if( result.Success ) generatedFileNames.Add( Path.GetFileName( finalFilePath ) );
                     result.LogResult( monitor );
-                    return result.Success;
+                    return new CodeGenerateResult( result.Success, generatedFileNames );
                 }
             }
             catch( Exception ex )
             {
                 monitor.Error( $"While generating final assembly '{finalFilePath}' from source code.", ex );
-                return false;
+                return new CodeGenerateResult( false, generatedFileNames );
             }
         }
 
