@@ -12,7 +12,7 @@ namespace SqlZonePackage.Zone
     public abstract class Package : SqlActorPackage.Basic.Package, SqlActorPackage.IAnyService
     {
         [InjectContract]
-        public new GroupHome GroupHome { get { return (GroupHome)base.GroupHome; } protected set { base.GroupHome = value; } }
+        public new GroupHome GroupHome { get { return (GroupHome)base.GroupHome; } }
 
         [InjectContract]
         public SecurityZoneHome SecurityZoneHome { get; protected set; }

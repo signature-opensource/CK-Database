@@ -329,20 +329,6 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Gets the AppSettings.Default[\"SourceGeneration\"] value.
-        /// </summary>
-        public static bool DefaultSourceGeneration
-        {
-            get
-            {
-                var u = AppSettings.Default["SourceGeneration"];
-                if( u == null || u.Equals( "false", StringComparison.OrdinalIgnoreCase ) ) return false;
-                if( u.Equals( "true", StringComparison.OrdinalIgnoreCase ) ) return true;
-                throw new Exception( "AppSettings.Default[\"SourceGeneration\"] must be not define, false or true." );
-            }
-        }
-
-        /// <summary>
         /// Gets the database test name from AppSettings.Default["DatabaseTestName"] (typically from configuration file).
         /// Note that the <see cref="AppSettings.Default"/> may be <see cref="AppSettings.Override(Func{Func{string, object}, string, object})">overridden</see>
         /// by code.
@@ -388,21 +374,6 @@ namespace CK.Core
             get
             {
                 var c = AppSettings.Default["AssembliesToSetup"];
-                if( c == null ) c = string.Empty;
-                return c.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
-                        .Select( s => s.Trim() ).ToArray();
-            }
-        }
-
-        /// <summary>
-        /// Gets the assemblies to test from configuration file application settings (comma 
-        /// separated names from "RecurseAssembliesToSetup" key).
-        /// </summary>
-        public static IReadOnlyList<string> RecurseAssembliesToSetup
-        {
-            get
-            {
-                var c = AppSettings.Default["RecurseAssembliesToSetup"];
                 if( c == null ) c = string.Empty;
                 return c.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
                         .Select( s => s.Trim() ).ToArray();
